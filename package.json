@@ -1,0 +1,20 @@
+{
+  "name": "cow-js",
+  "version": "0.0.1",
+  "license": "MIT",
+  "devDependencies": {
+    "microbundle": "^0.14.2"
+  },
+  "source": "src/index.ts",
+  "exports": {
+    "require": "./dist/cow-js.cjs",
+    "default": "./dist/cow-js.modern.js"
+  },
+  "main": "./dist/cow-js.cjs",
+  "module": "./dist/cow-js.module.js",
+  "unpkg": "./dist/cow-js.umd.js",
+  "scripts": {
+    "build": "microbundle",
+    "dev": "microbundle watch"
+  }
+}
