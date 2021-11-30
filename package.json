@@ -1,20 +1,25 @@
 {
-  "name": "cow-js",
+  "name": "cow-sdk",
   "version": "0.0.1",
   "license": "MIT",
   "devDependencies": {
+    "@babel/preset-typescript": "^7.16.0",
+    "@types/jest": "^27.0.3",
+    "jest": "^27.3.1",
     "microbundle": "^0.14.2"
   },
   "source": "src/index.ts",
   "exports": {
-    "require": "./dist/cow-js.cjs",
-    "default": "./dist/cow-js.modern.js"
+    "require": "./dist/cow-sdk.cjs",
+    "default": "./dist/cow-sdk.modern.js"
   },
-  "main": "./dist/cow-js.cjs",
-  "module": "./dist/cow-js.module.js",
-  "unpkg": "./dist/cow-js.umd.js",
+  "main": "./dist/cow-sdk.cjs",
+  "module": "./dist/cow-sdk.module.js",
+  "unpkg": "./dist/cow-sdk.umd.js",
   "scripts": {
     "build": "microbundle",
-    "dev": "microbundle watch"
-  }
+    "start": "microbundle watch",
+    "test": "jest"
+  },
+  "types": "dist/index.d.ts"
 }
