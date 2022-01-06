@@ -1,7 +1,7 @@
 {
   "name": "cow-sdk",
   "version": "0.0.1",
-  "license": "MIT",
+  "license": "(MIT OR Apache-2.0)",
   "devDependencies": {
     "@babel/preset-typescript": "^7.16.0",
     "@types/jest": "^27.0.3",

@@ -1,5 +1,7 @@
 # Intellectual Property Notice
 
+Copyright 2021 Gnosis Ltd
+
 Copyrights in this project are retained by contributors. No copyright assignment
 is required to contribute to this project.
 
