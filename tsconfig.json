@@ -6,6 +6,7 @@
     "strict": true,
     "alwaysStrict": true,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "noEmit": true,
   }
 }
