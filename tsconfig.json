@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "/*": ["src/*"]
+    },
     "moduleResolution": "node",
     "module": "ESNext",
     "target": "ESNext",
@@ -8,5 +12,7 @@
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "noEmit": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUnusedLocals": true,
   }
 }

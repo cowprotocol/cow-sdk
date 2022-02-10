@@ -10,10 +10,12 @@ import {
   IntChainIdTypedDataV4Signer,
   SigningScheme,
 } from '@gnosis.pm/gp-v2-contracts'
+import log from 'loglevel'
 
-import { SupportedChainId as ChainId } from '../constants/chains'
-import { GP_SETTLEMENT_CONTRACT_ADDRESS } from '../constants'
+import { SupportedChainId as ChainId } from '/constants/chains'
+import { GP_SETTLEMENT_CONTRACT_ADDRESS } from '/constants'
 import { TypedDataDomain, Signer } from '@ethersproject/abstract-signer'
+import { CowError } from './common'
 
 // For error codes, see:
 // - https://eth.wiki/json-rpc/json-rpc-error-codes-improvement-proposal
@@ -74,7 +76,7 @@ const mapSigningSchema: Map<SigningScheme, SchemaInfo> = new Map([
 function _getSigningSchemeInfo(ecdaSigningScheme: SigningScheme): SchemaInfo {
   const value = mapSigningSchema.get(ecdaSigningScheme)
   if (value === undefined) {
-    throw new Error('Unknown schema ' + ecdaSigningScheme)
+    throw new CowError('Unknown schema ' + ecdaSigningScheme)
   }
 
   return value
@@ -103,7 +105,7 @@ function _getDomain(chainId: ChainId): TypedDataDomain {
   const settlementContract = GP_SETTLEMENT_CONTRACT_ADDRESS[chainId]
 
   if (!settlementContract) {
-    throw new Error('Unsupported network. Settlement contract is not deployed')
+    throw new CowError('Unsupported network. Settlement contract is not deployed')
   }
 
   return domainGp(chainId, settlementContract)
@@ -125,7 +127,7 @@ async function _signOrderCancellation(params: SingOrderCancellationParams): Prom
   return signOrderCancellationGp(domain, orderId, signer, getSigningSchemeLibValue(signingScheme))
 }
 
-type SigningResult = { signature: string; signingScheme: SigningScheme }
+export type SigningResult = { signature: string; signingScheme: SigningScheme }
 
 async function _signPayload(
   payload: any,
@@ -149,8 +151,8 @@ async function _signPayload(
         _signer = signer
     }
   } catch (e) {
-    console.error('Wallet not supported:', e)
-    throw new Error('Wallet not supported')
+    log.error('Wallet not supported:', e)
+    throw new CowError('Wallet not supported')
   }
 
   try {
@@ -158,7 +160,7 @@ async function _signPayload(
   } catch (e) {
     if (!isProviderRpcError(e)) {
       // Some other error signing. Let it bubble up.
-      console.error(e)
+      log.error(e)
       throw e
     }
 
