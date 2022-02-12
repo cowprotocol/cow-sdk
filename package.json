@@ -34,7 +34,7 @@
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags"
   },
-  "types": "dist/index.d.ts",
+  "types": "dist/src/index.d.ts",
   "dependencies": {
     "@gnosis.pm/gp-v2-contracts": "^1.1.2",
     "ajv": "^8.8.2",
