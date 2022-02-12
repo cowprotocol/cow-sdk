@@ -1,6 +1,6 @@
 {
   "name": "@gnosis.pm/cow-sdk",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "license": "(MIT OR Apache-2.0)",
   "devDependencies": {
     "@babel/preset-typescript": "^7.16.0",
