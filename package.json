@@ -27,7 +27,12 @@
     "start": "microbundle -f modern,esm,cjs watch",
     "lint": "eslint src",
     "format": "prettier --write \"src/**/*.+(ts|json)\"",
-    "test": "jest"
+    "test": "jest",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint",
+    "preversion": "npm run lint",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags"
   },
   "types": "dist/index.d.ts",
   "dependencies": {
