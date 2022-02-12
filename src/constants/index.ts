@@ -1,5 +1,7 @@
-import { GPv2Settlement } from '@gnosis.pm/gp-v2-contracts/networks.json'
+import contractNetworks from '@gnosis.pm/gp-v2-contracts/networks.json'
 import { SupportedChainId as ChainId } from './chains'
+
+const { GPv2Settlement } = contractNetworks
 
 export const GP_SETTLEMENT_CONTRACT_ADDRESS: Partial<Record<number, string>> = {
   [ChainId.MAINNET]: GPv2Settlement[ChainId.MAINNET].address,
