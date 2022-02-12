@@ -14,7 +14,7 @@ async function getValidator(): Promise<{ ajv: Ajv; validate: ValidateFunction }>
   }
 
   if (!validate) {
-    const appDataSchema = await import('/schemas/appData.schema.json')
+    const appDataSchema = await import('../schemas/appData.schema.json')
     validate = ajv.compile(appDataSchema)
   }
 
