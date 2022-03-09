@@ -1,9 +1,7 @@
 import Ajv, { ErrorObject, ValidateFunction } from 'ajv'
-import CID from 'cids'
-import fetch from 'cross-fetch'
-import multihashes from 'multihashes'
 import { fromHexString } from './common'
 import { DEFAULT_IPFS_URI } from '../constants'
+import { AppDataDoc } from '../types'
 
 let validate: ValidateFunction | undefined
 let ajv: Ajv
@@ -26,11 +24,11 @@ async function getValidator(): Promise<{ ajv: Ajv; validate: ValidateFunction }>
   return { ajv, validate }
 }
 
-function buildCidInstance(hash: string) {
-  const cidVersion = 0x1 //.toString(16) //cidv1
-  const codec = 0x70 //.toString(16) //dag-pb
-  const type = 0x12 //.toString(16) //sha2-256
-  const length = 32 //.toString(16) //256 bits
+async function getSerializedCID(hash: string): Promise<void | string> {
+  const cidVersion = 0x1 //cidv1
+  const codec = 0x70 //dag-pb
+  const type = 0x12 //sha2-256
+  const length = 32 //256 bits
   const _hash = hash.replace(/(^0x)/, '')
 
   const hexHash = fromHexString(_hash)
@@ -38,11 +36,12 @@ function buildCidInstance(hash: string) {
   if (!hexHash) return
 
   const uint8array = Uint8Array.from([cidVersion, codec, type, length, ...hexHash])
-
-  return new CID(uint8array)
+  const { CID } = await import('multiformats/cid')
+  return CID.decode(uint8array).toV0().toString()
 }
 
-async function loadIpfsFromCid(cid: string) {
+async function loadIpfsFromCid(cid: string): Promise<AppDataDoc> {
+  const { default: fetch } = await import('cross-fetch')
   const response = await fetch(`${DEFAULT_IPFS_URI}/${cid}`)
 
   return await response.json()
@@ -58,25 +57,19 @@ export async function validateAppDataDocument(appDataDocument: unknown): Promise
   }
 }
 
-export async function decodeAppData(hash: string) {
-  const cid = buildCidInstance(hash)
-  if (!cid) return
-  let cidV0
+export async function decodeAppData(hash: string): Promise<void | AppDataDoc> {
   try {
-    cidV0 = cid.toV0().toString()
-  } catch (e) {
-    console.error(`Not able to extract CIDv0 from hash '${hash}'`, e)
-    return
-  }
-
-  try {
+    const cidV0 = await getSerializedCID(hash)
+    if (!cidV0) return
     return await loadIpfsFromCid(cidV0)
   } catch (e) {
-    console.error(`Failed to fetch data from IPFS for CIDv0 ${cidV0} (hash ${hash})`, e)
+    throw e
   }
 }
 
-export function decodeMultihash(ipfsHash: string): string {
-  const { digest } = multihashes.decode(new CID(ipfsHash).multihash)
+export async function decodeMultihash(ipfsHash: string): Promise<string | void> {
+  const { CID } = await import('multiformats/cid')
+
+  const { digest } = CID.parse(ipfsHash).multihash
   return `0x${Buffer.from(digest).toString('hex')}`
 }

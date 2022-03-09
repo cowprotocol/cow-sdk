@@ -4,7 +4,8 @@ const VALID_RESULT = {
   result: true,
 }
 
-const INVALID_MULTIHASH_LENGTH = 'multihash length inconsistent'
+const INVALID_MULTIHASH_LENGTH = 'Incorrect length'
+const INVALID_CID = 'Invalid CID'
 
 test('Valid minimal document', async () => {
   const validation = await validateAppDataDocument({
@@ -77,19 +78,19 @@ test('Invalid: AppData decode incorrect hash length', async () => {
   try {
     await decodeAppData('0xa6c81f4ca727252a05b108f1742a07430f28d474d2a3492d8f325746824d22e522')
   } catch (e: any) {
-    expect(e.message).toEqual(expect.stringContaining(INVALID_MULTIHASH_LENGTH))
+    expect(e.message).toEqual(INVALID_MULTIHASH_LENGTH)
   }
 })
 
-test('Valid decode multihash digest', () => {
-  const decodedHash = decodeMultihash('QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs')
+test('Valid decode multihash digest', async () => {
+  const decodedHash = await decodeMultihash('QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs')
   expect(decodedHash).toEqual('0x5ddb2c8207c10b96fac92cb934ef9ba004bc007a073c9e5b13edc422f209ed80')
 })
 
-test('Invalid: multihash incorrect length', () => {
+test('Invalid: multihash CID format', async () => {
   try {
-    decodeMultihash('QmUf2TrpSANVXdgcYfAA')
+    await decodeMultihash('QmUf2TrpSANVXdgcYfAA')
   } catch (e: any) {
-    expect(e.message).toEqual(expect.stringContaining(INVALID_MULTIHASH_LENGTH))
+    expect(e.message).toEqual(expect.stringContaining(INVALID_CID))
   }
 })
