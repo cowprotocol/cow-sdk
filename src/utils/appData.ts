@@ -1,7 +1,7 @@
 import Ajv, { ErrorObject, ValidateFunction } from 'ajv'
 import { fromHexString } from './common'
-import { DEFAULT_IPFS_URI } from '../constants'
-import { AppDataDoc } from '../types'
+import { DEFAULT_IPFS_GATEWAY_URI } from '../constants'
+import { AppDataDoc } from '/types'
 
 let validate: ValidateFunction | undefined
 let ajv: Ajv
@@ -24,7 +24,7 @@ async function getValidator(): Promise<{ ajv: Ajv; validate: ValidateFunction }>
   return { ajv, validate }
 }
 
-async function getSerializedCID(hash: string): Promise<void | string> {
+export async function getSerializedCID(hash: string): Promise<void | string> {
   const cidVersion = 0x1 //cidv1
   const codec = 0x70 //dag-pb
   const type = 0x12 //sha2-256
@@ -40,9 +40,9 @@ async function getSerializedCID(hash: string): Promise<void | string> {
   return CID.decode(uint8array).toV0().toString()
 }
 
-async function loadIpfsFromCid(cid: string): Promise<AppDataDoc> {
+export async function loadIpfsFromCid(cid: string, ipfsUri = DEFAULT_IPFS_GATEWAY_URI): Promise<AppDataDoc> {
   const { default: fetch } = await import('cross-fetch')
-  const response = await fetch(`${DEFAULT_IPFS_URI}/${cid}`)
+  const response = await fetch(`${ipfsUri}/${cid}`)
 
   return await response.json()
 }
@@ -55,21 +55,4 @@ export async function validateAppDataDocument(appDataDocument: unknown): Promise
     result,
     errors: ajv.errors ?? undefined,
   }
-}
-
-export async function decodeAppData(hash: string): Promise<void | AppDataDoc> {
-  try {
-    const cidV0 = await getSerializedCID(hash)
-    if (!cidV0) return
-    return await loadIpfsFromCid(cidV0)
-  } catch (e) {
-    throw e
-  }
-}
-
-export async function decodeMultihash(ipfsHash: string): Promise<string | void> {
-  const { CID } = await import('multiformats/cid')
-
-  const { digest } = CID.parse(ipfsHash).multihash
-  return `0x${Buffer.from(digest).toString('hex')}`
 }

@@ -96,12 +96,16 @@ const orderId = await cowSdk.cowApi.sendOrder({
 console.log(`https://explorer.cow.fi/rinkeby/orders/${orderId}`)
 ```
 
-SDK also allows you to decode the appData hash to get the ipfs appData document
+SDK also includes a Metadata API to interact with AppData documents and IPFS CIDs
 
 ```js
-  const hash = '0xa6c81f4ca727252a05b108f1742a07430f28d474d2a3492d8f325746824d22e5'
-  const appDataDoc  = await decodeAppData(hash)
-  console.log(appDataDoc) 
+ const chainId = 4 // Rinkeby
+ const cowSdk = new CowSdk(chainId)
+ let hash = '0xa6c81f4ca727252a05b108f1742a07430f28d474d2a3492d8f325746824d22e5'
+ 
+ // Decode AppData document given a CID hash
+ const appDataDoc = await cowSdk.metadataApi.decodeAppData(hash)
+ console.log(appDataDoc)
   /* {
       "appCode": "CowSwap",
       "metadata": {
@@ -111,15 +115,19 @@ SDK also allows you to decode the appData hash to get the ipfs appData document
           }
       },
       "version": "0.1.0"
-  } *.
-```
+  } */
 
-Or decode an IPFS mutlihash
+  hash = 'QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs'
+  
+  // Decode CID hash to AppData Hex 
+  const decodedAppDataHex  = await cidToAppDataHex(hash)
+  console.log(decodedAppDataHex) //0x5ddb2c8207c10b96fac92cb934ef9ba004bc007a073c9e5b13edc422f209ed80
 
-```js
-  const hash = 'QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs'
-  const decodedMultihash  = await decodeMultihash(hash)
-  console.log(decodedMultihash) // 0x5ddb2c8207c10b96fac92cb934ef9ba004bc007a073c9e5b13edc422f209ed80
+  hash = '0x5ddb2c8207c10b96fac92cb934ef9ba004bc007a073c9e5b13edc422f209ed80'
+
+  // Decode AppData Hex to CID
+  const decodedAppDataHex  = await cidToAppDataHex(hash)
+  console.log(decodedAppDataHex) //QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs
 ```
 
 ### Install Dependencies
