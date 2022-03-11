@@ -117,16 +117,16 @@ SDK also includes a Metadata API to interact with AppData documents and IPFS CID
       "version": "0.1.0"
   } */
 
-  hash = 'QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs'
+  const cid = 'QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs'
   
   // Decode CID hash to AppData Hex 
-  const decodedAppDataHex  = await cidToAppDataHex(hash)
+  const decodedAppDataHex  = await cowSdk.metadataApi.cidToAppDataHex(cid)
   console.log(decodedAppDataHex) //0x5ddb2c8207c10b96fac92cb934ef9ba004bc007a073c9e5b13edc422f209ed80
 
   hash = '0x5ddb2c8207c10b96fac92cb934ef9ba004bc007a073c9e5b13edc422f209ed80'
 
   // Decode AppData Hex to CID
-  const decodedAppDataHex  = await cidToAppDataHex(hash)
+  const decodedAppDataHex  = await cowSdk.metadataApi.appDataHexToCid(hash)
   console.log(decodedAppDataHex) //QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs
 ```
 

@@ -1,16 +1,13 @@
 import log from 'loglevel'
 import { Context } from '/utils/context'
-import { SupportedChainId as ChainId } from '/constants/chains'
 import { getSerializedCID, loadIpfsFromCid } from '/utils/appData'
 import { AppDataDoc } from './types'
 import { CowError } from '/utils/common'
 
-export class MetadataApi<T extends ChainId> {
-  chainId: T
+export class MetadataApi {
   context: Context
 
-  constructor(chainId: T, context: Context) {
-    this.chainId = chainId
+  constructor(context: Context) {
     this.context = context
   }
 
