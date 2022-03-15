@@ -10,13 +10,13 @@ export class CowSdk<T extends ChainId> {
   chainId: T
   context: Context
   cowApi: CowApi<T>
-  metadataApi: MetadataApi<T>
+  metadataApi: MetadataApi
 
   constructor(chainId: T, cowContext: CowContext = {}) {
     this.chainId = chainId
     this.context = new Context(cowContext)
     this.cowApi = new CowApi(chainId, this.context)
-    this.metadataApi = new MetadataApi(chainId, this.context)
+    this.metadataApi = new MetadataApi(this.context)
   }
 
   validateAppDataDocument = validateAppDataDocument
