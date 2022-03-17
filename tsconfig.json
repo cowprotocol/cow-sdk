@@ -1,10 +1,17 @@
+
 {
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": "src",
+    "rootDir": "./src",
+    "outDir": "./dist",
     "paths": {
-      "/*": ["src/*"]
+
+      "*":["*"],
     },
+    "esModuleInterop": true,
     "moduleResolution": "node",
+    "importHelpers": true,
+    "sourceMap": true,
     "module": "ESNext",
     "target": "ESNext",
     "strict": true,
@@ -13,6 +20,66 @@
     "allowSyntheticDefaultImports": true,
     "noEmit": true,
     "forceConsistentCasingInFileNames": true,
+    "experimentalDecorators": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
     "noUnusedLocals": true,
+    "skipLibCheck": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "allowJs": false,
+    "checkJs": false,
+    "declaration": true,
+    "declarationMap": true,
+    "plugins": [ {
+      "transform": "typescript-transform-paths",
+      "afterDeclarations": true 
+    },
+      {"transform": "typescript-transform-paths"}
+    ]
   }
 }
+
+/*
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "target": "es2015",
+    "downlevelIteration": true,
+    "importHelpers": true,
+    "sourceMap": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "allowJs": false,
+    "checkJs": false,
+    "declaration": true,
+    "declarationMap": true,
+    "resolveJsonModule": true,
+    "lib": ["dom", "es2015", "es2016", "es2017", "esnext"],
+    "forceConsistentCasingInFileNames": true,
+    "experimentalDecorators": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "suppressImplicitAnyIndexErrors":  true,
+    "types": ["jest", "node"],
+    "baseUrl": "src",
+    "outDir": "./build",
+    "paths": {
+      "*": [
+        "*"
+      ]
+    },
+    "plugins": [ {
+      "transform": "typescript-transform-paths",
+      "afterDeclarations": true 
+    },
+      {"transform": "typescript-transform-paths"}
+    ]
+  },
+  "include": ["src/index.ts"],
+  "exclude": ["node_modules", "coverage", "build"]
+}
+*/
