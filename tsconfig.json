@@ -5,7 +5,6 @@
     "rootDir": "./src",
     "outDir": "./dist",
     "paths": {
-
       "*":["*"],
     },
     "esModuleInterop": true,
@@ -38,48 +37,3 @@
     ]
   }
 }
-
-/*
-{
-  "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "target": "es2015",
-    "downlevelIteration": true,
-    "importHelpers": true,
-    "sourceMap": true,
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "allowJs": false,
-    "checkJs": false,
-    "declaration": true,
-    "declarationMap": true,
-    "resolveJsonModule": true,
-    "lib": ["dom", "es2015", "es2016", "es2017", "esnext"],
-    "forceConsistentCasingInFileNames": true,
-    "experimentalDecorators": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "suppressImplicitAnyIndexErrors":  true,
-    "types": ["jest", "node"],
-    "baseUrl": "src",
-    "outDir": "./build",
-    "paths": {
-      "*": [
-        "*"
-      ]
-    },
-    "plugins": [ {
-      "transform": "typescript-transform-paths",
-      "afterDeclarations": true 
-    },
-      {"transform": "typescript-transform-paths"}
-    ]
-  },
-  "include": ["src/index.ts"],
-  "exclude": ["node_modules", "coverage", "build"]
-}
-*/
