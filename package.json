@@ -11,21 +11,25 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^27.3.1",
-    "microbundle": "^0.14.2",
     "prettier": "^2.5.1",
+    "ttypescript": "^1.5.10",
     "typescript-transform-paths": "^3.3.1"
   },
   "source": "src/index.ts",
-  "main": "dist/index.modern.js",           
-  "types": "dist/index.d.ts",
+  "main": "dist/index.js",
+  "module": "dist-esm/index.js",
+  "jsnext:main": "dist-esm/index.js",
+  "types": "dist-esm/index.d.ts",
   "sideEffects": false,
-  "exports": "./dist/index.modern.js",
   "files": [
-    "dist/**/*"
+    "dist/**/*",
+    "dist-esm/**/*"
   ],
   "scripts": {
-    "build": "microbundle -f modern,cjs",
-    "start": "microbundle -f modern,esm,cjs watch",
+    "build": "npm run build:commonjs && npm run build:esm",
+    "build:commonjs": "rimraf dist && ttsc",
+    "build:esm": "rimraf build-esm && ttsc -m esnext -t es2015 --outDir dist-esm",
+    "start": "npx ttsc --watch",
     "lint": "eslint src",
     "format": "prettier --write \"src/**/*.+(ts|json)\"",
     "test": "jest",
