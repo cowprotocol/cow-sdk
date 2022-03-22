@@ -180,6 +180,7 @@ export class CowApi<T extends ChainId> {
       }
     } catch (error) {
       log.error('Error getting transaction orders information:', error)
+      if (error instanceof OperatorError) throw error
       throw new OperatorError(UNHANDLED_ORDER_ERROR)
     }
   }
