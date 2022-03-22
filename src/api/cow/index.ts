@@ -166,6 +166,24 @@ export class CowApi<T extends ChainId> {
     }
   }
 
+  async getTxOrders(txHash: string): Promise<OrderMetaData[]> {
+    log.debug(`[api:${this.API_NAME}] Get tx orders for `, this.chainId, txHash)
+
+    try {
+      const response = await this.get(`/transactions/${txHash}/orders`)
+
+      if (!response.ok) {
+        const errorResponse: ApiErrorObject = await response.json()
+        throw new OperatorError(errorResponse)
+      } else {
+        return response.json()
+      }
+    } catch (error) {
+      log.error('Error getting transaction orders information:', error)
+      throw new OperatorError(UNHANDLED_ORDER_ERROR)
+    }
+  }
+
   async getOrder(orderId: string): Promise<OrderMetaData | null> {
     log.debug(`[api:${this.API_NAME}] Get order for `, this.chainId, orderId)
     try {
