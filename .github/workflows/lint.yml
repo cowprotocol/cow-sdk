@@ -6,13 +6,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: bradennapier/eslint-plus-action@v3.4.2
+      - uses: gnosis/safe-react-eslint-plus-action@v3.5.0
         with:
           issueSummary: true
           issueSummaryType: compact
           issueSummaryMethod: edit
-          issueSummeryOnlyOnEvent: false
-          annotateWarnings: true
           reportSuggestions: true
           reportIgnoredFiles: true
           reportWarningsAsErrors: true
