@@ -7,3 +7,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: bradennapier/eslint-plus-action@v3.4.2
+      with:
+        issueSummary: true
+        issueSummaryType: compact
+        issueSummaryMethod: edit
+        issueSummeryOnlyOnEvent: false
+        annotateWarnings: true
+        reportSuggestions: true
+        reportIgnoredFiles: true
+        reportWarningsAsErrors: true
+        configFile: .eslintrc.json
+        useEslintrc: true
+        npmInstall: true
