@@ -4,6 +4,9 @@
   "license": "(MIT OR Apache-2.0)",
   "devDependencies": {
     "@babel/preset-typescript": "^7.16.0",
+    "@graphql-codegen/cli": "2.6.2",
+    "@graphql-codegen/typescript": "2.4.8",
+    "@graphql-codegen/typescript-operations": "^2.3.5",
     "@types/jest": "^27.0.3",
     "@typescript-eslint/eslint-plugin": "^5.9.0",
     "@typescript-eslint/parser": "^5.9.0",
@@ -28,11 +31,12 @@
     "lint": "eslint src",
     "format": "prettier --write \"src/**/*.+(ts|json)\"",
     "test": "jest",
-    "prepare": "npm run build",
+    "prepare": "npm run build && npm run graphql:codegen",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "graphql:codegen": "graphql-codegen --config graphql-codegen.yml"
   },
   "types": "dist/src/index.d.ts",
   "dependencies": {
@@ -40,6 +44,8 @@
     "ajv": "^8.8.2",
     "cross-fetch": "^3.1.5",
     "ethers": "^5.5.3",
+    "graphql": "^16.3.0",
+    "graphql-request": "^4.1.0",
     "loglevel": "^1.8.0"
   },
   "keywords": [
@@ -47,6 +53,7 @@
     "cow-protocol",
     "sdk",
     "crypto",
-    "typescript"
+    "typescript",
+    "subgraph"
   ]
 }

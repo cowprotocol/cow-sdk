@@ -1,4 +1,5 @@
 export { CowError } from '/utils/common'
 export { ALL_SUPPORTED_CHAIN_IDS } from '/constants/chains'
 export * from '/types'
+export * as GraphQL from '/api/cow-subgraph/graphql'
 export * from '/CowSdk'

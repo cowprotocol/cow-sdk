@@ -96,6 +96,32 @@ const orderId = await cowSdk.cowApi.sendOrder({
 console.log(`https://explorer.cow.fi/rinkeby/orders/${orderId}`)
 ```
 
+#### Querying the Cow Subgraph
+
+You can query the Cow Subgraph either by running some common queries exposed by the `CowSubgraphApi` or by building your own ones:
+
+```js
+// Get Cow Protocol totals
+const { totals } = await cowSdk.cowSubgraphApi.getTotals()
+const { tokens, orders, traders, settlements, volumeUsd, volumeEth, feesUsd, feesEth } = totals
+console.log({ tokens, orders, traders, settlements, volumeUsd, volumeEth, feesUsd, feesEth })
+```
+
+```js
+// Get the last 5 batches
+const query = `
+query LastBatches($n: Int!) {
+  settlements(orderBy: timestamp, orderDirection: desc, first: $n) {
+    txHash
+    timestamp
+  }
+}
+`
+const variables = { n: 5 }
+const response = await cowSdk.cowSubgraphApi.runQuery(query, variables)
+console.log(response.data.settlements)
+```
+
 ### Install Dependencies
 
 ```bash

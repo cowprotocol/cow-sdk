@@ -1,0 +1,8 @@
+overwrite: true
+schema: "https://api.thegraph.com/subgraphs/name/gabrielcamba/cow-mocked"
+documents: './src/api/cow-subgraph/index.ts'
+generates:
+  src/api/cow-subgraph/graphql.ts:
+    plugins:
+      - "typescript"
+      - "typescript-operations"

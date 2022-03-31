@@ -1,5 +1,6 @@
 import { version as SDK_VERSION } from '../package.json'
 import { CowApi } from './api'
+import { CowSubgraphApi } from './api/cow-subgraph'
 import { SupportedChainId as ChainId } from '/constants/chains'
 import { validateAppDataDocument } from '/utils/appData'
 import { Context, CowContext } from '/utils/context'
@@ -10,11 +11,13 @@ export class CowSdk<T extends ChainId> {
   chainId: T
   context: Context
   cowApi: CowApi<T>
+  cowSubgraphApi: CowSubgraphApi<T>
 
   constructor(chainId: T, cowContext: CowContext = {}) {
     this.chainId = chainId
     this.context = new Context(cowContext)
     this.cowApi = new CowApi(chainId, this.context)
+    this.cowSubgraphApi = new CowSubgraphApi(chainId, this.context)
   }
 
   validateAppDataDocument = validateAppDataDocument
