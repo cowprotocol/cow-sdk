@@ -8,9 +8,9 @@ import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphq
 
 export function getSubgraphUrls(): Record<ChainId, string> {
   return {
-    [ChainId.MAINNET]: 'https://thegraph.com/hosted-service/subgraph/cowprotocol/cow',
-    [ChainId.RINKEBY]: 'https://thegraph.com/hosted-service/subgraph/cowprotocol/cow-rinkeby',
-    [ChainId.GNOSIS_CHAIN]: 'https://thegraph.com/hosted-service/subgraph/cowprotocol/cow-gc',
+    [ChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow',
+    [ChainId.RINKEBY]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-rinkeby',
+    [ChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc',
   }
 }
 
