@@ -1,6 +1,6 @@
 import { Signer } from 'ethers'
 import log from 'loglevel'
-import { CowError } from './common'
+import { CowError, logPrefix } from './common'
 import { DEFAULT_APP_DATA_HASH } from '/constants'
 import { SupportedChainId as ChainId } from '/constants/chains'
 
@@ -43,7 +43,7 @@ export class Context implements Partial<CowContext> {
       return Promise.resolve(this.#chainId)
     }
 
-    log.debug('Getting chainId from provider')
+    log.debug(logPrefix, 'Getting chainId from provider')
 
     const getAndReconciliateNetwork = async () => {
       const network = await provider.getNetwork()
@@ -51,6 +51,7 @@ export class Context implements Partial<CowContext> {
 
       if (chainId !== this.#chainId) {
         log.debug(
+          logPrefix,
           `ChainId mismatch: Provider's chainId: ${chainId} vs Context's chainId: ${
             this.#chainId
           }. Updating Context's chainId`

@@ -23,7 +23,7 @@ import {
   ProfileData,
   TradeMetaData,
 } from '/api/cow/types'
-import { CowError, objectToQueryString } from '/utils/common'
+import { CowError, logPrefix, objectToQueryString } from '/utils/common'
 import { Context } from '/utils/context'
 
 function getGnosisProtocolUrl(isDev: boolean): Partial<Record<ChainId, string>> {
@@ -77,7 +77,7 @@ async function _handleQuoteResponse<T = any, P extends QuoteQuery = QuoteQuery>(
 
     if (params) {
       const { sellToken, buyToken } = params
-      log.error(`Error querying fee from API - sellToken: ${sellToken}, buyToken: ${buyToken}`)
+      log.error(logPrefix, `Error querying fee from API - sellToken: ${sellToken}, buyToken: ${buyToken}`)
     }
 
     throw quoteError
@@ -109,9 +109,9 @@ export class CowApi {
 
   async getProfileData(address: string): Promise<ProfileData | null> {
     const chainId = await this.context.chainId
-    log.debug(`[api:${this.API_NAME}] Get profile data for`, chainId, address)
+    log.debug(logPrefix, `[api:${this.API_NAME}] Get profile data for`, chainId, address)
     if (chainId !== ChainId.MAINNET) {
-      log.info('Profile data is only available for mainnet')
+      log.info(logPrefix, 'Profile data is only available for mainnet')
       return null
     }
 
@@ -119,7 +119,7 @@ export class CowApi {
 
     if (!response.ok) {
       const errorResponse = await response.json()
-      log.error(errorResponse)
+      log.error(logPrefix, errorResponse)
       throw new CowError(errorResponse?.description)
     } else {
       return response.json()
@@ -130,7 +130,7 @@ export class CowApi {
     const { owner, limit, offset } = params
     const qsParams = objectToQueryString({ owner, limit, offset })
     const chainId = await this.context.chainId
-    log.debug('[util:operator] Get trades for', chainId, owner, { limit, offset })
+    log.debug(logPrefix, '[util:operator] Get trades for', chainId, owner, { limit, offset })
     try {
       const response = await this.get(`/trades${qsParams}`)
 
@@ -141,7 +141,7 @@ export class CowApi {
         return response.json()
       }
     } catch (error) {
-      log.error('Error getting trades:', error)
+      log.error(logPrefix, 'Error getting trades:', error)
       throw new CowError('Error getting trades: ' + error)
     }
   }
@@ -150,7 +150,7 @@ export class CowApi {
     const { owner, limit = 1000, offset = 0 } = params
     const queryString = objectToQueryString({ limit, offset })
     const chainId = await this.context.chainId
-    log.debug(`[api:${this.API_NAME}] Get orders for `, chainId, owner, limit, offset)
+    log.debug(logPrefix, `[api:${this.API_NAME}] Get orders for `, chainId, owner, limit, offset)
 
     try {
       const response = await this.get(`/account/${owner}/orders/${queryString}`)
@@ -162,14 +162,14 @@ export class CowApi {
         return response.json()
       }
     } catch (error) {
-      log.error('Error getting orders information:', error)
+      log.error(logPrefix, 'Error getting orders information:', error)
       throw new OperatorError(UNHANDLED_ORDER_ERROR)
     }
   }
 
   async getOrder(orderId: string): Promise<OrderMetaData | null> {
     const chainId = await this.context.chainId
-    log.debug(`[api:${this.API_NAME}] Get order for `, chainId, orderId)
+    log.debug(logPrefix, `[api:${this.API_NAME}] Get order for `, chainId, orderId)
     try {
       const response = await this.get(`/orders/${orderId}`)
 
@@ -180,7 +180,7 @@ export class CowApi {
         return response.json()
       }
     } catch (error) {
-      log.error('Error getting order information:', error)
+      log.error(logPrefix, 'Error getting order information:', error)
       throw new OperatorError(UNHANDLED_ORDER_ERROR)
     }
   }
@@ -188,12 +188,12 @@ export class CowApi {
   async getPriceQuoteLegacy(params: PriceQuoteParams): Promise<PriceInformation | null> {
     const { baseToken, quoteToken, amount, kind } = params
     const chainId = await this.context.chainId
-    log.debug(`[api:${this.API_NAME}] Get price from API`, params, 'for', chainId)
+    log.debug(logPrefix, `[api:${this.API_NAME}] Get price from API`, params, 'for', chainId)
 
     const response = await this.get(
       `/markets/${toErc20Address(baseToken, chainId)}-${toErc20Address(quoteToken, chainId)}/${kind}/${amount}`
     ).catch((error) => {
-      log.error('Error getting price quote:', error)
+      log.error(logPrefix, 'Error getting price quote:', error)
       throw new QuoteError(UNHANDLED_QUOTE_ERROR)
     })
 
@@ -211,7 +211,7 @@ export class CowApi {
   async sendSignedOrderCancellation(params: OrderCancellationParams): Promise<void> {
     const { cancellation, owner: from } = params
     const chainId = await this.context.chainId
-    log.debug(`[api:${this.API_NAME}] Delete signed order for network`, chainId, cancellation)
+    log.debug(logPrefix, `[api:${this.API_NAME}] Delete signed order for network`, chainId, cancellation)
 
     const response = await this.delete(`/orders/${cancellation.orderUid}`, {
       signature: cancellation.signature,
@@ -225,14 +225,14 @@ export class CowApi {
       throw new CowError(errorMessage)
     }
 
-    log.debug(`[api:${this.API_NAME}] Cancelled order`, cancellation.orderUid, chainId)
+    log.debug(logPrefix, `[api:${this.API_NAME}] Cancelled order`, cancellation.orderUid, chainId)
   }
 
   async sendOrder(params: { order: Omit<OrderCreation, 'appData'>; owner: string }): Promise<OrderID> {
     const fullOrder: OrderCreation = { ...params.order, appData: this.context.appDataHash }
     const chainId = await this.context.chainId
     const { owner } = params
-    log.debug(`[api:${this.API_NAME}] Post signed order for network`, chainId, fullOrder)
+    log.debug(logPrefix, `[api:${this.API_NAME}] Post signed order for network`, chainId, fullOrder)
 
     // Call API
     const response = await this.post(`/orders`, {
@@ -249,7 +249,7 @@ export class CowApi {
     }
 
     const uid = (await response.json()) as string
-    log.debug(`[api:${this.API_NAME}] Success posting the signed order`, uid)
+    log.debug(logPrefix, `[api:${this.API_NAME}] Success posting the signed order`, uid)
     return uid
   }
 

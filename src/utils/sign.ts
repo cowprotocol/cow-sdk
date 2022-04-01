@@ -15,7 +15,7 @@ import log from 'loglevel'
 import { SupportedChainId as ChainId } from '/constants/chains'
 import { GP_SETTLEMENT_CONTRACT_ADDRESS } from '/constants'
 import { TypedDataDomain, Signer } from '@ethersproject/abstract-signer'
-import { CowError } from './common'
+import { CowError, logPrefix } from './common'
 
 // For error codes, see:
 // - https://eth.wiki/json-rpc/json-rpc-error-codes-improvement-proposal
@@ -151,7 +151,7 @@ async function _signPayload(
         _signer = signer
     }
   } catch (e) {
-    log.error('Wallet not supported:', e)
+    log.error(logPrefix, 'Wallet not supported:', e)
     throw new CowError('Wallet not supported')
   }
 
@@ -160,7 +160,7 @@ async function _signPayload(
   } catch (e) {
     if (!isProviderRpcError(e)) {
       // Some other error signing. Let it bubble up.
-      log.error(e)
+      log.error(logPrefix, e)
       throw e
     }
 
