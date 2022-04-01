@@ -25,6 +25,10 @@ export class CowSdk<T extends ChainId> {
     log.setLevel(options.loglevel || 'error')
   }
 
+  updateChainId = (chainId: T) => {
+    this.context.updateChainId(chainId)
+  }
+
   validateAppDataDocument = validateAppDataDocument
 
   async signOrder(order: Omit<UnsignedOrder, 'appData'>) {
