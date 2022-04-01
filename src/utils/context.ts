@@ -1,6 +1,8 @@
 import { Signer } from 'ethers'
+import log from 'loglevel'
 import { CowError } from './common'
 import { DEFAULT_APP_DATA_HASH } from '/constants'
+import { SupportedChainId as ChainId } from '/constants/chains'
 
 export interface CowContext {
   appDataHash?: string
@@ -17,11 +19,48 @@ export const DefaultCowContext = { appDataHash: DEFAULT_APP_DATA_HASH, isDevEnvi
  * @class Context
  * @implements {Required<CowContext>}
  */
-export class Context implements Required<CowContext> {
+export class Context implements Partial<CowContext> {
   private context: CowContext
+  #chainId: ChainId
 
-  constructor(context: CowContext) {
+  constructor(chainId: ChainId, context: CowContext) {
+    this.#chainId = this.updateChainId(chainId)
     this.context = { ...DefaultCowContext, ...context }
+  }
+
+  updateChainId(chainId: ChainId) {
+    if (!ChainId[chainId]) {
+      throw new CowError(`Invalid chainId: ${chainId}`)
+    }
+
+    this.#chainId = chainId
+    return chainId
+  }
+
+  get chainId(): Promise<ChainId> {
+    const provider = this.context.signer?.provider
+    if (!provider) {
+      return Promise.resolve(this.#chainId)
+    }
+
+    log.debug('Getting chainId from provider')
+
+    const getAndReconciliateNetwork = async () => {
+      const network = await provider.getNetwork()
+      const chainId = network.chainId
+
+      if (chainId !== this.#chainId) {
+        log.debug(
+          `ChainId mismatch: Provider's chainId: ${chainId} vs Context's chainId: ${
+            this.#chainId
+          }. Updating Context's chainId`
+        )
+        this.updateChainId(chainId)
+      }
+      return network.chainId
+    }
+
+    return getAndReconciliateNetwork()
   }
 
   get appDataHash(): string {
@@ -32,11 +71,7 @@ export class Context implements Required<CowContext> {
     return this.context.isDevEnvironment ?? DefaultCowContext.isDevEnvironment
   }
 
-  get signer(): Signer {
-    if (this.context.signer) {
-      return this.context.signer
-    }
-
-    throw new CowError('No signer was provided')
+  get signer(): Signer | undefined {
+    return this.context.signer
   }
 }
