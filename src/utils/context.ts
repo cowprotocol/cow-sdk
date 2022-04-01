@@ -33,6 +33,8 @@ export class Context implements Partial<CowContext> {
       throw new CowError(`Invalid chainId: ${chainId}`)
     }
 
+    log.debug(logPrefix, `Updating chainId to: ${chainId}`)
+
     this.#chainId = chainId
     return chainId
   }
