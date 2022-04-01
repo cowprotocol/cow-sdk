@@ -1,6 +1,5 @@
 import { version as SDK_VERSION } from '../package.json'
-import { CowApi } from './api'
-import { CowSubgraphApi } from './api/cow-subgraph'
+import { CowApi, CowSubgraphApi } from './api'
 import { SupportedChainId as ChainId } from '/constants/chains'
 import { validateAppDataDocument } from '/utils/appData'
 import { Context, CowContext } from '/utils/context'
