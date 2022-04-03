@@ -15,7 +15,7 @@
 Install the SDK:
 
 ```bash
-yarn add @gnosis.pm/cow-sdk
+yarn add @cowprotocol/cow-sdk
 ```
 
 Instantiate the SDK:
