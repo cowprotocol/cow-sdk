@@ -1,5 +1,5 @@
 {
-  "name": "@gnosis.pm/cow-sdk",
+  "name": "@cowprotocol/cow-sdk",
   "version": "0.0.6",
   "license": "(MIT OR Apache-2.0)",
   "devDependencies": {
