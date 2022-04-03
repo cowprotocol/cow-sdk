@@ -1,0 +1,19 @@
+name: 'ESLint check'
+on: [pull_request]
+
+jobs:
+  eslint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: gnosis/safe-react-eslint-plus-action@v4.0.0
+        with:
+          issueSummary: true
+          issueSummaryType: compact
+          issueSummaryMethod: edit
+          reportSuggestions: true
+          reportIgnoredFiles: true
+          reportWarningsAsErrors: true
+          configFile: .eslintrc.json
+          useEslintrc: true
+          npmInstall: true
