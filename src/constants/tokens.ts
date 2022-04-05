@@ -1,5 +1,5 @@
-import { SupportedChainId as ChainId } from '/constants/chains'
-import { Token } from '/types'
+import { SupportedChainId as ChainId } from './chains'
+import { Token } from '../types'
 
 export const XDAI_SYMBOL = 'XDAI'
 

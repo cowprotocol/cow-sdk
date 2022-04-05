@@ -1,6 +1,6 @@
 import { OrderKind } from '@gnosis.pm/gp-v2-contracts'
-import { SupportedChainId as ChainId } from '/constants/chains'
-import { OrderCancellation, SigningSchemeValue } from '/utils/sign'
+import { SupportedChainId as ChainId } from '../../constants/chains'
+import { OrderCancellation, SigningSchemeValue } from '../../utils/sign'
 
 /**
  * Unique identifier for the order, calculated by keccak256(orderDigest, ownerAddress, validTo),

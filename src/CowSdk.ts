@@ -1,8 +1,8 @@
-import { CowApi } from '/api'
-import { SupportedChainId as ChainId } from '/constants/chains'
-import { validateAppDataDocument } from '/utils/appData'
-import { Context, CowContext } from '/utils/context'
-import { signOrder, signOrderCancellation, UnsignedOrder } from '/utils/sign'
+import { CowApi } from './api'
+import { SupportedChainId as ChainId } from './constants/chains'
+import { validateAppDataDocument } from './utils/appData'
+import { Context, CowContext } from './utils/context'
+import { signOrder, signOrderCancellation, UnsignedOrder } from './utils/sign'
 
 export class CowSdk<T extends ChainId> {
   chainId: T
