@@ -1,4 +1,4 @@
-import { CowApi } from './api'
+import { CowApi } from '/api'
 import { SupportedChainId as ChainId } from '/constants/chains'
 import { validateAppDataDocument } from '/utils/appData'
 import { Context, CowContext } from '/utils/context'
