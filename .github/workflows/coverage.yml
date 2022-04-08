@@ -1,6 +1,9 @@
-on: ["push", "pull_request"]
-
 name: Test Coveralls
+on:
+  pull_request:
+  push:
+    branches:
+      - main
 
 jobs:
   test:
