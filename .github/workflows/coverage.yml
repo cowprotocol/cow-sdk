@@ -1,0 +1,41 @@
+on: ["push", "pull_request"]
+
+name: Test Coveralls
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.8.0
+        with:
+          access_token: ${{ github.token }}
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+
+      - name: Yarn cache
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Yarn install
+        run: |
+          mkdir .yarncache
+          yarn install --cache-folder ./.yarncache --frozen-lockfile
+          rm -rf .yarncache
+          yarn cache clean
+      - name: Run tests
+        run:  npm run test-coverage
+         
+
+      - name: Coveralls
+      uses: coverallsapp/github-action@1.1.3
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}

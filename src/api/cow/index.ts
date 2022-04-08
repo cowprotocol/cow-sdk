@@ -136,12 +136,13 @@ export class CowApi<T extends ChainId> {
 
       if (!response.ok) {
         const errorResponse = await response.json()
-        throw new CowError(errorResponse)
+        throw new OperatorError(errorResponse)
       } else {
         return response.json()
       }
     } catch (error) {
       log.error('Error getting trades:', error)
+      if (error instanceof OperatorError) throw error
       throw new CowError('Error getting trades: ' + error)
     }
   }
@@ -162,6 +163,7 @@ export class CowApi<T extends ChainId> {
       }
     } catch (error) {
       log.error('Error getting orders information:', error)
+      if (error instanceof OperatorError) throw error
       throw new OperatorError(UNHANDLED_ORDER_ERROR)
     }
   }
@@ -198,6 +200,7 @@ export class CowApi<T extends ChainId> {
       }
     } catch (error) {
       log.error('Error getting order information:', error)
+      if (error instanceof OperatorError) throw error
       throw new OperatorError(UNHANDLED_ORDER_ERROR)
     }
   }

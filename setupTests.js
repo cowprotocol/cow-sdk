@@ -1,3 +1,4 @@
 import fetchMock from 'jest-fetch-mock'
 
-fetchMock.enableMocks()
+jest.setMock('cross-fetch', fetchMock)
+jest.setMock('loglevel', { debug: jest.fn(), error: jest.fn() })
