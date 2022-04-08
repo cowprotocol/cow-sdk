@@ -1,5 +1,4 @@
 node_modules
 dist
 coverage
-.coveralls.yml
 jest.results.json

@@ -16,8 +16,8 @@
     "lint": "eslint src",
     "format": "prettier --write \"src/**/*.+(ts|json)\"",
     "test": "jest",
-    "test:coverage":"npm run test --coverage --watchAll=false",
-    "test:ci": "npm run test --ci --coverage --json --watchAll=false --testLocationInResults --runInBand --outputFile=jest.results.json",
+    "test:coverage":"jest --coverage --watchAll=false && cat ./coverage/lcov.info | coveralls",
+    "test:ci": "jest --ci --coverage --json --watchAll=false --testLocationInResults --runInBand --outputFile=jest.results.json",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
@@ -48,6 +48,11 @@
     "prettier": "^2.5.1"
   },
   "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "!src/**/*.{.spec.*}",
+      "!docs/**/*.*"
+    ],
     "automock": false,
     "resetMocks": false,
     "setupFiles": [
