@@ -1,4 +1,4 @@
-name: Unit tests
+name: Unit tests & Coverage
 on:
   pull_request:
   push:
@@ -35,7 +35,7 @@ jobs:
           rm -rf .yarncache
           yarn cache clean
       - name: Run tests
-        run: 'npm run test'
+        run: 'npm run test:ci'
 
       - name: Comment in failing tests
         uses: mattallty/jest-github-action@v1.0.3
@@ -45,3 +45,9 @@ jobs:
         with:
           test-command: 'echo unit tests already executed'
           coverage-comment: false
+
+      - name: Coveralls Report
+        uses: coverallsapp/github-action@1.1.3
+        if: success() || failure()
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}    
