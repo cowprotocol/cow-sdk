@@ -37,7 +37,7 @@ jobs:
           rm -rf .yarncache
           yarn cache clean
       - name: Run tests
-        run: test:coverage
+        run: yarn run test:coverage
   
       - name: Comment in failing tests
         uses: mattallty/jest-github-action@v1.0.3
@@ -52,6 +52,4 @@ jobs:
         uses: coverallsapp/github-action@v1.1.2
         if: success() || failure()
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          repo-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
-  
+          github-token: ${{ secrets.GITHUB_TOKEN }}  
