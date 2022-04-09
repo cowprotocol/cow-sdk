@@ -37,15 +37,13 @@ jobs:
           rm -rf .yarncache
           yarn cache clean
       - name: Run tests
-        run: |
-          npm run test
-          npm run test:coverage
-
+        run: npm run test
+  
       - name: Comment in failing tests
         uses: mattallty/jest-github-action@v1.0.3
         if: failure()
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ github.token }}
         with:
           test-command: 'echo unit tests already executed'
           coverage-comment: false
@@ -54,4 +52,4 @@ jobs:
         uses: coverallsapp/github-action@v1.1.2
         if: success() || failure()
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}    
+          github-token: ${{ github.token }}    
