@@ -43,7 +43,7 @@ jobs:
         uses: mattallty/jest-github-action@v1.0.3
         if: failure()
         env:
-          github-token: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           test-command: 'echo unit tests already executed'
           coverage-comment: false
