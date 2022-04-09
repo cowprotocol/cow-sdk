@@ -37,7 +37,7 @@ jobs:
           rm -rf .yarncache
           yarn cache clean
       - name: Run tests
-        run: npm run test:coverage
+        run: test:coverage
   
       - name: Comment in failing tests
         uses: mattallty/jest-github-action@v1.0.3
