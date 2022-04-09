@@ -5,7 +5,7 @@ on:
     branches:
       - main
 env:
-  COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+  COVERALLS_REPO_TOKEN: Jhg2OOcjM8FxWE3LzxqSCUEds9qECFNp7
 
 jobs:
   test:
