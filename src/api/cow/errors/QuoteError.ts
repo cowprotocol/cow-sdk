@@ -1,5 +1,5 @@
 import log from 'loglevel'
-import { CowError, logPrefix } from '/utils/common'
+import { CowError, logPrefix } from '../../../utils/common'
 import { ApiErrorCodes, ApiErrorObject } from './OperatorError'
 
 export interface GpQuoteErrorObject {

@@ -1,16 +1,21 @@
 import { Signer } from 'ethers'
 import log from 'loglevel'
 import { CowError, logPrefix } from './common'
-import { DEFAULT_APP_DATA_HASH } from '/constants'
-import { SupportedChainId as ChainId } from '/constants/chains'
+import { SupportedChainId as ChainId } from '../constants/chains'
+import { DEFAULT_APP_DATA_HASH, DEFAULT_IPFS_GATEWAY_URI } from '../constants'
 
 export interface CowContext {
   appDataHash?: string
   isDevEnvironment?: boolean
   signer?: Signer
+  ipfsUri?: string
 }
 
-export const DefaultCowContext = { appDataHash: DEFAULT_APP_DATA_HASH, isDevEnvironment: false }
+export const DefaultCowContext = {
+  appDataHash: DEFAULT_APP_DATA_HASH,
+  isDevEnvironment: false,
+  ipfsUri: DEFAULT_IPFS_GATEWAY_URI,
+}
 
 /**
  *
@@ -76,5 +81,9 @@ export class Context implements Partial<CowContext> {
 
   get signer(): Signer | undefined {
     return this.context.signer
+  }
+
+  get ipfsUri(): string {
+    return this.context.ipfsUri ?? DefaultCowContext.ipfsUri
   }
 }

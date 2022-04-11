@@ -1,27 +1,25 @@
 import { Signer } from 'ethers'
 import log, { LogLevelDesc } from 'loglevel'
-import { version as SDK_VERSION } from '../package.json'
-import { CowApi } from './api'
 import { CowError } from './utils/common'
-import { SupportedChainId as ChainId } from '/constants/chains'
-import { validateAppDataDocument } from '/utils/appData'
-import { Context, CowContext } from '/utils/context'
-import { signOrder, signOrderCancellation, UnsignedOrder } from '/utils/sign'
-
-log.setDefaultLevel('debug')
+import { CowApi, MetadataApi } from './api'
+import { SupportedChainId as ChainId } from './constants/chains'
+import { validateAppDataDocument } from './utils/appData'
+import { Context, CowContext } from './utils/context'
+import { signOrder, signOrderCancellation, UnsignedOrder } from './utils/sign'
 
 type Options = {
   loglevel?: LogLevelDesc
 }
 
 export class CowSdk<T extends ChainId> {
-  static version = SDK_VERSION
   context: Context
   cowApi: CowApi
+  metadataApi: MetadataApi
 
   constructor(chainId: T, cowContext: CowContext = {}, options: Options = {}) {
     this.context = new Context(chainId, { ...cowContext })
     this.cowApi = new CowApi(this.context)
+    this.metadataApi = new MetadataApi(this.context)
     log.setLevel(options.loglevel || 'error')
   }
 
