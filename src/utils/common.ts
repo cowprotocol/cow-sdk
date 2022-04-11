@@ -25,3 +25,9 @@ export function objectToQueryString(o: any): string {
 
   return qsResult ? `?${qsResult}` : ''
 }
+
+export function fromHexString(hexString: string) {
+  const stringMatch = hexString.match(/.{1,2}/g)
+  if (!stringMatch) return
+  return new Uint8Array(stringMatch.map((byte) => parseInt(byte, 16)))
+}

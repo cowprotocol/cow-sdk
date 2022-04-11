@@ -1,22 +1,22 @@
-import { version as SDK_VERSION } from '../package.json'
-import { CowApi, CowSubgraphApi } from './api'
-import { SupportedChainId as ChainId } from '/constants/chains'
-import { validateAppDataDocument } from '/utils/appData'
-import { Context, CowContext } from '/utils/context'
-import { signOrder, signOrderCancellation, UnsignedOrder } from '/utils/sign'
+import { CowApi, CowSubgraphApi, MetadataApi } from './api'
+import { SupportedChainId as ChainId } from './constants/chains'
+import { validateAppDataDocument } from './utils/appData'
+import { Context, CowContext } from './utils/context'
+import { signOrder, signOrderCancellation, UnsignedOrder } from './utils/sign'
 
 export class CowSdk<T extends ChainId> {
-  static version = SDK_VERSION
   chainId: T
   context: Context
   cowApi: CowApi<T>
   cowSubgraphApi: CowSubgraphApi<T>
+  metadataApi: MetadataApi
 
   constructor(chainId: T, cowContext: CowContext = {}) {
     this.chainId = chainId
     this.context = new Context(cowContext)
     this.cowApi = new CowApi(chainId, this.context)
     this.cowSubgraphApi = new CowSubgraphApi(chainId, this.context)
+    this.metadataApi = new MetadataApi(this.context)
   }
 
   validateAppDataDocument = validateAppDataDocument

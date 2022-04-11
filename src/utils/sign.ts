@@ -12,8 +12,8 @@ import {
 } from '@gnosis.pm/gp-v2-contracts'
 import log from 'loglevel'
 
-import { SupportedChainId as ChainId } from '/constants/chains'
-import { GP_SETTLEMENT_CONTRACT_ADDRESS } from '/constants'
+import { SupportedChainId as ChainId } from '../constants/chains'
+import { GP_SETTLEMENT_CONTRACT_ADDRESS } from '../constants'
 import { TypedDataDomain, Signer } from '@ethersproject/abstract-signer'
 import { CowError } from './common'
 

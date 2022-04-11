@@ -1,9 +1,9 @@
 import log from 'loglevel'
 import fetch from 'cross-fetch'
 import { GraphQLClient, gql, Variables } from 'graphql-request'
-import { CowError } from '/utils/common'
-import { SupportedChainId as ChainId } from '/constants/chains'
-import { Context } from '/utils/context'
+import { CowError } from '../../utils/common'
+import { Context } from '../../utils/context'
+import { SupportedChainId as ChainId } from '../../constants/chains'
 import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphql'
 
 export function getSubgraphUrls(): Record<ChainId, string> {

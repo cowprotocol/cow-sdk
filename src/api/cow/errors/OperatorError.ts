@@ -1,5 +1,5 @@
 import log from 'loglevel'
-import { CowError } from '/utils/common'
+import { CowError } from '../../../utils/common'
 
 type ApiActionType = 'get' | 'create' | 'delete'
 

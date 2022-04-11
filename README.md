@@ -15,7 +15,7 @@
 Install the SDK:
 
 ```bash
-yarn add @gnosis.pm/cow-sdk
+yarn add @cowprotocol/cow-sdk
 ```
 
 Instantiate the SDK:
@@ -96,6 +96,40 @@ const orderId = await cowSdk.cowApi.sendOrder({
 console.log(`https://explorer.cow.fi/rinkeby/orders/${orderId}`)
 ```
 
+SDK also includes a Metadata API to interact with AppData documents and IPFS CIDs
+
+```js
+ const chainId = 4 // Rinkeby
+ const cowSdk = new CowSdk(chainId)
+ let hash = '0xa6c81f4ca727252a05b108f1742a07430f28d474d2a3492d8f325746824d22e5'
+ 
+ // Decode AppData document given a CID hash
+ const appDataDoc = await cowSdk.metadataApi.decodeAppData(hash)
+ console.log(appDataDoc)
+  /* {
+      "appCode": "CowSwap",
+      "metadata": {
+          "referrer": {
+              "address": "0x1f5B740436Fc5935622e92aa3b46818906F416E9",
+              "version": "0.1.0"
+          }
+      },
+      "version": "0.1.0"
+  } */
+
+  const cid = 'QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs'
+  
+  // Decode CID hash to AppData Hex 
+  const decodedAppDataHex  = await cowSdk.metadataApi.cidToAppDataHex(cid)
+  console.log(decodedAppDataHex) //0x5ddb2c8207c10b96fac92cb934ef9ba004bc007a073c9e5b13edc422f209ed80
+
+  hash = '0x5ddb2c8207c10b96fac92cb934ef9ba004bc007a073c9e5b13edc422f209ed80'
+
+  // Decode AppData Hex to CID
+  const decodedAppDataHex  = await cowSdk.metadataApi.appDataHexToCid(hash)
+  console.log(decodedAppDataHex) //QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs
+```
+
 #### Querying the Cow Subgraph
 
 You can query the Cow Subgraph either by running some common queries exposed by the `CowSubgraphApi` or by building your own ones:
@@ -142,4 +176,3 @@ yarn start
 ```bash
 yarn test
 ```
-

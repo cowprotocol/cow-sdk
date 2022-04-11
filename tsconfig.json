@@ -1,9 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "/*": ["src/*"]
-    },
     "moduleResolution": "node",
     "module": "ESNext",
     "target": "ESNext",
@@ -13,6 +9,9 @@
     "allowSyntheticDefaultImports": true,
     "noEmit": true,
     "forceConsistentCasingInFileNames": true,
-    "noUnusedLocals": true,
-  }
+    "noUnusedLocals": true
+  },
+  "exclude": [
+    "dist"
+  ]
 }
