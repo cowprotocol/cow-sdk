@@ -1,7 +1,7 @@
 import Ajv, { ErrorObject, ValidateFunction } from 'ajv'
 import { fromHexString } from './common'
 import { DEFAULT_IPFS_GATEWAY_URI } from '../constants'
-import { AppDataDoc } from '/types'
+import { AppDataDoc } from '../types'
 
 let validate: ValidateFunction | undefined
 let ajv: Ajv

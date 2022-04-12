@@ -1,5 +1,5 @@
 import { GetQuoteResponse } from '@gnosis.pm/gp-v2-contracts'
-import { OrderMetaData } from '/api/cow/types'
+import { OrderMetaData } from '../api/cow/types'
 
 export interface QuoteParams {
   quoteParams: FeeQuoteParams

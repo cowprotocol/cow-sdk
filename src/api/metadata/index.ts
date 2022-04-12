@@ -1,8 +1,8 @@
 import log from 'loglevel'
-import { Context } from '/utils/context'
-import { getSerializedCID, loadIpfsFromCid } from '/utils/appData'
+import { Context } from '../../utils/context'
+import { getSerializedCID, loadIpfsFromCid } from '../../utils/appData'
 import { AppDataDoc } from './types'
-import { CowError } from '/utils/common'
+import { CowError } from '../../utils/common'
 
 export class MetadataApi {
   context: Context

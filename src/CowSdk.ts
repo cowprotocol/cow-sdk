@@ -1,12 +1,10 @@
-import { version as SDK_VERSION } from '../package.json'
 import { CowApi, MetadataApi } from './api'
-import { SupportedChainId as ChainId } from '/constants/chains'
-import { validateAppDataDocument } from '/utils/appData'
-import { Context, CowContext } from '/utils/context'
-import { signOrder, signOrderCancellation, UnsignedOrder } from '/utils/sign'
+import { SupportedChainId as ChainId } from './constants/chains'
+import { validateAppDataDocument } from './utils/appData'
+import { Context, CowContext } from './utils/context'
+import { signOrder, signOrderCancellation, UnsignedOrder } from './utils/sign'
 
 export class CowSdk<T extends ChainId> {
-  static version = SDK_VERSION
   chainId: T
   context: Context
   cowApi: CowApi<T>

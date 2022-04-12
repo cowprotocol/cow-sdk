@@ -1,6 +1,6 @@
 import { Signer } from 'ethers'
 import { CowError } from './common'
-import { DEFAULT_APP_DATA_HASH, DEFAULT_IPFS_GATEWAY_URI } from '/constants'
+import { DEFAULT_APP_DATA_HASH, DEFAULT_IPFS_GATEWAY_URI } from '../constants'
 
 export interface CowContext {
   appDataHash?: string
