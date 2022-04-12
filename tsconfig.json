@@ -10,7 +10,7 @@
     "noEmit": true,
     "forceConsistentCasingInFileNames": true,
     "noUnusedLocals": true,
-    "useUnknownInCatchVariables": false,
+    "noUnusedLocals": true
   },
   "exclude": [
     "dist"
