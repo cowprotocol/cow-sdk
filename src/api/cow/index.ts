@@ -23,7 +23,7 @@ import {
   ProfileData,
   TradeMetaData,
 } from './types'
-import { CowError, objectToQueryString } from '../../utils/common'
+import { CowError, logPrefix, objectToQueryString } from '../../utils/common'
 import { Context } from '../../utils/context'
 
 function getGnosisProtocolUrl(isDev: boolean): Partial<Record<ChainId, string>> {
@@ -77,7 +77,7 @@ async function _handleQuoteResponse<T = any, P extends QuoteQuery = QuoteQuery>(
 
     if (params) {
       const { sellToken, buyToken } = params
-      log.error(`Error querying fee from API - sellToken: ${sellToken}, buyToken: ${buyToken}`)
+      log.error(logPrefix, `Error querying fee from API - sellToken: ${sellToken}, buyToken: ${buyToken}`)
     }
 
     throw quoteError
@@ -86,14 +86,12 @@ async function _handleQuoteResponse<T = any, P extends QuoteQuery = QuoteQuery>(
   }
 }
 
-export class CowApi<T extends ChainId> {
-  chainId: T
+export class CowApi {
   context: Context
 
   API_NAME = 'CoW Protocol'
 
-  constructor(chainId: T, context: Context) {
-    this.chainId = chainId
+  constructor(context: Context) {
     this.context = context
   }
 
@@ -110,9 +108,10 @@ export class CowApi<T extends ChainId> {
   }
 
   async getProfileData(address: string): Promise<ProfileData | null> {
-    log.debug(`[api:${this.API_NAME}] Get profile data for`, this.chainId, address)
-    if (this.chainId !== ChainId.MAINNET) {
-      log.info('Profile data is only available for mainnet')
+    const chainId = await this.context.chainId
+    log.debug(logPrefix, `[api:${this.API_NAME}] Get profile data for`, chainId, address)
+    if (chainId !== ChainId.MAINNET) {
+      log.info(logPrefix, 'Profile data is only available for mainnet')
       return null
     }
 
@@ -120,7 +119,7 @@ export class CowApi<T extends ChainId> {
 
     if (!response.ok) {
       const errorResponse = await response.json()
-      log.error(errorResponse)
+      log.error(logPrefix, errorResponse)
       throw new CowError(errorResponse?.description)
     } else {
       return response.json()
@@ -130,7 +129,8 @@ export class CowApi<T extends ChainId> {
   async getTrades(params: GetTradesParams): Promise<TradeMetaData[]> {
     const { owner, limit, offset } = params
     const qsParams = objectToQueryString({ owner, limit, offset })
-    log.debug('[util:operator] Get trades for', this.chainId, owner, { limit, offset })
+    const chainId = await this.context.chainId
+    log.debug(logPrefix, '[util:operator] Get trades for', chainId, owner, { limit, offset })
     try {
       const response = await this.get(`/trades${qsParams}`)
 
@@ -141,7 +141,7 @@ export class CowApi<T extends ChainId> {
         return response.json()
       }
     } catch (error) {
-      log.error('Error getting trades:', error)
+      log.error(logPrefix, 'Error getting trades:', error)
       throw new CowError('Error getting trades: ' + error)
     }
   }
@@ -149,7 +149,8 @@ export class CowApi<T extends ChainId> {
   async getOrders(params: GetOrdersParams): Promise<OrderMetaData[]> {
     const { owner, limit = 1000, offset = 0 } = params
     const queryString = objectToQueryString({ limit, offset })
-    log.debug(`[api:${this.API_NAME}] Get orders for `, this.chainId, owner, limit, offset)
+    const chainId = await this.context.chainId
+    log.debug(logPrefix, `[api:${this.API_NAME}] Get orders for `, chainId, owner, limit, offset)
 
     try {
       const response = await this.get(`/account/${owner}/orders/${queryString}`)
@@ -161,13 +162,14 @@ export class CowApi<T extends ChainId> {
         return response.json()
       }
     } catch (error) {
-      log.error('Error getting orders information:', error)
+      log.error(logPrefix, 'Error getting orders information:', error)
       throw new OperatorError(UNHANDLED_ORDER_ERROR)
     }
   }
 
   async getTxOrders(txHash: string): Promise<OrderMetaData[]> {
-    log.debug(`[api:${this.API_NAME}] Get tx orders for `, this.chainId, txHash)
+    const chainId = await this.context.chainId
+    log.debug(`[api:${this.API_NAME}] Get tx orders for `, chainId, txHash)
 
     try {
       const response = await this.get(`/transactions/${txHash}/orders`)
@@ -186,7 +188,8 @@ export class CowApi<T extends ChainId> {
   }
 
   async getOrder(orderId: string): Promise<OrderMetaData | null> {
-    log.debug(`[api:${this.API_NAME}] Get order for `, this.chainId, orderId)
+    const chainId = await this.context.chainId
+    log.debug(logPrefix, `[api:${this.API_NAME}] Get order for `, chainId, orderId)
     try {
       const response = await this.get(`/orders/${orderId}`)
 
@@ -197,22 +200,20 @@ export class CowApi<T extends ChainId> {
         return response.json()
       }
     } catch (error) {
-      log.error('Error getting order information:', error)
+      log.error(logPrefix, 'Error getting order information:', error)
       throw new OperatorError(UNHANDLED_ORDER_ERROR)
     }
   }
 
   async getPriceQuoteLegacy(params: PriceQuoteParams): Promise<PriceInformation | null> {
     const { baseToken, quoteToken, amount, kind } = params
-    log.debug(`[api:${this.API_NAME}] Get price from API`, params)
+    const chainId = await this.context.chainId
+    log.debug(logPrefix, `[api:${this.API_NAME}] Get price from API`, params, 'for', chainId)
 
     const response = await this.get(
-      `/markets/${toErc20Address(baseToken, this.chainId)}-${toErc20Address(
-        quoteToken,
-        this.chainId
-      )}/${kind}/${amount}`
+      `/markets/${toErc20Address(baseToken, chainId)}-${toErc20Address(quoteToken, chainId)}/${kind}/${amount}`
     ).catch((error) => {
-      log.error('Error getting price quote:', error)
+      log.error(logPrefix, 'Error getting price quote:', error)
       throw new QuoteError(UNHANDLED_QUOTE_ERROR)
     })
 
@@ -220,7 +221,8 @@ export class CowApi<T extends ChainId> {
   }
 
   async getQuote(params: FeeQuoteParams): Promise<SimpleGetQuoteResponse> {
-    const quoteParams = this.mapNewToLegacyParams(params, this.chainId)
+    const chainId = await this.context.chainId
+    const quoteParams = this.mapNewToLegacyParams(params, chainId)
     const response = await this.post('/quote', quoteParams)
 
     return _handleQuoteResponse<SimpleGetQuoteResponse>(response)
@@ -228,8 +230,8 @@ export class CowApi<T extends ChainId> {
 
   async sendSignedOrderCancellation(params: OrderCancellationParams): Promise<void> {
     const { cancellation, owner: from } = params
-
-    log.debug(`[api:${this.API_NAME}] Delete signed order for network`, this.chainId, cancellation)
+    const chainId = await this.context.chainId
+    log.debug(logPrefix, `[api:${this.API_NAME}] Delete signed order for network`, chainId, cancellation)
 
     const response = await this.delete(`/orders/${cancellation.orderUid}`, {
       signature: cancellation.signature,
@@ -243,13 +245,14 @@ export class CowApi<T extends ChainId> {
       throw new CowError(errorMessage)
     }
 
-    log.debug(`[api:${this.API_NAME}] Cancelled order`, cancellation.orderUid, this.chainId)
+    log.debug(logPrefix, `[api:${this.API_NAME}] Cancelled order`, cancellation.orderUid, chainId)
   }
 
   async sendOrder(params: { order: Omit<OrderCreation, 'appData'>; owner: string }): Promise<OrderID> {
     const fullOrder: OrderCreation = { ...params.order, appData: this.context.appDataHash }
+    const chainId = await this.context.chainId
     const { owner } = params
-    log.debug(`[api:${this.API_NAME}] Post signed order for network`, this.chainId, fullOrder)
+    log.debug(logPrefix, `[api:${this.API_NAME}] Post signed order for network`, chainId, fullOrder)
 
     // Call API
     const response = await this.post(`/orders`, {
@@ -266,7 +269,7 @@ export class CowApi<T extends ChainId> {
     }
 
     const uid = (await response.json()) as string
-    log.debug(`[api:${this.API_NAME}] Success posting the signed order`, uid)
+    log.debug(logPrefix, `[api:${this.API_NAME}] Success posting the signed order`, uid)
     return uid
   }
 
@@ -306,28 +309,30 @@ export class CowApi<T extends ChainId> {
     return finalParams
   }
 
-  private getApiBaseUrl(): string {
-    const baseUrl = this.API_BASE_URL[this.chainId]
+  private async getApiBaseUrl(): Promise<string> {
+    const chainId = await this.context.chainId
+    const baseUrl = this.API_BASE_URL[chainId]
 
     if (!baseUrl) {
-      throw new CowError(`Unsupported Network. The ${this.API_NAME} API is not deployed in the Network ` + this.chainId)
+      throw new CowError(`Unsupported Network. The ${this.API_NAME} API is not deployed in the Network ` + chainId)
     } else {
       return baseUrl + '/v1'
     }
   }
 
-  private getProfileApiBaseUrl(): string {
-    const baseUrl = this.PROFILE_API_BASE_URL[this.chainId]
+  private async getProfileApiBaseUrl(): Promise<string> {
+    const chainId = await this.context.chainId
+    const baseUrl = this.PROFILE_API_BASE_URL[chainId]
 
     if (!baseUrl) {
-      throw new CowError(`Unsupported Network. The ${this.API_NAME} API is not deployed in the Network ` + this.chainId)
+      throw new CowError(`Unsupported Network. The ${this.API_NAME} API is not deployed in the Network ` + chainId)
     } else {
       return baseUrl + '/v1'
     }
   }
 
-  private fetch(url: string, method: 'GET' | 'POST' | 'DELETE', data?: any): Promise<Response> {
-    const baseUrl = this.getApiBaseUrl()
+  private async fetch(url: string, method: 'GET' | 'POST' | 'DELETE', data?: any): Promise<Response> {
+    const baseUrl = await this.getApiBaseUrl()
     return fetch(baseUrl + url, {
       headers: this.DEFAULT_HEADERS,
       method,
@@ -335,8 +340,8 @@ export class CowApi<T extends ChainId> {
     })
   }
 
-  private fetchProfile(url: string, method: 'GET' | 'POST' | 'DELETE', data?: any): Promise<Response> {
-    const baseUrl = this.getProfileApiBaseUrl()
+  private async fetchProfile(url: string, method: 'GET' | 'POST' | 'DELETE', data?: any): Promise<Response> {
+    const baseUrl = await this.getProfileApiBaseUrl()
     return fetch(baseUrl + url, {
       headers: this.DEFAULT_HEADERS,
       method,
