@@ -25,12 +25,12 @@ export const DefaultCowContext = {
  * @implements {Required<CowContext>}
  */
 export class Context implements Partial<CowContext> {
-  private context: CowContext
+  #context: CowContext
   #chainId: ChainId
 
   constructor(chainId: ChainId, context: CowContext) {
     this.#chainId = this.updateChainId(chainId)
-    this.context = { ...DefaultCowContext, ...context }
+    this.#context = { ...DefaultCowContext, ...context }
   }
 
   updateChainId(chainId: ChainId) {
@@ -45,7 +45,7 @@ export class Context implements Partial<CowContext> {
   }
 
   get chainId(): Promise<ChainId> {
-    const provider = this.context.signer?.provider
+    const provider = this.#context.signer?.provider
     if (!provider) {
       return Promise.resolve(this.#chainId)
     }
@@ -65,25 +65,25 @@ export class Context implements Partial<CowContext> {
         )
         this.updateChainId(chainId)
       }
-      return network.chainId
+      return chainId
     }
 
     return getAndReconciliateNetwork()
   }
 
   get appDataHash(): string {
-    return this.context.appDataHash ?? DefaultCowContext.appDataHash
+    return this.#context.appDataHash ?? DefaultCowContext.appDataHash
   }
 
   get isDevEnvironment(): boolean {
-    return this.context.isDevEnvironment ?? DefaultCowContext.isDevEnvironment
+    return this.#context.isDevEnvironment ?? DefaultCowContext.isDevEnvironment
   }
 
   get signer(): Signer | undefined {
-    return this.context.signer
+    return this.#context.signer
   }
 
   get ipfsUri(): string {
-    return this.context.ipfsUri ?? DefaultCowContext.ipfsUri
+    return this.#context.ipfsUri ?? DefaultCowContext.ipfsUri
   }
 }
