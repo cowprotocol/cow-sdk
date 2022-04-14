@@ -1,5 +1,5 @@
 import fetchMock from 'jest-fetch-mock'
-import log from 'logLevel'
+import log from 'loglevel'
 import { generateTestingUtils } from 'eth-testing'
 
 jest.setMock('cross-fetch', fetchMock)
