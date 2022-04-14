@@ -299,8 +299,9 @@ test('Invalid: Get Price Quote (Legacy) with unexisting token', async () => {
 
 test('Valid: Get Profile Data', async () => {
   fetchMock.mockResponseOnce(JSON.stringify(PROFILE_DATA_RESPONSE), { status: HTTP_STATUS_OK })
-  const cowSdk1 = new CowSdk(1)
-  //cowSdk.updateChainId(1)
+  const cowSdk1 = new CowSdk(chainId)
+  cowSdk1.updateChainId(1)
+
   await cowSdk1.cowApi.getProfileData('0x6810e776880c02933d47db1b9fc05908e5386b96')
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
@@ -324,8 +325,9 @@ test('Invalid: Get Profile Data from unexisting address', async () => {
     }),
     { status: HTTP_STATUS_NOT_FOUND }
   )
-  const cowSdk1 = new CowSdk(1)
-  //cowSdk.updateChainId(1)
+  const cowSdk1 = new CowSdk(chainId)
+  cowSdk1.updateChainId(1)
+
   try {
     await cowSdk1.cowApi.getProfileData('unexistingAddress')
   } catch (e) {
