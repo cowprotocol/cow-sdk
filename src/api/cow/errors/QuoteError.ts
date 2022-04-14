@@ -1,5 +1,5 @@
 import log from 'loglevel'
-import { CowError } from '../../../utils/common'
+import { CowError, logPrefix } from '../../../utils/common'
 import { ApiErrorCodes, ApiErrorObject } from './OperatorError'
 
 export interface GpQuoteErrorObject {
@@ -76,11 +76,11 @@ export default class GpQuoteError extends CowError {
         // shouldn't fall through as this error constructor expects the error code to exist but just in case
         return errorMessage || orderPostError.errorType
       } else {
-        log.error('Unknown reason for bad quote fetch', orderPostError)
+        log.error(logPrefix, 'Unknown reason for bad quote fetch', orderPostError)
         return orderPostError.description
       }
     } catch (error) {
-      log.error('Error handling 400/404 error. Likely a problem deserialising the JSON response')
+      log.error(logPrefix, 'Error handling 400/404 error. Likely a problem deserialising the JSON response')
       return GpQuoteError.quoteErrorDetails.UNHANDLED_ERROR
     }
   }
@@ -94,6 +94,7 @@ export default class GpQuoteError extends CowError {
       case 500:
       default:
         log.error(
+          logPrefix,
           '[QuoteError::getErrorFromStatusCode] Error fetching quote, status code:',
           response.status || 'unknown'
         )

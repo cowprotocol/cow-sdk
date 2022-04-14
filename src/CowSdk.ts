@@ -1,30 +1,52 @@
+import { Signer } from 'ethers'
+import log, { LogLevelDesc } from 'loglevel'
+import { CowError } from './utils/common'
 import { CowApi, MetadataApi } from './api'
 import { SupportedChainId as ChainId } from './constants/chains'
 import { validateAppDataDocument } from './utils/appData'
 import { Context, CowContext } from './utils/context'
 import { signOrder, signOrderCancellation, UnsignedOrder } from './utils/sign'
 
+type Options = {
+  loglevel?: LogLevelDesc
+}
+
 export class CowSdk<T extends ChainId> {
-  chainId: T
   context: Context
-  cowApi: CowApi<T>
+  cowApi: CowApi
   metadataApi: MetadataApi
 
-  constructor(chainId: T, cowContext: CowContext = {}) {
-    this.chainId = chainId
-    this.context = new Context(cowContext)
-    this.cowApi = new CowApi(chainId, this.context)
+  constructor(chainId: T, cowContext: CowContext = {}, options: Options = {}) {
+    this.context = new Context(chainId, { ...cowContext })
+    this.cowApi = new CowApi(this.context)
     this.metadataApi = new MetadataApi(this.context)
+    log.setLevel(options.loglevel || 'error')
+  }
+
+  updateChainId = (chainId: T) => {
+    this.context.updateChainId(chainId)
   }
 
   validateAppDataDocument = validateAppDataDocument
 
-  signOrder(order: Omit<UnsignedOrder, 'appData'>) {
-    return signOrder({ ...order, appData: this.context.appDataHash }, this.chainId, this.context.signer)
+  async signOrder(order: Omit<UnsignedOrder, 'appData'>) {
+    const signer = this._checkSigner()
+    const chainId = await this.context.chainId
+    return signOrder({ ...order, appData: this.context.appDataHash }, chainId, signer)
   }
 
-  signOrderCancellation(orderId: string) {
-    return signOrderCancellation(orderId, this.chainId, this.context.signer)
+  async signOrderCancellation(orderId: string) {
+    const signer = this._checkSigner()
+    const chainId = await this.context.chainId
+    return signOrderCancellation(orderId, chainId, signer)
+  }
+
+  _checkSigner(signer: Signer | undefined = this.context.signer) {
+    if (!signer) {
+      throw new CowError('No signer available')
+    }
+
+    return signer
   }
 }
 
