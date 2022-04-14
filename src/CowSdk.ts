@@ -23,7 +23,7 @@ export class CowSdk<T extends ChainId> {
     log.setLevel(options.loglevel || 'error')
   }
 
-  updateChainId = (chainId: T) => {
+  updateChainId = (chainId: ChainId) => {
     this.context.updateChainId(chainId)
   }
 
