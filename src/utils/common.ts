@@ -1,5 +1,3 @@
-import { version as SDK_VERSION } from '../../package.json'
-
 export class CowError extends Error {
   error_code?: string
 
@@ -28,7 +26,7 @@ export function objectToQueryString(o: any): string {
   return qsResult ? `?${qsResult}` : ''
 }
 
-export const logPrefix = `cow-sdk (${SDK_VERSION}):`
+export const logPrefix = 'cow-sdk:'
 
 export function fromHexString(hexString: string) {
   const stringMatch = hexString.match(/.{1,2}/g)
