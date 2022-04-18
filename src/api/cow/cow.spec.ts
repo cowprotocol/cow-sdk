@@ -12,13 +12,9 @@ enableFetchMocks()
 
 const chainId = 4 //Rinkeby
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const gpV2Contracts = require('@gnosis.pm/gp-v2-contracts')
+const signer = ethers.Wallet.createRandom()
 
-// @ts-expect-error: Let's ignore a compile error like this window.ethereum undefined
-const provider = new ethers.providers.Web3Provider(window.ethereum)
-
-const cowSdk = new CowSdk(chainId, { signer: provider.getSigner() })
+const cowSdk = new CowSdk(chainId, { signer })
 
 const HTTP_STATUS_OK = 200
 const HTTP_STATUS_NOT_FOUND = 404
@@ -42,7 +38,7 @@ const ORDER_RESPONSE = {
   from: '0x6810e776880c02933d47db1b9fc05908e5386b96',
   creationTime: '2020-12-03T18:35:18.814523Z',
   owner: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-  uid: 'string',
+  uid: '0x59920c85de0162e9e55df8d396e75f3b6b7c2dfdb535f03e5c807731c31585eaff714b8b0e2700303ec912bd40496c3997ceea2b616d6710',
   availableBalance: '1234567890',
   executedSellAmount: '1234567890',
   executedSellAmountBeforeFees: '1234567890',
@@ -64,6 +60,15 @@ const TRADE_RESPONSE = {
   sellAmountBeforeFees: '1234567890',
   buyAmount: '1234567890',
   transactionHash: '0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5',
+}
+
+const FETCH_RESPONSE_PARAMETERS = {
+  body: undefined,
+  headers: {
+    'Content-Type': 'application/json',
+    'X-AppId': cowSdk.context.appDataHash,
+  },
+  method: 'GET',
 }
 
 const PRICE_QUOTE_RESPONSE = {
@@ -95,17 +100,13 @@ afterEach(() => {
 
 test('Valid: Get an order ', async () => {
   fetchMock.mockResponseOnce(JSON.stringify(ORDER_RESPONSE), { status: HTTP_STATUS_OK })
-  const order = await cowSdk.cowApi.getOrder('string')
+  const order = await cowSdk.cowApi.getOrder(ORDER_RESPONSE.uid)
   expect(fetchMock).toHaveBeenCalledTimes(1)
-  expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/rinkeby/api/v1/orders/string', {
-    body: undefined,
-    headers: {
-      'Content-Type': 'application/json',
-      'X-AppId': '0x0000000000000000000000000000000000000000000000000000000000000000',
-    },
-    method: 'GET',
-  })
-  expect(order?.uid).toEqual('string')
+  expect(fetchMock).toHaveBeenCalledWith(
+    `https://api.cow.fi/rinkeby/api/v1/orders/${ORDER_RESPONSE.uid}`,
+    FETCH_RESPONSE_PARAMETERS
+  )
+  expect(order?.uid).toEqual(ORDER_RESPONSE.uid)
 })
 
 test('Invalid: Get an order ', async () => {
@@ -123,14 +124,10 @@ test('Invalid: Get an order ', async () => {
     const error = e as OperatorError
     expect(error.message).toEqual('Token pair selected has insufficient liquidity')
     expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/rinkeby/api/v1/orders/notValidOrderId', {
-      body: undefined,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-AppId': '0x0000000000000000000000000000000000000000000000000000000000000000',
-      },
-      method: 'GET',
-    })
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.cow.fi/rinkeby/api/v1/orders/notValidOrderId',
+      FETCH_RESPONSE_PARAMETERS
+    )
   }
 })
 
@@ -145,14 +142,7 @@ test('Valid: Get last 5 orders for a given trader ', async () => {
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
     'https://api.cow.fi/rinkeby/api/v1/account/0x00000000005ef87f8ca7014309ece7260bbcdaeb/orders/?limit=5',
-    {
-      body: undefined,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-AppId': '0x0000000000000000000000000000000000000000000000000000000000000000',
-      },
-      method: 'GET',
-    }
+    FETCH_RESPONSE_PARAMETERS
   )
   expect(orders.length).toEqual(5)
 })
@@ -176,14 +166,10 @@ test('Invalid: Get last 5 orders for an unexisting trader ', async () => {
     const error = e as OperatorError
     expect(error.message).toEqual('Token pair selected has insufficient liquidity')
     expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/rinkeby/api/v1/account/invalidOwner/orders/?limit=5', {
-      body: undefined,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-AppId': '0x0000000000000000000000000000000000000000000000000000000000000000',
-      },
-      method: 'GET',
-    })
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.cow.fi/rinkeby/api/v1/account/invalidOwner/orders/?limit=5',
+      FETCH_RESPONSE_PARAMETERS
+    )
   }
 })
 
@@ -198,14 +184,7 @@ test('Valid: Get last 5 trades for a given trader ', async () => {
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
     'https://api.cow.fi/rinkeby/api/v1/trades?owner=0x00000000005ef87f8ca7014309ece7260bbcdaeb&limit=5',
-    {
-      body: undefined,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-AppId': '0x0000000000000000000000000000000000000000000000000000000000000000',
-      },
-      method: 'GET',
-    }
+    FETCH_RESPONSE_PARAMETERS
   )
   expect(trades.length).toEqual(5)
 })
@@ -229,14 +208,10 @@ test('Invalid: Get last 5 trades for an unexisting trader ', async () => {
     const error = e as OperatorError
     expect(error.message).toEqual('Token pair selected has insufficient liquidity')
     expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/rinkeby/api/v1/trades?owner=invalidOwner&limit=5', {
-      body: undefined,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-AppId': '0x0000000000000000000000000000000000000000000000000000000000000000',
-      },
-      method: 'GET',
-    })
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.cow.fi/rinkeby/api/v1/trades?owner=invalidOwner&limit=5',
+      FETCH_RESPONSE_PARAMETERS
+    )
   }
 })
 
@@ -251,17 +226,10 @@ test('Valid: Get Price Quote (Legacy)', async () => {
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
     'https://api.cow.fi/rinkeby/api/v1/markets/0x6810e776880c02933d47db1b9fc05908e5386b96-0x6810e776880c02933d47db1b9fc05908e5386b96/buy/1234567890',
-    {
-      body: undefined,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-AppId': '0x0000000000000000000000000000000000000000000000000000000000000000',
-      },
-      method: 'GET',
-    }
+    FETCH_RESPONSE_PARAMETERS
   )
-  expect(price?.amount).toEqual('1234567890')
-  expect(price?.token).toEqual('0x6810e776880c02933d47db1b9fc05908e5386b96')
+  expect(price?.amount).toEqual(PRICE_QUOTE_RESPONSE.amount)
+  expect(price?.token).toEqual(PRICE_QUOTE_RESPONSE.token)
 })
 
 test('Invalid: Get Price Quote (Legacy) with unexisting token', async () => {
@@ -285,14 +253,7 @@ test('Invalid: Get Price Quote (Legacy) with unexisting token', async () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.cow.fi/rinkeby/api/v1/markets/unexistingToken-unexistingToken/buy/1234567890',
-      {
-        body: undefined,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-AppId': '0x0000000000000000000000000000000000000000000000000000000000000000',
-        },
-        method: 'GET',
-      }
+      FETCH_RESPONSE_PARAMETERS
     )
   }
 })
@@ -306,14 +267,7 @@ test('Valid: Get Profile Data', async () => {
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
     'https://api.cow.fi/affiliate/api/v1/profile/0x6810e776880c02933d47db1b9fc05908e5386b96',
-    {
-      body: undefined,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-AppId': '0x0000000000000000000000000000000000000000000000000000000000000000',
-      },
-      method: 'GET',
-    }
+    FETCH_RESPONSE_PARAMETERS
   )
 })
 
@@ -334,27 +288,20 @@ test('Invalid: Get Profile Data from unexisting address', async () => {
     const error = e as CowError
     expect(error.message).toEqual("You've passed an invalid URL")
     expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/affiliate/api/v1/profile/unexistingAddress', {
-      body: undefined,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-AppId': '0x0000000000000000000000000000000000000000000000000000000000000000',
-      },
-      method: 'GET',
-    })
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.cow.fi/affiliate/api/v1/profile/unexistingAddress',
+      FETCH_RESPONSE_PARAMETERS
+    )
   }
 })
 
 test('Invalid: Get Profile Data from not supported network', async () => {
+  fetchMock.mockResponseOnce(JSON.stringify(PROFILE_DATA_RESPONSE), { status: HTTP_STATUS_OK })
   const profileData = await cowSdk.cowApi.getProfileData('0x6810e776880c02933d47db1b9fc05908e5386b96')
   expect(profileData).toBeNull()
 })
 
 test('Valid: Sign Order', async () => {
-  gpV2Contracts.signOrder.mockImplementation(() => ({
-    scheme: SigningScheme.EIP712,
-    data: '0x4d306ce7c770d22005bcfc00223f8d9aaa04e8a20099cc986cb9ccf60c7e876b777ceafb1e03f359ebc6d3dc84245d111a3df584212b5679cb5f9e6717b69b031b',
-  }))
   const order: Omit<UnsignedOrder, 'appData'> = {
     kind: OrderKind.SELL,
     partiallyFillable: false, // Allow partial executions of an order (true would be for a "Fill or Kill" order, which is not yet supported but will be added soon)
@@ -368,19 +315,14 @@ test('Valid: Sign Order', async () => {
   }
 
   const signedOrder = await cowSdk.signOrder(order)
-  expect(signedOrder.signature).toEqual(SIGNED_ORDER_RESPONSE.signature)
-  expect(signedOrder.signingScheme).toEqual(SIGNED_ORDER_RESPONSE.signingScheme)
+  expect(signedOrder.signature).not.toBeNull()
+  expect(signedOrder.signingScheme).not.toBeNull()
 })
 
 test('Valid: Sign cancellation Order', async () => {
-  gpV2Contracts.signOrderCancellation.mockImplementation(() => ({
-    scheme: SigningScheme.EIP712,
-    data: '0x4d306ce7c770d22005bcfc00223f8d9aaa04e8a20099cc986cb9ccf60c7e876b777ceafb1e03f359ebc6d3dc84245d111a3df584212b5679cb5f9e6717b69b031b',
-  }))
-
-  const signCancellationOrder = await cowSdk.signOrderCancellation('validOrderId')
-  expect(signCancellationOrder.signature).toEqual(SIGNED_ORDER_RESPONSE.signature)
-  expect(signCancellationOrder.signingScheme).toEqual(SIGNED_ORDER_RESPONSE.signingScheme)
+  const signCancellationOrder = await cowSdk.signOrderCancellation(ORDER_RESPONSE.uid)
+  expect(signCancellationOrder.signature).not.toBeNull()
+  expect(signCancellationOrder.signingScheme).not.toBeNull()
 })
 
 test('Valid: Send an order ', async () => {
@@ -391,16 +333,13 @@ test('Valid: Send an order ', async () => {
   })
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/rinkeby/api/v1/orders', {
+    ...FETCH_RESPONSE_PARAMETERS,
     body: JSON.stringify({
       ...ORDER_RESPONSE,
       ...SIGNED_ORDER_RESPONSE,
       from: '0x1811be0994930fe9480eaede25165608b093ad7a',
       signingScheme: 'eip712',
     }),
-    headers: {
-      'Content-Type': 'application/json',
-      'X-AppId': '0x0000000000000000000000000000000000000000000000000000000000000000',
-    },
     method: 'POST',
   })
   expect(orderId).toEqual('validOrderId')
@@ -425,17 +364,47 @@ test('Invalid: Send an duplicate order ', async () => {
     expect(error.message).toEqual('There was another identical order already submitted. Please try again.')
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/rinkeby/api/v1/orders', {
+      ...FETCH_RESPONSE_PARAMETERS,
       body: JSON.stringify({
         ...ORDER_RESPONSE,
         ...SIGNED_ORDER_RESPONSE,
         from: '0x1811be0994930fe9480eaede25165608b093ad7a',
         signingScheme: 'eip712',
       }),
-      headers: {
-        'Content-Type': 'application/json',
-        'X-AppId': '0x0000000000000000000000000000000000000000000000000000000000000000',
-      },
       method: 'POST',
     })
   }
+})
+
+test('Valid: AppDataHash properly set on X-AppId header', async () => {
+  fetchMock.mockResponseOnce(JSON.stringify(PROFILE_DATA_RESPONSE), { status: HTTP_STATUS_OK })
+  const cowSdk1 = new CowSdk(chainId, {
+    appDataHash: '0x0000000000000000000000000000000000000000000000000000000000000001',
+  })
+  cowSdk1.updateChainId(1)
+  await cowSdk1.cowApi.getProfileData('0x6810e776880c02933d47db1b9fc05908e5386b96')
+  expect(fetchMock).toHaveBeenCalledWith(
+    'https://api.cow.fi/affiliate/api/v1/profile/0x6810e776880c02933d47db1b9fc05908e5386b96',
+    {
+      ...FETCH_RESPONSE_PARAMETERS,
+      headers: { ...FETCH_RESPONSE_PARAMETERS.headers, 'X-AppId': cowSdk1.context.appDataHash },
+    }
+  )
+})
+
+test('Valid: AppDataHash properly set on X-AppId header when undefined', async () => {
+  fetchMock.mockResponseOnce(JSON.stringify(PROFILE_DATA_RESPONSE), { status: HTTP_STATUS_OK })
+  const cowSdk1 = new CowSdk(chainId, { appDataHash: undefined })
+  cowSdk1.updateChainId(1)
+  await cowSdk1.cowApi.getProfileData('0x6810e776880c02933d47db1b9fc05908e5386b96')
+  expect(fetchMock).toHaveBeenCalledWith(
+    'https://api.cow.fi/affiliate/api/v1/profile/0x6810e776880c02933d47db1b9fc05908e5386b96',
+    {
+      ...FETCH_RESPONSE_PARAMETERS,
+      headers: {
+        ...FETCH_RESPONSE_PARAMETERS.headers,
+        'X-AppId': '0x0000000000000000000000000000000000000000000000000000000000000000',
+      },
+    }
+  )
 })
