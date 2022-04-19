@@ -4,17 +4,27 @@ import { CowError, logPrefix } from './common'
 import { SupportedChainId as ChainId } from '../constants/chains'
 import { DEFAULT_APP_DATA_HASH, DEFAULT_IPFS_GATEWAY_URI } from '../constants'
 
+export interface Ipfs {
+  uri: string
+  apiKey?: string
+  apiSecret?: string
+}
+
 export interface CowContext {
   appDataHash?: string
   isDevEnvironment?: boolean
   signer?: Signer
-  ipfsUri?: string
+  ipfs?: Ipfs
 }
 
 export const DefaultCowContext = {
   appDataHash: DEFAULT_APP_DATA_HASH,
   isDevEnvironment: false,
-  ipfsUri: DEFAULT_IPFS_GATEWAY_URI,
+  ipfs: {
+    uri: DEFAULT_IPFS_GATEWAY_URI,
+    apiKey: undefined,
+    apiSecret: undefined,
+  },
 }
 
 /**
@@ -83,7 +93,7 @@ export class Context implements Partial<CowContext> {
     return this.#context.signer
   }
 
-  get ipfsUri(): string {
-    return this.#context.ipfsUri ?? DefaultCowContext.ipfsUri
+  get ipfs(): Ipfs {
+    return this.#context.ipfs ?? DefaultCowContext.ipfs
   }
 }
