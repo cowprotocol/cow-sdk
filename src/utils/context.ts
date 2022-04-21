@@ -5,7 +5,7 @@ import { SupportedChainId as ChainId } from '../constants/chains'
 import { DEFAULT_APP_DATA_HASH, DEFAULT_IPFS_GATEWAY_URI } from '../constants'
 
 export interface Ipfs {
-  uri: string
+  uri?: string
   apiKey?: string
   apiSecret?: string
 }

@@ -28,10 +28,11 @@ export class MetadataApi {
     try {
       const cidV0 = await getSerializedCID(hash)
       if (!cidV0) throw new CowError('Error getting serialized CID')
-      return await loadIpfsFromCid(cidV0)
-    } catch (error) {
+      return loadIpfsFromCid(cidV0)
+    } catch (e) {
+      const error = e as Error
       log.error('Error decoding AppData:', error)
-      throw new CowError('Error decoding AppData: ' + error)
+      throw new CowError('Error decoding AppData: ' + error.message)
     }
   }
 
