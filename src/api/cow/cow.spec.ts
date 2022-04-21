@@ -183,7 +183,7 @@ test('Valid: Get last 5 trades for a given trader ', async () => {
   })
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    'https://api.cow.fi/rinkeby/api/v1/trades?owner=0x00000000005ef87f8ca7014309ece7260bbcdaeb&limit=5',
+    `https://api.cow.fi/rinkeby/api/v1/trades?owner=${TRADE_RESPONSE.owner}&limit=5`,
     FETCH_RESPONSE_PARAMETERS
   )
   expect(trades.length).toEqual(5)
