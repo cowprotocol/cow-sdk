@@ -177,7 +177,7 @@ test('Valid: Get last 5 trades for a given trader ', async () => {
   const TRADES_RESPONSE = Array(5).fill(TRADE_RESPONSE)
   fetchMock.mockResponseOnce(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK })
   const trades = await cowSdk.cowApi.getTrades({
-    owner: '0x00000000005ef87f8ca7014309ece7260bbcdaeb', // Trader
+    owner: TRADE_RESPONSE.owner, // Trader
     limit: 5,
     offset: 0,
   })
@@ -297,8 +297,8 @@ test('Invalid: Get Profile Data from unexisting address', async () => {
 
 test('Invalid: Get Profile Data from not supported network', async () => {
   fetchMock.mockResponseOnce(JSON.stringify(PROFILE_DATA_RESPONSE), { status: HTTP_STATUS_OK })
-  const profileData = await cowSdk.cowApi.getProfileData('0x6810e776880c02933d47db1b9fc05908e5386b96')
-  expect(profileData).toBeNull()
+  const profileData = await cowSdk.cowApi.getProfileData('0x6810e776880c02933d47db1b9fc05908e5386b96') // This will call sdk on Rinkeby which is not supported
+  expect(profileData).toBeNull() // getProfileData will return null when network is different from Mainnet
 })
 
 test('Valid: Sign Order', async () => {
