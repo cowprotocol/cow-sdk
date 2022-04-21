@@ -9,7 +9,7 @@
     "allowSyntheticDefaultImports": true,
     "noEmit": true,
     "forceConsistentCasingInFileNames": true,
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
   },
   "exclude": [
     "dist"
