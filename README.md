@@ -129,6 +129,19 @@ SDK also includes a Metadata API to interact with AppData documents and IPFS CID
   // Decode AppData Hex to CID
   const decodedAppDataHex  = await cowSdk.metadataApi.appDataHexToCid(hash)
   console.log(decodedAppDataHex) //QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs
+
+  // Create an AppData Document
+    const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({})
+    /* {
+        version: '0.1.0',
+        appCode: 'CowSwap',
+        metadata: {},
+      } */
+
+  // Upload AppDataDoc to IPFS
+   const cowSdk = new CowSdk(4, { ipfs: { apiKey: 'YOUR_API_KEY', apiSecret: 'YOUR_API_SECRET' } })
+   await cowSdk.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
+   /* 0x5ddb2c8207c10b96fac92cb934ef9ba004bc007a073c9e5b13edc422f209ed80 */   
 ```
 
 ### Install Dependencies
