@@ -1,3 +1,4 @@
+import { CowError } from './common'
 import { Ipfs } from './context'
 
 type PinataPinResponse = {
@@ -6,7 +7,16 @@ type PinataPinResponse = {
   Timestamp: string
 }
 
-export async function pinJSONToIPFS(file: any, { uri, apiKey = '', apiSecret = '' }: Ipfs): Promise<PinataPinResponse> {
+export async function pinJSONToIPFS(
+  file: any,
+  { uri, pinataApiKey = '', pinataApiSecret = '' }: Ipfs
+): Promise<PinataPinResponse> {
+  const { default: fetch } = await import('cross-fetch')
+
+  if (!pinataApiKey || !pinataApiSecret) {
+    throw new CowError('You need to pass IPFS api credentials.')
+  }
+
   const body = JSON.stringify({
     pinataContent: file,
     pinataMetadata: { name: 'appData-affiliate' },
@@ -14,19 +24,16 @@ export async function pinJSONToIPFS(file: any, { uri, apiKey = '', apiSecret = '
 
   const pinataUrl = `${uri}/pinning/pinJSONToIPFS`
 
-  const headers = new Headers({
-    'Content-Type': 'application/json',
-    pinata_api_key: apiKey,
-    pinata_secret_api_key: apiSecret,
-  })
-
-  const request = new Request(pinataUrl, {
+  const response = await fetch(pinataUrl, {
     method: 'POST',
-    headers,
     body,
+    headers: {
+      'Content-Type': 'application/json',
+      pinata_api_key: pinataApiKey,
+      pinata_secret_api_key: pinataApiSecret,
+    },
   })
 
-  const response = await fetch(request)
   const data = await response.json()
 
   if (response.status !== 200) {

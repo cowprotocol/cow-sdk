@@ -6,8 +6,8 @@ import { DEFAULT_APP_DATA_HASH, DEFAULT_IPFS_GATEWAY_URI } from '../constants'
 
 export interface Ipfs {
   uri?: string
-  apiKey?: string
-  apiSecret?: string
+  pinataApiKey?: string
+  pinataApiSecret?: string
 }
 
 export interface CowContext {

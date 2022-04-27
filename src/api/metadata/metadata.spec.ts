@@ -65,7 +65,7 @@ test('Invalid: Upload to IPFS without passing credentials', async () => {
 test('Valid: Upload AppDataDoc to IPFS', async () => {
   fetchMock.mockResponseOnce(JSON.stringify({ IpfsHash: IPFS_HASH }), { status: HTTP_STATUS_OK })
   const appDataDoc = cowSdk.metadataApi.generateAppDataDoc(CUSTOM_APP_DATA_DOC.metadata)
-  const cowSdk1 = new CowSdk(chainId, { ipfs: { apiKey: 'validApiKey', apiSecret: 'ValidApiSecret' } })
+  const cowSdk1 = new CowSdk(chainId, { ipfs: { pinataApiKey: 'validApiKey', pinataApiSecret: 'ValidApiSecret' } })
   const appDataHex = await cowSdk1.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(appDataHex).toEqual(APP_DATA_HEX)
@@ -76,11 +76,12 @@ test('Invalid: Upload AppDataDoc to IPFS with wrong credentials', async () => {
     status: HTTP_STATUS_INTERNAL_ERROR,
   })
   const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({})
-  const cowSdk1 = new CowSdk(chainId, { ipfs: { apiKey: 'InvalidApiKey', apiSecret: 'InvValidApiSecret' } })
+  const cowSdk1 = new CowSdk(chainId, { ipfs: { pinataApiKey: 'InvalidApiKey', pinataApiSecret: 'InvValidApiSecret' } })
   try {
     await cowSdk1.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
+    await expect(cowSdk1.metadataApi.uploadMetadataDocToIpfs(appDataDoc)).rejects.toThrow('IPFS api keys are invalid')
   } catch (e) {
-    const error = e as Error
+    const error = e as CowError
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(error.message).toEqual('IPFS api keys are invalid')
   }
