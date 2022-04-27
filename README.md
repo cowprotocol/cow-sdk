@@ -131,7 +131,11 @@ hash = '0x5ddb2c8207c10b96fac92cb934ef9ba004bc007a073c9e5b13edc422f209ed80'
 const decodedAppDataHex = await cowSdk.metadataApi.appDataHexToCid(hash)
 console.log(decodedAppDataHex) //QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs
 
-// Create an AppData Document with empty metadata and default appCode
+/*Create an AppData Document with empty metadata and default appCode
+  generateAppDataDoc receives as parameters: 
+    - metadata: MetadataDoc (Default: {})
+    - appCode: string (Default: 'Cowswap')
+*/
 const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({})
 /* {
       version: '0.1.0',
