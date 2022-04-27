@@ -8,7 +8,7 @@ type PinataPinResponse = {
 }
 
 export async function pinJSONToIPFS(
-  file: any,
+  file: unknown,
   { uri, pinataApiKey = '', pinataApiSecret = '' }: Ipfs
 ): Promise<PinataPinResponse> {
   const { default: fetch } = await import('cross-fetch')
