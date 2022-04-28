@@ -19,9 +19,6 @@
     "test:coverage": "jest --coverage --json --outputFile=jest.results.json && cat ./coverage/lcov.info | coveralls",
     "prepare": "npm run build && npm run graphql:codegen",
     "prepublishOnly": "npm test && npm run lint",
-    "preversion": "npm run lint",
-    "version": "npm run format && git add -A src",
-    "postversion": "git push && git push --tags",
     "graphql:codegen": "graphql-codegen --config graphql-codegen.yml"
   },
   "dependencies": {
