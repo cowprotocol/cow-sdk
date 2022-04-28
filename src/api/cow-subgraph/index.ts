@@ -99,9 +99,7 @@ export class CowSubgraphApi {
     } catch (error) {
       log.error(error)
       const baseUrl = await this.getBaseUrl()
-      throw new CowError(
-        `Error running query: ${query}. Variables: ${JSON.stringify(variables)}. API: ${baseUrl}`
-      )
+      throw new CowError(`Error running query: ${query}. Variables: ${JSON.stringify(variables)}. API: ${baseUrl}`)
     }
   }
 }
