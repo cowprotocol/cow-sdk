@@ -36,7 +36,7 @@ export class CowSubgraphApi {
     return getSubgraphUrls()[chainId]
   }
 
-  async getTotals(): Promise<TotalsQuery> {
+  async getTotals(): Promise<TotalsQuery['totals'][0]> {
     const chainId = await this.context.chainId
     log.debug(`[subgraph:${this.API_NAME}] Get totals for:`, chainId)
     const query = gql`
@@ -54,7 +54,7 @@ export class CowSubgraphApi {
       }
     `
     const response = await this.runQuery<TotalsQuery>(query)
-    return response.data
+    return response.totals[0]
   }
 
   async getLastDaysVolume(days: number): Promise<LastDaysVolumeQuery> {
@@ -68,8 +68,7 @@ export class CowSubgraphApi {
         }
       }
     `
-    const response = await this.runQuery<LastDaysVolumeQuery>(query, { days })
-    return response.data
+    return this.runQuery<LastDaysVolumeQuery>(query, { days })
   }
 
   async getLastHoursVolume(hours: number): Promise<LastHoursVolumeQuery> {
@@ -83,16 +82,10 @@ export class CowSubgraphApi {
         }
       }
     `
-    const response = await this.runQuery<LastHoursVolumeQuery>(query, { hours })
-    return response.data
+    return this.runQuery<LastHoursVolumeQuery>(query, { hours })
   }
 
-  public async runQuery<T = unknown>(
-    query: string,
-    variables?: Variables
-  ): Promise<{
-    data: T
-  }> {
+  async runQuery<T>(query: string, variables?: Variables): Promise<T> {
     try {
       const client = await this.client
       return client.request(query, variables)
