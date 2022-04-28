@@ -26,6 +26,8 @@ export function objectToQueryString(o: any): string {
   return qsResult ? `?${qsResult}` : ''
 }
 
+export const logPrefix = 'cow-sdk:'
+
 export function fromHexString(hexString: string) {
   const stringMatch = hexString.match(/.{1,2}/g)
   if (!stringMatch) return

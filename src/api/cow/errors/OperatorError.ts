@@ -1,5 +1,5 @@
 import log from 'loglevel'
-import { CowError } from '../../../utils/common'
+import { CowError, logPrefix } from '../../../utils/common'
 
 type ApiActionType = 'get' | 'create' | 'delete'
 
@@ -71,6 +71,7 @@ function _mapActionToErrorDetail(action?: ApiActionType) {
       return ApiErrorCodeDetails.UNHANDLED_DELETE_ERROR
     default:
       log.error(
+        logPrefix,
         '[OperatorError::_mapActionToErrorDetails] Uncaught error mapping error action type to server error. Please try again later.'
       )
       return 'Something failed. Please try again later.'
@@ -94,11 +95,11 @@ export default class OperatorError extends CowError {
         // shouldn't fall through as this error constructor expects the error code to exist but just in case
         return errorMessage || orderPostError.errorType
       } else {
-        log.error('Unknown reason for bad order submission', orderPostError)
+        log.error(logPrefix, 'Unknown reason for bad order submission', orderPostError)
         return orderPostError.description
       }
     } catch (error) {
-      log.error('Error handling a 400 error. Likely a problem deserialising the JSON response')
+      log.error(logPrefix, 'Error handling a 400 error. Likely a problem deserialising the JSON response')
       return _mapActionToErrorDetail(action)
     }
   }
@@ -119,6 +120,7 @@ export default class OperatorError extends CowError {
       case 500:
       default:
         log.error(
+          logPrefix,
           `[OperatorError::getErrorFromStatusCode] Error ${
             action === 'create' ? 'creating' : 'cancelling'
           } the order, status code:`,

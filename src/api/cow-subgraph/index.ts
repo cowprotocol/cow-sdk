@@ -14,25 +14,31 @@ export function getSubgraphUrls(): Record<ChainId, string> {
   }
 }
 
-export class CowSubgraphApi<T extends ChainId> {
-  chainId: T
+export class CowSubgraphApi {
   context: Context
-  client: GraphQLClient
+  client: Promise<GraphQLClient>
 
   API_NAME = 'CoW Protocol Subgraph'
 
-  constructor(chainId: T, context: Context) {
-    this.chainId = chainId
+  constructor(context: Context) {
     this.context = context
-    this.client = new GraphQLClient(this.API_BASE_URL, { fetch: fetch })
+    this.client = this.createClient()
   }
 
-  get API_BASE_URL(): string {
-    return getSubgraphUrls()[this.chainId]
+  private async createClient(): Promise<GraphQLClient> {
+    const baseUrl = await this.getBaseUrl()
+    const client = new GraphQLClient(baseUrl, { fetch: fetch })
+    return client
+  }
+
+  async getBaseUrl(): Promise<string> {
+    const chainId = await this.context.chainId
+    return getSubgraphUrls()[chainId]
   }
 
   async getTotals(): Promise<TotalsQuery> {
-    log.debug(`[subgraph:${this.API_NAME}] Get totals for:`, this.chainId)
+    const chainId = await this.context.chainId
+    log.debug(`[subgraph:${this.API_NAME}] Get totals for:`, chainId)
     const query = gql`
       query Totals {
         totals {
@@ -52,7 +58,8 @@ export class CowSubgraphApi<T extends ChainId> {
   }
 
   async getLastDaysVolume(days: number): Promise<LastDaysVolumeQuery> {
-    log.debug(`[subgraph:${this.API_NAME}] Get last ${days} days volume for:`, this.chainId)
+    const chainId = await this.context.chainId
+    log.debug(`[subgraph:${this.API_NAME}] Get last ${days} days volume for:`, chainId)
     const query = gql`
       query LastDaysVolume($days: Int!) {
         dailyTotals(orderBy: timestamp, orderDirection: desc, first: $days) {
@@ -66,7 +73,8 @@ export class CowSubgraphApi<T extends ChainId> {
   }
 
   async getLastHoursVolume(hours: number): Promise<LastHoursVolumeQuery> {
-    log.debug(`[subgraph:${this.API_NAME}] Get last ${hours} hours volume for:`, this.chainId)
+    const chainId = await this.context.chainId
+    log.debug(`[subgraph:${this.API_NAME}] Get last ${hours} hours volume for:`, chainId)
     const query = gql`
       query LastHoursVolume($hours: Int!) {
         hourlyTotals(orderBy: timestamp, orderDirection: desc, first: $hours) {
@@ -79,18 +87,20 @@ export class CowSubgraphApi<T extends ChainId> {
     return response.data
   }
 
-  public runQuery<T = any>(
+  public async runQuery<T = any>(
     query: string,
     variables?: Variables
   ): Promise<{
     data: T
   }> {
     try {
-      return this.client.request(query, variables)
+      const client = await this.client
+      return client.request(query, variables)
     } catch (error) {
       log.error(error)
+      const baseUrl = await this.getBaseUrl()
       throw new CowError(
-        `Error running query: ${query}. Variables: ${JSON.stringify(variables)}. API: ${this.API_BASE_URL}`
+        `Error running query: ${query}. Variables: ${JSON.stringify(variables)}. API: ${baseUrl}`
       )
     }
   }

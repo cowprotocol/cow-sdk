@@ -4,6 +4,7 @@
 
 # CoW protocol SDK
 [![Styled With Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://prettier.io/)
+[![Coverage Status](https://coveralls.io/repos/github/cowprotocol/cow-sdk/badge.svg?branch=main)](https://coveralls.io/github/cowprotocol/cow-sdk?branch=main)
 
 
 > ⚠️⚠️ THE SDK IS IN Beta ⚠️⚠️

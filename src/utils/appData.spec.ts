@@ -1,3 +1,4 @@
+import fetchMock from 'jest-fetch-mock'
 import { validateAppDataDocument, getSerializedCID, loadIpfsFromCid } from './appData'
 
 const VALID_RESULT = {
@@ -5,6 +6,10 @@ const VALID_RESULT = {
 }
 
 const INVALID_CID_LENGTH = 'Incorrect length'
+
+beforeEach(() => {
+  fetchMock.dontMock()
+})
 
 test('Valid minimal document', async () => {
   const validation = await validateAppDataDocument({
