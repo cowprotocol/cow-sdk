@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="400" src="https://raw.githubusercontent.com/gnosis/cow-sdk/main/docs/images/CoW.png">
+  <img width="400" src="https://raw.githubusercontent.com/cowprotocol/cow-sdk/main/docs/images/CoW.png">
 </p>
 
 # CoW protocol SDK
