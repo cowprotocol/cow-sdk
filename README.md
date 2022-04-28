@@ -136,13 +136,14 @@ SDK also includes a Metadata API to interact with AppData documents and IPFS CID
 You can query the Cow Subgraph either by running some common queries exposed by the `CowSubgraphApi` or by building your own ones:
 
 ```js
+const chainId = 1 // Mainnet
+const cowSdk = new CowSdk(chainId)
+
 // Get Cow Protocol totals
 const { totals } = await cowSdk.cowSubgraphApi.getTotals()
 const { tokens, orders, traders, settlements, volumeUsd, volumeEth, feesUsd, feesEth } = totals
 console.log({ tokens, orders, traders, settlements, volumeUsd, volumeEth, feesUsd, feesEth })
-```
 
-```js
 // Get the last 5 batches
 const query = `
 query LastBatches($n: Int!) {
