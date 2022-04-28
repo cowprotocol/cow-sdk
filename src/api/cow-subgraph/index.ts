@@ -87,7 +87,7 @@ export class CowSubgraphApi {
     return response.data
   }
 
-  public async runQuery<T = any>(
+  public async runQuery<T = unknown>(
     query: string,
     variables?: Variables
   ): Promise<{
