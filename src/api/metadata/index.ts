@@ -1,8 +1,12 @@
 import log from 'loglevel'
 import { Context } from '../../utils/context'
 import { getSerializedCID, loadIpfsFromCid } from '../../utils/appData'
-import { AppDataDoc } from './types'
+import { pinJSONToIPFS } from '../../utils/ipfs'
+import { AppDataDoc, MetadataDoc } from './types'
 import { CowError } from '../../utils/common'
+
+const DEFAULT_APP_CODE = 'CowSwap'
+const DEFAULT_APP_VERSION = '0.1.0'
 
 export class MetadataApi {
   context: Context
@@ -11,14 +15,25 @@ export class MetadataApi {
     this.context = context
   }
 
+  generateAppDataDoc(metadata: MetadataDoc = {}, appCode: string = DEFAULT_APP_CODE): AppDataDoc {
+    return {
+      version: DEFAULT_APP_VERSION,
+      appCode,
+      metadata: {
+        ...metadata,
+      },
+    }
+  }
+
   async decodeAppData(hash: string): Promise<void | AppDataDoc> {
     try {
       const cidV0 = await getSerializedCID(hash)
       if (!cidV0) throw new CowError('Error getting serialized CID')
-      return await loadIpfsFromCid(cidV0)
-    } catch (error) {
+      return loadIpfsFromCid(cidV0)
+    } catch (e) {
+      const error = e as CowError
       log.error('Error decoding AppData:', error)
-      throw new CowError('Error decoding AppData: ' + error)
+      throw new CowError('Error decoding AppData: ' + error.message)
     }
   }
 
@@ -33,5 +48,10 @@ export class MetadataApi {
     const cidV0 = await getSerializedCID(hash)
     if (!cidV0) throw new CowError('Error getting serialized CID')
     return cidV0
+  }
+
+  async uploadMetadataDocToIpfs(appDataDoc: AppDataDoc): Promise<string | void> {
+    const { IpfsHash } = await pinJSONToIPFS(appDataDoc, this.context.ipfs)
+    return this.cidToAppDataHex(IpfsHash)
   }
 }
