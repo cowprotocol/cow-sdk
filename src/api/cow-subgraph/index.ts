@@ -1,10 +1,11 @@
 import log from 'loglevel'
 import fetch from 'cross-fetch'
-import { GraphQLClient, gql, Variables } from 'graphql-request'
+import { GraphQLClient, Variables } from 'graphql-request'
 import { CowError } from '../../utils/common'
 import { Context } from '../../utils/context'
 import { SupportedChainId as ChainId } from '../../constants/chains'
 import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphql'
+import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
 
 export const subgraphUrls: Record<ChainId, string> = {
   [ChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow',
@@ -39,61 +40,34 @@ export class CowSubgraphApi {
   async getTotals(): Promise<TotalsQuery['totals'][0]> {
     const chainId = await this.context.chainId
     log.debug(`[subgraph:${this.API_NAME}] Get totals for:`, chainId)
-    const query = gql`
-      query Totals {
-        totals {
-          tokens
-          orders
-          traders
-          settlements
-          volumeUsd
-          volumeEth
-          feesUsd
-          feesEth
-        }
-      }
-    `
-    const response = await this.runQuery<TotalsQuery>(query)
+    const response = await this.runQuery<TotalsQuery>(TOTALS_QUERY)
     return response.totals[0]
   }
 
   async getLastDaysVolume(days: number): Promise<LastDaysVolumeQuery> {
     const chainId = await this.context.chainId
     log.debug(`[subgraph:${this.API_NAME}] Get last ${days} days volume for:`, chainId)
-    const query = gql`
-      query LastDaysVolume($days: Int!) {
-        dailyTotals(orderBy: timestamp, orderDirection: desc, first: $days) {
-          timestamp
-          volumeUsd
-        }
-      }
-    `
-    return this.runQuery<LastDaysVolumeQuery>(query, { days })
+    return this.runQuery<LastDaysVolumeQuery>(LAST_DAYS_VOLUME_QUERY, { days })
   }
 
   async getLastHoursVolume(hours: number): Promise<LastHoursVolumeQuery> {
     const chainId = await this.context.chainId
     log.debug(`[subgraph:${this.API_NAME}] Get last ${hours} hours volume for:`, chainId)
-    const query = gql`
-      query LastHoursVolume($hours: Int!) {
-        hourlyTotals(orderBy: timestamp, orderDirection: desc, first: $hours) {
-          timestamp
-          volumeUsd
-        }
-      }
-    `
-    return this.runQuery<LastHoursVolumeQuery>(query, { hours })
+    return this.runQuery<LastHoursVolumeQuery>(LAST_HOURS_VOLUME_QUERY, { hours })
   }
 
   async runQuery<T>(query: string, variables?: Variables): Promise<T> {
     try {
       const chainId = await this.context.chainId
       const client = this.clients[chainId]
-      return client.request(query, variables)
+      const response = await client.request(query, variables)
+      return response
     } catch (error) {
       log.error(error)
       const baseUrl = await this.getBaseUrl()
-      throw new CowError(`Error running query: ${query}. Variables: ${JSON.stringify(variables)}. API: ${baseUrl}`)
+      throw new CowError(
+        `Error running query: ${query}. Variables: ${JSON.stringify(variables)}. API: ${baseUrl}. Inner Error: ${error}`
+      )
     }
   }
 }
