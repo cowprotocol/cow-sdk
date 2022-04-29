@@ -1,7 +1,7 @@
 import { Signer } from 'ethers'
 import log, { LogLevelDesc } from 'loglevel'
 import { CowError } from './utils/common'
-import { CowApi, MetadataApi } from './api'
+import { CowApi, CowSubgraphApi, MetadataApi } from './api'
 import { SupportedChainId as ChainId } from './constants/chains'
 import { validateAppDataDocument } from './utils/appData'
 import { Context, CowContext } from './utils/context'
@@ -15,10 +15,12 @@ export class CowSdk<T extends ChainId> {
   context: Context
   cowApi: CowApi
   metadataApi: MetadataApi
+  cowSubgraphApi: CowSubgraphApi
 
   constructor(chainId: T, cowContext: CowContext = {}, options: Options = {}) {
     this.context = new Context(chainId, { ...cowContext })
     this.cowApi = new CowApi(this.context)
+    this.cowSubgraphApi = new CowSubgraphApi(this.context)
     this.metadataApi = new MetadataApi(this.context)
     log.setLevel(options.loglevel || 'error')
   }

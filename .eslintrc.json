@@ -11,5 +11,5 @@
     "prettier/prettier": "error"
   },
 
-  "ignorePatterns": ["dist", "node_modules"]
+  "ignorePatterns": ["dist", "node_modules", "src/api/cow-subgraph/graphql.ts"]
 }

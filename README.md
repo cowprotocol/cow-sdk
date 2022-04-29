@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="400" src="https://raw.githubusercontent.com/gnosis/cow-sdk/main/docs/images/CoW.png">
+  <img width="400" src="https://raw.githubusercontent.com/cowprotocol/cow-sdk/main/docs/images/CoW.png">
 </p>
 
 # CoW protocol SDK
@@ -129,6 +129,33 @@ SDK also includes a Metadata API to interact with AppData documents and IPFS CID
   // Decode AppData Hex to CID
   const decodedAppDataHex  = await cowSdk.metadataApi.appDataHexToCid(hash)
   console.log(decodedAppDataHex) //QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs
+```
+
+#### Querying the Cow Subgraph
+
+You can query the Cow Subgraph either by running some common queries exposed by the `CowSubgraphApi` or by building your own ones:
+
+```js
+const chainId = 1 // Mainnet
+const cowSdk = new CowSdk(chainId)
+
+// Get Cow Protocol totals
+const { totals } = await cowSdk.cowSubgraphApi.getTotals()
+const { tokens, orders, traders, settlements, volumeUsd, volumeEth, feesUsd, feesEth } = totals
+console.log({ tokens, orders, traders, settlements, volumeUsd, volumeEth, feesUsd, feesEth })
+
+// Get the last 5 batches
+const query = `
+query LastBatches($n: Int!) {
+  settlements(orderBy: timestamp, orderDirection: desc, first: $n) {
+    txHash
+    timestamp
+  }
+}
+`
+const variables = { n: 5 }
+const response = await cowSdk.cowSubgraphApi.runQuery(query, variables)
+console.log(response.data.settlements)
 ```
 
 ### Install Dependencies
