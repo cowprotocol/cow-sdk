@@ -184,22 +184,29 @@ const chainId = 1 // Mainnet
 const cowSdk = new CowSdk(chainId)
 
 // Get Cow Protocol totals
-const { totals } = await cowSdk.cowSubgraphApi.getTotals()
-const { tokens, orders, traders, settlements, volumeUsd, volumeEth, feesUsd, feesEth } = totals
+const { tokens, orders, traders, settlements, volumeUsd, volumeEth, feesUsd, feesEth } = await cowSdk.cowSubgraphApi.getTotals()
 console.log({ tokens, orders, traders, settlements, volumeUsd, volumeEth, feesUsd, feesEth })
+
+// Get last 24 hours volume in usd 
+const { hourlyTotals } = await cowSdk.cowSubgraphApi.getLastHoursVolume(24)
+console.log(hourlyTotals)
+
+// Get last week volume in usd
+const { dailyTotals } = await cowSdk.cowSubgraphApi.getLastDaysVolume(7)
+console.log(dailyTotals)
 
 // Get the last 5 batches
 const query = `
-query LastBatches($n: Int!) {
-  settlements(orderBy: timestamp, orderDirection: desc, first: $n) {
-    txHash
-    timestamp
+  query LastBatches($n: Int!) {
+    settlements(orderBy: firstTradeTimestamp, orderDirection: desc, first: $n) {
+      txHash
+      firstTradeTimestamp
+    }
   }
-}
 `
 const variables = { n: 5 }
 const response = await cowSdk.cowSubgraphApi.runQuery(query, variables)
-console.log(response.data.settlements)
+console.log(response)
 ```
 
 ### Install Dependencies
