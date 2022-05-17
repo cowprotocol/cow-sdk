@@ -3,14 +3,16 @@ import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { CowSdk } from '../../CowSdk'
 import { OrderKind, SigningScheme } from '@gnosis.pm/gp-v2-contracts'
 import OperatorError from './errors/OperatorError'
-import { PriceQuoteParams } from '../../utils/price'
-import QuoteError from './errors/QuoteError'
+import { FeeQuoteParams, PriceQuoteParams } from '../../utils/price'
+import QuoteError, { GpQuoteErrorObject } from './errors/QuoteError'
 import { CowError } from '../../utils/common'
-import { OrderCreation, UnsignedOrder } from '../../utils/sign'
+import { OrderCancellation, OrderCreation, UnsignedOrder } from '../../utils/sign'
+import { ZERO_ADDRESS } from '../../constants'
+import { SupportedChainId } from '../../constants/chains'
 
 enableFetchMocks()
 
-const chainId = 4 //Rinkeby
+const chainId = 4 as SupportedChainId //Rinkeby
 
 const signer = ethers.Wallet.createRandom()
 
@@ -18,8 +20,15 @@ const cowSdk = new CowSdk(chainId, { signer })
 
 const HTTP_STATUS_OK = 200
 const HTTP_STATUS_NOT_FOUND = 404
+const HTTP_BAD_REQUEST = 400
 
-const ORDER_RESPONSE = {
+const SIGNED_ORDER_RESPONSE = {
+  signature:
+    '0x4d306ce7c770d22005bcfc00223f8d9aaa04e8a20099cc986cb9ccf60c7e876b777ceafb1e03f359ebc6d3dc84245d111a3df584212b5679cb5f9e6717b69b031b',
+  signingScheme: SigningScheme.EIP712,
+}
+
+const PARTIAL_ORDER = {
   sellToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
   buyToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
   receiver: '0x6810e776880c02933d47db1b9fc05908e5386b96',
@@ -27,15 +36,17 @@ const ORDER_RESPONSE = {
   buyAmount: '1234567890',
   validTo: 0,
   appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
-  feeAmount: '1234567890',
-  kind: 'buy',
   partiallyFillable: true,
   sellTokenBalance: 'erc20',
   buyTokenBalance: 'erc20',
-  signingScheme: 'eip712',
-  signature:
-    '0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
   from: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+  kind: 'buy',
+}
+
+const ORDER_RESPONSE = {
+  ...PARTIAL_ORDER,
+  feeAmount: '1234567890',
+  ...SIGNED_ORDER_RESPONSE,
   creationTime: '2020-12-03T18:35:18.814523Z',
   owner: '0x6810e776880c02933d47db1b9fc05908e5386b96',
   uid: '0x59920c85de0162e9e55df8d396e75f3b6b7c2dfdb535f03e5c807731c31585eaff714b8b0e2700303ec912bd40496c3997ceea2b616d6710',
@@ -47,6 +58,16 @@ const ORDER_RESPONSE = {
   invalidated: true,
   status: 'presignaturePending',
   fullFeeAmount: '1234567890',
+}
+
+const ORDER_CANCELLATION = {
+  chainId,
+  cancellation: {
+    orderUid:
+      '0x59920c85de0162e9e55df8d396e75f3b6b7c2dfdb535f03e5c807731c31585eaff714b8b0e2700303ec912bd40496c3997ceea2b616d6710',
+    ...SIGNED_ORDER_RESPONSE,
+  } as unknown as OrderCancellation,
+  owner: '0x6810e776880c02933d47db1b9fc05908e5386b96',
 }
 
 const TRADE_RESPONSE = {
@@ -76,18 +97,38 @@ const PRICE_QUOTE_RESPONSE = {
   token: '0x6810e776880c02933d47db1b9fc05908e5386b96',
 }
 
+const QUOTE_REQUEST = {
+  ...PARTIAL_ORDER,
+  priceQuality: 'fast',
+  sellAmountBeforeFee: '1234567890',
+  amount: '1234567890',
+  userAddress: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+}
+const QUOTE_RESPONSE = {
+  quote: {
+    sellToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+    buyToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+    receiver: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+    sellAmount: '1234567890',
+    buyAmount: '1234567890',
+    validTo: 0,
+    appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    feeAmount: '1234567890',
+    kind: 'buy',
+    partiallyFillable: true,
+    sellTokenBalance: 'erc20',
+    buyTokenBalance: 'erc20',
+  },
+  from: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+  expirationDate: '1985-03-10T18:35:18.814523Z',
+}
+
 const PROFILE_DATA_RESPONSE = {
   totalTrades: 1,
   totalReferrals: 0,
   tradeVolumeUsd: 24.22795306584268,
   referralVolumeUsd: 0.0,
   lastUpdated: '2022-04-11T15:51:06Z',
-}
-
-const SIGNED_ORDER_RESPONSE = {
-  signature:
-    '0x4d306ce7c770d22005bcfc00223f8d9aaa04e8a20099cc986cb9ccf60c7e876b777ceafb1e03f359ebc6d3dc84245d111a3df584212b5679cb5f9e6717b69b031b',
-  signingScheme: SigningScheme.EIP712,
 }
 
 beforeEach(() => {
@@ -173,6 +214,41 @@ test('Invalid: Get last 5 orders for an unexisting trader ', async () => {
   }
 })
 
+test('Valid: Get tx orders from a given txHash', async () => {
+  const ORDERS_RESPONSE = Array(5).fill(ORDER_RESPONSE)
+  const txHash = '0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5'
+  fetchMock.mockResponseOnce(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK })
+  const txOrders = await cowSdk.cowApi.getTxOrders(txHash)
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(fetchMock).toHaveBeenCalledWith(
+    `https://api.cow.fi/rinkeby/api/v1/transactions/${txHash}/orders`,
+    FETCH_RESPONSE_PARAMETERS
+  )
+  expect(txOrders.length).toEqual(5)
+})
+
+test('Invalid: Get tx orders from an unexisting txHash', async () => {
+  fetchMock.mockResponseOnce(
+    JSON.stringify({
+      errorType: 'NotFound',
+      description: "You've passed an invalid URL",
+    }),
+    { status: HTTP_STATUS_NOT_FOUND }
+  )
+
+  try {
+    await cowSdk.cowApi.getTxOrders('invalidTxHash')
+  } catch (e: unknown) {
+    const error = e as OperatorError
+    expect(error.message).toEqual('Token pair selected has insufficient liquidity')
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.cow.fi/rinkeby/api/v1/transactions/invalidTxHash/orders',
+      FETCH_RESPONSE_PARAMETERS
+    )
+  }
+})
+
 test('Valid: Get last 5 trades for a given trader ', async () => {
   const TRADES_RESPONSE = Array(5).fill(TRADE_RESPONSE)
   fetchMock.mockResponseOnce(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK })
@@ -215,6 +291,30 @@ test('Invalid: Get last 5 trades for an unexisting trader ', async () => {
   }
 })
 
+test('Valid: Get Price Quote from partial order', async () => {
+  fetchMock.mockResponseOnce(JSON.stringify(QUOTE_RESPONSE), { status: HTTP_STATUS_OK })
+  const quote = await cowSdk.cowApi.getQuote(QUOTE_REQUEST as FeeQuoteParams)
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/rinkeby/api/v1/quote', {
+    ...FETCH_RESPONSE_PARAMETERS,
+    body: JSON.stringify({
+      kind: 'buy',
+      buyAmountAfterFee: '1234567890',
+      sellToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+      buyToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+      from: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+      receiver: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+      appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      validTo: 0,
+      partiallyFillable: false,
+    }),
+    method: 'POST',
+  })
+  expect(quote?.from).toEqual(QUOTE_RESPONSE.from)
+  expect(quote?.quote.buyToken).toEqual(QUOTE_RESPONSE.quote.buyToken)
+  expect(quote?.quote.sellToken).toEqual(QUOTE_RESPONSE.quote.sellToken)
+})
+
 test('Valid: Get Price Quote (Legacy)', async () => {
   fetchMock.mockResponseOnce(JSON.stringify(PRICE_QUOTE_RESPONSE), { status: HTTP_STATUS_OK })
   const price = await cowSdk.cowApi.getPriceQuoteLegacy({
@@ -230,6 +330,24 @@ test('Valid: Get Price Quote (Legacy)', async () => {
   )
   expect(price?.amount).toEqual(PRICE_QUOTE_RESPONSE.amount)
   expect(price?.token).toEqual(PRICE_QUOTE_RESPONSE.token)
+})
+
+test('Invalid: Get Price Quote from unexisting partial order', async () => {
+  fetchMock.mockResponseOnce(
+    JSON.stringify({
+      errorType: 'NoLiquidity',
+      description: 'string',
+    }),
+    { status: HTTP_BAD_REQUEST }
+  )
+  try {
+    await cowSdk.cowApi.getQuote({ ...QUOTE_REQUEST, from: ZERO_ADDRESS } as FeeQuoteParams)
+  } catch (e) {
+    const error = e as GpQuoteErrorObject
+
+    expect(error.description).toEqual('Token pair selected has insufficient liquidity')
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  }
 })
 
 test('Invalid: Get Price Quote (Legacy) with unexisting token', async () => {
@@ -256,6 +374,23 @@ test('Invalid: Get Price Quote (Legacy) with unexisting token', async () => {
       FETCH_RESPONSE_PARAMETERS
     )
   }
+})
+
+test('Valid: Get Price Quote', async () => {
+  fetchMock.mockResponseOnce(JSON.stringify(PRICE_QUOTE_RESPONSE), { status: HTTP_STATUS_OK })
+  const price = await cowSdk.cowApi.getPriceQuoteLegacy({
+    baseToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+    quoteToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+    amount: '1234567890',
+    kind: OrderKind.BUY,
+  } as PriceQuoteParams)
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(fetchMock).toHaveBeenCalledWith(
+    'https://api.cow.fi/rinkeby/api/v1/markets/0x6810e776880c02933d47db1b9fc05908e5386b96-0x6810e776880c02933d47db1b9fc05908e5386b96/buy/1234567890',
+    FETCH_RESPONSE_PARAMETERS
+  )
+  expect(price?.amount).toEqual(PRICE_QUOTE_RESPONSE.amount)
+  expect(price?.token).toEqual(PRICE_QUOTE_RESPONSE.token)
 })
 
 test('Valid: Get Profile Data', async () => {
@@ -317,6 +452,45 @@ test('Valid: Sign Order', async () => {
   const signedOrder = await cowSdk.signOrder(order)
   expect(signedOrder.signature).not.toBeNull()
   expect(signedOrder.signingScheme).not.toBeNull()
+})
+
+test('Valid: Send sign order cancellation', async () => {
+  fetchMock.mockResponseOnce(JSON.stringify(SIGNED_ORDER_RESPONSE), { status: HTTP_STATUS_OK })
+  await cowSdk.cowApi.sendSignedOrderCancellation(ORDER_CANCELLATION)
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(fetchMock).toHaveBeenCalledWith(
+    `https://api.cow.fi/rinkeby/api/v1/orders/${ORDER_CANCELLATION.cancellation.orderUid}`,
+    {
+      ...FETCH_RESPONSE_PARAMETERS,
+      body: JSON.stringify({ ...SIGNED_ORDER_RESPONSE, signingScheme: 'eip712', from: ORDER_CANCELLATION.owner }),
+      method: 'DELETE',
+    }
+  )
+})
+
+test('Invalid: Send sign not found order cancellation', async () => {
+  fetchMock.mockResponseOnce(
+    JSON.stringify({
+      errorType: 'NotFound',
+      description: "You've passed an invalid URL",
+    }),
+    { status: HTTP_STATUS_NOT_FOUND }
+  )
+  try {
+    await cowSdk.cowApi.sendSignedOrderCancellation({
+      ...ORDER_CANCELLATION,
+      cancellation: { ...ORDER_CANCELLATION.cancellation, orderUid: 'unexistingOrder' },
+    })
+  } catch (e) {
+    const error = e as CowError
+    expect(error.message).toEqual('Token pair selected has insufficient liquidity')
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/rinkeby/api/v1/orders/unexistingOrder', {
+      ...FETCH_RESPONSE_PARAMETERS,
+      body: JSON.stringify({ ...SIGNED_ORDER_RESPONSE, signingScheme: 'eip712', from: ORDER_CANCELLATION.owner }),
+      method: 'DELETE',
+    })
+  }
 })
 
 test('Valid: Sign cancellation Order', async () => {
