@@ -5,6 +5,11 @@ const VALID_RESULT = {
   result: true,
 }
 
+const BASE_DOCUMENT = {
+  version: '0.1.0',
+  metadata: {},
+}
+
 const INVALID_CID_LENGTH = 'Incorrect length'
 
 beforeEach(() => {
@@ -12,10 +17,7 @@ beforeEach(() => {
 })
 
 test('Valid minimal document', async () => {
-  const validation = await validateAppDataDocument({
-    version: '0.1.0',
-    metadata: {},
-  })
+  const validation = await validateAppDataDocument(BASE_DOCUMENT)
   expect(validation).toEqual(VALID_RESULT)
 })
 
@@ -111,4 +113,32 @@ test('Valid IPFS appData from CID', async () => {
   const validation = await validateAppDataDocument(appDataDocument)
 
   expect(validation).toEqual(VALID_RESULT)
+})
+
+test('Valid: quote metadata - minimal', async () => {
+  const document = {...BASE_DOCUMENT, metadata: {quote: {sellAmount: '1', buyAmount: '1'}}}
+  const validation = await validateAppDataDocument(document)
+
+  expect(validation).toEqual(VALID_RESULT)
+})
+
+test('Valid: quote metadata - with all fields', async () => {
+  const document = {...BASE_DOCUMENT, metadata: {quote: {sellAmount: '1', buyAmount: '1', id: 'S09D8ZFAX'}}}
+  const validation = await validateAppDataDocument(document)
+
+  expect(validation).toEqual(VALID_RESULT)
+})
+
+test('Invalid: quote metadata - missing fields', async () => {
+  const document = {...BASE_DOCUMENT, metadata: {quote: {}}}
+  const validation = await validateAppDataDocument(document)
+
+  expect(validation.result).toBeFalsy()
+})
+
+test('Invalid: quote metadata - wrong type', async () => {
+  const document = {...BASE_DOCUMENT, metadata: {quote: {sellAmount: 312, buyAmount: '0xbab3'}}}
+  const validation = await validateAppDataDocument(document)
+
+  expect(validation.result).toBeFalsy()
 })
