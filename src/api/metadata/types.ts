@@ -6,8 +6,15 @@ export interface ReferralMetadata extends Metadata {
   address: string
 }
 
+export interface QuoteMetadata extends Metadata {
+  id?: string
+  sellAmount: string
+  buyAmount: string
+}
+
 export type MetadataDoc = {
   referrer?: ReferralMetadata
+  quote?: QuoteMetadata
 }
 
 export type AppDataDoc = {
