@@ -106,6 +106,7 @@ const QUOTE_REQUEST = {
 }
 const QUOTE_RESPONSE = {
   quote: {
+    kind: 'buy',
     sellToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
     buyToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
     receiver: '0x6810e776880c02933d47db1b9fc05908e5386b96',
@@ -114,8 +115,7 @@ const QUOTE_RESPONSE = {
     validTo: 0,
     appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
     feeAmount: '1234567890',
-    kind: 'buy',
-    partiallyFillable: true,
+    partiallyFillable: false,
     sellTokenBalance: 'erc20',
     buyTokenBalance: 'erc20',
   },
@@ -294,22 +294,24 @@ test('Invalid: Get last 5 trades for an unexisting trader ', async () => {
 test('Valid: Get Price Quote from partial order', async () => {
   fetchMock.mockResponseOnce(JSON.stringify(QUOTE_RESPONSE), { status: HTTP_STATUS_OK })
   const quote = await cowSdk.cowApi.getQuote(QUOTE_REQUEST as FeeQuoteParams)
+  const { kind, sellToken, buyToken, receiver, validTo, appData, partiallyFillable } = QUOTE_RESPONSE.quote
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/rinkeby/api/v1/quote', {
     ...FETCH_RESPONSE_PARAMETERS,
     body: JSON.stringify({
-      kind: 'buy',
+      kind,
       buyAmountAfterFee: '1234567890',
-      sellToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-      buyToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-      from: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-      receiver: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-      appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
-      validTo: 0,
-      partiallyFillable: false,
+      sellToken,
+      buyToken,
+      from: QUOTE_RESPONSE.from,
+      receiver,
+      appData,
+      validTo,
+      partiallyFillable,
     }),
     method: 'POST',
   })
+
   expect(quote?.from).toEqual(QUOTE_RESPONSE.from)
   expect(quote?.quote.buyToken).toEqual(QUOTE_RESPONSE.quote.buyToken)
   expect(quote?.quote.sellToken).toEqual(QUOTE_RESPONSE.quote.sellToken)
