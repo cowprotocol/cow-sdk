@@ -323,6 +323,8 @@ export type Order = {
   id: Scalars['ID'];
   /** block's timestamp on invalidate event */
   invalidateTimestamp?: Maybe<Scalars['BigInt']>;
+  /** Boolean value to show if the order is signed */
+  isSigned: Scalars['Boolean'];
   /** Boolean value true by default unless is invalidated by the event */
   isValid: Scalars['Boolean'];
   /** Trade's owner or presign User */
@@ -369,6 +371,10 @@ export type Order_Filter = {
   invalidateTimestamp_lte?: InputMaybe<Scalars['BigInt']>;
   invalidateTimestamp_not?: InputMaybe<Scalars['BigInt']>;
   invalidateTimestamp_not_in?: InputMaybe<Array<Scalars['BigInt']>>;
+  isSigned?: InputMaybe<Scalars['Boolean']>;
+  isSigned_in?: InputMaybe<Array<Scalars['Boolean']>>;
+  isSigned_not?: InputMaybe<Scalars['Boolean']>;
+  isSigned_not_in?: InputMaybe<Array<Scalars['Boolean']>>;
   isValid?: InputMaybe<Scalars['Boolean']>;
   isValid_in?: InputMaybe<Array<Scalars['Boolean']>>;
   isValid_not?: InputMaybe<Scalars['Boolean']>;
@@ -414,6 +420,7 @@ export type Order_Filter = {
 export enum Order_OrderBy {
   Id = 'id',
   InvalidateTimestamp = 'invalidateTimestamp',
+  IsSigned = 'isSigned',
   IsValid = 'isValid',
   Owner = 'owner',
   PresignTimestamp = 'presignTimestamp',
@@ -423,13 +430,19 @@ export enum Order_OrderBy {
 
 export type Pair = {
   __typename?: 'Pair';
-  /** token0-token1 sorted by token0 < token1 */
+  /** Token0-token1 sorted by token0 < token1 */
   id: Scalars['ID'];
+  /** The token 0 address lower than token1 */
   token0: Token;
+  /** The token 1 address greater than token0 */
   token1: Token;
+  /** Total volume of token 0 traded */
   volumeToken0?: Maybe<Scalars['BigInt']>;
+  /** Total volume of token 1 traded */
   volumeToken1?: Maybe<Scalars['BigInt']>;
+  /** Total volume in Eth */
   volumeTradedEth?: Maybe<Scalars['BigDecimal']>;
+  /** Total volume in Usd */
   volumeTradedUsd?: Maybe<Scalars['BigDecimal']>;
 };
 
@@ -437,12 +450,19 @@ export type PairDaily = {
   __typename?: 'PairDaily';
   /** token0-token1-timestamp sorted by token0 < token1 */
   id: Scalars['ID'];
+  /** Start day timestamp */
   timestamp?: Maybe<Scalars['BigInt']>;
+  /** The token 0 address lower than token1 */
   token0: Token;
+  /** The token 1 address greater than token0 */
   token1: Token;
+  /** Total volume of token 0 traded */
   volumeToken0?: Maybe<Scalars['BigInt']>;
+  /** Total volume of token 1 traded */
   volumeToken1?: Maybe<Scalars['BigInt']>;
+  /** Total volume in Eth */
   volumeTradedEth?: Maybe<Scalars['BigDecimal']>;
+  /** Total volume in Usd */
   volumeTradedUsd?: Maybe<Scalars['BigDecimal']>;
 };
 
@@ -554,12 +574,19 @@ export type PairHourly = {
   __typename?: 'PairHourly';
   /** token0-token1-timestamp sorted by token0 < token1 */
   id: Scalars['ID'];
+  /** Start hour timestamp */
   timestamp?: Maybe<Scalars['BigInt']>;
+  /** The token 0 address lower than token1 */
   token0: Token;
+  /** The token 1 address greater than token0 */
   token1: Token;
+  /** Total volume of token 0 traded */
   volumeToken0?: Maybe<Scalars['BigInt']>;
+  /** Total volume of token 1 traded */
   volumeToken1?: Maybe<Scalars['BigInt']>;
+  /** Total volume in Eth */
   volumeTradedEth?: Maybe<Scalars['BigDecimal']>;
+  /** Total volume in Usd */
   volumeTradedUsd?: Maybe<Scalars['BigDecimal']>;
 };
 
@@ -2589,8 +2616,8 @@ export type User = {
   firstTradeTimestamp?: Maybe<Scalars['BigInt']>;
   /** Trade event order owner */
   id: Scalars['ID'];
-  /** Is a solver */
-  isSolver?: Maybe<Scalars['Boolean']>;
+  /** Determine if user has solved a settlement */
+  isSolver: Scalars['Boolean'];
   /** Solved trades */
   numberOfTrades: Scalars['Int'];
   /** List of orders placed by this user */
