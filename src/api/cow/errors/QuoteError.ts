@@ -5,7 +5,7 @@ import { ApiErrorCodes, ApiErrorObject } from './OperatorError'
 export interface GpQuoteErrorObject {
   errorType: GpQuoteErrorCodes
   description: string
-  data?: any
+  data?: unknown
 }
 
 // Conforms to backend API
@@ -61,7 +61,7 @@ export default class GpQuoteError extends CowError {
   name = 'QuoteErrorObject'
   description: string
   // any data attached
-  data?: any
+  data?: unknown
 
   // Status 400 errors
   // https://github.com/gnosis/gp-v2-services/blob/9014ae55412a356e46343e051aefeb683cc69c41/orderbook/openapi.yml#L563
@@ -110,6 +110,6 @@ export default class GpQuoteError extends CowError {
   }
 }
 
-export function isValidQuoteError(error: any): error is GpQuoteError {
+export function isValidQuoteError(error: unknown): error is GpQuoteError {
   return error instanceof GpQuoteError
 }

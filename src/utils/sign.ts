@@ -127,15 +127,16 @@ async function _signOrderCancellation(params: SingOrderCancellationParams): Prom
   return signOrderCancellationGp(domain, orderId, signer, getSigningSchemeLibValue(signingScheme))
 }
 
-export type SigningResult = { signature: string; signingScheme: SigningScheme }
+export type SigningResult = { signature?: string; signingScheme: SigningScheme }
 
 async function _signPayload(
-  payload: any,
-  signFn: typeof _signOrder | typeof _signOrderCancellation,
+  payload: Pick<SignOrderParams, 'order' & 'chainId'> | Pick<SingOrderCancellationParams, 'chainId' & 'orderId'>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  signFn: (params: any) => Promise<Signature>,
   signer: Signer,
   signingMethod: 'v4' | 'int_v4' | 'v3' | 'eth_sign' = 'v4'
 ): Promise<SigningResult> {
-  const signingScheme = signingMethod === 'eth_sign' ? SigningScheme.ETHSIGN : SigningScheme.EIP712
+  const signingScheme: SigningScheme = signingMethod === 'eth_sign' ? SigningScheme.ETHSIGN : SigningScheme.EIP712
   let signature: Signature | null = null
 
   let _signer
@@ -194,7 +195,7 @@ async function _signPayload(
       return _signPayload(payload, signFn, signer, 'eth_sign')
     }
   }
-  return { signature: signature!.data.toString(), signingScheme }
+  return { signature: signature?.data.toString(), signingScheme }
 }
 /**
  * Returns the signature for the specified order with the signing scheme encoded

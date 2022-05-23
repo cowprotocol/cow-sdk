@@ -64,7 +64,7 @@ const UNHANDLED_ORDER_ERROR: ApiErrorObject = {
   description: ApiErrorCodeDetails.UNHANDLED_CREATE_ERROR,
 }
 
-async function _handleQuoteResponse<T = any, P extends QuoteQuery = QuoteQuery>(
+async function _handleQuoteResponse<T = unknown, P extends QuoteQuery = QuoteQuery>(
   response: Response,
   params?: P
 ): Promise<T> {
@@ -337,7 +337,7 @@ export class CowApi {
     }
   }
 
-  private async fetch(url: string, method: 'GET' | 'POST' | 'DELETE', data?: any): Promise<Response> {
+  private async fetch(url: string, method: 'GET' | 'POST' | 'DELETE', data?: unknown): Promise<Response> {
     const baseUrl = await this.getApiBaseUrl()
     return fetch(baseUrl + url, {
       headers: this.DEFAULT_HEADERS,
@@ -346,7 +346,7 @@ export class CowApi {
     })
   }
 
-  private async fetchProfile(url: string, method: 'GET' | 'POST' | 'DELETE', data?: any): Promise<Response> {
+  private async fetchProfile(url: string, method: 'GET' | 'POST' | 'DELETE', data?: unknown): Promise<Response> {
     const baseUrl = await this.getProfileApiBaseUrl()
     return fetch(baseUrl + url, {
       headers: this.DEFAULT_HEADERS,
@@ -355,7 +355,7 @@ export class CowApi {
     })
   }
 
-  private post(url: string, data: any): Promise<Response> {
+  private post(url: string, data: unknown): Promise<Response> {
     return this.fetch(url, 'POST', data)
   }
 
@@ -367,7 +367,7 @@ export class CowApi {
     return this.fetchProfile(url, 'GET')
   }
 
-  private delete(url: string, data: any): Promise<Response> {
+  private delete(url: string, data: unknown): Promise<Response> {
     return this.fetch(url, 'DELETE', data)
   }
 }
