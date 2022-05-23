@@ -26,6 +26,8 @@ import {
 import { CowError, logPrefix, objectToQueryString } from '../../utils/common'
 import { Context } from '../../utils/context'
 
+export { OperatorError, QuoteError }
+
 function getGnosisProtocolUrl(isDev: boolean): Partial<Record<ChainId, string>> {
   if (isDev) {
     return {
