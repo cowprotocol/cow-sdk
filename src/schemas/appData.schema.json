@@ -30,6 +30,9 @@
       "properties": {
         "referrer": {
           "$ref": "#/definitions/kindMetadata/referrer"
+        },
+        "quote": {
+          "$ref": "#/definitions/kindMetadata/quote"
         }
       }
     }
@@ -49,6 +52,13 @@
       "examples": ["0xb6BAd41ae76A11D10f7b0E664C5007b908bC77C9"],
       "type": "string"
     },
+    "bigNumber": {
+      "$id": "#/definitions/bigNumber",
+      "pattern": "\\d+",
+      "title": "BigNumber",
+      "examples": ["90741097240912730913, 0, 75891372"],
+      "type": "string"
+    },
     "kindMetadata": {
       "referrer": {
         "$id": "#/definitions/referrer",
@@ -62,6 +72,28 @@
           "address": {
             "$ref": "#/definitions/ethereumAddress",
             "title": "Referrer address"
+          }
+        }
+      },
+      "quote": {
+        "$id": "#/definitions/quote",
+        "required": ["sellAmount", "buyAmount"],
+        "title": "Quote",
+        "type": "object",
+        "properties": {
+          "id": {
+            "$id": "#/definitions/quote/id",
+            "title": "Quote id",
+            "examples": ["XA23443543534FF"],
+            "type": "string"
+          },
+          "sellAmount": {
+            "$ref": "#/definitions/bigNumber",
+            "title": "Quote sell amount"
+          },
+          "buyAmount": {
+            "$ref": "#/definitions/bigNumber",
+            "title": "Quote buy amount"
           }
         }
       }
