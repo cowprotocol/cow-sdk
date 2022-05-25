@@ -11,7 +11,7 @@ import QuoteError, {
   GpQuoteErrorDetails,
 } from './errors/QuoteError'
 import { toErc20Address } from '../../utils/tokens'
-import { FeeQuoteParams, PriceInformation, PriceQuoteParams, SimpleGetQuoteResponse } from '../../utils/price'
+import { FeeQuoteParams, PriceInformation, PriceQuoteParams, SimpleGetQuoteResponse } from './types'
 
 import { ZERO_ADDRESS } from '../../constants'
 import {
