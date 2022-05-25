@@ -80,3 +80,12 @@ export type ProfileData = {
   referralVolumeUsd: number
   lastUpdated: string
 }
+
+export {
+  FeeQuoteParams,
+  PriceQuoteParams,
+  QuoteParams,
+  FeeInformation,
+  PriceInformation,
+  SimpleGetQuoteResponse,
+} from '../../utils/price'
