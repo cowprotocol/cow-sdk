@@ -12,7 +12,7 @@ const HTTP_STATUS_OK = 200
 const HTTP_STATUS_INTERNAL_ERROR = 500
 
 const DEFAULT_APP_DATA_DOC = {
-  version: '0.1.0',
+  version: '0.2.0',
   appCode: 'CowSwap',
   metadata: {},
 }
