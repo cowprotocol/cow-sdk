@@ -166,12 +166,16 @@ const appDataDoc = cowSdk.metadataApi.generateAppDataDoc(
     } 
 */
 
+// Calculate appDataHash (and cidV0) for given doc without uploading to IPFS
+// This operation is deterministic and can be used to know before the upload the actual hash
+const { appDataHash, cidv0 } = await cowSdk.metadataApi.calculateAppDataHash(appDataDoc)
+
 // Upload AppDataDoc to IPFS (Pinata)
 const cowSdk = new CowSdk(4, {
   ipfs: { pinataApiKey: 'YOUR_PINATA_API_KEY', pinataApiSecret: 'YOUR_PINATA_API_SECRET' },
 })
 
-await cowSdk.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
+const uploadedAppDataHash = await cowSdk.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
 /* 0x5ddb2c8207c10b96fac92cb934ef9ba004bc007a073c9e5b13edc422f209ed80 */
 ```
 
