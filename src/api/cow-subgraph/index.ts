@@ -1,6 +1,7 @@
 import log from 'loglevel'
 import fetch from 'cross-fetch'
 import { GraphQLClient, Variables } from 'graphql-request'
+import { DocumentNode } from 'graphql'
 import { CowError } from '../../utils/common'
 import { Context } from '../../utils/context'
 import { SupportedChainId as ChainId } from '../../constants/chains'
@@ -56,7 +57,7 @@ export class CowSubgraphApi {
     return this.runQuery<LastHoursVolumeQuery>(LAST_HOURS_VOLUME_QUERY, { hours })
   }
 
-  async runQuery<T>(query: string, variables?: Variables): Promise<T> {
+  async runQuery<T>(query: string | DocumentNode, variables?: Variables): Promise<T> {
     try {
       const chainId = await this.context.chainId
       const client = this.clients[chainId]
