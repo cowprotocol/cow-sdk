@@ -7,7 +7,7 @@ export class CowError extends Error {
   }
 }
 
-export function objectToQueryString(o: any): string {
+export function objectToQueryString(o: { [key: string]: string | number | undefined }): string {
   if (!o) {
     return ''
   }
@@ -17,7 +17,7 @@ export function objectToQueryString(o: any): string {
   for (const key of Object.keys(o)) {
     const value = o[key]
     if (value) {
-      qs.append(key, value)
+      qs.append(key, value.toString())
     }
   }
 

@@ -102,8 +102,9 @@ test('Invalid: serialized appData CID format ', async () => {
   const invalidHash = '0xa6c81f4ca727252a05b108f1742'
   try {
     await getSerializedCID(invalidHash)
-  } catch (e: any) {
-    expect(e.message).toEqual(INVALID_CID_LENGTH)
+  } catch (e: unknown) {
+    const error = e as Error
+    expect(error.message).toEqual(INVALID_CID_LENGTH)
   }
 })
 

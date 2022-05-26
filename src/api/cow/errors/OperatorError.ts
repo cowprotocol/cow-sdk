@@ -6,7 +6,7 @@ type ApiActionType = 'get' | 'create' | 'delete'
 export interface ApiErrorObject {
   errorType: ApiErrorCodes
   description: string
-  data?: any
+  data?: unknown
 }
 
 // Conforms to backend API
@@ -137,6 +137,6 @@ export default class OperatorError extends CowError {
   }
 }
 
-export function isValidOperatorError(error: any): error is OperatorError {
+export function isValidOperatorError(error: unknown): error is OperatorError {
   return error instanceof OperatorError
 }
