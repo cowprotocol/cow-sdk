@@ -10,6 +10,9 @@
     "noEmit": true,
     "forceConsistentCasingInFileNames": true,
     "noUnusedLocals": true,
+    "paths": {
+      "*": ["./src/types/*"]
+    }
   },
   "exclude": [
     "dist"

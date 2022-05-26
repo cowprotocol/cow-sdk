@@ -1,4 +1,4 @@
-import Ajv, { ErrorObject, ValidateFunction } from 'ajv'
+import Ajv, { ValidateFunction } from 'ajv'
 import { fromHexString } from './common'
 import { DEFAULT_IPFS_GATEWAY_URI } from '../constants'
 import { AppDataDoc } from '../types'
@@ -8,7 +8,7 @@ let ajv: Ajv
 
 interface ValidationResult {
   result: boolean
-  errors?: ErrorObject[]
+  errors?: string
 }
 
 async function getValidator(): Promise<{ ajv: Ajv; validate: ValidateFunction }> {
@@ -53,6 +53,6 @@ export async function validateAppDataDocument(appDataDocument: unknown): Promise
 
   return {
     result,
-    errors: ajv.errors ?? undefined,
+    errors: ajv.errors ? ajv.errorsText(ajv.errors) : undefined,
   }
 }

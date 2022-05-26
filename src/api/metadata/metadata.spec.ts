@@ -17,6 +17,10 @@ const DEFAULT_APP_DATA_DOC = {
   metadata: {},
 }
 
+const IPFS_HASH = 'QmWtoqEQKSUvwUqnCEyoLeJ5SfnCzPhWerVDXjBBjjnj9t'
+
+const APP_DATA_HEX = '0x7f1a65839d8801753d270a067c6cfaface303af6506531f3362a3001f25bb153'
+
 const CUSTOM_APP_DATA_DOC = {
   ...DEFAULT_APP_DATA_DOC,
   metadata: {
@@ -26,10 +30,6 @@ const CUSTOM_APP_DATA_DOC = {
     },
   },
 }
-
-const IPFS_HASH = 'QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs'
-
-const APP_DATA_HEX = '0x5ddb2c8207c10b96fac92cb934ef9ba004bc007a073c9e5b13edc422f209ed80'
 
 beforeEach(() => {
   fetchMock.resetMocks()
@@ -92,9 +92,7 @@ test('Valid: Decode appData ', async () => {
   const appDataDoc = await cowSdk.metadataApi.decodeAppData(APP_DATA_HEX)
 
   expect(fetchMock).toHaveBeenCalledTimes(1)
-  expect(fetchMock).toHaveBeenCalledWith(
-    'https://gnosis.mypinata.cloud/ipfs/QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs'
-  )
+  expect(fetchMock).toHaveBeenCalledWith(`https://gnosis.mypinata.cloud/ipfs/${IPFS_HASH}`)
   expect(appDataDoc?.version).toEqual(CUSTOM_APP_DATA_DOC.version)
   expect(appDataDoc?.appCode).toEqual(CUSTOM_APP_DATA_DOC.appCode)
   expect(appDataDoc?.metadata.referrer?.address).toEqual(CUSTOM_APP_DATA_DOC.metadata.referrer.address)
@@ -123,4 +121,31 @@ test('Invalid: AppData to CID with wrong format ', async () => {
     const error = e as CowError
     expect(error.message).toEqual('Incorrect length')
   }
+})
+
+test('Valid: pre-calculated CIDv0 and appDataHash', async () => {
+  const result = await cowSdk.metadataApi.calculateAppDataHash(DEFAULT_APP_DATA_DOC)
+
+  expect(result).not.toBeFalsy()
+  expect(result).toEqual({ cidV0: IPFS_HASH, appDataHash: APP_DATA_HEX })
+})
+
+test('Invalid: pre-calculated CIDv0 not valid appDoc', async () => {
+  const doc = {
+    ...DEFAULT_APP_DATA_DOC,
+    metadata: { quote: { sellAmount: 'fsdfas', buyAmount: '41231', version: '0.1.0' } },
+  }
+
+  await expect(cowSdk.metadataApi.calculateAppDataHash(doc)).rejects.toThrow('Invalid appData provided')
+})
+
+test('Invalid: Could not derive a the appDataHash', async () => {
+  const mock = jest.fn()
+  cowSdk.metadataApi.cidToAppDataHex = mock
+
+  await expect(cowSdk.metadataApi.calculateAppDataHash(DEFAULT_APP_DATA_DOC)).rejects.toThrow(
+    'Failed to calculate appDataHash'
+  )
+  expect(mock).toBeCalledTimes(1)
+  expect(mock).toHaveBeenCalledWith(IPFS_HASH)
 })
