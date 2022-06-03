@@ -1,6 +1,7 @@
 import { CowError } from './common'
 import { Ipfs } from './context'
 import { AppDataDoc } from '../api/metadata/types'
+import { DEFAULT_IPFS_WRITE_URI } from '../constants'
 
 type PinataPinResponse = {
   IpfsHash: string
@@ -10,7 +11,7 @@ type PinataPinResponse = {
 
 export async function pinJSONToIPFS(
   file: unknown,
-  { uri, pinataApiKey = '', pinataApiSecret = '' }: Ipfs
+  { writeUri = DEFAULT_IPFS_WRITE_URI, pinataApiKey = '', pinataApiSecret = '' }: Ipfs
 ): Promise<PinataPinResponse> {
   const { default: fetch } = await import('cross-fetch')
 
@@ -23,7 +24,7 @@ export async function pinJSONToIPFS(
     pinataMetadata: { name: 'appData-affiliate' },
   })
 
-  const pinataUrl = `${uri}/pinning/pinJSONToIPFS`
+  const pinataUrl = `${writeUri}/pinning/pinJSONToIPFS`
 
   const response = await fetch(pinataUrl, {
     method: 'POST',

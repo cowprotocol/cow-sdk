@@ -13,4 +13,5 @@ export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export const DEFAULT_APP_DATA_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000'
 
-export const DEFAULT_IPFS_GATEWAY_URI = 'https://gnosis.mypinata.cloud/ipfs'
+export const DEFAULT_IPFS_READ_URI = 'https://gnosis.mypinata.cloud/ipfs'
+export const DEFAULT_IPFS_WRITE_URI = 'https://api.pinata.cloud'
