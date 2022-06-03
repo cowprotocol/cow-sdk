@@ -21,7 +21,7 @@ export async function pinJSONToIPFS(
 
   const body = JSON.stringify({
     pinataContent: file,
-    pinataMetadata: { name: 'appData-affiliate' },
+    pinataMetadata: { name: 'appData' },
   })
 
   const pinataUrl = `${writeUri}/pinning/pinJSONToIPFS`
