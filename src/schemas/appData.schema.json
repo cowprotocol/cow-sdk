@@ -77,7 +77,7 @@
       },
       "quote": {
         "$id": "#/definitions/quote",
-        "required": ["sellAmount", "buyAmount"],
+        "required": ["sellAmount", "buyAmount", "version"],
         "title": "Quote",
         "type": "object",
         "properties": {
@@ -94,6 +94,9 @@
           "buyAmount": {
             "$ref": "#/definitions/bigNumber",
             "title": "Quote buy amount"
+          },
+          "version": {
+            "$ref": "#/definitions/version"
           }
         }
       }

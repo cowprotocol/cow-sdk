@@ -117,14 +117,17 @@ test('Valid IPFS appData from CID', async () => {
 })
 
 test('Valid: quote metadata - minimal', async () => {
-  const document = { ...BASE_DOCUMENT, metadata: { quote: { sellAmount: '1', buyAmount: '1' } } }
+  const document = { ...BASE_DOCUMENT, metadata: { quote: { sellAmount: '1', buyAmount: '1', version: '0.1.0' } } }
   const validation = await validateAppDataDocument(document)
 
   expect(validation).toEqual(VALID_RESULT)
 })
 
 test('Valid: quote metadata - with all fields', async () => {
-  const document = { ...BASE_DOCUMENT, metadata: { quote: { sellAmount: '1', buyAmount: '1', id: 'S09D8ZFAX' } } }
+  const document = {
+    ...BASE_DOCUMENT,
+    metadata: { quote: { sellAmount: '1', buyAmount: '1', id: 'S09D8ZFAX', version: '0.1.0' } },
+  }
   const validation = await validateAppDataDocument(document)
 
   expect(validation).toEqual(VALID_RESULT)
