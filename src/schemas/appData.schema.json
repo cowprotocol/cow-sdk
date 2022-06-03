@@ -33,6 +33,9 @@
         },
         "quote": {
           "$ref": "#/definitions/kindMetadata/quote"
+        },
+        "environment": {
+          "$ref": "#/definitions/kindMetadata/environment"
         }
       }
     }
@@ -97,6 +100,23 @@
           },
           "version": {
             "$ref": "#/definitions/version"
+          }
+        }
+      },
+      "environment": {
+        "$id": "#/definitions/environment",
+        "required": ["version", "name"],
+        "title": "Referrer",
+        "type": "object",
+        "properties": {
+          "version": {
+            "$ref": "#/definitions/version"
+          },
+          "name": {
+            "$id": "#/definitions/environment/name",
+            "title": "Environment name",
+            "examples": ["production", "development", "staging", "ens"],
+            "type": "string"
           }
         }
       }

@@ -12,9 +12,14 @@ export interface QuoteMetadata extends Metadata {
   buyAmount: string
 }
 
+export interface EnvironmentMetadata extends Metadata {
+  name: string
+}
+
 export type MetadataDoc = {
   referrer?: ReferralMetadata
   quote?: QuoteMetadata
+  environment?: EnvironmentMetadata
 }
 
 export type AppDataDoc = {
