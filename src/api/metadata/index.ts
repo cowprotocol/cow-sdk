@@ -6,7 +6,7 @@ import { AppDataDoc, IpfsHashInfo, MetadataDoc } from './types'
 import { CowError } from '../../utils/common'
 
 const DEFAULT_APP_CODE = 'CowSwap'
-const DEFAULT_APP_VERSION = '0.2.0'
+const DEFAULT_APP_VERSION = '0.3.0'
 
 export class MetadataApi {
   context: Context
