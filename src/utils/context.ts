@@ -43,7 +43,14 @@ export class Context implements Partial<CowContext> {
 
   constructor(chainId: ChainId, context: CowContext) {
     this.#chainId = this.updateChainId(chainId)
-    this.#context = { ...DefaultCowContext, ...context }
+    this.#context = {
+      ...DefaultCowContext,
+      ...context,
+      ipfs: {
+        ...DefaultCowContext.ipfs,
+        ...context.ipfs,
+      },
+    }
   }
 
   updateChainId(chainId: ChainId) {
