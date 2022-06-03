@@ -346,7 +346,7 @@ export type Order = {
   /** block's timestamp on invalidate event */
   invalidateTimestamp?: Maybe<Scalars['Int']>;
   /** Boolean value to show if the order is signed */
-  isSigned: Scalars['Boolean'];
+  isSigned?: Maybe<Scalars['Boolean']>;
   /** Boolean value true by default unless is invalidated by the event */
   isValid?: Maybe<Scalars['Boolean']>;
   /** Trade's owner or presign User */
@@ -845,6 +845,8 @@ export type Query = {
   trades: Array<Trade>;
   uniswapPool?: Maybe<UniswapPool>;
   uniswapPools: Array<UniswapPool>;
+  uniswapToken?: Maybe<UniswapToken>;
+  uniswapTokens: Array<UniswapToken>;
   user?: Maybe<User>;
   users: Array<User>;
 };
@@ -1125,6 +1127,24 @@ export type QueryUniswapPoolsArgs = {
 };
 
 
+export type QueryUniswapTokenArgs = {
+  block?: InputMaybe<Block_Height>;
+  id: Scalars['ID'];
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+
+export type QueryUniswapTokensArgs = {
+  block?: InputMaybe<Block_Height>;
+  first?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<UniswapToken_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars['Int']>;
+  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<UniswapToken_Filter>;
+};
+
+
 export type QueryUserArgs = {
   block?: InputMaybe<Block_Height>;
   id: Scalars['ID'];
@@ -1254,6 +1274,8 @@ export type Subscription = {
   trades: Array<Trade>;
   uniswapPool?: Maybe<UniswapPool>;
   uniswapPools: Array<UniswapPool>;
+  uniswapToken?: Maybe<UniswapToken>;
+  uniswapTokens: Array<UniswapToken>;
   user?: Maybe<User>;
   users: Array<User>;
 };
@@ -1534,6 +1556,24 @@ export type SubscriptionUniswapPoolsArgs = {
 };
 
 
+export type SubscriptionUniswapTokenArgs = {
+  block?: InputMaybe<Block_Height>;
+  id: Scalars['ID'];
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+
+export type SubscriptionUniswapTokensArgs = {
+  block?: InputMaybe<Block_Height>;
+  first?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<UniswapToken_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars['Int']>;
+  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<UniswapToken_Filter>;
+};
+
+
 export type SubscriptionUserArgs = {
   block?: InputMaybe<Block_Height>;
   id: Scalars['ID'];
@@ -1555,8 +1595,6 @@ export type Token = {
   __typename?: 'Token';
   /** Token address */
   address: Scalars['Bytes'];
-  /** Pools token is in that are allow listed for USD pricing */
-  allowedPools: Array<UniswapPool>;
   /** Token decimals fetched by contract call */
   decimals: Scalars['Int'];
   /** First token trade block timestamp */
@@ -1578,18 +1616,9 @@ export type Token = {
   /** Total volume managed in CowSwap */
   totalVolume?: Maybe<Scalars['BigInt']>;
   /** Total volume in Eth */
-  totalVolumeEth?: Maybe<Scalars['BigDecimal']>;
+  totalVolumeEth: Scalars['BigDecimal'];
   /** Total volume in Usd */
-  totalVolumeUsd?: Maybe<Scalars['BigDecimal']>;
-};
-
-
-export type TokenAllowedPoolsArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-  orderBy?: InputMaybe<UniswapPool_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars['Int']>;
-  where?: InputMaybe<UniswapPool_Filter>;
+  totalVolumeUsd: Scalars['BigDecimal'];
 };
 
 
@@ -2024,12 +2053,6 @@ export type Token_Filter = {
   address_not?: InputMaybe<Scalars['Bytes']>;
   address_not_contains?: InputMaybe<Scalars['Bytes']>;
   address_not_in?: InputMaybe<Array<Scalars['Bytes']>>;
-  allowedPools?: InputMaybe<Array<Scalars['String']>>;
-  allowedPools_contains?: InputMaybe<Array<Scalars['String']>>;
-  allowedPools_contains_nocase?: InputMaybe<Array<Scalars['String']>>;
-  allowedPools_not?: InputMaybe<Array<Scalars['String']>>;
-  allowedPools_not_contains?: InputMaybe<Array<Scalars['String']>>;
-  allowedPools_not_contains_nocase?: InputMaybe<Array<Scalars['String']>>;
   decimals?: InputMaybe<Scalars['Int']>;
   decimals_gt?: InputMaybe<Scalars['Int']>;
   decimals_gte?: InputMaybe<Scalars['Int']>;
@@ -2146,7 +2169,6 @@ export type Token_Filter = {
 
 export enum Token_OrderBy {
   Address = 'address',
-  AllowedPools = 'allowedPools',
   Decimals = 'decimals',
   FirstTradeTimestamp = 'firstTradeTimestamp',
   History = 'history',
@@ -2515,11 +2537,11 @@ export type UniswapPool = {
   /** Current tick */
   tick?: Maybe<Scalars['BigInt']>;
   /** Token0 */
-  token0: Token;
+  token0: UniswapToken;
   /** Token0 per token1 */
   token0Price: Scalars['BigDecimal'];
   /** Token1 */
-  token1: Token;
+  token1: UniswapToken;
   /** Token1 per token0 */
   token1Price: Scalars['BigDecimal'];
   /** Total token 0 across all ticks */
@@ -2639,6 +2661,135 @@ export enum UniswapPool_OrderBy {
   Token1Price = 'token1Price',
   TotalValueLockedToken0 = 'totalValueLockedToken0',
   TotalValueLockedToken1 = 'totalValueLockedToken1'
+}
+
+export type UniswapToken = {
+  __typename?: 'UniswapToken';
+  /** Token address */
+  address: Scalars['Bytes'];
+  /** Pools token is in that are allow listed for USD pricing */
+  allowedPools: Array<UniswapToken>;
+  /** Token decimals fetched by contract call */
+  decimals: Scalars['Int'];
+  /** Token address to hexString */
+  id: Scalars['ID'];
+  /** Token name fetched by ERC20 contract call */
+  name: Scalars['String'];
+  /** Derived price in ETH */
+  priceEth?: Maybe<Scalars['BigDecimal']>;
+  /** Derived price in USD */
+  priceUsd?: Maybe<Scalars['BigDecimal']>;
+  /** Token symbol fetched by contract call */
+  symbol: Scalars['String'];
+};
+
+
+export type UniswapTokenAllowedPoolsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<UniswapToken_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars['Int']>;
+  where?: InputMaybe<UniswapToken_Filter>;
+};
+
+export type UniswapToken_Filter = {
+  /** Filter for the block changed event. */
+  _change_block?: InputMaybe<BlockChangedFilter>;
+  address?: InputMaybe<Scalars['Bytes']>;
+  address_contains?: InputMaybe<Scalars['Bytes']>;
+  address_in?: InputMaybe<Array<Scalars['Bytes']>>;
+  address_not?: InputMaybe<Scalars['Bytes']>;
+  address_not_contains?: InputMaybe<Scalars['Bytes']>;
+  address_not_in?: InputMaybe<Array<Scalars['Bytes']>>;
+  allowedPools?: InputMaybe<Array<Scalars['String']>>;
+  allowedPools_contains?: InputMaybe<Array<Scalars['String']>>;
+  allowedPools_contains_nocase?: InputMaybe<Array<Scalars['String']>>;
+  allowedPools_not?: InputMaybe<Array<Scalars['String']>>;
+  allowedPools_not_contains?: InputMaybe<Array<Scalars['String']>>;
+  allowedPools_not_contains_nocase?: InputMaybe<Array<Scalars['String']>>;
+  decimals?: InputMaybe<Scalars['Int']>;
+  decimals_gt?: InputMaybe<Scalars['Int']>;
+  decimals_gte?: InputMaybe<Scalars['Int']>;
+  decimals_in?: InputMaybe<Array<Scalars['Int']>>;
+  decimals_lt?: InputMaybe<Scalars['Int']>;
+  decimals_lte?: InputMaybe<Scalars['Int']>;
+  decimals_not?: InputMaybe<Scalars['Int']>;
+  decimals_not_in?: InputMaybe<Array<Scalars['Int']>>;
+  id?: InputMaybe<Scalars['ID']>;
+  id_gt?: InputMaybe<Scalars['ID']>;
+  id_gte?: InputMaybe<Scalars['ID']>;
+  id_in?: InputMaybe<Array<Scalars['ID']>>;
+  id_lt?: InputMaybe<Scalars['ID']>;
+  id_lte?: InputMaybe<Scalars['ID']>;
+  id_not?: InputMaybe<Scalars['ID']>;
+  id_not_in?: InputMaybe<Array<Scalars['ID']>>;
+  name?: InputMaybe<Scalars['String']>;
+  name_contains?: InputMaybe<Scalars['String']>;
+  name_contains_nocase?: InputMaybe<Scalars['String']>;
+  name_ends_with?: InputMaybe<Scalars['String']>;
+  name_ends_with_nocase?: InputMaybe<Scalars['String']>;
+  name_gt?: InputMaybe<Scalars['String']>;
+  name_gte?: InputMaybe<Scalars['String']>;
+  name_in?: InputMaybe<Array<Scalars['String']>>;
+  name_lt?: InputMaybe<Scalars['String']>;
+  name_lte?: InputMaybe<Scalars['String']>;
+  name_not?: InputMaybe<Scalars['String']>;
+  name_not_contains?: InputMaybe<Scalars['String']>;
+  name_not_contains_nocase?: InputMaybe<Scalars['String']>;
+  name_not_ends_with?: InputMaybe<Scalars['String']>;
+  name_not_ends_with_nocase?: InputMaybe<Scalars['String']>;
+  name_not_in?: InputMaybe<Array<Scalars['String']>>;
+  name_not_starts_with?: InputMaybe<Scalars['String']>;
+  name_not_starts_with_nocase?: InputMaybe<Scalars['String']>;
+  name_starts_with?: InputMaybe<Scalars['String']>;
+  name_starts_with_nocase?: InputMaybe<Scalars['String']>;
+  priceEth?: InputMaybe<Scalars['BigDecimal']>;
+  priceEth_gt?: InputMaybe<Scalars['BigDecimal']>;
+  priceEth_gte?: InputMaybe<Scalars['BigDecimal']>;
+  priceEth_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  priceEth_lt?: InputMaybe<Scalars['BigDecimal']>;
+  priceEth_lte?: InputMaybe<Scalars['BigDecimal']>;
+  priceEth_not?: InputMaybe<Scalars['BigDecimal']>;
+  priceEth_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  priceUsd?: InputMaybe<Scalars['BigDecimal']>;
+  priceUsd_gt?: InputMaybe<Scalars['BigDecimal']>;
+  priceUsd_gte?: InputMaybe<Scalars['BigDecimal']>;
+  priceUsd_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  priceUsd_lt?: InputMaybe<Scalars['BigDecimal']>;
+  priceUsd_lte?: InputMaybe<Scalars['BigDecimal']>;
+  priceUsd_not?: InputMaybe<Scalars['BigDecimal']>;
+  priceUsd_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  symbol?: InputMaybe<Scalars['String']>;
+  symbol_contains?: InputMaybe<Scalars['String']>;
+  symbol_contains_nocase?: InputMaybe<Scalars['String']>;
+  symbol_ends_with?: InputMaybe<Scalars['String']>;
+  symbol_ends_with_nocase?: InputMaybe<Scalars['String']>;
+  symbol_gt?: InputMaybe<Scalars['String']>;
+  symbol_gte?: InputMaybe<Scalars['String']>;
+  symbol_in?: InputMaybe<Array<Scalars['String']>>;
+  symbol_lt?: InputMaybe<Scalars['String']>;
+  symbol_lte?: InputMaybe<Scalars['String']>;
+  symbol_not?: InputMaybe<Scalars['String']>;
+  symbol_not_contains?: InputMaybe<Scalars['String']>;
+  symbol_not_contains_nocase?: InputMaybe<Scalars['String']>;
+  symbol_not_ends_with?: InputMaybe<Scalars['String']>;
+  symbol_not_ends_with_nocase?: InputMaybe<Scalars['String']>;
+  symbol_not_in?: InputMaybe<Array<Scalars['String']>>;
+  symbol_not_starts_with?: InputMaybe<Scalars['String']>;
+  symbol_not_starts_with_nocase?: InputMaybe<Scalars['String']>;
+  symbol_starts_with?: InputMaybe<Scalars['String']>;
+  symbol_starts_with_nocase?: InputMaybe<Scalars['String']>;
+};
+
+export enum UniswapToken_OrderBy {
+  Address = 'address',
+  AllowedPools = 'allowedPools',
+  Decimals = 'decimals',
+  Id = 'id',
+  Name = 'name',
+  PriceEth = 'priceEth',
+  PriceUsd = 'priceUsd',
+  Symbol = 'symbol'
 }
 
 export type User = {
