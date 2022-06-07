@@ -1,6 +1,7 @@
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { CowSdk } from '../../CowSdk'
 import { CowError } from '../../utils/common'
+import { DEFAULT_IPFS_READ_URI, DEFAULT_IPFS_WRITE_URI } from '../../constants'
 
 enableFetchMocks()
 
@@ -18,7 +19,8 @@ const DEFAULT_APP_DATA_DOC = {
 }
 
 const IPFS_HASH = 'QmWtoqEQKSUvwUqnCEyoLeJ5SfnCzPhWerVDXjBBjjnj9t'
-
+const PINATA_API_KEY = 'apikey'
+const PINATA_API_SECRET = 'apiSecret'
 const APP_DATA_HEX = '0x7f1a65839d8801753d270a067c6cfaface303af6506531f3362a3001f25bb153'
 
 const CUSTOM_APP_DATA_DOC = {
@@ -65,10 +67,19 @@ test('Invalid: Upload to IPFS without passing credentials', async () => {
 test('Valid: Upload AppDataDoc to IPFS', async () => {
   fetchMock.mockResponseOnce(JSON.stringify({ IpfsHash: IPFS_HASH }), { status: HTTP_STATUS_OK })
   const appDataDoc = cowSdk.metadataApi.generateAppDataDoc(CUSTOM_APP_DATA_DOC.metadata)
-  const cowSdk1 = new CowSdk(chainId, { ipfs: { pinataApiKey: 'validApiKey', pinataApiSecret: 'ValidApiSecret' } })
+  const cowSdk1 = new CowSdk(chainId, { ipfs: { pinataApiKey: PINATA_API_KEY, pinataApiSecret: PINATA_API_SECRET } })
   const appDataHex = await cowSdk1.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(appDataHex).toEqual(APP_DATA_HEX)
+  expect(fetchMock).toHaveBeenCalledWith(DEFAULT_IPFS_WRITE_URI + '/pinning/pinJSONToIPFS', {
+    body: JSON.stringify({ pinataContent: appDataDoc, pinataMetadata: { name: 'appData' } }),
+    headers: {
+      'Content-Type': 'application/json',
+      pinata_api_key: PINATA_API_KEY,
+      pinata_secret_api_key: PINATA_API_SECRET,
+    },
+    method: 'POST',
+  })
 })
 
 test('Invalid: Upload AppDataDoc to IPFS with wrong credentials', async () => {
@@ -76,7 +87,7 @@ test('Invalid: Upload AppDataDoc to IPFS with wrong credentials', async () => {
     status: HTTP_STATUS_INTERNAL_ERROR,
   })
   const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({})
-  const cowSdk1 = new CowSdk(chainId, { ipfs: { pinataApiKey: 'InvalidApiKey', pinataApiSecret: 'InvValidApiSecret' } })
+  const cowSdk1 = new CowSdk(chainId, { ipfs: { pinataApiKey: PINATA_API_KEY, pinataApiSecret: PINATA_API_SECRET } })
   try {
     await cowSdk1.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
     await expect(cowSdk1.metadataApi.uploadMetadataDocToIpfs(appDataDoc)).rejects.toThrow('IPFS api keys are invalid')
@@ -92,7 +103,7 @@ test('Valid: Decode appData ', async () => {
   const appDataDoc = await cowSdk.metadataApi.decodeAppData(APP_DATA_HEX)
 
   expect(fetchMock).toHaveBeenCalledTimes(1)
-  expect(fetchMock).toHaveBeenCalledWith(`https://gnosis.mypinata.cloud/ipfs/${IPFS_HASH}`)
+  expect(fetchMock).toHaveBeenCalledWith(`${DEFAULT_IPFS_READ_URI}/${IPFS_HASH}`)
   expect(appDataDoc?.version).toEqual(CUSTOM_APP_DATA_DOC.version)
   expect(appDataDoc?.appCode).toEqual(CUSTOM_APP_DATA_DOC.appCode)
   expect(appDataDoc?.metadata.referrer?.address).toEqual(CUSTOM_APP_DATA_DOC.metadata.referrer.address)

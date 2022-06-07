@@ -2,10 +2,12 @@ import { Signer } from 'ethers'
 import log from 'loglevel'
 import { CowError, logPrefix } from './common'
 import { SupportedChainId as ChainId } from '../constants/chains'
-import { DEFAULT_APP_DATA_HASH, DEFAULT_IPFS_GATEWAY_URI } from '../constants'
+import { DEFAULT_APP_DATA_HASH, DEFAULT_IPFS_READ_URI, DEFAULT_IPFS_WRITE_URI } from '../constants'
 
 export interface Ipfs {
   uri?: string
+  writeUri?: string
+  readUri?: string
   pinataApiKey?: string
   pinataApiSecret?: string
 }
@@ -21,7 +23,8 @@ export const DefaultCowContext = {
   appDataHash: DEFAULT_APP_DATA_HASH,
   isDevEnvironment: false,
   ipfs: {
-    uri: DEFAULT_IPFS_GATEWAY_URI,
+    readUri: DEFAULT_IPFS_READ_URI,
+    writeUri: DEFAULT_IPFS_WRITE_URI,
     apiKey: undefined,
     apiSecret: undefined,
   },
@@ -40,7 +43,14 @@ export class Context implements Partial<CowContext> {
 
   constructor(chainId: ChainId, context: CowContext) {
     this.#chainId = this.updateChainId(chainId)
-    this.#context = { ...DefaultCowContext, ...context }
+    this.#context = {
+      ...DefaultCowContext,
+      ...context,
+      ipfs: {
+        ...DefaultCowContext.ipfs,
+        ...context.ipfs,
+      },
+    }
   }
 
   updateChainId(chainId: ChainId) {

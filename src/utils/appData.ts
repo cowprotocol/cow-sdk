@@ -1,6 +1,6 @@
 import Ajv, { ValidateFunction } from 'ajv'
 import { fromHexString } from './common'
-import { DEFAULT_IPFS_GATEWAY_URI } from '../constants'
+import { DEFAULT_IPFS_READ_URI } from '../constants'
 import { AppDataDoc } from '../types'
 
 let validate: ValidateFunction | undefined
@@ -40,7 +40,7 @@ export async function getSerializedCID(hash: string): Promise<void | string> {
   return CID.decode(uint8array).toV0().toString()
 }
 
-export async function loadIpfsFromCid(cid: string, ipfsUri = DEFAULT_IPFS_GATEWAY_URI): Promise<AppDataDoc> {
+export async function loadIpfsFromCid(cid: string, ipfsUri = DEFAULT_IPFS_READ_URI): Promise<AppDataDoc> {
   const { default: fetch } = await import('cross-fetch')
   const response = await fetch(`${ipfsUri}/${cid}`)
 
