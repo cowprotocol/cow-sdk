@@ -2,7 +2,7 @@ import log from 'loglevel'
 import { Context } from '../../utils/context'
 import { getSerializedCID, loadIpfsFromCid, validateAppDataDocument } from '../../utils/appData'
 import { calculateIpfsCidV0, pinJSONToIPFS } from '../../utils/ipfs'
-import { AppDataDoc, IpfsHashInfo, MetadataDoc } from './types'
+import { AppDataDoc, IpfsHashInfo, MetadataDoc, OptionalAppDataProperties } from './types'
 import { CowError } from '../../utils/common'
 
 const DEFAULT_APP_CODE = 'CowSwap'
@@ -15,10 +15,13 @@ export class MetadataApi {
     this.context = context
   }
 
-  generateAppDataDoc(metadata: MetadataDoc = {}, appCode: string = DEFAULT_APP_CODE): AppDataDoc {
+  generateAppDataDoc(metadata: MetadataDoc = {}, optionalProperties?: OptionalAppDataProperties): AppDataDoc {
+    const { appCode = DEFAULT_APP_CODE, environment } = optionalProperties || {}
+
     return {
       version: DEFAULT_APP_VERSION,
       appCode,
+      environment,
       metadata: {
         ...metadata,
       },
