@@ -17,12 +17,15 @@ export type MetadataDoc = {
   quote?: QuoteMetadata
 }
 
-export type AppDataDoc = {
-  version: string
+export type OptionalAppDataProperties = {
   appCode?: string
   environment?: string
-  metadata: MetadataDoc
 }
+
+export type AppDataDoc = {
+  version: string
+  metadata: MetadataDoc
+} & OptionalAppDataProperties
 
 export type IpfsHashInfo = {
   /**
