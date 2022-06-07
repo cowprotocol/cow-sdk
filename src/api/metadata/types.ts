@@ -20,6 +20,7 @@ export type MetadataDoc = {
 export type AppDataDoc = {
   version: string
   appCode?: string
+  environment?: string
   metadata: MetadataDoc
 }
 

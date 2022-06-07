@@ -20,6 +20,13 @@
       "title": "App Code",
       "type": "string"
     },
+    "environment": {
+      "$id": "#/properties/environment",
+      "description": "Environment in which the order came from",
+      "title": "Environment",
+      "type": "string",
+      "examples": ["production", "development", "staging", "ens"]
+    },
     "metadata": {
       "$id": "#/properties/metadata",
       "default": {},
