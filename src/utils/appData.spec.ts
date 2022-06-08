@@ -146,3 +146,19 @@ test('Invalid: quote metadata - wrong type', async () => {
 
   expect(validation.result).toBeFalsy()
 })
+
+test('Valid: environment', async () => {
+  const document = { ...BASE_DOCUMENT, environment: 'test' }
+
+  const validation = await validateAppDataDocument(document)
+
+  expect(validation).toEqual(VALID_RESULT)
+})
+
+test('Invalid: environment', async () => {
+  const document = { ...BASE_DOCUMENT, environment: 1234142 }
+
+  const validation = await validateAppDataDocument(document)
+
+  expect(validation.result).toBeFalsy()
+})
