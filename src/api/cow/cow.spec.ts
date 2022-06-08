@@ -281,6 +281,19 @@ test('Valid: Get last 5 trades for a given order id ', async () => {
   expect(trades.length).toEqual(5)
 })
 
+test('Invalid: Get trades passing both the owner and orderId', async () => {
+  await expect(
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    cowSdk.cowApi.getTrades({
+      owner: TRADE_RESPONSE.owner,
+      orderId: TRADE_RESPONSE.orderUid,
+      limit: 5,
+      offset: 0,
+    })
+  ).rejects.toThrowError(CowError)
+})
+
 test('Invalid: Get last 5 trades for an unexisting trader ', async () => {
   fetchMock.mockResponseOnce(
     JSON.stringify({
