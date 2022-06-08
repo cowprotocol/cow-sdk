@@ -265,6 +265,22 @@ test('Valid: Get last 5 trades for a given trader ', async () => {
   expect(trades.length).toEqual(5)
 })
 
+test('Valid: Get last 5 trades for a given order id ', async () => {
+  const TRADES_RESPONSE = Array(5).fill(TRADE_RESPONSE)
+  fetchMock.mockResponseOnce(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK })
+  const trades = await cowSdk.cowApi.getTrades({
+    orderId: TRADE_RESPONSE.orderUid,
+    limit: 5,
+    offset: 0,
+  })
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(fetchMock).toHaveBeenCalledWith(
+    `https://api.cow.fi/rinkeby/api/v1/trades?orderUid=${TRADE_RESPONSE.orderUid}&limit=5`,
+    FETCH_RESPONSE_PARAMETERS
+  )
+  expect(trades.length).toEqual(5)
+})
+
 test('Invalid: Get last 5 trades for an unexisting trader ', async () => {
   fetchMock.mockResponseOnce(
     JSON.stringify({

@@ -1,4 +1,5 @@
 import { GetQuoteResponse, OrderKind } from '@gnosis.pm/gp-v2-contracts'
+import { StrictUnion } from 'utilities'
 import { SupportedChainId as ChainId } from '../../constants/chains'
 import { OrderCancellation, SigningSchemeValue } from '../../utils/sign'
 
@@ -69,9 +70,13 @@ export type GetOrdersParams = {
   owner: string
 } & PaginationParams
 
-export type GetTradesParams = {
-  owner: string
-} & PaginationParams
+export type GetTradesParams = StrictUnion<
+  | {
+      owner: string
+    }
+  | { orderId: string }
+> &
+  PaginationParams
 
 export type ProfileData = {
   totalTrades: number
