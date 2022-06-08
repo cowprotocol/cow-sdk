@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/cow-sdk",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "license": "(MIT OR Apache-2.0)",
   "source": "src/index.ts",
   "main": "./dist/index.js",
