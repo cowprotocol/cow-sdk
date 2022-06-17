@@ -1,5 +1,4 @@
 import { SupportedChainId } from '../../constants/chains'
-import { CowError } from '../../utils/common'
 import { Context } from '../../utils/context'
 import { Options } from '../cow/types'
 

@@ -30,7 +30,7 @@ import BaseApi from '../base'
 
 const API_URL_VERSION = 'v1'
 
-function getGnosisProtocolUrl(isDev: boolean, version = API_URL_VERSION): Partial<Record<ChainId, string>> {
+function getGnosisProtocolUrl(isDev: boolean, version = API_URL_VERSION): Record<ChainId, string> {
   if (isDev) {
     return {
       [ChainId.MAINNET]: 'https://barn.api.cow.fi/mainnet/api/' + version,
