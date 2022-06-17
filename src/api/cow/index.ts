@@ -25,20 +25,23 @@ import {
 } from './types'
 import { CowError, logPrefix, objectToQueryString } from '../../utils/common'
 import { Context } from '../../utils/context'
+import BaseApi from '../base'
 
-function getGnosisProtocolUrl(isDev: boolean): Partial<Record<ChainId, string>> {
+const API_URL_VERSION = 'v1'
+
+function getGnosisProtocolUrl(isDev: boolean, version = API_URL_VERSION): Partial<Record<ChainId, string>> {
   if (isDev) {
     return {
-      [ChainId.MAINNET]: 'https://barn.api.cow.fi/mainnet/api',
-      [ChainId.RINKEBY]: 'https://barn.api.cow.fi/rinkeby/api',
-      [ChainId.GNOSIS_CHAIN]: 'https://barn.api.cow.fi/xdai/api',
+      [ChainId.MAINNET]: 'https://barn.api.cow.fi/mainnet/api/' + version,
+      [ChainId.RINKEBY]: 'https://barn.api.cow.fi/rinkeby/api/' + version,
+      [ChainId.GNOSIS_CHAIN]: 'https://barn.api.cow.fi/xdai/api/' + version,
     }
   }
 
   return {
-    [ChainId.MAINNET]: 'https://api.cow.fi/mainnet/api',
-    [ChainId.RINKEBY]: 'https://api.cow.fi/rinkeby/api',
-    [ChainId.GNOSIS_CHAIN]: 'https://api.cow.fi/xdai/api',
+    [ChainId.MAINNET]: 'https://api.cow.fi/mainnet/api/' + version,
+    [ChainId.RINKEBY]: 'https://api.cow.fi/rinkeby/api/' + version,
+    [ChainId.GNOSIS_CHAIN]: 'https://api.cow.fi/xdai/api/' + version,
   }
 }
 
@@ -86,21 +89,13 @@ async function _handleQuoteResponse<T = unknown, P extends QuoteQuery = QuoteQue
   }
 }
 
-export class CowApi {
-  context: Context
-
-  API_NAME = 'CoW Protocol'
-
+export class CowApi extends BaseApi {
   constructor(context: Context) {
-    this.context = context
+    super({ context, name: 'CoW Protocol', baseUrl: getGnosisProtocolUrl(context.isDevEnvironment, API_URL_VERSION) })
   }
 
   get DEFAULT_HEADERS() {
     return { 'Content-Type': 'application/json', 'X-AppId': this.context.appDataHash }
-  }
-
-  get API_BASE_URL() {
-    return getGnosisProtocolUrl(this.context.isDevEnvironment)
   }
 
   get PROFILE_API_BASE_URL(): Partial<Record<ChainId, string>> {
@@ -315,17 +310,6 @@ export class CowApi {
     return finalParams
   }
 
-  private async getApiBaseUrl(): Promise<string> {
-    const chainId = await this.context.chainId
-    const baseUrl = this.API_BASE_URL[chainId]
-
-    if (!baseUrl) {
-      throw new CowError(`Unsupported Network. The ${this.API_NAME} API is not deployed in the Network ` + chainId)
-    } else {
-      return baseUrl + '/v1'
-    }
-  }
-
   private async getProfileApiBaseUrl(): Promise<string> {
     const chainId = await this.context.chainId
     const baseUrl = this.PROFILE_API_BASE_URL[chainId]
@@ -337,15 +321,6 @@ export class CowApi {
     }
   }
 
-  private async fetch(url: string, method: 'GET' | 'POST' | 'DELETE', data?: unknown): Promise<Response> {
-    const baseUrl = await this.getApiBaseUrl()
-    return fetch(baseUrl + url, {
-      headers: this.DEFAULT_HEADERS,
-      method,
-      body: data !== undefined ? JSON.stringify(data) : data,
-    })
-  }
-
   private async fetchProfile(url: string, method: 'GET' | 'POST' | 'DELETE', data?: unknown): Promise<Response> {
     const baseUrl = await this.getProfileApiBaseUrl()
     return fetch(baseUrl + url, {
@@ -355,19 +330,7 @@ export class CowApi {
     })
   }
 
-  private post(url: string, data: unknown): Promise<Response> {
-    return this.fetch(url, 'POST', data)
-  }
-
-  private get(url: string): Promise<Response> {
-    return this.fetch(url, 'GET')
-  }
-
   private getProfile(url: string): Promise<Response> {
     return this.fetchProfile(url, 'GET')
-  }
-
-  private delete(url: string, data: unknown): Promise<Response> {
-    return this.fetch(url, 'DELETE', data)
   }
 }
