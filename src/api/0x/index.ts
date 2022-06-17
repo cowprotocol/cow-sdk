@@ -1,46 +1,13 @@
 import { OrderKind } from '@cowprotocol/contracts'
-
-// import { NetworkID } from 'paraswap'
 import { SupportedChainId as ChainId } from '../../constants/chains'
-// import { getTokensFromMarket } from 'utils/misc'
-import { /* getValidParams, */ PriceInformation, PriceQuoteParams } from '../cow/types'
+import { Context } from '../../utils/context'
+import { getValidParams } from '../../utils/price'
+import { getTokensFromMarket } from '../../utils/tokens'
+import BaseApi from '../base'
+import { PriceInformation, PriceQuoteParams } from '../cow/types'
+import { ZeroXPriceQuote } from './types'
 
-// copy/pasting as the library types correspond to the internal types, not API response
-// e.g "price: BigNumber" when we want the API response type: "price: string"
-// see link below to see
-// https://github.com/0xProject/0x-api/blob/8c4cc7bb8d4fa06a220b7dfd5784361c05daa92a/src/types.ts#L229
-interface GetSwapQuoteResponseLiquiditySource {
-  name: string
-  proportion: string
-  intermediateToken?: string
-  hops?: string[]
-}
-
-// https://github.com/0xProject/0x-api/blob/8c4cc7bb8d4fa06a220b7dfd5784361c05daa92a/src/types.ts#L229
-interface ZeroXBaseQuote {
-  chainId: ChainId
-  price: string
-  buyAmount: string
-  sellAmount: string
-  sources: GetSwapQuoteResponseLiquiditySource[]
-  gasPrice: string
-  estimatedGas: string
-  sellTokenToEthRate: string
-  buyTokenToEthRate: string
-  protocolFee: string
-  minimumProtocolFee: string
-  allowanceTarget?: string
-}
-
-// https://github.com/0xProject/0x-api/blob/8c4cc7bb8d4fa06a220b7dfd5784361c05daa92a/src/types.ts#L229
-export interface ZeroXPriceQuote extends ZeroXBaseQuote {
-  sellTokenAddress: string
-  buyTokenAddress: string
-  value: string
-  gas: string
-}
-
-function _get0xChainId(chainId: ChainId): NetworkID | null {
+function _get0xChainId(chainId: ChainId): ChainId | null {
   if (!ENABLED) {
     return null
   }
@@ -58,16 +25,18 @@ function _get0xChainId(chainId: ChainId): NetworkID | null {
   }
 }
 
-function _getApiUrl(): Partial<Record<ChainId, string>> {
+function _getApiUrl(): Record<ChainId, string> {
   // Support: Mainnet, Ropsten, Polygon, Binance Smart Chain
   // See https://0x.org/docs/api#introduction
   return {
     [ChainId.MAINNET]: 'https://api.0x.org/swap',
+    [ChainId.RINKEBY]: 'https://api.0x.org/swap',
+    [ChainId.GNOSIS_CHAIN]: 'https://api.0x.org/swap',
   }
 }
 
 // Defaults
-const API_NAME = 'Matcha(0x)'
+const API_NAME = '0x'
 const ENABLED = process.env.REACT_APP_PRICE_FEED_0X_ENABLED !== 'false'
 const API_BASE_URL = _getApiUrl()
 const API_VERSION = 'v1'
@@ -141,5 +110,30 @@ export function toPriceInformation(priceRaw: ZeroXPriceQuote | null, kind: Order
     return { amount: sellAmount, token: sellTokenAddress }
   } else {
     return { amount: buyAmount, token: buyTokenAddress }
+  }
+}
+
+export class ZeroXApi extends BaseApi {
+  constructor(context: Context) {
+    super({ context, name: API_NAME, baseUrl: API_BASE_URL })
+  }
+
+  async getProfileData(address: string): Promise<ProfileData | null> {
+    const chainId = await this.context.chainId
+    log.debug(logPrefix, `[api:${this.API_NAME}] Get profile data for`, chainId, address)
+    if (chainId !== ChainId.MAINNET) {
+      log.info(logPrefix, 'Profile data is only available for mainnet')
+      return null
+    }
+
+    const response = await this._getProfile(`/profile/${address}`)
+
+    if (!response.ok) {
+      const errorResponse = await response.json()
+      log.error(logPrefix, errorResponse)
+      throw new CowError(errorResponse?.description)
+    } else {
+      return response.json()
+    }
   }
 }
