@@ -1,10 +1,11 @@
 import { SupportedChainId } from '../../constants/chains'
+import { CowError } from '../../utils/common'
 import { Context } from '../../utils/context'
 
 interface ConstructorParams {
   context: Context
   name: string
-  baseUrl: Record<SupportedChainId, string>
+  baseUrl: Partial<Record<SupportedChainId, string>>
 }
 
 export default class BaseApi {
@@ -24,7 +25,13 @@ export default class BaseApi {
 
   public async getApiBaseUrl(): Promise<string> {
     const chainId = await this.context.chainId
-    return this.API_BASE_URL[chainId]
+    const baseUrl = this.API_BASE_URL[chainId]
+
+    if (!baseUrl) {
+      throw new CowError(`Unsupported Network. The ${this.API_NAME} API is not deployed in the Network ${chainId}`)
+    }
+
+    return baseUrl
   }
 
   public async fetch(url: string, method: 'GET' | 'POST' | 'DELETE', data?: unknown): Promise<Response> {
