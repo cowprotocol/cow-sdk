@@ -29,7 +29,7 @@ import BaseApi from '../base'
 
 const API_URL_VERSION = 'v1'
 
-function getGnosisProtocolUrl(isDev: boolean, version = API_URL_VERSION): Record<ChainId, string> {
+function _getGnosisProtocolUrl(isDev: boolean, version = API_URL_VERSION): Record<ChainId, string> {
   if (isDev) {
     return {
       [ChainId.MAINNET]: 'https://barn.api.cow.fi/mainnet/api/' + version,
@@ -45,7 +45,7 @@ function getGnosisProtocolUrl(isDev: boolean, version = API_URL_VERSION): Record
   }
 }
 
-function getProfileUrl(isDev: boolean): Partial<Record<ChainId, string>> {
+function _getProfileUrl(isDev: boolean): Partial<Record<ChainId, string>> {
   if (isDev) {
     return {
       [ChainId.MAINNET]: 'https://barn.api.cow.fi/affiliate/api',
@@ -91,11 +91,11 @@ async function _handleQuoteResponse<T = unknown, P extends QuoteQuery = QuoteQue
 
 export class CowApi extends BaseApi {
   constructor(context: Context) {
-    super({ context, name: 'CoW Protocol', baseUrl: getGnosisProtocolUrl(context.isDevEnvironment, API_URL_VERSION) })
+    super({ context, name: 'CoW Protocol', baseUrl: _getGnosisProtocolUrl(context.isDevEnvironment, API_URL_VERSION) })
   }
 
   get PROFILE_API_BASE_URL(): Partial<Record<ChainId, string>> {
-    return getProfileUrl(this.context.isDevEnvironment)
+    return _getProfileUrl(this.context.isDevEnvironment)
   }
 
   async getProfileData(address: string): Promise<ProfileData | null> {
@@ -106,7 +106,7 @@ export class CowApi extends BaseApi {
       return null
     }
 
-    const response = await this.getProfile(`/profile/${address}`)
+    const response = await this._getProfile(`/profile/${address}`)
 
     if (!response.ok) {
       const errorResponse = await response.json()
@@ -219,7 +219,7 @@ export class CowApi extends BaseApi {
 
   async getQuote(params: FeeQuoteParams): Promise<SimpleGetQuoteResponse> {
     const chainId = await this.context.chainId
-    const quoteParams = this.mapNewToLegacyParams(params, chainId)
+    const quoteParams = this._mapNewToLegacyParams(params, chainId)
     const response = await this.post('/quote', quoteParams)
 
     return _handleQuoteResponse<SimpleGetQuoteResponse>(response)
@@ -276,7 +276,7 @@ export class CowApi extends BaseApi {
     return baseUrl + `/orders/${orderId}`
   }
 
-  private mapNewToLegacyParams(params: FeeQuoteParams, chainId: ChainId): QuoteQuery {
+  private _mapNewToLegacyParams(params: FeeQuoteParams, chainId: ChainId): QuoteQuery {
     const { amount, kind, userAddress, receiver, validTo, sellToken, buyToken } = params
     const fallbackAddress = userAddress || ZERO_ADDRESS
 
@@ -306,7 +306,7 @@ export class CowApi extends BaseApi {
     return finalParams
   }
 
-  private async getProfileApiBaseUrl(): Promise<string> {
+  private async _getProfileApiBaseUrl(): Promise<string> {
     const chainId = await this.context.chainId
     const baseUrl = this.PROFILE_API_BASE_URL[chainId]
 
@@ -317,8 +317,8 @@ export class CowApi extends BaseApi {
     }
   }
 
-  private async fetchProfile(url: string, method: 'GET' | 'POST' | 'DELETE', data?: unknown): Promise<Response> {
-    const baseUrl = await this.getProfileApiBaseUrl()
+  private async _fetchProfile(url: string, method: 'GET' | 'POST' | 'DELETE', data?: unknown): Promise<Response> {
+    const baseUrl = await this._getProfileApiBaseUrl()
     return fetch(baseUrl + url, {
       headers: this.DEFAULT_HEADERS,
       method,
@@ -326,7 +326,7 @@ export class CowApi extends BaseApi {
     })
   }
 
-  private getProfile(url: string): Promise<Response> {
-    return this.fetchProfile(url, 'GET')
+  private _getProfile(url: string): Promise<Response> {
+    return this._fetchProfile(url, 'GET')
   }
 }
