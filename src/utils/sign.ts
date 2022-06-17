@@ -9,7 +9,7 @@ import {
   TypedDataV3Signer,
   IntChainIdTypedDataV4Signer,
   SigningScheme,
-} from '@gnosis.pm/gp-v2-contracts'
+} from '@cowprotocol/contracts'
 import log from 'loglevel'
 
 import { SupportedChainId as ChainId } from '../constants/chains'

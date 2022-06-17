@@ -1,6 +1,6 @@
 import log from 'loglevel'
 import fetch from 'cross-fetch'
-import { OrderKind, QuoteQuery } from '@gnosis.pm/gp-v2-contracts'
+import { OrderKind, QuoteQuery } from '@cowprotocol/contracts'
 import { SupportedChainId as ChainId } from '../../constants/chains'
 import { getSigningSchemeApiValue, OrderCreation } from '../../utils/sign'
 import OperatorError, { ApiErrorCodeDetails, ApiErrorCodes, ApiErrorObject } from './errors/OperatorError'
