@@ -94,10 +94,6 @@ export class CowApi extends BaseApi {
     super({ context, name: 'CoW Protocol', baseUrl: getGnosisProtocolUrl(context.isDevEnvironment, API_URL_VERSION) })
   }
 
-  get DEFAULT_HEADERS() {
-    return { 'Content-Type': 'application/json', 'X-AppId': this.context.appDataHash }
-  }
-
   get PROFILE_API_BASE_URL(): Partial<Record<ChainId, string>> {
     return getProfileUrl(this.context.isDevEnvironment)
   }
