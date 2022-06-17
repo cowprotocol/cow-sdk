@@ -1,5 +1,7 @@
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
-import { CowSdk } from '../../CowSdk'
+import BaseApi from '.'
+import { SupportedChainId } from '../../constants/chains'
+import { Context } from '../../utils/context'
 
 enableFetchMocks()
 
@@ -11,12 +13,21 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
+const MOCK_URLS = {
+  [SupportedChainId.MAINNET]: 'https://funinthesun.com',
+  [SupportedChainId.RINKEBY]: 'https://funinthesun.com',
+  [SupportedChainId.GNOSIS_CHAIN]: 'https://funinthesun.com',
+}
+
 test('Valid: DEFAULT_HEADERS returns the correct headers', async () => {
-  const appDataHash = '0x123TESTEST'
-  const cowSdk = new CowSdk(1, { appDataHash })
-  const headers = cowSdk.cowApi.DEFAULT_HEADERS
+  const baseApi = new BaseApi({
+    context: new Context(SupportedChainId.MAINNET, { appDataHash: '123' }),
+    name: 'BASE_API',
+    baseUrl: MOCK_URLS,
+  })
+  const headers = baseApi.DEFAULT_HEADERS
   expect(headers).toEqual({
     'Content-Type': 'application/json',
-    'X-AppId': '0x123TESTEST',
+    'X-AppId': '123',
   })
 })
