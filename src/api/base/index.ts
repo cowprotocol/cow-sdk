@@ -1,22 +1,23 @@
 import { SupportedChainId } from '../../constants/chains'
 import { CowError } from '../../utils/common'
 import { Context } from '../../utils/context'
+import { Options } from '../cow/types'
 
 interface ConstructorParams {
   context: Context
   name: string
-  baseUrl: Partial<Record<SupportedChainId, string>>
+  getUrl: (...params: any[]) => Partial<Record<SupportedChainId, string>>
 }
 
 export default class BaseApi {
   context: Context
   API_NAME: ConstructorParams['name']
-  API_BASE_URL: ConstructorParams['baseUrl']
+  URL_GETTER
 
   constructor(params: ConstructorParams) {
     this.context = params.context
     this.API_NAME = params.name
-    this.API_BASE_URL = params.baseUrl
+    this.URL_GETTER = params.getUrl
   }
 
   get DEFAULT_HEADERS() {
@@ -25,7 +26,7 @@ export default class BaseApi {
 
   public async getApiBaseUrl(): Promise<string> {
     const chainId = await this.context.chainId
-    const baseUrl = this.API_BASE_URL[chainId]
+    const baseUrl = this.URL_GETTER(this.context.isDevEnvironment)[chainId]
 
     if (!baseUrl) {
       throw new CowError(`Unsupported Network. The ${this.API_NAME} API is not deployed in the Network ` + chainId)
@@ -34,24 +35,55 @@ export default class BaseApi {
     }
   }
 
-  public async fetch(url: string, method: 'GET' | 'POST' | 'DELETE', data?: unknown): Promise<Response> {
-    const baseUrl = await this.getApiBaseUrl()
+  public post(url: string, data: unknown, options: Options = {}): Promise<Response> {
+    return this.handleMethod(url, 'POST', this.fetch.bind(this), this.URL_GETTER, options, data)
+  }
+
+  public get(url: string, options: Options = {}): Promise<Response> {
+    return this.handleMethod(url, 'GET', this.fetch.bind(this), this.URL_GETTER, options)
+  }
+
+  public delete(url: string, data: unknown, options: Options = {}): Promise<Response> {
+    return this.handleMethod(url, 'DELETE', this.fetch.bind(this), this.URL_GETTER, options, data)
+  }
+
+  public async handleMethod(
+    url: string,
+    method: 'GET' | 'POST' | 'DELETE',
+    fetchFn: typeof this.fetch /*  | typeof this.fetchProfile */,
+    getUrl: typeof this.URL_GETTER,
+    options: Options = {},
+    data?: unknown
+  ): Promise<Response> {
+    const { chainId: networkId, isDevEnvironment } = options
+    const prodUri = getUrl(false)
+    const barnUri = getUrl(true)
+    const chainId = networkId || (await this.context.chainId)
+
+    let response
+    if (isDevEnvironment === undefined) {
+      try {
+        response = await fetchFn(url, method, `${prodUri[chainId]}/v1`, data)
+      } catch (error) {
+        response = await fetchFn(url, method, `${barnUri[chainId]}/v1`, data)
+      }
+    } else {
+      const uri = isDevEnvironment ? barnUri : prodUri
+      response = await fetchFn(url, method, `${uri[chainId]}/v1`, data)
+    }
+    return response
+  }
+
+  private async fetch(
+    url: string,
+    method: 'GET' | 'POST' | 'DELETE',
+    baseUrl: string,
+    data?: unknown
+  ): Promise<Response> {
     return fetch(baseUrl + url, {
       headers: this.DEFAULT_HEADERS,
       method,
       body: data !== undefined ? JSON.stringify(data) : data,
     })
-  }
-
-  public post(url: string, data: unknown): Promise<Response> {
-    return this.fetch(url, 'POST', data)
-  }
-
-  public get(url: string): Promise<Response> {
-    return this.fetch(url, 'GET')
-  }
-
-  public delete(url: string, data: unknown): Promise<Response> {
-    return this.fetch(url, 'DELETE', data)
   }
 }

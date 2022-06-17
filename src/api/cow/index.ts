@@ -26,20 +26,23 @@ import {
 } from './types'
 import { CowError, logPrefix, objectToQueryString } from '../../utils/common'
 import { Context } from '../../utils/context'
+import BaseApi from '../base'
 
-function getGnosisProtocolUrl(isDev: boolean): Partial<Record<ChainId, string>> {
+const API_URL_VERSION = 'v1'
+
+function getGnosisProtocolUrl(isDev: boolean, version = API_URL_VERSION): Partial<Record<ChainId, string>> {
   if (isDev) {
     return {
-      [ChainId.MAINNET]: 'https://barn.api.cow.fi/mainnet/api',
-      [ChainId.RINKEBY]: 'https://barn.api.cow.fi/rinkeby/api',
-      [ChainId.GNOSIS_CHAIN]: 'https://barn.api.cow.fi/xdai/api',
+      [ChainId.MAINNET]: 'https://barn.api.cow.fi/mainnet/api/' + version,
+      [ChainId.RINKEBY]: 'https://barn.api.cow.fi/rinkeby/api/' + version,
+      [ChainId.GNOSIS_CHAIN]: 'https://barn.api.cow.fi/xdai/api/' + version,
     }
   }
 
   return {
-    [ChainId.MAINNET]: 'https://api.cow.fi/mainnet/api',
-    [ChainId.RINKEBY]: 'https://api.cow.fi/rinkeby/api',
-    [ChainId.GNOSIS_CHAIN]: 'https://api.cow.fi/xdai/api',
+    [ChainId.MAINNET]: 'https://api.cow.fi/mainnet/api/' + version,
+    [ChainId.RINKEBY]: 'https://api.cow.fi/rinkeby/api/' + version,
+    [ChainId.GNOSIS_CHAIN]: 'https://api.cow.fi/xdai/api/' + version,
   }
 }
 
@@ -87,21 +90,9 @@ async function _handleQuoteResponse<T = unknown, P extends QuoteQuery = QuoteQue
   }
 }
 
-export class CowApi {
-  context: Context
-
-  API_NAME = 'CoW Protocol'
-
+export class CowApi extends BaseApi {
   constructor(context: Context) {
-    this.context = context
-  }
-
-  get DEFAULT_HEADERS() {
-    return { 'Content-Type': 'application/json', 'X-AppId': this.context.appDataHash }
-  }
-
-  get API_BASE_URL() {
-    return getGnosisProtocolUrl(this.context.isDevEnvironment)
+    super({ context, name: 'CoW Protocol', getUrl: getGnosisProtocolUrl })
   }
 
   async getProfileData(address: string, options: Options = {}): Promise<ProfileData | null> {
@@ -306,6 +297,23 @@ export class CowApi {
     return baseUrl + `/orders/${orderId}`
   }
 
+  private getProfile(url: string, options: Options = {}): Promise<Response> {
+    return this.handleMethod(url, 'GET', this.fetchProfile.bind(this), getProfileUrl, options)
+  }
+
+  private async fetchProfile(
+    url: string,
+    method: 'GET' | 'POST' | 'DELETE',
+    baseUrl: string,
+    data?: unknown
+  ): Promise<Response> {
+    return fetch(baseUrl + url, {
+      headers: this.DEFAULT_HEADERS,
+      method,
+      body: data !== undefined ? JSON.stringify(data) : data,
+    })
+  }
+
   private mapNewToLegacyParams(params: FeeQuoteParams, chainId: ChainId): QuoteQuery {
     const { amount, kind, userAddress, receiver, validTo, sellToken, buyToken } = params
     const fallbackAddress = userAddress || ZERO_ADDRESS
@@ -334,85 +342,5 @@ export class CowApi {
           }
 
     return finalParams
-  }
-
-  private async getApiBaseUrl(): Promise<string> {
-    const chainId = await this.context.chainId
-    const baseUrl = this.API_BASE_URL[chainId]
-
-    if (!baseUrl) {
-      throw new CowError(`Unsupported Network. The ${this.API_NAME} API is not deployed in the Network ` + chainId)
-    } else {
-      return baseUrl + '/v1'
-    }
-  }
-
-  private async fetch(
-    url: string,
-    method: 'GET' | 'POST' | 'DELETE',
-    baseUrl: string,
-    data?: unknown
-  ): Promise<Response> {
-    return fetch(baseUrl + url, {
-      headers: this.DEFAULT_HEADERS,
-      method,
-      body: data !== undefined ? JSON.stringify(data) : data,
-    })
-  }
-
-  private async fetchProfile(
-    url: string,
-    method: 'GET' | 'POST' | 'DELETE',
-    baseUrl: string,
-    data?: unknown
-  ): Promise<Response> {
-    return fetch(baseUrl + url, {
-      headers: this.DEFAULT_HEADERS,
-      method,
-      body: data !== undefined ? JSON.stringify(data) : data,
-    })
-  }
-
-  private post(url: string, data: unknown, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'POST', this.fetch.bind(this), getGnosisProtocolUrl, options, data)
-  }
-
-  private get(url: string, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'GET', this.fetch.bind(this), getGnosisProtocolUrl, options)
-  }
-
-  private getProfile(url: string, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'GET', this.fetchProfile.bind(this), getProfileUrl, options)
-  }
-
-  private delete(url: string, data: unknown, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'DELETE', this.fetch.bind(this), getGnosisProtocolUrl, options, data)
-  }
-
-  private async handleMethod(
-    url: string,
-    method: 'GET' | 'POST' | 'DELETE',
-    fetchFn: typeof this.fetch | typeof this.fetchProfile,
-    getUrl: typeof getGnosisProtocolUrl | typeof getProfileUrl,
-    options: Options = {},
-    data?: unknown
-  ): Promise<Response> {
-    const { chainId: networkId, isDevEnvironment } = options
-    const prodUri = getUrl(false)
-    const barnUri = getUrl(true)
-    const chainId = networkId || (await this.context.chainId)
-
-    let response
-    if (isDevEnvironment === undefined) {
-      try {
-        response = await fetchFn(url, method, `${prodUri[chainId]}/v1`, data)
-      } catch (error) {
-        response = await fetchFn(url, method, `${barnUri[chainId]}/v1`, data)
-      }
-    } else {
-      const uri = isDevEnvironment ? barnUri : prodUri
-      response = await fetchFn(url, method, `${uri[chainId]}/v1`, data)
-    }
-    return response
   }
 }
