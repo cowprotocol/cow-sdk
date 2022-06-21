@@ -283,8 +283,7 @@ test('Valid: Get last 5 trades for a given order id ', async () => {
 
 test('Invalid: Get trades passing both the owner and orderId', async () => {
   await expect(
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+    // @ts-expect-error both owner and orderId can't be passed at the same time
     cowSdk.cowApi.getTrades({
       owner: TRADE_RESPONSE.owner,
       orderId: TRADE_RESPONSE.orderUid,
