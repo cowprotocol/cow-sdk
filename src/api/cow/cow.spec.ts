@@ -1,7 +1,7 @@
 import { ethers } from 'ethers'
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { CowSdk } from '../../CowSdk'
-import { OrderKind, SigningScheme } from '@gnosis.pm/gp-v2-contracts'
+import { OrderKind, SigningScheme } from '@cowprotocol/contracts'
 import OperatorError from './errors/OperatorError'
 import { FeeQuoteParams, PriceQuoteParams } from './types'
 import QuoteError, { GpQuoteErrorObject } from './errors/QuoteError'

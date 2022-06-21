@@ -1,4 +1,4 @@
-import { GetQuoteResponse, OrderKind } from '@gnosis.pm/gp-v2-contracts'
+import { GetQuoteResponse, OrderKind } from '@cowprotocol/contracts'
 import { StrictUnion } from 'utilities'
 import { SupportedChainId as ChainId } from '../../constants/chains'
 import { OrderCancellation, SigningSchemeValue } from '../../utils/sign'
@@ -103,7 +103,7 @@ export interface PriceInformation {
   amount: string | null
 }
 
-// GetQuoteResponse from @gnosis.pm/gp-v2-contracts types Timestamp and BigNumberish
+// GetQuoteResponse from @cowprotocol/contracts types Timestamp and BigNumberish
 // do not play well with our existing methods, using string instead
 export type SimpleGetQuoteResponse = Pick<GetQuoteResponse, 'from'> & {
   // We need to map BigNumberIsh and Timestamp to what we use: string
