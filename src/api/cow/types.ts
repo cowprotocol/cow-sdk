@@ -70,13 +70,15 @@ export type GetOrdersParams = {
   owner: string
 } & PaginationParams
 
-export type GetTradesParams = StrictUnion<
-  | {
-      owner: string
-    }
-  | { orderId: string }
-> &
-  PaginationParams
+type WithOwner = {
+  owner: string
+}
+
+type WithOrderId = {
+  orderId: string
+}
+
+export type GetTradesParams = StrictUnion<WithOwner | WithOrderId> & PaginationParams
 
 export type ProfileData = {
   totalTrades: number
