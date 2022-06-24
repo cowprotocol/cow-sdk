@@ -7,21 +7,21 @@ interface ConstructorParams {
   context: Context
   name: string
   getUrl: (...params: any[]) => Partial<Record<SupportedChainId, string>>
+  defaultHeaders?: HeadersInit
 }
 
+const DEFAULT_HEADERS = { 'Content-Type': 'application/json' }
 export default class BaseApi {
   context: Context
   API_NAME: ConstructorParams['name']
   URL_GETTER
+  DEFAULT_HEADERS: ConstructorParams['defaultHeaders']
 
-  constructor(params: ConstructorParams) {
-    this.context = params.context
-    this.API_NAME = params.name
-    this.URL_GETTER = params.getUrl
-  }
-
-  get DEFAULT_HEADERS() {
-    return { 'Content-Type': 'application/json', 'X-AppId': this.context.appDataHash }
+  constructor({ context, name, getUrl, defaultHeaders = DEFAULT_HEADERS }: ConstructorParams) {
+    this.context = context
+    this.API_NAME = name
+    this.URL_GETTER = getUrl
+    this.DEFAULT_HEADERS = defaultHeaders
   }
 
   public async getApiBaseUrl(): Promise<string> {
@@ -55,7 +55,7 @@ export default class BaseApi {
     options: Options = {},
     data?: unknown
   ): Promise<Response> {
-    const { chainId: networkId, isDevEnvironment } = options
+    const { chainId: networkId, isDevEnvironment, reqOptions } = options
     const prodUri = getUrl(false)
     const barnUri = getUrl(true)
     const chainId = networkId || (await this.context.chainId)
@@ -63,13 +63,13 @@ export default class BaseApi {
     let response
     if (isDevEnvironment === undefined) {
       try {
-        response = await fetchFn(url, method, `${prodUri[chainId]}/v1`, data)
+        response = await fetchFn(url, method, `${prodUri[chainId]}/v1`, data, reqOptions)
       } catch (error) {
-        response = await fetchFn(url, method, `${barnUri[chainId]}/v1`, data)
+        response = await fetchFn(url, method, `${barnUri[chainId]}/v1`, data, reqOptions)
       }
     } else {
       const uri = isDevEnvironment ? barnUri : prodUri
-      response = await fetchFn(url, method, `${uri[chainId]}/v1`, data)
+      response = await fetchFn(url, method, `${uri[chainId]}/v1`, data, reqOptions)
     }
     return response
   }
@@ -78,10 +78,12 @@ export default class BaseApi {
     url: string,
     method: 'GET' | 'POST' | 'DELETE',
     baseUrl: string,
-    data?: unknown
+    data?: unknown,
+    reqOptions?: RequestInit
   ): Promise<Response> {
     return fetch(baseUrl + url, {
       headers: this.DEFAULT_HEADERS,
+      ...reqOptions,
       method,
       body: data !== undefined ? JSON.stringify(data) : data,
     })
