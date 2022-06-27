@@ -116,6 +116,7 @@ export type SimpleGetQuoteResponse = Pick<GetQuoteResponse, 'from'> & {
     feeAmount: string
   }
   expiration: string
+  id: number | null
 }
 
 export type FeeQuoteParams = Pick<OrderMetaData, 'sellToken' | 'buyToken' | 'kind'> & {
