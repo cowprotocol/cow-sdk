@@ -46,6 +46,7 @@ export interface OrderCreation extends UnsignedOrder {
   //  - Signature: EIP-712,ETHSIGN
   //  - Owner address: for PRESIGN
   signature: string // 65 bytes encoded as hex without `0x` prefix. r + s + v from the spec
+  quoteId?: number
 }
 
 export interface SingOrderCancellationParams {
