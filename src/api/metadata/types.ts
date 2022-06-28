@@ -10,6 +10,7 @@ export interface QuoteMetadata extends Metadata {
   id?: string
   sellAmount: string
   buyAmount: string
+  slippageInBips?: string
 }
 
 export type MetadataDoc = {
