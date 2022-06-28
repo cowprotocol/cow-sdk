@@ -84,7 +84,7 @@
       },
       "quote": {
         "$id": "#/definitions/quote",
-        "required": ["sellAmount", "buyAmount", "version"],
+        "required": ["version"],
         "title": "Quote",
         "type": "object",
         "properties": {
