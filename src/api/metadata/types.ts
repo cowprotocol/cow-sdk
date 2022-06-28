@@ -1,17 +1,29 @@
-interface Metadata {
+type Metadata = {
   version: string
 }
 
-export interface ReferralMetadata extends Metadata {
+export type ReferralMetadata = Metadata & {
   address: string
 }
 
-export interface QuoteMetadata extends Metadata {
-  id?: string
-  sellAmount?: string
-  buyAmount?: string
-  slippageInBips?: string
+export type OnlyQuoteAmounts = {
+  sellAmount: string
+  buyAmount: string
+  slippageInBips?: never
 }
+
+export type OnlyQuoteSlippage = {
+  sellAmount?: never
+  buyAmount?: never
+  slippageInBips: string
+}
+
+export type OnlyQuoteAmountsOrSlippage = OnlyQuoteAmounts | OnlyQuoteSlippage
+
+export type QuoteMetadata = Metadata &
+  OnlyQuoteAmountsOrSlippage & {
+    id?: string
+  }
 
 export type MetadataDoc = {
   referrer?: ReferralMetadata
