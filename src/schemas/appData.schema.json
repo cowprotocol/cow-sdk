@@ -104,6 +104,13 @@
           },
           "version": {
             "$ref": "#/definitions/version"
+          },
+          "slippageInBips": {
+            "$id": "#/definitions/quote/slippageInBips",
+            "title": "Slippage percentage stored in Basis Points (BIPS)",
+            "examples": ["5", "10", "20", "100"],
+            "pattern": "^\\d+(\\.\\d+)?$",
+            "type": "string"
           }
         }
       }
