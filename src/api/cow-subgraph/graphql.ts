@@ -456,8 +456,16 @@ export type Pair = {
   id: Scalars['ID'];
   /** The token 0 address lower than token1 */
   token0: Token;
+  /** Token0 last trade price */
+  token0Price?: Maybe<Scalars['BigDecimal']>;
+  /** Token 0 price expressed in token1 in the last trade */
+  token0relativePrice?: Maybe<Scalars['BigDecimal']>;
   /** The token 1 address greater than token0 */
   token1: Token;
+  /** Token1 last trade price */
+  token1Price?: Maybe<Scalars['BigDecimal']>;
+  /** Token 1 price expressed in token1 in the last trade */
+  token1relativePrice?: Maybe<Scalars['BigDecimal']>;
   /** Total volume of token 0 traded */
   volumeToken0?: Maybe<Scalars['BigInt']>;
   /** Total volume of token 1 traded */
@@ -476,8 +484,16 @@ export type PairDaily = {
   timestamp: Scalars['Int'];
   /** The token 0 address lower than token1 */
   token0: Token;
+  /** Token0 last trade price */
+  token0Price?: Maybe<Scalars['BigDecimal']>;
+  /** Token 0 price expressed in token1 in the last trade */
+  token0relativePrice?: Maybe<Scalars['BigDecimal']>;
   /** The token 1 address greater than token0 */
   token1: Token;
+  /** Token1 last trade price */
+  token1Price?: Maybe<Scalars['BigDecimal']>;
+  /** Token 1 price expressed in token1 in the last trade */
+  token1relativePrice?: Maybe<Scalars['BigDecimal']>;
   /** Total volume of token 0 traded */
   volumeToken0?: Maybe<Scalars['BigInt']>;
   /** Total volume of token 1 traded */
@@ -508,6 +524,14 @@ export type PairDaily_Filter = {
   timestamp_not?: InputMaybe<Scalars['Int']>;
   timestamp_not_in?: InputMaybe<Array<Scalars['Int']>>;
   token0?: InputMaybe<Scalars['String']>;
+  token0Price?: InputMaybe<Scalars['BigDecimal']>;
+  token0Price_gt?: InputMaybe<Scalars['BigDecimal']>;
+  token0Price_gte?: InputMaybe<Scalars['BigDecimal']>;
+  token0Price_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  token0Price_lt?: InputMaybe<Scalars['BigDecimal']>;
+  token0Price_lte?: InputMaybe<Scalars['BigDecimal']>;
+  token0Price_not?: InputMaybe<Scalars['BigDecimal']>;
+  token0Price_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
   token0_contains?: InputMaybe<Scalars['String']>;
   token0_contains_nocase?: InputMaybe<Scalars['String']>;
   token0_ends_with?: InputMaybe<Scalars['String']>;
@@ -527,7 +551,23 @@ export type PairDaily_Filter = {
   token0_not_starts_with_nocase?: InputMaybe<Scalars['String']>;
   token0_starts_with?: InputMaybe<Scalars['String']>;
   token0_starts_with_nocase?: InputMaybe<Scalars['String']>;
+  token0relativePrice?: InputMaybe<Scalars['BigDecimal']>;
+  token0relativePrice_gt?: InputMaybe<Scalars['BigDecimal']>;
+  token0relativePrice_gte?: InputMaybe<Scalars['BigDecimal']>;
+  token0relativePrice_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  token0relativePrice_lt?: InputMaybe<Scalars['BigDecimal']>;
+  token0relativePrice_lte?: InputMaybe<Scalars['BigDecimal']>;
+  token0relativePrice_not?: InputMaybe<Scalars['BigDecimal']>;
+  token0relativePrice_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
   token1?: InputMaybe<Scalars['String']>;
+  token1Price?: InputMaybe<Scalars['BigDecimal']>;
+  token1Price_gt?: InputMaybe<Scalars['BigDecimal']>;
+  token1Price_gte?: InputMaybe<Scalars['BigDecimal']>;
+  token1Price_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  token1Price_lt?: InputMaybe<Scalars['BigDecimal']>;
+  token1Price_lte?: InputMaybe<Scalars['BigDecimal']>;
+  token1Price_not?: InputMaybe<Scalars['BigDecimal']>;
+  token1Price_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
   token1_contains?: InputMaybe<Scalars['String']>;
   token1_contains_nocase?: InputMaybe<Scalars['String']>;
   token1_ends_with?: InputMaybe<Scalars['String']>;
@@ -547,6 +587,14 @@ export type PairDaily_Filter = {
   token1_not_starts_with_nocase?: InputMaybe<Scalars['String']>;
   token1_starts_with?: InputMaybe<Scalars['String']>;
   token1_starts_with_nocase?: InputMaybe<Scalars['String']>;
+  token1relativePrice?: InputMaybe<Scalars['BigDecimal']>;
+  token1relativePrice_gt?: InputMaybe<Scalars['BigDecimal']>;
+  token1relativePrice_gte?: InputMaybe<Scalars['BigDecimal']>;
+  token1relativePrice_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  token1relativePrice_lt?: InputMaybe<Scalars['BigDecimal']>;
+  token1relativePrice_lte?: InputMaybe<Scalars['BigDecimal']>;
+  token1relativePrice_not?: InputMaybe<Scalars['BigDecimal']>;
+  token1relativePrice_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
   volumeToken0?: InputMaybe<Scalars['BigInt']>;
   volumeToken0_gt?: InputMaybe<Scalars['BigInt']>;
   volumeToken0_gte?: InputMaybe<Scalars['BigInt']>;
@@ -585,7 +633,11 @@ export enum PairDaily_OrderBy {
   Id = 'id',
   Timestamp = 'timestamp',
   Token0 = 'token0',
+  Token0Price = 'token0Price',
+  Token0relativePrice = 'token0relativePrice',
   Token1 = 'token1',
+  Token1Price = 'token1Price',
+  Token1relativePrice = 'token1relativePrice',
   VolumeToken0 = 'volumeToken0',
   VolumeToken1 = 'volumeToken1',
   VolumeTradedEth = 'volumeTradedEth',
@@ -600,8 +652,16 @@ export type PairHourly = {
   timestamp: Scalars['Int'];
   /** The token 0 address lower than token1 */
   token0: Token;
+  /** Token0 last trade price */
+  token0Price?: Maybe<Scalars['BigDecimal']>;
+  /** Token 0 price expressed in token1 in the last trade */
+  token0relativePrice?: Maybe<Scalars['BigDecimal']>;
   /** The token 1 address greater than token0 */
   token1: Token;
+  /** Token1 last trade price */
+  token1Price?: Maybe<Scalars['BigDecimal']>;
+  /** Token 1 price expressed in token1 in the last trade */
+  token1relativePrice?: Maybe<Scalars['BigDecimal']>;
   /** Total volume of token 0 traded */
   volumeToken0?: Maybe<Scalars['BigInt']>;
   /** Total volume of token 1 traded */
@@ -632,6 +692,14 @@ export type PairHourly_Filter = {
   timestamp_not?: InputMaybe<Scalars['Int']>;
   timestamp_not_in?: InputMaybe<Array<Scalars['Int']>>;
   token0?: InputMaybe<Scalars['String']>;
+  token0Price?: InputMaybe<Scalars['BigDecimal']>;
+  token0Price_gt?: InputMaybe<Scalars['BigDecimal']>;
+  token0Price_gte?: InputMaybe<Scalars['BigDecimal']>;
+  token0Price_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  token0Price_lt?: InputMaybe<Scalars['BigDecimal']>;
+  token0Price_lte?: InputMaybe<Scalars['BigDecimal']>;
+  token0Price_not?: InputMaybe<Scalars['BigDecimal']>;
+  token0Price_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
   token0_contains?: InputMaybe<Scalars['String']>;
   token0_contains_nocase?: InputMaybe<Scalars['String']>;
   token0_ends_with?: InputMaybe<Scalars['String']>;
@@ -651,7 +719,23 @@ export type PairHourly_Filter = {
   token0_not_starts_with_nocase?: InputMaybe<Scalars['String']>;
   token0_starts_with?: InputMaybe<Scalars['String']>;
   token0_starts_with_nocase?: InputMaybe<Scalars['String']>;
+  token0relativePrice?: InputMaybe<Scalars['BigDecimal']>;
+  token0relativePrice_gt?: InputMaybe<Scalars['BigDecimal']>;
+  token0relativePrice_gte?: InputMaybe<Scalars['BigDecimal']>;
+  token0relativePrice_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  token0relativePrice_lt?: InputMaybe<Scalars['BigDecimal']>;
+  token0relativePrice_lte?: InputMaybe<Scalars['BigDecimal']>;
+  token0relativePrice_not?: InputMaybe<Scalars['BigDecimal']>;
+  token0relativePrice_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
   token1?: InputMaybe<Scalars['String']>;
+  token1Price?: InputMaybe<Scalars['BigDecimal']>;
+  token1Price_gt?: InputMaybe<Scalars['BigDecimal']>;
+  token1Price_gte?: InputMaybe<Scalars['BigDecimal']>;
+  token1Price_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  token1Price_lt?: InputMaybe<Scalars['BigDecimal']>;
+  token1Price_lte?: InputMaybe<Scalars['BigDecimal']>;
+  token1Price_not?: InputMaybe<Scalars['BigDecimal']>;
+  token1Price_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
   token1_contains?: InputMaybe<Scalars['String']>;
   token1_contains_nocase?: InputMaybe<Scalars['String']>;
   token1_ends_with?: InputMaybe<Scalars['String']>;
@@ -671,6 +755,14 @@ export type PairHourly_Filter = {
   token1_not_starts_with_nocase?: InputMaybe<Scalars['String']>;
   token1_starts_with?: InputMaybe<Scalars['String']>;
   token1_starts_with_nocase?: InputMaybe<Scalars['String']>;
+  token1relativePrice?: InputMaybe<Scalars['BigDecimal']>;
+  token1relativePrice_gt?: InputMaybe<Scalars['BigDecimal']>;
+  token1relativePrice_gte?: InputMaybe<Scalars['BigDecimal']>;
+  token1relativePrice_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  token1relativePrice_lt?: InputMaybe<Scalars['BigDecimal']>;
+  token1relativePrice_lte?: InputMaybe<Scalars['BigDecimal']>;
+  token1relativePrice_not?: InputMaybe<Scalars['BigDecimal']>;
+  token1relativePrice_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
   volumeToken0?: InputMaybe<Scalars['BigInt']>;
   volumeToken0_gt?: InputMaybe<Scalars['BigInt']>;
   volumeToken0_gte?: InputMaybe<Scalars['BigInt']>;
@@ -709,7 +801,11 @@ export enum PairHourly_OrderBy {
   Id = 'id',
   Timestamp = 'timestamp',
   Token0 = 'token0',
+  Token0Price = 'token0Price',
+  Token0relativePrice = 'token0relativePrice',
   Token1 = 'token1',
+  Token1Price = 'token1Price',
+  Token1relativePrice = 'token1relativePrice',
   VolumeToken0 = 'volumeToken0',
   VolumeToken1 = 'volumeToken1',
   VolumeTradedEth = 'volumeTradedEth',
@@ -728,6 +824,14 @@ export type Pair_Filter = {
   id_not?: InputMaybe<Scalars['ID']>;
   id_not_in?: InputMaybe<Array<Scalars['ID']>>;
   token0?: InputMaybe<Scalars['String']>;
+  token0Price?: InputMaybe<Scalars['BigDecimal']>;
+  token0Price_gt?: InputMaybe<Scalars['BigDecimal']>;
+  token0Price_gte?: InputMaybe<Scalars['BigDecimal']>;
+  token0Price_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  token0Price_lt?: InputMaybe<Scalars['BigDecimal']>;
+  token0Price_lte?: InputMaybe<Scalars['BigDecimal']>;
+  token0Price_not?: InputMaybe<Scalars['BigDecimal']>;
+  token0Price_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
   token0_contains?: InputMaybe<Scalars['String']>;
   token0_contains_nocase?: InputMaybe<Scalars['String']>;
   token0_ends_with?: InputMaybe<Scalars['String']>;
@@ -747,7 +851,23 @@ export type Pair_Filter = {
   token0_not_starts_with_nocase?: InputMaybe<Scalars['String']>;
   token0_starts_with?: InputMaybe<Scalars['String']>;
   token0_starts_with_nocase?: InputMaybe<Scalars['String']>;
+  token0relativePrice?: InputMaybe<Scalars['BigDecimal']>;
+  token0relativePrice_gt?: InputMaybe<Scalars['BigDecimal']>;
+  token0relativePrice_gte?: InputMaybe<Scalars['BigDecimal']>;
+  token0relativePrice_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  token0relativePrice_lt?: InputMaybe<Scalars['BigDecimal']>;
+  token0relativePrice_lte?: InputMaybe<Scalars['BigDecimal']>;
+  token0relativePrice_not?: InputMaybe<Scalars['BigDecimal']>;
+  token0relativePrice_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
   token1?: InputMaybe<Scalars['String']>;
+  token1Price?: InputMaybe<Scalars['BigDecimal']>;
+  token1Price_gt?: InputMaybe<Scalars['BigDecimal']>;
+  token1Price_gte?: InputMaybe<Scalars['BigDecimal']>;
+  token1Price_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  token1Price_lt?: InputMaybe<Scalars['BigDecimal']>;
+  token1Price_lte?: InputMaybe<Scalars['BigDecimal']>;
+  token1Price_not?: InputMaybe<Scalars['BigDecimal']>;
+  token1Price_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
   token1_contains?: InputMaybe<Scalars['String']>;
   token1_contains_nocase?: InputMaybe<Scalars['String']>;
   token1_ends_with?: InputMaybe<Scalars['String']>;
@@ -767,6 +887,14 @@ export type Pair_Filter = {
   token1_not_starts_with_nocase?: InputMaybe<Scalars['String']>;
   token1_starts_with?: InputMaybe<Scalars['String']>;
   token1_starts_with_nocase?: InputMaybe<Scalars['String']>;
+  token1relativePrice?: InputMaybe<Scalars['BigDecimal']>;
+  token1relativePrice_gt?: InputMaybe<Scalars['BigDecimal']>;
+  token1relativePrice_gte?: InputMaybe<Scalars['BigDecimal']>;
+  token1relativePrice_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  token1relativePrice_lt?: InputMaybe<Scalars['BigDecimal']>;
+  token1relativePrice_lte?: InputMaybe<Scalars['BigDecimal']>;
+  token1relativePrice_not?: InputMaybe<Scalars['BigDecimal']>;
+  token1relativePrice_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
   volumeToken0?: InputMaybe<Scalars['BigInt']>;
   volumeToken0_gt?: InputMaybe<Scalars['BigInt']>;
   volumeToken0_gte?: InputMaybe<Scalars['BigInt']>;
@@ -804,7 +932,11 @@ export type Pair_Filter = {
 export enum Pair_OrderBy {
   Id = 'id',
   Token0 = 'token0',
+  Token0Price = 'token0Price',
+  Token0relativePrice = 'token0relativePrice',
   Token1 = 'token1',
+  Token1Price = 'token1Price',
+  Token1relativePrice = 'token1relativePrice',
   VolumeToken0 = 'volumeToken0',
   VolumeToken1 = 'volumeToken1',
   VolumeTradedEth = 'volumeTradedEth',

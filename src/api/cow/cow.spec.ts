@@ -431,7 +431,7 @@ test('Valid: Get Profile Data', async () => {
   await cowSdk1.cowApi.getProfileData('0x6810e776880c02933d47db1b9fc05908e5386b96')
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    'https://api.cow.fi/affiliate/api/v1/profile/0x6810e776880c02933d47db1b9fc05908e5386b96',
+    'https://barn.api.cow.fi/affiliate/api/v1/profile/0x6810e776880c02933d47db1b9fc05908e5386b96',
     FETCH_RESPONSE_PARAMETERS
   )
 })
@@ -454,7 +454,7 @@ test('Invalid: Get Profile Data from unexisting address', async () => {
     expect(error.message).toEqual("You've passed an invalid URL")
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://api.cow.fi/affiliate/api/v1/profile/unexistingAddress',
+      'https://barn.api.cow.fi/affiliate/api/v1/profile/unexistingAddress',
       FETCH_RESPONSE_PARAMETERS
     )
   }
@@ -489,7 +489,7 @@ test('Valid: Send sign order cancellation', async () => {
   await cowSdk.cowApi.sendSignedOrderCancellation(ORDER_CANCELLATION)
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    `https://api.cow.fi/rinkeby/api/v1/orders/${ORDER_CANCELLATION.cancellation.orderUid}`,
+    `https://barn.api.cow.fi/rinkeby/api/v1/orders/${ORDER_CANCELLATION.cancellation.orderUid}`,
     {
       ...FETCH_RESPONSE_PARAMETERS,
       body: JSON.stringify({ ...SIGNED_ORDER_RESPONSE, signingScheme: 'eip712', from: ORDER_CANCELLATION.owner }),
@@ -515,7 +515,7 @@ test('Invalid: Send sign not found order cancellation', async () => {
     const error = e as CowError
     expect(error.message).toEqual('Token pair selected has insufficient liquidity')
     expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/rinkeby/api/v1/orders/unexistingOrder', {
+    expect(fetchMock).toHaveBeenCalledWith('https://barn.api.cow.fi/rinkeby/api/v1/orders/unexistingOrder', {
       ...FETCH_RESPONSE_PARAMETERS,
       body: JSON.stringify({ ...SIGNED_ORDER_RESPONSE, signingScheme: 'eip712', from: ORDER_CANCELLATION.owner }),
       method: 'DELETE',
@@ -588,7 +588,7 @@ test('Valid: AppDataHash properly set on X-AppId header', async () => {
   cowSdk1.updateChainId(1)
   await cowSdk1.cowApi.getProfileData('0x6810e776880c02933d47db1b9fc05908e5386b96')
   expect(fetchMock).toHaveBeenCalledWith(
-    'https://api.cow.fi/affiliate/api/v1/profile/0x6810e776880c02933d47db1b9fc05908e5386b96',
+    'https://barn.api.cow.fi/affiliate/api/v1/profile/0x6810e776880c02933d47db1b9fc05908e5386b96',
     {
       ...FETCH_RESPONSE_PARAMETERS,
       headers: { ...FETCH_RESPONSE_PARAMETERS.headers, 'X-AppId': cowSdk1.context.appDataHash },
@@ -602,7 +602,7 @@ test('Valid: AppDataHash properly set on X-AppId header when undefined', async (
   cowSdk1.updateChainId(1)
   await cowSdk1.cowApi.getProfileData('0x6810e776880c02933d47db1b9fc05908e5386b96')
   expect(fetchMock).toHaveBeenCalledWith(
-    'https://api.cow.fi/affiliate/api/v1/profile/0x6810e776880c02933d47db1b9fc05908e5386b96',
+    'https://barn.api.cow.fi/affiliate/api/v1/profile/0x6810e776880c02933d47db1b9fc05908e5386b96',
     {
       ...FETCH_RESPONSE_PARAMETERS,
       headers: {
@@ -611,4 +611,48 @@ test('Valid: AppDataHash properly set on X-AppId header when undefined', async (
       },
     }
   )
+})
+
+test('Valid: Instantiate SDK without chainId defaults to mainnet', async () => {
+  const cowSdk1 = new CowSdk()
+  const chainId = await cowSdk1.context.chainId
+  expect(chainId).toEqual(SupportedChainId.MAINNET)
+})
+
+test('Valid: Get last 5 orders changing options parameters', async () => {
+  const ORDERS_RESPONSE = Array(5).fill(ORDER_RESPONSE)
+  fetchMock.mockResponseOnce(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK })
+  const orders = await cowSdk.cowApi.getOrders(
+    {
+      owner: '0x00000000005ef87f8ca7014309ece7260bbcdaeb', // Trader
+      limit: 5,
+      offset: 0,
+    },
+    { isDevEnvironment: true, chainId: SupportedChainId.MAINNET }
+  )
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(fetchMock).toHaveBeenCalledWith(
+    'https://barn.api.cow.fi/mainnet/api/v1/account/0x00000000005ef87f8ca7014309ece7260bbcdaeb/orders/?limit=5',
+    FETCH_RESPONSE_PARAMETERS
+  )
+  expect(orders.length).toEqual(5)
+})
+
+test('Valid: Get last 5 trades changing options parameters', async () => {
+  const TRADES_RESPONSE = Array(5).fill(TRADE_RESPONSE)
+  fetchMock.mockResponseOnce(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK })
+  const trades = await cowSdk.cowApi.getTrades(
+    {
+      owner: TRADE_RESPONSE.owner, // Trader
+      limit: 5,
+      offset: 0,
+    },
+    { isDevEnvironment: true, chainId: SupportedChainId.MAINNET }
+  )
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(fetchMock).toHaveBeenCalledWith(
+    `https://barn.api.cow.fi/mainnet/api/v1/trades?owner=${TRADE_RESPONSE.owner}&limit=5`,
+    FETCH_RESPONSE_PARAMETERS
+  )
+  expect(trades.length).toEqual(5)
 })
