@@ -59,7 +59,7 @@ import { CowSdk, OrderKind } from 'cow-sdk'
 // 1. Instantiate wallet and SDK
 const mnemonic = 'fall dirt bread cactus...'
 const wallet = Wallet.fromMnemonic(mnemonic)
-const cowSdk = new CowSdk(4, { signer: wallet })
+const cowSdk = new CowSdk(4, { signer: wallet }) // Leaving chainId empty will default to MAINNET
 
 // 2. Get a price/fee quote from the API
 //    It will return the price and fee to "Sell 1 ETH for USDC"
@@ -96,6 +96,15 @@ const orderId = await cowSdk.cowApi.sendOrder({
 
 // We can inspect the Order details in the CoW Protocol Explorer
 console.log(`https://explorer.cow.fi/rinkeby/orders/${orderId}`)
+
+// You can also override defaults params when using CowApi methods
+const orderId = await cowSdk.cowApi.sendOrder(
+  {
+    order: { ...order, ...signedOrder },
+    owner: '0x1811be0994930fe9480eaede25165608b093ad7a',
+  },
+  { chainId: 1, isDevEnvironment: false }
+)
 ```
 
 SDK also includes a Metadata API to interact with AppData documents and IPFS CIDs
@@ -188,10 +197,11 @@ const chainId = 1 // Mainnet
 const cowSdk = new CowSdk(chainId)
 
 // Get Cow Protocol totals
-const { tokens, orders, traders, settlements, volumeUsd, volumeEth, feesUsd, feesEth } = await cowSdk.cowSubgraphApi.getTotals()
+const { tokens, orders, traders, settlements, volumeUsd, volumeEth, feesUsd, feesEth } =
+  await cowSdk.cowSubgraphApi.getTotals()
 console.log({ tokens, orders, traders, settlements, volumeUsd, volumeEth, feesUsd, feesEth })
 
-// Get last 24 hours volume in usd 
+// Get last 24 hours volume in usd
 const { hourlyTotals } = await cowSdk.cowSubgraphApi.getLastHoursVolume(24)
 console.log(hourlyTotals)
 
