@@ -61,7 +61,7 @@
     },
     "bigNumber": {
       "$id": "#/definitions/bigNumber",
-      "pattern": "\\d+",
+      "pattern": "^\\d+$",
       "title": "BigNumber",
       "examples": ["90741097240912730913, 0, 75891372"],
       "type": "string"
