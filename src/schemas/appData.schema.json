@@ -112,7 +112,11 @@
             "pattern": "^\\d+(\\.\\d+)?$",
             "type": "string"
           }
-        }
+        },
+        "dependencies": {
+          "sellAmount": ["buyAmount"],
+          "buyAmount": ["sellAmount"]
+        },
       }
     }
   }
