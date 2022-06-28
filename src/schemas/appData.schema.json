@@ -117,6 +117,10 @@
           "sellAmount": ["buyAmount"],
           "buyAmount": ["sellAmount"]
         },
+        "oneOf": [
+          {"required": ["slippageInBips"]},
+          {"required": ["sellAmount"]}
+        ]
       }
     }
   }
