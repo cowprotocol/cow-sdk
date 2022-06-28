@@ -96,11 +96,13 @@
           },
           "sellAmount": {
             "$ref": "#/definitions/bigNumber",
-            "title": "Quote sell amount"
+            "title": "Quote sell amount",
+            "deprecated": true
           },
           "buyAmount": {
             "$ref": "#/definitions/bigNumber",
-            "title": "Quote buy amount"
+            "title": "Quote buy amount",
+            "deprecated": true
           },
           "version": {
             "$ref": "#/definitions/version"
