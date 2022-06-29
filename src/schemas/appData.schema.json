@@ -109,7 +109,7 @@
           },
           "slippageBips": {
             "$id": "#/definitions/quote/slippageBips",
-            "title": "Slippage percentage stored in Basis Points (BIPS)",
+            "title": "Slippage tolerance that was applied to the order to get the limit price. Expressed in Basis Points (BIPS)",
             "examples": ["5", "10", "20", "100"],
             "pattern": "^\\d+(\\.\\d+)?$",
             "type": "string"
