@@ -104,10 +104,6 @@ export class CowApi {
     return getGnosisProtocolUrl(this.context.isDevEnvironment)
   }
 
-  get PROFILE_API_BASE_URL(): Partial<Record<ChainId, string>> {
-    return getProfileUrl(this.context.isDevEnvironment)
-  }
-
   async getProfileData(address: string, options: Options = {}): Promise<ProfileData | null> {
     const { chainId: networkId, isDevEnvironment } = options
     const chainId = networkId || (await this.context.chainId)
@@ -304,8 +300,8 @@ export class CowApi {
     return uid
   }
 
-  getOrderLink(orderId: OrderID): string {
-    const baseUrl = this.getApiBaseUrl()
+  async getOrderLink(orderId: OrderID): Promise<string> {
+    const baseUrl = await this.getApiBaseUrl()
 
     return baseUrl + `/orders/${orderId}`
   }
@@ -351,24 +347,12 @@ export class CowApi {
     }
   }
 
-  private async getProfileApiBaseUrl(): Promise<string> {
-    const chainId = await this.context.chainId
-    const baseUrl = this.PROFILE_API_BASE_URL[chainId]
-
-    if (!baseUrl) {
-      throw new CowError(`Unsupported Network. The ${this.API_NAME} API is not deployed in the Network ` + chainId)
-    } else {
-      return baseUrl + '/v1'
-    }
-  }
-
   private async fetch(
     url: string,
     method: 'GET' | 'POST' | 'DELETE',
-    data?: unknown,
-    baseUri?: string
+    baseUrl: string,
+    data?: unknown
   ): Promise<Response> {
-    const baseUrl = baseUri || (await this.getApiBaseUrl())
     return fetch(baseUrl + url, {
       headers: this.DEFAULT_HEADERS,
       method,
@@ -379,10 +363,9 @@ export class CowApi {
   private async fetchProfile(
     url: string,
     method: 'GET' | 'POST' | 'DELETE',
-    data?: unknown,
-    baseUri?: string
+    baseUrl: string,
+    data?: unknown
   ): Promise<Response> {
-    const baseUrl = baseUri || (await this.getProfileApiBaseUrl())
     return fetch(baseUrl + url, {
       headers: this.DEFAULT_HEADERS,
       method,
@@ -398,14 +381,14 @@ export class CowApi {
     let response
     if (isDevEnvironment === undefined) {
       try {
-        response = await this.fetch(url, 'POST', data, `${prodUri[chainId]}/v1`)
+        response = await this.fetch(url, 'POST', `${prodUri[chainId]}/v1`, data)
       } catch (error) {
-        response = await this.fetch(url, 'POST', data, `${barnUri[chainId]}/v1`)
+        response = await this.fetch(url, 'POST', `${barnUri[chainId]}/v1`, data)
       }
       return response
     } else {
       const uri = isDevEnvironment ? barnUri : prodUri
-      return await this.fetch(url, 'POST', data, uri[chainId])
+      return await this.fetch(url, 'POST', `${uri[chainId]}/v1`, data)
     }
   }
 
@@ -418,13 +401,13 @@ export class CowApi {
     let response
     if (isDevEnvironment === undefined) {
       try {
-        response = await this.fetch(url, 'GET', undefined, `${prodUri[chainId]}/v1`)
+        response = await this.fetch(url, 'GET', `${prodUri[chainId]}/v1`)
       } catch (error) {
-        response = await this.fetch(url, 'GET', undefined, `${barnUri[chainId]}/v1`)
+        response = await this.fetch(url, 'GET', `${barnUri[chainId]}/v1`)
       }
     } else {
       const uri = isDevEnvironment ? barnUri : prodUri
-      response = await this.fetch(url, 'GET', undefined, `${uri[chainId]}/v1`)
+      response = await this.fetch(url, 'GET', `${uri[chainId]}/v1`)
     }
     return response
   }
@@ -438,13 +421,13 @@ export class CowApi {
     let response
     if (isDevEnvironment === undefined) {
       try {
-        response = await this.fetchProfile(url, 'GET', undefined, `${barnUri[chainId]}/v1`)
+        response = await this.fetchProfile(url, 'GET', `${barnUri[chainId]}/v1`)
       } catch (error) {
-        response = await this.fetchProfile(url, 'GET', undefined, `${prodUri[chainId]}/v1`)
+        response = await this.fetchProfile(url, 'GET', `${prodUri[chainId]}/v1`)
       }
     } else {
       const uri = isDevEnvironment ? barnUri : prodUri
-      response = await this.fetchProfile(url, 'GET', undefined, `${uri[chainId]}/v1`)
+      response = await this.fetchProfile(url, 'GET', `${uri[chainId]}/v1`)
     }
     return response
   }
@@ -458,13 +441,13 @@ export class CowApi {
     let response
     if (isDevEnvironment === undefined) {
       try {
-        response = await this.fetch(url, 'DELETE', data, `${barnUri[chainId]}/v1`)
+        response = await this.fetch(url, 'DELETE', `${barnUri[chainId]}/v1`, data)
       } catch (error) {
-        response = await this.fetch(url, 'DELETE', data, `${prodUri[chainId]}/v1`)
+        response = await this.fetch(url, 'DELETE', `${prodUri[chainId]}/v1`, data)
       }
     } else {
       const uri = isDevEnvironment ? barnUri : prodUri
-      response = await this.fetch(url, 'DELETE', data, `${uri[chainId]}/v1`)
+      response = await this.fetch(url, 'DELETE', `${uri[chainId]}/v1`, data)
     }
     return response
   }

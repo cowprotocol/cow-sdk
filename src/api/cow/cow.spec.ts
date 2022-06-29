@@ -139,6 +139,11 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
+test('Valid: Get orders link ', async () => {
+  const orderLink = await cowSdk.cowApi.getOrderLink(ORDER_RESPONSE.uid)
+  expect(orderLink).toEqual(`https://api.cow.fi/rinkeby/api/v1/orders/${ORDER_RESPONSE.uid}`)
+})
+
 test('Valid: Get an order ', async () => {
   fetchMock.mockResponseOnce(JSON.stringify(ORDER_RESPONSE), { status: HTTP_STATUS_OK })
   const order = await cowSdk.cowApi.getOrder(ORDER_RESPONSE.uid)
