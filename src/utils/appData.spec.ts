@@ -116,14 +116,14 @@ test('Valid IPFS appData from CID', async () => {
   expect(validation).toEqual(VALID_RESULT)
 })
 
-test('Valid: quote metadata - minimal', async () => {
+test('Valid: quote metadata - amounts', async () => {
   const document = { ...BASE_DOCUMENT, metadata: { quote: { sellAmount: '1', buyAmount: '1', version: '0.1.0' } } }
   const validation = await validateAppDataDocument(document)
 
   expect(validation).toEqual(VALID_RESULT)
 })
 
-test('Valid: quote metadata - with all fields', async () => {
+test('Valid: quote metadata - amounts - with quoteId', async () => {
   const document = {
     ...BASE_DOCUMENT,
     metadata: { quote: { sellAmount: '1', buyAmount: '1', id: 'S09D8ZFAX', version: '0.1.0' } },
@@ -133,15 +133,50 @@ test('Valid: quote metadata - with all fields', async () => {
   expect(validation).toEqual(VALID_RESULT)
 })
 
+test('Valid: quote metadata - slippage', async () => {
+  const document = { ...BASE_DOCUMENT, metadata: { quote: { version: '0.1.0', slippageBips: '5' } } }
+  const validation = await validateAppDataDocument(document)
+
+  expect(validation).toEqual(VALID_RESULT)
+})
+
+test('Valid: quote metadata - slippage - decimals', async () => {
+  const document = { ...BASE_DOCUMENT, metadata: { quote: { version: '0.1.0', slippageBips: '0.1' } } }
+  const validation = await validateAppDataDocument(document)
+
+  expect(validation).toEqual(VALID_RESULT)
+})
+
 test('Invalid: quote metadata - missing fields', async () => {
-  const document = { ...BASE_DOCUMENT, metadata: { quote: {} } }
+  const document = { ...BASE_DOCUMENT, metadata: { quote: { version: '0.1.2' } } }
   const validation = await validateAppDataDocument(document)
 
   expect(validation.result).toBeFalsy()
 })
 
-test('Invalid: quote metadata - wrong type', async () => {
-  const document = { ...BASE_DOCUMENT, metadata: { quote: { sellAmount: 312, buyAmount: '0xbab3' } } }
+test('Invalid: quote metadata - wrong amount type', async () => {
+  const document = { ...BASE_DOCUMENT, metadata: { quote: { version: '0.1.0', sellAmount: 312, buyAmount: '0xbab3' } } }
+  const validation = await validateAppDataDocument(document)
+
+  expect(validation.result).toBeFalsy()
+})
+
+test('Invalid: quote metadata - wrong slippage amount', async () => {
+  const document = { ...BASE_DOCUMENT, metadata: { quote: { version: '0.1.0', slippageBips: '.1' } } }
+  const validation = await validateAppDataDocument(document)
+
+  expect(validation.result).toBeFalsy()
+})
+
+test('Invalid: quote metadata - amount missing buyAmount type', async () => {
+  const document = { ...BASE_DOCUMENT, metadata: { quote: { sellAmount: 312 } } }
+  const validation = await validateAppDataDocument(document)
+
+  expect(validation.result).toBeFalsy()
+})
+
+test('Invalid: quote metadata - amount missing sellAmount type', async () => {
+  const document = { ...BASE_DOCUMENT, metadata: { quote: { buyAmount: 312 } } }
   const validation = await validateAppDataDocument(document)
 
   expect(validation.result).toBeFalsy()

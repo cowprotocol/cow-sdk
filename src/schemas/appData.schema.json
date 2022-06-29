@@ -61,7 +61,7 @@
     },
     "bigNumber": {
       "$id": "#/definitions/bigNumber",
-      "pattern": "\\d+",
+      "pattern": "^\\d+$",
       "title": "BigNumber",
       "examples": ["90741097240912730913, 0, 75891372"],
       "type": "string"
@@ -84,7 +84,7 @@
       },
       "quote": {
         "$id": "#/definitions/quote",
-        "required": ["sellAmount", "buyAmount", "version"],
+        "required": ["version"],
         "title": "Quote",
         "type": "object",
         "properties": {
@@ -96,16 +96,33 @@
           },
           "sellAmount": {
             "$ref": "#/definitions/bigNumber",
-            "title": "Quote sell amount"
+            "title": "Quote sell amount",
+            "deprecated": true
           },
           "buyAmount": {
             "$ref": "#/definitions/bigNumber",
-            "title": "Quote buy amount"
+            "title": "Quote buy amount",
+            "deprecated": true
           },
           "version": {
             "$ref": "#/definitions/version"
+          },
+          "slippageBips": {
+            "$id": "#/definitions/quote/slippageBips",
+            "title": "Slippage tolerance that was applied to the order to get the limit price. Expressed in Basis Points (BIPS)",
+            "examples": ["5", "10", "20", "100"],
+            "pattern": "^\\d+(\\.\\d+)?$",
+            "type": "string"
           }
-        }
+        },
+        "dependencies": {
+          "sellAmount": ["buyAmount"],
+          "buyAmount": ["sellAmount"]
+        },
+        "oneOf": [
+          {"required": ["slippageBips"]},
+          {"required": ["sellAmount"]}
+        ]
       }
     }
   }
