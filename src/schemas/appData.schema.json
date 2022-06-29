@@ -107,8 +107,8 @@
           "version": {
             "$ref": "#/definitions/version"
           },
-          "slippageInBips": {
-            "$id": "#/definitions/quote/slippageInBips",
+          "slippageBips": {
+            "$id": "#/definitions/quote/slippageBips",
             "title": "Slippage percentage stored in Basis Points (BIPS)",
             "examples": ["5", "10", "20", "100"],
             "pattern": "^\\d+(\\.\\d+)?$",
@@ -120,7 +120,7 @@
           "buyAmount": ["sellAmount"]
         },
         "oneOf": [
-          {"required": ["slippageInBips"]},
+          {"required": ["slippageBips"]},
           {"required": ["sellAmount"]}
         ]
       }

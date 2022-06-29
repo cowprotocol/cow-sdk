@@ -134,14 +134,14 @@ test('Valid: quote metadata - amounts - with quoteId', async () => {
 })
 
 test('Valid: quote metadata - slippage', async () => {
-  const document = { ...BASE_DOCUMENT, metadata: { quote: { version: '0.1.0', slippageInBips: '5' } } }
+  const document = { ...BASE_DOCUMENT, metadata: { quote: { version: '0.1.0', slippageBips: '5' } } }
   const validation = await validateAppDataDocument(document)
 
   expect(validation).toEqual(VALID_RESULT)
 })
 
 test('Valid: quote metadata - slippage - decimals', async () => {
-  const document = { ...BASE_DOCUMENT, metadata: { quote: { version: '0.1.0', slippageInBips: '0.1' } } }
+  const document = { ...BASE_DOCUMENT, metadata: { quote: { version: '0.1.0', slippageBips: '0.1' } } }
   const validation = await validateAppDataDocument(document)
 
   expect(validation).toEqual(VALID_RESULT)
@@ -162,7 +162,7 @@ test('Invalid: quote metadata - wrong amount type', async () => {
 })
 
 test('Invalid: quote metadata - wrong slippage amount', async () => {
-  const document = { ...BASE_DOCUMENT, metadata: { quote: { version: '0.1.0', slippageInBips: '.1' } } }
+  const document = { ...BASE_DOCUMENT, metadata: { quote: { version: '0.1.0', slippageBips: '.1' } } }
   const validation = await validateAppDataDocument(document)
 
   expect(validation.result).toBeFalsy()

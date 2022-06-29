@@ -9,13 +9,13 @@ export type ReferralMetadata = Metadata & {
 export type OnlyQuoteAmounts = {
   sellAmount: string
   buyAmount: string
-  slippageInBips?: never
+  slippageBips?: never
 }
 
 export type OnlyQuoteSlippage = {
   sellAmount?: never
   buyAmount?: never
-  slippageInBips: string
+  slippageBips: string
 }
 
 export type OnlyQuoteAmountsOrSlippage = OnlyQuoteAmounts | OnlyQuoteSlippage
