@@ -103,6 +103,7 @@ export interface FeeInformation {
 export interface PriceInformation {
   token: string
   amount: string | null
+  quoteId?: number
 }
 
 // GetQuoteResponse from @cowprotocol/contracts types Timestamp and BigNumberish
@@ -116,6 +117,7 @@ export type SimpleGetQuoteResponse = Pick<GetQuoteResponse, 'from'> & {
     feeAmount: string
   }
   expiration: string
+  id: number | null
 }
 
 export type FeeQuoteParams = Pick<OrderMetaData, 'sellToken' | 'buyToken' | 'kind'> & {
