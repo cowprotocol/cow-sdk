@@ -436,7 +436,7 @@ test('Valid: Get Profile Data', async () => {
   await cowSdk1.cowApi.getProfileData('0x6810e776880c02933d47db1b9fc05908e5386b96')
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    'https://barn.api.cow.fi/affiliate/api/v1/profile/0x6810e776880c02933d47db1b9fc05908e5386b96',
+    'https://api.cow.fi/affiliate/api/v1/profile/0x6810e776880c02933d47db1b9fc05908e5386b96',
     FETCH_RESPONSE_PARAMETERS
   )
 })
@@ -459,7 +459,7 @@ test('Invalid: Get Profile Data from unexisting address', async () => {
     expect(error.message).toEqual("You've passed an invalid URL")
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://barn.api.cow.fi/affiliate/api/v1/profile/unexistingAddress',
+      'https://api.cow.fi/affiliate/api/v1/profile/unexistingAddress',
       FETCH_RESPONSE_PARAMETERS
     )
   }
@@ -494,7 +494,7 @@ test('Valid: Send sign order cancellation', async () => {
   await cowSdk.cowApi.sendSignedOrderCancellation(ORDER_CANCELLATION)
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    `https://barn.api.cow.fi/rinkeby/api/v1/orders/${ORDER_CANCELLATION.cancellation.orderUid}`,
+    `https://api.cow.fi/rinkeby/api/v1/orders/${ORDER_CANCELLATION.cancellation.orderUid}`,
     {
       ...FETCH_RESPONSE_PARAMETERS,
       body: JSON.stringify({ ...SIGNED_ORDER_RESPONSE, signingScheme: 'eip712', from: ORDER_CANCELLATION.owner }),
@@ -520,7 +520,7 @@ test('Invalid: Send sign not found order cancellation', async () => {
     const error = e as CowError
     expect(error.message).toEqual('Token pair selected has insufficient liquidity')
     expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(fetchMock).toHaveBeenCalledWith('https://barn.api.cow.fi/rinkeby/api/v1/orders/unexistingOrder', {
+    expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/rinkeby/api/v1/orders/unexistingOrder', {
       ...FETCH_RESPONSE_PARAMETERS,
       body: JSON.stringify({ ...SIGNED_ORDER_RESPONSE, signingScheme: 'eip712', from: ORDER_CANCELLATION.owner }),
       method: 'DELETE',
@@ -593,7 +593,7 @@ test('Valid: AppDataHash properly set on X-AppId header', async () => {
   cowSdk1.updateChainId(1)
   await cowSdk1.cowApi.getProfileData('0x6810e776880c02933d47db1b9fc05908e5386b96')
   expect(fetchMock).toHaveBeenCalledWith(
-    'https://barn.api.cow.fi/affiliate/api/v1/profile/0x6810e776880c02933d47db1b9fc05908e5386b96',
+    'https://api.cow.fi/affiliate/api/v1/profile/0x6810e776880c02933d47db1b9fc05908e5386b96',
     {
       ...FETCH_RESPONSE_PARAMETERS,
       headers: { ...FETCH_RESPONSE_PARAMETERS.headers, 'X-AppId': cowSdk1.context.appDataHash },
@@ -607,7 +607,7 @@ test('Valid: AppDataHash properly set on X-AppId header when undefined', async (
   cowSdk1.updateChainId(1)
   await cowSdk1.cowApi.getProfileData('0x6810e776880c02933d47db1b9fc05908e5386b96')
   expect(fetchMock).toHaveBeenCalledWith(
-    'https://barn.api.cow.fi/affiliate/api/v1/profile/0x6810e776880c02933d47db1b9fc05908e5386b96',
+    'https://api.cow.fi/affiliate/api/v1/profile/0x6810e776880c02933d47db1b9fc05908e5386b96',
     {
       ...FETCH_RESPONSE_PARAMETERS,
       headers: {

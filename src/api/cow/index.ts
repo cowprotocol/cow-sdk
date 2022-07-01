@@ -373,81 +373,45 @@ export class CowApi {
     })
   }
 
-  private async post(url: string, data: unknown, options: Options = {}): Promise<Response> {
-    const { chainId: networkId, isDevEnvironment } = options
-    const prodUri = getGnosisProtocolUrl(false)
-    const barnUri = getGnosisProtocolUrl(true)
-    const chainId = networkId || (await this.context.chainId)
-    let response
-    if (isDevEnvironment === undefined) {
-      try {
-        response = await this.fetch(url, 'POST', `${prodUri[chainId]}/v1`, data)
-      } catch (error) {
-        response = await this.fetch(url, 'POST', `${barnUri[chainId]}/v1`, data)
-      }
-      return response
-    } else {
-      const uri = isDevEnvironment ? barnUri : prodUri
-      return await this.fetch(url, 'POST', `${uri[chainId]}/v1`, data)
-    }
+  private post(url: string, data: unknown, options: Options = {}): Promise<Response> {
+    return this.handleMethod(url, 'POST', this.fetch.bind(this), getGnosisProtocolUrl, options, data)
   }
 
-  private async get(url: string, options: Options = {}): Promise<Response> {
-    const { chainId: networkId, isDevEnvironment } = options
-    const prodUri = getGnosisProtocolUrl(false)
-    const barnUri = getGnosisProtocolUrl(true)
-    const chainId = networkId || (await this.context.chainId)
-
-    let response
-    if (isDevEnvironment === undefined) {
-      try {
-        response = await this.fetch(url, 'GET', `${prodUri[chainId]}/v1`)
-      } catch (error) {
-        response = await this.fetch(url, 'GET', `${barnUri[chainId]}/v1`)
-      }
-    } else {
-      const uri = isDevEnvironment ? barnUri : prodUri
-      response = await this.fetch(url, 'GET', `${uri[chainId]}/v1`)
-    }
-    return response
+  private get(url: string, options: Options = {}): Promise<Response> {
+    return this.handleMethod(url, 'GET', this.fetch.bind(this), getGnosisProtocolUrl, options)
   }
 
-  private async getProfile(url: string, options: Options = {}): Promise<Response> {
-    const { chainId: networkId, isDevEnvironment } = options
-    const prodUri = getProfileUrl(false)
-    const barnUri = getProfileUrl(true)
-    const chainId = networkId || (await this.context.chainId)
-
-    let response
-    if (isDevEnvironment === undefined) {
-      try {
-        response = await this.fetchProfile(url, 'GET', `${barnUri[chainId]}/v1`)
-      } catch (error) {
-        response = await this.fetchProfile(url, 'GET', `${prodUri[chainId]}/v1`)
-      }
-    } else {
-      const uri = isDevEnvironment ? barnUri : prodUri
-      response = await this.fetchProfile(url, 'GET', `${uri[chainId]}/v1`)
-    }
-    return response
+  private getProfile(url: string, options: Options = {}): Promise<Response> {
+    return this.handleMethod(url, 'GET', this.fetchProfile.bind(this), getProfileUrl, options)
   }
 
-  private async delete(url: string, data: unknown, options: Options = {}): Promise<Response> {
+  private delete(url: string, data: unknown, options: Options = {}): Promise<Response> {
+    return this.handleMethod(url, 'DELETE', this.fetch.bind(this), getGnosisProtocolUrl, options, data)
+  }
+
+  private async handleMethod(
+    url: string,
+    method: 'GET' | 'POST' | 'DELETE',
+    fetchFn: typeof this.fetch | typeof this.fetchProfile,
+    getUrl: typeof getGnosisProtocolUrl | typeof getProfileUrl,
+    options: Options = {},
+    data?: unknown
+  ): Promise<Response> {
     const { chainId: networkId, isDevEnvironment } = options
-    const prodUri = getGnosisProtocolUrl(false)
-    const barnUri = getGnosisProtocolUrl(true)
+    const prodUri = getUrl(false)
+    const barnUri = getUrl(true)
     const chainId = networkId || (await this.context.chainId)
 
     let response
     if (isDevEnvironment === undefined) {
       try {
-        response = await this.fetch(url, 'DELETE', `${barnUri[chainId]}/v1`, data)
+        response = await fetchFn(url, method, `${prodUri[chainId]}/v1`, data)
       } catch (error) {
-        response = await this.fetch(url, 'DELETE', `${prodUri[chainId]}/v1`, data)
+        response = await fetchFn(url, method, `${barnUri[chainId]}/v1`, data)
       }
     } else {
       const uri = isDevEnvironment ? barnUri : prodUri
-      response = await this.fetch(url, 'DELETE', `${uri[chainId]}/v1`, data)
+      response = await fetchFn(url, method, `${uri[chainId]}/v1`, data)
     }
     return response
   }
