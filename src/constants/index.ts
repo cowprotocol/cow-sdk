@@ -1,4 +1,4 @@
-import contractNetworks from '@cowprotocol/contracts/networks.json'
+import contractNetworks from '@cowprotocol/contracts/networks.json' assert { type: 'json' }
 import { SupportedChainId as ChainId } from './chains'
 
 const { GPv2Settlement } = contractNetworks
