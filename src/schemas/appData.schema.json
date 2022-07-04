@@ -84,26 +84,10 @@
       },
       "quote": {
         "$id": "#/definitions/quote",
-        "required": ["version"],
+        "required": ["version", "slippageBips"],
         "title": "Quote",
         "type": "object",
         "properties": {
-          "id": {
-            "$id": "#/definitions/quote/id",
-            "title": "Quote id",
-            "examples": ["XA23443543534FF"],
-            "type": "string"
-          },
-          "sellAmount": {
-            "$ref": "#/definitions/bigNumber",
-            "title": "Quote sell amount",
-            "deprecated": true
-          },
-          "buyAmount": {
-            "$ref": "#/definitions/bigNumber",
-            "title": "Quote buy amount",
-            "deprecated": true
-          },
           "version": {
             "$ref": "#/definitions/version"
           },
@@ -114,15 +98,7 @@
             "pattern": "^\\d+(\\.\\d+)?$",
             "type": "string"
           }
-        },
-        "dependencies": {
-          "sellAmount": ["buyAmount"],
-          "buyAmount": ["sellAmount"]
-        },
-        "oneOf": [
-          {"required": ["slippageBips"]},
-          {"required": ["sellAmount"]}
-        ]
+        }
       }
     }
   }
