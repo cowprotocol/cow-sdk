@@ -116,23 +116,6 @@ test('Valid IPFS appData from CID', async () => {
   expect(validation).toEqual(VALID_RESULT)
 })
 
-test('Valid: quote metadata - amounts', async () => {
-  const document = { ...BASE_DOCUMENT, metadata: { quote: { sellAmount: '1', buyAmount: '1', version: '0.1.0' } } }
-  const validation = await validateAppDataDocument(document)
-
-  expect(validation).toEqual(VALID_RESULT)
-})
-
-test('Valid: quote metadata - amounts - with quoteId', async () => {
-  const document = {
-    ...BASE_DOCUMENT,
-    metadata: { quote: { sellAmount: '1', buyAmount: '1', id: 'S09D8ZFAX', version: '0.1.0' } },
-  }
-  const validation = await validateAppDataDocument(document)
-
-  expect(validation).toEqual(VALID_RESULT)
-})
-
 test('Valid: quote metadata - slippage', async () => {
   const document = { ...BASE_DOCUMENT, metadata: { quote: { version: '0.1.0', slippageBips: '5' } } }
   const validation = await validateAppDataDocument(document)
