@@ -1,4 +1,5 @@
 import { OrderKind } from '@cowprotocol/contracts'
+import log from 'loglevel'
 import { SupportedChainId } from '../../constants/chains'
 import { Context } from '../../utils/context'
 import { getTokensFromMarket } from '../../utils/market'
@@ -6,33 +7,40 @@ import { toErc20Address } from '../../utils/tokens'
 
 import BaseApi from '../base'
 
-import { PriceInformation, PriceQuoteParams } from '../cow/types'
-import { MatchaPriceQuote } from './types'
-
-// Defaults
-const API_NAME = '0x'
+import { PriceQuoteParams } from '../cow/types'
+import { ERC20BridgeSource, MatchaOptions, MatchaPriceQuote } from './types'
 
 // GPV2Settlement
 // https://etherscan.io/address/0x9008d19f58aabd9ed0d60971565aa8510560ab41
 const AFFILIATE_ADDRESS = '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'
-const EXCLUDED_SOURCES = ''
-const MATCHA_DEFAULT_OPTIONS = `affiliateAddress=${AFFILIATE_ADDRESS}&excludedSources=${EXCLUDED_SOURCES}`
+const EXCLUDED_SOURCES: ERC20BridgeSource[] = []
 
 export class ZeroXApi extends BaseApi {
-  constructor(context: Context) {
-    super({ context, name: API_NAME, baseUrl: _get0xUrls() })
+  MATCHA_OPTIONS
+  MATCHA_OPTIONS_URL
+
+  constructor(
+    context: Context,
+    matchaOptions: MatchaOptions = { affiliateAddress: AFFILIATE_ADDRESS, excludedSources: EXCLUDED_SOURCES }
+  ) {
+    super({ context, name: '0x', baseUrl: _get0xUrls() })
+    this.MATCHA_OPTIONS = matchaOptions
+    this.MATCHA_OPTIONS_URL = _optionsToSearchUrl(matchaOptions)
   }
 
   async getQuote(params: PriceQuoteParams): Promise<MatchaPriceQuote | null> {
     const { amount, baseToken, quoteToken, kind } = params
     const chainId = await this.context.chainId
+    // this is handled via an error on L51 via the fetch call
+    // but we can handle it here to control the flow better
     const networkId = _getMatchaChainId(chainId)
     if (networkId == null) {
+      log.debug('[0x API] - Network not supported')
       // Unsupported network
       return null
     }
 
-    console.log(`[pricesApi:${API_NAME}] Get price from ${API_NAME}`, params)
+    log.debug(`[0x API] Get price from ${this.API_NAME}`, params, this.MATCHA_OPTIONS)
 
     // Buy/sell token and side (sell/buy)
     const { sellToken, buyToken } = getTokensFromMarket({
@@ -41,16 +49,28 @@ export class ZeroXApi extends BaseApi {
       kind,
     })
     const swapSide = kind === OrderKind.BUY ? 'buyAmount' : 'sellAmount'
-
     const response = await this.fetch(
-      `/price?sellToken=${sellToken}&buyToken=${buyToken}&${swapSide}=${amount}&${MATCHA_DEFAULT_OPTIONS}`,
+      `/price?sellToken=${sellToken}&buyToken=${buyToken}&${swapSide}=${amount}&${this.MATCHA_OPTIONS_URL}`,
       'GET'
     ).catch((error) => {
-      console.error(`Error getting ${API_NAME} price quote:`, error)
+      log.error(`Error getting ${this.API_NAME} price quote:`, error)
       throw new Error(error)
     })
 
     return response.json()
+  }
+
+  public updateOptions({ affiliateAddress, excludedSources }: Partial<MatchaOptions>) {
+    if (affiliateAddress) {
+      log.debug('0xApi::Updating 0x affiliate address to', affiliateAddress)
+      this.MATCHA_OPTIONS.affiliateAddress = affiliateAddress
+    }
+    if (excludedSources) {
+      log.debug('0xApi::Updating 0x affiliate exlcudedSources to', excludedSources)
+      this.MATCHA_OPTIONS.excludedSources = excludedSources
+    }
+
+    this.MATCHA_OPTIONS_URL = _optionsToSearchUrl(this.MATCHA_OPTIONS)
   }
 }
 
@@ -58,21 +78,7 @@ function _get0xUrls(): Partial<Record<SupportedChainId, string>> {
   // Support: Mainnet, Ropsten, Polygon, Binance Smart Chain
   // See https://0x.org/docs/api#introduction
   return {
-    [SupportedChainId.MAINNET]: 'https://api.0x.org/swap',
-  }
-}
-
-export function toPriceInformation(priceRaw: MatchaPriceQuote | null, kind: OrderKind): PriceInformation | null {
-  if (!priceRaw || !priceRaw.price) {
-    return null
-  }
-
-  const { sellAmount, buyAmount, sellTokenAddress, buyTokenAddress } = priceRaw
-
-  if (kind === OrderKind.BUY) {
-    return { amount: sellAmount, token: sellTokenAddress }
-  } else {
-    return { amount: buyAmount, token: buyTokenAddress }
+    [SupportedChainId.MAINNET]: 'https://api.0x.org/swap/v1',
   }
 }
 
@@ -88,4 +94,14 @@ function _getMatchaChainId(chainId: SupportedChainId): SupportedChainId | null {
       // Unsupported network
       return null
   }
+}
+
+function _optionsToSearchUrl(options: MatchaOptions) {
+  const { excludedSources, affiliateAddress } = options
+
+  const excludedSourceString = excludedSources.length > 0 ? excludedSources.join(',') : ''
+  const optionsMap = Object.entries({ excludedSources: excludedSourceString, affiliateAddress }).map(
+    ([option, value]) => `${option}=${value}`
+  )
+  return optionsMap.join('&')
 }
