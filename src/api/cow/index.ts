@@ -22,6 +22,7 @@ import {
   OrderMetaData,
   ProfileData,
   TradeMetaData,
+  Options,
 } from './types'
 import { CowError, logPrefix, objectToQueryString } from '../../utils/common'
 import { Context } from '../../utils/context'
@@ -103,19 +104,16 @@ export class CowApi {
     return getGnosisProtocolUrl(this.context.isDevEnvironment)
   }
 
-  get PROFILE_API_BASE_URL(): Partial<Record<ChainId, string>> {
-    return getProfileUrl(this.context.isDevEnvironment)
-  }
-
-  async getProfileData(address: string): Promise<ProfileData | null> {
-    const chainId = await this.context.chainId
+  async getProfileData(address: string, options: Options = {}): Promise<ProfileData | null> {
+    const { chainId: networkId, isDevEnvironment } = options
+    const chainId = networkId || (await this.context.chainId)
     log.debug(logPrefix, `[api:${this.API_NAME}] Get profile data for`, chainId, address)
     if (chainId !== ChainId.MAINNET) {
       log.info(logPrefix, 'Profile data is only available for mainnet')
       return null
     }
 
-    const response = await this.getProfile(`/profile/${address}`)
+    const response = await this.getProfile(`/profile/${address}`, { chainId, isDevEnvironment })
 
     if (!response.ok) {
       const errorResponse = await response.json()
@@ -126,16 +124,17 @@ export class CowApi {
     }
   }
 
-  async getTrades(params: GetTradesParams): Promise<TradeMetaData[]> {
+  async getTrades(params: GetTradesParams, options: Options = {}): Promise<TradeMetaData[]> {
+    const { chainId: networkId, isDevEnvironment = this.context.isDevEnvironment } = options
     const { owner, orderId, limit, offset } = params
     if (owner && orderId) {
       throw new CowError('Cannot specify both owner and orderId')
     }
     const qsParams = objectToQueryString({ owner, orderUid: orderId, limit, offset })
-    const chainId = await this.context.chainId
+    const chainId = networkId || (await this.context.chainId)
     log.debug(logPrefix, '[util:operator] Get trades for', chainId, { owner, orderId, limit, offset })
     try {
-      const response = await this.get(`/trades${qsParams}`)
+      const response = await this.get(`/trades${qsParams}`, { chainId, isDevEnvironment })
 
       if (!response.ok) {
         const errorResponse = await response.json()
@@ -151,14 +150,15 @@ export class CowApi {
     }
   }
 
-  async getOrders(params: GetOrdersParams): Promise<OrderMetaData[]> {
+  async getOrders(params: GetOrdersParams, options: Options = {}): Promise<OrderMetaData[]> {
+    const { chainId: networkId, isDevEnvironment = this.context.isDevEnvironment } = options
     const { owner, limit = 1000, offset = 0 } = params
     const queryString = objectToQueryString({ limit, offset })
-    const chainId = await this.context.chainId
+    const chainId = networkId || (await this.context.chainId)
     log.debug(logPrefix, `[api:${this.API_NAME}] Get orders for `, chainId, owner, limit, offset)
 
     try {
-      const response = await this.get(`/account/${owner}/orders/${queryString}`)
+      const response = await this.get(`/account/${owner}/orders/${queryString}`, { chainId, isDevEnvironment })
 
       if (!response.ok) {
         const errorResponse: ApiErrorObject = await response.json()
@@ -174,12 +174,13 @@ export class CowApi {
     }
   }
 
-  async getTxOrders(txHash: string): Promise<OrderMetaData[]> {
-    const chainId = await this.context.chainId
+  async getTxOrders(txHash: string, options: Options = {}): Promise<OrderMetaData[]> {
+    const { chainId: networkId, isDevEnvironment } = options
+    const chainId = networkId || (await this.context.chainId)
     log.debug(`[api:${this.API_NAME}] Get tx orders for `, chainId, txHash)
 
     try {
-      const response = await this.get(`/transactions/${txHash}/orders`)
+      const response = await this.get(`/transactions/${txHash}/orders`, { chainId, isDevEnvironment })
 
       if (!response.ok) {
         const errorResponse: ApiErrorObject = await response.json()
@@ -194,11 +195,12 @@ export class CowApi {
     }
   }
 
-  async getOrder(orderId: string): Promise<OrderMetaData | null> {
-    const chainId = await this.context.chainId
+  async getOrder(orderId: string, options: Options = {}): Promise<OrderMetaData | null> {
+    const { chainId: networkId, isDevEnvironment } = options
+    const chainId = networkId || (await this.context.chainId)
     log.debug(logPrefix, `[api:${this.API_NAME}] Get order for `, chainId, orderId)
     try {
-      const response = await this.get(`/orders/${orderId}`)
+      const response = await this.get(`/orders/${orderId}`, { chainId, isDevEnvironment })
 
       if (!response.ok) {
         const errorResponse: ApiErrorObject = await response.json()
@@ -214,13 +216,15 @@ export class CowApi {
     }
   }
 
-  async getPriceQuoteLegacy(params: PriceQuoteParams): Promise<PriceInformation | null> {
+  async getPriceQuoteLegacy(params: PriceQuoteParams, options: Options = {}): Promise<PriceInformation | null> {
+    const { chainId: networkId, isDevEnvironment } = options
     const { baseToken, quoteToken, amount, kind } = params
-    const chainId = await this.context.chainId
+    const chainId = networkId || (await this.context.chainId)
     log.debug(logPrefix, `[api:${this.API_NAME}] Get price from API`, params, 'for', chainId)
 
     const response = await this.get(
-      `/markets/${toErc20Address(baseToken, chainId)}-${toErc20Address(quoteToken, chainId)}/${kind}/${amount}`
+      `/markets/${toErc20Address(baseToken, chainId)}-${toErc20Address(quoteToken, chainId)}/${kind}/${amount}`,
+      { chainId, isDevEnvironment }
     ).catch((error) => {
       log.error(logPrefix, 'Error getting price quote:', error)
       throw new QuoteError(UNHANDLED_QUOTE_ERROR)
@@ -229,24 +233,30 @@ export class CowApi {
     return _handleQuoteResponse<PriceInformation | null>(response)
   }
 
-  async getQuote(params: FeeQuoteParams): Promise<SimpleGetQuoteResponse> {
-    const chainId = await this.context.chainId
+  async getQuote(params: FeeQuoteParams, options: Options = {}): Promise<SimpleGetQuoteResponse> {
+    const { chainId: networkId, isDevEnvironment } = options
+    const chainId = networkId || (await this.context.chainId)
     const quoteParams = this.mapNewToLegacyParams(params, chainId)
-    const response = await this.post('/quote', quoteParams)
+    const response = await this.post('/quote', quoteParams, { chainId, isDevEnvironment })
 
     return _handleQuoteResponse<SimpleGetQuoteResponse>(response)
   }
 
-  async sendSignedOrderCancellation(params: OrderCancellationParams): Promise<void> {
+  async sendSignedOrderCancellation(params: OrderCancellationParams, options: Options = {}): Promise<void> {
+    const { chainId: networkId, isDevEnvironment } = options
     const { cancellation, owner: from } = params
-    const chainId = await this.context.chainId
+    const chainId = networkId || (await this.context.chainId)
     log.debug(logPrefix, `[api:${this.API_NAME}] Delete signed order for network`, chainId, cancellation)
 
-    const response = await this.delete(`/orders/${cancellation.orderUid}`, {
-      signature: cancellation.signature,
-      signingScheme: getSigningSchemeApiValue(cancellation.signingScheme),
-      from,
-    })
+    const response = await this.delete(
+      `/orders/${cancellation.orderUid}`,
+      {
+        signature: cancellation.signature,
+        signingScheme: getSigningSchemeApiValue(cancellation.signingScheme),
+        from,
+      },
+      { chainId, isDevEnvironment }
+    )
 
     if (!response.ok) {
       // Raise an exception
@@ -257,18 +267,26 @@ export class CowApi {
     log.debug(logPrefix, `[api:${this.API_NAME}] Cancelled order`, cancellation.orderUid, chainId)
   }
 
-  async sendOrder(params: { order: Omit<OrderCreation, 'appData'>; owner: string }): Promise<OrderID> {
+  async sendOrder(
+    params: { order: Omit<OrderCreation, 'appData'>; owner: string },
+    options: Options = {}
+  ): Promise<OrderID> {
     const fullOrder: OrderCreation = { ...params.order, appData: this.context.appDataHash }
-    const chainId = await this.context.chainId
+    const { chainId: networkId, isDevEnvironment } = options
+    const chainId = networkId || (await this.context.chainId)
     const { owner } = params
     log.debug(logPrefix, `[api:${this.API_NAME}] Post signed order for network`, chainId, fullOrder)
 
     // Call API
-    const response = await this.post(`/orders`, {
-      ...fullOrder,
-      signingScheme: getSigningSchemeApiValue(fullOrder.signingScheme),
-      from: owner,
-    })
+    const response = await this.post(
+      `/orders`,
+      {
+        ...fullOrder,
+        signingScheme: getSigningSchemeApiValue(fullOrder.signingScheme),
+        from: owner,
+      },
+      { chainId, isDevEnvironment }
+    )
 
     // Handle response
     if (!response.ok) {
@@ -282,8 +300,8 @@ export class CowApi {
     return uid
   }
 
-  getOrderLink(orderId: OrderID): string {
-    const baseUrl = this.getApiBaseUrl()
+  async getOrderLink(orderId: OrderID): Promise<string> {
+    const baseUrl = await this.getApiBaseUrl()
 
     return baseUrl + `/orders/${orderId}`
   }
@@ -329,48 +347,72 @@ export class CowApi {
     }
   }
 
-  private async getProfileApiBaseUrl(): Promise<string> {
-    const chainId = await this.context.chainId
-    const baseUrl = this.PROFILE_API_BASE_URL[chainId]
+  private async fetch(
+    url: string,
+    method: 'GET' | 'POST' | 'DELETE',
+    baseUrl: string,
+    data?: unknown
+  ): Promise<Response> {
+    return fetch(baseUrl + url, {
+      headers: this.DEFAULT_HEADERS,
+      method,
+      body: data !== undefined ? JSON.stringify(data) : data,
+    })
+  }
 
-    if (!baseUrl) {
-      throw new CowError(`Unsupported Network. The ${this.API_NAME} API is not deployed in the Network ` + chainId)
+  private async fetchProfile(
+    url: string,
+    method: 'GET' | 'POST' | 'DELETE',
+    baseUrl: string,
+    data?: unknown
+  ): Promise<Response> {
+    return fetch(baseUrl + url, {
+      headers: this.DEFAULT_HEADERS,
+      method,
+      body: data !== undefined ? JSON.stringify(data) : data,
+    })
+  }
+
+  private post(url: string, data: unknown, options: Options = {}): Promise<Response> {
+    return this.handleMethod(url, 'POST', this.fetch.bind(this), getGnosisProtocolUrl, options, data)
+  }
+
+  private get(url: string, options: Options = {}): Promise<Response> {
+    return this.handleMethod(url, 'GET', this.fetch.bind(this), getGnosisProtocolUrl, options)
+  }
+
+  private getProfile(url: string, options: Options = {}): Promise<Response> {
+    return this.handleMethod(url, 'GET', this.fetchProfile.bind(this), getProfileUrl, options)
+  }
+
+  private delete(url: string, data: unknown, options: Options = {}): Promise<Response> {
+    return this.handleMethod(url, 'DELETE', this.fetch.bind(this), getGnosisProtocolUrl, options, data)
+  }
+
+  private async handleMethod(
+    url: string,
+    method: 'GET' | 'POST' | 'DELETE',
+    fetchFn: typeof this.fetch | typeof this.fetchProfile,
+    getUrl: typeof getGnosisProtocolUrl | typeof getProfileUrl,
+    options: Options = {},
+    data?: unknown
+  ): Promise<Response> {
+    const { chainId: networkId, isDevEnvironment } = options
+    const prodUri = getUrl(false)
+    const barnUri = getUrl(true)
+    const chainId = networkId || (await this.context.chainId)
+
+    let response
+    if (isDevEnvironment === undefined) {
+      try {
+        response = await fetchFn(url, method, `${prodUri[chainId]}/v1`, data)
+      } catch (error) {
+        response = await fetchFn(url, method, `${barnUri[chainId]}/v1`, data)
+      }
     } else {
-      return baseUrl + '/v1'
+      const uri = isDevEnvironment ? barnUri : prodUri
+      response = await fetchFn(url, method, `${uri[chainId]}/v1`, data)
     }
-  }
-
-  private async fetch(url: string, method: 'GET' | 'POST' | 'DELETE', data?: unknown): Promise<Response> {
-    const baseUrl = await this.getApiBaseUrl()
-    return fetch(baseUrl + url, {
-      headers: this.DEFAULT_HEADERS,
-      method,
-      body: data !== undefined ? JSON.stringify(data) : data,
-    })
-  }
-
-  private async fetchProfile(url: string, method: 'GET' | 'POST' | 'DELETE', data?: unknown): Promise<Response> {
-    const baseUrl = await this.getProfileApiBaseUrl()
-    return fetch(baseUrl + url, {
-      headers: this.DEFAULT_HEADERS,
-      method,
-      body: data !== undefined ? JSON.stringify(data) : data,
-    })
-  }
-
-  private post(url: string, data: unknown): Promise<Response> {
-    return this.fetch(url, 'POST', data)
-  }
-
-  private get(url: string): Promise<Response> {
-    return this.fetch(url, 'GET')
-  }
-
-  private getProfile(url: string): Promise<Response> {
-    return this.fetchProfile(url, 'GET')
-  }
-
-  private delete(url: string, data: unknown): Promise<Response> {
-    return this.fetch(url, 'DELETE', data)
+    return response
   }
 }

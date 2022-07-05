@@ -1,7 +1,7 @@
 import { Signer } from 'ethers'
 import log from 'loglevel'
 import { CowError, logPrefix } from './common'
-import { SupportedChainId as ChainId } from '../constants/chains'
+import { SupportedChainId as ChainId, SupportedChainId } from '../constants/chains'
 import { DEFAULT_APP_DATA_HASH, DEFAULT_IPFS_READ_URI, DEFAULT_IPFS_WRITE_URI } from '../constants'
 
 export interface Ipfs {
@@ -38,10 +38,17 @@ export const DefaultCowContext = {
  * @implements {Required<CowContext>}
  */
 export class Context implements Partial<CowContext> {
-  #context: CowContext
-  #chainId: ChainId
+  updateContext(cowContext: CowContext, chainId: ChainId) {
+    this.setParams(chainId, cowContext)
+  }
+  #context: CowContext = {}
+  #chainId: ChainId = SupportedChainId.MAINNET
 
   constructor(chainId: ChainId, context: CowContext) {
+    this.setParams(chainId, context)
+  }
+
+  private setParams(chainId: ChainId, context: CowContext) {
     this.#chainId = this.updateChainId(chainId)
     this.#context = {
       ...DefaultCowContext,

@@ -2,7 +2,7 @@ import { Signer } from 'ethers'
 import log, { LogLevelDesc } from 'loglevel'
 import { CowError } from './utils/common'
 import { CowApi, CowSubgraphApi, MetadataApi } from './api'
-import { SupportedChainId as ChainId } from './constants/chains'
+import { SupportedChainId as ChainId, SupportedChainId } from './constants/chains'
 import { validateAppDataDocument } from './utils/appData'
 import { Context, CowContext } from './utils/context'
 import { signOrder, signOrderCancellation, UnsignedOrder } from './utils/sign'
@@ -17,7 +17,7 @@ export class CowSdk<T extends ChainId> {
   metadataApi: MetadataApi
   cowSubgraphApi: CowSubgraphApi
 
-  constructor(chainId: T, cowContext: CowContext = {}, options: Options = {}) {
+  constructor(chainId: T = SupportedChainId.MAINNET as T, cowContext: CowContext = {}, options: Options = {}) {
     this.context = new Context(chainId, { ...cowContext })
     this.cowApi = new CowApi(this.context)
     this.cowSubgraphApi = new CowSubgraphApi(this.context)
@@ -27,6 +27,11 @@ export class CowSdk<T extends ChainId> {
 
   updateChainId = (chainId: ChainId) => {
     this.context.updateChainId(chainId)
+  }
+
+  updateContext = async (cowContext: CowContext, chainId?: ChainId) => {
+    const networkId = await this.context.chainId
+    this.context.updateContext(cowContext, chainId || networkId)
   }
 
   validateAppDataDocument = validateAppDataDocument

@@ -139,6 +139,11 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
+test('Valid: Get orders link ', async () => {
+  const orderLink = await cowSdk.cowApi.getOrderLink(ORDER_RESPONSE.uid)
+  expect(orderLink).toEqual(`https://api.cow.fi/rinkeby/api/v1/orders/${ORDER_RESPONSE.uid}`)
+})
+
 test('Valid: Get an order ', async () => {
   fetchMock.mockResponseOnce(JSON.stringify(ORDER_RESPONSE), { status: HTTP_STATUS_OK })
   const order = await cowSdk.cowApi.getOrder(ORDER_RESPONSE.uid)
@@ -611,4 +616,48 @@ test('Valid: AppDataHash properly set on X-AppId header when undefined', async (
       },
     }
   )
+})
+
+test('Valid: Instantiate SDK without chainId defaults to mainnet', async () => {
+  const cowSdk1 = new CowSdk()
+  const chainId = await cowSdk1.context.chainId
+  expect(chainId).toEqual(SupportedChainId.MAINNET)
+})
+
+test('Valid: Get last 5 orders changing options parameters', async () => {
+  const ORDERS_RESPONSE = Array(5).fill(ORDER_RESPONSE)
+  fetchMock.mockResponseOnce(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK })
+  const orders = await cowSdk.cowApi.getOrders(
+    {
+      owner: '0x00000000005ef87f8ca7014309ece7260bbcdaeb', // Trader
+      limit: 5,
+      offset: 0,
+    },
+    { isDevEnvironment: true, chainId: SupportedChainId.MAINNET }
+  )
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(fetchMock).toHaveBeenCalledWith(
+    'https://barn.api.cow.fi/mainnet/api/v1/account/0x00000000005ef87f8ca7014309ece7260bbcdaeb/orders/?limit=5',
+    FETCH_RESPONSE_PARAMETERS
+  )
+  expect(orders.length).toEqual(5)
+})
+
+test('Valid: Get last 5 trades changing options parameters', async () => {
+  const TRADES_RESPONSE = Array(5).fill(TRADE_RESPONSE)
+  fetchMock.mockResponseOnce(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK })
+  const trades = await cowSdk.cowApi.getTrades(
+    {
+      owner: TRADE_RESPONSE.owner, // Trader
+      limit: 5,
+      offset: 0,
+    },
+    { isDevEnvironment: true, chainId: SupportedChainId.MAINNET }
+  )
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(fetchMock).toHaveBeenCalledWith(
+    `https://barn.api.cow.fi/mainnet/api/v1/trades?owner=${TRADE_RESPONSE.owner}&limit=5`,
+    FETCH_RESPONSE_PARAMETERS
+  )
+  expect(trades.length).toEqual(5)
 })

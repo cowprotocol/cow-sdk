@@ -131,3 +131,8 @@ export type PriceQuoteParams = Omit<FeeQuoteParams, 'sellToken' | 'buyToken'> & 
   baseToken: string
   quoteToken: string
 }
+
+export type Options = {
+  chainId?: ChainId
+  isDevEnvironment?: boolean
+}
