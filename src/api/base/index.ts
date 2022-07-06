@@ -6,6 +6,8 @@ import { Options } from '../cow/types'
 interface ConstructorParams {
   context: Context
   name: string
+  // we want getUrl to accept any parameters but return a specific type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getUrl: (...params: any[]) => Partial<Record<SupportedChainId, string>>
   defaultHeaders?: HeadersInit
 }
