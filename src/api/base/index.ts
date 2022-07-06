@@ -26,7 +26,7 @@ export default class BaseApi {
     this.DEFAULT_HEADERS = defaultHeaders
   }
 
-  async getApiBaseUrl(): Promise<string> {
+  protected async getApiBaseUrl(): Promise<string> {
     const chainId = await this.context.chainId
     const baseUrl = this.API_URL_GETTER(this.context.isDevEnvironment)[chainId]
 
@@ -37,23 +37,23 @@ export default class BaseApi {
     }
   }
 
-  post(url: string, data: unknown, options: Options = {}): Promise<Response> {
+  protected post(url: string, data: unknown, options: Options = {}): Promise<Response> {
     return this.handleMethod(url, 'POST', this.fetch.bind(this), this.API_URL_GETTER, options, data)
   }
 
-  get(url: string, options: Options = {}): Promise<Response> {
+  protected get(url: string, options: Options = {}): Promise<Response> {
     return this.handleMethod(url, 'GET', this.fetch.bind(this), this.API_URL_GETTER, options)
   }
 
-  delete(url: string, data: unknown, options: Options = {}): Promise<Response> {
+  protected delete(url: string, data: unknown, options: Options = {}): Promise<Response> {
     return this.handleMethod(url, 'DELETE', this.fetch.bind(this), this.API_URL_GETTER, options, data)
   }
 
-  async handleMethod(
+  protected async handleMethod(
     url: string,
     method: 'GET' | 'POST' | 'DELETE',
-    fetchFn: typeof this.fetch,
-    getUrl: typeof this.API_URL_GETTER,
+    fetchFn: BaseApi['fetch'],
+    getUrl: BaseApi['API_URL_GETTER'],
     options: Options = {},
     data?: unknown
   ): Promise<Response> {
@@ -76,7 +76,7 @@ export default class BaseApi {
     return response
   }
 
-  private async fetch(
+  protected async fetch(
     url: string,
     method: 'GET' | 'POST' | 'DELETE',
     baseUrl: string,
