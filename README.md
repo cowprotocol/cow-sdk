@@ -7,11 +7,7 @@
 [![Styled With Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://prettier.io/)
 [![Coverage Status](https://coveralls.io/repos/github/cowprotocol/cow-sdk/badge.svg?branch=main)](https://coveralls.io/github/cowprotocol/cow-sdk?branch=main)
 
-> ⚠️⚠️ THE SDK IS IN Beta ⚠️⚠️
-> It is being currently develop and is a work in progress, also it's API is subjected to change.
-> If you experience any problems, please open an issue in Github trying to describe your problem.
-
-### Getting started
+## Getting started
 
 Install the SDK:
 
@@ -22,7 +18,7 @@ yarn add @cowprotocol/cow-sdk
 Instantiate the SDK:
 
 ```js
-import { CowSdk } from 'cow-sdk'
+import { CowSdk } from '@cowprotocol/cow-sdk'
 
 const chainId = 4 // Rinkeby
 const cowSdk = new CowSdk(chainId)
@@ -40,11 +36,8 @@ const trades = await cowSdk.cowApi.getOrders({
 console.log(trades)
 ```
 
-Let's see a full example on how to submit an order to CowSwap.
 
-> ⚠️ Before starting, the protocol requires you to approve the sell token before the order can be considered.
-> For more details see https://docs.cow.fi/tutorials/how-to-submit-orders-via-the-api/1.-set-allowance-for-the-sell-token
-
+## Sign and Post orders
 In this example, we will:
 
 - 1. **Instantiate the SDK and a wallet**: Used for signing orders
@@ -52,9 +45,14 @@ In this example, we will:
 - 3. **Sign the order using your wallet**: Only signed orders are considered by the protocol.
 - 4. **Post the signed order to the API**: Post the order so it can be executed.
 
+
+> ⚠️ Before starting, the protocol requires you to approve the sell token before the order can be considered.
+> For more details see https://docs.cow.fi/tutorials/how-to-submit-orders-via-the-api/1.-set-allowance-for-the-sell-token
+
+
 ```js
 import { Wallet } from 'ethers'
-import { CowSdk, OrderKind } from 'cow-sdk'
+import { CowSdk, OrderKind } from '@cowprotocol/cow-sdk'
 
 // 1. Instantiate wallet and SDK
 const mnemonic = 'fall dirt bread cactus...'
@@ -107,53 +105,35 @@ const orderId = await cowSdk.cowApi.sendOrder(
 )
 ```
 
-SDK also includes a Metadata API to interact with AppData documents and IPFS CIDs
+
+## Create a meta-data document for attaching into an order
+Orders in CoW Protocol can contain arbitrary data in a field called `AppData`.
+
+The SDK facilitates the creation of these documents, and getting the `AppData` Hex number that summarizes it.
+
+
+The most important thing to define in the meta-data is the name of your app, so the order-flow can be credited to it.
 
 ```js
-const chainId = 4 // Rinkeby
-const cowSdk = new CowSdk(chainId)
-let hash = '0xa6c81f4ca727252a05b108f1742a07430f28d474d2a3492d8f325746824d22e5'
+const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({}, {
+  appCode: 'YourApp'
+})
+```
 
-// Decode AppData document given a CID hash
-const appDataDoc = await cowSdk.metadataApi.decodeAppData(hash)
-console.log(appDataDoc)
-/* {
-      "appCode": "CowSwap",
-      "metadata": {
-          "referrer": {
-              "address": "0x1f5B740436Fc5935622e92aa3b46818906F416E9",
-              "version": "0.1.0"
-          }
-      },
-      "version": "0.1.0"
-  } */
+This will create a document similar to:
+```json
+{
+  "version": "0.1.0",
+  "appCode": "YourApp",
+  "metadata": {},
+} 
+```
 
-const cid = 'QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs'
+After creating the most basic document, you can see how to attach additional meta-data items.
 
-// Decode CID hash to AppData Hex
-const decodedAppDataHex = await cowSdk.metadataApi.cidToAppDataHex(cid)
-console.log(decodedAppDataHex) //0x5ddb2c8207c10b96fac92cb934ef9ba004bc007a073c9e5b13edc422f209ed80
+For example, you could give information about who reffered the user creating the order.
 
-hash = '0x5ddb2c8207c10b96fac92cb934ef9ba004bc007a073c9e5b13edc422f209ed80'
-
-// Decode AppData Hex to CID
-const decodedAppDataHex = await cowSdk.metadataApi.appDataHexToCid(hash)
-console.log(decodedAppDataHex) //QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs
-
-/*Create an AppData Document with empty metadata and default appCode
-  generateAppDataDoc receives as parameters: 
-    - metadata: MetadataDoc (Default: {})
-    - appCode: string (Default: 'Cowswap')
-*/
-const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({})
-/* {
-      version: '0.1.0',
-      appCode: 'CowSwap',
-      metadata: {},
-    } 
-*/
-
-// Create an AppData Document with custom metadata and appCode
+```js
 const appDataDoc = cowSdk.metadataApi.generateAppDataDoc(
   {
     referrer: {
@@ -161,32 +141,107 @@ const appDataDoc = cowSdk.metadataApi.generateAppDataDoc(
       version: '0.1.0',
     },
   },
-  'CowApp'
+  {
+    appCode: 'YourApp',
+  }
 )
-/* {
-      version: '0.1.0',
-      appCode: 'CowApp',
-      metadata: {
-        referrer: {
-          address: '0x1f5B740436Fc5935622e92aa3b46818906F416E9',
-          version: '0.1.0',
-        },
+```
+
+This will create a document similar to:
+
+```json
+{
+    "version": "0.1.0",
+    "appCode": "YourApp",
+    "metadata": {
+      "referrer": {
+        "address": "0x1f5B740436Fc5935622e92aa3b46818906F416E9",
+        "version": "0.1.0",
       },
-    } 
-*/
+    },
+}
+```
 
-// Calculate appDataHash (and cidV0) for given doc without uploading to IPFS
-// This operation is deterministic and can be used to know before the upload the actual hash
+
+For a complete list of meta-data that can be attach check [@cowprotocol/app-data](https://github.com/cowprotocol/app-data)
+
+
+## Get the AppData Hex
+The `AppData` Hex points to a IPFS document with the meta-data attached to the order.
+
+You can calculate the `AppData` Hex, and its corresponding `cidV0` using the SDK:
+
+```js
 const { appDataHash, cidv0 } = await cowSdk.metadataApi.calculateAppDataHash(appDataDoc)
+```
 
-// Upload AppDataDoc to IPFS (Pinata)
+Note how this operation is deterministic, so given the same document, it will always generate the same hash. 
+
+This method can be used to calculate the actual hash before posting the order, or even uploading the document to IPFS.
+
+
+## Get meta-data document uploaded to IPFS from AppData
+Given the `AppData` of a document that has been uploaded to IPFS, you can easily retrieve the document.
+
+```js
+const appDataDoc = await cowSdk.metadataApi.decodeAppData('0x5ddb2c8207c10b96fac92cb934ef9ba004bc007a073c9e5b13edc422f209ed80')
+```
+
+This will return a document similar to:
+
+```json
+{
+    "version": "0.1.0",
+    "appCode": "YourApp",
+    "metadata": {
+      "referrer": {
+        "address": "0x1f5B740436Fc5935622e92aa3b46818906F416E9",
+        "version": "0.1.0",
+      },
+    },
+}
+```
+
+## Upload document to IPFS
+The SDK uses Pinata to upload it to IPFS, so you will need an API Key in order to upload it using the SDK.
+
+Alternativelly, you can upload the document on your own using any other service.
+
+```js
+// Make sure yuou provide the IPFS params when instanciating the SDK
 const cowSdk = new CowSdk(4, {
-  ipfs: { pinataApiKey: 'YOUR_PINATA_API_KEY', pinataApiSecret: 'YOUR_PINATA_API_SECRET' },
+  ipfs: { 
+    pinataApiKey: 'YOUR_PINATA_API_KEY', 
+    pinataApiSecret: 'YOUR_PINATA_API_SECRET'
+  },
 })
 
+// Upload to IPFS
 const uploadedAppDataHash = await cowSdk.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
-/* 0x5ddb2c8207c10b96fac92cb934ef9ba004bc007a073c9e5b13edc422f209ed80 */
 ```
+
+## Convert IPFS CIDv0 to AppData (and back)
+Given an IPFS CIDv0 you can convert it to an `AppData` 
+
+```js
+const decodedAppDataHex = await cowSdk.metadataApi.cidToAppDataHex('QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs')
+```
+
+This will return an `AppData` hex: `0x5ddb2c8207c10b96fac92cb934ef9ba004bc007a073c9e5b13edc422f209ed80`
+
+
+> This might be handy if you decide to upload the document to IPFS yourself and then you need the AppData to post your order
+
+
+Similarly, you can do the opposite and convert an `AppData` into an IPFS document:
+
+```js
+const decodedAppDataHex = await cowSdk.metadataApi.appDataHexToCid(hash)
+```
+
+This will return an IPFS CIDv0: `QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs`
+
+
 
 #### Querying the Cow Subgraph
 
