@@ -14,21 +14,21 @@ interface ConstructorParams {
 
 const DEFAULT_HEADERS = { 'Content-Type': 'application/json' }
 export default class BaseApi {
-  context: Context
-  API_NAME: ConstructorParams['name']
-  URL_GETTER
-  DEFAULT_HEADERS: ConstructorParams['defaultHeaders']
+  context
+  API_NAME
+  API_URL_GETTER
+  DEFAULT_HEADERS
 
   constructor({ context, name, getUrl, defaultHeaders = DEFAULT_HEADERS }: ConstructorParams) {
     this.context = context
     this.API_NAME = name
-    this.URL_GETTER = getUrl
+    this.API_URL_GETTER = getUrl
     this.DEFAULT_HEADERS = defaultHeaders
   }
 
   public async getApiBaseUrl(): Promise<string> {
     const chainId = await this.context.chainId
-    const baseUrl = this.URL_GETTER(this.context.isDevEnvironment)[chainId]
+    const baseUrl = this.API_URL_GETTER(this.context.isDevEnvironment)[chainId]
 
     if (!baseUrl) {
       throw new CowError(`Unsupported Network. The ${this.API_NAME} API is not deployed in the Network ` + chainId)
@@ -38,22 +38,22 @@ export default class BaseApi {
   }
 
   public post(url: string, data: unknown, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'POST', this.fetch.bind(this), this.URL_GETTER, options, data)
+    return this.handleMethod(url, 'POST', this.fetch.bind(this), this.API_URL_GETTER, options, data)
   }
 
   public get(url: string, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'GET', this.fetch.bind(this), this.URL_GETTER, options)
+    return this.handleMethod(url, 'GET', this.fetch.bind(this), this.API_URL_GETTER, options)
   }
 
   public delete(url: string, data: unknown, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'DELETE', this.fetch.bind(this), this.URL_GETTER, options, data)
+    return this.handleMethod(url, 'DELETE', this.fetch.bind(this), this.API_URL_GETTER, options, data)
   }
 
   public async handleMethod(
     url: string,
     method: 'GET' | 'POST' | 'DELETE',
     fetchFn: typeof this.fetch /*  | typeof this.fetchProfile */,
-    getUrl: typeof this.URL_GETTER,
+    getUrl: typeof this.API_URL_GETTER,
     options: Options = {},
     data?: unknown
   ): Promise<Response> {
