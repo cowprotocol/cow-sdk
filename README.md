@@ -24,8 +24,16 @@ const chainId = 4 // Rinkeby
 const cowSdk = new CowSdk(chainId)
 ```
 
-The SDK will expose the CoW API operations (`cowSdk.cowApi`) and some convenient method that will facilitate signing orders (`cowSdk.signOrder`). Future version will provide easy access to The Graph data and some other convenient utils.
+The SDK will expose:
+* The CoW API (`cowSdk.cowApi`)
+* The CoW Subgraph (`cowSdk.cowSubgraphApi`)
+* Convenient method to facilitate signing orders (i.e `cowSdk.signOrder`)
 
+
+## CoW API
+The SDK provides access to the CoW API.
+
+For example, you can easily get the last 5 order of a trader:
 ```js
 // i.e. Get last 5 orders for a given trader
 const trades = await cowSdk.cowApi.getOrders({
@@ -35,7 +43,6 @@ const trades = await cowSdk.cowApi.getOrders({
 })
 console.log(trades)
 ```
-
 
 ## Sign and Post orders
 In this example, we will:
@@ -243,7 +250,7 @@ This will return an IPFS CIDv0: `QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs`
 
 
 
-#### Querying the Cow Subgraph
+## Querying the Cow Subgraph
 
 You can query the Cow Subgraph either by running some common queries exposed by the `CowSubgraphApi` or by building your own ones:
 
