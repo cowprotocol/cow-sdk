@@ -46,15 +46,15 @@ function getGnosisProtocolUrl(isDev: boolean, version = API_URL_VERSION): Record
   }
 }
 
-function getProfileUrl(isDev: boolean): Partial<Record<ChainId, string>> {
+function getProfileUrl(isDev: boolean, version = API_URL_VERSION): Partial<Record<ChainId, string>> {
   if (isDev) {
     return {
-      [ChainId.MAINNET]: 'https://barn.api.cow.fi/affiliate/api',
+      [ChainId.MAINNET]: 'https://barn.api.cow.fi/affiliate/api/' + version,
     }
   }
 
   return {
-    [ChainId.MAINNET]: 'https://api.cow.fi/affiliate/api',
+    [ChainId.MAINNET]: 'https://api.cow.fi/affiliate/api/' + version,
   }
 }
 

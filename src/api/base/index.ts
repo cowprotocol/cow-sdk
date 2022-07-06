@@ -26,7 +26,7 @@ export default class BaseApi {
     this.DEFAULT_HEADERS = defaultHeaders
   }
 
-  public async getApiBaseUrl(): Promise<string> {
+  async getApiBaseUrl(): Promise<string> {
     const chainId = await this.context.chainId
     const baseUrl = this.API_URL_GETTER(this.context.isDevEnvironment)[chainId]
 
@@ -37,22 +37,22 @@ export default class BaseApi {
     }
   }
 
-  public post(url: string, data: unknown, options: Options = {}): Promise<Response> {
+  post(url: string, data: unknown, options: Options = {}): Promise<Response> {
     return this.handleMethod(url, 'POST', this.fetch.bind(this), this.API_URL_GETTER, options, data)
   }
 
-  public get(url: string, options: Options = {}): Promise<Response> {
+  get(url: string, options: Options = {}): Promise<Response> {
     return this.handleMethod(url, 'GET', this.fetch.bind(this), this.API_URL_GETTER, options)
   }
 
-  public delete(url: string, data: unknown, options: Options = {}): Promise<Response> {
+  delete(url: string, data: unknown, options: Options = {}): Promise<Response> {
     return this.handleMethod(url, 'DELETE', this.fetch.bind(this), this.API_URL_GETTER, options, data)
   }
 
-  public async handleMethod(
+  async handleMethod(
     url: string,
     method: 'GET' | 'POST' | 'DELETE',
-    fetchFn: typeof this.fetch /*  | typeof this.fetchProfile */,
+    fetchFn: typeof this.fetch,
     getUrl: typeof this.API_URL_GETTER,
     options: Options = {},
     data?: unknown
@@ -65,13 +65,13 @@ export default class BaseApi {
     let response
     if (isDevEnvironment === undefined) {
       try {
-        response = await fetchFn(url, method, `${prodUri[chainId]}/v1`, data, reqOptions)
+        response = await fetchFn(url, method, `${prodUri[chainId]}`, data, reqOptions)
       } catch (error) {
-        response = await fetchFn(url, method, `${barnUri[chainId]}/v1`, data, reqOptions)
+        response = await fetchFn(url, method, `${barnUri[chainId]}`, data, reqOptions)
       }
     } else {
       const uri = isDevEnvironment ? barnUri : prodUri
-      response = await fetchFn(url, method, `${uri[chainId]}/v1`, data, reqOptions)
+      response = await fetchFn(url, method, `${uri[chainId]}`, data, reqOptions)
     }
     return response
   }
