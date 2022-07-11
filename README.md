@@ -48,6 +48,8 @@ const trades = await cowSdk.cowApi.getOrders({
 console.log(trades)
 ```
 
+> For more information about the API methods, you can check [api.cow.fi/docs](https://api.cow.fi/docs).
+
 ## Sign and Post orders
 In order to trade, you will need to create a valid order first.
 
@@ -179,9 +181,9 @@ const orderId = await cowSdk.cowApi.sendOrder({
 
 
 ### BONUS: Show link to Explorer
-Once the order is `OPEN`, its good to allow to check the state of it. 
+Once the order is posted, its good to allow to check the state of it. 
 
-One easy is to check in the CoW Explorer. You can 
+One easy is to check in the CoW Explorer. You can create a CoW Explorer link if you have the `orderId`:
 
 ```js
 // View order in explorer
