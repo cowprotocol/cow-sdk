@@ -62,11 +62,11 @@ Posting orders is a three steps process:
 
 
 ### Enable tokens (token approval)
-Before we jump to the fun part of creating an order, let's briefly mention some small disclamer. 
+Because of the use of off-chain signing (meta-transactions), users will need to **Enable the sell token**  before signed
+orders can be considered as valid ones. 
 
-The protocol requires you to approve (enable) the sell token before the order can be considered.
-
-This approval is something that is done once, and after all order creation can be done for free using offchain signing.
+This enabling is technically an `ERC-20` approval, and is something that needs to be done only once. After this all 
+order creation can be done for free using offchain signing.
 
 > For more details see https://docs.cow.fi/tutorials/how-to-submit-orders-via-the-api/1.-set-allowance-for-the-sell-token
 
@@ -86,14 +86,15 @@ const cowSdk = new CowSdk(
 ```
 
 ### STEP 1: Get Market Price
-To create an order, I will first need to get a price/fee quote:
+To create an order, you need to get a price/fee quote first:
 
-  * The SDK will give you easy access to the API, which will give you the `Market Price` and the `Fee`.
-  * The `Market Price` is not strictly needed, you can decide the price you use. You can choose a price that is below 
-   this Market price (**Market Order**), or above Market Price (**Limit Order**).
-  * The `Fee` however is very important. It is the required amount in sell token the trader agrees on paying for 
-   executing the order onchain. Normally, its value is proportional to the current Gas Price of the network. 
-   This fee is never charged if you don't trade.
+  * The SDK will give you easy access to the API, which returns the `Market Price` and the `Fee` for any given trade you intent to do.
+  * The returned `Market Price` is not strictly needed, you can use your own pricing logic. 
+    * You can choose a price that is below this Market price (**Market Order**), or above Market Price (**Limit Order**).
+  * The `Fee` however is very important. 
+    * It is the required amount in sell token the trader agrees on paying for executing the order onchain. 
+    * Normally, its value is proportional to the current Gas Price of the network. 
+    * This fee is never charged if you don't trade.
 
 To get the quote, you simply specify the trade you intent to do:
 
@@ -162,35 +163,29 @@ Once you have a signed order, last step is to send it to the API.
       * The order is `EXECUTED`: you will pay the signed fee, and get at least the `buyAmount` tokens you specified, although you will probably get more! (you will probably get a so-called **Surplus**).
       * The order `EXPIRES`: If your price is not good enough, and the order is out of the market price before
       expiration, your order will expire. This doesn't have any cost to the user, which **only pays the fee if the trade is executed**.
+      * You cancel the order, so it becomes `CANCELLED`. Cancelling an order can be done both as a free meta-transaction
+       (**soft cancelations**) or as a regular on-chain transaction (**hard cancelations**).
   * The API will return an `orderId` which identifies the order, and is created as a summary (hash) of it. In other words, the `orderId` is deterministic given all the order parameters.
 
 
 Post an order using the SDK:
 
 ```js
-
 const orderId = await cowSdk.cowApi.sendOrder({
   order: { ...order, ...signedOrder },
   owner: '0x1811be0994930fe9480eaede25165608b093ad7a',
 })
-
 ```
 
 
+### BONUS: Show link to Explorer
+Once the order is `OPEN`, its good to allow to check the state of it. 
+
+One easy is to check in the CoW Explorer. You can 
+
 ```js
-
-
-// We can inspect the Order details in the CoW Protocol Explorer
+// View order in explorer
 console.log(`https://explorer.cow.fi/rinkeby/orders/${orderId}`)
-
-// You can also override defaults params when using CowApi methods
-const orderId = await cowSdk.cowApi.sendOrder(
-  {
-    order: { ...order, ...signedOrder },
-    owner: '0x1811be0994930fe9480eaede25165608b093ad7a',
-  },
-  { chainId: 1, isDevEnvironment: false }
-)
 ```
 
 
