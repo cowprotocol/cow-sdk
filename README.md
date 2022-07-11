@@ -30,7 +30,7 @@ The SDK will expose:
 * Convenient method to facilitate signing orders (i.e `cowSdk.signOrder`)
 
 
-> For a quick snippet with the full process on posting an order see the [Post an Order Example](./docs/sign-example.ts)
+> For a quick snippet with the full process on posting an order see the [Post an Order Example](./docs/post-order-example.ts)
 
 
 ## CoW API
