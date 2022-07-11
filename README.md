@@ -193,7 +193,8 @@ const orderId = await cowSdk.cowApi.sendOrder(
 )
 ```
 
-## Create a meta-data document for attaching into an order
+
+## Create a meta-data document for attaching to an order
 Orders in CoW Protocol can contain arbitrary data in a field called `AppData`.
 
 The SDK facilitates the creation of these documents, and getting the `AppData` Hex number that summarizes it.
@@ -264,7 +265,7 @@ const { appDataHash, cidv0 } = await cowSdk.metadataApi.calculateAppDataHash(app
 
 Note how this operation is deterministic, so given the same document, it will always generate the same hash. 
 
-This method can be used to calculate the actual hash before posting the order, or even uploading the document to IPFS.
+This method can be used to calculate the actual hash before uploading the document to IPFS.
 
 
 ## Get meta-data document uploaded to IPFS from AppData
@@ -295,7 +296,7 @@ The SDK uses Pinata to upload it to IPFS, so you will need an API Key in order t
 Alternativelly, you can upload the document on your own using any other service.
 
 ```js
-// Make sure yuou provide the IPFS params when instanciating the SDK
+// Make sure you provide the IPFS params when instantiating the SDK
 const cowSdk = new CowSdk(4, {
   ipfs: { 
     pinataApiKey: 'YOUR_PINATA_API_KEY', 
