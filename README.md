@@ -2,7 +2,7 @@
   <img width="400" src="https://raw.githubusercontent.com/cowprotocol/cow-sdk/main/docs/images/CoW.png">
 </p>
 
-# CoW protocol SDK
+# CoW SDK
 
 [![Styled With Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://prettier.io/)
 [![Coverage Status](https://coveralls.io/repos/github/cowprotocol/cow-sdk/badge.svg?branch=main)](https://coveralls.io/github/cowprotocol/cow-sdk?branch=main)
@@ -31,7 +31,11 @@ The SDK will expose:
 
 
 ## CoW API
-The SDK provides access to the CoW API.
+The SDK provides access to the CoW API. The CoW API allows you:
+- Post orders
+- Get fee quotes
+- Get order details
+- Get history of orders: i.e. filtering by account, transaction hash, etc.
 
 For example, you can easily get the last 5 order of a trader:
 ```js
@@ -45,29 +49,55 @@ console.log(trades)
 ```
 
 ## Sign and Post orders
-In this example, we will:
+In order to trade, you will need to create a valid order first.
 
-- 1. **Instantiate the SDK and a wallet**: Used for signing orders
-- 2. **Get a price/fee quote from the API**: Get current market price and required protocol fee to settle your trade.
-- 3. **Sign the order using your wallet**: Only signed orders are considered by the protocol.
-- 4. **Post the signed order to the API**: Post the order so it can be executed.
+On the contraty to other decentralised exchanges, creating orders is free in CoW Protocol. This is because, one of the 
+most common ways to do it is by created offchain signed messages (meta-transactions, uses `EIP-712` or `EIP-1271`).
+
+Posting orders is a three steps process:
+
+- 1. **Get Market Pricea**: Fee & Price
+- 2. **Sign the order**: Using off-chain signing or Meta-transactions
+- 3. **Post the signed order to the API**: So, the order becomes `OPEN`
 
 
-> ⚠️ Before starting, the protocol requires you to approve the sell token before the order can be considered.
+### Enable tokens (token approval)
+Before we jump to the fun part of creating an order, let's briefly mention some small disclamer. 
+
+The protocol requires you to approve (enable) the sell token before the order can be considered.
+
+This approval is something that is done once, and after all order creation can be done for free using offchain signing.
+
 > For more details see https://docs.cow.fi/tutorials/how-to-submit-orders-via-the-api/1.-set-allowance-for-the-sell-token
 
+### Instantiate SDK with a signer
+Before you can sign any transaction, you have to instantiate the SDK with a [Ethers.JS signer](https://docs.ethers.io/v5/api/signer/):
 
 ```js
 import { Wallet } from 'ethers'
 import { CowSdk, OrderKind } from '@cowprotocol/cow-sdk'
 
-// 1. Instantiate wallet and SDK
 const mnemonic = 'fall dirt bread cactus...'
 const wallet = Wallet.fromMnemonic(mnemonic)
-const cowSdk = new CowSdk(4, { signer: wallet }) // Leaving chainId empty will default to MAINNET
+const cowSdk = new CowSdk(
+  4, {            // Leaving chainId empty will default to MAINNET
+  signer: wallet  // Provide a signer, so you can sign order
+  }) 
+```
 
-// 2. Get a price/fee quote from the API
-//    It will return the price and fee to "Sell 1 ETH for USDC"
+### STEP 1: Get Market Price
+To create an order, I will first need to get a price/fee quote:
+
+  * The SDK will give you easy access to the API, which will give you the `Market Price` and the `Fee`.
+  * The `Market Price` is not strictly needed, you can decide the price you use. You can choose a price that is below 
+   this Market price (**Market Order**), or above Market Price (**Limit Order**).
+  * The `Fee` however is very important. It is the required amount in sell token the trader agrees on paying for 
+   executing the order onchain. Normally, its value is proportional to the current Gas Price of the network. 
+   This fee is never charged if you don't trade.
+
+To get the quote, you simply specify the trade you intent to do:
+
+```js
 const quoteResponse = await cowSdk.cowApi.getQuote({
   kind: OrderKind.SELL, // Sell order (could also be BUY)
   sellToken: '0xc778417e063141139fce010982780140aa0cd5ab', // WETH
@@ -78,26 +108,77 @@ const quoteResponse = await cowSdk.cowApi.getQuote({
 })
 
 const { sellToken, buyToken, validTo, buyAmount, sellAmount, receiver, feeAmount } = quoteResponse.quote
+```
+
+### STEP 2: Sign the order
+Once you know the price and fee, we can create the order and sign it:
+
+  * Technically the order is just a signed message with your intent to trade, and contains your `Limit Price` and `Fee`.
+  * As explained before, you can choose your `Limit Price`, but some general approach is to take the current Market Price
+  and apply some slippage tolerance to it. `Received Amount = Expected Amount * (1 - Slippage Tolerance)`
+  * The SDK will provide an easy way to sign orders given the raw data
+
+
+```js
+const { sellToken, buyToken, validTo, buyAmount, sellAmount, receiver, feeAmount } = quoteResponse.quote
+
+// Prepare the RAW order
 const order = {
-  kind: OrderKind.SELL,
-  partiallyFillable: false, // Allow partial executions of an order (true would be for a "Fill or Kill" order, which is not yet supported but will be added soon)
+  kind: OrderKind.SELL, // SELL / BUY  
+  receiver, // Your account or any other
   sellToken,
   buyToken,
+
+  partiallyFillable: false, // (true would be for a "Fill or Kill" order, "false" for allowing "Partial execution" which is not supported yet)
+
+  // Deadline
   validTo,
-  buyAmount,
+
+  // Limit Price
+  //    You can apply some slippage tolerance here to make sure the trade is executed. 
+  //    CoW protocol protects from MEV, so it can work with higher slippages
   sellAmount,
-  receiver,
+  buyAmount, 
+
+  // Use the fee you received from the API
   feeAmount,
+
+  // The appData allows you to attach arbitrary information (meta-data) to the order. Its explained in their own section. For now, you can use this 0x0 value
+  appData: '0x0000000000000000000000000000000000000000000000000000000000000000'
 }
 
-// 3. Sign the order using your wallet
+// Sign the order
 const signedOrder = await cowSdk.signOrder(order)
+```
 
-// 4. Post the signed order to the API
+At this point, you have a signed order. So next step will be to post it to the API so it's considered by the solvers and executed.
+
+  
+## STEP 3: **Post the signed order to the API**: 
+Once you have a signed order, last step is to send it to the API.
+  * The API will accept the order if its correctly signed, the deadline is correct, and the fee is enough to settle it
+  *  Once accepted, the order will be `OPEN` until the specified `validTo` date (expiration)
+  * The possible outcomes once is accepted is:
+      * The order is `EXECUTED`: you will pay the signed fee, and get at least the `buyAmount` tokens you specified, although you will probably get more! (you will probably get a so-called **Surplus**).
+      * The order `EXPIRES`: If your price is not good enough, and the order is out of the market price before
+      expiration, your order will expire. This doesn't have any cost to the user, which **only pays the fee if the trade is executed**.
+  * The API will return an `orderId` which identifies the order, and is created as a summary (hash) of it. In other words, the `orderId` is deterministic given all the order parameters.
+
+
+Post an order using the SDK:
+
+```js
+
 const orderId = await cowSdk.cowApi.sendOrder({
   order: { ...order, ...signedOrder },
   owner: '0x1811be0994930fe9480eaede25165608b093ad7a',
 })
+
+```
+
+
+```js
+
 
 // We can inspect the Order details in the CoW Protocol Explorer
 console.log(`https://explorer.cow.fi/rinkeby/orders/${orderId}`)
@@ -111,7 +192,6 @@ const orderId = await cowSdk.cowApi.sendOrder(
   { chainId: 1, isDevEnvironment: false }
 )
 ```
-
 
 ## Create a meta-data document for attaching into an order
 Orders in CoW Protocol can contain arbitrary data in a field called `AppData`.
