@@ -30,6 +30,9 @@ The SDK will expose:
 * Convenient method to facilitate signing orders (i.e `cowSdk.signOrder`)
 
 
+> For a quick snippet with the full process on posting an order see the [Post an Order Example](./docs/sign-example.ts)
+
+
 ## CoW API
 The SDK provides access to the CoW API. The CoW API allows you:
 - Post orders
@@ -62,6 +65,9 @@ Posting orders is a three steps process:
 - 2. **Sign the order**: Using off-chain signing or Meta-transactions
 - 3. **Post the signed order to the API**: So, the order becomes `OPEN`
 
+The next sections will guide you through the process of creating a valid order.
+
+> For a quick snippet with the full process on posting an order see the [Post an Order Example](./docs/post-order-example.ts).
 
 ### Enable tokens (token approval)
 Because of the use of off-chain signing (meta-transactions), users will need to **Enable the sell token**  before signed
