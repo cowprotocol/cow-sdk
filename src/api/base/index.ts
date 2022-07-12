@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { SupportedChainId } from '../../constants/chains'
 import { CowError } from '../../utils/common'
 import { Context } from '../../utils/context'
@@ -6,34 +7,43 @@ import { Options } from '../cow/types'
 interface ConstructorParams {
   context: Context
   name: string
-  // we want getUrl to accept any parameters but return a specific type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getUrl: (...params: any[]) => Partial<Record<SupportedChainId, string>>
+  apiVersion?: string
+  // we want getApiUrl to accept any parameters but return a specific type
+  getApiUrl: (...params: any[]) => Partial<Record<SupportedChainId, string>>
   defaultHeaders?: HeadersInit
 }
 
 const DEFAULT_HEADERS = { 'Content-Type': 'application/json' }
+const DEFAULT_API_VERSION = 'v1'
 export default class BaseApi {
   context
   API_NAME
+  API_VERSION
   API_URL_GETTER
   DEFAULT_HEADERS
 
-  constructor({ context, name, getUrl, defaultHeaders = DEFAULT_HEADERS }: ConstructorParams) {
+  constructor({
+    context,
+    name,
+    getApiUrl,
+    defaultHeaders = DEFAULT_HEADERS,
+    apiVersion = DEFAULT_API_VERSION,
+  }: ConstructorParams) {
     this.context = context
     this.API_NAME = name
-    this.API_URL_GETTER = getUrl
+    this.API_VERSION = apiVersion
+    this.API_URL_GETTER = getApiUrl
     this.DEFAULT_HEADERS = defaultHeaders
   }
 
-  protected async getApiBaseUrl(): Promise<string> {
+  protected async getApiBaseUrl(...params: unknown[]): Promise<string> {
     const chainId = await this.context.chainId
-    const baseUrl = this.API_URL_GETTER(this.context.isDevEnvironment)[chainId]
+    const baseUrl = this.API_URL_GETTER(...params)[chainId]
 
     if (!baseUrl) {
       throw new CowError(`Unsupported Network. The ${this.API_NAME} API is not deployed in the Network ` + chainId)
     } else {
-      return baseUrl
+      return baseUrl + '/' + this.API_VERSION
     }
   }
 
@@ -53,27 +63,16 @@ export default class BaseApi {
     url: string,
     method: 'GET' | 'POST' | 'DELETE',
     fetchFn: BaseApi['fetch'],
-    getUrl: BaseApi['API_URL_GETTER'],
+    getApiUrl: BaseApi['API_URL_GETTER'],
     options: Options = {},
     data?: unknown
   ): Promise<Response> {
-    const { chainId: networkId, isDevEnvironment, reqOptions } = options
-    const prodUri = getUrl(false)
-    const barnUri = getUrl(true)
+    const { chainId: networkId, reqOptions } = options
     const chainId = networkId || (await this.context.chainId)
 
-    let response
-    if (isDevEnvironment === undefined) {
-      try {
-        response = await fetchFn(url, method, `${prodUri[chainId]}`, data, reqOptions)
-      } catch (error) {
-        response = await fetchFn(url, method, `${barnUri[chainId]}`, data, reqOptions)
-      }
-    } else {
-      const uri = isDevEnvironment ? barnUri : prodUri
-      response = await fetchFn(url, method, `${uri[chainId]}`, data, reqOptions)
-    }
-    return response
+    const uri = getApiUrl(options.apiUrlGetterParams)
+
+    return fetchFn(url, method, `${uri[chainId]}/${this.API_VERSION}`, data, reqOptions)
   }
 
   protected async fetch(
