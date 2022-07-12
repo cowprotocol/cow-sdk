@@ -15,12 +15,13 @@ import { ERC20BridgeSource, MatchaOptions, MatchaPriceQuote } from './types'
 // https://etherscan.io/address/0x9008d19f58aabd9ed0d60971565aa8510560ab41
 const AFFILIATE_ADDRESS = '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'
 const EXCLUDED_SOURCES: ERC20BridgeSource[] = []
+const API_VERSION = 'v1'
 
 function get0xUrls(): Partial<Record<SupportedChainId, string>> {
   // Support: Mainnet, Ropsten, Polygon, Binance Smart Chain
   // See https://0x.org/docs/api#introduction
   return {
-    [SupportedChainId.MAINNET]: 'https://api.0x.org/swap/v1',
+    [SupportedChainId.MAINNET]: 'https://api.0x.org/swap',
   }
 }
 
@@ -76,7 +77,7 @@ export class ZeroXApi extends BaseApi {
     context: Context,
     matchaOptions: MatchaOptions = { affiliateAddress: AFFILIATE_ADDRESS, excludedSources: EXCLUDED_SOURCES }
   ) {
-    super({ context, name: '0x', getUrl: get0xUrls })
+    super({ context, name: '0x', apiVersion: API_VERSION, getApiUrl: get0xUrls })
     this.MATCHA_OPTIONS = matchaOptions
     this.MATCHA_OPTIONS_URL = _optionsToSearchUrl(matchaOptions)
   }

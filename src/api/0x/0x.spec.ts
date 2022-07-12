@@ -3,6 +3,7 @@ import { OrderKind } from '@cowprotocol/contracts'
 import { PriceQuoteParams } from '../cow/types'
 import { SupportedChainId } from '../../constants/chains'
 import { ZeroXSdk } from '../../0xSdk'
+import ZeroXError from './error'
 
 enableFetchMocks()
 
@@ -68,4 +69,34 @@ test('Valid: Get Price Quote', async () => {
   )
   expect(price?.value).toEqual(PRICE_QUOTE_RESPONSE.value)
   expect(price?.buyTokenAddress).toEqual(PRICE_QUOTE_RESPONSE.buyTokenAddress)
+})
+test('Invalid: Get Price Quote', async () => {
+  fetchMock.mockResponseOnce(
+    JSON.stringify({
+      code: 100,
+      reason: 'Validation Failed',
+      validationErrors: [
+        {
+          field: 'sellAmount',
+          code: 1004,
+          reason: 'INSUFFICIENT_ASSET_LIQUIDITY',
+        },
+      ],
+    }),
+    { status: 400 }
+  )
+  try {
+    await zeroXSdk.api.getQuote({
+      baseToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+      quoteToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+      amount: '0',
+      kind: OrderKind.BUY,
+    } as PriceQuoteParams)
+  } catch (e) {
+    const error = e as ZeroXError
+
+    expect(error.message).toEqual('Validation Failed')
+    expect(error.description).toEqual('INSUFFICIENT_ASSET_LIQUIDITY')
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  }
 })
