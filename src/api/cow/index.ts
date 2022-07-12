@@ -30,31 +30,31 @@ import BaseApi from '../base'
 
 const API_URL_VERSION = 'v1'
 
-function getGnosisProtocolUrl(isDev: boolean, version = API_URL_VERSION): Record<ChainId, string> {
+function getGnosisProtocolUrl(isDev: boolean): Record<ChainId, string> {
   if (isDev) {
     return {
-      [ChainId.MAINNET]: 'https://barn.api.cow.fi/mainnet/api/' + version,
-      [ChainId.RINKEBY]: 'https://barn.api.cow.fi/rinkeby/api/' + version,
-      [ChainId.GNOSIS_CHAIN]: 'https://barn.api.cow.fi/xdai/api/' + version,
+      [ChainId.MAINNET]: 'https://barn.api.cow.fi/mainnet/api',
+      [ChainId.RINKEBY]: 'https://barn.api.cow.fi/rinkeby/api',
+      [ChainId.GNOSIS_CHAIN]: 'https://barn.api.cow.fi/xdai/api',
     }
   }
 
   return {
-    [ChainId.MAINNET]: 'https://api.cow.fi/mainnet/api/' + version,
-    [ChainId.RINKEBY]: 'https://api.cow.fi/rinkeby/api/' + version,
-    [ChainId.GNOSIS_CHAIN]: 'https://api.cow.fi/xdai/api/' + version,
+    [ChainId.MAINNET]: 'https://api.cow.fi/mainnet/api',
+    [ChainId.RINKEBY]: 'https://api.cow.fi/rinkeby/api',
+    [ChainId.GNOSIS_CHAIN]: 'https://api.cow.fi/xdai/api',
   }
 }
 
-function getProfileUrl(isDev: boolean, version = API_URL_VERSION): Partial<Record<ChainId, string>> {
+function getProfileUrl(isDev: boolean): Partial<Record<ChainId, string>> {
   if (isDev) {
     return {
-      [ChainId.MAINNET]: 'https://barn.api.cow.fi/affiliate/api/' + version,
+      [ChainId.MAINNET]: 'https://barn.api.cow.fi/affiliate/api',
     }
   }
 
   return {
-    [ChainId.MAINNET]: 'https://api.cow.fi/affiliate/api/' + version,
+    [ChainId.MAINNET]: 'https://api.cow.fi/affiliate/api',
   }
 }
 
@@ -92,7 +92,7 @@ async function _handleQuoteResponse<T = unknown, P extends QuoteQuery = QuoteQue
 
 export class CowApi extends BaseApi {
   constructor(context: Context) {
-    super({ context, name: 'CoW Protocol', getUrl: getGnosisProtocolUrl })
+    super({ context, name: 'CoW Protocol', apiVersion: API_URL_VERSION, getApiUrl: getGnosisProtocolUrl })
   }
 
   async getProfileData(address: string, options: Options = {}): Promise<ProfileData | null> {
@@ -301,19 +301,6 @@ export class CowApi extends BaseApi {
     return this.handleMethod(url, 'GET', this.fetchProfile.bind(this), getProfileUrl, options)
   }
 
-  private async fetchProfile(
-    url: string,
-    method: 'GET' | 'POST' | 'DELETE',
-    baseUrl: string,
-    data?: unknown
-  ): Promise<Response> {
-    return fetch(baseUrl + url, {
-      headers: this.DEFAULT_HEADERS,
-      method,
-      body: data !== undefined ? JSON.stringify(data) : data,
-    })
-  }
-
   private mapNewToLegacyParams(params: FeeQuoteParams, chainId: ChainId): QuoteQuery {
     const { amount, kind, userAddress, receiver, validTo, sellToken, buyToken } = params
     const fallbackAddress = userAddress || ZERO_ADDRESS
@@ -342,5 +329,49 @@ export class CowApi extends BaseApi {
           }
 
     return finalParams
+  }
+
+  protected getApiBaseUrl(): Promise<string> {
+    return super.getApiBaseUrl(this.context.isDevEnvironment)
+  }
+
+  private async fetchProfile(
+    url: string,
+    method: 'GET' | 'POST' | 'DELETE',
+    baseUrl: string,
+    data?: unknown
+  ): Promise<Response> {
+    return fetch(baseUrl + url, {
+      headers: this.DEFAULT_HEADERS,
+      method,
+      body: data !== undefined ? JSON.stringify(data) : data,
+    })
+  }
+
+  protected async handleMethod(
+    url: string,
+    method: 'GET' | 'POST' | 'DELETE',
+    fetchFn: typeof this.fetch | typeof this.fetchProfile,
+    getUrl: typeof getGnosisProtocolUrl | typeof getProfileUrl,
+    options: Options = {},
+    data?: unknown
+  ): Promise<Response> {
+    const { chainId: networkId, isDevEnvironment, reqOptions } = options
+    const prodUri = getUrl(false)
+    const barnUri = getUrl(true)
+    const chainId = networkId || (await this.context.chainId)
+
+    let response
+    if (isDevEnvironment === undefined) {
+      try {
+        response = await fetchFn(url, method, `${prodUri[chainId]}/${this.API_VERSION}`, data, reqOptions)
+      } catch (error) {
+        response = await fetchFn(url, method, `${barnUri[chainId]}/${this.API_VERSION}`, data, reqOptions)
+      }
+    } else {
+      const uri = isDevEnvironment ? barnUri : prodUri
+      response = await fetchFn(url, method, `${uri[chainId]}/${this.API_VERSION}`, data, reqOptions)
+    }
+    return response
   }
 }
