@@ -54,9 +54,15 @@ async function _handleQuoteResponse<T = unknown, P extends PriceQuoteParams = Pr
   params?: P
 ): Promise<T> {
   if (!response.ok) {
-    const errorObj: ZeroXErrorResponse = await response.json()
+    const errorObj: ZeroXErrorResponse = await response.clone().json()
 
-    const priceError = new ZeroXError(errorObj)
+    let priceError
+    if (errorObj?.code && errorObj?.reason) {
+      priceError = new ZeroXError(errorObj)
+    } else {
+      const errorMessage = await ZeroXError.getErrorFromStatusCode(response.clone())
+      priceError = new ZeroXError({ code: response.status, reason: errorMessage })
+    }
 
     if (params) {
       const { quoteToken, baseToken } = params

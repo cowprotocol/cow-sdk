@@ -1,4 +1,5 @@
 import log from 'loglevel'
+import { CowError } from '../../../utils/common'
 
 interface ValidationError {
   field: string
@@ -13,7 +14,7 @@ export interface ZeroXErrorResponse {
 }
 
 export const logPrefix = '0x-sdk:'
-export default class ZeroXError {
+export default class ZeroXError extends CowError {
   name = 'ZeroXError'
   description
   message
@@ -24,15 +25,17 @@ export default class ZeroXError {
       const errorResponse: ZeroXErrorResponse = await response.json()
 
       if (errorResponse.validationErrors?.length) {
-        const errorMessage = _extractFirstValidationError(errorResponse as Required<ZeroXErrorResponse>)
+        const errorMessage = errorResponse.validationErrors?.[0].reason || errorResponse.reason
         // shouldn't fall through as this error constructor expects the error code to exist but just in case
         return errorMessage
-      } else {
-        log.error(logPrefix, 'Unknown reason for bad price request', errorResponse)
+      } else if (errorResponse?.reason) {
+        log.error(logPrefix, 'Unknown validation reason for bad price request', errorResponse)
         return errorResponse.reason
+      } else {
+        throw 'Error response body properties "reason" and "validationErrors" missing.'
       }
     } catch (error) {
-      log.error(logPrefix, 'Error handling a 400 error. Likely a problem deserialising the JSON response')
+      log.error(logPrefix, 'Error handling a 4xx error. Likely a problem deserialising the JSON response')
       return 'Price fetch failed. This may be due to a server or network connectivity issue. Please try again later.'
     }
   }
@@ -64,11 +67,8 @@ export default class ZeroXError {
   }
 
   constructor(apiError: ZeroXErrorResponse) {
+    super(apiError.reason, apiError.code.toString())
     this.description = apiError.validationErrors?.[0].reason || apiError.reason
     this.message = apiError.reason
   }
-}
-
-function _extractFirstValidationError(response: Required<ZeroXErrorResponse>) {
-  return `${logPrefix}${response.reason}: ${response.validationErrors[0].reason}`
 }
