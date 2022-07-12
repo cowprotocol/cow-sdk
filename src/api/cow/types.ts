@@ -136,4 +136,5 @@ export type Options = {
   chainId?: ChainId
   isDevEnvironment?: boolean
   reqOptions?: RequestInit
+  apiUrlGetterParams?: unknown[]
 }
