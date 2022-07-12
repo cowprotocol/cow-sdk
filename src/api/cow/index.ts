@@ -351,7 +351,7 @@ export class CowApi extends BaseApi {
   protected async handleMethod(
     url: string,
     method: 'GET' | 'POST' | 'DELETE',
-    fetchFn: typeof this.fetch | typeof this.fetchProfile,
+    fetchFn: CowApi['fetch'] | CowApi['fetchProfile'],
     getUrl: typeof getGnosisProtocolUrl | typeof getProfileUrl,
     options: Options = {},
     data?: unknown
