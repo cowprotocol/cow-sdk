@@ -67,12 +67,12 @@ export default class BaseApi {
     options: Options = {},
     data?: unknown
   ): Promise<Response> {
-    const { chainId: networkId, reqOptions } = options
+    const { chainId: networkId, requestOptions } = options
     const chainId = networkId || (await this.context.chainId)
 
     const uri = getApiUrl(options.apiUrlGetterParams)
 
-    return fetchFn(url, method, `${uri[chainId]}/${this.API_VERSION}`, data, reqOptions)
+    return fetchFn(url, method, `${uri[chainId]}/${this.API_VERSION}`, data, requestOptions)
   }
 
   protected async fetch(
@@ -80,11 +80,11 @@ export default class BaseApi {
     method: 'GET' | 'POST' | 'DELETE',
     baseUrl: string,
     data?: unknown,
-    reqOptions?: RequestInit
+    requestOptions?: RequestInit
   ): Promise<Response> {
     return fetch(baseUrl + url, {
       headers: this.DEFAULT_HEADERS,
-      ...reqOptions,
+      ...requestOptions,
       method,
       body: data !== undefined ? JSON.stringify(data) : data,
     })

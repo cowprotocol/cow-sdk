@@ -356,7 +356,7 @@ export class CowApi extends BaseApi {
     options: Options = {},
     data?: unknown
   ): Promise<Response> {
-    const { chainId: networkId, isDevEnvironment, reqOptions } = options
+    const { chainId: networkId, isDevEnvironment, requestOptions } = options
     const prodUri = getUrl(false)
     const barnUri = getUrl(true)
     const chainId = networkId || (await this.context.chainId)
@@ -364,13 +364,13 @@ export class CowApi extends BaseApi {
     let response
     if (isDevEnvironment === undefined) {
       try {
-        response = await fetchFn(url, method, `${prodUri[chainId]}/${this.API_VERSION}`, data, reqOptions)
+        response = await fetchFn(url, method, `${prodUri[chainId]}/${this.API_VERSION}`, data, requestOptions)
       } catch (error) {
-        response = await fetchFn(url, method, `${barnUri[chainId]}/${this.API_VERSION}`, data, reqOptions)
+        response = await fetchFn(url, method, `${barnUri[chainId]}/${this.API_VERSION}`, data, requestOptions)
       }
     } else {
       const uri = isDevEnvironment ? barnUri : prodUri
-      response = await fetchFn(url, method, `${uri[chainId]}/${this.API_VERSION}`, data, reqOptions)
+      response = await fetchFn(url, method, `${uri[chainId]}/${this.API_VERSION}`, data, requestOptions)
     }
     return response
   }
