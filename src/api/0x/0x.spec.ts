@@ -120,7 +120,7 @@ test('Invalid: Get Price Quote - Insufficient liquidity', async () => {
 test('Invalid: Get Price Quote - 400', async () => {
   fetchMock.mockResponseOnce(JSON.stringify({}), { status: 400 })
   try {
-    await zeroXSdk.api.getQuote({
+    await cowSdk.zeroXApi.getQuote({
       baseToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
       quoteToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
       amount: '0',
@@ -139,7 +139,7 @@ test('Invalid: Get Price Quote - 400', async () => {
 test('Invalid: Get Price Quote - 404', async () => {
   fetchMock.mockResponseOnce(JSON.stringify({}), { status: 404 })
   try {
-    await zeroXSdk.api.getQuote({
+    await cowSdk.zeroXApi.getQuote({
       baseToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
       quoteToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
       amount: '0',
@@ -156,7 +156,7 @@ test('Invalid: Get Price Quote - 404', async () => {
 test('Invalid: Get Price Quote - 429', async () => {
   fetchMock.mockResponseOnce(JSON.stringify({}), { status: 429 })
   try {
-    await zeroXSdk.api.getQuote({
+    await cowSdk.zeroXApi.getQuote({
       baseToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
       quoteToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
       amount: '0',
@@ -173,7 +173,7 @@ test('Invalid: Get Price Quote - 429', async () => {
 test('Invalid: Get Price Quote - 500', async () => {
   fetchMock.mockResponseOnce(JSON.stringify({}), { status: 500 })
   try {
-    await zeroXSdk.api.getQuote({
+    await cowSdk.zeroXApi.getQuote({
       baseToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
       quoteToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
       amount: '0',
@@ -190,7 +190,7 @@ test('Invalid: Get Price Quote - 500', async () => {
 test('Invalid: Get Price Quote - 501', async () => {
   fetchMock.mockResponseOnce(JSON.stringify({}), { status: 501 })
   try {
-    await zeroXSdk.api.getQuote({
+    await cowSdk.zeroXApi.getQuote({
       baseToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
       quoteToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
       amount: '0',
@@ -207,7 +207,7 @@ test('Invalid: Get Price Quote - 501', async () => {
 test('Invalid: Get Price Quote - 503', async () => {
   fetchMock.mockResponseOnce(JSON.stringify({}), { status: 503 })
   try {
-    await zeroXSdk.api.getQuote({
+    await cowSdk.zeroXApi.getQuote({
       baseToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
       quoteToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
       amount: '0',
@@ -224,7 +224,7 @@ test('Invalid: Get Price Quote - 503', async () => {
 test('Invalid: Get Price Quote - unknown', async () => {
   fetchMock.mockResponseOnce(JSON.stringify({}), { status: 600 })
   try {
-    await zeroXSdk.api.getQuote({
+    await cowSdk.zeroXApi.getQuote({
       baseToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
       quoteToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
       amount: '0',
