@@ -32,11 +32,18 @@ export default class ZeroXError extends CowError {
         log.error(logPrefix, 'Unknown validation reason for bad price request', errorResponse)
         return errorResponse.reason
       } else {
-        throw 'Error response body properties "reason" and "validationErrors" missing.'
+        throw new Error('Error response body properties "reason" and "validationErrors" missing.')
       }
     } catch (error) {
-      log.error(logPrefix, 'Error handling a 4xx error. Likely a problem deserialising the JSON response')
-      return 'Price fetch failed. This may be due to a server or network connectivity issue. Please try again later.'
+      const isError = error instanceof Error
+      log.error(
+        logPrefix,
+        'Error handling a 4xx error. Likely a problem deserialising the JSON response.',
+        isError && error?.message
+      )
+      return isError
+        ? error?.message
+        : 'Price fetch failed. This may be due to a server or network connectivity issue. Please try again later.'
     }
   }
 
@@ -57,11 +64,7 @@ export default class ZeroXError extends CowError {
         return 'Server Error - Too many open connections'
 
       default:
-        log.error(
-          logPrefix,
-          '[ZeroXError::getErrorFromStatusCode] Error fetching quote, status code:',
-          response.status || 'unknown'
-        )
+        log.error(logPrefix, 'Error fetching quote, status code:', response.status || 'unknown')
         return 'Error fetching quote'
     }
   }

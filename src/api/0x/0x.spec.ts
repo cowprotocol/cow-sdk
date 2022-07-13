@@ -2,14 +2,14 @@ import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { OrderKind } from '@cowprotocol/contracts'
 import { PriceQuoteParams } from '../cow/types'
 import { SupportedChainId } from '../../constants/chains'
-import { ZeroXSdk } from '../../0xSdk'
+import CowSdk from '../../CowSdk'
 import ZeroXError from './error'
 
 enableFetchMocks()
 
-const chainId = 1 as SupportedChainId //Rinkeby
+const chainId = SupportedChainId.MAINNET
 
-const zeroXSdk = new ZeroXSdk(chainId, {}, { loglevel: 'debug' })
+const cowSdk = new CowSdk(chainId, {}, { loglevel: 'debug' })
 
 const HTTP_STATUS_OK = 200
 
@@ -54,14 +54,16 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
+const query = {
+  baseToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+  quoteToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+  amount: '1234567890',
+  kind: OrderKind.BUY,
+} as PriceQuoteParams
+
 test('Valid: Get Price Quote', async () => {
   fetchMock.mockResponseOnce(JSON.stringify(PRICE_QUOTE_RESPONSE), { status: HTTP_STATUS_OK })
-  const price = await zeroXSdk.api.getQuote({
-    baseToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-    quoteToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-    amount: '1234567890',
-    kind: OrderKind.BUY,
-  } as PriceQuoteParams)
+  const price = await cowSdk.zeroXApi.getQuote(query)
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
     'https://api.0x.org/swap/v1/price?sellToken=0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2&buyToken=0x6810e776880c02933d47db1b9fc05908e5386b96&buyAmount=1234567890&excludedSources=&affiliateAddress=0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
@@ -70,6 +72,7 @@ test('Valid: Get Price Quote', async () => {
   expect(price?.value).toEqual(PRICE_QUOTE_RESPONSE.value)
   expect(price?.buyTokenAddress).toEqual(PRICE_QUOTE_RESPONSE.buyTokenAddress)
 })
+
 test('Invalid: Get Price Quote', async () => {
   fetchMock.mockResponseOnce(
     JSON.stringify({
@@ -85,18 +88,6 @@ test('Invalid: Get Price Quote', async () => {
     }),
     { status: 400 }
   )
-  try {
-    await zeroXSdk.api.getQuote({
-      baseToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-      quoteToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-      amount: '0',
-      kind: OrderKind.BUY,
-    } as PriceQuoteParams)
-  } catch (e) {
-    const error = e as ZeroXError
 
-    expect(error.message).toEqual('Validation Failed')
-    expect(error.description).toEqual('INSUFFICIENT_ASSET_LIQUIDITY')
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-  }
+  await expect(cowSdk.zeroXApi.getQuote(query)).rejects.toThrowError(ZeroXError)
 })
