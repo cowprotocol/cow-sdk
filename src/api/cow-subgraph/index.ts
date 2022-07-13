@@ -11,6 +11,7 @@ import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from '.
 export const subgraphUrls: Record<ChainId, string> = {
   [ChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow',
   [ChainId.RINKEBY]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-rinkeby',
+  [ChainId.GOERLI]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-goerli',
   [ChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc',
 }
 
@@ -29,6 +30,7 @@ export class CowSubgraphApi {
     return {
       [ChainId.MAINNET]: new GraphQLClient(subgraphUrls[ChainId.MAINNET], { fetch }),
       [ChainId.RINKEBY]: new GraphQLClient(subgraphUrls[ChainId.RINKEBY], { fetch }),
+      [ChainId.GOERLI]: new GraphQLClient(subgraphUrls[ChainId.GOERLI], { fetch }),
       [ChainId.GNOSIS_CHAIN]: new GraphQLClient(subgraphUrls[ChainId.GNOSIS_CHAIN], { fetch }),
     }
   }

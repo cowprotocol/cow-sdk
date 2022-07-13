@@ -32,6 +32,7 @@ function getGnosisProtocolUrl(isDev: boolean): Partial<Record<ChainId, string>> 
     return {
       [ChainId.MAINNET]: 'https://barn.api.cow.fi/mainnet/api',
       [ChainId.RINKEBY]: 'https://barn.api.cow.fi/rinkeby/api',
+      [ChainId.GOERLI]: 'https://barn.api.cow.fi/goerli/api',
       [ChainId.GNOSIS_CHAIN]: 'https://barn.api.cow.fi/xdai/api',
     }
   }
@@ -39,6 +40,7 @@ function getGnosisProtocolUrl(isDev: boolean): Partial<Record<ChainId, string>> 
   return {
     [ChainId.MAINNET]: 'https://api.cow.fi/mainnet/api',
     [ChainId.RINKEBY]: 'https://api.cow.fi/rinkeby/api',
+    [ChainId.GOERLI]: 'https://api.cow.fi/goerli/api',
     [ChainId.GNOSIS_CHAIN]: 'https://api.cow.fi/xdai/api',
   }
 }
