@@ -4,6 +4,7 @@ import { PriceQuoteParams } from '../cow/types'
 import { SupportedChainId } from '../../constants/chains'
 import CowSdk from '../../CowSdk'
 import ZeroXError from './error'
+import { ERC20BridgeSource } from './types'
 
 enableFetchMocks()
 
@@ -61,12 +62,36 @@ const query = {
   kind: OrderKind.BUY,
 } as PriceQuoteParams
 
-test('Valid: Get Price Quote', async () => {
+test('Valid: Get Price Quote with default options', async () => {
   fetchMock.mockResponseOnce(JSON.stringify(PRICE_QUOTE_RESPONSE), { status: HTTP_STATUS_OK })
   const price = await cowSdk.zeroXApi.getQuote(query)
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    'https://api.0x.org/swap/v1/price?sellToken=0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2&buyToken=0x6810e776880c02933d47db1b9fc05908e5386b96&buyAmount=1234567890&excludedSources=&affiliateAddress=0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+    'https://api.0x.org/swap/v1/price?sellToken=0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2&buyToken=0x6810e776880c02933d47db1b9fc05908e5386b96&buyAmount=1234567890&affiliateAddress=0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+    FETCH_RESPONSE_PARAMETERS
+  )
+  expect(price?.value).toEqual(PRICE_QUOTE_RESPONSE.value)
+  expect(price?.buyTokenAddress).toEqual(PRICE_QUOTE_RESPONSE.buyTokenAddress)
+})
+
+test('Valid: Get Price Quote with custom options', async () => {
+  fetchMock.mockResponseOnce(JSON.stringify(PRICE_QUOTE_RESPONSE), { status: HTTP_STATUS_OK })
+  const cowSdk = new CowSdk(
+    chainId,
+    {},
+    {
+      matchaOptions: {
+        affiliateAddressMap: {
+          [SupportedChainId.MAINNET]: '0xAFFILIATE_ADDRESS_MAINNET',
+        },
+        excludedSources: [ERC20BridgeSource.Uniswap, ERC20BridgeSource.ACryptos, ERC20BridgeSource.CheeseSwap],
+      },
+    }
+  )
+  const price = await cowSdk.zeroXApi.getQuote(query)
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(fetchMock).toHaveBeenCalledWith(
+    'https://api.0x.org/swap/v1/price?sellToken=0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2&buyToken=0x6810e776880c02933d47db1b9fc05908e5386b96&buyAmount=1234567890&affiliateAddress=0xAFFILIATE_ADDRESS_MAINNET&excludedSources=Uniswap%2CACryptoS%2CCheeseSwap',
     FETCH_RESPONSE_PARAMETERS
   )
   expect(price?.value).toEqual(PRICE_QUOTE_RESPONSE.value)
