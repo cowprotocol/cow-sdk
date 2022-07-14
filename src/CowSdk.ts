@@ -26,7 +26,7 @@ export class CowSdk<T extends ChainId> {
     this.cowApi = new CowApi(this.context)
     this.cowSubgraphApi = new CowSubgraphApi(this.context)
     this.metadataApi = new MetadataApi(this.context)
-    this.zeroXApi = new ZeroXApi(this.context, options.matchaOptions)
+    this.zeroXApi = new ZeroXApi(chainId, options.matchaOptions)
     log.setLevel(options.loglevel || 'error')
   }
 
