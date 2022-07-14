@@ -103,11 +103,11 @@ export class CowApi {
   }
 
   get API_BASE_URL() {
-    return getGnosisProtocolUrl(this.context.isDevEnvironment)
+    return getGnosisProtocolUrl(this.context.env === 'staging')
   }
 
   async getProfileData(address: string, options: Options = {}): Promise<ProfileData | null> {
-    const { chainId: networkId, isDevEnvironment } = options
+    const { chainId: networkId, env } = options
     const chainId = networkId || (await this.context.chainId)
     log.debug(logPrefix, `[api:${this.API_NAME}] Get profile data for`, chainId, address)
     if (chainId !== ChainId.MAINNET) {
@@ -115,7 +115,7 @@ export class CowApi {
       return null
     }
 
-    const response = await this.getProfile(`/profile/${address}`, { chainId, isDevEnvironment })
+    const response = await this.getProfile(`/profile/${address}`, { chainId, env })
 
     if (!response.ok) {
       const errorResponse = await response.json()
@@ -127,7 +127,7 @@ export class CowApi {
   }
 
   async getTrades(params: GetTradesParams, options: Options = {}): Promise<TradeMetaData[]> {
-    const { chainId: networkId, isDevEnvironment = this.context.isDevEnvironment } = options
+    const { chainId: networkId, env = this.context.env } = options
     const { owner, orderId, limit, offset } = params
     if (owner && orderId) {
       throw new CowError('Cannot specify both owner and orderId')
@@ -136,7 +136,7 @@ export class CowApi {
     const chainId = networkId || (await this.context.chainId)
     log.debug(logPrefix, '[util:operator] Get trades for', chainId, { owner, orderId, limit, offset })
     try {
-      const response = await this.get(`/trades${qsParams}`, { chainId, isDevEnvironment })
+      const response = await this.get(`/trades${qsParams}`, { chainId, env })
 
       if (!response.ok) {
         const errorResponse = await response.json()
@@ -153,14 +153,14 @@ export class CowApi {
   }
 
   async getOrders(params: GetOrdersParams, options: Options = {}): Promise<OrderMetaData[]> {
-    const { chainId: networkId, isDevEnvironment = this.context.isDevEnvironment } = options
+    const { chainId: networkId, env = this.context.env } = options
     const { owner, limit = 1000, offset = 0 } = params
     const queryString = objectToQueryString({ limit, offset })
     const chainId = networkId || (await this.context.chainId)
     log.debug(logPrefix, `[api:${this.API_NAME}] Get orders for `, chainId, owner, limit, offset)
 
     try {
-      const response = await this.get(`/account/${owner}/orders/${queryString}`, { chainId, isDevEnvironment })
+      const response = await this.get(`/account/${owner}/orders/${queryString}`, { chainId, env })
 
       if (!response.ok) {
         const errorResponse: ApiErrorObject = await response.json()
@@ -177,12 +177,12 @@ export class CowApi {
   }
 
   async getTxOrders(txHash: string, options: Options = {}): Promise<OrderMetaData[]> {
-    const { chainId: networkId, isDevEnvironment } = options
+    const { chainId: networkId, env } = options
     const chainId = networkId || (await this.context.chainId)
     log.debug(`[api:${this.API_NAME}] Get tx orders for `, chainId, txHash)
 
     try {
-      const response = await this.get(`/transactions/${txHash}/orders`, { chainId, isDevEnvironment })
+      const response = await this.get(`/transactions/${txHash}/orders`, { chainId, env })
 
       if (!response.ok) {
         const errorResponse: ApiErrorObject = await response.json()
@@ -198,11 +198,11 @@ export class CowApi {
   }
 
   async getOrder(orderId: string, options: Options = {}): Promise<OrderMetaData | null> {
-    const { chainId: networkId, isDevEnvironment } = options
+    const { chainId: networkId, env } = options
     const chainId = networkId || (await this.context.chainId)
     log.debug(logPrefix, `[api:${this.API_NAME}] Get order for `, chainId, orderId)
     try {
-      const response = await this.get(`/orders/${orderId}`, { chainId, isDevEnvironment })
+      const response = await this.get(`/orders/${orderId}`, { chainId, env })
 
       if (!response.ok) {
         const errorResponse: ApiErrorObject = await response.json()
@@ -219,14 +219,14 @@ export class CowApi {
   }
 
   async getPriceQuoteLegacy(params: PriceQuoteParams, options: Options = {}): Promise<PriceInformation | null> {
-    const { chainId: networkId, isDevEnvironment } = options
+    const { chainId: networkId, env } = options
     const { baseToken, quoteToken, amount, kind } = params
     const chainId = networkId || (await this.context.chainId)
     log.debug(logPrefix, `[api:${this.API_NAME}] Get price from API`, params, 'for', chainId)
 
     const response = await this.get(
       `/markets/${toErc20Address(baseToken, chainId)}-${toErc20Address(quoteToken, chainId)}/${kind}/${amount}`,
-      { chainId, isDevEnvironment }
+      { chainId, env }
     ).catch((error) => {
       log.error(logPrefix, 'Error getting price quote:', error)
       throw new QuoteError(UNHANDLED_QUOTE_ERROR)
@@ -236,16 +236,16 @@ export class CowApi {
   }
 
   async getQuote(params: FeeQuoteParams, options: Options = {}): Promise<SimpleGetQuoteResponse> {
-    const { chainId: networkId, isDevEnvironment } = options
+    const { chainId: networkId, env } = options
     const chainId = networkId || (await this.context.chainId)
     const quoteParams = this.mapNewToLegacyParams(params, chainId)
-    const response = await this.post('/quote', quoteParams, { chainId, isDevEnvironment })
+    const response = await this.post('/quote', quoteParams, { chainId, env })
 
     return _handleQuoteResponse<SimpleGetQuoteResponse>(response)
   }
 
   async sendSignedOrderCancellation(params: OrderCancellationParams, options: Options = {}): Promise<void> {
-    const { chainId: networkId, isDevEnvironment } = options
+    const { chainId: networkId, env } = options
     const { cancellation, owner: from } = params
     const chainId = networkId || (await this.context.chainId)
     log.debug(logPrefix, `[api:${this.API_NAME}] Delete signed order for network`, chainId, cancellation)
@@ -257,7 +257,7 @@ export class CowApi {
         signingScheme: getSigningSchemeApiValue(cancellation.signingScheme),
         from,
       },
-      { chainId, isDevEnvironment }
+      { chainId, env }
     )
 
     if (!response.ok) {
@@ -274,7 +274,7 @@ export class CowApi {
     options: Options = {}
   ): Promise<OrderID> {
     const fullOrder: OrderCreation = { ...params.order, appData: this.context.appDataHash }
-    const { chainId: networkId, isDevEnvironment } = options
+    const { chainId: networkId, env } = options
     const chainId = networkId || (await this.context.chainId)
     const { owner } = params
     log.debug(logPrefix, `[api:${this.API_NAME}] Post signed order for network`, chainId, fullOrder)
@@ -287,7 +287,7 @@ export class CowApi {
         signingScheme: getSigningSchemeApiValue(fullOrder.signingScheme),
         from: owner,
       },
-      { chainId, isDevEnvironment }
+      { chainId, env }
     )
 
     // Handle response
@@ -399,20 +399,20 @@ export class CowApi {
     options: Options = {},
     data?: unknown
   ): Promise<Response> {
-    const { chainId: networkId, isDevEnvironment } = options
+    const { chainId: networkId, env } = options
     const prodUri = getUrl(false)
     const barnUri = getUrl(true)
     const chainId = networkId || (await this.context.chainId)
 
     let response
-    if (isDevEnvironment === undefined) {
+    if (env === undefined) {
       try {
         response = await fetchFn(url, method, `${prodUri[chainId]}/v1`, data)
       } catch (error) {
         response = await fetchFn(url, method, `${barnUri[chainId]}/v1`, data)
       }
     } else {
-      const uri = isDevEnvironment ? barnUri : prodUri
+      const uri = env === 'staging' ? barnUri : prodUri
       response = await fetchFn(url, method, `${uri[chainId]}/v1`, data)
     }
     return response

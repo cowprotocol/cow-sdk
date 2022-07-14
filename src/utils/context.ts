@@ -4,6 +4,8 @@ import { CowError, logPrefix } from './common'
 import { SupportedChainId as ChainId, SupportedChainId } from '../constants/chains'
 import { DEFAULT_APP_DATA_HASH, DEFAULT_IPFS_READ_URI, DEFAULT_IPFS_WRITE_URI } from '../constants'
 
+export type Env = 'prod' | 'staging'
+
 export interface Ipfs {
   uri?: string
   writeUri?: string
@@ -14,14 +16,14 @@ export interface Ipfs {
 
 export interface CowContext {
   appDataHash?: string
-  isDevEnvironment?: boolean
+  env?: Env
   signer?: Signer
   ipfs?: Ipfs
 }
 
 export const DefaultCowContext = {
   appDataHash: DEFAULT_APP_DATA_HASH,
-  isDevEnvironment: false,
+  env: 'staging' as Env,
   ipfs: {
     readUri: DEFAULT_IPFS_READ_URI,
     writeUri: DEFAULT_IPFS_WRITE_URI,
@@ -102,8 +104,8 @@ export class Context implements Partial<CowContext> {
     return this.#context.appDataHash ?? DefaultCowContext.appDataHash
   }
 
-  get isDevEnvironment(): boolean {
-    return this.#context.isDevEnvironment ?? DefaultCowContext.isDevEnvironment
+  get env(): Env {
+    return this.#context.env ?? DefaultCowContext.env
   }
 
   get signer(): Signer | undefined {

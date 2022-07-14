@@ -141,7 +141,7 @@ afterEach(() => {
 
 test('Valid: Get orders link ', async () => {
   const orderLink = await cowSdk.cowApi.getOrderLink(ORDER_RESPONSE.uid)
-  expect(orderLink).toEqual(`https://api.cow.fi/rinkeby/api/v1/orders/${ORDER_RESPONSE.uid}`)
+  expect(orderLink).toEqual(`https://barn.api.cow.fi/rinkeby/api/v1/orders/${ORDER_RESPONSE.uid}`)
 })
 
 test('Valid: Get an order ', async () => {
@@ -187,7 +187,7 @@ test('Valid: Get last 5 orders for a given trader ', async () => {
   })
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    'https://api.cow.fi/rinkeby/api/v1/account/0x00000000005ef87f8ca7014309ece7260bbcdaeb/orders/?limit=5',
+    'https://barn.api.cow.fi/rinkeby/api/v1/account/0x00000000005ef87f8ca7014309ece7260bbcdaeb/orders/?limit=5',
     FETCH_RESPONSE_PARAMETERS
   )
   expect(orders.length).toEqual(5)
@@ -213,7 +213,7 @@ test('Invalid: Get last 5 orders for an unexisting trader ', async () => {
     expect(error.message).toEqual('Token pair selected has insufficient liquidity')
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://api.cow.fi/rinkeby/api/v1/account/invalidOwner/orders/?limit=5',
+      'https://barn.api.cow.fi/rinkeby/api/v1/account/invalidOwner/orders/?limit=5',
       FETCH_RESPONSE_PARAMETERS
     )
   }
@@ -264,7 +264,7 @@ test('Valid: Get last 5 trades for a given trader ', async () => {
   })
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    `https://api.cow.fi/rinkeby/api/v1/trades?owner=${TRADE_RESPONSE.owner}&limit=5`,
+    `https://barn.api.cow.fi/rinkeby/api/v1/trades?owner=${TRADE_RESPONSE.owner}&limit=5`,
     FETCH_RESPONSE_PARAMETERS
   )
   expect(trades.length).toEqual(5)
@@ -280,7 +280,7 @@ test('Valid: Get last 5 trades for a given order id ', async () => {
   })
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    `https://api.cow.fi/rinkeby/api/v1/trades?orderUid=${TRADE_RESPONSE.orderUid}&limit=5`,
+    `https://barn.api.cow.fi/rinkeby/api/v1/trades?orderUid=${TRADE_RESPONSE.orderUid}&limit=5`,
     FETCH_RESPONSE_PARAMETERS
   )
   expect(trades.length).toEqual(5)
@@ -318,7 +318,7 @@ test('Invalid: Get last 5 trades for an unexisting trader ', async () => {
     expect(error.message).toEqual('Token pair selected has insufficient liquidity')
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://api.cow.fi/rinkeby/api/v1/trades?owner=invalidOwner&limit=5',
+      'https://barn.api.cow.fi/rinkeby/api/v1/trades?owner=invalidOwner&limit=5',
       FETCH_RESPONSE_PARAMETERS
     )
   }
