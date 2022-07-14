@@ -80,7 +80,7 @@ export class MetadataApi {
    * @param appData
    */
   async calculateAppDataHash(appData: AppDataDoc): Promise<IpfsHashInfo | void> {
-    const validation = await validateAppDataDocument(appData)
+    const validation = await validateAppDataDocument(appData, appData.version)
     if (!validation?.result) {
       throw new CowError('Invalid appData provided', validation?.errors)
     }
