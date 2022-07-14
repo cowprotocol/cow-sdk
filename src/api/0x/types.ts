@@ -35,7 +35,7 @@ export interface MatchaPriceQuote extends MatchaBaseQuote {
 }
 
 export type MatchaOptions = {
-  affiliateAddress: string
+  affiliateAddressMap: Partial<Record<number, string>>
   excludedSources: ERC20BridgeSource[]
 }
 
