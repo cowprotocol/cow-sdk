@@ -661,3 +661,8 @@ test('Valid: Get last 5 trades changing options parameters', async () => {
   )
   expect(trades.length).toEqual(5)
 })
+
+test('Valid: Update sdk context', async () => {
+  await cowSdk.updateContext({ env: 'prod' })
+  expect(cowSdk.context.env).toEqual('prod')
+})
