@@ -105,7 +105,7 @@ export class Context implements Partial<CowContext> {
   }
 
   get env(): Env {
-    return this.#context.env ?? DefaultCowContext.env
+    return this.#context.env || DefaultCowContext.env
   }
 
   get signer(): Signer | undefined {

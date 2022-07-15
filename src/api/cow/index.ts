@@ -25,35 +25,37 @@ import {
   Options,
 } from './types'
 import { CowError, logPrefix, objectToQueryString } from '../../utils/common'
-import { Context } from '../../utils/context'
+import { Context, Env } from '../../utils/context'
 
-function getGnosisProtocolUrl(isDev: boolean): Partial<Record<ChainId, string>> {
-  if (isDev) {
-    return {
-      [ChainId.MAINNET]: 'https://barn.api.cow.fi/mainnet/api',
-      [ChainId.RINKEBY]: 'https://barn.api.cow.fi/rinkeby/api',
-      [ChainId.GOERLI]: 'https://barn.api.cow.fi/goerli/api',
-      [ChainId.GNOSIS_CHAIN]: 'https://barn.api.cow.fi/xdai/api',
-    }
-  }
-
-  return {
-    [ChainId.MAINNET]: 'https://api.cow.fi/mainnet/api',
-    [ChainId.RINKEBY]: 'https://api.cow.fi/rinkeby/api',
-    [ChainId.GOERLI]: 'https://api.cow.fi/goerli/api',
-    [ChainId.GNOSIS_CHAIN]: 'https://api.cow.fi/xdai/api',
+function getCowProtocolUrl(env: Env): Partial<Record<ChainId, string>> {
+  switch (env) {
+    case 'staging':
+      return {
+        [ChainId.MAINNET]: 'https://barn.api.cow.fi/mainnet/api',
+        [ChainId.RINKEBY]: 'https://barn.api.cow.fi/rinkeby/api',
+        [ChainId.GOERLI]: 'https://barn.api.cow.fi/goerli/api',
+        [ChainId.GNOSIS_CHAIN]: 'https://barn.api.cow.fi/xdai/api',
+      }
+    case 'prod':
+      return {
+        [ChainId.MAINNET]: 'https://api.cow.fi/mainnet/api',
+        [ChainId.RINKEBY]: 'https://api.cow.fi/rinkeby/api',
+        [ChainId.GOERLI]: 'https://api.cow.fi/goerli/api',
+        [ChainId.GNOSIS_CHAIN]: 'https://api.cow.fi/xdai/api',
+      }
   }
 }
 
-function getProfileUrl(isDev: boolean): Partial<Record<ChainId, string>> {
-  if (isDev) {
-    return {
-      [ChainId.MAINNET]: 'https://barn.api.cow.fi/affiliate/api',
-    }
-  }
-
-  return {
-    [ChainId.MAINNET]: 'https://api.cow.fi/affiliate/api',
+function getProfileUrl(env: Env): Partial<Record<ChainId, string>> {
+  switch (env) {
+    case 'staging':
+      return {
+        [ChainId.MAINNET]: 'https://barn.api.cow.fi/affiliate/api',
+      }
+    case 'prod':
+      return {
+        [ChainId.MAINNET]: 'https://api.cow.fi/affiliate/api',
+      }
   }
 }
 
@@ -103,7 +105,7 @@ export class CowApi {
   }
 
   get API_BASE_URL() {
-    return getGnosisProtocolUrl(this.context.env === 'staging')
+    return getCowProtocolUrl(this.context.env)
   }
 
   async getProfileData(address: string, options: Options = {}): Promise<ProfileData | null> {
@@ -376,11 +378,11 @@ export class CowApi {
   }
 
   private post(url: string, data: unknown, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'POST', this.fetch.bind(this), getGnosisProtocolUrl, options, data)
+    return this.handleMethod(url, 'POST', this.fetch.bind(this), getCowProtocolUrl, options, data)
   }
 
   private get(url: string, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'GET', this.fetch.bind(this), getGnosisProtocolUrl, options)
+    return this.handleMethod(url, 'GET', this.fetch.bind(this), getCowProtocolUrl, options)
   }
 
   private getProfile(url: string, options: Options = {}): Promise<Response> {
@@ -388,20 +390,20 @@ export class CowApi {
   }
 
   private delete(url: string, data: unknown, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'DELETE', this.fetch.bind(this), getGnosisProtocolUrl, options, data)
+    return this.handleMethod(url, 'DELETE', this.fetch.bind(this), getCowProtocolUrl, options, data)
   }
 
   private async handleMethod(
     url: string,
     method: 'GET' | 'POST' | 'DELETE',
     fetchFn: typeof this.fetch | typeof this.fetchProfile,
-    getUrl: typeof getGnosisProtocolUrl | typeof getProfileUrl,
+    getUrl: typeof getCowProtocolUrl | typeof getProfileUrl,
     options: Options = {},
     data?: unknown
   ): Promise<Response> {
     const { chainId: networkId, env } = options
-    const prodUri = getUrl(false)
-    const barnUri = getUrl(true)
+    const prodUri = getUrl('prod')
+    const barnUri = getUrl('staging')
     const chainId = networkId || (await this.context.chainId)
 
     let response
@@ -412,7 +414,7 @@ export class CowApi {
         response = await fetchFn(url, method, `${barnUri[chainId]}/v1`, data)
       }
     } else {
-      const uri = env === 'staging' ? barnUri : prodUri
+      const uri = getUrl(env)
       response = await fetchFn(url, method, `${uri[chainId]}/v1`, data)
     }
     return response

@@ -633,7 +633,7 @@ test('Valid: Get last 5 orders changing options parameters', async () => {
       limit: 5,
       offset: 0,
     },
-    { isDevEnvironment: true, chainId: SupportedChainId.MAINNET }
+    { env: 'staging', chainId: SupportedChainId.MAINNET }
   )
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
@@ -652,7 +652,7 @@ test('Valid: Get last 5 trades changing options parameters', async () => {
       limit: 5,
       offset: 0,
     },
-    { isDevEnvironment: true, chainId: SupportedChainId.MAINNET }
+    { env: 'staging', chainId: SupportedChainId.MAINNET }
   )
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
