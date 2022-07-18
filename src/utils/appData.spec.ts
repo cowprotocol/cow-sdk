@@ -12,10 +12,6 @@ const BASE_DOCUMENT = {
 
 const INVALID_CID_LENGTH = 'Incorrect length'
 
-beforeEach(() => {
-  fetchMock.dontMock()
-})
-
 // TODO: move unit tests to app-data package
 
 test('Valid minimal document', async () => {
@@ -132,11 +128,16 @@ test('Invalid: serialized appData CID format ', async () => {
 })
 
 test('Valid IPFS appData from CID', async () => {
+  fetchMock.mockResponseOnce(
+    '{"appCode":"CowSwap","metadata":{"referrer":{"address":"0x1f5B740436Fc5935622e92aa3b46818906F416E9","version":"0.1.0"}},"version":"0.1.0"}'
+  )
+
   const validSerializedCidV0 = 'QmZZhNnqMF1gRywNKnTPuZksX7rVjQgTT3TJAZ7R6VE3b2'
   const appDataDocument = await loadIpfsFromCid(validSerializedCidV0)
   const validation = await validateAppDataDocument(appDataDocument, '0.1.0')
 
   expect(validation).toEqual(VALID_RESULT)
+  expect(fetchMock).toHaveBeenCalledTimes(1)
 })
 
 test('Valid: quote metadata - slippage', async () => {
