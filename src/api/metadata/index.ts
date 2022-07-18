@@ -2,7 +2,7 @@ import log from 'loglevel'
 import { Context } from '../../utils/context'
 import { getSerializedCID, loadIpfsFromCid, validateAppDataDocument } from '../../utils/appData'
 import { calculateIpfsCidV0, pinJSONToIPFS } from '../../utils/ipfs'
-import { AppDataDoc, IpfsHashInfo, MetadataDoc, OptionalAppDataProperties } from './types'
+import { AnyAppDataDocVersion, LatestAppDataDocVersion, IpfsHashInfo } from './types'
 import { CowError } from '../../utils/common'
 
 const DEFAULT_APP_CODE = 'CowSwap'
@@ -28,7 +28,7 @@ export class MetadataApi {
     }
   }
 
-  async decodeAppData(hash: string): Promise<void | AppDataDoc> {
+  async decodeAppData(hash: string): Promise<void | AnyAppDataDocVersion> {
     try {
       const cidV0 = await getSerializedCID(hash)
       if (!cidV0) throw new CowError('Error getting serialized CID')
@@ -79,7 +79,7 @@ export class MetadataApi {
    *
    * @param appData
    */
-  async calculateAppDataHash(appData: AppDataDoc): Promise<IpfsHashInfo | void> {
+  async calculateAppDataHash(appData: AnyAppDataDocVersion): Promise<IpfsHashInfo | void> {
     const validation = await validateAppDataDocument(appData, appData.version)
     if (!validation?.result) {
       throw new CowError('Invalid appData provided', validation?.errors)
@@ -100,7 +100,7 @@ export class MetadataApi {
     }
   }
 
-  async uploadMetadataDocToIpfs(appDataDoc: AppDataDoc): Promise<string | void> {
+  async uploadMetadataDocToIpfs(appDataDoc: AnyAppDataDocVersion): Promise<string | void> {
     const { IpfsHash } = await pinJSONToIPFS(appDataDoc, this.context.ipfs)
     return this.cidToAppDataHex(IpfsHash)
   }

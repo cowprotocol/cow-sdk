@@ -84,7 +84,7 @@ test('Valid: Upload AppDataDoc to IPFS', async () => {
   })
 })
 
-test('Invalid: Upload AppDataDoc to IPFS with wrong credentials', async () => {
+test('Invalid: Upload LatestAppDataDocVersion to IPFS with wrong credentials', async () => {
   fetchMock.mockResponseOnce(JSON.stringify({ error: { details: 'IPFS api keys are invalid' } }), {
     status: HTTP_STATUS_INTERNAL_ERROR,
   })

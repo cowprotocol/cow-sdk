@@ -1,6 +1,6 @@
 import { CowError } from './common'
 import { Ipfs } from './context'
-import { AppDataDoc } from '../api/metadata/types'
+import { AnyAppDataDocVersion } from '../api/metadata/types'
 import { DEFAULT_IPFS_WRITE_URI } from '../constants'
 
 type PinataPinResponse = {
@@ -45,7 +45,7 @@ export async function pinJSONToIPFS(
   return data
 }
 
-export async function calculateIpfsCidV0(doc: AppDataDoc): Promise<string> {
+export async function calculateIpfsCidV0(doc: AnyAppDataDocVersion): Promise<string> {
   const docString = JSON.stringify(doc)
 
   const { of } = await import('ipfs-only-hash')

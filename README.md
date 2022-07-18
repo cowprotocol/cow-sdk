@@ -202,60 +202,58 @@ Orders in CoW Protocol can contain arbitrary data in a field called `AppData`.
 
 The SDK facilitates the creation of these documents, and getting the `AppData` Hex number that summarizes it.
 
-
 The most important thing to define in the meta-data is the name of your app, so the order-flow can be credited to it.
 
 ```js
-const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({}, {
-  appCode: 'YourApp'
+const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({
+  appDataParams: { appCode: "YourApp" }
 })
 ```
 
 This will create a document similar to:
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.4.0",
   "appCode": "YourApp",
-  "metadata": {},
+  "metadata": {}
 } 
 ```
 
 After creating the most basic document, you can see how to attach additional meta-data items.
 
-For example, you could give information about who reffered the user creating the order.
+For example, you could give information about who referred the user creating the order.
 
 ```js
-const appDataDoc = cowSdk.metadataApi.generateAppDataDoc(
-  {
-    referrer: {
-      address: '0x1f5B740436Fc5935622e92aa3b46818906F416E9',
-      version: '0.1.0',
-    },
-  },
-  {
-    appCode: 'YourApp',
+const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({
+  appDataParams: { appCode: "YourApp" },
+  metadataParas: {
+    referrerParams: {
+      address: '0x1f5B740436Fc5935622e92aa3b46818906F416E9'
+    }
   }
-)
+})
 ```
 
 This will create a document similar to:
 
 ```json
 {
-    "version": "0.1.0",
-    "appCode": "YourApp",
-    "metadata": {
-      "referrer": {
-        "address": "0x1f5B740436Fc5935622e92aa3b46818906F416E9",
-        "version": "0.1.0",
-      },
-    },
+  "version": "0.4.0",
+  "appCode": "YourApp",
+  "metadata": {
+    "referrer": {
+      "address": "0x1f5B740436Fc5935622e92aa3b46818906F416E9",
+      "version": "0.1.0"
+    }
+  }
 }
 ```
 
+The method `cowSdk.metadataApi.generateAppDataDoc` will always create the latest schema version.
 
-For a complete list of meta-data that can be attach check [@cowprotocol/app-data](https://github.com/cowprotocol/app-data)
-
+For a complete list of metadata that can be attached and for previous versions
+check `@cowprotocol/app-data` [repository](https://github.com/cowprotocol/app-data)
+and [NPM package](https://www.npmjs.com/package/@cowprotocol/app-data)
 
 ## Get the AppData Hex
 The `AppData` Hex points to an IPFS document with the meta-data attached to the order.
@@ -282,14 +280,14 @@ This will return a document similar to:
 
 ```json
 {
-    "version": "0.1.0",
-    "appCode": "YourApp",
-    "metadata": {
-      "referrer": {
-        "address": "0x1f5B740436Fc5935622e92aa3b46818906F416E9",
-        "version": "0.1.0",
-      },
-    },
+  "version": "0.1.0",
+  "appCode": "YourApp",
+  "metadata": {
+    "referrer": {
+      "address": "0x1f5B740436Fc5935622e92aa3b46818906F416E9",
+      "version": "0.1.0"
+    }
+  }
 }
 ```
 

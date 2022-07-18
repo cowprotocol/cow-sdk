@@ -1,29 +1,4 @@
-type Metadata = {
-  version: string
-}
-
-export type ReferralMetadata = Metadata & {
-  address: string
-}
-
-export type QuoteMetadata = Metadata & {
-  slippageBips: string
-}
-
-export type MetadataDoc = {
-  referrer?: ReferralMetadata
-  quote?: QuoteMetadata
-}
-
-export type OptionalAppDataProperties = {
-  appCode?: string
-  environment?: string
-}
-
-export type AppDataDoc = {
-  version: string
-  metadata: MetadataDoc
-} & OptionalAppDataProperties
+export { AnyAppDataDocVersion, LatestAppDataDocVersion } from '@cowprotocol/app-data'
 
 export type IpfsHashInfo = {
   /**
