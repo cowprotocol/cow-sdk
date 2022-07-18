@@ -136,4 +136,6 @@ export type PriceQuoteParams = Omit<FeeQuoteParams, 'sellToken' | 'buyToken'> & 
 export type Options = {
   chainId?: ChainId
   env?: Env
+  requestOptions?: RequestInit
+  apiUrlGetterParams?: unknown[]
 }

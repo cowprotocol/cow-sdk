@@ -87,7 +87,6 @@ const FETCH_RESPONSE_PARAMETERS = {
   body: undefined,
   headers: {
     'Content-Type': 'application/json',
-    'X-AppId': cowSdk.context.appDataHash,
   },
   method: 'GET',
 }
@@ -584,40 +583,6 @@ test('Invalid: Send an duplicate order ', async () => {
     })
   }
 })
-
-test('Valid: AppDataHash properly set on X-AppId header', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify(PROFILE_DATA_RESPONSE), { status: HTTP_STATUS_OK })
-  const cowSdk1 = new CowSdk(chainId, {
-    appDataHash: '0x0000000000000000000000000000000000000000000000000000000000000001',
-  })
-  cowSdk1.updateChainId(1)
-  await cowSdk1.cowApi.getProfileData('0x6810e776880c02933d47db1b9fc05908e5386b96')
-  expect(fetchMock).toHaveBeenCalledWith(
-    'https://api.cow.fi/affiliate/api/v1/profile/0x6810e776880c02933d47db1b9fc05908e5386b96',
-    {
-      ...FETCH_RESPONSE_PARAMETERS,
-      headers: { ...FETCH_RESPONSE_PARAMETERS.headers, 'X-AppId': cowSdk1.context.appDataHash },
-    }
-  )
-})
-
-test('Valid: AppDataHash properly set on X-AppId header when undefined', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify(PROFILE_DATA_RESPONSE), { status: HTTP_STATUS_OK })
-  const cowSdk1 = new CowSdk(chainId, { appDataHash: undefined })
-  cowSdk1.updateChainId(1)
-  await cowSdk1.cowApi.getProfileData('0x6810e776880c02933d47db1b9fc05908e5386b96')
-  expect(fetchMock).toHaveBeenCalledWith(
-    'https://api.cow.fi/affiliate/api/v1/profile/0x6810e776880c02933d47db1b9fc05908e5386b96',
-    {
-      ...FETCH_RESPONSE_PARAMETERS,
-      headers: {
-        ...FETCH_RESPONSE_PARAMETERS.headers,
-        'X-AppId': '0x0000000000000000000000000000000000000000000000000000000000000000',
-      },
-    }
-  )
-})
-
 test('Valid: Instantiate SDK without chainId defaults to mainnet', async () => {
   const cowSdk1 = new CowSdk()
   const chainId = await cowSdk1.context.chainId
