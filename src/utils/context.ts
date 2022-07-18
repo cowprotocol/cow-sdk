@@ -21,14 +21,14 @@ export interface CowContext {
   ipfs?: Ipfs
 }
 
-export const DefaultCowContext = {
+export const DefaultCowContext: CowContext = {
   appDataHash: DEFAULT_APP_DATA_HASH,
-  env: 'staging' as Env,
+  env: 'prod',
   ipfs: {
     readUri: DEFAULT_IPFS_READ_URI,
     writeUri: DEFAULT_IPFS_WRITE_URI,
-    apiKey: undefined,
-    apiSecret: undefined,
+    pinataApiKey: '',
+    pinataApiSecret: '',
   },
 }
 
@@ -100,11 +100,11 @@ export class Context implements Partial<CowContext> {
     return getAndReconciliateNetwork()
   }
 
-  get appDataHash(): string {
+  get appDataHash(): string | undefined {
     return this.#context.appDataHash ?? DefaultCowContext.appDataHash
   }
 
-  get env(): Env {
+  get env(): Env | undefined {
     return this.#context.env || DefaultCowContext.env
   }
 
@@ -112,7 +112,7 @@ export class Context implements Partial<CowContext> {
     return this.#context.signer
   }
 
-  get ipfs(): Ipfs {
+  get ipfs(): Ipfs | undefined {
     return this.#context.ipfs ?? DefaultCowContext.ipfs
   }
 }
