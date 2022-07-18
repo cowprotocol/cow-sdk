@@ -26,8 +26,11 @@ import {
 } from './types'
 import { CowError, logPrefix, objectToQueryString } from '../../utils/common'
 import { Context } from '../../utils/context'
+import BaseApi from '../base'
 
-function getGnosisProtocolUrl(isDev: boolean): Partial<Record<ChainId, string>> {
+const API_URL_VERSION = 'v1'
+
+function getGnosisProtocolUrl(isDev: boolean): Record<ChainId, string> {
   if (isDev) {
     return {
       [ChainId.MAINNET]: 'https://barn.api.cow.fi/mainnet/api',
@@ -89,21 +92,9 @@ async function _handleQuoteResponse<T = unknown, P extends QuoteQuery = QuoteQue
   }
 }
 
-export class CowApi {
-  context: Context
-
-  API_NAME = 'CoW Protocol'
-
+export class CowApi extends BaseApi {
   constructor(context: Context) {
-    this.context = context
-  }
-
-  get DEFAULT_HEADERS() {
-    return { 'Content-Type': 'application/json', 'X-AppId': this.context.appDataHash }
-  }
-
-  get API_BASE_URL() {
-    return getGnosisProtocolUrl(this.context.isDevEnvironment)
+    super({ context, name: 'CoW Protocol', apiVersion: API_URL_VERSION, getApiUrl: getGnosisProtocolUrl })
   }
 
   async getProfileData(address: string, options: Options = {}): Promise<ProfileData | null> {
@@ -308,6 +299,10 @@ export class CowApi {
     return baseUrl + `/orders/${orderId}`
   }
 
+  private getProfile(url: string, options: Options = {}): Promise<Response> {
+    return this.handleMethod(url, 'GET', this.fetchProfile.bind(this), getProfileUrl, options)
+  }
+
   private mapNewToLegacyParams(params: FeeQuoteParams, chainId: ChainId): QuoteQuery {
     const { amount, kind, userAddress, receiver, validTo, sellToken, buyToken } = params
     const fallbackAddress = userAddress || ZERO_ADDRESS
@@ -338,28 +333,8 @@ export class CowApi {
     return finalParams
   }
 
-  private async getApiBaseUrl(): Promise<string> {
-    const chainId = await this.context.chainId
-    const baseUrl = this.API_BASE_URL[chainId]
-
-    if (!baseUrl) {
-      throw new CowError(`Unsupported Network. The ${this.API_NAME} API is not deployed in the Network ` + chainId)
-    } else {
-      return baseUrl + '/v1'
-    }
-  }
-
-  private async fetch(
-    url: string,
-    method: 'GET' | 'POST' | 'DELETE',
-    baseUrl: string,
-    data?: unknown
-  ): Promise<Response> {
-    return fetch(baseUrl + url, {
-      headers: this.DEFAULT_HEADERS,
-      method,
-      body: data !== undefined ? JSON.stringify(data) : data,
-    })
+  protected getApiBaseUrl(): Promise<string> {
+    return super.getApiBaseUrl(this.context.isDevEnvironment)
   }
 
   private async fetchProfile(
@@ -375,31 +350,15 @@ export class CowApi {
     })
   }
 
-  private post(url: string, data: unknown, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'POST', this.fetch.bind(this), getGnosisProtocolUrl, options, data)
-  }
-
-  private get(url: string, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'GET', this.fetch.bind(this), getGnosisProtocolUrl, options)
-  }
-
-  private getProfile(url: string, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'GET', this.fetchProfile.bind(this), getProfileUrl, options)
-  }
-
-  private delete(url: string, data: unknown, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'DELETE', this.fetch.bind(this), getGnosisProtocolUrl, options, data)
-  }
-
-  private async handleMethod(
+  protected async handleMethod(
     url: string,
     method: 'GET' | 'POST' | 'DELETE',
-    fetchFn: typeof this.fetch | typeof this.fetchProfile,
+    fetchFn: CowApi['fetch'] | CowApi['fetchProfile'],
     getUrl: typeof getGnosisProtocolUrl | typeof getProfileUrl,
     options: Options = {},
     data?: unknown
   ): Promise<Response> {
-    const { chainId: networkId, isDevEnvironment } = options
+    const { chainId: networkId, isDevEnvironment, requestOptions } = options
     const prodUri = getUrl(false)
     const barnUri = getUrl(true)
     const chainId = networkId || (await this.context.chainId)
@@ -407,13 +366,13 @@ export class CowApi {
     let response
     if (isDevEnvironment === undefined) {
       try {
-        response = await fetchFn(url, method, `${prodUri[chainId]}/v1`, data)
+        response = await fetchFn(url, method, `${prodUri[chainId]}/${this.API_VERSION}`, data, requestOptions)
       } catch (error) {
-        response = await fetchFn(url, method, `${barnUri[chainId]}/v1`, data)
+        response = await fetchFn(url, method, `${barnUri[chainId]}/${this.API_VERSION}`, data, requestOptions)
       }
     } else {
       const uri = isDevEnvironment ? barnUri : prodUri
-      response = await fetchFn(url, method, `${uri[chainId]}/v1`, data)
+      response = await fetchFn(url, method, `${uri[chainId]}/${this.API_VERSION}`, data, requestOptions)
     }
     return response
   }
