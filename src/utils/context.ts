@@ -21,7 +21,7 @@ export interface CowContext {
   ipfs?: Ipfs
 }
 
-export const DefaultCowContext: CowContext = {
+export const DefaultCowContext: Pick<CowContext, 'env' | 'ipfs'> & { appDataHash: string } = {
   appDataHash: DEFAULT_APP_DATA_HASH,
   env: 'prod',
   ipfs: {
@@ -100,7 +100,7 @@ export class Context implements Partial<CowContext> {
     return getAndReconciliateNetwork()
   }
 
-  get appDataHash(): string | undefined {
+  get appDataHash(): string {
     return this.#context.appDataHash ?? DefaultCowContext.appDataHash
   }
 
