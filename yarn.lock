@@ -1097,10 +1097,10 @@
   resolved "https://registry.npmjs.org/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@cowprotocol/app-data@^0.0.1-RC.0":
-  version "0.0.1-RC.0"
-  resolved "https://registry.yarnpkg.com/@cowprotocol/app-data/-/app-data-0.0.1-RC.0.tgz#42104aaaa1d2a6fb559a2ff2b860a4f23fdca095"
-  integrity sha512-fZEeaqwYc5NKUAnTAqpKphIdoGiteUKE0LDjdwVbuLPYemwq7WodSTy5UGF3dmz2bjWkc1zrr+iTC4NzCrMYQw==
+"@cowprotocol/app-data@^0.0.1-RC.1":
+  version "0.0.1-RC.1"
+  resolved "https://registry.yarnpkg.com/@cowprotocol/app-data/-/app-data-0.0.1-RC.1.tgz#1d00036a1f49ffb6128f424e7a778c50973e9248"
+  integrity sha512-LYMRjU7xDd8t9KZXkRI36AN1RtgdxACXvqv/9yqNpi0AxRiePH5bqTOYm9RuFwIzmAbHq5xGN2/rSCxfvfU9eQ==
 
 "@cowprotocol/contracts@^1.3.1":
   version "1.3.1"
