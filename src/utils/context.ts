@@ -21,7 +21,7 @@ export interface CowContext {
   ipfs?: Ipfs
 }
 
-export const DefaultCowContext: Pick<CowContext, 'env' | 'ipfs'> & { appDataHash: string } = {
+export const DefaultCowContext: { appDataHash: string; ipfs: Ipfs; env: Env } = {
   appDataHash: DEFAULT_APP_DATA_HASH,
   env: 'prod',
   ipfs: {
@@ -43,8 +43,9 @@ export class Context implements Partial<CowContext> {
   updateContext(cowContext: CowContext, chainId: ChainId) {
     this.setParams(chainId, cowContext)
   }
-  #context: CowContext = {}
+
   #chainId: ChainId = SupportedChainId.MAINNET
+  #context: CowContext = DefaultCowContext
 
   constructor(chainId: ChainId, context: CowContext) {
     this.setParams(chainId, context)
@@ -112,7 +113,7 @@ export class Context implements Partial<CowContext> {
     return this.#context.signer
   }
 
-  get ipfs(): Ipfs | undefined {
+  get ipfs(): Ipfs {
     return this.#context.ipfs ?? DefaultCowContext.ipfs
   }
 }

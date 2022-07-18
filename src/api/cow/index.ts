@@ -1,5 +1,4 @@
 import log from 'loglevel'
-import fetch from 'cross-fetch'
 import { OrderKind, QuoteQuery } from '@cowprotocol/contracts'
 import { SupportedChainId as ChainId } from '../../constants/chains'
 import { getSigningSchemeApiValue, OrderCreation } from '../../utils/sign'
@@ -96,16 +95,7 @@ async function _handleQuoteResponse<T = unknown, P extends QuoteQuery = QuoteQue
 
 export class CowApi extends BaseApi {
   constructor(context: Context) {
-    this.context = context
-  }
-
-  get DEFAULT_HEADERS() {
-    return { 'Content-Type': 'application/json', 'X-AppId': this.context.appDataHash }
-  }
-
-  get API_BASE_URL() {
-    return getCowProtocolUrl(this.context.env)
-    super({ context, name: 'CoW Protocol', apiVersion: API_URL_VERSION, getApiUrl: getGnosisProtocolUrl })
+    super({ context, name: 'CoW Protocol', apiVersion: API_URL_VERSION, getApiUrl: getCowProtocolUrl })
   }
 
   async getProfileData(address: string, options: Options = {}): Promise<ProfileData | null> {
@@ -345,7 +335,7 @@ export class CowApi extends BaseApi {
   }
 
   protected getApiBaseUrl(): Promise<string> {
-    return super.getApiBaseUrl(this.context.isDevEnvironment)
+    return super.getApiBaseUrl(this.context.env)
   }
 
   private async fetchProfile(
@@ -359,49 +349,5 @@ export class CowApi extends BaseApi {
       method,
       body: data !== undefined ? JSON.stringify(data) : data,
     })
-  }
-
-  private post(url: string, data: unknown, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'POST', this.fetch.bind(this), getCowProtocolUrl, options, data)
-  }
-
-  private get(url: string, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'GET', this.fetch.bind(this), getCowProtocolUrl, options)
-  }
-
-  private getProfile(url: string, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'GET', this.fetchProfile.bind(this), getProfileUrl, options)
-  }
-
-  private delete(url: string, data: unknown, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'DELETE', this.fetch.bind(this), getCowProtocolUrl, options, data)
-  }
-
-  private async handleMethod(
-    url: string,
-    method: 'GET' | 'POST' | 'DELETE',
-    fetchFn: typeof this.fetch | typeof this.fetchProfile,
-    getUrl: typeof getCowProtocolUrl | typeof getProfileUrl,
-    options: Options = {},
-    data?: unknown
-  ): Promise<Response> {
-    const { chainId: networkId, isDevEnvironment, requestOptions } = options
-    const prodUri = getUrl('prod')
-    const barnUri = getUrl('staging')
-
-    const chainId = networkId || (await this.context.chainId)
-
-    let response
-    if (env === undefined) {
-      try {
-        response = await fetchFn(url, method, `${prodUri[chainId]}/${this.API_VERSION}`, data, requestOptions)
-      } catch (error) {
-        response = await fetchFn(url, method, `${barnUri[chainId]}/${this.API_VERSION}`, data, requestOptions)
-      }
-    } else {
-      const uri = getUrl(env)
-      response = await fetchFn(url, method, `${uri[chainId]}/${this.API_VERSION}`, data, requestOptions)
-    }
-    return response
   }
 }

@@ -67,12 +67,25 @@ export default class BaseApi {
     options: Options = {},
     data?: unknown
   ): Promise<Response> {
-    const { chainId: networkId, requestOptions } = options
+    const { chainId: networkId, env, requestOptions } = options
+    const prodUri = getApiUrl('prod')
+    const barnUri = getApiUrl('staging')
+
     const chainId = networkId || (await this.context.chainId)
 
-    const uri = getApiUrl(options.apiUrlGetterParams)
+    let response
+    if (env === undefined) {
+      try {
+        response = await fetchFn(url, method, `${prodUri[chainId]}/${this.API_VERSION}`, data, requestOptions)
+      } catch (error) {
+        response = await fetchFn(url, method, `${barnUri[chainId]}/${this.API_VERSION}`, data, requestOptions)
+      }
+    } else {
+      const uri = getApiUrl(env)
+      response = await fetchFn(url, method, `${uri[chainId]}/${this.API_VERSION}`, data, requestOptions)
+    }
 
-    return fetchFn(url, method, `${uri[chainId]}/${this.API_VERSION}`, data, requestOptions)
+    return response
   }
 
   protected async fetch(
