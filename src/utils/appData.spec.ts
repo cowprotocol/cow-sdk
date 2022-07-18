@@ -16,6 +16,8 @@ beforeEach(() => {
   fetchMock.dontMock()
 })
 
+// TODO: move unit tests to app-data package
+
 test('Valid minimal document', async () => {
   const validation = await validateAppDataDocument(BASE_DOCUMENT, BASE_DOCUMENT.version)
   expect(validation).toEqual(VALID_RESULT)

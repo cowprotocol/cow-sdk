@@ -1,4 +1,14 @@
+import { createAppDataDoc, createQuoteMetadata, createReferrerMetadata } from '@cowprotocol/app-data'
+
 export { AnyAppDataDocVersion, LatestAppDataDocVersion } from '@cowprotocol/app-data'
+
+export type GenerateAppDataDocParams = {
+  appDataParams?: Omit<Parameters<typeof createAppDataDoc>[0], 'metadata'>
+  metadataParams?: {
+    referrerParams?: Parameters<typeof createReferrerMetadata>[0]
+    quoteParams?: Parameters<typeof createQuoteMetadata>[0]
+  }
+}
 
 export type IpfsHashInfo = {
   /**
