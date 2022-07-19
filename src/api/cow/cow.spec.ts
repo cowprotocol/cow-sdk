@@ -87,7 +87,6 @@ const FETCH_RESPONSE_PARAMETERS = {
   body: undefined,
   headers: {
     'Content-Type': 'application/json',
-    'X-AppId': cowSdk.context.appDataHash,
   },
   method: 'GET',
 }
@@ -137,6 +136,11 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.restoreAllMocks()
+})
+
+test('Valid: Get orders link ', async () => {
+  const orderLink = await cowSdk.cowApi.getOrderLink(ORDER_RESPONSE.uid)
+  expect(orderLink).toEqual(`https://api.cow.fi/rinkeby/api/v1/orders/${ORDER_RESPONSE.uid}`)
 })
 
 test('Valid: Get an order ', async () => {
@@ -579,36 +583,46 @@ test('Invalid: Send an duplicate order ', async () => {
     })
   }
 })
-
-test('Valid: AppDataHash properly set on X-AppId header', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify(PROFILE_DATA_RESPONSE), { status: HTTP_STATUS_OK })
-  const cowSdk1 = new CowSdk(chainId, {
-    appDataHash: '0x0000000000000000000000000000000000000000000000000000000000000001',
-  })
-  cowSdk1.updateChainId(1)
-  await cowSdk1.cowApi.getProfileData('0x6810e776880c02933d47db1b9fc05908e5386b96')
-  expect(fetchMock).toHaveBeenCalledWith(
-    'https://api.cow.fi/affiliate/api/v1/profile/0x6810e776880c02933d47db1b9fc05908e5386b96',
-    {
-      ...FETCH_RESPONSE_PARAMETERS,
-      headers: { ...FETCH_RESPONSE_PARAMETERS.headers, 'X-AppId': cowSdk1.context.appDataHash },
-    }
-  )
+test('Valid: Instantiate SDK without chainId defaults to mainnet', async () => {
+  const cowSdk1 = new CowSdk()
+  const chainId = await cowSdk1.context.chainId
+  expect(chainId).toEqual(SupportedChainId.MAINNET)
 })
 
-test('Valid: AppDataHash properly set on X-AppId header when undefined', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify(PROFILE_DATA_RESPONSE), { status: HTTP_STATUS_OK })
-  const cowSdk1 = new CowSdk(chainId, { appDataHash: undefined })
-  cowSdk1.updateChainId(1)
-  await cowSdk1.cowApi.getProfileData('0x6810e776880c02933d47db1b9fc05908e5386b96')
-  expect(fetchMock).toHaveBeenCalledWith(
-    'https://api.cow.fi/affiliate/api/v1/profile/0x6810e776880c02933d47db1b9fc05908e5386b96',
+test('Valid: Get last 5 orders changing options parameters', async () => {
+  const ORDERS_RESPONSE = Array(5).fill(ORDER_RESPONSE)
+  fetchMock.mockResponseOnce(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK })
+  const orders = await cowSdk.cowApi.getOrders(
     {
-      ...FETCH_RESPONSE_PARAMETERS,
-      headers: {
-        ...FETCH_RESPONSE_PARAMETERS.headers,
-        'X-AppId': '0x0000000000000000000000000000000000000000000000000000000000000000',
-      },
-    }
+      owner: '0x00000000005ef87f8ca7014309ece7260bbcdaeb', // Trader
+      limit: 5,
+      offset: 0,
+    },
+    { isDevEnvironment: true, chainId: SupportedChainId.MAINNET }
   )
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(fetchMock).toHaveBeenCalledWith(
+    'https://barn.api.cow.fi/mainnet/api/v1/account/0x00000000005ef87f8ca7014309ece7260bbcdaeb/orders/?limit=5',
+    FETCH_RESPONSE_PARAMETERS
+  )
+  expect(orders.length).toEqual(5)
+})
+
+test('Valid: Get last 5 trades changing options parameters', async () => {
+  const TRADES_RESPONSE = Array(5).fill(TRADE_RESPONSE)
+  fetchMock.mockResponseOnce(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK })
+  const trades = await cowSdk.cowApi.getTrades(
+    {
+      owner: TRADE_RESPONSE.owner, // Trader
+      limit: 5,
+      offset: 0,
+    },
+    { isDevEnvironment: true, chainId: SupportedChainId.MAINNET }
+  )
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(fetchMock).toHaveBeenCalledWith(
+    `https://barn.api.cow.fi/mainnet/api/v1/trades?owner=${TRADE_RESPONSE.owner}&limit=5`,
+    FETCH_RESPONSE_PARAMETERS
+  )
+  expect(trades.length).toEqual(5)
 })
