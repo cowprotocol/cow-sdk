@@ -1,7 +1,7 @@
-import contractNetworks from '@cowprotocol/contracts/networks.json' assert { type: 'json' }
+import contractNetworks from '@cowprotocol/contracts/networks.json'
 import { SupportedChainId as ChainId } from './chains'
 
-const { GPv2Settlement } = contractNetworks
+const { GPv2Settlement } = JSON.parse(contractNetworks as unknown as string) as typeof contractNetworks
 
 export const GP_SETTLEMENT_CONTRACT_ADDRESS: Partial<Record<number, string>> = {
   [ChainId.MAINNET]: GPv2Settlement[ChainId.MAINNET].address,
