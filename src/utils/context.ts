@@ -105,7 +105,7 @@ export class Context implements Partial<CowContext> {
     return this.#context.appDataHash ?? DefaultCowContext.appDataHash
   }
 
-  get env(): Env | undefined {
+  get env(): Env {
     return this.#context.env || DefaultCowContext.env
   }
 
