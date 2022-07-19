@@ -1,6 +1,7 @@
 import { GetQuoteResponse, OrderKind } from '@cowprotocol/contracts'
 import { StrictUnion } from 'utilities'
 import { SupportedChainId as ChainId } from '../../constants/chains'
+import { Env } from '../../utils/context'
 import { OrderCancellation, SigningSchemeValue } from '../../utils/sign'
 
 /**
@@ -134,7 +135,7 @@ export type PriceQuoteParams = Omit<FeeQuoteParams, 'sellToken' | 'buyToken'> & 
 
 export type Options = {
   chainId?: ChainId
-  isDevEnvironment?: boolean
+  env?: Env
   requestOptions?: RequestInit
   apiUrlGetterParams?: unknown[]
 }

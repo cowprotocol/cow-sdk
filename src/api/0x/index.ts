@@ -49,7 +49,7 @@ export class ZeroXApi extends BaseApi {
 
   async getQuote(params: PriceQuoteParams, options: Options = {}): Promise<MatchaPriceQuote | null> {
     const { amount, baseToken, quoteToken, kind } = params
-    const { chainId: customChainId, isDevEnvironment = this.context.isDevEnvironment } = options
+    const { chainId: customChainId, env = this.context.env } = options
     const chainId = customChainId || (await this.context.chainId)
     // this is handled via an error on L51 via the fetch call
     // but we can handle it here to control the flow better
@@ -81,7 +81,7 @@ export class ZeroXApi extends BaseApi {
         affiliateAddress,
         excludedSources: extractExcludedSources(this.MATCHA_OPTIONS),
       })}`,
-      { chainId, isDevEnvironment }
+      { chainId, env }
     ).catch((error) => {
       log.error(`Error getting ${this.API_NAME} price quote:`, error)
       throw new Error(error)
