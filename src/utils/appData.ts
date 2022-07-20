@@ -1,5 +1,5 @@
 import Ajv, { ValidateFunction } from 'ajv'
-import { fromHexString } from './common'
+import { CowError, fromHexString } from './common'
 import { DEFAULT_IPFS_READ_URI } from '../constants'
 import { AnyAppDataDocVersion } from '../types'
 
@@ -18,7 +18,13 @@ async function getValidator(version: string): Promise<{ ajv: Ajv; validate: Vali
   validate = ajv.getSchema(version)
 
   if (!validate) {
-    const appDataSchema = await import(`@cowprotocol/app-data/schemas/v${version}.json`)
+    let appDataSchema
+
+    try {
+      appDataSchema = await import(`@cowprotocol/app-data/schemas/v${version}.json`)
+    } catch (e) {
+      throw new CowError(`AppData version ${version} does not exist`, 'MISSING_APP_DATA_VERSION')
+    }
     // add new schema to ajv cache
     ajv.addSchema(appDataSchema, version)
     // fetch and return it
