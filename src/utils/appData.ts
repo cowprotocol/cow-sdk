@@ -63,6 +63,6 @@ export async function validateAppDataDocument(appDataDocument: unknown, version:
 
   return {
     result,
-    errors: ajv.errors ? ajv.errorsText(ajv.errors) : undefined,
+    errors: validate.errors ? ajv.errorsText(validate.errors) : undefined,
   }
 }
