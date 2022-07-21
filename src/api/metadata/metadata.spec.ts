@@ -32,6 +32,10 @@ const CUSTOM_APP_DATA_DOC = {
       address: '0x1f5B740436Fc5935622e92aa3b46818906F416E9',
       version: '0.1.0',
     },
+    quote: {
+      slippageBips: '1',
+      version: '0.2.0',
+    },
   },
 }
 
@@ -51,13 +55,24 @@ test('Valid: Create appDataDoc with empty metadata ', () => {
 })
 
 test('Valid: Create appDataDoc with custom metadata ', () => {
-  const appDataDoc = cowSdk.metadataApi.generateAppDataDoc(CUSTOM_APP_DATA_DOC.metadata)
+  const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({
+    metadataParams: {
+      referrerParams: CUSTOM_APP_DATA_DOC.metadata.referrer,
+      quoteParams: CUSTOM_APP_DATA_DOC.metadata.quote,
+    },
+  })
   expect(appDataDoc.metadata.referrer?.address).toEqual(CUSTOM_APP_DATA_DOC.metadata.referrer.address)
   expect(appDataDoc.metadata.referrer?.version).toEqual(CUSTOM_APP_DATA_DOC.metadata.referrer.version)
+  expect(appDataDoc.metadata.quote?.slippageBips).toEqual(CUSTOM_APP_DATA_DOC.metadata.quote.slippageBips)
+  expect(appDataDoc.metadata.quote?.version).toEqual(CUSTOM_APP_DATA_DOC.metadata.quote.version)
 })
 
 test('Invalid: Upload to IPFS without passing credentials', async () => {
-  const appDataDoc = cowSdk.metadataApi.generateAppDataDoc(CUSTOM_APP_DATA_DOC.metadata)
+  const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({
+    metadataParams: {
+      referrerParams: CUSTOM_APP_DATA_DOC.metadata.referrer,
+    },
+  })
   try {
     await cowSdk.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
   } catch (e) {
@@ -66,9 +81,11 @@ test('Invalid: Upload to IPFS without passing credentials', async () => {
   }
 })
 
-test('Valid: Upload AppDataDoc to IPFS', async () => {
+test('Valid: Upload LatestAppDataDocVersion to IPFS', async () => {
   fetchMock.mockResponseOnce(JSON.stringify({ IpfsHash: IPFS_HASH }), { status: HTTP_STATUS_OK })
-  const appDataDoc = cowSdk.metadataApi.generateAppDataDoc(CUSTOM_APP_DATA_DOC.metadata)
+  const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({
+    metadataParams: { referrerParams: CUSTOM_APP_DATA_DOC.metadata.referrer },
+  })
   const cowSdk1 = new CowSdk(chainId, { ipfs: { pinataApiKey: PINATA_API_KEY, pinataApiSecret: PINATA_API_SECRET } })
   const appDataHex = await cowSdk1.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
   expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -84,7 +101,7 @@ test('Valid: Upload AppDataDoc to IPFS', async () => {
   })
 })
 
-test('Invalid: Upload AppDataDoc to IPFS with wrong credentials', async () => {
+test('Invalid: Upload LatestAppDataDocVersion to IPFS with wrong credentials', async () => {
   fetchMock.mockResponseOnce(JSON.stringify({ error: { details: 'IPFS api keys are invalid' } }), {
     status: HTTP_STATUS_INTERNAL_ERROR,
   })
