@@ -1,7 +1,14 @@
-import { createAppDataDoc, createQuoteMetadata, createReferrerMetadata, latest } from '@cowprotocol/app-data'
+import {
+  createAppDataDoc,
+  createQuoteMetadata,
+  createReferrerMetadata,
+  latest,
+  getAppDataSchema,
+  validateAppDataDoc,
+} from '@cowprotocol/app-data'
 import log from 'loglevel'
 import { Context } from '../../utils/context'
-import { getSerializedCID, loadIpfsFromCid, validateAppDataDocument } from '../../utils/appData'
+import { getSerializedCID, loadIpfsFromCid } from '../../utils/appData'
 import { calculateIpfsCidV0, pinJSONToIPFS } from '../../utils/ipfs'
 import { AnyAppDataDocVersion, LatestAppDataDocVersion, IpfsHashInfo, GenerateAppDataDocParams } from './types'
 import { CowError } from '../../utils/common'
@@ -35,6 +42,37 @@ export class MetadataApi {
 
     const appCode = appDataParams?.appCode || DEFAULT_APP_CODE
     return createAppDataDoc({ ...appDataParams, appCode, metadata })
+  }
+
+  /**
+   * Wrapper around @cowprotocol/app-data getAppDataSchema
+   *
+   * Returns the appData schema for given version, if any
+   * Throws CowError when version doesn't exist
+   */
+  async getAppDataSchema(version: string): Promise<AnyAppDataDocVersion | void> {
+    try {
+      return await getAppDataSchema(version)
+    } catch (e) {
+      // Wrapping @cowprotocol/app-data Error into CowError
+      const error = e as Error
+      throw new CowError(error.message)
+    }
+  }
+
+  /**
+   * Wrapper around @cowprotocol/app-data validateAppDataDoc
+   *
+   * Validates given doc against the doc's own version
+   */
+  async validateAppDataDoc(appDataDoc: AnyAppDataDocVersion): ReturnType<typeof validateAppDataDoc> {
+    try {
+      return await validateAppDataDoc(appDataDoc)
+    } catch (e) {
+      // Wrapping @cowprotocol/app-data Error into CowError
+      const error = e as Error
+      throw new CowError(error.message)
+    }
   }
 
   async decodeAppData(hash: string): Promise<void | AnyAppDataDocVersion> {
@@ -89,8 +127,8 @@ export class MetadataApi {
    * @param appData
    */
   async calculateAppDataHash(appData: AnyAppDataDocVersion): Promise<IpfsHashInfo | void> {
-    const validation = await validateAppDataDocument(appData, appData.version)
-    if (!validation?.result) {
+    const validation = await this.validateAppDataDoc(appData)
+    if (!validation?.success) {
       throw new CowError('Invalid appData provided', validation?.errors)
     }
 
