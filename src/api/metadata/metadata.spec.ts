@@ -231,3 +231,27 @@ describe('validateAppDataDocument', () => {
     expect(validation.errors).toEqual("AppData version 0.0.0 doesn't exist")
   })
 })
+
+describe('getAppDataSchema', () => {
+  test('Returns existing schema', async () => {
+    // given
+    const version = '0.4.0'
+
+    // when
+    const schema = await cowSdk.metadataApi.getAppDataSchema(version)
+
+    // then
+    expect(schema.$id).toMatch(version)
+  })
+
+  test('Throws on invalid schema', async () => {
+    // given
+    const version = '0.0.0'
+
+    // when
+    const promise = cowSdk.metadataApi.getAppDataSchema(version)
+
+    // then
+    await expect(promise).rejects.toThrow(`AppData version ${version} doesn't exist`)
+  })
+})
