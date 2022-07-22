@@ -3,6 +3,7 @@ import { ParaswapPriceQuoteParams } from './types'
 import { toErc20Address } from '../../utils/tokens'
 import { OptimalRate } from 'paraswap-core'
 import { APIError, NetworkID } from 'paraswap'
+import ParaswapError from './error'
 
 export function getValidParams(chainId: SupportedChainId, params: ParaswapPriceQuoteParams) {
   const { baseToken: baseTokenAux, quoteToken: quoteTokenAux, userAddress } = params
@@ -13,11 +14,11 @@ export function getValidParams(chainId: SupportedChainId, params: ParaswapPriceQ
 }
 
 export function isGetRateSuccess(rateResult: OptimalRate | APIError): rateResult is OptimalRate {
-  return !!(rateResult as OptimalRate).destAmount
+  return !!(rateResult as OptimalRate)?.destAmount
 }
 
 export function getPriceQuoteFromError(error: APIError): OptimalRate | null {
-  if (error.message === 'ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT' && error.data && error.data.priceRoute) {
+  if (error?.message === 'ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT' && error.data && error.data.priceRoute) {
     // If the price impact is too big, it still give you the estimation
     return error.data.priceRoute
   } else {
@@ -35,5 +36,20 @@ export function getParaswapChainId(chainId: SupportedChainId): NetworkID | null 
     default:
       // Unsupported network
       return null
+  }
+}
+
+export function handleResponse(rateResult: OptimalRate | APIError) {
+  if (isGetRateSuccess(rateResult)) {
+    // Success getting the price
+    return rateResult
+  } else {
+    // Error getting the price
+    const priceQuote = getPriceQuoteFromError(rateResult)
+    if (priceQuote) {
+      return priceQuote
+    } else {
+      throw new ParaswapError(rateResult)
+    }
   }
 }
