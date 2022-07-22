@@ -189,3 +189,45 @@ describe('calculateAppDataHash', () => {
     expect(mock).toHaveBeenCalledWith(IPFS_HASH)
   })
 })
+
+describe('validateAppDataDocument', () => {
+  const v010Doc = {
+    ...DEFAULT_APP_DATA_DOC,
+    metatadata: {
+      referrer: { address: '0xb6BAd41ae76A11D10f7b0E664C5007b908bC77C9', version: '0.1.0' },
+    },
+  }
+  const v040Doc = {
+    ...v010Doc,
+    version: '0.4.0',
+    metadata: { ...v010Doc.metadata, quote: { slippageBips: '1', version: '0.2.0' } },
+  }
+
+  test('Version matches schema', async () => {
+    // given
+    // when
+    const v010Validation = await cowSdk.metadataApi.validateAppDataDoc(v010Doc)
+    const v040Validation = await cowSdk.metadataApi.validateAppDataDoc(v040Doc)
+    // then
+    expect(v010Validation.success).toBeTruthy()
+    expect(v040Validation.success).toBeTruthy()
+  })
+
+  test("Version doesn't match schema", async () => {
+    // given
+    // when
+    const v030Validation = await cowSdk.metadataApi.validateAppDataDoc({ ...v040Doc, version: '0.3.0' })
+    // then
+    expect(v030Validation.success).toBeFalsy()
+    expect(v030Validation.errors).toEqual("data/metadata/quote must have required property 'sellAmount'")
+  })
+
+  test("Version doesn't exist", async () => {
+    // given
+    // when
+    const validation = await cowSdk.metadataApi.validateAppDataDoc({ ...v010Doc, version: '0.0.0' })
+    // then
+    expect(validation.success).toBeFalsy()
+    expect(validation.errors).toEqual("AppData version 0.0.0 doesn't exist")
+  })
+})

@@ -1,58 +1,8 @@
 import fetchMock from 'jest-fetch-mock'
-import { validateAppDataDocument, getSerializedCID, loadIpfsFromCid } from './appData'
+import { getSerializedCID, loadIpfsFromCid } from './appData'
 import { DEFAULT_IPFS_READ_URI } from '../constants'
 
-const VALID_RESULT = {
-  result: true,
-}
-
-const BASE_DOCUMENT = {
-  version: '0.1.0',
-  metadata: {},
-}
-
 const INVALID_CID_LENGTH = 'Incorrect length'
-
-describe('validateAppDataDocument', () => {
-  const v010Doc = {
-    ...BASE_DOCUMENT,
-    metatadata: {
-      referrer: { address: '0xb6BAd41ae76A11D10f7b0E664C5007b908bC77C9', version: '0.1.0' },
-    },
-  }
-  const v040Doc = {
-    ...v010Doc,
-    version: '0.4.0',
-    metadata: { ...v010Doc.metadata, quote: { slippageBips: '1', version: '0.2.0' } },
-  }
-
-  test('Version matches schema', async () => {
-    // given
-    // when
-    const v010Validation = await validateAppDataDocument(v010Doc, v010Doc.version)
-    const v040Validation = await validateAppDataDocument(v040Doc, v040Doc.version)
-    // then
-    expect(v010Validation).toEqual(VALID_RESULT)
-    expect(v040Validation).toEqual(VALID_RESULT)
-  })
-
-  test("Version doesn't match schema", async () => {
-    // given
-    // when
-    const v030Validation = await validateAppDataDocument(v040Doc, '0.3.0')
-    // then
-    expect(v030Validation.result).toBeFalsy()
-    expect(v030Validation.errors).toEqual("data/metadata/quote must have required property 'sellAmount'")
-  })
-
-  test("Version doesn't exist", async () => {
-    // given
-    // when
-    const validation = validateAppDataDocument(v010Doc, '0.0.0')
-    // then
-    await expect(validation).rejects.toThrow('AppData version 0.0.0 does not exist')
-  })
-})
 
 describe('getSerializedCID', () => {
   test('Serializes hash into CID', async () => {
