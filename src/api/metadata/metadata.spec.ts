@@ -1,9 +1,6 @@
-import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
+import fetchMock from 'jest-fetch-mock'
 import { CowSdk } from '../../CowSdk'
-import { CowError } from '../../utils/common'
 import { DEFAULT_IPFS_READ_URI, DEFAULT_IPFS_WRITE_URI } from '../../constants'
-
-enableFetchMocks()
 
 const chainId = 4 //Rinkeby
 
@@ -49,19 +46,25 @@ afterEach(() => {
 
 describe('generateAppDataDoc', () => {
   test('Creates appDataDoc with empty metadata ', () => {
+    // when
     const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({})
+    // then
     expect(appDataDoc.version).toEqual(DEFAULT_APP_DATA_DOC.version)
     expect(appDataDoc.appCode).toEqual(DEFAULT_APP_DATA_DOC.appCode)
     expect(appDataDoc.metadata).toEqual(DEFAULT_APP_DATA_DOC.metadata)
   })
 
   test('Creates appDataDoc with custom metadata ', () => {
-    const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({
+    // given
+    const params = {
       metadataParams: {
         referrerParams: CUSTOM_APP_DATA_DOC.metadata.referrer,
         quoteParams: CUSTOM_APP_DATA_DOC.metadata.quote,
       },
-    })
+    }
+    // when
+    const appDataDoc = cowSdk.metadataApi.generateAppDataDoc(params)
+    // then
     expect(appDataDoc.metadata.referrer?.address).toEqual(CUSTOM_APP_DATA_DOC.metadata.referrer.address)
     expect(appDataDoc.metadata.referrer?.version).toEqual(CUSTOM_APP_DATA_DOC.metadata.referrer.version)
     expect(appDataDoc.metadata.quote?.slippageBips).toEqual(CUSTOM_APP_DATA_DOC.metadata.quote.slippageBips)
@@ -71,44 +74,44 @@ describe('generateAppDataDoc', () => {
 
 describe('uploadMetadataDocToIpfs', () => {
   test('Fails without passing credentials', async () => {
+    // given
     const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({
       metadataParams: {
         referrerParams: CUSTOM_APP_DATA_DOC.metadata.referrer,
       },
     })
-    try {
-      await cowSdk.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
-    } catch (e) {
-      const error = e as CowError
-      expect(error.message).toEqual('You need to pass IPFS api credentials.')
-    }
+    // when
+    const promise = cowSdk.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
+    // then
+    await expect(promise).rejects.toThrow('You need to pass IPFS api credentials.')
   })
 
   test('Fails with wrong credentials', async () => {
+    // given
     fetchMock.mockResponseOnce(JSON.stringify({ error: { details: 'IPFS api keys are invalid' } }), {
       status: HTTP_STATUS_INTERNAL_ERROR,
     })
     const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({})
     const cowSdk1 = new CowSdk(chainId, { ipfs: { pinataApiKey: PINATA_API_KEY, pinataApiSecret: PINATA_API_SECRET } })
-    try {
-      await cowSdk1.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
-      await expect(cowSdk1.metadataApi.uploadMetadataDocToIpfs(appDataDoc)).rejects.toThrow('IPFS api keys are invalid')
-    } catch (e) {
-      const error = e as CowError
-      expect(fetchMock).toHaveBeenCalledTimes(1)
-      expect(error.message).toEqual('IPFS api keys are invalid')
-    }
+    // when
+    const promise = cowSdk1.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
+    // then
+    await expect(promise).rejects.toThrow('IPFS api keys are invalid')
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
   test('Uploads to IPFS', async () => {
+    // given
     fetchMock.mockResponseOnce(JSON.stringify({ IpfsHash: IPFS_HASH }), { status: HTTP_STATUS_OK })
     const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({
       metadataParams: { referrerParams: CUSTOM_APP_DATA_DOC.metadata.referrer },
     })
     const cowSdk1 = new CowSdk(chainId, { ipfs: { pinataApiKey: PINATA_API_KEY, pinataApiSecret: PINATA_API_SECRET } })
+    // when
     const appDataHex = await cowSdk1.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    // then
     expect(appDataHex).toEqual(APP_DATA_HEX)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(DEFAULT_IPFS_WRITE_URI + '/pinning/pinJSONToIPFS', {
       body: JSON.stringify({ pinataContent: appDataDoc, pinataMetadata: { name: 'appData' } }),
       headers: {
@@ -123,9 +126,11 @@ describe('uploadMetadataDocToIpfs', () => {
 
 describe('decodeAppData', () => {
   test('Decodes appData', async () => {
+    // given
     fetchMock.mockResponseOnce(JSON.stringify(CUSTOM_APP_DATA_DOC), { status: HTTP_STATUS_OK })
+    // when
     const appDataDoc = await cowSdk.metadataApi.decodeAppData(APP_DATA_HEX)
-
+    // then
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(`${DEFAULT_IPFS_READ_URI}/${IPFS_HASH}`)
     expect(appDataDoc?.version).toEqual(CUSTOM_APP_DATA_DOC.version)
@@ -135,56 +140,60 @@ describe('decodeAppData', () => {
   })
 
   test('Throws with wrong hash format', async () => {
+    // given
     fetchMock.mockResponseOnce(JSON.stringify({}), { status: HTTP_STATUS_INTERNAL_ERROR })
-    try {
-      await cowSdk.metadataApi.decodeAppData('invalidHash')
-    } catch (e) {
-      const error = e as CowError
-      expect(error.message).toEqual('Error decoding AppData: Incorrect length')
-    }
+    // when
+    const promise = cowSdk.metadataApi.decodeAppData('invalidHash')
+    // then
+    await expect(promise).rejects.toThrow('Error decoding AppData: Incorrect length')
   })
 })
 
 describe('appDataHexToCid', () => {
   test('Happy path', async () => {
+    // when
     const decodedAppDataHex = await cowSdk.metadataApi.appDataHexToCid(APP_DATA_HEX)
+    // then
     expect(decodedAppDataHex).toEqual(IPFS_HASH)
   })
 
   test('Throws with wrong hash format ', async () => {
-    try {
-      await cowSdk.metadataApi.appDataHexToCid('invalidHash')
-    } catch (e) {
-      const error = e as CowError
-      expect(error.message).toEqual('Incorrect length')
-    }
+    // when
+    const promise = cowSdk.metadataApi.appDataHexToCid('invalidHash')
+    // then
+    await expect(promise).rejects.toThrow('Incorrect length')
   })
 })
 
 describe('calculateAppDataHash', () => {
   test('Valid: pre-calculated CIDv0 and appDataHash', async () => {
+    // when
     const result = await cowSdk.metadataApi.calculateAppDataHash(DEFAULT_APP_DATA_DOC)
-
+    // then
     expect(result).not.toBeFalsy()
     expect(result).toEqual({ cidV0: IPFS_HASH, appDataHash: APP_DATA_HEX })
   })
 
   test('Invalid: pre-calculated CIDv0 not valid appDoc', async () => {
+    // given
     const doc = {
       ...DEFAULT_APP_DATA_DOC,
       metadata: { quote: { sellAmount: 'fsdfas', buyAmount: '41231', version: '0.1.0' } },
     }
-
-    await expect(cowSdk.metadataApi.calculateAppDataHash(doc)).rejects.toThrow('Invalid appData provided')
+    // when
+    const promise = cowSdk.metadataApi.calculateAppDataHash(doc)
+    // then
+    await expect(promise).rejects.toThrow('Invalid appData provided')
   })
 
   test('Invalid: Could not derive a the appDataHash', async () => {
+    // given
     const mock = jest.fn()
     cowSdk.metadataApi.cidToAppDataHex = mock
-
-    await expect(cowSdk.metadataApi.calculateAppDataHash(DEFAULT_APP_DATA_DOC)).rejects.toThrow(
-      'Failed to calculate appDataHash'
-    )
+    // when
+    const promise = cowSdk.metadataApi.calculateAppDataHash(DEFAULT_APP_DATA_DOC)
+    // then
+    await expect(promise).rejects.toThrow('Failed to calculate appDataHash')
     expect(mock).toBeCalledTimes(1)
     expect(mock).toHaveBeenCalledWith(IPFS_HASH)
   })
@@ -204,7 +213,6 @@ describe('validateAppDataDocument', () => {
   }
 
   test('Version matches schema', async () => {
-    // given
     // when
     const v010Validation = await cowSdk.metadataApi.validateAppDataDoc(v010Doc)
     const v040Validation = await cowSdk.metadataApi.validateAppDataDoc(v040Doc)
@@ -214,7 +222,6 @@ describe('validateAppDataDocument', () => {
   })
 
   test("Version doesn't match schema", async () => {
-    // given
     // when
     const v030Validation = await cowSdk.metadataApi.validateAppDataDoc({ ...v040Doc, version: '0.3.0' })
     // then
@@ -223,7 +230,6 @@ describe('validateAppDataDocument', () => {
   })
 
   test("Version doesn't exist", async () => {
-    // given
     // when
     const validation = await cowSdk.metadataApi.validateAppDataDoc({ ...v010Doc, version: '0.0.0' })
     // then
@@ -236,10 +242,8 @@ describe('getAppDataSchema', () => {
   test('Returns existing schema', async () => {
     // given
     const version = '0.4.0'
-
     // when
     const schema = await cowSdk.metadataApi.getAppDataSchema(version)
-
     // then
     expect(schema.$id).toMatch(version)
   })
@@ -247,10 +251,8 @@ describe('getAppDataSchema', () => {
   test('Throws on invalid schema', async () => {
     // given
     const version = '0.0.0'
-
     // when
     const promise = cowSdk.metadataApi.getAppDataSchema(version)
-
     // then
     await expect(promise).rejects.toThrow(`AppData version ${version} doesn't exist`)
   })
