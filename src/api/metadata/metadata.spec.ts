@@ -47,135 +47,145 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
-test('Valid: Create appDataDoc with empty metadata ', () => {
-  const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({})
-  expect(appDataDoc.version).toEqual(DEFAULT_APP_DATA_DOC.version)
-  expect(appDataDoc.appCode).toEqual(DEFAULT_APP_DATA_DOC.appCode)
-  expect(appDataDoc.metadata).toEqual(DEFAULT_APP_DATA_DOC.metadata)
-})
-
-test('Valid: Create appDataDoc with custom metadata ', () => {
-  const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({
-    metadataParams: {
-      referrerParams: CUSTOM_APP_DATA_DOC.metadata.referrer,
-      quoteParams: CUSTOM_APP_DATA_DOC.metadata.quote,
-    },
+describe('generateAppDataDoc', () => {
+  test('Creates appDataDoc with empty metadata ', () => {
+    const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({})
+    expect(appDataDoc.version).toEqual(DEFAULT_APP_DATA_DOC.version)
+    expect(appDataDoc.appCode).toEqual(DEFAULT_APP_DATA_DOC.appCode)
+    expect(appDataDoc.metadata).toEqual(DEFAULT_APP_DATA_DOC.metadata)
   })
-  expect(appDataDoc.metadata.referrer?.address).toEqual(CUSTOM_APP_DATA_DOC.metadata.referrer.address)
-  expect(appDataDoc.metadata.referrer?.version).toEqual(CUSTOM_APP_DATA_DOC.metadata.referrer.version)
-  expect(appDataDoc.metadata.quote?.slippageBips).toEqual(CUSTOM_APP_DATA_DOC.metadata.quote.slippageBips)
-  expect(appDataDoc.metadata.quote?.version).toEqual(CUSTOM_APP_DATA_DOC.metadata.quote.version)
-})
 
-test('Invalid: Upload to IPFS without passing credentials', async () => {
-  const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({
-    metadataParams: {
-      referrerParams: CUSTOM_APP_DATA_DOC.metadata.referrer,
-    },
-  })
-  try {
-    await cowSdk.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
-  } catch (e) {
-    const error = e as CowError
-    expect(error.message).toEqual('You need to pass IPFS api credentials.')
-  }
-})
-
-test('Valid: Upload LatestAppDataDocVersion to IPFS', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify({ IpfsHash: IPFS_HASH }), { status: HTTP_STATUS_OK })
-  const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({
-    metadataParams: { referrerParams: CUSTOM_APP_DATA_DOC.metadata.referrer },
-  })
-  const cowSdk1 = new CowSdk(chainId, { ipfs: { pinataApiKey: PINATA_API_KEY, pinataApiSecret: PINATA_API_SECRET } })
-  const appDataHex = await cowSdk1.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
-  expect(fetchMock).toHaveBeenCalledTimes(1)
-  expect(appDataHex).toEqual(APP_DATA_HEX)
-  expect(fetchMock).toHaveBeenCalledWith(DEFAULT_IPFS_WRITE_URI + '/pinning/pinJSONToIPFS', {
-    body: JSON.stringify({ pinataContent: appDataDoc, pinataMetadata: { name: 'appData' } }),
-    headers: {
-      'Content-Type': 'application/json',
-      pinata_api_key: PINATA_API_KEY,
-      pinata_secret_api_key: PINATA_API_SECRET,
-    },
-    method: 'POST',
+  test('Creates appDataDoc with custom metadata ', () => {
+    const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({
+      metadataParams: {
+        referrerParams: CUSTOM_APP_DATA_DOC.metadata.referrer,
+        quoteParams: CUSTOM_APP_DATA_DOC.metadata.quote,
+      },
+    })
+    expect(appDataDoc.metadata.referrer?.address).toEqual(CUSTOM_APP_DATA_DOC.metadata.referrer.address)
+    expect(appDataDoc.metadata.referrer?.version).toEqual(CUSTOM_APP_DATA_DOC.metadata.referrer.version)
+    expect(appDataDoc.metadata.quote?.slippageBips).toEqual(CUSTOM_APP_DATA_DOC.metadata.quote.slippageBips)
+    expect(appDataDoc.metadata.quote?.version).toEqual(CUSTOM_APP_DATA_DOC.metadata.quote.version)
   })
 })
 
-test('Invalid: Upload LatestAppDataDocVersion to IPFS with wrong credentials', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify({ error: { details: 'IPFS api keys are invalid' } }), {
-    status: HTTP_STATUS_INTERNAL_ERROR,
+describe('uploadMetadataDocToIpfs', () => {
+  test('Fails without passing credentials', async () => {
+    const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({
+      metadataParams: {
+        referrerParams: CUSTOM_APP_DATA_DOC.metadata.referrer,
+      },
+    })
+    try {
+      await cowSdk.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
+    } catch (e) {
+      const error = e as CowError
+      expect(error.message).toEqual('You need to pass IPFS api credentials.')
+    }
   })
-  const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({})
-  const cowSdk1 = new CowSdk(chainId, { ipfs: { pinataApiKey: PINATA_API_KEY, pinataApiSecret: PINATA_API_SECRET } })
-  try {
-    await cowSdk1.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
-    await expect(cowSdk1.metadataApi.uploadMetadataDocToIpfs(appDataDoc)).rejects.toThrow('IPFS api keys are invalid')
-  } catch (e) {
-    const error = e as CowError
+
+  test('Fails with wrong credentials', async () => {
+    fetchMock.mockResponseOnce(JSON.stringify({ error: { details: 'IPFS api keys are invalid' } }), {
+      status: HTTP_STATUS_INTERNAL_ERROR,
+    })
+    const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({})
+    const cowSdk1 = new CowSdk(chainId, { ipfs: { pinataApiKey: PINATA_API_KEY, pinataApiSecret: PINATA_API_SECRET } })
+    try {
+      await cowSdk1.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
+      await expect(cowSdk1.metadataApi.uploadMetadataDocToIpfs(appDataDoc)).rejects.toThrow('IPFS api keys are invalid')
+    } catch (e) {
+      const error = e as CowError
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+      expect(error.message).toEqual('IPFS api keys are invalid')
+    }
+  })
+
+  test('Uploads to IPFS', async () => {
+    fetchMock.mockResponseOnce(JSON.stringify({ IpfsHash: IPFS_HASH }), { status: HTTP_STATUS_OK })
+    const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({
+      metadataParams: { referrerParams: CUSTOM_APP_DATA_DOC.metadata.referrer },
+    })
+    const cowSdk1 = new CowSdk(chainId, { ipfs: { pinataApiKey: PINATA_API_KEY, pinataApiSecret: PINATA_API_SECRET } })
+    const appDataHex = await cowSdk1.metadataApi.uploadMetadataDocToIpfs(appDataDoc)
     expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(error.message).toEqual('IPFS api keys are invalid')
-  }
+    expect(appDataHex).toEqual(APP_DATA_HEX)
+    expect(fetchMock).toHaveBeenCalledWith(DEFAULT_IPFS_WRITE_URI + '/pinning/pinJSONToIPFS', {
+      body: JSON.stringify({ pinataContent: appDataDoc, pinataMetadata: { name: 'appData' } }),
+      headers: {
+        'Content-Type': 'application/json',
+        pinata_api_key: PINATA_API_KEY,
+        pinata_secret_api_key: PINATA_API_SECRET,
+      },
+      method: 'POST',
+    })
+  })
 })
 
-test('Valid: Decode appData ', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify(CUSTOM_APP_DATA_DOC), { status: HTTP_STATUS_OK })
-  const appDataDoc = await cowSdk.metadataApi.decodeAppData(APP_DATA_HEX)
+describe('decodeAppData', () => {
+  test('Decodes appData', async () => {
+    fetchMock.mockResponseOnce(JSON.stringify(CUSTOM_APP_DATA_DOC), { status: HTTP_STATUS_OK })
+    const appDataDoc = await cowSdk.metadataApi.decodeAppData(APP_DATA_HEX)
 
-  expect(fetchMock).toHaveBeenCalledTimes(1)
-  expect(fetchMock).toHaveBeenCalledWith(`${DEFAULT_IPFS_READ_URI}/${IPFS_HASH}`)
-  expect(appDataDoc?.version).toEqual(CUSTOM_APP_DATA_DOC.version)
-  expect(appDataDoc?.appCode).toEqual(CUSTOM_APP_DATA_DOC.appCode)
-  expect(appDataDoc?.metadata.referrer?.address).toEqual(CUSTOM_APP_DATA_DOC.metadata.referrer.address)
-  expect(appDataDoc?.metadata.referrer?.version).toEqual(CUSTOM_APP_DATA_DOC.metadata.referrer.version)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(`${DEFAULT_IPFS_READ_URI}/${IPFS_HASH}`)
+    expect(appDataDoc?.version).toEqual(CUSTOM_APP_DATA_DOC.version)
+    expect(appDataDoc?.appCode).toEqual(CUSTOM_APP_DATA_DOC.appCode)
+    expect(appDataDoc?.metadata.referrer?.address).toEqual(CUSTOM_APP_DATA_DOC.metadata.referrer.address)
+    expect(appDataDoc?.metadata.referrer?.version).toEqual(CUSTOM_APP_DATA_DOC.metadata.referrer.version)
+  })
+
+  test('Throws with wrong hash format', async () => {
+    fetchMock.mockResponseOnce(JSON.stringify({}), { status: HTTP_STATUS_INTERNAL_ERROR })
+    try {
+      await cowSdk.metadataApi.decodeAppData('invalidHash')
+    } catch (e) {
+      const error = e as CowError
+      expect(error.message).toEqual('Error decoding AppData: Incorrect length')
+    }
+  })
 })
 
-test('Invalid: Decode appData with wrong hash format', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify({}), { status: HTTP_STATUS_INTERNAL_ERROR })
-  try {
-    await cowSdk.metadataApi.decodeAppData('invalidHash')
-  } catch (e) {
-    const error = e as CowError
-    expect(error.message).toEqual('Error decoding AppData: Incorrect length')
-  }
+describe('appDataHexToCid', () => {
+  test('Happy path', async () => {
+    const decodedAppDataHex = await cowSdk.metadataApi.appDataHexToCid(APP_DATA_HEX)
+    expect(decodedAppDataHex).toEqual(IPFS_HASH)
+  })
+
+  test('Throws with wrong hash format ', async () => {
+    try {
+      await cowSdk.metadataApi.appDataHexToCid('invalidHash')
+    } catch (e) {
+      const error = e as CowError
+      expect(error.message).toEqual('Incorrect length')
+    }
+  })
 })
 
-test('Valid: AppData to CID ', async () => {
-  const decodedAppDataHex = await cowSdk.metadataApi.appDataHexToCid(APP_DATA_HEX)
-  expect(decodedAppDataHex).toEqual(IPFS_HASH)
-})
+describe('calculateAppDataHash', () => {
+  test('Valid: pre-calculated CIDv0 and appDataHash', async () => {
+    const result = await cowSdk.metadataApi.calculateAppDataHash(DEFAULT_APP_DATA_DOC)
 
-test('Invalid: AppData to CID with wrong format ', async () => {
-  try {
-    await cowSdk.metadataApi.appDataHexToCid('invalidHash')
-  } catch (e) {
-    const error = e as CowError
-    expect(error.message).toEqual('Incorrect length')
-  }
-})
+    expect(result).not.toBeFalsy()
+    expect(result).toEqual({ cidV0: IPFS_HASH, appDataHash: APP_DATA_HEX })
+  })
 
-test('Valid: pre-calculated CIDv0 and appDataHash', async () => {
-  const result = await cowSdk.metadataApi.calculateAppDataHash(DEFAULT_APP_DATA_DOC)
+  test('Invalid: pre-calculated CIDv0 not valid appDoc', async () => {
+    const doc = {
+      ...DEFAULT_APP_DATA_DOC,
+      metadata: { quote: { sellAmount: 'fsdfas', buyAmount: '41231', version: '0.1.0' } },
+    }
 
-  expect(result).not.toBeFalsy()
-  expect(result).toEqual({ cidV0: IPFS_HASH, appDataHash: APP_DATA_HEX })
-})
+    await expect(cowSdk.metadataApi.calculateAppDataHash(doc)).rejects.toThrow('Invalid appData provided')
+  })
 
-test('Invalid: pre-calculated CIDv0 not valid appDoc', async () => {
-  const doc = {
-    ...DEFAULT_APP_DATA_DOC,
-    metadata: { quote: { sellAmount: 'fsdfas', buyAmount: '41231', version: '0.1.0' } },
-  }
+  test('Invalid: Could not derive a the appDataHash', async () => {
+    const mock = jest.fn()
+    cowSdk.metadataApi.cidToAppDataHex = mock
 
-  await expect(cowSdk.metadataApi.calculateAppDataHash(doc)).rejects.toThrow('Invalid appData provided')
-})
-
-test('Invalid: Could not derive a the appDataHash', async () => {
-  const mock = jest.fn()
-  cowSdk.metadataApi.cidToAppDataHex = mock
-
-  await expect(cowSdk.metadataApi.calculateAppDataHash(DEFAULT_APP_DATA_DOC)).rejects.toThrow(
-    'Failed to calculate appDataHash'
-  )
-  expect(mock).toBeCalledTimes(1)
-  expect(mock).toHaveBeenCalledWith(IPFS_HASH)
+    await expect(cowSdk.metadataApi.calculateAppDataHash(DEFAULT_APP_DATA_DOC)).rejects.toThrow(
+      'Failed to calculate appDataHash'
+    )
+    expect(mock).toBeCalledTimes(1)
+    expect(mock).toHaveBeenCalledWith(IPFS_HASH)
+  })
 })
