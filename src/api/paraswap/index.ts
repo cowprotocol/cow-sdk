@@ -1,45 +1,129 @@
 import { OrderKind } from '@cowprotocol/contracts'
-import { log, warn } from 'loglevel'
-import { ParaSwap } from 'paraswap'
-import { APIError, RateOptions } from 'paraswap/build/types'
-import { OptimalRate, SwapSide } from 'paraswap-core'
-import { getTokensFromMarket } from '../../utils/market'
-import { getParaswapChainId, getPriceQuoteFromError, getValidParams, isGetRateSuccess } from './utils'
-import { ParaswapSupportedChainIds, ParaswapLibMap, QuoteOptions, ParaswapPriceQuoteParams } from './types'
+import { debug, error, warn } from 'loglevel'
+import { ParaSwap, SwapSide } from 'paraswap'
+import { OptimalRate } from 'paraswap-core'
+import { NetworkID, RateOptions } from 'paraswap/build/types'
 import { SupportedChainId } from '../../constants/chains'
 import { CowError } from '../../utils/common'
+import { getTokensFromMarket } from '../../utils/market'
+import {
+  API_NAME,
+  BASE_URL,
+  DEFAULT_RATE_OPTIONS,
+  COMPATIBLE_PARASWAP_CHAINS_WITH_COW,
+  LIB,
+  LOG_PREFIX,
+} from './constants'
+import { ParaswapCowswapNetworkID, ParaswapLibMap, ParaswapPriceQuoteParams, QuoteOptions } from './types'
+import { getParaswapChainId, getValidParams, handleResponse } from './utils'
 
-const logPrefix = 'ParaswapApi'
 const ALL_SUPPORTED_CHAIN_IDS = [SupportedChainId.MAINNET]
 
-class ParaswapBaseApi {
-  libMap: ParaswapLibMap = new Map()
+export default class ParaswapApi {
+  libMap: ParaswapLibMap = LIB
   name: string
   apiUrl: string
+  rateOptions: RateOptions
 
   constructor() {
-    this.name = 'Paraswap'
-    this.apiUrl = 'https://apiv5.paraswap.io'
+    this.name = API_NAME
+    this.apiUrl = BASE_URL
+    this.rateOptions = DEFAULT_RATE_OPTIONS
   }
 
-  static isValidChain(chainId: number): chainId is ParaswapSupportedChainIds {
-    switch (chainId) {
-      case SupportedChainId.MAINNET:
-        return true
-      default:
-        return false
+  public async getQuote(
+    params: ParaswapPriceQuoteParams & { chainId: NetworkID },
+    options?: Omit<QuoteOptions<true>, 'chainId'>
+  ): Promise<OptimalRate | null>
+  public async getQuote(
+    params: ParaswapPriceQuoteParams & { chainId: ParaswapCowswapNetworkID },
+    options?: Omit<QuoteOptions<false>, 'chainId'>
+  ): Promise<OptimalRate | null>
+  public async getQuote(
+    params: ParaswapPriceQuoteParams,
+    options: Omit<QuoteOptions<boolean>, 'chainId'> = { allowParaswapNetworks: false }
+  ): Promise<OptimalRate | null> {
+    const { chainId } = params
+    const { baseToken, quoteToken, fromDecimals, toDecimals, amount, kind, userAddress } = getValidParams(
+      params.chainId,
+      params
+    )
+
+    const paraSwap = this.getLib(chainId, options?.apiUrl || this.apiUrl)
+    if (!paraSwap) throw new CowError("ParaswapApi isn't compatible with chainId " + chainId)
+
+    // Buy/sell token and side (sell/buy)
+    const { sellToken, buyToken } = getTokensFromMarket({ baseToken, quoteToken, kind })
+    const swapSide = kind === OrderKind.BUY ? SwapSide.BUY : SwapSide.SELL
+
+    // https://developers.paraswap.network/api/get-rate-for-a-token-pair
+    const paraswapOptions: RateOptions = { ...this.rateOptions, ...options?.rateOptions }
+    // block any non-cow compatible chains
+    if (!options?.allowParaswapNetworks) {
+      const isCompatibleChain = getParaswapChainId(chainId)
+      if (!isCompatibleChain) {
+        error(
+          LOG_PREFIX,
+          `Chain id ${chainId} is not currently supported by the CoW contracts - please use: ${COMPATIBLE_PARASWAP_CHAINS_WITH_COW.join(
+            ','
+          )}. If you want to query all other ParaSwap specific chain ids, please pass { allowParaswapNetworks: true } as the query's "options" parameter.`
+        )
+
+        // return a null price
+        return null
+      }
+    }
+
+    debug(LOG_PREFIX, 'Getting price quote', params)
+
+    // Get price
+    const rateResult = await paraSwap.getRate(
+      sellToken,
+      buyToken,
+      amount,
+      userAddress,
+      swapSide,
+      paraswapOptions,
+      fromDecimals,
+      toDecimals
+    )
+
+    return handleResponse(rateResult)
+  }
+
+  public async getQuoteAllNetworks(
+    params: ParaswapPriceQuoteParams & { chainId: NetworkID },
+    options?: Omit<QuoteOptions<true>, 'chainId' | 'allowParaswapNetworks'>
+  ) {
+    return this.getQuote(params, { ...options, allowParaswapNetworks: true })
+  }
+
+  public async updateOptions(options: { apiUrl?: string; rateOptions?: RateOptions | null }) {
+    // null resets rateOptions to empty
+    if (options.rateOptions === null) {
+      this.rateOptions = {}
+    } else {
+      this.rateOptions = {
+        ...this.rateOptions,
+        ...(options.rateOptions || {}),
+      }
+    }
+
+    if (options.apiUrl) {
+      this.apiUrl = options.apiUrl
     }
   }
 
-  protected getQuoter(chainId: SupportedChainId, apiUrl: string): ParaSwap | null {
+  /* ----- PRIVATE ----- */
+  private getLib(chainId: NetworkID, apiUrl: string): ParaSwap | null {
     let paraSwap = this.libMap.get(chainId)
     if (!paraSwap) {
-      // get paraswaps overlapping supported chains
+      // get paraswap/cow's overlapping supported chains
       const networkId = getParaswapChainId(chainId)
       if (networkId == null) {
         warn(
-          logPrefix,
-          'Unsupported network passed as quote fetch parameter. You passed:',
+          LOG_PREFIX,
+          '- Unsupported network passed as quote fetch parameter. You passed:',
           chainId,
           ' Supported networks:',
           ALL_SUPPORTED_CHAIN_IDS.join(',')
@@ -52,143 +136,5 @@ class ParaswapBaseApi {
     }
 
     return paraSwap
-  }
-
-  protected get DEFAULT_RATE_OPTIONS() {
-    return {
-      maxImpact: 100,
-      excludeDEXS: 'ParaSwapPool4',
-    }
-  }
-}
-
-export class ParaswapApi extends ParaswapBaseApi {
-  chainId: ParaswapSupportedChainIds
-
-  private constructor(chainId: ParaswapSupportedChainIds) {
-    super()
-    this.chainId = chainId
-  }
-
-  static instantiate(chainId: number) {
-    if (!ParaswapBaseApi.isValidChain(chainId)) {
-      console.error(
-        new CowError(
-          logPrefix +
-            ': Invalid chainId passed to constructor: ' +
-            chainId.toString() +
-            ' - instantiating as undefined.'
-        )
-      )
-
-      return new ParaswapApiStatic()
-    } else {
-      return new ParaswapApi(chainId as ParaswapSupportedChainIds)
-    }
-  }
-
-  async getQuote(params: ParaswapPriceQuoteParams, options?: QuoteOptions): Promise<OptimalRate | null> {
-    const chainId = options?.chainId || this.chainId
-    const { baseToken, quoteToken, fromDecimals, toDecimals, amount, kind, userAddress } = getValidParams(
-      chainId,
-      params
-    )
-
-    const paraSwap = this.getQuoter(chainId, options?.apiUrl || this.apiUrl)
-
-    if (!paraSwap) throw new CowError('Invalid parameters')
-
-    log(logPrefix, 'Get price quote', params)
-
-    // Buy/sell token and side (sell/buy)
-    const { sellToken, buyToken } = getTokensFromMarket({ baseToken, quoteToken, kind })
-    const swapSide = kind === OrderKind.BUY ? SwapSide.BUY : SwapSide.SELL
-
-    // https://developers.paraswap.network/api/get-rate-for-a-token-pair
-    const paraswapOptions: RateOptions = { ...this.DEFAULT_RATE_OPTIONS, ...options?.options }
-
-    // Get price
-    const rateResult = await paraSwap.getRate(
-      sellToken,
-      buyToken,
-      amount,
-      userAddress,
-      swapSide,
-      paraswapOptions,
-      fromDecimals,
-      toDecimals
-    )
-
-    console.debug(`
-        =====================
-        Rate Result: ${JSON.stringify(rateResult, null, 2)}
-        =====================
-    `)
-
-    return _handleResponse(rateResult)
-  }
-}
-
-export class ParaswapApiStatic extends ParaswapBaseApi {
-  constructor() {
-    super()
-  }
-
-  public static async getQuote(
-    params: ParaswapPriceQuoteParams & { chainId: SupportedChainId },
-    options?: Omit<QuoteOptions, 'chainId'>
-  ): Promise<OptimalRate | null> {
-    const { baseToken, quoteToken, fromDecimals, toDecimals, amount, kind, userAddress } = getValidParams(
-      params.chainId,
-      params
-    )
-
-    const paraSwap = this.getQuoter(chainId, options?.apiUrl || this.apiUrl)
-
-    if (!paraSwap) throw new CowError('Invalid parameters')
-
-    log(logPrefix, 'Get price quote', params)
-
-    // Buy/sell token and side (sell/buy)
-    const { sellToken, buyToken } = getTokensFromMarket({ baseToken, quoteToken, kind })
-    const swapSide = kind === OrderKind.BUY ? SwapSide.BUY : SwapSide.SELL
-
-    // https://developers.paraswap.network/api/get-rate-for-a-token-pair
-    const paraswapOptions: RateOptions = { ...this.DEFAULT_RATE_OPTIONS, ...options?.options }
-
-    // Get price
-    const rateResult = await paraSwap.getRate(
-      sellToken,
-      buyToken,
-      amount,
-      userAddress,
-      swapSide,
-      paraswapOptions,
-      fromDecimals,
-      toDecimals
-    )
-
-    console.debug(`
-        =====================
-        Rate Result: ${JSON.stringify(rateResult, null, 2)}
-        =====================
-    `)
-
-    return _handleResponse(rateResult)
-  }
-}
-
-function _handleResponse(rateResult: OptimalRate | APIError) {
-  if (isGetRateSuccess(rateResult)) {
-    // Success getting the price
-    return rateResult
-  } else {
-    // Error getting the price
-    const priceQuote = getPriceQuoteFromError(rateResult)
-    if (priceQuote) {
-      return priceQuote
-    } else {
-      throw rateResult
-    }
   }
 }
