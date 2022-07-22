@@ -50,7 +50,7 @@ export class MetadataApi {
    * Returns the appData schema for given version, if any
    * Throws CowError when version doesn't exist
    */
-  async getAppDataSchema(version: string): Promise<AnyAppDataDocVersion | void> {
+  async getAppDataSchema(version: string): Promise<AnyAppDataDocVersion> {
     try {
       return await getAppDataSchema(version)
     } catch (e) {
