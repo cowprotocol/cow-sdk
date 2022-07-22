@@ -1,5 +1,6 @@
 import fetchMock from 'jest-fetch-mock'
 import { validateAppDataDocument, getSerializedCID, loadIpfsFromCid } from './appData'
+import { DEFAULT_IPFS_READ_URI } from '../constants'
 
 const VALID_RESULT = {
   result: true,
@@ -54,36 +55,44 @@ describe('validateAppDataDocument', () => {
 })
 
 describe('getSerializedCID', () => {
-  test('Valid serialized appData CID', async () => {
+  test('Serializes hash into CID', async () => {
+    // given
     const hash = '0xa6c81f4ca727252a05b108f1742a07430f28d474d2a3492d8f325746824d22e5'
-    const serializedCidV0 = 'QmZZhNnqMF1gRywNKnTPuZksX7rVjQgTT3TJAZ7R6VE3b2'
+    const expected = 'QmZZhNnqMF1gRywNKnTPuZksX7rVjQgTT3TJAZ7R6VE3b2'
+
+    // when
     const cidV0 = await getSerializedCID(hash)
 
-    expect(cidV0).toEqual(serializedCidV0)
+    // then
+    expect(cidV0).toEqual(expected)
   })
 
-  test('Invalid: serialized appData CID format ', async () => {
+  test('Throws on invalid appData hash', async () => {
+    // given
     const invalidHash = '0xa6c81f4ca727252a05b108f1742'
-    try {
-      await getSerializedCID(invalidHash)
-    } catch (e: unknown) {
-      const error = e as Error
-      expect(error.message).toEqual(INVALID_CID_LENGTH)
-    }
+
+    // when
+    const promise = getSerializedCID(invalidHash)
+
+    // then
+    await expect(promise).rejects.toThrow(INVALID_CID_LENGTH)
   })
 })
 
 describe('loadIpfsFromCid', () => {
   test('Valid IPFS appData from CID', async () => {
-    fetchMock.mockResponseOnce(
-      '{"appCode":"CowSwap","metadata":{"referrer":{"address":"0x1f5B740436Fc5935622e92aa3b46818906F416E9","version":"0.1.0"}},"version":"0.1.0"}'
-    )
-
+    // given
     const validSerializedCidV0 = 'QmZZhNnqMF1gRywNKnTPuZksX7rVjQgTT3TJAZ7R6VE3b2'
-    const appDataDocument = await loadIpfsFromCid(validSerializedCidV0)
-    const validation = await validateAppDataDocument(appDataDocument, '0.1.0')
+    const expected =
+      '{"appCode":"CowSwap","metadata":{"referrer":{"address":"0x1f5B740436Fc5935622e92aa3b46818906F416E9","version":"0.1.0"}},"version":"0.1.0"}'
+    fetchMock.mockResponseOnce(expected)
 
-    expect(validation).toEqual(VALID_RESULT)
+    // when
+    const appDataDocument = await loadIpfsFromCid(validSerializedCidV0)
+
+    // then
+    expect(appDataDocument).toEqual(JSON.parse(expected))
     expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(`${DEFAULT_IPFS_READ_URI}/${validSerializedCidV0}`)
   })
 })
