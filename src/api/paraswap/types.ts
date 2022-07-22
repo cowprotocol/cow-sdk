@@ -1,18 +1,18 @@
 import { ParaSwap } from 'paraswap'
-import { RateOptions } from 'paraswap/build/types'
+import { NetworkID, RateOptions } from 'paraswap/build/types'
 import { SupportedChainId } from '../../constants/chains'
 import { PriceQuoteParams } from '../cow/types'
 
-// current support for Mainnet - 1, Ropsten - 3, Polygon - 56, BSC - 137
-// https://app.swaggerhub.com/apis/paraswapv5/api/1.0#/tokens/get_tokens__network_
-export type ParaswapSupportedChainIds = 1 | 3 | 56 | 137
-export type ParaswapLibMap = Map<number, ParaSwap>
-export type QuoteOptions = {
+export type ParaswapLibMap = Map<NetworkID, ParaSwap>
+export type QuoteOptions<T extends boolean> = {
   chainId?: SupportedChainId
   apiUrl?: string
-  options?: RateOptions
+  rateOptions?: RateOptions
+  // bypasses null return when passed non-cow compatible chainId
+  allowParaswapNetworks?: T
 }
-export type ParaswapPriceQuoteParams = PriceQuoteParams & {
+export type ParaswapPriceQuoteParams = Omit<PriceQuoteParams, 'validTo'> & {
   fromDecimals: number
   toDecimals: number
-}
+} & { chainId: ParaswapCowswapNetworkID | NetworkID }
+export type ParaswapCowswapNetworkID = 1
