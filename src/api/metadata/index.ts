@@ -66,13 +66,7 @@ export class MetadataApi {
    * Validates given doc against the doc's own version
    */
   async validateAppDataDoc(appDataDoc: AnyAppDataDocVersion): ReturnType<typeof validateAppDataDoc> {
-    try {
-      return await validateAppDataDoc(appDataDoc)
-    } catch (e) {
-      // Wrapping @cowprotocol/app-data Error into CowError
-      const error = e as Error
-      throw new CowError(error.message)
-    }
+    return validateAppDataDoc(appDataDoc)
   }
 
   async decodeAppData(hash: string): Promise<void | AnyAppDataDocVersion> {
