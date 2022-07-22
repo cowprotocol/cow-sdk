@@ -7,7 +7,7 @@
   "module": "./dist/index.module.js",
   "exports": {
     "require": "./dist/index.js",
-    "default": "./dist/index.modern.js"
+    "default": "./dist/index.modern.mjs"
   },
   "types": "dist/index.d.ts",
   "files": [
@@ -45,13 +45,14 @@
     "@types/jest": "^27.0.3",
     "@typescript-eslint/eslint-plugin": "^5.9.0",
     "@typescript-eslint/parser": "^5.9.0",
+    "babel-plugin-inline-import": "^3.0.0",
     "coveralls": "^3.1.1",
     "eslint": "^8.6.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^27.3.1",
     "jest-fetch-mock": "^3.0.3",
-    "microbundle": "^0.14.2",
+    "microbundle": "^0.15.0",
     "prettier": "^2.5.1"
   },
   "jest": {
