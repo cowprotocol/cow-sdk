@@ -34,7 +34,7 @@ export interface MatchaPriceQuote extends MatchaBaseQuote {
   gas: string
 }
 
-export type MatchaOptions = {
+export type ZeroXOptions = {
   affiliateAddressMap: Partial<Record<number, string>>
   excludedSources: ERC20BridgeSource[]
 }
