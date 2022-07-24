@@ -3,7 +3,7 @@ import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { CowSdk } from '../../CowSdk'
 import { OrderKind, SigningScheme } from '@cowprotocol/contracts'
 import OperatorError from './errors/OperatorError'
-import { FeeQuoteParams, PriceQuoteParams } from './types'
+import { FeeQuoteParams, PriceQuoteLegacyParams } from './types'
 import QuoteError, { GpQuoteErrorObject } from './errors/QuoteError'
 import { CowError } from '../../utils/common'
 import { OrderCancellation, OrderCreation, UnsignedOrder } from '../../utils/sign'
@@ -21,6 +21,7 @@ const cowSdk = new CowSdk(chainId, { signer })
 const HTTP_STATUS_OK = 200
 const HTTP_STATUS_NOT_FOUND = 404
 const HTTP_BAD_REQUEST = 400
+const HEADERS = { 'Content-Type': 'application/json' }
 
 const SIGNED_ORDER_RESPONSE = {
   signature:
@@ -145,7 +146,10 @@ test('Valid: Get orders link ', async () => {
 })
 
 test('Valid: Get an order ', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify(ORDER_RESPONSE), { status: HTTP_STATUS_OK })
+  fetchMock.mockResponseOnce(JSON.stringify(ORDER_RESPONSE), {
+    status: HTTP_STATUS_OK,
+    headers: HEADERS,
+  })
   const order = await cowSdk.cowApi.getOrder(ORDER_RESPONSE.uid)
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
@@ -161,7 +165,7 @@ test('Invalid: Get an order ', async () => {
       errorType: 'NotFound',
       description: "You've passed an invalid URL",
     }),
-    { status: HTTP_STATUS_NOT_FOUND }
+    { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS }
   )
 
   try {
@@ -179,7 +183,7 @@ test('Invalid: Get an order ', async () => {
 
 test('Valid: Get last 5 orders for a given trader ', async () => {
   const ORDERS_RESPONSE = Array(5).fill(ORDER_RESPONSE)
-  fetchMock.mockResponseOnce(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK })
+  fetchMock.mockResponseOnce(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
   const orders = await cowSdk.cowApi.getOrders({
     owner: '0x00000000005ef87f8ca7014309ece7260bbcdaeb', // Trader
     limit: 5,
@@ -199,7 +203,7 @@ test('Invalid: Get last 5 orders for an unexisting trader ', async () => {
       errorType: 'NotFound',
       description: "You've passed an invalid URL",
     }),
-    { status: HTTP_STATUS_NOT_FOUND }
+    { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS }
   )
 
   try {
@@ -222,7 +226,7 @@ test('Invalid: Get last 5 orders for an unexisting trader ', async () => {
 test('Valid: Get tx orders from a given txHash', async () => {
   const ORDERS_RESPONSE = Array(5).fill(ORDER_RESPONSE)
   const txHash = '0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5'
-  fetchMock.mockResponseOnce(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK })
+  fetchMock.mockResponseOnce(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
   const txOrders = await cowSdk.cowApi.getTxOrders(txHash)
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
@@ -238,7 +242,7 @@ test('Invalid: Get tx orders from an unexisting txHash', async () => {
       errorType: 'NotFound',
       description: "You've passed an invalid URL",
     }),
-    { status: HTTP_STATUS_NOT_FOUND }
+    { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS }
   )
 
   try {
@@ -256,7 +260,7 @@ test('Invalid: Get tx orders from an unexisting txHash', async () => {
 
 test('Valid: Get last 5 trades for a given trader ', async () => {
   const TRADES_RESPONSE = Array(5).fill(TRADE_RESPONSE)
-  fetchMock.mockResponseOnce(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK })
+  fetchMock.mockResponseOnce(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
   const trades = await cowSdk.cowApi.getTrades({
     owner: TRADE_RESPONSE.owner, // Trader
     limit: 5,
@@ -272,7 +276,7 @@ test('Valid: Get last 5 trades for a given trader ', async () => {
 
 test('Valid: Get last 5 trades for a given order id ', async () => {
   const TRADES_RESPONSE = Array(5).fill(TRADE_RESPONSE)
-  fetchMock.mockResponseOnce(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK })
+  fetchMock.mockResponseOnce(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
   const trades = await cowSdk.cowApi.getTrades({
     orderId: TRADE_RESPONSE.orderUid,
     limit: 5,
@@ -304,7 +308,7 @@ test('Invalid: Get last 5 trades for an unexisting trader ', async () => {
       errorType: 'NotFound',
       description: "You've passed an invalid URL",
     }),
-    { status: HTTP_STATUS_NOT_FOUND }
+    { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS }
   )
 
   try {
@@ -325,8 +329,8 @@ test('Invalid: Get last 5 trades for an unexisting trader ', async () => {
 })
 
 test('Valid: Get Price Quote from partial order', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify(QUOTE_RESPONSE), { status: HTTP_STATUS_OK })
-  const quote = await cowSdk.cowApi.getQuote(QUOTE_REQUEST as FeeQuoteParams)
+  fetchMock.mockResponseOnce(JSON.stringify(QUOTE_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
+  const quote = await cowSdk.cowApi.getQuoteLegacyParams(QUOTE_REQUEST as FeeQuoteParams)
   const { kind, sellToken, buyToken, receiver, validTo, appData, partiallyFillable } = QUOTE_RESPONSE.quote
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/rinkeby/api/v1/quote', {
@@ -351,13 +355,13 @@ test('Valid: Get Price Quote from partial order', async () => {
 })
 
 test('Valid: Get Price Quote (Legacy)', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify(PRICE_QUOTE_RESPONSE), { status: HTTP_STATUS_OK })
+  fetchMock.mockResponseOnce(JSON.stringify(PRICE_QUOTE_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
   const price = await cowSdk.cowApi.getPriceQuoteLegacy({
     baseToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
     quoteToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
     amount: '1234567890',
     kind: OrderKind.BUY,
-  } as PriceQuoteParams)
+  } as PriceQuoteLegacyParams)
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
     'https://api.cow.fi/rinkeby/api/v1/markets/0x6810e776880c02933d47db1b9fc05908e5386b96-0x6810e776880c02933d47db1b9fc05908e5386b96/buy/1234567890',
@@ -373,10 +377,10 @@ test('Invalid: Get Price Quote from unexisting partial order', async () => {
       errorType: 'NoLiquidity',
       description: 'string',
     }),
-    { status: HTTP_BAD_REQUEST }
+    { status: HTTP_BAD_REQUEST, headers: HEADERS }
   )
   try {
-    await cowSdk.cowApi.getQuote({ ...QUOTE_REQUEST, from: ZERO_ADDRESS } as FeeQuoteParams)
+    await cowSdk.cowApi.getQuoteLegacyParams({ ...QUOTE_REQUEST, from: ZERO_ADDRESS } as FeeQuoteParams)
   } catch (e) {
     const error = e as GpQuoteErrorObject
 
@@ -391,7 +395,7 @@ test('Invalid: Get Price Quote (Legacy) with unexisting token', async () => {
       errorType: 'NotFound',
       description: "You've passed an invalid URL",
     }),
-    { status: HTTP_STATUS_NOT_FOUND }
+    { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS }
   )
   try {
     await cowSdk.cowApi.getPriceQuoteLegacy({
@@ -399,7 +403,7 @@ test('Invalid: Get Price Quote (Legacy) with unexisting token', async () => {
       quoteToken: 'unexistingToken',
       amount: '1234567890',
       kind: OrderKind.BUY,
-    } as PriceQuoteParams)
+    } as PriceQuoteLegacyParams)
   } catch (e) {
     const error = e as QuoteError
     expect(error.message).toEqual('Token pair selected has insufficient liquidity')
@@ -412,13 +416,13 @@ test('Invalid: Get Price Quote (Legacy) with unexisting token', async () => {
 })
 
 test('Valid: Get Price Quote', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify(PRICE_QUOTE_RESPONSE), { status: HTTP_STATUS_OK })
+  fetchMock.mockResponseOnce(JSON.stringify(PRICE_QUOTE_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
   const price = await cowSdk.cowApi.getPriceQuoteLegacy({
     baseToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
     quoteToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
     amount: '1234567890',
     kind: OrderKind.BUY,
-  } as PriceQuoteParams)
+  } as PriceQuoteLegacyParams)
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
     'https://api.cow.fi/rinkeby/api/v1/markets/0x6810e776880c02933d47db1b9fc05908e5386b96-0x6810e776880c02933d47db1b9fc05908e5386b96/buy/1234567890',
@@ -429,7 +433,7 @@ test('Valid: Get Price Quote', async () => {
 })
 
 test('Valid: Get Profile Data', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify(PROFILE_DATA_RESPONSE), { status: HTTP_STATUS_OK })
+  fetchMock.mockResponseOnce(JSON.stringify(PROFILE_DATA_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
   const cowSdk1 = new CowSdk(chainId)
   cowSdk1.updateChainId(1)
 
@@ -447,7 +451,7 @@ test('Invalid: Get Profile Data from unexisting address', async () => {
       errorType: 'NotFound',
       description: "You've passed an invalid URL",
     }),
-    { status: HTTP_STATUS_NOT_FOUND }
+    { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS }
   )
   const cowSdk1 = new CowSdk(chainId)
   cowSdk1.updateChainId(1)
@@ -466,7 +470,7 @@ test('Invalid: Get Profile Data from unexisting address', async () => {
 })
 
 test('Invalid: Get Profile Data from not supported network', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify(PROFILE_DATA_RESPONSE), { status: HTTP_STATUS_OK })
+  fetchMock.mockResponseOnce(JSON.stringify(PROFILE_DATA_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
   const profileData = await cowSdk.cowApi.getProfileData('0x6810e776880c02933d47db1b9fc05908e5386b96') // This will call sdk on Rinkeby which is not supported
   expect(profileData).toBeNull() // getProfileData will return null when network is different from Mainnet
 })
@@ -490,7 +494,7 @@ test('Valid: Sign Order', async () => {
 })
 
 test('Valid: Send sign order cancellation', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify(SIGNED_ORDER_RESPONSE), { status: HTTP_STATUS_OK })
+  fetchMock.mockResponseOnce(JSON.stringify(SIGNED_ORDER_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
   await cowSdk.cowApi.sendSignedOrderCancellation(ORDER_CANCELLATION)
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
@@ -509,7 +513,7 @@ test('Invalid: Send sign not found order cancellation', async () => {
       errorType: 'NotFound',
       description: "You've passed an invalid URL",
     }),
-    { status: HTTP_STATUS_NOT_FOUND }
+    { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS }
   )
   try {
     await cowSdk.cowApi.sendSignedOrderCancellation({
@@ -535,7 +539,7 @@ test('Valid: Sign cancellation Order', async () => {
 })
 
 test('Valid: Send an order ', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify('validOrderId'), { status: HTTP_STATUS_OK })
+  fetchMock.mockResponseOnce(JSON.stringify('validOrderId'), { status: HTTP_STATUS_OK, headers: HEADERS })
   const orderId = await cowSdk.cowApi.sendOrder({
     order: { ...ORDER_RESPONSE, ...SIGNED_ORDER_RESPONSE } as Omit<OrderCreation, 'appData'>,
     owner: '0x1811be0994930fe9480eaede25165608b093ad7a',
@@ -560,7 +564,7 @@ test('Invalid: Send an duplicate order ', async () => {
       errorType: 'DuplicateOrder',
       description: 'string',
     }),
-    { status: HTTP_STATUS_NOT_FOUND }
+    { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS }
   )
 
   try {
@@ -626,7 +630,7 @@ test('Valid: Instantiate SDK without chainId defaults to mainnet', async () => {
 
 test('Valid: Get last 5 orders changing options parameters', async () => {
   const ORDERS_RESPONSE = Array(5).fill(ORDER_RESPONSE)
-  fetchMock.mockResponseOnce(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK })
+  fetchMock.mockResponseOnce(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
   const orders = await cowSdk.cowApi.getOrders(
     {
       owner: '0x00000000005ef87f8ca7014309ece7260bbcdaeb', // Trader
@@ -645,7 +649,7 @@ test('Valid: Get last 5 orders changing options parameters', async () => {
 
 test('Valid: Get last 5 trades changing options parameters', async () => {
   const TRADES_RESPONSE = Array(5).fill(TRADE_RESPONSE)
-  fetchMock.mockResponseOnce(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK })
+  fetchMock.mockResponseOnce(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
   const trades = await cowSdk.cowApi.getTrades(
     {
       owner: TRADE_RESPONSE.owner, // Trader
