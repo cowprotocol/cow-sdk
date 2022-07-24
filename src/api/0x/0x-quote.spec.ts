@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { OrderKind } from '@cowprotocol/contracts'
 import { PriceQuoteLegacyParams } from '../cow/types'
@@ -9,7 +10,7 @@ enableFetchMocks()
 
 const chainId = SupportedChainId.MAINNET
 
-const cowSdk = new CowSdk(chainId, {}, { loglevel: 'debug' })
+const cowSdk = new CowSdk(chainId, {}, { loglevel: 'debug', zeroXOptions: { enabled: true } })
 
 const HTTP_STATUS_OK = 200
 
@@ -67,7 +68,7 @@ describe('Get Quote', () => {
     fetchMock.mockResponseOnce(JSON.stringify(PRICE_QUOTE_RESPONSE), { status: HTTP_STATUS_OK })
 
     // WHEN - we fetch a quote
-    const price = await cowSdk.zeroXApi.getQuote(query)
+    const price = await cowSdk.zeroXApi!.getQuote(query)
 
     // THEN
     expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -87,7 +88,8 @@ describe('Get Quote', () => {
       chainId,
       {},
       {
-        matchaOptions: {
+        zeroXOptions: {
+          enabled: true,
           affiliateAddressMap: {
             [SupportedChainId.MAINNET]: '0xAFFILIATE_ADDRESS_MAINNET',
           },
@@ -96,7 +98,7 @@ describe('Get Quote', () => {
       }
     )
     // WHEN - we fetch a quote
-    const price = await cowSdk.zeroXApi.getQuote(query)
+    const price = await cowSdk.zeroXApi!.getQuote(query)
 
     // THEN
     expect(fetchMock).toHaveBeenCalledTimes(1)
