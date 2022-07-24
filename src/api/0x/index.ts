@@ -11,7 +11,7 @@ import BaseApi from '../base'
 
 import { Options, PriceQuoteLegacyParams } from '../cow/types'
 import { logPrefix } from './error'
-import { ERC20BridgeSource, MatchaOptions, MatchaPriceQuote } from './types'
+import { ERC20BridgeSource, ZeroXOptions, MatchaPriceQuote } from './types'
 import {
   throwOrReturnAffiliateAddress,
   optionsToMatchaParamsUrl,
@@ -25,23 +25,23 @@ const EXCLUDED_SOURCES: ERC20BridgeSource[] = []
 const API_VERSION = 'v1'
 
 export class ZeroXApi extends BaseApi {
-  MATCHA_OPTIONS: MatchaOptions
-  MATCHA_OPTIONS_URL: string
+  ZEROX_OPTIONS: ZeroXOptions
+  ZEROX_OPTIONS_URL: string
 
-  constructor(
-    chainId: SupportedChainId,
-    { affiliateAddressMap, excludedSources }: MatchaOptions = {
-      affiliateAddressMap: GP_SETTLEMENT_CONTRACT_ADDRESS,
-      excludedSources: EXCLUDED_SOURCES,
-    }
-  ) {
+  constructor(chainId: SupportedChainId, options: Partial<ZeroXOptions> | undefined) {
     super({ context: new Context(chainId, {}), name: '0x', apiVersion: API_VERSION, getApiUrl: get0xUrls })
 
+    // get defaults if necessary
+    const affiliateAddressMap = options?.affiliateAddressMap || GP_SETTLEMENT_CONTRACT_ADDRESS
+    const excludedSources = options?.excludedSources || EXCLUDED_SOURCES
     // checks if missing affiliate address from address map and throws if undefined else returns address string
-    const affiliateAddress = throwOrReturnAffiliateAddress({ affiliateAddressMap, chainId })
+    const affiliateAddress = throwOrReturnAffiliateAddress({
+      affiliateAddressMap,
+      chainId,
+    })
 
-    this.MATCHA_OPTIONS = { affiliateAddressMap, excludedSources }
-    this.MATCHA_OPTIONS_URL = optionsToMatchaParamsUrl({
+    this.ZEROX_OPTIONS = { affiliateAddressMap, excludedSources }
+    this.ZEROX_OPTIONS_URL = optionsToMatchaParamsUrl({
       excludedSources: excludedSources,
       affiliateAddress,
     })
@@ -60,7 +60,7 @@ export class ZeroXApi extends BaseApi {
       return null
     }
 
-    log.debug(logPrefix, `Get price from ${this.API_NAME}`, params, this.MATCHA_OPTIONS)
+    log.debug(logPrefix, `Get price from ${this.API_NAME}`, params, this.ZEROX_OPTIONS)
 
     // Buy/sell token and side (sell/buy)
     const { sellToken, buyToken } = getTokensFromMarket({
@@ -69,7 +69,7 @@ export class ZeroXApi extends BaseApi {
       kind,
     })
     const affiliateAddress = throwOrReturnAffiliateAddress({
-      affiliateAddressMap: this.MATCHA_OPTIONS.affiliateAddressMap,
+      affiliateAddressMap: this.ZEROX_OPTIONS.affiliateAddressMap,
       chainId,
     })
     const swapSide = kind === OrderKind.BUY ? 'buyAmount' : 'sellAmount'
@@ -79,7 +79,7 @@ export class ZeroXApi extends BaseApi {
         buyToken,
         [swapSide]: amount,
         affiliateAddress,
-        excludedSources: extractExcludedSources(this.MATCHA_OPTIONS),
+        excludedSources: extractExcludedSources(this.ZEROX_OPTIONS),
       })}`,
       { chainId, env }
     ).catch((error) => {
@@ -90,25 +90,25 @@ export class ZeroXApi extends BaseApi {
     return handleQuoteResponse(response)
   }
 
-  public async updateOptions({ affiliateAddressMap, excludedSources }: Partial<MatchaOptions>) {
+  public async updateOptions({ affiliateAddressMap, excludedSources }: Partial<ZeroXOptions>) {
     const chainId = await this.context.chainId
 
     if (affiliateAddressMap) {
       log.debug(logPrefix, 'Updating 0x options affiliate address to', affiliateAddressMap)
-      this.MATCHA_OPTIONS.affiliateAddressMap = affiliateAddressMap
+      this.ZEROX_OPTIONS.affiliateAddressMap = affiliateAddressMap
     }
     if (excludedSources) {
       log.debug(logPrefix, 'Updating 0x options excludedSources to', excludedSources)
-      this.MATCHA_OPTIONS.excludedSources = excludedSources
+      this.ZEROX_OPTIONS.excludedSources = excludedSources
     }
 
     const affiliateAddress = throwOrReturnAffiliateAddress({
-      affiliateAddressMap: this.MATCHA_OPTIONS.affiliateAddressMap,
+      affiliateAddressMap: this.ZEROX_OPTIONS.affiliateAddressMap,
       chainId,
     })
 
-    this.MATCHA_OPTIONS_URL = optionsToMatchaParamsUrl({
-      ...this.MATCHA_OPTIONS,
+    this.ZEROX_OPTIONS_URL = optionsToMatchaParamsUrl({
+      ...this.ZEROX_OPTIONS,
       affiliateAddress,
     })
   }
