@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import fetch from 'cross-fetch'
 import { SupportedChainId } from '../../constants/chains'
 import { CowError } from '../../utils/common'
 import { Context } from '../../utils/context'
