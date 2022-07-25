@@ -1,75 +1,60 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import CowSdk from '../CowSdk'
+import CowSdk from '../../CowSdk'
 import { BigNumber } from 'ethers'
 import BigNumberJs from 'bignumber.js'
 // common
-import { SupportedChainId } from '../constants/chains'
-import { isPromiseFulfilled, logPrefix as cowLogPrefix, withTimeout } from './common'
-import { getCanonicalMarket } from './market'
-import {
-  FeeInformation,
-  OrderKind,
-  PriceInformation,
-  PriceQuoteParams,
-  QuoteParams,
-  WithChainId,
-  WithDecimals,
-} from '../types'
+import { SupportedChainId } from '../../constants/chains'
+import { isPromiseFulfilled, logPrefix as cowLogPrefix, withTimeout } from '../common'
+import { getCanonicalMarket } from '../market'
+import { OrderKind, PriceInformation, PriceQuoteParams, QuoteParams, SimpleGetQuoteResponse } from '../../types'
 // paraswap
 import { OptimalRate } from 'paraswap-core'
-import { LOG_PREFIX as paraswapLogPrefix } from '../api/paraswap/constants'
-import { normaliseQuoteResponse as normaliseQuoteResponseParaswap } from '../api/paraswap/utils'
+import { LOG_PREFIX as paraswapLogPrefix } from '../../api/paraswap/constants'
+import { getParaswapChainId, normaliseQuoteResponse as normaliseQuoteResponseParaswap } from '../../api/paraswap/utils'
 // 0x
-import { MatchaPriceQuote } from '../api/0x/types'
+import { ZeroXQuote } from '../../api/0x/types'
 // TODO: move this to constants
-import { logPrefix as zeroXLogPrefix } from '../api/0x/error'
-import { normaliseQuoteResponse as normaliseQuoteResponse0x } from '../api/0x/utils'
-import GpQuoteError, { GpQuoteErrorCodes } from '../api/cow/errors/QuoteError'
-
-interface GetBestPriceOptions {
-  aggrOverride?: 'max' | 'min'
-}
-type CompatibleQuoteParams = PriceQuoteParams & WithDecimals & WithChainId
-type QuoteResult = [PromiseSettledResult<PriceInformation>, PromiseSettledResult<FeeInformation>]
-type AllPricesResult = {
-  cowQuoteResult: PromiseSettledResult<PriceInformation | null>
-  paraswapQuoteResult: PromiseSettledResult<OptimalRate | null>
-  zeroXQuoteResult: PromiseSettledResult<MatchaPriceQuote | null>
-}
-type PriceSource = 'cow-protocol' | 'paraswap' | '0x'
-
-type PriceInformationWithSource = PriceInformation & { source: PriceSource; data?: any }
-type PromiseRejectedResultWithSource = PromiseRejectedResult & { source: PriceSource }
-type FilterWinningPriceParams = {
-  kind: string
-  amounts: string[]
-  priceQuotes: PriceInformationWithSource[]
-} & GetBestPriceOptions
+import { logPrefix as zeroXLogPrefix } from '../../api/0x/error'
+import { normaliseQuoteResponse as normaliseQuoteResponse0x } from '../../api/0x/utils'
+import GpQuoteError, { GpQuoteErrorCodes } from '../../api/cow/errors/QuoteError'
+import { NetworkID } from 'paraswap'
+import {
+  AllPricesResult,
+  CompatibleQuoteParams,
+  FilterWinningPriceParams,
+  GetBestPriceOptions,
+  PriceInformationWithSource,
+  PromiseRejectedResultWithSource,
+  QuoteResult,
+} from './types'
 
 // TODO: review and move
 const PRICE_API_TIMEOUT_MS = 15000
 
-export async function getAllPrices(
+export async function getAllPricesLegacy(
   cowSdk: CowSdk<SupportedChainId>,
   params: CompatibleQuoteParams
 ): Promise<AllPricesResult> {
   const { cowApi, zeroXApi, paraswapApi } = cowSdk
 
-  const is0xEnabled = !!zeroXApi
-  const isParaswapEnabled = !!paraswapApi
-
-  // Get price from all API: Gpv2, Paraswap, Matcha (0x)
+  // Get price from all API: CoW legacy, Paraswap, 0x
   const cowQuotePromise = withTimeout(
     cowApi.getPriceQuoteLegacy(params),
     PRICE_API_TIMEOUT_MS,
     cowLogPrefix + ': Get quote'
   )
 
+  const isParaswapEnabled = Boolean(paraswapApi && getParaswapChainId(params.chainId))
   const paraswapQuotePromise = isParaswapEnabled
-    ? withTimeout(cowSdk.paraswapApi!.getQuote(params), PRICE_API_TIMEOUT_MS, paraswapLogPrefix + ': Get quote')
+    ? withTimeout(
+        cowSdk.paraswapApi!.getQuote({ ...params, chainId: params.chainId as NetworkID }),
+        PRICE_API_TIMEOUT_MS,
+        paraswapLogPrefix + ': Get quote'
+      )
     : null
 
+  const is0xEnabled = !!zeroXApi
   const zeroXQuotePromise = is0xEnabled
     ? withTimeout(cowSdk.zeroXApi!.getQuote(params), PRICE_API_TIMEOUT_MS, zeroXLogPrefix + ': Get quote')
     : null
@@ -88,13 +73,13 @@ export async function getAllPrices(
   }
 }
 
-export async function getBestPrice(
+export async function getBestPriceLegacy(
   cowSdk: CowSdk<SupportedChainId>,
   params: CompatibleQuoteParams,
   options?: GetBestPriceOptions
 ): Promise<PriceInformation> {
   // Get all prices
-  const { cowQuoteResult, paraswapQuoteResult, zeroXQuoteResult } = await getAllPrices(cowSdk, params)
+  const { cowQuoteResult, paraswapQuoteResult, zeroXQuoteResult } = await getAllPricesLegacy(cowSdk, params)
 
   // Aggregate successful and error prices
   const [priceQuotes, errorsGetPrice] = _extractPriceAndErrorPromiseValues(
@@ -108,19 +93,19 @@ export async function getBestPrice(
   // Print prices who failed to be fetched
   if (errorsGetPrice.length > 0) {
     const sourceNames = errorsGetPrice.map((e) => e.source).join(', ')
-    console.error('[utils::useRefetchPriceCallback] Some API failed or timed out: ' + sourceNames, errorsGetPrice)
+    console.error('[utils::getBestPriceLegacy] Some API failed or timed out: ' + sourceNames, errorsGetPrice)
   }
 
   if (priceQuotes.length > 0) {
     // At least we have one successful price
     const sourceNames = priceQuotes.map((p) => p.source).join(', ')
-    console.log('[utils::useRefetchPriceCallback] Get best price succeeded for ' + sourceNames, priceQuotes)
+    console.log('[utils::getBestPriceLegacy] Get best price succeeded for ' + sourceNames, priceQuotes)
     const amounts = priceQuotes.map((quote) => quote.amount).filter(Boolean) as string[]
 
     return _filterWinningPrice({ ...options, kind: params.kind, amounts, priceQuotes })
   } else {
     // It was not possible to get a price estimation
-    const priceQuoteError = new PriceQuoteError('Error querying price from APIs', params, [
+    const priceQuoteError = new PriceQuoteErrorLegacy('Error querying price from APIs', params, [
       cowQuoteResult,
       paraswapQuoteResult,
       zeroXQuoteResult,
@@ -130,11 +115,11 @@ export async function getBestPrice(
   }
 }
 
-export async function getBestQuote(
+export async function getBestQuoteLegacy(
   cowSdk: CowSdk<SupportedChainId>,
   { quoteParams, fetchFee, previousFee }: Omit<QuoteParams, 'strategy'> & { quoteParams: CompatibleQuoteParams }
 ): Promise<QuoteResult> {
-  const { sellToken, buyToken, fromDecimals, toDecimals, amount, kind, userAddress, validTo } = quoteParams
+  const { sellToken, buyToken, amount, kind } = quoteParams
   const { baseToken, quoteToken } = getCanonicalMarket({ sellToken, buyToken, kind })
   // Get a new fee quote (if required)
   const feePromise =
@@ -153,8 +138,6 @@ export async function getBestQuote(
     // we need to check for 0/negative exchangeAmount should fee >= amount
     const { amount: fee } = await feePromise
     const result = BigNumber.from(amount).sub(fee)
-    console.log(`Sell amount before fee: ${_formatAtoms(amount, fromDecimals)}  (in atoms ${amount})`)
-    console.log(`Sell amount after fee: ${_formatAtoms(result.toString(), fromDecimals)}  (in atoms ${result})`)
 
     feeExceedsPrice = result.lte('0')
 
@@ -167,7 +150,7 @@ export async function getBestQuote(
   // Get price for price estimation
   const pricePromise =
     !feeExceedsPrice && exchangeAmount
-      ? getBestPrice(cowSdk, { ...quoteParams, baseToken, quoteToken, amount: exchangeAmount })
+      ? getBestPriceLegacy(cowSdk, { ...quoteParams, baseToken, quoteToken, amount: exchangeAmount })
       : // fee exceeds our price, is invalid
         Promise.reject(FEE_EXCEEDS_FROM_ERROR)
 
@@ -183,7 +166,7 @@ function _extractPriceAndErrorPromiseValues(
   kind: OrderKind,
   gpPriceResult: PromiseSettledResult<PriceInformation | null>,
   paraswapQuoteResult: PromiseSettledResult<OptimalRate | null>,
-  matchaPriceResult: PromiseSettledResult<MatchaPriceQuote | null>
+  matchaPriceResult: PromiseSettledResult<ZeroXQuote | null>
 ): [Array<PriceInformationWithSource>, Array<PromiseRejectedResultWithSource>] {
   // Prepare an array with all successful estimations
   const priceQuotes: Array<PriceInformationWithSource> = []
@@ -238,19 +221,14 @@ function _filterWinningPrice(params: FilterWinningPriceParams) {
   return { token, amount }
 }
 
-const TEN = new BigNumberJs(10)
-function _formatAtoms(amount: string, decimals: number): string {
-  return new BigNumberJs(amount).div(TEN.pow(decimals)).toString(10)
-}
-
 const FEE_EXCEEDS_FROM_ERROR = new GpQuoteError({
   errorType: GpQuoteErrorCodes.FeeExceedsFrom,
   description: GpQuoteError.quoteErrorDetails.FeeExceedsFrom,
 })
 
-class PriceQuoteError extends Error {
+class PriceQuoteErrorLegacy extends Error {
   params: PriceQuoteParams
-  results: PromiseSettledResult<any>[]
+  results: PromiseSettledResult<unknown>[]
 
   constructor(message: string, params: PriceQuoteParams, results: PromiseSettledResult<any>[]) {
     super(message)
@@ -259,13 +237,31 @@ class PriceQuoteError extends Error {
   }
 }
 
+function _errorHasProperty<T extends object>(data: unknown, prop: string): data is T {
+  if (typeof data === 'object' && data) {
+    return prop in data
+  } else {
+    return false
+  }
+}
+
 function _checkFeeErrorForData(error: GpQuoteError) {
   console.warn('[getBestQuote]::Fee error', error)
+  let feeAmount
+  if (_errorHasProperty<{ fee_amount: string }>(error?.data, 'fee_amount')) {
+    feeAmount = error.data.fee_amount
+  } else if (_errorHasProperty<{ feeAmount: string }>(error?.data, 'feeAmount')) {
+    feeAmount = error.data.feeAmount
+  }
 
-  const feeAmount = (error?.data as any)?.fee_amount || (error?.data as any)?.feeAmount
-  const feeExpiration = (error?.data as any)?.expiration
+  const feeExpiration = _errorHasProperty<{ expiration: SimpleGetQuoteResponse['expiration'] }>(
+    error.data,
+    'expiration'
+  )
+    ? error.data.expiration
+    : undefined
   // check if our error response has any fee data attached to it
-  if (feeAmount) {
+  if (feeAmount && feeExpiration) {
     return {
       amount: feeAmount,
       expirationDate: feeExpiration,
