@@ -127,7 +127,7 @@ export type FeeQuoteParams = Pick<OrderMetaData, 'sellToken' | 'buyToken' | 'kin
   validTo: number
 }
 
-export type PriceQuoteParams = Omit<FeeQuoteParams, 'sellToken' | 'buyToken'> & {
+export type PriceQuoteLegacyParams = Omit<FeeQuoteParams, 'sellToken' | 'buyToken'> & {
   baseToken: string
   quoteToken: string
 }

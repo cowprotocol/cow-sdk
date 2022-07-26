@@ -11,7 +11,7 @@ import QuoteError, {
   GpQuoteErrorDetails,
 } from './errors/QuoteError'
 import { toErc20Address } from '../../utils/tokens'
-import { FeeQuoteParams, PriceInformation, PriceQuoteParams, SimpleGetQuoteResponse } from './types'
+import { FeeQuoteParams, PriceInformation, PriceQuoteLegacyParams, SimpleGetQuoteResponse } from './types'
 
 import { ZERO_ADDRESS } from '../../constants'
 import {
@@ -72,18 +72,27 @@ async function _handleQuoteResponse<T = unknown, P extends QuoteQuery = QuoteQue
   params?: P
 ): Promise<T> {
   if (!response.ok) {
-    const errorObj: ApiErrorObject = await response.json()
+    const responseContentType = response.headers.get('Content-Type')
+    if (responseContentType === 'application/json') {
+      const errorObj: ApiErrorObject = await response.json()
 
-    // we need to map the backend error codes to match our own for quotes
-    const mappedError = mapOperatorErrorToQuoteError(errorObj)
-    const quoteError = new QuoteError(mappedError)
+      // we need to map the backend error codes to match our own for quotes
+      const mappedError = mapOperatorErrorToQuoteError(errorObj)
+      const quoteError = new QuoteError(mappedError)
 
-    if (params) {
-      const { sellToken, buyToken } = params
-      log.error(logPrefix, `Error querying fee from API - sellToken: ${sellToken}, buyToken: ${buyToken}`)
+      if (params) {
+        const { sellToken, buyToken } = params
+        log.error(logPrefix, `Error querying fee from API - sellToken: ${sellToken}, buyToken: ${buyToken}`)
+      }
+
+      throw quoteError
+    } else {
+      const text = await response.text()
+      throw new QuoteError({
+        description: text,
+        errorType: GpQuoteErrorCodes.UNHANDLED_ERROR,
+      })
     }
-
-    throw quoteError
   } else {
     return response.json()
   }
@@ -218,7 +227,7 @@ export class CowApi {
     }
   }
 
-  async getPriceQuoteLegacy(params: PriceQuoteParams, options: Options = {}): Promise<PriceInformation | null> {
+  async getPriceQuoteLegacy(params: PriceQuoteLegacyParams, options: Options = {}): Promise<PriceInformation | null> {
     const { chainId: networkId, isDevEnvironment } = options
     const { baseToken, quoteToken, amount, kind } = params
     const chainId = networkId || (await this.context.chainId)
@@ -235,11 +244,19 @@ export class CowApi {
     return _handleQuoteResponse<PriceInformation | null>(response)
   }
 
-  async getQuote(params: FeeQuoteParams, options: Options = {}): Promise<SimpleGetQuoteResponse> {
+  async getQuoteLegacyParams(params: FeeQuoteParams, options: Options = {}): Promise<SimpleGetQuoteResponse> {
     const { chainId: networkId, isDevEnvironment } = options
     const chainId = networkId || (await this.context.chainId)
     const quoteParams = this.mapNewToLegacyParams(params, chainId)
     const response = await this.post('/quote', quoteParams, { chainId, isDevEnvironment })
+
+    return _handleQuoteResponse<SimpleGetQuoteResponse>(response)
+  }
+
+  async getQuote(params: QuoteQuery, options: Options = {}): Promise<SimpleGetQuoteResponse> {
+    const { chainId: networkId, isDevEnvironment } = options
+    const chainId = networkId || (await this.context.chainId)
+    const response = await this.post('/quote', params, { chainId, isDevEnvironment })
 
     return _handleQuoteResponse<SimpleGetQuoteResponse>(response)
   }

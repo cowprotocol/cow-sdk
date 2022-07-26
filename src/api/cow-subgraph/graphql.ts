@@ -154,6 +154,7 @@ export type DailyTotal_Filter = {
   timestamp_not?: InputMaybe<Scalars['Int']>;
   timestamp_not_in?: InputMaybe<Array<Scalars['Int']>>;
   tokens?: InputMaybe<Array<Scalars['String']>>;
+  tokens_?: InputMaybe<Token_Filter>;
   tokens_contains?: InputMaybe<Array<Scalars['String']>>;
   tokens_contains_nocase?: InputMaybe<Array<Scalars['String']>>;
   tokens_not?: InputMaybe<Array<Scalars['String']>>;
@@ -294,6 +295,7 @@ export type HourlyTotal_Filter = {
   timestamp_not?: InputMaybe<Scalars['Int']>;
   timestamp_not_in?: InputMaybe<Array<Scalars['Int']>>;
   tokens?: InputMaybe<Array<Scalars['String']>>;
+  tokens_?: InputMaybe<Token_Filter>;
   tokens_contains?: InputMaybe<Array<Scalars['String']>>;
   tokens_contains_nocase?: InputMaybe<Array<Scalars['String']>>;
   tokens_not?: InputMaybe<Array<Scalars['String']>>;
@@ -402,6 +404,7 @@ export type Order_Filter = {
   isValid_not?: InputMaybe<Scalars['Boolean']>;
   isValid_not_in?: InputMaybe<Array<Scalars['Boolean']>>;
   owner?: InputMaybe<Scalars['String']>;
+  owner_?: InputMaybe<User_Filter>;
   owner_contains?: InputMaybe<Scalars['String']>;
   owner_contains_nocase?: InputMaybe<Scalars['String']>;
   owner_ends_with?: InputMaybe<Scalars['String']>;
@@ -437,6 +440,7 @@ export type Order_Filter = {
   tradesTimestamp_lte?: InputMaybe<Scalars['Int']>;
   tradesTimestamp_not?: InputMaybe<Scalars['Int']>;
   tradesTimestamp_not_in?: InputMaybe<Array<Scalars['Int']>>;
+  trades_?: InputMaybe<Trade_Filter>;
 };
 
 export enum Order_OrderBy {
@@ -532,6 +536,7 @@ export type PairDaily_Filter = {
   token0Price_lte?: InputMaybe<Scalars['BigDecimal']>;
   token0Price_not?: InputMaybe<Scalars['BigDecimal']>;
   token0Price_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  token0_?: InputMaybe<Token_Filter>;
   token0_contains?: InputMaybe<Scalars['String']>;
   token0_contains_nocase?: InputMaybe<Scalars['String']>;
   token0_ends_with?: InputMaybe<Scalars['String']>;
@@ -568,6 +573,7 @@ export type PairDaily_Filter = {
   token1Price_lte?: InputMaybe<Scalars['BigDecimal']>;
   token1Price_not?: InputMaybe<Scalars['BigDecimal']>;
   token1Price_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  token1_?: InputMaybe<Token_Filter>;
   token1_contains?: InputMaybe<Scalars['String']>;
   token1_contains_nocase?: InputMaybe<Scalars['String']>;
   token1_ends_with?: InputMaybe<Scalars['String']>;
@@ -700,6 +706,7 @@ export type PairHourly_Filter = {
   token0Price_lte?: InputMaybe<Scalars['BigDecimal']>;
   token0Price_not?: InputMaybe<Scalars['BigDecimal']>;
   token0Price_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  token0_?: InputMaybe<Token_Filter>;
   token0_contains?: InputMaybe<Scalars['String']>;
   token0_contains_nocase?: InputMaybe<Scalars['String']>;
   token0_ends_with?: InputMaybe<Scalars['String']>;
@@ -736,6 +743,7 @@ export type PairHourly_Filter = {
   token1Price_lte?: InputMaybe<Scalars['BigDecimal']>;
   token1Price_not?: InputMaybe<Scalars['BigDecimal']>;
   token1Price_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  token1_?: InputMaybe<Token_Filter>;
   token1_contains?: InputMaybe<Scalars['String']>;
   token1_contains_nocase?: InputMaybe<Scalars['String']>;
   token1_ends_with?: InputMaybe<Scalars['String']>;
@@ -832,6 +840,7 @@ export type Pair_Filter = {
   token0Price_lte?: InputMaybe<Scalars['BigDecimal']>;
   token0Price_not?: InputMaybe<Scalars['BigDecimal']>;
   token0Price_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  token0_?: InputMaybe<Token_Filter>;
   token0_contains?: InputMaybe<Scalars['String']>;
   token0_contains_nocase?: InputMaybe<Scalars['String']>;
   token0_ends_with?: InputMaybe<Scalars['String']>;
@@ -868,6 +877,7 @@ export type Pair_Filter = {
   token1Price_lte?: InputMaybe<Scalars['BigDecimal']>;
   token1Price_not?: InputMaybe<Scalars['BigDecimal']>;
   token1Price_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  token1_?: InputMaybe<Token_Filter>;
   token1_contains?: InputMaybe<Scalars['String']>;
   token1_contains_nocase?: InputMaybe<Scalars['String']>;
   token1_ends_with?: InputMaybe<Scalars['String']>;
@@ -1337,6 +1347,7 @@ export type Settlement_Filter = {
   id_not?: InputMaybe<Scalars['ID']>;
   id_not_in?: InputMaybe<Array<Scalars['ID']>>;
   solver?: InputMaybe<Scalars['String']>;
+  solver_?: InputMaybe<User_Filter>;
   solver_contains?: InputMaybe<Scalars['String']>;
   solver_contains_nocase?: InputMaybe<Scalars['String']>;
   solver_ends_with?: InputMaybe<Scalars['String']>;
@@ -1356,6 +1367,7 @@ export type Settlement_Filter = {
   solver_not_starts_with_nocase?: InputMaybe<Scalars['String']>;
   solver_starts_with?: InputMaybe<Scalars['String']>;
   solver_starts_with_nocase?: InputMaybe<Scalars['String']>;
+  trades_?: InputMaybe<Trade_Filter>;
   txHash?: InputMaybe<Scalars['Bytes']>;
   txHash_contains?: InputMaybe<Scalars['Bytes']>;
   txHash_in?: InputMaybe<Array<Scalars['Bytes']>>;
@@ -1727,12 +1739,16 @@ export type Token = {
   __typename?: 'Token';
   /** Token address */
   address: Scalars['Bytes'];
+  /** Daily totals */
+  dailyTotals: Array<TokenDailyTotal>;
   /** Token decimals fetched by contract call */
   decimals: Scalars['Int'];
   /** First token trade block timestamp */
-  firstTradeTimestamp?: Maybe<Scalars['Int']>;
+  firstTradeTimestamp: Scalars['Int'];
   /** History of trading for this token */
   history: Array<TokenTradingEvent>;
+  /** Hourly totals */
+  hourlyTotals: Array<TokenHourlyTotal>;
   /** Token address to hexString */
   id: Scalars['ID'];
   /** Token name fetched by ERC20 contract call */
@@ -1754,12 +1770,30 @@ export type Token = {
 };
 
 
+export type TokenDailyTotalsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<TokenDailyTotal_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars['Int']>;
+  where?: InputMaybe<TokenDailyTotal_Filter>;
+};
+
+
 export type TokenHistoryArgs = {
   first?: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<TokenTradingEvent_OrderBy>;
   orderDirection?: InputMaybe<OrderDirection>;
   skip?: InputMaybe<Scalars['Int']>;
   where?: InputMaybe<TokenTradingEvent_Filter>;
+};
+
+
+export type TokenHourlyTotalsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<TokenHourlyTotal_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars['Int']>;
+  where?: InputMaybe<TokenHourlyTotal_Filter>;
 };
 
 export type TokenDailyTotal = {
@@ -1850,6 +1884,7 @@ export type TokenDailyTotal_Filter = {
   timestamp_not?: InputMaybe<Scalars['Int']>;
   timestamp_not_in?: InputMaybe<Array<Scalars['Int']>>;
   token?: InputMaybe<Scalars['String']>;
+  token_?: InputMaybe<Token_Filter>;
   token_contains?: InputMaybe<Scalars['String']>;
   token_contains_nocase?: InputMaybe<Scalars['String']>;
   token_ends_with?: InputMaybe<Scalars['String']>;
@@ -2006,6 +2041,7 @@ export type TokenHourlyTotal_Filter = {
   timestamp_not?: InputMaybe<Scalars['Int']>;
   timestamp_not_in?: InputMaybe<Array<Scalars['Int']>>;
   token?: InputMaybe<Scalars['String']>;
+  token_?: InputMaybe<Token_Filter>;
   token_contains?: InputMaybe<Scalars['String']>;
   token_contains_nocase?: InputMaybe<Scalars['String']>;
   token_ends_with?: InputMaybe<Scalars['String']>;
@@ -2126,6 +2162,7 @@ export type TokenTradingEvent_Filter = {
   timestamp_not?: InputMaybe<Scalars['Int']>;
   timestamp_not_in?: InputMaybe<Array<Scalars['Int']>>;
   token?: InputMaybe<Scalars['String']>;
+  token_?: InputMaybe<Token_Filter>;
   token_contains?: InputMaybe<Scalars['String']>;
   token_contains_nocase?: InputMaybe<Scalars['String']>;
   token_ends_with?: InputMaybe<Scalars['String']>;
@@ -2146,6 +2183,7 @@ export type TokenTradingEvent_Filter = {
   token_starts_with?: InputMaybe<Scalars['String']>;
   token_starts_with_nocase?: InputMaybe<Scalars['String']>;
   trade?: InputMaybe<Scalars['String']>;
+  trade_?: InputMaybe<Trade_Filter>;
   trade_contains?: InputMaybe<Scalars['String']>;
   trade_contains_nocase?: InputMaybe<Scalars['String']>;
   trade_ends_with?: InputMaybe<Scalars['String']>;
@@ -2185,6 +2223,7 @@ export type Token_Filter = {
   address_not?: InputMaybe<Scalars['Bytes']>;
   address_not_contains?: InputMaybe<Scalars['Bytes']>;
   address_not_in?: InputMaybe<Array<Scalars['Bytes']>>;
+  dailyTotals_?: InputMaybe<TokenDailyTotal_Filter>;
   decimals?: InputMaybe<Scalars['Int']>;
   decimals_gt?: InputMaybe<Scalars['Int']>;
   decimals_gte?: InputMaybe<Scalars['Int']>;
@@ -2201,6 +2240,8 @@ export type Token_Filter = {
   firstTradeTimestamp_lte?: InputMaybe<Scalars['Int']>;
   firstTradeTimestamp_not?: InputMaybe<Scalars['Int']>;
   firstTradeTimestamp_not_in?: InputMaybe<Array<Scalars['Int']>>;
+  history_?: InputMaybe<TokenTradingEvent_Filter>;
+  hourlyTotals_?: InputMaybe<TokenHourlyTotal_Filter>;
   id?: InputMaybe<Scalars['ID']>;
   id_gt?: InputMaybe<Scalars['ID']>;
   id_gte?: InputMaybe<Scalars['ID']>;
@@ -2301,9 +2342,11 @@ export type Token_Filter = {
 
 export enum Token_OrderBy {
   Address = 'address',
+  DailyTotals = 'dailyTotals',
   Decimals = 'decimals',
   FirstTradeTimestamp = 'firstTradeTimestamp',
   History = 'history',
+  HourlyTotals = 'hourlyTotals',
   Id = 'id',
   Name = 'name',
   NumberOfTrades = 'numberOfTrades',
@@ -2499,6 +2542,7 @@ export type Trade_Filter = {
   buyAmount_not?: InputMaybe<Scalars['BigInt']>;
   buyAmount_not_in?: InputMaybe<Array<Scalars['BigInt']>>;
   buyToken?: InputMaybe<Scalars['String']>;
+  buyToken_?: InputMaybe<Token_Filter>;
   buyToken_contains?: InputMaybe<Scalars['String']>;
   buyToken_contains_nocase?: InputMaybe<Scalars['String']>;
   buyToken_ends_with?: InputMaybe<Scalars['String']>;
@@ -2543,6 +2587,7 @@ export type Trade_Filter = {
   id_not?: InputMaybe<Scalars['ID']>;
   id_not_in?: InputMaybe<Array<Scalars['ID']>>;
   order?: InputMaybe<Scalars['String']>;
+  order_?: InputMaybe<Order_Filter>;
   order_contains?: InputMaybe<Scalars['String']>;
   order_contains_nocase?: InputMaybe<Scalars['String']>;
   order_ends_with?: InputMaybe<Scalars['String']>;
@@ -2587,6 +2632,7 @@ export type Trade_Filter = {
   sellAmount_not?: InputMaybe<Scalars['BigInt']>;
   sellAmount_not_in?: InputMaybe<Array<Scalars['BigInt']>>;
   sellToken?: InputMaybe<Scalars['String']>;
+  sellToken_?: InputMaybe<Token_Filter>;
   sellToken_contains?: InputMaybe<Scalars['String']>;
   sellToken_contains_nocase?: InputMaybe<Scalars['String']>;
   sellToken_ends_with?: InputMaybe<Scalars['String']>;
@@ -2607,6 +2653,7 @@ export type Trade_Filter = {
   sellToken_starts_with?: InputMaybe<Scalars['String']>;
   sellToken_starts_with_nocase?: InputMaybe<Scalars['String']>;
   settlement?: InputMaybe<Scalars['String']>;
+  settlement_?: InputMaybe<Settlement_Filter>;
   settlement_contains?: InputMaybe<Scalars['String']>;
   settlement_contains_nocase?: InputMaybe<Scalars['String']>;
   settlement_ends_with?: InputMaybe<Scalars['String']>;
@@ -2718,6 +2765,7 @@ export type UniswapPool_Filter = {
   token0Price_lte?: InputMaybe<Scalars['BigDecimal']>;
   token0Price_not?: InputMaybe<Scalars['BigDecimal']>;
   token0Price_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  token0_?: InputMaybe<UniswapToken_Filter>;
   token0_contains?: InputMaybe<Scalars['String']>;
   token0_contains_nocase?: InputMaybe<Scalars['String']>;
   token0_ends_with?: InputMaybe<Scalars['String']>;
@@ -2746,6 +2794,7 @@ export type UniswapPool_Filter = {
   token1Price_lte?: InputMaybe<Scalars['BigDecimal']>;
   token1Price_not?: InputMaybe<Scalars['BigDecimal']>;
   token1Price_not_in?: InputMaybe<Array<Scalars['BigDecimal']>>;
+  token1_?: InputMaybe<UniswapToken_Filter>;
   token1_contains?: InputMaybe<Scalars['String']>;
   token1_contains_nocase?: InputMaybe<Scalars['String']>;
   token1_ends_with?: InputMaybe<Scalars['String']>;
@@ -2834,6 +2883,7 @@ export type UniswapToken_Filter = {
   address_not_contains?: InputMaybe<Scalars['Bytes']>;
   address_not_in?: InputMaybe<Array<Scalars['Bytes']>>;
   allowedPools?: InputMaybe<Array<Scalars['String']>>;
+  allowedPools_?: InputMaybe<UniswapToken_Filter>;
   allowedPools_contains?: InputMaybe<Array<Scalars['String']>>;
   allowedPools_contains_nocase?: InputMaybe<Array<Scalars['String']>>;
   allowedPools_not?: InputMaybe<Array<Scalars['String']>>;
@@ -2929,7 +2979,7 @@ export type User = {
   /** Owner's address */
   address: Scalars['Bytes'];
   /** First trade block timestamp */
-  firstTradeTimestamp?: Maybe<Scalars['Int']>;
+  firstTradeTimestamp: Scalars['Int'];
   /** Trade event order owner */
   id: Scalars['ID'];
   /** Determine if user has solved a settlement */
@@ -2994,6 +3044,7 @@ export type User_Filter = {
   numberOfTrades_lte?: InputMaybe<Scalars['Int']>;
   numberOfTrades_not?: InputMaybe<Scalars['Int']>;
   numberOfTrades_not_in?: InputMaybe<Array<Scalars['Int']>>;
+  ordersPlaced_?: InputMaybe<Order_Filter>;
   solvedAmountEth?: InputMaybe<Scalars['BigDecimal']>;
   solvedAmountEth_gt?: InputMaybe<Scalars['BigDecimal']>;
   solvedAmountEth_gte?: InputMaybe<Scalars['BigDecimal']>;

@@ -5,4 +5,5 @@ coverage
 jest.results.json
 .idea
 *.iml
-
+.yalc
+yalc.lock
