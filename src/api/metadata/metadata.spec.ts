@@ -161,7 +161,7 @@ describe('appDataHexToCid', () => {
 })
 
 describe('calculateAppDataHash', () => {
-  test('Valid: pre-calculated CIDv0 and appDataHash', async () => {
+  test('Happy path', async () => {
     // when
     const result = await cowSdk.metadataApi.calculateAppDataHash(DEFAULT_APP_DATA_DOC)
     // then
@@ -169,7 +169,7 @@ describe('calculateAppDataHash', () => {
     expect(result).toEqual({ cidV0: IPFS_HASH, appDataHash: APP_DATA_HEX })
   })
 
-  test('Invalid: pre-calculated CIDv0 not valid appDoc', async () => {
+  test('Throws with invalid appDoc', async () => {
     // given
     const doc = {
       ...DEFAULT_APP_DATA_DOC,
@@ -181,7 +181,7 @@ describe('calculateAppDataHash', () => {
     await expect(promise).rejects.toThrow('Invalid appData provided')
   })
 
-  test('Invalid: Could not derive a the appDataHash', async () => {
+  test('Throws when cannot derive the appDataHash', async () => {
     // given
     const mock = jest.fn()
     cowSdk.metadataApi.cidToAppDataHex = mock
