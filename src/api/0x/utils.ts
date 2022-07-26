@@ -4,7 +4,7 @@ import { SupportedChainId } from '../../constants/chains'
 import { objectToQueryString, CowError } from '../../utils/common'
 import { PriceInformation, PriceQuoteParams } from '../cow/types'
 import ZeroXError, { ZeroXErrorResponse, logPrefix } from './error'
-import { ZeroXOptions, MatchaPriceQuote } from './types'
+import { ZeroXOptions, ZeroXQuote } from './types'
 
 export function get0xUrls(): Partial<Record<SupportedChainId, string>> {
   // Support: Mainnet, Ropsten, Polygon, Binance Smart Chain
@@ -14,7 +14,7 @@ export function get0xUrls(): Partial<Record<SupportedChainId, string>> {
   }
 }
 
-export function normaliseQuoteResponse(priceRaw: MatchaPriceQuote | null, kind: OrderKind): PriceInformation | null {
+export function normaliseQuoteResponse(priceRaw: ZeroXQuote | null, kind: OrderKind): PriceInformation | null {
   if (!priceRaw || !priceRaw.price) {
     return null
   }
