@@ -12,15 +12,6 @@ const paraswap = require('paraswap')
 // mock the entire library (found in top level __mocks__ > paraswap.js)
 jest.mock('paraswap')
 
-// const HTTP_STATUS_OK = 200
-// const FETCH_RESPONSE_PARAMETERS = {
-//   body: undefined,
-//   headers: {
-//     'Content-Type': 'application/json',
-//   },
-//   method: 'GET',
-// }
-
 const PRICE_QUOTE_RESPONSE: OptimalRate = {
   blockNumber: 99999999,
   network: 1,
