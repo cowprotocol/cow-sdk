@@ -1,24 +1,25 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import CowSdk from '../../CowSdk'
 import { BigNumber } from 'ethers'
 import BigNumberJs from 'bignumber.js'
+import { log, debug, error } from 'loglevel'
 // common
 import { SupportedChainId } from '../../constants/chains'
 import { isPromiseFulfilled, logPrefix as cowLogPrefix, withTimeout } from '../common'
 import { getCanonicalMarket } from '../market'
-import { OrderKind, PriceInformation, PriceQuoteParams, QuoteParams, SimpleGetQuoteResponse } from '../../types'
+import GpQuoteError, { GpQuoteErrorCodes } from '../../api/cow/errors/QuoteError'
 // paraswap
 import { OptimalRate } from 'paraswap-core'
 import { LOG_PREFIX as paraswapLogPrefix } from '../../api/paraswap/constants'
 import { getParaswapChainId, normaliseQuoteResponse as normaliseQuoteResponseParaswap } from '../../api/paraswap/utils'
+import ParaswapApi from '../../api/paraswap'
+import { NetworkID } from 'paraswap'
 // 0x
 import { ZeroXQuote } from '../../api/0x/types'
 // TODO: move this to constants
 import { logPrefix as zeroXLogPrefix } from '../../api/0x/error'
 import { normaliseQuoteResponse as normaliseQuoteResponse0x } from '../../api/0x/utils'
-import GpQuoteError, { GpQuoteErrorCodes } from '../../api/cow/errors/QuoteError'
-import { NetworkID } from 'paraswap'
+// types
+import { OrderKind, PriceInformation, PriceQuoteParams, QuoteParams, SimpleGetQuoteResponse } from '../../types'
 import {
   AllPricesResult,
   CompatibleQuoteParams,
@@ -29,9 +30,9 @@ import {
   QuoteResult,
 } from './types'
 
-// TODO: review and move
-const PRICE_API_TIMEOUT_MS = 15000
+const PRICE_API_TIMEOUT_MS = 10000 // 10s
 
+// Queries all legacy endpoints for price quotes using passed parameters
 export async function getAllPricesLegacy(
   cowSdk: CowSdk<SupportedChainId>,
   params: CompatibleQuoteParams
@@ -46,18 +47,25 @@ export async function getAllPricesLegacy(
   )
 
   const isParaswapEnabled = Boolean(paraswapApi && getParaswapChainId(params.chainId))
-  const paraswapQuotePromise = isParaswapEnabled
-    ? withTimeout(
-        cowSdk.paraswapApi!.getQuote({ ...params, chainId: params.chainId as NetworkID }),
-        PRICE_API_TIMEOUT_MS,
-        paraswapLogPrefix + ': Get quote'
-      )
-    : null
+  let paraswapQuotePromise: Promise<OptimalRate | null> | null = null
+  if (isParaswapEnabled) {
+    paraswapQuotePromise = withTimeout(
+      // L47 check makes this type-safe
+      (paraswapApi as ParaswapApi).getQuote({ ...params, chainId: params.chainId as NetworkID }),
+      PRICE_API_TIMEOUT_MS,
+      paraswapLogPrefix + ': Get quote'
+    )
+  } else {
+    debug(paraswapLogPrefix, 'DISABLED, SKIPPING.')
+  }
 
   const is0xEnabled = !!zeroXApi
-  const zeroXQuotePromise = is0xEnabled
-    ? withTimeout(cowSdk.zeroXApi!.getQuote(params), PRICE_API_TIMEOUT_MS, zeroXLogPrefix + ': Get quote')
-    : null
+  let zeroXQuotePromise = null
+  if (is0xEnabled) {
+    zeroXQuotePromise = withTimeout(zeroXApi.getQuote(params), PRICE_API_TIMEOUT_MS, zeroXLogPrefix + ': Get quote')
+  } else {
+    debug(zeroXLogPrefix, 'DISABLED, SKIPPING.')
+  }
 
   // Get results from API queries
   const [cowQuote, paraswapQuote, zeroXQuote] = await Promise.allSettled([
@@ -73,6 +81,7 @@ export async function getAllPricesLegacy(
   }
 }
 
+// Returns the single best price out of the 3 legacy endpoints: Cow, 0x, ParaSwap
 export async function getBestPriceLegacy(
   cowSdk: CowSdk<SupportedChainId>,
   params: CompatibleQuoteParams,
@@ -93,13 +102,13 @@ export async function getBestPriceLegacy(
   // Print prices who failed to be fetched
   if (errorsGetPrice.length > 0) {
     const sourceNames = errorsGetPrice.map((e) => e.source).join(', ')
-    console.error('[utils::getBestPriceLegacy] Some API failed or timed out: ' + sourceNames, errorsGetPrice)
+    error('[utils::getBestPriceLegacy] Some API failed or timed out: ' + sourceNames, errorsGetPrice)
   }
 
   if (priceQuotes.length > 0) {
     // At least we have one successful price
     const sourceNames = priceQuotes.map((p) => p.source).join(', ')
-    console.log('[utils::getBestPriceLegacy] Get best price succeeded for ' + sourceNames, priceQuotes)
+    log('[utils::getBestPriceLegacy] Get best price succeeded for ' + sourceNames, priceQuotes)
     const amounts = priceQuotes.map((quote) => quote.amount).filter(Boolean) as string[]
 
     return _filterWinningPrice({ ...options, kind: params.kind, amounts, priceQuotes })
@@ -115,9 +124,15 @@ export async function getBestPriceLegacy(
   }
 }
 
+// queries the fee using the COWSWAP endpoint
+// and the BEST price via the LEGACY endpoints
 export async function getBestQuoteLegacy(
   cowSdk: CowSdk<SupportedChainId>,
-  { quoteParams, fetchFee, previousFee }: Omit<QuoteParams, 'strategy'> & { quoteParams: CompatibleQuoteParams }
+  {
+    quoteParams,
+    fetchFee,
+    previousFee,
+  }: Omit<QuoteParams, 'strategy'> & { quoteParams: Omit<CompatibleQuoteParams, 'baseToken' | 'quoteToken'> }
 ): Promise<QuoteResult> {
   const { sellToken, buyToken, amount, kind } = quoteParams
   const { baseToken, quoteToken } = getCanonicalMarket({ sellToken, buyToken, kind })
@@ -158,6 +173,26 @@ export async function getBestQuoteLegacy(
 }
 
 /**
+ * Error class used only for these utils
+ */
+const FEE_EXCEEDS_FROM_ERROR = new GpQuoteError({
+  errorType: GpQuoteErrorCodes.FeeExceedsFrom,
+  description: GpQuoteError.quoteErrorDetails.FeeExceedsFrom,
+})
+
+class PriceQuoteErrorLegacy extends Error {
+  params: PriceQuoteParams
+  results: PromiseSettledResult<unknown>[]
+
+  constructor(message: string, params: PriceQuoteParams, results: PromiseSettledResult<unknown>[]) {
+    super(message)
+    this.params = params
+    this.results = results
+  }
+}
+
+/** -- PRIVATE FNs --
+
  * Auxiliary function that would take the settled results from all price feeds (resolved/rejected), and group them by
  * successful price quotes and errors price quotes. For each price, it also give the context (the name of the price feed)
  */
@@ -216,25 +251,9 @@ function _filterWinningPrice(params: FilterWinningPriceParams) {
     .filter((quote) => quote.amount === amount)
     .map((p) => p.source)
     .join(', ')
-  console.debug('[util::filterWinningPrice] Winning price: ' + winningPrices + ' for token ' + token + ' @', amount)
+  debug('[util::filterWinningPrice] Winning price: ' + winningPrices + ' for token ' + token + ' @', amount)
 
   return { token, amount }
-}
-
-const FEE_EXCEEDS_FROM_ERROR = new GpQuoteError({
-  errorType: GpQuoteErrorCodes.FeeExceedsFrom,
-  description: GpQuoteError.quoteErrorDetails.FeeExceedsFrom,
-})
-
-class PriceQuoteErrorLegacy extends Error {
-  params: PriceQuoteParams
-  results: PromiseSettledResult<unknown>[]
-
-  constructor(message: string, params: PriceQuoteParams, results: PromiseSettledResult<any>[]) {
-    super(message)
-    this.params = params
-    this.results = results
-  }
 }
 
 function _errorHasProperty<T extends object>(data: unknown, prop: string): data is T {
@@ -246,7 +265,6 @@ function _errorHasProperty<T extends object>(data: unknown, prop: string): data 
 }
 
 function _checkFeeErrorForData(error: GpQuoteError) {
-  console.warn('[getBestQuote]::Fee error', error)
   let feeAmount
   if (_errorHasProperty<{ fee_amount: string }>(error?.data, 'fee_amount')) {
     feeAmount = error.data.fee_amount
