@@ -5,6 +5,8 @@ import CowSdk from '../../CowSdk'
 import { ParaswapPriceQuoteParams } from './types'
 import { OptimalRate, SwapSide } from 'paraswap-core'
 import ParaswapError from './error'
+import { NetworkID } from 'paraswap'
+import { CowError } from '../../utils/common'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const paraswap = require('paraswap')
@@ -113,11 +115,42 @@ describe('Get Quote', () => {
     paraswap.__setRateResponseOrError(PRICE_QUOTE_RESPONSE)
   })
 
-  test('Returns price quote using default options', async () => {
+  test('getQuote RETURNS proper response using default options and user passes valid chain', async () => {
     // GIVEN
     // WHEN
     expect.assertions(1)
-    const price = await cowSdk.paraswapApi.getQuote(query)
+    const price = await cowSdk.paraswapApi.getQuote({ ...query, chainId: 1 })
+
+    // THEN
+    expect(price).toEqual(PRICE_QUOTE_RESPONSE)
+  })
+
+  test('getQuote THROWS proper error when user ignores TS and passes invalid chain', async () => {
+    // GIVEN
+    // WHEN
+    expect.assertions(1)
+    // user forces TS to accept chain as valid
+    const promise = cowSdk.paraswapApi.getQuote({ ...query, chainId: 2 as NetworkID })
+
+    // THEN
+    expect(promise).rejects.toThrow(new CowError("ParaswapApi isn't compatible with chainId " + 2))
+  })
+
+  test('getQuoteAllNetworks RETURNS proper response', async () => {
+    // GIVEN
+    // WHEN
+    expect.assertions(1)
+    const price = await cowSdk.paraswapApi.getQuoteAllNetworks(query)
+
+    // THEN
+    expect(price).toEqual(PRICE_QUOTE_RESPONSE)
+  })
+
+  test('getQuoteCowNetworks RETURNS proper response', async () => {
+    // GIVEN
+    // WHEN
+    expect.assertions(1)
+    const price = await cowSdk.paraswapApi.getQuoteCowNetworks({ ...query, chainId: 1 })
 
     // THEN
     expect(price).toEqual(PRICE_QUOTE_RESPONSE)
@@ -125,7 +158,7 @@ describe('Get Quote', () => {
 })
 
 describe('Error responses', () => {
-  test('Returns 404', async () => {
+  test('RETURNS 404', async () => {
     // GIVEN
     paraswap.__setRateResponseOrError({
       status: 404,
@@ -154,7 +187,7 @@ describe('Error responses', () => {
     }
   })
 
-  test('Returns 400 - Validation failed', async () => {
+  test('RETURNS 400 - Validation failed', async () => {
     // GIVEN
     paraswap.__setRateResponseOrError({
       status: 400,
@@ -185,7 +218,7 @@ describe('Error responses', () => {
 })
 
 describe('Changing class options', () => {
-  test('Returns correct apiUrl after changing it', async () => {
+  test('RETURNS correct apiUrl after changing it', async () => {
     // GIVEN
     // WHEN - we fetch a quote passing in excludedSources as the RateOptions
     cowSdk.paraswapApi.updateOptions({ apiUrl: 'https://apiv6.paraswap.io' })
@@ -193,7 +226,7 @@ describe('Changing class options', () => {
     // THEN
     expect(cowSdk.paraswapApi.apiUrl).toEqual('https://apiv6.paraswap.io')
   })
-  test('Returns empty rateOptions object when passing null', async () => {
+  test('RETURNS empty rateOptions object when passing null', async () => {
     // GIVEN
     // WHEN - we fetch a quote passing in excludedSources as the RateOptions
     cowSdk.paraswapApi.updateOptions({ rateOptions: null })
@@ -201,7 +234,7 @@ describe('Changing class options', () => {
     // THEN
     expect(cowSdk.paraswapApi.rateOptions).toEqual({})
   })
-  test('Returns updated rateOptions object', async () => {
+  test('RETURNS updated rateOptions object', async () => {
     // GIVEN
     // WHEN - we fetch a quote passing in excludedSources as the RateOptions
     cowSdk.paraswapApi.updateOptions({
