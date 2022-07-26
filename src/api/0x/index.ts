@@ -11,7 +11,7 @@ import BaseApi from '../base'
 
 import { Options, PriceQuoteLegacyParams } from '../cow/types'
 import { logPrefix } from './error'
-import { ERC20BridgeSource, ZeroXOptions, MatchaPriceQuote } from './types'
+import { ERC20BridgeSource, ZeroXOptions, ZeroXQuote } from './types'
 import {
   throwOrReturnAffiliateAddress,
   optionsToMatchaParamsUrl,
@@ -47,7 +47,7 @@ export class ZeroXApi extends BaseApi {
     })
   }
 
-  async getQuote(params: PriceQuoteLegacyParams, options: Options = {}): Promise<MatchaPriceQuote | null> {
+  async getQuote(params: PriceQuoteLegacyParams, options: Options = {}): Promise<ZeroXQuote | null> {
     const { amount, baseToken, quoteToken, kind } = params
     const { chainId: customChainId, env = this.context.env } = options
     const chainId = customChainId || (await this.context.chainId)
