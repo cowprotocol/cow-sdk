@@ -1,38 +1,6 @@
-import Ajv, { ValidateFunction } from 'ajv'
-import { CowError, fromHexString } from './common'
+import { fromHexString } from './common'
 import { DEFAULT_IPFS_READ_URI } from '../constants'
 import { AnyAppDataDocVersion } from '../types'
-
-let validate: ValidateFunction | undefined
-let ajv: Ajv
-
-interface ValidationResult {
-  result: boolean
-  errors?: string
-}
-
-async function getValidator(version: string): Promise<{ ajv: Ajv; validate: ValidateFunction }> {
-  if (!ajv) {
-    ajv = new Ajv()
-  }
-  validate = ajv.getSchema(version)
-
-  if (!validate) {
-    let appDataSchema
-
-    try {
-      appDataSchema = await import(`@cowprotocol/app-data/schemas/v${version}.json`)
-    } catch (e) {
-      throw new CowError(`AppData version ${version} does not exist`, 'MISSING_APP_DATA_VERSION')
-    }
-    // add new schema to ajv cache
-    ajv.addSchema(appDataSchema, version)
-    // fetch and return it
-    validate = ajv.getSchema(version) as ValidateFunction
-  }
-
-  return { ajv, validate }
-}
 
 export async function getSerializedCID(hash: string): Promise<void | string> {
   const cidVersion = 0x1 //cidv1
@@ -55,14 +23,4 @@ export async function loadIpfsFromCid(cid: string, ipfsUri = DEFAULT_IPFS_READ_U
   const response = await fetch(`${ipfsUri}/${cid}`)
 
   return await response.json()
-}
-
-export async function validateAppDataDocument(appDataDocument: unknown, version: string): Promise<ValidationResult> {
-  const { ajv, validate } = await getValidator(version)
-  const result = !!validate(appDataDocument)
-
-  return {
-    result,
-    errors: validate.errors ? ajv.errorsText(validate.errors) : undefined,
-  }
 }

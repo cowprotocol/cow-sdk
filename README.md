@@ -294,7 +294,7 @@ This will return a document similar to:
 ## Upload document to IPFS
 The SDK uses Pinata to upload it to IPFS, so you will need an API Key in order to upload it using the SDK.
 
-Alternativelly, you can upload the document on your own using any other service.
+Alternatively, you can upload the document on your own using any other service.
 
 ```js
 // Make sure you provide the IPFS params when instantiating the SDK
@@ -330,6 +330,20 @@ const decodedAppDataHex = await cowSdk.metadataApi.appDataHexToCid(hash)
 
 This will return an IPFS CIDv0: `QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs`
 
+
+## Getting appData schema files
+It's possible to get schema files directly for each exported version using `getAppDataSchema`
+
+```js
+const schema = await cowSdk.metadataApi.getAppDataSchema('0.4.0')
+```
+
+## Validating appDataDocs
+If for some reason you decide to create an `appDataDoc` without using the helper function, you can use `validateAppDataDoc` to validate it against the schema
+
+```js
+const { success, error } = await cowSdk.metadataApi.validateAppDataDoc({ version: '0.1.0', ... })
+```
 
 
 ## Querying the Cow Subgraph

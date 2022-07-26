@@ -3,7 +3,6 @@ import log, { LogLevelDesc } from 'loglevel'
 import { CowError } from './utils/common'
 import { CowApi, CowSubgraphApi, MetadataApi } from './api'
 import { SupportedChainId as ChainId, SupportedChainId } from './constants/chains'
-import { validateAppDataDocument } from './utils/appData'
 import { Context, CowContext } from './utils/context'
 import { signOrder, signOrderCancellation, UnsignedOrder } from './utils/sign'
 import { ZeroXApi } from './api/0x'
@@ -38,8 +37,6 @@ export class CowSdk<T extends ChainId> {
     const networkId = await this.context.chainId
     this.context.updateContext(cowContext, chainId || networkId)
   }
-
-  validateAppDataDocument = validateAppDataDocument
 
   async signOrder(order: Omit<UnsignedOrder, 'appData'>) {
     const signer = this._checkSigner()
