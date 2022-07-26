@@ -20,15 +20,15 @@ import { getParaswapChainId, getValidParams, handleResponse } from './utils'
 const ALL_SUPPORTED_CHAIN_IDS = [SupportedChainId.MAINNET]
 
 export default class ParaswapApi {
-  libMap: ParaswapLibMap = LIB
   name: string
-  apiUrl: string
-  rateOptions: RateOptions
+  #libMap: ParaswapLibMap = LIB
+  #apiUrl: string
+  #rateOptions: RateOptions
 
   constructor() {
     this.name = API_NAME
-    this.apiUrl = BASE_URL
-    this.rateOptions = DEFAULT_RATE_OPTIONS
+    this.#apiUrl = BASE_URL
+    this.#rateOptions = DEFAULT_RATE_OPTIONS
   }
 
   public async getQuote(
@@ -49,7 +49,7 @@ export default class ParaswapApi {
       params
     )
 
-    const paraSwap = this.getLib(chainId, options?.apiUrl || this.apiUrl)
+    const paraSwap = this.#getLib(chainId, options?.apiUrl || this.#apiUrl)
     if (!paraSwap) throw new CowError("ParaswapApi isn't compatible with chainId " + chainId)
 
     // Buy/sell token and side (sell/buy)
@@ -57,7 +57,7 @@ export default class ParaswapApi {
     const swapSide = kind === OrderKind.BUY ? SwapSide.BUY : SwapSide.SELL
 
     // https://developers.paraswap.network/api/get-rate-for-a-token-pair
-    const paraswapOptions: RateOptions = { ...this.rateOptions, ...options?.rateOptions }
+    const paraswapOptions: RateOptions = { ...this.#rateOptions, ...options?.rateOptions }
     // block any non-cow compatible chains
     if (!options?.allowParaswapNetworks) {
       const isCompatibleChain = getParaswapChainId(chainId)
@@ -101,22 +101,30 @@ export default class ParaswapApi {
   public async updateOptions(options: { apiUrl?: string; rateOptions?: RateOptions | null }) {
     // null resets rateOptions to empty
     if (options.rateOptions === null) {
-      this.rateOptions = {}
+      this.#rateOptions = {}
     } else {
-      this.rateOptions = {
-        ...this.rateOptions,
+      this.#rateOptions = {
+        ...this.#rateOptions,
         ...(options.rateOptions || {}),
       }
     }
 
     if (options.apiUrl) {
-      this.apiUrl = options.apiUrl
+      this.#apiUrl = options.apiUrl
     }
   }
 
+  get rateOptions() {
+    return this.#rateOptions
+  }
+
+  get apiUrl() {
+    return this.#apiUrl
+  }
+
   /* ----- PRIVATE ----- */
-  private getLib(chainId: NetworkID, apiUrl: string): ParaSwap | null {
-    let paraSwap = this.libMap.get(chainId)
+  #getLib(chainId: NetworkID, apiUrl: string): ParaSwap | null {
+    let paraSwap = this.#libMap.get(chainId)
     if (!paraSwap) {
       // get paraswap/cow's overlapping supported chains
       const networkId = getParaswapChainId(chainId)
@@ -132,7 +140,7 @@ export default class ParaswapApi {
         return null
       }
       paraSwap = new ParaSwap(networkId, apiUrl)
-      this.libMap.set(chainId, paraSwap)
+      this.#libMap.set(chainId, paraSwap)
     }
 
     return paraSwap
