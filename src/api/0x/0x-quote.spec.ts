@@ -68,7 +68,7 @@ describe('Get Quote', () => {
     fetchMock.mockResponseOnce(JSON.stringify(PRICE_QUOTE_RESPONSE), { status: HTTP_STATUS_OK })
 
     // WHEN - we fetch a quote
-    const price = await cowSdk.zeroXApi!.getQuote(query)
+    const price = await cowSdk.zeroXApi.getQuote(query)
 
     // THEN
     expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -98,7 +98,7 @@ describe('Get Quote', () => {
       }
     )
     // WHEN - we fetch a quote
-    const price = await cowSdk.zeroXApi!.getQuote(query)
+    const price = await cowSdk.zeroXApi.getQuote(query)
 
     // THEN
     expect(fetchMock).toHaveBeenCalledTimes(1)
