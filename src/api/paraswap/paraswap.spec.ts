@@ -120,7 +120,7 @@ describe('Get Quote', () => {
     // GIVEN
     // WHEN
     expect.assertions(1)
-    const price = await cowSdk.paraswapApi!.getQuote({ ...query, chainId: 1 })
+    const price = await cowSdk.paraswapApi.getQuote({ ...query, chainId: 1 })
 
     // THEN
     expect(price).toEqual(PRICE_QUOTE_RESPONSE)
@@ -131,7 +131,7 @@ describe('Get Quote', () => {
     // WHEN
     expect.assertions(1)
     // user forces TS to accept chain as valid
-    const promise = cowSdk.paraswapApi!.getQuote({ ...query, chainId: 2 as NetworkID })
+    const promise = cowSdk.paraswapApi.getQuote({ ...query, chainId: 2 as NetworkID })
 
     // THEN
     expect(promise).rejects.toThrow(new CowError("ParaswapApi isn't compatible with chainId " + 2))
@@ -141,7 +141,7 @@ describe('Get Quote', () => {
     // GIVEN
     // WHEN
     expect.assertions(1)
-    const price = await cowSdk.paraswapApi!.getQuoteAllNetworks(query)
+    const price = await cowSdk.paraswapApi.getQuoteAllNetworks(query)
 
     // THEN
     expect(price).toEqual(PRICE_QUOTE_RESPONSE)
@@ -151,7 +151,7 @@ describe('Get Quote', () => {
     // GIVEN
     // WHEN
     expect.assertions(1)
-    const price = await cowSdk.paraswapApi!.getQuoteCowNetworks({ ...query, chainId: 1 })
+    const price = await cowSdk.paraswapApi.getQuoteCowNetworks({ ...query, chainId: 1 })
 
     // THEN
     expect(price).toEqual(PRICE_QUOTE_RESPONSE)
@@ -173,7 +173,7 @@ describe('Error responses', () => {
 
     try {
       // WHEN
-      await cowSdk.paraswapApi!.getQuote(query)
+      await cowSdk.paraswapApi.getQuote(query)
     } catch (error) {
       // THEN
       expect(error).toEqual(
@@ -202,7 +202,7 @@ describe('Error responses', () => {
 
     try {
       // WHEN
-      await cowSdk.paraswapApi!.getQuote(query)
+      await cowSdk.paraswapApi.getQuote(query)
     } catch (error) {
       // THEN
       expect(error).toEqual(
@@ -222,23 +222,23 @@ describe('Changing class options', () => {
   test('RETURNS correct apiUrl after changing it', async () => {
     // GIVEN
     // WHEN - we fetch a quote passing in excludedSources as the RateOptions
-    cowSdk.paraswapApi!.updateOptions({ apiUrl: 'https://apiv6.paraswap.io' })
+    cowSdk.paraswapApi.updateOptions({ apiUrl: 'https://apiv6.paraswap.io' })
 
     // THEN
-    expect(cowSdk.paraswapApi!.apiUrl).toEqual('https://apiv6.paraswap.io')
+    expect(cowSdk.paraswapApi.apiUrl).toEqual('https://apiv6.paraswap.io')
   })
   test('RETURNS empty rateOptions object when passing null', async () => {
     // GIVEN
     // WHEN - we fetch a quote passing in excludedSources as the RateOptions
-    cowSdk.paraswapApi!.updateOptions({ rateOptions: null })
+    cowSdk.paraswapApi.updateOptions({ rateOptions: null })
 
     // THEN
-    expect(cowSdk.paraswapApi!.rateOptions).toEqual({})
+    expect(cowSdk.paraswapApi.rateOptions).toEqual({})
   })
   test('RETURNS updated rateOptions object', async () => {
     // GIVEN
     // WHEN - we fetch a quote passing in excludedSources as the RateOptions
-    cowSdk.paraswapApi!.updateOptions({
+    cowSdk.paraswapApi.updateOptions({
       rateOptions: {
         excludePools: 'UniswapV2',
         excludeDEXS: 'CowSwap',
@@ -246,7 +246,7 @@ describe('Changing class options', () => {
     })
 
     // THEN
-    expect(cowSdk.paraswapApi!.rateOptions).toEqual({
+    expect(cowSdk.paraswapApi.rateOptions).toEqual({
       excludePools: 'UniswapV2',
       // T_T - don't do this!
       excludeDEXS: 'CowSwap',
