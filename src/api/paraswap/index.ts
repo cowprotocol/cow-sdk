@@ -1,9 +1,8 @@
 import { OrderKind } from '@cowprotocol/contracts'
-import { debug, error, warn } from 'loglevel'
+import { debug, error } from 'loglevel'
 import { ParaSwap, SwapSide } from 'paraswap'
 import { OptimalRate } from 'paraswap-core'
 import { NetworkID, RateOptions } from 'paraswap/build/types'
-import { SupportedChainId } from '../../constants/chains'
 import { CowError } from '../../utils/common'
 import { getTokensFromMarket } from '../../utils/market'
 import {
@@ -17,8 +16,6 @@ import {
 import { ParaswapCowswapNetworkID, ParaswapLibMap, ParaswapPriceQuoteParams, QuoteOptions } from './types'
 import { getParaswapChainId, getValidParams, handleResponse } from './utils'
 
-const ALL_SUPPORTED_CHAIN_IDS = [SupportedChainId.MAINNET]
-
 export default class ParaswapApi {
   name: string
   #libMap: ParaswapLibMap = LIB
@@ -31,15 +28,15 @@ export default class ParaswapApi {
     this.#rateOptions = DEFAULT_RATE_OPTIONS
   }
 
-  public async getQuote(
+  async getQuote(
     params: ParaswapPriceQuoteParams & { chainId: NetworkID },
     options?: Omit<QuoteOptions<true>, 'chainId'>
   ): Promise<OptimalRate | null>
-  public async getQuote(
+  async getQuote(
     params: ParaswapPriceQuoteParams & { chainId: ParaswapCowswapNetworkID },
     options?: Omit<QuoteOptions<false>, 'chainId'>
   ): Promise<OptimalRate | null>
-  public async getQuote(
+  async getQuote(
     params: ParaswapPriceQuoteParams,
     options: Omit<QuoteOptions<boolean>, 'chainId'> = { allowParaswapNetworks: false }
   ): Promise<OptimalRate | null> {
@@ -48,8 +45,14 @@ export default class ParaswapApi {
       params.chainId,
       params
     )
+    const requireCowCompatibleChain = !options?.allowParaswapNetworks
+    const isCowCompatibleChain = !!getParaswapChainId(chainId)
+    // Api expect cow/paraswap compatible chainId, check that passed chainId abides
+    if (requireCowCompatibleChain && !isCowCompatibleChain) {
+      throw new CowError("ParaswapApi isn't compatible with chainId " + chainId)
+    }
 
-    const paraSwap = this.#getLib(chainId, options?.apiUrl || this.#apiUrl)
+    const paraSwap = this.#getLib(chainId)
     if (!paraSwap) throw new CowError("ParaswapApi isn't compatible with chainId " + chainId)
 
     // Buy/sell token and side (sell/buy)
@@ -91,6 +94,19 @@ export default class ParaswapApi {
     return handleResponse(rateResult)
   }
 
+  /**
+   * Syntactic sugar for calling getQuote explicitly requiring Paraswap/CoW compatible chains
+   */
+  public async getQuoteCowNetworks(
+    params: ParaswapPriceQuoteParams & { chainId: ParaswapCowswapNetworkID },
+    options?: Omit<QuoteOptions<true>, 'chainId' | 'allowParaswapNetworks'>
+  ) {
+    return this.getQuote(params, { ...options, allowParaswapNetworks: false })
+  }
+
+  /**
+   * Syntactic sugar for calling getQuote explicitly allowing all Paraswap chains
+   */
   public async getQuoteAllNetworks(
     params: ParaswapPriceQuoteParams & { chainId: NetworkID },
     options?: Omit<QuoteOptions<true>, 'chainId' | 'allowParaswapNetworks'>
@@ -123,26 +139,7 @@ export default class ParaswapApi {
   }
 
   /* ----- PRIVATE ----- */
-  #getLib(chainId: NetworkID, apiUrl: string): ParaSwap | null {
-    let paraSwap = this.#libMap.get(chainId)
-    if (!paraSwap) {
-      // get paraswap/cow's overlapping supported chains
-      const networkId = getParaswapChainId(chainId)
-      if (networkId == null) {
-        warn(
-          LOG_PREFIX,
-          '- Unsupported network passed as quote fetch parameter. You passed:',
-          chainId,
-          ' Supported networks:',
-          ALL_SUPPORTED_CHAIN_IDS.join(',')
-        )
-        // Unsupported network
-        return null
-      }
-      paraSwap = new ParaSwap(networkId, apiUrl)
-      this.#libMap.set(chainId, paraSwap)
-    }
-
-    return paraSwap
+  #getLib(chainId: NetworkID): ParaSwap | null {
+    return this.#libMap.get(chainId) ?? null
   }
 }
