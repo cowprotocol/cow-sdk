@@ -1,30 +1,15 @@
 import { Signer } from 'ethers'
-import log, { LogLevelDesc } from 'loglevel'
+import log from 'loglevel'
 import { CowError } from './utils/common'
 import { CowApi, CowSubgraphApi, MetadataApi } from './api'
-import { SupportedChainId as ChainId, SupportedChainId } from './constants/chains'
+import { SupportedChainId as ChainId } from './constants/chains'
 import { Context, CowContext } from './utils/context'
 import { signOrder, signOrderCancellation, UnsignedOrder } from './utils/sign'
 import { ZeroXApi } from './api/0x'
-import { ZeroXOptions } from './api/0x/types'
 import ParaswapApi from './api/paraswap'
-import { ParaswapOptions } from './api/paraswap/types'
-import { WithEnabled } from './types'
-
-type Options = {
-  loglevel?: LogLevelDesc
-  zeroXOptions?: Partial<ZeroXOptions & WithEnabled>
-  paraswapOptions?: Partial<ParaswapOptions> & WithEnabled
-}
-
-type OptionsWithZeroXEnabled = Options & { zeroXOptions: { enabled: true } }
-type ZeroXEnabled<Opt> = ExtendsObject<Opt, OptionsWithZeroXEnabled, ZeroXApi, undefined>
-
-type OptionsWithParaswapEnabled = Options & { paraswapOptions: { enabled: true } }
-type ParaswapEnabled<Opt> = ExtendsObject<Opt, OptionsWithParaswapEnabled, ParaswapApi, undefined>
-
-type ExtendsObject<ExtendingObject, ExtendableObject, ResultingType, FallbackType> =
-  ExtendingObject extends ExtendableObject ? ResultingType : FallbackType
+// types
+import { Options, OptionsWithParaswapEnabled, OptionsWithZeroXEnabled, ParaswapEnabled, ZeroXEnabled } from 'sdk'
+import { ExtendsObject } from 'utilities'
 
 interface ICowSdk<Opt extends Options> {
   context: Context
@@ -34,7 +19,7 @@ interface ICowSdk<Opt extends Options> {
   zeroXApi: ZeroXEnabled<Opt>
   paraswapApi: ParaswapEnabled<Opt>
 }
-export class CowSdk<T extends ChainId, Opt extends Options> implements ICowSdk<Opt> {
+export class CowSdk<T extends ChainId = ChainId, Opt extends Options = Options> implements ICowSdk<Opt> {
   context
   cowApi
   metadataApi
@@ -42,7 +27,7 @@ export class CowSdk<T extends ChainId, Opt extends Options> implements ICowSdk<O
   zeroXApi: ExtendsObject<Opt, OptionsWithZeroXEnabled, ZeroXApi, undefined>
   paraswapApi: ExtendsObject<Opt, OptionsWithParaswapEnabled, ParaswapApi, undefined>
 
-  constructor(chainId: T = SupportedChainId.MAINNET as T, cowContext: CowContext = {}, options: Options = {}) {
+  constructor(chainId: T = ChainId.MAINNET as T, cowContext: CowContext = {}, options: Options = {}) {
     const zeroXEnabled = options?.zeroXOptions?.enabled ?? false
     const paraswapEnabled = options?.paraswapOptions?.enabled ?? false
 
