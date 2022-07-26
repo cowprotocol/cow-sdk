@@ -17,13 +17,24 @@ type Options = {
   paraswapOptions?: Partial<ParaswapOptions> & WithEnabled
 }
 
-export class CowSdk<T extends ChainId> {
+type ZeroXEnabled = Options & { zeroXOptions: { enabled: true } }
+type ParaswapEnabled = Options & { paraswapOptions: { enabled: true } }
+
+interface ICowSdk<Opt extends Options> {
   context: Context
   cowApi: CowApi
   metadataApi: MetadataApi
   cowSubgraphApi: CowSubgraphApi
-  zeroXApi?: ZeroXApi
-  paraswapApi?: ParaswapApi
+  zeroXApi: Opt extends ZeroXEnabled ? ZeroXApi : undefined
+  paraswapApi: Opt extends ParaswapEnabled ? ParaswapApi : undefined
+}
+export class CowSdk<T extends ChainId, Opt extends Options> implements ICowSdk<Opt> {
+  context
+  cowApi
+  metadataApi
+  cowSubgraphApi
+  zeroXApi: Opt extends ZeroXEnabled ? ZeroXApi : undefined
+  paraswapApi: Opt extends ParaswapEnabled ? ParaswapApi : undefined
 
   constructor(chainId: T = SupportedChainId.MAINNET as T, cowContext: CowContext = {}, options: Options = {}) {
     const zeroXEnabled = options?.zeroXOptions?.enabled ?? false
@@ -34,8 +45,12 @@ export class CowSdk<T extends ChainId> {
     this.cowSubgraphApi = new CowSubgraphApi(this.context)
     this.metadataApi = new MetadataApi(this.context)
 
-    this.zeroXApi = zeroXEnabled ? new ZeroXApi(chainId, options.zeroXOptions) : undefined
-    this.paraswapApi = paraswapEnabled ? new ParaswapApi(options.paraswapOptions) : undefined
+    this.zeroXApi = (zeroXEnabled ? new ZeroXApi(chainId, options.zeroXOptions) : undefined) as Opt extends ZeroXEnabled
+      ? ZeroXApi
+      : undefined
+    this.paraswapApi = (
+      paraswapEnabled ? new ParaswapApi(options.paraswapOptions) : undefined
+    ) as Opt extends ParaswapEnabled ? ParaswapApi : undefined
 
     log.setLevel(options.loglevel || 'ERROR')
   }
