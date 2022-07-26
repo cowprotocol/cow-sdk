@@ -12,18 +12,18 @@ const HTTP_STATUS_INTERNAL_ERROR = 500
 const DEFAULT_APP_DATA_DOC = {
   version: '0.4.0',
   appCode: 'CowSwap',
-  environment: 'test',
   metadata: {},
 }
 
-const IPFS_HASH = 'QmRoosA9VFaZVPxBk9k9jhPGGmCAcLMeDP8L2Dd2RbjNv2'
-const APP_DATA_HEX = '0x3388186d8f802360e78ee4d57d489678a01c3ce922b1e0078eeb45c8f084b7e7'
+const IPFS_HASH = 'QmPvZL3KURfFR1ePyAk3sWxK86rgqNmcrGK3zyYyQMJUhW'
+const APP_DATA_HEX = '0x178b59ca7634e30a9b85867dd1c565e625d5920a7ecfbe31304e93406daa2cc1'
 
 const PINATA_API_KEY = 'apikey'
 const PINATA_API_SECRET = 'apiSecret'
 
 const CUSTOM_APP_DATA_DOC = {
   ...DEFAULT_APP_DATA_DOC,
+  environment: 'test',
   metadata: {
     referrer: {
       address: '0x1f5B740436Fc5935622e92aa3b46818906F416E9',
@@ -49,14 +49,15 @@ describe('generateAppDataDoc', () => {
     // when
     const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({})
     // then
-    expect(appDataDoc.version).toEqual(DEFAULT_APP_DATA_DOC.version)
-    expect(appDataDoc.appCode).toEqual(DEFAULT_APP_DATA_DOC.appCode)
-    expect(appDataDoc.metadata).toEqual(DEFAULT_APP_DATA_DOC.metadata)
+    expect(appDataDoc).toEqual(DEFAULT_APP_DATA_DOC)
   })
 
   test('Creates appDataDoc with custom metadata ', () => {
     // given
     const params = {
+      appDataParams: {
+        environment: CUSTOM_APP_DATA_DOC.environment,
+      },
       metadataParams: {
         referrerParams: CUSTOM_APP_DATA_DOC.metadata.referrer,
         quoteParams: CUSTOM_APP_DATA_DOC.metadata.quote,
@@ -65,10 +66,7 @@ describe('generateAppDataDoc', () => {
     // when
     const appDataDoc = cowSdk.metadataApi.generateAppDataDoc(params)
     // then
-    expect(appDataDoc.metadata.referrer?.address).toEqual(CUSTOM_APP_DATA_DOC.metadata.referrer.address)
-    expect(appDataDoc.metadata.referrer?.version).toEqual(CUSTOM_APP_DATA_DOC.metadata.referrer.version)
-    expect(appDataDoc.metadata.quote?.slippageBips).toEqual(CUSTOM_APP_DATA_DOC.metadata.quote.slippageBips)
-    expect(appDataDoc.metadata.quote?.version).toEqual(CUSTOM_APP_DATA_DOC.metadata.quote.version)
+    expect(appDataDoc).toEqual(CUSTOM_APP_DATA_DOC)
   })
 })
 
@@ -133,10 +131,7 @@ describe('decodeAppData', () => {
     // then
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(`${DEFAULT_IPFS_READ_URI}/${IPFS_HASH}`)
-    expect(appDataDoc?.version).toEqual(CUSTOM_APP_DATA_DOC.version)
-    expect(appDataDoc?.appCode).toEqual(CUSTOM_APP_DATA_DOC.appCode)
-    expect(appDataDoc?.metadata.referrer?.address).toEqual(CUSTOM_APP_DATA_DOC.metadata.referrer.address)
-    expect(appDataDoc?.metadata.referrer?.version).toEqual(CUSTOM_APP_DATA_DOC.metadata.referrer.version)
+    expect(appDataDoc).toEqual(CUSTOM_APP_DATA_DOC)
   })
 
   test('Throws with wrong hash format', async () => {
