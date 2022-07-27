@@ -2,7 +2,7 @@ import { OrderKind } from '@cowprotocol/contracts'
 import log from 'loglevel'
 import { SupportedChainId } from '../../constants/chains'
 import { objectToQueryString, CowError } from '../../utils/common'
-import { PriceInformation, PriceQuoteParams } from '../cow/types'
+import { PriceInformation, PriceQuoteLegacyParams } from '../cow/types'
 import ZeroXError, { ZeroXErrorResponse, logPrefix } from './error'
 import { MatchaOptions, MatchaPriceQuote } from './types'
 
@@ -54,7 +54,7 @@ export function optionsToMatchaParamsUrl({
   return objectToQueryString({ excludedSources: excludedSourceString, affiliateAddress })
 }
 
-export async function handleQuoteResponse<T = unknown, P extends PriceQuoteParams = PriceQuoteParams>(
+export async function handleQuoteResponse<T = unknown, P extends PriceQuoteLegacyParams = PriceQuoteLegacyParams>(
   response: Response,
   params?: P
 ): Promise<T> {

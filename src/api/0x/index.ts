@@ -9,7 +9,7 @@ import { toErc20Address } from '../../utils/tokens'
 
 import BaseApi from '../base'
 
-import { Options, PriceQuoteParams } from '../cow/types'
+import { Options, PriceQuoteLegacyParams } from '../cow/types'
 import { logPrefix } from './error'
 import { ERC20BridgeSource, MatchaOptions, MatchaPriceQuote } from './types'
 import {
@@ -47,7 +47,7 @@ export class ZeroXApi extends BaseApi {
     })
   }
 
-  async getQuote(params: PriceQuoteParams, options: Options = {}): Promise<MatchaPriceQuote | null> {
+  async getQuote(params: PriceQuoteLegacyParams, options: Options = {}): Promise<MatchaPriceQuote | null> {
     const { amount, baseToken, quoteToken, kind } = params
     const { chainId: customChainId, env = this.context.env } = options
     const chainId = customChainId || (await this.context.chainId)

@@ -1,7 +1,7 @@
 import { ParaSwap } from 'paraswap'
 import { NetworkID, RateOptions } from 'paraswap/build/types'
 import { SupportedChainId } from '../../constants/chains'
-import { PriceQuoteParams } from '../cow/types'
+import { PriceQuoteLegacyParams } from '../cow/types'
 
 export type ParaswapLibMap = Map<NetworkID, ParaSwap>
 export type QuoteOptions<T extends boolean> = {
@@ -11,7 +11,7 @@ export type QuoteOptions<T extends boolean> = {
   // bypasses null return when passed non-cow compatible chainId
   allowParaswapNetworks?: T
 }
-export type ParaswapPriceQuoteParams = Omit<PriceQuoteParams, 'validTo'> & {
+export type ParaswapPriceQuoteParams = Omit<PriceQuoteLegacyParams, 'validTo'> & {
   fromDecimals: number
   toDecimals: number
 } & { chainId: ParaswapCowswapNetworkID | NetworkID }

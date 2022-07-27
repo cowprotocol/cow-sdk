@@ -3,7 +3,7 @@ import { enableFetchMocks } from 'jest-fetch-mock'
 import ZeroXError from '.'
 import { SupportedChainId } from '../../../constants/chains'
 import CowSdk from '../../../CowSdk'
-import { PriceQuoteParams } from '../../cow/types'
+import { PriceQuoteLegacyParams } from '../../cow/types'
 
 enableFetchMocks()
 
@@ -16,7 +16,7 @@ const query = {
   quoteToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
   amount: '1234567890',
   kind: OrderKind.BUY,
-} as PriceQuoteParams
+} as PriceQuoteLegacyParams
 
 describe('0x Error handling', () => {
   beforeEach(() => {
