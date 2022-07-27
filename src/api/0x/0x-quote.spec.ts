@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { OrderKind } from '@cowprotocol/contracts'
 import { PriceQuoteLegacyParams } from '../cow/types'

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { OrderKind } from '@cowprotocol/contracts'
 import { SupportedChainId } from '../../constants/chains'
 import CowSdk from '../../CowSdk'
@@ -251,5 +250,5 @@ describe('Changing class options', () => {
       // T_T - don't do this!
       excludeDEXS: 'CowSwap',
     })
-  })!
+  })
 })
