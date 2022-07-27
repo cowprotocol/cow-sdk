@@ -8,7 +8,14 @@ import { signOrder, signOrderCancellation, UnsignedOrder } from './utils/sign'
 import { ZeroXApi } from './api/0x'
 import ParaswapApi from './api/paraswap'
 // types
-import { Options, OptionsWithParaswapEnabled, OptionsWithZeroXEnabled, ParaswapEnabled, ZeroXEnabled } from 'sdk'
+import {
+  Options,
+  OptionsWithApisEnabledStatus,
+  OptionsWithParaswapEnabled,
+  OptionsWithZeroXEnabled,
+  ParaswapEnabled,
+  ZeroXEnabled,
+} from 'sdk'
 import { ExtendsObject } from 'utilities'
 
 interface ICowSdk<Opt extends Options> {
@@ -19,7 +26,9 @@ interface ICowSdk<Opt extends Options> {
   zeroXApi: ZeroXEnabled<Opt>
   paraswapApi: ParaswapEnabled<Opt>
 }
-export class CowSdk<T extends ChainId = ChainId, Opt extends Options = Options> implements ICowSdk<Opt> {
+export class CowSdk<T extends ChainId = ChainId, Opt extends Options = OptionsWithApisEnabledStatus>
+  implements ICowSdk<Opt>
+{
   context
   cowApi
   metadataApi
