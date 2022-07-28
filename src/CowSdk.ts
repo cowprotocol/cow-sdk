@@ -26,8 +26,8 @@ export class CowSdk<T extends ChainId> {
   paraswapApi?: ParaswapApi
 
   constructor(chainId: T = SupportedChainId.MAINNET as T, cowContext: CowContext = {}, options: Options = {}) {
-    const zeroXEnabled = !!options?.zeroXOptions?.enabled
-    const paraswapEnabled = !!options?.paraswapOptions?.enabled
+    const zeroXEnabled = options?.zeroXOptions?.enabled ?? false
+    const paraswapEnabled = options?.paraswapOptions?.enabled ?? false
 
     this.context = new Context(chainId, { ...cowContext })
     this.cowApi = new CowApi(this.context)
