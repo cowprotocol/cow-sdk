@@ -8,35 +8,17 @@ import { signOrder, signOrderCancellation, UnsignedOrder } from './utils/sign'
 import { ZeroXApi } from './api/0x'
 import ParaswapApi from './api/paraswap'
 // types
-import {
-  Options,
-  OptionsWithApisEnabledStatus,
-  OptionsWithParaswapEnabled,
-  OptionsWithZeroXEnabled,
-  ParaswapEnabled,
-  ZeroXEnabled,
-} from 'sdk'
-import { ExtendsObject } from 'utilities'
+import { Options, ParaswapEnabled, ZeroXEnabled } from 'sdk'
 
-interface ICowSdk<Opt extends Options> {
+export class CowSdk<T extends ChainId, Opt extends Options> {
   context: Context
   cowApi: CowApi
   metadataApi: MetadataApi
   cowSubgraphApi: CowSubgraphApi
   zeroXApi: ZeroXEnabled<Opt>
   paraswapApi: ParaswapEnabled<Opt>
-}
-export class CowSdk<T extends ChainId = ChainId, Opt extends Options = OptionsWithApisEnabledStatus>
-  implements ICowSdk<Opt>
-{
-  context
-  cowApi
-  metadataApi
-  cowSubgraphApi
-  zeroXApi: ExtendsObject<Opt, OptionsWithZeroXEnabled, ZeroXApi, undefined>
-  paraswapApi: ExtendsObject<Opt, OptionsWithParaswapEnabled, ParaswapApi, undefined>
 
-  constructor(chainId: T = ChainId.MAINNET as T, cowContext: CowContext = {}, options: Options = {}) {
+  constructor(chainId: T = ChainId.MAINNET as T, cowContext: CowContext = {}, options: Opt = {} as Opt) {
     const zeroXEnabled = options?.zeroXOptions?.enabled ?? false
     const paraswapEnabled = options?.paraswapOptions?.enabled ?? false
 
