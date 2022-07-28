@@ -33,11 +33,14 @@
     "graphql-request": "^4.1.0",
     "ipfs-only-hash": "^4.0.0",
     "loglevel": "^1.8.0",
-    "multiformats": "^9.6.4"
+    "multiformats": "^9.6.4",
+    "paraswap": "^5.2.0",
+    "paraswap-core": "^1.0.2"
   },
   "devDependencies": {
-    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.16.7",
-    "@babel/preset-typescript": "^7.16.0",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.18.6",
+    "@babel/plugin-proposal-private-methods": "^7.18.6",
+    "@babel/preset-typescript": "^7.18.6",
     "@graphql-codegen/cli": "2.6.2",
     "@graphql-codegen/typescript": "2.4.8",
     "@graphql-codegen/typescript-operations": "^2.3.5",

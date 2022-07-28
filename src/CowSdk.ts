@@ -7,6 +7,7 @@ import { Context, CowContext } from './utils/context'
 import { signOrder, signOrderCancellation, UnsignedOrder } from './utils/sign'
 import { ZeroXApi } from './api/0x'
 import { MatchaOptions } from './api/0x/types'
+import ParaswapApi from './api/paraswap'
 
 type Options = {
   loglevel?: LogLevelDesc
@@ -19,6 +20,7 @@ export class CowSdk<T extends ChainId> {
   metadataApi: MetadataApi
   cowSubgraphApi: CowSubgraphApi
   zeroXApi: ZeroXApi
+  paraswapApi: ParaswapApi
 
   constructor(chainId: T = SupportedChainId.MAINNET as T, cowContext: CowContext = {}, options: Options = {}) {
     this.context = new Context(chainId, { ...cowContext })
@@ -26,7 +28,8 @@ export class CowSdk<T extends ChainId> {
     this.cowSubgraphApi = new CowSubgraphApi(this.context)
     this.metadataApi = new MetadataApi(this.context)
     this.zeroXApi = new ZeroXApi(chainId, options.matchaOptions)
-    log.setLevel(options.loglevel || 'error')
+    this.paraswapApi = new ParaswapApi()
+    log.setLevel(options.loglevel || 'ERROR')
   }
 
   updateChainId = (chainId: ChainId) => {

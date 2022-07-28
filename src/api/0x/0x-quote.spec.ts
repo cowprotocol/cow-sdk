@@ -1,6 +1,6 @@
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { OrderKind } from '@cowprotocol/contracts'
-import { PriceQuoteParams } from '../cow/types'
+import { PriceQuoteLegacyParams } from '../cow/types'
 import { SupportedChainId } from '../../constants/chains'
 import CowSdk from '../../CowSdk'
 import { ERC20BridgeSource } from './types'
@@ -59,7 +59,7 @@ const query = {
   quoteToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
   amount: '1234567890',
   kind: OrderKind.BUY,
-} as PriceQuoteParams
+} as PriceQuoteLegacyParams
 
 describe('Get Quote', () => {
   test('Returns price quote using default options', async () => {
