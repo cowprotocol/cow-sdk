@@ -8,9 +8,9 @@ import { signOrder, signOrderCancellation, UnsignedOrder } from './utils/sign'
 import { ZeroXApi } from './api/0x'
 import ParaswapApi from './api/paraswap'
 // types
-import { Options, ParaswapEnabled, ZeroXEnabled } from 'sdk'
+import { SdkOptions, ParaswapEnabled, ZeroXEnabled } from 'sdk'
 
-export class CowSdk<T extends ChainId, Opt extends Options> {
+export class CowSdk<T extends ChainId, Opt extends SdkOptions> {
   context: Context
   cowApi: CowApi
   metadataApi: MetadataApi

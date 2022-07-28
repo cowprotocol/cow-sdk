@@ -8,18 +8,18 @@ import { ZeroXOptions } from '../api/0x/types'
 import ParaswapApi from '../api/paraswap'
 import { ParaswapOptions } from '../api/paraswap/types'
 
-export type Options = {
+export type SdkOptions = {
   loglevel?: LogLevelDesc
   zeroXOptions?: Partial<ZeroXOptions & WithEnabled>
   paraswapOptions?: Partial<ParaswapOptions> & WithEnabled
 }
-export type OptionsWithZeroXEnabled = Options & { zeroXOptions: Partial<ZeroXOptions> & { enabled: true } }
-export type ZeroXEnabled<Opt> = ExtendsObject<Opt, OptionsWithZeroXEnabled, ZeroXApi, undefined>
+export type OptionsWithZeroXEnabled = SdkOptions & { zeroXOptions: Partial<ZeroXOptions> & { enabled: true } }
+export type OptionsWithParaswapEnabled = SdkOptions & { paraswapOptions: Partial<ParaswapOptions> & { enabled: true } }
 
-export type OptionsWithParaswapEnabled = Options & { paraswapOptions: Partial<ParaswapOptions> & { enabled: true } }
+export type ZeroXEnabled<Opt> = ExtendsObject<Opt, OptionsWithZeroXEnabled, ZeroXApi, undefined>
 export type ParaswapEnabled<Opt> = ExtendsObject<Opt, OptionsWithParaswapEnabled, ParaswapApi, undefined>
 
-export type OptionsWithApisEnabledStatus = Options &
+export type OptionsWithApisEnabledStatus = SdkOptions &
   (
     | {
         paraswapOptions: Partial<ParaswapOptions> & { enabled: true }
