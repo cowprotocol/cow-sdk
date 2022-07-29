@@ -10,7 +10,7 @@ import { ParaswapOptions } from '../api/paraswap/types'
 
 export type SdkOptions = {
   loglevel?: LogLevelDesc
-  zeroXOptions?: Partial<ZeroXOptions & WithEnabled>
+  zeroXOptions?: Partial<ZeroXOptions> & WithEnabled
   paraswapOptions?: Partial<ParaswapOptions> & WithEnabled
 }
 export type OptionsWithZeroXEnabled = SdkOptions & { zeroXOptions: Partial<ZeroXOptions> & { enabled: true } }

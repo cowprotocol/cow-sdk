@@ -7,5 +7,5 @@ export class Token {
 }
 
 export type WithEnabled = {
-  enabled?: boolean
+  enabled: boolean
 }
