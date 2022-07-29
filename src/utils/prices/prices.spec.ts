@@ -3,21 +3,18 @@ import { ethers } from 'ethers'
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { CowSdk } from '../../CowSdk'
 import { OrderKind } from '@cowprotocol/contracts'
-import { PriceQuoteLegacyParams } from '../../types'
 import { SupportedChainId } from '../../constants/chains'
 import { OptimalRate, SwapSide } from 'paraswap-core'
-import { ParaswapPriceQuoteParams } from '../../api/paraswap/types'
-import { getAllPricesLegacy } from '.'
+import { getAllPricesLegacy, getBestPriceLegacy } from '.'
 
 /**
  * MOCK fetch calls
  * MOCK paraswap lib
  */
 enableFetchMocks()
+// mock the entire library (found in top level __mocks__ > paraswap.js)
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const paraswap = require('paraswap')
-// mock the entire library (found in top level __mocks__ > paraswap.js)
-jest.mock('paraswap')
 
 const signer = ethers.Wallet.createRandom()
 
@@ -30,26 +27,6 @@ const GOOD_SERVER_RESPONSE = {
   status: HTTP_STATUS_OK,
   headers: HEADERS,
 }
-// 400 error server response with good headers
-const FOUR_HUNDRED_SERVER_RESPONSE = {
-  status: 400,
-  headers: HEADERS,
-}
-
-/* const PARTIAL_ORDER = {
-  sellToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-  buyToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-  receiver: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-  sellAmount: '1234567890',
-  buyAmount: '1234567890',
-  validTo: 0,
-  appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
-  partiallyFillable: true,
-  sellTokenBalance: 'erc20',
-  buyTokenBalance: 'erc20',
-  from: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-  kind: 'buy',
-} */
 
 const FETCH_RESPONSE_PARAMETERS = {
   body: undefined,
@@ -60,19 +37,12 @@ const FETCH_RESPONSE_PARAMETERS = {
 }
 
 const COW_PRICE_QUOTE_RESPONSE = {
-  amount: '1234567890',
+  amount: '500',
   token: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+  quoteId: undefined,
 }
 
-/* const COW_QUOTE_REQUEST = {
-  ...PARTIAL_ORDER,
-  priceQuality: 'fast',
-  sellAmountBeforeFee: '1234567890',
-  amount: '1234567890',
-  userAddress: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-} */
-
-const PARASWAP_PRICE_QUOTE_RESPONSE: OptimalRate = {
+const PARASWAP_PRICE_QUOTE_RESPONSE: Omit<OptimalRate, 'side'> = {
   blockNumber: 99999999,
   network: 1,
   srcToken: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
@@ -142,7 +112,6 @@ const PARASWAP_PRICE_QUOTE_RESPONSE: OptimalRate = {
   ],
   gasCostUSD: '10',
   gasCost: '111111',
-  side: SwapSide.SELL,
   tokenTransferProxy: '0x3e7d31751347BAacf35945074a4a4A41581B2271',
   contractAddress: '0x485D2446711E141D2C8a94bC24BeaA5d5A110D74',
   contractMethod: 'swapOnUniswap',
@@ -155,7 +124,6 @@ const PARASWAP_PRICE_QUOTE_RESPONSE: OptimalRate = {
 }
 
 const ZEROX_PRICE_QUOTE_RESPONSE = {
-  chainId: 1,
   price: '0.123456789101112',
   estimatedPriceImpact: '0',
   value: '0',
@@ -166,8 +134,8 @@ const ZEROX_PRICE_QUOTE_RESPONSE = {
   minimumProtocolFee: '0',
   buyTokenAddress: '0x6810e776880c02933d47db1b9fc05908e5386b96',
   buyAmount: '1234567890',
-  sellTokenAddress: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
   sellAmount: '123456789',
+  sellTokenAddress: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
   sources: [
     {
       name: 'Uniswap',
@@ -179,37 +147,7 @@ const ZEROX_PRICE_QUOTE_RESPONSE = {
   buyTokenToEthRate: '10',
 }
 
-const PARASWAP_QUERY = {
-  fromDecimals: 18,
-  toDecimals: 18,
-  baseToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-  quoteToken: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-  amount: '1000000000000000000',
-  kind: OrderKind.SELL,
-  chainId: 1,
-} as ParaswapPriceQuoteParams
-
-const COW_QUOTE_RESPONSE = {
-  quote: {
-    kind: 'buy',
-    sellToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-    buyToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-    receiver: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-    sellAmount: '1234567890',
-    buyAmount: '1234567890',
-    validTo: 0,
-    appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
-    feeAmount: '1234567890',
-    partiallyFillable: false,
-    sellTokenBalance: 'erc20',
-    buyTokenBalance: 'erc20',
-  },
-  from: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-  expirationDate: '1985-03-10T18:35:18.814523Z',
-}
-
 beforeEach(() => {
-  // GIVEN
   fetchMock.resetMocks()
 })
 
@@ -217,26 +155,10 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
-test('getAllPricesLegacy returns CoW price and null for uninstantiated APIs', async () => {
+describe('getAllPricesLegacy', () => {
   // GIVEN
   const chainId = SupportedChainId.MAINNET
-  const cowSdk = new CowSdk(chainId, { signer }) // no additional APIs instantiated
-  // mocks cow/0x/para quote response
-  _mockApiResponses({
-    cow: {
-      response: {
-        amount: '123',
-        quoteId: undefined,
-        token: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-      },
-      responseOptions: GOOD_SERVER_RESPONSE,
-    },
-    para: { response: null, responseOptions: GOOD_SERVER_RESPONSE },
-    zrx: { response: null, responseOptions: GOOD_SERVER_RESPONSE },
-  })
-
-  // WHEN
-  const quote = await getAllPricesLegacy(cowSdk, {
+  const BUY_QUOTE_PARAMS = {
     chainId,
     fromDecimals: 18,
     toDecimals: 18,
@@ -245,46 +167,128 @@ test('getAllPricesLegacy returns CoW price and null for uninstantiated APIs', as
     amount: '1234567890',
     kind: OrderKind.BUY,
     validTo: Date.now() + 30000,
+  }
+  const ZRX_BUY_QUOTE_RESPONSE = { ...ZEROX_PRICE_QUOTE_RESPONSE, chainId }
+  const PARA_BUY_QUOTE_RESPONSE = { ...PARASWAP_PRICE_QUOTE_RESPONSE, side: SwapSide.BUY }
+
+  test('Returns CoW price and null for uninstantiated APIs', async () => {
+    const cowSdk = new CowSdk(chainId, { signer }) // no additional APIs instantiated
+    // mocks cow/0x/para quote response
+    _mockApiResponses({
+      cow: {
+        response: COW_PRICE_QUOTE_RESPONSE,
+        responseOptions: GOOD_SERVER_RESPONSE,
+      },
+      para: { response: null },
+      zrx: { response: null, responseOptions: GOOD_SERVER_RESPONSE },
+    })
+
+    // WHEN
+    const quote = await getAllPricesLegacy(cowSdk, BUY_QUOTE_PARAMS)
+
+    // THEN
+    expect(quote).toEqual({
+      cowQuoteResult: {
+        status: 'fulfilled',
+        value: COW_PRICE_QUOTE_RESPONSE,
+      },
+      paraswapQuoteResult: {
+        status: 'fulfilled',
+        value: null,
+      },
+      zeroXQuoteResult: {
+        status: 'fulfilled',
+        value: null,
+      },
+    })
   })
 
-  // THEN
-  expect(quote).toEqual({
-    cowQuoteResult: {
-      status: 'fulfilled',
-      value: { amount: '123', token: '0x6810e776880c02933d47db1b9fc05908e5386b96', quoteId: undefined },
-    },
-    paraswapQuoteResult: {
-      status: 'fulfilled',
-      value: null,
-    },
-    zeroXQuoteResult: {
-      status: 'fulfilled',
-      value: null,
-    },
+  test('Returns 2 quotes when 0x API is added on VALID chainId', async () => {
+    const cowSdk = new CowSdk(chainId, { signer }, { zeroXOptions: ENABLE_API }) // no additional APIs instantiated
+    // mocks cow/0x/para quote response
+    _mockApiResponses({
+      cow: {
+        response: COW_PRICE_QUOTE_RESPONSE,
+        responseOptions: GOOD_SERVER_RESPONSE,
+      },
+      para: { response: null },
+      zrx: { response: ZRX_BUY_QUOTE_RESPONSE, responseOptions: GOOD_SERVER_RESPONSE },
+    })
+
+    // WHEN
+    const quote = await getAllPricesLegacy(cowSdk, BUY_QUOTE_PARAMS)
+
+    // THEN
+    expect(quote).toEqual({
+      cowQuoteResult: {
+        status: 'fulfilled',
+        value: COW_PRICE_QUOTE_RESPONSE,
+      },
+      paraswapQuoteResult: {
+        status: 'fulfilled',
+        value: null,
+      },
+      zeroXQuoteResult: {
+        status: 'fulfilled',
+        value: ZRX_BUY_QUOTE_RESPONSE,
+      },
+    })
+  })
+
+  test('Returns 3 quotes when 0x and Para APIs are added on VALID chainId', async () => {
+    // GIVEN
+    // create SDK
+    const cowSdk = new CowSdk(
+      SupportedChainId.MAINNET,
+      { signer },
+      { paraswapOptions: ENABLE_API, zeroXOptions: ENABLE_API }
+    )
+    _mockApiResponses({
+      cow: {
+        response: COW_PRICE_QUOTE_RESPONSE,
+        responseOptions: GOOD_SERVER_RESPONSE,
+      },
+      para: { response: PARA_BUY_QUOTE_RESPONSE },
+      zrx: { response: ZRX_BUY_QUOTE_RESPONSE, responseOptions: GOOD_SERVER_RESPONSE },
+    })
+
+    // WHEN
+    const quote = await getAllPricesLegacy(cowSdk, BUY_QUOTE_PARAMS)
+
+    // THEN
+    // cow - call 1
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      'https://api.cow.fi/mainnet/api/v1/markets/0x6810e776880c02933d47db1b9fc05908e5386b96-0x6810e776880c02933d47db1b9fc05908e5386b96/buy/1234567890',
+      FETCH_RESPONSE_PARAMETERS
+    )
+    // zrx - call 2
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      'https://api.0x.org/swap/v1/price?sellToken=0x6810e776880c02933d47db1b9fc05908e5386b96&buyToken=0x6810e776880c02933d47db1b9fc05908e5386b96&buyAmount=1234567890&affiliateAddress=0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+      FETCH_RESPONSE_PARAMETERS
+    )
+
+    expect(quote).toEqual({
+      cowQuoteResult: {
+        status: 'fulfilled',
+        value: COW_PRICE_QUOTE_RESPONSE,
+      },
+      paraswapQuoteResult: {
+        status: 'fulfilled',
+        value: PARA_BUY_QUOTE_RESPONSE,
+      },
+      zeroXQuoteResult: {
+        status: 'fulfilled',
+        value: ZRX_BUY_QUOTE_RESPONSE,
+      },
+    })
   })
 })
 
-test('getAllPricesLegacy returns 2 quotes when 0x API is added on VALID chainId', async () => {
-  // GIVE
+describe('getBestPriceLegacy: BUY', () => {
   const chainId = SupportedChainId.MAINNET
-  // no additional APIs instantiated
-  const cowSdk = new CowSdk(chainId, { signer }, { zeroXOptions: ENABLE_API })
-  // mocks cow/0x/para quote response
-  _mockApiResponses({
-    cow: {
-      response: {
-        amount: '123',
-        quoteId: undefined,
-        token: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-      },
-      responseOptions: GOOD_SERVER_RESPONSE,
-    },
-    para: { response: null },
-    zrx: { response: ZEROX_PRICE_QUOTE_RESPONSE, responseOptions: GOOD_SERVER_RESPONSE },
-  })
-
-  // WHEN
-  const quote = await getAllPricesLegacy(cowSdk, {
+  const BUY_QUOTE_PARAMS = {
     chainId,
     fromDecimals: 18,
     toDecimals: 18,
@@ -293,104 +297,148 @@ test('getAllPricesLegacy returns 2 quotes when 0x API is added on VALID chainId'
     amount: '1234567890',
     kind: OrderKind.BUY,
     validTo: Date.now() + 30000,
+  }
+  const ZRX_BUY_QUOTE_RESPONSE = { ...ZEROX_PRICE_QUOTE_RESPONSE, chainId }
+  const PARA_BUY_QUOTE_RESPONSE = { ...PARASWAP_PRICE_QUOTE_RESPONSE, side: SwapSide.BUY }
+
+  test('Returns CoW price as winner when CoW is only API', async () => {
+    // GIVEN
+    const cowSdk = new CowSdk(chainId, { signer }) // no additional APIs instantiated
+    // mocks cow/0x/para quote response
+    _mockApiResponses({
+      cow: {
+        response: COW_PRICE_QUOTE_RESPONSE,
+        responseOptions: GOOD_SERVER_RESPONSE,
+      },
+      para: { response: null },
+      zrx: { response: null, responseOptions: GOOD_SERVER_RESPONSE },
+    })
+
+    // WHEN
+    const winningPrice = await getBestPriceLegacy(cowSdk, BUY_QUOTE_PARAMS)
+
+    // THEN
+    expect(winningPrice).toEqual({ token: '0x6810e776880c02933d47db1b9fc05908e5386b96', amount: '500' })
+  })
+  test('Returns CoW price as winner when CoW and 0x are active APIs', async () => {
+    // GIVEN
+    const cowSdk = new CowSdk(chainId, { signer }, { zeroXOptions: ENABLE_API })
+    // mocks cow/0x/para quote response
+    _mockApiResponses({
+      cow: {
+        response: COW_PRICE_QUOTE_RESPONSE,
+        responseOptions: GOOD_SERVER_RESPONSE,
+      },
+      para: { response: null },
+      zrx: { response: ZRX_BUY_QUOTE_RESPONSE, responseOptions: GOOD_SERVER_RESPONSE },
+    })
+
+    // WHEN
+    const winningPrice = await getBestPriceLegacy(cowSdk, BUY_QUOTE_PARAMS)
+
+    // THEN
+    expect(winningPrice).toEqual({ token: '0x6810e776880c02933d47db1b9fc05908e5386b96', amount: '500' })
   })
 
-  // THEN
-  expect(quote).toEqual({
-    cowQuoteResult: {
-      status: 'fulfilled',
-      value: { amount: '123', token: '0x6810e776880c02933d47db1b9fc05908e5386b96', quoteId: undefined },
-    },
-    paraswapQuoteResult: {
-      status: 'fulfilled',
-      value: null,
-    },
-    zeroXQuoteResult: {
-      status: 'fulfilled',
-      value: ZEROX_PRICE_QUOTE_RESPONSE,
-    },
+  test('Returns ParaSwap price as winner when CoW, ParaSwap and 0x are active APIs', async () => {
+    // GIVEN
+    const cowSdk = new CowSdk(chainId, { signer }, { zeroXOptions: ENABLE_API, paraswapOptions: ENABLE_API })
+    // mocks cow/0x/para quote response
+    _mockApiResponses({
+      cow: {
+        response: COW_PRICE_QUOTE_RESPONSE,
+        responseOptions: GOOD_SERVER_RESPONSE,
+      },
+      para: { response: { ...PARA_BUY_QUOTE_RESPONSE, srcAmount: '99' } },
+      zrx: { response: ZRX_BUY_QUOTE_RESPONSE, responseOptions: GOOD_SERVER_RESPONSE },
+    })
+
+    // WHEN
+    const winningPrice = await getBestPriceLegacy(cowSdk, BUY_QUOTE_PARAMS)
+
+    // THEN
+    expect(winningPrice).toEqual({ token: '0x6810e776880c02933d47db1b9fc05908e5386b96', amount: '99' })
   })
 })
 
-test('getAllPricesLegacy returns 3 quotes when 0x and Para APIs are added on VALID chainId', async () => {
-  // GIVEN
-  const cowSdk = new CowSdk(
-    SupportedChainId.MAINNET,
-    { signer },
-    { paraswapOptions: ENABLE_API, zeroXOptions: ENABLE_API }
-  )
-  _mockApiResponses({
-    cow: {
-      response: {
-        amount: '123',
-        quoteId: undefined,
-        token: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-      },
-      responseOptions: GOOD_SERVER_RESPONSE,
-    },
-    para: { response: PARASWAP_PRICE_QUOTE_RESPONSE },
-    zrx: { response: ZEROX_PRICE_QUOTE_RESPONSE, responseOptions: GOOD_SERVER_RESPONSE },
-  })
-
-  // WHEN
-  const quote = await getAllPricesLegacy(cowSdk, {
-    chainId: SupportedChainId.MAINNET,
+describe('getBestPriceLegacy: SELL', () => {
+  const chainId = SupportedChainId.MAINNET
+  const SELL_QUOTE_PARAMS = {
+    chainId,
     fromDecimals: 18,
     toDecimals: 18,
     baseToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
     quoteToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
     amount: '1234567890',
-    kind: OrderKind.BUY,
+    kind: OrderKind.SELL,
     validTo: Date.now() + 30000,
+  }
+  const ZRX_SELL_QUOTE_RESPONSE = { ...ZEROX_PRICE_QUOTE_RESPONSE, chainId }
+  const PARA_SELL_QUOTE_RESPONSE = { ...PARASWAP_PRICE_QUOTE_RESPONSE, side: SwapSide.SELL }
+
+  test('Returns CoW price as winner when CoW is only API', async () => {
+    // GIVEN
+    const cowSdk = new CowSdk(chainId, { signer }) // no additional APIs instantiated
+    // mocks cow/0x/para quote response
+    _mockApiResponses({
+      cow: {
+        response: COW_PRICE_QUOTE_RESPONSE,
+        responseOptions: GOOD_SERVER_RESPONSE,
+      },
+      para: { response: null },
+      zrx: { response: null, responseOptions: GOOD_SERVER_RESPONSE },
+    })
+
+    // WHEN
+    const winningPrice = await getBestPriceLegacy(cowSdk, SELL_QUOTE_PARAMS)
+
+    // THEN
+    expect(winningPrice).toEqual({ token: '0x6810e776880c02933d47db1b9fc05908e5386b96', amount: '500' })
+  })
+  test('Returns 0x price as winner when CoW and 0x are active APIs', async () => {
+    // GIVEN
+    const cowSdk = new CowSdk(chainId, { signer }, { zeroXOptions: ENABLE_API })
+    // mocks cow/0x/para quote response
+    _mockApiResponses({
+      cow: {
+        response: COW_PRICE_QUOTE_RESPONSE,
+        responseOptions: GOOD_SERVER_RESPONSE,
+      },
+      para: { response: null },
+      zrx: { response: ZRX_SELL_QUOTE_RESPONSE, responseOptions: GOOD_SERVER_RESPONSE },
+    })
+
+    // WHEN
+    const winningPrice = await getBestPriceLegacy(cowSdk, SELL_QUOTE_PARAMS)
+
+    // THEN
+    expect(winningPrice).toEqual({ token: '0x6810e776880c02933d47db1b9fc05908e5386b96', amount: '1234567890' })
   })
 
-  // THEN
-  // cow mock
-  expect(fetchMock).toHaveBeenNthCalledWith(
-    1,
-    'https://api.cow.fi/mainnet/api/v1/markets/0x6810e776880c02933d47db1b9fc05908e5386b96-0x6810e776880c02933d47db1b9fc05908e5386b96/buy/1234567890',
-    FETCH_RESPONSE_PARAMETERS
-  )
-  // zrx mock
-  expect(fetchMock).toHaveBeenNthCalledWith(
-    2,
-    'https://api.0x.org/swap/v1/price?sellToken=0x6810e776880c02933d47db1b9fc05908e5386b96&buyToken=0x6810e776880c02933d47db1b9fc05908e5386b96&buyAmount=1234567890&affiliateAddress=0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
-    FETCH_RESPONSE_PARAMETERS
-  )
+  test('Returns 0x price as winner when CoW, ParaSwap and 0x are active APIs', async () => {
+    // GIVEN
+    const cowSdk = new CowSdk(chainId, { signer }, { zeroXOptions: ENABLE_API, paraswapOptions: ENABLE_API })
+    // mocks cow/0x/para quote response
+    // GIVEN - sell quote winners are chosen from whomever has the HIGHEST price
+    _mockApiResponses({
+      cow: {
+        response: {
+          ...COW_PRICE_QUOTE_RESPONSE,
+          amount: '100',
+        },
+        responseOptions: GOOD_SERVER_RESPONSE,
+      },
+      para: { response: { ...PARA_SELL_QUOTE_RESPONSE, destAmount: '200' } },
+      zrx: { response: { ...ZRX_SELL_QUOTE_RESPONSE, buyAmount: '300' }, responseOptions: GOOD_SERVER_RESPONSE },
+    })
 
-  expect(quote).toEqual({
-    cowQuoteResult: {
-      status: 'fulfilled',
-      value: { amount: '123', token: '0x6810e776880c02933d47db1b9fc05908e5386b96', quoteId: undefined },
-    },
-    paraswapQuoteResult: {
-      status: 'fulfilled',
-      value: PARASWAP_PRICE_QUOTE_RESPONSE,
-    },
-    zeroXQuoteResult: {
-      status: 'fulfilled',
-      value: ZEROX_PRICE_QUOTE_RESPONSE,
-    },
+    // WHEN
+    const winningPrice = await getBestPriceLegacy(cowSdk, SELL_QUOTE_PARAMS)
+
+    // THEN
+    expect(winningPrice).toEqual({ token: '0x6810e776880c02933d47db1b9fc05908e5386b96', amount: '300' })
   })
 })
-
-/* function __createPromiseFulfilledValue<T>(value: T): PromiseFulfilledResult<T> {
-  return {
-    status: 'fulfilled',
-    value,
-  }
-}
-
-function __createPromiseRejectedWithValue<T>(
-  value: T,
-  reason: string
-): PromiseRejectedResult & { value: T | undefined } {
-  return {
-    status: 'rejected',
-    reason,
-    value,
-  }
-} */
 
 interface MockResponse<T> {
   response: T
@@ -402,12 +450,12 @@ function _mockApiResponses({
   zrx,
 }: {
   cow: MockResponse<any>
-  para: Omit<MockResponse<any>, 'responseOptions'>
-  zrx: MockResponse<any>
+  para?: Omit<MockResponse<any>, 'responseOptions'>
+  zrx?: MockResponse<any>
 }) {
   fetchMock.mockResponseOnce(JSON.stringify(cow.response), cow.responseOptions)
   // mocks 0x fetch response
-  fetchMock.mockResponseOnce(JSON.stringify(zrx.response), zrx.responseOptions)
+  zrx && fetchMock.mockResponseOnce(JSON.stringify(zrx.response), zrx.responseOptions)
   // mock paraswap response separate from fetchMock
-  paraswap.__setRateResponseOrError(JSON.stringify(para.response))
+  para && paraswap.__setRateResponseOrError(para.response)
 }
