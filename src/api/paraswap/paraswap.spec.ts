@@ -5,7 +5,6 @@ import CowSdk from '../../CowSdk'
 import { ParaswapPriceQuoteParams } from './types'
 import { OptimalRate, SwapSide } from 'paraswap-core'
 import ParaswapError from './error'
-import { NetworkID } from 'paraswap'
 import { CowError } from '../../utils/common'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -130,7 +129,8 @@ describe('Get Quote', () => {
     // WHEN
     expect.assertions(1)
     // user forces TS to accept chain as valid
-    const promise = cowSdk.paraswapApi.getQuote({ ...query, chainId: 2 as NetworkID })
+    // @ts-expect-error - part of test suite
+    const promise = cowSdk.paraswapApi.getQuote({ ...query, chainId: 2 })
 
     // THEN
     expect(promise).rejects.toThrow(new CowError("ParaswapApi isn't compatible with chainId " + 2))

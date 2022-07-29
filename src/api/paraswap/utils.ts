@@ -1,9 +1,10 @@
 import { SupportedChainId } from '../../constants/chains'
 import { ParaswapPriceQuoteParams } from './types'
 import { toErc20Address } from '../../utils/tokens'
-import { OptimalRate } from 'paraswap-core'
+import { OptimalRate, SwapSide } from 'paraswap-core'
 import { APIError, NetworkID } from 'paraswap'
 import ParaswapError from './error'
+import { PriceInformation } from '../../types'
 
 export function getValidParams(chainId: SupportedChainId, params: ParaswapPriceQuoteParams) {
   const { baseToken: baseTokenAux, quoteToken: quoteTokenAux, userAddress } = params
@@ -50,6 +51,25 @@ export function handleResponse(rateResult: OptimalRate | APIError) {
       return priceQuote
     } else {
       throw new ParaswapError(rateResult)
+    }
+  }
+}
+
+export function normaliseQuoteResponse(priceRaw: OptimalRate | null): PriceInformation | null {
+  if (!priceRaw) {
+    return null
+  }
+
+  const { destAmount, srcAmount, srcToken, destToken, side } = priceRaw
+  if (side === SwapSide.SELL) {
+    return {
+      amount: destAmount,
+      token: destToken,
+    }
+  } else {
+    return {
+      amount: srcAmount,
+      token: srcToken,
     }
   }
 }

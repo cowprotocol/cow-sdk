@@ -33,3 +33,29 @@ export function fromHexString(hexString: string) {
   if (!stringMatch) return
   return new Uint8Array(stringMatch.map((byte) => parseInt(byte, 16)))
 }
+
+export const delay = <T = void>(ms = 100, result?: T): Promise<T> =>
+  new Promise((resolve) => setTimeout(resolve, ms, result))
+
+export function withTimeout<T>(promise: Promise<T>, ms: number, context?: string): Promise<T> {
+  const failOnTimeout = delay(ms).then(() => {
+    const errorMessage = 'Timeout after ' + ms + ' ms'
+    throw new Error(context ? `${context}. ${errorMessage}` : errorMessage)
+  })
+
+  return Promise.race([promise, failOnTimeout])
+}
+
+export function isPromiseFulfilled<T>(
+  promiseResult: PromiseSettledResult<T>
+): promiseResult is PromiseFulfilledResult<T> {
+  return promiseResult.status === 'fulfilled'
+}
+
+// To properly handle PromiseSettleResult which returns and object
+export function getPromiseFulfilledValue<T, E = undefined>(
+  promiseResult: PromiseSettledResult<T>,
+  nonFulfilledReturn: E
+) {
+  return isPromiseFulfilled(promiseResult) ? promiseResult.value : nonFulfilledReturn
+}

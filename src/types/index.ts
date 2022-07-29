@@ -9,3 +9,11 @@ export class Token {
 export type WithEnabled = {
   enabled: boolean
 }
+export type WithDecimals = {
+  fromDecimals: number
+  toDecimals: number
+}
+
+export type WithChainId = {
+  chainId: number
+}
