@@ -10,7 +10,6 @@ import GpQuoteError, { GpQuoteErrorCodes } from '../../api/cow/errors/QuoteError
 import { OptimalRate } from 'paraswap-core'
 import { LOG_PREFIX as paraswapLogPrefix } from '../../api/paraswap/constants'
 import { getParaswapChainId, normaliseQuoteResponse as normaliseQuoteResponseParaswap } from '../../api/paraswap/utils'
-import ParaswapApi from '../../api/paraswap'
 import { NetworkID } from 'paraswap'
 // 0x
 import { ZeroXQuote } from '../../api/0x/types'
@@ -42,12 +41,11 @@ export async function getAllPricesLegacy(cowSdk: CowSdk, params: CompatibleQuote
     cowLogPrefix + ': Get quote'
   )
 
-  const isParaswapEnabled = Boolean(paraswapApi && getParaswapChainId(params.chainId))
   let paraswapQuotePromise: Promise<OptimalRate | null> | null = null
-  if (isParaswapEnabled) {
+  if (!!paraswapApi && getParaswapChainId(params.chainId)) {
     paraswapQuotePromise = withTimeout(
       // L47 check makes this type-safe
-      (paraswapApi as ParaswapApi).getQuote({ ...params, chainId: params.chainId as NetworkID }),
+      paraswapApi.getQuote({ ...params, chainId: params.chainId as NetworkID }),
       PRICE_API_TIMEOUT_MS,
       paraswapLogPrefix + ': Get quote'
     )
@@ -55,9 +53,8 @@ export async function getAllPricesLegacy(cowSdk: CowSdk, params: CompatibleQuote
     debug(paraswapLogPrefix, 'DISABLED, SKIPPING.')
   }
 
-  const is0xEnabled = !!zeroXApi
   let zeroXQuotePromise = null
-  if (is0xEnabled) {
+  if (!!zeroXApi) {
     zeroXQuotePromise = withTimeout(zeroXApi.getQuote(params), PRICE_API_TIMEOUT_MS, zeroXLogPrefix + ': Get quote')
   } else {
     debug(zeroXLogPrefix, 'DISABLED, SKIPPING.')
