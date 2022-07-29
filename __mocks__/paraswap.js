@@ -5,12 +5,8 @@ const paraswap = jest.createMockFromModule('paraswap')
 // This is a custom function that our tests can use during setup to specify
 // what the response will be: OptimalRate or APIError
 let outcome
-function __setRateResponseOrError(response, error) {
-  if (response) {
-    outcome = response
-  } else {
-    outcome = error
-  }
+function __setRateResponseOrError(response) {
+  outcome = response
 }
 
 function __getOutcome() {
