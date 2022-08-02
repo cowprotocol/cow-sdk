@@ -51,11 +51,3 @@ export function isPromiseFulfilled<T>(
 ): promiseResult is PromiseFulfilledResult<T> {
   return promiseResult.status === 'fulfilled'
 }
-
-// To properly handle PromiseSettleResult which returns and object
-export function getPromiseFulfilledValue<T, E = undefined>(
-  promiseResult: PromiseSettledResult<T>,
-  nonFulfilledReturn: E
-) {
-  return isPromiseFulfilled(promiseResult) ? promiseResult.value : nonFulfilledReturn
-}
