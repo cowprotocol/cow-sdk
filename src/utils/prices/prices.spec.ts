@@ -5,7 +5,7 @@ import { CowSdk } from '../../CowSdk'
 import { OrderKind } from '@cowprotocol/contracts'
 import { SupportedChainId } from '../../constants/chains'
 import { OptimalRate, SwapSide } from 'paraswap-core'
-import { getAllPricesLegacy, getBestPriceLegacy } from '.'
+import { getAllPricesLegacy, getBestPriceLegacy, PriceQuoteErrorLegacy } from '.'
 
 /**
  * MOCK fetch calls
@@ -437,6 +437,32 @@ describe('getBestPriceLegacy: SELL', () => {
 
     // THEN
     expect(winningPrice).toEqual({ token: '0x6810e776880c02933d47db1b9fc05908e5386b96', amount: '300' })
+  })
+
+  test('Returns no prices and throws error when CoW, ParaSwap and 0x are active APIs', async () => {
+    // GIVEN
+    const cowSdk = new CowSdk(chainId, { signer }, { zeroXOptions: ENABLE_API, paraswapOptions: ENABLE_API })
+    // mocks cow/0x/para quote response
+    // GIVEN - sell quote winners are chosen from whomever has the HIGHEST price
+    _mockApiResponses({
+      cow: {
+        response: undefined,
+        responseOptions: { status: 400, headers: HEADERS },
+      },
+      para: { response: undefined },
+      zrx: { response: undefined, responseOptions: { status: 400, headers: HEADERS } },
+    })
+
+    expect.assertions(1)
+    try {
+      // WHEN
+      await getBestPriceLegacy(cowSdk, SELL_QUOTE_PARAMS)
+    } catch (error) {
+      // THEN
+      expect(error).toEqual(
+        new PriceQuoteErrorLegacy('price-utils::Error querying price from APIs', SELL_QUOTE_PARAMS, [])
+      )
+    }
   })
 })
 

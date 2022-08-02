@@ -172,7 +172,7 @@ const FEE_EXCEEDS_FROM_ERROR = new GpQuoteError({
   description: GpQuoteError.quoteErrorDetails.FeeExceedsFrom,
 })
 
-class PriceQuoteErrorLegacy extends Error {
+export class PriceQuoteErrorLegacy extends Error {
   params: PriceQuoteLegacyParams
   results: PromiseSettledResult<unknown>[]
 
