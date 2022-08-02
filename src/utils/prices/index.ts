@@ -124,7 +124,9 @@ export async function getBestQuoteLegacy(
     quoteParams,
     fetchFee,
     previousFee,
-  }: Omit<QuoteParams, 'strategy'> & { quoteParams: Omit<CompatibleQuoteParams, 'baseToken' | 'quoteToken'> }
+  }: Omit<QuoteParams, 'isPriceRefresh' | 'strategy'> & {
+    quoteParams: Omit<CompatibleQuoteParams, 'baseToken' | 'quoteToken'>
+  }
 ): Promise<QuoteResult> {
   const { sellToken, buyToken, amount, kind } = quoteParams
   const { baseToken, quoteToken } = getCanonicalMarket({ sellToken, buyToken, kind })
@@ -167,7 +169,7 @@ export async function getBestQuoteLegacy(
 /**
  * Error class used only for these utils
  */
-const FEE_EXCEEDS_FROM_ERROR = new GpQuoteError({
+export const FEE_EXCEEDS_FROM_ERROR = new GpQuoteError({
   errorType: GpQuoteErrorCodes.FeeExceedsFrom,
   description: GpQuoteError.quoteErrorDetails.FeeExceedsFrom,
 })

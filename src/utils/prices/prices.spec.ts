@@ -5,7 +5,16 @@ import { CowSdk } from '../../CowSdk'
 import { OrderKind } from '@cowprotocol/contracts'
 import { SupportedChainId } from '../../constants/chains'
 import { OptimalRate, SwapSide } from 'paraswap-core'
-import { getAllPricesLegacy, getBestPriceLegacy, PriceQuoteErrorLegacy } from '.'
+import {
+  FEE_EXCEEDS_FROM_ERROR,
+  getAllPricesLegacy,
+  getBestPriceLegacy,
+  getBestQuoteLegacy,
+  PriceQuoteErrorLegacy,
+} from '.'
+import { CompatibleQuoteParams } from './types'
+import { FeeQuoteParams } from '../../types'
+import { ApiErrorCodeDetails, ApiErrorCodes } from '../../api/cow/errors/OperatorError'
 
 /**
  * MOCK fetch calls
@@ -155,7 +164,7 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
-describe('getAllPricesLegacy', () => {
+describe('getAllPricesLegacy: Common logic', () => {
   // GIVEN
   const chainId = SupportedChainId.MAINNET
   const BUY_QUOTE_PARAMS = {
@@ -463,6 +472,168 @@ describe('getBestPriceLegacy: SELL', () => {
         new PriceQuoteErrorLegacy('price-utils::Error querying price from APIs', SELL_QUOTE_PARAMS, [])
       )
     }
+  })
+})
+
+describe('getBestQuoteLegacy: Common logic', () => {
+  const chainId = SupportedChainId.MAINNET
+  const BEST_QUOTE_LEGACY_PARAMS_BUY: FeeQuoteParams & Omit<CompatibleQuoteParams, 'baseToken' | 'quoteToken'> = {
+    chainId,
+    fromDecimals: 18,
+    toDecimals: 18,
+    buyToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+    sellToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+    amount: '1234567890',
+    kind: OrderKind.BUY,
+    validTo: Date.now() + 30000,
+  }
+
+  test('Returns valid price and fee amount', async () => {
+    // GIVEN
+    const cowSdk = new CowSdk(chainId, { signer }) // no additional APIs instantiated
+    // fetch CoW quote for FEE
+    fetchMock.mockResponseOnce(
+      JSON.stringify({
+        expiration: '2117-08-26T18:40:50.072Z',
+        quote: {
+          feeAmount: '123456789',
+        },
+      })
+    )
+    // mocks cow/0x/para quote response
+    _mockApiResponses({
+      cow: {
+        response: COW_PRICE_QUOTE_RESPONSE,
+        responseOptions: GOOD_SERVER_RESPONSE,
+      },
+    })
+
+    // WHEN
+    const bestQuote = await getBestQuoteLegacy(cowSdk, {
+      quoteParams: BEST_QUOTE_LEGACY_PARAMS_BUY,
+      fetchFee: true,
+    })
+
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    // THEN
+    expect(bestQuote).toEqual([
+      { status: 'fulfilled', value: { token: '0x6810e776880c02933d47db1b9fc05908e5386b96', amount: '500' } },
+      { status: 'fulfilled', value: { amount: '123456789', expirationDate: '2117-08-26T18:40:50.072Z' } },
+    ])
+  })
+
+  test('Returns fee_amount and expiration with FeeExceedsFrom/SellAmountDoesNotCoverFee error', async () => {
+    // GIVEN
+    const cowSdk = new CowSdk(chainId, { signer })
+    // fetch CoW quote for FEE
+    fetchMock.mockResponseOnce(
+      JSON.stringify({
+        errorType: ApiErrorCodes.SellAmountDoesNotCoverFee,
+        description: ApiErrorCodeDetails.SellAmountDoesNotCoverFee,
+        data: { fee_amount: '123456789', expiration: '2117-08-26T18:40:50.072Z' },
+      }),
+      { status: 400, headers: HEADERS }
+    )
+    // mocks cow/0x/para quote response
+    _mockApiResponses({
+      cow: {
+        response: COW_PRICE_QUOTE_RESPONSE,
+        responseOptions: GOOD_SERVER_RESPONSE,
+      },
+    })
+
+    // WHEN
+    const bestQuote = await getBestQuoteLegacy(cowSdk, {
+      quoteParams: BEST_QUOTE_LEGACY_PARAMS_BUY,
+      fetchFee: true,
+    })
+
+    // THEN
+    expect(bestQuote).toEqual([
+      { status: 'fulfilled', value: { token: '0x6810e776880c02933d47db1b9fc05908e5386b96', amount: '500' } },
+      { status: 'fulfilled', value: { amount: '123456789', expirationDate: '2117-08-26T18:40:50.072Z' } },
+    ])
+  })
+
+  test('Returns quote as normal and fee as previous fee', async () => {
+    // GIVEN
+    const cowSdk = new CowSdk(chainId, { signer })
+    // using previous fee options
+    const PREVIOUS_FEE = {
+      expirationDate: 'some-expiration-date-dont-drink-the-milk',
+      amount: '777777777',
+    }
+
+    // mocks cow/0x/para quote response
+    _mockApiResponses({
+      cow: {
+        response: COW_PRICE_QUOTE_RESPONSE,
+        responseOptions: GOOD_SERVER_RESPONSE,
+      },
+    })
+
+    // WHEN
+    const bestQuote = await getBestQuoteLegacy(cowSdk, {
+      quoteParams: BEST_QUOTE_LEGACY_PARAMS_BUY,
+      fetchFee: false,
+      previousFee: PREVIOUS_FEE,
+    })
+
+    // THEN
+    expect(bestQuote).toEqual([
+      { status: 'fulfilled', value: { token: '0x6810e776880c02933d47db1b9fc05908e5386b96', amount: '500' } },
+      {
+        status: 'fulfilled',
+        value: { amount: '777777777', expirationDate: 'some-expiration-date-dont-drink-the-milk' },
+      },
+    ])
+  })
+})
+
+describe('getBestQuoteLegacy: SELL', () => {
+  const chainId = SupportedChainId.MAINNET
+  const BEST_QUOTE_LEGACY_PARAMS_SELL: FeeQuoteParams & Omit<CompatibleQuoteParams, 'baseToken' | 'quoteToken'> = {
+    chainId,
+    fromDecimals: 18,
+    toDecimals: 18,
+    buyToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+    sellToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+    amount: '500',
+    kind: OrderKind.SELL,
+    validTo: Date.now() + 30000,
+  }
+
+  test('Throws proper FEE_EXCEEDS_FROM_ERROR when from amount is less than quote fee', async () => {
+    // GIVEN
+    const cowSdk = new CowSdk(chainId, { signer })
+    // fetch CoW quote for FEE
+    fetchMock.mockResponseOnce(
+      JSON.stringify({
+        expiration: '2117-08-26T18:40:50.072Z',
+        quote: {
+          feeAmount: '1000',
+        },
+      })
+    )
+    // mocks cow/0x/para quote response
+    _mockApiResponses({
+      cow: {
+        response: COW_PRICE_QUOTE_RESPONSE,
+        responseOptions: GOOD_SERVER_RESPONSE,
+      },
+    })
+
+    // WHEN
+    const bestQuote = await getBestQuoteLegacy(cowSdk, {
+      quoteParams: BEST_QUOTE_LEGACY_PARAMS_SELL,
+      fetchFee: true,
+    })
+
+    // THEN
+    expect(bestQuote).toEqual([
+      { status: 'rejected', reason: FEE_EXCEEDS_FROM_ERROR },
+      { status: 'fulfilled', value: { amount: '1000', expirationDate: '2117-08-26T18:40:50.072Z' } },
+    ])
   })
 })
 
