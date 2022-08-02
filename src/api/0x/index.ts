@@ -87,7 +87,7 @@ export class ZeroXApi extends BaseApi {
       throw new Error(error)
     })
 
-    return handleQuoteResponse(response)
+    return handleQuoteResponse(response, params)
   }
 
   public async updateOptions({ affiliateAddressMap, excludedSources }: Partial<ZeroXOptions>) {

@@ -33,6 +33,7 @@ export function mapOperatorErrorToQuoteError(error?: ApiErrorObject): GpQuoteErr
       return {
         errorType: GpQuoteErrorCodes.InsufficientLiquidity,
         description: GpQuoteErrorDetails.InsufficientLiquidity,
+        data: error?.data,
       }
 
     case ApiErrorCodes.SellAmountDoesNotCoverFee:
@@ -46,14 +47,20 @@ export function mapOperatorErrorToQuoteError(error?: ApiErrorObject): GpQuoteErr
       return {
         errorType: GpQuoteErrorCodes.UnsupportedToken,
         description: error.description,
+        data: error?.data,
       }
     case ApiErrorCodes.SellAmountDoesNotCoverFee:
       return {
         errorType: GpQuoteErrorCodes.FeeExceedsFrom,
         description: error.description,
+        data: error?.data,
       }
     default:
-      return { errorType: GpQuoteErrorCodes.UNHANDLED_ERROR, description: GpQuoteErrorDetails.UNHANDLED_ERROR }
+      return {
+        errorType: GpQuoteErrorCodes.UNHANDLED_ERROR,
+        description: GpQuoteErrorDetails.UNHANDLED_ERROR,
+        data: error?.data,
+      }
   }
 }
 

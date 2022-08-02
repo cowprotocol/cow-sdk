@@ -29,7 +29,7 @@ import {
 } from './types'
 
 const PRICE_API_TIMEOUT_MS = 10000 // 10s
-
+const LOG_PREFIX = 'price-utils::'
 // Queries all legacy endpoints for price quotes using passed parameters
 export async function getAllPricesLegacy(cowSdk: CowSdk, params: CompatibleQuoteParams): Promise<AllPricesResult> {
   const { cowApi, zeroXApi, paraswapApi } = cowSdk
@@ -38,26 +38,25 @@ export async function getAllPricesLegacy(cowSdk: CowSdk, params: CompatibleQuote
   const cowQuotePromise = withTimeout(
     cowApi.getPriceQuoteLegacy(params),
     PRICE_API_TIMEOUT_MS,
-    cowLogPrefix + ': Get quote'
+    LOG_PREFIX + cowLogPrefix + ': Get quote'
   )
 
   let paraswapQuotePromise: Promise<OptimalRate | null> | null = null
   if (!!paraswapApi && getParaswapChainId(params.chainId)) {
     paraswapQuotePromise = withTimeout(
-      // L47 check makes this type-safe
       paraswapApi.getQuote({ ...params, chainId: params.chainId as NetworkID }),
       PRICE_API_TIMEOUT_MS,
       paraswapLogPrefix + ': Get quote'
     )
   } else {
-    debug(paraswapLogPrefix, 'DISABLED, SKIPPING.')
+    debug(LOG_PREFIX + paraswapLogPrefix, 'DISABLED, SKIPPING.')
   }
 
   let zeroXQuotePromise = null
   if (!!zeroXApi) {
     zeroXQuotePromise = withTimeout(zeroXApi.getQuote(params), PRICE_API_TIMEOUT_MS, zeroXLogPrefix + ': Get quote')
   } else {
-    debug(zeroXLogPrefix, 'DISABLED, SKIPPING.')
+    debug(LOG_PREFIX + zeroXLogPrefix, 'DISABLED, SKIPPING.')
   }
 
   // Get results from API queries
@@ -95,19 +94,19 @@ export async function getBestPriceLegacy(
   // Print prices who failed to be fetched
   if (errorsGetPrice.length > 0) {
     const sourceNames = errorsGetPrice.map((e) => e.source).join(', ')
-    error('[utils::getBestPriceLegacy] Some API failed or timed out: ' + sourceNames, errorsGetPrice)
+    error(LOG_PREFIX + 'Some API failed or timed out: ' + sourceNames, errorsGetPrice)
   }
 
   if (priceQuotes.length > 0) {
     // At least we have one successful price
     const sourceNames = priceQuotes.map((p) => p.source).join(', ')
-    log('[utils::getBestPriceLegacy] Get best price succeeded for ' + sourceNames, priceQuotes)
+    log(LOG_PREFIX + 'Get best price succeeded for ' + sourceNames, priceQuotes)
     const amounts = priceQuotes.map((quote) => quote.amount).filter(Boolean) as string[]
 
     return _filterWinningPrice({ ...options, kind: params.kind, amounts, priceQuotes })
   } else {
     // It was not possible to get a price estimation
-    const priceQuoteError = new PriceQuoteErrorLegacy('Error querying price from APIs', params, [
+    const priceQuoteError = new PriceQuoteErrorLegacy(LOG_PREFIX + 'Error querying price from APIs', params, [
       cowQuoteResult,
       paraswapQuoteResult,
       zeroXQuoteResult,
@@ -125,7 +124,9 @@ export async function getBestQuoteLegacy(
     quoteParams,
     fetchFee,
     previousFee,
-  }: Omit<QuoteParams, 'strategy'> & { quoteParams: Omit<CompatibleQuoteParams, 'baseToken' | 'quoteToken'> }
+  }: Omit<QuoteParams, 'isPriceRefresh' | 'strategy'> & {
+    quoteParams: Omit<CompatibleQuoteParams, 'baseToken' | 'quoteToken'>
+  }
 ): Promise<QuoteResult> {
   const { sellToken, buyToken, amount, kind } = quoteParams
   const { baseToken, quoteToken } = getCanonicalMarket({ sellToken, buyToken, kind })
@@ -168,12 +169,12 @@ export async function getBestQuoteLegacy(
 /**
  * Error class used only for these utils
  */
-const FEE_EXCEEDS_FROM_ERROR = new GpQuoteError({
+export const FEE_EXCEEDS_FROM_ERROR = new GpQuoteError({
   errorType: GpQuoteErrorCodes.FeeExceedsFrom,
   description: GpQuoteError.quoteErrorDetails.FeeExceedsFrom,
 })
 
-class PriceQuoteErrorLegacy extends Error {
+export class PriceQuoteErrorLegacy extends Error {
   params: PriceQuoteLegacyParams
   results: PromiseSettledResult<unknown>[]
 
@@ -244,7 +245,7 @@ function _filterWinningPrice(params: FilterWinningPriceParams) {
     .filter((quote) => quote.amount === amount)
     .map((p) => p.source)
     .join(', ')
-  debug('[util::filterWinningPrice] Winning price: ' + winningPrices + ' for token ' + token + ' @', amount)
+  debug(LOG_PREFIX + 'Filtered winning price: ' + winningPrices + ' for token ' + token + ' @', amount)
 
   return { token, amount }
 }
