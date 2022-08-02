@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { OrderKind } from '@cowprotocol/contracts'
 import { enableFetchMocks } from 'jest-fetch-mock'
 import ZeroXError from '.'
@@ -48,7 +47,7 @@ describe('0x Error handling', () => {
 
     try {
       // WHEN
-      await cowSdk.zeroXApi!.getQuote(query)
+      await cowSdk.zeroXApi.getQuote(query)
     } catch (error) {
       const e = error instanceof ZeroXError ? error : undefined
       // THEN expect the error to be properly constructed
@@ -78,7 +77,7 @@ describe('0x Error handling', () => {
 
     try {
       // WHEN request is made
-      await cowSdk.zeroXApi!.getQuote(query)
+      await cowSdk.zeroXApi.getQuote(query)
     } catch (error) {
       const e = error instanceof ZeroXError ? error : undefined
       // THEN expect the e to be properly constructed
@@ -95,7 +94,7 @@ describe('0x Error handling', () => {
 
     try {
       // WHEN request is made
-      await cowSdk.zeroXApi!.getQuote(query)
+      await cowSdk.zeroXApi.getQuote(query)
     } catch (error) {
       const e = error instanceof ZeroXError ? error : undefined
       // THEN expect the e to be properly constructed
@@ -112,7 +111,7 @@ describe('0x Error handling', () => {
 
     try {
       // WHEN request is made
-      await cowSdk.zeroXApi!.getQuote(query)
+      await cowSdk.zeroXApi.getQuote(query)
     } catch (error) {
       const e = error instanceof ZeroXError ? error : undefined
       // THEN expect the e to be properly constructed
@@ -129,7 +128,7 @@ describe('0x Error handling', () => {
 
     try {
       // WHEN request is made
-      await cowSdk.zeroXApi!.getQuote(query)
+      await cowSdk.zeroXApi.getQuote(query)
     } catch (error) {
       const e = error instanceof ZeroXError ? error : undefined
       // THEN expect the e to be properly constructed
@@ -146,7 +145,7 @@ describe('0x Error handling', () => {
 
     try {
       // WHEN request is made
-      await cowSdk.zeroXApi!.getQuote(query)
+      await cowSdk.zeroXApi.getQuote(query)
     } catch (error) {
       const e = error instanceof ZeroXError ? error : undefined
       // THEN expect the e to be properly constructed
@@ -163,7 +162,7 @@ describe('0x Error handling', () => {
 
     try {
       // WHEN request is made
-      await cowSdk.zeroXApi!.getQuote(query)
+      await cowSdk.zeroXApi.getQuote(query)
     } catch (error) {
       const e = error instanceof ZeroXError ? error : undefined
       // THEN expect the e to be properly constructed
