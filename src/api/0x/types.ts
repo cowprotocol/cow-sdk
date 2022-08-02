@@ -11,7 +11,7 @@ interface GetSwapQuoteResponseLiquiditySource {
 }
 
 // https://github.com/0xProject/0x-api/blob/8c4cc7bb8d4fa06a220b7dfd5784361c05daa92a/src/types.ts#L229
-interface MatchaBaseQuote {
+interface ZeroXBaseQuote {
   chainId: SupportedChainId
   price: string
   buyAmount: string
@@ -27,14 +27,14 @@ interface MatchaBaseQuote {
 }
 
 // https://github.com/0xProject/0x-api/blob/8c4cc7bb8d4fa06a220b7dfd5784361c05daa92a/src/types.ts#L229
-export interface MatchaPriceQuote extends MatchaBaseQuote {
+export interface ZeroXQuote extends ZeroXBaseQuote {
   sellTokenAddress: string
   buyTokenAddress: string
   value: string
   gas: string
 }
 
-export type MatchaOptions = {
+export type ZeroXOptions = {
   affiliateAddressMap: Partial<Record<number, string>>
   excludedSources: ERC20BridgeSource[]
 }

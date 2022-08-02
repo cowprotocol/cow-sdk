@@ -107,7 +107,7 @@ const query = {
 } as ParaswapPriceQuoteParams
 
 const chainId = SupportedChainId.MAINNET
-const cowSdk = new CowSdk(chainId, {}, { loglevel: 'debug' })
+const cowSdk = new CowSdk(chainId, {}, { loglevel: 'debug', paraswapOptions: { enabled: true } })
 
 describe('Get Quote', () => {
   beforeEach(() => {

@@ -11,6 +11,7 @@ export type QuoteOptions<T extends boolean> = {
   // bypasses null return when passed non-cow compatible chainId
   allowParaswapNetworks?: T
 }
+export type ParaswapOptions = RateOptions
 export type ParaswapPriceQuoteParams = Omit<PriceQuoteLegacyParams, 'validTo'> & {
   fromDecimals: number
   toDecimals: number

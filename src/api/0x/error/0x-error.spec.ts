@@ -9,7 +9,7 @@ enableFetchMocks()
 
 const chainId = SupportedChainId.MAINNET
 
-const cowSdk = new CowSdk(chainId, {}, { loglevel: 'debug' })
+const cowSdk = new CowSdk(chainId, {}, { loglevel: 'debug', zeroXOptions: { enabled: true } })
 
 const query = {
   baseToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',

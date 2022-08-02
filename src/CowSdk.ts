@@ -1,34 +1,35 @@
 import { Signer } from 'ethers'
-import log, { LogLevelDesc } from 'loglevel'
+import log from 'loglevel'
 import { CowError } from './utils/common'
 import { CowApi, CowSubgraphApi, MetadataApi } from './api'
-import { SupportedChainId as ChainId, SupportedChainId } from './constants/chains'
+import { SupportedChainId as ChainId } from './constants/chains'
 import { Context, CowContext } from './utils/context'
 import { signOrder, signOrderCancellation, UnsignedOrder } from './utils/sign'
 import { ZeroXApi } from './api/0x'
-import { MatchaOptions } from './api/0x/types'
 import ParaswapApi from './api/paraswap'
+// types
+import { SdkOptions, ParaswapEnabled, ZeroXEnabled, OptionsWithApisEnabledStatus } from 'sdk'
 
-type Options = {
-  loglevel?: LogLevelDesc
-  matchaOptions?: MatchaOptions
-}
-
-export class CowSdk<T extends ChainId> {
+export class CowSdk<T extends ChainId = ChainId, Opt extends SdkOptions = OptionsWithApisEnabledStatus> {
   context: Context
   cowApi: CowApi
   metadataApi: MetadataApi
   cowSubgraphApi: CowSubgraphApi
-  zeroXApi: ZeroXApi
-  paraswapApi: ParaswapApi
+  zeroXApi: ZeroXEnabled<Opt>
+  paraswapApi: ParaswapEnabled<Opt>
 
-  constructor(chainId: T = SupportedChainId.MAINNET as T, cowContext: CowContext = {}, options: Options = {}) {
+  constructor(chainId: T = ChainId.MAINNET as T, cowContext: CowContext = {}, options: Opt = {} as Opt) {
+    const zeroXEnabled = options?.zeroXOptions?.enabled ?? false
+    const paraswapEnabled = options?.paraswapOptions?.enabled ?? false
+
     this.context = new Context(chainId, { ...cowContext })
     this.cowApi = new CowApi(this.context)
     this.cowSubgraphApi = new CowSubgraphApi(this.context)
     this.metadataApi = new MetadataApi(this.context)
-    this.zeroXApi = new ZeroXApi(chainId, options.matchaOptions)
-    this.paraswapApi = new ParaswapApi()
+
+    this.zeroXApi = (zeroXEnabled ? new ZeroXApi(chainId, options.zeroXOptions) : undefined) as ZeroXEnabled<Opt>
+    this.paraswapApi = (paraswapEnabled ? new ParaswapApi(options.paraswapOptions) : undefined) as ParaswapEnabled<Opt>
+
     log.setLevel(options.loglevel || 'ERROR')
   }
 

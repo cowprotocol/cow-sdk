@@ -22,10 +22,10 @@ export default class ParaswapApi {
   #apiUrl: string
   #rateOptions: RateOptions
 
-  constructor() {
+  constructor(options: RateOptions = {}) {
     this.name = API_NAME
     this.#apiUrl = BASE_URL
-    this.#rateOptions = DEFAULT_RATE_OPTIONS
+    this.#rateOptions = { ...DEFAULT_RATE_OPTIONS, ...options }
   }
 
   async getQuote(

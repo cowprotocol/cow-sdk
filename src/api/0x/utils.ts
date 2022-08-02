@@ -4,7 +4,7 @@ import { SupportedChainId } from '../../constants/chains'
 import { objectToQueryString, CowError } from '../../utils/common'
 import { PriceInformation, PriceQuoteLegacyParams } from '../cow/types'
 import ZeroXError, { ZeroXErrorResponse, logPrefix } from './error'
-import { MatchaOptions, MatchaPriceQuote } from './types'
+import { ZeroXOptions, ZeroXQuote } from './types'
 
 export function get0xUrls(): Partial<Record<SupportedChainId, string>> {
   // Support: Mainnet, Ropsten, Polygon, Binance Smart Chain
@@ -14,7 +14,7 @@ export function get0xUrls(): Partial<Record<SupportedChainId, string>> {
   }
 }
 
-export function normaliseQuoteResponse(priceRaw: MatchaPriceQuote | null, kind: OrderKind): PriceInformation | null {
+export function normaliseQuoteResponse(priceRaw: ZeroXQuote | null, kind: OrderKind): PriceInformation | null {
   if (!priceRaw || !priceRaw.price) {
     return null
   }
@@ -46,7 +46,7 @@ export function optionsToMatchaParamsUrl({
   excludedSources,
   affiliateAddress,
 }: {
-  excludedSources: MatchaOptions['excludedSources']
+  excludedSources: ZeroXOptions['excludedSources']
   affiliateAddress: string
 }): string {
   const excludedSourceString = extractExcludedSources({ excludedSources })
@@ -84,7 +84,7 @@ export function throwOrReturnAffiliateAddress({
   affiliateAddressMap,
   chainId,
 }: {
-  affiliateAddressMap: MatchaOptions['affiliateAddressMap']
+  affiliateAddressMap: ZeroXOptions['affiliateAddressMap']
   chainId: SupportedChainId
 }): string {
   const affiliateAddress = affiliateAddressMap[chainId]
@@ -95,7 +95,7 @@ export function throwOrReturnAffiliateAddress({
   return affiliateAddress
 }
 
-export function extractExcludedSources({ excludedSources }: Pick<MatchaOptions, 'excludedSources'>) {
+export function extractExcludedSources({ excludedSources }: Pick<ZeroXOptions, 'excludedSources'>) {
   return excludedSources.length > 0 ? excludedSources.join(',') : ''
 }
 

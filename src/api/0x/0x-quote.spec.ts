@@ -9,7 +9,7 @@ enableFetchMocks()
 
 const chainId = SupportedChainId.MAINNET
 
-const cowSdk = new CowSdk(chainId, {}, { loglevel: 'debug' })
+const cowSdk = new CowSdk(chainId, {}, { loglevel: 'debug', zeroXOptions: { enabled: true } })
 
 const HTTP_STATUS_OK = 200
 
@@ -87,7 +87,8 @@ describe('Get Quote', () => {
       chainId,
       {},
       {
-        matchaOptions: {
+        zeroXOptions: {
+          enabled: true,
           affiliateAddressMap: {
             [SupportedChainId.MAINNET]: '0xAFFILIATE_ADDRESS_MAINNET',
           },
