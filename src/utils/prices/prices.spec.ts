@@ -555,6 +555,72 @@ describe('getBestQuoteLegacy: Common logic', () => {
     ])
   })
 
+  test('Returns feeAmount and expiration with FeeExceedsFrom/SellAmountDoesNotCoverFee error', async () => {
+    // GIVEN
+    const cowSdk = new CowSdk(chainId, { signer })
+    // fetch CoW quote for FEE
+    fetchMock.mockResponseOnce(
+      JSON.stringify({
+        errorType: ApiErrorCodes.SellAmountDoesNotCoverFee,
+        description: ApiErrorCodeDetails.SellAmountDoesNotCoverFee,
+        data: { feeAmount: '123456789', expiration: '2117-08-26T18:40:50.072Z' },
+      }),
+      { status: 400, headers: HEADERS }
+    )
+    // mocks cow/0x/para quote response
+    _mockApiResponses({
+      cow: {
+        response: COW_PRICE_QUOTE_RESPONSE,
+        responseOptions: GOOD_SERVER_RESPONSE,
+      },
+    })
+
+    // WHEN
+    const bestQuote = await getBestQuoteLegacy(cowSdk, {
+      quoteParams: BEST_QUOTE_LEGACY_PARAMS_BUY,
+      fetchFee: true,
+    })
+
+    // THEN
+    expect(bestQuote).toEqual([
+      { status: 'fulfilled', value: { token: '0x6810e776880c02933d47db1b9fc05908e5386b96', amount: '500' } },
+      { status: 'fulfilled', value: { amount: '123456789', expirationDate: '2117-08-26T18:40:50.072Z' } },
+    ])
+  })
+
+  test('Throws proper error when FeeExceedsFrom/SellAmountDoesNotCoverFee error does not have a data prop', async () => {
+    // GIVEN
+    const cowSdk = new CowSdk(chainId, { signer })
+    // fetch CoW quote for FEE
+    fetchMock.mockResponseOnce(
+      JSON.stringify({
+        errorType: ApiErrorCodes.SellAmountDoesNotCoverFee,
+        description: ApiErrorCodeDetails.SellAmountDoesNotCoverFee,
+        data: undefined,
+      }),
+      { status: 400, headers: HEADERS }
+    )
+    // mocks cow/0x/para quote response
+    _mockApiResponses({
+      cow: {
+        response: COW_PRICE_QUOTE_RESPONSE,
+        responseOptions: GOOD_SERVER_RESPONSE,
+      },
+    })
+
+    // WHEN
+    const bestQuote = await getBestQuoteLegacy(cowSdk, {
+      quoteParams: BEST_QUOTE_LEGACY_PARAMS_BUY,
+      fetchFee: true,
+    })
+
+    // THEN
+    expect(bestQuote).toEqual([
+      { status: 'fulfilled', value: { token: '0x6810e776880c02933d47db1b9fc05908e5386b96', amount: '500' } },
+      { status: 'rejected', reason: FEE_EXCEEDS_FROM_ERROR },
+    ])
+  })
+
   test('Returns quote as normal and fee as previous fee', async () => {
     // GIVEN
     const cowSdk = new CowSdk(chainId, { signer })
