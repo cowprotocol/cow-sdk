@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ethers } from 'ethers'
-import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
+import fetchMock from 'jest-fetch-mock'
 import { CowSdk } from '../../CowSdk'
 import { OrderKind } from '@cowprotocol/contracts'
 import { SupportedChainId } from '../../constants/chains'
@@ -16,11 +16,6 @@ import { CompatibleQuoteParams } from './types'
 import { FeeQuoteParams } from '../../types'
 import { ApiErrorCodeDetails, ApiErrorCodes } from '../../api/cow/errors/OperatorError'
 
-/**
- * MOCK fetch calls
- * MOCK paraswap lib
- */
-enableFetchMocks()
 // mock the entire library (found in top level __mocks__ > paraswap.js)
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const paraswap = require('paraswap')
@@ -320,7 +315,7 @@ describe('getBestPriceLegacy: BUY', () => {
         responseOptions: GOOD_SERVER_RESPONSE,
       },
       para: { response: null },
-      zrx: { response: null, responseOptions: GOOD_SERVER_RESPONSE },
+      zrx: { response: null },
     })
 
     // WHEN
@@ -448,7 +443,7 @@ describe('getBestPriceLegacy: SELL', () => {
     expect(winningPrice).toEqual({ token: '0x6810e776880c02933d47db1b9fc05908e5386b96', amount: '300' })
   })
 
-  test('Returns no prices and throws error when CoW, ParaSwap and 0x are active APIs', async () => {
+  test('Throws error when no price is returned from any active API', async () => {
     // GIVEN
     const cowSdk = new CowSdk(chainId, { signer }, { zeroXOptions: ENABLE_API, paraswapOptions: ENABLE_API })
     // mocks cow/0x/para quote response
@@ -461,17 +456,14 @@ describe('getBestPriceLegacy: SELL', () => {
       para: { response: undefined },
       zrx: { response: undefined, responseOptions: { status: 400, headers: HEADERS } },
     })
-
-    expect.assertions(1)
-    try {
-      // WHEN
-      await getBestPriceLegacy(cowSdk, SELL_QUOTE_PARAMS)
-    } catch (error) {
-      // THEN
-      expect(error).toEqual(
-        new PriceQuoteErrorLegacy('price-utils::Error querying price from APIs', SELL_QUOTE_PARAMS, [])
-      )
-    }
+    
+    // WHEN
+    const promise = getBestPriceLegacy(cowSdk, SELL_QUOTE_PARAMS)
+  
+    // THEN
+    await expect(promise).rejects.toThrow(
+      new PriceQuoteErrorLegacy('price-utils::Error querying price from APIs', SELL_QUOTE_PARAMS, [])
+    )
   })
 })
 
@@ -588,7 +580,7 @@ describe('getBestQuoteLegacy: Common logic', () => {
     ])
   })
 
-  test('Throws proper error when FeeExceedsFrom/SellAmountDoesNotCoverFee error does not have a data prop', async () => {
+  test('Returns proper rejected fee promise when FeeExceedsFrom/SellAmountDoesNotCoverFee error does not have a data prop', async () => {
     // GIVEN
     const cowSdk = new CowSdk(chainId, { signer })
     // fetch CoW quote for FEE
@@ -705,7 +697,7 @@ describe('getBestQuoteLegacy: SELL', () => {
 
 interface MockResponse<T> {
   response: T
-  responseOptions: { status: number; headers: typeof HEADERS }
+  responseOptions?: { status: number; headers: typeof HEADERS }
 }
 function _mockApiResponses({
   cow,
