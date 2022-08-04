@@ -184,7 +184,7 @@ describe('getAllPricesLegacy: Common logic', () => {
         responseOptions: GOOD_SERVER_RESPONSE,
       },
       para: { response: null },
-      zrx: { response: null, responseOptions: GOOD_SERVER_RESPONSE },
+      zrx: { response: null },
     })
 
     // WHEN
@@ -456,10 +456,10 @@ describe('getBestPriceLegacy: SELL', () => {
       para: { response: undefined },
       zrx: { response: undefined, responseOptions: { status: 400, headers: HEADERS } },
     })
-    
+
     // WHEN
     const promise = getBestPriceLegacy(cowSdk, SELL_QUOTE_PARAMS)
-  
+
     // THEN
     await expect(promise).rejects.toThrow(
       new PriceQuoteErrorLegacy('price-utils::Error querying price from APIs', SELL_QUOTE_PARAMS, [])
@@ -661,7 +661,7 @@ describe('getBestQuoteLegacy: SELL', () => {
     validTo: Date.now() + 30000,
   }
 
-  test('Throws proper FEE_EXCEEDS_FROM_ERROR when from amount is less than quote fee', async () => {
+  test('Returns proper rejected FEE_EXCEEDS_FROM_ERROR promise when from amount is less than quote fee', async () => {
     // GIVEN
     const cowSdk = new CowSdk(chainId, { signer })
     // fetch CoW quote for FEE
