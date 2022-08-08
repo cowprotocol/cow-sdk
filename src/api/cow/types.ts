@@ -79,7 +79,7 @@ type WithOrderId = {
   orderId: string
 }
 
-export type GetTradesParams = StrictUnion<WithOwner | WithOrderId> & PaginationParams
+export type GetTradesParams = StrictUnion<WithOwner | WithOrderId>
 
 export type ProfileData = {
   totalTrades: number

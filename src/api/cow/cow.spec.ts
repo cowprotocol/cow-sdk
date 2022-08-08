@@ -262,12 +262,10 @@ test('Valid: Get last 5 trades for a given trader ', async () => {
   fetchMock.mockResponseOnce(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
   const trades = await cowSdk.cowApi.getTrades({
     owner: TRADE_RESPONSE.owner, // Trader
-    limit: 5,
-    offset: 0,
   })
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    `https://api.cow.fi/rinkeby/api/v1/trades?owner=${TRADE_RESPONSE.owner}&limit=5`,
+    `https://api.cow.fi/rinkeby/api/v1/trades?owner=${TRADE_RESPONSE.owner}`,
     FETCH_RESPONSE_PARAMETERS
   )
   expect(trades.length).toEqual(5)
@@ -278,12 +276,10 @@ test('Valid: Get last 5 trades for a given order id ', async () => {
   fetchMock.mockResponseOnce(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
   const trades = await cowSdk.cowApi.getTrades({
     orderId: TRADE_RESPONSE.orderUid,
-    limit: 5,
-    offset: 0,
   })
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    `https://api.cow.fi/rinkeby/api/v1/trades?orderUid=${TRADE_RESPONSE.orderUid}&limit=5`,
+    `https://api.cow.fi/rinkeby/api/v1/trades?orderUid=${TRADE_RESPONSE.orderUid}`,
     FETCH_RESPONSE_PARAMETERS
   )
   expect(trades.length).toEqual(5)
@@ -295,8 +291,6 @@ test('Invalid: Get trades passing both the owner and orderId', async () => {
     cowSdk.cowApi.getTrades({
       owner: TRADE_RESPONSE.owner,
       orderId: TRADE_RESPONSE.orderUid,
-      limit: 5,
-      offset: 0,
     })
   ).rejects.toThrowError(CowError)
 })
@@ -313,15 +307,13 @@ test('Invalid: Get last 5 trades for an unexisting trader ', async () => {
   try {
     await cowSdk.cowApi.getTrades({
       owner: 'invalidOwner',
-      limit: 5,
-      offset: 0,
     })
   } catch (e: unknown) {
     const error = e as OperatorError
     expect(error.message).toEqual('Token pair selected has insufficient liquidity')
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://api.cow.fi/rinkeby/api/v1/trades?owner=invalidOwner&limit=5',
+      'https://api.cow.fi/rinkeby/api/v1/trades?owner=invalidOwner',
       FETCH_RESPONSE_PARAMETERS
     )
   }
@@ -618,14 +610,12 @@ test('Valid: Get last 5 trades changing options parameters', async () => {
   const trades = await cowSdk.cowApi.getTrades(
     {
       owner: TRADE_RESPONSE.owner, // Trader
-      limit: 5,
-      offset: 0,
     },
     { env: 'staging', chainId: SupportedChainId.MAINNET }
   )
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    `https://barn.api.cow.fi/mainnet/api/v1/trades?owner=${TRADE_RESPONSE.owner}&limit=5`,
+    `https://barn.api.cow.fi/mainnet/api/v1/trades?owner=${TRADE_RESPONSE.owner}`,
     FETCH_RESPONSE_PARAMETERS
   )
   expect(trades.length).toEqual(5)
