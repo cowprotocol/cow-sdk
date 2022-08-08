@@ -1,8 +1,8 @@
 import { GetQuoteResponse, OrderKind } from '@cowprotocol/contracts'
-import { StrictUnion } from 'utilities'
 import { SupportedChainId as ChainId } from '../../constants/chains'
 import { Env } from '../../utils/context'
 import { OrderCancellation, SigningSchemeValue } from '../../utils/sign'
+import type { StrictUnion } from '../../types/utilities'
 
 /**
  * Unique identifier for the order, calculated by keccak256(orderDigest, ownerAddress, validTo),
