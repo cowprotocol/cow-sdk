@@ -1,76 +1,88 @@
 import log from 'loglevel'
-import fetch from 'cross-fetch'
-import { GraphQLClient, Variables } from 'graphql-request'
+import { Variables, request } from 'graphql-request'
 import { DocumentNode } from 'graphql'
 import { CowError } from '../../utils/common'
-import { Context } from '../../utils/context'
+import { Context, Env } from '../../utils/context'
 import { SupportedChainId as ChainId } from '../../constants/chains'
 import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphql'
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
 
-export const subgraphUrls: Record<ChainId, string> = {
-  [ChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow',
-  [ChainId.RINKEBY]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-rinkeby',
-  [ChainId.GOERLI]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-goerli',
-  [ChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc',
+export function getSubgraphUrl(env: Env): Partial<Record<ChainId, string>> {
+  switch (env) {
+    case 'staging':
+      return {
+        [ChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-staging',
+        [ChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc-staging',
+      }
+    case 'prod':
+      return {
+        [ChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow',
+        [ChainId.RINKEBY]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-rinkeby',
+        [ChainId.GOERLI]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-goerli',
+        [ChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc',
+      }
+  }
 }
 
 export class CowSubgraphApi {
   context: Context
-  clients: Record<ChainId, GraphQLClient>
 
   API_NAME = 'CoW Protocol Subgraph'
 
   constructor(context: Context) {
     this.context = context
-    this.clients = this.createClients()
   }
 
-  private createClients(): Record<ChainId, GraphQLClient> {
-    return {
-      [ChainId.MAINNET]: new GraphQLClient(subgraphUrls[ChainId.MAINNET], { fetch }),
-      [ChainId.RINKEBY]: new GraphQLClient(subgraphUrls[ChainId.RINKEBY], { fetch }),
-      [ChainId.GOERLI]: new GraphQLClient(subgraphUrls[ChainId.GOERLI], { fetch }),
-      [ChainId.GNOSIS_CHAIN]: new GraphQLClient(subgraphUrls[ChainId.GNOSIS_CHAIN], { fetch }),
+  async getBaseUrl(options: SubgraphOptions = {}): Promise<string> {
+    const { chainId: networkId, env = 'prod' } = options
+    const chainId = networkId || (await this.context.chainId)
+    let baseUrl = getSubgraphUrl(env)[chainId]
+    if (!baseUrl) {
+      log.warn(
+        `[subgraph:${this.API_NAME}] No subgraph endpoint for chainId: ${chainId} and environment: ${env}. Switching to production mainnet endpoint`
+      )
+      baseUrl = getSubgraphUrl('prod')[ChainId.MAINNET] || ''
     }
+
+    return baseUrl
   }
 
-  async getBaseUrl(): Promise<string> {
-    const chainId = await this.context.chainId
-    return subgraphUrls[chainId]
-  }
-
-  async getTotals(): Promise<TotalsQuery['totals'][0]> {
+  async getTotals(options: SubgraphOptions = {}): Promise<TotalsQuery['totals'][0]> {
     const chainId = await this.context.chainId
     log.debug(`[subgraph:${this.API_NAME}] Get totals for:`, chainId)
-    const response = await this.runQuery<TotalsQuery>(TOTALS_QUERY)
+    const response = await this.runQuery<TotalsQuery>(TOTALS_QUERY, undefined, options)
     return response.totals[0]
   }
 
-  async getLastDaysVolume(days: number): Promise<LastDaysVolumeQuery> {
+  async getLastDaysVolume(days: number, options: SubgraphOptions = {}): Promise<LastDaysVolumeQuery> {
     const chainId = await this.context.chainId
     log.debug(`[subgraph:${this.API_NAME}] Get last ${days} days volume for:`, chainId)
-    return this.runQuery<LastDaysVolumeQuery>(LAST_DAYS_VOLUME_QUERY, { days })
+    return this.runQuery<LastDaysVolumeQuery>(LAST_DAYS_VOLUME_QUERY, { days }, options)
   }
 
-  async getLastHoursVolume(hours: number): Promise<LastHoursVolumeQuery> {
+  async getLastHoursVolume(hours: number, options: SubgraphOptions = {}): Promise<LastHoursVolumeQuery> {
     const chainId = await this.context.chainId
     log.debug(`[subgraph:${this.API_NAME}] Get last ${hours} hours volume for:`, chainId)
-    return this.runQuery<LastHoursVolumeQuery>(LAST_HOURS_VOLUME_QUERY, { hours })
+    return this.runQuery<LastHoursVolumeQuery>(LAST_HOURS_VOLUME_QUERY, { hours }, options)
   }
 
-  async runQuery<T>(query: string | DocumentNode, variables?: Variables): Promise<T> {
+  async runQuery<T>(query: string | DocumentNode, variables?: Variables, options: SubgraphOptions = {}): Promise<T> {
     try {
-      const chainId = await this.context.chainId
-      const client = this.clients[chainId]
-      const response = await client.request(query, variables)
+      const { chainId, env } = options
+      const baseUrl = await this.getBaseUrl({ chainId, env })
+      const response = await request(baseUrl, query, variables)
       return response
     } catch (error) {
-      log.error(error)
+      log.error(`[subgraph:${this.API_NAME}]`, error)
       const baseUrl = await this.getBaseUrl()
       throw new CowError(
         `Error running query: ${query}. Variables: ${JSON.stringify(variables)}. API: ${baseUrl}. Inner Error: ${error}`
       )
     }
   }
+}
+
+export type SubgraphOptions = {
+  chainId?: ChainId
+  env?: Env
 }
