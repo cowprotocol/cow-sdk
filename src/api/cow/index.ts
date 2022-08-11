@@ -66,9 +66,9 @@ const UNHANDLED_QUOTE_ERROR: GpQuoteErrorObject = {
   description: GpQuoteErrorDetails.UNHANDLED_ERROR,
 }
 
-const UNHANDLED_ORDER_ERROR: ApiErrorObject = {
-  errorType: ApiErrorCodes.UNHANDLED_CREATE_ERROR,
-  description: ApiErrorCodeDetails.UNHANDLED_CREATE_ERROR,
+const UNHANDLED_ORDER_GET_ERROR: ApiErrorObject = {
+  errorType: ApiErrorCodes.UNHANDLED_GET_ERROR,
+  description: ApiErrorCodeDetails.UNHANDLED_GET_ERROR,
 }
 
 async function _handleQuoteResponse<T = unknown, P extends QuoteQuery = QuoteQuery>(
@@ -173,7 +173,7 @@ export class CowApi extends BaseApi {
       log.error(logPrefix, 'Error getting orders information:', error)
       if (error instanceof OperatorError) throw error
 
-      throw new OperatorError(UNHANDLED_ORDER_ERROR)
+      throw new OperatorError(UNHANDLED_ORDER_GET_ERROR)
     }
   }
 
@@ -194,7 +194,7 @@ export class CowApi extends BaseApi {
     } catch (error) {
       log.error('Error getting transaction orders information:', error)
       if (error instanceof OperatorError) throw error
-      throw new OperatorError(UNHANDLED_ORDER_ERROR)
+      throw new OperatorError(UNHANDLED_ORDER_GET_ERROR)
     }
   }
 
@@ -215,7 +215,7 @@ export class CowApi extends BaseApi {
       log.error(logPrefix, 'Error getting order information:', error)
       if (error instanceof OperatorError) throw error
 
-      throw new OperatorError(UNHANDLED_ORDER_ERROR)
+      throw new OperatorError(UNHANDLED_ORDER_GET_ERROR)
     }
   }
 
