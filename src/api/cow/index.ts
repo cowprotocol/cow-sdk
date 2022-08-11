@@ -296,7 +296,8 @@ export class CowApi extends BaseApi {
         signingScheme: getSigningSchemeApiValue(fullOrder.signingScheme),
         from: owner,
       },
-      { chainId, env }
+      { chainId, env },
+      'singleEnv' // we don't want to try to post to both barn and prod at the same time
     )
 
     // Handle response
@@ -318,7 +319,7 @@ export class CowApi extends BaseApi {
   }
 
   private getProfile(url: string, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'GET', this.fetchProfile.bind(this), getProfileUrl, options)
+    return this.fetchMultipleEnvs(url, 'GET', this.fetchProfile.bind(this), getProfileUrl, options)
   }
 
   private mapNewToLegacyParams(params: FeeQuoteParams, chainId: ChainId): QuoteQuery {

@@ -48,19 +48,46 @@ export default class BaseApi {
     }
   }
 
-  protected post(url: string, data: unknown, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'POST', this.fetch.bind(this), this.API_URL_GETTER, options, data)
+  protected post(
+    url: string,
+    data: unknown,
+    options: Options = {},
+    fetchFn?: 'singleEnv' | 'multipleEnvs'
+  ): Promise<Response> {
+    const params = [url, 'POST', this.fetch.bind(this), this.API_URL_GETTER, options, data]
+    if (fetchFn === 'singleEnv') {
+      return this.fetchSingleEnv(...(params as Parameters<typeof this.fetchSingleEnv>))
+    } else {
+      return this.fetchMultipleEnvs(...(params as Parameters<typeof this.fetchMultipleEnvs>))
+    }
   }
 
   protected get(url: string, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'GET', this.fetch.bind(this), this.API_URL_GETTER, options)
+    return this.fetchMultipleEnvs(url, 'GET', this.fetch.bind(this), this.API_URL_GETTER, options)
   }
 
   protected delete(url: string, data: unknown, options: Options = {}): Promise<Response> {
-    return this.handleMethod(url, 'DELETE', this.fetch.bind(this), this.API_URL_GETTER, options, data)
+    return this.fetchMultipleEnvs(url, 'DELETE', this.fetch.bind(this), this.API_URL_GETTER, options, data)
   }
 
-  protected async handleMethod(
+  protected async fetchSingleEnv(
+    url: string,
+    method: 'GET' | 'POST' | 'DELETE',
+    fetchFn: BaseApi['fetch'],
+    getApiUrl: BaseApi['API_URL_GETTER'],
+    options: Options = {},
+    data?: unknown
+  ): Promise<Response> {
+    const { chainId: networkId, env: _env, requestOptions } = options
+
+    const env = _env || (await this.context.env) || 'prod'
+    const chainId = networkId || (await this.context.chainId)
+
+    const uri = getApiUrl(env)
+    return fetchFn(url, method, `${uri[chainId]}/${this.API_VERSION}`, data, requestOptions)
+  }
+
+  protected async fetchMultipleEnvs(
     url: string,
     method: 'GET' | 'POST' | 'DELETE',
     fetchFn: BaseApi['fetch'],
@@ -74,19 +101,33 @@ export default class BaseApi {
 
     const chainId = networkId || (await this.context.chainId)
 
-    let response
-    if (env === undefined) {
+    // `env` is not set, meaning we should try both envs
+    if (!env) {
+      let prodResponse
+      let barnResponse
       try {
-        response = await fetchFn(url, method, `${prodUri[chainId]}/${this.API_VERSION}`, data, requestOptions)
+        // Prod goes first
+        prodResponse = await fetchFn(url, method, `${prodUri[chainId]}/${this.API_VERSION}`, data, requestOptions)
       } catch (error) {
-        response = await fetchFn(url, method, `${barnUri[chainId]}/${this.API_VERSION}`, data, requestOptions)
+        barnResponse = await fetchFn(url, method, `${barnUri[chainId]}/${this.API_VERSION}`, data, requestOptions)
+      }
+      // If `barnResponse` is set it means `prod` fetching threw and `barn` succeeded
+      // Return that, then
+      if (barnResponse) {
+        return barnResponse
+      }
+      // Prod barnResponse can fail without throwing
+      if (prodResponse?.ok) {
+        // If succeeded, return it
+        return prodResponse
+      } else {
+        // Otherwise, try barn
+        return await fetchFn(url, method, `${barnUri[chainId]}/${this.API_VERSION}`, data, requestOptions)
       }
     } else {
       const uri = getApiUrl(env)
-      response = await fetchFn(url, method, `${uri[chainId]}/${this.API_VERSION}`, data, requestOptions)
+      return await fetchFn(url, method, `${uri[chainId]}/${this.API_VERSION}`, data, requestOptions)
     }
-
-    return response
   }
 
   protected async fetch(
