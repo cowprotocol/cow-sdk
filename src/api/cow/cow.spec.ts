@@ -2,9 +2,8 @@ import { ethers } from 'ethers'
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { CowSdk } from '../../CowSdk'
 import { OrderKind, SigningScheme } from '@cowprotocol/contracts'
-import OperatorError from './errors/OperatorError'
 import { FeeQuoteParams, PriceQuoteLegacyParams } from './types'
-import QuoteError, { GpQuoteErrorObject } from './errors/QuoteError'
+import QuoteError from './errors/QuoteError'
 import { CowError } from '../../utils/common'
 import { OrderCancellation, OrderCreation, UnsignedOrder } from '../../utils/sign'
 import { ZERO_ADDRESS } from '../../constants'
@@ -159,7 +158,8 @@ test('Valid: Get an order ', async () => {
 })
 
 test('Invalid: Get an order ', async () => {
-  fetchMock.mockResponseOnce(
+  // given
+  fetchMock.mockResponse(
     JSON.stringify({
       errorType: 'NotFound',
       description: "You've passed an invalid URL",
@@ -167,22 +167,25 @@ test('Invalid: Get an order ', async () => {
     { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS }
   )
 
-  try {
-    await cowSdk.cowApi.getOrder('notValidOrderId')
-  } catch (e: unknown) {
-    const error = e as OperatorError
-    expect(error.message).toEqual('Token pair selected has insufficient liquidity')
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(fetchMock).toHaveBeenCalledWith(
-      'https://api.cow.fi/rinkeby/api/v1/orders/notValidOrderId',
-      FETCH_RESPONSE_PARAMETERS
-    )
-  }
+  // when
+  const promise = cowSdk.cowApi.getOrder('notValidOrderId', { env: undefined })
+
+  // then
+  await expect(promise).rejects.toThrow('Not found')
+  expect(fetchMock).toHaveBeenCalledTimes(2)
+  expect(fetchMock).toHaveBeenCalledWith(
+    'https://api.cow.fi/rinkeby/api/v1/orders/notValidOrderId',
+    FETCH_RESPONSE_PARAMETERS
+  )
+  expect(fetchMock).toHaveBeenCalledWith(
+    'https://barn.api.cow.fi/rinkeby/api/v1/orders/notValidOrderId',
+    FETCH_RESPONSE_PARAMETERS
+  )
 })
 
 test('Valid: Get last 5 orders for a given trader ', async () => {
   const ORDERS_RESPONSE = Array(5).fill(ORDER_RESPONSE)
-  fetchMock.mockResponseOnce(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
+  fetchMock.mockResponse(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
   const orders = await cowSdk.cowApi.getOrders({
     owner: '0x00000000005ef87f8ca7014309ece7260bbcdaeb', // Trader
     limit: 5,
@@ -197,7 +200,8 @@ test('Valid: Get last 5 orders for a given trader ', async () => {
 })
 
 test('Invalid: Get last 5 orders for an unexisting trader ', async () => {
-  fetchMock.mockResponseOnce(
+  // given
+  fetchMock.mockResponse(
     JSON.stringify({
       errorType: 'NotFound',
       description: "You've passed an invalid URL",
@@ -205,27 +209,26 @@ test('Invalid: Get last 5 orders for an unexisting trader ', async () => {
     { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS }
   )
 
-  try {
-    await cowSdk.cowApi.getOrders({
-      owner: 'invalidOwner',
-      limit: 5,
-      offset: 0,
-    })
-  } catch (e: unknown) {
-    const error = e as OperatorError
-    expect(error.message).toEqual('Token pair selected has insufficient liquidity')
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(fetchMock).toHaveBeenCalledWith(
-      'https://api.cow.fi/rinkeby/api/v1/account/invalidOwner/orders/?limit=5',
-      FETCH_RESPONSE_PARAMETERS
-    )
-  }
+  // when
+  const promise = cowSdk.cowApi.getOrders({
+    owner: 'invalidOwner',
+    limit: 5,
+    offset: 0,
+  })
+
+  // then
+  await expect(promise).rejects.toThrow('Not found')
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(fetchMock).toHaveBeenCalledWith(
+    'https://api.cow.fi/rinkeby/api/v1/account/invalidOwner/orders/?limit=5',
+    FETCH_RESPONSE_PARAMETERS
+  )
 })
 
 test('Valid: Get tx orders from a given txHash', async () => {
   const ORDERS_RESPONSE = Array(5).fill(ORDER_RESPONSE)
   const txHash = '0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5'
-  fetchMock.mockResponseOnce(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
+  fetchMock.mockResponse(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
   const txOrders = await cowSdk.cowApi.getTxOrders(txHash)
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
@@ -236,7 +239,8 @@ test('Valid: Get tx orders from a given txHash', async () => {
 })
 
 test('Invalid: Get tx orders from an unexisting txHash', async () => {
-  fetchMock.mockResponseOnce(
+  // given
+  fetchMock.mockResponse(
     JSON.stringify({
       errorType: 'NotFound',
       description: "You've passed an invalid URL",
@@ -244,22 +248,25 @@ test('Invalid: Get tx orders from an unexisting txHash', async () => {
     { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS }
   )
 
-  try {
-    await cowSdk.cowApi.getTxOrders('invalidTxHash')
-  } catch (e: unknown) {
-    const error = e as OperatorError
-    expect(error.message).toEqual('Token pair selected has insufficient liquidity')
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(fetchMock).toHaveBeenCalledWith(
-      'https://api.cow.fi/rinkeby/api/v1/transactions/invalidTxHash/orders',
-      FETCH_RESPONSE_PARAMETERS
-    )
-  }
+  // when
+  const promise = cowSdk.cowApi.getTxOrders('invalidTxHash')
+
+  // then
+  await expect(promise).rejects.toThrow('Not found')
+  expect(fetchMock).toHaveBeenCalledTimes(2)
+  expect(fetchMock).toHaveBeenCalledWith(
+    'https://api.cow.fi/rinkeby/api/v1/transactions/invalidTxHash/orders',
+    FETCH_RESPONSE_PARAMETERS
+  )
+  expect(fetchMock).toHaveBeenCalledWith(
+    'https://barn.api.cow.fi/rinkeby/api/v1/transactions/invalidTxHash/orders',
+    FETCH_RESPONSE_PARAMETERS
+  )
 })
 
 test('Valid: Get last 5 trades for a given trader ', async () => {
   const TRADES_RESPONSE = Array(5).fill(TRADE_RESPONSE)
-  fetchMock.mockResponseOnce(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
+  fetchMock.mockResponse(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
   const trades = await cowSdk.cowApi.getTrades({
     owner: TRADE_RESPONSE.owner, // Trader
   })
@@ -273,7 +280,7 @@ test('Valid: Get last 5 trades for a given trader ', async () => {
 
 test('Valid: Get last 5 trades for a given order id ', async () => {
   const TRADES_RESPONSE = Array(5).fill(TRADE_RESPONSE)
-  fetchMock.mockResponseOnce(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
+  fetchMock.mockResponse(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
   const trades = await cowSdk.cowApi.getTrades({
     orderId: TRADE_RESPONSE.orderUid,
   })
@@ -296,7 +303,8 @@ test('Invalid: Get trades passing both the owner and orderId', async () => {
 })
 
 test('Invalid: Get last 5 trades for an unexisting trader ', async () => {
-  fetchMock.mockResponseOnce(
+  // given
+  fetchMock.mockResponse(
     JSON.stringify({
       errorType: 'NotFound',
       description: "You've passed an invalid URL",
@@ -304,23 +312,22 @@ test('Invalid: Get last 5 trades for an unexisting trader ', async () => {
     { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS }
   )
 
-  try {
-    await cowSdk.cowApi.getTrades({
-      owner: 'invalidOwner',
-    })
-  } catch (e: unknown) {
-    const error = e as OperatorError
-    expect(error.message).toEqual('Token pair selected has insufficient liquidity')
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(fetchMock).toHaveBeenCalledWith(
-      'https://api.cow.fi/rinkeby/api/v1/trades?owner=invalidOwner',
-      FETCH_RESPONSE_PARAMETERS
-    )
-  }
+  // when
+  const promise = cowSdk.cowApi.getTrades({
+    owner: 'invalidOwner',
+  })
+
+  // then
+  await expect(promise).rejects.toThrow('Not found')
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(fetchMock).toHaveBeenCalledWith(
+    'https://api.cow.fi/rinkeby/api/v1/trades?owner=invalidOwner',
+    FETCH_RESPONSE_PARAMETERS
+  )
 })
 
 test('Valid: Get Price Quote from partial order', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify(QUOTE_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
+  fetchMock.mockResponse(JSON.stringify(QUOTE_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
   const quote = await cowSdk.cowApi.getQuoteLegacyParams(QUOTE_REQUEST as FeeQuoteParams)
   const { kind, sellToken, buyToken, receiver, validTo, appData, partiallyFillable } = QUOTE_RESPONSE.quote
   expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -363,25 +370,25 @@ test('Valid: Get Price Quote (Legacy)', async () => {
 })
 
 test('Invalid: Get Price Quote from unexisting partial order', async () => {
-  fetchMock.mockResponseOnce(
+  // given
+  fetchMock.mockResponse(
     JSON.stringify({
       errorType: 'NoLiquidity',
       description: 'string',
     }),
     { status: HTTP_BAD_REQUEST, headers: HEADERS }
   )
-  try {
-    await cowSdk.cowApi.getQuoteLegacyParams({ ...QUOTE_REQUEST, from: ZERO_ADDRESS } as FeeQuoteParams)
-  } catch (e) {
-    const error = e as GpQuoteErrorObject
 
-    expect(error.description).toEqual('Token pair selected has insufficient liquidity')
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-  }
+  // when
+  const promise = cowSdk.cowApi.getQuoteLegacyParams({ ...QUOTE_REQUEST, from: ZERO_ADDRESS } as FeeQuoteParams)
+
+  // then
+  await expect(promise).rejects.toThrow('Token pair selected has insufficient liquidity')
+  expect(fetchMock).toHaveBeenCalledTimes(2)
 })
 
 test('Invalid: Get Price Quote (Legacy) with unexisting token', async () => {
-  fetchMock.mockResponseOnce(
+  fetchMock.mockResponse(
     JSON.stringify({
       errorType: 'NotFound',
       description: "You've passed an invalid URL",
@@ -398,9 +405,13 @@ test('Invalid: Get Price Quote (Legacy) with unexisting token', async () => {
   } catch (e) {
     const error = e as QuoteError
     expect(error.message).toEqual('Token pair selected has insufficient liquidity')
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.cow.fi/rinkeby/api/v1/markets/unexistingToken-unexistingToken/buy/1234567890',
+      FETCH_RESPONSE_PARAMETERS
+    )
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://barn.api.cow.fi/rinkeby/api/v1/markets/unexistingToken-unexistingToken/buy/1234567890',
       FETCH_RESPONSE_PARAMETERS
     )
   }
@@ -437,7 +448,8 @@ test('Valid: Get Profile Data', async () => {
 })
 
 test('Invalid: Get Profile Data from unexisting address', async () => {
-  fetchMock.mockResponseOnce(
+  // given
+  fetchMock.mockResponse(
     JSON.stringify({
       errorType: 'NotFound',
       description: "You've passed an invalid URL",
@@ -447,17 +459,20 @@ test('Invalid: Get Profile Data from unexisting address', async () => {
   const cowSdk1 = new CowSdk(chainId)
   cowSdk1.updateChainId(1)
 
-  try {
-    await cowSdk1.cowApi.getProfileData('unexistingAddress')
-  } catch (e) {
-    const error = e as CowError
-    expect(error.message).toEqual("You've passed an invalid URL")
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(fetchMock).toHaveBeenCalledWith(
-      'https://api.cow.fi/affiliate/api/v1/profile/unexistingAddress',
-      FETCH_RESPONSE_PARAMETERS
-    )
-  }
+  // when
+  const promise = cowSdk1.cowApi.getProfileData('unexistingAddress')
+
+  // then
+  await expect(promise).rejects.toThrow("You've passed an invalid URL")
+  expect(fetchMock).toHaveBeenCalledTimes(2)
+  expect(fetchMock).toHaveBeenCalledWith(
+    'https://api.cow.fi/affiliate/api/v1/profile/unexistingAddress',
+    FETCH_RESPONSE_PARAMETERS
+  )
+  expect(fetchMock).toHaveBeenCalledWith(
+    'https://barn.api.cow.fi/affiliate/api/v1/profile/unexistingAddress',
+    FETCH_RESPONSE_PARAMETERS
+  )
 })
 
 test('Invalid: Get Profile Data from not supported network', async () => {
@@ -499,28 +514,29 @@ test('Valid: Send sign order cancellation', async () => {
 })
 
 test('Invalid: Send sign not found order cancellation', async () => {
-  fetchMock.mockResponseOnce(
+  // given
+  fetchMock.mockResponse(
     JSON.stringify({
       errorType: 'NotFound',
       description: "You've passed an invalid URL",
     }),
     { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS }
   )
-  try {
-    await cowSdk.cowApi.sendSignedOrderCancellation({
-      ...ORDER_CANCELLATION,
-      cancellation: { ...ORDER_CANCELLATION.cancellation, orderUid: 'unexistingOrder' },
-    })
-  } catch (e) {
-    const error = e as CowError
-    expect(error.message).toEqual('Token pair selected has insufficient liquidity')
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/rinkeby/api/v1/orders/unexistingOrder', {
-      ...FETCH_RESPONSE_PARAMETERS,
-      body: JSON.stringify({ ...SIGNED_ORDER_RESPONSE, signingScheme: 'eip712', from: ORDER_CANCELLATION.owner }),
-      method: 'DELETE',
-    })
-  }
+
+  // when
+  const promise = cowSdk.cowApi.sendSignedOrderCancellation({
+    ...ORDER_CANCELLATION,
+    cancellation: { ...ORDER_CANCELLATION.cancellation, orderUid: 'unexistingOrder' },
+  })
+
+  // then
+  await expect(promise).rejects.toThrow('Not found')
+  expect(fetchMock).toHaveBeenCalledTimes(2)
+  expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/rinkeby/api/v1/orders/unexistingOrder', {
+    ...FETCH_RESPONSE_PARAMETERS,
+    body: JSON.stringify({ ...SIGNED_ORDER_RESPONSE, signingScheme: 'eip712', from: ORDER_CANCELLATION.owner }),
+    method: 'DELETE',
+  })
 })
 
 test('Valid: Sign cancellation Order', async () => {
@@ -550,7 +566,8 @@ test('Valid: Send an order ', async () => {
 })
 
 test('Invalid: Send an duplicate order ', async () => {
-  fetchMock.mockResponseOnce(
+  // given
+  fetchMock.mockResponse(
     JSON.stringify({
       errorType: 'DuplicateOrder',
       description: 'string',
@@ -558,27 +575,27 @@ test('Invalid: Send an duplicate order ', async () => {
     { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS }
   )
 
-  try {
-    await cowSdk.cowApi.sendOrder({
-      order: { ...ORDER_RESPONSE, ...SIGNED_ORDER_RESPONSE } as Omit<OrderCreation, 'appData'>,
-      owner: '0x1811be0994930fe9480eaede25165608b093ad7a',
-    })
-  } catch (e: unknown) {
-    const error = e as CowError
-    expect(error.message).toEqual('There was another identical order already submitted. Please try again.')
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/rinkeby/api/v1/orders', {
-      ...FETCH_RESPONSE_PARAMETERS,
-      body: JSON.stringify({
-        ...ORDER_RESPONSE,
-        ...SIGNED_ORDER_RESPONSE,
-        from: '0x1811be0994930fe9480eaede25165608b093ad7a',
-        signingScheme: 'eip712',
-      }),
-      method: 'POST',
-    })
-  }
+  // when
+  const promise = cowSdk.cowApi.sendOrder({
+    order: { ...ORDER_RESPONSE, ...SIGNED_ORDER_RESPONSE } as Omit<OrderCreation, 'appData'>,
+    owner: '0x1811be0994930fe9480eaede25165608b093ad7a',
+  })
+
+  // then
+  await expect(promise).rejects.toThrow('There was another identical order already submitted. Please try again.')
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/rinkeby/api/v1/orders', {
+    ...FETCH_RESPONSE_PARAMETERS,
+    body: JSON.stringify({
+      ...ORDER_RESPONSE,
+      ...SIGNED_ORDER_RESPONSE,
+      from: '0x1811be0994930fe9480eaede25165608b093ad7a',
+      signingScheme: 'eip712',
+    }),
+    method: 'POST',
+  })
 })
+
 test('Valid: Instantiate SDK without chainId defaults to mainnet', async () => {
   const cowSdk1 = new CowSdk()
   const chainId = await cowSdk1.context.chainId
