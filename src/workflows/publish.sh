@@ -35,6 +35,13 @@ if ! git fetch --end-of-options origin "refs/tags/$version_tag" 2>/dev/null; the
   echo "Tag $version_tag is not created. Create the Release first."
   exit 1
 fi
+
+latest_tag="$(git describe --tags --abbrev=0)"
+if ! $version_tag == latest_tag; then
+  echo "Latest tag $latest_tag version doesn't match package.json version $version"
+  exit 1
+fi
+
 yarn publish --access public
 
 echo "Package $package_name version $version successfully published."
