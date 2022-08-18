@@ -31,19 +31,17 @@ if package_exists "$package_name" && grep --silent --line-regexp --fixed-strings
 fi
 
 version_tag="v$version"
-if git fetch --end-of-options origin "refs/tags/$version_tag" 2>/dev/null; then
-  echo "Tag $version_tag is already present"
+if ! git fetch --end-of-options origin "refs/tags/$version_tag" 2>/dev/null; then
+  echo "Tag $version_tag is not created. Create the Release first."
+  exit 1
+fi
+
+latest_tag="$(git describe --tags --abbrev=0)"
+if ! $version_tag == latest_tag; then
+  echo "Latest tag $latest_tag version doesn't match package.json version $version"
   exit 1
 fi
 
 yarn publish --access public
-
-if ! git config --get user.name &>/dev/null; then
-  git config user.name "$git_username"
-  git config user.email "$git_useremail"
-fi
-git tag -m "Version $version" --end-of-options "$version_tag"
-
-git push origin "refs/tags/$version_tag"
 
 echo "Package $package_name version $version successfully published."
