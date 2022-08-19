@@ -48,14 +48,9 @@ export default class BaseApi {
     }
   }
 
-  protected post(
-    url: string,
-    data: unknown,
-    options: Options = {},
-    fetchFn?: 'singleEnv' | 'multipleEnvs'
-  ): Promise<Response> {
+  protected post(url: string, data: unknown, options: Options = {}, onlySingleEnv?: boolean): Promise<Response> {
     const params = [url, 'POST', this.fetch.bind(this), this.API_URL_GETTER, options, data]
-    if (fetchFn === 'singleEnv') {
+    if (onlySingleEnv) {
       return this.fetchSingleEnv(...(params as Parameters<typeof this.fetchSingleEnv>))
     } else {
       return this.fetchMultipleEnvs(...(params as Parameters<typeof this.fetchMultipleEnvs>))
