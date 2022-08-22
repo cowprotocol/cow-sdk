@@ -138,17 +138,22 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
-test('Valid: Get orders link ', async () => {
+test('Valid: Get orders link', async () => {
   const orderLink = await cowSdk.cowApi.getOrderLink(ORDER_RESPONSE.uid)
   expect(orderLink).toEqual(`https://api.cow.fi/rinkeby/api/v1/orders/${ORDER_RESPONSE.uid}`)
 })
 
-test('Valid: Get an order ', async () => {
+test('Valid: Get an order', async () => {
+  // given
   fetchMock.mockResponseOnce(JSON.stringify(ORDER_RESPONSE), {
     status: HTTP_STATUS_OK,
     headers: HEADERS,
   })
+
+  // when
   const order = await cowSdk.cowApi.getOrder(ORDER_RESPONSE.uid)
+
+  // then
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
     `https://api.cow.fi/rinkeby/api/v1/orders/${ORDER_RESPONSE.uid}`,
@@ -157,7 +162,31 @@ test('Valid: Get an order ', async () => {
   expect(order?.uid).toEqual(ORDER_RESPONSE.uid)
 })
 
-test('Invalid: Get an order ', async () => {
+test('Valid: Get an order from barn without env set', async () => {
+  // given
+  fetchMock.mockRejectOnce(Error('something went wrong'))
+  fetchMock.mockResponseOnce(JSON.stringify(ORDER_RESPONSE), {
+    status: HTTP_STATUS_OK,
+    headers: HEADERS,
+  })
+
+  // when
+  const order = await cowSdk.cowApi.getOrder(ORDER_RESPONSE.uid)
+
+  // then
+  expect(fetchMock).toHaveBeenCalledTimes(2)
+  expect(fetchMock).toHaveBeenCalledWith(
+    `https://api.cow.fi/rinkeby/api/v1/orders/${ORDER_RESPONSE.uid}`,
+    FETCH_RESPONSE_PARAMETERS
+  )
+  expect(fetchMock).toHaveBeenCalledWith(
+    `https://barn.api.cow.fi/rinkeby/api/v1/orders/${ORDER_RESPONSE.uid}`,
+    FETCH_RESPONSE_PARAMETERS
+  )
+  expect(order?.uid).toEqual(ORDER_RESPONSE.uid)
+})
+
+test('Invalid: Get an order', async () => {
   // given
   fetchMock.mockResponse(
     JSON.stringify({
@@ -179,6 +208,28 @@ test('Invalid: Get an order ', async () => {
   )
   expect(fetchMock).toHaveBeenCalledWith(
     'https://barn.api.cow.fi/rinkeby/api/v1/orders/notValidOrderId',
+    FETCH_RESPONSE_PARAMETERS
+  )
+})
+
+test('Invalid: Get an order failed on both envs', async () => {
+  // given
+  fetchMock.mockReject(Error('something went wrong'))
+
+  // when
+  const promise = cowSdk.cowApi.getOrder(ORDER_RESPONSE.uid)
+
+  // then
+  await expect(promise).rejects.toThrow(
+    'Order fetch failed. This may be due to a server or network connectivity issue. Please try again later.'
+  )
+  expect(fetchMock).toHaveBeenCalledTimes(2)
+  expect(fetchMock).toHaveBeenCalledWith(
+    `https://api.cow.fi/rinkeby/api/v1/orders/${ORDER_RESPONSE.uid}`,
+    FETCH_RESPONSE_PARAMETERS
+  )
+  expect(fetchMock).toHaveBeenCalledWith(
+    `https://barn.api.cow.fi/rinkeby/api/v1/orders/${ORDER_RESPONSE.uid}`,
     FETCH_RESPONSE_PARAMETERS
   )
 })
