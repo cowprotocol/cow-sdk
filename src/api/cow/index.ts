@@ -297,7 +297,7 @@ export class CowApi extends BaseApi {
         from: owner,
       },
       { chainId, env },
-      'singleEnv' // we don't want to try to post to both barn and prod at the same time
+      true // we don't want to try to post to both barn and prod at the same time
     )
 
     // Handle response

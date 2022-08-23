@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { SupportedChainId } from '../../constants/chains'
 import { CowError } from '../../utils/common'
-import { Context } from '../../utils/context'
+import { Context, Env } from '../../utils/context'
 import { Options } from '../cow/types'
 import fetch from 'cross-fetch'
 
@@ -16,6 +16,7 @@ interface ConstructorParams {
 
 const DEFAULT_HEADERS = { 'Content-Type': 'application/json' }
 const DEFAULT_API_VERSION = 'v1'
+
 export default class BaseApi {
   context
   API_NAME
@@ -48,14 +49,9 @@ export default class BaseApi {
     }
   }
 
-  protected post(
-    url: string,
-    data: unknown,
-    options: Options = {},
-    fetchFn?: 'singleEnv' | 'multipleEnvs'
-  ): Promise<Response> {
+  protected post(url: string, data: unknown, options: Options = {}, onlySingleEnv?: boolean): Promise<Response> {
     const params = [url, 'POST', this.fetch.bind(this), this.API_URL_GETTER, options, data]
-    if (fetchFn === 'singleEnv') {
+    if (onlySingleEnv) {
       return this.fetchSingleEnv(...(params as Parameters<typeof this.fetchSingleEnv>))
     } else {
       return this.fetchMultipleEnvs(...(params as Parameters<typeof this.fetchMultipleEnvs>))
@@ -95,39 +91,23 @@ export default class BaseApi {
     options: Options = {},
     data?: unknown
   ): Promise<Response> {
-    const { chainId: networkId, env, requestOptions } = options
-    const prodUri = getApiUrl('prod')
-    const barnUri = getApiUrl('staging')
+    const { env, chainId: networkId, ...otherOptions } = options
 
+    // No env set? Check first prod then staging
+    // Otherwise use what's passed in
+    const envs: Env[] = !env ? ['prod', 'staging'] : [env]
     const chainId = networkId || (await this.context.chainId)
 
-    // `env` is not set, meaning we should try both envs
-    if (!env) {
-      let prodResponse
-      let barnResponse
-      try {
-        // Prod goes first
-        prodResponse = await fetchFn(url, method, `${prodUri[chainId]}/${this.API_VERSION}`, data, requestOptions)
-      } catch (error) {
-        barnResponse = await fetchFn(url, method, `${barnUri[chainId]}/${this.API_VERSION}`, data, requestOptions)
-      }
-      // If `barnResponse` is set it means `prod` fetching threw and `barn` succeeded
-      // Return that, then
-      if (barnResponse) {
-        return barnResponse
-      }
-      // Prod barnResponse can fail without throwing
-      if (prodResponse?.ok) {
-        // If succeeded, return it
-        return prodResponse
-      } else {
-        // Otherwise, try barn
-        return await fetchFn(url, method, `${barnUri[chainId]}/${this.API_VERSION}`, data, requestOptions)
-      }
-    } else {
-      const uri = getApiUrl(env)
-      return await fetchFn(url, method, `${uri[chainId]}/${this.API_VERSION}`, data, requestOptions)
-    }
+    return this.fetchMultipleEnvsRecursive({
+      url,
+      method,
+      fetchFn,
+      getApiUrl,
+      options: otherOptions,
+      envs,
+      chainId,
+      data,
+    })
   }
 
   protected async fetch(
@@ -144,4 +124,45 @@ export default class BaseApi {
       body: data !== undefined ? JSON.stringify(data) : data,
     })
   }
+
+  private async fetchMultipleEnvsRecursive(params: FetchMultipleEnvsRecursiveParams): Promise<Response> {
+    const { url, method, fetchFn, getApiUrl, options = {}, envs, chainId, data } = params
+
+    const { requestOptions } = options
+    // Pick the first env from the list to try
+    const [env, ...nextEnvs] = envs
+
+    const uri = getApiUrl(env)[chainId]
+
+    try {
+      const response = await fetchFn(url, method, `${uri}/${this.API_VERSION}`, data, requestOptions)
+
+      if (!response.ok && nextEnvs?.length) {
+        // If the response is not ok and there are more envs to try, do that
+        return this.fetchMultipleEnvsRecursive({ ...params, envs: nextEnvs })
+      }
+
+      // Otherwise return response as is
+      return response
+    } catch (error) {
+      if (nextEnvs?.length) {
+        // If request failed and there are more envs to try, do that
+        return this.fetchMultipleEnvsRecursive({ ...params, envs: nextEnvs })
+      } else {
+        // Otherwise re-throw error as is
+        throw error
+      }
+    }
+  }
+}
+
+type FetchMultipleEnvsRecursiveParams = {
+  url: string
+  method: 'GET' | 'POST' | 'DELETE'
+  fetchFn: BaseApi['fetch']
+  getApiUrl: BaseApi['API_URL_GETTER']
+  options: Omit<Options, 'env' | 'chainId'>
+  envs: Env[]
+  chainId: SupportedChainId
+  data?: unknown
 }
