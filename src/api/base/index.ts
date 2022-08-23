@@ -16,6 +16,7 @@ interface ConstructorParams {
 
 const DEFAULT_HEADERS = { 'Content-Type': 'application/json' }
 const DEFAULT_API_VERSION = 'v1'
+
 export default class BaseApi {
   context
   API_NAME
@@ -97,7 +98,16 @@ export default class BaseApi {
     const envs: Env[] = !env ? ['prod', 'staging'] : [env]
     const chainId = networkId || (await this.context.chainId)
 
-    return this.fetchMultipleEnvsRecursive(url, method, fetchFn, getApiUrl, otherOptions, envs, chainId, data)
+    return this.fetchMultipleEnvsRecursive({
+      url,
+      method,
+      fetchFn,
+      getApiUrl,
+      options: otherOptions,
+      envs,
+      chainId,
+      data,
+    })
   }
 
   protected async fetch(
@@ -115,16 +125,9 @@ export default class BaseApi {
     })
   }
 
-  private async fetchMultipleEnvsRecursive(
-    url: string,
-    method: 'GET' | 'POST' | 'DELETE',
-    fetchFn: BaseApi['fetch'],
-    getApiUrl: BaseApi['API_URL_GETTER'],
-    options: Omit<Options, 'env' | 'chainId'> = {},
-    envs: Env[],
-    chainId: SupportedChainId,
-    data?: unknown
-  ): Promise<Response> {
+  private async fetchMultipleEnvsRecursive(params: FetchMultipleEnvsRecursiveParams): Promise<Response> {
+    const { url, method, fetchFn, getApiUrl, options = {}, envs, chainId, data } = params
+
     const { requestOptions } = options
     // Pick the first env from the list to try
     const [env, ...nextEnvs] = envs
@@ -136,7 +139,7 @@ export default class BaseApi {
 
       if (!response.ok && nextEnvs?.length) {
         // If the response is not ok and there are more envs to try, do that
-        return this.fetchMultipleEnvsRecursive(url, method, fetchFn, getApiUrl, options, nextEnvs, chainId, data)
+        return this.fetchMultipleEnvsRecursive({ ...params, envs: nextEnvs })
       }
 
       // Otherwise return response as is
@@ -144,11 +147,22 @@ export default class BaseApi {
     } catch (error) {
       if (nextEnvs?.length) {
         // If request failed and there are more envs to try, do that
-        return this.fetchMultipleEnvsRecursive(url, method, fetchFn, getApiUrl, options, nextEnvs, chainId, data)
+        return this.fetchMultipleEnvsRecursive({ ...params, envs: nextEnvs })
       } else {
         // Otherwise re-throw error as is
         throw error
       }
     }
   }
+}
+
+type FetchMultipleEnvsRecursiveParams = {
+  url: string
+  method: 'GET' | 'POST' | 'DELETE'
+  fetchFn: BaseApi['fetch']
+  getApiUrl: BaseApi['API_URL_GETTER']
+  options: Omit<Options, 'env' | 'chainId'>
+  envs: Env[]
+  chainId: SupportedChainId
+  data?: unknown
 }
