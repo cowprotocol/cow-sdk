@@ -6,7 +6,7 @@ const mnemonic = 'fall dirt bread cactus...'
 const wallet = Wallet.fromMnemonic(mnemonic)
 const cowSdk = new CowSdk(
   // Leaving chainId empty will default to MAINNET
-  4,
+  100,
   {
     signer: wallet, // Provide a signer, so you can sign order
   }
@@ -63,4 +63,4 @@ const orderId = await cowSdk.cowApi.sendOrder({
 
 /* --------------------  BONUS: Link to the CoW Explorer   -------------------- */
 // View order in explorer
-console.log(`https://explorer.cow.fi/rinkeby/orders/${orderId}`)
+console.log(`https://explorer.cow.fi/gc/orders/${orderId}`)

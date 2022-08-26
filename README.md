@@ -20,7 +20,7 @@ Instantiate the SDK:
 ```js
 import { CowSdk } from '@cowprotocol/cow-sdk'
 
-const chainId = 4 // Rinkeby
+const chainId = 100 // Gnosis chain
 const cowSdk = new CowSdk(chainId)
 ```
 
@@ -193,7 +193,7 @@ One easy is to check in the CoW Explorer. You can create a CoW Explorer link if 
 
 ```js
 // View order in explorer
-console.log(`https://explorer.cow.fi/rinkeby/orders/${orderId}`)
+console.log(`https://explorer.cow.fi/gc/orders/${orderId}`)
 ```
 
 

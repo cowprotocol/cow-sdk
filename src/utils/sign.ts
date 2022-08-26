@@ -38,7 +38,7 @@ export interface SignOrderParams {
 
 // posted to /api/v1/orders on Order creation
 // serializable, so no BigNumbers
-//  See https://protocol-rinkeby.dev.gnosisdev.com/api/
+//  See https://api.cow.fi/docs
 export interface OrderCreation extends UnsignedOrder {
   signingScheme: SigningScheme // signed method
 

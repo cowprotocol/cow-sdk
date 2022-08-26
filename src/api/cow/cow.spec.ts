@@ -11,7 +11,7 @@ import { SupportedChainId } from '../../constants/chains'
 
 enableFetchMocks()
 
-const chainId = 4 as SupportedChainId //Rinkeby
+const chainId = 100 as SupportedChainId // Gnosis chain
 
 const signer = ethers.Wallet.createRandom()
 
@@ -140,7 +140,7 @@ afterEach(() => {
 
 test('Valid: Get orders link', async () => {
   const orderLink = await cowSdk.cowApi.getOrderLink(ORDER_RESPONSE.uid)
-  expect(orderLink).toEqual(`https://api.cow.fi/rinkeby/api/v1/orders/${ORDER_RESPONSE.uid}`)
+  expect(orderLink).toEqual(`https://api.cow.fi/xdai/api/v1/orders/${ORDER_RESPONSE.uid}`)
 })
 
 test('Valid: Get an order', async () => {
@@ -156,7 +156,7 @@ test('Valid: Get an order', async () => {
   // then
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    `https://api.cow.fi/rinkeby/api/v1/orders/${ORDER_RESPONSE.uid}`,
+    `https://api.cow.fi/xdai/api/v1/orders/${ORDER_RESPONSE.uid}`,
     FETCH_RESPONSE_PARAMETERS
   )
   expect(order?.uid).toEqual(ORDER_RESPONSE.uid)
@@ -176,11 +176,11 @@ test('Valid: Get an order from barn without env set', async () => {
   // then
   expect(fetchMock).toHaveBeenCalledTimes(2)
   expect(fetchMock).toHaveBeenCalledWith(
-    `https://api.cow.fi/rinkeby/api/v1/orders/${ORDER_RESPONSE.uid}`,
+    `https://api.cow.fi/xdai/api/v1/orders/${ORDER_RESPONSE.uid}`,
     FETCH_RESPONSE_PARAMETERS
   )
   expect(fetchMock).toHaveBeenCalledWith(
-    `https://barn.api.cow.fi/rinkeby/api/v1/orders/${ORDER_RESPONSE.uid}`,
+    `https://barn.api.cow.fi/xdai/api/v1/orders/${ORDER_RESPONSE.uid}`,
     FETCH_RESPONSE_PARAMETERS
   )
   expect(order?.uid).toEqual(ORDER_RESPONSE.uid)
@@ -203,11 +203,11 @@ test('Invalid: Get an order', async () => {
   await expect(promise).rejects.toThrow('Not found')
   expect(fetchMock).toHaveBeenCalledTimes(2)
   expect(fetchMock).toHaveBeenCalledWith(
-    'https://api.cow.fi/rinkeby/api/v1/orders/notValidOrderId',
+    'https://api.cow.fi/xdai/api/v1/orders/notValidOrderId',
     FETCH_RESPONSE_PARAMETERS
   )
   expect(fetchMock).toHaveBeenCalledWith(
-    'https://barn.api.cow.fi/rinkeby/api/v1/orders/notValidOrderId',
+    'https://barn.api.cow.fi/xdai/api/v1/orders/notValidOrderId',
     FETCH_RESPONSE_PARAMETERS
   )
 })
@@ -225,11 +225,11 @@ test('Invalid: Get an order failed on both envs', async () => {
   )
   expect(fetchMock).toHaveBeenCalledTimes(2)
   expect(fetchMock).toHaveBeenCalledWith(
-    `https://api.cow.fi/rinkeby/api/v1/orders/${ORDER_RESPONSE.uid}`,
+    `https://api.cow.fi/xdai/api/v1/orders/${ORDER_RESPONSE.uid}`,
     FETCH_RESPONSE_PARAMETERS
   )
   expect(fetchMock).toHaveBeenCalledWith(
-    `https://barn.api.cow.fi/rinkeby/api/v1/orders/${ORDER_RESPONSE.uid}`,
+    `https://barn.api.cow.fi/xdai/api/v1/orders/${ORDER_RESPONSE.uid}`,
     FETCH_RESPONSE_PARAMETERS
   )
 })
@@ -244,7 +244,7 @@ test('Valid: Get last 5 orders for a given trader ', async () => {
   })
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    'https://api.cow.fi/rinkeby/api/v1/account/0x00000000005ef87f8ca7014309ece7260bbcdaeb/orders/?limit=5',
+    'https://api.cow.fi/xdai/api/v1/account/0x00000000005ef87f8ca7014309ece7260bbcdaeb/orders/?limit=5',
     FETCH_RESPONSE_PARAMETERS
   )
   expect(orders.length).toEqual(5)
@@ -271,7 +271,7 @@ test('Invalid: Get last 5 orders for an unexisting trader ', async () => {
   await expect(promise).rejects.toThrow('Not found')
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    'https://api.cow.fi/rinkeby/api/v1/account/invalidOwner/orders/?limit=5',
+    'https://api.cow.fi/xdai/api/v1/account/invalidOwner/orders/?limit=5',
     FETCH_RESPONSE_PARAMETERS
   )
 })
@@ -283,7 +283,7 @@ test('Valid: Get tx orders from a given txHash', async () => {
   const txOrders = await cowSdk.cowApi.getTxOrders(txHash)
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    `https://api.cow.fi/rinkeby/api/v1/transactions/${txHash}/orders`,
+    `https://api.cow.fi/xdai/api/v1/transactions/${txHash}/orders`,
     FETCH_RESPONSE_PARAMETERS
   )
   expect(txOrders.length).toEqual(5)
@@ -306,11 +306,11 @@ test('Invalid: Get tx orders from an unexisting txHash', async () => {
   await expect(promise).rejects.toThrow('Not found')
   expect(fetchMock).toHaveBeenCalledTimes(2)
   expect(fetchMock).toHaveBeenCalledWith(
-    'https://api.cow.fi/rinkeby/api/v1/transactions/invalidTxHash/orders',
+    'https://api.cow.fi/xdai/api/v1/transactions/invalidTxHash/orders',
     FETCH_RESPONSE_PARAMETERS
   )
   expect(fetchMock).toHaveBeenCalledWith(
-    'https://barn.api.cow.fi/rinkeby/api/v1/transactions/invalidTxHash/orders',
+    'https://barn.api.cow.fi/xdai/api/v1/transactions/invalidTxHash/orders',
     FETCH_RESPONSE_PARAMETERS
   )
 })
@@ -323,7 +323,7 @@ test('Valid: Get last 5 trades for a given trader ', async () => {
   })
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    `https://api.cow.fi/rinkeby/api/v1/trades?owner=${TRADE_RESPONSE.owner}`,
+    `https://api.cow.fi/xdai/api/v1/trades?owner=${TRADE_RESPONSE.owner}`,
     FETCH_RESPONSE_PARAMETERS
   )
   expect(trades.length).toEqual(5)
@@ -337,7 +337,7 @@ test('Valid: Get last 5 trades for a given order id ', async () => {
   })
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    `https://api.cow.fi/rinkeby/api/v1/trades?orderUid=${TRADE_RESPONSE.orderUid}`,
+    `https://api.cow.fi/xdai/api/v1/trades?orderUid=${TRADE_RESPONSE.orderUid}`,
     FETCH_RESPONSE_PARAMETERS
   )
   expect(trades.length).toEqual(5)
@@ -372,7 +372,7 @@ test('Invalid: Get last 5 trades for an unexisting trader ', async () => {
   await expect(promise).rejects.toThrow('Not found')
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    'https://api.cow.fi/rinkeby/api/v1/trades?owner=invalidOwner',
+    'https://api.cow.fi/xdai/api/v1/trades?owner=invalidOwner',
     FETCH_RESPONSE_PARAMETERS
   )
 })
@@ -382,7 +382,7 @@ test('Valid: Get Price Quote from partial order', async () => {
   const quote = await cowSdk.cowApi.getQuoteLegacyParams(QUOTE_REQUEST as FeeQuoteParams)
   const { kind, sellToken, buyToken, receiver, validTo, appData, partiallyFillable } = QUOTE_RESPONSE.quote
   expect(fetchMock).toHaveBeenCalledTimes(1)
-  expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/rinkeby/api/v1/quote', {
+  expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/xdai/api/v1/quote', {
     ...FETCH_RESPONSE_PARAMETERS,
     body: JSON.stringify({
       kind,
@@ -413,7 +413,7 @@ test('Valid: Get Price Quote (Legacy)', async () => {
   } as PriceQuoteLegacyParams)
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    'https://api.cow.fi/rinkeby/api/v1/markets/0x6810e776880c02933d47db1b9fc05908e5386b96-0x6810e776880c02933d47db1b9fc05908e5386b96/buy/1234567890',
+    'https://api.cow.fi/xdai/api/v1/markets/0x6810e776880c02933d47db1b9fc05908e5386b96-0x6810e776880c02933d47db1b9fc05908e5386b96/buy/1234567890',
     FETCH_RESPONSE_PARAMETERS
   )
   expect(price?.amount).toEqual(PRICE_QUOTE_RESPONSE.amount)
@@ -458,11 +458,11 @@ test('Invalid: Get Price Quote (Legacy) with unexisting token', async () => {
     expect(error.message).toEqual('Token pair selected has insufficient liquidity')
     expect(fetchMock).toHaveBeenCalledTimes(2)
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://api.cow.fi/rinkeby/api/v1/markets/unexistingToken-unexistingToken/buy/1234567890',
+      'https://api.cow.fi/xdai/api/v1/markets/unexistingToken-unexistingToken/buy/1234567890',
       FETCH_RESPONSE_PARAMETERS
     )
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://barn.api.cow.fi/rinkeby/api/v1/markets/unexistingToken-unexistingToken/buy/1234567890',
+      'https://barn.api.cow.fi/xdai/api/v1/markets/unexistingToken-unexistingToken/buy/1234567890',
       FETCH_RESPONSE_PARAMETERS
     )
   }
@@ -478,7 +478,7 @@ test('Valid: Get Price Quote', async () => {
   } as PriceQuoteLegacyParams)
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    'https://api.cow.fi/rinkeby/api/v1/markets/0x6810e776880c02933d47db1b9fc05908e5386b96-0x6810e776880c02933d47db1b9fc05908e5386b96/buy/1234567890',
+    'https://api.cow.fi/xdai/api/v1/markets/0x6810e776880c02933d47db1b9fc05908e5386b96-0x6810e776880c02933d47db1b9fc05908e5386b96/buy/1234567890',
     FETCH_RESPONSE_PARAMETERS
   )
   expect(price?.amount).toEqual(PRICE_QUOTE_RESPONSE.amount)
@@ -528,7 +528,7 @@ test('Invalid: Get Profile Data from unexisting address', async () => {
 
 test('Invalid: Get Profile Data from not supported network', async () => {
   fetchMock.mockResponseOnce(JSON.stringify(PROFILE_DATA_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
-  const profileData = await cowSdk.cowApi.getProfileData('0x6810e776880c02933d47db1b9fc05908e5386b96') // This will call sdk on Rinkeby which is not supported
+  const profileData = await cowSdk.cowApi.getProfileData('0x6810e776880c02933d47db1b9fc05908e5386b96') // This will call sdk on xdai which is not supported
   expect(profileData).toBeNull() // getProfileData will return null when network is different from Mainnet
 })
 
@@ -555,7 +555,7 @@ test('Valid: Send sign order cancellation', async () => {
   await cowSdk.cowApi.sendSignedOrderCancellation(ORDER_CANCELLATION)
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    `https://api.cow.fi/rinkeby/api/v1/orders/${ORDER_CANCELLATION.cancellation.orderUid}`,
+    `https://api.cow.fi/xdai/api/v1/orders/${ORDER_CANCELLATION.cancellation.orderUid}`,
     {
       ...FETCH_RESPONSE_PARAMETERS,
       body: JSON.stringify({ ...SIGNED_ORDER_RESPONSE, signingScheme: 'eip712', from: ORDER_CANCELLATION.owner }),
@@ -583,7 +583,7 @@ test('Invalid: Send sign not found order cancellation', async () => {
   // then
   await expect(promise).rejects.toThrow('Not found')
   expect(fetchMock).toHaveBeenCalledTimes(2)
-  expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/rinkeby/api/v1/orders/unexistingOrder', {
+  expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/xdai/api/v1/orders/unexistingOrder', {
     ...FETCH_RESPONSE_PARAMETERS,
     body: JSON.stringify({ ...SIGNED_ORDER_RESPONSE, signingScheme: 'eip712', from: ORDER_CANCELLATION.owner }),
     method: 'DELETE',
@@ -603,7 +603,7 @@ test('Valid: Send an order ', async () => {
     owner: '0x1811be0994930fe9480eaede25165608b093ad7a',
   })
   expect(fetchMock).toHaveBeenCalledTimes(1)
-  expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/rinkeby/api/v1/orders', {
+  expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/xdai/api/v1/orders', {
     ...FETCH_RESPONSE_PARAMETERS,
     body: JSON.stringify({
       ...ORDER_RESPONSE,
@@ -635,7 +635,7 @@ test('Invalid: Send an duplicate order ', async () => {
   // then
   await expect(promise).rejects.toThrow('There was another identical order already submitted. Please try again.')
   expect(fetchMock).toHaveBeenCalledTimes(1)
-  expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/rinkeby/api/v1/orders', {
+  expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/xdai/api/v1/orders', {
     ...FETCH_RESPONSE_PARAMETERS,
     body: JSON.stringify({
       ...ORDER_RESPONSE,

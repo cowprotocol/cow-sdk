@@ -1,5 +1,5 @@
 import log from 'loglevel'
-import { Variables, request } from 'graphql-request'
+import { request, Variables } from 'graphql-request'
 import { DocumentNode } from 'graphql'
 import { CowError } from '../../utils/common'
 import { Context, Env } from '../../utils/context'
@@ -17,7 +17,6 @@ export function getSubgraphUrl(env: Env): Partial<Record<ChainId, string>> {
     case 'prod':
       return {
         [ChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow',
-        [ChainId.RINKEBY]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-rinkeby',
         [ChainId.GOERLI]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-goerli',
         [ChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc',
       }

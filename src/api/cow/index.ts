@@ -5,24 +5,27 @@ import { getSigningSchemeApiValue, OrderCreation } from '../../utils/sign'
 import OperatorError, { ApiErrorCodeDetails, ApiErrorCodes, ApiErrorObject } from './errors/OperatorError'
 import QuoteError, {
   GpQuoteErrorCodes,
+  GpQuoteErrorDetails,
   GpQuoteErrorObject,
   mapOperatorErrorToQuoteError,
-  GpQuoteErrorDetails,
 } from './errors/QuoteError'
 import { toErc20Address } from '../../utils/tokens'
-import { FeeQuoteParams, PriceInformation, PriceQuoteLegacyParams, SimpleGetQuoteResponse } from './types'
-
-import { ZERO_ADDRESS } from '../../constants'
 import {
+  FeeQuoteParams,
   GetOrdersParams,
   GetTradesParams,
+  Options,
   OrderCancellationParams,
   OrderID,
   OrderMetaData,
+  PriceInformation,
+  PriceQuoteLegacyParams,
   ProfileData,
+  SimpleGetQuoteResponse,
   TradeMetaData,
-  Options,
 } from './types'
+
+import { ZERO_ADDRESS } from '../../constants'
 import { CowError, logPrefix, objectToQueryString } from '../../utils/common'
 import { Context, Env } from '../../utils/context'
 import BaseApi from '../base'
@@ -34,14 +37,12 @@ function getCowProtocolUrl(env: Env): Partial<Record<ChainId, string>> {
     case 'staging':
       return {
         [ChainId.MAINNET]: 'https://barn.api.cow.fi/mainnet/api',
-        [ChainId.RINKEBY]: 'https://barn.api.cow.fi/rinkeby/api',
         [ChainId.GOERLI]: 'https://barn.api.cow.fi/goerli/api',
         [ChainId.GNOSIS_CHAIN]: 'https://barn.api.cow.fi/xdai/api',
       }
     case 'prod':
       return {
         [ChainId.MAINNET]: 'https://api.cow.fi/mainnet/api',
-        [ChainId.RINKEBY]: 'https://api.cow.fi/rinkeby/api',
         [ChainId.GOERLI]: 'https://api.cow.fi/goerli/api',
         [ChainId.GNOSIS_CHAIN]: 'https://api.cow.fi/xdai/api',
       }
@@ -318,6 +319,10 @@ export class CowApi extends BaseApi {
     return baseUrl + `/orders/${orderId}`
   }
 
+  protected getApiBaseUrl(): Promise<string> {
+    return super.getApiBaseUrl(this.context.env)
+  }
+
   private getProfile(url: string, options: Options = {}): Promise<Response> {
     return this.fetchMultipleEnvs(url, 'GET', this.fetchProfile.bind(this), getProfileUrl, options)
   }
@@ -350,10 +355,6 @@ export class CowApi extends BaseApi {
           }
 
     return finalParams
-  }
-
-  protected getApiBaseUrl(): Promise<string> {
-    return super.getApiBaseUrl(this.context.env)
   }
 
   private async fetchProfile(

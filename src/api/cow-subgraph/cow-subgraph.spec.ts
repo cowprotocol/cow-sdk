@@ -321,15 +321,15 @@ test('Invalid: non-existent query', async () => {
 })
 
 describe('Chain id update', () => {
-  test('Valid: Handles Rinkeby', async () => {
+  test('Valid: Handles Goerli', async () => {
     const fetchParameters = getFetchParameters(LAST_HOURS_VOLUME_QUERY, 'LastHoursVolume', { hours: 24 })
     fetchMock.mockResponseOnce(JSON.stringify(LAST_24_HOURS_VOLUME_RESPONSE), {
       status: 200,
       headers,
     })
-    cowSdk.updateChainId(SupportedChainId.RINKEBY)
+    cowSdk.updateChainId(SupportedChainId.GOERLI)
     await cowSdk.cowSubgraphApi.getLastHoursVolume(24)
-    expect(fetchMock).toHaveBeenCalledWith(prodUrls[SupportedChainId.RINKEBY], fetchParameters)
+    expect(fetchMock).toHaveBeenCalledWith(prodUrls[SupportedChainId.GOERLI], fetchParameters)
   })
 
   test('Valid: Handles Gnosis Chain', async () => {
@@ -362,7 +362,7 @@ describe('Passing Options object', () => {
       status: 200,
       headers,
     })
-    await cowSdk.cowSubgraphApi.getLastHoursVolume(24, { chainId: SupportedChainId.RINKEBY, env: 'staging' })
+    await cowSdk.cowSubgraphApi.getLastHoursVolume(24, { chainId: SupportedChainId.GOERLI, env: 'staging' })
     expect(fetchMock).toHaveBeenCalledWith(prodUrls[SupportedChainId.MAINNET], fetchParameters)
   })
 })
