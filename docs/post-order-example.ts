@@ -34,7 +34,7 @@ const order = {
   sellToken,
   buyToken,
 
-  partiallyFillable: false, // (true would be for a "Fill or Kill" order, "false" for allowing "Partial execution" which is not supported yet)
+  partiallyFillable: false, // ("false" would be for a "Fill or Kill" order, "true" for allowing "Partial execution" which is not supported yet)
 
   // Deadline
   validTo,
