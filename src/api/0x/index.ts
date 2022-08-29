@@ -1,6 +1,6 @@
 import { OrderKind } from '@cowprotocol/contracts'
 import log from 'loglevel'
-import { GP_SETTLEMENT_CONTRACT_ADDRESS } from '../../constants'
+import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS } from '../../constants'
 import { SupportedChainId } from '../../constants/chains'
 import { objectToQueryString } from '../../utils/common'
 import { Context } from '../../utils/context'
@@ -13,12 +13,12 @@ import { Options, PriceQuoteLegacyParams } from '../cow/types'
 import { logPrefix } from './error'
 import { ERC20BridgeSource, ZeroXOptions, ZeroXQuote } from './types'
 import {
-  throwOrReturnAffiliateAddress,
-  optionsToMatchaParamsUrl,
   extractExcludedSources,
-  handleQuoteResponse,
-  getMatchaChainId,
   get0xUrls,
+  getMatchaChainId,
+  handleQuoteResponse,
+  optionsToMatchaParamsUrl,
+  throwOrReturnAffiliateAddress,
 } from './utils'
 
 const EXCLUDED_SOURCES: ERC20BridgeSource[] = []
@@ -32,7 +32,7 @@ export class ZeroXApi extends BaseApi {
     super({ context: new Context(chainId, {}), name: '0x', apiVersion: API_VERSION, getApiUrl: get0xUrls })
 
     // get defaults if necessary
-    const affiliateAddressMap = options?.affiliateAddressMap || GP_SETTLEMENT_CONTRACT_ADDRESS
+    const affiliateAddressMap = options?.affiliateAddressMap || COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS
     const excludedSources = options?.excludedSources || EXCLUDED_SOURCES
     // checks if missing affiliate address from address map and throws if undefined else returns address string
     const affiliateAddress = throwOrReturnAffiliateAddress({
