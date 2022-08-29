@@ -3,7 +3,7 @@ import { SupportedChainId as ChainId } from './chains'
 
 const { GPv2Settlement } = JSON.parse(contractNetworks as unknown as string) as typeof contractNetworks
 
-export const GP_SETTLEMENT_CONTRACT_ADDRESS: Partial<Record<number, string>> = {
+export const COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS: Partial<Record<number, string>> = {
   [ChainId.MAINNET]: GPv2Settlement[ChainId.MAINNET].address,
   [ChainId.RINKEBY]: GPv2Settlement[ChainId.RINKEBY].address,
   [ChainId.GOERLI]: GPv2Settlement[ChainId.GOERLI].address,

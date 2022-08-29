@@ -1,20 +1,20 @@
 import {
   domain as domainGp,
-  signOrder as signOrderGp,
-  signOrderCancellation as signOrderCancellationGp,
   EcdsaSignature,
+  IntChainIdTypedDataV4Signer,
   Order,
   OrderCancellation as OrderCancellationGp,
   Signature,
-  TypedDataV3Signer,
-  IntChainIdTypedDataV4Signer,
   SigningScheme,
+  signOrder as signOrderGp,
+  signOrderCancellation as signOrderCancellationGp,
+  TypedDataV3Signer,
 } from '@cowprotocol/contracts'
 import log from 'loglevel'
 
 import { SupportedChainId as ChainId } from '../constants/chains'
-import { GP_SETTLEMENT_CONTRACT_ADDRESS } from '../constants'
-import { TypedDataDomain, Signer } from '@ethersproject/abstract-signer'
+import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS } from '../constants'
+import { Signer, TypedDataDomain } from '@ethersproject/abstract-signer'
 import { CowError, logPrefix } from './common'
 
 // For error codes, see:
@@ -103,7 +103,7 @@ export function getSigningSchemeLibValue(ecdaSigningScheme: SigningScheme): numb
 
 function _getDomain(chainId: ChainId): TypedDataDomain {
   // Get settlement contract address
-  const settlementContract = GP_SETTLEMENT_CONTRACT_ADDRESS[chainId]
+  const settlementContract = COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[chainId]
 
   if (!settlementContract) {
     throw new CowError('Unsupported network. Settlement contract is not deployed')
