@@ -88,7 +88,7 @@ import { CowSdk, OrderKind } from '@cowprotocol/cow-sdk'
 const mnemonic = 'fall dirt bread cactus...'
 const wallet = Wallet.fromMnemonic(mnemonic)
 const cowSdk = new CowSdk(
-  4, {            // Leaving chainId empty will default to MAINNET
+  100, {            // Leaving chainId empty will default to MAINNET
   signer: wallet  // Provide a signer, so you can sign order
   }) 
 ```
@@ -298,7 +298,7 @@ Alternatively, you can upload the document on your own using any other service.
 
 ```js
 // Make sure you provide the IPFS params when instantiating the SDK
-const cowSdk = new CowSdk(4, {
+const cowSdk = new CowSdk(100, {
   ipfs: { 
     pinataApiKey: 'YOUR_PINATA_API_KEY', 
     pinataApiSecret: 'YOUR_PINATA_API_SECRET'
