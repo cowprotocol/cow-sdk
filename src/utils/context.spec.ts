@@ -8,8 +8,8 @@ test('Context: update chainId', async () => {
   expect(chainId).toEqual(1)
 
   // works
-  chainId = await context.updateChainId(4)
-  expect(chainId).toEqual(4)
+  chainId = await context.updateChainId(100)
+  expect(chainId).toEqual(100)
 })
 
 test('Context: update chainId fails', () => {

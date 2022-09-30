@@ -20,7 +20,7 @@ Instantiate the SDK:
 ```js
 import { CowSdk } from '@cowprotocol/cow-sdk'
 
-const chainId = 4 // Rinkeby
+const chainId = 100 // Gnosis chain
 const cowSdk = new CowSdk(chainId)
 ```
 
@@ -88,7 +88,7 @@ import { CowSdk, OrderKind } from '@cowprotocol/cow-sdk'
 const mnemonic = 'fall dirt bread cactus...'
 const wallet = Wallet.fromMnemonic(mnemonic)
 const cowSdk = new CowSdk(
-  4, {            // Leaving chainId empty will default to MAINNET
+  100, {            // Leaving chainId empty will default to MAINNET
   signer: wallet  // Provide a signer, so you can sign order
   }) 
 ```
@@ -193,7 +193,7 @@ One easy is to check in the CoW Explorer. You can create a CoW Explorer link if 
 
 ```js
 // View order in explorer
-console.log(`https://explorer.cow.fi/rinkeby/orders/${orderId}`)
+console.log(`https://explorer.cow.fi/gc/orders/${orderId}`)
 ```
 
 
@@ -298,7 +298,7 @@ Alternatively, you can upload the document on your own using any other service.
 
 ```js
 // Make sure you provide the IPFS params when instantiating the SDK
-const cowSdk = new CowSdk(4, {
+const cowSdk = new CowSdk(100, {
   ipfs: { 
     pinataApiKey: 'YOUR_PINATA_API_KEY', 
     pinataApiSecret: 'YOUR_PINATA_API_SECRET'

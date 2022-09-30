@@ -1,14 +1,15 @@
 import contractNetworks from '@cowprotocol/contracts/networks.json'
-import { SupportedChainId as ChainId } from './chains'
+import { ALL_SUPPORTED_CHAIN_IDS } from './chains'
 
 const { GPv2Settlement } = JSON.parse(contractNetworks as unknown as string) as typeof contractNetworks
 
-export const COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS: Partial<Record<number, string>> = {
-  [ChainId.MAINNET]: GPv2Settlement[ChainId.MAINNET].address,
-  [ChainId.RINKEBY]: GPv2Settlement[ChainId.RINKEBY].address,
-  [ChainId.GOERLI]: GPv2Settlement[ChainId.GOERLI].address,
-  [ChainId.GNOSIS_CHAIN]: GPv2Settlement[ChainId.GNOSIS_CHAIN].address,
-}
+export const COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS = ALL_SUPPORTED_CHAIN_IDS.reduce<Record<number, string>>(
+  (acc, chainId) => ({
+    ...acc,
+    [chainId]: GPv2Settlement[chainId].address,
+  }),
+  {}
+)
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
