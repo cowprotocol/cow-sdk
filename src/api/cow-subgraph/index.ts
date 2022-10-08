@@ -35,12 +35,9 @@ export class CowSubgraphApi {
   async getBaseUrl(options: SubgraphOptions = {}): Promise<string> {
     const { chainId: networkId, env = 'prod' } = options
     const chainId = networkId || (await this.context.chainId)
-    let baseUrl = getSubgraphUrl(env)[chainId]
+    const baseUrl = getSubgraphUrl(env)[chainId]
     if (!baseUrl) {
-      log.warn(
-        `[subgraph:${this.API_NAME}] No subgraph endpoint for chainId: ${chainId} and environment: ${env}. Switching to production mainnet endpoint`
-      )
-      baseUrl = getSubgraphUrl('prod')[ChainId.MAINNET] || ''
+      throw new Error(`No network support for SubGraph in ChainId ${networkId} and Environment "${env}"`)
     }
 
     return baseUrl
