@@ -37,7 +37,7 @@ export class CowSubgraphApi {
     const chainId = networkId || (await this.context.chainId)
     const baseUrl = getSubgraphUrl(env)[chainId]
     if (!baseUrl) {
-      throw new Error(`No network support for SubGraph in ChainId ${networkId} and Environment "${env}"`)
+      throw new CowError(`No network support for SubGraph in ChainId ${networkId} and Environment "${env}"`)
     }
 
     return baseUrl
@@ -63,11 +63,10 @@ export class CowSubgraphApi {
   }
 
   async runQuery<T>(query: string | DocumentNode, variables?: Variables, options: SubgraphOptions = {}): Promise<T> {
+    const { chainId, env } = options
+    const baseUrl = await this.getBaseUrl({ chainId, env })
     try {
-      const { chainId, env } = options
-      const baseUrl = await this.getBaseUrl({ chainId, env })
-      const response = await request(baseUrl, query, variables)
-      return response
+      return await request(baseUrl, query, variables)
     } catch (error) {
       log.error(`[subgraph:${this.API_NAME}]`, error)
       const baseUrl = await this.getBaseUrl()
