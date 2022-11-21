@@ -35,7 +35,7 @@ export interface OrderMetaData {
   status: ApiOrderStatus
   receiver: string
   // EthFlow related fields
-  ethflowData: EthFlowData
+  ethflowData?: EthFlowData
   onchainUser?: string
 }
 
