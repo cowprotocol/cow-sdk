@@ -35,12 +35,9 @@ export class CowSubgraphApi {
   async getBaseUrl(options: SubgraphOptions = {}): Promise<string> {
     const { chainId: networkId, env = 'prod' } = options
     const chainId = networkId || (await this.context.chainId)
-    let baseUrl = getSubgraphUrl(env)[chainId]
+    const baseUrl = getSubgraphUrl(env)[chainId]
     if (!baseUrl) {
-      log.warn(
-        `[subgraph:${this.API_NAME}] No subgraph endpoint for chainId: ${chainId} and environment: ${env}. Switching to production mainnet endpoint`
-      )
-      baseUrl = getSubgraphUrl('prod')[ChainId.MAINNET] || ''
+      throw new CowError(`No network support for SubGraph in ChainId ${networkId} and Environment "${env}"`)
     }
 
     return baseUrl
@@ -66,11 +63,10 @@ export class CowSubgraphApi {
   }
 
   async runQuery<T>(query: string | DocumentNode, variables?: Variables, options: SubgraphOptions = {}): Promise<T> {
+    const { chainId, env } = options
+    const baseUrl = await this.getBaseUrl({ chainId, env })
     try {
-      const { chainId, env } = options
-      const baseUrl = await this.getBaseUrl({ chainId, env })
-      const response = await request(baseUrl, query, variables)
-      return response
+      return await request(baseUrl, query, variables)
     } catch (error) {
       log.error(`[subgraph:${this.API_NAME}]`, error)
       const baseUrl = await this.getBaseUrl()

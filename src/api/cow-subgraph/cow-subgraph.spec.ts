@@ -356,13 +356,13 @@ describe('Passing Options object', () => {
     expect(fetchMock).toHaveBeenCalledWith(gcStagingUrl, fetchParameters)
   })
 
-  test("Valid: Switches to production mainnet if the specified env doesn't exist", async () => {
-    const fetchParameters = getFetchParameters(LAST_HOURS_VOLUME_QUERY, 'LastHoursVolume', { hours: 24 })
-    fetchMock.mockResponseOnce(JSON.stringify(LAST_24_HOURS_VOLUME_RESPONSE), {
-      status: 200,
-      headers,
-    })
-    await cowSdk.cowSubgraphApi.getLastHoursVolume(24, { chainId: SupportedChainId.GOERLI, env: 'staging' })
-    expect(fetchMock).toHaveBeenCalledWith(prodUrls[SupportedChainId.MAINNET], fetchParameters)
+  test("Throws if the specified env doesn't exist", async () => {
+    // given
+
+    // when
+    const promise = cowSdk.cowSubgraphApi.getLastHoursVolume(24, { chainId: SupportedChainId.GOERLI, env: 'staging' })
+
+    // then
+    await expect(promise).rejects.toThrow('No network support for SubGraph in ChainId')
   })
 })
