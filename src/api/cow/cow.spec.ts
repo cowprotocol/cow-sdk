@@ -1,7 +1,7 @@
 import { ethers } from 'ethers'
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { CowSdk } from '../../CowSdk'
-import { OrderKind, SigningScheme } from '@cowprotocol/contracts'
+import { BUY_ETH_ADDRESS, OrderKind, SigningScheme } from '@cowprotocol/contracts'
 import { FeeQuoteParams, PriceQuoteLegacyParams } from './types'
 import QuoteError from './errors/QuoteError'
 import { CowError } from '../../utils/common'
@@ -58,6 +58,16 @@ const ORDER_RESPONSE = {
   invalidated: true,
   status: 'presignaturePending',
   fullFeeAmount: '1234567890',
+}
+
+const ETH_FLOW_ORDER_RESPONSE = {
+  ...ORDER_RESPONSE,
+  owner: '0x76aaf674848311c7f21fc691b0b952f016da49f3', // EthFlowContract
+  ethflowData: {
+    isRefunded: false,
+    validTo: Date.now() + 60 * 1000 * 5,
+  },
+  onchainUser: '0x6810e776880c02933d47db1b9fc05908e5386b96',
 }
 
 const ORDER_CANCELLATION = {
@@ -692,4 +702,64 @@ test('Valid: Get last 5 trades changing options parameters', async () => {
 test('Valid: Update sdk context', async () => {
   await cowSdk.updateContext({ env: 'prod' })
   expect(cowSdk.context.env).toEqual('prod')
+})
+
+describe('Transform EthFlow orders', () => {
+  test('getOrder', async () => {
+    fetchMock.mockResponseOnce(JSON.stringify(ETH_FLOW_ORDER_RESPONSE), {
+      status: HTTP_STATUS_OK,
+      headers: HEADERS,
+    })
+
+    // when
+    const order = await cowSdk.cowApi.getOrder(ETH_FLOW_ORDER_RESPONSE.uid)
+
+    // then
+    expect(order?.owner).toEqual(order?.onchainUser)
+    expect(order?.validTo).toEqual(order?.ethflowData?.userValidTo)
+    expect(order?.sellToken).toEqual(BUY_ETH_ADDRESS)
+  })
+
+  test('getOrders', async () => {
+    // given
+    const ORDERS_RESPONSE = [ETH_FLOW_ORDER_RESPONSE, ORDER_RESPONSE]
+    fetchMock.mockResponse(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
+
+    // when
+    const orders = await cowSdk.cowApi.getOrders({
+      owner: '0x6810e776880c02933d47db1b9fc05908e5386b96', // Trader
+      limit: 5,
+      offset: 0,
+    })
+
+    // then
+    // eth flow order
+    expect(orders[0].owner).toEqual(orders[0].onchainUser)
+    expect(orders[0].validTo).toEqual(orders[0].ethflowData?.userValidTo)
+    expect(orders[0].sellToken).toEqual(BUY_ETH_ADDRESS)
+    // regular order
+    expect(orders[1].owner).toEqual(ORDER_RESPONSE.owner)
+    expect(orders[1].validTo).toEqual(ORDER_RESPONSE.validTo)
+    expect(orders[1].sellToken).toEqual(ORDER_RESPONSE.sellToken)
+  })
+
+  test('getTxOrders', async () => {
+    // given
+    const ORDERS_RESPONSE = [ETH_FLOW_ORDER_RESPONSE, ORDER_RESPONSE]
+    const txHash = '0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5'
+    fetchMock.mockResponse(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
+
+    // when
+    const txOrders = await cowSdk.cowApi.getTxOrders(txHash)
+
+    // then
+    // eth flow order
+    expect(txOrders[0].owner).toEqual(txOrders[0].onchainUser)
+    expect(txOrders[0].validTo).toEqual(txOrders[0].ethflowData?.userValidTo)
+    expect(txOrders[0].sellToken).toEqual(BUY_ETH_ADDRESS)
+    // regular order
+    expect(txOrders[1].owner).toEqual(ORDER_RESPONSE.owner)
+    expect(txOrders[1].validTo).toEqual(ORDER_RESPONSE.validTo)
+    expect(txOrders[1].sellToken).toEqual(ORDER_RESPONSE.sellToken)
+  })
 })
