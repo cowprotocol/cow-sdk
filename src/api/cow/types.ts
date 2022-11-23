@@ -10,7 +10,7 @@ import type { StrictUnion } from '../../types/utilities'
  */
 export type OrderID = string
 export type ApiOrderStatus = 'fulfilled' | 'expired' | 'cancelled' | 'presignaturePending' | 'open'
-export type OrderClass = 'market' | 'limit'
+export type OrderClass = 'market' | 'limit' | 'liquidity'
 
 export interface OrderMetaData {
   creationDate: string
