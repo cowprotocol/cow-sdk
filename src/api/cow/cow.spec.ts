@@ -41,6 +41,7 @@ const PARTIAL_ORDER = {
   buyTokenBalance: 'erc20',
   from: '0x6810e776880c02933d47db1b9fc05908e5386b96',
   kind: 'buy',
+  class: 'market',
 }
 
 const ORDER_RESPONSE = {
@@ -762,4 +763,23 @@ describe('Transform EthFlow orders', () => {
     expect(txOrders[1].validTo).toEqual(ORDER_RESPONSE.validTo)
     expect(txOrders[1].sellToken).toEqual(ORDER_RESPONSE.sellToken)
   })
+})
+
+test('API getOrder() method should return order with "class" property', async () => {
+  // given
+  fetchMock.mockResponseOnce(JSON.stringify({ ...ORDER_RESPONSE, class: 'limit' }), {
+    status: HTTP_STATUS_OK,
+    headers: HEADERS,
+  })
+
+  // when
+  const order = await cowSdk.cowApi.getOrder(ORDER_RESPONSE.uid)
+
+  // then
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(fetchMock).toHaveBeenCalledWith(
+    `https://api.cow.fi/xdai/api/v1/orders/${ORDER_RESPONSE.uid}`,
+    FETCH_RESPONSE_PARAMETERS
+  )
+  expect(order?.class).toEqual('limit')
 })
