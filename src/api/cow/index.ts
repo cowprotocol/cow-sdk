@@ -30,7 +30,7 @@ import { ZERO_ADDRESS } from '../../constants'
 import { CowError, logPrefix, objectToQueryString } from '../../utils/common'
 import { Context, Env } from '../../utils/context'
 import BaseApi from '../base'
-import { orderTransform } from './orderTransform'
+import { transformOrder } from './transformOrder'
 
 const API_URL_VERSION = 'v1'
 
@@ -172,7 +172,7 @@ export class CowApi extends BaseApi {
       } else {
         const orders: OrderDto[] = await response.json()
 
-        return orders.map(orderTransform)
+        return orders.map(transformOrder)
       }
     } catch (error) {
       log.error(logPrefix, 'Error getting orders information:', error)
@@ -196,7 +196,7 @@ export class CowApi extends BaseApi {
       } else {
         const orders: OrderDto[] = await response.json()
 
-        return orders.map(orderTransform)
+        return orders.map(transformOrder)
       }
     } catch (error) {
       log.error('Error getting transaction orders information:', error)
@@ -218,7 +218,7 @@ export class CowApi extends BaseApi {
       } else {
         const order: OrderDto = await response.json()
 
-        return orderTransform(order)
+        return transformOrder(order)
       }
     } catch (error) {
       log.error(logPrefix, 'Error getting order information:', error)

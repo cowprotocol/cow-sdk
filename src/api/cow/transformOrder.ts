@@ -1,10 +1,14 @@
 import { OrderDto, OrderMetaData } from './types'
 import { BUY_ETH_ADDRESS } from '@cowprotocol/contracts'
 
-export function orderTransform(order: OrderDto): OrderMetaData {
+export function transformOrder(order: OrderDto): OrderMetaData {
   return transformEthFlowOrder(addTotalFeeToOrder(order))
 }
 
+/**
+ * The executedSurplusFee represents exactly the fee that was charged (regardless of the fee signed with the order).
+ * So, while the protocol currently does not allow placing a limit order with any other fee than 0 - the backend is designed to support these kinds of orders for the future.
+ */
 function addTotalFeeToOrder(dto: OrderDto): OrderMetaData {
   const { executedFeeAmount, executedSurplusFee } = dto
   const totalFee = executedSurplusFee ?? executedFeeAmount
