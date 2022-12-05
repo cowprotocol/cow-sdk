@@ -12,7 +12,7 @@ export type OrderID = string
 export type ApiOrderStatus = 'fulfilled' | 'expired' | 'cancelled' | 'presignaturePending' | 'open'
 export type OrderClass = 'market' | 'limit' | 'liquidity'
 
-export interface OrderMetaData {
+export interface OrderDto {
   creationDate: string
   owner: string
   uid: OrderID
@@ -21,7 +21,7 @@ export interface OrderMetaData {
   executedSellAmount: string
   executedSellAmountBeforeFees: string
   executedFeeAmount: string
-  executedSurplusFee: string
+  executedSurplusFee: string | null
   invalidated: false
   sellToken: string
   buyToken: string
@@ -40,6 +40,10 @@ export interface OrderMetaData {
   // EthFlow related fields
   ethflowData?: EthFlowData
   onchainUser?: string
+}
+
+export interface OrderMetaData extends OrderDto {
+  totalFee: string
 }
 
 type EthFlowData = {

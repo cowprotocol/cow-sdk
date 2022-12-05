@@ -1,5 +1,5 @@
 import log from 'loglevel'
-import { BUY_ETH_ADDRESS, OrderKind, QuoteQuery } from '@cowprotocol/contracts'
+import { OrderKind, QuoteQuery } from '@cowprotocol/contracts'
 import { SupportedChainId as ChainId } from '../../constants/chains'
 import { getSigningSchemeApiValue, OrderCreation } from '../../utils/sign'
 import OperatorError, { ApiErrorCodeDetails, ApiErrorCodes, ApiErrorObject } from './errors/OperatorError'
@@ -16,6 +16,7 @@ import {
   GetTradesParams,
   Options,
   OrderCancellationParams,
+  OrderDto,
   OrderID,
   OrderMetaData,
   PriceInformation,
@@ -29,6 +30,7 @@ import { ZERO_ADDRESS } from '../../constants'
 import { CowError, logPrefix, objectToQueryString } from '../../utils/common'
 import { Context, Env } from '../../utils/context'
 import BaseApi from '../base'
+import { orderTransform } from './orderTransform'
 
 const API_URL_VERSION = 'v1'
 
@@ -168,9 +170,9 @@ export class CowApi extends BaseApi {
         const errorResponse: ApiErrorObject = await response.json()
         throw new OperatorError(errorResponse)
       } else {
-        const orders = await response.json()
+        const orders: OrderDto[] = await response.json()
 
-        return orders.map(transformEthFlowOrder)
+        return orders.map(orderTransform)
       }
     } catch (error) {
       log.error(logPrefix, 'Error getting orders information:', error)
@@ -192,9 +194,9 @@ export class CowApi extends BaseApi {
         const errorResponse: ApiErrorObject = await response.json()
         throw new OperatorError(errorResponse)
       } else {
-        const orders = await response.json()
+        const orders: OrderDto[] = await response.json()
 
-        return orders.map(transformEthFlowOrder)
+        return orders.map(orderTransform)
       }
     } catch (error) {
       log.error('Error getting transaction orders information:', error)
@@ -214,9 +216,9 @@ export class CowApi extends BaseApi {
         const errorResponse: ApiErrorObject = await response.json()
         throw new OperatorError(errorResponse)
       } else {
-        const order = await response.json()
+        const order: OrderDto = await response.json()
 
-        return transformEthFlowOrder(order)
+        return orderTransform(order)
       }
     } catch (error) {
       log.error(logPrefix, 'Error getting order information:', error)
@@ -375,27 +377,4 @@ export class CowApi extends BaseApi {
       body: data !== undefined ? JSON.stringify(data) : data,
     })
   }
-}
-
-/**
- * Transform order field for Native EthFlow orders
- *
- * A no-op for regular orders
- * For Native EthFlow, due to how the contract is setup:
- * - sellToken set to Native token address
- * - owner set to `onchainUser`
- * - validTo set to `ethflowData.userValidTo`
- */
-function transformEthFlowOrder(order: OrderMetaData): OrderMetaData {
-  const { ethflowData } = order
-
-  if (!ethflowData) {
-    return order
-  }
-
-  const { userValidTo: validTo } = ethflowData
-  const owner = order.onchainUser || order.owner
-  const sellToken = BUY_ETH_ADDRESS
-
-  return { ...order, validTo, owner, sellToken }
 }
