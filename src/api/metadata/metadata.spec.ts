@@ -15,8 +15,8 @@ const DEFAULT_APP_DATA_DOC = {
   metadata: {},
 }
 
-const IPFS_HASH = 'QmPvZL3KURfFR1ePyAk3sWxK86rgqNmcrGK3zyYyQMJUhW'
-const APP_DATA_HEX = '0x178b59ca7634e30a9b85867dd1c565e625d5920a7ecfbe31304e93406daa2cc1'
+const IPFS_HASH = 'QmYNdAx6V62cUiHGBujwzeaB5FumAKCmPVeaV8DUvrU97F'
+const APP_DATA_HEX = '0x95164af4bca0ce893339efb678065e705e16e2dc4e6d9c22fcb9d6e54efab8b2'
 
 const PINATA_API_KEY = 'apikey'
 const PINATA_API_SECRET = 'apiSecret'
