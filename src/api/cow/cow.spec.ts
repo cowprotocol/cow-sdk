@@ -65,7 +65,7 @@ const ETH_FLOW_ORDER_RESPONSE = {
   ...ORDER_RESPONSE,
   owner: '0x76aaf674848311c7f21fc691b0b952f016da49f3', // EthFlowContract
   ethflowData: {
-    isRefunded: false,
+    isRefundable: false,
     validTo: Date.now() + 60 * 1000 * 5,
     refundTxHash: null,
   },
