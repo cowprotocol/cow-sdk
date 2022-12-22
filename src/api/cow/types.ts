@@ -39,7 +39,7 @@ export interface OrderDto {
   receiver: string
   // EthFlow related fields
   ethflowData?: EthFlowData
-  onchainUser?: string
+  onchainOrderData?: OnChainOrderData
 }
 
 export interface OrderMetaData extends OrderDto {
@@ -49,6 +49,12 @@ export interface OrderMetaData extends OrderDto {
 type EthFlowData = {
   userValidTo: number
   isRefunded: boolean
+  refundTxHash?: string | null
+}
+
+type OnChainOrderData = {
+  user: string
+  placementError?: string | null
 }
 
 export interface TradeMetaData {

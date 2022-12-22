@@ -36,7 +36,7 @@ function transformEthFlowOrder(order: OrderMetaData): OrderMetaData {
   }
 
   const { userValidTo: validTo } = ethflowData
-  const owner = order.onchainUser || order.owner
+  const owner = order.onchainOrderData?.user || order.owner
   const sellToken = BUY_ETH_ADDRESS
 
   return { ...order, validTo, owner, sellToken }
