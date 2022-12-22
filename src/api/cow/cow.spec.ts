@@ -67,8 +67,12 @@ const ETH_FLOW_ORDER_RESPONSE = {
   ethflowData: {
     isRefunded: false,
     validTo: Date.now() + 60 * 1000 * 5,
+    refundTxHash: null,
   },
-  onchainUser: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+  onchainOrderData: {
+    user: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+    placementError: null,
+  },
 }
 
 const ORDER_CANCELLATION = {
@@ -716,7 +720,7 @@ describe('Transform EthFlow orders', () => {
     const order = await cowSdk.cowApi.getOrder(ETH_FLOW_ORDER_RESPONSE.uid)
 
     // then
-    expect(order?.owner).toEqual(order?.onchainUser)
+    expect(order?.owner).toEqual(order?.onchainOrderData?.user)
     expect(order?.validTo).toEqual(order?.ethflowData?.userValidTo)
     expect(order?.sellToken).toEqual(BUY_ETH_ADDRESS)
   })
@@ -735,7 +739,7 @@ describe('Transform EthFlow orders', () => {
 
     // then
     // eth flow order
-    expect(orders[0].owner).toEqual(orders[0].onchainUser)
+    expect(orders[0].owner).toEqual(orders[0].onchainOrderData?.user)
     expect(orders[0].validTo).toEqual(orders[0].ethflowData?.userValidTo)
     expect(orders[0].sellToken).toEqual(BUY_ETH_ADDRESS)
     // regular order
@@ -755,7 +759,7 @@ describe('Transform EthFlow orders', () => {
 
     // then
     // eth flow order
-    expect(txOrders[0].owner).toEqual(txOrders[0].onchainUser)
+    expect(txOrders[0].owner).toEqual(txOrders[0].onchainOrderData?.user)
     expect(txOrders[0].validTo).toEqual(txOrders[0].ethflowData?.userValidTo)
     expect(txOrders[0].sellToken).toEqual(BUY_ETH_ADDRESS)
     // regular order
