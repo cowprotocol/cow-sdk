@@ -349,20 +349,17 @@ export class CowApi extends BaseApi {
       partiallyFillable: false,
     }
 
-    const finalParams: QuoteQuery =
-      kind === OrderKind.SELL
-        ? {
-            kind: OrderKind.SELL,
-            sellAmountBeforeFee: amount,
-            ...baseParams,
-          }
-        : {
-            kind: OrderKind.BUY,
-            buyAmountAfterFee: amount,
-            ...baseParams,
-          }
-
-    return finalParams
+    return kind === OrderKind.SELL
+      ? {
+          kind: OrderKind.SELL,
+          sellAmountBeforeFee: amount,
+          ...baseParams,
+        }
+      : {
+          kind: OrderKind.BUY,
+          buyAmountAfterFee: amount,
+          ...baseParams,
+        }
   }
 
   private async fetchProfile(
