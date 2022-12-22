@@ -9,7 +9,7 @@ import type { StrictUnion } from '../../types/utilities'
  * where orderDigest = keccak256(orderStruct). bytes32.
  */
 export type OrderID = string
-export type ApiOrderStatus = 'fulfilled' | 'expired' | 'cancelled' | 'presignaturePending' | 'open'
+export type ApiOrderStatus = 'fulfilled' | 'expired' | 'cancelled' | 'presignaturePending' | 'open' | 'invalid'
 export type OrderClass = 'market' | 'limit' | 'liquidity'
 
 export interface OrderDto {
