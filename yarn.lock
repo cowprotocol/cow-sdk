@@ -1052,10 +1052,10 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@cowprotocol/app-data@^0.0.2-RC.1":
-  version "0.0.2-RC.1"
-  resolved "https://registry.yarnpkg.com/@cowprotocol/app-data/-/app-data-0.0.2-RC.1.tgz#66f02f05e120b4b03b265fd609c07089f0db68c9"
-  integrity sha512-x+fRnQ62u9nF04vkeWoiiU97Ug6kPunn76uZeVF1TyVg7N8TAy97XJL7V5s9PKddbmT5TKECmVqQ0TVeeyCtDA==
+"@cowprotocol/app-data@^0.0.3-RC.0":
+  version "0.0.3-RC.0"
+  resolved "https://registry.yarnpkg.com/@cowprotocol/app-data/-/app-data-0.0.3-RC.0.tgz#23fc1e19adade3e95243f03e9624f42e6ae165c6"
+  integrity sha512-N1JpAIK9cTGnmI/Z682GtEN7LJYzc96klqHZMR58mqlsoZVobPpH9x7QDug03hTjE+81N0J7NwdiQ7y3lhKvoQ==
   dependencies:
     ajv "^8.11.0"
 
