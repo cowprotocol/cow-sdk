@@ -114,7 +114,7 @@ export default class BaseApi {
     url: string,
     method: 'GET' | 'POST' | 'DELETE',
     baseUrl: string,
-    data?: unknown,
+    data?: any,
     requestOptions?: RequestInit
   ): Promise<Response> {
     return fetch(baseUrl + url, {

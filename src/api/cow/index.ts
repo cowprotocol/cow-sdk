@@ -369,7 +369,7 @@ export class CowApi extends BaseApi {
     url: string,
     method: 'GET' | 'POST' | 'DELETE',
     baseUrl: string,
-    data?: unknown
+    data?: any
   ): Promise<Response> {
     return fetch(baseUrl + url, {
       headers: this.DEFAULT_HEADERS,
