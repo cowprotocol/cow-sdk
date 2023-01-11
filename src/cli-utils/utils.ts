@@ -1,10 +1,24 @@
 import CowSdk from '../CowSdk'
 import { OrderCreation, UnsignedOrder } from '../utils/sign'
-import { CreatingParams } from './operations/create'
+import { Wallet } from '@ethersproject/wallet'
+import { CommonOperationParams, SignOrderOperationParams } from './types'
+
+const cliCowSdkCache: { [key: string]: CowSdk } = {}
+export function getCliCowSdk(params: CommonOperationParams): CowSdk {
+  const cacheKey = JSON.stringify(params)
+
+  if (!cliCowSdkCache[cacheKey]) {
+    const signer = new Wallet(params.privateKey)
+
+    cliCowSdkCache[cacheKey] = new CowSdk(+params.chainId, { signer })
+  }
+
+  return cliCowSdkCache[cacheKey]
+}
 
 export async function generateOrder(
   cowSdk: CowSdk,
-  creatingParams: CreatingParams
+  creatingParams: SignOrderOperationParams
 ): Promise<Omit<OrderCreation, 'appData'>> {
   const order: Omit<UnsignedOrder, 'appData'> = {
     sellToken: creatingParams.sellToken,

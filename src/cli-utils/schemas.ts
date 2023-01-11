@@ -24,10 +24,10 @@ export const operationSchema: PromptObject[] = [
     type: 'select',
     name: 'operation',
     choices: [
-      { title: 'create', value: 'create' },
-      { title: 'send', value: 'send' },
+      { title: 'Sign order', value: 'signOrder' },
+      { title: 'Send order', value: 'sendOrder' },
     ],
-    message: 'Choose operation for limit order RFQ: create, fill, cancel',
+    message: 'Choose operation:',
   },
 ]
 
@@ -60,22 +60,22 @@ export const createOrderSchema: PromptObject[] = [
   {
     type: 'text',
     name: 'sellToken',
-    message: 'Maker asset address',
+    message: 'Sell tokem address',
   },
   {
     type: 'text',
     name: 'buyToken',
-    message: 'Taker asset address',
+    message: 'Buy token address',
   },
   {
     type: 'text',
     name: 'sellAmount',
-    message: 'Maker asset amount',
+    message: 'Sell token amount',
   },
   {
     type: 'text',
     name: 'buyAmount',
-    message: 'Taker asset amount',
+    message: 'Buy token amount',
   },
   {
     type: 'text',

@@ -1,8 +1,8 @@
 import prompts from 'prompts'
 import yargs from 'yargs'
 import { createOrderSchema, operationSchema } from './schemas'
-import { createOrderOperation } from './operations/create'
-import { sendOrderOperation } from './operations/send'
+import { signOrderOperation } from './operations/signOrder'
+import { sendOrderOperation } from './operations/sendOrder'
 
 const allSchemas = [createOrderSchema, operationSchema]
 
@@ -24,9 +24,16 @@ yargs.parserConfiguration({
   const operationResult = (await prompts(operationSchema)) as OperationParams
 
   switch (operationResult.operation) {
-    case 'create':
-      await createOrderOperation(isRunningWithArgv)
-    case 'send':
+    // getProfileData
+    // getTrades
+    // getOrders
+    // getOrder
+    // sendSignedOrderCancellation
+    // sendOrder
+    case 'signOrder':
+      await signOrderOperation(isRunningWithArgv)
+      break
+    case 'sendOrder':
       await sendOrderOperation(isRunningWithArgv)
       break
     default:
