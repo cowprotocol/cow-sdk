@@ -5,6 +5,7 @@ export enum CliOperations {
   sendOrder = 'Send order',
   cancelOrder = 'Cancel order',
   getOrder = 'Get order',
+  getOrders = 'Get orders',
 }
 
 export type CliOperationsKeys = keyof typeof CliOperations

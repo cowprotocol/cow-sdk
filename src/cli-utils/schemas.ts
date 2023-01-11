@@ -104,3 +104,24 @@ export const createOrderSchema: PromptObject[] = [
 export const cancelOrderSchema: PromptObject[] = [...commonProperties, orderUidPrompt]
 
 export const getOrderSchema: PromptObject[] = [chainIdPrompt, orderUidPrompt]
+
+export const getOrdersSchema: PromptObject[] = [
+  chainIdPrompt,
+  {
+    type: 'text',
+    name: 'owner',
+    message: 'Owner address',
+  },
+  {
+    type: 'number',
+    name: 'limit',
+    message: 'Pagination limit',
+    initial: 20,
+  },
+  {
+    type: 'number',
+    name: 'offset',
+    message: 'Pagination offset',
+    initial: 0,
+  },
+]

@@ -22,10 +22,6 @@ yargs.parserConfiguration({
   const isRunningWithArgv = cli.schema.map((i) => i.name as string).every((param) => argvKeys.includes(param))
 
   try {
-    // getProfileData
-    // getTrades
-    // getOrders
-    // getOrder
     await cli.operation(isRunningWithArgv)
   } catch (e) {
     console.log(e instanceof Error ? e.message : e)
