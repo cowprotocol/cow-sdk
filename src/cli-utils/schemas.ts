@@ -26,6 +26,7 @@ export const operationSchema: PromptObject[] = [
     choices: [
       { title: 'Sign order', value: 'signOrder' },
       { title: 'Send order', value: 'sendOrder' },
+      { title: 'Cancel order', value: 'cancelOrder' },
     ],
     message: 'Choose operation:',
   },
@@ -87,5 +88,14 @@ export const createOrderSchema: PromptObject[] = [
     name: 'receiver',
     message: 'Receiver address (optional)',
     initial: '',
+  },
+]
+
+export const cancelOrderSchema: PromptObject[] = [
+  ...commonProperties,
+  {
+    type: 'text',
+    name: 'orderUid',
+    message: 'Order id',
   },
 ]
