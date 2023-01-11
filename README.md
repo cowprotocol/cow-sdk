@@ -383,20 +383,19 @@ console.log(response)
 
 ## CLI
 
+### Via prompt
+
 ```
-yarn run run-cli \
---private-key="0XPRIVATE_KEY" \
---chainId=100 \
---operation=create \
---kind=sell \
---partiallyFillable=yes \
---expiresIn=600 \
---sellToken=0xe91d153e0b41518a2ce8dd3d7944fa863463a97d \
---buyToken=0x8e5bbbb09ed1ebde8674cda39a0c169401db4252 \
---sellAmount=1000000 \
---buyAmount=200 \
---feeAmount=100 \
---receiver=""
+npx cow-sdk-cli
+```
+
+### With pure result
+
+```
+npx cow-sdk-cli \
+--chainId=5 \
+--operation=getOrder \
+--orderUid="0xe0759f514e5e0a5d3e0ae7b492de87d72d765a94c4a6d16c5301a02c91cfaa44fb3c7eb936caa12b5a884d612393969a557d430763be64a2"
 ```
 
 ### Install Dependencies

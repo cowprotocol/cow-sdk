@@ -12,13 +12,20 @@ export interface OperationParams {
 yargs.parserConfiguration({
   'parse-numbers': false,
 })
-;(async () => {
+
+async function init() {
   const argvKeys = Object.keys(yargs.argv)
 
   prompts.override(yargs.argv)
 
   const operationResult = (await prompts(operationSchema)) as OperationParams
   const cli = registry[CliOperations[operationResult.operation as CliOperationsKeys]]
+
+  if (!cli) {
+    console.log('Unknown operation')
+    return
+  }
+
   const isRunningWithArgv = cli.schema.map((i) => i.name as string).every((param) => argvKeys.includes(param))
 
   try {
@@ -26,4 +33,6 @@ yargs.parserConfiguration({
   } catch (e) {
     console.log(e instanceof Error ? e.message : e)
   }
-})()
+}
+
+init()
