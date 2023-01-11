@@ -1,8 +1,9 @@
-import { cancelOrderSchema, createOrderSchema, Schema } from './schemas'
+import { cancelOrderSchema, createOrderSchema, getOrderSchema, Schema } from './schemas'
 import { CliOperation, CliOperations } from './types'
 import { signOrderOperation } from './operations/signOrder'
 import { sendOrderOperation } from './operations/sendOrder'
 import { cancelOrderOperation } from './operations/cancelOrder'
+import { getOrderOperation } from './operations/getOrder'
 
 export const registry: { [key in CliOperations]: { schema: Schema; operation: CliOperation } } = {
   [CliOperations.signOrder]: {
@@ -16,5 +17,9 @@ export const registry: { [key in CliOperations]: { schema: Schema; operation: Cl
   [CliOperations.cancelOrder]: {
     schema: cancelOrderSchema,
     operation: cancelOrderOperation,
+  },
+  [CliOperations.getOrder]: {
+    schema: getOrderSchema,
+    operation: getOrderOperation,
   },
 }

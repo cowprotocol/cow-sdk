@@ -4,17 +4,25 @@ import { CliOperations, CliOperationsKeys } from './types'
 
 export type Schema = PromptObject[]
 
+const chainIdPrompt: PromptObject = {
+  type: 'select',
+  name: 'chainId',
+  message: 'Select network',
+  choices: [
+    { title: 'Ethereum', value: SupportedChainId.MAINNET },
+    { title: 'Gnosis chain', value: SupportedChainId.GNOSIS_CHAIN },
+    { title: 'Goerli', value: SupportedChainId.GOERLI },
+  ],
+}
+
+const orderUidPrompt: PromptObject = {
+  type: 'text',
+  name: 'orderUid',
+  message: 'Order id',
+}
+
 const commonProperties: PromptObject[] = [
-  {
-    type: 'select',
-    name: 'chainId',
-    message: 'Select network',
-    choices: [
-      { title: 'Ethereum', value: SupportedChainId.MAINNET },
-      { title: 'Gnosis chain', value: SupportedChainId.GNOSIS_CHAIN },
-      { title: 'Goerli', value: SupportedChainId.GOERLI },
-    ],
-  },
+  chainIdPrompt,
   {
     type: 'password',
     name: 'privateKey',
@@ -93,11 +101,6 @@ export const createOrderSchema: PromptObject[] = [
   },
 ]
 
-export const cancelOrderSchema: PromptObject[] = [
-  ...commonProperties,
-  {
-    type: 'text',
-    name: 'orderUid',
-    message: 'Order id',
-  },
-]
+export const cancelOrderSchema: PromptObject[] = [...commonProperties, orderUidPrompt]
+
+export const getOrderSchema: PromptObject[] = [chainIdPrompt, orderUidPrompt]
