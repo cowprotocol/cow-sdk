@@ -21,7 +21,11 @@ describe('Cow SDK CLI', () => {
       --receiver=""
   `,
       (err, stdOut) => {
-        expect(stdOut.trim()).toMatchSnapshot()
+        const order = JSON.parse(stdOut.trim())
+
+        delete order.validTo
+        delete order.signature
+        expect(order).toMatchSnapshot()
         done()
       }
     )
