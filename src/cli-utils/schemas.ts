@@ -1,5 +1,8 @@
 import { PromptObject } from 'prompts'
 import { SupportedChainId } from '../constants/chains'
+import { CliOperations, CliOperationsKeys } from './types'
+
+export type Schema = PromptObject[]
 
 const commonProperties: PromptObject[] = [
   {
@@ -23,11 +26,10 @@ export const operationSchema: PromptObject[] = [
   {
     type: 'select',
     name: 'operation',
-    choices: [
-      { title: 'Sign order', value: 'signOrder' },
-      { title: 'Send order', value: 'sendOrder' },
-      { title: 'Cancel order', value: 'cancelOrder' },
-    ],
+    choices: Object.keys(CliOperations).map((key) => ({
+      title: CliOperations[key as CliOperationsKeys],
+      value: key,
+    })),
     message: 'Choose operation:',
   },
 ]

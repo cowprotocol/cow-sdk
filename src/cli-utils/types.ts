@@ -1,5 +1,13 @@
 import { OrderKind } from '@cowprotocol/contracts'
 
+export enum CliOperations {
+  signOrder = 'Sign order',
+  sendOrder = 'Send order',
+  cancelOrder = 'Cancel order',
+}
+
+export type CliOperationsKeys = keyof typeof CliOperations
+
 export interface CommonOperationParams {
   chainId: string
   privateKey: string
@@ -17,3 +25,5 @@ export interface SignOrderOperationParams extends CommonOperationParams {
   buyAmount: string
   receiver?: string
 }
+
+export type CliOperation<T = undefined> = (isRunningWithArgv: boolean, params?: T) => Promise<void>
