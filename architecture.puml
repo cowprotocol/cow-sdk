@@ -1,0 +1,59 @@
+@startuml
+  skinparam linetype ortho
+
+  namespace SDK {
+    class EnvConfig {
+        - cowProtocolUrl
+        - subGraphUrl
+        - settlementContractAddress
+    }
+
+    class Context {
+      - chainId
+      - ipfs
+      - appDataHash
+      - env?
+    }
+
+    class CowApi {
+      - getTrades
+      - getOrders
+      - getTxOrders
+      - getOrder
+      - getQuote
+      - sendSignedOrderCancellation
+      - sendOrder
+    }
+    note bottom of CowApi
+      https://api.cow.fi/docs
+    end note
+
+    class CowSubgraphApi {
+      - getLastHoursVolume
+      - getLastDaysVolume
+      - runQuery
+    }
+    note bottom of CowSubgraphApi
+      https://api.thegraph.com/subgraphs/name/cowprotocol/cow
+    end note
+
+    class MetadataApi {
+      - generateAppDataDoc
+      - calculateAppDataHash
+      - uploadMetadataDocToIpfs
+      - decodeAppData
+      - appDataHexToCid
+      - getAppDataSchema
+      - validateAppDataDoc
+    }
+
+    Context <-- CowApi
+    Context <-- CowSubgraphApi
+    Context <-- MetadataApi
+
+    EnvConfig <-- CowApi
+    EnvConfig <-- CowSubgraphApi
+    EnvConfig <-- MetadataApi
+  }
+
+@enduml
