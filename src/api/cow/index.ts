@@ -27,7 +27,7 @@ import {
 } from './types'
 
 import { ZERO_ADDRESS } from '../../constants'
-import { CowError, logPrefix, objectToQueryString } from '../../utils/common'
+import { CowError, logPrefix } from '../../utils/common'
 import { Context, Env } from '../../utils/context'
 import BaseApi from '../base'
 import { transformOrder } from './transformOrder'
@@ -136,11 +136,16 @@ export class CowApi extends BaseApi {
     if (owner && orderId) {
       throw new CowError('Cannot specify both owner and orderId')
     }
-    const qsParams = objectToQueryString({ owner, orderUid: orderId })
+
+    const queryParams: Record<string, string> = {}
+    if (owner) queryParams.owner = owner
+    if (orderId) queryParams.orderId = orderId
+
+    const qsParams = new URLSearchParams(queryParams)
     const chainId = networkId || (await this.context.chainId)
     log.debug(logPrefix, '[util:operator] Get trades for', chainId, { owner, orderId })
     try {
-      const response = await this.get(`/trades${qsParams}`, { chainId, env })
+      const response = await this.get(`/trades?${qsParams}`, { chainId, env })
 
       if (!response.ok) {
         const errorResponse = await response.json()
@@ -159,12 +164,12 @@ export class CowApi extends BaseApi {
   async getOrders(params: GetOrdersParams, options: Options = {}): Promise<OrderMetaData[]> {
     const { chainId: networkId, env = this.context.env } = options
     const { owner, limit = 1000, offset = 0 } = params
-    const queryString = objectToQueryString({ limit, offset })
+    const queryString = new URLSearchParams({ limit: limit.toString(), offset: offset.toString() })
     const chainId = networkId || (await this.context.chainId)
     log.debug(logPrefix, `[api:${this.API_NAME}] Get orders for `, chainId, owner, limit, offset)
 
     try {
-      const response = await this.get(`/account/${owner}/orders/${queryString}`, { chainId, env })
+      const response = await this.get(`/account/${owner}/orders?${queryString}`, { chainId, env })
 
       if (!response.ok) {
         const errorResponse: ApiErrorObject = await response.json()

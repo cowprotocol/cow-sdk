@@ -7,29 +7,4 @@ export class CowError extends Error {
   }
 }
 
-export function objectToQueryString(o: { [key: string]: string | number | undefined }): string {
-  if (!o) {
-    return ''
-  }
-
-  const qs = new URLSearchParams()
-
-  for (const key of Object.keys(o)) {
-    const value = o[key]
-    if (value) {
-      qs.append(key, value.toString())
-    }
-  }
-
-  const qsResult = qs.toString()
-
-  return qsResult ? `?${qsResult}` : ''
-}
-
 export const logPrefix = 'cow-sdk:'
-
-export function fromHexString(hexString: string) {
-  const stringMatch = hexString.match(/.{1,2}/g)
-  if (!stringMatch) return
-  return new Uint8Array(stringMatch.map((byte) => parseInt(byte, 16)))
-}

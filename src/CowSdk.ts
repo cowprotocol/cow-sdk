@@ -52,5 +52,3 @@ export class CowSdk<T extends ChainId = ChainId, Opt extends SdkOptions = SdkOpt
     return signer
   }
 }
-
-export default CowSdk

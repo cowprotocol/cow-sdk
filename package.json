@@ -33,9 +33,7 @@
     "graphql-request": "^4.3.0",
     "ipfs-only-hash": "^4.0.0",
     "loglevel": "^1.8.0",
-    "multiformats": "^9.6.4",
-    "paraswap": "^5.2.0",
-    "paraswap-core": "^1.0.2"
+    "multiformats": "^9.6.4"
   },
   "devDependencies": {
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.18.6",
