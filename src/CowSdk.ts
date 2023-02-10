@@ -5,30 +5,20 @@ import { CowApi, CowSubgraphApi, MetadataApi } from './api'
 import { SupportedChainId as ChainId } from './constants/chains'
 import { Context, CowContext } from './utils/context'
 import { signOrder, signOrderCancellation, UnsignedOrder } from './utils/sign'
-import { ZeroXApi } from './api/0x'
-import ParaswapApi from './api/paraswap'
 // types
-import { SdkOptions, ParaswapEnabled, ZeroXEnabled, OptionsWithApisEnabledStatus } from 'sdk'
+import { SdkOptions } from 'sdk'
 
-export class CowSdk<T extends ChainId = ChainId, Opt extends SdkOptions = OptionsWithApisEnabledStatus> {
+export class CowSdk<T extends ChainId = ChainId, Opt extends SdkOptions = SdkOptions> {
   context: Context
   cowApi: CowApi
   metadataApi: MetadataApi
   cowSubgraphApi: CowSubgraphApi
-  zeroXApi: ZeroXEnabled<Opt>
-  paraswapApi: ParaswapEnabled<Opt>
 
   constructor(chainId: T = ChainId.MAINNET as T, cowContext: CowContext = {}, options: Opt = {} as Opt) {
-    const zeroXEnabled = options?.zeroXOptions?.enabled ?? false
-    const paraswapEnabled = options?.paraswapOptions?.enabled ?? false
-
     this.context = new Context(chainId, { ...cowContext })
     this.cowApi = new CowApi(this.context)
     this.cowSubgraphApi = new CowSubgraphApi(this.context)
     this.metadataApi = new MetadataApi(this.context)
-
-    this.zeroXApi = (zeroXEnabled ? new ZeroXApi(chainId, options.zeroXOptions) : undefined) as ZeroXEnabled<Opt>
-    this.paraswapApi = (paraswapEnabled ? new ParaswapApi(options.paraswapOptions) : undefined) as ParaswapEnabled<Opt>
 
     log.setLevel(options.loglevel || 'ERROR')
   }
