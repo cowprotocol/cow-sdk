@@ -132,18 +132,18 @@ export class CowApi extends BaseApi {
 
   async getTrades(params: GetTradesParams, options: Options = {}): Promise<TradeMetaData[]> {
     const { chainId: networkId, env = this.context.env } = options
-    const { owner, orderId } = params
-    if (owner && orderId) {
+    const { owner, orderId: orderUid } = params
+    if (owner && orderUid) {
       throw new CowError('Cannot specify both owner and orderId')
     }
 
     const queryParams: Record<string, string> = {}
     if (owner) queryParams.owner = owner
-    if (orderId) queryParams.orderId = orderId
+    if (orderUid) queryParams.orderUid = orderUid
 
     const qsParams = new URLSearchParams(queryParams)
     const chainId = networkId || (await this.context.chainId)
-    log.debug(logPrefix, '[util:operator] Get trades for', chainId, { owner, orderId })
+    log.debug(logPrefix, '[util:operator] Get trades for', chainId, { owner, orderUid })
     try {
       const response = await this.get(`/trades?${qsParams}`, { chainId, env })
 
