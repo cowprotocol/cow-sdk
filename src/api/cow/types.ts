@@ -48,6 +48,7 @@ export interface OrderMetaData extends OrderDto {
 
 type EthFlowData = {
   userValidTo: number
+  isRefunded: boolean
 }
 
 export interface TradeMetaData {

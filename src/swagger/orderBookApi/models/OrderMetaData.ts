@@ -74,6 +74,11 @@ export type OrderMetaData = {
      */
     ethflowData?: EthflowData;
     /**
+     * TODO: smth related to ETH flow
+     *
+     */
+    onchainUser?: Address;
+    /**
      * There is some data only available for orders that are placed onchain. This data
      * can be found in this object
      *

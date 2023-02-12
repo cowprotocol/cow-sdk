@@ -22,5 +22,10 @@ export type EthflowData = {
      *
      */
     userValidTo: number;
+    /**
+     * Is ETH refunded
+     *
+     */
+    isRefunded: boolean;
 };
 

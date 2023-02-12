@@ -2,7 +2,8 @@ import { Address, DefaultService, OrderBookClient, UID } from '../swagger/orderB
 import { CowError } from '../utils/common'
 import { SupportedChainId } from '../constants/chains'
 import { PROD_CONFIG, STAGING_CONFIG } from './configs'
-import { transformOrder } from '../api/cow/transformOrder'
+import { transformOrder } from './transformOrder'
+import { EnrichedOrder } from './types'
 
 export class OrderBookApi {
   private service: DefaultService
@@ -23,8 +24,8 @@ export class OrderBookApi {
     return this.service.getApiV1Trades(owner, orderUid)
   }
 
-  getOrders(owner: Address, offset = 0, limit = 1000) {
-    this.service.getApiV1AccountOrders(owner, offset, limit).then((orders) => {
+  getOrders(owner: Address, offset = 0, limit = 1000): Promise<Array<EnrichedOrder>> {
+    return this.service.getApiV1AccountOrders(owner, offset, limit).then((orders) => {
       return orders.map(transformOrder)
     })
   }
