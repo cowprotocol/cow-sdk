@@ -1,4 +1,13 @@
-import { Address, DefaultService, OrderBookClient, UID } from '../swagger/orderBookApi'
+import {
+  Address,
+  DefaultService,
+  OrderBookClient,
+  OrderCancellation,
+  OrderCreation,
+  OrderQuoteRequest,
+  TransactionHash,
+  UID,
+} from '../swagger/orderBookApi'
 import { CowError } from '../utils/common'
 import { SupportedChainId } from '../constants/chains'
 import { PROD_CONFIG, STAGING_CONFIG } from './configs'
@@ -28,5 +37,32 @@ export class OrderBookApi {
     return this.service.getApiV1AccountOrders(owner, offset, limit).then((orders) => {
       return orders.map(transformOrder)
     })
+  }
+
+  getTxOrders(txHash: TransactionHash): Promise<Array<EnrichedOrder>> {
+    return this.service.getApiV1TransactionsOrders(txHash).then((orders) => {
+      return orders.map(transformOrder)
+    })
+  }
+
+  getOrder(uid: UID): Promise<EnrichedOrder> {
+    return this.service.getApiV1Orders(uid).then((order) => {
+      return transformOrder(order)
+    })
+  }
+
+  getQuote(requestBody: OrderQuoteRequest): ReturnType<typeof this.service.postApiV1Quote> {
+    return this.service.postApiV1Quote(requestBody)
+  }
+
+  sendSignedOrderCancellation(
+    uid: UID,
+    requestBody: OrderCancellation
+  ): ReturnType<typeof this.service.deleteApiV1Orders1> {
+    return this.service.deleteApiV1Orders1(uid, requestBody)
+  }
+
+  sendOrder(requestBody: OrderCreation): ReturnType<typeof this.service.postApiV1Orders> {
+    return this.service.postApiV1Orders(requestBody)
   }
 }
