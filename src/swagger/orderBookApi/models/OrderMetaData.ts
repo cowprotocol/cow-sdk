@@ -6,6 +6,7 @@ import type { Address } from './Address';
 import type { BigUint } from './BigUint';
 import type { EthflowData } from './EthflowData';
 import type { OnchainOrderData } from './OnchainOrderData';
+import type { OrderClass } from './OrderClass';
 import type { OrderStatus } from './OrderStatus';
 import type { TokenAmount } from './TokenAmount';
 import type { UID } from './UID';
@@ -19,9 +20,10 @@ export type OrderMetaData = {
     /**
      * Creation time of the order. Encoded as ISO 8601 UTC.
      */
-    creationTime: string;
+    creationDate: string;
+    class: OrderClass;
     owner: Address;
-    UID: UID;
+    uid: UID;
     /**
      * Amount of sellToken available for the settlement contract to spend on behalf of the owner. Null if API was unable to fetch balance or if the order status isn't Open.
      */
@@ -49,7 +51,7 @@ export type OrderMetaData = {
     /**
      * Order status
      */
-    status?: OrderStatus;
+    status: OrderStatus;
     /**
      * Amount that the signed fee would be without subsidies
      */

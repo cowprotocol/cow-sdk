@@ -28,6 +28,7 @@ export type { Order } from './models/Order';
 export type { OrderCancellation } from './models/OrderCancellation';
 export { OrderCancellationError } from './models/OrderCancellationError';
 export type { OrderCancellations } from './models/OrderCancellations';
+export { OrderClass } from './models/OrderClass';
 export type { OrderCreation } from './models/OrderCreation';
 export type { OrderMetaData } from './models/OrderMetaData';
 export type { OrderParameters } from './models/OrderParameters';

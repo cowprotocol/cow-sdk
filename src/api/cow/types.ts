@@ -1,42 +1,42 @@
-import { GetQuoteResponse, OrderKind } from '@cowprotocol/contracts'
+import { GetQuoteResponse } from '@cowprotocol/contracts'
 import { SupportedChainId as ChainId } from '../../constants/chains'
 import { Env } from '../../utils/context'
 import { OrderCancellation, SigningSchemeValue } from '../../utils/sign'
 import type { StrictUnion } from '../../types/utilities'
+import { OrderStatus, OrderType } from '../../swagger/orderBookApi'
 
 /**
  * Unique identifier for the order, calculated by keccak256(orderDigest, ownerAddress, validTo),
  * where orderDigest = keccak256(orderStruct). bytes32.
  */
 export type OrderID = string
-export type ApiOrderStatus = 'fulfilled' | 'expired' | 'cancelled' | 'presignaturePending' | 'open'
 export type OrderClass = 'market' | 'limit' | 'liquidity'
 
 export interface OrderDto {
   creationDate: string
   owner: string
   uid: OrderID
-  availableBalance: string
+  availableBalance?: string | null
   executedBuyAmount: string
   executedSellAmount: string
   executedSellAmountBeforeFees: string
   executedFeeAmount: string
-  executedSurplusFee: string | null
-  invalidated: false
+  executedSurplusFee?: string | null
+  invalidated: boolean
   sellToken: string
   buyToken: string
   sellAmount: string
   buyAmount: string
   validTo: number
-  appData: number
+  appData: string
   feeAmount: string
-  kind: OrderKind
+  kind: OrderType
   class: OrderClass
-  partiallyFillable: false
+  partiallyFillable: boolean
   signature: string
   signingScheme: SigningSchemeValue
-  status: ApiOrderStatus
-  receiver: string
+  status: OrderStatus
+  receiver?: string | null
   // EthFlow related fields
   ethflowData?: EthFlowData
   onchainUser?: string
@@ -48,7 +48,6 @@ export interface OrderMetaData extends OrderDto {
 
 type EthFlowData = {
   userValidTo: number
-  isRefunded: boolean
 }
 
 export interface TradeMetaData {
