@@ -22,7 +22,8 @@
     "test:coverage": "jest --coverage --json --outputFile=jest.results.json && cat ./coverage/lcov.info | coveralls",
     "prepare": "npm run build && npm run graphql:codegen",
     "prepublishOnly": "npm test && npm run lint",
-    "graphql:codegen": "graphql-codegen --config graphql-codegen.yml"
+    "graphql:codegen": "graphql-codegen --config graphql-codegen.yml",
+    "swagger:codegen": " openapi --input https://raw.githubusercontent.com/cowprotocol/services/main/crates/orderbook/openapi.yml --output ./src/swagger/orderBookApi --client xhr --name OrderBookClient"
   },
   "dependencies": {
     "@cowprotocol/app-data": "^0.0.3-RC.0",
@@ -53,6 +54,7 @@
     "jest": "^29.4.2",
     "jest-fetch-mock": "^3.0.3",
     "microbundle": "^0.15.1",
+    "openapi-typescript-codegen": "^0.23.0",
     "prettier": "^2.5.1"
   },
   "jest": {
