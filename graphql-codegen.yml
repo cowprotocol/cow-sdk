@@ -1,8 +1,8 @@
 overwrite: true
 schema: "https://api.thegraph.com/subgraphs/name/cowprotocol/cow"
-documents: './src/api/cow-subgraph/queries.ts'
+documents: './src/api/subgraph/queries.ts'
 generates:
-  src/api/cow-subgraph/graphql.ts:
+  src/api/subgraph/graphql.ts:
     plugins:
       - "typescript"
       - "typescript-operations"

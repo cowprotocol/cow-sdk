@@ -1,2 +1,2 @@
 dist/
-src/api/cow-subgraph/graphql.ts
+src/api/subgraph/graphql.ts

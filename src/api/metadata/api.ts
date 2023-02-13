@@ -12,7 +12,7 @@ import { getSerializedCID, loadIpfsFromCid } from '../../utils/appData'
 import { calculateIpfsCidV0, pinJSONToIPFS } from '../../utils/ipfs'
 import { AnyAppDataDocVersion, LatestAppDataDocVersion, IpfsHashInfo, GenerateAppDataDocParams } from './types'
 import { CowError } from '../../utils/common'
-import { IpfsConfig } from '../../configs'
+import { IpfsConfig } from '../configs'
 
 const DEFAULT_APP_CODE = 'CowSwap'
 

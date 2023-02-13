@@ -2,14 +2,6 @@
   "name": "@cowprotocol/cow-sdk",
   "version": "1.0.2-RC.0",
   "license": "(MIT OR Apache-2.0)",
-  "source": "src/index.ts",
-  "main": "./dist/index.js",
-  "module": "./dist/index.module.js",
-  "exports": {
-    "require": "./dist/index.js",
-    "default": "./dist/index.modern.mjs"
-  },
-  "types": "dist/index.d.ts",
   "files": [
     "/dist"
   ],
@@ -20,10 +12,10 @@
     "format": "prettier --write \"src/**/*.+(ts|json)\"",
     "test": "jest",
     "test:coverage": "jest --coverage --json --outputFile=jest.results.json && cat ./coverage/lcov.info | coveralls",
-    "prepare": "npm run build && npm run graphql:codegen",
+    "prepare": "npm run build && npm run graphql:codegen && npm run swagger:codegen",
     "prepublishOnly": "npm test && npm run lint",
     "graphql:codegen": "graphql-codegen --config graphql-codegen.yml",
-    "swagger:codegen": " openapi --input https://raw.githubusercontent.com/cowprotocol/services/fix/orderbook-openapi/crates/orderbook/openapi.yml --output ./src/api/cow/generated --client fetch --name OrderBookClient"
+    "swagger:codegen": " openapi --input https://raw.githubusercontent.com/cowprotocol/services/fix/orderbook-openapi/crates/orderbook/openapi.yml --output src/api/order-book/generated --client fetch --name OrderBookClient"
   },
   "dependencies": {
     "@cowprotocol/app-data": "^0.0.3-RC.0",
@@ -64,8 +56,7 @@
       "./setupTests.js"
     ],
     "collectCoverageFrom": [
-      "src/**/*.{ts,tsx}",
-      "!src/api/cow/errors/*.{ts,tsx}"
+      "src/**/*.{ts,tsx}"
     ]
   },
   "keywords": [

@@ -1,4 +1,4 @@
-export * from '../api/cow/types'
+export * from '../api/order-book/types'
 export * from '../api/metadata/types'
 export * from './sdk'
 export * from './utilities'
