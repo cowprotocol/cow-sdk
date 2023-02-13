@@ -2,8 +2,14 @@
 import { SupportedChainId } from '../../constants/chains'
 import { CowError } from '../../utils/common'
 import { Context, Env } from '../../utils/context'
-import { Options } from '../cow/types'
 import fetch from 'cross-fetch'
+
+type Options = {
+  chainId?: number
+  env?: 'prod' | 'staging'
+  requestOptions?: RequestInit
+  apiUrlGetterParams?: unknown[]
+}
 
 interface ConstructorParams {
   context: Context

@@ -1,4 +1,4 @@
-import { SupportedChainId } from '../constants/chains'
+import { SupportedChainId } from './constants/chains'
 
 export interface IpfsConfig {
   uri?: string

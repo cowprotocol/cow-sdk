@@ -14,7 +14,7 @@ import {
 } from '../swagger/orderBookApi'
 import { CowError } from '../utils/common'
 import { SupportedChainId } from '../constants/chains'
-import { EnvConfig, PROD_CONFIG, STAGING_CONFIG } from './configs'
+import { EnvConfig, PROD_CONFIG, STAGING_CONFIG } from '../configs'
 import { transformOrder } from './transformOrder'
 import { EnrichedOrder } from './types'
 import { ApiRequestOptions } from '../swagger/orderBookApi/core/ApiRequestOptions'
