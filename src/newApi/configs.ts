@@ -1,5 +1,13 @@
 import { SupportedChainId } from '../constants/chains'
 
+export interface IpfsConfig {
+  uri?: string
+  writeUri?: string
+  readUri?: string
+  pinataApiKey?: string
+  pinataApiSecret?: string
+}
+
 export interface EnvConfig {
   readonly apiUrl: string
 }

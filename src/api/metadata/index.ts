@@ -8,21 +8,15 @@ import {
   validateAppDataDoc,
 } from '@cowprotocol/app-data'
 import log from 'loglevel'
-import { Context } from '../../utils/context'
 import { getSerializedCID, loadIpfsFromCid } from '../../utils/appData'
 import { calculateIpfsCidV0, pinJSONToIPFS } from '../../utils/ipfs'
 import { AnyAppDataDocVersion, LatestAppDataDocVersion, IpfsHashInfo, GenerateAppDataDocParams } from './types'
 import { CowError } from '../../utils/common'
+import { IpfsConfig } from '../../newApi/configs'
 
 const DEFAULT_APP_CODE = 'CowSwap'
 
 export class MetadataApi {
-  context: Context
-
-  constructor(context: Context) {
-    this.context = context
-  }
-
   /**
    * Creates an appDataDoc with the latest version format
    *
@@ -145,8 +139,8 @@ export class MetadataApi {
     }
   }
 
-  async uploadMetadataDocToIpfs(appDataDoc: AnyAppDataDocVersion): Promise<string | void> {
-    const { IpfsHash } = await pinJSONToIPFS(appDataDoc, this.context.ipfs)
+  async uploadMetadataDocToIpfs(appDataDoc: AnyAppDataDocVersion, ipfsConfig: IpfsConfig): Promise<string | void> {
+    const { IpfsHash } = await pinJSONToIPFS(appDataDoc, ipfsConfig)
     return this.cidToAppDataHex(IpfsHash)
   }
 }
