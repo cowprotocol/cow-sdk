@@ -14,9 +14,9 @@ import {
   TransactionHash,
   UID,
 } from './generated'
-import { CowError } from '../../utils/common'
-import { SupportedChainId } from '../../constants/chains'
-import { EnvConfig, PROD_CONFIG, STAGING_CONFIG } from '../configs'
+import { CowError } from '../../common/cow-error'
+import { SupportedChainId } from '../../common/chains'
+import { EnvConfig, PROD_CONFIG, STAGING_CONFIG } from '../../common/configs'
 import { transformOrder } from './transformOrder'
 import { EnrichedOrder } from './types'
 import { ApiRequestOptions } from './generated/core/ApiRequestOptions'

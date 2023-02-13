@@ -1,11 +1,11 @@
-import { CowError } from '../../utils/common'
+import { CowError } from '../../common/cow-error'
 import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphql'
 import log from 'loglevel'
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
 import { DocumentNode } from 'graphql/index'
 import { request, Variables } from 'graphql-request'
-import { EnvConfig, PROD_CONFIG, STAGING_CONFIG } from '../configs'
-import { SupportedChainId } from '../../constants/chains'
+import { EnvConfig, PROD_CONFIG, STAGING_CONFIG } from '../../common/configs'
+import { SupportedChainId } from '../../common/chains'
 
 export class SubgraphApi {
   API_NAME = 'CoW Protocol Subgraph'

@@ -1,12 +1,19 @@
-import { CowError } from './common'
-import { Ipfs } from './context'
-import { AnyAppDataDocVersion } from '../api/metadata/types'
-import { DEFAULT_IPFS_WRITE_URI } from '../constants'
+import { CowError } from '../../../common/cow-error'
+import { AnyAppDataDocVersion } from '../types'
+import { DEFAULT_IPFS_WRITE_URI } from '../../../common/ipfs'
 
 type PinataPinResponse = {
   IpfsHash: string
   PinSize: number
   Timestamp: string
+}
+
+export interface Ipfs {
+  uri?: string
+  writeUri?: string
+  readUri?: string
+  pinataApiKey?: string
+  pinataApiSecret?: string
 }
 
 export async function pinJSONToIPFS(

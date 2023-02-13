@@ -1,10 +1,10 @@
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { BUY_ETH_ADDRESS } from '@cowprotocol/contracts'
-import { CowError } from '../../utils/common'
-import { OrderCancellation } from '../../utils/sign'
-import { SupportedChainId } from '../../constants/chains'
+import { CowError } from '../../common/cow-error'
+import { SupportedChainId } from '../../common/chains'
 import { OrderBookApi } from './api'
 import { BuyTokenDestination, EcdsaSigningScheme, OrderType, SellTokenSource, SigningScheme } from './generated'
+import { OrderCancellation as OrderCancellationGp } from '@cowprotocol/contracts/lib/esm/order'
 
 enableFetchMocks()
 
@@ -73,7 +73,7 @@ const ORDER_CANCELLATION = {
     orderUid:
       '0x59920c85de0162e9e55df8d396e75f3b6b7c2dfdb535f03e5c807731c31585eaff714b8b0e2700303ec912bd40496c3997ceea2b616d6710',
     ...SIGNED_ORDER_RESPONSE,
-  } as unknown as OrderCancellation,
+  } as unknown as OrderCancellationGp,
   owner: '0x6810e776880c02933d47db1b9fc05908e5386b96',
 }
 

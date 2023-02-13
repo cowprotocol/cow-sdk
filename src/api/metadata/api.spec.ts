@@ -1,5 +1,5 @@
 import fetchMock from 'jest-fetch-mock'
-import { DEFAULT_IPFS_READ_URI, DEFAULT_IPFS_WRITE_URI } from '../../constants'
+import { DEFAULT_IPFS_READ_URI, DEFAULT_IPFS_WRITE_URI } from '../../common/ipfs'
 import { MetadataApi } from './api'
 
 const metadataApi = new MetadataApi()

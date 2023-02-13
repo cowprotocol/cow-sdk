@@ -1,5 +1,5 @@
-import { DEFAULT_IPFS_READ_URI } from '../constants'
-import { AnyAppDataDocVersion } from '../types'
+import { DEFAULT_IPFS_READ_URI } from '../../../common/ipfs'
+import { AnyAppDataDocVersion } from '@cowprotocol/app-data'
 
 function fromHexString(hexString: string) {
   const stringMatch = hexString.match(/.{1,2}/g)
