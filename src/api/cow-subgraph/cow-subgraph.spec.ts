@@ -1,23 +1,15 @@
 import { gql } from 'graphql-request'
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
-import { getSubgraphUrl } from '.'
 import { SupportedChainId } from '../../constants/chains'
-import { CowSdk } from '../../CowSdk'
 import { CowError } from '../../utils/common'
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
+import { PROD_CONFIG } from '../../configs'
+import { CowSubgraphApi } from './api'
 
 enableFetchMocks()
 
-const cowSdk = new CowSdk(SupportedChainId.MAINNET)
-const prodUrls = getSubgraphUrl('prod')
-
-beforeEach(() => {
-  fetchMock.resetMocks()
-})
-
-afterEach(() => {
-  jest.restoreAllMocks()
-})
+const cowSubgraphApi = new CowSubgraphApi(SupportedChainId.MAINNET)
+const prodUrls = PROD_CONFIG
 
 const headers = {
   'Content-Type': 'application/json',
@@ -239,130 +231,99 @@ const INVALID_QUERY_RESPONSE = {
   ],
 }
 
-test('Valid: Get Totals', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify(TOTALS_RESPONSE), {
-    status: 200,
-    headers,
+describe('Cow subgraph URL', () => {
+  beforeEach(() => {
+    fetchMock.resetMocks()
   })
-  const totals = await cowSdk.cowSubgraphApi.getTotals()
-  expect(fetchMock).toHaveBeenCalledTimes(1)
-  expect(fetchMock).toHaveBeenCalledWith(prodUrls[SupportedChainId.MAINNET], getFetchParameters(TOTALS_QUERY, 'Totals'))
-  expect(totals).toEqual(TOTALS_RESPONSE.data.totals[0])
-})
 
-test('Valid: Get Last 7 days volume', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify(LAST_7_DAYS_VOLUME_RESPONSE), {
-    status: 200,
-    headers,
+  afterEach(() => {
+    jest.restoreAllMocks()
   })
-  const response = await cowSdk.cowSubgraphApi.getLastDaysVolume(7)
-  expect(fetchMock).toHaveBeenCalledTimes(1)
-  expect(fetchMock).toHaveBeenCalledWith(
-    prodUrls[SupportedChainId.MAINNET],
-    getFetchParameters(LAST_DAYS_VOLUME_QUERY, 'LastDaysVolume', { days: 7 })
-  )
-  expect(response).toEqual(LAST_7_DAYS_VOLUME_RESPONSE.data)
-})
 
-test('Valid: Get Last 24 hours volume', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify(LAST_24_HOURS_VOLUME_RESPONSE), {
-    status: 200,
-    headers,
+  test('Valid: Get Totals', async () => {
+    fetchMock.mockResponseOnce(JSON.stringify(TOTALS_RESPONSE), {
+      status: 200,
+      headers,
+    })
+    const totals = await cowSubgraphApi.getTotals()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      prodUrls[SupportedChainId.MAINNET].subgraphUrl,
+      getFetchParameters(TOTALS_QUERY, 'Totals')
+    )
+    expect(totals).toEqual(TOTALS_RESPONSE.data.totals[0])
   })
-  const response = await cowSdk.cowSubgraphApi.getLastHoursVolume(24)
-  expect(fetchMock).toHaveBeenCalledTimes(1)
-  expect(fetchMock).toHaveBeenCalledWith(
-    prodUrls[SupportedChainId.MAINNET],
-    getFetchParameters(LAST_HOURS_VOLUME_QUERY, 'LastHoursVolume', { hours: 24 })
-  )
-  expect(response).toEqual(LAST_24_HOURS_VOLUME_RESPONSE.data)
-})
 
-test('Valid: Run custom query', async () => {
-  const query = gql`
-    query TokensByVolume {
-      tokens(first: 5, orderBy: totalVolumeUsd, orderDirection: desc) {
-        address
-        symbol
-        totalVolumeUsd
-        priceUsd
+  test('Valid: Get Last 7 days volume', async () => {
+    fetchMock.mockResponseOnce(JSON.stringify(LAST_7_DAYS_VOLUME_RESPONSE), {
+      status: 200,
+      headers,
+    })
+    const response = await cowSubgraphApi.getLastDaysVolume(7)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      prodUrls[SupportedChainId.MAINNET].subgraphUrl,
+      getFetchParameters(LAST_DAYS_VOLUME_QUERY, 'LastDaysVolume', { days: 7 })
+    )
+    expect(response).toEqual(LAST_7_DAYS_VOLUME_RESPONSE.data)
+  })
+
+  test('Valid: Get Last 24 hours volume', async () => {
+    fetchMock.mockResponseOnce(JSON.stringify(LAST_24_HOURS_VOLUME_RESPONSE), {
+      status: 200,
+      headers,
+    })
+    const response = await cowSubgraphApi.getLastHoursVolume(24)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      prodUrls[SupportedChainId.MAINNET].subgraphUrl,
+      getFetchParameters(LAST_HOURS_VOLUME_QUERY, 'LastHoursVolume', { hours: 24 })
+    )
+    expect(response).toEqual(LAST_24_HOURS_VOLUME_RESPONSE.data)
+  })
+
+  test('Valid: Run custom query', async () => {
+    const query = gql`
+      query TokensByVolume {
+        tokens(first: 5, orderBy: totalVolumeUsd, orderDirection: desc) {
+          address
+          symbol
+          totalVolumeUsd
+          priceUsd
+        }
       }
-    }
-  `
-  fetchMock.mockResponseOnce(JSON.stringify(TOKENS_BY_VOLUME_RESPONSE), {
-    status: 200,
-    headers,
+    `
+    fetchMock.mockResponseOnce(JSON.stringify(TOKENS_BY_VOLUME_RESPONSE), {
+      status: 200,
+      headers,
+    })
+    const response = await cowSubgraphApi.runQuery(query)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      prodUrls[SupportedChainId.MAINNET].subgraphUrl,
+      getFetchParameters(query, 'TokensByVolume')
+    )
+    expect(response).toEqual(TOKENS_BY_VOLUME_RESPONSE.data)
   })
-  const response = await cowSdk.cowSubgraphApi.runQuery(query)
-  expect(fetchMock).toHaveBeenCalledTimes(1)
-  expect(fetchMock).toHaveBeenCalledWith(
-    prodUrls[SupportedChainId.MAINNET],
-    getFetchParameters(query, 'TokensByVolume')
-  )
-  expect(response).toEqual(TOKENS_BY_VOLUME_RESPONSE.data)
-})
 
-test('Invalid: non-existent query', async () => {
-  const query = gql`
-    query InvalidQuery {
-      invalidQuery {
-        field1
-        field2
+  test('Invalid: non-existent query', async () => {
+    const query = gql`
+      query InvalidQuery {
+        invalidQuery {
+          field1
+          field2
+        }
       }
-    }
-  `
-  fetchMock.mockResponseOnce(JSON.stringify(INVALID_QUERY_RESPONSE), {
-    status: 200,
-    headers,
-  })
-  await expect(cowSdk.cowSubgraphApi.runQuery(query)).rejects.toThrowError(CowError)
-  expect(fetchMock).toHaveBeenCalledTimes(1)
-  expect(fetchMock).toHaveBeenCalledWith(prodUrls[SupportedChainId.MAINNET], getFetchParameters(query, 'InvalidQuery'))
-})
-
-describe('Chain id update', () => {
-  test('Valid: Handles Goerli', async () => {
-    const fetchParameters = getFetchParameters(LAST_HOURS_VOLUME_QUERY, 'LastHoursVolume', { hours: 24 })
-    fetchMock.mockResponseOnce(JSON.stringify(LAST_24_HOURS_VOLUME_RESPONSE), {
+    `
+    fetchMock.mockResponseOnce(JSON.stringify(INVALID_QUERY_RESPONSE), {
       status: 200,
       headers,
     })
-    cowSdk.updateChainId(SupportedChainId.GOERLI)
-    await cowSdk.cowSubgraphApi.getLastHoursVolume(24)
-    expect(fetchMock).toHaveBeenCalledWith(prodUrls[SupportedChainId.GOERLI], fetchParameters)
-  })
-
-  test('Valid: Handles Gnosis Chain', async () => {
-    const fetchParameters = getFetchParameters(LAST_HOURS_VOLUME_QUERY, 'LastHoursVolume', { hours: 24 })
-    fetchMock.mockResponseOnce(JSON.stringify(LAST_24_HOURS_VOLUME_RESPONSE), {
-      status: 200,
-      headers,
-    })
-    cowSdk.updateChainId(SupportedChainId.GNOSIS_CHAIN)
-    await cowSdk.cowSubgraphApi.getLastHoursVolume(24)
-    expect(fetchMock).toHaveBeenCalledWith(prodUrls[SupportedChainId.GNOSIS_CHAIN], fetchParameters)
-  })
-})
-
-describe('Passing Options object', () => {
-  test('Valid: Handles Gnosis Chain staging env', async () => {
-    const fetchParameters = getFetchParameters(LAST_HOURS_VOLUME_QUERY, 'LastHoursVolume', { hours: 24 })
-    fetchMock.mockResponseOnce(JSON.stringify(LAST_24_HOURS_VOLUME_RESPONSE), {
-      status: 200,
-      headers,
-    })
-    await cowSdk.cowSubgraphApi.getLastHoursVolume(24, { chainId: SupportedChainId.GNOSIS_CHAIN, env: 'staging' })
-    const gcStagingUrl = getSubgraphUrl('staging')[SupportedChainId.GNOSIS_CHAIN]
-    expect(fetchMock).toHaveBeenCalledWith(gcStagingUrl, fetchParameters)
-  })
-
-  test("Throws if the specified env doesn't exist", async () => {
-    // given
-
-    // when
-    const promise = cowSdk.cowSubgraphApi.getLastHoursVolume(24, { chainId: SupportedChainId.GOERLI, env: 'staging' })
-
-    // then
-    await expect(promise).rejects.toThrow('No network support for SubGraph in ChainId')
+    await expect(cowSubgraphApi.runQuery(query)).rejects.toThrowError(CowError)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      prodUrls[SupportedChainId.MAINNET].subgraphUrl,
+      getFetchParameters(query, 'InvalidQuery')
+    )
   })
 })
