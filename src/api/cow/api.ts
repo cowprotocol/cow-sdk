@@ -11,14 +11,14 @@ import {
   OrderQuoteRequest,
   TransactionHash,
   UID,
-} from '../swagger/orderBookApi'
-import { CowError } from '../utils/common'
-import { SupportedChainId } from '../constants/chains'
-import { EnvConfig, PROD_CONFIG, STAGING_CONFIG } from '../configs'
+} from './generated'
+import { CowError } from '../../utils/common'
+import { SupportedChainId } from '../../constants/chains'
+import { EnvConfig, PROD_CONFIG, STAGING_CONFIG } from '../../configs'
 import { transformOrder } from './transformOrder'
 import { EnrichedOrder } from './types'
-import { ApiRequestOptions } from '../swagger/orderBookApi/core/ApiRequestOptions'
-import { request as __request } from '../swagger/orderBookApi/core/request'
+import { ApiRequestOptions } from './generated/core/ApiRequestOptions'
+import { request as __request } from './generated/core/request'
 
 class FetchHttpRequest extends BaseHttpRequest {
   constructor(config: OpenAPIConfig) {

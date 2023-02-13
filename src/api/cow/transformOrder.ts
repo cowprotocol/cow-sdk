@@ -1,5 +1,5 @@
 import { BUY_ETH_ADDRESS } from '@cowprotocol/contracts'
-import { Order } from '../swagger/orderBookApi'
+import { Order } from './generated'
 import { EnrichedOrder } from './types'
 
 export function transformOrder(order: Order): EnrichedOrder {

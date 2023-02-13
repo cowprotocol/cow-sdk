@@ -3,14 +3,8 @@ import { BUY_ETH_ADDRESS } from '@cowprotocol/contracts'
 import { CowError } from '../../utils/common'
 import { OrderCancellation } from '../../utils/sign'
 import { SupportedChainId } from '../../constants/chains'
-import { OrderBookApi } from '../../newApi/orderBook.api'
-import {
-  BuyTokenDestination,
-  EcdsaSigningScheme,
-  OrderType,
-  SellTokenSource,
-  SigningScheme,
-} from '../../swagger/orderBookApi'
+import { OrderBookApi } from './api'
+import { BuyTokenDestination, EcdsaSigningScheme, OrderType, SellTokenSource, SigningScheme } from './generated'
 
 enableFetchMocks()
 
