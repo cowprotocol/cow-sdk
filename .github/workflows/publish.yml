@@ -15,6 +15,6 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           scope: '@cowprotocol'
       - run: yarn --frozen-lockfile
-      - run: bash src/workflows/publish.sh
+      - run: bash workflows/publish.sh
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
