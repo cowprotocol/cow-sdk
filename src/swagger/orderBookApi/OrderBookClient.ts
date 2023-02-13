@@ -3,7 +3,7 @@
 /* eslint-disable */
 import type { BaseHttpRequest } from './core/BaseHttpRequest';
 import type { OpenAPIConfig } from './core/OpenAPI';
-import { XHRHttpRequest } from './core/XHRHttpRequest';
+import { FetchHttpRequest } from './core/FetchHttpRequest';
 
 import { DefaultService } from './services/DefaultService';
 
@@ -15,7 +15,7 @@ export class OrderBookClient {
 
     public readonly request: BaseHttpRequest;
 
-    constructor(config?: Partial<OpenAPIConfig>, HttpRequest: HttpRequestConstructor = XHRHttpRequest) {
+    constructor(config?: Partial<OpenAPIConfig>, HttpRequest: HttpRequestConstructor = FetchHttpRequest) {
         this.request = new HttpRequest({
             BASE: config?.BASE ?? 'https://api.cow.fi/mainnet',
             VERSION: config?.VERSION ?? '0.0.1',

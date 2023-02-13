@@ -23,6 +23,7 @@
       - getQuote
       - sendSignedOrderCancellation
       - sendOrder
+      - getOrderLink
     }
     note bottom of CowApi
       https://api.cow.fi/docs

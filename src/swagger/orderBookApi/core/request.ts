@@ -37,10 +37,6 @@ const isFormData = (value: any): value is FormData => {
     return value instanceof FormData;
 };
 
-const isSuccess = (status: number): boolean => {
-    return status >= 200 && status < 300;
-};
-
 const base64 = (str: string): string => {
     try {
         return btoa(str);
@@ -190,7 +186,6 @@ const getRequestBody = (options: ApiRequestOptions): any => {
             return JSON.stringify(options.body);
         }
     }
-
     return undefined;
 };
 
@@ -202,28 +197,28 @@ export const sendRequest = async (
     formData: FormData | undefined,
     headers: Headers,
     onCancel: OnCancel
-): Promise<XMLHttpRequest> => {
-    const xhr = new XMLHttpRequest();
-    xhr.open(options.method, url, true);
-    xhr.withCredentials = config.WITH_CREDENTIALS;
+): Promise<Response> => {
+    const controller = new AbortController();
 
-    headers.forEach((value, key) => {
-        xhr.setRequestHeader(key, value);
-    });
+    const request: RequestInit = {
+        headers,
+        body: body ?? formData,
+        method: options.method,
+        signal: controller.signal,
+    };
 
-    return new Promise<XMLHttpRequest>((resolve, reject) => {
-        xhr.onload = () => resolve(xhr);
-        xhr.onabort = () => reject(new Error('Request aborted'));
-        xhr.onerror = () => reject(new Error('Network error'));
-        xhr.send(body ?? formData);
+    if (config.WITH_CREDENTIALS) {
+        request.credentials = config.CREDENTIALS;
+    }
 
-        onCancel(() => xhr.abort());
-    });
+    onCancel(() => controller.abort());
+
+    return await fetch(url, request);
 };
 
-const getResponseHeader = (xhr: XMLHttpRequest, responseHeader?: string): string | undefined => {
+const getResponseHeader = (response: Response, responseHeader?: string): string | undefined => {
     if (responseHeader) {
-        const content = xhr.getResponseHeader(responseHeader);
+        const content = response.headers.get(responseHeader);
         if (isString(content)) {
             return content;
         }
@@ -231,16 +226,16 @@ const getResponseHeader = (xhr: XMLHttpRequest, responseHeader?: string): string
     return undefined;
 };
 
-const getResponseBody = (xhr: XMLHttpRequest): any => {
-    if (xhr.status !== 204) {
+const getResponseBody = async (response: Response): Promise<any> => {
+    if (response.status !== 204) {
         try {
-            const contentType = xhr.getResponseHeader('Content-Type');
+            const contentType = response.headers.get('Content-Type');
             if (contentType) {
                 const isJSON = contentType.toLowerCase().startsWith('application/json');
                 if (isJSON) {
-                    return JSON.parse(xhr.responseText);
+                    return await response.json();
                 } else {
-                    return xhr.responseText;
+                    return await response.text();
                 }
             }
         } catch (error) {
@@ -289,12 +284,12 @@ export const request = <T>(config: OpenAPIConfig, options: ApiRequestOptions): C
 
             if (!onCancel.isCancelled) {
                 const response = await sendRequest(config, options, url, body, formData, headers, onCancel);
-                const responseBody = getResponseBody(response);
+                const responseBody = await getResponseBody(response);
                 const responseHeader = getResponseHeader(response, options.responseHeader);
 
                 const result: ApiResult = {
                     url,
-                    ok: isSuccess(response.status),
+                    ok: response.ok,
                     status: response.status,
                     statusText: response.statusText,
                     body: responseHeader ?? responseBody,

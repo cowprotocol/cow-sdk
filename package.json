@@ -23,7 +23,7 @@
     "prepare": "npm run build && npm run graphql:codegen",
     "prepublishOnly": "npm test && npm run lint",
     "graphql:codegen": "graphql-codegen --config graphql-codegen.yml",
-    "swagger:codegen": " openapi --input https://raw.githubusercontent.com/cowprotocol/services/fix/orderbook-openapi/crates/orderbook/openapi.yml --output ./src/swagger/orderBookApi --client xhr --name OrderBookClient"
+    "swagger:codegen": " openapi --input https://raw.githubusercontent.com/cowprotocol/services/fix/orderbook-openapi/crates/orderbook/openapi.yml --output ./src/swagger/orderBookApi --client fetch --name OrderBookClient"
   },
   "dependencies": {
     "@cowprotocol/app-data": "^0.0.3-RC.0",
