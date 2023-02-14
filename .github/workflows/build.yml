@@ -12,6 +12,9 @@ on:
   release:
     types: [published]
 
+env:
+  NODE_VERSION: lts/gallium
+
 jobs:
   build:
     name: Build Package
@@ -30,7 +33,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: ${{ env.NODE_VERSION }}
 
       - uses: actions/cache@v2
         with:
@@ -45,6 +48,6 @@ jobs:
           yarn install --cache-folder ./.yarncache --frozen-lockfile
           rm -rf .yarncache
           yarn cache clean
-          
+
       - name: Build app
         run: yarn build

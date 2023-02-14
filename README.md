@@ -5,7 +5,12 @@
 # CoW SDK
 
 [![Styled With Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://prettier.io/)
-[![Coverage Status](https://coveralls.io/repos/github/cowprotocol/cow-sdk/badge.svg?branch=main)](https://coveralls.io/github/cowprotocol/cow-sdk?branch=main)
+
+## Test coverage
+
+| Statements                                                                    | Branches                                                                    | Functions                                                                  | Lines                                                                    |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| ![Statements](https://img.shields.io/badge/statements-94.77%25-brightgreen.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-76.78%25-red.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-97.43%25-brightgreen.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-97.67%25-brightgreen.svg?style=flat) |
 
 ## Getting started
 
@@ -56,7 +61,7 @@ console.log(trades)
 ## Sign and Post orders
 In order to trade, you will need to create a valid order first.
 
-On the contraty to other decentralised exchanges, creating orders is free in CoW Protocol. This is because, one of the 
+On the contraty to other decentralised exchanges, creating orders is free in CoW Protocol. This is because, one of the
 most common ways to do it is by created offchain signed messages (meta-transactions, uses `EIP-712` or `EIP-1271`).
 
 Posting orders is a three steps process:
@@ -71,9 +76,9 @@ The next sections will guide you through the process of creating a valid order.
 
 ### Enable tokens (token approval)
 Because of the use of off-chain signing (meta-transactions), users will need to **Enable the sell token**  before signed
-orders can be considered as valid ones. 
+orders can be considered as valid ones.
 
-This enabling is technically an `ERC-20` approval, and is something that needs to be done only once. After this all 
+This enabling is technically an `ERC-20` approval, and is something that needs to be done only once. After this all
 order creation can be done for free using offchain signing.
 
 > For more details see https://docs.cow.fi/tutorials/how-to-submit-orders-via-the-api/1.-set-allowance-for-the-sell-token
@@ -90,18 +95,18 @@ const wallet = Wallet.fromMnemonic(mnemonic)
 const cowSdk = new CowSdk(
   100, {            // Leaving chainId empty will default to MAINNET
   signer: wallet  // Provide a signer, so you can sign order
-  }) 
+  })
 ```
 
 ### STEP 1: Get Market Price
 To create an order, you need to get a price/fee quote first:
 
   * The SDK will give you easy access to the API, which returns the `Market Price` and the `Fee` for any given trade you intent to do.
-  * The returned `Market Price` is not strictly needed, you can use your own pricing logic. 
+  * The returned `Market Price` is not strictly needed, you can use your own pricing logic.
     * You can choose a price that is below this Market price (**Market Order**), or above Market Price (**Limit Order**).
-  * The `Fee` however is very important. 
-    * It is the required amount in sell token the trader agrees on paying for executing the order onchain. 
-    * Normally, its value is proportional to the current Gas Price of the network. 
+  * The `Fee` however is very important.
+    * It is the required amount in sell token the trader agrees on paying for executing the order onchain.
+    * Normally, its value is proportional to the current Gas Price of the network.
     * This fee is never charged if you don't trade.
 
 To get the quote, you simply specify the trade you intent to do:
@@ -133,7 +138,7 @@ const { sellToken, buyToken, validTo, buyAmount, sellAmount, receiver, feeAmount
 
 // Prepare the RAW order
 const order = {
-  kind: OrderKind.SELL, // SELL || BUY  
+  kind: OrderKind.SELL, // SELL || BUY
   receiver, // Your account or any other
   sellToken,
   buyToken,
@@ -144,10 +149,10 @@ const order = {
   validTo,
 
   // Limit Price
-  //    You can apply some slippage tolerance here to make sure the trade is executed. 
+  //    You can apply some slippage tolerance here to make sure the trade is executed.
   //    CoW protocol protects from MEV, so it can work with higher slippages
   sellAmount,
-  buyAmount, 
+  buyAmount,
 
   // Use the fee you received from the API
   feeAmount,
@@ -162,8 +167,8 @@ const signedOrder = await cowSdk.signOrder(order)
 
 At this point, you have a signed order. So next step will be to post it to the API so it's considered by the solvers and executed.
 
-  
-## STEP 3: **Post the signed order to the API**: 
+
+## STEP 3: **Post the signed order to the API**:
 Once you have a signed order, last step is to send it to the API.
   * The API will accept the order if its correctly signed, the deadline is correct, and the fee is enough to settle it
   * Once accepted, the order will be `OPEN` until the specified `validTo` date (expiration)
@@ -187,7 +192,7 @@ const orderId = await cowSdk.cowApi.sendOrder({
 
 
 ### BONUS: Show link to Explorer
-Once the order is posted, its good to allow to check the state of it. 
+Once the order is posted, its good to allow to check the state of it.
 
 One easy is to check in the CoW Explorer. You can create a CoW Explorer link if you have the `orderId`:
 
@@ -216,7 +221,7 @@ This will create a document similar to:
   "version": "0.4.0",
   "appCode": "YourApp",
   "metadata": {}
-} 
+}
 ```
 
 After creating the most basic document, you can see how to attach additional meta-data items.
@@ -264,7 +269,7 @@ You can calculate the `AppData` Hex, and its corresponding `cidV0` using the SDK
 const { appDataHash, cidv0 } = await cowSdk.metadataApi.calculateAppDataHash(appDataDoc)
 ```
 
-Note how this operation is deterministic, so given the same document, it will always generate the same hash. 
+Note how this operation is deterministic, so given the same document, it will always generate the same hash.
 
 This method can be used to calculate the actual hash before uploading the document to IPFS.
 
@@ -299,8 +304,8 @@ Alternatively, you can upload the document on your own using any other service.
 ```js
 // Make sure you provide the IPFS params when instantiating the SDK
 const cowSdk = new CowSdk(100, {
-  ipfs: { 
-    pinataApiKey: 'YOUR_PINATA_API_KEY', 
+  ipfs: {
+    pinataApiKey: 'YOUR_PINATA_API_KEY',
     pinataApiSecret: 'YOUR_PINATA_API_SECRET'
   },
 })
@@ -310,7 +315,7 @@ const uploadedAppDataHash = await cowSdk.metadataApi.uploadMetadataDocToIpfs(app
 ```
 
 ## Convert IPFS CIDv0 to AppData (and back)
-Given an IPFS CIDv0 you can convert it to an `AppData` 
+Given an IPFS CIDv0 you can convert it to an `AppData`
 
 ```js
 const decodedAppDataHex = await cowSdk.metadataApi.cidToAppDataHex('QmUf2TrpSANVXdgcYfAAACe6kg551cY3rAemB7xfEMjYvs')
