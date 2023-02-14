@@ -14,9 +14,9 @@ module.exports = {
     ],
   },
   entry: {
-    metadata: './src/api/metadata/index.ts',
-    orderBook: './src/api/order-book/index.ts',
-    subgraph: './src/api/subgraph/index.ts',
+    metadata: './src/metadata/index.ts',
+    orderBook: './src/order-book/index.ts',
+    subgraph: './src/subgraph/index.ts',
   },
   output: {
     path: path.resolve(__dirname, 'dist'),

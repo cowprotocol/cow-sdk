@@ -1,4 +1,4 @@
-import { DEFAULT_IPFS_READ_URI } from '../../../common/ipfs'
+import { DEFAULT_IPFS_READ_URI } from '../../common/ipfs'
 import { AnyAppDataDocVersion } from '@cowprotocol/app-data'
 
 function fromHexString(hexString: string) {

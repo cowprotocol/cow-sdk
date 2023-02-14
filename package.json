@@ -8,10 +8,10 @@
   "scripts": {
     "prebuild": "rm -rf dist && yarn run test:coverage && yarn run make-badges && yarn run codegen",
     "build": "tsc --module commonjs",
-    "postbuild": "cp package.json dist && cp README.md dist && cp -R docs dist",
-    "start:metadata": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"node ./dist/api/metadata/index.js\"",
-    "start:order-book": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"node ./dist/api/order-book/index.js\"",
-    "start:subgraph": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"node ./dist/api/subgraph/index.js\"",
+    "postbuild": "cp package.json dist && cp README.md dist",
+    "start:metadata": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"node ./dist/metadata/index.js\"",
+    "start:order-book": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"node ./dist/order-book/index.js\"",
+    "start:subgraph": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"node ./dist/subgraph/index.js\"",
     "lint": "eslint src",
     "format": "prettier --write \"src/**/*.+(ts|json)\"",
     "test": "jest",
@@ -20,7 +20,7 @@
     "prepublishOnly": "npm test && npm run lint",
     "make-badges": "istanbul-badges-readme",
     "graphql:codegen": "graphql-codegen --config graphql-codegen.yml",
-    "swagger:codegen": " openapi --input https://raw.githubusercontent.com/cowprotocol/services/fix/orderbook-openapi/crates/orderbook/openapi.yml --output src/api/order-book/generated --client fetch --name OrderBookClient"
+    "swagger:codegen": " openapi --input https://raw.githubusercontent.com/cowprotocol/services/fix/orderbook-openapi/crates/orderbook/openapi.yml --output src/order-book/generated --client fetch --name OrderBookClient"
   },
   "dependencies": {
     "@cowprotocol/app-data": "^0.0.3-RC.0",
