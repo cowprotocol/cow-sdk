@@ -1,3 +1,3 @@
 export * from './cow'
-export * from '../cow-subgraph'
+export * from '../subgraph'
 export * from '../metadata'
