@@ -55,6 +55,8 @@ export async function pinJSONToIPFS(
 export async function calculateIpfsCidV0(doc: AnyAppDataDocVersion): Promise<string> {
   const docString = JSON.stringify(doc)
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   const { of } = await import('ipfs-only-hash')
   return of(docString, { cidVersion: 0 })
 }

@@ -56,7 +56,7 @@ export class OrderBookApi {
 
   getTrades({ owner, orderId }: { owner?: Address; orderId?: UID }): CancelablePromise<Array<Trade>> {
     if (owner && orderId) {
-      return new CancelablePromise((resolve, reject) => {
+      return new CancelablePromise((_, reject) => {
         reject(new CowError('Cannot specify both owner and orderId'))
       })
     }

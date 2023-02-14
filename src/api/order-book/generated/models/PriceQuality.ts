@@ -8,6 +8,6 @@
  *
  */
 export enum PriceQuality {
-  FAST = 'fast',
-  OPTIMAL = 'optimal',
+    FAST = 'fast',
+    OPTIMAL = 'optimal',
 }

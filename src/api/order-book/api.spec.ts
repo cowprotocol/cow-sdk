@@ -264,7 +264,6 @@ describe('Cow Api', () => {
 
   test('Invalid: Get trades passing both the owner and orderId', async () => {
     expect(
-      // @ts-expect-error both owner and orderId can't be passed at the same time
       cowSdk.cowApi.getTrades({
         owner: TRADE_RESPONSE.owner,
         orderId: TRADE_RESPONSE.orderUid,

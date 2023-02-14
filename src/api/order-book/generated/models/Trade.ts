@@ -2,55 +2,56 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Address } from './Address'
-import type { BigUint } from './BigUint'
-import type { TokenAmount } from './TokenAmount'
-import type { TransactionHash } from './TransactionHash'
-import type { UID } from './UID'
+import type { Address } from './Address';
+import type { BigUint } from './BigUint';
+import type { TokenAmount } from './TokenAmount';
+import type { TransactionHash } from './TransactionHash';
+import type { UID } from './UID';
 
 /**
  * Trade data such as executed amounts, fees, order id and block number.
  *
  */
 export type Trade = {
-  /**
-   * Block in which trade occurred.
-   */
-  blockNumber: number
-  /**
-   * Index in which transaction was included in block.
-   */
-  logIndex: number
-  /**
-   * Unique ID of the order matched by this trade.
-   */
-  orderUid: UID
-  /**
-   * Address of trader.
-   */
-  owner: Address
-  /**
-   * Address of token sold.
-   */
-  sellToken: Address
-  /**
-   * Address of token bought.
-   */
-  buyToken: Address
-  /**
-   * Total amount of sellToken that has been executed for this trade (including fees).
-   */
-  sellAmount: TokenAmount
-  /**
-   * The total amount of sellToken that has been executed for this order without fees.
-   */
-  sellAmountBeforeFees: BigUint
-  /**
-   * Total amount of buyToken received in this trade.
-   */
-  buyAmount: TokenAmount
-  /**
-   * Hash of the corresponding settlement transaction containing the trade (if available).
-   */
-  transactionHash: TransactionHash | null
-}
+    /**
+     * Block in which trade occurred.
+     */
+    blockNumber: number;
+    /**
+     * Index in which transaction was included in block.
+     */
+    logIndex: number;
+    /**
+     * Unique ID of the order matched by this trade.
+     */
+    orderUid: UID;
+    /**
+     * Address of trader.
+     */
+    owner: Address;
+    /**
+     * Address of token sold.
+     */
+    sellToken: Address;
+    /**
+     * Address of token bought.
+     */
+    buyToken: Address;
+    /**
+     * Total amount of sellToken that has been executed for this trade (including fees).
+     */
+    sellAmount: TokenAmount;
+    /**
+     * The total amount of sellToken that has been executed for this order without fees.
+     */
+    sellAmountBeforeFees: BigUint;
+    /**
+     * Total amount of buyToken received in this trade.
+     */
+    buyAmount: TokenAmount;
+    /**
+     * Hash of the corresponding settlement transaction containing the trade (if available).
+     */
+    transactionHash: TransactionHash | null;
+};
+

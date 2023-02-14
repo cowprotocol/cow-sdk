@@ -2,4 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type OnchainOrderData = {}
+export type OnchainOrderData = {
+};
+

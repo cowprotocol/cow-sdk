@@ -8,4 +8,4 @@
  * and bytes 52..56 valid to,
  *
  */
-export type UID = string
+export type UID = string;

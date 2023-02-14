@@ -7,7 +7,6 @@ import {
   getAppDataSchema,
   validateAppDataDoc,
 } from '@cowprotocol/app-data'
-import log from 'loglevel'
 import { getSerializedCID, loadIpfsFromCid } from './utils/appData'
 import { calculateIpfsCidV0, pinJSONToIPFS } from './utils/ipfs'
 import { AnyAppDataDocVersion, LatestAppDataDocVersion, IpfsHashInfo, GenerateAppDataDocParams } from './types'
@@ -74,7 +73,7 @@ export class MetadataApi {
       return loadIpfsFromCid(cidV0)
     } catch (e) {
       const error = e as CowError
-      log.error('Error decoding AppData:', error)
+      console.error('Error decoding AppData:', error)
       throw new CowError('Error decoding AppData: ' + error.message)
     }
   }

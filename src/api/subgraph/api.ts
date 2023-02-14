@@ -1,6 +1,5 @@
 import { CowError } from '../../common/cow-error'
 import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphql'
-import log from 'loglevel'
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
 import { DocumentNode } from 'graphql/index'
 import { request, Variables } from 'graphql-request'
@@ -17,18 +16,18 @@ export class SubgraphApi {
   }
 
   async getTotals(): Promise<TotalsQuery['totals'][0]> {
-    log.debug(`[subgraph:${this.API_NAME}] Get totals for:`, this.chainId)
+    console.debug(`[subgraph:${this.API_NAME}] Get totals for:`, this.chainId)
     const response = await this.runQuery<TotalsQuery>(TOTALS_QUERY)
     return response.totals[0]
   }
 
   async getLastDaysVolume(days: number): Promise<LastDaysVolumeQuery> {
-    log.debug(`[subgraph:${this.API_NAME}] Get last ${days} days volume for:`, this.chainId)
+    console.debug(`[subgraph:${this.API_NAME}] Get last ${days} days volume for:`, this.chainId)
     return this.runQuery<LastDaysVolumeQuery>(LAST_DAYS_VOLUME_QUERY, { days })
   }
 
   async getLastHoursVolume(hours: number): Promise<LastHoursVolumeQuery> {
-    log.debug(`[subgraph:${this.API_NAME}] Get last ${hours} hours volume for:`, this.chainId)
+    console.debug(`[subgraph:${this.API_NAME}] Get last ${hours} hours volume for:`, this.chainId)
     return this.runQuery<LastHoursVolumeQuery>(LAST_HOURS_VOLUME_QUERY, { hours })
   }
 
@@ -37,7 +36,7 @@ export class SubgraphApi {
     try {
       return await request(baseUrl, query, variables)
     } catch (error) {
-      log.error(`[subgraph:${this.API_NAME}]`, error)
+      console.error(`[subgraph:${this.API_NAME}]`, error)
       throw new CowError(
         `Error running query: ${query}. Variables: ${JSON.stringify(variables)}. API: ${baseUrl}. Inner Error: ${error}`
       )
