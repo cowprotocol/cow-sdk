@@ -8,11 +8,11 @@ import {
   validateAppDataDoc,
 } from '@cowprotocol/app-data'
 import log from 'loglevel'
-import { Context } from '../utils/context'
-import { getSerializedCID, loadIpfsFromCid } from '../utils/appData'
-import { calculateIpfsCidV0, pinJSONToIPFS } from '../utils/ipfs'
+import { Context } from './utils/context'
+import { getSerializedCID, loadIpfsFromCid } from './utils/appData'
+import { calculateIpfsCidV0, pinJSONToIPFS } from './utils/ipfs'
 import { AnyAppDataDocVersion, LatestAppDataDocVersion, IpfsHashInfo, GenerateAppDataDocParams } from './types'
-import { CowError } from '../utils/common'
+import { CowError } from './utils/common'
 
 const DEFAULT_APP_CODE = 'CowSwap'
 

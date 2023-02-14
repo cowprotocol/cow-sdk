@@ -1,9 +1,9 @@
 import log from 'loglevel'
 import { request, Variables } from 'graphql-request'
 import { DocumentNode } from 'graphql'
-import { CowError } from '../utils/common'
-import { Context, Env } from '../utils/context'
-import { SupportedChainId as ChainId } from '../constants/chains'
+import { CowError } from '../metadata/utils/common'
+import { Context, Env } from '../metadata/utils/context'
+import { SupportedChainId as ChainId } from '../common/chains'
 import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphql'
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
 

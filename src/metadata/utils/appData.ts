@@ -1,5 +1,5 @@
 import { fromHexString } from './common'
-import { DEFAULT_IPFS_READ_URI } from '../constants'
+import { DEFAULT_IPFS_READ_URI } from '../../common'
 import { AnyAppDataDocVersion } from '../types'
 
 export async function getSerializedCID(hash: string): Promise<void | string> {

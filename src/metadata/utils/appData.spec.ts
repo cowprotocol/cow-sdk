@@ -1,6 +1,6 @@
 import fetchMock from 'jest-fetch-mock'
 import { getSerializedCID, loadIpfsFromCid } from './appData'
-import { DEFAULT_IPFS_READ_URI } from '../constants'
+import { DEFAULT_IPFS_READ_URI } from '../../common'
 
 const INVALID_CID_LENGTH = 'Incorrect length'
 
