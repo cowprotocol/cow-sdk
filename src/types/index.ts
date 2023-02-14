@@ -1,7 +1,7 @@
 export * from '../api/cow/types'
 export * from '../api/0x/types'
 export * from '../api/paraswap/types'
-export * from '../api/metadata/types'
+export * from '../metadata/types'
 export * from './sdk'
 export * from './utilities'
 

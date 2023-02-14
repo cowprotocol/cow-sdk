@@ -1,6 +1,6 @@
 import fetchMock from 'jest-fetch-mock'
-import { CowSdk } from '../../CowSdk'
-import { DEFAULT_IPFS_READ_URI, DEFAULT_IPFS_WRITE_URI } from '../../constants'
+import { CowSdk } from '../CowSdk'
+import { DEFAULT_IPFS_READ_URI, DEFAULT_IPFS_WRITE_URI } from '../constants'
 
 const chainId = 100 // Gnosis chain
 

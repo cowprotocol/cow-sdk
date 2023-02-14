@@ -1,6 +1,6 @@
 import { CowError } from './common'
 import { Ipfs } from './context'
-import { AnyAppDataDocVersion } from '../api/metadata/types'
+import { AnyAppDataDocVersion } from '../metadata/types'
 import { DEFAULT_IPFS_WRITE_URI } from '../constants'
 
 type PinataPinResponse = {
