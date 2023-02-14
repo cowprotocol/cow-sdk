@@ -1,13 +1,13 @@
 import { ethers } from 'ethers'
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
-import { CowSdk } from '../../CowSdk'
+import { CowSdk } from '../CowSdk'
 import { BUY_ETH_ADDRESS, OrderKind, SigningScheme } from '@cowprotocol/contracts'
-import { FeeQuoteParams, PriceQuoteLegacyParams } from './types'
-import QuoteError from './errors/QuoteError'
-import { CowError } from '../../utils/common'
-import { OrderCancellation, OrderCreation, UnsignedOrder } from '../../utils/sign'
-import { ZERO_ADDRESS } from '../../constants'
-import { SupportedChainId } from '../../constants/chains'
+import { FeeQuoteParams, PriceQuoteLegacyParams } from '../api/cow/types'
+import QuoteError from '../api/cow/errors/QuoteError'
+import { CowError } from '../utils/common'
+import { OrderCancellation, OrderCreation, UnsignedOrder } from '../utils/sign'
+import { ZERO_ADDRESS } from '../constants'
+import { SupportedChainId } from '../constants/chains'
 
 enableFetchMocks()
 

@@ -30,7 +30,7 @@ import { ZERO_ADDRESS } from '../../constants'
 import { CowError, logPrefix, objectToQueryString } from '../../utils/common'
 import { Context, Env } from '../../utils/context'
 import BaseApi from '../base'
-import { transformOrder } from './transformOrder'
+import { transformOrder } from '../../order-book/transformOrder'
 
 const API_URL_VERSION = 'v1'
 

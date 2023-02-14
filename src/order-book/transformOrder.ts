@@ -1,4 +1,4 @@
-import { OrderDto, OrderMetaData } from './types'
+import { OrderDto, OrderMetaData } from '../api/cow/types'
 import { BUY_ETH_ADDRESS } from '@cowprotocol/contracts'
 
 export function transformOrder(order: OrderDto): OrderMetaData {
