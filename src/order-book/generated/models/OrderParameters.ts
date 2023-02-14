@@ -5,7 +5,7 @@
 import type { Address } from './Address';
 import type { AppData } from './AppData';
 import type { BuyTokenDestination } from './BuyTokenDestination';
-import type { OrderType } from './OrderType';
+import type { OrderKind } from './OrderKind';
 import type { SellTokenSource } from './SellTokenSource';
 import type { SigningScheme } from './SigningScheme';
 import type { TokenAmount } from './TokenAmount';
@@ -54,7 +54,7 @@ export type OrderParameters = {
     /**
      * The kind is either a buy or sell order
      */
-    kind: OrderType;
+    kind: OrderKind;
     /**
      * Is this a fill-or-kill order or a partially fillable order?
      */

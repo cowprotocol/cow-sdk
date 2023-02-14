@@ -5,7 +5,7 @@
 /**
  * Is this a buy order or sell order?
  */
-export enum OrderType {
+export enum OrderKind {
     BUY = 'buy',
     SELL = 'sell',
 }

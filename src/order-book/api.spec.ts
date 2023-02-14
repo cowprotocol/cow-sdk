@@ -3,7 +3,7 @@ import { BUY_ETH_ADDRESS } from '@cowprotocol/contracts'
 import { CowError } from '../common/cow-error'
 import { SupportedChainId } from '../common/chains'
 import { OrderBookApi } from './api'
-import { BuyTokenDestination, EcdsaSigningScheme, OrderType, SellTokenSource, SigningScheme } from './generated'
+import { BuyTokenDestination, EcdsaSigningScheme, OrderKind, SellTokenSource, SigningScheme } from './generated'
 import { OrderCancellation as OrderCancellationGp } from '@cowprotocol/contracts/lib/esm/order'
 
 enableFetchMocks()
@@ -36,7 +36,7 @@ const PARTIAL_ORDER = {
   sellTokenBalance: SellTokenSource.ERC20,
   buyTokenBalance: BuyTokenDestination.ERC20,
   from: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-  kind: OrderType.BUY,
+  kind: OrderKind.BUY,
   class: 'market',
 }
 
