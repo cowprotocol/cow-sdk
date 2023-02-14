@@ -52,6 +52,6 @@ export type Trade = {
     /**
      * Hash of the corresponding settlement transaction containing the trade (if available).
      */
-    transactionHash: TransactionHash | null;
+    txHash: TransactionHash | null;
 };
 
