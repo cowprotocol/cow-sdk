@@ -66,6 +66,12 @@ The SDK will expose:
 
 > 📚 Read more about [How to get started with the SDK](https://docs.cow.fi/cow-sdk/getting-started-with-the-sdk)
 
+## Architecture
+
+One way to make the most out of the SDK is to get familiar to its architecture.
+
+> See [SDK Architecture](./docs/architecture.md)
+
 ## CoW API
 
 The SDK provides access to the CoW API. The CoW API allows you:
