@@ -1,6 +1,6 @@
 import { gql } from 'graphql-request'
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
-import { getSubgraphUrl } from '.'
+import { getDefaultSubgraphUrls } from '.'
 import { SupportedChainId } from '../../constants/chains'
 import { CowSdk } from '../../CowSdk'
 import { CowError } from '../../utils/common'
@@ -9,7 +9,7 @@ import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from '.
 enableFetchMocks()
 
 const cowSdk = new CowSdk(SupportedChainId.MAINNET)
-const prodUrls = getSubgraphUrl('prod')
+const prodUrls = getDefaultSubgraphUrls('prod')
 
 beforeEach(() => {
   fetchMock.resetMocks()
@@ -352,7 +352,7 @@ describe('Passing Options object', () => {
       headers,
     })
     await cowSdk.cowSubgraphApi.getLastHoursVolume(24, { chainId: SupportedChainId.GNOSIS_CHAIN, env: 'staging' })
-    const gcStagingUrl = getSubgraphUrl('staging')[SupportedChainId.GNOSIS_CHAIN]
+    const gcStagingUrl = getDefaultSubgraphUrls('staging')[SupportedChainId.GNOSIS_CHAIN]
     expect(fetchMock).toHaveBeenCalledWith(gcStagingUrl, fetchParameters)
   })
 
