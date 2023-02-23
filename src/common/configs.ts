@@ -13,7 +13,9 @@ export interface EnvConfig {
   readonly subgraphUrl: string
 }
 
-export const PROD_CONFIG: { [key in SupportedChainId]: EnvConfig } = {
+export type EnvConfigs = Record<SupportedChainId, EnvConfig>
+
+export const PROD_CONFIG: EnvConfigs = {
   [SupportedChainId.MAINNET]: {
     apiUrl: 'https://api.cow.fi/mainnet',
     subgraphUrl: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow',
@@ -28,7 +30,7 @@ export const PROD_CONFIG: { [key in SupportedChainId]: EnvConfig } = {
   },
 }
 
-export const STAGING_CONFIG: { [key in SupportedChainId]: EnvConfig } = {
+export const STAGING_CONFIG: EnvConfigs = {
   [SupportedChainId.MAINNET]: {
     apiUrl: 'https://barn.api.cow.fi/mainnet',
     subgraphUrl: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-staging',
