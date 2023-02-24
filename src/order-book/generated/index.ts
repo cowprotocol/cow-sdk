@@ -36,7 +36,7 @@ export type { OrderParameters } from './models/OrderParameters';
 export { OrderPostError } from './models/OrderPostError';
 export type { OrderQuoteRequest } from './models/OrderQuoteRequest';
 export type { OrderQuoteResponse } from './models/OrderQuoteResponse';
-export { OrderQuoteSide } from './models/OrderQuoteSide';
+export type { OrderQuoteSide } from './models/OrderQuoteSide';
 export type { OrderQuoteValidity } from './models/OrderQuoteValidity';
 export { OrderStatus } from './models/OrderStatus';
 export type { PreSignature } from './models/PreSignature';
