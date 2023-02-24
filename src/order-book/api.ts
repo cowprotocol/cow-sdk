@@ -3,6 +3,7 @@ import {
   BaseHttpRequest,
   CancelablePromise,
   DefaultService,
+  NativePriceResponse,
   OpenAPIConfig,
   OrderBookClient,
   OrderCancellation,
@@ -128,6 +129,10 @@ export class OrderBookApi {
 
         throw error
       })
+  }
+
+  getNativePrice(chainId: SupportedChainId, tokenAddress: Address): CancelablePromise<NativePriceResponse> {
+    return this.getServiceForNetwork(chainId).getApiV1TokenNativePrice(tokenAddress)
   }
 
   getOrderLink(chainId: SupportedChainId, uid: UID): string {

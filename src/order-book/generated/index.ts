@@ -23,7 +23,7 @@ export { FeeAndQuoteError } from './models/FeeAndQuoteError';
 export type { FeeAndQuoteSellResponse } from './models/FeeAndQuoteSellResponse';
 export type { FeeInformation } from './models/FeeInformation';
 export type { NativePriceResponse } from './models/NativePriceResponse';
-export type { OnchainOrderData } from './models/OnchainOrderData';
+export { OnchainOrderData } from './models/OnchainOrderData';
 export type { Order } from './models/Order';
 export type { OrderCancellation } from './models/OrderCancellation';
 export { OrderCancellationError } from './models/OrderCancellationError';
