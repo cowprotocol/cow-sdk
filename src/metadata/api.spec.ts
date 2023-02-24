@@ -172,18 +172,6 @@ describe('Metadata api', () => {
       expect(result).toEqual({ cidV0: IPFS_HASH, appDataHash: APP_DATA_HEX })
     })
 
-    test('Throws with invalid appDoc', async () => {
-      // given
-      const doc = {
-        ...DEFAULT_APP_DATA_DOC,
-        metadata: { quote: { sellAmount: 'fsdfas', buyAmount: '41231', version: '0.1.0' } },
-      }
-      // when
-      const promise = metadataApi.calculateAppDataHash(doc)
-      // then
-      await expect(promise).rejects.toThrow('Invalid appData provided')
-    })
-
     test('Throws when cannot derive the appDataHash', async () => {
       // given
       const mock = jest.fn()
@@ -194,65 +182,6 @@ describe('Metadata api', () => {
       await expect(promise).rejects.toThrow('Failed to calculate appDataHash')
       expect(mock).toBeCalledTimes(1)
       expect(mock).toHaveBeenCalledWith(IPFS_HASH)
-    })
-  })
-
-  describe('validateAppDataDocument', () => {
-    const v010Doc = {
-      ...DEFAULT_APP_DATA_DOC,
-      metatadata: {
-        referrer: { address: '0xb6BAd41ae76A11D10f7b0E664C5007b908bC77C9', version: '0.1.0' },
-      },
-    }
-    const v040Doc = {
-      ...v010Doc,
-      version: '0.4.0',
-      metadata: { ...v010Doc.metadata, quote: { slippageBips: '1', version: '0.2.0' } },
-    }
-
-    test('Version matches schema', async () => {
-      // when
-      const v010Validation = await metadataApi.validateAppDataDoc(v010Doc)
-      const v040Validation = await metadataApi.validateAppDataDoc(v040Doc)
-      // then
-      expect(v010Validation.success).toBeTruthy()
-      expect(v040Validation.success).toBeTruthy()
-    })
-
-    test("Version doesn't match schema", async () => {
-      // when
-      const v030Validation = await metadataApi.validateAppDataDoc({ ...v040Doc, version: '0.3.0' })
-      // then
-      expect(v030Validation.success).toBeFalsy()
-      expect(v030Validation.errors).toEqual("data/metadata/quote must have required property 'sellAmount'")
-    })
-
-    test("Version doesn't exist", async () => {
-      // when
-      const validation = await metadataApi.validateAppDataDoc({ ...v010Doc, version: '0.0.0' })
-      // then
-      expect(validation.success).toBeFalsy()
-      expect(validation.errors).toEqual("AppData version 0.0.0 doesn't exist")
-    })
-  })
-
-  describe('getAppDataSchema', () => {
-    test('Returns existing schema', async () => {
-      // given
-      const version = '0.4.0'
-      // when
-      const schema = await metadataApi.getAppDataSchema(version)
-      // then
-      expect(schema.$id).toMatch(version)
-    })
-
-    test('Throws on invalid schema', async () => {
-      // given
-      const version = '0.0.0'
-      // when
-      const promise = metadataApi.getAppDataSchema(version)
-      // then
-      await expect(promise).rejects.toThrow(`AppData version ${version} doesn't exist`)
     })
   })
 })

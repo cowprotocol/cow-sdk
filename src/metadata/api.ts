@@ -1,12 +1,3 @@
-import {
-  createAppDataDoc,
-  createQuoteMetadata,
-  createReferrerMetadata,
-  createOrderClassMetadata,
-  latest,
-  getAppDataSchema,
-  validateAppDataDoc,
-} from '@cowprotocol/app-data'
 import { getSerializedCID, loadIpfsFromCid } from './utils/appData'
 import { calculateIpfsCidV0, pinJSONToIPFS } from './utils/ipfs'
 import { AnyAppDataDocVersion, LatestAppDataDocVersion, IpfsHashInfo, GenerateAppDataDocParams } from './types'
@@ -14,6 +5,10 @@ import { CowError } from '../common/cow-error'
 import { IpfsConfig } from '../common/configs'
 
 const DEFAULT_APP_CODE = 'CowSwap'
+const REFERRER_VERSION = '0.1.0'
+const QUOTE_VERSION = '0.2.0'
+const ORDER_CLASS_VERSION = '0.1.0'
+const APP_DATA_VERSION = '0.5.0'
 
 export class MetadataApi {
   /**
@@ -26,44 +21,16 @@ export class MetadataApi {
     const { appDataParams, metadataParams } = params || {}
     const { referrerParams, quoteParams, orderClassParams } = metadataParams || {}
 
-    const metadata: latest.Metadata = {}
-    if (referrerParams) {
-      metadata.referrer = createReferrerMetadata(referrerParams)
+    return {
+      appCode: appDataParams?.appCode || DEFAULT_APP_CODE,
+      environment: appDataParams?.environment,
+      metadata: {
+        ...(referrerParams ? { referrer: { ...referrerParams, version: REFERRER_VERSION } } : null),
+        ...(quoteParams ? { quote: { ...quoteParams, version: QUOTE_VERSION } } : null),
+        ...(orderClassParams ? { orderClass: { ...orderClassParams, version: ORDER_CLASS_VERSION } } : null),
+      },
+      version: APP_DATA_VERSION,
     }
-    if (quoteParams) {
-      metadata.quote = createQuoteMetadata(quoteParams)
-    }
-    if (orderClassParams) {
-      metadata.orderClass = createOrderClassMetadata(orderClassParams)
-    }
-
-    const appCode = appDataParams?.appCode || DEFAULT_APP_CODE
-    return createAppDataDoc({ ...appDataParams, appCode, metadata })
-  }
-
-  /**
-   * Wrapper around @cowprotocol/app-data getAppDataSchema
-   *
-   * Returns the appData schema for given version, if any
-   * Throws CowError when version doesn't exist
-   */
-  async getAppDataSchema(version: string): Promise<AnyAppDataDocVersion> {
-    try {
-      return await getAppDataSchema(version)
-    } catch (e) {
-      // Wrapping @cowprotocol/app-data Error into CowError
-      const error = e as Error
-      throw new CowError(error.message)
-    }
-  }
-
-  /**
-   * Wrapper around @cowprotocol/app-data validateAppDataDoc
-   *
-   * Validates given doc against the doc's own version
-   */
-  async validateAppDataDoc(appDataDoc: AnyAppDataDocVersion): ReturnType<typeof validateAppDataDoc> {
-    return validateAppDataDoc(appDataDoc)
   }
 
   async decodeAppData(hash: string): Promise<void | AnyAppDataDocVersion> {
@@ -118,11 +85,6 @@ export class MetadataApi {
    * @param appData
    */
   async calculateAppDataHash(appData: AnyAppDataDocVersion): Promise<IpfsHashInfo | void> {
-    const validation = await this.validateAppDataDoc(appData)
-    if (!validation?.success) {
-      throw new CowError('Invalid appData provided', validation?.errors)
-    }
-
     try {
       const cidV0 = await calculateIpfsCidV0(appData)
       const appDataHash = await this.cidToAppDataHex(cidV0)
