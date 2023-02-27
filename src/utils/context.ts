@@ -19,7 +19,7 @@ export interface CowContext {
   env?: Env
   signer?: Signer
   ipfs?: Ipfs
-  subgraphBaseUrls?: Record<ChainId, string>
+  subgraphBaseUrls?: Record<SupportedChainId, string>
 }
 
 export const DefaultCowContext: { appDataHash: string; ipfs: Ipfs; env: Env } = {
@@ -118,7 +118,7 @@ export class Context implements Partial<CowContext> {
     return this.#context.ipfs ?? DefaultCowContext.ipfs
   }
 
-  get subgraphBaseUrls(): Record<number, string> | undefined {
+  get subgraphBaseUrls(): Record<SupportedChainId, string> | undefined {
     return this.#context.subgraphBaseUrls
   }
 }
