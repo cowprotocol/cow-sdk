@@ -7,10 +7,11 @@ import { SupportedChainId as ChainId } from '../../constants/chains'
 import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphql'
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
 
-export function getDefaultSubgraphUrls(env: Env): Partial<Record<ChainId, string>> {
+export function getDefaultSubgraphUrls(env: Env): Record<ChainId, string> {
   switch (env) {
     case 'staging':
       return {
+        [ChainId.GOERLI]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-goerli',
         [ChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-staging',
         [ChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc-staging',
       }
@@ -31,7 +32,10 @@ export class CowSubgraphApi {
 
   constructor(context: Context) {
     this.context = context
-    this.baseUrls = context.subgraphBaseUrls ?? getDefaultSubgraphUrls(context.env)
+    this.baseUrls = {
+      ...getDefaultSubgraphUrls(context.env),
+      ...(context.subgraphBaseUrls || {}),
+    }
   }
 
   async getBaseUrl(options: SubgraphOptions = {}): Promise<string> {
