@@ -9,7 +9,9 @@ import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from '.
 enableFetchMocks()
 
 const cowSdk = new CowSdk(SupportedChainId.MAINNET)
-const prodUrls = getDefaultSubgraphUrl({ env: 'prod' })
+const PROD_URL = getDefaultSubgraphUrl({ env: 'prod' })
+const GOERLI_URL = getDefaultSubgraphUrl({ chainId: SupportedChainId.GOERLI })
+const GC_URL = getDefaultSubgraphUrl({ chainId: SupportedChainId.GNOSIS_CHAIN })
 
 beforeEach(() => {
   fetchMock.resetMocks()
@@ -18,20 +20,6 @@ beforeEach(() => {
 afterEach(() => {
   jest.restoreAllMocks()
 })
-
-const headers = {
-  'Content-Type': 'application/json',
-}
-
-const getFetchParameters = (query: string, operationName: string, variables?: unknown) => {
-  const body = {
-    query,
-    variables,
-    operationName,
-  }
-
-  return { body: JSON.stringify(body), headers, method: 'POST' }
-}
 
 const TOTALS_RESPONSE = {
   data: {
@@ -239,40 +227,51 @@ const INVALID_QUERY_RESPONSE = {
   ],
 }
 
+const MOCK_HEADERS = {
+  'Content-Type': 'application/json',
+}
+
+const MOCK_RESPONSE = {
+  status: 200,
+  headers: MOCK_HEADERS,
+}
+const mock24hVolume = () => fetchMock.mockResponseOnce(JSON.stringify(LAST_24_HOURS_VOLUME_RESPONSE), MOCK_RESPONSE)
+
+const getFetchParameters = (query: string, operationName: string, variables?: unknown) => {
+  const body = {
+    query,
+    variables,
+    operationName,
+  }
+
+  return { body: JSON.stringify(body), headers: MOCK_HEADERS, method: 'POST' }
+}
+
 test('Valid: Get Totals', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify(TOTALS_RESPONSE), {
-    status: 200,
-    headers,
-  })
+  fetchMock.mockResponseOnce(JSON.stringify(TOTALS_RESPONSE), MOCK_RESPONSE)
   const totals = await cowSdk.cowSubgraphApi.getTotals()
   expect(fetchMock).toHaveBeenCalledTimes(1)
-  expect(fetchMock).toHaveBeenCalledWith(prodUrls[SupportedChainId.MAINNET], getFetchParameters(TOTALS_QUERY, 'Totals'))
+  expect(fetchMock).toHaveBeenCalledWith(PROD_URL, getFetchParameters(TOTALS_QUERY, 'Totals'))
   expect(totals).toEqual(TOTALS_RESPONSE.data.totals[0])
 })
 
 test('Valid: Get Last 7 days volume', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify(LAST_7_DAYS_VOLUME_RESPONSE), {
-    status: 200,
-    headers,
-  })
+  fetchMock.mockResponseOnce(JSON.stringify(LAST_7_DAYS_VOLUME_RESPONSE), MOCK_RESPONSE)
   const response = await cowSdk.cowSubgraphApi.getLastDaysVolume(7)
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    prodUrls[SupportedChainId.MAINNET],
+    PROD_URL,
     getFetchParameters(LAST_DAYS_VOLUME_QUERY, 'LastDaysVolume', { days: 7 })
   )
   expect(response).toEqual(LAST_7_DAYS_VOLUME_RESPONSE.data)
 })
 
 test('Valid: Get Last 24 hours volume', async () => {
-  fetchMock.mockResponseOnce(JSON.stringify(LAST_24_HOURS_VOLUME_RESPONSE), {
-    status: 200,
-    headers,
-  })
+  mock24hVolume()
   const response = await cowSdk.cowSubgraphApi.getLastHoursVolume(24)
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock).toHaveBeenCalledWith(
-    prodUrls[SupportedChainId.MAINNET],
+    PROD_URL,
     getFetchParameters(LAST_HOURS_VOLUME_QUERY, 'LastHoursVolume', { hours: 24 })
   )
   expect(response).toEqual(LAST_24_HOURS_VOLUME_RESPONSE.data)
@@ -289,16 +288,10 @@ test('Valid: Run custom query', async () => {
       }
     }
   `
-  fetchMock.mockResponseOnce(JSON.stringify(TOKENS_BY_VOLUME_RESPONSE), {
-    status: 200,
-    headers,
-  })
+  fetchMock.mockResponseOnce(JSON.stringify(TOKENS_BY_VOLUME_RESPONSE), MOCK_RESPONSE)
   const response = await cowSdk.cowSubgraphApi.runQuery(query)
   expect(fetchMock).toHaveBeenCalledTimes(1)
-  expect(fetchMock).toHaveBeenCalledWith(
-    prodUrls[SupportedChainId.MAINNET],
-    getFetchParameters(query, 'TokensByVolume')
-  )
+  expect(fetchMock).toHaveBeenCalledWith(PROD_URL, getFetchParameters(query, 'TokensByVolume'))
   expect(response).toEqual(TOKENS_BY_VOLUME_RESPONSE.data)
 })
 
@@ -311,49 +304,37 @@ test('Invalid: non-existent query', async () => {
       }
     }
   `
-  fetchMock.mockResponseOnce(JSON.stringify(INVALID_QUERY_RESPONSE), {
-    status: 200,
-    headers,
-  })
+  fetchMock.mockResponseOnce(JSON.stringify(INVALID_QUERY_RESPONSE), MOCK_RESPONSE)
   await expect(cowSdk.cowSubgraphApi.runQuery(query)).rejects.toThrowError(CowError)
   expect(fetchMock).toHaveBeenCalledTimes(1)
-  expect(fetchMock).toHaveBeenCalledWith(prodUrls[SupportedChainId.MAINNET], getFetchParameters(query, 'InvalidQuery'))
+  expect(fetchMock).toHaveBeenCalledWith(PROD_URL, getFetchParameters(query, 'InvalidQuery'))
 })
 
 describe('Chain id update', () => {
   test('Valid: Handles Goerli', async () => {
     const fetchParameters = getFetchParameters(LAST_HOURS_VOLUME_QUERY, 'LastHoursVolume', { hours: 24 })
-    fetchMock.mockResponseOnce(JSON.stringify(LAST_24_HOURS_VOLUME_RESPONSE), {
-      status: 200,
-      headers,
-    })
+    mock24hVolume()
     cowSdk.updateChainId(SupportedChainId.GOERLI)
     await cowSdk.cowSubgraphApi.getLastHoursVolume(24)
-    expect(fetchMock).toHaveBeenCalledWith(prodUrls[SupportedChainId.GOERLI], fetchParameters)
+    expect(fetchMock).toHaveBeenCalledWith(GOERLI_URL, fetchParameters)
   })
 
   test('Valid: Handles Gnosis Chain', async () => {
     const fetchParameters = getFetchParameters(LAST_HOURS_VOLUME_QUERY, 'LastHoursVolume', { hours: 24 })
-    fetchMock.mockResponseOnce(JSON.stringify(LAST_24_HOURS_VOLUME_RESPONSE), {
-      status: 200,
-      headers,
-    })
+    mock24hVolume()
     cowSdk.updateChainId(SupportedChainId.GNOSIS_CHAIN)
     await cowSdk.cowSubgraphApi.getLastHoursVolume(24)
-    expect(fetchMock).toHaveBeenCalledWith(prodUrls[SupportedChainId.GNOSIS_CHAIN], fetchParameters)
+    expect(fetchMock).toHaveBeenCalledWith(GC_URL, fetchParameters)
   })
 })
 
 describe('Passing Options object', () => {
-  test.only('Valid: Handles Gnosis Chain staging env', async () => {
+  test('Valid: Handles Gnosis Chain staging env', async () => {
     // GIVEN: We have a supported chain/env (gnosis chain in staging)
     // GIVEN: And this chain is not the "default" one in the SDK instanciation
     const gcStagingUrl = getDefaultSubgraphUrl({ chainId: SupportedChainId.GNOSIS_CHAIN, env: 'staging' })
     const env = 'staging'
-    fetchMock.mockResponseOnce(JSON.stringify(LAST_24_HOURS_VOLUME_RESPONSE), {
-      status: 200,
-      headers,
-    })
+    mock24hVolume()
 
     // WHEN: We query this chain/env
     await cowSdk.cowSubgraphApi.getLastHoursVolume(24, { chainId: SupportedChainId.GNOSIS_CHAIN, env })
