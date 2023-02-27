@@ -118,7 +118,7 @@ export class Context implements Partial<CowContext> {
     return this.#context.ipfs ?? DefaultCowContext.ipfs
   }
 
-  get subgraphBaseUrls(): Record<SupportedChainId, string> | undefined {
-    return this.#context.subgraphBaseUrls
+  get subgraphBaseUrls(): Partial<Record<SupportedChainId, string>> {
+    return this.#context.subgraphBaseUrls || {}
   }
 }
