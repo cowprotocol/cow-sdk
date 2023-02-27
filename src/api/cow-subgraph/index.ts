@@ -7,19 +7,25 @@ import { SupportedChainId as ChainId } from '../../constants/chains'
 import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphql'
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
 
-export function getDefaultSubgraphUrls(env: Env): Partial<Record<ChainId, string>> {
-  switch (env) {
-    case 'staging':
-      return {
-        [ChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-staging',
-        [ChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc-staging',
-      }
-    case 'prod':
-      return {
-        [ChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow',
-        [ChainId.GOERLI]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-goerli',
-        [ChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc',
-      }
+export function getDefaultSubgraphUrls(_env: Env): Record<ChainId, string> {
+  // switch (env) {
+  //   case 'staging':
+  //     return {
+  //       [ChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-staging',
+  //       [ChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc-staging',
+  //     }
+  //   case 'prod':
+  //     return {
+  //       [ChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow',
+  //       [ChainId.GOERLI]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-goerli',
+  //       [ChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc',
+  //     }
+  // }
+  // TODO: Ideally we would have a staging environment for Satsuma too. But this needs to be created
+  return {
+    [ChainId.MAINNET]: 'https://subgraph.satsuma-prod.com/94b7bd7c35c5/cow/cow/api',
+    [ChainId.GOERLI]: 'https://subgraph.satsuma-prod.com/94b7bd7c35c5/cow/cow-goerli/api',
+    [ChainId.GNOSIS_CHAIN]: 'https://subgraph.satsuma-prod.com/94b7bd7c35c5/cow/cow-gc/api',
   }
 }
 
