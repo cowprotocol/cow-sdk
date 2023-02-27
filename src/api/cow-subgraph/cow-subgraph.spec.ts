@@ -358,7 +358,7 @@ describe('Passing Options object', () => {
 
 describe('Override URLs', () => {
   test('Override default chain', async () => {
-    // GIVEN: We instantiate the SDK with a different URL for Gnosis Chain
+    // GIVEN: We instantiate the SDK with a different URL for MAINNET (default chain)
     const anotherGraphUrl = 'http://cow.fi'
     const cowSdk = new CowSdk(SupportedChainId.MAINNET, {
       subgraphBaseUrls: {
@@ -367,11 +367,47 @@ describe('Override URLs', () => {
     })
     mock24hVolume()
 
-    // WHEN: We query this chain/env
+    // WHEN: We query without specifying the chain
     await cowSdk.cowSubgraphApi.getLastHoursVolume(24)
 
-    // THEN: The API is called with the correct parameters
+    // THEN: The URL is the modified one
     const fetchParameters = getFetchParameters(LAST_HOURS_VOLUME_QUERY, 'LastHoursVolume', { hours: 24 })
     expect(fetchMock).toHaveBeenCalledWith(anotherGraphUrl, fetchParameters)
+  })
+
+  test('Override GC chain', async () => {
+    // GIVEN: We instantiate the SDK with a different URL for Gnosis Chain
+    const anotherGraphUrl = 'http://cow.fi'
+    const cowSdk = new CowSdk(SupportedChainId.MAINNET, {
+      subgraphBaseUrls: {
+        [SupportedChainId.GNOSIS_CHAIN]: anotherGraphUrl,
+      },
+    })
+    mock24hVolume()
+
+    // WHEN: We query for Gnosis Chain
+    await cowSdk.cowSubgraphApi.getLastHoursVolume(24, { chainId: SupportedChainId.GNOSIS_CHAIN })
+
+    // THEN: The URL is the modified one
+    const fetchParameters = getFetchParameters(LAST_HOURS_VOLUME_QUERY, 'LastHoursVolume', { hours: 24 })
+    expect(fetchMock).toHaveBeenCalledWith(anotherGraphUrl, fetchParameters)
+  })
+
+  test("Override GC chain, shouldn't affect the main chain", async () => {
+    // GIVEN: We instantiate the SDK with a different URL for Gnosis Chain
+    const anotherGraphUrl = 'http://cow.fi'
+    const cowSdk = new CowSdk(SupportedChainId.MAINNET, {
+      subgraphBaseUrls: {
+        [SupportedChainId.GNOSIS_CHAIN]: anotherGraphUrl,
+      },
+    })
+    mock24hVolume()
+
+    // WHEN: We query for the default chain (MAINNET)
+    await cowSdk.cowSubgraphApi.getLastHoursVolume(24)
+
+    // THEN: The URL is the original un-modified one
+    const fetchParameters = getFetchParameters(LAST_HOURS_VOLUME_QUERY, 'LastHoursVolume', { hours: 24 })
+    expect(fetchMock).toHaveBeenCalledWith(PROD_URL, fetchParameters)
   })
 })
