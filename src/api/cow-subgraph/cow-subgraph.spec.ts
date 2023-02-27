@@ -355,3 +355,23 @@ describe('Passing Options object', () => {
     await expect(promise).rejects.toThrow('No network support for SubGraph in ChainId')
   })
 })
+
+describe('Override URLs', () => {
+  test('Override default chain', async () => {
+    // GIVEN: We instantiate the SDK with a different URL for Gnosis Chain
+    const anotherGraphUrl = 'http://cow.fi'
+    const cowSdk = new CowSdk(SupportedChainId.MAINNET, {
+      subgraphBaseUrls: {
+        [SupportedChainId.MAINNET]: anotherGraphUrl,
+      },
+    })
+    mock24hVolume()
+
+    // WHEN: We query this chain/env
+    await cowSdk.cowSubgraphApi.getLastHoursVolume(24)
+
+    // THEN: The API is called with the correct parameters
+    const fetchParameters = getFetchParameters(LAST_HOURS_VOLUME_QUERY, 'LastHoursVolume', { hours: 24 })
+    expect(fetchMock).toHaveBeenCalledWith(anotherGraphUrl, fetchParameters)
+  })
+})
