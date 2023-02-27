@@ -1,6 +1,6 @@
 import { gql } from 'graphql-request'
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
-import { getDefaultSubgraphUrls } from '.'
+import { getDefaultSubgraphUrl } from '.'
 import { SupportedChainId } from '../../constants/chains'
 import { CowSdk } from '../../CowSdk'
 import { CowError } from '../../utils/common'
@@ -9,7 +9,7 @@ import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from '.
 enableFetchMocks()
 
 const cowSdk = new CowSdk(SupportedChainId.MAINNET)
-const prodUrls = getDefaultSubgraphUrls('prod')
+const prodUrls = getDefaultSubgraphUrl({ env: 'prod' })
 
 beforeEach(() => {
   fetchMock.resetMocks()
@@ -345,24 +345,32 @@ describe('Chain id update', () => {
 })
 
 describe('Passing Options object', () => {
-  test('Valid: Handles Gnosis Chain staging env', async () => {
-    const fetchParameters = getFetchParameters(LAST_HOURS_VOLUME_QUERY, 'LastHoursVolume', { hours: 24 })
+  test.only('Valid: Handles Gnosis Chain staging env', async () => {
+    // GIVEN: We have a supported chain/env (gnosis chain in staging)
+    // GIVEN: And this chain is not the "default" one in the SDK instanciation
+    const gcStagingUrl = getDefaultSubgraphUrl({ chainId: SupportedChainId.GNOSIS_CHAIN, env: 'staging' })
+    const env = 'staging'
     fetchMock.mockResponseOnce(JSON.stringify(LAST_24_HOURS_VOLUME_RESPONSE), {
       status: 200,
       headers,
     })
-    await cowSdk.cowSubgraphApi.getLastHoursVolume(24, { chainId: SupportedChainId.GNOSIS_CHAIN, env: 'staging' })
-    const gcStagingUrl = getDefaultSubgraphUrls('staging')[SupportedChainId.GNOSIS_CHAIN]
+
+    // WHEN: We query this chain/env
+    await cowSdk.cowSubgraphApi.getLastHoursVolume(24, { chainId: SupportedChainId.GNOSIS_CHAIN, env })
+
+    // THEN: The API is called with the correct parameters
+    const fetchParameters = getFetchParameters(LAST_HOURS_VOLUME_QUERY, 'LastHoursVolume', { hours: 24 })
     expect(fetchMock).toHaveBeenCalledWith(gcStagingUrl, fetchParameters)
   })
 
   test("Throws if the specified env doesn't exist", async () => {
-    // given
+    // GIVEN: We an unsuppoerted chain
+    const unsupportedChain = 9999
 
-    // when
-    const promise = cowSdk.cowSubgraphApi.getLastHoursVolume(24, { chainId: SupportedChainId.GOERLI, env: 'staging' })
+    // WHEN: Query the volume
+    const promise = cowSdk.cowSubgraphApi.getLastHoursVolume(24, { chainId: unsupportedChain, env: 'staging' })
 
-    // then
+    // THEN: Throws an error
     await expect(promise).rejects.toThrow('No network support for SubGraph in ChainId')
   })
 })

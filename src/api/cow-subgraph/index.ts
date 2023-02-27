@@ -7,44 +7,46 @@ import { SupportedChainId as ChainId } from '../../constants/chains'
 import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphql'
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
 
-export function getDefaultSubgraphUrls(env: Env): Record<ChainId, string> {
+const DEFAULT_STAGING_URLS = {
+  [ChainId.GOERLI]: 'https://subgraph.satsuma-prod.com/94b7bd7c35c5/cow/cow-goerli/api',
+  [ChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-staging',
+  [ChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc-staging',
+}
+
+const DEFAULT_PROD_URLS = {
+  [ChainId.GOERLI]: 'https://subgraph.satsuma-prod.com/94b7bd7c35c5/cow/cow-goerli/api',
+  [ChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow',
+  [ChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc',
+}
+
+const DEFAULT_ENV = 'prod'
+
+export function getDefaultSubgraphUrl(params: { chainId?: ChainId; env?: Env }): string {
+  const { chainId = ChainId.MAINNET, env = DEFAULT_ENV } = params
   switch (env) {
     case 'staging':
-      return {
-        [ChainId.GOERLI]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-goerli',
-        [ChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-staging',
-        [ChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc-staging',
-      }
+      return DEFAULT_STAGING_URLS[chainId]
     case 'prod':
-      return {
-        [ChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow',
-        [ChainId.GOERLI]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-goerli',
-        [ChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc',
-      }
+      return DEFAULT_PROD_URLS[chainId]
   }
 }
 
 export class CowSubgraphApi {
   context: Context
-  baseUrls: Record<ChainId, string>
+  baseUrls: Partial<Record<ChainId, string>>
 
   API_NAME = 'CoW Protocol Subgraph'
 
   constructor(context: Context) {
     this.context = context
-    this.baseUrls = {
-      ...getDefaultSubgraphUrls(context.env),
-      ...(context.subgraphBaseUrls || {}),
-    }
+    this.baseUrls = context.subgraphBaseUrls || {}
   }
 
   async getBaseUrl(options: SubgraphOptions = {}): Promise<string> {
-    const { chainId: networkId, env = 'prod' } = options
+    const { chainId: networkId, env = DEFAULT_ENV } = options
     const chainId = networkId || (await this.context.chainId)
 
-    this.context.chainId
-
-    const baseUrl = this.baseUrls[chainId]
+    const baseUrl = this.baseUrls[chainId] || getDefaultSubgraphUrl({ chainId, env })
     if (!baseUrl) {
       throw new CowError(`No network support for SubGraph in ChainId ${networkId} and Environment "${env}"`)
     }
