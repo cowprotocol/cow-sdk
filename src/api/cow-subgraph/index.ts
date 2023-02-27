@@ -33,20 +33,18 @@ export function getDefaultSubgraphUrl(params: { chainId?: ChainId; env?: Env }):
 
 export class CowSubgraphApi {
   context: Context
-  baseUrls: Partial<Record<ChainId, string>>
 
   API_NAME = 'CoW Protocol Subgraph'
 
   constructor(context: Context) {
     this.context = context
-    this.baseUrls = context.subgraphBaseUrls || {}
   }
 
   async getBaseUrl(options: SubgraphOptions = {}): Promise<string> {
     const { chainId: networkId, env = DEFAULT_ENV } = options
     const chainId = networkId || (await this.context.chainId)
 
-    const baseUrl = this.baseUrls[chainId] || getDefaultSubgraphUrl({ chainId, env })
+    const baseUrl = this.context.subgraphBaseUrls[chainId] || getDefaultSubgraphUrl({ chainId, env })
     if (!baseUrl) {
       throw new CowError(`No network support for SubGraph in ChainId ${networkId} and Environment "${env}"`)
     }
