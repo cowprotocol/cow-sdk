@@ -1,12 +1,19 @@
-import { CowError } from './common'
-import { Ipfs } from './context'
+import { CowError } from '../../common/cow-error'
 import { AnyAppDataDocVersion } from '../types'
-import { DEFAULT_IPFS_WRITE_URI } from '../../common'
+import { DEFAULT_IPFS_WRITE_URI } from '../../common/ipfs'
 
 type PinataPinResponse = {
   IpfsHash: string
   PinSize: number
   Timestamp: string
+}
+
+export interface Ipfs {
+  uri?: string
+  writeUri?: string
+  readUri?: string
+  pinataApiKey?: string
+  pinataApiSecret?: string
 }
 
 export async function pinJSONToIPFS(
@@ -48,6 +55,8 @@ export async function pinJSONToIPFS(
 export async function calculateIpfsCidV0(doc: AnyAppDataDocVersion): Promise<string> {
   const docString = JSON.stringify(doc)
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   const { of } = await import('ipfs-only-hash')
   return of(docString, { cidVersion: 0 })
 }

@@ -8,7 +8,8 @@ import { SubgraphApi } from './api'
 
 enableFetchMocks()
 
-const cowSubgraphApi = new SubgraphApi(SupportedChainId.MAINNET)
+const chainId = SupportedChainId.MAINNET
+const cowSubgraphApi = new SubgraphApi()
 const prodUrls = PROD_CONFIG
 
 const headers = {
@@ -245,7 +246,7 @@ describe('Cow subgraph URL', () => {
       status: 200,
       headers,
     })
-    const totals = await cowSubgraphApi.getTotals()
+    const totals = await cowSubgraphApi.getTotals(chainId)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       prodUrls[SupportedChainId.MAINNET].subgraphUrl,
@@ -259,7 +260,7 @@ describe('Cow subgraph URL', () => {
       status: 200,
       headers,
     })
-    const response = await cowSubgraphApi.getLastDaysVolume(7)
+    const response = await cowSubgraphApi.getLastDaysVolume(chainId, 7)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       prodUrls[SupportedChainId.MAINNET].subgraphUrl,
@@ -273,7 +274,7 @@ describe('Cow subgraph URL', () => {
       status: 200,
       headers,
     })
-    const response = await cowSubgraphApi.getLastHoursVolume(24)
+    const response = await cowSubgraphApi.getLastHoursVolume(chainId, 24)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       prodUrls[SupportedChainId.MAINNET].subgraphUrl,
@@ -297,7 +298,7 @@ describe('Cow subgraph URL', () => {
       status: 200,
       headers,
     })
-    const response = await cowSubgraphApi.runQuery(query)
+    const response = await cowSubgraphApi.runQuery(chainId, query)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       prodUrls[SupportedChainId.MAINNET].subgraphUrl,
@@ -319,7 +320,7 @@ describe('Cow subgraph URL', () => {
       status: 200,
       headers,
     })
-    await expect(cowSubgraphApi.runQuery(query)).rejects.toThrowError(CowError)
+    await expect(cowSubgraphApi.runQuery(chainId, query)).rejects.toThrowError(CowError)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       prodUrls[SupportedChainId.MAINNET].subgraphUrl,
