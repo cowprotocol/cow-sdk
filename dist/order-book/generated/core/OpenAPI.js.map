@@ -1,0 +1,1 @@
+{"version":3,"file":"OpenAPI.js","sourceRoot":"","sources":["../../../../src/order-book/generated/core/OpenAPI.ts"],"names":[],"mappings":";;;AAoBa,QAAA,OAAO,GAAkB;IAClC,IAAI,EAAE,4BAA4B;IAClC,OAAO,EAAE,OAAO;IAChB,gBAAgB,EAAE,KAAK;IACvB,WAAW,EAAE,SAAS;IACtB,KAAK,EAAE,SAAS;IAChB,QAAQ,EAAE,SAAS;IACnB,QAAQ,EAAE,SAAS;IACnB,OAAO,EAAE,SAAS;IAClB,WAAW,EAAE,SAAS;CACzB,CAAC"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"cow-error.js","sourceRoot":"","sources":["../../src/common/cow-error.ts"],"names":[],"mappings":";;;AAAA,MAAa,QAAS,SAAQ,KAAK;IAGjC,YAAY,OAAe,EAAE,UAAmB;QAC9C,KAAK,CAAC,OAAO,CAAC,CAAA;QACd,IAAI,CAAC,UAAU,GAAG,UAAU,CAAA;IAC9B,CAAC;CACF;AAPD,4BAOC;AAEY,QAAA,SAAS,GAAG,UAAU,CAAA"}
