@@ -11,5 +11,5 @@
     "prettier/prettier": "error"
   },
 
-  "ignorePatterns": ["dist", "node_modules", "src/subgraph/graphql.ts", "webpack.config.js"]
+  "ignorePatterns": ["dist", "node_modules", "src/subgraph/graphql.ts"]
 }

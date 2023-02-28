@@ -2,14 +2,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { OrderKind } from './OrderKind';
 import type { TokenAmount } from './TokenAmount';
 
 /**
  * The buy or sell side when quoting an order.
  */
 export type OrderQuoteSide = ({
-    kind: OrderKind;
+    kind: OrderQuoteSide.kind;
     /**
      * The total amount that is available for the order. From this value, the fee
      * is deducted and the buy amount is calculated.
@@ -17,16 +16,25 @@ export type OrderQuoteSide = ({
      */
     sellAmountBeforeFee: TokenAmount;
 } | {
-    kind: OrderKind;
+    kind: OrderQuoteSide.kind;
     /**
      * The sell amount for the order.
      */
     sellAmountAfterFee: TokenAmount;
 } | {
-    kind: OrderKind;
+    kind: OrderQuoteSide.kind;
     /**
      * The buy amount for the order.
      */
     buyAmountAfterFee: TokenAmount;
 });
+
+export namespace OrderQuoteSide {
+
+    export enum kind {
+        SELL = 'sell',
+    }
+
+
+}
 

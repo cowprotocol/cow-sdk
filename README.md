@@ -5,12 +5,7 @@
 # CoW SDK
 
 [![Styled With Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://prettier.io/)
-
-## Test coverage
-
-| Statements                                                                    | Branches                                                                    | Functions                                                                  | Lines                                                                    |
-| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| ![Statements](https://img.shields.io/badge/statements-95.31%25-brightgreen.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-76.78%25-red.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-97.36%25-brightgreen.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-98.36%25-brightgreen.svg?style=flat) |
+[![Coverage Status](https://coveralls.io/repos/github/cowprotocol/cow-sdk/badge.svg?branch=main)](https://coveralls.io/github/cowprotocol/cow-sdk?branch=main)
 
 ## Getting started
 
