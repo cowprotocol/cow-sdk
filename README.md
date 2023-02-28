@@ -90,7 +90,7 @@ const wallet = Wallet.fromMnemonic(mnemonic)
 const cowSdk = new CowSdk(
   100, {            // Leaving chainId empty will default to MAINNET
   signer: wallet  // Provide a signer, so you can sign order
-  })
+})
 ```
 
 ### STEP 1: Get Market Price
