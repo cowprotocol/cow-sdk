@@ -1,6 +1,11 @@
-import { fromHexString } from './common'
-import { DEFAULT_IPFS_READ_URI } from '../../common'
-import { AnyAppDataDocVersion } from '../types'
+import { DEFAULT_IPFS_READ_URI } from '../../common/ipfs'
+import type { AnyAppDataDocVersion } from '@cowprotocol/app-data'
+
+function fromHexString(hexString: string) {
+  const stringMatch = hexString.match(/.{1,2}/g)
+  if (!stringMatch) return
+  return new Uint8Array(stringMatch.map((byte) => parseInt(byte, 16)))
+}
 
 export async function getSerializedCID(hash: string): Promise<void | string> {
   const cidVersion = 0x1 //cidv1
