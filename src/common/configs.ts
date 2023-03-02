@@ -13,7 +13,18 @@ export interface EnvConfig {
   readonly subgraphUrl: string
 }
 
+export type CowEnv = 'prod' | 'staging'
+
+export type PartialApiContext = Partial<ApiContext>
+
 export type EnvConfigs = Record<SupportedChainId, EnvConfig>
+
+export interface ApiContext {
+  chainId: SupportedChainId
+  env: CowEnv
+}
+
+export const DEFAULT_COW_API_CONTEXT: ApiContext = { env: 'prod', chainId: SupportedChainId.MAINNET }
 
 export const PROD_CONFIG: EnvConfigs = {
   [SupportedChainId.MAINNET]: {
