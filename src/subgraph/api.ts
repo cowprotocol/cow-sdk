@@ -16,7 +16,11 @@ import {
 export class SubgraphApi {
   API_NAME = 'CoW Protocol Subgraph'
 
-  constructor(public context: ApiContext = DEFAULT_COW_API_CONTEXT) {}
+  public context: ApiContext
+
+  constructor(context: PartialApiContext = {}) {
+    this.context = { ...DEFAULT_COW_API_CONTEXT, ...context }
+  }
 
   async getTotals(contextOverride: PartialApiContext = {}): Promise<TotalsQuery['totals'][0]> {
     const response = await this.runQuery<TotalsQuery>(TOTALS_QUERY, undefined, contextOverride)

@@ -1,15 +1,13 @@
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { BUY_ETH_ADDRESS } from '@cowprotocol/contracts'
 import { CowError } from '../common/cow-error'
-import { SupportedChainId } from '../common/chains'
 import { OrderBookApi } from './api'
 import { BuyTokenDestination, EcdsaSigningScheme, OrderKind, SellTokenSource, SigningScheme } from './generated'
+import { SupportedChainId } from '../common/chains'
 
 enableFetchMocks()
 
-const chainId = 100 as SupportedChainId // Gnosis chain
-
-const orderBookApi = new OrderBookApi()
+const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.GNOSIS_CHAIN })
 
 const HTTP_STATUS_OK = 200
 const HTTP_STATUS_NOT_FOUND = 404
@@ -102,7 +100,7 @@ describe('Cow Api', () => {
   })
 
   test('Valid: Get orders link', async () => {
-    const orderLink = await orderBookApi.getOrderLink(chainId, ORDER_RESPONSE.uid)
+    const orderLink = await orderBookApi.getOrderLink(ORDER_RESPONSE.uid)
     expect(orderLink).toEqual(`https://api.cow.fi/xdai/api/v1/orders/${ORDER_RESPONSE.uid}`)
   })
 
@@ -114,7 +112,7 @@ describe('Cow Api', () => {
     })
 
     // when
-    const order = await orderBookApi.getOrder(chainId, ORDER_RESPONSE.uid)
+    const order = await orderBookApi.getOrder(ORDER_RESPONSE.uid)
 
     // then
     expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -123,6 +121,25 @@ describe('Cow Api', () => {
       FETCH_RESPONSE_PARAMETERS
     )
     expect(order?.uid).toEqual(ORDER_RESPONSE.uid)
+  })
+
+  test('Valid: Get an order for custom chainId', async () => {
+    // given
+    fetchMock.mockResponseOnce(JSON.stringify({ ...ORDER_RESPONSE, class: 'limit' }), {
+      status: HTTP_STATUS_OK,
+      headers: HEADERS,
+    })
+
+    // when
+    const order = await orderBookApi.getOrder(ORDER_RESPONSE.uid, { chainId: SupportedChainId.MAINNET })
+
+    // then
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      `https://api.cow.fi/mainnet/api/v1/orders/${ORDER_RESPONSE.uid}`,
+      FETCH_RESPONSE_PARAMETERS
+    )
+    expect(order?.class).toEqual('limit')
   })
 
   test('Invalid: Get an order', async () => {
@@ -136,7 +153,7 @@ describe('Cow Api', () => {
     )
 
     // when
-    const promise = orderBookApi.getOrder(chainId, 'notValidOrderId')
+    const promise = orderBookApi.getOrder('notValidOrderId')
 
     // then
     await expect(promise).rejects.toThrow('Order was not found')
@@ -150,7 +167,7 @@ describe('Cow Api', () => {
   test('Valid: Get last 5 orders for a given trader ', async () => {
     const ORDERS_RESPONSE = Array(5).fill(ORDER_RESPONSE)
     fetchMock.mockResponse(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
-    const orders = await orderBookApi.getOrders(chainId, {
+    const orders = await orderBookApi.getOrders({
       owner: '0x00000000005ef87f8ca7014309ece7260bbcdaeb', // Trader
       limit: 5,
       offset: 0,
@@ -174,7 +191,7 @@ describe('Cow Api', () => {
     )
 
     // when
-    const promise = orderBookApi.getOrders(chainId, {
+    const promise = orderBookApi.getOrders({
       owner: 'invalidOwner',
       limit: 5,
       offset: 0,
@@ -193,7 +210,7 @@ describe('Cow Api', () => {
     const ORDERS_RESPONSE = Array(5).fill(ORDER_RESPONSE)
     const txHash = '0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5'
     fetchMock.mockResponse(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
-    const txOrders = await orderBookApi.getTxOrders(chainId, txHash)
+    const txOrders = await orderBookApi.getTxOrders(txHash)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       `https://api.cow.fi/xdai/api/v1/transactions/${txHash}/orders`,
@@ -213,7 +230,7 @@ describe('Cow Api', () => {
     )
 
     // when
-    const promise = orderBookApi.getTxOrders(chainId, 'invalidTxHash')
+    const promise = orderBookApi.getTxOrders('invalidTxHash')
 
     // then
     await expect(promise).rejects.toThrow('Not Found')
@@ -227,7 +244,7 @@ describe('Cow Api', () => {
   test('Valid: Get last 5 trades for a given trader ', async () => {
     const TRADES_RESPONSE = Array(5).fill(TRADE_RESPONSE)
     fetchMock.mockResponse(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
-    const trades = await orderBookApi.getTrades(chainId, {
+    const trades = await orderBookApi.getTrades({
       owner: TRADE_RESPONSE.owner, // Trader
     })
     expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -241,7 +258,7 @@ describe('Cow Api', () => {
   test('Valid: Get last 5 trades for a given order id ', async () => {
     const TRADES_RESPONSE = Array(5).fill(TRADE_RESPONSE)
     fetchMock.mockResponse(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
-    const trades = await orderBookApi.getTrades(chainId, {
+    const trades = await orderBookApi.getTrades({
       orderId: TRADE_RESPONSE.orderUid,
     })
     expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -254,7 +271,7 @@ describe('Cow Api', () => {
 
   test('Invalid: Get trades passing both the owner and orderId', async () => {
     expect(
-      orderBookApi.getTrades(chainId, {
+      orderBookApi.getTrades({
         owner: TRADE_RESPONSE.owner,
         orderId: TRADE_RESPONSE.orderUid,
       })
@@ -272,7 +289,7 @@ describe('Cow Api', () => {
     )
 
     // when
-    const promise = orderBookApi.getTrades(chainId, {
+    const promise = orderBookApi.getTrades({
       owner: 'invalidOwner',
     })
 
@@ -285,28 +302,9 @@ describe('Cow Api', () => {
     )
   })
 
-  // TODO: move to another class - walletSDK or something similar
-  // test('Valid: Sign Order', async () => {
-  //   const order: Omit<UnsignedOrder, 'appData'> = {
-  //     kind: OrderKind.SELL,
-  //     partiallyFillable: false, // Allow partial executions of an order (true would be for a "Fill or Kill" order, which is not yet supported but will be added soon)
-  //     sellToken: '0xc778417e063141139fce010982780140aa0cd5ab', // WETH
-  //     buyToken: '0x4dbcdf9b62e891a7cec5a2568c3f4faf9e8abe2b', // USDC
-  //     sellAmount: '1234567890',
-  //     buyAmount: '1234567890',
-  //     validTo: 2524608000,
-  //     receiver: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-  //     feeAmount: '1234567890',
-  //   }
-  //
-  //   const signedOrder = await cowSdk.signOrder(order)
-  //   expect(signedOrder.signature).not.toBeNull()
-  //   expect(signedOrder.signingScheme).not.toBeNull()
-  // })
-
   test('Valid: Send sign order cancellation', async () => {
     fetchMock.mockResponseOnce(JSON.stringify(SIGNED_ORDER_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
-    await orderBookApi.sendSignedOrderCancellation(chainId, ORDER_CANCELLATION_UID, SIGNED_ORDER_RESPONSE)
+    await orderBookApi.sendSignedOrderCancellation(ORDER_CANCELLATION_UID, SIGNED_ORDER_RESPONSE)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       `https://api.cow.fi/xdai/api/v1/orders/${ORDER_CANCELLATION_UID}`,
@@ -329,7 +327,7 @@ describe('Cow Api', () => {
     )
 
     // when
-    const promise = orderBookApi.sendSignedOrderCancellation(chainId, 'unexistingOrder', SIGNED_ORDER_RESPONSE)
+    const promise = orderBookApi.sendSignedOrderCancellation('unexistingOrder', SIGNED_ORDER_RESPONSE)
 
     // then
     await expect(promise).rejects.toThrow('Order was not found')
@@ -353,7 +351,7 @@ describe('Cow Api', () => {
 
   test('Valid: Send an order ', async () => {
     fetchMock.mockResponseOnce(JSON.stringify('validOrderId'), { status: HTTP_STATUS_OK, headers: HEADERS })
-    const orderId = await orderBookApi.sendOrder(chainId, {
+    const orderId = await orderBookApi.sendOrder({
       ...ORDER_RESPONSE,
       ...SIGNED_ORDER_RESPONSE,
       signingScheme: SigningScheme.EIP712,
@@ -387,7 +385,7 @@ describe('Cow Api', () => {
     )
 
     // when
-    const promise = orderBookApi.sendOrder(chainId, {
+    const promise = orderBookApi.sendOrder({
       ...ORDER_RESPONSE,
       ...SIGNED_ORDER_RESPONSE,
       signingScheme: SigningScheme.EIP712,
@@ -415,7 +413,7 @@ describe('Cow Api', () => {
   test('Valid: Get last 5 orders changing options parameters', async () => {
     const ORDERS_RESPONSE = Array(5).fill(ORDER_RESPONSE)
     fetchMock.mockResponseOnce(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
-    const orders = await orderBookApi.getOrders(chainId, {
+    const orders = await orderBookApi.getOrders({
       owner: '0x00000000005ef87f8ca7014309ece7260bbcdaeb', // Trader
       limit: 5,
       offset: 0,
@@ -431,7 +429,7 @@ describe('Cow Api', () => {
   test('Valid: Get last 5 trades changing options parameters', async () => {
     const TRADES_RESPONSE = Array(5).fill(TRADE_RESPONSE)
     fetchMock.mockResponseOnce(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
-    const trades = await orderBookApi.getTrades(chainId, {
+    const trades = await orderBookApi.getTrades({
       owner: TRADE_RESPONSE.owner, // Trader
     })
     expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -450,7 +448,7 @@ describe('Cow Api', () => {
       })
 
       // when
-      const order = await orderBookApi.getOrder(chainId, ETH_FLOW_ORDER_RESPONSE.uid)
+      const order = await orderBookApi.getOrder(ETH_FLOW_ORDER_RESPONSE.uid)
 
       // then
       expect(order?.owner).toEqual(order?.onchainUser)
@@ -464,7 +462,7 @@ describe('Cow Api', () => {
       fetchMock.mockResponse(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
 
       // when
-      const orders = await orderBookApi.getOrders(chainId, {
+      const orders = await orderBookApi.getOrders({
         owner: '0x6810e776880c02933d47db1b9fc05908e5386b96', // Trader
         limit: 5,
         offset: 0,
@@ -488,7 +486,7 @@ describe('Cow Api', () => {
       fetchMock.mockResponse(JSON.stringify(ORDERS_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
 
       // when
-      const txOrders = await orderBookApi.getTxOrders(chainId, txHash)
+      const txOrders = await orderBookApi.getTxOrders(txHash)
 
       // then
       // eth flow order
@@ -510,7 +508,7 @@ describe('Cow Api', () => {
     })
 
     // when
-    const order = await orderBookApi.getOrder(chainId, ORDER_RESPONSE.uid)
+    const order = await orderBookApi.getOrder(ORDER_RESPONSE.uid)
 
     // then
     expect(fetchMock).toHaveBeenCalledTimes(1)
