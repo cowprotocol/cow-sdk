@@ -16,6 +16,23 @@ export class MetadataApi {
    *
    * Without params creates a default minimum appData doc
    * Optionally creates metadata docs
+   *
+   * Example of result:
+   * {
+   *   "appCode": "CoW Swap",
+   *   "environment": "local",
+   *   "metadata": {
+   *     "quote": {
+   *       "slippageBips": "50",
+   *       "version": "0.2.0"
+   *     },
+   *     "orderClass": {
+   *       "orderClass": "market",
+   *       "version": "0.1.0"
+   *     }
+   *   },
+   *   "version": "0.5.0"
+   * }
    */
   generateAppDataDoc(params?: GenerateAppDataDocParams): LatestAppDataDocVersion {
     const { appDataParams, metadataParams } = params || {}
