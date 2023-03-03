@@ -18,8 +18,11 @@ export class SubgraphApi {
 
   public context: ApiContext
 
-  constructor(context: PartialApiContext = {}) {
+  public customEnvConfigs?: EnvConfigs
+
+  constructor(context: PartialApiContext = {}, customEnvConfigs?: EnvConfigs) {
     this.context = { ...DEFAULT_COW_API_CONTEXT, ...context }
+    this.customEnvConfigs = customEnvConfigs
   }
 
   async getTotals(contextOverride: PartialApiContext = {}): Promise<TotalsQuery['totals'][0]> {
@@ -41,7 +44,7 @@ export class SubgraphApi {
     contextOverride: PartialApiContext = {}
   ): Promise<T> {
     const { chainId, env } = this.getContextWithOverride(contextOverride)
-    const baseUrl = this.getEnvConfig(env)[chainId].subgraphUrl
+    const baseUrl = this.getEnvConfigs(env)[chainId].subgraphUrl
 
     try {
       return await request(baseUrl, query, variables)
@@ -57,7 +60,9 @@ export class SubgraphApi {
     return { ...this.context, ...contextOverride }
   }
 
-  private getEnvConfig(env: CowEnv): EnvConfigs {
+  private getEnvConfigs(env: CowEnv): EnvConfigs {
+    if (this.customEnvConfigs) return this.customEnvConfigs
+
     return env === 'prod' ? PROD_CONFIG : STAGING_CONFIG
   }
 }

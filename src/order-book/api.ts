@@ -57,10 +57,13 @@ class FetchHttpRequest extends BaseHttpRequest {
 export class OrderBookApi {
   public context: ApiContext
 
+  public customEnvConfigs?: EnvConfigs
+
   private servicePerNetwork: Record<string, OrderBookClient | null> = {}
 
-  constructor(context: PartialApiContext = {}) {
+  constructor(context: PartialApiContext = {}, customEnvConfigs?: EnvConfigs) {
     this.context = { ...DEFAULT_COW_API_CONTEXT, ...context }
+    this.customEnvConfigs = customEnvConfigs
   }
 
   getTrades(
@@ -171,7 +174,7 @@ export class OrderBookApi {
   getOrderLink(uid: UID, contextOverride: PartialApiContext = {}): string {
     const { chainId, env } = this.getContextWithOverride(contextOverride)
 
-    return this.getEnvConfig(env)[chainId].apiUrl + `/api/v1/orders/${uid}`
+    return this.getEnvConfigs(env)[chainId].apiUrl + `/api/v1/orders/${uid}`
   }
 
   private getServiceForNetwork(contextOverride: PartialApiContext): DefaultService {
@@ -181,7 +184,7 @@ export class OrderBookApi {
 
     if (cached) return cached.default
 
-    const client = new OrderBookClient({ BASE: this.getEnvConfig(env)[chainId].apiUrl }, FetchHttpRequest)
+    const client = new OrderBookClient({ BASE: this.getEnvConfigs(env)[chainId].apiUrl }, FetchHttpRequest)
     this.servicePerNetwork[key] = client
 
     return client.default
@@ -191,7 +194,9 @@ export class OrderBookApi {
     return { ...this.context, ...contextOverride }
   }
 
-  private getEnvConfig(env: CowEnv): EnvConfigs {
+  private getEnvConfigs(env: CowEnv): EnvConfigs {
+    if (this.customEnvConfigs) return this.customEnvConfigs
+
     return env === 'prod' ? PROD_CONFIG : STAGING_CONFIG
   }
 }
