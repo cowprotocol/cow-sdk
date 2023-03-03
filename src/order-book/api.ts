@@ -24,13 +24,24 @@ import {
   EnvConfigs,
   ENVS_LIST,
   PartialApiContext,
-  PROD_CONFIG,
-  STAGING_CONFIG,
 } from '../common/configs'
 import { transformOrder } from './transformOrder'
 import { EnrichedOrder } from './types'
 import { ApiRequestOptions } from './generated/core/ApiRequestOptions'
 import { request as __request } from './generated/core/request'
+import { SupportedChainId } from '../common/chains'
+
+export const ORDER_BOOK_PROD_CONFIG: EnvConfigs = {
+  [SupportedChainId.MAINNET]: 'https://api.cow.fi/mainnet',
+  [SupportedChainId.GNOSIS_CHAIN]: 'https://api.cow.fi/xdai',
+  [SupportedChainId.GOERLI]: 'https://api.cow.fi/goerli',
+}
+
+export const ORDER_BOOK_STAGING_CONFIG: EnvConfigs = {
+  [SupportedChainId.MAINNET]: 'https://barn.api.cow.fi/mainnet',
+  [SupportedChainId.GNOSIS_CHAIN]: 'https://barn.api.cow.fi/xdai',
+  [SupportedChainId.GOERLI]: 'https://barn.api.cow.fi/goerli',
+}
 
 class FetchHttpRequest extends BaseHttpRequest {
   constructor(config: OpenAPIConfig) {
@@ -174,7 +185,7 @@ export class OrderBookApi {
   getOrderLink(uid: UID, contextOverride: PartialApiContext = {}): string {
     const { chainId, env } = this.getContextWithOverride(contextOverride)
 
-    return this.getEnvConfigs(env)[chainId].apiUrl + `/api/v1/orders/${uid}`
+    return this.getEnvConfigs(env)[chainId] + `/api/v1/orders/${uid}`
   }
 
   private getServiceForNetwork(contextOverride: PartialApiContext): DefaultService {
@@ -184,7 +195,7 @@ export class OrderBookApi {
 
     if (cached) return cached.default
 
-    const client = new OrderBookClient({ BASE: this.getEnvConfigs(env)[chainId].apiUrl }, FetchHttpRequest)
+    const client = new OrderBookClient({ BASE: this.getEnvConfigs(env)[chainId] }, FetchHttpRequest)
     this.servicePerNetwork[key] = client
 
     return client.default
@@ -197,6 +208,6 @@ export class OrderBookApi {
   private getEnvConfigs(env: CowEnv): EnvConfigs {
     if (this.customEnvConfigs) return this.customEnvConfigs
 
-    return env === 'prod' ? PROD_CONFIG : STAGING_CONFIG
+    return env === 'prod' ? ORDER_BOOK_PROD_CONFIG : ORDER_BOOK_STAGING_CONFIG
   }
 }

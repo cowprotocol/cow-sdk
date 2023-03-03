@@ -3,15 +3,20 @@ import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphq
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
 import { DocumentNode } from 'graphql/index'
 import { request, Variables } from 'graphql-request'
-import {
-  ApiContext,
-  CowEnv,
-  DEFAULT_COW_API_CONTEXT,
-  EnvConfigs,
-  PartialApiContext,
-  PROD_CONFIG,
-  STAGING_CONFIG,
-} from '../common/configs'
+import { ApiContext, CowEnv, DEFAULT_COW_API_CONTEXT, EnvConfigs, PartialApiContext } from '../common/configs'
+import { SupportedChainId } from '../common/chains'
+
+export const SUBGRAPH_PROD_CONFIG: EnvConfigs = {
+  [SupportedChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow',
+  [SupportedChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc',
+  [SupportedChainId.GOERLI]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-goerli',
+}
+
+export const SUBGRAPH_STAGING_CONFIG: EnvConfigs = {
+  [SupportedChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-staging',
+  [SupportedChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc-staging',
+  [SupportedChainId.GOERLI]: '',
+}
 
 export class SubgraphApi {
   API_NAME = 'CoW Protocol Subgraph'
@@ -44,7 +49,7 @@ export class SubgraphApi {
     contextOverride: PartialApiContext = {}
   ): Promise<T> {
     const { chainId, env } = this.getContextWithOverride(contextOverride)
-    const baseUrl = this.getEnvConfigs(env)[chainId].subgraphUrl
+    const baseUrl = this.getEnvConfigs(env)[chainId]
 
     try {
       return await request(baseUrl, query, variables)
@@ -63,6 +68,6 @@ export class SubgraphApi {
   private getEnvConfigs(env: CowEnv): EnvConfigs {
     if (this.customEnvConfigs) return this.customEnvConfigs
 
-    return env === 'prod' ? PROD_CONFIG : STAGING_CONFIG
+    return env === 'prod' ? SUBGRAPH_PROD_CONFIG : SUBGRAPH_STAGING_CONFIG
   }
 }

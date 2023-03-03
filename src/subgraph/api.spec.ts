@@ -3,13 +3,12 @@ import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { SupportedChainId } from '../common/chains'
 import { CowError } from '../common/cow-error'
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
-import { PROD_CONFIG } from '../common/configs'
-import { SubgraphApi } from './api'
+import { SUBGRAPH_PROD_CONFIG, SubgraphApi } from './api'
 
 enableFetchMocks()
 
 const cowSubgraphApi = new SubgraphApi()
-const prodUrls = PROD_CONFIG
+const prodUrls = SUBGRAPH_PROD_CONFIG
 
 const headers = {
   'Content-Type': 'application/json',
@@ -248,7 +247,7 @@ describe('Cow subgraph URL', () => {
     const totals = await cowSubgraphApi.getTotals()
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      prodUrls[SupportedChainId.MAINNET].subgraphUrl,
+      prodUrls[SupportedChainId.MAINNET],
       getFetchParameters(TOTALS_QUERY, 'Totals')
     )
     expect(totals).toEqual(TOTALS_RESPONSE.data.totals[0])
@@ -262,7 +261,7 @@ describe('Cow subgraph URL', () => {
     const response = await cowSubgraphApi.getLastDaysVolume(7)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      prodUrls[SupportedChainId.MAINNET].subgraphUrl,
+      prodUrls[SupportedChainId.MAINNET],
       getFetchParameters(LAST_DAYS_VOLUME_QUERY, 'LastDaysVolume', { days: 7 })
     )
     expect(response).toEqual(LAST_7_DAYS_VOLUME_RESPONSE.data)
@@ -276,7 +275,7 @@ describe('Cow subgraph URL', () => {
     const response = await cowSubgraphApi.getLastHoursVolume(24)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      prodUrls[SupportedChainId.MAINNET].subgraphUrl,
+      prodUrls[SupportedChainId.MAINNET],
       getFetchParameters(LAST_HOURS_VOLUME_QUERY, 'LastHoursVolume', { hours: 24 })
     )
     expect(response).toEqual(LAST_24_HOURS_VOLUME_RESPONSE.data)
@@ -300,7 +299,7 @@ describe('Cow subgraph URL', () => {
     const response = await cowSubgraphApi.runQuery(query)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      prodUrls[SupportedChainId.MAINNET].subgraphUrl,
+      prodUrls[SupportedChainId.MAINNET],
       getFetchParameters(query, 'TokensByVolume')
     )
     expect(response).toEqual(TOKENS_BY_VOLUME_RESPONSE.data)
@@ -322,8 +321,31 @@ describe('Cow subgraph URL', () => {
     await expect(cowSubgraphApi.runQuery(query)).rejects.toThrowError(CowError)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      prodUrls[SupportedChainId.MAINNET].subgraphUrl,
+      prodUrls[SupportedChainId.MAINNET],
       getFetchParameters(query, 'InvalidQuery')
     )
+  })
+
+  test('Uses urls from custom env config', async () => {
+    const customEnvConfig = {
+      [SupportedChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-staging',
+      [SupportedChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc-staging',
+      [SupportedChainId.GOERLI]: 'https://subgraph.satsuma-prod.com/94b7bd7c35c5/cow/cow-goerli/api',
+    }
+
+    const customSubgraphApi = new SubgraphApi({}, customEnvConfig)
+
+    fetchMock.mockResponseOnce(JSON.stringify(TOTALS_RESPONSE), {
+      status: 200,
+      headers,
+    })
+    const totals = await customSubgraphApi.getTotals()
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      customEnvConfig[SupportedChainId.MAINNET],
+      getFetchParameters(TOTALS_QUERY, 'Totals')
+    )
+    expect(totals).toEqual(TOTALS_RESPONSE.data.totals[0])
   })
 })
