@@ -188,8 +188,6 @@ export class OrderBookApi {
   }
 
   private getContextWithOverride(contextOverride: PartialApiContext = {}): ApiContext {
-    if (!contextOverride) return this.context
-
     return { ...this.context, ...contextOverride }
   }
 
