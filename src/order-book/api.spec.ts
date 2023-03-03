@@ -518,4 +518,30 @@ describe('Cow Api', () => {
     )
     expect(order?.class).toEqual('limit')
   })
+
+  test('getOrderMultiEnv() should fallback to another env when the original one returned 404 API error', async () => {
+    // given
+    fetchMock.mockResponseOnce(JSON.stringify({ ...ORDER_RESPONSE }), {
+      status: 404,
+      headers: HEADERS,
+    })
+
+    // when
+    try {
+      await orderBookApi.getOrderMultiEnv(ORDER_RESPONSE.uid, { env: 'prod' })
+    } catch (e) {
+      //
+    }
+
+    // then
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock).toHaveBeenCalledWith(
+      `https://api.cow.fi/xdai/api/v1/orders/${ORDER_RESPONSE.uid}`,
+      FETCH_RESPONSE_PARAMETERS
+    )
+    expect(fetchMock).toHaveBeenCalledWith(
+      `https://barn.api.cow.fi/xdai/api/v1/orders/${ORDER_RESPONSE.uid}`,
+      FETCH_RESPONSE_PARAMETERS
+    )
+  })
 })

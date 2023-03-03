@@ -1,5 +1,6 @@
 import {
   Address,
+  ApiError,
   BaseHttpRequest,
   CancelablePromise,
   DefaultService,
@@ -16,12 +17,12 @@ import {
   UID,
 } from './generated'
 import { CowError } from '../common/cow-error'
-import { SupportedChainId } from '../common/chains'
 import {
   ApiContext,
   CowEnv,
   DEFAULT_COW_API_CONTEXT,
   EnvConfigs,
+  ENVS_LIST,
   PartialApiContext,
   PROD_CONFIG,
   STAGING_CONFIG,
@@ -56,11 +57,7 @@ class FetchHttpRequest extends BaseHttpRequest {
 export class OrderBookApi {
   public context: ApiContext
 
-  private servicePerNetwork: Record<SupportedChainId, OrderBookClient | null> = {
-    [SupportedChainId.MAINNET]: null,
-    [SupportedChainId.GOERLI]: null,
-    [SupportedChainId.GNOSIS_CHAIN]: null,
-  }
+  private servicePerNetwork: Record<string, OrderBookClient | null> = {}
 
   constructor(context: PartialApiContext = {}) {
     this.context = { ...DEFAULT_COW_API_CONTEXT, ...context }
@@ -114,6 +111,27 @@ export class OrderBookApi {
       })
   }
 
+  getOrderMultiEnv(uid: UID, contextOverride: PartialApiContext = {}): Promise<EnrichedOrder> {
+    const { env } = this.getContextWithOverride(contextOverride)
+    const otherEnvs = ENVS_LIST.filter((i) => i !== env)
+
+    let attemptsCount = 0
+
+    const fallback = (error: Error): Promise<EnrichedOrder> => {
+      const nextEnv = otherEnvs[attemptsCount]
+
+      if (error instanceof ApiError && error.status === 404 && nextEnv) {
+        attemptsCount++
+
+        return this.getOrder(uid, { ...contextOverride, env: nextEnv }).catch(fallback)
+      }
+
+      return Promise.reject(error)
+    }
+
+    return this.getOrder(uid, { ...contextOverride, env }).catch(fallback)
+  }
+
   getQuote(
     requestBody: OrderQuoteRequest,
     contextOverride: PartialApiContext = {}
@@ -158,12 +176,13 @@ export class OrderBookApi {
 
   private getServiceForNetwork(contextOverride: PartialApiContext): DefaultService {
     const { chainId, env } = this.getContextWithOverride(contextOverride)
-    const cached = this.servicePerNetwork[chainId]
+    const key = `${env}|${chainId}`
+    const cached = this.servicePerNetwork[key]
 
     if (cached) return cached.default
 
     const client = new OrderBookClient({ BASE: this.getEnvConfig(env)[chainId].apiUrl }, FetchHttpRequest)
-    this.servicePerNetwork[chainId] = client
+    this.servicePerNetwork[key] = client
 
     return client.default
   }

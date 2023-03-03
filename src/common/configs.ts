@@ -24,6 +24,8 @@ export interface ApiContext {
   env: CowEnv
 }
 
+export const ENVS_LIST: CowEnv[] = ['prod', 'staging']
+
 export const DEFAULT_COW_API_CONTEXT: ApiContext = { env: 'prod', chainId: SupportedChainId.MAINNET }
 
 export const PROD_CONFIG: EnvConfigs = {
