@@ -1,9 +1,9 @@
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
-import { BUY_ETH_ADDRESS } from '@cowprotocol/contracts'
 import { CowError } from '../common/cow-error'
 import { OrderBookApi } from './api'
 import { BuyTokenDestination, EcdsaSigningScheme, OrderKind, SellTokenSource, SigningScheme } from './generated'
 import { SupportedChainId } from '../common/chains'
+import { BUY_ETH_ADDRESS } from './transformOrder'
 
 enableFetchMocks()
 

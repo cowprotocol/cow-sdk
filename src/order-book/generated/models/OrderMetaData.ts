@@ -74,7 +74,8 @@ export type OrderMetaData = {
      */
     ethflowData?: EthflowData;
     /**
-     * TODO: smth related to ETH flow
+     * This represents the actual trader of an on-chain order.
+     * In that case, the owner would be the EthFlow contract in the case of EthFlow orders and not the actual trader.
      *
      */
     onchainUser?: Address;

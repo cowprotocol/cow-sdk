@@ -1,6 +1,7 @@
-import { BUY_ETH_ADDRESS } from '@cowprotocol/contracts'
 import { Order } from './generated'
 import { EnrichedOrder } from './types'
+
+export const BUY_ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 
 export function transformOrder(order: Order): EnrichedOrder {
   return transformEthFlowOrder(addTotalFeeToOrder(order))
