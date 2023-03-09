@@ -73,7 +73,6 @@ The next sections will guide you through the process of creating a valid order.
 > For a quick snippet with the full process on posting an order see the [Post an Order Example](./docs/post-order-example.ts).
 
 ### Enable tokens (token approval)
-
 Because of the use of off-chain signing (meta-transactions), users will need to **Enable the sell token** before signed
 orders can be considered as valid ones.
 
@@ -92,9 +91,10 @@ import { CowSdk, OrderKind } from '@cowprotocol/cow-sdk'
 
 const mnemonic = 'fall dirt bread cactus...'
 const wallet = Wallet.fromMnemonic(mnemonic)
-const cowSdk = new CowSdk(100, {
-  // Leaving chainId empty will default to MAINNET
-  signer: wallet, // Provide a signer, so you can sign order
+
+const cowSdk = new CowSdk(
+  100, {            // Leaving chainId empty will default to MAINNET
+  signer: wallet  // Provide a signer, so you can sign order
 })
 ```
 
@@ -102,13 +102,13 @@ const cowSdk = new CowSdk(100, {
 
 To create an order, you need to get a price/fee quote first:
 
-- The SDK will give you easy access to the API, which returns the `Market Price` and the `Fee` for any given trade you intent to do.
-- The returned `Market Price` is not strictly needed, you can use your own pricing logic.
-  - You can choose a price that is below this Market price (**Market Order**), or above Market Price (**Limit Order**).
-- The `Fee` however is very important.
-  - It is the required amount in sell token the trader agrees on paying for executing the order onchain.
-  - Normally, its value is proportional to the current Gas Price of the network.
-  - This fee is never charged if you don't trade.
+  * The SDK will give you easy access to the API, which returns the `Market Price` and the `Fee` for any given trade you intent to do.
+  * The returned `Market Price` is not strictly needed, you can use your own pricing logic.
+    * You can choose a price that is below this Market price (**Market Order**), or above Market Price (**Limit Order**).
+  * The `Fee` however is very important.
+    * It is the required amount in sell token the trader agrees on paying for executing the order onchain.
+    * Normally, its value is proportional to the current Gas Price of the network.
+    * This fee is never charged if you don't trade.
 
 To get the quote, you simply specify the trade you intent to do:
 
@@ -192,7 +192,6 @@ const orderId = await cowSdk.cowApi.sendOrder({
 ```
 
 ### BONUS: Show link to Explorer
-
 Once the order is posted, its good to allow to check the state of it.
 
 One easy is to check in the CoW Explorer. You can create a CoW Explorer link if you have the `orderId`:
@@ -321,7 +320,6 @@ const uploadedAppDataHash = await cowSdk.metadataApi.uploadMetadataDocToIpfs(app
 ```
 
 ## Convert IPFS CIDv0 to AppData (and back)
-
 Given an IPFS CIDv0 you can convert it to an `AppData`
 
 ```js
