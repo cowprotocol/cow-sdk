@@ -21,7 +21,7 @@ import {
   ApiContext,
   CowEnv,
   DEFAULT_COW_API_CONTEXT,
-  EnvConfigs,
+  ApiBaseUrls,
   ENVS_LIST,
   PartialApiContext,
 } from '../common/configs'
@@ -31,13 +31,13 @@ import { ApiRequestOptions } from './generated/core/ApiRequestOptions'
 import { request as __request } from './generated/core/request'
 import { SupportedChainId } from '../common/chains'
 
-export const ORDER_BOOK_PROD_CONFIG: EnvConfigs = {
+export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.MAINNET]: 'https://api.cow.fi/mainnet',
   [SupportedChainId.GNOSIS_CHAIN]: 'https://api.cow.fi/xdai',
   [SupportedChainId.GOERLI]: 'https://api.cow.fi/goerli',
 }
 
-export const ORDER_BOOK_STAGING_CONFIG: EnvConfigs = {
+export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.MAINNET]: 'https://barn.api.cow.fi/mainnet',
   [SupportedChainId.GNOSIS_CHAIN]: 'https://barn.api.cow.fi/xdai',
   [SupportedChainId.GOERLI]: 'https://barn.api.cow.fi/goerli',
@@ -67,14 +67,10 @@ class FetchHttpRequest extends BaseHttpRequest {
 
 export class OrderBookApi {
   public context: ApiContext
-
-  public customEnvConfigs?: EnvConfigs
-
   private servicePerNetwork: Record<string, OrderBookClient | null> = {}
 
-  constructor(context: PartialApiContext = {}, customEnvConfigs?: EnvConfigs) {
+  constructor(context: PartialApiContext = {}) {
     this.context = { ...DEFAULT_COW_API_CONTEXT, ...context }
-    this.customEnvConfigs = customEnvConfigs
   }
 
   getTrades(
@@ -182,10 +178,9 @@ export class OrderBookApi {
     return this.getServiceForNetwork(contextOverride).getApiV1TokenNativePrice(tokenAddress)
   }
 
-  getOrderLink(uid: UID, contextOverride: PartialApiContext = {}): string {
+  getOrderLink(uid: UID, contextOverride?: PartialApiContext): string {
     const { chainId, env } = this.getContextWithOverride(contextOverride)
-
-    return this.getEnvConfigs(env)[chainId] + `/api/v1/orders/${uid}`
+    return this.getApiBaseUrls(env)[chainId] + `/api/v1/orders/${uid}`
   }
 
   private getServiceForNetwork(contextOverride: PartialApiContext): DefaultService {
@@ -195,7 +190,7 @@ export class OrderBookApi {
 
     if (cached) return cached.default
 
-    const client = new OrderBookClient({ BASE: this.getEnvConfigs(env)[chainId] }, FetchHttpRequest)
+    const client = new OrderBookClient({ BASE: this.getApiBaseUrls(env)[chainId] }, FetchHttpRequest)
     this.servicePerNetwork[key] = client
 
     return client.default
@@ -205,8 +200,8 @@ export class OrderBookApi {
     return { ...this.context, ...contextOverride }
   }
 
-  private getEnvConfigs(env: CowEnv): EnvConfigs {
-    if (this.customEnvConfigs) return this.customEnvConfigs
+  private getApiBaseUrls(env: CowEnv): ApiBaseUrls {
+    if (this.context.baseUrls) return this.context.baseUrls
 
     return env === 'prod' ? ORDER_BOOK_PROD_CONFIG : ORDER_BOOK_STAGING_CONFIG
   }

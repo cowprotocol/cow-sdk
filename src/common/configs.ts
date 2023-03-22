@@ -12,13 +12,17 @@ export type CowEnv = 'prod' | 'staging'
 
 export type PartialApiContext = Partial<ApiContext>
 
-export type EnvConfigs = Record<SupportedChainId, string>
+export type ApiBaseUrls = Record<SupportedChainId, string>
 
 export interface ApiContext {
   chainId: SupportedChainId
   env: CowEnv
+  baseUrls?: ApiBaseUrls
 }
 
 export const ENVS_LIST: CowEnv[] = ['prod', 'staging']
 
-export const DEFAULT_COW_API_CONTEXT: ApiContext = { env: 'prod', chainId: SupportedChainId.MAINNET }
+export const DEFAULT_COW_API_CONTEXT: ApiContext = {
+  env: 'prod',
+  chainId: SupportedChainId.MAINNET,
+}
