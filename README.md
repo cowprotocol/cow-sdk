@@ -20,11 +20,12 @@ yarn add @cowprotocol/cow-sdk
 
 Instantiate the SDK:
 
-````js
+```js
 import { CowSdk } from '@cowprotocol/cow-sdk'
 
 const chainId = 100 // Gnosis chain
 const cowSdk = new CowSdk(chainId)
+```
 
 The SDK will expose:
 
@@ -53,7 +54,7 @@ const trades = await cowSdk.cowApi.getOrders({
   offset: 0,
 })
 console.log(trades)
-````
+```
 
 The SDK will expose:
 
