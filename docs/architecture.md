@@ -290,10 +290,10 @@ classDiagram
 class MetadataApi {
   + generateAppDataDoc(params: GenerateAppDataDocParams): AppDataDoc
   + validateAppDataDoc(appDataDoc: AppDataDoc): ValidateResult
-  + calculateAppDataHash(appDataDoc: AppDataDoc): Promise~IpfsHashInfo | void~
-  + uploadMetadataDocToIpfs(appDataDoc: AppDataDoc, ipfsConfig): Promise~string | void~
+  + calculateAppDataHash(appDataDoc: AppDataDoc): Promise~IpfsHashInfo|void~
+  + uploadMetadataDocToIpfs(appDataDoc: AppDataDoc, ipfsConfig): Promise~string|void~
   + decodeAppData(hash: string): AppDataDoc
-  + appDataHexToCid(hash: string): Promise~string | void~
+  + appDataHexToCid(hash: string): Promise~string|void~
 }
 
 class AppDataDoc {
@@ -357,6 +357,4 @@ GenerateAppDataDocParams --> MetadataParams: metadataParams
 Metadata --> Referrer: referrer
 Metadata --> Quote: quote
 Metadata --> OrderClass: orderClass
-
-
 ```
