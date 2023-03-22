@@ -319,9 +319,6 @@ class IpfsHashInfo {
   + appDataHash: string
 }
 
-MetadataApi ..> IpfsHashInfo
-
-
 class OrderClass {
   version: string;
   orderClass: string;
@@ -340,12 +337,8 @@ class MetadataParams {
   ...
 }
 
-class IpfsHashInfo {
-  cidV0: string
-  appDataHash: string
-}
 
-
+MetadataApi ..> IpfsHashInfo
 MetadataApi ..> GenerateAppDataDocParams
 MetadataApi ..> AppDataDoc
 
