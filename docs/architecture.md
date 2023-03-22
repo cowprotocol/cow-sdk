@@ -34,21 +34,6 @@ Order <|-- EnrichedOrder
 
 ## Model: Orders (details)
 
-<style>
-    .important {
-        stroke-width: 3;
-        stoke: #eeff82;
-        fill: #eeff82
-    }
-
-     
-     .important > rect {
-        stroke-width: 3;
-        stoke: #eeff82;
-        fill: #eeff82
-    }
-</style>
-
 ```mermaid
 classDiagram
 
