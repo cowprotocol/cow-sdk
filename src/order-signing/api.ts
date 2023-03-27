@@ -5,7 +5,7 @@ import type { SigningResult, UnsignedOrder } from './types'
 
 const getSignUtils = () => import('./signUtils')
 
-export class OrderSignApi {
+export class OrderSigningApi {
   async signOrder(order: UnsignedOrder, chainId: SupportedChainId, signer: Signer): Promise<SigningResult> {
     const { signOrder } = await getSignUtils()
     return signOrder(order, chainId, signer)
