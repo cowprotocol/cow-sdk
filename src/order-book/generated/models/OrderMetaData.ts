@@ -25,7 +25,8 @@ export type OrderMetaData = {
     owner: Address;
     uid: UID;
     /**
-     * Amount of sellToken available for the settlement contract to spend on behalf of the owner. Null if API was unable to fetch balance or if the order status isn't Open.
+     * Unused field that is currently always set to null and will be removed in the future.
+     * @deprecated
      */
     availableBalance?: TokenAmount | null;
     /**

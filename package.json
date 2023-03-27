@@ -29,6 +29,8 @@
     "swagger:codegen": " openapi --input https://raw.githubusercontent.com/cowprotocol/services/main/crates/orderbook/openapi.yml --output src/order-book/generated --client fetch --name OrderBookClient"
   },
   "dependencies": {
+    "@cowprotocol/contracts": "^1.4.0",
+    "@ethersproject/abstract-signer": "^5.7.0",
     "graphql": "^16.3.0",
     "graphql-request": "^4.3.0"
   },
