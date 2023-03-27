@@ -13,7 +13,7 @@ import {
   signOrderCancellation as signOrderCancellationGp,
   TypedDataVersionedSigner,
 } from '@cowprotocol/contracts'
-import type { Signer } from '@ethersproject/abstract-signer'
+import type { Signer } from 'ethers'
 
 import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS } from '../common/consts'
 import { CowError, SupportedChainId } from '../common'

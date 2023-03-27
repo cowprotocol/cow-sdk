@@ -1,5 +1,5 @@
 import type { SupportedChainId } from '../common'
-import type { Signer } from '@ethersproject/abstract-signer'
+import type { Signer } from 'ethers'
 import type { OrderParameters, EcdsaSigningScheme } from '../order-book'
 
 export type UnsignedOrder = Omit<OrderParameters, 'receiver'> & { receiver: string }
