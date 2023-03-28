@@ -11,6 +11,7 @@ import {
   SigningScheme,
   signOrder as signOrderGp,
   signOrderCancellation as signOrderCancellationGp,
+  signOrderCancellations as signOrderCancellationsGp,
   TypedDataVersionedSigner,
 } from '@cowprotocol/contracts'
 import type { Signer } from 'ethers'
@@ -19,6 +20,7 @@ import type { SigningResult, SignOrderParams, SingOrderCancellationParams, Unsig
 import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS } from '../common/consts'
 import { CowError, SupportedChainId } from '../common'
 import { EcdsaSigningScheme } from '../order-book'
+import { SingOrderCancellationsParams } from './types'
 
 // For error codes, see:
 // - https://eth.wiki/json-rpc/json-rpc-error-codes-improvement-proposal
@@ -44,6 +46,11 @@ interface ProviderRpcError extends Error {
   data?: unknown
 }
 
+type PayloadParams =
+  | Pick<SignOrderParams, 'order' & 'chainId'>
+  | Pick<SingOrderCancellationParams, 'chainId' & 'orderId'>
+  | Pick<SingOrderCancellationsParams, 'chainId' & 'orderUids'>
+
 function isProviderRpcError(error: unknown): error is ProviderRpcError {
   return (error as ProviderRpcError).code !== undefined || (error as ProviderRpcError).message !== undefined
 }
@@ -64,8 +71,16 @@ async function _signOrderCancellation(params: SingOrderCancellationParams): Prom
   return signOrderCancellationGp(domain, orderId, signer, mapSigningSchema[signingScheme])
 }
 
+async function _signOrderCancellations(params: SingOrderCancellationsParams): Promise<Signature> {
+  const { chainId, signer, signingScheme, orderUids } = params
+
+  const domain = getDomain(chainId)
+
+  return signOrderCancellationsGp(domain, orderUids, signer, mapSigningSchema[signingScheme])
+}
+
 async function _signPayload(
-  payload: Pick<SignOrderParams, 'order' & 'chainId'> | Pick<SingOrderCancellationParams, 'chainId' & 'orderId'>,
+  payload: PayloadParams,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   signFn: (params: any) => Promise<Signature>,
   signer: Signer,
@@ -183,6 +198,14 @@ export async function signOrderCancellation(
   signer: Signer
 ): Promise<SigningResult> {
   return _signPayload({ orderId, chainId }, _signOrderCancellation, signer)
+}
+
+export async function signOrderCancellations(
+  orderUids: string[],
+  chainId: SupportedChainId,
+  signer: Signer
+): Promise<SigningResult> {
+  return _signPayload({ orderUids, chainId }, _signOrderCancellations, signer)
 }
 
 export function getDomain(chainId: SupportedChainId): TypedDataDomain {

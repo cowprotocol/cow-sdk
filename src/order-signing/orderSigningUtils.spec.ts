@@ -2,7 +2,7 @@ import { OrderSigningUtils } from './orderSigningUtils'
 import { SupportedChainId } from '../common'
 import { UnsignedOrder } from './types'
 import { OrderKind } from '../order-book'
-import { mock, instance, when, anything } from 'ts-mockito'
+import { mock, instance, when, anything, capture } from 'ts-mockito'
 import type { TypedDataSigner } from '@cowprotocol/contracts'
 
 describe('OrderSigningApi', () => {
@@ -40,6 +40,47 @@ describe('OrderSigningApi', () => {
     const orderId =
       '0xdaaa7dddec9ad04cc101a121e3eed017eab4d3927c045d407d5ad6700eea2bf7fb3c7eb936caa12b5a884d612393969a557d430764060343'
     const result = await OrderSigningUtils.signOrderCancellation(orderId, SupportedChainId.MAINNET, instance(signer))
+
+    expect(result.signature).toBe(signature)
+  })
+
+  it('signOrderCancellations - returns the signature for cancelling multiple orders', async () => {
+    const orderId1 =
+      '0x1aaa7dddecccc04cc101a121e3eed017eab4d3927c045d407d5ad6700eea2bf7fb3c7eb936caa12b5a884d612393969a557d430764060343'
+    const orderId2 =
+      '0x2aaa7dddec22204cc101a121e3eed017eab4d3927c045d407d5ad6700eea2bf7fb3c7eb936caa12b5a884d612393969a557d430764060343'
+    const orderId3 =
+      '0x3aaa7dddec33304cc101a121e3eed017eab4d3927c045d407d5ad6700eea2bf7fb3c7eb936caa12b5a884d612393969a557d430764060343'
+
+    const ordersUids = [orderId1, orderId2, orderId3]
+
+    const result = await OrderSigningUtils.signOrderCancellations(
+      ordersUids,
+      SupportedChainId.MAINNET,
+      instance(signer)
+    )
+
+    const [domain, typedData, ids] = capture(signer._signTypedData).first()
+
+    expect(domain).toEqual({
+      chainId: 1,
+      name: 'Gnosis Protocol',
+      verifyingContract: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+      version: 'v2',
+    })
+
+    expect(typedData).toEqual({
+      OrderCancellations: [
+        {
+          name: 'orderUids',
+          type: 'bytes[]',
+        },
+      ],
+    })
+
+    expect(ids).toEqual({
+      orderUids: ordersUids,
+    })
 
     expect(result.signature).toBe(signature)
   })

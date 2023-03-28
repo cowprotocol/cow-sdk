@@ -19,3 +19,10 @@ export interface SingOrderCancellationParams {
   orderId: string
   signingScheme: EcdsaSigningScheme
 }
+
+export interface SingOrderCancellationsParams {
+  chainId: SupportedChainId
+  signer: Signer
+  orderUids: string[]
+  signingScheme: EcdsaSigningScheme
+}

@@ -20,6 +20,15 @@ export class OrderSigningUtils {
     return signOrderCancellation(orderId, chainId, signer)
   }
 
+  static async signOrderCancellations(
+    orderUid: string[],
+    chainId: SupportedChainId,
+    signer: Signer
+  ): Promise<SigningResult> {
+    const { signOrderCancellations } = await getSignUtils()
+    return signOrderCancellations(orderUid, chainId, signer)
+  }
+
   static async getDomain(chainId: SupportedChainId): Promise<TypedDataDomain> {
     const { getDomain } = await getSignUtils()
     return getDomain(chainId)
