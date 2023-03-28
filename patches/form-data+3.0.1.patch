@@ -1,0 +1,8 @@
+diff --git a/node_modules/form-data/lib/browser.js b/node_modules/form-data/lib/browser.js
+index 09e7c70..90e7f5c 100644
+--- a/node_modules/form-data/lib/browser.js
++++ b/node_modules/form-data/lib/browser.js
+@@ -1,2 +1,2 @@
+ /* eslint-env browser */
+-module.exports = typeof self == 'object' ? self.FormData : window.FormData;
++module.exports = typeof self == 'object' ? self.FormData : (typeof window === 'undefined' ? global.FormData : window.FormData);
