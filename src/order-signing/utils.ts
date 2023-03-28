@@ -14,10 +14,10 @@ import {
   TypedDataVersionedSigner,
 } from '@cowprotocol/contracts'
 import type { Signer } from 'ethers'
+import type { SigningResult, SignOrderParams, SingOrderCancellationParams, UnsignedOrder } from './types'
 
 import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS } from '../common/consts'
 import { CowError, SupportedChainId } from '../common'
-import { SigningResult, SignOrderParams, SingOrderCancellationParams, UnsignedOrder } from './types'
 import { EcdsaSigningScheme } from '../order-book'
 
 // For error codes, see:
@@ -46,17 +46,6 @@ interface ProviderRpcError extends Error {
 
 function isProviderRpcError(error: unknown): error is ProviderRpcError {
   return (error as ProviderRpcError).code !== undefined || (error as ProviderRpcError).message !== undefined
-}
-
-export function getDomain(chainId: SupportedChainId): TypedDataDomain {
-  // Get settlement contract address
-  const settlementContract = COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[chainId]
-
-  if (!settlementContract) {
-    throw new CowError('Unsupported network. Settlement contract is not deployed')
-  }
-
-  return domainGp(chainId, settlementContract)
 }
 
 async function _signOrder(params: SignOrderParams): Promise<Signature> {
@@ -194,4 +183,15 @@ export async function signOrderCancellation(
   signer: Signer
 ): Promise<SigningResult> {
   return _signPayload({ orderId, chainId }, _signOrderCancellation, signer)
+}
+
+export function getDomain(chainId: SupportedChainId): TypedDataDomain {
+  // Get settlement contract address
+  const settlementContract = COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[chainId]
+
+  if (!settlementContract) {
+    throw new CowError('Unsupported network. Settlement contract is not deployed')
+  }
+
+  return domainGp(chainId, settlementContract)
 }

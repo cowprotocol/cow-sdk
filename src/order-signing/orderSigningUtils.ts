@@ -3,20 +3,24 @@ import type { Signer } from 'ethers'
 import type { TypedDataDomain } from '@cowprotocol/contracts'
 import type { SigningResult, UnsignedOrder } from './types'
 
-const getSignUtils = () => import('./signUtils')
+const getSignUtils = () => import('./utils')
 
-export class OrderSigningApi {
-  async signOrder(order: UnsignedOrder, chainId: SupportedChainId, signer: Signer): Promise<SigningResult> {
+export class OrderSigningUtils {
+  static async signOrder(order: UnsignedOrder, chainId: SupportedChainId, signer: Signer): Promise<SigningResult> {
     const { signOrder } = await getSignUtils()
     return signOrder(order, chainId, signer)
   }
 
-  async signOrderCancellation(orderId: string, chainId: SupportedChainId, signer: Signer): Promise<SigningResult> {
+  static async signOrderCancellation(
+    orderId: string,
+    chainId: SupportedChainId,
+    signer: Signer
+  ): Promise<SigningResult> {
     const { signOrderCancellation } = await getSignUtils()
     return signOrderCancellation(orderId, chainId, signer)
   }
 
-  async getDomain(chainId: SupportedChainId): Promise<TypedDataDomain> {
+  static async getDomain(chainId: SupportedChainId): Promise<TypedDataDomain> {
     const { getDomain } = await getSignUtils()
     return getDomain(chainId)
   }
