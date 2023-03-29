@@ -39,10 +39,13 @@ function Example({ open = false, title, Component }: ExampleProps) {
 
 function App() {
   return (
-    <div className="App">
-      {EXAMPLES.map((props, index) => {
-        return <Example key={index} {...props} open={index === 0} />
-      })}
+    <div>
+      <h3>The example works only with Metamask extension!</h3>
+      <div className="App">
+        {EXAMPLES.map((props, index) => {
+          return <Example key={index} {...props} open={index === 0} />
+        })}
+      </div>
     </div>
   )
 }
