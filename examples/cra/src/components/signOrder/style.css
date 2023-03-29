@@ -1,0 +1,19 @@
+.form label {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.form label > span {
+  display: block;
+  font-weight: normal;
+  font-size: 14px;
+}
+
+.form label > input {
+  min-width: 290px;
+}
+
+.result {
+  min-width: 800px;
+  min-height: 100px;
+}

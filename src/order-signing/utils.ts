@@ -14,7 +14,7 @@ import {
   signOrderCancellations as signOrderCancellationsGp,
   TypedDataVersionedSigner,
 } from '@cowprotocol/contracts'
-import type { Signer } from 'ethers'
+import type { Signer } from '@ethersproject/abstract-signer'
 import type { SigningResult, SignOrderParams, SingOrderCancellationParams, UnsignedOrder } from './types'
 
 import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS } from '../common/consts'
