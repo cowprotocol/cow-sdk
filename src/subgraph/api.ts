@@ -3,16 +3,16 @@ import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphq
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
 import { DocumentNode } from 'graphql/index'
 import { request, Variables } from 'graphql-request'
-import { ApiContext, CowEnv, DEFAULT_COW_API_CONTEXT, EnvConfigs, PartialApiContext } from '../common/configs'
+import { ApiContext, CowEnv, DEFAULT_COW_API_CONTEXT, ApiBaseUrls, PartialApiContext } from '../common/configs'
 import { SupportedChainId } from '../common/chains'
 
-export const SUBGRAPH_PROD_CONFIG: EnvConfigs = {
+export const SUBGRAPH_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow',
   [SupportedChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc',
   [SupportedChainId.GOERLI]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-goerli',
 }
 
-export const SUBGRAPH_STAGING_CONFIG: EnvConfigs = {
+export const SUBGRAPH_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-staging',
   [SupportedChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc-staging',
   [SupportedChainId.GOERLI]: '',
@@ -23,11 +23,11 @@ export class SubgraphApi {
 
   public context: ApiContext
 
-  public customEnvConfigs?: EnvConfigs
-
-  constructor(context: PartialApiContext = {}, customEnvConfigs?: EnvConfigs) {
-    this.context = { ...DEFAULT_COW_API_CONTEXT, ...context }
-    this.customEnvConfigs = customEnvConfigs
+  constructor(context: PartialApiContext = {}) {
+    this.context = {
+      ...DEFAULT_COW_API_CONTEXT,
+      ...context,
+    }
   }
 
   async getTotals(contextOverride: PartialApiContext = {}): Promise<TotalsQuery['totals'][0]> {
@@ -65,8 +65,8 @@ export class SubgraphApi {
     return { ...this.context, ...contextOverride }
   }
 
-  private getEnvConfigs(env: CowEnv): EnvConfigs {
-    if (this.customEnvConfigs) return this.customEnvConfigs
+  private getEnvConfigs(env: CowEnv): ApiBaseUrls {
+    if (this.context.baseUrls) return this.context.baseUrls
 
     return env === 'prod' ? SUBGRAPH_PROD_CONFIG : SUBGRAPH_STAGING_CONFIG
   }
