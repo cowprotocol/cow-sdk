@@ -1,7 +1,11 @@
 import './App.css'
 import { SignOrderPage } from './components/signOrder'
+import { SignOrderCancellationPage } from './components/signOrderCancellation'
 
-const ACTIONS = [{ title: 'Sign order', Component: SignOrderPage }]
+const ACTIONS = [
+  { title: 'Sign order', Component: SignOrderPage },
+  { title: 'Sign order cancellation', Component: SignOrderCancellationPage },
+]
 
 function App() {
   return (

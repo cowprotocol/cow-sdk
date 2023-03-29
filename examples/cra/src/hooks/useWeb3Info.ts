@@ -20,7 +20,7 @@ export function useWeb3Info(): Web3Info {
     provider.listAccounts().then((accounts: string[]) => {
       setAccount(accounts[0])
     })
-  })
+  }, [setChainId, setAccount])
 
   return { chainId, account, provider }
 }

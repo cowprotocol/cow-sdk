@@ -1,10 +1,10 @@
 import { FormEvent, useCallback, useState } from 'react'
 import '../../pageStyles.css'
-import { OrderSigningUtils, SigningResult, OrderKind, UnsignedOrder } from '@cowprotocol/cow-sdk'
+import { OrderSigningUtils, SigningResult } from '@cowprotocol/cow-sdk'
 import { useWeb3Info } from '../../hooks/useWeb3Info'
 
-export function SignOrderPage() {
-  const { chainId, account, provider } = useWeb3Info()
+export function SignOrderCancellationPage() {
+  const { chainId, provider } = useWeb3Info()
   const [result, setResult] = useState<SigningResult | null>(null)
 
   const signOrder = useCallback(
@@ -15,26 +15,16 @@ export function SignOrderPage() {
       const value = Object.fromEntries(data.entries())
 
       const chainId = +value.chainId
-      const unsignedOrder: UnsignedOrder = JSON.parse(value.order as string)
+      const orderId = value.orderId as string
       const signer = provider.getSigner()
 
-      OrderSigningUtils.signOrder(unsignedOrder, chainId, signer).then(setResult).catch(setResult)
+      OrderSigningUtils.signOrderCancellation(orderId, chainId, signer).then(setResult).catch(setResult)
     },
     [provider]
   )
 
-  const order: UnsignedOrder = {
-    sellToken: '0x6b175474e89094c44da98b954eedeac495271d0f',
-    buyToken: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-    receiver: account,
-    sellAmount: '2',
-    buyAmount: '1',
-    validTo: Math.round((Date.now() + 200_000) / 1000),
-    appData: '0x',
-    feeAmount: '0',
-    kind: OrderKind.SELL,
-    partiallyFillable: false,
-  }
+  const orderId =
+    '0xe720cfe8881c3ea04f6e67307e6d590ac253ada9183ba6b1487b6f2154baeefa40a50cf069e992aa4536211b23f286ef88752187ffffffff'
 
   return (
     <div>
@@ -45,12 +35,12 @@ export function SignOrderPage() {
         </div>
 
         <div>
-          <label>Order:</label>
-          <textarea className="result" name="order" value={JSON.stringify(order, null, 4)}></textarea>
+          <label>Order Id:</label>
+          <textarea className="result" name="orderId" value={orderId}></textarea>
         </div>
 
         <div>
-          <button type="submit">Sign order</button>
+          <button type="submit">Sign order cancellation</button>
         </div>
       </form>
 
