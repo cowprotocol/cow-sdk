@@ -6,8 +6,9 @@ import { GetOrdersPage } from './components/getOrders'
 import { GetQuotePage } from './components/getQuote'
 import { SignAndSendOrderPage } from './components/sendOrder'
 import { SendOrderCancellationPage } from './components/sendOrderCancellation'
+import { FC, useState } from 'react'
 
-const ACTIONS = [
+const EXAMPLES: ExampleProps[] = [
   { title: 'Get quote', Component: GetQuotePage },
   { title: 'Get trades', Component: GetTradesPage },
   { title: 'Get orders', Component: GetOrdersPage },
@@ -17,18 +18,30 @@ const ACTIONS = [
   { title: 'Send order cancellation', Component: SendOrderCancellationPage },
 ]
 
+interface ExampleProps {
+  title: string
+  Component: FC
+  open?: boolean
+}
+
+function Example({ open = false, title, Component }: ExampleProps) {
+  const [isOpen, setIsOpen] = useState(open)
+
+  return (
+    <div key={title} className="section">
+      <div onClick={() => setIsOpen((state) => !state)}>{title}</div>
+      <div className={isOpen ? 'open' : ''}>
+        <Component />
+      </div>
+    </div>
+  )
+}
+
 function App() {
   return (
     <div className="App">
-      {ACTIONS.map(({ title, Component }) => {
-        return (
-          <div key={title} className="section">
-            <div>{title}</div>
-            <div>
-              <Component />
-            </div>
-          </div>
-        )
+      {EXAMPLES.map((props, index) => {
+        return <Example key={index} {...props} open={index === 0} />
       })}
     </div>
   )
