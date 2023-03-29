@@ -333,7 +333,9 @@ describe('Cow subgraph URL', () => {
       [SupportedChainId.GOERLI]: 'https://subgraph.satsuma-prod.com/94b7bd7c35c5/cow/cow-goerli/api',
     }
 
-    const customSubgraphApi = new SubgraphApi({}, customEnvConfig)
+    const customSubgraphApi = new SubgraphApi({
+      baseUrls: customEnvConfig,
+    })
 
     fetchMock.mockResponseOnce(JSON.stringify(TOTALS_RESPONSE), {
       status: 200,
