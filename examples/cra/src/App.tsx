@@ -3,12 +3,14 @@ import { SignOrderPage } from './components/signOrder'
 import { SignOrderCancellationPage } from './components/signOrderCancellation'
 import { GetTradesPage } from './components/getTrades'
 import { GetOrdersPage } from './components/getOrders'
+import { GetQuotePage } from './components/getQuote'
 
 const ACTIONS = [
   { title: 'Sign order', Component: SignOrderPage },
   { title: 'Sign order cancellation', Component: SignOrderCancellationPage },
   { title: 'Get trades', Component: GetTradesPage },
   { title: 'Get orders', Component: GetOrdersPage },
+  { title: 'Get quote', Component: GetQuotePage },
 ]
 
 function App() {
