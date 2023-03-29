@@ -2,6 +2,7 @@ import { FormEvent, useCallback, useState } from 'react'
 import '../../pageStyles.css'
 import { OrderSigningUtils, SigningResult } from '@cowprotocol/cow-sdk'
 import { useWeb3Info } from '../../hooks/useWeb3Info'
+import { parseFormData } from '../../utils'
 
 export function SignOrderCancellationPage() {
   const { chainId, provider } = useWeb3Info()
@@ -11,14 +12,17 @@ export function SignOrderCancellationPage() {
     (event: FormEvent) => {
       event.preventDefault()
 
-      const data = new FormData(event.target as HTMLFormElement)
-      const value = Object.fromEntries(data.entries())
+      const data = parseFormData<{ chainId: string; orderId: string }>(event)
 
-      const chainId = +value.chainId
-      const orderId = value.orderId as string
+      const chainId = +data.chainId
+      const orderId = data.orderId
       const signer = provider.getSigner()
 
-      OrderSigningUtils.signOrderCancellation(orderId, chainId, signer).then(setResult).catch(setResult)
+      OrderSigningUtils.signOrderCancellation(orderId, chainId, signer)
+        .then(setResult)
+        .catch((error) => {
+          setResult(error.toString())
+        })
     },
     [provider]
   )
