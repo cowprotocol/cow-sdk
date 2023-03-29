@@ -7,7 +7,7 @@ import {
   NativePriceResponse,
   OpenAPIConfig,
   OrderBookClient,
-  OrderCancellation,
+  OrderCancellations,
   OrderCreation,
   OrderPostError,
   OrderQuoteRequest,
@@ -149,12 +149,11 @@ export class OrderBookApi {
     return this.getServiceForNetwork(contextOverride).postApiV1Quote(requestBody)
   }
 
-  sendSignedOrderCancellation(
-    uid: UID,
-    requestBody: OrderCancellation,
+  sendSignedOrderCancellations(
+    requestBody: OrderCancellations,
     contextOverride: PartialApiContext = {}
   ): CancelablePromise<void> {
-    return this.getServiceForNetwork(contextOverride).deleteApiV1Orders1(uid, requestBody)
+    return this.getServiceForNetwork(contextOverride).deleteApiV1Orders(requestBody)
   }
 
   sendOrder(requestBody: OrderCreation, contextOverride: PartialApiContext = {}): Promise<UID> {

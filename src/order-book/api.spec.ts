@@ -304,13 +304,16 @@ describe('Cow Api', () => {
 
   test('Valid: Send sign order cancellation', async () => {
     fetchMock.mockResponseOnce(JSON.stringify(SIGNED_ORDER_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
-    await orderBookApi.sendSignedOrderCancellation(ORDER_CANCELLATION_UID, SIGNED_ORDER_RESPONSE)
+
+    const body = { ...SIGNED_ORDER_RESPONSE, orderUids: [ORDER_CANCELLATION_UID] }
+
+    await orderBookApi.sendSignedOrderCancellations(body)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      `https://api.cow.fi/xdai/api/v1/orders/${ORDER_CANCELLATION_UID}`,
+      `https://api.cow.fi/xdai/api/v1/orders`,
       expect.objectContaining({
         ...RAW_FETCH_RESPONSE_PARAMETERS,
-        body: JSON.stringify(SIGNED_ORDER_RESPONSE),
+        body: JSON.stringify(body),
         method: 'DELETE',
       })
     )
@@ -326,17 +329,19 @@ describe('Cow Api', () => {
       { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS }
     )
 
+    const body = { ...SIGNED_ORDER_RESPONSE, orderUids: ['unexistingOrder'] }
+
     // when
-    const promise = orderBookApi.sendSignedOrderCancellation('unexistingOrder', SIGNED_ORDER_RESPONSE)
+    const promise = orderBookApi.sendSignedOrderCancellations(body)
 
     // then
-    await expect(promise).rejects.toThrow('Order was not found')
+    await expect(promise).rejects.toThrow('One or more orders were not found and no orders were cancelled.')
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://api.cow.fi/xdai/api/v1/orders/unexistingOrder',
+      'https://api.cow.fi/xdai/api/v1/orders',
       expect.objectContaining({
         ...RAW_FETCH_RESPONSE_PARAMETERS,
-        body: JSON.stringify(SIGNED_ORDER_RESPONSE),
+        body: JSON.stringify(body),
         method: 'DELETE',
       })
     )
