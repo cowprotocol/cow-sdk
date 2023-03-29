@@ -1087,10 +1087,10 @@
   resolved "https://registry.yarnpkg.com/@cowprotocol/contracts/-/contracts-1.4.0.tgz#e93e5f25aac76feeaa348fa57231903274676247"
   integrity sha512-XLs3SlPmXD4lbiWIO7mxxuCn1eE5isuO6EUlE1cj17HqN/wukDAN0xXYPx6umOH/XdjGS33miMiPHELEyY9siw==
 
-"@cowprotocol/cow-sdk@^2.0.0-alpha.5":
-  version "2.0.0-alpha.5"
-  resolved "https://registry.yarnpkg.com/@cowprotocol/cow-sdk/-/cow-sdk-2.0.0-alpha.5.tgz#88666136f9ffa91e474686cee9cf42f041212730"
-  integrity sha512-ZTe6ugHuB6OXWqFSXTunREP/WFt8TuDhbItuUa42IwIR4rpqPtAvN6FQcOQHrvbqoLm68WNuz8K1SlN4TUgaBg==
+"@cowprotocol/cow-sdk@^2.0.0-alpha.6":
+  version "2.0.0-alpha.6"
+  resolved "https://registry.yarnpkg.com/@cowprotocol/cow-sdk/-/cow-sdk-2.0.0-alpha.6.tgz#84b427c105f38e8f0dddd5cdaf1f7e9bcf357781"
+  integrity sha512-iF0+6ErX8kGPtrv5E0IVV70nXw5LCe8l1WFqccVKHCeHS3tm6I37F6BzP0ErPNTruktpE6Gl832hUB6hZ5aSlg==
   dependencies:
     "@cowprotocol/contracts" "^1.4.0"
     ethers "^5.7.2"

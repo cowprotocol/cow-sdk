@@ -18,7 +18,7 @@ export function SignOrderCancellationPage() {
       const orderId = data.orderId
       const signer = provider.getSigner()
 
-      OrderSigningUtils.signOrderCancellation(orderId, chainId, signer)
+      OrderSigningUtils.signOrderCancellations([orderId], chainId, signer)
         .then(setResult)
         .catch((error) => {
           setResult(error.toString())
@@ -40,7 +40,7 @@ export function SignOrderCancellationPage() {
 
         <div>
           <label>Order Id:</label>
-          <textarea className="result" name="orderId" value={orderId}></textarea>
+          <textarea className="result" name="orderId" defaultValue={orderId}></textarea>
         </div>
 
         <div>

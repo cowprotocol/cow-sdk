@@ -10,7 +10,7 @@ export interface Web3Info {
 }
 
 export function useWeb3Info(): Web3Info {
-  const [chainId, setChainId] = useState(1)
+  const [chainId, setChainId] = useState(5)
   const [account, setAccount] = useState<string>('')
 
   useEffect(() => {
