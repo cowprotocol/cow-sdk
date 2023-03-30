@@ -9,8 +9,10 @@ import { SendOrderCancellationPage } from './pages/sendOrderCancellation'
 import { FC, useEffect, useState } from 'react'
 import { useWeb3Info } from './hooks/useWeb3Info'
 import { ChainIdContext } from './context'
+import { QuickStartPage } from './pages/quickStart'
 
 const EXAMPLES: ExampleProps[] = [
+  { title: 'Quick start', Component: QuickStartPage },
   { title: 'Get quote', Component: GetQuotePage },
   { title: 'Get trades', Component: GetTradesPage },
   { title: 'Get orders', Component: GetOrdersPage },
