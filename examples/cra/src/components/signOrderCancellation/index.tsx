@@ -1,55 +1,56 @@
 import { FormEvent, useCallback, useState } from 'react'
 import '../../pageStyles.css'
-import { OrderSigningUtils, SigningResult } from '@cowprotocol/cow-sdk'
+import { OrderCancellations, OrderSigningUtils, SigningResult } from '@cowprotocol/cow-sdk'
 import { useWeb3Info } from '../../hooks/useWeb3Info'
 import { parseFormData } from '../../utils'
+import { JsonContent } from '../jsonContent'
+import { ResultContent } from '../resultContent'
+import { useCurrentChainId } from '../../hooks/useCurrentChainId'
+import { signOrderCancellation } from '@cowprotocol/contracts'
 
 export function SignOrderCancellationPage() {
-  const { chainId, provider } = useWeb3Info()
-  const [result, setResult] = useState<SigningResult | null>(null)
+  const { provider } = useWeb3Info()
+  const chainId = useCurrentChainId()
 
-  const signOrder = useCallback(
+  const [input, setInput] = useState<string[] | null>(null)
+  const [output, setOutput] = useState<SigningResult | string>('')
+
+  const signOrderCancellation = useCallback(
     (event: FormEvent) => {
       event.preventDefault()
+      if (!input) return
 
-      const data = parseFormData<{ chainId: string; orderId: string }>(event)
+      setOutput('Loading...')
 
-      const chainId = +data.chainId
-      const orderId = data.orderId
       const signer = provider.getSigner()
 
-      OrderSigningUtils.signOrderCancellations([orderId], chainId, signer)
-        .then(setResult)
+      OrderSigningUtils.signOrderCancellations(input, chainId, signer)
+        .then(setOutput)
         .catch((error) => {
-          setResult(error.toString())
+          setOutput(error.toString())
         })
     },
-    [provider]
+    [provider, input, chainId]
   )
 
-  const orderId =
-    '0xe720cfe8881c3ea04f6e67307e6d590ac253ada9183ba6b1487b6f2154baeefa40a50cf069e992aa4536211b23f286ef88752187ffffffff'
+  const defaultValue = [
+    '0xe720cfe8881c3ea04f6e67307e6d590ac253ada9183ba6b1487b6f2154baeefa40a50cf069e992aa4536211b23f286ef88752187ffffffff',
+  ]
 
   return (
     <div>
-      <form className="form" onSubmit={(event) => signOrder(event)}>
+      <div className="form">
         <div>
-          <label>ChainId:</label>
-          <input name="chainId" value={chainId} />
+          <h1>Order ID:</h1>
+          <JsonContent defaultValue={defaultValue} onChange={setInput} />
         </div>
 
         <div>
-          <label>Order Id:</label>
-          <textarea className="result" name="orderId" defaultValue={orderId}></textarea>
+          <button onClick={signOrderCancellation}>Sign order cancellation</button>
         </div>
+      </div>
 
-        <div>
-          <button type="submit">Sign order cancellation</button>
-        </div>
-      </form>
-
-      <h3>Result:</h3>
-      <textarea className="result" readOnly={true} value={JSON.stringify(result, null, 4)}></textarea>
+      <ResultContent data={output} />
     </div>
   )
 }

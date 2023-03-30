@@ -2,13 +2,18 @@ import { FormEvent, useCallback, useEffect, useState } from 'react'
 import '../../pageStyles.css'
 import { OrderSigningUtils, UID, OrderKind, UnsignedOrder, OrderBookApi, SigningScheme } from '@cowprotocol/cow-sdk'
 import { useWeb3Info } from '../../hooks/useWeb3Info'
-import { parseFormData } from '../../utils'
+import { JsonContent } from '../jsonContent'
+import { ResultContent } from '../resultContent'
+import { useCurrentChainId } from '../../hooks/useCurrentChainId'
 
 const orderBookApi = new OrderBookApi()
 
 export function SignAndSendOrderPage() {
-  const { chainId, account, provider } = useWeb3Info()
-  const [result, setResult] = useState<UID | null>(null)
+  const { account, provider } = useWeb3Info()
+  const chainId = useCurrentChainId()
+
+  const [input, setInput] = useState<UnsignedOrder | null>(null)
+  const [output, setOutput] = useState<UID | string>('')
 
   useEffect(() => {
     orderBookApi.context.chainId = chainId
@@ -18,15 +23,16 @@ export function SignAndSendOrderPage() {
     (event: FormEvent) => {
       event.preventDefault()
 
-      const data = parseFormData<{ chainId: string; order: string }>(event)
-      const chainId = +data.chainId
-      const unsignedOrder: UnsignedOrder = JSON.parse(data.order)
+      if (!input) return
+
+      setOutput('Loading...')
+
       const signer = provider.getSigner()
 
-      OrderSigningUtils.signOrder(unsignedOrder, chainId, signer)
+      OrderSigningUtils.signOrder(input, chainId, signer)
         .then((signingResult) => {
           return orderBookApi.sendOrder({
-            ...unsignedOrder,
+            ...input,
             signingScheme: signingResult.signingScheme as string as SigningScheme,
             signature: signingResult.signature,
           })
@@ -34,15 +40,15 @@ export function SignAndSendOrderPage() {
         .then((orderId) => {
           return orderBookApi.getOrderLink(orderId)
         })
-        .then(setResult)
+        .then(setOutput)
         .catch((error) => {
-          setResult(error.toString())
+          setOutput(error.toString())
         })
     },
-    [provider]
+    [input, chainId, provider]
   )
 
-  const order: UnsignedOrder = {
+  const defaultValue: UnsignedOrder = {
     sellToken: '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
     buyToken: '0x07865c6E87B9F70255377e024ace6630C1Eaa37F',
     receiver: account,
@@ -57,24 +63,18 @@ export function SignAndSendOrderPage() {
 
   return (
     <div>
-      <form className="form" onSubmit={(event) => sendOrder(event)}>
+      <div className="form">
         <div>
-          <label>ChainId:</label>
-          <input name="chainId" value={chainId} />
+          <h1>Order:</h1>
+          <JsonContent defaultValue={defaultValue} onChange={setInput} />
         </div>
 
         <div>
-          <label>Order:</label>
-          <textarea className="result" name="order" value={JSON.stringify(order, null, 4)}></textarea>
+          <button onClick={sendOrder}>Sign and send order</button>
         </div>
+      </div>
 
-        <div>
-          <button type="submit">Sign and send order</button>
-        </div>
-      </form>
-
-      <h3>Result:</h3>
-      <textarea className="result" readOnly={true} value={JSON.stringify(result, null, 4)}></textarea>
+      <ResultContent data={output} />
     </div>
   )
 }

@@ -2,61 +2,64 @@ import { FormEvent, useCallback, useEffect, useState } from 'react'
 import '../../pageStyles.css'
 import { OrderQuoteRequest, OrderQuoteResponse, OrderBookApi, OrderQuoteSide } from '@cowprotocol/cow-sdk'
 import { useWeb3Info } from '../../hooks/useWeb3Info'
-import { parseFormData } from '../../utils'
+import { JsonContent } from '../jsonContent'
+import { useCurrentChainId } from '../../hooks/useCurrentChainId'
+import { ResultContent } from '../resultContent'
 
 const orderBookApi = new OrderBookApi()
 
 export function GetQuotePage() {
-  const { chainId, account } = useWeb3Info()
-  const [result, setResult] = useState<OrderQuoteResponse | null>(null)
+  const { account } = useWeb3Info()
+  const chainId = useCurrentChainId()
+
+  const [input, setInput] = useState<OrderQuoteRequest | null>(null)
+  const [output, setOutput] = useState<OrderQuoteResponse | string>('')
 
   useEffect(() => {
     orderBookApi.context.chainId = chainId
   }, [chainId])
 
-  const getQuote = useCallback((event: FormEvent) => {
-    event.preventDefault()
+  const getQuote = useCallback(
+    (event: FormEvent) => {
+      event.preventDefault()
 
-    const data = parseFormData<{ chainId: string; order: string }>(event)
-    const order: OrderQuoteRequest = JSON.parse(data.order)
+      if (!input) return
 
-    orderBookApi
-      .getQuote(order)
-      .then(setResult)
-      .catch((error) => {
-        setResult(error.toString())
-      })
-  }, [])
+      setOutput('Loading...')
 
-  const order: OrderQuoteRequest = {
-    sellToken: '0x6b175474e89094c44da98b954eedeac495271d0f',
-    buyToken: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+      orderBookApi
+        .getQuote(input)
+        .then(setOutput)
+        .catch((error) => {
+          setOutput(error.toString())
+        })
+    },
+    [input]
+  )
+
+  const defaultValue: OrderQuoteRequest = {
+    sellToken: '0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6', // WETH goerli
+    buyToken: '0x02abbdbaaa7b1bb64b5c878f7ac17f8dda169532', // GNO goerli
     from: account,
     receiver: account,
-    sellAmountBeforeFee: (200 * 10 ** 18).toString(),
+    sellAmountBeforeFee: (0.4 * 10 ** 18).toString(),
     kind: OrderQuoteSide.kind.SELL,
   }
 
   return (
     <div>
-      <form className="form" onSubmit={(event) => getQuote(event)}>
+      <div className="form">
         <div>
-          <label>ChainId:</label>
-          <input name="chainId" value={chainId} />
+          <h1>Order:</h1>
+          <JsonContent defaultValue={defaultValue} onChange={setInput} />
         </div>
 
         <div>
-          <label>Order:</label>
-          <textarea className="result" name="order" value={JSON.stringify(order, null, 4)}></textarea>
+          <button onClick={getQuote}>Get quote</button>
         </div>
+      </div>
 
-        <div>
-          <button type="submit">Get quote</button>
-        </div>
-      </form>
-
-      <h3>Result:</h3>
-      <textarea className="result" readOnly={true} value={JSON.stringify(result, null, 4)}></textarea>
+      <ResultContent data={output} />
     </div>
   )
 }

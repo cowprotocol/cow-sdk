@@ -1,59 +1,60 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react'
 import '../../pageStyles.css'
-import { OrderBookApi } from '@cowprotocol/cow-sdk'
-import { useWeb3Info } from '../../hooks/useWeb3Info'
-import { parseFormData } from '../../utils'
+import { EcdsaSigningScheme, OrderBookApi, OrderCancellations } from '@cowprotocol/cow-sdk'
+import { JsonContent } from '../jsonContent'
+import { ResultContent } from '../resultContent'
+import { useCurrentChainId } from '../../hooks/useCurrentChainId'
 
 const orderBookApi = new OrderBookApi()
 
 export function SendOrderCancellationPage() {
-  const { chainId } = useWeb3Info()
-  const [result, setResult] = useState<string | null>(null)
+  const chainId = useCurrentChainId()
+
+  const [input, setInput] = useState<OrderCancellations | null>(null)
+  const [output, setOutput] = useState<string>('')
 
   useEffect(() => {
     orderBookApi.context.chainId = chainId
   }, [chainId])
 
-  const sendOrderCancellation = useCallback((event: FormEvent) => {
-    event.preventDefault()
+  const sendOrderCancellation = useCallback(
+    (event: FormEvent) => {
+      event.preventDefault()
 
-    const data = parseFormData<{ chainId: string; params: string }>(event)
-    const { orderId, signature, signingScheme } = JSON.parse(data.params)
+      if (!input) return
 
-    orderBookApi
-      .sendSignedOrderCancellations({ orderUids: [orderId], signature, signingScheme })
-      .then((answer: any) => setResult(answer))
-      .catch((error) => {
-        setResult(error.toString())
-      })
-  }, [])
+      setOutput('Loading...')
 
-  const params = {
-    signature: 'PAST_CANCELLATION_SIGNATURE_HERE',
-    signingScheme: 'eip712',
-    orderId: 'PAST_ORDER_ID_HERE',
+      orderBookApi
+        .sendSignedOrderCancellations(input)
+        .then((answer: any) => setOutput(answer))
+        .catch((error) => {
+          setOutput(error.toString())
+        })
+    },
+    [input]
+  )
+
+  const defaultValue: OrderCancellations = {
+    signature: 'PASTE_CANCELLATION_SIGNATURE_HERE',
+    signingScheme: EcdsaSigningScheme.EIP712,
+    orderUids: ['PASTE_ORDER_ID_HERE'],
   }
 
   return (
     <div>
-      <form className="form" onSubmit={(event) => sendOrderCancellation(event)}>
+      <div className="form">
         <div>
-          <label>ChainId:</label>
-          <input name="chainId" value={chainId} />
+          <h1>Params:</h1>
+          <JsonContent defaultValue={defaultValue} onChange={setInput} />
         </div>
 
         <div>
-          <label>Params:</label>
-          <textarea className="result" name="params" defaultValue={JSON.stringify(params, null, 4)}></textarea>
+          <button onClick={sendOrderCancellation}>Send order cancellation</button>
         </div>
+      </div>
 
-        <div>
-          <button type="submit">Send order cancellation</button>
-        </div>
-      </form>
-
-      <h3>Result:</h3>
-      <textarea className="result" readOnly={true} value={JSON.stringify(result, null, 4)}></textarea>
+      <ResultContent data={output} />
     </div>
   )
 }

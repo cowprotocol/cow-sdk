@@ -1,55 +1,61 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react'
 import '../../pageStyles.css'
-import { OrderBookApi, Trade } from '@cowprotocol/cow-sdk'
+import { OrderBookApi, Address, UID, Trade } from '@cowprotocol/cow-sdk'
 import { useWeb3Info } from '../../hooks/useWeb3Info'
-import { parseFormData } from '../../utils'
+import { useCurrentChainId } from '../../hooks/useCurrentChainId'
+import { JsonContent } from '../jsonContent'
+import { ResultContent } from '../resultContent'
 
 const orderBookApi = new OrderBookApi()
 
 export function GetTradesPage() {
-  const { chainId } = useWeb3Info()
-  const [result, setResult] = useState<Array<Trade> | null>(null)
+  const { account } = useWeb3Info()
+  const chainId = useCurrentChainId()
+
+  const [input, setInput] = useState<{ owner?: Address; orderId?: UID } | null>(null)
+  const [output, setOutput] = useState<Array<Trade> | string>('')
 
   useEffect(() => {
     orderBookApi.context.chainId = chainId
   }, [chainId])
 
-  const getTrades = useCallback((event: FormEvent) => {
-    event.preventDefault()
+  const getTrades = useCallback(
+    (event: FormEvent) => {
+      event.preventDefault()
 
-    const { owner } = parseFormData<{ owner: string }>(event)
+      if (!input) return
 
-    orderBookApi
-      .getTrades({ owner })
-      .then(setResult)
-      .catch((error) => {
-        console.error(error)
-        setResult(error.toString())
-      })
-  }, [])
+      setOutput('Loading...')
 
-  const owner = '0xd8da6bf26964af9d7eed9e03e53415d37aa96045'
+      orderBookApi
+        .getTrades(input)
+        .then(setOutput)
+        .catch((error) => {
+          console.error(error)
+          setOutput(error.toString())
+        })
+    },
+    [input]
+  )
+
+  const defaultValue = {
+    owner: account,
+  }
 
   return (
     <div>
-      <form className="form" onSubmit={(event) => getTrades(event)}>
+      <div className="form">
         <div>
-          <label>ChainId:</label>
-          <input name="chainId" value={chainId} />
+          <h1>Owner or orderId:</h1>
+          <JsonContent defaultValue={defaultValue} onChange={setInput} />
         </div>
 
         <div>
-          <label>Owner address:</label>
-          <textarea className="result" name="owner" value={owner}></textarea>
+          <button onClick={getTrades}>Get trades</button>
         </div>
+      </div>
 
-        <div>
-          <button type="submit">Get trades</button>
-        </div>
-      </form>
-
-      <h3>Result:</h3>
-      <textarea className="result" readOnly={true} value={JSON.stringify(result, null, 4)}></textarea>
+      <ResultContent data={output} />
     </div>
   )
 }
