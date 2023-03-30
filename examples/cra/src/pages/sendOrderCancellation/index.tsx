@@ -1,8 +1,8 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react'
 import '../../pageStyles.css'
 import { EcdsaSigningScheme, OrderBookApi, OrderCancellations } from '@cowprotocol/cow-sdk'
-import { JsonContent } from '../jsonContent'
-import { ResultContent } from '../resultContent'
+import { JsonContent } from '../../components/jsonContent'
+import { ResultContent } from '../../components/resultContent'
 import { useCurrentChainId } from '../../hooks/useCurrentChainId'
 
 const orderBookApi = new OrderBookApi()

@@ -1,29 +1,25 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react'
 import '../../pageStyles.css'
-import { OrderBookApi, EnrichedOrder, Address } from '@cowprotocol/cow-sdk'
+import { OrderQuoteRequest, OrderQuoteResponse, OrderBookApi, OrderQuoteSide } from '@cowprotocol/cow-sdk'
 import { useWeb3Info } from '../../hooks/useWeb3Info'
+import { JsonContent } from '../../components/jsonContent'
 import { useCurrentChainId } from '../../hooks/useCurrentChainId'
-import { JsonContent } from '../jsonContent'
-import { ResultContent } from '../resultContent'
+import { ResultContent } from '../../components/resultContent'
 
 const orderBookApi = new OrderBookApi()
 
-export function GetOrdersPage() {
+export function GetQuotePage() {
   const { account } = useWeb3Info()
   const chainId = useCurrentChainId()
 
-  const [input, setInput] = useState<{
-    owner: Address
-    offset?: number
-    limit?: number
-  } | null>(null)
-  const [output, setOutput] = useState<Array<EnrichedOrder> | string>('')
+  const [input, setInput] = useState<OrderQuoteRequest | null>(null)
+  const [output, setOutput] = useState<OrderQuoteResponse | string>('')
 
   useEffect(() => {
     orderBookApi.context.chainId = chainId
   }, [chainId])
 
-  const getOrders = useCallback(
+  const getQuote = useCallback(
     (event: FormEvent) => {
       event.preventDefault()
 
@@ -32,32 +28,34 @@ export function GetOrdersPage() {
       setOutput('Loading...')
 
       orderBookApi
-        .getOrders(input)
+        .getQuote(input)
         .then(setOutput)
         .catch((error) => {
-          console.error(error)
           setOutput(error.toString())
         })
     },
     [input]
   )
 
-  const defaultValue = {
-    owner: account,
-    limit: 10,
-    offset: 0,
+  const defaultValue: OrderQuoteRequest = {
+    sellToken: '0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6', // WETH goerli
+    buyToken: '0x02abbdbaaa7b1bb64b5c878f7ac17f8dda169532', // GNO goerli
+    from: account,
+    receiver: account,
+    sellAmountBeforeFee: (0.4 * 10 ** 18).toString(),
+    kind: OrderQuoteSide.kind.SELL,
   }
 
   return (
     <div>
       <div className="form">
         <div>
-          <h1>Params:</h1>
+          <h1>Order:</h1>
           <JsonContent defaultValue={defaultValue} onChange={setInput} />
         </div>
 
         <div>
-          <button onClick={getOrders}>Get orders</button>
+          <button onClick={getQuote}>Get quote</button>
         </div>
       </div>
 

@@ -1,25 +1,25 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react'
 import '../../pageStyles.css'
-import { OrderQuoteRequest, OrderQuoteResponse, OrderBookApi, OrderQuoteSide } from '@cowprotocol/cow-sdk'
+import { OrderBookApi, Address, UID, Trade } from '@cowprotocol/cow-sdk'
 import { useWeb3Info } from '../../hooks/useWeb3Info'
-import { JsonContent } from '../jsonContent'
 import { useCurrentChainId } from '../../hooks/useCurrentChainId'
-import { ResultContent } from '../resultContent'
+import { JsonContent } from '../../components/jsonContent'
+import { ResultContent } from '../../components/resultContent'
 
 const orderBookApi = new OrderBookApi()
 
-export function GetQuotePage() {
+export function GetTradesPage() {
   const { account } = useWeb3Info()
   const chainId = useCurrentChainId()
 
-  const [input, setInput] = useState<OrderQuoteRequest | null>(null)
-  const [output, setOutput] = useState<OrderQuoteResponse | string>('')
+  const [input, setInput] = useState<{ owner?: Address; orderId?: UID } | null>(null)
+  const [output, setOutput] = useState<Array<Trade> | string>('')
 
   useEffect(() => {
     orderBookApi.context.chainId = chainId
   }, [chainId])
 
-  const getQuote = useCallback(
+  const getTrades = useCallback(
     (event: FormEvent) => {
       event.preventDefault()
 
@@ -28,34 +28,30 @@ export function GetQuotePage() {
       setOutput('Loading...')
 
       orderBookApi
-        .getQuote(input)
+        .getTrades(input)
         .then(setOutput)
         .catch((error) => {
+          console.error(error)
           setOutput(error.toString())
         })
     },
     [input]
   )
 
-  const defaultValue: OrderQuoteRequest = {
-    sellToken: '0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6', // WETH goerli
-    buyToken: '0x02abbdbaaa7b1bb64b5c878f7ac17f8dda169532', // GNO goerli
-    from: account,
-    receiver: account,
-    sellAmountBeforeFee: (0.4 * 10 ** 18).toString(),
-    kind: OrderQuoteSide.kind.SELL,
+  const defaultValue = {
+    owner: account,
   }
 
   return (
     <div>
       <div className="form">
         <div>
-          <h1>Order:</h1>
+          <h1>Owner or orderId:</h1>
           <JsonContent defaultValue={defaultValue} onChange={setInput} />
         </div>
 
         <div>
-          <button onClick={getQuote}>Get quote</button>
+          <button onClick={getTrades}>Get trades</button>
         </div>
       </div>
 

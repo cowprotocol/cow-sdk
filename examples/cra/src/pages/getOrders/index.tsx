@@ -1,25 +1,29 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react'
 import '../../pageStyles.css'
-import { OrderBookApi, Address, UID, Trade } from '@cowprotocol/cow-sdk'
+import { OrderBookApi, EnrichedOrder, Address } from '@cowprotocol/cow-sdk'
 import { useWeb3Info } from '../../hooks/useWeb3Info'
 import { useCurrentChainId } from '../../hooks/useCurrentChainId'
-import { JsonContent } from '../jsonContent'
-import { ResultContent } from '../resultContent'
+import { JsonContent } from '../../components/jsonContent'
+import { ResultContent } from '../../components/resultContent'
 
 const orderBookApi = new OrderBookApi()
 
-export function GetTradesPage() {
+export function GetOrdersPage() {
   const { account } = useWeb3Info()
   const chainId = useCurrentChainId()
 
-  const [input, setInput] = useState<{ owner?: Address; orderId?: UID } | null>(null)
-  const [output, setOutput] = useState<Array<Trade> | string>('')
+  const [input, setInput] = useState<{
+    owner: Address
+    offset?: number
+    limit?: number
+  } | null>(null)
+  const [output, setOutput] = useState<Array<EnrichedOrder> | string>('')
 
   useEffect(() => {
     orderBookApi.context.chainId = chainId
   }, [chainId])
 
-  const getTrades = useCallback(
+  const getOrders = useCallback(
     (event: FormEvent) => {
       event.preventDefault()
 
@@ -28,7 +32,7 @@ export function GetTradesPage() {
       setOutput('Loading...')
 
       orderBookApi
-        .getTrades(input)
+        .getOrders(input)
         .then(setOutput)
         .catch((error) => {
           console.error(error)
@@ -40,18 +44,20 @@ export function GetTradesPage() {
 
   const defaultValue = {
     owner: account,
+    limit: 10,
+    offset: 0,
   }
 
   return (
     <div>
       <div className="form">
         <div>
-          <h1>Owner or orderId:</h1>
+          <h1>Params:</h1>
           <JsonContent defaultValue={defaultValue} onChange={setInput} />
         </div>
 
         <div>
-          <button onClick={getTrades}>Get trades</button>
+          <button onClick={getOrders}>Get orders</button>
         </div>
       </div>
 

@@ -2,8 +2,8 @@ import { FormEvent, useCallback, useState } from 'react'
 import '../../pageStyles.css'
 import { OrderSigningUtils, SigningResult, OrderKind, UnsignedOrder } from '@cowprotocol/cow-sdk'
 import { useWeb3Info } from '../../hooks/useWeb3Info'
-import { JsonContent } from '../jsonContent'
-import { ResultContent } from '../resultContent'
+import { JsonContent } from '../../components/jsonContent'
+import { ResultContent } from '../../components/resultContent'
 import { useCurrentChainId } from '../../hooks/useCurrentChainId'
 
 export function SignOrderPage() {
