@@ -3,7 +3,7 @@
 /* eslint-disable */
 import type { BaseHttpRequest } from './core/BaseHttpRequest';
 import type { OpenAPIConfig } from './core/OpenAPI';
-import { AxiosHttpRequest } from './core/AxiosHttpRequest';
+import { FetchHttpRequest } from './core/FetchHttpRequest';
 
 import { DefaultService } from './services/DefaultService';
 
@@ -15,7 +15,7 @@ export class OrderBookClient {
 
     public readonly request: BaseHttpRequest;
 
-    constructor(config?: Partial<OpenAPIConfig>, HttpRequest: HttpRequestConstructor = AxiosHttpRequest) {
+    constructor(config?: Partial<OpenAPIConfig>, HttpRequest: HttpRequestConstructor = FetchHttpRequest) {
         this.request = new HttpRequest({
             BASE: config?.BASE ?? 'https://api.cow.fi/mainnet',
             VERSION: config?.VERSION ?? '0.0.1',
