@@ -1,8 +1,10 @@
 import { ClipboardEvent, useCallback, useEffect, useRef, useState } from 'react'
+import usePrevious from '../../hooks/usePrevious'
 
-export function JsonContent<T>({ defaultValue, onChange }: { defaultValue: T; onChange: (data: T | null) => void }) {
+export function JsonContent<T>({ defaultValue, onChange }: { defaultValue: T; onChange: (data: T) => void }) {
   const [isValid, setIsValid] = useState(true)
   const ref = useRef<HTMLPreElement>(null)
+  const prevDefaultValue = usePrevious(defaultValue)
 
   const onPasteCallback = useCallback((event: ClipboardEvent) => {
     event.preventDefault()
@@ -23,13 +25,16 @@ export function JsonContent<T>({ defaultValue, onChange }: { defaultValue: T; on
   }, [onChange])
 
   useEffect(() => {
+    if (JSON.stringify(prevDefaultValue) === JSON.stringify(defaultValue)) return
+
     onChangeCallback()
-  }, [defaultValue, onChangeCallback])
+  }, [defaultValue, prevDefaultValue, onChangeCallback])
 
   return (
     <pre
       ref={ref}
       className={`json-content ${isValid ? '' : 'invalid'}`}
+      suppressContentEditableWarning={true}
       contentEditable={true}
       onPaste={onPasteCallback}
       onInput={onChangeCallback}
