@@ -1,0 +1,45 @@
+.App {
+  background-color: #282c34;
+  color: white;
+}
+
+.chain-id-box {
+  padding: 14px;
+  font-size: 18px;
+  background: #545c6c;
+  margin: 0 15px 15px;
+}
+
+.chain-id-box label {
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.section {
+  border-bottom: 1px solid #b4b4b4;
+}
+
+.section > div {
+  padding: 10px;
+}
+
+.section > div:first-child {
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  border-bottom: 1px solid #b4b4b4;
+}
+
+.section > div:first-child:hover {
+  text-decoration: underline;
+}
+
+.section > div:last-child {
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  padding-left: 50px;
+}
+
+.section > div:last-child:not(.open) {
+  display: none;
+}

@@ -1,5 +1,5 @@
 import type { SupportedChainId } from '../common'
-import type { Signer } from 'ethers'
+import type { Signer } from '@ethersproject/abstract-signer'
 import type { TypedDataDomain } from '@cowprotocol/contracts'
 import type { SigningResult, UnsignedOrder } from './types'
 

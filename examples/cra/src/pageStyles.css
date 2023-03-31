@@ -1,0 +1,37 @@
+.form h1 {
+  font-size: 20px;
+}
+
+.form button {
+  font-size: 16px;
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+
+.json-content {
+  width: 900px;
+  min-height: 180px;
+  max-height: 550px;
+  background: #fff;
+  color: #282c34;
+  outline: none;
+  padding: 5px;
+  border-radius: 4px;
+  overflow-y: scroll;
+}
+
+.json-content.invalid {
+  outline: 3px solid #ff9292;
+}
+
+.result-content textarea {
+  outline: none;
+  min-width: 900px;
+  min-height: 150px;
+  padding: 10px;
+  background: #d4d9de;
+}
+
+.result-content h3 {
+  font-weight: normal;
+}

@@ -1,0 +1,16 @@
+{
+  "name": "cow-sdk-nodejs-example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@cowprotocol/cow-sdk": "^2.0.0-alpha.4",
+    "ts-node": "^10.9.1"
+  },
+  "author": "",
+  "license": "ISC"
+}
