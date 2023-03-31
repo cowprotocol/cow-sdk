@@ -4,6 +4,8 @@
 
 # CoW SDK
 
+## 📚 [SDK docs website](https://docs.cow.fi/cow-sdk)
+
 ## Test coverage
 
 | Statements                                                                                 | Branches                                                                       | Functions                                                                                | Lines                                                                            |
@@ -12,121 +14,133 @@
 
 ## Getting started
 
-Install the SDK:
+**Usage examples: [VanillaJS](./examples/vanilla/src/index.ts), [Create React App](./examples/cra/src/pages/getOrders/index.tsx), [NodeJS](./examples/nodejs/src/index.ts)**
+
+### Installation
 
 ```bash
 yarn add @cowprotocol/cow-sdk
 ```
 
-Instantiate the SDK:
+### Content
 
-```js
-import { CowSdk } from '@cowprotocol/cow-sdk'
+- `OrderBookApi` - provides the ability to retrieve orders and trades from the CowSap order-book, as well as add and cancel them
+- `OrderSigningUtils` - serves to sign orders and cancel them using [EIP-712](https://eips.ethereum.org/EIPS/eip-712)
+- `SubgraphApi` - provides statistics data about CoW protocol from [Subgraph](https://github.com/cowprotocol/subgraph), such as trading volume, trades count and others
+
+
+```typescript
+import { OrderBookApi, OrderSigningUtils, SubgraphApi } from '@cowprotocol/cow-sdk'
 
 const chainId = 100 // Gnosis chain
-const cowSdk = new CowSdk(chainId)
+
+const orderBookApi = new OrderBookApi({ chainId })
+const subgraphApi = new SubgraphApi({ chainId })
+const orderSigningUtils = new OrderSigningUtils()
 ```
 
-The SDK will expose:
+## Quick start
 
-- The CoW API (`cowSdk.cowApi`)
-- The CoW Subgraph (`cowSdk.cowSubgraphApi`)
-- Convenient method to facilitate signing orders (i.e `cowSdk.signOrder`)
+### Sign, fetch, post and cancel order
 
-> For a quick snippet with the full process on posting an order see the [Post an Order Example](./docs/post-order-example.ts)
+For clarity, let's look at the use of the API with a practical example:
+Exchanging `0.4 GNO` to `WETH` on `Goerli` network.
 
-## CoW API
+We will do the following operations:
+1. Get a quote
+2. Sign the order
+3. Send the order to the order-book
+4. Get the data of the created order
+5. Get trades of the order
+6. Cancel the order (signing + sending)
 
-The SDK provides access to the CoW API. The CoW API allows you:
+[You also can check this code in the CRA example](./examples/cra/src/pages/quickStart/index.tsx)
 
-- Post orders
-- Get fee quotes
-- Get order details
-- Get history of orders: i.e. filtering by account, transaction hash, etc.
 
-For example, you can easily get the last 5 order of a trader:
+```typescript
+import { OrderBookApi, OrderSigningUtils, SupportedChainId } from '@cowprotocol/cow-sdk'
+import { Web3Provider } from '@ethersproject/providers'
 
-```js
-// i.e. Get last 5 orders for a given trader
-const trades = await cowSdk.cowApi.getOrders({
-  owner: '0x00000000005ef87f8ca7014309ece7260bbcdaeb', // Trader
-  limit: 5,
-  offset: 0,
-})
-console.log(trades)
+const account = 'YOUR_WALLET_ADDRESS'
+const chainId = 5 // Goerli
+const provider = new Web3Provider(window.ethereum)
+const signer = provider.getSigner()
+
+const quoteRequest = {
+  sellToken: '0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6', // WETH goerli
+  buyToken: '0x02abbdbaaa7b1bb64b5c878f7ac17f8dda169532', // GNO goerli
+  from: account,
+  receiver: account,
+  sellAmountBeforeFee: (0.4 * 10 ** 18).toString(), // 0.4 WETH
+  kind: OrderQuoteSide.kind.SELL,
+}
+
+const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.GOERLI })
+
+async function main() {
+    const { quote } = await orderBookApi.getQuote(quoteRequest)
+
+    const orderSigningResult = await OrderSigningUtils.signOrder(quote, chainId, signer)
+
+    const orderId = await orderBookApi.sendOrder({ ...quote, ...orderSigningResult })
+
+    const order = await orderBookApi.getOrder(orderId)
+
+    const trades = await orderBookApi.getTrades({ orderId })
+
+    const orderCancellationSigningResult = await OrderSigningUtils.signOrderCancellations([orderId], chainId, signer)
+
+    const cancellationResult = await orderBookApi.sendSignedOrderCancellations({...orderCancellationSigningResult, orderUids: [orderId] })
+
+    console.log('Results: ', { orderId, order, trades, orderCancellationSigningResult, cancellationResult })
+}
+```
+### Querying the Cow Subgraph
+
+The [Subgraph](https://github.com/cowprotocol/subgraph) is constantly indexing the protocol, making all the information more accessible. It provides information about trades, users, tokens and settlements. Additionally, it has some data aggregations which provides insights on the hourly/daily/totals USD volumes, trades, users, etc.
+
+The SDK provides just an easy way to access all this information.
+
+You can query the Cow Subgraph either by running some common queries exposed by the `CowSubgraphApi` or by building your own ones:
+
+```typescript
+import { SubgraphApi, SupportedChainId } from '@cowprotocol/cow-sdk'
+
+const subgraphApi = new SubgraphApi({ chainId: SupportedChainId.MAINNET })
+
+// Get CoW Protocol totals
+const { tokens, orders, traders, settlements, volumeUsd, volumeEth, feesUsd, feesEth } =
+  await csubgraphApi.getTotals()
+console.log({ tokens, orders, traders, settlements, volumeUsd, volumeEth, feesUsd, feesEth })
+
+// Get last 24 hours volume in usd
+const { hourlyTotals } = await cowSubgraphApi.getLastHoursVolume(24)
+console.log(hourlyTotals)
+
+// Get last week volume in usd
+const { dailyTotals } = await cowSubgraphApi.getLastDaysVolume(7)
+console.log(dailyTotals)
+
+// Get the last 5 batches
+const query = `
+  query LastBatches($n: Int!) {
+    settlements(orderBy: firstTradeTimestamp, orderDirection: desc, first: $n) {
+      txHash
+      firstTradeTimestamp
+    }
+  }
+`
+const variables = { n: 5 }
+const response = await cowSubgraphApi.runQuery(query, variables)
+console.log(response)
 ```
 
-The SDK will expose:
-
-- The CoW API (`cowSdk.cowApi`)
-- The CoW Subgraph (`cowSdk.cowSubgraphApi`)
-- Convenient method to facilitate signing orders (i.e `cowSdk.signOrder`)
-
-> ✨ For a quick snippet with the full process on posting an order see the [Post an Order Example](./docs/post-order-example.ts)
-
-> 📚 Read more about [How to get started with the SDK](https://docs.cow.fi/cow-sdk/getting-started-with-the-sdk)
 
 ## Architecture
 
 One way to make the most out of the SDK is to get familiar to its architecture.
 
 > See [SDK Architecture](./docs/architecture.md)
-
-## CoW API
-
-The SDK provides access to the CoW API. The CoW API allows you:
-
-- Post orders
-- Get fee quotes
-- Get order details
-- Get history of orders: i.e. filtering by account, transaction hash, etc.
-
-> 📚 Read more about [How to Query the API](https://docs.cow.fi/cow-sdk/cow-api)
-
-## Sign and Post orders
-
-In order to trade, you will need to create a valid order first.
-
-On the contraty to other decentralised exchanges, creating orders is free in CoW Protocol. This is because, one of the
-most common ways to do it is by created offchain signed messages (meta-transactions, uses `EIP-712` or `EIP-1271`).
-
-Posting orders is a three steps process:
-
-- 1. **Get Market Pricea**: Fee & Price
-- 2. **Sign the order**: Using off-chain signing or Meta-transactions
-- 3. **Post the signed order to the API**: So, the order becomes `OPEN`
-
-The next sections will guide you through the process of creating a valid order.
-
-> For a quick snippet with the full process on posting an order see the [Post an Order Example](./docs/post-order-example.ts).
-
-> 📚 Read more about [How to Sign and Post your orders](https://docs.cow.fi/cow-sdk/sign-and-post-orders)
-
-## Create a meta-data document for attaching to an order
-
-Orders in CoW Protocol can contain arbitrary data in a field called `AppData`.
-
-The SDK facilitates the creation of these documents, and getting the `AppData` Hex number that summarizes it.
-
-The most important thing to define in the meta-data is the name of your app, so the order-flow can be credited to it.
-
-```js
-const appDataDoc = cowSdk.metadataApi.generateAppDataDoc({
-  appDataParams: { appCode: 'YourApp' },
-})
-```
-
-This will create a document similar to:
-
-```json
-{
-  "version": "0.4.0",
-  "appCode": "YourApp",
-  "metadata": {}
-}
-```
-
-> 📚 Read more about [How to Create/Encode/Decode your own Meta-data for orders](https://docs.cow.fi/cow-sdk/order-meta-data-appdata)
 
 ## Development
 
