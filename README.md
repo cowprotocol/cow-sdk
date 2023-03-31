@@ -58,7 +58,7 @@ We will do the following operations:
 
 
 ```typescript
-import { OrderBookApi } from '@cowprotocol/cow-sdk'
+import { OrderBookApi, OrderSigningUtils, SupportedChainId } from '@cowprotocol/cow-sdk'
 import { Web3Provider } from '@ethersproject/providers'
 
 const account = 'YOUR_WALLET_ADDRESS'
@@ -75,7 +75,7 @@ const quoteRequest = {
   kind: OrderQuoteSide.kind.SELL,
 }
 
-const orderBookApi = new OrderBookApi()
+const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.GOERLI })
 
 async function main() {
     const { quote } = await orderBookApi.getQuote(quoteRequest)
