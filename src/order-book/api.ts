@@ -5,6 +5,7 @@ import {
   BaseHttpRequest,
   CancelablePromise,
   DefaultService,
+  FeeAndQuoteError,
   NativePriceResponse,
   OpenAPIConfig,
   OrderBookClient,
@@ -143,11 +144,12 @@ export class OrderBookApi {
     return this.getOrder(uid, { ...contextOverride, env }).catch(fallback)
   }
 
-  getQuote(
-    requestBody: OrderQuoteRequest,
-    contextOverride: PartialApiContext = {}
-  ): CancelablePromise<OrderQuoteResponse> {
-    return this.getServiceForNetwork(contextOverride).postApiV1Quote(requestBody)
+  getQuote(requestBody: OrderQuoteRequest, contextOverride: PartialApiContext = {}): Promise<OrderQuoteResponse> {
+    return this.getServiceForNetwork(contextOverride)
+      .postApiV1Quote(requestBody)
+      .catch((error: { body: FeeAndQuoteError }) => {
+        return Promise.reject(error.body || error)
+      })
   }
 
   sendSignedOrderCancellations(
