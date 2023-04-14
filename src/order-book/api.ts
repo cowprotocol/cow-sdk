@@ -32,6 +32,7 @@ import { EnrichedOrder } from './types'
 import { ApiRequestOptions } from './generated/core/ApiRequestOptions'
 import { request as __request } from './generated/core/request'
 import { SupportedChainId } from '../common/chains'
+import { transformError } from './transformError'
 
 export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.MAINNET]: 'https://api.cow.fi/mainnet',
@@ -147,8 +148,8 @@ export class OrderBookApi {
   getQuote(requestBody: OrderQuoteRequest, contextOverride: PartialApiContext = {}): Promise<OrderQuoteResponse> {
     return this.getServiceForNetwork(contextOverride)
       .postApiV1Quote(requestBody)
-      .catch((error: { body: FeeAndQuoteError }) => {
-        return Promise.reject(error.body || error)
+      .catch((error) => {
+        return Promise.reject(transformError<FeeAndQuoteError>(error))
       })
   }
 
