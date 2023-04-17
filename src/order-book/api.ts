@@ -174,11 +174,12 @@ export class OrderBookApi {
       })
   }
 
-  getNativePrice(
-    tokenAddress: Address,
-    contextOverride: PartialApiContext = {}
-  ): CancelablePromise<NativePriceResponse> {
-    return this.getServiceForNetwork(contextOverride).getApiV1TokenNativePrice(tokenAddress)
+  getNativePrice(tokenAddress: Address, contextOverride: PartialApiContext = {}): Promise<NativePriceResponse> {
+    return this.getServiceForNetwork(contextOverride)
+      .getApiV1TokenNativePrice(tokenAddress)
+      .catch((error) => {
+        return Promise.reject(transformError<FeeAndQuoteError>(error))
+      })
   }
 
   getOrderLink(uid: UID, contextOverride?: PartialApiContext): string {
