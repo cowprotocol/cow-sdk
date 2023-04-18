@@ -153,7 +153,7 @@ export class OrderBookApi {
   }
 
   getNativePrice(tokenAddress: Address, contextOverride: PartialApiContext = {}): Promise<NativePriceResponse> {
-    return this.fetch({ path: `/api/v1/token/${tokenAddress}/native_price`, method: 'POST' }, contextOverride)
+    return this.fetch({ path: `/api/v1/token/${tokenAddress}/native_price`, method: 'GET' }, contextOverride)
   }
 
   getOrderLink(uid: UID, contextOverride?: PartialApiContext): string {
