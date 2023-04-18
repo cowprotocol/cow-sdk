@@ -32,6 +32,7 @@ import { EnrichedOrder } from './types'
 import { ApiRequestOptions } from './generated/core/ApiRequestOptions'
 import { request as __request } from './generated/core/request'
 import { SupportedChainId } from '../common/chains'
+import { backOff, BackoffOptions } from 'exponential-backoff'
 
 export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.MAINNET]: 'https://api.cow.fi/mainnet',
@@ -45,6 +46,12 @@ export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.GOERLI]: 'https://barn.api.cow.fi/goerli',
 }
 
+const DEFAULT_BACKOFF_OPTIONS: BackoffOptions = {
+  numOfAttempts: 10,
+  maxDelay: Infinity,
+  jitter: 'none',
+}
+
 class FetchHttpRequest extends BaseHttpRequest {
   constructor(config: OpenAPIConfig) {
     super(config)
@@ -56,14 +63,16 @@ class FetchHttpRequest extends BaseHttpRequest {
    * @returns CancelablePromise<T>
    * @throws ApiError
    */
-  public override request<T>(options: ApiRequestOptions): CancelablePromise<T> {
-    return __request(this.config, {
-      ...options,
-      headers: {
-        ...options.headers,
-        'Content-Type': 'application/json',
-      },
-    })
+  public override request<T>(options: ApiRequestOptions): Promise<T> {
+    return backOff(() => {
+      return __request(this.config, {
+        ...options,
+        headers: {
+          ...options.headers,
+          'Content-Type': 'application/json',
+        },
+      })
+    }, DEFAULT_BACKOFF_OPTIONS)
   }
 }
 
