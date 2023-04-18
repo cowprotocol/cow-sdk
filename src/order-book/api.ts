@@ -25,7 +25,7 @@ import { EnrichedOrder } from './types'
 import { SupportedChainId } from '../common/chains'
 import { BackoffOptions } from 'exponential-backoff'
 import { RateLimiter, RateLimiterOpts } from 'limiter'
-import { FetchParams, OrderBookApiError, request } from './request'
+import { DEFAULT_BACKOFF_OPTIONS, DEFAULT_LIMITER_OPTIONS, FetchParams, OrderBookApiError, request } from './request'
 
 export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.MAINNET]: 'https://api.cow.fi/mainnet',
@@ -37,19 +37,6 @@ export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.MAINNET]: 'https://barn.api.cow.fi/mainnet',
   [SupportedChainId.GNOSIS_CHAIN]: 'https://barn.api.cow.fi/xdai',
   [SupportedChainId.GOERLI]: 'https://barn.api.cow.fi/goerli',
-}
-
-// See config in https://www.npmjs.com/package/@insertish/exponential-backoff
-const DEFAULT_BACKOFF_OPTIONS: BackoffOptions = {
-  numOfAttempts: 10,
-  maxDelay: Infinity,
-  jitter: 'none',
-}
-
-// CowSwap order-book API is limited by 5 requests per second from one IP
-const DEFAULT_LIMITER_OPTIONS: RateLimiterOpts = {
-  tokensPerInterval: 5,
-  interval: 'second',
 }
 
 export class OrderBookApi {

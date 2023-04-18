@@ -1,17 +1,55 @@
 import { backOff, BackoffOptions } from 'exponential-backoff'
-import { RateLimiter } from 'limiter'
+import { RateLimiter, RateLimiterOpts } from 'limiter'
+
+export class OrderBookApiError<T = unknown> extends Error {
+  constructor(public readonly response: Response, public readonly body: T) {
+    super(typeof body === 'string' ? body : response.statusText)
+  }
+}
+
+const REQUEST_TIMEOUT = 408
+const TOO_EARLY = 425
+const TOO_MANY_REQUESTS = 429
+const INTERNAL_SERVER_ERROR = 500
+const BAD_GATEWAY = 502
+const SERVICE_UNAVAILABLE = 503
+const GATEWAY_TIMEOUT = 504
+
+const STATUS_CODES_TO_RETRY = [
+  REQUEST_TIMEOUT,
+  TOO_EARLY,
+  TOO_MANY_REQUESTS,
+  INTERNAL_SERVER_ERROR,
+  BAD_GATEWAY,
+  SERVICE_UNAVAILABLE,
+  GATEWAY_TIMEOUT,
+]
+
+// See config in https://www.npmjs.com/package/@insertish/exponential-backoff
+export const DEFAULT_BACKOFF_OPTIONS: BackoffOptions = {
+  numOfAttempts: 10,
+  maxDelay: Infinity,
+  jitter: 'none',
+  retry: (error: Error | OrderBookApiError) => {
+    if (error instanceof OrderBookApiError) {
+      return STATUS_CODES_TO_RETRY.includes(error.response.status)
+    }
+
+    return true
+  },
+}
+
+// CowSwap order-book API is limited by 5 requests per second from one IP
+export const DEFAULT_LIMITER_OPTIONS: RateLimiterOpts = {
+  tokensPerInterval: 5,
+  interval: 'second',
+}
 
 export interface FetchParams {
   path: string
   method: 'GET' | 'POST' | 'DELETE' | 'PUT'
   body?: unknown
   query?: URLSearchParams
-}
-
-export class OrderBookApiError<T = unknown> extends Error {
-  constructor(public readonly response: Response, public readonly body: T) {
-    super(typeof body === 'string' ? body : response.statusText)
-  }
 }
 
 const getResponseBody = async (response: Response): Promise<any> => {
