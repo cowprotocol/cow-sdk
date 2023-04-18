@@ -52,13 +52,12 @@ export interface FetchParams {
   query?: URLSearchParams
 }
 
-const getResponseBody = async (response: Response): Promise<any> => {
+const getResponseBody = async (response: Response): Promise<unknown> => {
   if (response.status !== 204) {
     try {
       const contentType = response.headers.get('Content-Type')
       if (contentType) {
-        const isJSON = contentType.toLowerCase().startsWith('application/json')
-        if (isJSON) {
+        if (contentType.toLowerCase().startsWith('application/json')) {
           return await response.json()
         } else {
           return await response.text()
@@ -90,7 +89,7 @@ export async function request<T>(
     await rateLimiter.removeTokens(1)
 
     const response = await fetch(url, init)
-    const responseBody = await getResponseBody(response)
+    const responseBody = (await getResponseBody(response)) as T
 
     // Successful response
     if (response.status >= 200 && response.status < 300) {
