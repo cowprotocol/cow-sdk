@@ -19,7 +19,11 @@ import { BUY_ETH_ADDRESS } from './transformOrder'
 
 enableFetchMocks()
 
-const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.GNOSIS_CHAIN })
+const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.GNOSIS_CHAIN }, undefined, {
+  numOfAttempts: 1,
+  maxDelay: Infinity,
+  jitter: 'none',
+})
 
 const HTTP_STATUS_OK = 200
 const HTTP_STATUS_NOT_FOUND = 404
@@ -92,12 +96,11 @@ const TRADE_RESPONSE = {
 
 const RAW_FETCH_RESPONSE_PARAMETERS = {
   body: undefined,
-  headers: new Headers({
+  headers: {
     Accept: 'application/json',
     'Content-Type': 'application/json',
-  }),
+  },
   method: 'GET',
-  signal: expect.anything(),
 }
 
 const FETCH_RESPONSE_PARAMETERS = expect.objectContaining(RAW_FETCH_RESPONSE_PARAMETERS)
@@ -155,20 +158,25 @@ describe('Cow Api', () => {
   })
 
   test('Invalid: Get an order', async () => {
+    const errorBody = {
+      errorType: 'NotFound',
+      description: "You've passed an invalid URL",
+    }
+
     // given
-    fetchMock.mockResponse(
-      JSON.stringify({
-        errorType: 'NotFound',
-        description: "You've passed an invalid URL",
-      }),
-      { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS }
-    )
+    fetchMock.mockResponse(JSON.stringify(errorBody), { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS })
 
     // when
     const promise = orderBookApi.getOrder('notValidOrderId')
 
-    // then
-    await expect(promise).rejects.toThrow('Order was not found')
+    await expect(promise).rejects.toEqual({
+      body: errorBody,
+      response: expect.objectContaining({
+        status: 404,
+        statusText: 'Not Found',
+      }),
+    })
+
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.cow.fi/xdai/api/v1/orders/notValidOrderId',
@@ -193,14 +201,13 @@ describe('Cow Api', () => {
   })
 
   test('Invalid: Get last 5 orders for an unexisting trader ', async () => {
+    const errorBody = {
+      errorType: 'NotFound',
+      description: "You've passed an invalid URL",
+    }
+
     // given
-    fetchMock.mockResponse(
-      JSON.stringify({
-        errorType: 'NotFound',
-        description: "You've passed an invalid URL",
-      }),
-      { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS }
-    )
+    fetchMock.mockResponse(JSON.stringify(errorBody), { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS })
 
     // when
     const promise = orderBookApi.getOrders({
@@ -210,7 +217,13 @@ describe('Cow Api', () => {
     })
 
     // then
-    await expect(promise).rejects.toThrow('Not Found')
+    await expect(promise).rejects.toEqual({
+      body: errorBody,
+      response: expect.objectContaining({
+        status: 404,
+        statusText: 'Not Found',
+      }),
+    })
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.cow.fi/xdai/api/v1/account/invalidOwner/orders?offset=0&limit=5',
@@ -232,20 +245,25 @@ describe('Cow Api', () => {
   })
 
   test('Invalid: Get tx orders from an unexisting txHash', async () => {
+    const errorBody = {
+      errorType: 'NotFound',
+      description: "You've passed an invalid URL",
+    }
+
     // given
-    fetchMock.mockResponse(
-      JSON.stringify({
-        errorType: 'NotFound',
-        description: "You've passed an invalid URL",
-      }),
-      { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS }
-    )
+    fetchMock.mockResponse(JSON.stringify(errorBody), { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS })
 
     // when
     const promise = orderBookApi.getTxOrders('invalidTxHash')
 
     // then
-    await expect(promise).rejects.toThrow('Not Found')
+    await expect(promise).rejects.toEqual({
+      body: errorBody,
+      response: expect.objectContaining({
+        status: 404,
+        statusText: 'Not Found',
+      }),
+    })
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.cow.fi/xdai/api/v1/transactions/invalidTxHash/orders',
@@ -270,8 +288,9 @@ describe('Cow Api', () => {
   test('Valid: Get last 5 trades for a given order id ', async () => {
     const TRADES_RESPONSE = Array(5).fill(TRADE_RESPONSE)
     fetchMock.mockResponse(JSON.stringify(TRADES_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
+
     const trades = await orderBookApi.getTrades({
-      orderId: TRADE_RESPONSE.orderUid,
+      orderUid: TRADE_RESPONSE.orderUid,
     })
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
@@ -285,20 +304,19 @@ describe('Cow Api', () => {
     expect(
       orderBookApi.getTrades({
         owner: TRADE_RESPONSE.owner,
-        orderId: TRADE_RESPONSE.orderUid,
+        orderUid: TRADE_RESPONSE.orderUid,
       })
     ).rejects.toThrowError(CowError)
   })
 
   test('Invalid: Get last 5 trades for an unexisting trader ', async () => {
+    const errorBody = {
+      errorType: 'NotFound',
+      description: "You've passed an invalid URL",
+    }
+
     // given
-    fetchMock.mockResponse(
-      JSON.stringify({
-        errorType: 'NotFound',
-        description: "You've passed an invalid URL",
-      }),
-      { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS }
-    )
+    fetchMock.mockResponse(JSON.stringify(errorBody), { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS })
 
     // when
     const promise = orderBookApi.getTrades({
@@ -306,7 +324,13 @@ describe('Cow Api', () => {
     })
 
     // then
-    await expect(promise).rejects.toThrow('Not Found')
+    await expect(promise).rejects.toEqual({
+      body: errorBody,
+      response: expect.objectContaining({
+        status: 404,
+        statusText: 'Not Found',
+      }),
+    })
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.cow.fi/xdai/api/v1/trades?owner=invalidOwner',
@@ -332,14 +356,13 @@ describe('Cow Api', () => {
   })
 
   test('Invalid: Send sign not found order cancellation', async () => {
+    const errorBody = {
+      errorType: 'NotFound',
+      description: "You've passed an invalid URL",
+    }
+
     // given
-    fetchMock.mockResponse(
-      JSON.stringify({
-        errorType: 'NotFound',
-        description: "You've passed an invalid URL",
-      }),
-      { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS }
-    )
+    fetchMock.mockResponse(JSON.stringify(errorBody), { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS })
 
     const body = { ...SIGNED_ORDER_RESPONSE, orderUids: ['unexistingOrder'] }
 
@@ -347,7 +370,13 @@ describe('Cow Api', () => {
     const promise = orderBookApi.sendSignedOrderCancellations(body)
 
     // then
-    await expect(promise).rejects.toThrow('One or more orders were not found and no orders were cancelled.')
+    await expect(promise).rejects.toEqual({
+      body: errorBody,
+      response: expect.objectContaining({
+        status: 404,
+        statusText: 'Not Found',
+      }),
+    })
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.cow.fi/xdai/api/v1/orders',
@@ -392,14 +421,12 @@ describe('Cow Api', () => {
   })
 
   test('Invalid: Send an duplicate order ', async () => {
+    const errorBody = {
+      errorType: 'DuplicateOrder',
+      description: 'order already exists',
+    }
     // given
-    fetchMock.mockResponse(
-      JSON.stringify({
-        errorType: 'DuplicateOrder',
-        description: 'order already exists',
-      }),
-      { status: 400, headers: HEADERS }
-    )
+    fetchMock.mockResponse(JSON.stringify(errorBody), { status: 400, headers: HEADERS })
 
     // when
     const promise = orderBookApi.sendOrder({
@@ -410,7 +437,12 @@ describe('Cow Api', () => {
     })
 
     // then
-    await expect(promise).rejects.toThrow('DuplicateOrder')
+    await expect(promise).rejects.toEqual({
+      body: errorBody,
+      response: expect.objectContaining({
+        status: 400,
+      }),
+    })
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.cow.fi/xdai/api/v1/orders',

@@ -1,17 +1,10 @@
 import 'cross-fetch/polyfill'
 import {
   Address,
-  ApiError,
-  BaseHttpRequest,
-  CancelablePromise,
-  DefaultService,
-  FeeAndQuoteError,
   NativePriceResponse,
-  OpenAPIConfig,
-  OrderBookClient,
+  Order,
   OrderCancellations,
   OrderCreation,
-  OrderPostError,
   OrderQuoteRequest,
   OrderQuoteResponse,
   Trade,
@@ -29,10 +22,10 @@ import {
 } from '../common/configs'
 import { transformOrder } from './transformOrder'
 import { EnrichedOrder } from './types'
-import { ApiRequestOptions } from './generated/core/ApiRequestOptions'
-import { request as __request } from './generated/core/request'
 import { SupportedChainId } from '../common/chains'
-import { transformError } from './transformError'
+import { BackoffOptions } from 'exponential-backoff'
+import { RateLimiter, RateLimiterOpts } from 'limiter'
+import { FetchParams, OrderBookApiError, request } from './request'
 
 export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.MAINNET]: 'https://api.cow.fi/mainnet',
@@ -46,47 +39,44 @@ export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.GOERLI]: 'https://barn.api.cow.fi/goerli',
 }
 
-class FetchHttpRequest extends BaseHttpRequest {
-  constructor(config: OpenAPIConfig) {
-    super(config)
-  }
+// See config in https://www.npmjs.com/package/@insertish/exponential-backoff
+const DEFAULT_BACKOFF_OPTIONS: BackoffOptions = {
+  numOfAttempts: 10,
+  maxDelay: Infinity,
+  jitter: 'none',
+}
 
-  /**
-   * Request method
-   * @param options The request options from the service
-   * @returns CancelablePromise<T>
-   * @throws ApiError
-   */
-  public override request<T>(options: ApiRequestOptions): CancelablePromise<T> {
-    return __request(this.config, {
-      ...options,
-      headers: {
-        ...options.headers,
-        'Content-Type': 'application/json',
-      },
-    })
-  }
+// CowSwap order-book API is limited by 5 requests per second from one IP
+const DEFAULT_LIMITER_OPTIONS: RateLimiterOpts = {
+  tokensPerInterval: 5,
+  interval: 'second',
 }
 
 export class OrderBookApi {
   public context: ApiContext
-  private servicePerNetwork: Record<string, OrderBookClient | null> = {}
 
-  constructor(context: PartialApiContext = {}) {
+  private rateLimiter: RateLimiter
+
+  constructor(
+    context: PartialApiContext = {},
+    limiterOpts: RateLimiterOpts = DEFAULT_LIMITER_OPTIONS,
+    public readonly backoffOpts: BackoffOptions = DEFAULT_BACKOFF_OPTIONS
+  ) {
     this.context = { ...DEFAULT_COW_API_CONTEXT, ...context }
+    this.rateLimiter = new RateLimiter(limiterOpts)
   }
 
   getTrades(
-    { owner, orderId }: { owner?: Address; orderId?: UID },
+    request: { owner?: Address; orderUid?: UID },
     contextOverride: PartialApiContext = {}
-  ): CancelablePromise<Array<Trade>> {
-    if (owner && orderId) {
-      return new CancelablePromise((_, reject) => {
-        reject(new CowError('Cannot specify both owner and orderId'))
-      })
+  ): Promise<Array<Trade>> {
+    if (request.owner && request.orderUid) {
+      return Promise.reject(new CowError('Cannot specify both owner and orderId'))
     }
 
-    return this.getServiceForNetwork(contextOverride).getApiV1Trades(owner, orderId)
+    const query = new URLSearchParams(request)
+
+    return this.fetch({ path: '/api/v1/trades', method: 'GET', query }, contextOverride)
   }
 
   getOrders(
@@ -101,27 +91,29 @@ export class OrderBookApi {
     },
     contextOverride: PartialApiContext = {}
   ): Promise<Array<EnrichedOrder>> {
-    return this.getServiceForNetwork(contextOverride)
-      .getApiV1AccountOrders(owner, offset, limit)
-      .then((orders) => {
-        return orders.map(transformOrder)
-      })
+    const query = new URLSearchParams({ offset: offset.toString(), limit: limit.toString() })
+
+    return this.fetch<Array<EnrichedOrder>>(
+      { path: `/api/v1/account/${owner}/orders`, method: 'GET', query },
+      contextOverride
+    ).then((orders) => {
+      return orders.map(transformOrder)
+    })
   }
 
   getTxOrders(txHash: TransactionHash, contextOverride: PartialApiContext = {}): Promise<Array<EnrichedOrder>> {
-    return this.getServiceForNetwork(contextOverride)
-      .getApiV1TransactionsOrders(txHash)
-      .then((orders) => {
-        return orders.map(transformOrder)
-      })
+    return this.fetch<Array<EnrichedOrder>>(
+      { path: `/api/v1/transactions/${txHash}/orders`, method: 'GET' },
+      contextOverride
+    ).then((orders) => {
+      return orders.map(transformOrder)
+    })
   }
 
   getOrder(uid: UID, contextOverride: PartialApiContext = {}): Promise<EnrichedOrder> {
-    return this.getServiceForNetwork(contextOverride)
-      .getApiV1Orders(uid)
-      .then((order) => {
-        return transformOrder(order)
-      })
+    return this.fetch<Order>({ path: `/api/v1/orders/${uid}`, method: 'GET' }, contextOverride).then((order) => {
+      return transformOrder(order)
+    })
   }
 
   getOrderMultiEnv(uid: UID, contextOverride: PartialApiContext = {}): Promise<EnrichedOrder> {
@@ -130,10 +122,10 @@ export class OrderBookApi {
 
     let attemptsCount = 0
 
-    const fallback = (error: Error): Promise<EnrichedOrder> => {
+    const fallback = (error: Error | OrderBookApiError): Promise<EnrichedOrder> => {
       const nextEnv = otherEnvs[attemptsCount]
 
-      if (error instanceof ApiError && error.status === 404 && nextEnv) {
+      if (error instanceof OrderBookApiError && error.response.status === 404 && nextEnv) {
         attemptsCount++
 
         return this.getOrder(uid, { ...contextOverride, env: nextEnv }).catch(fallback)
@@ -146,57 +138,27 @@ export class OrderBookApi {
   }
 
   getQuote(requestBody: OrderQuoteRequest, contextOverride: PartialApiContext = {}): Promise<OrderQuoteResponse> {
-    return this.getServiceForNetwork(contextOverride)
-      .postApiV1Quote(requestBody)
-      .catch((error) => {
-        return Promise.reject(transformError<FeeAndQuoteError>(error))
-      })
+    return this.fetch({ path: '/api/v1/quote', method: 'POST', body: requestBody }, contextOverride)
   }
 
   sendSignedOrderCancellations(
     requestBody: OrderCancellations,
     contextOverride: PartialApiContext = {}
-  ): CancelablePromise<void> {
-    return this.getServiceForNetwork(contextOverride).deleteApiV1Orders(requestBody)
+  ): Promise<void> {
+    return this.fetch({ path: '/api/v1/orders', method: 'DELETE', body: requestBody }, contextOverride)
   }
 
   sendOrder(requestBody: OrderCreation, contextOverride: PartialApiContext = {}): Promise<UID> {
-    return this.getServiceForNetwork(contextOverride)
-      .postApiV1Orders(requestBody)
-      .catch((error) => {
-        const body: OrderPostError = error.body
-
-        if (body?.errorType) {
-          throw new Error(body.errorType)
-        }
-
-        throw error
-      })
+    return this.fetch({ path: '/api/v1/orders', method: 'POST', body: requestBody }, contextOverride)
   }
 
-  getNativePrice(
-    tokenAddress: Address,
-    contextOverride: PartialApiContext = {}
-  ): CancelablePromise<NativePriceResponse> {
-    return this.getServiceForNetwork(contextOverride).getApiV1TokenNativePrice(tokenAddress)
+  getNativePrice(tokenAddress: Address, contextOverride: PartialApiContext = {}): Promise<NativePriceResponse> {
+    return this.fetch({ path: `/api/v1/token/${tokenAddress}/native_price`, method: 'POST' }, contextOverride)
   }
 
   getOrderLink(uid: UID, contextOverride?: PartialApiContext): string {
     const { chainId, env } = this.getContextWithOverride(contextOverride)
     return this.getApiBaseUrls(env)[chainId] + `/api/v1/orders/${uid}`
-  }
-
-  private getServiceForNetwork(contextOverride: PartialApiContext): DefaultService {
-    const { chainId, env } = this.getContextWithOverride(contextOverride)
-    const key = `${env}|${chainId}`
-    const cached = this.servicePerNetwork[key]
-
-    if (cached) return cached.default
-
-    const client = new OrderBookClient({ BASE: this.getApiBaseUrls(env)[chainId] }, FetchHttpRequest)
-    this.servicePerNetwork[key] = client
-
-    return client.default
   }
 
   private getContextWithOverride(contextOverride: PartialApiContext = {}): ApiContext {
@@ -207,5 +169,12 @@ export class OrderBookApi {
     if (this.context.baseUrls) return this.context.baseUrls
 
     return env === 'prod' ? ORDER_BOOK_PROD_CONFIG : ORDER_BOOK_STAGING_CONFIG
+  }
+
+  private fetch<T>(params: FetchParams, contextOverride: PartialApiContext = {}): Promise<T> {
+    const { chainId, env } = this.getContextWithOverride(contextOverride)
+    const baseUrl = this.getApiBaseUrls(env)[chainId]
+
+    return request(baseUrl, params, this.rateLimiter, this.backoffOpts)
   }
 }
