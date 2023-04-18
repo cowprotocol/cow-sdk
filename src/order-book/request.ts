@@ -8,8 +8,10 @@ export interface FetchParams {
   query?: URLSearchParams
 }
 
-export class OrderBookApiError<T = unknown> {
-  constructor(public readonly response: Response, public readonly body: T) {}
+export class OrderBookApiError<T = unknown> extends Error {
+  constructor(public readonly response: Response, public readonly body: T) {
+    super(typeof body === 'string' ? body : response.statusText)
+  }
 }
 
 const getResponseBody = async (response: Response): Promise<any> => {

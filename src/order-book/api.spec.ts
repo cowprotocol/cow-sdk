@@ -169,13 +169,15 @@ describe('Cow Api', () => {
     // when
     const promise = orderBookApi.getOrder('notValidOrderId')
 
-    await expect(promise).rejects.toEqual({
-      body: errorBody,
-      response: expect.objectContaining({
-        status: 404,
-        statusText: 'Not Found',
-      }),
-    })
+    await expect(promise).rejects.toEqual(
+      expect.objectContaining({
+        body: errorBody,
+        response: expect.objectContaining({
+          status: 404,
+          statusText: 'Not Found',
+        }),
+      })
+    )
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
@@ -217,13 +219,15 @@ describe('Cow Api', () => {
     })
 
     // then
-    await expect(promise).rejects.toEqual({
-      body: errorBody,
-      response: expect.objectContaining({
-        status: 404,
-        statusText: 'Not Found',
-      }),
-    })
+    await expect(promise).rejects.toEqual(
+      expect.objectContaining({
+        body: errorBody,
+        response: expect.objectContaining({
+          status: 404,
+          statusText: 'Not Found',
+        }),
+      })
+    )
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.cow.fi/xdai/api/v1/account/invalidOwner/orders?offset=0&limit=5',
@@ -257,13 +261,15 @@ describe('Cow Api', () => {
     const promise = orderBookApi.getTxOrders('invalidTxHash')
 
     // then
-    await expect(promise).rejects.toEqual({
-      body: errorBody,
-      response: expect.objectContaining({
-        status: 404,
-        statusText: 'Not Found',
-      }),
-    })
+    await expect(promise).rejects.toEqual(
+      expect.objectContaining({
+        body: errorBody,
+        response: expect.objectContaining({
+          status: 404,
+          statusText: 'Not Found',
+        }),
+      })
+    )
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.cow.fi/xdai/api/v1/transactions/invalidTxHash/orders',
@@ -324,13 +330,15 @@ describe('Cow Api', () => {
     })
 
     // then
-    await expect(promise).rejects.toEqual({
-      body: errorBody,
-      response: expect.objectContaining({
-        status: 404,
-        statusText: 'Not Found',
-      }),
-    })
+    await expect(promise).rejects.toEqual(
+      expect.objectContaining({
+        body: errorBody,
+        response: expect.objectContaining({
+          status: 404,
+          statusText: 'Not Found',
+        }),
+      })
+    )
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.cow.fi/xdai/api/v1/trades?owner=invalidOwner',
@@ -370,13 +378,15 @@ describe('Cow Api', () => {
     const promise = orderBookApi.sendSignedOrderCancellations(body)
 
     // then
-    await expect(promise).rejects.toEqual({
-      body: errorBody,
-      response: expect.objectContaining({
-        status: 404,
-        statusText: 'Not Found',
-      }),
-    })
+    await expect(promise).rejects.toEqual(
+      expect.objectContaining({
+        body: errorBody,
+        response: expect.objectContaining({
+          status: 404,
+          statusText: 'Not Found',
+        }),
+      })
+    )
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.cow.fi/xdai/api/v1/orders',
@@ -437,12 +447,14 @@ describe('Cow Api', () => {
     })
 
     // then
-    await expect(promise).rejects.toEqual({
-      body: errorBody,
-      response: expect.objectContaining({
-        status: 400,
-      }),
-    })
+    await expect(promise).rejects.toEqual(
+      expect.objectContaining({
+        body: errorBody,
+        response: expect.objectContaining({
+          status: 400,
+        }),
+      })
+    )
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.cow.fi/xdai/api/v1/orders',
