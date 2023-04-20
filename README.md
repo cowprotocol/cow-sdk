@@ -102,6 +102,13 @@ async function main() {
 Since the API supports different networks and environments, there are some options to configure it.
 
 #### Environment configuration
+
+`chainId` - can be `SupportedChainId.MAINNET` or `SupportedChainId.GOERLI` or `SupportedChainId.GNOSIS_CHAIN`
+
+`env` - this parameter affects which environment will be used:
+ - `https://api.cow.fi` for `prod` (default)
+ - `https://barn.api.cow.fi` for `staging`
+
 ```typescript
 import { OrderBookApi } from '@cowprotocol/cow-sdk'
 
@@ -112,6 +119,9 @@ const orderBookApi = new OrderBookApi({
 ```
 
 #### API urls configuration
+
+In case you need to use custom endpoints (e.g. you use a proxy), you can do it this way:
+
 ```typescript
 import { OrderBookApi } from '@cowprotocol/cow-sdk'
 
