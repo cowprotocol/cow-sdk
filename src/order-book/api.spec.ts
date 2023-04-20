@@ -19,10 +19,13 @@ import { BUY_ETH_ADDRESS } from './transformOrder'
 
 enableFetchMocks()
 
-const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.GNOSIS_CHAIN }, undefined, {
-  numOfAttempts: 1,
-  maxDelay: Infinity,
-  jitter: 'none',
+const orderBookApi = new OrderBookApi({
+  chainId: SupportedChainId.GNOSIS_CHAIN,
+  backoffOpts: {
+    numOfAttempts: 1,
+    maxDelay: Infinity,
+    jitter: 'none',
+  },
 })
 
 const HTTP_STATUS_OK = 200

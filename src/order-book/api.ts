@@ -19,12 +19,12 @@ import {
   ApiBaseUrls,
   ENVS_LIST,
   PartialApiContext,
+  RequestOptions,
 } from '../common/configs'
 import { transformOrder } from './transformOrder'
 import { EnrichedOrder } from './types'
 import { SupportedChainId } from '../common/chains'
-import { BackoffOptions } from 'exponential-backoff'
-import { RateLimiter, RateLimiterOpts } from 'limiter'
+import { RateLimiter } from 'limiter'
 import { DEFAULT_BACKOFF_OPTIONS, DEFAULT_LIMITER_OPTIONS, FetchParams, OrderBookApiError, request } from './request'
 
 export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
@@ -40,17 +40,13 @@ export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
 }
 
 export class OrderBookApi {
-  public context: ApiContext
+  public context: ApiContext & RequestOptions
 
   private rateLimiter: RateLimiter
 
-  constructor(
-    context: PartialApiContext = {},
-    limiterOpts: RateLimiterOpts = DEFAULT_LIMITER_OPTIONS,
-    public readonly backoffOpts: BackoffOptions = DEFAULT_BACKOFF_OPTIONS
-  ) {
+  constructor(context: PartialApiContext & RequestOptions = {}) {
     this.context = { ...DEFAULT_COW_API_CONTEXT, ...context }
-    this.rateLimiter = new RateLimiter(limiterOpts)
+    this.rateLimiter = new RateLimiter(context.limiterOpts || DEFAULT_LIMITER_OPTIONS)
   }
 
   getTrades(
@@ -148,7 +144,7 @@ export class OrderBookApi {
     return this.getApiBaseUrls(env)[chainId] + `/api/v1/orders/${uid}`
   }
 
-  private getContextWithOverride(contextOverride: PartialApiContext = {}): ApiContext {
+  private getContextWithOverride(contextOverride: PartialApiContext = {}): ApiContext & RequestOptions {
     return { ...this.context, ...contextOverride }
   }
 
@@ -161,7 +157,8 @@ export class OrderBookApi {
   private fetch<T>(params: FetchParams, contextOverride: PartialApiContext = {}): Promise<T> {
     const { chainId, env } = this.getContextWithOverride(contextOverride)
     const baseUrl = this.getApiBaseUrls(env)[chainId]
+    const backoffOpts = this.context.backoffOpts || DEFAULT_BACKOFF_OPTIONS
 
-    return request(baseUrl, params, this.rateLimiter, this.backoffOpts)
+    return request(baseUrl, params, this.rateLimiter, backoffOpts)
   }
 }
