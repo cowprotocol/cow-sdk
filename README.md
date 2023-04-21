@@ -103,7 +103,7 @@ Since the API supports different networks and environments, there are some optio
 
 #### Environment configuration
 
-`chainId` - can be `SupportedChainId.MAINNET` or `SupportedChainId.GOERLI` or `SupportedChainId.GNOSIS_CHAIN`
+`chainId` - can be `SupportedChainId.MAINNET` or `SupportedChainId.GNOSIS_CHAIN` or `SupportedChainId.GOERLI`
 
 `env` - this parameter affects which environment will be used:
  - `https://api.cow.fi` for `prod` (default)
@@ -157,9 +157,7 @@ const backOffOpts: BackoffOptions = {
 }
 
 const orderBookApi = new OrderBookApi(
-  {chainId: SupportedChainId.GOERLI},
-  limiterOpts,
-  backOffOpts
+  {chainId: SupportedChainId.GOERLI, limiterOpts, backOffOpts},
 )
 ```
 
