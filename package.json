@@ -26,11 +26,13 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "graphql:codegen": "graphql-codegen --config graphql-codegen.yml",
-    "swagger:codegen": " openapi --input https://raw.githubusercontent.com/cowprotocol/services/main/crates/orderbook/openapi.yml --output src/order-book/generated --client fetch --name OrderBookClient"
+    "swagger:codegen": " openapi --input https://raw.githubusercontent.com/cowprotocol/services/main/crates/orderbook/openapi.yml --output src/order-book/generated --exportServices false --exportCore false"
   },
   "dependencies": {
     "@cowprotocol/contracts": "^1.4.0",
-    "@ethersproject/abstract-signer": "^5.7.0"
+    "@ethersproject/abstract-signer": "^5.7.0",
+    "exponential-backoff": "^3.1.1",
+    "limiter": "^2.1.0"
   },
   "peerDependencies": {
     "cross-fetch": "^3.1.5",

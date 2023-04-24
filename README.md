@@ -95,6 +95,72 @@ async function main() {
     console.log('Results: ', { orderId, order, trades, orderCancellationSigningResult, cancellationResult })
 }
 ```
+
+### OrderBookApi
+
+`OrderBookApi` - is a main tool for working with [CoW Protocol API](https://api.cow.fi/docs/#/).
+Since the API supports different networks and environments, there are some options to configure it.
+
+#### Environment configuration
+
+`chainId` - can be `SupportedChainId.MAINNET` or `SupportedChainId.GNOSIS_CHAIN` or `SupportedChainId.GOERLI`
+
+`env` - this parameter affects which environment will be used:
+ - `https://api.cow.fi` for `prod` (default)
+ - `https://barn.api.cow.fi` for `staging`
+
+```typescript
+import { OrderBookApi } from '@cowprotocol/cow-sdk'
+
+const orderBookApi = new OrderBookApi({
+  chainId: SupportedChainId.GOERLI,
+  env: 'staging' // <-----
+})
+```
+
+#### API urls configuration
+
+In case you need to use custom endpoints (e.g. you use a proxy), you can do it this way:
+
+```typescript
+import { OrderBookApi } from '@cowprotocol/cow-sdk'
+
+const orderBookApi = new OrderBookApi({
+  chainId: SupportedChainId.GOERLI,
+  baseUrls: { // <-----
+    [SupportedChainId.MAINNET]: 'https://YOUR_ENDPOINT/mainnet',
+    [SupportedChainId.GNOSIS_CHAIN]: 'https://YOUR_ENDPOINT/xdai',
+    [SupportedChainId.GOERLI]: 'https://YOUR_ENDPOINT/goerli',
+  }
+})
+```
+
+The [CoW Protocol API](https://api.cow.fi/docs/#/) has restrictions on the backend side to protect against DDOS and other issues.
+
+>The main restrictions is a limit of requests per second: **5 requests per second for each IP address**
+
+This settings can be configured as well:
+```typescript
+import { OrderBookApi } from '@cowprotocol/cow-sdk'
+import { BackoffOptions } from 'exponential-backoff'
+import { RateLimiterOpts } from 'limiter'
+
+const limiterOpts: RateLimiterOpts = {
+  tokensPerInterval: 5,
+  interval: 'second',
+}
+
+const backOffOpts: BackoffOptions = {
+  numOfAttempts: 5,
+  maxDelay: Infinity,
+  jitter: 'none',
+}
+
+const orderBookApi = new OrderBookApi(
+  {chainId: SupportedChainId.GOERLI, limiterOpts, backOffOpts},
+)
+```
+
 ### Querying the Cow Subgraph
 
 The [Subgraph](https://github.com/cowprotocol/subgraph) is constantly indexing the protocol, making all the information more accessible. It provides information about trades, users, tokens and settlements. Additionally, it has some data aggregations which provides insights on the hourly/daily/totals USD volumes, trades, users, etc.

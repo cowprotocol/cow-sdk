@@ -1,4 +1,6 @@
 import { SupportedChainId } from './chains'
+import { BackoffOptions } from 'exponential-backoff'
+import { RateLimiterOpts } from 'limiter/dist/esm'
 
 export interface IpfsConfig {
   uri?: string
@@ -6,6 +8,11 @@ export interface IpfsConfig {
   readUri?: string
   pinataApiKey?: string
   pinataApiSecret?: string
+}
+
+export interface RequestOptions {
+  limiterOpts?: RateLimiterOpts
+  backoffOpts?: BackoffOptions
 }
 
 export type CowEnv = 'prod' | 'staging'

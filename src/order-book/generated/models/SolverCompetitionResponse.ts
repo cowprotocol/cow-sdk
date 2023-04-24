@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { CompetitionAuction } from './CompetitionAuction';
 import type { SolverSettlement } from './SolverSettlement';
 import type { TransactionHash } from './TransactionHash';
 
@@ -26,6 +27,7 @@ export type SolverCompetitionResponse = {
     gasPrice?: number;
     liquidityCollectedBlock?: number;
     competitionSimulationBlock?: number;
+    auction?: CompetitionAuction;
     /**
      * Maps from solver name to object describing that solver's settlement.
      */
