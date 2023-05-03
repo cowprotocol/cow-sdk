@@ -39,6 +39,14 @@ export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.GOERLI]: 'https://barn.api.cow.fi/goerli',
 }
 
+function cleanObjectFromUndefinedValues(obj: Record<string, string>): typeof obj {
+  return Object.keys(obj).reduce((acc, key) => {
+    const val = obj[key]
+    if (typeof val !== 'undefined') acc[key] = val
+    return acc
+  }, {} as typeof obj)
+}
+
 export class OrderBookApi {
   public context: ApiContext & RequestOptions
 
@@ -57,7 +65,7 @@ export class OrderBookApi {
       return Promise.reject(new CowError('Cannot specify both owner and orderId'))
     }
 
-    const query = new URLSearchParams(request)
+    const query = new URLSearchParams(cleanObjectFromUndefinedValues(request))
 
     return this.fetch({ path: '/api/v1/trades', method: 'GET', query }, contextOverride)
   }
@@ -74,7 +82,9 @@ export class OrderBookApi {
     },
     contextOverride: PartialApiContext = {}
   ): Promise<Array<EnrichedOrder>> {
-    const query = new URLSearchParams({ offset: offset.toString(), limit: limit.toString() })
+    const query = new URLSearchParams(
+      cleanObjectFromUndefinedValues({ offset: offset.toString(), limit: limit.toString() })
+    )
 
     return this.fetch<Array<EnrichedOrder>>(
       { path: `/api/v1/account/${owner}/orders`, method: 'GET', query },
