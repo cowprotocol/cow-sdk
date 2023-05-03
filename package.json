@@ -32,12 +32,12 @@
     "@cowprotocol/contracts": "^1.4.0",
     "@ethersproject/abstract-signer": "^5.7.0",
     "exponential-backoff": "^3.1.1",
-    "limiter": "^2.1.0"
+    "limiter": "^2.1.0",
+    "cross-fetch": "^3.1.5",
+    "graphql-request": "^4.3.0"
   },
   "peerDependencies": {
-    "cross-fetch": "^3.1.5",
-    "ethers": "^5.7.2",
-    "graphql-request": "^4.3.0"
+    "ethers": "^5.7.2"
   },
   "devDependencies": {
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.18.6",
