@@ -230,7 +230,7 @@ const INVALID_QUERY_RESPONSE = {
   ],
 }
 
-describe('Cow subgraph URL', () => {
+describe('CoW subgraph URL', () => {
   beforeEach(() => {
     fetchMock.resetMocks()
   })

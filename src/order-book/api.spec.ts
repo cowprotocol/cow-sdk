@@ -108,7 +108,7 @@ const RAW_FETCH_RESPONSE_PARAMETERS = {
 
 const FETCH_RESPONSE_PARAMETERS = expect.objectContaining(RAW_FETCH_RESPONSE_PARAMETERS)
 
-describe('Cow Api', () => {
+describe('CoW Api', () => {
   beforeEach(() => {
     fetchMock.resetMocks()
   })

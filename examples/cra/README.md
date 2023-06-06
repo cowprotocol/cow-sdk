@@ -1,4 +1,4 @@
-# Example of CowSwap SDK usage
+# Example of CoW Protocol SDK usage
 
 ## How to start
 
