@@ -24,9 +24,9 @@ yarn add @cowprotocol/cow-sdk
 
 ### Content
 
-- `OrderBookApi` - provides the ability to retrieve orders and trades from the CowSap order-book, as well as add and cancel them
+- `OrderBookApi` - provides the ability to retrieve orders and trades from the CoW Protocol order-book, as well as add and cancel them
 - `OrderSigningUtils` - serves to sign orders and cancel them using [EIP-712](https://eips.ethereum.org/EIPS/eip-712)
-- `SubgraphApi` - provides statistics data about CoW protocol from [Subgraph](https://github.com/cowprotocol/subgraph), such as trading volume, trades count and others
+- `SubgraphApi` - provides statistics data about CoW protocol from [Subgraph](https://github.com/cowprotocol/subgraph), such as trading volume, trade count and others
 
 
 ```typescript
@@ -103,7 +103,7 @@ Since the API supports different networks and environments, there are some optio
 
 #### Environment configuration
 
-`chainId` - can be `SupportedChainId.MAINNET` or `SupportedChainId.GNOSIS_CHAIN` or `SupportedChainId.GOERLI`
+`chainId` - can be one of `SupportedChainId.MAINNET`, `SupportedChainId.GNOSIS_CHAIN`, or `SupportedChainId.GOERLI`
 
 `env` - this parameter affects which environment will be used:
  - `https://api.cow.fi` for `prod` (default)
@@ -137,9 +137,9 @@ const orderBookApi = new OrderBookApi({
 
 The [CoW Protocol API](https://api.cow.fi/docs/#/) has restrictions on the backend side to protect against DDOS and other issues.
 
->The main restrictions is a limit of requests per second: **5 requests per second for each IP address**
+>The main restriction is request rate limit of: **5 requests per second for each IP address**
 
-This settings can be configured as well:
+The *client's* limiter settings can be configured as well:
 ```typescript
 import { OrderBookApi } from '@cowprotocol/cow-sdk'
 import { BackoffOptions } from 'exponential-backoff'
@@ -161,22 +161,22 @@ const orderBookApi = new OrderBookApi(
 )
 ```
 
-### Querying the Cow Subgraph
+### Querying the CoW Subgraph
 
 The [Subgraph](https://github.com/cowprotocol/subgraph) is constantly indexing the protocol, making all the information more accessible. It provides information about trades, users, tokens and settlements. Additionally, it has some data aggregations which provides insights on the hourly/daily/totals USD volumes, trades, users, etc.
 
-The SDK provides just an easy way to access all this information.
+The SDK provides an easy way to access all this information.
 
-You can query the Cow Subgraph either by running some common queries exposed by the `CowSubgraphApi` or by building your own ones:
+You can query the CoW Subgraph either by running some common queries exposed by the `CowSubgraphApi` or by building your own:
 
 ```typescript
 import { SubgraphApi, SupportedChainId } from '@cowprotocol/cow-sdk'
 
-const subgraphApi = new SubgraphApi({ chainId: SupportedChainId.MAINNET })
+const cowSubgraphApi = new SubgraphApi({ chainId: SupportedChainId.MAINNET })
 
 // Get CoW Protocol totals
 const { tokens, orders, traders, settlements, volumeUsd, volumeEth, feesUsd, feesEth } =
-  await csubgraphApi.getTotals()
+  await cowSubgraphApi.getTotals()
 console.log({ tokens, orders, traders, settlements, volumeUsd, volumeEth, feesUsd, feesEth })
 
 // Get last 24 hours volume in usd
@@ -204,7 +204,7 @@ console.log(response)
 
 ## Architecture
 
-One way to make the most out of the SDK is to get familiar to its architecture.
+One way to make the most out of the SDK is to get familiar with its architecture.
 
 > See [SDK Architecture](./docs/architecture.md)
 
@@ -233,7 +233,7 @@ yarn test
 
 ### Code generation
 
-Some parets of the SDK are automatically generated. This is the case for the Order Book APU and the Subgraph API
+Some parts of the SDK are automatically generated. This is the case for the Order Book API and the Subgraph API
 
 ```bash
 # Re-create automatically generated code

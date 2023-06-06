@@ -15,19 +15,19 @@ import {
   TypedDataVersionedSigner,
 } from '@cowprotocol/contracts'
 import type { Signer } from '@ethersproject/abstract-signer'
-import type { SigningResult, SignOrderParams, SingOrderCancellationParams, UnsignedOrder } from './types'
+import type { SigningResult, SignOrderParams, SignOrderCancellationParams, UnsignedOrder } from './types'
 
 import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS } from '../common/consts'
 import { CowError, SupportedChainId } from '../common'
 import { EcdsaSigningScheme } from '../order-book'
-import { SingOrderCancellationsParams } from './types'
+import { SignOrderCancellationsParams } from './types'
 
 // For error codes, see:
 // - https://eth.wiki/json-rpc/json-rpc-error-codes-improvement-proposal
 // - https://www.jsonrpc.org/specification#error_object
 const METAMASK_SIGNATURE_ERROR_CODE = -32603
 const METHOD_NOT_FOUND_ERROR_CODE = -32601
-// Added the following because of 1Inch walet who doesn't send the error code
+// Added the following because of 1Inch wallet who doesn't send the error code
 // So we will check the actual error text
 const METHOD_NOT_FOUND_ERROR_MSG_REGEX = /Method not found/i
 const V4_ERROR_MSG_REGEX = /eth_signTypedData_v4 does not exist/i
@@ -48,8 +48,8 @@ interface ProviderRpcError extends Error {
 
 type PayloadParams =
   | Pick<SignOrderParams, 'order' & 'chainId'>
-  | Pick<SingOrderCancellationParams, 'chainId' & 'orderId'>
-  | Pick<SingOrderCancellationsParams, 'chainId' & 'orderUids'>
+  | Pick<SignOrderCancellationParams, 'chainId' & 'orderId'>
+  | Pick<SignOrderCancellationsParams, 'chainId' & 'orderUids'>
 
 function isProviderRpcError(error: unknown): error is ProviderRpcError {
   return (error as ProviderRpcError).code !== undefined || (error as ProviderRpcError).message !== undefined
@@ -63,7 +63,7 @@ async function _signOrder(params: SignOrderParams): Promise<Signature> {
   return signOrderGp(domain, order as OrderFromContract, signer, mapSigningSchema[signingScheme])
 }
 
-async function _signOrderCancellation(params: SingOrderCancellationParams): Promise<Signature> {
+async function _signOrderCancellation(params: SignOrderCancellationParams): Promise<Signature> {
   const { chainId, signer, signingScheme, orderId } = params
 
   const domain = getDomain(chainId)
@@ -71,7 +71,7 @@ async function _signOrderCancellation(params: SingOrderCancellationParams): Prom
   return signOrderCancellationGp(domain, orderId, signer, mapSigningSchema[signingScheme])
 }
 
-async function _signOrderCancellations(params: SingOrderCancellationsParams): Promise<Signature> {
+async function _signOrderCancellations(params: SignOrderCancellationsParams): Promise<Signature> {
   const { chainId, signer, signingScheme, orderUids } = params
 
   const domain = getDomain(chainId)

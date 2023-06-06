@@ -13,14 +13,14 @@ export interface SignOrderParams {
   signingScheme: EcdsaSigningScheme
 }
 
-export interface SingOrderCancellationParams {
+export interface SignOrderCancellationParams {
   chainId: SupportedChainId
   signer: Signer
   orderId: string
   signingScheme: EcdsaSigningScheme
 }
 
-export interface SingOrderCancellationsParams {
+export interface SignOrderCancellationsParams {
   chainId: SupportedChainId
   signer: Signer
   orderUids: string[]

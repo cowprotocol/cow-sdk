@@ -16,12 +16,12 @@ SDK --> MetadataApi
 The SDK has 3 main APIs
 
 - **Order Book API**: Allows to get the open orders, historic orders, post new orders, etc.
-- **Subgraph API**: Provides access to On-chain data indexed by The Graph
+- **Subgraph API**: Provides access to on-chain data indexed by The Graph
 - **Metadata API**: Allows to encode/decode meta-data to be attached in orders
 
 ## Model: Orders
 
-The orders model used for the API is organized in a hierachy:
+The orders model used for the API is organized in a hierarchy:
 
 ```mermaid
 classDiagram
@@ -231,15 +231,15 @@ CowApi ..> OrderQuoteRequest
 
 ## API: Subgraph
 
-Provides access to On-chain data indexed by The Graph
+Provides access to on-chain data indexed by The Graph
 
 > ⚽️ [Playground](https://thegraph.com/hosted-service/subgraph/cowprotocol/cow)
 
 > 📚 [Dev Docs - SubGraph](https://docs.cow.fi/cow-sdk/querying-the-cow-subgraph)
 
-> 📄 [Github code](https://github.com/cowprotocol/subgraph)
+> 📄 [GitHub code](https://github.com/cowprotocol/subgraph)
 
-**NOTE**: For details about the model, it's better to check the schema using the exported Typescript, or by revieing the [schema definition](https://thegraph.com/hosted-service/subgraph/cowprotocol/cow).
+**NOTE**: For details about the model, it's better to check the schema using the exported Typescript, or by reviewing the [schema definition](https://thegraph.com/hosted-service/subgraph/cowprotocol/cow).
 
 ```mermaid
 classDiagram
@@ -282,7 +282,7 @@ Allows to encode/decode meta-data to be attached in orders
 
 > 📚 [Dev Docs - Metadata](https://docs.cow.fi/cow-sdk/order-meta-data-appdata)
 
-> 📄 [Github code](https://github.com/cowprotocol/app-data)
+> 📄 [GitHub code](https://github.com/cowprotocol/app-data)
 
 ```mermaid
 classDiagram
