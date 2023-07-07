@@ -77,10 +77,14 @@ export type OrderCreation = {
     quoteId?: number | null;
     /**
 <<<<<<< HEAD
+<<<<<<< HEAD
      * This field comes in two forms for backward compatibility. The first form (`appDataHash`)
 =======
      * This field comes in two forms for backward compatibility. The first form (app data hash)
 >>>>>>> 768e944 (chore: update generated openapi)
+=======
+     * This field comes in two forms for backward compatibility. The first form (`appDataHash`)
+>>>>>>> 6d15a31 (chore: update generated orderbook models)
      * will eventually stop being accepted.
      *
      */
