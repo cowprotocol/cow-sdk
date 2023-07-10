@@ -64,7 +64,7 @@ async function _signOrder(params: SignOrderParams): Promise<Signature> {
 }
 
 async function _signOrderCancellation(params: SignOrderCancellationParams): Promise<Signature> {
-  const { chainId, signer, signingScheme, orderId } = params
+  const { chainId, signer, signingScheme, orderUid: orderId } = params
 
   const domain = getDomain(chainId)
 
@@ -168,7 +168,6 @@ async function _signPayload(
 /**
  * Returns the signature for the specified order with the signing scheme encoded
  * into the signature.
- * @export
  * @param {UnsignedOrder} order The order to sign.
  * @param {SupportedChainId} chainId The chain Id
  * @param {Signer} signer The owner for the order used to sign.
@@ -187,19 +186,28 @@ export async function signOrder(
  * into the signature.
  *
  * @export
- * @param {string} orderId The unique identifier of the order being cancelled.
+ * @param {string} orderUid The unique identifier of the order being cancelled.
  * @param {SupportedChainId} chainId The chain Id
  * @param {Signer} signer The owner for the order used to sign.
  * @return {*} Encoded signature including signing scheme for the order.
  */
 export async function signOrderCancellation(
-  orderId: string,
+  orderUid: string,
   chainId: SupportedChainId,
   signer: Signer
 ): Promise<SigningResult> {
-  return _signPayload({ orderId, chainId }, _signOrderCancellation, signer)
+  return _signPayload({ orderUid, chainId }, _signOrderCancellation, signer)
 }
 
+/**
+ * Returns the signature for the Order Cancellations with the signing scheme encoded
+ * into the signature.
+ *
+ * @param {string[]} orderUids The unique identifiers of the orders being cancelled.
+ * @param {SupportedChainId} chainId The CoW Protocol protocol `chainId` context that's being used.
+ * @param {Signer} signer The owner that had placed the orders used to sign.
+ * @returns {*} Encoded signature including signing scheme for the order.
+ */
 export async function signOrderCancellations(
   orderUids: string[],
   chainId: SupportedChainId,
@@ -208,6 +216,12 @@ export async function signOrderCancellations(
   return _signPayload({ orderUids, chainId }, _signOrderCancellations, signer)
 }
 
+/**
+ * Returns the TypedDataDomain used for signing for the specified chainId.
+ * @param {SupportedChainId} chainId The chain Id
+ * @return {*} The TypedDataDomain for the specified chainId.
+ * @throws {CowError} If the chainId is not supported.
+ */
 export function getDomain(chainId: SupportedChainId): TypedDataDomain {
   // Get settlement contract address
   const settlementContract = COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[chainId]
