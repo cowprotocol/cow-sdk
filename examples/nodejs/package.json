@@ -8,8 +8,12 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@cowprotocol/cow-sdk": "^2.0.0-alpha.4",
-    "ts-node": "^10.9.1"
+    "@cowprotocol/cow-sdk": "^2.1.0",
+    "@types/node": "^20.4.1",
+    "ethers": "^5.7.2",
+    "graphql": "^16.7.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6"
   },
   "author": "",
   "license": "ISC"

@@ -8,7 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@cowprotocol/cow-sdk": "^2.0.0-alpha.4"
+    "@cowprotocol/cow-sdk": "^2.1.0"
   },
   "author": "",
   "license": "ISC",
@@ -17,6 +17,9 @@
     "ts-loader": "^9.4.2",
     "webpack": "^5.76.3",
     "webpack-cli": "^5.0.1",
-    "webpack-dev-server": "^4.13.1"
+    "webpack-dev-server": "^4.13.1",
+    "ethers": "^5.7.2",
+    "graphql": "^16.7.1",
+    "typescript": "^5.1.6"
   }
 }
