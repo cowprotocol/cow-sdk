@@ -26,7 +26,7 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "graphql:codegen": "graphql-codegen --config graphql-codegen.yml",
-    "swagger:codegen": " openapi --input https://raw.githubusercontent.com/cowprotocol/services/main/crates/orderbook/openapi.yml --output src/order-book/generated --exportServices false --exportCore false"
+    "swagger:codegen": " openapi --input https://raw.githubusercontent.com/cowprotocol/services/e48989e6b86f45d9197105ced7c8b2c560bec99e/crates/orderbook/openapi.yml --output src/order-book/generated --exportServices false --exportCore false"
   },
   "dependencies": {
     "@cowprotocol/contracts": "^1.4.0",
