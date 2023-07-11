@@ -8,9 +8,20 @@ import { keccak256 } from 'ethers/lib/utils'
 // Define the ABI tuple for the TWAPData struct
 export const CONDITIONAL_ORDER_PARAMS_ABI = ['tuple(address handler, bytes32 salt, bytes staticInput)']
 
+/**
+ * An abstract base class from which all conditional orders should inherit.
+ *
+ * This class provids some basic functionality to help with handling conditional orders,
+ * such as:
+ * - Validating the conditional order
+ * - Creating a human-readable string representation of the conditional order
+ * - Serializing the conditional order for use with the `IConditionalOrder` struct
+ * - Getting any dependencies for the conditional order
+ * - Getting the off-chain input for the conditional order
+ */
 export abstract class BaseConditionalOrder {
   public readonly orderType: string
-  public readonly address: string
+  protected address: string
   public readonly salt: string
   public readonly hasOffChainInput: boolean
 
@@ -38,7 +49,9 @@ export abstract class BaseConditionalOrder {
    * This is used when calling `createWithContext` or `setRootWithContext` on a ComposableCoW-enabled Safe.
    * @returns The context dependency.
    */
-  abstract get context(): Context
+  get context(): Context | undefined {
+    return undefined
+  }
 
   /**
    * If the conditional order has off-chain input, return it!
@@ -56,13 +69,6 @@ export abstract class BaseConditionalOrder {
    * @returns Whether the conditional order is valid.
    */
   abstract isValid(o: any): boolean
-
-  /**
-   * Serializes the conditional order into it's ABI-encoded form.
-   *
-   * @returns The equivalent of `IConditionalOrder.Params` for the conditional order.
-   */
-  abstract serialize(): string
 
   /**
    * Helper method for validating ABI types.
@@ -85,6 +91,19 @@ export abstract class BaseConditionalOrder {
    */
   abstract toString(tokenFormatter: ((address: string, amount: BigNumber) => string) | undefined): string
 
+  /**
+   * Serializes the conditional order into it's ABI-encoded form.
+   *
+   * @returns The equivalent of `IConditionalOrder.Params` for the conditional order.
+   */
+  abstract serialize(): string
+
+  /**
+   * A helper function for generically serializing a conditional order.
+   * @param orderDataTypes ABI types for the order's data struct.
+   * @param data The order's data struct.
+   * @returns An ABI-encoded `IConditionalOrder.Params` struct.
+   */
   protected serializeHelper<T>(orderDataTypes: string[], data: T): string {
     try {
       const payload = utils.defaultAbiCoder.encode(orderDataTypes, [data])
@@ -94,6 +113,14 @@ export abstract class BaseConditionalOrder {
     }
   }
 
+  /**
+   * A helper function for generically deserializing a conditional order.
+   * @param s The ABI-encoded `IConditionalOrder.Params` struct to deserialize.
+   * @param address Of the handler for the conditional order.
+   * @param orderDataTypes ABI types for the order's data struct.
+   * @param callback A callback function that takes the deserialized data struct and the salt and returns an instance of the class.
+   * @returns An instance of the conditional order class.
+   */
   protected static deserializeHelper<T>(
     s: string,
     address: string,
@@ -112,8 +139,12 @@ export abstract class BaseConditionalOrder {
 
       // Create a new instance of the class
       return callback(d, salt)
-    } catch (e) {
-      throw new Error('InvalidSerializedConditionalOrder')
+    } catch (e: any) {
+      if (e.message === 'HandlerMismatch') {
+        throw e
+      } else {
+        throw new Error('InvalidSerializedConditionalOrder')
+      }
     }
   }
 }

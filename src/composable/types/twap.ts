@@ -1,12 +1,38 @@
-import { BigNumber, constants, utils } from 'ethers'
-import { BaseConditionalOrder, CONDITIONAL_ORDER_PARAMS_ABI } from '../conditionalorder'
+import { BigNumber, constants } from 'ethers'
+import { BaseConditionalOrder } from '../conditionalorder'
 import { Context } from '../multiplexer'
 
+// The type of Conditional Order
 const TWAP_ORDER_TYPE = 'TWAP'
+// The address of the TWAP contract (also known as the handler)
 const TWAP_ADDRESS = '0x910d00a310f7Dc5B29FE73458F47f519be547D3d'
+/**
+ * The address of the `CurrentBlockTimestampFactory` contract
+ *
+ * **NOTE**: This is used in the event that TWAP's have a `t0` of `0`.
+ */
 const CURRENT_BLOCK_TIMESTAMP_FACTORY_ADDRESS = '0x0899c7DC280363d263Cc954506134F249CceC4a5'
 
-export type TWAPData = {
+// Define the ABI tuple for the TWAPData struct
+const TWAP_DATA_ABI = [
+  'tuple(address sellToken, address buyToken, address receiver, uint256 partSellAmount, uint256 minPartLimit, uint256 t0, uint256 n, uint256 t, uint256 span, bytes32 appData)',
+]
+
+/**
+ * Parameters for a TWAP order, made a little more user-friendly for SDK users.
+ * @see {@link TWAPData} for the native struct.
+ */
+export type TWAPDataParams = Omit<TWAPData, 'partSellAmount' | 'minPartLimit'> & {
+  // total amount of sellToken to sell across the entire TWAP
+  readonly sellAmount: BigNumber
+  // minimum amount of buyToken that must be bought across the entire TWAP
+  readonly buyAmount: BigNumber
+}
+
+/**
+ * Parameters for a TWAP order, as expected by the contract's `staticInput`.
+ */
+type TWAPData = {
   // which token to sell
   readonly sellToken: string
   // which token to buy
@@ -29,23 +55,11 @@ export type TWAPData = {
   readonly appData: string
 }
 
-// Define the ABI tuple for the TWAPData struct
-const TWAP_DATA_ABI = [
-  'tuple(address sellToken, address buyToken, address receiver, uint256 partSellAmount, uint256 minPartLimit, uint256 t0, uint256 n, uint256 t, uint256 span, bytes32 appData)',
-]
-
 /**
- * Parameters for a TWAP order as passed by the consumer of the API.
- * @see {@link TWAPData} for the native struct.
+ * `ComposableCoW` implementation of a TWAP order.
+ * @author mfw78 <mfw78@rndlabs.xyz>
  */
-export type TWAPDataParams = Omit<TWAPData, 'partSellAmount' | 'minPartLimit'> & {
-  // total amount of sellToken to sell across the entire TWAP
-  readonly sellAmount: BigNumber
-  // minimum amount of buyToken that must be bought across the entire TWAP
-  readonly buyAmount: BigNumber
-}
-
-export class TwapTS extends BaseConditionalOrder {
+export class TWAP extends BaseConditionalOrder {
   private readonly data: TWAPData
 
   /**
@@ -61,10 +75,26 @@ export class TwapTS extends BaseConditionalOrder {
 
     // As we take in the parameters in a more user-friendly format,
     // we need to transform them into the format expected by the contract.
-    this.data = TwapTS.transformParamsToData(params)
+    this.data = TWAP.transformParamsToData(params)
 
     // Finally, verify that the transformed data is ABI-encodable
-    if (!TwapTS.isValidAbi(TWAP_DATA_ABI, [this.data])) throw new Error('InvalidData')
+    if (!TWAP.isValidAbi(TWAP_DATA_ABI, [this.data])) throw new Error('InvalidData')
+  }
+
+  /**
+   * Enforces that TWAPs will commence at the beginning of a block by use of the
+   * `CurrentBlockTimestampFactory` contract to provide the current block timestamp
+   * as the start time of the TWAP.
+   */
+  get context(): Context | undefined {
+    if (this.data.t0.gt(0)) {
+      return super.context
+    } else {
+      return {
+        address: CURRENT_BLOCK_TIMESTAMP_FACTORY_ADDRESS,
+        args: undefined,
+      }
+    }
   }
 
   /**
@@ -100,12 +130,12 @@ export class TwapTS extends BaseConditionalOrder {
    * @param {string} s ABI-encoded TWAP order to deserialize.
    * @returns A deserialized TWAP order.
    */
-  static deserialize(s: string): TwapTS {
+  static deserialize(s: string): TWAP {
     return super.deserializeHelper(
       s,
       TWAP_ADDRESS,
       TWAP_DATA_ABI,
-      (o: TWAPData, salt: string) => new TwapTS({ ...o, ...TwapTS.partsToTotal(o) }, salt)
+      (o: TWAPData, salt: string) => new TWAP({ ...o, ...TWAP.partsToTotal(o) }, salt)
     )
   }
 
@@ -119,7 +149,7 @@ export class TwapTS extends BaseConditionalOrder {
     const defaultFormatter = (address: string, amount: BigNumber) => `${address}@${amount}`
     tokenFormatter = tokenFormatter || defaultFormatter
 
-    const { sellAmount, buyAmount } = TwapTS.partsToTotal(this.data)
+    const { sellAmount, buyAmount } = TWAP.partsToTotal(this.data)
 
     return `${this.orderType}: Sell total ${tokenFormatter(
       this.data.sellToken,
@@ -130,18 +160,6 @@ export class TwapTS extends BaseConditionalOrder {
   }
 
   /**
-   * Enforces that TWAPs will commence at the beginning of a block by use of the
-   * `CurrentBlockTimestampFactory` contract to provide the current block timestamp
-   * as the start time of the TWAP.
-   */
-  get context(): Context {
-    return {
-      address: CURRENT_BLOCK_TIMESTAMP_FACTORY_ADDRESS,
-      args: undefined,
-    }
-  }
-
-  /**
    * Transform parameters into a native struct.
    * @param {TWAPDataParams} params As passed by the consumer of the API.
    * @returns {TWAPData} A formatted struct as expected by the smart contract.
@@ -149,7 +167,7 @@ export class TwapTS extends BaseConditionalOrder {
   private static transformParamsToData(params: TWAPDataParams): TWAPData {
     return {
       ...params,
-      ...TwapTS.totalToPart(params),
+      ...TWAP.totalToPart(params),
     }
   }
 
