@@ -4,7 +4,7 @@ import { Context } from '../multiplexer'
 
 // The type of Conditional Order
 const TWAP_ORDER_TYPE = 'TWAP'
-// The address of the TWAP contract (also known as the handler)
+// The address of the TWAP handler contract
 const TWAP_ADDRESS = '0x910d00a310f7Dc5B29FE73458F47f519be547D3d'
 /**
  * The address of the `CurrentBlockTimestampFactory` contract
@@ -59,26 +59,21 @@ type TWAPData = {
  * `ComposableCoW` implementation of a TWAP order.
  * @author mfw78 <mfw78@rndlabs.xyz>
  */
-export class TWAP extends BaseConditionalOrder {
-  private readonly data: TWAPData
-
+export class TWAP extends BaseConditionalOrder<TWAPData> {
   /**
    * @param params The TWAP order parameters.
    * @see {@link TWAPDataParams} for the native struct.
    * @throws If the TWAP order is invalid.
    */
   constructor(params: TWAPDataParams, salt?: string) {
-    super(TWAP_ORDER_TYPE, TWAP_ADDRESS, salt)
-
     // First verify that the order params are logically valid
-    this.isValid(params)
+    TWAP.isValid(params)
 
-    // As we take in the parameters in a more user-friendly format,
-    // we need to transform them into the format expected by the contract.
-    this.data = TWAP.transformParamsToData(params)
+    // Second, construct the base class using transformed parameters
+    super(TWAP_ORDER_TYPE, TWAP_ADDRESS, salt, TWAP.transformParamsToData(params))
 
     // Finally, verify that the transformed data is ABI-encodable
-    if (!TWAP.isValidAbi(TWAP_DATA_ABI, [this.data])) throw new Error('InvalidData')
+    if (!TWAP.isValidAbi(TWAP_DATA_ABI, [this.staticInput])) throw new Error('InvalidData')
   }
 
   /**
@@ -87,7 +82,7 @@ export class TWAP extends BaseConditionalOrder {
    * as the start time of the TWAP.
    */
   get context(): Context | undefined {
-    if (this.data.t0.gt(0)) {
+    if (this.staticInput.t0.gt(0)) {
       return super.context
     } else {
       return {
@@ -104,7 +99,7 @@ export class TWAP extends BaseConditionalOrder {
    * @throws If the TWAP order is invalid.
    * @see {@link TWAPData} for the native struct.
    */
-  isValid(data: TWAPDataParams): boolean {
+  static isValid(data: TWAPDataParams): boolean {
     if (!(data.sellToken != data.buyToken)) throw new Error('InvalidSameToken')
     if (!(data.sellToken != constants.AddressZero && data.buyToken != constants.AddressZero))
       throw new Error('InvalidToken')
@@ -122,7 +117,7 @@ export class TWAP extends BaseConditionalOrder {
    * @returns {string} The ABI-encoded TWAP order.
    */
   serialize(): string {
-    return super.serializeHelper(TWAP_DATA_ABI, this.data)
+    return super.serializeHelper(TWAP_DATA_ABI, this.staticInput)
   }
 
   /**
@@ -149,14 +144,16 @@ export class TWAP extends BaseConditionalOrder {
     const defaultFormatter = (address: string, amount: BigNumber) => `${address}@${amount}`
     tokenFormatter = tokenFormatter || defaultFormatter
 
-    const { sellAmount, buyAmount } = TWAP.partsToTotal(this.data)
+    const { sellAmount, buyAmount } = TWAP.partsToTotal(this.staticInput)
 
     return `${this.orderType}: Sell total ${tokenFormatter(
-      this.data.sellToken,
+      this.staticInput.sellToken,
       sellAmount
-    )} for a minimum of ${tokenFormatter(this.data.buyToken, buyAmount)} over ${this.data.n} parts with a spacing of ${
-      this.data.t
-    }s beginning at ${this.data.t0.eq(0) ? 'time of mining' : new Date(Number(this.data.t0) * 1000)}`
+    )} for a minimum of ${tokenFormatter(this.staticInput.buyToken, buyAmount)} over ${
+      this.staticInput.n
+    } parts with a spacing of ${this.staticInput.t}s beginning at ${
+      this.staticInput.t0.eq(0) ? 'time of mining' : new Date(Number(this.staticInput.t0) * 1000)
+    }`
   }
 
   /**

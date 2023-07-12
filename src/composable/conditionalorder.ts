@@ -19,17 +19,24 @@ export const CONDITIONAL_ORDER_PARAMS_ABI = ['tuple(address handler, bytes32 sal
  * - Getting any dependencies for the conditional order
  * - Getting the off-chain input for the conditional order
  */
-export abstract class BaseConditionalOrder {
+export abstract class BaseConditionalOrder<T> {
   public readonly orderType: string
-  protected address: string
+  public readonly handler: string
   public readonly salt: string
+  public readonly staticInput: T
   public readonly hasOffChainInput: boolean
 
-  protected constructor(orderType: string, address: string, salt: string = keccak256(ethers.utils.randomBytes(32))) {
+  protected constructor(
+    orderType: string,
+    handler: string,
+    salt: string = keccak256(ethers.utils.randomBytes(32)),
+    staticInput: T,
+    hasOffChainInput = false
+  ) {
     // Verify input to the constructor
-    // 1. Verify that the address is a valid ethereum address
-    if (!ethers.utils.isAddress(address)) {
-      throw new Error(`Invalid address: ${address}`)
+    // 1. Verify that the handler is a valid ethereum address
+    if (!ethers.utils.isAddress(handler)) {
+      throw new Error(`Invalid handler: ${handler}`)
     }
 
     // 2. Verify that the salt is a valid 32-byte string usable with ethers
@@ -38,9 +45,10 @@ export abstract class BaseConditionalOrder {
     }
 
     this.orderType = orderType
-    this.address = address
+    this.handler = handler
     this.salt = salt
-    this.hasOffChainInput = false
+    this.staticInput = staticInput
+    this.hasOffChainInput = hasOffChainInput
   }
 
   /**
@@ -62,13 +70,6 @@ export abstract class BaseConditionalOrder {
   get offChainInput(): string {
     return '0x'
   }
-
-  /**
-   * Validate the conditional order.
-   * @param o The conditional order to validate.
-   * @returns Whether the conditional order is valid.
-   */
-  abstract isValid(o: any): boolean
 
   /**
    * Helper method for validating ABI types.
@@ -104,10 +105,10 @@ export abstract class BaseConditionalOrder {
    * @param data The order's data struct.
    * @returns An ABI-encoded `IConditionalOrder.Params` struct.
    */
-  protected serializeHelper<T>(orderDataTypes: string[], data: T): string {
+  protected serializeHelper(orderDataTypes: string[], data: T): string {
     try {
       const payload = utils.defaultAbiCoder.encode(orderDataTypes, [data])
-      return utils.defaultAbiCoder.encode(CONDITIONAL_ORDER_PARAMS_ABI, [[this.address, this.salt, payload]])
+      return utils.defaultAbiCoder.encode(CONDITIONAL_ORDER_PARAMS_ABI, [[this.handler, this.salt, payload]])
     } catch (e) {
       throw new Error('SerializationFailed')
     }
@@ -116,23 +117,25 @@ export abstract class BaseConditionalOrder {
   /**
    * A helper function for generically deserializing a conditional order.
    * @param s The ABI-encoded `IConditionalOrder.Params` struct to deserialize.
-   * @param address Of the handler for the conditional order.
+   * @param handler Address of the handler for the conditional order.
    * @param orderDataTypes ABI types for the order's data struct.
    * @param callback A callback function that takes the deserialized data struct and the salt and returns an instance of the class.
    * @returns An instance of the conditional order class.
    */
   protected static deserializeHelper<T>(
     s: string,
-    address: string,
+    handler: string,
     orderDataTypes: string[],
     callback: (d: any, salt: string) => T
   ): T {
     try {
       // First, decode the `IConditionalOrder.Params` struct
-      const [[handler, salt, staticInput]] = utils.defaultAbiCoder.decode(CONDITIONAL_ORDER_PARAMS_ABI, s) as [string[]]
+      const [[recoveredHandler, salt, staticInput]] = utils.defaultAbiCoder.decode(CONDITIONAL_ORDER_PARAMS_ABI, s) as [
+        string[]
+      ]
 
-      // Second, verify that the address is the correct handler
-      if (!(handler == address)) throw new Error('HandlerMismatch')
+      // Second, verify that the recovered handler is the correct handler
+      if (!(recoveredHandler == handler)) throw new Error('HandlerMismatch')
 
       // Third, decode the data struct
       const [d] = utils.defaultAbiCoder.decode(orderDataTypes, staticInput)
