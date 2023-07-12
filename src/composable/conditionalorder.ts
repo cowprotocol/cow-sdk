@@ -1,6 +1,3 @@
-// Requires an  order types to implement (add / update to modify initial state), serialize for the IConditionalOrder.Params struct.
-// Some method for poll that can be used to determine the input data for offchainInput.
-
 import { BigNumber, ethers, utils } from 'ethers'
 import { Context } from './multiplexer'
 import { keccak256 } from 'ethers/lib/utils'
@@ -11,7 +8,7 @@ export const CONDITIONAL_ORDER_PARAMS_ABI = ['tuple(address handler, bytes32 sal
 /**
  * An abstract base class from which all conditional orders should inherit.
  *
- * This class provids some basic functionality to help with handling conditional orders,
+ * This class provides some basic functionality to help with handling conditional orders,
  * such as:
  * - Validating the conditional order
  * - Creating a human-readable string representation of the conditional order
@@ -26,6 +23,19 @@ export abstract class BaseConditionalOrder<T> {
   public readonly staticInput: T
   public readonly hasOffChainInput: boolean
 
+  /**
+   * A constructor that provides some basic validation for the conditional order.
+   *
+   * This constructor **MUST** be called by any class that inherits from `BaseConditionalOrder`.
+   *
+   * **NOTE**: The salt is optional and will be randomly generated if not provided.
+   * @param handler The address of the handler for the conditional order.
+   * @param salt A 32-byte string used to salt the conditional order.
+   * @param staticInput The static input for the conditional order.
+   * @param hasOffChainInput Whether the conditional order has off-chain input.
+   * @throws If the handler is not a valid ethereum address.
+   * @throws If the salt is not a valid 32-byte string.
+   */
   protected constructor(
     orderType: string,
     handler: string,
