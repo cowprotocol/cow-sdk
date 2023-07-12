@@ -34,8 +34,12 @@ jobs:
           yarn install --cache-folder ./.yarncache --frozen-lockfile
           rm -rf .yarncache
           yarn cache clean
-      - name: Run tests
+      - name: Run tests with coverage
         run: yarn run test:coverage
+        if: env.COVERALLS_REPO_TOKEN != ''
+      - name: Run tests without coverage
+        run: yarn run test
+        if: env.COVERALLS_REPO_TOKEN == ''
 
       - name: Comment in failing tests
         uses: mattallty/jest-github-action@v1.0.3
