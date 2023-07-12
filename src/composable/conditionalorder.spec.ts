@@ -50,7 +50,7 @@ describe('ConditionalOrder', () => {
 
   test('Create: constructor fails if invalid params', () => {
     // bad address
-    expect(() => new TestConditionalOrder('0xdeadbeef')).toThrow('Invalid address: 0xdeadbeef')
+    expect(() => new TestConditionalOrder('0xdeadbeef')).toThrow('Invalid handler: 0xdeadbeef')
     // bad salt
 
     expect(() => new TestConditionalOrder('0x910d00a310f7Dc5B29FE73458F47f519be547D3d', 'cowtomoon')).toThrow(
@@ -82,9 +82,9 @@ describe('ConditionalOrder', () => {
   })
 })
 
-class TestConditionalOrder extends BaseConditionalOrder {
+class TestConditionalOrder extends BaseConditionalOrder<string> {
   constructor(address: string, salt?: string) {
-    super('TEST', address, salt)
+    super('TEST', address, salt, '0x')
   }
 
   isValid(o: any): boolean {
