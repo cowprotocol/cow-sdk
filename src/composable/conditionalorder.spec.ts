@@ -72,7 +72,11 @@ describe('ConditionalOrder', () => {
 
   test('Serialize: Fails if invalid params', () => {
     const order = new TestConditionalOrder('0x910d00a310f7Dc5B29FE73458F47f519be547D3d')
-    expect(() => order.serialize()).toThrow('SerializationFailed')
+    expect(() => order.testEncodeStaticInput()).toThrow('SerializationFailed')
+    expect(() => BaseConditionalOrder.encodeParams({ handler: '0xdeadbeef', salt: '0x', staticInput: '0x' })).toThrow(
+      'SerializationFailed'
+    )
+  })
   })
 
   test('Deserialize: Fails if handler mismatch', () => {
@@ -83,15 +87,23 @@ describe('ConditionalOrder', () => {
 })
 
 class TestConditionalOrder extends BaseConditionalOrder<string> {
-  constructor(address: string, salt?: string) {
-    super('TEST', address, salt, '0x')
+  constructor(address: string, salt?: string, staticInput = '0x') {
+    super('TEST', address, salt, staticInput)
+  }
+
+  encodeStaticInput(): string {
+    return this.staticInput
+  }
+
+  testEncodeStaticInput(): string {
+    return super.encodeStaticInputHelper(['uint256'], this.staticInput)
   }
 
   isValid(o: any): boolean {
     throw new Error('Method not implemented.')
   }
   serialize(): string {
-    return super.serializeHelper(['tuple(uint256, uint256)'], '0xdeadbeef')
+    return BaseConditionalOrder.encodeParams(this.leaf)
   }
   toString(tokenFormatter: ((address: string, amount: BigNumber) => string) | undefined): string {
     throw new Error('Method not implemented.')

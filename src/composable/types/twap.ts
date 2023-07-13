@@ -117,7 +117,15 @@ export class TWAP extends BaseConditionalOrder<TWAPData> {
    * @returns {string} The ABI-encoded TWAP order.
    */
   serialize(): string {
-    return super.serializeHelper(TWAP_DATA_ABI, this.staticInput)
+    return BaseConditionalOrder.encodeParams(this.leaf)
+  }
+
+  /**
+   * Get the encoded static input for the TWAP order.
+   * @returns {string} The ABI-encoded TWAP order.
+   */
+  encodeStaticInput(): string {
+    return super.encodeStaticInputHelper(TWAP_DATA_ABI, this.staticInput)
   }
 
   /**

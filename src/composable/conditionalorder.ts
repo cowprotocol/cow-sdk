@@ -5,6 +5,12 @@ import { keccak256 } from 'ethers/lib/utils'
 // Define the ABI tuple for the TWAPData struct
 export const CONDITIONAL_ORDER_PARAMS_ABI = ['tuple(address handler, bytes32 salt, bytes staticInput)']
 
+export type ConditionalOrderParams = {
+  readonly handler: string
+  readonly salt: string
+  readonly staticInput: string
+}
+
 /**
  * An abstract base class from which all conditional orders should inherit.
  *
@@ -110,17 +116,50 @@ export abstract class BaseConditionalOrder<T> {
   abstract serialize(): string
 
   /**
-   * A helper function for generically serializing a conditional order.
-   * @param orderDataTypes ABI types for the order's data struct.
-   * @param data The order's data struct.
-   * @returns An ABI-encoded `IConditionalOrder.Params` struct.
+   * Encode the `staticInput` for the conditional order.
+   * @returns The ABI-encoded `staticInput` for the conditional order.
+   * @see ConditionalOrderParams
    */
-  protected serializeHelper(orderDataTypes: string[], data: T): string {
+  abstract encodeStaticInput(): string
+
+  /**
+   * A helper function for generically serializing a conditional order's static input.
+   * @param orderDataTypes ABI types for the order's data struct.
+   * @param staticInput The order's data struct.
+   * @returns An ABI-encoded representation of the order's data struct.
+   */
+  protected encodeStaticInputHelper(orderDataTypes: string[], staticInput: T): string {
     try {
-      const payload = utils.defaultAbiCoder.encode(orderDataTypes, [data])
-      return utils.defaultAbiCoder.encode(CONDITIONAL_ORDER_PARAMS_ABI, [[this.handler, this.salt, payload]])
+      return utils.defaultAbiCoder.encode(orderDataTypes, [staticInput])
     } catch (e) {
       throw new Error('SerializationFailed')
+    }
+  }
+
+  /**
+   * Encode the `ConditionalOrderParams` for the conditional order.
+   * @param leaf The `ConditionalOrderParams` struct representing the conditional order as taken from a merkle tree.
+   * @returns The ABI-encoded conditional order.
+   * @see ConditionalOrderParams
+   */
+  static encodeParams(leaf: ConditionalOrderParams): string {
+    try {
+      return utils.defaultAbiCoder.encode(CONDITIONAL_ORDER_PARAMS_ABI, [leaf])
+    } catch (e) {
+      throw new Error('SerializationFailed')
+    }
+  }
+
+  /**
+   * Decode the `ConditionalOrderParams` for the conditional order.
+   * @param encoded The encoded conditional order.
+   * @returns The decoded conditional order.
+   */
+  static decodeParams(encoded: string): ConditionalOrderParams {
+    try {
+      return utils.defaultAbiCoder.decode(CONDITIONAL_ORDER_PARAMS_ABI, encoded)[0]
+    } catch (e) {
+      throw new Error('DeserializationFailed')
     }
   }
 
@@ -140,9 +179,7 @@ export abstract class BaseConditionalOrder<T> {
   ): T {
     try {
       // First, decode the `IConditionalOrder.Params` struct
-      const [[recoveredHandler, salt, staticInput]] = utils.defaultAbiCoder.decode(CONDITIONAL_ORDER_PARAMS_ABI, s) as [
-        string[]
-      ]
+      const { handler: recoveredHandler, salt, staticInput } = BaseConditionalOrder.decodeParams(s)
 
       // Second, verify that the recovered handler is the correct handler
       if (!(recoveredHandler == handler)) throw new Error('HandlerMismatch')
