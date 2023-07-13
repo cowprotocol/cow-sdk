@@ -21,6 +21,9 @@ export type ConditionalOrderParams = {
  * - Serializing the conditional order for use with the `IConditionalOrder` struct
  * - Getting any dependencies for the conditional order
  * - Getting the off-chain input for the conditional order
+ *
+ * **NOTE**: Instances of conditional orders have an `id` property that is a `keccak256` hash of
+ *           the serialized conditional order.
  */
 export abstract class BaseConditionalOrder<T> {
   public readonly orderType: string
