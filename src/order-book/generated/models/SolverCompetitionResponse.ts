@@ -8,13 +8,13 @@ import type { TransactionHash } from './TransactionHash';
 
 /**
  * The settlements submitted by every solver for a specific auction.
- * The auction id corresponds to the id external solvers are provided
+ * The `auctionId` corresponds to the id external solvers are provided
  * with.
  *
  */
 export type SolverCompetitionResponse = {
     /**
-     * The id of the auction the competition info is for.
+     * The ID of the auction the competition info is for.
      */
     auctionId?: number;
     /**
@@ -22,7 +22,7 @@ export type SolverCompetitionResponse = {
      */
     transactionHash?: TransactionHash | null;
     /**
-     * gas price used for ranking solutions
+     * Gas price used for ranking solutions.
      */
     gasPrice?: number;
     liquidityCollectedBlock?: number;

@@ -12,8 +12,8 @@ import type { TokenAmount } from './TokenAmount';
 import type { UID } from './UID';
 
 /**
- * Extra order data that is returned to users when querying orders
- * but not provided by users when creating orders.
+ * Extra order data that is returned to users when querying orders but not provided by users
+ * when creating orders.
  *
  */
 export type OrderMetaData = {
@@ -25,20 +25,24 @@ export type OrderMetaData = {
     owner: Address;
     uid: UID;
     /**
-     * Unused field that is currently always set to null and will be removed in the future.
+     * Unused field that is currently always set to `null` and will be removed in the future.
+     *
      * @deprecated
      */
     availableBalance?: TokenAmount | null;
     /**
-     * The total amount of sellToken that has been executed for this order including fees.
+     * The total amount of `sellToken` that has been executed for this order including fees.
+     *
      */
     executedSellAmount: BigUint;
     /**
-     * The total amount of sellToken that has been executed for this order without fees.
+     * The total amount of `sellToken` that has been executed for this order without fees.
+     *
      */
     executedSellAmountBeforeFees: BigUint;
     /**
-     * The total amount of buyToken that has been executed for this order.
+     * The total amount of `buyToken` that has been executed for this order.
+     *
      */
     executedBuyAmount: BigUint;
     /**
@@ -50,11 +54,11 @@ export type OrderMetaData = {
      */
     invalidated: boolean;
     /**
-     * Order status
+     * Order status.
      */
     status: OrderStatus;
     /**
-     * Amount that the signed fee would be without subsidies
+     * Amount that the signed fee would be without subsidies.
      */
     fullFeeAmount?: TokenAmount;
     /**
@@ -62,27 +66,26 @@ export type OrderMetaData = {
      * placed with the intent of actively getting traded. Instead they facilitate the
      * trade of normal orders by allowing them to be matched against liquidity orders which
      * uses less gas and can have better prices than external liquidity.
+     *
      * As such liquidity orders will only be used in order to improve settlement of normal
      * orders. They should not be expected to be traded otherwise and should not expect to get
      * surplus.
      *
      */
     isLiquidityOrder?: boolean;
-    /**
-     * For ethflow orders - order that are placed onchain with native eth -, this field
-     * contains a struct with two variables user_valid_to and is_refunded
-     *
-     */
     ethflowData?: EthflowData;
     /**
      * This represents the actual trader of an on-chain order.
-     * In that case, the owner would be the EthFlow contract in the case of EthFlow orders and not the actual trader.
+     *
+     * ### ethflow orders
+     *
+     * In this case, the `owner` would be the `EthFlow` contract and *not* the actual trader.
      *
      */
     onchainUser?: Address;
     /**
-     * There is some data only available for orders that are placed onchain. This data
-     * can be found in this object
+     * There is some data only available for orders that are placed on-chain. This data
+     * can be found in this object.
      *
      */
     onchainOrderData?: OnchainOrderData;
@@ -90,5 +93,11 @@ export type OrderMetaData = {
      * Surplus fee that the limit order was executed with.
      */
     executedSurplusFee?: BigUint | null;
+    /**
+     * Full `appData`, which the contract-level `appData` is a hash of. See `OrderCreation`
+     * for more information.
+     *
+     */
+    fullAppData?: string | null;
 };
 

@@ -4,7 +4,8 @@
 
 /**
  * How good should the price estimate be?
- * Note that orders are supposed to be created from "optimal" price estimates.
+ *
+ * **NOTE**: Orders are supposed to be created from `optimal` price estimates.
  *
  */
 export enum PriceQuality {

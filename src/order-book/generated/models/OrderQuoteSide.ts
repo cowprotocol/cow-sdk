@@ -18,13 +18,13 @@ export type OrderQuoteSide = ({
 } | {
     kind: OrderQuoteSide.kind;
     /**
-     * The sell amount for the order.
+     * The `sellAmount` for the order.
      */
     sellAmountAfterFee: TokenAmount;
 } | {
     kind: OrderQuoteSide.kind;
     /**
-     * The buy amount for the order.
+     * The `buyAmount` for the order.
      */
     buyAmountAfterFee: TokenAmount;
 });

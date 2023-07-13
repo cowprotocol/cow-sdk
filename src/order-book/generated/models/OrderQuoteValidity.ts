@@ -3,16 +3,16 @@
 /* eslint-disable */
 
 /**
- * The validity for the order
+ * The validity for the order.
  */
 export type OrderQuoteValidity = ({
     /**
-     * Unix timestamp until the order is valid. uint32.
+     * Unix timestamp (`uint32`) until which the order is valid.
      */
     validTo?: number;
 } | {
     /**
-     * Number of seconds that the order should be valid for. uint32.
+     * Number (`uint32`) of seconds that the order should be valid for.
      */
     validFor?: number;
 });

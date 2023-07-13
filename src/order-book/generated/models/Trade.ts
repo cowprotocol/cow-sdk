@@ -9,7 +9,7 @@ import type { TransactionHash } from './TransactionHash';
 import type { UID } from './UID';
 
 /**
- * Trade data such as executed amounts, fees, order id and block number.
+ * Trade data such as executed amounts, fees, `orderUid` and `block` number.
  *
  */
 export type Trade = {
@@ -22,7 +22,7 @@ export type Trade = {
      */
     logIndex: number;
     /**
-     * Unique ID of the order matched by this trade.
+     * UID of the order matched by this trade.
      */
     orderUid: UID;
     /**
@@ -38,19 +38,19 @@ export type Trade = {
      */
     buyToken: Address;
     /**
-     * Total amount of sellToken that has been executed for this trade (including fees).
+     * Total amount of `sellToken` that has been executed for this trade (including fees).
      */
     sellAmount: TokenAmount;
     /**
-     * The total amount of sellToken that has been executed for this order without fees.
+     * The total amount of `sellToken` that has been executed for this order without fees.
      */
     sellAmountBeforeFees: BigUint;
     /**
-     * Total amount of buyToken received in this trade.
+     * Total amount of `buyToken` received in this trade.
      */
     buyAmount: TokenAmount;
     /**
-     * Hash of the corresponding settlement transaction containing the trade (if available).
+     * Transaction hash of the corresponding settlement transaction containing the trade (if available).
      */
     txHash: TransactionHash | null;
 };
