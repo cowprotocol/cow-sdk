@@ -5,8 +5,7 @@
 import type { TransactionHash } from './TransactionHash';
 
 /**
- * Provides the additional data for ethflow orders
- *
+ * Provides the additional data for ethflow orders.
  */
 export type EthflowData = {
     /**
@@ -16,9 +15,10 @@ export type EthflowData = {
      */
     refundTxHash: TransactionHash | null;
     /**
-     * Describes the valid to of an order ethflow order.
-     * Note that for ethflow orders, the valid_to encoded in the smart
-     * contract is max(uint)
+     * Describes the `validTo` of an order ethflow order.
+     *
+     * **NOTE**: For ethflow orders, the `validTo` encoded in the smart
+     * contract is `type(uint256).max`.
      *
      */
     userValidTo: number;

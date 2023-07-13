@@ -3,9 +3,10 @@
 /* eslint-disable */
 
 export type { Address } from './models/Address';
-export type { AppData } from './models/AppData';
+export type { AppDataHash } from './models/AppDataHash';
 export type { Auction } from './models/Auction';
 export type { AuctionPrices } from './models/AuctionPrices';
+export type { BackendAppData } from './models/BackendAppData';
 export type { BigUint } from './models/BigUint';
 export { BuyTokenDestination } from './models/BuyTokenDestination';
 export type { CallData } from './models/CallData';
@@ -40,7 +41,7 @@ export { SigningScheme } from './models/SigningScheme';
 export type { SolverCompetitionResponse } from './models/SolverCompetitionResponse';
 export type { SolverSettlement } from './models/SolverSettlement';
 export type { TokenAmount } from './models/TokenAmount';
+export type { TotalSurplus } from './models/TotalSurplus';
 export type { Trade } from './models/Trade';
 export type { TransactionHash } from './models/TransactionHash';
 export type { UID } from './models/UID';
-export type { VersionResponse } from './models/VersionResponse';

@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 /**
- * The current order status
+ * The current order status.
  */
 export enum OrderStatus {
     PRESIGNATURE_PENDING = 'presignaturePending',

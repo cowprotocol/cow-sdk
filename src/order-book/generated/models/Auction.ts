@@ -24,7 +24,7 @@ export type Auction = {
     /**
      * The latest block on which a settlement has been processed.
      *
-     * Note that under certain conditions it is possible for a settlement to have been mined as
+     * **NOTE**: Under certain conditions it is possible for a settlement to have been mined as
      * part of `block` but not have yet been processed.
      *
      */

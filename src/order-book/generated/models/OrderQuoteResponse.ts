@@ -6,7 +6,7 @@ import type { Address } from './Address';
 import type { OrderParameters } from './OrderParameters';
 
 /**
- * An order quoted by the back end that can be directly signed and
+ * An order quoted by the backend that can be directly signed and
  * submitted to the order creation backend.
  *
  */
@@ -20,7 +20,7 @@ export type OrderQuoteResponse = {
      */
     expiration: string;
     /**
-     * Order ID linked to a quote to enable providing more metadata when analyzing
+     * Quote ID linked to a quote to enable providing more metadata when analysing
      * order slippage.
      *
      */

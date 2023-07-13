@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 /**
- * Where should the sell token be drawn from?
+ * Where should the `sellToken` be drawn from?
  */
 export enum SellTokenSource {
     ERC20 = 'erc20',

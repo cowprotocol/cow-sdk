@@ -7,16 +7,16 @@ import type { EcdsaSigningScheme } from './EcdsaSigningScheme';
 import type { UID } from './UID';
 
 /**
- * EIP-712 signature of struct OrderCancellations { orderUid: bytes[] } from the order's owner
+ * EIP-712 signature of struct OrderCancellations { orderUid: bytes[] } from the order's owner.
  *
  */
 export type OrderCancellations = {
     /**
-     * UIDs of orders to cancel
+     * UIDs of orders to cancel.
      */
     orderUids?: Array<UID>;
     /**
-     * OrderCancellation signed by owner
+     * `OrderCancellation` signed by the owner.
      */
     signature: EcdsaSignature;
     signingScheme: EcdsaSigningScheme;
