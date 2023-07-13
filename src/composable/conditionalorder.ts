@@ -78,6 +78,41 @@ export abstract class BaseConditionalOrder<T> {
   }
 
   /**
+   * Calculate the id of the conditional order.
+   *
+   * This is a `keccak256` hash of the serialized conditional order.
+   * @returns The id of the conditional order.
+   */
+  get id(): string {
+    return utils.keccak256(this.serialize())
+  }
+
+  /**
+   * Get the `leaf` of the conditional order. This is the data that is used to create the merkle tree.
+   *
+   * For the purposes of this library, the `leaf` is the `ConditionalOrderParams` struct.
+   * @returns The `leaf` of the conditional order.
+   * @see ConditionalOrderParams
+   */
+  get leaf(): ConditionalOrderParams {
+    return {
+      handler: this.handler,
+      salt: this.salt,
+      staticInput: this.encodeStaticInput(),
+    }
+  }
+
+  /**
+   * Calculate the id of the conditional order.
+   * @param leaf The `leaf` representing the conditional order.
+   * @returns The id of the conditional order.
+   * @see ConditionalOrderParams
+   */
+  static leafToId(leaf: ConditionalOrderParams): string {
+    return utils.keccak256(BaseConditionalOrder.encodeParams(leaf))
+  }
+
+  /**
    * If the conditional order has off-chain input, return it!
    *
    * **NOTE**: This should be overridden by any conditional order that has off-chain input.

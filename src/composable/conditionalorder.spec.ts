@@ -77,6 +77,23 @@ describe('ConditionalOrder', () => {
       'SerializationFailed'
     )
   })
+
+  test('id: Returns correct id', () => {
+    const order = new TestConditionalOrder(
+      '0x910d00a310f7Dc5B29FE73458F47f519be547D3d',
+      '0x9379a0bf532ff9a66ffde940f94b1a025d6f18803054c1aef52dc94b15255bbe'
+    )
+    expect(order.id).toEqual('0x88ca0698d8c5500b31015d84fa0166272e1812320d9af8b60e29ae00153363b3')
+  })
+
+  test('leafToId: Returns correct id', () => {
+    const order = new TestConditionalOrder(
+      '0x910d00a310f7Dc5B29FE73458F47f519be547D3d',
+      '0x9379a0bf532ff9a66ffde940f94b1a025d6f18803054c1aef52dc94b15255bbe'
+    )
+    expect(BaseConditionalOrder.leafToId(order.leaf)).toEqual(
+      '0x88ca0698d8c5500b31015d84fa0166272e1812320d9af8b60e29ae00153363b3'
+    )
   })
 
   test('Deserialize: Fails if handler mismatch', () => {
