@@ -86,7 +86,7 @@ export type ProofWithParams = {
  * This class provides functionality to:
  * - Generate a merkle tree of conditional orders
  * - Generate proofs for all orders in the merkle tree
- * - Save off-chain proofs, with the ability to omit / skip specific conditional orders
+ * - Save proofs, with the ability to omit / skip specific conditional orders
  * - Propose `create` and `setRoot` to a ComposableCoW-enabled Safe
  * - BONUS: Upload proofs to IPFS or Swarm and use the location within the ProofStruct to direct indexers.
  */
@@ -107,14 +107,27 @@ export class Multiplexer {
    */
   constructor(chain: SupportedChainId, orders?: BaseConditionalOrder<any, any>[], root?: string) {
     this.chain = chain
-    this.orders = orders.reduce((acc, order) => {
-      acc[order.id] = order
-      return acc
-    }, {} as Record<string, BaseConditionalOrder<any>>)
-    this.tree = StandardMerkleTree.of(
-      orders.map((o) => [o.handler, o.salt, o.encodeStaticInput()]),
-      CONDITIONAL_ORDER_LEAF_ABI
-    )
+
+    // If orders are provided, the length must be > 0
+    if (orders && orders.length === 0) {
+      throw new Error('If orders are provided, they must actually be provided! (array length is zero)')
+    }
+
+    // If orders are provided, so must a root, and vice versa
+    if ((orders && !root) || (!orders && root)) {
+      throw new Error('Orders and root must be provided together')
+    }
+
+    // can only proceed past here if both orders and root are provided, or neither are
+
+    // If orders (and therefore the root) are provided, generate the merkle tree
+    if (orders) {
+      this.orders = orders.reduce((acc, order) => {
+        acc[order.id] = order
+        return acc
+      }, {} as Record<string, BaseConditionalOrder<any, any>>)
+
+      this.generate()
 
       // if generate was successful, this.tree will be defined and we can verify the root
       if (this.tree && this.tree.root !== root) {
@@ -242,5 +255,11 @@ export class Multiplexer {
   private reset(): void {
     this.tree = undefined
   }
+
+  public static registerOrderType(
+    orderType: string,
+    conditionalOrderClass: new (...args: any[]) => BaseConditionalOrder<any, any>
+  ) {
+    Multiplexer.orderTypeRegistry[orderType] = conditionalOrderClass
   }
 }
