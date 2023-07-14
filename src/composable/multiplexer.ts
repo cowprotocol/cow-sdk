@@ -22,16 +22,24 @@ export enum ProofLocation {
   IPFS = 4,
 }
 
-export type ContextArgs = {
-  args: any[]
-  argsType: string[]
-}
-
-export type Context = {
+/**
+ * A factory and it's arguments that are called at transaction mining time to generate the context
+ * for a conditional order(s).
+ *
+ * This allows to support the case where conditional orders may want to *commence* validity at the
+ * time of transaction mining, like in the case of a `TWAP` executed by a DAO or `Safe` that takes
+ * a reasonable amount of time to aggregate signatures or collect votes.
+ *
+ * @remarks This is used in conjunction with `setRootWithContext` or `createWithContext`.
+ */
+export type ContextFactory = {
   // The address of the `IValueFactory` that will be used to resolve the context.
   address: string
   // Any arguments that will be passed to the `IValueFactory` to resolve the context.
-  args: ContextArgs | undefined
+  factoryArgs?: {
+    args: any[]
+    argsType: string[]
+  }
 }
 
 /**

@@ -1,6 +1,6 @@
 import { BigNumber, constants } from 'ethers'
 import { BaseConditionalOrder } from '../conditionalorder'
-import { Context } from '../multiplexer'
+import { ContextFactory } from '../multiplexer'
 
 // The type of Conditional Order
 const TWAP_ORDER_TYPE = 'TWAP'
@@ -81,13 +81,13 @@ export class TWAP extends BaseConditionalOrder<TWAPData> {
    * `CurrentBlockTimestampFactory` contract to provide the current block timestamp
    * as the start time of the TWAP.
    */
-  get context(): Context | undefined {
+  get context(): ContextFactory | undefined {
     if (this.staticInput.t0.gt(0)) {
       return super.context
     } else {
       return {
         address: CURRENT_BLOCK_TIMESTAMP_FACTORY_ADDRESS,
-        args: undefined,
+        factoryArgs: undefined,
       }
     }
   }

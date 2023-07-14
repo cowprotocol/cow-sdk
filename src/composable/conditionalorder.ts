@@ -1,5 +1,5 @@
 import { BigNumber, ethers, utils } from 'ethers'
-import { Context } from './multiplexer'
+import { ContextFactory } from './multiplexer'
 import { keccak256 } from 'ethers/lib/utils'
 
 // Define the ABI tuple for the TWAPData struct
@@ -76,7 +76,7 @@ export abstract class BaseConditionalOrder<T> {
    * This is used when calling `createWithContext` or `setRootWithContext` on a ComposableCoW-enabled Safe.
    * @returns The context dependency.
    */
-  get context(): Context | undefined {
+  get context(): ContextFactory | undefined {
     return undefined
   }
 
