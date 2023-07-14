@@ -287,7 +287,40 @@ export class Multiplexer {
     )
   }
 
-    return utils.defaultAbiCoder.encode(PAYLOAD_EMITTED_ABI, proofs)
+  encodeProofStruct(filter?: (v: string[]) => boolean): string {
+    if (!this.tree) {
+      throw new Error('Merkle tree not generated')
+    }
+
+    // default to private location
+    const location = this.location || ProofLocation.PRIVATE
+
+    const data = (): string => {
+      switch (location) {
+        case ProofLocation.PRIVATE:
+          return '0x'
+        case ProofLocation.EMITTED:
+          return this.encodeProofAndParamsToEmit(filter)
+        case ProofLocation.SWARM:
+          // TODO: upload to swarm and return the `bmt` root hash. This can be
+          // pre-computed using bee-js.
+          throw new Error('Not implemented')
+        case ProofLocation.WAKU:
+          // TODO: define WAKU2-STORE format and return the WAKU2-STORE address
+          // eg. This may need to contain an `enrtree` of the Waku fleet to use,
+          // as well as the `contentTopic` on which to retrieve from.
+          throw new Error('Not implemented')
+        case ProofLocation.RESERVED:
+          throw new Error('Not implemented')
+        case ProofLocation.IPFS:
+          // TODO: upload to IPFS and return the IPFS hash
+          throw new Error('Not implemented')
+        default:
+          throw new Error('Unsupported location')
+      }
+    }
+
+    return utils.defaultAbiCoder.encode(PROOF_ABI, [location, data()])
   }
 
   /**
