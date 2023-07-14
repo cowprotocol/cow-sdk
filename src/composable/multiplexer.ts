@@ -263,6 +263,31 @@ export class Multiplexer {
   }
 
   /**
+   * Accessor for a given conditional order in the multiplexer.
+   * @param id The `id` of the `BaseConditionalOrder` to retrieve.
+   * @returns A `BaseConditionalOrder` with the given `id`.
+   */
+  getById(id: string): BaseConditionalOrder<any, any> {
+    return this.orders[id]
+  }
+
+  /**
+   * Accessor for a given conditional order in the multiplexer.
+   * @param i The index of the `BaseConditionalOrder` to retrieve.
+   * @returns A `BaseConditionalOrder` at the given index.
+   */
+  getByIndex(i: number): BaseConditionalOrder<any, any> {
+    return this.orders[this.listOrderIds[i]]
+  }
+
+  /**
+   * Get all the conditional order ids in the multiplexer.
+   */
+  get listOrderIds(): string[] {
+    return Object.keys(this.orders)
+  }
+
+  /**
    * Generate the merkle tree for the current set of conditional orders.
    *
    * **CAUTION**: This will overwrite any existing merkle tree. This operation is expensive and should only be done when necessary.
