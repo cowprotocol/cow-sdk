@@ -97,8 +97,8 @@ export class Multiplexer {
   public location?: ProofLocation
 
   private orders: Record<string, BaseConditionalOrder<any, any>> = {}
-  private tree: StandardMerkleTree<string[]>
-  private ctx: string | undefined = undefined
+  private tree?: StandardMerkleTree<string[]>
+  private ctx?: string
 
   /**
    * @param chain The `chainId` for where we're using `ComposableCoW`.
@@ -116,9 +116,10 @@ export class Multiplexer {
       CONDITIONAL_ORDER_LEAF_ABI
     )
 
-    // Verify the root if provided
-    if (root && root !== this.tree.root) {
-      throw new Error('Root mismatch')
+      // if generate was successful, this.tree will be defined and we can verify the root
+      if (this.tree && this.tree.root !== root) {
+        throw new Error('Root mismatch')
+      }
     }
   }
 
@@ -217,6 +218,11 @@ export class Multiplexer {
         }
       })
       .reduce((acc: ProofWithParams[], x) => {
+        // guard against the tree not being defined
+        if (!this.tree) {
+          throw new Error('Merkle tree not generated')
+        }
+
         if (x) {
           acc.push({
             proof: this.tree.getProof(x.idx),
@@ -234,6 +240,7 @@ export class Multiplexer {
    * A helper to reset the merkle tree.
    */
   private reset(): void {
-    this.tree = StandardMerkleTree.of([], CONDITIONAL_ORDER_LEAF_ABI)
+    this.tree = undefined
+  }
   }
 }
