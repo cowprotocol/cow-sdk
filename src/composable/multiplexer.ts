@@ -3,6 +3,7 @@ import { BigNumber, utils } from 'ethers'
 
 import { SupportedChainId } from '../common'
 import { BaseConditionalOrder, ConditionalOrderParams } from './conditionalorder'
+import assert from 'assert'
 
 const CONDITIONAL_ORDER_LEAF_ABI = ['address', 'bytes32', 'bytes']
 
@@ -124,9 +125,10 @@ export class Multiplexer {
     if (orders) {
       this.orders = orders
       this.generate()
+      assert(this.tree, 'Merkle tree not generated')
 
       // if generate was successful, this.tree will be defined and we can verify the root
-      if (this.tree && this.tree.root !== root) {
+      if (this.tree.root !== root) {
         throw new Error('Root mismatch')
       }
     }
@@ -202,11 +204,7 @@ export class Multiplexer {
     // Make sure the merkle tree is generated
     if (!this.tree) {
       this.generate()
-
-      // if generation wasn't successful, this.tree will still be undefined so we throw
-      if (!this.tree) {
-        throw new Error('Merkle tree not generated')
-      }
+      assert(this.tree, 'Merkle tree not generated')
     }
 
     // serialize the multiplexer, including the root but excluding the merkle tree.
@@ -293,7 +291,7 @@ export class Multiplexer {
    * **CAUTION**: This will overwrite any existing merkle tree. This operation is expensive and should only be done when necessary.
    * @throws If the merkle tree cannot be generated.
    */
-  generate(): void {
+  private generate(): void {
     this.tree = StandardMerkleTree.of(
       Object.values(this.orders).map((order) => [...Object.values(order.leaf)]),
       CONDITIONAL_ORDER_LEAF_ABI
