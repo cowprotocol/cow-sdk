@@ -1,5 +1,5 @@
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree'
-import { utils } from 'ethers'
+import { BigNumber, utils } from 'ethers'
 
 import { SupportedChainId } from '../common'
 import { BaseConditionalOrder, ConditionalOrderParams } from './conditionalorder'
@@ -105,11 +105,11 @@ export class Multiplexer {
    * @param orders An optional array of conditional orders to initialize the merkle tree with.
    * @param root An optional root to verify against.
    */
-  constructor(chain: SupportedChainId, orders?: BaseConditionalOrder<any, any>[], root?: string) {
+  constructor(chain: SupportedChainId, orders?: Record<string, BaseConditionalOrder<any, any>>, root?: string) {
     this.chain = chain
 
     // If orders are provided, the length must be > 0
-    if (orders && orders.length === 0) {
+    if (orders && Object.keys(orders).length === 0) {
       throw new Error('If orders are provided, they must actually be provided! (array length is zero)')
     }
 
@@ -122,11 +122,7 @@ export class Multiplexer {
 
     // If orders (and therefore the root) are provided, generate the merkle tree
     if (orders) {
-      this.orders = orders.reduce((acc, order) => {
-        acc[order.id] = order
-        return acc
-      }, {} as Record<string, BaseConditionalOrder<any, any>>)
-
+      this.orders = orders
       this.generate()
 
       // if generate was successful, this.tree will be defined and we can verify the root
@@ -142,6 +138,91 @@ export class Multiplexer {
    */
   static create<T, P>(order: BaseConditionalOrder<T, P>): Promise<string> {
     throw new Error('Not implemented')
+  }
+
+  /**
+   * Given a serialized multiplexer, create the multiplexer and rehydrate all conditional orders.
+   * Integrity of the multiplexer will be verified by generating the merkle tree and verifying
+   * the root.
+   *
+   * **NOTE**: Before using this method, you must register all conditional order types using `Multiplexer.registerOrderType`.
+   * @param s The serialized multiplexer.
+   * @returns The multiplexer with all conditional orders rehydrated.
+   * @throws If the multiplexer cannot be deserialized.
+   * @throws If the merkle tree cannot be generated.
+   * @throws If the merkle tree cannot be verified against the root.
+   */
+  static fromJSON(s: string): Multiplexer {
+    // reviver function to deserialize the orders
+    const reviver = (k: string, v: any) => {
+      if (k === 'orders' && typeof v === 'object' && v !== null) {
+        const orders: { [key: string]: BaseConditionalOrder<any, any> } = {}
+
+        for (const orderKey in v) {
+          if (v.hasOwnProperty(orderKey)) {
+            const { orderType, ...orderData } = v[orderKey]
+
+            if (Multiplexer.orderTypeRegistry.hasOwnProperty(orderType)) {
+              const OrderConstructor = Multiplexer.orderTypeRegistry[orderType]
+              const orderArgs = Object.values(orderData)
+              orders[orderKey] = new OrderConstructor(...orderArgs)
+            } else {
+              throw new Error(`Unknown order type: ${orderType}`)
+            }
+          }
+        }
+
+        return orders
+      }
+
+      // Make sure we deserialize `BigNumber` correctly
+      if (typeof v === 'object' && v !== null && v.hasOwnProperty('type') && v.hasOwnProperty('hex')) {
+        if (v.type === 'BigNumber') {
+          return BigNumber.from(v)
+        }
+      }
+
+      return v
+    }
+
+    const { chain, orders, root, location } = JSON.parse(s, reviver)
+    const m = new Multiplexer(chain, orders, root)
+    m.location = location
+    return m
+  }
+
+  /**
+   * Serialize the multiplexer to JSON.
+   *
+   * This will include all state necessary to reconstruct the multiplexer, including the root.
+   * @remarks This will **NOT** include the merkle tree.
+   * @returns The JSON representation of the multiplexer, including the root but excluding the merkle tree.
+   */
+  toJSON(): string {
+    // Make sure the merkle tree is generated
+    if (!this.tree) {
+      this.generate()
+
+      // if generation wasn't successful, this.tree will still be undefined so we throw
+      if (!this.tree) {
+        throw new Error('Merkle tree not generated')
+      }
+    }
+
+    // serialize the multiplexer, including the root but excluding the merkle tree.
+    return JSON.stringify({ ...this, root: this.tree.root }, (k, v) => {
+      // filter out the merkle tree
+      if (k === 'tree') return undefined
+      if (typeof v === 'object' && v !== null && 'orderType' in v) {
+        const conditionalOrder = v as BaseConditionalOrder<any, any>
+        return {
+          ...conditionalOrder,
+          orderType: conditionalOrder.orderType,
+        }
+      }
+      // We do not do any custom serialization of `BigNumber` in order to preserve it's type.
+      return v
+    })
   }
 
   /**
