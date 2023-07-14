@@ -103,9 +103,13 @@ describe('ConditionalOrder', () => {
   })
 })
 
-class TestConditionalOrder extends BaseConditionalOrder<string> {
+class TestConditionalOrder extends BaseConditionalOrder<string, string> {
   constructor(address: string, salt?: string, staticInput = '0x') {
-    super('TEST', address, salt, staticInput)
+    super(address, salt, staticInput)
+  }
+
+  get orderType(): string {
+    return 'TEST'
   }
 
   encodeStaticInput(): string {
@@ -122,7 +126,7 @@ class TestConditionalOrder extends BaseConditionalOrder<string> {
   serialize(): string {
     return BaseConditionalOrder.encodeParams(this.leaf)
   }
-  toString(tokenFormatter: ((address: string, amount: BigNumber) => string) | undefined): string {
+  toString(_tokenFormatter?: (address: string, amount: BigNumber) => string): string {
     throw new Error('Method not implemented.')
   }
 }
