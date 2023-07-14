@@ -15,11 +15,18 @@ const PAYLOAD_EMITTED_ABI = ['tuple(bytes32[] proof, tuple(address handler, byte
 // const PROOF_ABI = ['tuple(uint256 location, bytes data)']
 
 export enum ProofLocation {
+  // The location of the proofs is private to the caller.
   PRIVATE = 0,
+  // The `data` field of the emitted `Proof` struct contains proofs + conditional order parameters.
   EMITTED = 1,
+  // The `data` field of the emitted `Proof` struct contains the Swarm address (`bytes32`) of the proofs + conditional order parameters.
   SWARM = 2,
+  // The `data` field is set to TBD.
   WAKU = 3,
-  IPFS = 4,
+  // The `data` field is set to TBD
+  RESERVED = 4,
+  // The `data` field of the emitted `Proof` struct contains the IPFS address (`bytes32`) of the proofs + conditional order parameters.
+  IPFS = 5,
 }
 
 /**
@@ -85,6 +92,7 @@ export type ProofWithParams = {
  */
 export class Multiplexer {
   public chain: SupportedChainId
+  public location?: ProofLocation
 
   private orders: Record<string, BaseConditionalOrder<any>> = {}
   private tree: StandardMerkleTree<string[]>
