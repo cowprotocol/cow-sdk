@@ -91,10 +91,12 @@ export type ProofWithParams = {
  * - BONUS: Upload proofs to IPFS or Swarm and use the location within the ProofStruct to direct indexers.
  */
 export class Multiplexer {
+  static orderTypeRegistry: Record<string, new (...args: any[]) => BaseConditionalOrder<any, any>> = {}
+
   public chain: SupportedChainId
   public location?: ProofLocation
 
-  private orders: Record<string, BaseConditionalOrder<any>> = {}
+  private orders: Record<string, BaseConditionalOrder<any, any>> = {}
   private tree: StandardMerkleTree<string[]>
   private ctx: string | undefined = undefined
 
@@ -103,7 +105,7 @@ export class Multiplexer {
    * @param orders An optional array of conditional orders to initialize the merkle tree with.
    * @param root An optional root to verify against.
    */
-  constructor(chain: SupportedChainId, orders: BaseConditionalOrder<any>[] = [], root?: string) {
+  constructor(chain: SupportedChainId, orders?: BaseConditionalOrder<any, any>[], root?: string) {
     this.chain = chain
     this.orders = orders.reduce((acc, order) => {
       acc[order.id] = order
@@ -124,7 +126,7 @@ export class Multiplexer {
    * Mark a single conditional order as valid.
    * @param order The conditional order for `ComposableCoW` to signal it's intent to trade.
    */
-  static create<T>(order: BaseConditionalOrder<T>): Promise<string> {
+  static create<T, P>(order: BaseConditionalOrder<T, P>): Promise<string> {
     throw new Error('Not implemented')
   }
 
@@ -132,7 +134,7 @@ export class Multiplexer {
    * Add a conditional order to the merkle tree.
    * @param order The order to add to the merkle tree.
    */
-  add<T>(order: BaseConditionalOrder<T>): void {
+  add<T, P>(order: BaseConditionalOrder<T, P>): void {
     this.orders[order.id] = order
     this.reset()
   }
@@ -151,7 +153,10 @@ export class Multiplexer {
    * @param id The id of the `BaseConditionalOrder` to update.
    * @param updater A function that takes the existing `BaseConditionalOrder` and context, returning an updated `BaseConditionalOrder`.
    */
-  update<T>(id: string, updater: (order: BaseConditionalOrder<T>, ctx?: string) => BaseConditionalOrder<T>): void {
+  update<T, P>(
+    id: string,
+    updater: (order: BaseConditionalOrder<T, P>, ctx?: string) => BaseConditionalOrder<T, P>
+  ): void {
     // copy the existing order and update it, given the existing context (if any)
     const order = updater(this.orders[id], this.ctx)
     // delete the existing order
