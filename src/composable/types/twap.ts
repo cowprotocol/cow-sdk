@@ -87,6 +87,15 @@ export class TWAP extends BaseConditionalOrder<TWAPData, TWAPDataParams> {
   }
 
   /**
+   * Create a TWAP order with sound defaults.
+   * @param staticInput The TWAP order parameters in a more user-friendly format.
+   * @returns An instance of the TWAP order.
+   */
+  static default(staticInput: TWAPDataParams): BaseConditionalOrder<TWAPData, TWAPDataParams> {
+    return new TWAP(TWAP_ADDRESS, undefined, staticInput, false)
+  }
+
+  /**
    * Enforces that TWAPs will commence at the beginning of a block by use of the
    * `CurrentBlockTimestampFactory` contract to provide the current block timestamp
    * as the start time of the TWAP.
