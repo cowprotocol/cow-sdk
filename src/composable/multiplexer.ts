@@ -12,7 +12,7 @@ const CONDITIONAL_ORDER_LEAF_ABI = ['address', 'bytes32', 'bytes']
 
 const PAYLOAD_EMITTED_ABI = ['tuple(bytes32[] proof, tuple(address handler, bytes32 salt, bytes staticInput) params)[]']
 
-// const PROOF_ABI = ['tuple(uint256 location, bytes data)']
+const PROOF_ABI = ['tuple(uint256 location, bytes data)']
 
 export enum ProofLocation {
   // The location of the proofs is private to the caller.
@@ -85,7 +85,7 @@ export type ProofWithParams = {
  *
  * This class provides functionality to:
  * - Generate a merkle tree of conditional orders
- * - Generate off-chain proofs for all orders in the merkle tree
+ * - Generate proofs for all orders in the merkle tree
  * - Save off-chain proofs, with the ability to omit / skip specific conditional orders
  * - Propose `create` and `setRoot` to a ComposableCoW-enabled Safe
  * - BONUS: Upload proofs to IPFS or Swarm and use the location within the ProofStruct to direct indexers.
@@ -180,9 +180,12 @@ export class Multiplexer {
    * @param filter {@link getProofs}
    * @returns An ABI-encoded payload to be used in the `Proof` struct.
    */
-  encodeProofs(filter?: (v: any) => boolean): string {
-    throw new Error('Not implemented')
-    const proofs = this.getProofs(filter)
+  encodeProofAndParamsToEmit(filter?: (v: string[]) => boolean): string {
+    return utils.defaultAbiCoder.encode(
+      PAYLOAD_EMITTED_ABI,
+      this.getProofs(filter).map((p) => ({ proof: p.proof, params: p.params }))
+    )
+  }
 
     return utils.defaultAbiCoder.encode(PAYLOAD_EMITTED_ABI, proofs)
   }

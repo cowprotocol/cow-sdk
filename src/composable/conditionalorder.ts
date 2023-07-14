@@ -25,8 +25,7 @@ export type ConditionalOrderParams = {
  * **NOTE**: Instances of conditional orders have an `id` property that is a `keccak256` hash of
  *           the serialized conditional order.
  */
-export abstract class BaseConditionalOrder<T> {
-  public readonly orderType: string
+export abstract class BaseConditionalOrder<T, P> {
   public readonly handler: string
   public readonly salt: string
   public readonly staticInput: T
@@ -45,11 +44,10 @@ export abstract class BaseConditionalOrder<T> {
    * @throws If the handler is not a valid ethereum address.
    * @throws If the salt is not a valid 32-byte string.
    */
-  protected constructor(
-    orderType: string,
+  constructor(
     handler: string,
     salt: string = keccak256(ethers.utils.randomBytes(32)),
-    staticInput: T,
+    staticInput: P,
     hasOffChainInput = false
   ) {
     // Verify input to the constructor
@@ -63,12 +61,17 @@ export abstract class BaseConditionalOrder<T> {
       throw new Error(`Invalid salt: ${salt}`)
     }
 
-    this.orderType = orderType
     this.handler = handler
     this.salt = salt
-    this.staticInput = staticInput
+    this.staticInput = this.transformParamsToData(staticInput)
     this.hasOffChainInput = hasOffChainInput
   }
+
+  /**
+   * Get the concrete type of the conditional order.
+   * @returns {string} The concrete type of the conditional order.
+   */
+  abstract get orderType(): string
 
   /**
    * Get the context dependency for the conditional order.
@@ -144,7 +147,7 @@ export abstract class BaseConditionalOrder<T> {
    * Create a human-readable string representation of the conditional order.
    * @param tokenFormatter An optional function that takes an address and an amount and returns a human-readable string.
    */
-  abstract toString(tokenFormatter: ((address: string, amount: BigNumber) => string) | undefined): string
+  abstract toString(tokenFormatter?: (address: string, amount: BigNumber) => string): string
 
   /**
    * Serializes the conditional order into it's ABI-encoded form.
@@ -172,6 +175,18 @@ export abstract class BaseConditionalOrder<T> {
     } catch (e) {
       throw new Error('SerializationFailed')
     }
+  }
+
+  /**
+   * Apply any transformations to the parameters that are passed in to the constructor.
+   *
+   * **NOTE**: This should be overridden by any conditional order that requires transformations.
+   * This implementation is a no-op.
+   * @param params {P} Parameters that are passed in to the constructor.
+   * @returns {T} The static input for the conditional order.
+   */
+  protected transformParamsToData(params: P): T {
+    return params as unknown as T
   }
 
   /**
