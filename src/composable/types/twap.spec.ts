@@ -29,7 +29,7 @@ export const TWAP_PARAMS_TEST: TWAPDataParams = {
   appData: '0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5',
 }
 
-const TWAP_SERIALIZED = (salt?: string): string => {
+export const TWAP_SERIALIZED = (salt?: string): string => {
   return (
     '0x' +
     '0000000000000000000000000000000000000000000000000000000000000020' +
@@ -68,11 +68,17 @@ describe('TWAP', () => {
 
     const twap2 = TWAP.default({ ...TWAP_PARAMS_TEST, t0: BigNumber.from(1) })
     expect(twap2.context).toBeUndefined()
+
+    expect(() => new TWAP('0xdeaddeaddeaddeaddeaddeaddeaddeaddeaddead', undefined, TWAP_PARAMS_TEST)).toThrow(
+      'InvalidHandler'
+    )
   })
 
   test('isValid: Validates TWAP params', () => {
     expect(() => TWAP.default({ ...TWAP_PARAMS_TEST })).not.toThrow()
-    expect(() => TWAP.default({ ...TWAP_PARAMS_TEST, sellToken: TWAP_PARAMS_TEST.buyToken })).toThrow('InvalidSameToken')
+    expect(() => TWAP.default({ ...TWAP_PARAMS_TEST, sellToken: TWAP_PARAMS_TEST.buyToken })).toThrow(
+      'InvalidSameToken'
+    )
     expect(() => TWAP.default({ ...TWAP_PARAMS_TEST, sellToken: constants.AddressZero })).toThrow('InvalidToken')
     expect(() => TWAP.default({ ...TWAP_PARAMS_TEST, buyToken: constants.AddressZero })).toThrow('InvalidToken')
     expect(() => TWAP.default({ ...TWAP_PARAMS_TEST, sellAmount: BigNumber.from(0) })).toThrow('InvalidSellAmount')
