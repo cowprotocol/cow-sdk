@@ -336,7 +336,7 @@ export class Multiplexer {
    * @returns The ABI-encoded `ProofStruct` for `setRoot` and `setRootWithContext`.
    */
   async prepareProofStruct(
-    location: ProofLocation,
+    location: ProofLocation = this.location,
     filter?: (v: string[]) => boolean,
     uploader?: (offChainEncoded: string) => Promise<string>
   ): Promise<string> {
@@ -368,6 +368,7 @@ export class Multiplexer {
       .then((d) => {
         // if we get here, we have a valid `data` field for the `ProofStruct`
         // This means that if there was an upload function, it was called and the upload was successful
+        // note: we don't check if the location has changed because we don't care
         this.location = location
         return utils.defaultAbiCoder.encode(PROOF_ABI, [location, d])
       })
