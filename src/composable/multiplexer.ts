@@ -75,7 +75,7 @@ export type PayloadLocationEmitted = {
 export type ProofWithParams = {
   // The proof for the Merkle tree that contains the conditional order.
   proof: string[]
-  // The parameters for the conditional order.
+  // The parameters as expected by ABI encoding.
   params: ConditionalOrderParams
 }
 
@@ -115,12 +115,12 @@ export class Multiplexer {
 
     // If orders are provided, the length must be > 0
     if (orders && Object.keys(orders).length === 0) {
-      throw new Error('If orders are provided, they must actually be provided! (array length is zero)')
+      throw new Error('orders must have non-zero length')
     }
 
     // If orders are provided, so must a root, and vice versa
     if ((orders && !root) || (!orders && root)) {
-      throw new Error('Orders and root must be provided together')
+      throw new Error('orders cannot have undefined root')
     }
 
     // can only proceed past here if both orders and root are provided, or neither are
@@ -142,7 +142,7 @@ export class Multiplexer {
 
       // if generate was successful, this.tree will be defined and we can verify the root
       if (this.tree && this.tree.root !== root) {
-        throw new Error('Root mismatch')
+        throw new Error('root mismatch')
       }
     }
   }
@@ -436,6 +436,10 @@ export class Multiplexer {
     return this.encodeToJSON(filter)
   }
 
+  dumpProofsAndParams(filter?: (v: string[]) => boolean): ProofWithParams[] {
+    return this.getProofs(filter)
+  }
+
   /**
    * Get the proofs with parameters for the conditional orders in the merkle tree.
    * @param filter A function that takes a conditional order and returns a boolean indicating
@@ -443,7 +447,7 @@ export class Multiplexer {
    * @returns An array of proofs and their order's parameters for the conditional orders in the
    *          merkle tree.
    */
-  private getProofs(filter?: (v: string[]) => boolean, obj = false): ProofWithParams[] {
+  private getProofs(filter?: (v: string[]) => boolean): ProofWithParams[] {
     if (!this.tree) {
       // If the merkle tree doesn't generate, it will throw
       this.generate()
@@ -517,5 +521,12 @@ export class Multiplexer {
     conditionalOrderClass: new (...args: any[]) => BaseConditionalOrder<any, any>
   ) {
     Multiplexer.orderTypeRegistry[orderType] = conditionalOrderClass
+  }
+
+  /**
+   * Reset the order type registry.
+   */
+  public static resetOrderTypeRegistry() {
+    Multiplexer.orderTypeRegistry = {}
   }
 }
