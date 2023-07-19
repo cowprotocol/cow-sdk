@@ -289,13 +289,13 @@ export class Multiplexer {
    * @returns A `BaseConditionalOrder` at the given index.
    */
   getByIndex(i: number): BaseConditionalOrder<any, any> {
-    return this.orders[this.listOrderIds[i]]
+    return this.orders[this.orderIds[i]]
   }
 
   /**
    * Get all the conditional order ids in the multiplexer.
    */
-  get listOrderIds(): string[] {
+  get orderIds(): string[] {
     return Object.keys(this.orders)
   }
 
@@ -331,16 +331,8 @@ export class Multiplexer {
    * @throws If the `ProofWithParams` array cannot be deserialized.
    */
   static decodeFromJSON(s: string): ProofWithParams[] {
-    return JSON.parse(s, (_k, v) => {
-      // Make sure we deserialize `BigNumber` correctly
-      if (typeof v === 'object' && v !== null && v.hasOwnProperty('type') && v.hasOwnProperty('hex')) {
-        if (v.type === 'BigNumber') {
-          return BigNumber.from(v)
-        }
-      }
-
-      return v
-    })
+    // no need to rehydrate `BigNumber` as this is fully ABI encoded
+    return JSON.parse(s)
   }
 
   /**
