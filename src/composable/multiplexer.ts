@@ -212,14 +212,13 @@ export class Multiplexer {
   toJSON(): string {
     // Make sure the merkle tree is generated
     if (!this.tree) {
+      // If the merkle tree doesn't generate, it will throw
       this.generate()
-
-      // If the merkle tree is still not generated, throw
-      if (!this.tree) throw new Error('Merkle tree not generated')
     }
 
     // serialize the multiplexer, including the root but excluding the merkle tree.
-    return JSON.stringify({ ...this, root: this.tree.root }, (k, v) => {
+    // use a non-null assertion because we know the merkle tree is defined
+    return JSON.stringify({ ...this, root: this.tree!.root }, (k, v) => {
       // filter out the merkle tree
       if (k === 'tree') return undefined
       if (typeof v === 'object' && v !== null && 'orderType' in v) {
@@ -300,6 +299,16 @@ export class Multiplexer {
     return Object.keys(this.orders)
   }
 
+  get root(): string {
+    if (!this.tree) {
+      // If the merkle tree doesn't generate, it will throw
+      this.generate()
+    }
+
+    // use a non-null assertion because we know the merkle tree is defined
+    return this.tree!.root
+  }
+
   /**
    * Generate the merkle tree for the current set of conditional orders.
    *
@@ -351,9 +360,10 @@ export class Multiplexer {
     location: ProofLocation = this.location,
     filter?: (v: string[]) => boolean,
     uploader?: (offChainEncoded: string) => Promise<string>
-  ): Promise<string> {
+  ): Promise<ComposableCoW.ProofStruct> {
     if (!this.tree) {
-      throw new Error('Merkle tree not generated')
+      // If the merkle tree doesn't generate, it will throw
+      this.generate()
     }
 
     const data = async (): Promise<string> => {
@@ -439,13 +449,15 @@ export class Multiplexer {
    * @returns An array of proofs and their order's parameters for the conditional orders in the
    *          merkle tree.
    */
-  private getProofs(filter?: (v: string[]) => boolean): ProofWithParams[] {
+  private getProofs(filter?: (v: string[]) => boolean, obj = false): ProofWithParams[] {
     if (!this.tree) {
-      throw new Error('Merkle tree not generated')
+      // If the merkle tree doesn't generate, it will throw
+      this.generate()
     }
 
     // Get a list of all entry indices in the tree, excluding any that don't match the filter
-    return [...this.tree.entries()]
+    // non-null assertion because we know the tree is defined
+    return [...this.tree!.entries()]
       .map(([i, v]) => {
         if ((filter && filter(v)) || filter === undefined) {
           return { idx: i, value: v }
