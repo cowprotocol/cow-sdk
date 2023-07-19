@@ -381,16 +381,20 @@ export class Multiplexer {
     return await data()
       .then((d) => {
         try {
-          // validate that `d` is a valid `bytes` field for the `ProofStruct`
-          utils.defaultAbiCoder.decode(['bytes'], d)
+          // validate that `d` is a valid `bytes` ready to be abi-encoded
+          utils.hexlify(utils.arrayify(d))
 
           // if we get here, we have a valid `data` field for the `ProofStruct`
           // This means that if there was an upload function, it was called and the upload was successful
           // note: we don't check if the location has changed because we don't care
           this.location = location
-          return utils.defaultAbiCoder.encode(PROOF_ABI, [location, d])
+
+          return {
+            location,
+            data: d,
+          }
         } catch (e) {
-          throw new Error(`Data returned by uploader is invalid: ${e}`)
+          throw new Error(`data returned by uploader is invalid`)
         }
       })
       .catch((e) => {
