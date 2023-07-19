@@ -127,6 +127,16 @@ export class Multiplexer {
 
     // can only proceed past here if both orders and root are provided, or neither are
 
+    // validate that no unknown order types are provided
+    for (const orderKey in orders) {
+      if (orders.hasOwnProperty(orderKey)) {
+        const order = orders[orderKey]
+        if (!Multiplexer.orderTypeRegistry.hasOwnProperty(order.orderType)) {
+          throw new Error(`Unknown order type: ${order.orderType}`)
+        }
+      }
+    }
+
     // If orders (and therefore the root) are provided, generate the merkle tree
     if (orders) {
       this.orders = orders
