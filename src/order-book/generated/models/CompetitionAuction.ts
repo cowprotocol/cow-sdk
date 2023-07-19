@@ -11,7 +11,7 @@ import type { UID } from './UID';
  */
 export type CompetitionAuction = {
     /**
-     * The uids of the orders included in the auction.
+     * The UIDs of the orders included in the auction.
      *
      */
     orders?: Array<UID>;

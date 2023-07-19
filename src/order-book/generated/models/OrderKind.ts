@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 /**
- * Is this a buy order or sell order?
+ * Is this order a buy or sell?
  */
 export enum OrderKind {
     BUY = 'buy',

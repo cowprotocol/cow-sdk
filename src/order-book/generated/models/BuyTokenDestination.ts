@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 /**
- * Where should the buy token be transfered to?
+ * Where should the `buyToken` be transferred to?
  */
 export enum BuyTokenDestination {
     ERC20 = 'erc20',

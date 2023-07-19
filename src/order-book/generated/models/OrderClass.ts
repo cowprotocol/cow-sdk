@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 /**
- * Order class
+ * Order class.
  */
 export enum OrderClass {
     MARKET = 'market',
