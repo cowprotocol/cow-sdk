@@ -45,3 +45,4 @@ export type { TotalSurplus } from './models/TotalSurplus';
 export type { Trade } from './models/Trade';
 export type { TransactionHash } from './models/TransactionHash';
 export type { UID } from './models/UID';
+export type { VersionResponse } from './models/VersionResponse';
