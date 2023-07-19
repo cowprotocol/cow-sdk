@@ -8,3 +8,4 @@ jest.results.json
 .yalc
 yalc.lock
 src/composable/generated
+docs/typedoc/
