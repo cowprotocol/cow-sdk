@@ -5,13 +5,11 @@ import { COMPOSABLE_COW_CONTRACT_ADDRESS, SupportedChainId } from '../common'
 import { BaseConditionalOrder, ConditionalOrderParams } from './conditionalorder'
 
 import { ComposableCoW__factory } from './generated'
-import { GPv2Order } from './generated/ComposableCoW'
+import { ComposableCoW, GPv2Order } from './generated/ComposableCoW'
 
 const CONDITIONAL_ORDER_LEAF_ABI = ['address', 'bytes32', 'bytes']
 
 const PAYLOAD_EMITTED_ABI = ['tuple(bytes32[] proof, tuple(address handler, bytes32 salt, bytes staticInput) params)[]']
-
-const PROOF_ABI = ['tuple(uint256 location, bytes data)']
 
 export type Orders = Record<string, BaseConditionalOrder<any, any>>
 
@@ -468,12 +466,14 @@ export class Multiplexer {
         }
 
         if (x) {
+          const p: ConditionalOrderParams = {
+            handler: x.value[0],
+            salt: x.value[1],
+            staticInput: x.value[2],
+          }
           acc.push({
             proof: this.tree.getProof(x.idx),
-            params:
-              this.orders[
-                BaseConditionalOrder.leafToId({ handler: x.value[0], salt: x.value[1], staticInput: x.value[2] })
-              ],
+            params: p,
           })
         }
         return acc
@@ -486,7 +486,7 @@ export class Multiplexer {
    * @returns ABI-encoded `data` for the `ProofStruct`.
    */
   private encodeToABI(filter?: (v: string[]) => boolean): string {
-    return utils.defaultAbiCoder.encode(PAYLOAD_EMITTED_ABI, this.getProofs(filter))
+    return utils.defaultAbiCoder.encode(PAYLOAD_EMITTED_ABI, [this.getProofs(filter)])
   }
 
   /**
