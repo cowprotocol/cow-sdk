@@ -13,6 +13,8 @@ const PAYLOAD_EMITTED_ABI = ['tuple(bytes32[] proof, tuple(address handler, byte
 
 const PROOF_ABI = ['tuple(uint256 location, bytes data)']
 
+export type Orders = Record<string, BaseConditionalOrder<any, any>>
+
 export enum ProofLocation {
   // The location of the proofs is private to the caller.
   PRIVATE = 0,
@@ -94,7 +96,7 @@ export class Multiplexer {
   public chain: SupportedChainId
   public location: ProofLocation
 
-  private orders: Record<string, BaseConditionalOrder<any, any>> = {}
+  private orders: Orders = {}
   private tree?: StandardMerkleTree<string[]>
   private ctx?: string
 
@@ -106,7 +108,7 @@ export class Multiplexer {
    */
   constructor(
     chain: SupportedChainId,
-    orders?: Record<string, BaseConditionalOrder<any, any>>,
+    orders?: Orders,
     root?: string,
     location: ProofLocation = ProofLocation.PRIVATE
   ) {
@@ -155,7 +157,7 @@ export class Multiplexer {
     // reviver function to deserialize the orders
     const reviver = (k: string, v: any) => {
       if (k === 'orders' && typeof v === 'object' && v !== null) {
-        const orders: { [key: string]: BaseConditionalOrder<any, any> } = {}
+        const orders: Orders = {}
 
         for (const orderKey in v) {
           if (v.hasOwnProperty(orderKey)) {
