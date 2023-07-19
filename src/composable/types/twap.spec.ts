@@ -19,11 +19,11 @@ enableFetchMocks()
 export const TWAP_PARAMS_TEST: TWAPDataParams = {
   sellToken: '0x6810e776880C02933D47DB1b9fc05908e5386b96',
   buyToken: '0xDAE5F1590db13E3B40423B5b5c5fbf175515910b',
+  receiver: '0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF',
   sellAmount: utils.parseEther('1'),
   buyAmount: utils.parseEther('1'),
   t: BigNumber.from(60 * 60),
   n: BigNumber.from(10),
-  receiver: '0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF',
   span: BigNumber.from(0),
   t0: BigNumber.from(0),
   appData: '0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5',
@@ -48,6 +48,21 @@ export const TWAP_SERIALIZED = (salt?: string): string => {
     '0000000000000000000000000000000000000000000000000000000000000000' +
     'd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5'
   )
+}
+
+export function generateRandomTWAPData(): TWAPDataParams {
+  return {
+    sellToken: utils.getAddress(utils.hexlify(utils.randomBytes(20))),
+    buyToken: utils.getAddress(utils.hexlify(utils.randomBytes(20))),
+    receiver: constants.AddressZero,
+    sellAmount: utils.parseEther('1'),
+    buyAmount: utils.parseEther('1'),
+    t: BigNumber.from(60 * 60),
+    n: BigNumber.from(10),
+    span: BigNumber.from(0),
+    t0: BigNumber.from(0),
+    appData: utils.hexlify(utils.randomBytes(32)),
+  }
 }
 
 describe('TWAP', () => {
