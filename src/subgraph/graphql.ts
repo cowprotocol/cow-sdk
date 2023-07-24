@@ -1872,7 +1872,7 @@ export type Token = {
   priceUsd?: Maybe<Scalars['BigDecimal']>;
   /** Token symbol fetched by contract call */
   symbol: Scalars['String'];
-  /** Total volume managed in CowSwap */
+  /** Total volume managed in CoW Protocol */
   totalVolume?: Maybe<Scalars['BigInt']>;
   /** Total volume in Eth */
   totalVolumeEth: Scalars['BigDecimal'];

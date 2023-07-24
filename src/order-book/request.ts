@@ -39,7 +39,7 @@ export const DEFAULT_BACKOFF_OPTIONS: BackoffOptions = {
   },
 }
 
-// CowSwap order-book API is limited by 5 requests per second from one IP
+// CoW Protocol order-book API is limited by 5 requests per second from one IP
 export const DEFAULT_LIMITER_OPTIONS: RateLimiterOpts = {
   tokensPerInterval: 5,
   interval: 'second',
