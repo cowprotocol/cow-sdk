@@ -643,7 +643,7 @@ describe('CoW Api', () => {
     // then
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      `https://api.cow.fi/xdai/api/v1/${address}/total_surplus`,
+      `https://api.cow.fi/xdai/api/v1/users/${address}/total_surplus`,
       FETCH_RESPONSE_PARAMETERS
     )
     expect(surplus).toEqual(totalSurplus)
