@@ -156,12 +156,8 @@ export class OrderBookApi {
   getNativePrice(tokenAddress: Address, contextOverride: PartialApiContext = {}): Promise<NativePriceResponse> {
     return this.fetch({ path: `/api/v1/token/${tokenAddress}/native_price`, method: 'GET' }, contextOverride)
   }
-  getTotalSurplus(
-    address: Address,
-    requestBody: OrderQuoteRequest,
-    contextOverride: PartialApiContext = {}
-  ): Promise<TotalSurplus> {
-    return this.fetch({ path: `/api/v1/${address}/total_surplus`, method: 'GET', body: requestBody }, contextOverride)
+  getTotalSurplus(address: Address, contextOverride: PartialApiContext = {}): Promise<TotalSurplus> {
+    return this.fetch({ path: `/api/v1/${address}/total_surplus`, method: 'GET' }, contextOverride)
   }
 
   getAppData(appDataHash: AppDataHash, contextOverride: PartialApiContext = {}): Promise<ProtocolAppData> {

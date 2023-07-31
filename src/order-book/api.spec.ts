@@ -626,53 +626,76 @@ describe('CoW Api', () => {
     )
   })
 
-  test('Valid: Get AppData', async () => {
+  test('Valid: Get total surplus', async () => {
     // given
-    const APP_DATA_HASH = '0x1fddf237451709522e5ac66887f979db70c3501efd4623ee86225ff914423fa1'
-    const APP_DATA_BODY = {
-      fullAppData: '{"hello": "world"}',
+    const address = '0x6810e776880c02933d47db1b9fc05908e5386b96'
+    const totalSurplus = {
+      totalSurplus: '123456789',
     }
-    fetchMock.mockResponseOnce(JSON.stringify(APP_DATA_BODY), {
+    fetchMock.mockResponseOnce(JSON.stringify(totalSurplus), {
       status: HTTP_STATUS_OK,
       headers: HEADERS,
     })
 
     // when
-    const appData = await orderBookApi.getAppData(APP_DATA_HASH)
+    const surplus = await orderBookApi.getTotalSurplus(address)
 
     // then
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      `https://api.cow.fi/xdai/api/v1/app_data/${APP_DATA_HASH}`,
+      `https://api.cow.fi/xdai/api/v1/${address}/total_surplus`,
       FETCH_RESPONSE_PARAMETERS
     )
-    expect(appData).toEqual(APP_DATA_BODY)
+    expect(surplus).toEqual(totalSurplus)
+  })
+
+  test('Valid: Get AppData', async () => {
+    // given
+    const appDataHash = '0x1fddf237451709522e5ac66887f979db70c3501efd4623ee86225ff914423fa1'
+    const appDataBody = {
+      fullAppData: '{"hello": "world"}',
+    }
+    fetchMock.mockResponseOnce(JSON.stringify(appDataBody), {
+      status: HTTP_STATUS_OK,
+      headers: HEADERS,
+    })
+
+    // when
+    const appData = await orderBookApi.getAppData(appDataHash)
+
+    // then
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      `https://api.cow.fi/xdai/api/v1/app_data/${appDataHash}`,
+      FETCH_RESPONSE_PARAMETERS
+    )
+    expect(appData).toEqual(appDataBody)
   })
 
   test('Valid: Upload AppData', async () => {
     // given
-    const APP_DATA_HASH = '0x1fddf237451709522e5ac66887f979db70c3501efd4623ee86225ff914423fa1'
-    const APP_DATA_BODY = {
+    const appDataHash = '0x1fddf237451709522e5ac66887f979db70c3501efd4623ee86225ff914423fa1'
+    const appDataBody = {
       fullAppData: '{"hello": "world"}',
     }
-    fetchMock.mockResponseOnce(JSON.stringify(APP_DATA_BODY), {
+    fetchMock.mockResponseOnce(JSON.stringify(appDataBody), {
       status: HTTP_STATUS_OK,
       headers: HEADERS,
     })
 
     // when
-    const appData = await orderBookApi.uploadAppData(APP_DATA_HASH, APP_DATA_BODY.fullAppData)
+    const appData = await orderBookApi.uploadAppData(appDataHash, appDataBody.fullAppData)
 
     // then
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      `https://api.cow.fi/xdai/api/v1/app_data/${APP_DATA_HASH}`,
+      `https://api.cow.fi/xdai/api/v1/app_data/${appDataHash}`,
       expect.objectContaining({
-        body: JSON.stringify(APP_DATA_BODY),
+        body: JSON.stringify(appDataBody),
         method: 'PUT',
       })
     )
-    expect(appData).toEqual(APP_DATA_BODY)
+    expect(appData).toEqual(appDataBody)
   })
 
   test('Valid: Get solver competition by auctionId', async () => {
