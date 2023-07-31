@@ -1,12 +1,16 @@
 import 'cross-fetch/polyfill'
 import {
   Address,
+  AppDataHash,
   NativePriceResponse,
   Order,
   OrderCancellations,
   OrderCreation,
   OrderQuoteRequest,
   OrderQuoteResponse,
+  ProtocolAppData,
+  SolverCompetitionResponse,
+  TotalSurplus,
   Trade,
   TransactionHash,
   UID,
@@ -55,6 +59,10 @@ export class OrderBookApi {
   constructor(context: PartialApiContext & RequestOptions = {}) {
     this.context = { ...DEFAULT_COW_API_CONTEXT, ...context }
     this.rateLimiter = new RateLimiter(context.limiterOpts || DEFAULT_LIMITER_OPTIONS)
+  }
+
+  getVersion(contextOverride: PartialApiContext = {}): Promise<string> {
+    return this.fetch({ path: '/api/v1/version', method: 'GET' }, contextOverride)
   }
 
   getTrades(
@@ -147,6 +155,45 @@ export class OrderBookApi {
 
   getNativePrice(tokenAddress: Address, contextOverride: PartialApiContext = {}): Promise<NativePriceResponse> {
     return this.fetch({ path: `/api/v1/token/${tokenAddress}/native_price`, method: 'GET' }, contextOverride)
+  }
+  getTotalSurplus(
+    address: Address,
+    requestBody: OrderQuoteRequest,
+    contextOverride: PartialApiContext = {}
+  ): Promise<TotalSurplus> {
+    return this.fetch({ path: `/api/v1/${address}/total_surplus`, method: 'GET', body: requestBody }, contextOverride)
+  }
+
+  getAppData(appDataHash: AppDataHash, contextOverride: PartialApiContext = {}): Promise<ProtocolAppData> {
+    return this.fetch({ path: `/api/v1/app_data/${appDataHash}`, method: 'GET' }, contextOverride)
+  }
+
+  uploadAppData(
+    appDataHash: AppDataHash,
+    fullAppData: string,
+    contextOverride: PartialApiContext = {}
+  ): Promise<ProtocolAppData> {
+    return this.fetch(
+      { path: `/api/v1/app_data/${appDataHash}`, method: 'PUT', body: { fullAppData } },
+      contextOverride
+    )
+  }
+
+  getSolverCompetition(auctionId: number, contextOverride?: PartialApiContext): Promise<SolverCompetitionResponse>
+
+  getSolverCompetition(txHash: string, contextOverride?: PartialApiContext): Promise<SolverCompetitionResponse>
+
+  getSolverCompetition(
+    auctionIdorTx: number | string,
+    contextOverride: PartialApiContext = {}
+  ): Promise<SolverCompetitionResponse> {
+    return this.fetch(
+      {
+        path: `/api/v1/solver_competition${typeof auctionIdorTx === 'string' ? '/by_tx_hash' : ''}/${auctionIdorTx}`,
+        method: 'GET',
+      },
+      contextOverride
+    )
   }
 
   getOrderLink(uid: UID, contextOverride?: PartialApiContext): string {
