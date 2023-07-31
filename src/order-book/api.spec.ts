@@ -667,7 +667,7 @@ describe('CoW Api', () => {
       `https://api.cow.fi/xdai/api/v1/app_data/${appDataHash}`,
       FETCH_RESPONSE_PARAMETERS
     )
-    expect(appData).toEqual(appDataBody)
+    expect(appData).toEqual(JSON.parse(appDataBody))
   })
 
   test('Valid: Upload AppData', async () => {
@@ -691,7 +691,7 @@ describe('CoW Api', () => {
         method: 'PUT',
       })
     )
-    expect(appData).toEqual(appDataBody)
+    expect(appData).toEqual(JSON.parse(appDataBody))
   })
 
   test('Valid: Get solver competition by auctionId', async () => {
