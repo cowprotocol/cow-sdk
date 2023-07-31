@@ -169,10 +169,7 @@ export class OrderBookApi {
     fullAppData: string,
     contextOverride: PartialApiContext = {}
   ): Promise<ProtocolAppData> {
-    return this.fetch(
-      { path: `/api/v1/app_data/${appDataHash}`, method: 'PUT', body: { fullAppData } },
-      contextOverride
-    )
+    return this.fetch({ path: `/api/v1/app_data/${appDataHash}`, method: 'PUT', body: fullAppData }, contextOverride)
   }
 
   getSolverCompetition(auctionId: number, contextOverride?: PartialApiContext): Promise<SolverCompetitionResponse>
