@@ -652,10 +652,8 @@ describe('CoW Api', () => {
   test('Valid: Get AppData', async () => {
     // given
     const appDataHash = '0x1fddf237451709522e5ac66887f979db70c3501efd4623ee86225ff914423fa1'
-    const appDataBody = {
-      fullAppData: '{"hello": "world"}',
-    }
-    fetchMock.mockResponseOnce(JSON.stringify(appDataBody), {
+    const appDataBody = '{"hello": "world"}'
+    fetchMock.mockResponseOnce(appDataBody, {
       status: HTTP_STATUS_OK,
       headers: HEADERS,
     })
@@ -675,16 +673,14 @@ describe('CoW Api', () => {
   test('Valid: Upload AppData', async () => {
     // given
     const appDataHash = '0x1fddf237451709522e5ac66887f979db70c3501efd4623ee86225ff914423fa1'
-    const appDataBody = {
-      fullAppData: '{"hello": "world"}',
-    }
-    fetchMock.mockResponseOnce(JSON.stringify(appDataBody), {
+    const appDataBody = '{"hello": "world"}'
+    fetchMock.mockResponseOnce(appDataBody, {
       status: HTTP_STATUS_OK,
       headers: HEADERS,
     })
 
     // when
-    const appData = await orderBookApi.uploadAppData(appDataHash, appDataBody.fullAppData)
+    const appData = await orderBookApi.uploadAppData(appDataHash, appDataBody)
 
     // then
     expect(fetchMock).toHaveBeenCalledTimes(1)
