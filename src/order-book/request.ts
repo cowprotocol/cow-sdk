@@ -83,7 +83,16 @@ export async function request<T>(
   }
 
   const url = `${baseUrl}${path}${queryString}`
-  const init: RequestInit = { method, body: body ? JSON.stringify(body) : undefined, headers }
+  const bodyContent = (() => {
+    if (!body) return undefined
+
+    return typeof body === 'string' ? body : JSON.stringify(body)
+  })()
+  const init: RequestInit = {
+    method,
+    body: bodyContent,
+    headers,
+  }
 
   return backOff<T>(async () => {
     await rateLimiter.removeTokens(1)

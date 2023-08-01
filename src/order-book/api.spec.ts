@@ -687,7 +687,7 @@ describe('CoW Api', () => {
     expect(fetchMock).toHaveBeenCalledWith(
       `https://api.cow.fi/xdai/api/v1/app_data/${appDataHash}`,
       expect.objectContaining({
-        body: JSON.stringify(appDataBody),
+        body: appDataBody,
         method: 'PUT',
       })
     )
