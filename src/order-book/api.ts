@@ -9,7 +9,6 @@ import {
   OrderCreation,
   OrderQuoteRequest,
   OrderQuoteResponse,
-  ProtocolAppData,
   SolverCompetitionResponse,
   TotalSurplus,
   Trade,
