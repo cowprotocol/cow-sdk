@@ -678,13 +678,13 @@ describe('CoW Api', () => {
     const appDataBody = {
       fullAppData: '{"hello": "world"}',
     }
-    fetchMock.mockResponseOnce(JSON.stringify(appDataBody), {
+    fetchMock.mockResponseOnce(JSON.stringify(appDataHash), {
       status: HTTP_STATUS_OK,
       headers: HEADERS,
     })
 
     // when
-    const appData = await orderBookApi.uploadAppData(appDataHash, appDataBody.fullAppData)
+    const appDataHashResult = await orderBookApi.uploadAppData(appDataHash, appDataBody.fullAppData)
 
     // then
     expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -695,7 +695,7 @@ describe('CoW Api', () => {
         method: 'PUT',
       })
     )
-    expect(appData).toEqual(appDataBody)
+    expect(appDataHashResult).toEqual(appDataHash)
   })
 
   test('Valid: Get solver competition by auctionId', async () => {

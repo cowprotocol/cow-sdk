@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 export type { Address } from './models/Address';
+export type { AppDataDocument } from './models/AppDataDocument';
 export type { AppDataHash } from './models/AppDataHash';
 export type { Auction } from './models/Auction';
 export type { AuctionPrices } from './models/AuctionPrices';

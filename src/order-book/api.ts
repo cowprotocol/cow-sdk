@@ -1,6 +1,7 @@
 import 'cross-fetch/polyfill'
 import {
   Address,
+  AppDataDocument,
   AppDataHash,
   NativePriceResponse,
   Order,
@@ -160,7 +161,7 @@ export class OrderBookApi {
     return this.fetch({ path: `/api/v1/users/${address}/total_surplus`, method: 'GET' }, contextOverride)
   }
 
-  getAppData(appDataHash: AppDataHash, contextOverride: PartialApiContext = {}): Promise<ProtocolAppData> {
+  getAppData(appDataHash: AppDataHash, contextOverride: PartialApiContext = {}): Promise<AppDataDocument> {
     return this.fetch({ path: `/api/v1/app_data/${appDataHash}`, method: 'GET' }, contextOverride)
   }
 
@@ -168,7 +169,7 @@ export class OrderBookApi {
     appDataHash: AppDataHash,
     fullAppData: string,
     contextOverride: PartialApiContext = {}
-  ): Promise<ProtocolAppData> {
+  ): Promise<AppDataDocument> {
     return this.fetch(
       { path: `/api/v1/app_data/${appDataHash}`, method: 'PUT', body: { fullAppData } },
       contextOverride
