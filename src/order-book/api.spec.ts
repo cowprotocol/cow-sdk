@@ -652,8 +652,10 @@ describe('CoW Api', () => {
   test('Valid: Get AppData', async () => {
     // given
     const appDataHash = '0x1fddf237451709522e5ac66887f979db70c3501efd4623ee86225ff914423fa1'
-    const appDataBody = '{"hello": "world"}'
-    fetchMock.mockResponseOnce(appDataBody, {
+    const appDataBody = {
+      fullAppData: '{"hello": "world"}',
+    }
+    fetchMock.mockResponseOnce(JSON.stringify(appDataBody), {
       status: HTTP_STATUS_OK,
       headers: HEADERS,
     })
@@ -667,7 +669,7 @@ describe('CoW Api', () => {
       `https://api.cow.fi/xdai/api/v1/app_data/${appDataHash}`,
       FETCH_RESPONSE_PARAMETERS
     )
-    expect(appData).toEqual(JSON.parse(appDataBody))
+    expect(appData).toEqual(appDataBody)
   })
 
   test('Valid: Upload AppData', async () => {
