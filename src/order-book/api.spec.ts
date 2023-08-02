@@ -16,6 +16,7 @@ import { OrderBookApi } from './api'
 import { BuyTokenDestination, EcdsaSigningScheme, OrderKind, SellTokenSource, SigningScheme } from './generated'
 import { SupportedChainId } from '../common/chains'
 import { BUY_ETH_ADDRESS } from './transformOrder'
+import { AUCTION } from './mock'
 
 enableFetchMocks()
 
@@ -115,6 +116,22 @@ describe('CoW Api', () => {
 
   afterEach(() => {
     jest.restoreAllMocks()
+  })
+
+  test('Valid: Get version', async () => {
+    // given
+    fetchMock.mockResponseOnce(JSON.stringify('v1.2.3'), {
+      status: HTTP_STATUS_OK,
+      headers: HEADERS,
+    })
+
+    // when
+    const version = await orderBookApi.getVersion()
+
+    // then
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith('https://api.cow.fi/xdai/api/v1/version', FETCH_RESPONSE_PARAMETERS)
+    expect(version).toEqual('v1.2.3')
   })
 
   test('Valid: Get orders link', async () => {
@@ -607,5 +624,117 @@ describe('CoW Api', () => {
       `https://barn.api.cow.fi/xdai/api/v1/orders/${ORDER_RESPONSE.uid}`,
       FETCH_RESPONSE_PARAMETERS
     )
+  })
+
+  test('Valid: Get total surplus', async () => {
+    // given
+    const address = '0x6810e776880c02933d47db1b9fc05908e5386b96'
+    const totalSurplus = {
+      totalSurplus: '123456789',
+    }
+    fetchMock.mockResponseOnce(JSON.stringify(totalSurplus), {
+      status: HTTP_STATUS_OK,
+      headers: HEADERS,
+    })
+
+    // when
+    const surplus = await orderBookApi.getTotalSurplus(address)
+
+    // then
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      `https://api.cow.fi/xdai/api/v1/users/${address}/total_surplus`,
+      FETCH_RESPONSE_PARAMETERS
+    )
+    expect(surplus).toEqual(totalSurplus)
+  })
+
+  test('Valid: Get AppData', async () => {
+    // given
+    const appDataHash = '0x1fddf237451709522e5ac66887f979db70c3501efd4623ee86225ff914423fa1'
+    const appDataBody = {
+      fullAppData: '{"hello": "world"}',
+    }
+    fetchMock.mockResponseOnce(JSON.stringify(appDataBody), {
+      status: HTTP_STATUS_OK,
+      headers: HEADERS,
+    })
+
+    // when
+    const appData = await orderBookApi.getAppData(appDataHash)
+
+    // then
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      `https://api.cow.fi/xdai/api/v1/app_data/${appDataHash}`,
+      FETCH_RESPONSE_PARAMETERS
+    )
+    expect(appData).toEqual(appDataBody)
+  })
+
+  test('Valid: Upload AppData', async () => {
+    // given
+    const appDataHash = '0x1fddf237451709522e5ac66887f979db70c3501efd4623ee86225ff914423fa1'
+    const appDataBody = {
+      fullAppData: '{"hello": "world"}',
+    }
+    fetchMock.mockResponseOnce(JSON.stringify(appDataHash), {
+      status: HTTP_STATUS_OK,
+      headers: HEADERS,
+    })
+
+    // when
+    const appDataHashResult = await orderBookApi.uploadAppData(appDataHash, appDataBody.fullAppData)
+
+    // then
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      `https://api.cow.fi/xdai/api/v1/app_data/${appDataHash}`,
+      expect.objectContaining({
+        body: JSON.stringify(appDataBody),
+        method: 'PUT',
+      })
+    )
+    expect(appDataHashResult).toEqual(appDataHash)
+  })
+
+  test('Valid: Get solver competition by auctionId', async () => {
+    // given
+    const auctionId = 7841036
+    fetchMock.mockResponseOnce(JSON.stringify(AUCTION), {
+      status: HTTP_STATUS_OK,
+      headers: HEADERS,
+    })
+
+    // when
+    const competition = await orderBookApi.getSolverCompetition(auctionId)
+
+    // then
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      `https://api.cow.fi/xdai/api/v1/solver_competition/${auctionId}`,
+      FETCH_RESPONSE_PARAMETERS
+    )
+    expect(competition).toEqual(AUCTION)
+  })
+
+  test('Valid: Get solver competition by tx hash', async () => {
+    // given
+    const txHash = '0xe395eac238e7c6b2f4c5dea57d4a3d9a2b42d9f4ae5574dd003f9e5dd76abeee'
+    fetchMock.mockResponseOnce(JSON.stringify(AUCTION), {
+      status: HTTP_STATUS_OK,
+      headers: HEADERS,
+    })
+
+    // when
+    const competition = await orderBookApi.getSolverCompetition(txHash)
+
+    // then
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      `https://api.cow.fi/xdai/api/v1/solver_competition/by_tx_hash/${txHash}`,
+      FETCH_RESPONSE_PARAMETERS
+    )
+    expect(competition).toEqual(AUCTION)
   })
 })

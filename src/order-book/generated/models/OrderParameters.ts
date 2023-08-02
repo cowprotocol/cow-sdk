@@ -7,6 +7,7 @@ import type { AppDataHash } from './AppDataHash';
 import type { BuyTokenDestination } from './BuyTokenDestination';
 import type { OrderKind } from './OrderKind';
 import type { SellTokenSource } from './SellTokenSource';
+import type { SigningScheme } from './SigningScheme';
 import type { TokenAmount } from './TokenAmount';
 
 /**
@@ -54,5 +55,6 @@ export type OrderParameters = {
     partiallyFillable: boolean;
     sellTokenBalance?: SellTokenSource;
     buyTokenBalance?: BuyTokenDestination;
+    signingScheme?: SigningScheme;
 };
 
