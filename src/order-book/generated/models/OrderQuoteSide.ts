@@ -33,6 +33,7 @@ export namespace OrderQuoteSide {
 
     export enum kind {
         SELL = 'sell',
+        BUY = 'buy',
     }
 
 
