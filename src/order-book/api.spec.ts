@@ -1,3 +1,11 @@
+import { OrderCancellations, OrderCreation } from './generated'
+import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
+import { CowError } from '../common/cow-error'
+import { OrderBookApi } from './api'
+import { SupportedChainId } from '../common/chains'
+import { BUY_ETH_ADDRESS } from './transformOrder'
+import { AUCTION } from './mock'
+
 jest.mock('cross-fetch', () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const fetchMock = require('jest-fetch-mock')
@@ -9,14 +17,6 @@ jest.mock('cross-fetch', () => {
     default: fetchMock,
   }
 })
-
-import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
-import { CowError } from '../common/cow-error'
-import { OrderBookApi } from './api'
-import { BuyTokenDestination, OrderKind, SellTokenSource, SigningScheme } from './generated'
-import { SupportedChainId } from '../common/chains'
-import { BUY_ETH_ADDRESS } from './transformOrder'
-import { AUCTION } from './mock'
 
 enableFetchMocks()
 
@@ -48,10 +48,10 @@ const PARTIAL_ORDER = {
   validTo: 0,
   appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
   partiallyFillable: true,
-  sellTokenBalance: SellTokenSource.ERC20,
-  buyTokenBalance: BuyTokenDestination.ERC20,
+  sellTokenBalance: 'erc20',
+  buyTokenBalance: 'erc20',
   from: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-  kind: OrderKind.BUY,
+  kind: 'buy',
   class: 'market',
 }
 
@@ -369,7 +369,7 @@ describe('CoW Api', () => {
   test('Valid: Send sign order cancellation', async () => {
     fetchMock.mockResponseOnce(JSON.stringify(SIGNED_ORDER_RESPONSE), { status: HTTP_STATUS_OK, headers: HEADERS })
 
-    const body = { ...SIGNED_ORDER_RESPONSE, orderUids: [ORDER_CANCELLATION_UID] }
+    const body = { ...SIGNED_ORDER_RESPONSE, orderUids: [ORDER_CANCELLATION_UID] } as OrderCancellations
 
     await orderBookApi.sendSignedOrderCancellations(body)
     expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -392,7 +392,7 @@ describe('CoW Api', () => {
     // given
     fetchMock.mockResponse(JSON.stringify(errorBody), { status: HTTP_STATUS_NOT_FOUND, headers: HEADERS })
 
-    const body = { ...SIGNED_ORDER_RESPONSE, orderUids: ['unexistingOrder'] }
+    const body = { ...SIGNED_ORDER_RESPONSE, orderUids: ['unexistingOrder'] } as OrderCancellations
 
     // when
     const promise = orderBookApi.sendSignedOrderCancellations(body)
@@ -427,12 +427,14 @@ describe('CoW Api', () => {
 
   test('Valid: Send an order ', async () => {
     fetchMock.mockResponseOnce(JSON.stringify('validOrderId'), { status: HTTP_STATUS_OK, headers: HEADERS })
-    const orderId = await orderBookApi.sendOrder({
+    const body = {
       ...ORDER_RESPONSE,
       ...SIGNED_ORDER_RESPONSE,
-      signingScheme: SigningScheme.EIP712,
+      signingScheme: 'eip712',
       from: '0x1811be0994930fe9480eaede25165608b093ad7a',
-    })
+    } as OrderCreation
+
+    const orderId = await orderBookApi.sendOrder(body)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.cow.fi/xdai/api/v1/orders',
@@ -457,14 +459,15 @@ describe('CoW Api', () => {
     }
     // given
     fetchMock.mockResponse(JSON.stringify(errorBody), { status: 400, headers: HEADERS })
-
-    // when
-    const promise = orderBookApi.sendOrder({
+    const body = {
       ...ORDER_RESPONSE,
       ...SIGNED_ORDER_RESPONSE,
-      signingScheme: SigningScheme.EIP712,
+      signingScheme: 'eip712',
       from: '0x1811be0994930fe9480eaede25165608b093ad7a',
-    })
+    } as OrderCreation
+
+    // when
+    const promise = orderBookApi.sendOrder(body)
 
     // then
     await expect(promise).rejects.toEqual(

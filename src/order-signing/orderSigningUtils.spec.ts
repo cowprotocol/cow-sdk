@@ -13,8 +13,7 @@ jest.mock('cross-fetch', () => {
 import { OrderSigningUtils } from './orderSigningUtils'
 import { SupportedChainId } from '../common'
 import { UnsignedOrder } from './types'
-import { OrderKind } from '../order-book'
-import { mock, instance, when, anything, capture } from 'ts-mockito'
+import { anything, capture, instance, mock, when } from 'ts-mockito'
 import type { TypedDataSigner } from '@cowprotocol/contracts'
 
 describe('OrderSigningApi', () => {
@@ -40,7 +39,7 @@ describe('OrderSigningApi', () => {
       validTo: 5000222,
       appData: '0x0',
       feeAmount: '2300000',
-      kind: OrderKind.SELL,
+      kind: 'sell',
       partiallyFillable: true,
     }
     const result = await OrderSigningUtils.signOrder(order, SupportedChainId.MAINNET, instance(signer))
