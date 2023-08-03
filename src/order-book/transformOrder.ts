@@ -1,3 +1,4 @@
+import { BUY_ETH_ADDRESS } from '../common/consts'
 import { Order } from './generated'
 import { EnrichedOrder } from './types'
 

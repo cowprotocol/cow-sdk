@@ -36,7 +36,7 @@ export interface SignOrderParams {
 export interface SignOrderCancellationParams {
   chainId: SupportedChainId
   signer: Signer
-  orderId: string
+  orderUid: string
   signingScheme: EcdsaSigningScheme
 }
 

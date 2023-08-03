@@ -64,11 +64,11 @@ async function _signOrder(params: SignOrderParams): Promise<Signature> {
 }
 
 async function _signOrderCancellation(params: SignOrderCancellationParams): Promise<Signature> {
-  const { chainId, signer, signingScheme, orderId } = params
+  const { chainId, signer, signingScheme, orderUid } = params
 
   const domain = getDomain(chainId)
 
-  return signOrderCancellationGp(domain, orderId, signer, mapSigningSchema[signingScheme])
+  return signOrderCancellationGp(domain, orderUid, signer, mapSigningSchema[signingScheme])
 }
 
 async function _signOrderCancellations(params: SignOrderCancellationsParams): Promise<Signature> {
@@ -190,11 +190,11 @@ export async function signOrder(
  * @return {*} Encoded signature including signing scheme for the order.
  */
 export async function signOrderCancellation(
-  orderId: string,
+  orderUid: string,
   chainId: SupportedChainId,
   signer: Signer
 ): Promise<SigningResult> {
-  return _signPayload({ orderId, chainId }, _signOrderCancellation, signer)
+  return _signPayload({ orderUid, chainId }, _signOrderCancellation, signer)
 }
 
 /**

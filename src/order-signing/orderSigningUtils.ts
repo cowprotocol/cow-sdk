@@ -64,12 +64,12 @@ export class OrderSigningUtils {
    * @returns {Promise<SigningResult>} Encoded signature including signing scheme for the cancellation.
    */
   static async signOrderCancellation(
-    orderId: string,
+    orderUid: string,
     chainId: SupportedChainId,
     signer: Signer
   ): Promise<SigningResult> {
     const { signOrderCancellation } = await getSignUtils()
-    return signOrderCancellation(orderId, chainId, signer)
+    return signOrderCancellation(orderUid, chainId, signer)
   }
 
   /**
@@ -80,12 +80,12 @@ export class OrderSigningUtils {
    * @returns {Promise<SigningResult>} Encoded signature including signing scheme for the cancellation.
    */
   static async signOrderCancellations(
-    orderUid: string[],
+    orderUids: string[],
     chainId: SupportedChainId,
     signer: Signer
   ): Promise<SigningResult> {
     const { signOrderCancellations } = await getSignUtils()
-    return signOrderCancellations(orderUid, chainId, signer)
+    return signOrderCancellations(orderUids, chainId, signer)
   }
 
   /**

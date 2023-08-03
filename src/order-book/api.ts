@@ -228,13 +228,13 @@ export class OrderBookApi {
       if (error instanceof OrderBookApiError && error.response.status === 404 && nextEnv) {
         attemptsCount++
 
-        return this.getOrder(uid, { ...contextOverride, env: nextEnv }).catch(fallback)
+        return this.getOrder(orderUid, { ...contextOverride, env: nextEnv }).catch(fallback)
       }
 
       return Promise.reject(error)
     }
 
-    return this.getOrder(uid, { ...contextOverride, env }).catch(fallback)
+    return this.getOrder(orderUid, { ...contextOverride, env }).catch(fallback)
   }
 
   /**
@@ -329,8 +329,9 @@ export class OrderBookApi {
    * @param contextOverride Optional context override for this request.
    * @returns The API endpoint to get the order.
    */
+  getOrderLink(orderUid: UID, contextOverride?: PartialApiContext): string {
     const { chainId, env } = this.getContextWithOverride(contextOverride)
-    return this.getApiBaseUrls(env)[chainId] + `/api/v1/orders/${uid}`
+    return this.getApiBaseUrls(env)[chainId] + `/api/v1/orders/${orderUid}`
   }
 
   /**

@@ -15,7 +15,7 @@ import { CowError } from '../common/cow-error'
 import { OrderBookApi } from './api'
 import { BuyTokenDestination, EcdsaSigningScheme, OrderKind, SellTokenSource, SigningScheme } from './generated'
 import { SupportedChainId } from '../common/chains'
-import { BUY_ETH_ADDRESS } from './transformOrder'
+import { BUY_ETH_ADDRESS } from '../common/consts'
 import { AUCTION } from './mock'
 
 enableFetchMocks()

@@ -6,6 +6,8 @@ import { request, Variables } from 'graphql-request'
 import { ApiContext, CowEnv, DEFAULT_COW_API_CONTEXT, ApiBaseUrls, PartialApiContext } from '../common/configs'
 import { SupportedChainId } from '../common/chains'
 
+const SUBGRAPH_BASE_URL = 'https://api.thegraph.com/subgraphs/name/cowprotocol'
+
 /**
  * CoW Protocol Production Subgraph API configuration.
  * @see {@link https://api.thegraph.com/subgraphs/name/cowprotocol/cow}
@@ -13,9 +15,9 @@ import { SupportedChainId } from '../common/chains'
  * @see {@link https://api.thegraph.com/subgraphs/name/cowprotocol/cow-goerli}
  */
 export const SUBGRAPH_PROD_CONFIG: ApiBaseUrls = {
-  [SupportedChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow',
-  [SupportedChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc',
-  [SupportedChainId.GOERLI]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-goerli',
+  [SupportedChainId.MAINNET]: SUBGRAPH_BASE_URL + '/cow',
+  [SupportedChainId.GNOSIS_CHAIN]: SUBGRAPH_BASE_URL + '/cow-gc',
+  [SupportedChainId.GOERLI]: SUBGRAPH_BASE_URL + '/cow-goerli',
 }
 
 /**
@@ -25,8 +27,8 @@ export const SUBGRAPH_PROD_CONFIG: ApiBaseUrls = {
  * @see {@link https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc-staging}
  */
 export const SUBGRAPH_STAGING_CONFIG: ApiBaseUrls = {
-  [SupportedChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-staging',
-  [SupportedChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc-staging',
+  [SupportedChainId.MAINNET]: SUBGRAPH_BASE_URL + '/cow-staging',
+  [SupportedChainId.GNOSIS_CHAIN]: SUBGRAPH_BASE_URL + '/cow-gc-staging',
   [SupportedChainId.GOERLI]: '',
 }
 
