@@ -13,7 +13,7 @@ jest.mock('cross-fetch', () => {
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { CowError } from '../common/cow-error'
 import { OrderBookApi } from './api'
-import { BuyTokenDestination, EcdsaSigningScheme, OrderKind, SellTokenSource, SigningScheme } from './generated'
+import { BuyTokenDestination, OrderKind, SellTokenSource, SigningScheme } from './generated'
 import { SupportedChainId } from '../common/chains'
 import { BUY_ETH_ADDRESS } from './transformOrder'
 import { AUCTION } from './mock'
@@ -36,7 +36,7 @@ const HEADERS = { 'Content-Type': 'application/json' }
 const SIGNED_ORDER_RESPONSE = {
   signature:
     '0x4d306ce7c770d22005bcfc00223f8d9aaa04e8a20099cc986cb9ccf60c7e876b777ceafb1e03f359ebc6d3dc84245d111a3df584212b5679cb5f9e6717b69b031b',
-  signingScheme: EcdsaSigningScheme.EIP712,
+  signingScheme: 'eip712',
 }
 
 const PARTIAL_ORDER = {

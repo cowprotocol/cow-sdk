@@ -1,6 +1,6 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react'
 import '../../pageStyles.css'
-import { EcdsaSigningScheme, OrderBookApi, OrderCancellations } from '@cowprotocol/cow-sdk'
+import { OrderBookApi, OrderCancellations } from '@cowprotocol/cow-sdk'
 import { JsonContent } from '../../components/jsonContent'
 import { ResultContent } from '../../components/resultContent'
 import { useCurrentChainId } from '../../hooks/useCurrentChainId'
@@ -37,7 +37,7 @@ export function SendOrderCancellationPage() {
 
   const defaultValue: OrderCancellations = {
     signature: 'PASTE_CANCELLATION_SIGNATURE_HERE',
-    signingScheme: EcdsaSigningScheme.EIP712,
+    signingScheme: 'eip712',
     orderUids: ['PASTE_ORDER_ID_HERE'],
   }
 

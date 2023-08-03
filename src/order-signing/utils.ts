@@ -1,8 +1,8 @@
 import type {
+  EcdsaSigningScheme as EcdsaSigningSchemeContract,
   Order as OrderFromContract,
   Signature,
   TypedDataDomain,
-  EcdsaSigningScheme as EcdsaSigningSchemeContract,
 } from '@cowprotocol/contracts'
 import {
   domain as domainGp,
@@ -15,12 +15,12 @@ import {
   TypedDataVersionedSigner,
 } from '@cowprotocol/contracts'
 import type { Signer } from '@ethersproject/abstract-signer'
-import type { SigningResult, SignOrderParams, SignOrderCancellationParams, UnsignedOrder } from './types'
+import type { SigningResult, SignOrderCancellationParams, SignOrderParams, UnsignedOrder } from './types'
+import { SignOrderCancellationsParams } from './types'
 
 import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS } from '../common/consts'
 import { CowError, SupportedChainId } from '../common'
 import { EcdsaSigningScheme } from '../order-book'
-import { SignOrderCancellationsParams } from './types'
 
 // For error codes, see:
 // - https://eth.wiki/json-rpc/json-rpc-error-codes-improvement-proposal
@@ -36,8 +36,8 @@ const RPC_REQUEST_FAILED_REGEX = /RPC request failed/i
 const METAMASK_STRING_CHAINID_REGEX = /provided chainid .* must match the active chainid/i
 
 const mapSigningSchema: Record<EcdsaSigningScheme, EcdsaSigningSchemeContract> = {
-  [EcdsaSigningScheme.EIP712]: SigningScheme.EIP712,
-  [EcdsaSigningScheme.ETHSIGN]: SigningScheme.ETHSIGN,
+  ['eip712']: SigningScheme.EIP712,
+  ['ethsign']: SigningScheme.ETHSIGN,
 }
 
 interface ProviderRpcError extends Error {
@@ -86,8 +86,7 @@ async function _signPayload(
   signer: Signer,
   signingMethod: 'default' | 'v4' | 'int_v4' | 'v3' | 'eth_sign' = 'v4'
 ): Promise<SigningResult> {
-  const signingScheme: EcdsaSigningScheme =
-    signingMethod === 'eth_sign' ? EcdsaSigningScheme.ETHSIGN : EcdsaSigningScheme.EIP712
+  const signingScheme: EcdsaSigningScheme = signingMethod === 'eth_sign' ? 'ethsign' : 'eip712'
   let signature: Signature | null = null
 
   let _signer
