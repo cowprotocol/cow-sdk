@@ -22,6 +22,7 @@
     "format": "prettier --write \"src/**/*.+(ts|json)\"",
     "test": "jest",
     "test:coverage": "jest --coverage --json --outputFile=jest.results.json && cat ./coverage/lcov.info | coveralls",
+    "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
     "codegen": "npm run graphql:codegen && npm run swagger:codegen",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
