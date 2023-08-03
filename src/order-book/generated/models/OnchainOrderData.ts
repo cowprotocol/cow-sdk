@@ -18,23 +18,6 @@ export type OnchainOrderData = {
      * found or generated.
      *
      */
-    placementError?: OnchainOrderData.placementError;
+    placementError?: 'QuoteNotFound' | 'ValidToTooFarInFuture' | 'PreValidationError';
 };
-
-export namespace OnchainOrderData {
-
-    /**
-     * Describes the error, if the order placement was not successful. This could
-     * happen, for example, if the `validTo` is too high, or no valid quote was
-     * found or generated.
-     *
-     */
-    export enum placementError {
-        QUOTE_NOT_FOUND = 'QuoteNotFound',
-        VALID_TO_TOO_FAR_IN_FUTURE = 'ValidToTooFarInFuture',
-        PRE_VALIDATION_ERROR = 'PreValidationError',
-    }
-
-
-}
 

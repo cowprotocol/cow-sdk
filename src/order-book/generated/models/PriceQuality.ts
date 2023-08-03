@@ -12,8 +12,4 @@
  * **NOTE**: Orders are supposed to be created from `verified` price estimates.
  *
  */
-export enum PriceQuality {
-    FAST = 'fast',
-    OPTIMAL = 'optimal',
-    VERIFIED = 'verified',
-}
+export type PriceQuality = 'fast' | 'optimal' | 'verified';

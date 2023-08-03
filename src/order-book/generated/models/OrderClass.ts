@@ -5,8 +5,4 @@
 /**
  * Order class.
  */
-export enum OrderClass {
-    MARKET = 'market',
-    LIMIT = 'limit',
-    LIQUIDITY = 'liquidity',
-}
+export type OrderClass = 'market' | 'limit' | 'liquidity';
