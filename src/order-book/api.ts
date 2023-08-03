@@ -59,6 +59,15 @@ function cleanObjectFromUndefinedValues(obj: Record<string, string>): typeof obj
 }
 
 /**
+ * The parameters for the `getOrders` request.
+ */
+export type GetOrdersRequest = {
+  owner: Address
+  offset?: number
+  limit?: number
+}
+
+/**
  * The CoW Protocol OrderBook API client.
  *
  * This is the main entry point for interacting with the CoW Protocol OrderBook API. The main advantage of using
@@ -130,6 +139,12 @@ export class OrderBookApi {
     this.rateLimiter = new RateLimiter(context.limiterOpts || DEFAULT_LIMITER_OPTIONS)
   }
 
+  /**
+   * Get the version of the API.
+   * @param contextOverride Optional context override for this request.
+   * @returns The version of the API.
+   * @see {@link https://api.cow.fi/docs/#/default/get_api_v1_version}
+   */
   getVersion(contextOverride: PartialApiContext = {}): Promise<string> {
     return this.fetch({ path: '/api/v1/version', method: 'GET' }, contextOverride)
   }
@@ -150,6 +165,8 @@ export class OrderBookApi {
   ): Promise<Array<Trade>> {
     if (request.owner && request.orderUid) {
       return Promise.reject(new CowError('Cannot specify both owner and orderId'))
+    } else if (!request.owner && !request.orderUid) {
+      return Promise.reject(new CowError('Must specify either owner or orderId'))
     }
 
     const query = new URLSearchParams(cleanObjectFromUndefinedValues(request))
@@ -165,8 +182,8 @@ export class OrderBookApi {
    * @see {@link GetOrdersRequest}
    * @see {@link EnrichedOrder}
    */
-      limit?: number
-    },
+  getOrders(
+    { owner, offset = 0, limit = 1000 }: GetOrdersRequest,
     contextOverride: PartialApiContext = {}
   ): Promise<Array<EnrichedOrder>> {
     const query = new URLSearchParams(
@@ -188,6 +205,7 @@ export class OrderBookApi {
    * @returns A list of orders matching the request.
    * @see {@link EnrichedOrder}
    */
+  getTxOrders(txHash: TransactionHash, contextOverride: PartialApiContext = {}): Promise<Array<EnrichedOrder>> {
     return this.fetch<Array<EnrichedOrder>>(
       { path: `/api/v1/transactions/${txHash}/orders`, method: 'GET' },
       contextOverride
@@ -202,6 +220,8 @@ export class OrderBookApi {
    * @param contextOverride Optional context override for this request.
    * @returns The order matching the request.
    */
+  getOrder(orderUid: UID, contextOverride: PartialApiContext = {}): Promise<EnrichedOrder> {
+    return this.fetch<Order>({ path: `/api/v1/orders/${orderUid}`, method: 'GET' }, contextOverride).then((order) => {
       return transformOrder(order)
     })
   }
@@ -217,6 +237,7 @@ export class OrderBookApi {
    * @returns The order matching the request.
    * @throws {OrderBookApiError} If the order is not found in any of the environments.
    */
+  getOrderMultiEnv(orderUid: UID, contextOverride: PartialApiContext = {}): Promise<EnrichedOrder> {
     const { env } = this.getContextWithOverride(contextOverride)
     const otherEnvs = ENVS_LIST.filter((i) => i !== env)
 
@@ -287,14 +308,34 @@ export class OrderBookApi {
   getNativePrice(tokenAddress: Address, contextOverride: PartialApiContext = {}): Promise<NativePriceResponse> {
     return this.fetch({ path: `/api/v1/token/${tokenAddress}/native_price`, method: 'GET' }, contextOverride)
   }
+
+  /**
+   * Given a user's address, get the total surplus that they have earned.
+   * @param address The user's address
+   * @param contextOverride Optional context override for this request.
+   * @returns Calculated user's surplus
+   */
   getTotalSurplus(address: Address, contextOverride: PartialApiContext = {}): Promise<TotalSurplus> {
     return this.fetch({ path: `/api/v1/users/${address}/total_surplus`, method: 'GET' }, contextOverride)
   }
 
+  /**
+   * Retrieve the full app data for a given app data hash.
+   * @param appDataHash `bytes32` hash of the app data
+   * @param contextOverride Optional context override for this request.
+   * @returns Full app data that was uploaded
+   */
   getAppData(appDataHash: AppDataHash, contextOverride: PartialApiContext = {}): Promise<AppDataDocument> {
     return this.fetch({ path: `/api/v1/app_data/${appDataHash}`, method: 'GET' }, contextOverride)
   }
 
+  /**
+   * Upload the full app data that corresponds to a given app data hash.
+   * @param appDataHash `bytes32` hash of the app data
+   * @param fullAppData Full app data to be uploaded
+   * @param contextOverride Optional context override for this request.
+   * @returns The string encoding of the full app data that was uploaded.
+   */
   uploadAppData(
     appDataHash: AppDataHash,
     fullAppData: string,
@@ -310,6 +351,12 @@ export class OrderBookApi {
 
   getSolverCompetition(txHash: string, contextOverride?: PartialApiContext): Promise<SolverCompetitionResponse>
 
+  /**
+   * Given an auction id or tx hash, get the details of the solver competition for that auction.
+   * @param auctionIdorTx auction id or tx hash corresponding to the auction
+   * @param contextOverride Optional context override for this request.
+   * @returns An object containing the solver competition details
+   */
   getSolverCompetition(
     auctionIdorTx: number | string,
     contextOverride: PartialApiContext = {}
