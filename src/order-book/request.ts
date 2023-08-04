@@ -1,7 +1,16 @@
 import { backOff, BackoffOptions } from 'exponential-backoff'
 import { RateLimiter, RateLimiterOpts } from 'limiter'
 
+/**
+ * Error thrown when the CoW Protocol OrderBook API returns an error.
+ */
 export class OrderBookApiError<T = unknown> extends Error {
+  /**
+   * Error thrown when the CoW Protocol OrderBook API returns an error.
+   * @param response The response from the CoW Protocol OrderBook API.
+   * @param body The body of the response.
+   * @constructor
+   */
   constructor(public readonly response: Response, public readonly body: T) {
     super(typeof body === 'string' ? body : response.statusText)
   }
@@ -25,7 +34,10 @@ const STATUS_CODES_TO_RETRY = [
   GATEWAY_TIMEOUT,
 ]
 
-// See config in https://www.npmjs.com/package/@insertish/exponential-backoff
+/**
+ * The default backoff options for CoW Protocol's API
+ * @see {@link Backoff configuration: https://www.npmjs.com/package/@insertish/exponential-backoff}
+ */
 export const DEFAULT_BACKOFF_OPTIONS: BackoffOptions = {
   numOfAttempts: 10,
   maxDelay: Infinity,
@@ -39,12 +51,19 @@ export const DEFAULT_BACKOFF_OPTIONS: BackoffOptions = {
   },
 }
 
-// CoW Protocol order-book API is limited by 5 requests per second from one IP
+/**
+ * The default rate limiter options for CoW Protocol's API.
+ *
+ * **CAUTION**: The CoW Protocol OrderBook API is limited to 5 requests per second per IP.
+ */
 export const DEFAULT_LIMITER_OPTIONS: RateLimiterOpts = {
   tokensPerInterval: 5,
   interval: 'second',
 }
 
+/**
+ * Describe the parameters for a fetch request.
+ */
 export interface FetchParams {
   path: string
   method: 'GET' | 'POST' | 'DELETE' | 'PUT'
@@ -70,6 +89,18 @@ const getResponseBody = async (response: Response): Promise<unknown> => {
   return undefined
 }
 
+/**
+ * Helper function to make a rate-limited request to an API.
+ * @param baseUrl The base URL of the API.
+ * @param path The path of the request.
+ * @param query The query parameters of the request.
+ * @param method The HTTP method of the request.
+ * @param body The body of the request.
+ * @param rateLimiter The rate limiter to use.
+ * @param backoffOpts The backoff options to use.
+ * @returns The response of the request.
+ * @throws If the API returns an error or if the request fails.
+ */
 export async function request<T>(
   baseUrl: string,
   { path, query, method, body }: FetchParams,

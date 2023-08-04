@@ -22,11 +22,12 @@
     "format": "prettier --write \"src/**/*.+(ts|json)\"",
     "test": "jest",
     "test:coverage": "jest --coverage --json --outputFile=jest.results.json && cat ./coverage/lcov.info | coveralls",
+    "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
     "codegen": "npm run graphql:codegen && npm run swagger:codegen",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "graphql:codegen": "graphql-codegen --config graphql-codegen.yml",
-    "swagger:codegen": " openapi --input https://raw.githubusercontent.com/cowprotocol/services/main/crates/orderbook/openapi.yml --output src/order-book/generated --exportServices false --exportCore false"
+    "swagger:codegen": " openapi --input https://raw.githubusercontent.com/cowprotocol/services/v2.117.1/crates/orderbook/openapi.yml --output src/order-book/generated --exportServices false --exportCore false"
   },
   "dependencies": {
     "@cowprotocol/contracts": "^1.4.0",
