@@ -2,7 +2,7 @@ import type { SupportedChainId } from '../common'
 import type { Signer } from '@ethersproject/abstract-signer'
 import type { TypedDataDomain } from '@cowprotocol/contracts'
 import type { SigningResult, UnsignedOrder } from './types'
-
+import { _TypedDataEncoder } from 'ethers/lib/utils'
 const getSignUtils = () => import('./utils')
 
 /**
@@ -97,5 +97,38 @@ export class OrderSigningUtils {
   static async getDomain(chainId: SupportedChainId): Promise<TypedDataDomain> {
     const { getDomain } = await getSignUtils()
     return getDomain(chainId)
+  }
+
+  /**
+   * Get the domain separator hash for the EIP-712 typed domain data being used for signing.
+   * @param chainId {SupportedChainId} chainId The CoW Protocol protocol `chainId` context that's being used.
+   * @returns A string representation of the EIP-712 typed domain data hash.
+   */
+  static getDomainSeparator(chainId: SupportedChainId): string {
+    return _TypedDataEncoder.hashDomain(getDomain(chainId))
+  }
+
+  /**
+   * Get the EIP-712 types used for signing a GPv2Order.Data struct. This is useful for when
+   * signing orders using smart contracts, whereby this SDK cannot do the EIP-1271 signing for you.
+   * @returns The EIP-712 types used for signing.
+   */
+  static getEIP712Types(): Record<string, any> {
+    return {
+      Order: [
+        { name: 'sellToken', type: 'address' },
+        { name: 'buyToken', type: 'address' },
+        { name: 'receiver', type: 'address' },
+        { name: 'sellAmount', type: 'uint256' },
+        { name: 'buyAmount', type: 'uint256' },
+        { name: 'validTo', type: 'uint32' },
+        { name: 'appData', type: 'bytes32' },
+        { name: 'feeAmount', type: 'uint256' },
+        { name: 'kind', type: 'string' },
+        { name: 'partiallyFillable', type: 'bool' },
+        { name: 'sellTokenBalance', type: 'string' },
+        { name: 'buyTokenBalance', type: 'string' },
+      ],
+    }
   }
 }
