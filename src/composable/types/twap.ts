@@ -14,6 +14,9 @@ export const TWAP_ADDRESS = '0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5'
  */
 export const CURRENT_BLOCK_TIMESTAMP_FACTORY_ADDRESS = '0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc'
 
+export const MAX_UINT32 = BigNumber.from(2).pow(32).sub(1) // 2^32 - 1
+export const MAX_FREQUENCY = BigNumber.from(365 * 24 * 60 * 60) // 1 year
+
 // Define the ABI tuple for the TWAPData struct
 const TWAP_DATA_ABI = [
   'tuple(address sellToken, address buyToken, address receiver, uint256 partSellAmount, uint256 minPartLimit, uint256 t0, uint256 n, uint256 t, uint256 span, bytes32 appData)',
@@ -129,11 +132,11 @@ export class TWAP extends BaseConditionalOrder<TWAPData, TWAPDataParams> {
     if (!(data.sellToken != data.buyToken)) throw new Error('InvalidSameToken')
     if (!(data.sellToken != constants.AddressZero && data.buyToken != constants.AddressZero))
       throw new Error('InvalidToken')
-    if (!data.sellAmount.gt(0)) throw new Error('InvalidSellAmount')
-    if (!data.buyAmount.gt(0)) throw new Error('InvalidMinBuyAmount')
-    if (!(data.t0.gte(0) && data.t0.lt(2 ** 32))) throw new Error('InvalidStartTime')
-    if (!(data.n.gt(1) && data.n.lte(2 ** 32))) throw new Error('InvalidNumParts')
-    if (!(data.t.gt(0) && data.t.lte(365 * 24 * 60 * 60))) throw new Error('InvalidFrequency')
+    if (!data.sellAmount.gt(constants.Zero)) throw new Error('InvalidSellAmount')
+    if (!data.buyAmount.gt(constants.Zero)) throw new Error('InvalidMinBuyAmount')
+    if (!(data.t0.gte(constants.Zero) && data.t0.lt(MAX_UINT32))) throw new Error('InvalidStartTime')
+    if (!(data.n.gt(constants.One) && data.n.lte(MAX_UINT32))) throw new Error('InvalidNumParts')
+    if (!(data.t.gt(constants.Zero) && data.t.lte(MAX_FREQUENCY))) throw new Error('InvalidFrequency')
     if (!data.span.lte(data.t)) throw new Error('InvalidSpan')
     return true
   }
