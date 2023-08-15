@@ -221,7 +221,7 @@ describe('Multiplexer (ComposableCoW)', () => {
     // use the typechain generated interface to see if the proof struct is valid
     // by generating calldata for `setRoot`.
 
-    const calldata = ComposableCoW__factory.createInterface().encodeFunctionData('setRoot', [m.root, proofStruct])
+    ComposableCoW__factory.createInterface().encodeFunctionData('setRoot', [m.root, proofStruct])
   })
 
   test('prepareProofStruct: emits when location set to emitted', async () => {
@@ -235,7 +235,7 @@ describe('Multiplexer (ComposableCoW)', () => {
     // use the typechain generated interface to see if the proof struct is valid
     // by generating calldata for `setRoot`.
 
-    const calldata = ComposableCoW__factory.createInterface().encodeFunctionData('setRoot', [m.root, proofStruct])
+    ComposableCoW__factory.createInterface().encodeFunctionData('setRoot', [m.root, proofStruct])
   })
 
   test('prepareProofStruct: throws on invalid location', async () => {

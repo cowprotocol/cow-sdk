@@ -97,7 +97,7 @@ class TestConditionalOrder extends BaseConditionalOrder<string, string> {
     return super.encodeStaticInputHelper(['uint256'], this.staticInput)
   }
 
-  isValid(o: any): boolean {
+  isValid(_o: unknown): boolean {
     throw new Error('Method not implemented.')
   }
   serialize(): string {
