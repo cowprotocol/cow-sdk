@@ -92,7 +92,7 @@ export class TWAP extends BaseConditionalOrder<TWAPData, TWAPDataParams> {
    * @returns An instance of the TWAP order.
    */
   static default(staticInput: TWAPDataParams): BaseConditionalOrder<TWAPData, TWAPDataParams> {
-    return new TWAP(TWAP_ADDRESS, undefined, staticInput, false)
+    return new TWAP(TWAP_ADDRESS, undefined, staticInput)
   }
 
   /**
@@ -171,8 +171,7 @@ export class TWAP extends BaseConditionalOrder<TWAPData, TWAPDataParams> {
           {
             ...o,
             ...TWAP.partsToTotal(o),
-          },
-          false
+          }
         )
     )
   }
