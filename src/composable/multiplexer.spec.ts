@@ -190,7 +190,7 @@ describe('Multiplexer (ComposableCoW)', () => {
     // Guard against the filter modifying the multiplexer state
     expect(() => {
       m.dumpProofs(badFilter)
-    }).toThrow('Merkle tree not generated')
+    }).toThrow('cannot modify tree with filter')
 
     // Dump the proofs
     const serialized = m.dumpProofs(filter)

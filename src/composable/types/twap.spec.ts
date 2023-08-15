@@ -1,4 +1,4 @@
-import { TWAP, type TWAPDataParams } from './twap'
+import { TWAP, TWAP_ADDRESS, type TWAPDataParams } from './twap'
 import { BigNumber, utils, constants } from 'ethers'
 
 export const TWAP_PARAMS_TEST: TWAPDataParams = {
@@ -18,7 +18,7 @@ export const TWAP_SERIALIZED = (salt?: string): string => {
   return (
     '0x' +
     '0000000000000000000000000000000000000000000000000000000000000020' +
-    '000000000000000000000000910d00a310f7dc5b29fe73458f47f519be547d3d' +
+    '000000000000000000000000' + TWAP_ADDRESS.substring(2).toLowerCase() +
     (salt?.substring(2) ?? '9379a0bf532ff9a66ffde940f94b1a025d6f18803054c1aef52dc94b15255bbe') +
     '0000000000000000000000000000000000000000000000000000000000000060' +
     '0000000000000000000000000000000000000000000000000000000000000140' +
