@@ -138,10 +138,9 @@ export class Multiplexer {
     // If orders (and therefore the root) are provided, generate the merkle tree
     if (orders) {
       this.orders = orders
-      this.generate()
 
-      // if generate was successful, this.tree will be defined and we can verify the root
-      if (this.tree && this.tree.root !== root) {
+      // if generate was successful, we can verify the root
+      if (this.getOrGenerateTree().root !== root) {
         throw new Error('root mismatch')
       }
     }
@@ -208,15 +207,10 @@ export class Multiplexer {
    * @returns The JSON representation of the multiplexer, including the root but excluding the merkle tree.
    */
   toJSON(): string {
-    // Make sure the merkle tree is generated
-    if (!this.tree) {
-      // If the merkle tree doesn't generate, it will throw
-      this.generate()
-    }
+    const root = this.getOrGenerateTree().root
 
     // serialize the multiplexer, including the root but excluding the merkle tree.
-    // use a non-null assertion because we know the merkle tree is defined
-    return JSON.stringify({ ...this, root: this.tree!.root }, (k, v) => {
+    return JSON.stringify({ ...this, root }, (k, v) => {
       // filter out the merkle tree
       if (k === 'tree') return undefined
       if (typeof v === 'object' && v !== null && 'orderType' in v) {
@@ -298,26 +292,25 @@ export class Multiplexer {
   }
 
   get root(): string {
-    if (!this.tree) {
-      // If the merkle tree doesn't generate, it will throw
-      this.generate()
-    }
-
-    // use a non-null assertion because we know the merkle tree is defined
-    return this.tree!.root
+    return this.getOrGenerateTree().root
   }
 
   /**
-   * Generate the merkle tree for the current set of conditional orders.
-   *
+   * Retrieve the merkle tree of orders, or generate it if it doesn't exist.
+   * 
    * **CAUTION**: This will overwrite any existing merkle tree. This operation is expensive and should only be done when necessary.
    * @throws If the merkle tree cannot be generated.
+   * @returns The merkle tree for the current set of conditional orders.
    */
-  private generate(): void {
-    this.tree = StandardMerkleTree.of(
-      Object.values(this.orders).map((order) => [...Object.values(order.leaf)]),
-      CONDITIONAL_ORDER_LEAF_ABI
-    )
+  private getOrGenerateTree(): StandardMerkleTree<string[]> {
+    if (!this.tree) {
+      this.tree = StandardMerkleTree.of(
+        Object.values(this.orders).map((order) => [...Object.values(order.leaf)]),
+        CONDITIONAL_ORDER_LEAF_ABI
+      )
+    }
+
+    return this.tree
   }
 
   // --- serialization for watchtowers / indexers ---
@@ -351,11 +344,6 @@ export class Multiplexer {
     filter?: (v: string[]) => boolean,
     uploader?: (offChainEncoded: string) => Promise<string>
   ): Promise<ComposableCoW.ProofStruct> {
-    if (!this.tree) {
-      // If the merkle tree doesn't generate, it will throw
-      this.generate()
-    }
-
     const data = async (): Promise<string> => {
       switch (location) {
         case ProofLocation.PRIVATE:
@@ -433,7 +421,10 @@ export class Multiplexer {
    * @returns A JSON-encoded string of the proofs and parameters for the conditional orders.
    */
   dumpProofs(filter?: (v: string[]) => boolean): string {
-    return this.encodeToJSON(filter)
+    const root = this.getOrGenerateTree().root
+    const payload = this.encodeToJSON(filter)
+    if (root !== this.getOrGenerateTree().root) throw new Error('cannot modify tree with filter')
+    return payload
   }
 
   dumpProofsAndParams(filter?: (v: string[]) => boolean): ProofWithParams[] {
@@ -448,14 +439,8 @@ export class Multiplexer {
    *          merkle tree.
    */
   private getProofs(filter?: (v: string[]) => boolean): ProofWithParams[] {
-    if (!this.tree) {
-      // If the merkle tree doesn't generate, it will throw
-      this.generate()
-    }
-
     // Get a list of all entry indices in the tree, excluding any that don't match the filter
-    // non-null assertion because we know the tree is defined
-    return [...this.tree!.entries()]
+    return [...this.getOrGenerateTree().entries()]
       .map(([i, v]) => {
         if ((filter && filter(v)) || filter === undefined) {
           return { idx: i, value: v }
@@ -464,11 +449,6 @@ export class Multiplexer {
         }
       })
       .reduce((acc: ProofWithParams[], x) => {
-        // guard against the tree not being defined
-        if (!this.tree) {
-          throw new Error('Merkle tree not generated')
-        }
-
         if (x) {
           const p: ConditionalOrderParams = {
             handler: x.value[0],
@@ -476,7 +456,7 @@ export class Multiplexer {
             staticInput: x.value[2],
           }
           acc.push({
-            proof: this.tree.getProof(x.idx),
+            proof: this.getOrGenerateTree().getProof(x.idx),
             params: p,
           })
         }
