@@ -168,14 +168,10 @@ export class TWAP extends BaseConditionalOrder<TWAPData, TWAPDataParams> {
       TWAP_ADDRESS,
       TWAP_DATA_ABI,
       (o: TWAPData, salt: string) =>
-        new TWAP(
-          TWAP_ADDRESS,
-          salt,
-          {
-            ...o,
-            ...TWAP.partsToTotal(o),
-          }
-        )
+        new TWAP(TWAP_ADDRESS, salt, {
+          ...o,
+          ...TWAP.partsToTotal(o),
+        })
     )
   }
 

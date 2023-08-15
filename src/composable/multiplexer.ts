@@ -297,7 +297,7 @@ export class Multiplexer {
 
   /**
    * Retrieve the merkle tree of orders, or generate it if it doesn't exist.
-   * 
+   *
    * **CAUTION**: This will overwrite any existing merkle tree. This operation is expensive and should only be done when necessary.
    * @throws If the merkle tree cannot be generated.
    * @returns The merkle tree for the current set of conditional orders.
