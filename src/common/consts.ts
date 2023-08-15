@@ -4,8 +4,8 @@ import contractNetworks from '@cowprotocol/contracts/networks.json'
 const { GPv2Settlement } = JSON.parse(contractNetworks as unknown as string) as typeof contractNetworks
 
 export const BUY_ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
-export const EXTENSIBLE_FALLBACK_HANDLER = '0x4e305935b14627eA57CBDbCfF57e81fd9F240403'
-export const COMPOSABLE_COW = '0xF487887DA5a4b4e3eC114FDAd97dc0F785d72738'
+export const EXTENSIBLE_FALLBACK_HANDLER = '0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5'
+export const COMPOSABLE_COW = '0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74'
 
 /**
  * The list of supported chains.

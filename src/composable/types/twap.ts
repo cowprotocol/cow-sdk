@@ -6,13 +6,13 @@ import { ContextFactory } from '../multiplexer'
 // The type of Conditional Order
 const TWAP_ORDER_TYPE = 'TWAP'
 // The address of the TWAP handler contract
-export const TWAP_ADDRESS = '0x910d00a310f7Dc5B29FE73458F47f519be547D3d'
+export const TWAP_ADDRESS = '0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5'
 /**
  * The address of the `CurrentBlockTimestampFactory` contract
  *
  * **NOTE**: This is used in the event that TWAP's have a `t0` of `0`.
  */
-export const CURRENT_BLOCK_TIMESTAMP_FACTORY_ADDRESS = '0x0899c7DC280363d263Cc954506134F249CceC4a5'
+export const CURRENT_BLOCK_TIMESTAMP_FACTORY_ADDRESS = '0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc'
 
 // Define the ABI tuple for the TWAPData struct
 const TWAP_DATA_ABI = [
