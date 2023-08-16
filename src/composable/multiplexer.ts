@@ -421,10 +421,7 @@ export class Multiplexer {
    * @returns A JSON-encoded string of the proofs and parameters for the conditional orders.
    */
   dumpProofs(filter?: (v: string[]) => boolean): string {
-    const root = this.getOrGenerateTree().root
-    const payload = this.encodeToJSON(filter)
-    if (root !== this.getOrGenerateTree().root) throw new Error('cannot modify tree with filter')
-    return payload
+    return this.encodeToJSON(filter)
   }
 
   dumpProofsAndParams(filter?: (v: string[]) => boolean): ProofWithParams[] {

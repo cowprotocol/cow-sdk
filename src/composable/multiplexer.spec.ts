@@ -182,16 +182,6 @@ describe('Multiplexer (ComposableCoW)', () => {
       return !(handler === v[0] && salt === v[1] && staticInput === v[2])
     }
 
-    const badFilter = (_v: string[]) => {
-      m.add(TWAP.default(generateRandomTWAPData()))
-      return true
-    }
-
-    // Guard against the filter modifying the multiplexer state
-    expect(() => {
-      m.dumpProofs(badFilter)
-    }).toThrow('cannot modify tree with filter')
-
     // Dump the proofs
     const serialized = m.dumpProofs(filter)
     const unserialized = m.dumpProofsAndParams(filter)
