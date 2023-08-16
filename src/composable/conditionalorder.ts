@@ -1,6 +1,8 @@
 import { BigNumber, ethers, utils } from 'ethers'
 import { ContextFactory } from './multiplexer'
 import { keccak256 } from 'ethers/lib/utils'
+import { ComposableCoW__factory } from './generated'
+import { IConditionalOrder } from './generated/ComposableCoW'
 
 // Define the ABI tuple for the TWAPData struct
 export const CONDITIONAL_ORDER_PARAMS_ABI = ['tuple(address handler, bytes32 salt, bytes staticInput)']
@@ -81,6 +83,48 @@ export abstract class BaseConditionalOrder<T, P> {
    */
   get context(): ContextFactory | undefined {
     return undefined
+  }
+
+  /**
+   * Get the calldata for creating the conditional order.
+   *
+   * This will automatically determine whether or not to use `create` or `createWithContext` based on the
+   * order type's context dependency.
+   *
+   * **NOTE**: By default, this will cause the create to emit the `ConditionalOrderCreated` event.
+   * @returns The calldata for creating the conditional order.
+   */
+  get createCalldata(): string {
+    const context = this.context
+    const composableCow = ComposableCoW__factory.createInterface()
+    const paramsStruct: IConditionalOrder.ConditionalOrderParamsStruct = {
+      handler: this.handler,
+      salt: this.salt,
+      staticInput: this.encodeStaticInput(),
+    }
+
+    if (context) {
+      const contextArgsAbi = context.factoryArgs
+        ? utils.defaultAbiCoder.encode(context.factoryArgs.argsType, context.factoryArgs.args)
+        : '0x'
+      return composableCow.encodeFunctionData('createWithContext', [
+        paramsStruct,
+        context.address,
+        contextArgsAbi,
+        true,
+      ])
+    } else {
+      return composableCow.encodeFunctionData('create', [paramsStruct, true])
+    }
+  }
+
+  /**
+   * Get the calldata for removing a conditional order that was created as a single order.
+   * @returns The calldata for removing the conditional order.
+   */
+  get removeCalldata(): string {
+    const composableCow = ComposableCoW__factory.createInterface()
+    return composableCow.encodeFunctionData('remove', [this.id])
   }
 
   /**
