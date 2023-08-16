@@ -2,8 +2,9 @@ import type { SupportedChainId } from '../common'
 import type { Signer } from '@ethersproject/abstract-signer'
 import type { TypedDataDomain } from '@cowprotocol/contracts'
 import type { SigningResult, UnsignedOrder } from './types'
-import { _TypedDataEncoder } from 'ethers/lib/utils'
-import { getDomain, signOrder, signOrderCancellation, signOrderCancellations } from './utils'
+
+const getSignUtils = () => import('./utils')
+const ethersUtils = () => import('ethers/lib/utils')
 
 /**
  * Utility class for signing order intents and cancellations.
@@ -52,6 +53,7 @@ export class OrderSigningUtils {
    * @returns {Promise<SigningResult>} Encoded signature including signing scheme for the order.
    */
   static async signOrder(order: UnsignedOrder, chainId: SupportedChainId, signer: Signer): Promise<SigningResult> {
+    const { signOrder } = await getSignUtils()
     return signOrder(order, chainId, signer)
   }
 
@@ -67,6 +69,7 @@ export class OrderSigningUtils {
     chainId: SupportedChainId,
     signer: Signer
   ): Promise<SigningResult> {
+    const { signOrderCancellation } = await getSignUtils()
     return signOrderCancellation(orderUid, chainId, signer)
   }
 
@@ -82,6 +85,7 @@ export class OrderSigningUtils {
     chainId: SupportedChainId,
     signer: Signer
   ): Promise<SigningResult> {
+    const { signOrderCancellations } = await getSignUtils()
     return signOrderCancellations(orderUids, chainId, signer)
   }
 
@@ -92,6 +96,7 @@ export class OrderSigningUtils {
    * @see https://eips.ethereum.org/EIPS/eip-712
    */
   static async getDomain(chainId: SupportedChainId): Promise<TypedDataDomain> {
+    const { getDomain } = await getSignUtils()
     return getDomain(chainId)
   }
 
@@ -100,7 +105,9 @@ export class OrderSigningUtils {
    * @param chainId {SupportedChainId} chainId The CoW Protocol protocol `chainId` context that's being used.
    * @returns A string representation of the EIP-712 typed domain data hash.
    */
-  static getDomainSeparator(chainId: SupportedChainId): string {
+  static async getDomainSeparator(chainId: SupportedChainId): Promise<string> {
+    const { getDomain } = await getSignUtils()
+    const { _TypedDataEncoder } = await ethersUtils()
     return _TypedDataEncoder.hashDomain(getDomain(chainId))
   }
 
