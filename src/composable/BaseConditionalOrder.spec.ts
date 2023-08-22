@@ -1,6 +1,6 @@
 import { BigNumber } from 'ethers'
 import { BaseConditionalOrder } from './BaseConditionalOrder'
-import { TWAP } from './types/twap'
+import { TwapOrder } from './types/Twap2'
 
 const TWAP_SERIALIZED = (salt?: string, handler?: string): string => {
   return (
@@ -72,9 +72,9 @@ describe('ConditionalOrder', () => {
   })
 
   test('Deserialize: Fails if handler mismatch', () => {
-    expect(() => TWAP.deserialize(TWAP_SERIALIZED(undefined, '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'))).toThrow(
-      'HandlerMismatch'
-    )
+    expect(() =>
+      TwapOrder.deserialize(TWAP_SERIALIZED(undefined, '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'))
+    ).toThrow('HandlerMismatch')
   })
 })
 

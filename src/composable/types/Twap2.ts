@@ -4,7 +4,7 @@ import { BaseConditionalOrder } from '../BaseConditionalOrder'
 import { ConditionalOrderArguments, ContextFactory } from '../types'
 
 // The type of Conditional Order
-const TWAP_ORDER_TYPE = 'TWAP'
+const TWAP_ORDER_TYPE = 'twap'
 // The address of the TWAP handler contract
 export const TWAP_ADDRESS = '0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5'
 /**
@@ -28,9 +28,9 @@ const DEFAULT_TOKEN_FORMATTER = (address: string, amount: BigNumber) => `${addre
 /**
  * Parameters for a TWAP order, made a little more user-friendly for SDK users.
  *
- * @see {@link TWAPData} for the native struct.
+ * @see {@link TwapData} for the native struct.
  */
-export type TWAPDataParams = Omit<TWAPData, 'partSellAmount' | 'minPartLimit'> & {
+export type TwapDataParams = Omit<TwapData, 'partSellAmount' | 'minPartLimit'> & {
   // total amount of sellToken to sell across the entire TWAP
   readonly sellAmount: BigNumber
   // minimum amount of buyToken that must be bought across the entire TWAP
@@ -40,7 +40,7 @@ export type TWAPDataParams = Omit<TWAPData, 'partSellAmount' | 'minPartLimit'> &
 /**
  * Parameters for a discrete part of a TWAP order
  */
-export type TWAPPart = {
+export type TwapPart = {
   /**
    * Amount of sellToken to sell in each part
    */
@@ -55,7 +55,7 @@ export type TWAPPart = {
 /**
  * Parameters for a TWAP order, as expected by the contract's `staticInput`.
  */
-export type TWAPData = {
+export type TwapData = {
   /**
    * which token to sell
    */
@@ -114,26 +114,26 @@ export type TWAPData = {
  * `ComposableCoW` implementation of a TWAP order.
  * @author mfw78 <mfw78@rndlabs.xyz>
  */
-export class TWAP extends BaseConditionalOrder<TWAPData, TWAPDataParams> {
+export class TwapOrder extends BaseConditionalOrder<TwapData, TwapDataParams> {
   /**
    * @see {@link BaseConditionalOrder.constructor}
    * @throws If the TWAP order is invalid.
    * @throws If the TWAP order is not ABI-encodable.
    * @throws If the handler is not the TWAP address.
    */
-  constructor(params: ConditionalOrderArguments<TWAPDataParams>) {
+  constructor(params: ConditionalOrderArguments<TwapDataParams>) {
     const { handler, salt, staticInput, hasOffChainInput } = params
     // First, verify that the handler is the TWAP address
-    if (handler !== TWAP_ADDRESS) throw new Error('InvalidHandler: handler' + handler + ' TWAP_ADDRESS ' + TWAP_ADDRESS)
+    if (handler !== TWAP_ADDRESS) throw new Error(`InvalidHandler: Expected: ${TWAP_ADDRESS}, provided: ${handler}`)
 
     // Second, verify that the order params are logically valid
-    TWAP.isValid(staticInput)
+    TwapOrder.isValid(staticInput)
 
     // Third, construct the base class using transformed parameters
     super({ handler: TWAP_ADDRESS, salt, staticInput, hasOffChainInput })
 
     // Finally, verify that the transformed data is ABI-encodable
-    if (!TWAP.isValidAbi(TWAP_DATA_ABI, [this.staticInput])) throw new Error('InvalidData')
+    if (!TwapOrder.isValidAbi(TWAP_DATA_ABI, [this.staticInput])) throw new Error('InvalidData')
   }
 
   /**
@@ -141,8 +141,8 @@ export class TWAP extends BaseConditionalOrder<TWAPData, TWAPDataParams> {
    * @param staticInput The TWAP order parameters in a more user-friendly format.
    * @returns An instance of the TWAP order.
    */
-  static default(staticInput: TWAPDataParams): BaseConditionalOrder<TWAPData, TWAPDataParams> {
-    return new TWAP({ handler: TWAP_ADDRESS, staticInput })
+  static default(staticInput: TwapDataParams): BaseConditionalOrder<TwapData, TwapDataParams> {
+    return new TwapOrder({ handler: TWAP_ADDRESS, staticInput })
   }
 
   /**
@@ -173,9 +173,9 @@ export class TWAP extends BaseConditionalOrder<TWAPData, TWAPDataParams> {
    * @param data The TWAP order to validate.
    * @returns Whether the TWAP order is valid.
    * @throws If the TWAP order is invalid.
-   * @see {@link TWAPData} for the native struct.
+   * @see {@link TwapData} for the native struct.
    */
-  static isValid(data: TWAPDataParams): boolean {
+  static isValid(data: TwapDataParams): boolean {
     if (!(data.sellToken != data.buyToken)) throw new Error('InvalidSameToken')
     if (!(data.sellToken != constants.AddressZero && data.buyToken != constants.AddressZero))
       throw new Error('InvalidToken')
@@ -209,18 +209,18 @@ export class TWAP extends BaseConditionalOrder<TWAPData, TWAPDataParams> {
    * @param {string} s ABI-encoded TWAP order to deserialize.
    * @returns A deserialized TWAP order.
    */
-  static deserialize(s: string): TWAP {
+  static deserialize(s: string): TwapOrder {
     return super.deserializeHelper(
       s,
       TWAP_ADDRESS,
       TWAP_DATA_ABI,
-      (o: TWAPData, salt: string) =>
-        new TWAP({
+      (o: TwapData, salt: string) =>
+        new TwapOrder({
           handler: TWAP_ADDRESS,
           salt,
           staticInput: {
             ...o,
-            ...TWAP.partsToTotal(o),
+            ...TwapOrder.partsToTotal(o),
           },
         })
     )
@@ -234,7 +234,7 @@ export class TWAP extends BaseConditionalOrder<TWAPData, TWAPDataParams> {
    */
   toString(tokenFormatter = DEFAULT_TOKEN_FORMATTER): string {
     const { sellToken, buyToken, n, t, t0 } = this.staticInput
-    const { sellAmount, buyAmount } = TWAP.partsToTotal(this.staticInput)
+    const { sellAmount, buyAmount } = TwapOrder.partsToTotal(this.staticInput)
 
     const sellAmountFormatted = tokenFormatter(sellToken, sellAmount)
     const buyAmountFormatted = tokenFormatter(buyToken, buyAmount)
@@ -245,22 +245,22 @@ export class TWAP extends BaseConditionalOrder<TWAPData, TWAPDataParams> {
   /**
    * Transform parameters into a native struct.
    *
-   * @param {TWAPDataParams} params As passed by the consumer of the API.
-   * @returns {TWAPData} A formatted struct as expected by the smart contract.
+   * @param {TwapDataParams} params As passed by the consumer of the API.
+   * @returns {TwapData} A formatted struct as expected by the smart contract.
    */
-  transformParamsToData(params: TWAPDataParams): TWAPData {
+  transformParamsToData(params: TwapDataParams): TwapData {
     return {
       ...params,
-      ...TWAP.totalToPart(params),
+      ...TwapOrder.totalToPart(params),
     }
   }
 
   /**
    * Convert TWAP parts to total amounts.
-   * @param {TWAPData} o The TWAP order.
+   * @param {TwapData} o The TWAP order.
    * @returns {object} The total sell amount and total minimum buy amount.
    */
-  private static partsToTotal(o: TWAPData): {
+  private static partsToTotal(o: TwapData): {
     sellAmount: BigNumber
     buyAmount: BigNumber
   } {
@@ -272,11 +272,11 @@ export class TWAP extends BaseConditionalOrder<TWAPData, TWAPDataParams> {
 
   /**
    * Convert total amounts to TWAP parts.
-   * @param {TWAPDataParams} o The TWAP order parameters.
+   * @param {TwapDataParams} o The TWAP order parameters.
    * @returns {object} The part sell amount and minimum part limit.
    * @throws If the number of parts is less than 1.
    */
-  private static totalToPart(o: TWAPDataParams): {
+  private static totalToPart(o: TwapDataParams): {
     partSellAmount: BigNumber
     minPartLimit: BigNumber
   } {
