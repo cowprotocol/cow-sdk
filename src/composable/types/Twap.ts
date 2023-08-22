@@ -114,7 +114,7 @@ export type TwapData = {
  * `ComposableCoW` implementation of a TWAP order.
  * @author mfw78 <mfw78@rndlabs.xyz>
  */
-export class TwapOrder extends BaseConditionalOrder<TwapData, TwapDataParams> {
+export class Twap extends BaseConditionalOrder<TwapData, TwapDataParams> {
   /**
    * @see {@link BaseConditionalOrder.constructor}
    * @throws If the TWAP order is invalid.
@@ -127,13 +127,13 @@ export class TwapOrder extends BaseConditionalOrder<TwapData, TwapDataParams> {
     if (handler !== TWAP_ADDRESS) throw new Error(`InvalidHandler: Expected: ${TWAP_ADDRESS}, provided: ${handler}`)
 
     // Second, verify that the order params are logically valid
-    TwapOrder.isValid(staticInput)
+    Twap.isValid(staticInput)
 
     // Third, construct the base class using transformed parameters
     super({ handler: TWAP_ADDRESS, salt, staticInput, hasOffChainInput })
 
     // Finally, verify that the transformed data is ABI-encodable
-    if (!TwapOrder.isValidAbi(TWAP_DATA_ABI, [this.staticInput])) throw new Error('InvalidData')
+    if (!Twap.isValidAbi(TWAP_DATA_ABI, [this.staticInput])) throw new Error('InvalidData')
   }
 
   /**
@@ -142,7 +142,7 @@ export class TwapOrder extends BaseConditionalOrder<TwapData, TwapDataParams> {
    * @returns An instance of the TWAP order.
    */
   static default(staticInput: TwapDataParams): BaseConditionalOrder<TwapData, TwapDataParams> {
-    return new TwapOrder({ handler: TWAP_ADDRESS, staticInput })
+    return new Twap({ handler: TWAP_ADDRESS, staticInput })
   }
 
   /**
@@ -209,18 +209,18 @@ export class TwapOrder extends BaseConditionalOrder<TwapData, TwapDataParams> {
    * @param {string} s ABI-encoded TWAP order to deserialize.
    * @returns A deserialized TWAP order.
    */
-  static deserialize(s: string): TwapOrder {
+  static deserialize(s: string): Twap {
     return super.deserializeHelper(
       s,
       TWAP_ADDRESS,
       TWAP_DATA_ABI,
       (o: TwapData, salt: string) =>
-        new TwapOrder({
+        new Twap({
           handler: TWAP_ADDRESS,
           salt,
           staticInput: {
             ...o,
-            ...TwapOrder.partsToTotal(o),
+            ...Twap.partsToTotal(o),
           },
         })
     )
@@ -234,7 +234,7 @@ export class TwapOrder extends BaseConditionalOrder<TwapData, TwapDataParams> {
    */
   toString(tokenFormatter = DEFAULT_TOKEN_FORMATTER): string {
     const { sellToken, buyToken, n, t, t0 } = this.staticInput
-    const { sellAmount, buyAmount } = TwapOrder.partsToTotal(this.staticInput)
+    const { sellAmount, buyAmount } = Twap.partsToTotal(this.staticInput)
 
     const sellAmountFormatted = tokenFormatter(sellToken, sellAmount)
     const buyAmountFormatted = tokenFormatter(buyToken, buyAmount)
@@ -251,7 +251,7 @@ export class TwapOrder extends BaseConditionalOrder<TwapData, TwapDataParams> {
   transformParamsToData(params: TwapDataParams): TwapData {
     return {
       ...params,
-      ...TwapOrder.totalToPart(params),
+      ...Twap.totalToPart(params),
     }
   }
 

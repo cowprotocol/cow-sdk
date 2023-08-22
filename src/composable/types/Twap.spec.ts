@@ -1,4 +1,4 @@
-import { TwapOrder, TWAP_ADDRESS, type TwapDataParams } from './Twap2'
+import { Twap, TWAP_ADDRESS, type TwapDataParams } from './Twap'
 import { BigNumber, utils, constants } from 'ethers'
 
 export const TWAP_PARAMS_TEST: TwapDataParams = {
@@ -53,63 +53,61 @@ export function generateRandomTWAPData(): TwapDataParams {
 
 describe('Twap', () => {
   test('Create: constructor creates valid TWAP', () => {
-    const twap = TwapOrder.default(TWAP_PARAMS_TEST)
+    const twap = Twap.default(TWAP_PARAMS_TEST)
     expect(twap.orderType).toEqual('twap')
     expect(twap.hasOffChainInput).toEqual(false)
     expect(twap.offChainInput).toEqual('0x')
     expect(twap.context?.address).not.toBeUndefined()
 
-    const twap2 = TwapOrder.default({ ...TWAP_PARAMS_TEST, t0: BigNumber.from(1) })
+    const twap2 = Twap.default({ ...TWAP_PARAMS_TEST, t0: BigNumber.from(1) })
     expect(twap2.context).toBeUndefined()
 
     expect(
-      () => new TwapOrder({ handler: '0xdeaddeaddeaddeaddeaddeaddeaddeaddeaddead', staticInput: TWAP_PARAMS_TEST })
+      () => new Twap({ handler: '0xdeaddeaddeaddeaddeaddeaddeaddeaddeaddead', staticInput: TWAP_PARAMS_TEST })
     ).toThrow('InvalidHandler')
   })
 
   test('isValid: Validates TWAP params', () => {
-    expect(() => TwapOrder.default({ ...TWAP_PARAMS_TEST })).not.toThrow()
-    expect(() => TwapOrder.default({ ...TWAP_PARAMS_TEST, sellToken: TWAP_PARAMS_TEST.buyToken })).toThrow(
+    expect(() => Twap.default({ ...TWAP_PARAMS_TEST })).not.toThrow()
+    expect(() => Twap.default({ ...TWAP_PARAMS_TEST, sellToken: TWAP_PARAMS_TEST.buyToken })).toThrow(
       'InvalidSameToken'
     )
-    expect(() => TwapOrder.default({ ...TWAP_PARAMS_TEST, sellToken: constants.AddressZero })).toThrow('InvalidToken')
-    expect(() => TwapOrder.default({ ...TWAP_PARAMS_TEST, buyToken: constants.AddressZero })).toThrow('InvalidToken')
-    expect(() => TwapOrder.default({ ...TWAP_PARAMS_TEST, sellAmount: BigNumber.from(0) })).toThrow('InvalidSellAmount')
-    expect(() => TwapOrder.default({ ...TWAP_PARAMS_TEST, buyAmount: BigNumber.from(0) })).toThrow(
-      'InvalidMinBuyAmount'
-    )
-    expect(() => TwapOrder.default({ ...TWAP_PARAMS_TEST, t0: BigNumber.from(-1) })).toThrow('InvalidStartTime')
-    expect(() => TwapOrder.default({ ...TWAP_PARAMS_TEST, n: BigNumber.from(0) })).toThrow('InvalidNumParts')
-    expect(() => TwapOrder.default({ ...TWAP_PARAMS_TEST, t: BigNumber.from(0) })).toThrow('InvalidFrequency')
-    expect(() => TwapOrder.default({ ...TWAP_PARAMS_TEST, span: TWAP_PARAMS_TEST.t.add(1) })).toThrow('InvalidSpan')
+    expect(() => Twap.default({ ...TWAP_PARAMS_TEST, sellToken: constants.AddressZero })).toThrow('InvalidToken')
+    expect(() => Twap.default({ ...TWAP_PARAMS_TEST, buyToken: constants.AddressZero })).toThrow('InvalidToken')
+    expect(() => Twap.default({ ...TWAP_PARAMS_TEST, sellAmount: BigNumber.from(0) })).toThrow('InvalidSellAmount')
+    expect(() => Twap.default({ ...TWAP_PARAMS_TEST, buyAmount: BigNumber.from(0) })).toThrow('InvalidMinBuyAmount')
+    expect(() => Twap.default({ ...TWAP_PARAMS_TEST, t0: BigNumber.from(-1) })).toThrow('InvalidStartTime')
+    expect(() => Twap.default({ ...TWAP_PARAMS_TEST, n: BigNumber.from(0) })).toThrow('InvalidNumParts')
+    expect(() => Twap.default({ ...TWAP_PARAMS_TEST, t: BigNumber.from(0) })).toThrow('InvalidFrequency')
+    expect(() => Twap.default({ ...TWAP_PARAMS_TEST, span: TWAP_PARAMS_TEST.t.add(1) })).toThrow('InvalidSpan')
   })
 
   test('isValidAbi: Fails if invalid', () => {
     // The below test triggers a throw by trying to ABI parse `appData` as a `bytes32` when
     // it only has 20 bytes (ie. an address)
-    expect(() => TwapOrder.default({ ...TWAP_PARAMS_TEST, appData: constants.AddressZero })).toThrow('InvalidData')
+    expect(() => Twap.default({ ...TWAP_PARAMS_TEST, appData: constants.AddressZero })).toThrow('InvalidData')
   })
 
   test('serialize: Serializes correctly', () => {
-    const twap = TwapOrder.default(TWAP_PARAMS_TEST)
+    const twap = Twap.default(TWAP_PARAMS_TEST)
     expect(twap.serialize()).toEqual(TWAP_SERIALIZED(twap.salt))
   })
 
   test('deserialize: Deserializes correctly', () => {
-    const twap = TwapOrder.default(TWAP_PARAMS_TEST)
-    expect(TwapOrder.deserialize(TWAP_SERIALIZED(twap.salt))).toMatchObject(twap)
+    const twap = Twap.default(TWAP_PARAMS_TEST)
+    expect(Twap.deserialize(TWAP_SERIALIZED(twap.salt))).toMatchObject(twap)
   })
 
   test('deserialize: Throws if invalid', () => {
-    expect(() => TwapOrder.deserialize('0x')).toThrow('InvalidSerializedConditionalOrder')
+    expect(() => Twap.deserialize('0x')).toThrow('InvalidSerializedConditionalOrder')
   })
 
   test('toString: Formats correctly', () => {
-    expect(TwapOrder.default(TWAP_PARAMS_TEST).toString()).toEqual(
+    expect(Twap.default(TWAP_PARAMS_TEST).toString()).toEqual(
       `twap: Sell total ${TWAP_PARAMS_TEST.sellToken}@${TWAP_PARAMS_TEST.sellAmount} for a minimum of ${TWAP_PARAMS_TEST.buyToken}@${TWAP_PARAMS_TEST.buyAmount} over ${TWAP_PARAMS_TEST.n} parts with a spacing of ${TWAP_PARAMS_TEST.t}s beginning at time of mining`
     )
     const t0 = BigNumber.from(BigInt(Date.now()) / 1000n)
-    expect(TwapOrder.default({ ...TWAP_PARAMS_TEST, t0 }).toString()).toEqual(
+    expect(Twap.default({ ...TWAP_PARAMS_TEST, t0 }).toString()).toEqual(
       `twap: Sell total ${TWAP_PARAMS_TEST.sellToken}@${TWAP_PARAMS_TEST.sellAmount} for a minimum of ${
         TWAP_PARAMS_TEST.buyToken
       }@${TWAP_PARAMS_TEST.buyAmount} over ${TWAP_PARAMS_TEST.n} parts with a spacing of ${

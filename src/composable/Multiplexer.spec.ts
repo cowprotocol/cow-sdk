@@ -1,14 +1,14 @@
-import { Multiplexer, Orders } from './Multiplexer2'
+import { Multiplexer, Orders } from './Multiplexer'
 import { SupportedChainId } from '../common'
 import { ComposableCoW__factory } from './generated'
 import { ProofLocation } from './types'
-import { TwapOrder } from './types/Twap2'
-import { TWAP_PARAMS_TEST, generateRandomTWAPData } from './types/Twap2.spec'
+import { Twap } from './types/Twap'
+import { TWAP_PARAMS_TEST, generateRandomTWAPData } from './types/Twap.spec'
 
 describe('Multiplexer (ComposableCoW)', () => {
   beforeEach(() => {
     // Register the TWAP handler
-    Multiplexer.registerOrderType('twap', TwapOrder)
+    Multiplexer.registerOrderType('twap', Twap)
   })
 
   afterEach(() => {
@@ -28,7 +28,7 @@ describe('Multiplexer (ComposableCoW)', () => {
 
   test('constructor: cannot have undefined root for orders', () => {
     expect(() => {
-      const twap = TwapOrder.default(generateRandomTWAPData())
+      const twap = Twap.default(generateRandomTWAPData())
 
       new Multiplexer(SupportedChainId.GNOSIS_CHAIN, { [twap.id]: twap })
     }).toThrow('orders cannot have undefined root')
@@ -37,7 +37,7 @@ describe('Multiplexer (ComposableCoW)', () => {
   test('constructor: order types must be registered', () => {
     Multiplexer.resetOrderTypeRegistry()
 
-    const twap = TwapOrder.default(generateRandomTWAPData())
+    const twap = Twap.default(generateRandomTWAPData())
     expect(() => {
       new Multiplexer(SupportedChainId.GNOSIS_CHAIN, { [twap.id]: twap }, '0x1234')
     }).toThrow(`Unknown order type: ${twap.orderType}`)
@@ -45,7 +45,7 @@ describe('Multiplexer (ComposableCoW)', () => {
 
   test('constructor: orders must have valid root supplied', () => {
     expect(() => {
-      const twap = TwapOrder.default(generateRandomTWAPData())
+      const twap = Twap.default(generateRandomTWAPData())
 
       new Multiplexer(SupportedChainId.GNOSIS_CHAIN, { [twap.id]: twap }, '0x1234')
     }).toThrow('root mismatch')
@@ -54,7 +54,7 @@ describe('Multiplexer (ComposableCoW)', () => {
   test('crud: can add, remove, update, and get orders', () => {
     // Create a new multiplexer, add a TWAP order
     const m = new Multiplexer(SupportedChainId.GNOSIS_CHAIN)
-    const twap = TwapOrder.default(generateRandomTWAPData())
+    const twap = Twap.default(generateRandomTWAPData())
     m.add(twap)
 
     // Get the order by id
@@ -68,7 +68,7 @@ describe('Multiplexer (ComposableCoW)', () => {
     expect(order2).toEqual(twap)
 
     // Create another random TWAP order
-    const twap2 = TwapOrder.default(generateRandomTWAPData())
+    const twap2 = Twap.default(generateRandomTWAPData())
     m.add(twap2)
 
     // Confirm that the multiplexer has two orders
@@ -101,7 +101,7 @@ describe('Multiplexer (ComposableCoW)', () => {
   test('serde(toJSON): can serialize to JSON', () => {
     // Create a new multiplexer, add a TWAP order
     const m = new Multiplexer(SupportedChainId.GNOSIS_CHAIN)
-    const twap = TwapOrder.default(generateRandomTWAPData())
+    const twap = Twap.default(generateRandomTWAPData())
     m.add(twap)
 
     // Serialize the multiplexer
@@ -117,7 +117,7 @@ describe('Multiplexer (ComposableCoW)', () => {
   test('serde(fromJSON): enforce order types are registered', () => {
     // Create a new multiplexer, add a TWAP order
     const m = new Multiplexer(SupportedChainId.GNOSIS_CHAIN)
-    const twap = TwapOrder.default(generateRandomTWAPData())
+    const twap = Twap.default(generateRandomTWAPData())
     m.add(twap)
 
     // Serialize the multiplexer
@@ -138,7 +138,7 @@ describe('Multiplexer (ComposableCoW)', () => {
 
     // generate `n` random TWAP orders
     for (let i = 0; i < 10; i++) {
-      m.add(TwapOrder.default(generateRandomTWAPData()))
+      m.add(Twap.default(generateRandomTWAPData()))
     }
 
     // Generate a random index to get an order from the multiplexer
@@ -167,7 +167,7 @@ describe('Multiplexer (ComposableCoW)', () => {
 
     // generate `n` random TWAP orders
     for (let i = 0; i < 10; i++) {
-      m.add(TwapOrder.default(generateRandomTWAPData()))
+      m.add(Twap.default(generateRandomTWAPData()))
     }
 
     // Generate a random index to get an order from the multiplexer
@@ -204,7 +204,7 @@ describe('Multiplexer (ComposableCoW)', () => {
 
     // generate `n` random TWAP orders
     for (let i = 0; i < 10; i++) {
-      m.add(TwapOrder.default(generateRandomTWAPData()))
+      m.add(Twap.default(generateRandomTWAPData()))
     }
 
     const proofStruct = await m.prepareProofStruct()
@@ -218,7 +218,7 @@ describe('Multiplexer (ComposableCoW)', () => {
   test('prepareProofStruct: emits when location set to emitted', async () => {
     // Create a new multiplexer, add the standard TWAP order
     const m = new Multiplexer(SupportedChainId.GNOSIS_CHAIN)
-    const twap = TwapOrder.default(TWAP_PARAMS_TEST)
+    const twap = Twap.default(TWAP_PARAMS_TEST)
     m.add(twap)
 
     const proofStruct = await m.prepareProofStruct(ProofLocation.EMITTED)
@@ -232,7 +232,7 @@ describe('Multiplexer (ComposableCoW)', () => {
   test('prepareProofStruct: throws on invalid location', async () => {
     // Create a new multiplexer, add the standard TWAP order
     const m = new Multiplexer(SupportedChainId.GNOSIS_CHAIN)
-    const twap = TwapOrder.default(TWAP_PARAMS_TEST)
+    const twap = Twap.default(TWAP_PARAMS_TEST)
     m.add(twap)
 
     await expect(m.prepareProofStruct(ProofLocation.EMITTED + 100)).rejects.toThrow('Unsupported location')
@@ -241,7 +241,7 @@ describe('Multiplexer (ComposableCoW)', () => {
   test('prepareProofStruct: uploader', async () => {
     // Create a new multiplexer, add the standard TWAP order
     const m = new Multiplexer(SupportedChainId.GNOSIS_CHAIN)
-    const twap = TwapOrder.default(TWAP_PARAMS_TEST)
+    const twap = Twap.default(TWAP_PARAMS_TEST)
     m.add(twap)
 
     try {
