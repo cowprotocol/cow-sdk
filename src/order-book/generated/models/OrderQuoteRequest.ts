@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { Address } from './Address';
+import type { AppData } from './AppData';
 import type { AppDataHash } from './AppDataHash';
 import type { BuyTokenDestination } from './BuyTokenDestination';
 import type { OrderQuoteSide } from './OrderQuoteSide';
@@ -29,7 +30,21 @@ export type OrderQuoteRequest = (OrderQuoteSide & OrderQuoteValidity & {
      *
      */
     receiver?: Address | null;
-    appData?: AppDataHash;
+    /**
+     * AppData which will be assigned to the order.
+     * Expects either a string JSON doc as defined on [AppData](https://github.com/cowprotocol/app-data) or a
+     * hex encoded string for backwards compatibility.
+     * When the first format is used, it's possible to provide the derived appDataHash field.
+     *
+     */
+    appData?: (AppData | AppDataHash);
+    /**
+     * The hash of the stringified JSON appData doc.
+     * If present, `appData` field must be set with the aforementioned data where this hash is derived from.
+     * In case they differ, the call will fail.
+     *
+     */
+    appDataHash?: AppDataHash;
     /**
      * Is the order fill-or-kill or partially fillable?
      */
