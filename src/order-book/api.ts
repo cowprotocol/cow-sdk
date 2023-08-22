@@ -1,8 +1,8 @@
 import 'cross-fetch/polyfill'
 import {
   Address,
-  AppDataDocument,
   AppDataHash,
+  AppDataObject,
   NativePriceResponse,
   Order,
   OrderCancellations,
@@ -17,10 +17,10 @@ import {
 } from './generated'
 import { CowError } from '../common/cow-error'
 import {
+  ApiBaseUrls,
   ApiContext,
   CowEnv,
   DEFAULT_COW_API_CONTEXT,
-  ApiBaseUrls,
   ENVS_LIST,
   PartialApiContext,
   RequestOptions,
@@ -325,7 +325,7 @@ export class OrderBookApi {
    * @param contextOverride Optional context override for this request.
    * @returns Full app data that was uploaded
    */
-  getAppData(appDataHash: AppDataHash, contextOverride: PartialApiContext = {}): Promise<AppDataDocument> {
+  getAppData(appDataHash: AppDataHash, contextOverride: PartialApiContext = {}): Promise<AppDataObject> {
     return this.fetch({ path: `/api/v1/app_data/${appDataHash}`, method: 'GET' }, contextOverride)
   }
 
@@ -340,7 +340,7 @@ export class OrderBookApi {
     appDataHash: AppDataHash,
     fullAppData: string,
     contextOverride: PartialApiContext = {}
-  ): Promise<AppDataDocument> {
+  ): Promise<AppDataObject> {
     return this.fetch(
       { path: `/api/v1/app_data/${appDataHash}`, method: 'PUT', body: { fullAppData } },
       contextOverride

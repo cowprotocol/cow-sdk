@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { Address } from './Address';
+import type { AppData } from './AppData';
 import type { AppDataHash } from './AppDataHash';
 import type { BuyTokenDestination } from './BuyTokenDestination';
 import type { OrderKind } from './OrderKind';
@@ -76,11 +77,11 @@ export type OrderCreation = {
      */
     quoteId?: number | null;
     /**
-     * This field comes in two forms for backward compatibility. The first form (`appDataHash`)
-     * will eventually stop being accepted.
+     * This field comes in two forms for backward compatibility. The hash form will eventually
+     * stop being accepted.
      *
      */
-    appData: (AppDataHash | string);
+    appData: (AppData | AppDataHash);
     /**
      * May be set for debugging purposes. If set, this field is compared to what the backend
      * internally calculates as the app data hash based on the contents of `appData`. If the
