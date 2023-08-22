@@ -1,5 +1,5 @@
 import { BigNumber } from 'ethers'
-import { BaseConditionalOrder } from './conditionalorder'
+import { BaseConditionalOrder } from './BaseConditionalOrder'
 import { TWAP } from './types/twap'
 
 const TWAP_SERIALIZED = (salt?: string, handler?: string): string => {

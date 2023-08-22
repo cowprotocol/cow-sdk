@@ -2,7 +2,7 @@ import { StandardMerkleTree } from '@openzeppelin/merkle-tree'
 import { BigNumber, providers, utils } from 'ethers'
 
 import { COMPOSABLE_COW_CONTRACT_ADDRESS, SupportedChainId } from '../common'
-import { BaseConditionalOrder, ConditionalOrderParams } from './conditionalorder'
+import { BaseConditionalOrder, ConditionalOrderParams } from './BaseConditionalOrder'
 
 import { ComposableCoW__factory } from './generated'
 import { ComposableCoW, GPv2Order } from './generated/ComposableCoW'

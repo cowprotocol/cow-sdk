@@ -1,6 +1,6 @@
 import { BigNumber, constants, ethers, utils } from 'ethers'
 
-import { BaseConditionalOrder } from '../conditionalorder'
+import { BaseConditionalOrder } from '../BaseConditionalOrder'
 import { ContextFactory } from '../multiplexer'
 
 // The type of Conditional Order
