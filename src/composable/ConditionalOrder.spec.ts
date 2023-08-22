@@ -1,6 +1,7 @@
 import { BigNumber } from 'ethers'
 import { ConditionalOrder } from './ConditionalOrder'
 import { Twap } from './types/Twap'
+import { encodeParams } from './utils'
 
 const TWAP_SERIALIZED = (salt?: string, handler?: string): string => {
   return (
@@ -106,9 +107,6 @@ class TestConditionalOrder extends ConditionalOrder<string, string> {
     throw new Error('Method not implemented.')
   }
   serialize(): string {
-    return ConditionalOrder.encodeParams(this.leaf)
-  }
-  toString(_tokenFormatter?: (address: string, amount: BigNumber) => string): string {
-    throw new Error('Method not implemented.')
+    return encodeParams(this.leaf)
   }
 }

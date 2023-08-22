@@ -164,21 +164,6 @@ export abstract class ConditionalOrder<Data, Params> {
   }
 
   /**
-   * Helper method for validating ABI types.
-   * @param types ABI types to validate against.
-   * @param values The values to validate.
-   * @returns {boolean} Whether the values are valid ABI for the given types.
-   */
-  protected static isValidAbi(types: readonly (string | ethers.utils.ParamType)[], values: any[]): boolean {
-    try {
-      ethers.utils.defaultAbiCoder.encode(types, values)
-    } catch (e) {
-      return false
-    }
-    return true
-  }
-
-  /**
    * Create a human-readable string representation of the conditional order.
    *
    * @param tokenFormatter An optional function that takes an address and an amount and returns a human-readable string.

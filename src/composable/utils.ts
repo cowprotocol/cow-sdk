@@ -41,12 +41,12 @@ export function createSetDomainVerifierTx(domain: string, verifier: string): str
 /**
  * Encode the `ConditionalOrderParams` for the conditional order.
  *
- * @param leaf The `ConditionalOrderParams` struct representing the conditional order as taken from a merkle tree.
+ * @param params The `ConditionalOrderParams` struct representing the conditional order as taken from a merkle tree.
  * @returns The ABI-encoded conditional order.
  * @see ConditionalOrderParams
  */
-export function encodeParams(leaf: ConditionalOrderParams): string {
-  return utils.defaultAbiCoder.encode(CONDITIONAL_ORDER_PARAMS_ABI, [leaf])
+export function encodeParams(params: ConditionalOrderParams): string {
+  return utils.defaultAbiCoder.encode(CONDITIONAL_ORDER_PARAMS_ABI, [params])
 }
 
 /**
@@ -58,4 +58,20 @@ export function encodeParams(leaf: ConditionalOrderParams): string {
 export function decodeParams(encoded: string): ConditionalOrderParams {
   const { handler, salt, staticInput } = utils.defaultAbiCoder.decode(CONDITIONAL_ORDER_PARAMS_ABI, encoded)[0]
   return { handler, salt, staticInput }
+}
+
+/**
+ * Helper method for validating ABI types.
+ * @param types ABI types to validate against.
+ * @param values The values to validate.
+ * @returns {boolean} Whether the values are valid ABI for the given types.
+ */
+export function isValidAbi(types: readonly (string | utils.ParamType)[], values: any[]): boolean {
+  try {
+    utils.defaultAbiCoder.encode(types, values)
+  } catch (e) {
+    console.log('eeeee', e)
+    return false
+  }
+  return true
 }

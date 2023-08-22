@@ -2,6 +2,7 @@ import { BigNumber, constants } from 'ethers'
 
 import { ConditionalOrder } from '../ConditionalOrder'
 import { ConditionalOrderArguments, ContextFactory } from '../types'
+import { encodeParams, isValidAbi } from '../utils'
 
 // The type of Conditional Order
 const TWAP_ORDER_TYPE = 'twap'
@@ -18,7 +19,7 @@ export const MAX_UINT32 = BigNumber.from(2).pow(32).sub(1) // 2^32 - 1
 export const MAX_FREQUENCY = BigNumber.from(365 * 24 * 60 * 60) // 1 year
 
 // Define the ABI tuple for the TWAPData struct
-const TWAP_DATA_ABI = [
+export const TWAP_DATA_ABI = [
   'tuple(address sellToken, address buyToken, address receiver, uint256 partSellAmount, uint256 minPartLimit, uint256 t0, uint256 n, uint256 t, uint256 span, bytes32 appData)',
 ]
 
@@ -133,7 +134,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapDataParams> {
     super({ handler: TWAP_ADDRESS, salt, staticInput, hasOffChainInput })
 
     // Finally, verify that the transformed data is ABI-encodable
-    if (!Twap.isValidAbi(TWAP_DATA_ABI, [this.staticInput])) throw new Error('InvalidData')
+    if (!isValidAbi(TWAP_DATA_ABI, [this.staticInput])) throw new Error('InvalidData')
   }
 
   /**
@@ -193,7 +194,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapDataParams> {
    * @returns {string} The ABI-encoded TWAP order.
    */
   serialize(): string {
-    return ConditionalOrder.encodeParams(this.leaf)
+    return encodeParams(this.leaf)
   }
 
   /**
