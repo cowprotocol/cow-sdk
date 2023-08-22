@@ -1,6 +1,6 @@
 import { BigNumber, constants } from 'ethers'
 
-import { BaseConditionalOrder } from '../BaseConditionalOrder'
+import { ConditionalOrder } from '../ConditionalOrder'
 import { ConditionalOrderArguments, ContextFactory } from '../types'
 
 // The type of Conditional Order
@@ -114,9 +114,9 @@ export type TwapData = {
  * `ComposableCoW` implementation of a TWAP order.
  * @author mfw78 <mfw78@rndlabs.xyz>
  */
-export class Twap extends BaseConditionalOrder<TwapData, TwapDataParams> {
+export class Twap extends ConditionalOrder<TwapData, TwapDataParams> {
   /**
-   * @see {@link BaseConditionalOrder.constructor}
+   * @see {@link ConditionalOrder.constructor}
    * @throws If the TWAP order is invalid.
    * @throws If the TWAP order is not ABI-encodable.
    * @throws If the handler is not the TWAP address.
@@ -141,7 +141,7 @@ export class Twap extends BaseConditionalOrder<TwapData, TwapDataParams> {
    * @param staticInput The TWAP order parameters in a more user-friendly format.
    * @returns An instance of the TWAP order.
    */
-  static default(staticInput: TwapDataParams): BaseConditionalOrder<TwapData, TwapDataParams> {
+  static default(staticInput: TwapDataParams): ConditionalOrder<TwapData, TwapDataParams> {
     return new Twap({ handler: TWAP_ADDRESS, staticInput })
   }
 
@@ -162,7 +162,7 @@ export class Twap extends BaseConditionalOrder<TwapData, TwapDataParams> {
   }
 
   /**
-   * @inheritdoc {@link BaseConditionalOrder.orderType}
+   * @inheritdoc {@link ConditionalOrder.orderType}
    */
   get orderType(): string {
     return TWAP_ORDER_TYPE
@@ -193,7 +193,7 @@ export class Twap extends BaseConditionalOrder<TwapData, TwapDataParams> {
    * @returns {string} The ABI-encoded TWAP order.
    */
   serialize(): string {
-    return BaseConditionalOrder.encodeParams(this.leaf)
+    return ConditionalOrder.encodeParams(this.leaf)
   }
 
   /**

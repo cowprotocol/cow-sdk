@@ -1,10 +1,14 @@
-import { providers } from 'ethers'
+import { utils, providers } from 'ethers'
 import {
   COMPOSABLE_COW_CONTRACT_ADDRESS,
   EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS,
   SupportedChainId,
 } from '../common'
 import { ExtensibleFallbackHandler__factory } from './generated'
+import { ConditionalOrderParams } from './types'
+
+// Define the ABI tuple for the TWAPData struct
+export const CONDITIONAL_ORDER_PARAMS_ABI = ['tuple(address handler, bytes32 salt, bytes staticInput)']
 
 export function isExtensibleFallbackHandler(handler: string, chainId: SupportedChainId): boolean {
   return handler === EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS[chainId]
@@ -32,4 +36,26 @@ export function createSetDomainVerifierTx(domain: string, verifier: string): str
     domain,
     verifier,
   ])
+}
+
+/**
+ * Encode the `ConditionalOrderParams` for the conditional order.
+ *
+ * @param leaf The `ConditionalOrderParams` struct representing the conditional order as taken from a merkle tree.
+ * @returns The ABI-encoded conditional order.
+ * @see ConditionalOrderParams
+ */
+export function encodeParams(leaf: ConditionalOrderParams): string {
+  return utils.defaultAbiCoder.encode(CONDITIONAL_ORDER_PARAMS_ABI, [leaf])
+}
+
+/**
+ * Decode the `ConditionalOrderParams` for the conditional order.
+ *
+ * @param encoded The encoded conditional order.
+ * @returns The decoded conditional order.
+ */
+export function decodeParams(encoded: string): ConditionalOrderParams {
+  const { handler, salt, staticInput } = utils.defaultAbiCoder.decode(CONDITIONAL_ORDER_PARAMS_ABI, encoded)[0]
+  return { handler, salt, staticInput }
 }

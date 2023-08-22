@@ -1,12 +1,9 @@
 import { BigNumber, ethers, utils } from 'ethers'
-import { ConditionalOrderArguments as BaseConditionalOrderParams, ContextFactory } from './types'
-import { keccak256 } from 'ethers/lib/utils'
-import { ComposableCoW__factory } from './generated'
 import { IConditionalOrder } from './generated/ComposableCoW'
-import { ConditionalOrderParams } from './types'
 
-// Define the ABI tuple for the TWAPData struct
-export const CONDITIONAL_ORDER_PARAMS_ABI = ['tuple(address handler, bytes32 salt, bytes staticInput)']
+import { ComposableCoW__factory } from './generated'
+import { decodeParams, encodeParams } from './utils'
+import { ConditionalOrderArguments, ConditionalOrderParams, ContextFactory } from './types'
 
 /**
  * An abstract base class from which all conditional orders should inherit.
@@ -22,7 +19,7 @@ export const CONDITIONAL_ORDER_PARAMS_ABI = ['tuple(address handler, bytes32 sal
  * **NOTE**: Instances of conditional orders have an `id` property that is a `keccak256` hash of
  *           the serialized conditional order.
  */
-export abstract class BaseConditionalOrder<Data, Params> {
+export abstract class ConditionalOrder<Data, Params> {
   public readonly handler: string
   public readonly salt: string
   public readonly staticInput: Data
@@ -31,7 +28,7 @@ export abstract class BaseConditionalOrder<Data, Params> {
   /**
    * A constructor that provides some basic validation for the conditional order.
    *
-   * This constructor **MUST** be called by any class that inherits from `BaseConditionalOrder`.
+   * This constructor **MUST** be called by any class that inherits from `ConditionalOrder`.
    *
    * **NOTE**: The salt is optional and will be randomly generated if not provided.
    * @param handler The address of the handler for the conditional order.
@@ -41,8 +38,8 @@ export abstract class BaseConditionalOrder<Data, Params> {
    * @throws If the handler is not a valid ethereum address.
    * @throws If the salt is not a valid 32-byte string.
    */
-  constructor(params: BaseConditionalOrderParams<Params>) {
-    const { handler, salt = keccak256(ethers.utils.randomBytes(32)), staticInput, hasOffChainInput = false } = params
+  constructor(params: ConditionalOrderArguments<Params>) {
+    const { handler, salt = utils.keccak256(utils.randomBytes(32)), staticInput, hasOffChainInput = false } = params
     // Verify input to the constructor
     // 1. Verify that the handler is a valid ethereum address
     if (!ethers.utils.isAddress(handler)) {
@@ -153,7 +150,7 @@ export abstract class BaseConditionalOrder<Data, Params> {
    * @see ConditionalOrderParams
    */
   static leafToId(leaf: ConditionalOrderParams): string {
-    return utils.keccak256(BaseConditionalOrder.encodeParams(leaf))
+    return utils.keccak256(encodeParams(leaf))
   }
 
   /**
@@ -226,27 +223,6 @@ export abstract class BaseConditionalOrder<Data, Params> {
   abstract transformParamsToData(params: Params): Data
 
   /**
-   * Encode the `ConditionalOrderParams` for the conditional order.
-   *
-   * @param leaf The `ConditionalOrderParams` struct representing the conditional order as taken from a merkle tree.
-   * @returns The ABI-encoded conditional order.
-   * @see ConditionalOrderParams
-   */
-  static encodeParams(leaf: ConditionalOrderParams): string {
-    return utils.defaultAbiCoder.encode(CONDITIONAL_ORDER_PARAMS_ABI, [leaf])
-  }
-
-  /**
-   * Decode the `ConditionalOrderParams` for the conditional order.
-   *
-   * @param encoded The encoded conditional order.
-   * @returns The decoded conditional order.
-   */
-  static decodeParams(encoded: string): ConditionalOrderParams {
-    return utils.defaultAbiCoder.decode(CONDITIONAL_ORDER_PARAMS_ABI, encoded)[0]
-  }
-
-  /**
    * A helper function for generically deserializing a conditional order.
    * @param s The ABI-encoded `IConditionalOrder.Params` struct to deserialize.
    * @param handler Address of the handler for the conditional order.
@@ -262,7 +238,7 @@ export abstract class BaseConditionalOrder<Data, Params> {
   ): T {
     try {
       // First, decode the `IConditionalOrder.Params` struct
-      const { handler: recoveredHandler, salt, staticInput } = BaseConditionalOrder.decodeParams(s)
+      const { handler: recoveredHandler, salt, staticInput } = decodeParams(s)
 
       // Second, verify that the recovered handler is the correct handler
       if (!(recoveredHandler == handler)) throw new Error('HandlerMismatch')
