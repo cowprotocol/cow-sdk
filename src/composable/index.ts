@@ -1,4 +1,4 @@
 export * from './extensible'
-export * from './multiplexer'
+export * from './Multiplexer'
 export * from './BaseConditionalOrder'
 export * from './types'

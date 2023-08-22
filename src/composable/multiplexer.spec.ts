@@ -1,8 +1,9 @@
 import { TWAP } from './types/twap'
 import { TWAP_PARAMS_TEST, generateRandomTWAPData } from './types/twap.spec'
-import { Multiplexer, Orders, ProofLocation } from './multiplexer'
+import { Multiplexer, Orders } from './Multiplexer'
 import { SupportedChainId } from '../common'
 import { ComposableCoW__factory } from './generated'
+import { ProofLocation } from './types'
 
 describe('Multiplexer (ComposableCoW)', () => {
   beforeEach(() => {

@@ -2,11 +2,11 @@ import { StandardMerkleTree } from '@openzeppelin/merkle-tree'
 import { BigNumber, providers, utils } from 'ethers'
 
 import { COMPOSABLE_COW_CONTRACT_ADDRESS, SupportedChainId } from '../common'
-import { BaseConditionalOrder, ConditionalOrderParams } from './BaseConditionalOrder'
 
 import { ComposableCoW__factory } from './generated'
 import { ComposableCoW, GPv2Order } from './generated/ComposableCoW'
-import { ProofLocation, ProofWithParams } from './types'
+import { ProofLocation, ProofWithParams, ConditionalOrderParams } from './types'
+import { BaseConditionalOrder } from './BaseConditionalOrder'
 
 const CONDITIONAL_ORDER_LEAF_ABI = ['address', 'bytes32', 'bytes']
 
@@ -107,8 +107,7 @@ export class Multiplexer {
 
             if (Multiplexer.orderTypeRegistry.hasOwnProperty(orderType)) {
               const OrderConstructor = Multiplexer.orderTypeRegistry[orderType]
-              const orderArgs = Object.values(orderData)
-              orders[orderKey] = new OrderConstructor(...orderArgs)
+              orders[orderKey] = new OrderConstructor(orderData)
             } else {
               throw new Error(`Unknown order type: ${orderType}`)
             }

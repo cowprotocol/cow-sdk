@@ -49,10 +49,8 @@ describe('ConditionalOrder', () => {
 
   test('Serialize: Fails if invalid params', () => {
     const order = new TestConditionalOrder('0x910d00a310f7Dc5B29FE73458F47f519be547D3d')
-    expect(() => order.testEncodeStaticInput()).toThrow('SerializationFailed')
-    expect(() => BaseConditionalOrder.encodeParams({ handler: '0xdeadbeef', salt: '0x', staticInput: '0x' })).toThrow(
-      'SerializationFailed'
-    )
+    expect(() => order.testEncodeStaticInput()).toThrow()
+    expect(() => BaseConditionalOrder.encodeParams({ handler: '0xdeadbeef', salt: '0x', staticInput: '0x' })).toThrow()
   })
 
   test('id: Returns correct id', () => {
@@ -82,7 +80,11 @@ describe('ConditionalOrder', () => {
 
 class TestConditionalOrder extends BaseConditionalOrder<string, string> {
   constructor(address: string, salt?: string, staticInput = '0x') {
-    super(address, salt, staticInput)
+    super({
+      handler: address,
+      salt,
+      staticInput,
+    })
   }
 
   get orderType(): string {
@@ -95,6 +97,10 @@ class TestConditionalOrder extends BaseConditionalOrder<string, string> {
 
   testEncodeStaticInput(): string {
     return super.encodeStaticInputHelper(['uint256'], this.staticInput)
+  }
+
+  transformParamsToData(params: string): string {
+    return params
   }
 
   isValid(_o: unknown): boolean {

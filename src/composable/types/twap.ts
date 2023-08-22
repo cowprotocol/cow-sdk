@@ -1,7 +1,7 @@
-import { BigNumber, constants, ethers, utils } from 'ethers'
+import { BigNumber, constants } from 'ethers'
 
 import { BaseConditionalOrder } from '../BaseConditionalOrder'
-import { ContextFactory } from '../types'
+import { ConditionalOrderArguments, ContextFactory } from '../types'
 
 // The type of Conditional Order
 const TWAP_ORDER_TYPE = 'TWAP'
@@ -121,20 +121,16 @@ export class TWAP extends BaseConditionalOrder<TWAPData, TWAPDataParams> {
    * @throws If the TWAP order is not ABI-encodable.
    * @throws If the handler is not the TWAP address.
    */
-  constructor(
-    handler: string,
-    salt: string = utils.keccak256(ethers.utils.randomBytes(32)),
-    staticInput: TWAPDataParams,
-    hasOffChainInput = false
-  ) {
+  constructor(params: ConditionalOrderArguments<TWAPDataParams>) {
+    const { handler, salt, staticInput, hasOffChainInput } = params
     // First, verify that the handler is the TWAP address
-    if (handler !== TWAP_ADDRESS) throw new Error('InvalidHandler')
+    if (handler !== TWAP_ADDRESS) throw new Error('InvalidHandler: handler' + handler + ' TWAP_ADDRESS ' + TWAP_ADDRESS)
 
     // Second, verify that the order params are logically valid
     TWAP.isValid(staticInput)
 
     // Third, construct the base class using transformed parameters
-    super(TWAP_ADDRESS, salt, staticInput, hasOffChainInput)
+    super({ handler: TWAP_ADDRESS, salt, staticInput, hasOffChainInput })
 
     // Finally, verify that the transformed data is ABI-encodable
     if (!TWAP.isValidAbi(TWAP_DATA_ABI, [this.staticInput])) throw new Error('InvalidData')
@@ -146,7 +142,7 @@ export class TWAP extends BaseConditionalOrder<TWAPData, TWAPDataParams> {
    * @returns An instance of the TWAP order.
    */
   static default(staticInput: TWAPDataParams): BaseConditionalOrder<TWAPData, TWAPDataParams> {
-    return new TWAP(TWAP_ADDRESS, undefined, staticInput)
+    return new TWAP({ handler: TWAP_ADDRESS, staticInput })
   }
 
   /**
@@ -219,9 +215,13 @@ export class TWAP extends BaseConditionalOrder<TWAPData, TWAPDataParams> {
       TWAP_ADDRESS,
       TWAP_DATA_ABI,
       (o: TWAPData, salt: string) =>
-        new TWAP(TWAP_ADDRESS, salt, {
-          ...o,
-          ...TWAP.partsToTotal(o),
+        new TWAP({
+          handler: TWAP_ADDRESS,
+          salt,
+          staticInput: {
+            ...o,
+            ...TWAP.partsToTotal(o),
+          },
         })
     )
   }
@@ -244,6 +244,7 @@ export class TWAP extends BaseConditionalOrder<TWAPData, TWAPDataParams> {
 
   /**
    * Transform parameters into a native struct.
+   *
    * @param {TWAPDataParams} params As passed by the consumer of the API.
    * @returns {TWAPData} A formatted struct as expected by the smart contract.
    */

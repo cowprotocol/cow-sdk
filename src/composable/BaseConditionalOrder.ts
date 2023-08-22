@@ -1,5 +1,5 @@
 import { BigNumber, ethers, utils } from 'ethers'
-import { ContextFactory } from './types'
+import { ConditionalOrderArguments as BaseConditionalOrderParams, ContextFactory } from './types'
 import { keccak256 } from 'ethers/lib/utils'
 import { ComposableCoW__factory } from './generated'
 import { IConditionalOrder } from './generated/ComposableCoW'
@@ -41,12 +41,8 @@ export abstract class BaseConditionalOrder<Data, Params> {
    * @throws If the handler is not a valid ethereum address.
    * @throws If the salt is not a valid 32-byte string.
    */
-  constructor(
-    handler: string,
-    salt: string = keccak256(ethers.utils.randomBytes(32)),
-    staticInput: Params,
-    hasOffChainInput = false
-  ) {
+  constructor(params: BaseConditionalOrderParams<Params>) {
+    const { handler, salt = keccak256(ethers.utils.randomBytes(32)), staticInput, hasOffChainInput = false } = params
     // Verify input to the constructor
     // 1. Verify that the handler is a valid ethereum address
     if (!ethers.utils.isAddress(handler)) {
@@ -90,7 +86,7 @@ export abstract class BaseConditionalOrder<Data, Params> {
    * **NOTE**: By default, this will cause the create to emit the `ConditionalOrderCreated` event.
    * @returns The calldata for creating the conditional order.
    */
-  get getCreateCalldata(): string {
+  get createCalldata(): string {
     const context = this.context
     const composableCow = ComposableCoW__factory.createInterface()
     const paramsStruct: IConditionalOrder.ConditionalOrderParamsStruct = {
@@ -120,7 +116,7 @@ export abstract class BaseConditionalOrder<Data, Params> {
    * Get the calldata for removing a conditional order that was created as a single order.
    * @returns The calldata for removing the conditional order.
    */
-  get getRemoveCalldata(): string {
+  get removeCalldata(): string {
     const composableCow = ComposableCoW__factory.createInterface()
     return composableCow.encodeFunctionData('remove', [this.id])
   }
@@ -187,6 +183,7 @@ export abstract class BaseConditionalOrder<Data, Params> {
 
   /**
    * Create a human-readable string representation of the conditional order.
+   *
    * @param tokenFormatter An optional function that takes an address and an amount and returns a human-readable string.
    */
   abstract toString(tokenFormatter?: (address: string, amount: BigNumber) => string): string
@@ -200,6 +197,7 @@ export abstract class BaseConditionalOrder<Data, Params> {
 
   /**
    * Encode the `staticInput` for the conditional order.
+   *
    * @returns The ABI-encoded `staticInput` for the conditional order.
    * @see ConditionalOrderParams
    */
@@ -207,6 +205,7 @@ export abstract class BaseConditionalOrder<Data, Params> {
 
   /**
    * A helper function for generically serializing a conditional order's static input.
+   *
    * @param orderDataTypes ABI types for the order's data struct.
    * @param staticInput The order's data struct.
    * @returns An ABI-encoded representation of the order's data struct.
@@ -220,13 +219,15 @@ export abstract class BaseConditionalOrder<Data, Params> {
    *
    * **NOTE**: This should be overridden by any conditional order that requires transformations.
    * This implementation is a no-op.
+   *
    * @param params {Params} Parameters that are passed in to the constructor.
    * @returns {Data} The static input for the conditional order.
    */
-  protected abstract transformParamsToData(params: Params): Data
+  abstract transformParamsToData(params: Params): Data
 
   /**
    * Encode the `ConditionalOrderParams` for the conditional order.
+   *
    * @param leaf The `ConditionalOrderParams` struct representing the conditional order as taken from a merkle tree.
    * @returns The ABI-encoded conditional order.
    * @see ConditionalOrderParams
@@ -237,6 +238,7 @@ export abstract class BaseConditionalOrder<Data, Params> {
 
   /**
    * Decode the `ConditionalOrderParams` for the conditional order.
+   *
    * @param encoded The encoded conditional order.
    * @returns The decoded conditional order.
    */

@@ -1,3 +1,10 @@
+export interface ConditionalOrderArguments<Params> {
+  handler: string
+  staticInput: Params
+  salt?: string
+  hasOffChainInput?: boolean
+}
+
 export type ConditionalOrderParams = {
   readonly handler: string
   readonly salt: string
