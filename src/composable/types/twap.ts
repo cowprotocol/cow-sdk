@@ -1,7 +1,7 @@
 import { BigNumber, constants, ethers, utils } from 'ethers'
 
 import { BaseConditionalOrder } from '../BaseConditionalOrder'
-import { ContextFactory } from '../multiplexer'
+import { ContextFactory } from '../types'
 
 // The type of Conditional Order
 const TWAP_ORDER_TYPE = 'TWAP'
@@ -22,8 +22,12 @@ const TWAP_DATA_ABI = [
   'tuple(address sellToken, address buyToken, address receiver, uint256 partSellAmount, uint256 minPartLimit, uint256 t0, uint256 n, uint256 t, uint256 span, bytes32 appData)',
 ]
 
+// const DEFAULT_TOKEN_FORMATTER =  (address: string, amount: BigNumber) => string
+const DEFAULT_TOKEN_FORMATTER = (address: string, amount: BigNumber) => `${address}@${amount}`
+
 /**
  * Parameters for a TWAP order, made a little more user-friendly for SDK users.
+ *
  * @see {@link TWAPData} for the native struct.
  */
 export type TWAPDataParams = Omit<TWAPData, 'partSellAmount' | 'minPartLimit'> & {
@@ -34,28 +38,75 @@ export type TWAPDataParams = Omit<TWAPData, 'partSellAmount' | 'minPartLimit'> &
 }
 
 /**
+ * Parameters for a discrete part of a TWAP order
+ */
+export type TWAPPart = {
+  /**
+   * Amount of sellToken to sell in each part
+   */
+  partSellAmount: BigNumber
+
+  /**
+   * Minimum amount of buyToken that must be bought across the entire TWAP
+   */
+  minPartLimit: BigNumber
+}
+
+/**
  * Parameters for a TWAP order, as expected by the contract's `staticInput`.
  */
 export type TWAPData = {
-  // which token to sell
+  /**
+   * which token to sell
+   */
   readonly sellToken: string
-  // which token to buy
+
+  /**
+   * which token to buy
+   */
   readonly buyToken: string
-  // who to send the tokens to
+
+  /**
+   * who to send the tokens to
+   */
   readonly receiver: string
-  // amount of sellToken to sell in each part
+
+  /**
+   * amount of sellToken to sell in each part
+   */
   readonly partSellAmount: BigNumber
-  // minimum amount of buyToken that must be bought in each part
+
+  /**
+   * minimum amount of buyToken that must be bought in each part
+   */
   readonly minPartLimit: BigNumber
-  // start time of the TWAP
+
+  /**
+   * start time of the TWAP
+   */
   readonly t0: BigNumber
-  // number of parts
+
+  /**
+   * number of parts
+   */
   readonly n: BigNumber
-  // duration of the TWAP interval
+
+  /**
+   * duration of the TWAP interval
+   */
   readonly t: BigNumber
-  // whether the TWAP is valid for the entire interval or not
+
+  /**
+   * whether the TWAP is valid for the entire interval or not
+   */
   readonly span: BigNumber
-  // appData
+
+  /**
+   * Meta-data associated with the order. Normally would be the keccak256 hash of the document generated in http://github.com/cowprotocol/app-data
+   *
+   * This hash should have been uploaded to the API https://api.cow.fi/docs/#/default/put_api_v1_app_data__app_data_hash_ and potentially to other data availability protocols like IPFS.
+   *
+   */
   readonly appData: string
 }
 
@@ -181,20 +232,14 @@ export class TWAP extends BaseConditionalOrder<TWAPData, TWAPDataParams> {
    *        function that takes an address and an amount and returns a human-readable string.
    * @returns {string} A human-readable string representation of the TWAP order.
    */
-  toString(tokenFormatter?: (address: string, amount: BigNumber) => string): string {
-    const defaultFormatter = (address: string, amount: BigNumber) => `${address}@${amount}`
-    tokenFormatter = tokenFormatter || defaultFormatter
-
+  toString(tokenFormatter = DEFAULT_TOKEN_FORMATTER): string {
+    const { sellToken, buyToken, n, t, t0 } = this.staticInput
     const { sellAmount, buyAmount } = TWAP.partsToTotal(this.staticInput)
 
-    return `${this.orderType}: Sell total ${tokenFormatter(
-      this.staticInput.sellToken,
-      sellAmount
-    )} for a minimum of ${tokenFormatter(this.staticInput.buyToken, buyAmount)} over ${
-      this.staticInput.n
-    } parts with a spacing of ${this.staticInput.t}s beginning at ${
-      this.staticInput.t0.eq(0) ? 'time of mining' : new Date(Number(this.staticInput.t0) * 1000)
-    }`
+    const sellAmountFormatted = tokenFormatter(sellToken, sellAmount)
+    const buyAmountFormatted = tokenFormatter(buyToken, buyAmount)
+    const t0Formatted = t0.eq(0) ? 'time of mining' : new Date(Number(this.staticInput.t0) * 1000)
+    return `${this.orderType}: Sell total ${sellAmountFormatted} for a minimum of ${buyAmountFormatted} over ${n} parts with a spacing of ${t}s beginning at ${t0Formatted}`
   }
 
   /**
