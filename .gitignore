@@ -9,3 +9,4 @@ jest.results.json
 yalc.lock
 src/composable/generated
 docs/typedoc/
+abi/
