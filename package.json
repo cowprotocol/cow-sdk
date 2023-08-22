@@ -14,7 +14,7 @@
   },
   "types": "dist/index.d.ts",
   "scripts": {
-    "prebuild": "rm -rf dist && yarn run codegen",
+    "prebuild": "rm -rf dist && rm -rf abi && yarn ts-node prepublish.ts && yarn run codegen",
     "build": "microbundle -f modern,esm,cjs",
     "start": "microbundle -f modern,esm,cjs watch",
     "postbuild": "cp package.json dist && cp README.md dist",
