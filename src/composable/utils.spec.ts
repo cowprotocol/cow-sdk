@@ -1,6 +1,10 @@
 import { decodeParams, encodeParams, isValidAbi } from './utils'
-import { TWAP_DATA_ABI, Twap, TwapData } from './types/Twap'
+import { TwapData } from './types/Twap'
 import { TWAP_PARAMS_TEST } from './types/twap.spec'
+
+const TWAP_DATA_ABI = [
+  'tuple(address sellToken, address buyToken, address receiver, uint256 partSellAmount, uint256 minPartLimit, uint256 t0, uint256 n, uint256 t, uint256 span, bytes32 appData)',
+]
 
 const CONDITIONAL_ORDER_PARAMS = {
   handler: '0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5',
