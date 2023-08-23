@@ -79,8 +79,9 @@ export type ProofWithParams = {
   params: ConditionalOrderParams
 }
 
-export type PollResult =
-  | PollResultSuccess
+export type PollResult = PollResultSuccess | PollResultErrors
+
+export type PollResultErrors =
   | PollResultTryNextBlock
   | PollResultTryAtDate
   | PollResultUnexpectedError

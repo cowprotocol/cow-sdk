@@ -7,7 +7,7 @@ import {
 import { ExtensibleFallbackHandler__factory } from './generated'
 import { ConditionalOrderParams } from './types'
 
-// Define the ABI tuple for the TWAPData struct
+// Define the ABI tuple for the ConditionalOrderParams struct
 export const CONDITIONAL_ORDER_PARAMS_ABI = ['tuple(address handler, bytes32 salt, bytes staticInput)']
 
 export function isExtensibleFallbackHandler(handler: string, chainId: SupportedChainId): boolean {

@@ -1,5 +1,5 @@
 import { ConditionalOrder } from './ConditionalOrder'
-import { IsValidResult, PollResult } from './types'
+import { IsValidResult, PollResultErrors } from './types'
 import { Twap } from './types/Twap'
 import { encodeParams } from './utils'
 
@@ -102,7 +102,7 @@ class TestConditionalOrder extends ConditionalOrder<string, string> {
   transformParamsToData(params: string): string {
     return params
   }
-  protected pollCustom(): Promise<PollResult | undefined> {
+  protected pollValidate(): Promise<PollResultErrors | undefined> {
     throw new Error('Method not implemented.')
   }
 

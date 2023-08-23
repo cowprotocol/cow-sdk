@@ -10,6 +10,7 @@ import {
   IsValidResult,
   PollResult,
   PollResultCode,
+  PollResultErrors,
 } from './types'
 import { SupportedChainId } from 'src/common'
 import { getComposableCow } from './contracts'
@@ -234,7 +235,7 @@ export abstract class ConditionalOrder<T, P> {
       }
 
       // Let the concrete Conditional Order decide about the poll result
-      const pollResult = await this.pollCustom(owner, chain, provider)
+      const pollResult = await this.pollValidate(owner, chain, provider)
       if (pollResult) {
         return pollResult
       }
@@ -269,16 +270,36 @@ export abstract class ConditionalOrder<T, P> {
     }
   }
 
+  /**
+   * Checks if the owner authorized the conditional order.
+   *
+   * @param owner The owner of the conditional order.
+   * @param chain Which chain to use for the ComposableCoW contract.
+   * @param provider An RPC provider for the chain.
+   * @returns true if the owner authorized the order, false otherwise.
+   */
   public isAuthorized(owner: string, chain: SupportedChainId, provider: providers.Provider): Promise<boolean> {
     const composableCow = getComposableCow(chain, provider)
     return composableCow.callStatic.singleOrders(owner, this.id)
   }
 
-  protected abstract pollCustom(
+  /**
+   * Allow concrete conditional orders to perform additional validation for the poll method.
+   *
+   * This will allow the concrete orders to decide when an order shouldn't be polled again. For example, if the orders is expired.
+   * It also allows to signal when should the next check be done. For example, an order could signal that the validations will fail until a certain time or block.
+   *
+   * @param owner The owner of the conditional order.
+   * @param chain Which chain to use for the ComposableCoW contract.
+   * @param provider An RPC provider for the chain.
+   *
+   * @returns undefined if the concrete order can't make a decision. Otherwise, it returns a PollResultErrors object.
+   */
+  protected abstract pollValidate(
     owner: string,
     chain: SupportedChainId,
     provider: providers.Provider
-  ): Promise<PollResult | undefined>
+  ): Promise<PollResultErrors | undefined>
 
   /**
    * Apply any transformations to the parameters that are passed in to the constructor.

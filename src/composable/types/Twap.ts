@@ -1,7 +1,7 @@
 import { BigNumber, constants, providers } from 'ethers'
 
 import { ConditionalOrder } from '../ConditionalOrder'
-import { ConditionalOrderArguments, ContextFactory, IsNotValid, IsValid, PollResult } from '../types'
+import { ConditionalOrderArguments, ContextFactory, IsNotValid, IsValid, PollResultErrors } from '../types'
 import { encodeParams, isValidAbi } from '../utils'
 import { SupportedChainId } from 'src/common'
 
@@ -20,7 +20,7 @@ export const MAX_UINT32 = BigNumber.from(2).pow(32).sub(1) // 2^32 - 1
 export const MAX_FREQUENCY = BigNumber.from(365 * 24 * 60 * 60) // 1 year
 
 // Define the ABI tuple for the TWAPData struct
-export const TWAP_DATA_ABI = [
+const TWAP_DATA_ABI = [
   'tuple(address sellToken, address buyToken, address receiver, uint256 partSellAmount, uint256 minPartLimit, uint256 t0, uint256 n, uint256 t, uint256 span, bytes32 appData)',
 ]
 
@@ -195,11 +195,11 @@ export class Twap extends ConditionalOrder<TwapData, TwapDataParams> {
     return error ? { isValid: false, reason: error } : { isValid: true }
   }
 
-  protected async pollCustom(
+  protected async pollValidate(
     _owner: string,
     _chain: SupportedChainId,
     _provider: providers.Provider
-  ): Promise<PollResult | undefined> {
+  ): Promise<PollResultErrors | undefined> {
     return undefined
   }
 
