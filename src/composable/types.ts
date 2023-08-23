@@ -83,6 +83,7 @@ export type PollResult = PollResultSuccess | PollResultErrors
 
 export type PollResultErrors =
   | PollResultTryNextBlock
+  | PollResultTryNextBlock
   | PollResultTryAtDate
   | PollResultUnexpectedError
   | PollResultDontTryAgain
@@ -108,6 +109,12 @@ export interface PollResultUnexpectedError {
 
 export interface PollResultTryNextBlock {
   readonly result: PollResultCode.TRY_NEXT_BLOCK
+  reason?: string
+}
+
+export interface PollResultTryOnBlock {
+  readonly result: PollResultCode.TRY_ON_BLOCK
+  readonly blockNumber: number
   reason?: string
 }
 
