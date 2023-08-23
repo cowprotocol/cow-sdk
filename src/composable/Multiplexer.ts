@@ -1,12 +1,12 @@
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree'
 import { BigNumber, providers, utils } from 'ethers'
 
-import { COMPOSABLE_COW_CONTRACT_ADDRESS, SupportedChainId } from '../common'
+import { SupportedChainId } from '../common'
 
-import { ComposableCoW__factory } from './generated'
 import { ComposableCoW, GPv2Order } from './generated/ComposableCoW'
 import { ProofLocation, ProofWithParams, ConditionalOrderParams } from './types'
 import { ConditionalOrder } from './ConditionalOrder'
+import { getComposableCow } from './contracts'
 
 const CONDITIONAL_ORDER_LEAF_ABI = ['address', 'bytes32', 'bytes']
 
@@ -338,9 +338,10 @@ export class Multiplexer {
     provider: providers.Provider,
     offChainInputFn?: (owner: string, params: ConditionalOrderParams) => Promise<string>
   ): Promise<[GPv2Order.DataStructOutput, string]> {
-    const contract = ComposableCoW__factory.connect(COMPOSABLE_COW_CONTRACT_ADDRESS[chain], provider)
+    const composableCow = getComposableCow(chain, provider)
+
     const offChainInput = offChainInputFn ? await offChainInputFn(owner, p.params) : '0x'
-    return await contract.getTradeableOrderWithSignature(owner, p.params, offChainInput, p.proof)
+    return await composableCow.getTradeableOrderWithSignature(owner, p.params, offChainInput, p.proof)
   }
 
   /**

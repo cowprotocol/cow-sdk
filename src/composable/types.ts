@@ -1,3 +1,5 @@
+import { GPv2Order } from './generated/ComposableCoW'
+
 export interface ConditionalOrderArguments<Params> {
   handler: string
   staticInput: Params
@@ -75,4 +77,38 @@ export type ProofWithParams = {
   proof: string[]
   // The parameters as expected by ABI encoding.
   params: ConditionalOrderParams
+}
+
+export type PollResult =
+  | PollResultSuccess
+  | PollResultUnexpectedError
+  | PollResultTryNextBlock
+  | PollResultTryAtDate
+  | PollResultUnexpectedError
+
+export enum PollResultCode {
+  SUCCESS = 'SUCCESS',
+  UNEXPECTED_ERROR = 'UNEXPECTED_ERROR',
+  TRY_NEXT_BLOCK = 'TRY_NEXT_BLOCK',
+  TRY_ON_BLOCK = 'TRY_ON_BLOCK',
+  TRY_AT_DATE = 'TRY_AT_DATE',
+}
+export interface PollResultSuccess {
+  readonly result: PollResultCode.SUCCESS
+  readonly order: GPv2Order.DataStructOutput
+  readonly signature: string
+}
+
+export interface PollResultUnexpectedError {
+  readonly result: PollResultCode.UNEXPECTED_ERROR
+  readonly error: Error
+}
+
+export interface PollResultTryNextBlock {
+  readonly result: PollResultCode.TRY_NEXT_BLOCK
+}
+
+export interface PollResultTryAtDate {
+  readonly result: PollResultCode.TRY_AT_DATE
+  readonly date: Date
 }

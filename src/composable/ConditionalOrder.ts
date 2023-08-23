@@ -1,9 +1,11 @@
-import { BigNumber, ethers, utils } from 'ethers'
+import { BigNumber, ethers, utils, providers } from 'ethers'
 import { IConditionalOrder } from './generated/ComposableCoW'
 
 import { ComposableCoW__factory } from './generated'
 import { decodeParams, encodeParams } from './utils'
-import { ConditionalOrderArguments, ConditionalOrderParams, ContextFactory } from './types'
+import { ConditionalOrderArguments, ConditionalOrderParams, ContextFactory, PollResult, PollResultCode } from './types'
+import { SupportedChainId } from 'src/common'
+import { getComposableCow } from './contracts'
 
 /**
  * An abstract base class from which all conditional orders should inherit.
@@ -194,6 +196,39 @@ export abstract class ConditionalOrder<Data, Params> {
    */
   protected encodeStaticInputHelper(orderDataTypes: string[], staticInput: Data): string {
     return utils.defaultAbiCoder.encode(orderDataTypes, [staticInput])
+  }
+
+  /**
+   * Poll a conditional order to see if it is tradeable.
+   *
+   * @param owner The owner of the conditional order.
+   * @param p The proof and parameters.
+   * @param chain Which chain to use for the ComposableCoW contract.
+   * @param provider An RPC provider for the chain.
+   * @param offChainInputFn A function, if provided, that will return the off-chain input for the conditional order.
+   * @throws If the conditional order is not tradeable.
+   * @returns The tradeable `GPv2Order.Data` struct and the `signature` for the conditional order.
+   */
+  protected async poll(owner: string, chain: SupportedChainId, provider: providers.Provider): Promise<PollResult> {
+    const composableCow = getComposableCow(chain, provider)
+
+    const [order, signature] = await composableCow.getTradeableOrderWithSignature(
+      owner,
+      this.leaf,
+      this.offChainInput,
+      []
+    )
+
+    // return {
+    //   result: PollResultCode.SUCCESS,
+    //   order,
+    //   signature,
+    // }
+    const result = {
+      result: PollResultCode.TRY_NEXT_BLOCK,
+    }
+
+    return result
   }
 
   /**
