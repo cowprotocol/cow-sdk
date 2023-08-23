@@ -1,8 +1,8 @@
 import { GPv2Order } from './generated/ComposableCoW'
 
-export interface ConditionalOrderArguments<Params> {
+export interface ConditionalOrderArguments<P> {
   handler: string
-  staticInput: Params
+  staticInput: P
   salt?: string
   hasOffChainInput?: boolean
 }

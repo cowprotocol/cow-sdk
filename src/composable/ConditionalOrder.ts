@@ -28,11 +28,11 @@ import { getComposableCow } from './contracts'
  * **NOTE**: Instances of conditional orders have an `id` property that is a `keccak256` hash of
  *           the serialized conditional order.
  */
-export abstract class ConditionalOrder<Data, Params> {
+export abstract class ConditionalOrder<T, P> {
   public readonly handler: string
   public readonly salt: string
-  public readonly data: Data
-  public readonly staticInput: Params
+  public readonly data: T
+  public readonly staticInput: P
   public readonly hasOffChainInput: boolean
 
   /**
@@ -48,7 +48,7 @@ export abstract class ConditionalOrder<Data, Params> {
    * @throws If the handler is not a valid ethereum address.
    * @throws If the salt is not a valid 32-byte string.
    */
-  constructor(params: ConditionalOrderArguments<Params>) {
+  constructor(params: ConditionalOrderArguments<P>) {
     const { handler, salt = utils.keccak256(utils.randomBytes(32)), staticInput, hasOffChainInput = false } = params
     // Verify input to the constructor
     // 1. Verify that the handler is a valid ethereum address
@@ -205,7 +205,7 @@ export abstract class ConditionalOrder<Data, Params> {
    * @param data The order's data struct.
    * @returns An ABI-encoded representation of the order's data struct.
    */
-  protected encodeDataHelper(orderDataTypes: string[], data: Data): string {
+  protected encodeDataHelper(orderDataTypes: string[], data: T): string {
     return utils.defaultAbiCoder.encode(orderDataTypes, [data])
   }
 
@@ -274,10 +274,10 @@ export abstract class ConditionalOrder<Data, Params> {
    * **NOTE**: This should be overridden by any conditional order that requires transformations.
    * This implementation is a no-op.
    *
-   * @param params {Params} Parameters that are passed in to the constructor.
-   * @returns {Data} The static input for the conditional order.
+   * @param params {P} Parameters that are passed in to the constructor.
+   * @returns {T} The static input for the conditional order.
    */
-  abstract transformParamsToData(params: Params): Data
+  abstract transformParamsToData(params: P): T
 
   /**
    * A helper function for generically deserializing a conditional order.
