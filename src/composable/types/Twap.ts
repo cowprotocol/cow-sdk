@@ -1,8 +1,9 @@
-import { BigNumber, constants } from 'ethers'
+import { BigNumber, constants, providers } from 'ethers'
 
 import { ConditionalOrder } from '../ConditionalOrder'
-import { ConditionalOrderArguments, ContextFactory } from '../types'
+import { ConditionalOrderArguments, ContextFactory, IsNotValid, IsValid, PollResult } from '../types'
 import { encodeParams, isValidAbi } from '../utils'
+import { SupportedChainId } from 'src/common'
 
 // The type of Conditional Order
 const TWAP_ORDER_TYPE = 'twap'
@@ -127,14 +128,8 @@ export class Twap extends ConditionalOrder<TwapData, TwapDataParams> {
     // First, verify that the handler is the TWAP address
     if (handler !== TWAP_ADDRESS) throw new Error(`InvalidHandler: Expected: ${TWAP_ADDRESS}, provided: ${handler}`)
 
-    // Second, verify that the order params are logically valid
-    Twap.isValid(staticInput)
-
     // Third, construct the base class using transformed parameters
     super({ handler: TWAP_ADDRESS, salt, staticInput, hasOffChainInput })
-
-    // Finally, verify that the transformed data is ABI-encodable
-    if (!isValidAbi(TWAP_DATA_ABI, [this.staticInput])) throw new Error('InvalidData')
   }
 
   /**
@@ -176,17 +171,36 @@ export class Twap extends ConditionalOrder<TwapData, TwapDataParams> {
    * @throws If the TWAP order is invalid.
    * @see {@link TwapData} for the native struct.
    */
-  static isValid(data: TwapDataParams): boolean {
-    if (!(data.sellToken != data.buyToken)) throw new Error('InvalidSameToken')
-    if (!(data.sellToken != constants.AddressZero && data.buyToken != constants.AddressZero))
-      throw new Error('InvalidToken')
-    if (!data.sellAmount.gt(constants.Zero)) throw new Error('InvalidSellAmount')
-    if (!data.buyAmount.gt(constants.Zero)) throw new Error('InvalidMinBuyAmount')
-    if (!(data.t0.gte(constants.Zero) && data.t0.lt(MAX_UINT32))) throw new Error('InvalidStartTime')
-    if (!(data.n.gt(constants.One) && data.n.lte(MAX_UINT32))) throw new Error('InvalidNumParts')
-    if (!(data.t.gt(constants.Zero) && data.t.lte(MAX_FREQUENCY))) throw new Error('InvalidFrequency')
-    if (!data.span.lte(data.t)) throw new Error('InvalidSpan')
-    return true
+  isValid(): IsValid | IsNotValid {
+    const error = (() => {
+      const { sellToken, sellAmount, buyToken, buyAmount, t0, n, t, span } = this.staticInput
+
+      // Verify that the order params are logically valid
+      if (!(sellToken != buyToken)) return 'InvalidSameToken'
+      if (!(sellToken != constants.AddressZero && buyToken != constants.AddressZero)) return 'InvalidToken'
+      if (!sellAmount.gt(constants.Zero)) return 'InvalidSellAmount'
+      if (!buyAmount.gt(constants.Zero)) return 'InvalidMinBuyAmount'
+      if (!(t0.gte(constants.Zero) && t0.lt(MAX_UINT32))) return 'InvalidStartTime'
+      if (!(n.gt(constants.One) && n.lte(MAX_UINT32))) return 'InvalidNumParts'
+      if (!(t.gt(constants.Zero) && t.lte(MAX_FREQUENCY))) return 'InvalidFrequency'
+      if (!span.lte(t)) return 'InvalidSpan'
+
+      // Verify that the transformed data is ABI-encodable
+      if (!isValidAbi(TWAP_DATA_ABI, [this.data])) return 'InvalidData'
+
+      // No errors
+      return undefined
+    })()
+
+    return error ? { isValid: false, reason: error } : { isValid: true }
+  }
+
+  protected async pollCustom(
+    _owner: string,
+    _chain: SupportedChainId,
+    _provider: providers.Provider
+  ): Promise<PollResult | undefined> {
+    return undefined
   }
 
   /**
@@ -202,7 +216,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapDataParams> {
    * @returns {string} The ABI-encoded TWAP order.
    */
   encodeStaticInput(): string {
-    return super.encodeStaticInputHelper(TWAP_DATA_ABI, this.staticInput)
+    return super.encodeDataHelper(TWAP_DATA_ABI, this.data)
   }
 
   /**
@@ -234,8 +248,8 @@ export class Twap extends ConditionalOrder<TwapData, TwapDataParams> {
    * @returns {string} A human-readable string representation of the TWAP order.
    */
   toString(tokenFormatter = DEFAULT_TOKEN_FORMATTER): string {
-    const { sellToken, buyToken, n, t, t0 } = this.staticInput
-    const { sellAmount, buyAmount } = Twap.partsToTotal(this.staticInput)
+    const { sellToken, buyToken, n, t, t0 } = this.data
+    const { sellAmount, buyAmount } = Twap.partsToTotal(this.data)
 
     const sellAmountFormatted = tokenFormatter(sellToken, sellAmount)
     const buyAmountFormatted = tokenFormatter(buyToken, buyAmount)
@@ -281,9 +295,14 @@ export class Twap extends ConditionalOrder<TwapData, TwapDataParams> {
     partSellAmount: BigNumber
     minPartLimit: BigNumber
   } {
-    return {
-      partSellAmount: o.sellAmount.div(o.n),
-      minPartLimit: o.buyAmount.div(o.n),
-    }
+    return !o.n.isZero()
+      ? {
+          partSellAmount: o.sellAmount.div(o.n),
+          minPartLimit: o.buyAmount.div(o.n),
+        }
+      : {
+          partSellAmount: BigNumber.from(0),
+          minPartLimit: BigNumber.from(0),
+        }
   }
 }

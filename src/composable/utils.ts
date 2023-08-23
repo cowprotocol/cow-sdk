@@ -70,7 +70,6 @@ export function isValidAbi(types: readonly (string | utils.ParamType)[], values:
   try {
     utils.defaultAbiCoder.encode(types, values)
   } catch (e) {
-    console.log('eeeee', e)
     return false
   }
   return true

@@ -3,7 +3,14 @@ import { IConditionalOrder } from './generated/ComposableCoW'
 
 import { ComposableCoW__factory } from './generated'
 import { decodeParams, encodeParams } from './utils'
-import { ConditionalOrderArguments, ConditionalOrderParams, ContextFactory, PollResult, PollResultCode } from './types'
+import {
+  ConditionalOrderArguments,
+  ConditionalOrderParams,
+  ContextFactory,
+  IsValidResult,
+  PollResult,
+  PollResultCode,
+} from './types'
 import { SupportedChainId } from 'src/common'
 import { getComposableCow } from './contracts'
 
@@ -24,7 +31,8 @@ import { getComposableCow } from './contracts'
 export abstract class ConditionalOrder<Data, Params> {
   public readonly handler: string
   public readonly salt: string
-  public readonly staticInput: Data
+  public readonly data: Data
+  public readonly staticInput: Params
   public readonly hasOffChainInput: boolean
 
   /**
@@ -55,7 +63,8 @@ export abstract class ConditionalOrder<Data, Params> {
 
     this.handler = handler
     this.salt = salt
-    this.staticInput = this.transformParamsToData(staticInput)
+    this.staticInput = staticInput
+    this.data = this.transformParamsToData(staticInput)
     this.hasOffChainInput = hasOffChainInput
   }
 
@@ -75,6 +84,8 @@ export abstract class ConditionalOrder<Data, Params> {
   get context(): ContextFactory | undefined {
     return undefined
   }
+
+  abstract isValid(): IsValidResult
 
   /**
    * Get the calldata for creating the conditional order.
@@ -191,11 +202,11 @@ export abstract class ConditionalOrder<Data, Params> {
    * A helper function for generically serializing a conditional order's static input.
    *
    * @param orderDataTypes ABI types for the order's data struct.
-   * @param staticInput The order's data struct.
+   * @param data The order's data struct.
    * @returns An ABI-encoded representation of the order's data struct.
    */
-  protected encodeStaticInputHelper(orderDataTypes: string[], staticInput: Data): string {
-    return utils.defaultAbiCoder.encode(orderDataTypes, [staticInput])
+  protected encodeDataHelper(orderDataTypes: string[], data: Data): string {
+    return utils.defaultAbiCoder.encode(orderDataTypes, [data])
   }
 
   /**
@@ -209,27 +220,53 @@ export abstract class ConditionalOrder<Data, Params> {
    * @throws If the conditional order is not tradeable.
    * @returns The tradeable `GPv2Order.Data` struct and the `signature` for the conditional order.
    */
-  protected async poll(owner: string, chain: SupportedChainId, provider: providers.Provider): Promise<PollResult> {
+  async poll(owner: string, chain: SupportedChainId, provider: providers.Provider): Promise<PollResult> {
     const composableCow = getComposableCow(chain, provider)
 
-    const [order, signature] = await composableCow.getTradeableOrderWithSignature(
-      owner,
-      this.leaf,
-      this.offChainInput,
-      []
-    )
-
-    // return {
-    //   result: PollResultCode.SUCCESS,
-    //   order,
-    //   signature,
-    // }
-    const result = {
-      result: PollResultCode.TRY_NEXT_BLOCK,
+    const isValid = this.isValid()
+    // Do a validation first
+    if (!isValid.isValid) {
+      return {
+        result: PollResultCode.TRY_NEXT_BLOCK,
+        reason: `InvalidConditionalOrder. Reason: ${isValid.reason}`,
+      }
     }
 
-    return result
+    // Let the concrete Conditional Order decide about the poll result
+    const pollResult = await this.pollCustom(owner, chain, provider)
+    if (pollResult) {
+      return pollResult
+    }
+
+    // TODO: check auth, and return PollResultDontTryAgain if not authorized
+
+    // Lastly, try to get the tradeable order and signature
+    try {
+      const [order, signature] = await composableCow.getTradeableOrderWithSignature(
+        owner,
+        this.leaf,
+        this.offChainInput,
+        []
+      )
+
+      return {
+        result: PollResultCode.SUCCESS,
+        order,
+        signature,
+      }
+    } catch (error) {
+      return {
+        result: PollResultCode.UNEXPECTED_ERROR,
+        error: error,
+      }
+    }
   }
+
+  protected abstract pollCustom(
+    owner: string,
+    chain: SupportedChainId,
+    provider: providers.Provider
+  ): Promise<PollResult | undefined>
 
   /**
    * Apply any transformations to the parameters that are passed in to the constructor.

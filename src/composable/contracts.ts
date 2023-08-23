@@ -1,5 +1,5 @@
 import { providers } from 'ethers'
-import { COMPOSABLE_COW_CONTRACT_ADDRESS, SupportedChainId } from 'src/common'
+import { COMPOSABLE_COW_CONTRACT_ADDRESS, SupportedChainId } from '../common'
 import { ComposableCoW, ComposableCoW__factory } from './generated'
 
 let composableCow: ComposableCoW | undefined

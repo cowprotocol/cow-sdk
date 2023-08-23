@@ -92,6 +92,7 @@ export enum PollResultCode {
   TRY_NEXT_BLOCK = 'TRY_NEXT_BLOCK',
   TRY_ON_BLOCK = 'TRY_ON_BLOCK',
   TRY_AT_DATE = 'TRY_AT_DATE',
+  DONT_TRY_AGAIN = 'DONT_TRY_AGAIN',
 }
 export interface PollResultSuccess {
   readonly result: PollResultCode.SUCCESS
@@ -101,14 +102,30 @@ export interface PollResultSuccess {
 
 export interface PollResultUnexpectedError {
   readonly result: PollResultCode.UNEXPECTED_ERROR
-  readonly error: Error
+  readonly error: any
 }
 
 export interface PollResultTryNextBlock {
   readonly result: PollResultCode.TRY_NEXT_BLOCK
+  reason?: string
 }
 
 export interface PollResultTryAtDate {
   readonly result: PollResultCode.TRY_AT_DATE
   readonly date: Date
+  reason?: string
+}
+
+export interface PollResultDontTryAgain {
+  readonly result: PollResultCode.DONT_TRY_AGAIN
+  reason?: string
+}
+
+export type IsValidResult = IsValid | IsNotValid
+export interface IsValid {
+  isValid: true
+}
+export interface IsNotValid {
+  isValid: false
+  reason: string
 }

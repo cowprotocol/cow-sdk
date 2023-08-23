@@ -1,5 +1,5 @@
-import { BigNumber } from 'ethers'
 import { ConditionalOrder } from './ConditionalOrder'
+import { IsValidResult, PollResult } from './types'
 import { Twap } from './types/Twap'
 import { encodeParams } from './utils'
 
@@ -96,17 +96,24 @@ class TestConditionalOrder extends ConditionalOrder<string, string> {
   }
 
   testEncodeStaticInput(): string {
-    return super.encodeStaticInputHelper(['uint256'], this.staticInput)
+    return super.encodeDataHelper(['uint256'], this.data)
   }
 
   transformParamsToData(params: string): string {
     return params
   }
+  protected pollCustom(): Promise<PollResult | undefined> {
+    throw new Error('Method not implemented.')
+  }
 
-  isValid(_o: unknown): boolean {
+  isValid(): IsValidResult {
     throw new Error('Method not implemented.')
   }
   serialize(): string {
     return encodeParams(this.leaf)
+  }
+
+  toString(): string {
+    throw new Error('Method not implemented.')
   }
 }

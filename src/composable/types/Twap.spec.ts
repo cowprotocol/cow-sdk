@@ -67,25 +67,60 @@ describe('Twap', () => {
     ).toThrow('InvalidHandler')
   })
 
-  test('isValid: Validates TWAP params', () => {
-    expect(() => Twap.default({ ...TWAP_PARAMS_TEST })).not.toThrow()
-    expect(() => Twap.default({ ...TWAP_PARAMS_TEST, sellToken: TWAP_PARAMS_TEST.buyToken })).toThrow(
-      'InvalidSameToken'
-    )
-    expect(() => Twap.default({ ...TWAP_PARAMS_TEST, sellToken: constants.AddressZero })).toThrow('InvalidToken')
-    expect(() => Twap.default({ ...TWAP_PARAMS_TEST, buyToken: constants.AddressZero })).toThrow('InvalidToken')
-    expect(() => Twap.default({ ...TWAP_PARAMS_TEST, sellAmount: BigNumber.from(0) })).toThrow('InvalidSellAmount')
-    expect(() => Twap.default({ ...TWAP_PARAMS_TEST, buyAmount: BigNumber.from(0) })).toThrow('InvalidMinBuyAmount')
-    expect(() => Twap.default({ ...TWAP_PARAMS_TEST, t0: BigNumber.from(-1) })).toThrow('InvalidStartTime')
-    expect(() => Twap.default({ ...TWAP_PARAMS_TEST, n: BigNumber.from(0) })).toThrow('InvalidNumParts')
-    expect(() => Twap.default({ ...TWAP_PARAMS_TEST, t: BigNumber.from(0) })).toThrow('InvalidFrequency')
-    expect(() => Twap.default({ ...TWAP_PARAMS_TEST, span: TWAP_PARAMS_TEST.t.add(1) })).toThrow('InvalidSpan')
+  test('isValid: valid twap', () => {
+    expect(Twap.default({ ...TWAP_PARAMS_TEST }).isValid()).toEqual({ isValid: true })
   })
 
-  test('isValidAbi: Fails if invalid', () => {
-    // The below test triggers a throw by trying to ABI parse `appData` as a `bytes32` when
+  test('isValid: invalid twap', () => {
+    expect(Twap.default({ ...TWAP_PARAMS_TEST, sellToken: TWAP_PARAMS_TEST.buyToken }).isValid()).toEqual({
+      isValid: false,
+      reason: 'InvalidSameToken',
+    })
+    expect(Twap.default({ ...TWAP_PARAMS_TEST, sellToken: constants.AddressZero }).isValid()).toEqual({
+      isValid: false,
+      reason: 'InvalidToken',
+    })
+    expect(Twap.default({ ...TWAP_PARAMS_TEST, buyToken: constants.AddressZero }).isValid()).toEqual({
+      isValid: false,
+      reason: 'InvalidToken',
+    })
+    expect(Twap.default({ ...TWAP_PARAMS_TEST, sellAmount: BigNumber.from(0) }).isValid()).toEqual({
+      isValid: false,
+      reason: 'InvalidSellAmount',
+    })
+    expect(Twap.default({ ...TWAP_PARAMS_TEST, buyAmount: BigNumber.from(0) }).isValid()).toEqual({
+      isValid: false,
+      reason: 'InvalidMinBuyAmount',
+    })
+    expect(Twap.default({ ...TWAP_PARAMS_TEST, t0: BigNumber.from(-1) }).isValid()).toEqual({
+      isValid: false,
+      reason: 'InvalidStartTime',
+    })
+    expect(Twap.default({ ...TWAP_PARAMS_TEST, n: BigNumber.from(0) }).isValid()).toEqual({
+      isValid: false,
+      reason: 'InvalidNumParts',
+    })
+    expect(Twap.default({ ...TWAP_PARAMS_TEST, t: BigNumber.from(0) }).isValid()).toEqual({
+      isValid: false,
+      reason: 'InvalidFrequency',
+    })
+    expect(Twap.default({ ...TWAP_PARAMS_TEST, span: TWAP_PARAMS_TEST.t.add(1) }).isValid()).toEqual({
+      isValid: false,
+      reason: 'InvalidSpan',
+    })
+    expect(Twap.default({ ...TWAP_PARAMS_TEST, appData: constants.AddressZero }).isValid()).toEqual({
+      isValid: false,
+      reason: 'InvalidData',
+    })
+  })
+
+  test('isValid: Fails if appData has a wrong number of bytes', () => {
+    // The isValid below test triggers a throw by trying to ABI parse `appData` as a `bytes32` when
     // it only has 20 bytes (ie. an address)
-    expect(() => Twap.default({ ...TWAP_PARAMS_TEST, appData: constants.AddressZero })).toThrow('InvalidData')
+    expect(Twap.default({ ...TWAP_PARAMS_TEST, appData: constants.AddressZero }).isValid()).toEqual({
+      isValid: false,
+      reason: 'InvalidData',
+    })
   })
 
   test('serialize: Serializes correctly', () => {
