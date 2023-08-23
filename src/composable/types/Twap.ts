@@ -208,6 +208,8 @@ export class Twap extends ConditionalOrder<TwapData, TwapDataParams> {
     _chain: SupportedChainId,
     _provider: providers.Provider
   ): Promise<PollResultErrors | undefined> {
+    // TODO: Do not check again expired order
+    // TODO: Calculate the next part start time, signal to not check again until then
     return undefined
   }
 
