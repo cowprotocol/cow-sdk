@@ -40,21 +40,6 @@ export type TwapDataParams = Omit<TwapData, 'partSellAmount' | 'minPartLimit'> &
 }
 
 /**
- * Parameters for a discrete part of a TWAP order
- */
-export type TwapPart = {
-  /**
-   * Amount of sellToken to sell in each part
-   */
-  partSellAmount: BigNumber
-
-  /**
-   * Minimum amount of buyToken that must be bought across the entire TWAP
-   */
-  minPartLimit: BigNumber
-}
-
-/**
  * Parameters for a TWAP order, as expected by the contract's `staticInput`.
  */
 export type TwapData = {
