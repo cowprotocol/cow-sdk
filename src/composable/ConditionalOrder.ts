@@ -119,7 +119,7 @@ export abstract class ConditionalOrder<Data, Params> {
   }
 
   /**
-   * Calculate the id of the conditional order (also know as ctx or context in the Composable CoW contract).
+   * Calculate the id of the conditional order (which also happens to be the key used for `ctx` in the ComposableCoW contract).
    *
    * This is a `keccak256` hash of the serialized conditional order.
    * @returns The id of the conditional order.
