@@ -83,7 +83,7 @@ export type PollResult = PollResultSuccess | PollResultErrors
 
 export type PollResultErrors =
   | PollResultTryNextBlock
-  | PollResultTryNextBlock
+  | PollResultTryOnBlock
   | PollResultTryAtDate
   | PollResultUnexpectedError
   | PollResultDontTryAgain
