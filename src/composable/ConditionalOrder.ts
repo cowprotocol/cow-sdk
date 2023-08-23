@@ -229,7 +229,7 @@ export abstract class ConditionalOrder<T, P> {
       // Do a validation first
       if (!isValid.isValid) {
         return {
-          result: PollResultCode.TRY_NEXT_BLOCK,
+          result: PollResultCode.DONT_TRY_AGAIN,
           reason: `InvalidConditionalOrder. Reason: ${isValid.reason}`,
         }
       }

@@ -195,6 +195,14 @@ export class Twap extends ConditionalOrder<TwapData, TwapDataParams> {
     return error ? { isValid: false, reason: error } : { isValid: true }
   }
 
+  /**
+   * Checks if the owner authorized the conditional order.
+   *
+   * @param owner The owner of the conditional order.
+   * @param chain Which chain to use for the ComposableCoW contract.
+   * @param provider An RPC provider for the chain.
+   * @returns true if the owner authorized the order, false otherwise.
+   */
   protected async pollValidate(
     _owner: string,
     _chain: SupportedChainId,
