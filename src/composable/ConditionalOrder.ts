@@ -223,25 +223,32 @@ export abstract class ConditionalOrder<T, P> {
   async poll(owner: string, chain: SupportedChainId, provider: providers.Provider): Promise<PollResult> {
     const composableCow = getComposableCow(chain, provider)
 
-    const isValid = this.isValid()
-    // Do a validation first
-    if (!isValid.isValid) {
-      return {
-        result: PollResultCode.TRY_NEXT_BLOCK,
-        reason: `InvalidConditionalOrder. Reason: ${isValid.reason}`,
-      }
-    }
-
-    // Let the concrete Conditional Order decide about the poll result
-    const pollResult = await this.pollCustom(owner, chain, provider)
-    if (pollResult) {
-      return pollResult
-    }
-
-    // TODO: check auth, and return PollResultDontTryAgain if not authorized
-
-    // Lastly, try to get the tradeable order and signature
     try {
+      const isValid = this.isValid()
+      // Do a validation first
+      if (!isValid.isValid) {
+        return {
+          result: PollResultCode.TRY_NEXT_BLOCK,
+          reason: `InvalidConditionalOrder. Reason: ${isValid.reason}`,
+        }
+      }
+
+      // Let the concrete Conditional Order decide about the poll result
+      const pollResult = await this.pollCustom(owner, chain, provider)
+      if (pollResult) {
+        return pollResult
+      }
+
+      // Check if the owner authorised the order
+      const isAuthorized = await this.isAuthorized(owner, chain, provider)
+      if (!isAuthorized) {
+        return {
+          result: PollResultCode.DONT_TRY_AGAIN,
+          reason: `NotAuthorised: Order ${this.id} is not authorised for ${owner} on chain ${chain}`,
+        }
+      }
+
+      // Lastly, try to get the tradeable order and signature
       const [order, signature] = await composableCow.getTradeableOrderWithSignature(
         owner,
         this.leaf,
@@ -260,6 +267,11 @@ export abstract class ConditionalOrder<T, P> {
         error: error,
       }
     }
+  }
+
+  public isAuthorized(owner: string, chain: SupportedChainId, provider: providers.Provider): Promise<boolean> {
+    const composableCow = getComposableCow(chain, provider)
+    return composableCow.callStatic.singleOrders(owner, this.id)
   }
 
   protected abstract pollCustom(

@@ -81,10 +81,10 @@ export type ProofWithParams = {
 
 export type PollResult =
   | PollResultSuccess
-  | PollResultUnexpectedError
   | PollResultTryNextBlock
   | PollResultTryAtDate
   | PollResultUnexpectedError
+  | PollResultDontTryAgain
 
 export enum PollResultCode {
   SUCCESS = 'SUCCESS',
