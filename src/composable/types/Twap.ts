@@ -28,21 +28,11 @@ const TWAP_DATA_ABI = [
 const DEFAULT_TOKEN_FORMATTER = (address: string, amount: BigNumber) => `${address}@${amount}`
 
 /**
- * Parameters for a TWAP order, made a little more user-friendly for SDK users.
- *
- * @see {@link TwapData} for the native struct.
+ * Base parameters for a TWAP order. Shared by:
+ *   - TwapStruct (modeling the contract's struct used for `staticInput`).
+ *   - TwapData (modeling the friendly SDK interface).
  */
-export type TwapDataParams = Omit<TwapData, 'partSellAmount' | 'minPartLimit'> & {
-  // total amount of sellToken to sell across the entire TWAP
-  readonly sellAmount: BigNumber
-  // minimum amount of buyToken that must be bought across the entire TWAP
-  readonly buyAmount: BigNumber
-}
-
-/**
- * Parameters for a TWAP order, as expected by the contract's `staticInput`.
- */
-export type TwapData = {
+export type TwapDataBase = {
   /**
    * which token to sell
    */
@@ -58,6 +48,19 @@ export type TwapData = {
    */
   readonly receiver: string
 
+  /**
+   * Meta-data associated with the order. Normally would be the keccak256 hash of the document generated in http://github.com/cowprotocol/app-data
+   *
+   * This hash should have been uploaded to the API https://api.cow.fi/docs/#/default/put_api_v1_app_data__app_data_hash_ and potentially to other data availability protocols like IPFS.
+   *
+   */
+  readonly appData: string
+}
+
+/**
+ * Parameters for a TWAP order, as expected by the contract's `staticInput`.
+ */
+export interface TwapStruct extends TwapDataBase {
   /**
    * amount of sellToken to sell in each part
    */
@@ -87,43 +90,91 @@ export type TwapData = {
    * whether the TWAP is valid for the entire interval or not
    */
   readonly span: BigNumber
+}
+
+/**
+ * Parameters for a TWAP order, made a little more user-friendly for SDK users.
+ *
+ * @see {@link TwapStruct} for the native struct.
+ */
+export interface TwapData extends TwapDataBase {
+  /**
+   * total amount of sellToken to sell across the entire TWAP
+   */
+  readonly sellAmount: BigNumber
 
   /**
-   * Meta-data associated with the order. Normally would be the keccak256 hash of the document generated in http://github.com/cowprotocol/app-data
-   *
-   * This hash should have been uploaded to the API https://api.cow.fi/docs/#/default/put_api_v1_app_data__app_data_hash_ and potentially to other data availability protocols like IPFS.
-   *
+   * minimum amount of buyToken that must be bought across the entire TWAP
    */
-  readonly appData: string
+  readonly buyAmount: BigNumber
+
+  /**
+   * start time of the TWAP
+   */
+  readonly startTime: StartTime
+
+  /**
+   * number of parts
+   */
+  readonly numberOfParts: BigNumber
+
+  /**
+   * duration of the TWAP interval
+   */
+  readonly timeBetweenParts: BigNumber
+
+  /**
+   * whether the TWAP is valid for the entire interval or not
+   */
+  readonly durationOfPart: DurationOfPart
+}
+
+export type DurationOfPart =
+  | { span: SpanValue.SPAN_UNTIL_NEXT_PART }
+  | { span: SpanValue.SPAN_FOR_SECONDS; amount: BigNumber }
+
+export enum SpanValue {
+  SPAN_UNTIL_NEXT_PART = 'SPAN_UNTIL_NEXT_PART',
+  SPAN_FOR_SECONDS = 'SPAN_FOR_SECONDS',
+}
+
+export type StartTime =
+  | { start: StartTimeValue.START_AT_MINING_TIME }
+  | { start: StartTimeValue.START_AT_EPOC; epoch: BigNumber }
+
+export enum StartTimeValue {
+  START_AT_MINING_TIME = 'START_AT_MINING_TIME',
+  START_AT_EPOC = 'START_AT_EPOC',
 }
 
 /**
  * `ComposableCoW` implementation of a TWAP order.
  * @author mfw78 <mfw78@rndlabs.xyz>
  */
-export class Twap extends ConditionalOrder<TwapData, TwapDataParams> {
+export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
   /**
    * @see {@link ConditionalOrder.constructor}
    * @throws If the TWAP order is invalid.
    * @throws If the TWAP order is not ABI-encodable.
    * @throws If the handler is not the TWAP address.
    */
-  constructor(params: ConditionalOrderArguments<TwapDataParams>) {
-    const { handler, salt, staticInput, hasOffChainInput } = params
+  constructor(params: ConditionalOrderArguments<TwapData>) {
+    const { handler, salt, data: staticInput, hasOffChainInput } = params
+
     // First, verify that the handler is the TWAP address
     if (handler !== TWAP_ADDRESS) throw new Error(`InvalidHandler: Expected: ${TWAP_ADDRESS}, provided: ${handler}`)
 
     // Third, construct the base class using transformed parameters
-    super({ handler: TWAP_ADDRESS, salt, staticInput, hasOffChainInput })
+    super({ handler: TWAP_ADDRESS, salt, data: staticInput, hasOffChainInput })
   }
 
   /**
    * Create a TWAP order with sound defaults.
-   * @param staticInput The TWAP order parameters in a more user-friendly format.
+   * @param data The TWAP order parameters in a more user-friendly format.
    * @returns An instance of the TWAP order.
    */
-  static default(staticInput: TwapDataParams): ConditionalOrder<TwapData, TwapDataParams> {
-    return new Twap({ handler: TWAP_ADDRESS, staticInput })
+  static fromData(data: TwapData): Twap {
+    return new Twap({ handler: TWAP_ADDRESS, data })
   }
 
   /**
@@ -154,24 +205,31 @@ export class Twap extends ConditionalOrder<TwapData, TwapDataParams> {
    * @param data The TWAP order to validate.
    * @returns Whether the TWAP order is valid.
    * @throws If the TWAP order is invalid.
-   * @see {@link TwapData} for the native struct.
+   * @see {@link TwapStruct} for the native struct.
    */
   isValid(): IsValid | IsNotValid {
     const error = (() => {
-      const { sellToken, sellAmount, buyToken, buyAmount, t0, n, t, span } = this.staticInput
+      const { sellToken, sellAmount, buyToken, buyAmount, startTime, numberOfParts, timeBetweenParts, durationOfPart } =
+        this.data
 
       // Verify that the order params are logically valid
       if (!(sellToken != buyToken)) return 'InvalidSameToken'
       if (!(sellToken != constants.AddressZero && buyToken != constants.AddressZero)) return 'InvalidToken'
       if (!sellAmount.gt(constants.Zero)) return 'InvalidSellAmount'
       if (!buyAmount.gt(constants.Zero)) return 'InvalidMinBuyAmount'
-      if (!(t0.gte(constants.Zero) && t0.lt(MAX_UINT32))) return 'InvalidStartTime'
-      if (!(n.gt(constants.One) && n.lte(MAX_UINT32))) return 'InvalidNumParts'
-      if (!(t.gt(constants.Zero) && t.lte(MAX_FREQUENCY))) return 'InvalidFrequency'
-      if (!span.lte(t)) return 'InvalidSpan'
+      if (startTime.start === StartTimeValue.START_AT_EPOC) {
+        const t0 = startTime.epoch
+        if (!(t0.gte(constants.Zero) && t0.lt(MAX_UINT32))) return 'InvalidStartTime'
+      }
+      if (!(numberOfParts.gt(constants.One) && numberOfParts.lte(MAX_UINT32))) return 'InvalidNumParts'
+      if (!(timeBetweenParts.gt(constants.Zero) && timeBetweenParts.lte(MAX_FREQUENCY))) return 'InvalidFrequency'
+      if (durationOfPart.span === SpanValue.SPAN_FOR_SECONDS) {
+        const span = durationOfPart.amount
+        if (!span.lte(timeBetweenParts)) return 'InvalidSpan'
+      }
 
-      // Verify that the transformed data is ABI-encodable
-      if (!isValidAbi(TWAP_DATA_ABI, [this.data])) return 'InvalidData'
+      // Verify that the staticInput derived from the data is ABI-encodable
+      if (!isValidAbi(TWAP_DATA_ABI, [this.staticInput])) return 'InvalidData'
 
       // No errors
       return undefined
@@ -211,7 +269,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapDataParams> {
    * @returns {string} The ABI-encoded TWAP order.
    */
   encodeStaticInput(): string {
-    return super.encodeDataHelper(TWAP_DATA_ABI, this.data)
+    return super.encodeStaticInputHelper(TWAP_DATA_ABI, this.staticInput)
   }
 
   /**
@@ -224,14 +282,11 @@ export class Twap extends ConditionalOrder<TwapData, TwapDataParams> {
       s,
       TWAP_ADDRESS,
       TWAP_DATA_ABI,
-      (o: TwapData, salt: string) =>
+      (struct: TwapStruct, salt: string) =>
         new Twap({
           handler: TWAP_ADDRESS,
           salt,
-          staticInput: {
-            ...o,
-            ...Twap.partsToTotal(o),
-          },
+          data: transformStructToData(struct),
         })
     )
   }
@@ -243,61 +298,102 @@ export class Twap extends ConditionalOrder<TwapData, TwapDataParams> {
    * @returns {string} A human-readable string representation of the TWAP order.
    */
   toString(tokenFormatter = DEFAULT_TOKEN_FORMATTER): string {
-    const { sellToken, buyToken, n, t, t0 } = this.data
-    const { sellAmount, buyAmount } = Twap.partsToTotal(this.data)
+    const { sellToken, buyToken, numberOfParts, timeBetweenParts, startTime, sellAmount, buyAmount } = this.data
 
     const sellAmountFormatted = tokenFormatter(sellToken, sellAmount)
     const buyAmountFormatted = tokenFormatter(buyToken, buyAmount)
-    const t0Formatted = t0.eq(0) ? 'time of mining' : new Date(Number(this.staticInput.t0) * 1000)
-    return `${this.orderType}: Sell total ${sellAmountFormatted} for a minimum of ${buyAmountFormatted} over ${n} parts with a spacing of ${t}s beginning at ${t0Formatted}`
+    const t0Formatted =
+      startTime.start === StartTimeValue.START_AT_MINING_TIME ? 'time of mining' : 'epoch ' + startTime.epoch.toString()
+    return `${this.orderType}: Sell total ${sellAmountFormatted} for a minimum of ${buyAmountFormatted} over ${numberOfParts} parts with a spacing of ${timeBetweenParts}s beginning at ${t0Formatted}`
   }
 
   /**
    * Transform parameters into a native struct.
    *
-   * @param {TwapDataParams} params As passed by the consumer of the API.
-   * @returns {TwapData} A formatted struct as expected by the smart contract.
+   * @param {TwapData} data As passed by the consumer of the API.
+   * @returns {TwapStruct} A formatted struct as expected by the smart contract.
    */
-  transformParamsToData(params: TwapDataParams): TwapData {
-    return {
-      ...params,
-      ...Twap.totalToPart(params),
-    }
+  transformDataToStruct(data: TwapData): TwapStruct {
+    return _transformDataToStruct(data)
   }
 
   /**
-   * Convert TWAP parts to total amounts.
-   * @param {TwapData} o The TWAP order.
-   * @returns {object} The total sell amount and total minimum buy amount.
+   * Transform parameters into a TWAP order struct.
+   *
+   * @param {TwapData} params As passed by the consumer of the API.
+   * @returns {TwapStruct} A formatted struct as expected by the smart contract.
    */
-  private static partsToTotal(o: TwapData): {
-    sellAmount: BigNumber
-    buyAmount: BigNumber
-  } {
-    return {
-      sellAmount: o.partSellAmount.mul(o.n),
-      buyAmount: o.minPartLimit.mul(o.n),
-    }
+  transformStructToData(struct: TwapStruct): TwapData {
+    return transformStructToData(struct)
   }
+}
 
-  /**
-   * Convert total amounts to TWAP parts.
-   * @param {TwapDataParams} o The TWAP order parameters.
-   * @returns {object} The part sell amount and minimum part limit.
-   * @throws If the number of parts is less than 1.
-   */
-  private static totalToPart(o: TwapDataParams): {
-    partSellAmount: BigNumber
-    minPartLimit: BigNumber
-  } {
-    return !o.n.isZero()
+/**
+ * Transform parameters into a native struct.
+ *
+ * @param {TwapData} data As passed by the consumer of the API.
+ * @returns {TwapStruct} A formatted struct as expected by the smart contract.
+ */
+function _transformDataToStruct(data: TwapData): TwapStruct {
+  const {
+    sellAmount,
+    buyAmount,
+    numberOfParts,
+    startTime: startEpoch,
+    timeBetweenParts,
+    durationOfPart,
+    ...rest
+  } = data
+
+  const { partSellAmount, minPartLimit } =
+    numberOfParts && !numberOfParts.isZero()
       ? {
-          partSellAmount: o.sellAmount.div(o.n),
-          minPartLimit: o.buyAmount.div(o.n),
+          partSellAmount: sellAmount.div(numberOfParts),
+          minPartLimit: buyAmount.div(numberOfParts),
         }
       : {
-          partSellAmount: BigNumber.from(0),
-          minPartLimit: BigNumber.from(0),
+          partSellAmount: constants.Zero,
+          minPartLimit: constants.Zero,
         }
+
+  const span = durationOfPart.span === SpanValue.SPAN_UNTIL_NEXT_PART ? constants.Zero : durationOfPart.amount
+  const t0 = startEpoch.start === StartTimeValue.START_AT_MINING_TIME ? constants.Zero : startEpoch.epoch
+
+  return {
+    partSellAmount,
+    minPartLimit,
+    t0,
+    n: numberOfParts,
+    t: timeBetweenParts,
+    span,
+    ...rest,
+  }
+}
+
+/**
+ * Transform parameters into a TWAP order struct.
+ *
+ * @param {TwapData} params As passed by the consumer of the API.
+ * @returns {TwapStruct} A formatted struct as expected by the smart contract.
+ */
+function transformStructToData(struct: TwapStruct): TwapData {
+  const { n: numberOfParts, partSellAmount, minPartLimit, t: timeBetweenParts, t0: startEpoch, span, ...rest } = struct
+
+  const durationOfPart: DurationOfPart = span.isZero()
+    ? { span: SpanValue.SPAN_UNTIL_NEXT_PART }
+    : { span: SpanValue.SPAN_FOR_SECONDS, amount: span }
+
+  const startTime: StartTime = span.isZero()
+    ? { start: StartTimeValue.START_AT_MINING_TIME }
+    : { start: StartTimeValue.START_AT_EPOC, epoch: startEpoch }
+
+  return {
+    sellAmount: partSellAmount.mul(numberOfParts),
+    buyAmount: minPartLimit.mul(numberOfParts),
+    startTime,
+    numberOfParts,
+    timeBetweenParts,
+    durationOfPart,
+    ...rest,
   }
 }

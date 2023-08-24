@@ -1,8 +1,8 @@
 import { GPv2Order } from './generated/ComposableCoW'
 
-export interface ConditionalOrderArguments<P> {
+export interface ConditionalOrderArguments<T> {
   handler: string
-  staticInput: P
+  data: T
   salt?: string
   hasOffChainInput?: boolean
 }
@@ -84,7 +84,7 @@ export type PollResult = PollResultSuccess | PollResultErrors
 export type PollResultErrors =
   | PollResultTryNextBlock
   | PollResultTryOnBlock
-  | PollResultTryAtDate
+  | PollResultTryAtEpoch
   | PollResultUnexpectedError
   | PollResultDontTryAgain
 
@@ -93,7 +93,7 @@ export enum PollResultCode {
   UNEXPECTED_ERROR = 'UNEXPECTED_ERROR',
   TRY_NEXT_BLOCK = 'TRY_NEXT_BLOCK',
   TRY_ON_BLOCK = 'TRY_ON_BLOCK',
-  TRY_AT_DATE = 'TRY_AT_DATE',
+  TRY_AT_EPOCH = 'TRY_AT_DATE',
   DONT_TRY_AGAIN = 'DONT_TRY_AGAIN',
 }
 export interface PollResultSuccess {
@@ -118,9 +118,15 @@ export interface PollResultTryOnBlock {
   reason?: string
 }
 
-export interface PollResultTryAtDate {
-  readonly result: PollResultCode.TRY_AT_DATE
-  readonly date: Date
+export interface PollResultTryAtEpoch {
+  readonly result: PollResultCode.TRY_AT_EPOCH
+  /**
+   * The epoch after which it is ok to re-try to to poll this order.
+   * The value is expressed as a Unix timestamp (in seconds).
+   *
+   * This epoch will be inclusive, meaning that it is ok to re-try at the block mined pricesely at this epoch or later.
+   */
+  readonly epoch: number
   reason?: string
 }
 

@@ -79,11 +79,11 @@ describe('ConditionalOrder', () => {
 })
 
 class TestConditionalOrder extends ConditionalOrder<string, string> {
-  constructor(address: string, salt?: string, staticInput = '0x') {
+  constructor(address: string, salt?: string, data = '0x') {
     super({
       handler: address,
       salt,
-      staticInput,
+      data,
     })
   }
 
@@ -96,12 +96,17 @@ class TestConditionalOrder extends ConditionalOrder<string, string> {
   }
 
   testEncodeStaticInput(): string {
-    return super.encodeDataHelper(['uint256'], this.data)
+    return super.encodeStaticInputHelper(['uint256'], this.staticInput)
   }
 
-  transformParamsToData(params: string): string {
+  transformStructToData(params: string): string {
     return params
   }
+
+  transformDataToStruct(params: string): string {
+    return params
+  }
+
   protected pollValidate(): Promise<PollResultErrors | undefined> {
     throw new Error('Method not implemented.')
   }

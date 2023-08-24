@@ -1,7 +1,6 @@
 import { BigNumber, ethers, utils, providers } from 'ethers'
 import { IConditionalOrder } from './generated/ComposableCoW'
 
-import { ComposableCoW__factory } from './generated'
 import { decodeParams, encodeParams } from './utils'
 import {
   ConditionalOrderArguments,
@@ -13,7 +12,7 @@ import {
   PollResultErrors,
 } from './types'
 import { SupportedChainId } from 'src/common'
-import { getComposableCow } from './contracts'
+import { getComposableCow, getComposableCowInterface } from './contracts'
 
 /**
  * An abstract base class from which all conditional orders should inherit.
@@ -29,11 +28,11 @@ import { getComposableCow } from './contracts'
  * **NOTE**: Instances of conditional orders have an `id` property that is a `keccak256` hash of
  *           the serialized conditional order.
  */
-export abstract class ConditionalOrder<T, P> {
+export abstract class ConditionalOrder<D, S> {
   public readonly handler: string
   public readonly salt: string
-  public readonly data: T
-  public readonly staticInput: P
+  public readonly data: D
+  public readonly staticInput: S
   public readonly hasOffChainInput: boolean
 
   /**
@@ -44,13 +43,13 @@ export abstract class ConditionalOrder<T, P> {
    * **NOTE**: The salt is optional and will be randomly generated if not provided.
    * @param handler The address of the handler for the conditional order.
    * @param salt A 32-byte string used to salt the conditional order.
-   * @param staticInput The static input for the conditional order.
+   * @param data The data of the order
    * @param hasOffChainInput Whether the conditional order has off-chain input.
    * @throws If the handler is not a valid ethereum address.
    * @throws If the salt is not a valid 32-byte string.
    */
-  constructor(params: ConditionalOrderArguments<P>) {
-    const { handler, salt = utils.keccak256(utils.randomBytes(32)), staticInput, hasOffChainInput = false } = params
+  constructor(params: ConditionalOrderArguments<D>) {
+    const { handler, salt = utils.keccak256(utils.randomBytes(32)), data, hasOffChainInput = false } = params
     // Verify input to the constructor
     // 1. Verify that the handler is a valid ethereum address
     if (!ethers.utils.isAddress(handler)) {
@@ -64,8 +63,9 @@ export abstract class ConditionalOrder<T, P> {
 
     this.handler = handler
     this.salt = salt
-    this.staticInput = staticInput
-    this.data = this.transformParamsToData(staticInput)
+    this.data = data
+    this.staticInput = this.transformDataToStruct(data)
+
     this.hasOffChainInput = hasOffChainInput
   }
 
@@ -99,7 +99,7 @@ export abstract class ConditionalOrder<T, P> {
    */
   get createCalldata(): string {
     const context = this.context
-    const composableCow = ComposableCoW__factory.createInterface()
+    const composableCow = getComposableCowInterface()
     const paramsStruct: IConditionalOrder.ConditionalOrderParamsStruct = {
       handler: this.handler,
       salt: this.salt,
@@ -128,8 +128,7 @@ export abstract class ConditionalOrder<T, P> {
    * @returns The calldata for removing the conditional order.
    */
   get removeCalldata(): string {
-    const composableCow = ComposableCoW__factory.createInterface()
-    return composableCow.encodeFunctionData('remove', [this.id])
+    return getComposableCowInterface().encodeFunctionData('remove', [this.id])
   }
 
   /**
@@ -206,8 +205,8 @@ export abstract class ConditionalOrder<T, P> {
    * @param data The order's data struct.
    * @returns An ABI-encoded representation of the order's data struct.
    */
-  protected encodeDataHelper(orderDataTypes: string[], data: T): string {
-    return utils.defaultAbiCoder.encode(orderDataTypes, [data])
+  protected encodeStaticInputHelper(orderDataTypes: string[], staticInput: S): string {
+    return utils.defaultAbiCoder.encode(orderDataTypes, [staticInput])
   }
 
   /**
@@ -302,15 +301,26 @@ export abstract class ConditionalOrder<T, P> {
   ): Promise<PollResultErrors | undefined>
 
   /**
-   * Apply any transformations to the parameters that are passed in to the constructor.
+   * Convert the struct that the contract expect as an encoded `staticInput` into a friendly data object modeling the smart order.
    *
    * **NOTE**: This should be overridden by any conditional order that requires transformations.
-   * This implementation is a no-op.
+   * This implementation is a no-op if you use the same type for both.
    *
-   * @param params {P} Parameters that are passed in to the constructor.
-   * @returns {T} The static input for the conditional order.
+   * @param params {S} Parameters that are passed in to the constructor.
+   * @returns {D} The static input for the conditional order.
    */
-  abstract transformParamsToData(params: P): T
+  abstract transformStructToData(params: S): D
+
+  /**
+   * Converts a friendly data object modeling the smart order into the struct that the contract expect as an encoded `staticInput`.
+   *
+   * **NOTE**: This should be overridden by any conditional order that requires transformations.
+   * This implementation is a no-op if you use the same type for both.
+   *
+   * @param params {S} Parameters that are passed in to the constructor.
+   * @returns {D} The static input for the conditional order.
+   */
+  abstract transformDataToStruct(params: D): S
 
   /**
    * A helper function for generically deserializing a conditional order.
