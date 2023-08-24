@@ -86,6 +86,13 @@ export abstract class ConditionalOrder<D, S> {
     return undefined
   }
 
+  assertIsValid(): void {
+    const isValidResult = this.isValid()
+    if (!isValidResult.isValid) {
+      throw new Error(`Invalid order: ${isValidResult.reason}`)
+    }
+  }
+
   abstract isValid(): IsValidResult
 
   /**
@@ -98,6 +105,8 @@ export abstract class ConditionalOrder<D, S> {
    * @returns The calldata for creating the conditional order.
    */
   get createCalldata(): string {
+    this.assertIsValid()
+
     const context = this.context
     const composableCow = getComposableCowInterface()
     const paramsStruct: IConditionalOrder.ConditionalOrderParamsStruct = {
@@ -128,6 +137,8 @@ export abstract class ConditionalOrder<D, S> {
    * @returns The calldata for removing the conditional order.
    */
   get removeCalldata(): string {
+    this.assertIsValid()
+
     return getComposableCowInterface().encodeFunctionData('remove', [this.id])
   }
 
