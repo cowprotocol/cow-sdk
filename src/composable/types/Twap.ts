@@ -314,7 +314,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
    * @returns {TwapStruct} A formatted struct as expected by the smart contract.
    */
   transformDataToStruct(data: TwapData): TwapStruct {
-    return _transformDataToStruct(data)
+    return transformDataToStruct(data)
   }
 
   /**
@@ -334,7 +334,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
  * @param {TwapData} data As passed by the consumer of the API.
  * @returns {TwapStruct} A formatted struct as expected by the smart contract.
  */
-function _transformDataToStruct(data: TwapData): TwapStruct {
+export function transformDataToStruct(data: TwapData): TwapStruct {
   const {
     sellAmount,
     buyAmount,
@@ -376,7 +376,7 @@ function _transformDataToStruct(data: TwapData): TwapStruct {
  * @param {TwapData} params As passed by the consumer of the API.
  * @returns {TwapStruct} A formatted struct as expected by the smart contract.
  */
-function transformStructToData(struct: TwapStruct): TwapData {
+export function transformStructToData(struct: TwapStruct): TwapData {
   const { n: numberOfParts, partSellAmount, minPartLimit, t: timeBetweenParts, t0: startEpoch, span, ...rest } = struct
 
   const durationOfPart: DurationOfPart = span.isZero()
