@@ -2,7 +2,7 @@ import { decodeParams, encodeParams, isValidAbi } from './utils'
 import { TwapStruct, transformDataToStruct } from './types/Twap'
 import { TWAP_PARAMS_TEST } from './types/twap.spec'
 
-const TWAP_DATA_ABI = [
+const TWAP_STRUCT_ABI = [
   'tuple(address sellToken, address buyToken, address receiver, uint256 partSellAmount, uint256 minPartLimit, uint256 t0, uint256 n, uint256 t, uint256 span, bytes32 appData)',
 ]
 
@@ -39,10 +39,10 @@ describe('decodeParams', () => {
 
 describe('isValidAbi', () => {
   test('isValidAbi: Fails if invalid params', () => {
-    expect(isValidAbi(TWAP_DATA_ABI, ['0x0'])).toEqual(false)
+    expect(isValidAbi(TWAP_STRUCT_ABI, ['0x0'])).toEqual(false)
   })
 
   test('isValidAbi: Happy path', () => {
-    expect(isValidAbi(TWAP_DATA_ABI, [TWAP_STRUCT])).toEqual(true)
+    expect(isValidAbi(TWAP_STRUCT_ABI, [TWAP_STRUCT])).toEqual(true)
   })
 })

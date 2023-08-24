@@ -20,7 +20,7 @@ export const MAX_UINT32 = BigNumber.from(2).pow(32).sub(1) // 2^32 - 1
 export const MAX_FREQUENCY = BigNumber.from(365 * 24 * 60 * 60) // 1 year
 
 // Define the ABI tuple for the TWAPData struct
-const TWAP_DATA_ABI = [
+const TWAP_STRUCT_ABI = [
   'tuple(address sellToken, address buyToken, address receiver, uint256 partSellAmount, uint256 minPartLimit, uint256 t0, uint256 n, uint256 t, uint256 span, bytes32 appData)',
 ]
 
@@ -238,7 +238,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
       }
 
       // Verify that the staticInput derived from the data is ABI-encodable
-      if (!isValidAbi(TWAP_DATA_ABI, [this.staticInput])) return 'InvalidData'
+      if (!isValidAbi(TWAP_STRUCT_ABI, [this.staticInput])) return 'InvalidData'
 
       // No errors
       return undefined
@@ -278,7 +278,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
    * @returns {string} The ABI-encoded TWAP order.
    */
   encodeStaticInput(): string {
-    return super.encodeStaticInputHelper(TWAP_DATA_ABI, this.staticInput)
+    return super.encodeStaticInputHelper(TWAP_STRUCT_ABI, this.staticInput)
   }
 
   /**
@@ -290,7 +290,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     return super.deserializeHelper(
       s,
       TWAP_ADDRESS,
-      TWAP_DATA_ABI,
+      TWAP_STRUCT_ABI,
       (struct: TwapStruct, salt: string) =>
         new Twap({
           handler: TWAP_ADDRESS,
