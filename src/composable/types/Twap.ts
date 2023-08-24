@@ -24,7 +24,6 @@ const TWAP_DATA_ABI = [
   'tuple(address sellToken, address buyToken, address receiver, uint256 partSellAmount, uint256 minPartLimit, uint256 t0, uint256 n, uint256 t, uint256 span, bytes32 appData)',
 ]
 
-// const DEFAULT_TOKEN_FORMATTER =  (address: string, amount: BigNumber) => string
 const DEFAULT_TOKEN_FORMATTER = (address: string, amount: BigNumber) => `${address}@${amount}`
 
 /**
@@ -111,7 +110,7 @@ export interface TwapData extends TwapDataBase {
   /**
    * start time of the TWAP
    */
-  readonly startTime: StartTime
+  readonly startTime?: StartTime
 
   /**
    * number of parts
@@ -126,26 +125,29 @@ export interface TwapData extends TwapDataBase {
   /**
    * whether the TWAP is valid for the entire interval or not
    */
-  readonly durationOfPart: DurationOfPart
+  readonly durationOfPart?: DurationOfPart
 }
 
 export type DurationOfPart =
-  | { span: SpanValue.SPAN_UNTIL_NEXT_PART }
-  | { span: SpanValue.SPAN_FOR_SECONDS; amount: BigNumber }
+  | { durationType: DurationType.AUTO }
+  | { durationType: DurationType.LIMIT_DURATION; duration: BigNumber }
 
-export enum SpanValue {
-  SPAN_UNTIL_NEXT_PART = 'SPAN_UNTIL_NEXT_PART',
-  SPAN_FOR_SECONDS = 'SPAN_FOR_SECONDS',
+export enum DurationType {
+  AUTO = 'AUTO',
+  LIMIT_DURATION = 'LIMIT_DURATION',
 }
 
 export type StartTime =
-  | { start: StartTimeValue.START_AT_MINING_TIME }
-  | { start: StartTimeValue.START_AT_EPOC; epoch: BigNumber }
+  | { startType: StartTimeValue.AT_MINING_TIME }
+  | { startType: StartTimeValue.AT_EPOC; epoch: BigNumber }
 
 export enum StartTimeValue {
-  START_AT_MINING_TIME = 'START_AT_MINING_TIME',
-  START_AT_EPOC = 'START_AT_EPOC',
+  AT_MINING_TIME = 'AT_MINING_TIME',
+  AT_EPOC = 'AT_EPOC',
 }
+
+const DEFAULT_START_TIME: StartTime = { startType: StartTimeValue.AT_MINING_TIME }
+const DEFAULT_DURATION_OF_PART: DurationOfPart = { durationType: DurationType.AUTO }
 
 /**
  * `ComposableCoW` implementation of a TWAP order.
@@ -209,23 +211,30 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
    */
   isValid(): IsValid | IsNotValid {
     const error = (() => {
-      const { sellToken, sellAmount, buyToken, buyAmount, startTime, numberOfParts, timeBetweenParts, durationOfPart } =
-        this.data
+      const {
+        sellToken,
+        sellAmount,
+        buyToken,
+        buyAmount,
+        startTime = DEFAULT_START_TIME,
+        numberOfParts,
+        timeBetweenParts,
+        durationOfPart = DEFAULT_DURATION_OF_PART,
+      } = this.data
 
       // Verify that the order params are logically valid
       if (!(sellToken != buyToken)) return 'InvalidSameToken'
       if (!(sellToken != constants.AddressZero && buyToken != constants.AddressZero)) return 'InvalidToken'
       if (!sellAmount.gt(constants.Zero)) return 'InvalidSellAmount'
       if (!buyAmount.gt(constants.Zero)) return 'InvalidMinBuyAmount'
-      if (startTime.start === StartTimeValue.START_AT_EPOC) {
+      if (startTime.startType === StartTimeValue.AT_EPOC) {
         const t0 = startTime.epoch
         if (!(t0.gte(constants.Zero) && t0.lt(MAX_UINT32))) return 'InvalidStartTime'
       }
       if (!(numberOfParts.gt(constants.One) && numberOfParts.lte(MAX_UINT32))) return 'InvalidNumParts'
       if (!(timeBetweenParts.gt(constants.Zero) && timeBetweenParts.lte(MAX_FREQUENCY))) return 'InvalidFrequency'
-      if (durationOfPart.span === SpanValue.SPAN_FOR_SECONDS) {
-        const span = durationOfPart.amount
-        if (!span.lte(timeBetweenParts)) return 'InvalidSpan'
+      if (durationOfPart.durationType === DurationType.LIMIT_DURATION) {
+        if (!durationOfPart.duration.lte(timeBetweenParts)) return 'InvalidSpan'
       }
 
       // Verify that the staticInput derived from the data is ABI-encodable
@@ -298,12 +307,20 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
    * @returns {string} A human-readable string representation of the TWAP order.
    */
   toString(tokenFormatter = DEFAULT_TOKEN_FORMATTER): string {
-    const { sellToken, buyToken, numberOfParts, timeBetweenParts, startTime, sellAmount, buyAmount } = this.data
+    const {
+      sellToken,
+      buyToken,
+      numberOfParts,
+      timeBetweenParts = DEFAULT_DURATION_OF_PART,
+      startTime = DEFAULT_START_TIME,
+      sellAmount,
+      buyAmount,
+    } = this.data
 
     const sellAmountFormatted = tokenFormatter(sellToken, sellAmount)
     const buyAmountFormatted = tokenFormatter(buyToken, buyAmount)
     const t0Formatted =
-      startTime.start === StartTimeValue.START_AT_MINING_TIME ? 'time of mining' : 'epoch ' + startTime.epoch.toString()
+      startTime.startType === StartTimeValue.AT_MINING_TIME ? 'time of mining' : 'epoch ' + startTime.epoch.toString()
     return `${this.orderType}: Sell total ${sellAmountFormatted} for a minimum of ${buyAmountFormatted} over ${numberOfParts} parts with a spacing of ${timeBetweenParts}s beginning at ${t0Formatted}`
   }
 
@@ -339,9 +356,9 @@ export function transformDataToStruct(data: TwapData): TwapStruct {
     sellAmount,
     buyAmount,
     numberOfParts,
-    startTime: startEpoch,
+    startTime: startTime = DEFAULT_START_TIME,
     timeBetweenParts,
-    durationOfPart,
+    durationOfPart = DEFAULT_DURATION_OF_PART,
     ...rest
   } = data
 
@@ -356,8 +373,8 @@ export function transformDataToStruct(data: TwapData): TwapStruct {
           minPartLimit: constants.Zero,
         }
 
-  const span = durationOfPart.span === SpanValue.SPAN_UNTIL_NEXT_PART ? constants.Zero : durationOfPart.amount
-  const t0 = startEpoch.start === StartTimeValue.START_AT_MINING_TIME ? constants.Zero : startEpoch.epoch
+  const span = durationOfPart.durationType === DurationType.AUTO ? constants.Zero : durationOfPart.duration
+  const t0 = startTime.startType === StartTimeValue.AT_MINING_TIME ? constants.Zero : startTime.epoch
 
   return {
     partSellAmount,
@@ -380,12 +397,12 @@ export function transformStructToData(struct: TwapStruct): TwapData {
   const { n: numberOfParts, partSellAmount, minPartLimit, t: timeBetweenParts, t0: startEpoch, span, ...rest } = struct
 
   const durationOfPart: DurationOfPart = span.isZero()
-    ? { span: SpanValue.SPAN_UNTIL_NEXT_PART }
-    : { span: SpanValue.SPAN_FOR_SECONDS, amount: span }
+    ? { durationType: DurationType.AUTO }
+    : { durationType: DurationType.LIMIT_DURATION, duration: span }
 
   const startTime: StartTime = span.isZero()
-    ? { start: StartTimeValue.START_AT_MINING_TIME }
-    : { start: StartTimeValue.START_AT_EPOC, epoch: startEpoch }
+    ? { startType: StartTimeValue.AT_MINING_TIME }
+    : { startType: StartTimeValue.AT_EPOC, epoch: startEpoch }
 
   return {
     sellAmount: partSellAmount.mul(numberOfParts),

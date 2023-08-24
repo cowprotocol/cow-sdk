@@ -1,4 +1,4 @@
-import { SpanValue, StartTimeValue, Twap, TWAP_ADDRESS, TwapData } from './Twap'
+import { DurationType, StartTimeValue, Twap, TWAP_ADDRESS, TwapData } from './Twap'
 import { BigNumber, utils, constants } from 'ethers'
 
 export const TWAP_PARAMS_TEST: TwapData = {
@@ -10,10 +10,10 @@ export const TWAP_PARAMS_TEST: TwapData = {
   timeBetweenParts: BigNumber.from(60 * 60),
   numberOfParts: BigNumber.from(10),
   durationOfPart: {
-    span: SpanValue.SPAN_UNTIL_NEXT_PART,
+    durationType: DurationType.AUTO,
   },
   startTime: {
-    start: StartTimeValue.START_AT_MINING_TIME,
+    startType: StartTimeValue.AT_MINING_TIME,
   },
   appData: '0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5',
 }
@@ -50,10 +50,10 @@ export function generateRandomTWAPData(): TwapData {
     timeBetweenParts: BigNumber.from(60 * 60),
     numberOfParts: BigNumber.from(10),
     durationOfPart: {
-      span: SpanValue.SPAN_UNTIL_NEXT_PART,
+      durationType: DurationType.AUTO,
     },
     startTime: {
-      start: StartTimeValue.START_AT_MINING_TIME,
+      startType: StartTimeValue.AT_MINING_TIME,
     },
     appData: utils.hexlify(utils.randomBytes(32)),
   }
@@ -103,7 +103,7 @@ describe('Twap', () => {
     expect(
       Twap.fromData({
         ...TWAP_PARAMS_TEST,
-        startTime: { start: StartTimeValue.START_AT_EPOC, epoch: BigNumber.from(-1) },
+        startTime: { startType: StartTimeValue.AT_EPOC, epoch: BigNumber.from(-1) },
       }).isValid()
     ).toEqual({
       isValid: false,
@@ -120,7 +120,10 @@ describe('Twap', () => {
     expect(
       Twap.fromData({
         ...TWAP_PARAMS_TEST,
-        durationOfPart: { span: SpanValue.SPAN_FOR_SECONDS, amount: TWAP_PARAMS_TEST.timeBetweenParts.add(1) },
+        durationOfPart: {
+          durationType: DurationType.LIMIT_DURATION,
+          duration: TWAP_PARAMS_TEST.timeBetweenParts.add(1),
+        },
       }).isValid()
     ).toEqual({
       isValid: false,
@@ -163,7 +166,7 @@ describe('Twap', () => {
     expect(
       Twap.fromData({
         ...TWAP_PARAMS_TEST,
-        startTime: { start: StartTimeValue.START_AT_EPOC, epoch: startEpoch },
+        startTime: { startType: StartTimeValue.AT_EPOC, epoch: startEpoch },
       }).toString()
     ).toEqual(
       'twap: Sell total 0x6810e776880C02933D47DB1b9fc05908e5386b96@1000000000000000000 for a minimum of 0xDAE5F1590db13E3B40423B5b5c5fbf175515910b@1000000000000000000 over 10 parts with a spacing of 3600s beginning at epoch 1692876646'
