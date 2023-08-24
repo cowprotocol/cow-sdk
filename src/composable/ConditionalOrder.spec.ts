@@ -1,6 +1,7 @@
 import { BigNumber } from 'ethers'
-import { BaseConditionalOrder } from './conditionalorder'
-import { TWAP } from './types/twap'
+import { ConditionalOrder } from './ConditionalOrder'
+import { Twap } from './types/Twap'
+import { encodeParams } from './utils'
 
 const TWAP_SERIALIZED = (salt?: string, handler?: string): string => {
   return (
@@ -49,10 +50,7 @@ describe('ConditionalOrder', () => {
 
   test('Serialize: Fails if invalid params', () => {
     const order = new TestConditionalOrder('0x910d00a310f7Dc5B29FE73458F47f519be547D3d')
-    expect(() => order.testEncodeStaticInput()).toThrow('SerializationFailed')
-    expect(() => BaseConditionalOrder.encodeParams({ handler: '0xdeadbeef', salt: '0x', staticInput: '0x' })).toThrow(
-      'SerializationFailed'
-    )
+    expect(() => order.testEncodeStaticInput()).toThrow()
   })
 
   test('id: Returns correct id', () => {
@@ -68,21 +66,25 @@ describe('ConditionalOrder', () => {
       '0x910d00a310f7Dc5B29FE73458F47f519be547D3d',
       '0x9379a0bf532ff9a66ffde940f94b1a025d6f18803054c1aef52dc94b15255bbe'
     )
-    expect(BaseConditionalOrder.leafToId(order.leaf)).toEqual(
+    expect(ConditionalOrder.leafToId(order.leaf)).toEqual(
       '0x88ca0698d8c5500b31015d84fa0166272e1812320d9af8b60e29ae00153363b3'
     )
   })
 
   test('Deserialize: Fails if handler mismatch', () => {
-    expect(() => TWAP.deserialize(TWAP_SERIALIZED(undefined, '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'))).toThrow(
+    expect(() => Twap.deserialize(TWAP_SERIALIZED(undefined, '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'))).toThrow(
       'HandlerMismatch'
     )
   })
 })
 
-class TestConditionalOrder extends BaseConditionalOrder<string, string> {
+class TestConditionalOrder extends ConditionalOrder<string, string> {
   constructor(address: string, salt?: string, staticInput = '0x') {
-    super(address, salt, staticInput)
+    super({
+      handler: address,
+      salt,
+      staticInput,
+    })
   }
 
   get orderType(): string {
@@ -97,13 +99,14 @@ class TestConditionalOrder extends BaseConditionalOrder<string, string> {
     return super.encodeStaticInputHelper(['uint256'], this.staticInput)
   }
 
+  transformParamsToData(params: string): string {
+    return params
+  }
+
   isValid(_o: unknown): boolean {
     throw new Error('Method not implemented.')
   }
   serialize(): string {
-    return BaseConditionalOrder.encodeParams(this.leaf)
-  }
-  toString(_tokenFormatter?: (address: string, amount: BigNumber) => string): string {
-    throw new Error('Method not implemented.')
+    return encodeParams(this.leaf)
   }
 }

@@ -2,82 +2,17 @@ import { StandardMerkleTree } from '@openzeppelin/merkle-tree'
 import { BigNumber, providers, utils } from 'ethers'
 
 import { COMPOSABLE_COW_CONTRACT_ADDRESS, SupportedChainId } from '../common'
-import { BaseConditionalOrder, ConditionalOrderParams } from './conditionalorder'
 
 import { ComposableCoW__factory } from './generated'
 import { ComposableCoW, GPv2Order } from './generated/ComposableCoW'
+import { ProofLocation, ProofWithParams, ConditionalOrderParams } from './types'
+import { ConditionalOrder } from './ConditionalOrder'
 
 const CONDITIONAL_ORDER_LEAF_ABI = ['address', 'bytes32', 'bytes']
 
 const PAYLOAD_EMITTED_ABI = ['tuple(bytes32[] proof, tuple(address handler, bytes32 salt, bytes staticInput) params)[]']
 
-export type Orders = Record<string, BaseConditionalOrder<any, any>>
-
-export enum ProofLocation {
-  // The location of the proofs is private to the caller.
-  PRIVATE = 0,
-  // The `data` field of the emitted `Proof` struct contains proofs + conditional order parameters.
-  EMITTED = 1,
-  // The `data` field of the emitted `Proof` struct contains the Swarm address (`bytes32`) of the proofs + conditional order parameters.
-  SWARM = 2,
-  // The `data` field is set to TBD.
-  WAKU = 3,
-  // The `data` field is set to TBD
-  RESERVED = 4,
-  // The `data` field of the emitted `Proof` struct contains the IPFS address (`bytes32`) of the proofs + conditional order parameters.
-  IPFS = 5,
-}
-
-/**
- * A factory and it's arguments that are called at transaction mining time to generate the context
- * for a conditional order(s).
- *
- * This allows to support the case where conditional orders may want to *commence* validity at the
- * time of transaction mining, like in the case of a `TWAP` executed by a DAO or `Safe` that takes
- * a reasonable amount of time to aggregate signatures or collect votes.
- *
- * @remarks This is used in conjunction with `setRootWithContext` or `createWithContext`.
- */
-export type ContextFactory = {
-  // The address of the `IValueFactory` that will be used to resolve the context.
-  address: string
-  // Any arguments that will be passed to the `IValueFactory` to resolve the context.
-  factoryArgs?: {
-    args: any[]
-    argsType: string[]
-  }
-}
-
-/**
- * A struct for a proof that can be used with `setRoot` and `setRootWithContext` on a
- * ComposableCoW-enabled Safe.
- */
-export type ProofStruct = {
-  // The location of the proof.
-  location: ProofLocation
-  // The data for the proof.
-  data: string | '0x'
-}
-
-/**
- * Payload for emitting a merkle root to a ComposableCoW-enabled Safe.
- *
- * If setting `ProofLocation.EMITTED`, this type should be used as the `data` in the `Proof` struct.
- */
-export type PayloadLocationEmitted = {
-  // An array of conditional orders and their proofs.
-  proofs: ProofWithParams[]
-}
-
-/**
- * A proof for a conditional order and it's parameters.
- */
-export type ProofWithParams = {
-  // The proof for the Merkle tree that contains the conditional order.
-  proof: string[]
-  // The parameters as expected by ABI encoding.
-  params: ConditionalOrderParams
-}
+export type Orders = Record<string, ConditionalOrder<any, any>>
 
 /**
  * Multiplexer for conditional orders - using `ComposableCoW`!
@@ -89,7 +24,7 @@ export type ProofWithParams = {
  * - Support for passing an optional upload function to upload the proofs to a decentralized storage network
  */
 export class Multiplexer {
-  static orderTypeRegistry: Record<string, new (...args: any[]) => BaseConditionalOrder<any, any>> = {}
+  static orderTypeRegistry: Record<string, new (...args: any[]) => ConditionalOrder<any, any>> = {}
 
   public chain: SupportedChainId
   public location: ProofLocation
@@ -172,8 +107,7 @@ export class Multiplexer {
 
             if (Multiplexer.orderTypeRegistry.hasOwnProperty(orderType)) {
               const OrderConstructor = Multiplexer.orderTypeRegistry[orderType]
-              const orderArgs = Object.values(orderData)
-              orders[orderKey] = new OrderConstructor(...orderArgs)
+              orders[orderKey] = new OrderConstructor(orderData)
             } else {
               throw new Error(`Unknown order type: ${orderType}`)
             }
@@ -214,7 +148,7 @@ export class Multiplexer {
       // filter out the merkle tree
       if (k === 'tree') return undefined
       if (typeof v === 'object' && v !== null && 'orderType' in v) {
-        const conditionalOrder = v as BaseConditionalOrder<any, any>
+        const conditionalOrder = v as ConditionalOrder<any, any>
         return {
           ...conditionalOrder,
           orderType: conditionalOrder.orderType,
@@ -231,14 +165,14 @@ export class Multiplexer {
    * Add a conditional order to the merkle tree.
    * @param order The order to add to the merkle tree.
    */
-  add<T, P>(order: BaseConditionalOrder<T, P>): void {
+  add<T, P>(order: ConditionalOrder<T, P>): void {
     this.orders[order.id] = order
     this.reset()
   }
 
   /**
    * Remove a conditional order from the merkle tree.
-   * @param id The id of the `BaseConditionalOrder` to remove from the merkle tree.
+   * @param id The id of the `ConditionalOrder` to remove from the merkle tree.
    */
   remove(id: string): void {
     delete this.orders[id]
@@ -247,13 +181,10 @@ export class Multiplexer {
 
   /**
    * Update a given conditional order in the merkle tree.
-   * @param id The id of the `BaseConditionalOrder` to update.
-   * @param updater A function that takes the existing `BaseConditionalOrder` and context, returning an updated `BaseConditionalOrder`.
+   * @param id The id of the `ConditionalOrder` to update.
+   * @param updater A function that takes the existing `ConditionalOrder` and context, returning an updated `ConditionalOrder`.
    */
-  update<T, P>(
-    id: string,
-    updater: (order: BaseConditionalOrder<T, P>, ctx?: string) => BaseConditionalOrder<T, P>
-  ): void {
+  update<T, P>(id: string, updater: (order: ConditionalOrder<T, P>, ctx?: string) => ConditionalOrder<T, P>): void {
     // copy the existing order and update it, given the existing context (if any)
     const order = updater(this.orders[id], this.ctx)
     // delete the existing order
@@ -268,19 +199,19 @@ export class Multiplexer {
 
   /**
    * Accessor for a given conditional order in the multiplexer.
-   * @param id The `id` of the `BaseConditionalOrder` to retrieve.
-   * @returns A `BaseConditionalOrder` with the given `id`.
+   * @param id The `id` of the `ConditionalOrder` to retrieve.
+   * @returns A `ConditionalOrder` with the given `id`.
    */
-  getById(id: string): BaseConditionalOrder<any, any> {
+  getById(id: string): ConditionalOrder<any, any> {
     return this.orders[id]
   }
 
   /**
    * Accessor for a given conditional order in the multiplexer.
-   * @param i The index of the `BaseConditionalOrder` to retrieve.
-   * @returns A `BaseConditionalOrder` at the given index.
+   * @param i The index of the `ConditionalOrder` to retrieve.
+   * @returns A `ConditionalOrder` at the given index.
    */
-  getByIndex(i: number): BaseConditionalOrder<any, any> {
+  getByIndex(i: number): ConditionalOrder<any, any> {
     return this.orders[this.orderIds[i]]
   }
 
@@ -497,7 +428,7 @@ export class Multiplexer {
    */
   public static registerOrderType(
     orderType: string,
-    conditionalOrderClass: new (...args: any[]) => BaseConditionalOrder<any, any>
+    conditionalOrderClass: new (...args: any[]) => ConditionalOrder<any, any>
   ) {
     Multiplexer.orderTypeRegistry[orderType] = conditionalOrderClass
   }

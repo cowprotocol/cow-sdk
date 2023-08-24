@@ -1,17 +1,9 @@
 import { BigNumber, ethers, utils } from 'ethers'
-import { ContextFactory } from './multiplexer'
-import { keccak256 } from 'ethers/lib/utils'
-import { ComposableCoW__factory } from './generated'
 import { IConditionalOrder } from './generated/ComposableCoW'
 
-// Define the ABI tuple for the TWAPData struct
-export const CONDITIONAL_ORDER_PARAMS_ABI = ['tuple(address handler, bytes32 salt, bytes staticInput)']
-
-export type ConditionalOrderParams = {
-  readonly handler: string
-  readonly salt: string
-  readonly staticInput: string
-}
+import { ComposableCoW__factory } from './generated'
+import { decodeParams, encodeParams } from './utils'
+import { ConditionalOrderArguments, ConditionalOrderParams, ContextFactory } from './types'
 
 /**
  * An abstract base class from which all conditional orders should inherit.
@@ -27,16 +19,16 @@ export type ConditionalOrderParams = {
  * **NOTE**: Instances of conditional orders have an `id` property that is a `keccak256` hash of
  *           the serialized conditional order.
  */
-export abstract class BaseConditionalOrder<T, P> {
+export abstract class ConditionalOrder<Data, Params> {
   public readonly handler: string
   public readonly salt: string
-  public readonly staticInput: T
+  public readonly staticInput: Data
   public readonly hasOffChainInput: boolean
 
   /**
    * A constructor that provides some basic validation for the conditional order.
    *
-   * This constructor **MUST** be called by any class that inherits from `BaseConditionalOrder`.
+   * This constructor **MUST** be called by any class that inherits from `ConditionalOrder`.
    *
    * **NOTE**: The salt is optional and will be randomly generated if not provided.
    * @param handler The address of the handler for the conditional order.
@@ -46,12 +38,8 @@ export abstract class BaseConditionalOrder<T, P> {
    * @throws If the handler is not a valid ethereum address.
    * @throws If the salt is not a valid 32-byte string.
    */
-  constructor(
-    handler: string,
-    salt: string = keccak256(ethers.utils.randomBytes(32)),
-    staticInput: P,
-    hasOffChainInput = false
-  ) {
+  constructor(params: ConditionalOrderArguments<Params>) {
+    const { handler, salt = utils.keccak256(utils.randomBytes(32)), staticInput, hasOffChainInput = false } = params
     // Verify input to the constructor
     // 1. Verify that the handler is a valid ethereum address
     if (!ethers.utils.isAddress(handler)) {
@@ -70,7 +58,8 @@ export abstract class BaseConditionalOrder<T, P> {
   }
 
   /**
-   * Get the concrete type of the conditional order.
+   * Get a descriptive name for the type of the conditional order (i.e twap, dca, etc).
+   *
    * @returns {string} The concrete type of the conditional order.
    */
   abstract get orderType(): string
@@ -104,6 +93,7 @@ export abstract class BaseConditionalOrder<T, P> {
     }
 
     if (context) {
+      // Create (with context)
       const contextArgsAbi = context.factoryArgs
         ? utils.defaultAbiCoder.encode(context.factoryArgs.argsType, context.factoryArgs.args)
         : '0x'
@@ -114,6 +104,7 @@ export abstract class BaseConditionalOrder<T, P> {
         true,
       ])
     } else {
+      // Create
       return composableCow.encodeFunctionData('create', [paramsStruct, true])
     }
   }
@@ -128,7 +119,7 @@ export abstract class BaseConditionalOrder<T, P> {
   }
 
   /**
-   * Calculate the id of the conditional order.
+   * Calculate the id of the conditional order (which also happens to be the key used for `ctx` in the ComposableCoW contract).
    *
    * This is a `keccak256` hash of the serialized conditional order.
    * @returns The id of the conditional order.
@@ -159,7 +150,7 @@ export abstract class BaseConditionalOrder<T, P> {
    * @see ConditionalOrderParams
    */
   static leafToId(leaf: ConditionalOrderParams): string {
-    return utils.keccak256(BaseConditionalOrder.encodeParams(leaf))
+    return utils.keccak256(encodeParams(leaf))
   }
 
   /**
@@ -173,22 +164,8 @@ export abstract class BaseConditionalOrder<T, P> {
   }
 
   /**
-   * Helper method for validating ABI types.
-   * @param types ABI types to validate against.
-   * @param values The values to validate.
-   * @returns {boolean} Whether the values are valid ABI for the given types.
-   */
-  protected static isValidAbi(types: readonly (string | ethers.utils.ParamType)[], values: any[]): boolean {
-    try {
-      ethers.utils.defaultAbiCoder.encode(types, values)
-    } catch (e) {
-      return false
-    }
-    return true
-  }
-
-  /**
    * Create a human-readable string representation of the conditional order.
+   *
    * @param tokenFormatter An optional function that takes an address and an amount and returns a human-readable string.
    */
   abstract toString(tokenFormatter?: (address: string, amount: BigNumber) => string): string
@@ -202,6 +179,7 @@ export abstract class BaseConditionalOrder<T, P> {
 
   /**
    * Encode the `staticInput` for the conditional order.
+   *
    * @returns The ABI-encoded `staticInput` for the conditional order.
    * @see ConditionalOrderParams
    */
@@ -209,16 +187,13 @@ export abstract class BaseConditionalOrder<T, P> {
 
   /**
    * A helper function for generically serializing a conditional order's static input.
+   *
    * @param orderDataTypes ABI types for the order's data struct.
    * @param staticInput The order's data struct.
    * @returns An ABI-encoded representation of the order's data struct.
    */
-  protected encodeStaticInputHelper(orderDataTypes: string[], staticInput: T): string {
-    try {
-      return utils.defaultAbiCoder.encode(orderDataTypes, [staticInput])
-    } catch (e) {
-      throw new Error('SerializationFailed')
-    }
+  protected encodeStaticInputHelper(orderDataTypes: string[], staticInput: Data): string {
+    return utils.defaultAbiCoder.encode(orderDataTypes, [staticInput])
   }
 
   /**
@@ -226,39 +201,11 @@ export abstract class BaseConditionalOrder<T, P> {
    *
    * **NOTE**: This should be overridden by any conditional order that requires transformations.
    * This implementation is a no-op.
-   * @param params {P} Parameters that are passed in to the constructor.
-   * @returns {T} The static input for the conditional order.
+   *
+   * @param params {Params} Parameters that are passed in to the constructor.
+   * @returns {Data} The static input for the conditional order.
    */
-  protected transformParamsToData(params: P): T {
-    return params as unknown as T
-  }
-
-  /**
-   * Encode the `ConditionalOrderParams` for the conditional order.
-   * @param leaf The `ConditionalOrderParams` struct representing the conditional order as taken from a merkle tree.
-   * @returns The ABI-encoded conditional order.
-   * @see ConditionalOrderParams
-   */
-  static encodeParams(leaf: ConditionalOrderParams): string {
-    try {
-      return utils.defaultAbiCoder.encode(CONDITIONAL_ORDER_PARAMS_ABI, [leaf])
-    } catch (e) {
-      throw new Error('SerializationFailed')
-    }
-  }
-
-  /**
-   * Decode the `ConditionalOrderParams` for the conditional order.
-   * @param encoded The encoded conditional order.
-   * @returns The decoded conditional order.
-   */
-  static decodeParams(encoded: string): ConditionalOrderParams {
-    try {
-      return utils.defaultAbiCoder.decode(CONDITIONAL_ORDER_PARAMS_ABI, encoded)[0]
-    } catch (e) {
-      throw new Error('DeserializationFailed')
-    }
-  }
+  abstract transformParamsToData(params: Params): Data
 
   /**
    * A helper function for generically deserializing a conditional order.
@@ -276,7 +223,7 @@ export abstract class BaseConditionalOrder<T, P> {
   ): T {
     try {
       // First, decode the `IConditionalOrder.Params` struct
-      const { handler: recoveredHandler, salt, staticInput } = BaseConditionalOrder.decodeParams(s)
+      const { handler: recoveredHandler, salt, staticInput } = decodeParams(s)
 
       // Second, verify that the recovered handler is the correct handler
       if (!(recoveredHandler == handler)) throw new Error('HandlerMismatch')
