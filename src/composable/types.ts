@@ -1,6 +1,8 @@
-export interface ConditionalOrderArguments<Params> {
+import { GPv2Order } from './generated/ComposableCoW'
+
+export interface ConditionalOrderArguments<T> {
   handler: string
-  staticInput: Params
+  data: T
   salt?: string
   hasOffChainInput?: boolean
 }
@@ -75,4 +77,69 @@ export type ProofWithParams = {
   proof: string[]
   // The parameters as expected by ABI encoding.
   params: ConditionalOrderParams
+}
+
+export type PollResult = PollResultSuccess | PollResultErrors
+
+export type PollResultErrors =
+  | PollResultTryNextBlock
+  | PollResultTryOnBlock
+  | PollResultTryAtEpoch
+  | PollResultUnexpectedError
+  | PollResultDontTryAgain
+
+export enum PollResultCode {
+  SUCCESS = 'SUCCESS',
+  UNEXPECTED_ERROR = 'UNEXPECTED_ERROR',
+  TRY_NEXT_BLOCK = 'TRY_NEXT_BLOCK',
+  TRY_ON_BLOCK = 'TRY_ON_BLOCK',
+  TRY_AT_EPOCH = 'TRY_AT_DATE',
+  DONT_TRY_AGAIN = 'DONT_TRY_AGAIN',
+}
+export interface PollResultSuccess {
+  readonly result: PollResultCode.SUCCESS
+  readonly order: GPv2Order.DataStructOutput
+  readonly signature: string
+}
+
+export interface PollResultUnexpectedError {
+  readonly result: PollResultCode.UNEXPECTED_ERROR
+  readonly error: any
+}
+
+export interface PollResultTryNextBlock {
+  readonly result: PollResultCode.TRY_NEXT_BLOCK
+  reason?: string
+}
+
+export interface PollResultTryOnBlock {
+  readonly result: PollResultCode.TRY_ON_BLOCK
+  readonly blockNumber: number
+  reason?: string
+}
+
+export interface PollResultTryAtEpoch {
+  readonly result: PollResultCode.TRY_AT_EPOCH
+  /**
+   * The epoch after which it is ok to re-try to to poll this order.
+   * The value is expressed as a Unix timestamp (in seconds).
+   *
+   * This epoch will be inclusive, meaning that it is ok to re-try at the block mined pricesely at this epoch or later.
+   */
+  readonly epoch: number
+  reason?: string
+}
+
+export interface PollResultDontTryAgain {
+  readonly result: PollResultCode.DONT_TRY_AGAIN
+  reason?: string
+}
+
+export type IsValidResult = IsValid | IsNotValid
+export interface IsValid {
+  isValid: true
+}
+export interface IsNotValid {
+  isValid: false
+  reason: string
 }

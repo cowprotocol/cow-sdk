@@ -1,9 +1,18 @@
-import { BigNumber, ethers, utils } from 'ethers'
+import { BigNumber, ethers, utils, providers } from 'ethers'
 import { IConditionalOrder } from './generated/ComposableCoW'
 
-import { ComposableCoW__factory } from './generated'
 import { decodeParams, encodeParams } from './utils'
-import { ConditionalOrderArguments, ConditionalOrderParams, ContextFactory } from './types'
+import {
+  ConditionalOrderArguments,
+  ConditionalOrderParams,
+  ContextFactory,
+  IsValidResult,
+  PollResult,
+  PollResultCode,
+  PollResultErrors,
+} from './types'
+import { SupportedChainId } from 'src/common'
+import { getComposableCow, getComposableCowInterface } from './contracts'
 
 /**
  * An abstract base class from which all conditional orders should inherit.
@@ -19,10 +28,11 @@ import { ConditionalOrderArguments, ConditionalOrderParams, ContextFactory } fro
  * **NOTE**: Instances of conditional orders have an `id` property that is a `keccak256` hash of
  *           the serialized conditional order.
  */
-export abstract class ConditionalOrder<Data, Params> {
+export abstract class ConditionalOrder<D, S> {
   public readonly handler: string
   public readonly salt: string
-  public readonly staticInput: Data
+  public readonly data: D
+  public readonly staticInput: S
   public readonly hasOffChainInput: boolean
 
   /**
@@ -33,13 +43,13 @@ export abstract class ConditionalOrder<Data, Params> {
    * **NOTE**: The salt is optional and will be randomly generated if not provided.
    * @param handler The address of the handler for the conditional order.
    * @param salt A 32-byte string used to salt the conditional order.
-   * @param staticInput The static input for the conditional order.
+   * @param data The data of the order
    * @param hasOffChainInput Whether the conditional order has off-chain input.
    * @throws If the handler is not a valid ethereum address.
    * @throws If the salt is not a valid 32-byte string.
    */
-  constructor(params: ConditionalOrderArguments<Params>) {
-    const { handler, salt = utils.keccak256(utils.randomBytes(32)), staticInput, hasOffChainInput = false } = params
+  constructor(params: ConditionalOrderArguments<D>) {
+    const { handler, salt = utils.keccak256(utils.randomBytes(32)), data, hasOffChainInput = false } = params
     // Verify input to the constructor
     // 1. Verify that the handler is a valid ethereum address
     if (!ethers.utils.isAddress(handler)) {
@@ -53,7 +63,9 @@ export abstract class ConditionalOrder<Data, Params> {
 
     this.handler = handler
     this.salt = salt
-    this.staticInput = this.transformParamsToData(staticInput)
+    this.data = data
+    this.staticInput = this.transformDataToStruct(data)
+
     this.hasOffChainInput = hasOffChainInput
   }
 
@@ -74,6 +86,15 @@ export abstract class ConditionalOrder<Data, Params> {
     return undefined
   }
 
+  assertIsValid(): void {
+    const isValidResult = this.isValid()
+    if (!isValidResult.isValid) {
+      throw new Error(`Invalid order: ${isValidResult.reason}`)
+    }
+  }
+
+  abstract isValid(): IsValidResult
+
   /**
    * Get the calldata for creating the conditional order.
    *
@@ -84,8 +105,10 @@ export abstract class ConditionalOrder<Data, Params> {
    * @returns The calldata for creating the conditional order.
    */
   get createCalldata(): string {
+    this.assertIsValid()
+
     const context = this.context
-    const composableCow = ComposableCoW__factory.createInterface()
+    const composableCow = getComposableCowInterface()
     const paramsStruct: IConditionalOrder.ConditionalOrderParamsStruct = {
       handler: this.handler,
       salt: this.salt,
@@ -114,8 +137,9 @@ export abstract class ConditionalOrder<Data, Params> {
    * @returns The calldata for removing the conditional order.
    */
   get removeCalldata(): string {
-    const composableCow = ComposableCoW__factory.createInterface()
-    return composableCow.encodeFunctionData('remove', [this.id])
+    this.assertIsValid()
+
+    return getComposableCowInterface().encodeFunctionData('remove', [this.id])
   }
 
   /**
@@ -189,23 +213,125 @@ export abstract class ConditionalOrder<Data, Params> {
    * A helper function for generically serializing a conditional order's static input.
    *
    * @param orderDataTypes ABI types for the order's data struct.
-   * @param staticInput The order's data struct.
+   * @param data The order's data struct.
    * @returns An ABI-encoded representation of the order's data struct.
    */
-  protected encodeStaticInputHelper(orderDataTypes: string[], staticInput: Data): string {
+  protected encodeStaticInputHelper(orderDataTypes: string[], staticInput: S): string {
     return utils.defaultAbiCoder.encode(orderDataTypes, [staticInput])
   }
 
   /**
-   * Apply any transformations to the parameters that are passed in to the constructor.
+   * Poll a conditional order to see if it is tradeable.
+   *
+   * @param owner The owner of the conditional order.
+   * @param p The proof and parameters.
+   * @param chain Which chain to use for the ComposableCoW contract.
+   * @param provider An RPC provider for the chain.
+   * @param offChainInputFn A function, if provided, that will return the off-chain input for the conditional order.
+   * @throws If the conditional order is not tradeable.
+   * @returns The tradeable `GPv2Order.Data` struct and the `signature` for the conditional order.
+   */
+  async poll(owner: string, chain: SupportedChainId, provider: providers.Provider): Promise<PollResult> {
+    const composableCow = getComposableCow(chain, provider)
+
+    try {
+      const isValid = this.isValid()
+      // Do a validation first
+      if (!isValid.isValid) {
+        return {
+          result: PollResultCode.DONT_TRY_AGAIN,
+          reason: `InvalidConditionalOrder. Reason: ${isValid.reason}`,
+        }
+      }
+
+      // Let the concrete Conditional Order decide about the poll result
+      const pollResult = await this.pollValidate(owner, chain, provider)
+      if (pollResult) {
+        return pollResult
+      }
+
+      // Check if the owner authorised the order
+      const isAuthorized = await this.isAuthorized(owner, chain, provider)
+      if (!isAuthorized) {
+        return {
+          result: PollResultCode.DONT_TRY_AGAIN,
+          reason: `NotAuthorised: Order ${this.id} is not authorised for ${owner} on chain ${chain}`,
+        }
+      }
+
+      // Lastly, try to get the tradeable order and signature
+      const [order, signature] = await composableCow.getTradeableOrderWithSignature(
+        owner,
+        this.leaf,
+        this.offChainInput,
+        []
+      )
+
+      return {
+        result: PollResultCode.SUCCESS,
+        order,
+        signature,
+      }
+    } catch (error) {
+      return {
+        result: PollResultCode.UNEXPECTED_ERROR,
+        error: error,
+      }
+    }
+  }
+
+  /**
+   * Checks if the owner authorized the conditional order.
+   *
+   * @param owner The owner of the conditional order.
+   * @param chain Which chain to use for the ComposableCoW contract.
+   * @param provider An RPC provider for the chain.
+   * @returns true if the owner authorized the order, false otherwise.
+   */
+  public isAuthorized(owner: string, chain: SupportedChainId, provider: providers.Provider): Promise<boolean> {
+    const composableCow = getComposableCow(chain, provider)
+    return composableCow.callStatic.singleOrders(owner, this.id)
+  }
+
+  /**
+   * Allow concrete conditional orders to perform additional validation for the poll method.
+   *
+   * This will allow the concrete orders to decide when an order shouldn't be polled again. For example, if the orders is expired.
+   * It also allows to signal when should the next check be done. For example, an order could signal that the validations will fail until a certain time or block.
+   *
+   * @param owner The owner of the conditional order.
+   * @param chain Which chain to use for the ComposableCoW contract.
+   * @param provider An RPC provider for the chain.
+   *
+   * @returns undefined if the concrete order can't make a decision. Otherwise, it returns a PollResultErrors object.
+   */
+  protected abstract pollValidate(
+    owner: string,
+    chain: SupportedChainId,
+    provider: providers.Provider
+  ): Promise<PollResultErrors | undefined>
+
+  /**
+   * Convert the struct that the contract expect as an encoded `staticInput` into a friendly data object modeling the smart order.
    *
    * **NOTE**: This should be overridden by any conditional order that requires transformations.
-   * This implementation is a no-op.
+   * This implementation is a no-op if you use the same type for both.
    *
-   * @param params {Params} Parameters that are passed in to the constructor.
-   * @returns {Data} The static input for the conditional order.
+   * @param params {S} Parameters that are passed in to the constructor.
+   * @returns {D} The static input for the conditional order.
    */
-  abstract transformParamsToData(params: Params): Data
+  abstract transformStructToData(params: S): D
+
+  /**
+   * Converts a friendly data object modeling the smart order into the struct that the contract expect as an encoded `staticInput`.
+   *
+   * **NOTE**: This should be overridden by any conditional order that requires transformations.
+   * This implementation is a no-op if you use the same type for both.
+   *
+   * @param params {S} Parameters that are passed in to the constructor.
+   * @returns {D} The static input for the conditional order.
+   */
+  abstract transformDataToStruct(params: D): S
 
   /**
    * A helper function for generically deserializing a conditional order.
