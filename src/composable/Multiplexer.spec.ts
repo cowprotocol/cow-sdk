@@ -4,6 +4,7 @@ import { ProofLocation } from './types'
 import { Twap } from './types/Twap'
 import { TWAP_PARAMS_TEST, generateRandomTWAPData } from './types/Twap.spec'
 import { getComposableCowInterface } from './contracts'
+import { BigNumber } from 'ethers'
 
 describe('Multiplexer (ComposableCoW)', () => {
   beforeEach(() => {
@@ -96,6 +97,13 @@ describe('Multiplexer (ComposableCoW)', () => {
     const order3 = m.getById(twap.id)
     expect(order3).toBeDefined()
     expect(order3).toEqual(twap)
+  })
+
+  test("Can't add invalid conditional orders", () => {
+    // Given an invalid order, don't allow to add it to the multiplexer
+    const m = new Multiplexer(SupportedChainId.GNOSIS_CHAIN)
+    const invalidTwap = Twap.fromData({ ...generateRandomTWAPData(), timeBetweenParts: BigNumber.from(-1) })
+    expect(() => m.add(invalidTwap)).toThrow('Invalid order: InvalidFrequency')
   })
 
   test('serde(toJSON): can serialize to JSON', () => {

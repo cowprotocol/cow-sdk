@@ -166,6 +166,11 @@ export class Multiplexer {
    * @param order The order to add to the merkle tree.
    */
   add<T, P>(order: ConditionalOrder<T, P>): void {
+    const isValidResult = order.isValid()
+    if (!isValidResult.isValid) {
+      throw new Error(`Invalid order: ${isValidResult.reason}`)
+    }
+
     this.orders[order.id] = order
     this.reset()
   }
