@@ -1,9 +1,16 @@
 import { BigNumber, constants, providers } from 'ethers'
 
 import { ConditionalOrder } from '../ConditionalOrder'
-import { ConditionalOrderArguments, ContextFactory, IsNotValid, IsValid, PollResultErrors } from '../types'
+import {
+  ConditionalOrderArguments,
+  ConditionalOrderParams,
+  ContextFactory,
+  IsNotValid,
+  IsValid,
+  PollResultErrors,
+} from '../types'
 import { encodeParams, isValidAbi } from '../utils'
-import { SupportedChainId } from 'src/common'
+import { SupportedChainId } from '../../common'
 
 // The type of Conditional Order
 const TWAP_ORDER_TYPE = 'twap'
@@ -180,6 +187,16 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
   }
 
   /**
+   * Create a TWAP order with sound defaults.
+   * @param data The TWAP order parameters in a more user-friendly format.
+   * @returns An instance of the TWAP order.
+   */
+  static fromParams(params: ConditionalOrderParams): Twap {
+    const twap = Twap.deserialize(encodeParams(params))
+    return twap
+  }
+
+  /**
    * Enforces that TWAPs will commence at the beginning of a block by use of the
    * `CurrentBlockTimestampFactory` contract to provide the current block timestamp
    * as the start time of the TWAP.
@@ -283,12 +300,12 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
 
   /**
    * Deserialize a TWAP order from it's ABI-encoded form.
-   * @param {string} s ABI-encoded TWAP order to deserialize.
+   * @param {string} twapSerialized ABI-encoded TWAP order to deserialize.
    * @returns A deserialized TWAP order.
    */
-  static deserialize(s: string): Twap {
+  static deserialize(twapSerialized: string): Twap {
     return super.deserializeHelper(
-      s,
+      twapSerialized,
       TWAP_ADDRESS,
       TWAP_STRUCT_ABI,
       (struct: TwapStruct, salt: string) =>

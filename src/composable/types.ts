@@ -43,7 +43,7 @@ export type ContextFactory = {
   address: string
   // Any arguments that will be passed to the `IValueFactory` to resolve the context.
   factoryArgs?: {
-    args: any[]
+    args: unknown[]
     argsType: string[]
   }
 }
@@ -104,7 +104,7 @@ export interface PollResultSuccess {
 
 export interface PollResultUnexpectedError {
   readonly result: PollResultCode.UNEXPECTED_ERROR
-  readonly error: any
+  readonly error: unknown
 }
 
 export interface PollResultTryNextBlock {
