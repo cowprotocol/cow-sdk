@@ -1,8 +1,8 @@
 import { Multiplexer, Orders } from './Multiplexer'
 import { SupportedChainId } from '../common'
 import { ProofLocation } from './types'
-import { Twap } from './types/Twap'
-import { TWAP_PARAMS_TEST, generateRandomTWAPData } from './types/Twap.spec'
+import { Twap } from './orderTypes/Twap'
+import { TWAP_PARAMS_TEST, generateRandomTWAPData } from './orderTypes/Twap.spec'
 import { getComposableCowInterface } from './contracts'
 import { BigNumber } from 'ethers'
 

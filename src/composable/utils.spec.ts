@@ -1,6 +1,23 @@
 import { decodeParams, encodeParams, isValidAbi } from './utils'
-import { TwapStruct, transformDataToStruct } from './types/Twap'
-import { TWAP_PARAMS_TEST } from './types/twap.spec'
+import { DurationType, StartTimeValue, TwapData, TwapStruct, transformDataToStruct } from './orderTypes/Twap'
+import { BigNumber, utils } from 'ethers'
+
+export const TWAP_PARAMS_TEST: TwapData = {
+  sellToken: '0x6810e776880C02933D47DB1b9fc05908e5386b96',
+  buyToken: '0xDAE5F1590db13E3B40423B5b5c5fbf175515910b',
+  receiver: '0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF',
+  sellAmount: utils.parseEther('1'),
+  buyAmount: utils.parseEther('1'),
+  timeBetweenParts: BigNumber.from(60 * 60),
+  numberOfParts: BigNumber.from(10),
+  durationOfPart: {
+    durationType: DurationType.AUTO,
+  },
+  startTime: {
+    startType: StartTimeValue.AT_MINING_TIME,
+  },
+  appData: '0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5',
+}
 
 const TWAP_STRUCT_ABI = [
   'tuple(address sellToken, address buyToken, address receiver, uint256 partSellAmount, uint256 minPartLimit, uint256 t0, uint256 n, uint256 t, uint256 span, bytes32 appData)',

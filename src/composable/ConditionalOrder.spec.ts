@@ -1,6 +1,6 @@
 import { ConditionalOrder } from './ConditionalOrder'
 import { IsValidResult, PollResultErrors } from './types'
-import { Twap } from './types/Twap'
+import { Twap } from './orderTypes/Twap'
 import { encodeParams } from './utils'
 
 const TWAP_SERIALIZED = (salt?: string, handler?: string): string => {

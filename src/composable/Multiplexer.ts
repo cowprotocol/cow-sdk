@@ -12,7 +12,7 @@ const CONDITIONAL_ORDER_LEAF_ABI = ['address', 'bytes32', 'bytes']
 
 const PAYLOAD_EMITTED_ABI = ['tuple(bytes32[] proof, tuple(address handler, bytes32 salt, bytes staticInput) params)[]']
 
-export type Orders = Record<string, ConditionalOrder<any, any>>
+export type Orders = Record<string, ConditionalOrder<unknown, unknown>>
 
 /**
  * Multiplexer for conditional orders - using `ComposableCoW`!
@@ -24,7 +24,7 @@ export type Orders = Record<string, ConditionalOrder<any, any>>
  * - Support for passing an optional upload function to upload the proofs to a decentralized storage network
  */
 export class Multiplexer {
-  static orderTypeRegistry: Record<string, new (...args: any[]) => ConditionalOrder<any, any>> = {}
+  static orderTypeRegistry: Record<string, new (...args: unknown[]) => ConditionalOrder<unknown, unknown>> = {}
 
   public chain: SupportedChainId
   public location: ProofLocation
@@ -148,7 +148,7 @@ export class Multiplexer {
       // filter out the merkle tree
       if (k === 'tree') return undefined
       if (typeof v === 'object' && v !== null && 'orderType' in v) {
-        const conditionalOrder = v as ConditionalOrder<any, any>
+        const conditionalOrder = v as ConditionalOrder<unknown, unknown>
         return {
           ...conditionalOrder,
           orderType: conditionalOrder.orderType,
@@ -186,7 +186,10 @@ export class Multiplexer {
    * @param id The id of the `ConditionalOrder` to update.
    * @param updater A function that takes the existing `ConditionalOrder` and context, returning an updated `ConditionalOrder`.
    */
-  update<T, P>(id: string, updater: (order: ConditionalOrder<T, P>, ctx?: string) => ConditionalOrder<T, P>): void {
+  update(
+    id: string,
+    updater: (order: ConditionalOrder<unknown, unknown>, ctx?: string) => ConditionalOrder<unknown, unknown>
+  ): void {
     // copy the existing order and update it, given the existing context (if any)
     const order = updater(this.orders[id], this.ctx)
     // delete the existing order
@@ -204,7 +207,7 @@ export class Multiplexer {
    * @param id The `id` of the `ConditionalOrder` to retrieve.
    * @returns A `ConditionalOrder` with the given `id`.
    */
-  getById(id: string): ConditionalOrder<any, any> {
+  getById(id: string): ConditionalOrder<unknown, unknown> {
     return this.orders[id]
   }
 
@@ -213,7 +216,7 @@ export class Multiplexer {
    * @param i The index of the `ConditionalOrder` to retrieve.
    * @returns A `ConditionalOrder` at the given index.
    */
-  getByIndex(i: number): ConditionalOrder<any, any> {
+  getByIndex(i: number): ConditionalOrder<unknown, unknown> {
     return this.orders[this.orderIds[i]]
   }
 
@@ -431,7 +434,7 @@ export class Multiplexer {
    */
   public static registerOrderType(
     orderType: string,
-    conditionalOrderClass: new (...args: any[]) => ConditionalOrder<any, any>
+    conditionalOrderClass: new (...args: unknown[]) => ConditionalOrder<unknown, unknown>
   ) {
     Multiplexer.orderTypeRegistry[orderType] = conditionalOrderClass
   }

@@ -11,7 +11,7 @@ import {
   PollResultCode,
   PollResultErrors,
 } from './types'
-import { SupportedChainId } from 'src/common'
+import { SupportedChainId } from '../common'
 import { getComposableCow, getComposableCowInterface } from './contracts'
 
 /**
