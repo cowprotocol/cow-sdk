@@ -5,7 +5,7 @@ import {
   SupportedChainId,
 } from '../common'
 import { ExtensibleFallbackHandler__factory } from './generated'
-import { ConditionalOrderParams } from './types'
+import { BlockInfo, ConditionalOrderParams } from './types'
 
 // Define the ABI tuple for the ConditionalOrderParams struct
 export const CONDITIONAL_ORDER_PARAMS_ABI = ['tuple(address handler, bytes32 salt, bytes staticInput)']
@@ -73,4 +73,13 @@ export function isValidAbi(types: readonly (string | utils.ParamType)[], values:
     return false
   }
   return true
+}
+
+export async function getBlockInfo(provider: providers.Provider): Promise<BlockInfo> {
+  const block = await provider.getBlock('latest')
+
+  return {
+    blockNumber: block.number,
+    blockTimestamp: block.timestamp,
+  }
 }

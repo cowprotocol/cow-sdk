@@ -1,4 +1,6 @@
+import { SupportedChainId } from '../common'
 import { GPv2Order } from './generated/ComposableCoW'
+import { providers } from 'ethers'
 
 export interface ConditionalOrderArguments<T> {
   handler: string
@@ -79,6 +81,22 @@ export type ProofWithParams = {
   params: ConditionalOrderParams
 }
 
+export type PollParams = {
+  owner: string
+  chain: SupportedChainId
+  provider: providers.Provider
+
+  /**
+   * If present, it can be used for custom conditional order validations. If not present, the orders will need to get the block info themselves using the provider
+   */
+  blockInfo?: BlockInfo
+}
+
+export type BlockInfo = {
+  blockNumber: number
+  blockTimestamp: number
+}
+
 export type PollResult = PollResultSuccess | PollResultErrors
 
 export type PollResultErrors =
@@ -105,6 +123,7 @@ export interface PollResultSuccess {
 export interface PollResultUnexpectedError {
   readonly result: PollResultCode.UNEXPECTED_ERROR
   readonly error: unknown
+  reason?: string
 }
 
 export interface PollResultTryNextBlock {
