@@ -285,11 +285,11 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
    * @returns true if the owner authorized the order, false otherwise.
    */
   protected async pollValidate(params: PollParams): Promise<PollResultErrors | undefined> {
-    const { blockInfo = await getBlockInfo(params.provider), owner, chain, provider } = params
+    const { blockInfo = await getBlockInfo(params.provider), owner, chainId, provider } = params
     const { blockTimestamp } = blockInfo
-    const { numberOfParts, timeBetweenParts, durationOfPart } = this.data
+    const { numberOfParts, timeBetweenParts } = this.data
 
-    const startTimestamp = await this.startTimestamp(owner, chain, provider)
+    const startTimestamp = await this.startTimestamp(owner, chainId, provider)
 
     if (startTimestamp > blockTimestamp) {
       // The start time hasn't started

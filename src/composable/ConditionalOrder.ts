@@ -233,8 +233,8 @@ export abstract class ConditionalOrder<D, S> {
    * @returns The tradeable `GPv2Order.Data` struct and the `signature` for the conditional order.
    */
   async poll(params: PollParams): Promise<PollResult> {
-    const { chain, owner, provider } = params
-    const composableCow = getComposableCow(chain, provider)
+    const { chainId, owner, provider } = params
+    const composableCow = getComposableCow(chainId, provider)
 
     try {
       const isValid = this.isValid()
@@ -253,11 +253,11 @@ export abstract class ConditionalOrder<D, S> {
       }
 
       // Check if the owner authorised the order
-      const isAuthorized = await this.isAuthorized(owner, chain, provider)
+      const isAuthorized = await this.isAuthorized(owner, chainId, provider)
       if (!isAuthorized) {
         return {
           result: PollResultCode.DONT_TRY_AGAIN,
-          reason: `NotAuthorised: Order ${this.id} is not authorised for ${owner} on chain ${chain}`,
+          reason: `NotAuthorised: Order ${this.id} is not authorised for ${owner} on chain ${chainId}`,
         }
       }
 
@@ -296,7 +296,7 @@ export abstract class ConditionalOrder<D, S> {
   }
 
   /**
-   * Checks if the owner authorized the conditional order.
+   * Checks the value in the cabinet for a given owner and chain
    *
    * @param owner The owner of the conditional order.
    * @param chain Which chain to use for the ComposableCoW contract.

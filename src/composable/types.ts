@@ -83,11 +83,11 @@ export type ProofWithParams = {
 
 export type PollParams = {
   owner: string
-  chain: SupportedChainId
+  chainId: SupportedChainId
   provider: providers.Provider
 
   /**
-   * If present, it can be used for custom conditional order validations. If not present, the orders will need to get the block info themselves using the provider
+   * If present, it can be used for custom conditional order validations. If not present, the orders will need to get the block info themselves
    */
   blockInfo?: BlockInfo
 }
