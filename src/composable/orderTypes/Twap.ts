@@ -293,7 +293,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
 
     if (startTimestamp <= blockTimestamp) {
       // The start time hasn't started
-      return { result: PollResultCode.TRY_AT_EPOCH, epoch: startTimestamp }
+      return { result: PollResultCode.TRY_AT_EPOCH, epoch: startTimestamp, reason: "TWAP hasn't started yet" }
     }
 
     // TODO: Do not check again expired order
