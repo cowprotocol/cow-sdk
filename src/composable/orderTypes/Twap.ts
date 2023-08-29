@@ -192,8 +192,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
    * @returns An instance of the TWAP order.
    */
   static fromParams(params: ConditionalOrderParams): Twap {
-    const twap = Twap.deserialize(encodeParams(params))
-    return twap
+    return Twap.deserialize(encodeParams(params))
   }
 
   /**
