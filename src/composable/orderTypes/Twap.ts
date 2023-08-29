@@ -291,7 +291,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
 
     const startTimestamp = await this.startTimestamp(owner, chain, provider)
 
-    if (startTimestamp <= blockTimestamp) {
+    if (startTimestamp > blockTimestamp) {
       // The start time hasn't started
       return { result: PollResultCode.TRY_AT_EPOCH, epoch: startTimestamp, reason: "TWAP hasn't started yet" }
     }
