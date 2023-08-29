@@ -11,7 +11,7 @@ import {
   PollResultCode,
   PollResultErrors,
 } from '../types'
-import { encodeParams, getBlockInfo, isValidAbi } from '../utils'
+import { encodeParams, formatEpoc, getBlockInfo, isValidAbi } from '../utils'
 import { SupportedChainId } from '../../common'
 
 // The type of Conditional Order
@@ -287,13 +287,26 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
   protected async pollValidate(params: PollParams): Promise<PollResultErrors | undefined> {
     const { blockInfo = await getBlockInfo(params.provider), owner, chain, provider } = params
     const { blockTimestamp } = blockInfo
-    const {} = this.data
+    const { numberOfParts, timeBetweenParts } = this.data
 
     const startTimestamp = await this.startTimestamp(owner, chain, provider)
 
     if (startTimestamp > blockTimestamp) {
       // The start time hasn't started
-      return { result: PollResultCode.TRY_AT_EPOCH, epoch: startTimestamp, reason: "TWAP hasn't started yet" }
+      return {
+        result: PollResultCode.TRY_AT_EPOCH,
+        epoch: startTimestamp,
+        reason: `TWAP hasn't started yet. Starts at ${startTimestamp} (${formatEpoc(startTimestamp)})`,
+      }
+    }
+
+    const expirationTimestamp = startTimestamp + numberOfParts.mul(timeBetweenParts).toNumber()
+    if (blockTimestamp >= expirationTimestamp) {
+      // The order has expired
+      return {
+        result: PollResultCode.DONT_TRY_AGAIN,
+        reason: `TWAP has expired. Expired at ${expirationTimestamp} (${formatEpoc(expirationTimestamp)})`,
+      }
     }
 
     // TODO: Do not check again expired order

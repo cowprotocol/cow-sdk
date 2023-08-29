@@ -83,3 +83,7 @@ export async function getBlockInfo(provider: providers.Provider): Promise<BlockI
     blockTimestamp: block.timestamp,
   }
 }
+
+export function formatEpoc(epoch: number): string {
+  return new Date(epoch * 1000).toISOString()
+}
