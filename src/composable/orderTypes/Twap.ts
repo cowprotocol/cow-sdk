@@ -7,9 +7,11 @@ import {
   ContextFactory,
   IsNotValid,
   IsValid,
+  PollParams,
+  PollResultCode,
   PollResultErrors,
 } from '../types'
-import { encodeParams, isValidAbi } from '../utils'
+import { encodeParams, getBlockInfo, isValidAbi } from '../utils'
 import { SupportedChainId } from '../../common'
 
 // The type of Conditional Order
@@ -263,6 +265,17 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     return error ? { isValid: false, reason: error } : { isValid: true }
   }
 
+  private async startTimestamp(owner: string, chain: SupportedChainId, provider: providers.Provider): Promise<number> {
+    const { startTime } = this.data
+
+    if (startTime?.startType === StartTimeValue.AT_EPOC) {
+      return startTime.epoch.toNumber()
+    }
+
+    const cabinet = await this.cabinet(owner, chain, provider)
+    return parseInt(cabinet, 16)
+  }
+
   /**
    * Checks if the owner authorized the conditional order.
    *
@@ -271,11 +284,18 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
    * @param provider An RPC provider for the chain.
    * @returns true if the owner authorized the order, false otherwise.
    */
-  protected async pollValidate(
-    _owner: string,
-    _chain: SupportedChainId,
-    _provider: providers.Provider
-  ): Promise<PollResultErrors | undefined> {
+  protected async pollValidate(params: PollParams): Promise<PollResultErrors | undefined> {
+    const { blockInfo = await getBlockInfo(params.provider), owner, chain, provider } = params
+    const { blockTimestamp } = blockInfo
+    const {} = this.data
+
+    const startTimestamp = await this.startTimestamp(owner, chain, provider)
+
+    if (startTimestamp <= blockTimestamp) {
+      // The start time hasn't started
+      return { result: PollResultCode.TRY_AT_EPOCH, epoch: startTimestamp }
+    }
+
     // TODO: Do not check again expired order
     // TODO: Calculate the next part start time, signal to not check again until then
     return undefined

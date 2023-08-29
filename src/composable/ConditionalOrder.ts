@@ -7,6 +7,7 @@ import {
   ConditionalOrderParams,
   ContextFactory,
   IsValidResult,
+  PollParams,
   PollResult,
   PollResultCode,
   PollResultErrors,
@@ -231,7 +232,8 @@ export abstract class ConditionalOrder<D, S> {
    * @throws If the conditional order is not tradeable.
    * @returns The tradeable `GPv2Order.Data` struct and the `signature` for the conditional order.
    */
-  async poll(owner: string, chain: SupportedChainId, provider: providers.Provider): Promise<PollResult> {
+  async poll(params: PollParams): Promise<PollResult> {
+    const { chain, owner, provider } = params
     const composableCow = getComposableCow(chain, provider)
 
     try {
@@ -245,7 +247,7 @@ export abstract class ConditionalOrder<D, S> {
       }
 
       // Let the concrete Conditional Order decide about the poll result
-      const pollResult = await this.pollValidate(owner, chain, provider)
+      const pollResult = await this.pollValidate(params)
       if (pollResult) {
         return pollResult
       }
@@ -294,22 +296,29 @@ export abstract class ConditionalOrder<D, S> {
   }
 
   /**
+   * Checks if the owner authorized the conditional order.
+   *
+   * @param owner The owner of the conditional order.
+   * @param chain Which chain to use for the ComposableCoW contract.
+   * @param provider An RPC provider for the chain.
+   * @returns true if the owner authorized the order, false otherwise.
+   */
+  public cabinet(owner: string, chain: SupportedChainId, provider: providers.Provider): Promise<string> {
+    const composableCow = getComposableCow(chain, provider)
+    return composableCow.callStatic.cabinet(owner, this.id)
+  }
+
+  /**
    * Allow concrete conditional orders to perform additional validation for the poll method.
    *
    * This will allow the concrete orders to decide when an order shouldn't be polled again. For example, if the orders is expired.
    * It also allows to signal when should the next check be done. For example, an order could signal that the validations will fail until a certain time or block.
    *
-   * @param owner The owner of the conditional order.
-   * @param chain Which chain to use for the ComposableCoW contract.
-   * @param provider An RPC provider for the chain.
+   * @param params The poll parameters
    *
    * @returns undefined if the concrete order can't make a decision. Otherwise, it returns a PollResultErrors object.
    */
-  protected abstract pollValidate(
-    owner: string,
-    chain: SupportedChainId,
-    provider: providers.Provider
-  ): Promise<PollResultErrors | undefined>
+  protected abstract pollValidate(params: PollParams): Promise<PollResultErrors | undefined>
 
   /**
    * Convert the struct that the contract expect as an encoded `staticInput` into a friendly data object modeling the smart order.
