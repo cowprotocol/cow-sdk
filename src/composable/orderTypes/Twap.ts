@@ -287,7 +287,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
   protected async pollValidate(params: PollParams): Promise<PollResultErrors | undefined> {
     const { blockInfo = await getBlockInfo(params.provider), owner, chain, provider } = params
     const { blockTimestamp } = blockInfo
-    const { numberOfParts, timeBetweenParts } = this.data
+    const { numberOfParts, timeBetweenParts, durationOfPart } = this.data
 
     const startTimestamp = await this.startTimestamp(owner, chain, provider)
 
@@ -309,8 +309,19 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
       }
     }
 
-    // TODO: Do not check again expired order
-    // TODO: Calculate the next part start time, signal to not check again until then
+    // TODO: Do not check between parts
+    //    - 1. Check whats the order parameters for the current partNumber
+    //    - 2. Derive discrete orderUid
+    //    - 3. Verify if this is already created in the API
+    //    - 4. If so, we know we should return
+    //   return {
+    //     result: PollResultCode.TRY_AT_EPOCH,
+    //     epoch: nextPartStartTime,
+    //     reason: `Current active TWAP part is already created. The next one doesn't start until ${nextPartStartTime} (${formatEpoc(nextPartStartTime)})`,
+    //   }
+    // // Get current part number
+    // const partNumber = Math.floor(blockTimestamp - startTimestamp / timeBetweenParts.toNumber())
+
     return undefined
   }
 
