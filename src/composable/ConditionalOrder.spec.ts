@@ -25,35 +25,60 @@ const TWAP_SERIALIZED = (salt?: string, handler?: string): string => {
   )
 }
 
-describe('ConditionalOrder', () => {
-  test('Create: constructor fails if invalid params', () => {
+describe('Constuctor', () => {
+  test('Create TestConditionalOrder', () => {
     // bad address
     expect(() => new TestConditionalOrder('0xdeadbeef')).toThrow('Invalid handler: 0xdeadbeef')
-    // bad salt
-
-    expect(() => new TestConditionalOrder('0x910d00a310f7Dc5B29FE73458F47f519be547D3d', 'cowtomoon')).toThrow(
-      'Invalid salt: cowtomoon'
-    )
-    expect(() => new TestConditionalOrder('0x910d00a310f7Dc5B29FE73458F47f519be547D3d', '0xdeadbeef')).toThrow(
-      'Invalid salt: 0xdeadbeef'
-    )
-    expect(
-      () =>
-        new TestConditionalOrder(
-          '0x910d00a310f7Dc5B29FE73458F47f519be547D3d',
-          '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
-        )
-    ).toThrow(
-      'Invalid salt: 0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
-    )
   })
 
+  test('Fail if bad address', () => {
+    // bad address
+    expect(() => new TestConditionalOrder('0xdeadbeef')).toThrow('Invalid handler: 0xdeadbeef')
+  })
+
+  describe('Fail if bad salt', () => {
+    test('Fails if salt is not an hex', () => {
+      expect(() => new TestConditionalOrder('0x910d00a310f7Dc5B29FE73458F47f519be547D3d', 'cowtomoon')).toThrow(
+        'Invalid salt: cowtomoon'
+      )
+    })
+
+    test('Fails if salt is too short (not 32 bytes)', () => {
+      expect(() => new TestConditionalOrder('0x910d00a310f7Dc5B29FE73458F47f519be547D3d', '0xdeadbeef')).toThrow(
+        'Invalid salt: 0xdeadbeef'
+      )
+    })
+
+    test('Fails if salt is too long (not 32 bytes)', () => {
+      expect(
+        () =>
+          new TestConditionalOrder(
+            '0x910d00a310f7Dc5B29FE73458F47f519be547D3d',
+            '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
+          )
+      ).toThrow(
+        'Invalid salt: 0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
+      )
+    })
+  })
+})
+describe('Deserialize: Decode static input', () => {
+  test('Fails if handler mismatch', () => {
+    expect(() => Twap.deserialize(TWAP_SERIALIZED(undefined, '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'))).toThrow(
+      'HandlerMismatch'
+    )
+  })
+})
+
+describe('Serialize: Encode static input', () => {
   test('Serialize: Fails if invalid params', () => {
     const order = new TestConditionalOrder('0x910d00a310f7Dc5B29FE73458F47f519be547D3d')
     expect(() => order.testEncodeStaticInput()).toThrow()
   })
+})
 
-  test('id: Returns correct id', () => {
+describe('Compute orderUid', () => {
+  test('Returns correct id', () => {
     const order = new TestConditionalOrder(
       '0x910d00a310f7Dc5B29FE73458F47f519be547D3d',
       '0x9379a0bf532ff9a66ffde940f94b1a025d6f18803054c1aef52dc94b15255bbe'
@@ -61,19 +86,13 @@ describe('ConditionalOrder', () => {
     expect(order.id).toEqual('0x88ca0698d8c5500b31015d84fa0166272e1812320d9af8b60e29ae00153363b3')
   })
 
-  test('leafToId: Returns correct id', () => {
+  test('Derive OrderId from leaf data', () => {
     const order = new TestConditionalOrder(
       '0x910d00a310f7Dc5B29FE73458F47f519be547D3d',
       '0x9379a0bf532ff9a66ffde940f94b1a025d6f18803054c1aef52dc94b15255bbe'
     )
     expect(ConditionalOrder.leafToId(order.leaf)).toEqual(
       '0x88ca0698d8c5500b31015d84fa0166272e1812320d9af8b60e29ae00153363b3'
-    )
-  })
-
-  test('Deserialize: Fails if handler mismatch', () => {
-    expect(() => Twap.deserialize(TWAP_SERIALIZED(undefined, '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'))).toThrow(
-      'HandlerMismatch'
     )
   })
 })
@@ -124,3 +143,5 @@ class TestConditionalOrder extends ConditionalOrder<string, string> {
     throw new Error('Method not implemented.')
   }
 }
+
+describe('Constuctor', () => {})
