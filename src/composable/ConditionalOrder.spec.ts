@@ -143,5 +143,3 @@ class TestConditionalOrder extends ConditionalOrder<string, string> {
     throw new Error('Method not implemented.')
   }
 }
-
-describe('Constuctor', () => {})
