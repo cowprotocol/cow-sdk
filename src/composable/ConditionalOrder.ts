@@ -70,6 +70,7 @@ export abstract class ConditionalOrder<D, S> {
     this.hasOffChainInput = hasOffChainInput
   }
 
+  // TODO: https://github.com/cowprotocol/cow-sdk/issues/155
   abstract get isSingleOrder(): boolean
 
   /**
@@ -153,6 +154,15 @@ export abstract class ConditionalOrder<D, S> {
    */
   get id(): string {
     return utils.keccak256(this.serialize())
+  }
+
+  /**
+   * The context key of the order (bytes32(0) if a merkle tree is used, otherwise H(params)) with which to lookup the cabinet
+   *
+   * The context, relates to the 'ctx' in the contract: https://github.com/cowprotocol/composable-cow/blob/c7fb85ab10c05e28a1632ba97a1749fb261fcdfb/src/interfaces/IConditionalOrder.sol#L38
+   */
+  protected get ctx(): string {
+    return this.isSingleOrder ? this.id : constants.HashZero
   }
 
   /**
@@ -304,10 +314,8 @@ export abstract class ConditionalOrder<D, S> {
   public cabinet(params: OwnerContext): Promise<string> {
     const { chainId, owner, provider } = params
 
-    const slotId = this.isSingleOrder ? this.id : constants.HashZero
-
     const composableCow = getComposableCow(chainId, provider)
-    return composableCow.callStatic.cabinet(owner, slotId)
+    return composableCow.callStatic.cabinet(owner, this.ctx)
   }
 
   /**

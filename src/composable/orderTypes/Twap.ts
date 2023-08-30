@@ -5,9 +5,8 @@ import {
   ConditionalOrderArguments,
   ConditionalOrderParams,
   ContextFactory,
-  IsNotValid,
-  IsValid,
   OwnerContext,
+  IsValidResult,
   PollParams,
   PollResultCode,
   PollResultErrors,
@@ -229,7 +228,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
    * @throws If the TWAP order is invalid.
    * @see {@link TwapStruct} for the native struct.
    */
-  isValid(): IsValid | IsNotValid {
+  isValid(): IsValidResult {
     const error = (() => {
       const {
         sellToken,
