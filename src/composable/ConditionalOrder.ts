@@ -1,4 +1,4 @@
-import { BigNumber, ethers, utils } from 'ethers'
+import { BigNumber, constants, ethers, utils } from 'ethers'
 import { IConditionalOrder } from './generated/ComposableCoW'
 
 import { decodeParams, encodeParams } from './utils'
@@ -304,8 +304,10 @@ export abstract class ConditionalOrder<D, S> {
   public cabinet(params: OwnerContext): Promise<string> {
     const { chainId, owner, provider } = params
 
+    const slotId = this.isSingleOrder ? this.id : constants.HashZero
+
     const composableCow = getComposableCow(chainId, provider)
-    return composableCow.callStatic.cabinet(owner, this.id)
+    return composableCow.callStatic.cabinet(owner, slotId)
   }
 
   /**
