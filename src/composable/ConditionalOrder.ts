@@ -70,6 +70,8 @@ export abstract class ConditionalOrder<D, S> {
     this.hasOffChainInput = hasOffChainInput
   }
 
+  abstract get isSingleOrder(): boolean
+
   /**
    * Get a descriptive name for the type of the conditional order (i.e twap, dca, etc).
    *
@@ -285,9 +287,7 @@ export abstract class ConditionalOrder<D, S> {
   /**
    * Checks if the owner authorized the conditional order.
    *
-   * @param owner The owner of the conditional order.
-   * @param chain Which chain to use for the ComposableCoW contract.
-   * @param provider An RPC provider for the chain.
+   * @param params owner context, to be able to check if the order is authorized
    * @returns true if the owner authorized the order, false otherwise.
    */
   public isAuthorized(params: OwnerContext): Promise<boolean> {
@@ -299,10 +299,7 @@ export abstract class ConditionalOrder<D, S> {
   /**
    * Checks the value in the cabinet for a given owner and chain
    *
-   * @param owner The owner of the conditional order.
-   * @param chain Which chain to use for the ComposableCoW contract.
-   * @param provider An RPC provider for the chain.
-   * @returns true if the owner authorized the order, false otherwise.
+   * @param params owner context, to be able to check the cabinet
    */
   public cabinet(params: OwnerContext): Promise<string> {
     const { chainId, owner, provider } = params

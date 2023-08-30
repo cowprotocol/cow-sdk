@@ -163,6 +163,8 @@ const DEFAULT_DURATION_OF_PART: DurationOfPart = { durationType: DurationType.AU
  * @author mfw78 <mfw78@rndlabs.xyz>
  */
 export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
+  isSingleOrder = true
+
   /**
    * @see {@link ConditionalOrder.constructor}
    * @throws If the TWAP order is invalid.
