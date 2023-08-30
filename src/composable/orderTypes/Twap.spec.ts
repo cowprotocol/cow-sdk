@@ -191,18 +191,18 @@ describe('Serialize', () => {
   })
 })
 
-describe('Deserializes', () => {
-  test('deserialize: Deserializes correctly', () => {
+describe('Deserialize', () => {
+  test('Deserializes correctly', () => {
     const twap = Twap.fromData(TWAP_PARAMS_TEST)
     expect(Twap.deserialize(TWAP_SERIALIZED(twap.salt))).toMatchObject(twap)
   })
 
-  test('deserialize: Throws if invalid', () => {
+  test('Throws if invalid', () => {
     expect(() => Twap.deserialize('0x')).toThrow('InvalidSerializedConditionalOrder')
   })
 })
 
-describe('To Sting', () => {
+describe('To String', () => {
   test('toString: Formats correctly', () => {
     expect(Twap.fromData(TWAP_PARAMS_TEST).toString()).toEqual(
       'twap: Sell total 0x6810e776880C02933D47DB1b9fc05908e5386b96@1000000000000000000 for a minimum of 0xDAE5F1590db13E3B40423B5b5c5fbf175515910b@1000000000000000000 over 10 parts with a spacing of 3600s beginning at time of mining'
