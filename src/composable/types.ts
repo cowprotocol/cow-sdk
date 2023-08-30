@@ -111,7 +111,7 @@ export enum PollResultCode {
   UNEXPECTED_ERROR = 'UNEXPECTED_ERROR',
   TRY_NEXT_BLOCK = 'TRY_NEXT_BLOCK',
   TRY_ON_BLOCK = 'TRY_ON_BLOCK',
-  TRY_AT_EPOCH = 'TRY_AT_DATE',
+  TRY_AT_EPOCH = 'TRY_AT_EPOCH',
   DONT_TRY_AGAIN = 'DONT_TRY_AGAIN',
 }
 export interface PollResultSuccess {

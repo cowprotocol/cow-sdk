@@ -11,7 +11,7 @@ import {
   PollResultCode,
   PollResultErrors,
 } from '../types'
-import { encodeParams, formatEpoc, getBlockInfo, isValidAbi } from '../utils'
+import { encodeParams, formatEpoch, getBlockInfo, isValidAbi } from '../utils'
 import { SupportedChainId } from '../../common'
 
 // The type of Conditional Order
@@ -296,7 +296,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
       return {
         result: PollResultCode.TRY_AT_EPOCH,
         epoch: startTimestamp,
-        reason: `TWAP hasn't started yet. Starts at ${startTimestamp} (${formatEpoc(startTimestamp)})`,
+        reason: `TWAP hasn't started yet. Starts at ${startTimestamp} (${formatEpoch(startTimestamp)})`,
       }
     }
 
@@ -305,7 +305,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
       // The order has expired
       return {
         result: PollResultCode.DONT_TRY_AGAIN,
-        reason: `TWAP has expired. Expired at ${expirationTimestamp} (${formatEpoc(expirationTimestamp)})`,
+        reason: `TWAP has expired. Expired at ${expirationTimestamp} (${formatEpoch(expirationTimestamp)})`,
       }
     }
 
@@ -317,7 +317,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     //   return {
     //     result: PollResultCode.TRY_AT_EPOCH,
     //     epoch: nextPartStartTime,
-    //     reason: `Current active TWAP part is already created. The next one doesn't start until ${nextPartStartTime} (${formatEpoc(nextPartStartTime)})`,
+    //     reason: `Current active TWAP part is already created. The next one doesn't start until ${nextPartStartTime} (${formatEpoch(nextPartStartTime)})`,
     //   }
     // // Get current part number
     // const partNumber = Math.floor(blockTimestamp - startTimestamp / timeBetweenParts.toNumber())
