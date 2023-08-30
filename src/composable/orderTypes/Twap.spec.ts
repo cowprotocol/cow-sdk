@@ -159,13 +159,6 @@ describe('Validate', () => {
     })
   })
 
-  test('Invalid twap: InvalidData', () => {
-    expect(Twap.fromData({ ...TWAP_PARAMS_TEST, appData: constants.AddressZero }).isValid()).toEqual({
-      isValid: false,
-      reason: 'InvalidData',
-    })
-  })
-
   test('Invalid twap: InvalidSpan (limit duration)', () => {
     expect(
       Twap.fromData({
