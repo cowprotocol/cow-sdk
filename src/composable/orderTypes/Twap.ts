@@ -1,4 +1,4 @@
-import { BigNumber, constants } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 
 import { ConditionalOrder } from '../ConditionalOrder'
 import {
@@ -275,6 +275,12 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     }
 
     const cabinet = await this.cabinet(params)
+    const cabinetEpoc = utils.defaultAbiCoder.decode(['uint256'], cabinet)[0]
+
+    if (cabinetEpoc === 0) {
+      throw new Error('Cabinet is not set. Required for TWAP orders that start at mining time.')
+    }
+
     return parseInt(cabinet, 16)
   }
 
