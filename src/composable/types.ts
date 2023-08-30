@@ -81,11 +81,13 @@ export type ProofWithParams = {
   params: ConditionalOrderParams
 }
 
-export type PollParams = {
+export type OwnerContext = {
   owner: string
   chainId: SupportedChainId
   provider: providers.Provider
+}
 
+export type PollParams = OwnerContext & {
   /**
    * If present, it can be used for custom conditional order validations. If not present, the orders will need to get the block info themselves
    */

@@ -1,4 +1,4 @@
-import { BigNumber, ethers, utils, providers } from 'ethers'
+import { BigNumber, ethers, utils } from 'ethers'
 import { IConditionalOrder } from './generated/ComposableCoW'
 
 import { decodeParams, encodeParams } from './utils'
@@ -7,12 +7,12 @@ import {
   ConditionalOrderParams,
   ContextFactory,
   IsValidResult,
+  OwnerContext,
   PollParams,
   PollResult,
   PollResultCode,
   PollResultErrors,
 } from './types'
-import { SupportedChainId } from '../common'
 import { getComposableCow, getComposableCowInterface } from './contracts'
 
 /**
@@ -253,7 +253,7 @@ export abstract class ConditionalOrder<D, S> {
       }
 
       // Check if the owner authorised the order
-      const isAuthorized = await this.isAuthorized(owner, chainId, provider)
+      const isAuthorized = await this.isAuthorized(params)
       if (!isAuthorized) {
         return {
           result: PollResultCode.DONT_TRY_AGAIN,
@@ -290,8 +290,9 @@ export abstract class ConditionalOrder<D, S> {
    * @param provider An RPC provider for the chain.
    * @returns true if the owner authorized the order, false otherwise.
    */
-  public isAuthorized(owner: string, chain: SupportedChainId, provider: providers.Provider): Promise<boolean> {
-    const composableCow = getComposableCow(chain, provider)
+  public isAuthorized(params: OwnerContext): Promise<boolean> {
+    const { chainId, owner, provider } = params
+    const composableCow = getComposableCow(chainId, provider)
     return composableCow.callStatic.singleOrders(owner, this.id)
   }
 
@@ -303,8 +304,10 @@ export abstract class ConditionalOrder<D, S> {
    * @param provider An RPC provider for the chain.
    * @returns true if the owner authorized the order, false otherwise.
    */
-  public cabinet(owner: string, chain: SupportedChainId, provider: providers.Provider): Promise<string> {
-    const composableCow = getComposableCow(chain, provider)
+  public cabinet(params: OwnerContext): Promise<string> {
+    const { chainId, owner, provider } = params
+
+    const composableCow = getComposableCow(chainId, provider)
     return composableCow.callStatic.cabinet(owner, this.id)
   }
 

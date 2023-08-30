@@ -1,4 +1,4 @@
-import { BigNumber, constants, providers } from 'ethers'
+import { BigNumber, constants } from 'ethers'
 
 import { ConditionalOrder } from '../ConditionalOrder'
 import {
@@ -7,12 +7,12 @@ import {
   ContextFactory,
   IsNotValid,
   IsValid,
+  OwnerContext,
   PollParams,
   PollResultCode,
   PollResultErrors,
 } from '../types'
 import { encodeParams, formatEpoch, getBlockInfo, isValidAbi } from '../utils'
-import { SupportedChainId } from '../../common'
 
 // The type of Conditional Order
 const TWAP_ORDER_TYPE = 'twap'
@@ -265,14 +265,14 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     return error ? { isValid: false, reason: error } : { isValid: true }
   }
 
-  private async startTimestamp(owner: string, chain: SupportedChainId, provider: providers.Provider): Promise<number> {
+  private async startTimestamp(params: OwnerContext): Promise<number> {
     const { startTime } = this.data
 
     if (startTime?.startType === StartTimeValue.AT_EPOC) {
       return startTime.epoch.toNumber()
     }
 
-    const cabinet = await this.cabinet(owner, chain, provider)
+    const cabinet = await this.cabinet(params)
     return parseInt(cabinet, 16)
   }
 
@@ -285,11 +285,11 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
    * @returns true if the owner authorized the order, false otherwise.
    */
   protected async pollValidate(params: PollParams): Promise<PollResultErrors | undefined> {
-    const { blockInfo = await getBlockInfo(params.provider), owner, chainId, provider } = params
+    const { blockInfo = await getBlockInfo(params.provider) } = params
     const { blockTimestamp } = blockInfo
     const { numberOfParts, timeBetweenParts } = this.data
 
-    const startTimestamp = await this.startTimestamp(owner, chainId, provider)
+    const startTimestamp = await this.startTimestamp(params)
 
     if (startTimestamp > blockTimestamp) {
       // The start time hasn't started
