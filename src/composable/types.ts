@@ -88,6 +88,9 @@ export type OwnerContext = {
 }
 
 export type PollParams = OwnerContext & {
+  offchainInput: string
+  proof: string[]
+
   /**
    * If present, it can be used for custom conditional order validations. If not present, the orders will need to get the block info themselves
    */
