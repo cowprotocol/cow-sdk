@@ -79,6 +79,8 @@ describe('ConditionalOrder', () => {
 })
 
 class TestConditionalOrder extends ConditionalOrder<string, string> {
+  isSingleOrder = true
+
   constructor(address: string, salt?: string, data = '0x') {
     super({
       handler: address,

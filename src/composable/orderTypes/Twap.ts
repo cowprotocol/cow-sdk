@@ -1,4 +1,4 @@
-import { BigNumber, constants, providers } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 
 import { ConditionalOrder } from '../ConditionalOrder'
 import {
@@ -7,10 +7,12 @@ import {
   ContextFactory,
   IsNotValid,
   IsValid,
+  OwnerContext,
+  PollParams,
+  PollResultCode,
   PollResultErrors,
 } from '../types'
-import { encodeParams, isValidAbi } from '../utils'
-import { SupportedChainId } from '../../common'
+import { encodeParams, formatEpoch, getBlockInfo, isValidAbi } from '../utils'
 
 // The type of Conditional Order
 const TWAP_ORDER_TYPE = 'twap'
@@ -161,6 +163,8 @@ const DEFAULT_DURATION_OF_PART: DurationOfPart = { durationType: DurationType.AU
  * @author mfw78 <mfw78@rndlabs.xyz>
  */
 export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
+  isSingleOrder = true
+
   /**
    * @see {@link ConditionalOrder.constructor}
    * @throws If the TWAP order is invalid.
@@ -263,6 +267,23 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     return error ? { isValid: false, reason: error } : { isValid: true }
   }
 
+  private async startTimestamp(params: OwnerContext): Promise<number> {
+    const { startTime } = this.data
+
+    if (startTime?.startType === StartTimeValue.AT_EPOC) {
+      return startTime.epoch.toNumber()
+    }
+
+    const cabinet = await this.cabinet(params)
+    const cabinetEpoc = utils.defaultAbiCoder.decode(['uint256'], cabinet)[0]
+
+    if (cabinetEpoc === 0) {
+      throw new Error('Cabinet is not set. Required for TWAP orders that start at mining time.')
+    }
+
+    return parseInt(cabinet, 16)
+  }
+
   /**
    * Checks if the owner authorized the conditional order.
    *
@@ -271,13 +292,44 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
    * @param provider An RPC provider for the chain.
    * @returns true if the owner authorized the order, false otherwise.
    */
-  protected async pollValidate(
-    _owner: string,
-    _chain: SupportedChainId,
-    _provider: providers.Provider
-  ): Promise<PollResultErrors | undefined> {
-    // TODO: Do not check again expired order
-    // TODO: Calculate the next part start time, signal to not check again until then
+  protected async pollValidate(params: PollParams): Promise<PollResultErrors | undefined> {
+    const { blockInfo = await getBlockInfo(params.provider) } = params
+    const { blockTimestamp } = blockInfo
+    const { numberOfParts, timeBetweenParts } = this.data
+
+    const startTimestamp = await this.startTimestamp(params)
+
+    if (startTimestamp > blockTimestamp) {
+      // The start time hasn't started
+      return {
+        result: PollResultCode.TRY_AT_EPOCH,
+        epoch: startTimestamp,
+        reason: `TWAP hasn't started yet. Starts at ${startTimestamp} (${formatEpoch(startTimestamp)})`,
+      }
+    }
+
+    const expirationTimestamp = startTimestamp + numberOfParts.mul(timeBetweenParts).toNumber()
+    if (blockTimestamp >= expirationTimestamp) {
+      // The order has expired
+      return {
+        result: PollResultCode.DONT_TRY_AGAIN,
+        reason: `TWAP has expired. Expired at ${expirationTimestamp} (${formatEpoch(expirationTimestamp)})`,
+      }
+    }
+
+    // TODO: Do not check between parts
+    //    - 1. Check whats the order parameters for the current partNumber
+    //    - 2. Derive discrete orderUid
+    //    - 3. Verify if this is already created in the API
+    //    - 4. If so, we know we should return
+    //   return {
+    //     result: PollResultCode.TRY_AT_EPOCH,
+    //     epoch: nextPartStartTime,
+    //     reason: `Current active TWAP part is already created. The next one doesn't start until ${nextPartStartTime} (${formatEpoch(nextPartStartTime)})`,
+    //   }
+    // // Get current part number
+    // const partNumber = Math.floor(blockTimestamp - startTimestamp / timeBetweenParts.toNumber())
+
     return undefined
   }
 

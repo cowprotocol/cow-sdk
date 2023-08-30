@@ -1,4 +1,4 @@
-import { BigNumber, ethers, utils, providers } from 'ethers'
+import { BigNumber, constants, ethers, utils } from 'ethers'
 import { IConditionalOrder } from './generated/ComposableCoW'
 
 import { decodeParams, encodeParams } from './utils'
@@ -7,11 +7,12 @@ import {
   ConditionalOrderParams,
   ContextFactory,
   IsValidResult,
+  OwnerContext,
+  PollParams,
   PollResult,
   PollResultCode,
   PollResultErrors,
 } from './types'
-import { SupportedChainId } from '../common'
 import { getComposableCow, getComposableCowInterface } from './contracts'
 
 /**
@@ -68,6 +69,8 @@ export abstract class ConditionalOrder<D, S> {
 
     this.hasOffChainInput = hasOffChainInput
   }
+
+  abstract get isSingleOrder(): boolean
 
   /**
    * Get a descriptive name for the type of the conditional order (i.e twap, dca, etc).
@@ -231,8 +234,9 @@ export abstract class ConditionalOrder<D, S> {
    * @throws If the conditional order is not tradeable.
    * @returns The tradeable `GPv2Order.Data` struct and the `signature` for the conditional order.
    */
-  async poll(owner: string, chain: SupportedChainId, provider: providers.Provider): Promise<PollResult> {
-    const composableCow = getComposableCow(chain, provider)
+  async poll(params: PollParams): Promise<PollResult> {
+    const { chainId, owner, provider } = params
+    const composableCow = getComposableCow(chainId, provider)
 
     try {
       const isValid = this.isValid()
@@ -245,17 +249,17 @@ export abstract class ConditionalOrder<D, S> {
       }
 
       // Let the concrete Conditional Order decide about the poll result
-      const pollResult = await this.pollValidate(owner, chain, provider)
+      const pollResult = await this.pollValidate(params)
       if (pollResult) {
         return pollResult
       }
 
       // Check if the owner authorised the order
-      const isAuthorized = await this.isAuthorized(owner, chain, provider)
+      const isAuthorized = await this.isAuthorized(params)
       if (!isAuthorized) {
         return {
           result: PollResultCode.DONT_TRY_AGAIN,
-          reason: `NotAuthorised: Order ${this.id} is not authorised for ${owner} on chain ${chain}`,
+          reason: `NotAuthorised: Order ${this.id} is not authorised for ${owner} on chain ${chainId}`,
         }
       }
 
@@ -283,14 +287,27 @@ export abstract class ConditionalOrder<D, S> {
   /**
    * Checks if the owner authorized the conditional order.
    *
-   * @param owner The owner of the conditional order.
-   * @param chain Which chain to use for the ComposableCoW contract.
-   * @param provider An RPC provider for the chain.
+   * @param params owner context, to be able to check if the order is authorized
    * @returns true if the owner authorized the order, false otherwise.
    */
-  public isAuthorized(owner: string, chain: SupportedChainId, provider: providers.Provider): Promise<boolean> {
-    const composableCow = getComposableCow(chain, provider)
+  public isAuthorized(params: OwnerContext): Promise<boolean> {
+    const { chainId, owner, provider } = params
+    const composableCow = getComposableCow(chainId, provider)
     return composableCow.callStatic.singleOrders(owner, this.id)
+  }
+
+  /**
+   * Checks the value in the cabinet for a given owner and chain
+   *
+   * @param params owner context, to be able to check the cabinet
+   */
+  public cabinet(params: OwnerContext): Promise<string> {
+    const { chainId, owner, provider } = params
+
+    const slotId = this.isSingleOrder ? this.id : constants.HashZero
+
+    const composableCow = getComposableCow(chainId, provider)
+    return composableCow.callStatic.cabinet(owner, slotId)
   }
 
   /**
@@ -299,17 +316,11 @@ export abstract class ConditionalOrder<D, S> {
    * This will allow the concrete orders to decide when an order shouldn't be polled again. For example, if the orders is expired.
    * It also allows to signal when should the next check be done. For example, an order could signal that the validations will fail until a certain time or block.
    *
-   * @param owner The owner of the conditional order.
-   * @param chain Which chain to use for the ComposableCoW contract.
-   * @param provider An RPC provider for the chain.
+   * @param params The poll parameters
    *
    * @returns undefined if the concrete order can't make a decision. Otherwise, it returns a PollResultErrors object.
    */
-  protected abstract pollValidate(
-    owner: string,
-    chain: SupportedChainId,
-    provider: providers.Provider
-  ): Promise<PollResultErrors | undefined>
+  protected abstract pollValidate(params: PollParams): Promise<PollResultErrors | undefined>
 
   /**
    * Convert the struct that the contract expect as an encoded `staticInput` into a friendly data object modeling the smart order.
