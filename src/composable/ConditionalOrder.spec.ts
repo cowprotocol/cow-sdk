@@ -186,7 +186,7 @@ describe('Poll Single Orders', () => {
   })
 
   test.only('[SUCCESS] Happy path', async () => {
-    // GIVEN: An order that is authorized
+    // GIVEN: An order that is authorised
     mockSingleOrders.mockReturnValue(true)
 
     // GIVEN: And a getTradeableOrderWithSignature that doesn't revert
@@ -194,8 +194,6 @@ describe('Poll Single Orders', () => {
 
     // When we poll
     const pollResult = await SINGLE_ORDER.poll(param)
-
-    // expect(SINGLE_ORDER.cabinet(param)).toEqual(cabinetValue)
 
     // THEN: we expect a CALL to getTradeableOrderWithSignature with the owner, params, off-chain input, and no-proof
     expect(mockGetTradeableOrderWithSignature.mock.calls).toHaveLength(1)
@@ -215,8 +213,8 @@ describe('Poll Single Orders', () => {
     })
   })
 
-  test.only('[SUCCESS] Not authorized', async () => {
-    // GIVEN: An order that is authorized
+  test.only('[DONT_TRY_AGAIN] Not authorised', async () => {
+    // GIVEN: An order that is authorised
     mockSingleOrders.mockReturnValue(false)
 
     // GIVEN: And a getTradeableOrderWithSignature that doesn't revert
@@ -230,7 +228,7 @@ describe('Poll Single Orders', () => {
     expect(pollResult).toEqual({
       result: PollResultCode.DONT_TRY_AGAIN,
       reason:
-        'NotAuthorized: Order 0x88ca0698d8c5500b31015d84fa0166272e1812320d9af8b60e29ae00153363b3 is not authorized for 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 on chain 1',
+        'NotAuthorised: Order 0x88ca0698d8c5500b31015d84fa0166272e1812320d9af8b60e29ae00153363b3 is not authorised for 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 on chain 1',
     })
   })
 })

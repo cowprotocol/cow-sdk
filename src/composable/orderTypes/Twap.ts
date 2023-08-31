@@ -284,12 +284,12 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
   }
 
   /**
-   * Checks if the owner authorized the conditional order.
+   * Checks if the owner authorised the conditional order.
    *
    * @param owner The owner of the conditional order.
    * @param chain Which chain to use for the ComposableCoW contract.
    * @param provider An RPC provider for the chain.
-   * @returns true if the owner authorized the order, false otherwise.
+   * @returns true if the owner authorised the order, false otherwise.
    */
   protected async pollValidate(params: PollParams): Promise<PollResultErrors | undefined> {
     const { blockInfo = await getBlockInfo(params.provider) } = params
