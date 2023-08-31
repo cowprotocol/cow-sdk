@@ -223,7 +223,7 @@ describe('Poll Single Orders', () => {
     // When we poll
     const pollResult = await SINGLE_ORDER.poll(param)
 
-    // THEN: We expect a SUCCESS result, which returns the order and the signature
+    // THEN: We expect an error. We shouldn't try again
     pollResult.result === PollResultCode.UNEXPECTED_ERROR && console.error(pollResult.error)
     expect(pollResult).toEqual({
       result: PollResultCode.DONT_TRY_AGAIN,
