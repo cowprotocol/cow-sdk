@@ -145,10 +145,10 @@ export interface PollResultTryOnBlock {
 export interface PollResultTryAtEpoch {
   readonly result: PollResultCode.TRY_AT_EPOCH
   /**
-   * The epoch after which it is ok to re-try to to poll this order.
+   * The epoch after which it is ok to retry to to poll this order.
    * The value is expressed as a Unix timestamp (in seconds).
    *
-   * This epoch will be inclusive, meaning that it is ok to re-try at the block mined pricesely at this epoch or later.
+   * This epoch will be inclusive, meaning that it is ok to retry at the block mined precisely at this epoch or later.
    */
   readonly epoch: number
   reason?: string
