@@ -84,6 +84,12 @@
     ],
     "coveragePathIgnorePatterns": [
       "src/composable/generated"
+    ],
+    "moduleDirectories": [
+      "node_modules"
+    ],
+    "modulePaths": [
+      "<rootDir>/"
     ]
   },
   "keywords": [
