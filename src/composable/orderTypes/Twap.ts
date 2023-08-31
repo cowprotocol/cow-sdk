@@ -36,8 +36,8 @@ const DEFAULT_TOKEN_FORMATTER = (address: string, amount: BigNumber) => `${addre
 
 /**
  * Base parameters for a TWAP order. Shared by:
- *   - TwapStruct (modeling the contract's struct used for `staticInput`).
- *   - TwapData (modeling the friendly SDK interface).
+ *   - TwapStruct (modelling the contract's struct used for `staticInput`).
+ *   - TwapData (modelling the friendly SDK interface).
  */
 export type TwapDataBase = {
   /**
@@ -147,11 +147,11 @@ export enum DurationType {
 
 export type StartTime =
   | { startType: StartTimeValue.AT_MINING_TIME }
-  | { startType: StartTimeValue.AT_EPOC; epoch: BigNumber }
+  | { startType: StartTimeValue.AT_EPOCH; epoch: BigNumber }
 
 export enum StartTimeValue {
   AT_MINING_TIME = 'AT_MINING_TIME',
-  AT_EPOC = 'AT_EPOC',
+  AT_EPOCH = 'AT_EPOCH',
 }
 
 const DEFAULT_START_TIME: StartTime = { startType: StartTimeValue.AT_MINING_TIME }
@@ -246,7 +246,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
       if (!(sellToken != constants.AddressZero && buyToken != constants.AddressZero)) return 'InvalidToken'
       if (!sellAmount.gt(constants.Zero)) return 'InvalidSellAmount'
       if (!buyAmount.gt(constants.Zero)) return 'InvalidMinBuyAmount'
-      if (startTime.startType === StartTimeValue.AT_EPOC) {
+      if (startTime.startType === StartTimeValue.AT_EPOCH) {
         const t0 = startTime.epoch
         if (!(t0.gte(constants.Zero) && t0.lt(MAX_UINT32))) return 'InvalidStartTime'
       }
@@ -269,14 +269,14 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
   private async startTimestamp(params: OwnerContext): Promise<number> {
     const { startTime } = this.data
 
-    if (startTime?.startType === StartTimeValue.AT_EPOC) {
+    if (startTime?.startType === StartTimeValue.AT_EPOCH) {
       return startTime.epoch.toNumber()
     }
 
     const cabinet = await this.cabinet(params)
-    const cabinetEpoc = utils.defaultAbiCoder.decode(['uint256'], cabinet)[0]
+    const cabinetEpoch = utils.defaultAbiCoder.decode(['uint256'], cabinet)[0]
 
-    if (cabinetEpoc === 0) {
+    if (cabinetEpoch === 0) {
       throw new Error('Cabinet is not set. Required for TWAP orders that start at mining time.')
     }
 
@@ -284,12 +284,12 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
   }
 
   /**
-   * Checks if the owner authorized the conditional order.
+   * Checks if the owner authorised the conditional order.
    *
    * @param owner The owner of the conditional order.
    * @param chain Which chain to use for the ComposableCoW contract.
    * @param provider An RPC provider for the chain.
-   * @returns true if the owner authorized the order, false otherwise.
+   * @returns true if the owner authorised the order, false otherwise.
    */
   protected async pollValidate(params: PollParams): Promise<PollResultErrors | undefined> {
     const { blockInfo = await getBlockInfo(params.provider) } = params
@@ -469,7 +469,7 @@ export function transformStructToData(struct: TwapStruct): TwapData {
 
   const startTime: StartTime = span.isZero()
     ? { startType: StartTimeValue.AT_MINING_TIME }
-    : { startType: StartTimeValue.AT_EPOC, epoch: startEpoch }
+    : { startType: StartTimeValue.AT_EPOCH, epoch: startEpoch }
 
   return {
     sellAmount: partSellAmount.mul(numberOfParts),

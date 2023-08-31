@@ -3,21 +3,21 @@ import { COMPOSABLE_COW_CONTRACT_ADDRESS, SupportedChainId } from '../common'
 import { ComposableCoW, ComposableCoW__factory } from './generated'
 import { ComposableCoWInterface } from './generated/ComposableCoW'
 
-let iCcomposableCow: ComposableCoWInterface | undefined
-let composableCow: ComposableCoW | undefined
+let composableCowInterfaceCache: ComposableCoWInterface | undefined
+let composableCowContractCache: ComposableCoW | undefined
 
 export function getComposableCowInterface(): ComposableCoWInterface {
-  if (!iCcomposableCow) {
-    iCcomposableCow = ComposableCoW__factory.createInterface()
+  if (!composableCowInterfaceCache) {
+    composableCowInterfaceCache = ComposableCoW__factory.createInterface()
   }
 
-  return iCcomposableCow
+  return composableCowInterfaceCache
 }
 
 export function getComposableCow(chain: SupportedChainId, provider: providers.Provider) {
-  if (!composableCow) {
-    composableCow = ComposableCoW__factory.connect(COMPOSABLE_COW_CONTRACT_ADDRESS[chain], provider)
+  if (!composableCowContractCache) {
+    composableCowContractCache = ComposableCoW__factory.connect(COMPOSABLE_COW_CONTRACT_ADDRESS[chain], provider)
   }
 
-  return composableCow
+  return composableCowContractCache
 }

@@ -87,7 +87,7 @@ describe('Twap.fromData', () => {
   test('Creates valid TWAP: Start at epoch', () => {
     const twap = Twap.fromData({
       ...TWAP_PARAMS_TEST,
-      startTime: { startType: StartTimeValue.AT_EPOC, epoch: BigNumber.from(1) },
+      startTime: { startType: StartTimeValue.AT_EPOCH, epoch: BigNumber.from(1) },
     })
     expect(twap.context).toBeUndefined()
   })
@@ -137,7 +137,7 @@ describe('Validate', () => {
     expect(
       Twap.fromData({
         ...TWAP_PARAMS_TEST,
-        startTime: { startType: StartTimeValue.AT_EPOC, epoch: BigNumber.from(-1) },
+        startTime: { startType: StartTimeValue.AT_EPOCH, epoch: BigNumber.from(-1) },
       }).isValid()
     ).toEqual({
       isValid: false,
@@ -211,7 +211,7 @@ describe('To String', () => {
     expect(
       Twap.fromData({
         ...TWAP_PARAMS_TEST,
-        startTime: { startType: StartTimeValue.AT_EPOC, epoch: startEpoch },
+        startTime: { startType: StartTimeValue.AT_EPOCH, epoch: startEpoch },
       }).toString()
     ).toEqual(
       'twap: Sell total 0x6810e776880C02933D47DB1b9fc05908e5386b96@1000000000000000000 for a minimum of 0xDAE5F1590db13E3B40423B5b5c5fbf175515910b@1000000000000000000 over 10 parts with a spacing of 3600s beginning at epoch 1692876646'

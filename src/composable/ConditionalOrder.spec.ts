@@ -25,7 +25,7 @@ const TWAP_SERIALIZED = (salt?: string, handler?: string): string => {
   )
 }
 
-describe('Constuctor', () => {
+describe('Constructor', () => {
   test('Create TestConditionalOrder', () => {
     // bad address
     expect(() => new TestConditionalOrder('0xdeadbeef')).toThrow('Invalid handler: 0xdeadbeef')

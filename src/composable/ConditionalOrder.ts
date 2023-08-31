@@ -295,10 +295,10 @@ export abstract class ConditionalOrder<D, S> {
   }
 
   /**
-   * Checks if the owner authorized the conditional order.
+   * Checks if the owner authorised the conditional order.
    *
-   * @param params owner context, to be able to check if the order is authorized
-   * @returns true if the owner authorized the order, false otherwise.
+   * @param params owner context, to be able to check if the order is authorised
+   * @returns true if the owner authorised the order, false otherwise.
    */
   public isAuthorized(params: OwnerContext): Promise<boolean> {
     const { chainId, owner, provider } = params
@@ -331,7 +331,7 @@ export abstract class ConditionalOrder<D, S> {
   protected abstract pollValidate(params: PollParams): Promise<PollResultErrors | undefined>
 
   /**
-   * Convert the struct that the contract expect as an encoded `staticInput` into a friendly data object modeling the smart order.
+   * Convert the struct that the contract expect as an encoded `staticInput` into a friendly data object modelling the smart order.
    *
    * **NOTE**: This should be overridden by any conditional order that requires transformations.
    * This implementation is a no-op if you use the same type for both.
@@ -342,7 +342,7 @@ export abstract class ConditionalOrder<D, S> {
   abstract transformStructToData(params: S): D
 
   /**
-   * Converts a friendly data object modeling the smart order into the struct that the contract expect as an encoded `staticInput`.
+   * Converts a friendly data object modelling the smart order into the struct that the contract expect as an encoded `staticInput`.
    *
    * **NOTE**: This should be overridden by any conditional order that requires transformations.
    * This implementation is a no-op if you use the same type for both.
