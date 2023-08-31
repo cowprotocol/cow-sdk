@@ -1,7 +1,12 @@
+import { TestConditionalOrder } from './orderTypes/test/TestConditionalOrder'
 import { ConditionalOrder } from './ConditionalOrder'
-import { IsValidResult, PollResultErrors } from './types'
 import { Twap } from './orderTypes/Twap'
-import { encodeParams } from './utils'
+
+import { getComposableCow } from './contracts'
+import { constants } from 'ethers'
+
+jest.mock('./contracts')
+const mockGetComposableCow = getComposableCow as jest.MockedFunction<typeof getComposableCow>
 
 const TWAP_SERIALIZED = (salt?: string, handler?: string): string => {
   return (
@@ -24,6 +29,20 @@ const TWAP_SERIALIZED = (salt?: string, handler?: string): string => {
     'd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5'
   )
 }
+
+const SINGLE_ORDER = new TestConditionalOrder(
+  '0x910d00a310f7Dc5B29FE73458F47f519be547D3d',
+  '0x9379a0bf532ff9a66ffde940f94b1a025d6f18803054c1aef52dc94b15255bbe',
+  '0x',
+  true
+)
+
+const MERKLE_ROOT_ORDER = new TestConditionalOrder(
+  '0x910d00a310f7Dc5B29FE73458F47f519be547D3d',
+  '0x9379a0bf532ff9a66ffde940f94b1a025d6f18803054c1aef52dc94b15255bbe',
+  '0x',
+  false
+)
 
 describe('Constructor', () => {
   test('Create TestConditionalOrder', () => {
@@ -79,11 +98,7 @@ describe('Serialize: Encode static input', () => {
 
 describe('Compute orderUid', () => {
   test('Returns correct id', () => {
-    const order = new TestConditionalOrder(
-      '0x910d00a310f7Dc5B29FE73458F47f519be547D3d',
-      '0x9379a0bf532ff9a66ffde940f94b1a025d6f18803054c1aef52dc94b15255bbe'
-    )
-    expect(order.id).toEqual('0x88ca0698d8c5500b31015d84fa0166272e1812320d9af8b60e29ae00153363b3')
+    expect(SINGLE_ORDER.id).toEqual('0x88ca0698d8c5500b31015d84fa0166272e1812320d9af8b60e29ae00153363b3')
   })
 
   test('Derive OrderId from leaf data', () => {
@@ -97,49 +112,47 @@ describe('Compute orderUid', () => {
   })
 })
 
-class TestConditionalOrder extends ConditionalOrder<string, string> {
-  isSingleOrder = true
+describe('cabinet', () => {
+  const owner = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+  const cabinetValue = '000000000000000000000000000000000000000000000000000000064f0b353'
+  const mockCabinet = jest.fn()
+  const param = { owner } as any
+  beforeEach(() => {
+    jest.resetAllMocks()
 
-  constructor(address: string, salt?: string, data = '0x') {
-    super({
-      handler: address,
-      salt,
-      data,
-    })
-  }
+    mockGetComposableCow.mockReturnValue({
+      callStatic: {
+        cabinet: mockCabinet,
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
 
-  get orderType(): string {
-    return 'TEST'
-  }
+    mockCabinet.mockReturnValue(cabinetValue)
+  })
 
-  encodeStaticInput(): string {
-    return this.staticInput
-  }
+  test('Single orders call the contract with order id as the ctx', () => {
+    // GIVEN: a conditional order
+    // WHEN: we call cabinet
+    expect(SINGLE_ORDER.cabinet(param)).toEqual(cabinetValue)
 
-  testEncodeStaticInput(): string {
-    return super.encodeStaticInputHelper(['uint256'], this.staticInput)
-  }
+    // THEN: we expect to do a CALL using the ComposableCoW contract passing the UID of the order
+    expect(mockGetComposableCow).toHaveBeenCalledTimes(1)
+    expect(mockCabinet.mock.calls).toHaveLength(1)
 
-  transformStructToData(params: string): string {
-    return params
-  }
+    // THEN: we expect the params to be the owner and the order id
+    expect(mockCabinet.mock.calls[0]).toEqual([owner, SINGLE_ORDER.id])
+  })
 
-  transformDataToStruct(params: string): string {
-    return params
-  }
+  test('Merkle Root orders call the contract with the 0x0 as the ctx', () => {
+    // GIVEN: a merkle root order
+    // WHEN: we call cabinet
+    expect(MERKLE_ROOT_ORDER.cabinet(param)).toEqual(cabinetValue)
 
-  protected pollValidate(): Promise<PollResultErrors | undefined> {
-    throw new Error('Method not implemented.')
-  }
+    // THEN: we expect to do a CALL using the ComposableCoW contract
+    expect(mockGetComposableCow).toHaveBeenCalledTimes(1)
+    expect(mockCabinet.mock.calls).toHaveLength(1)
 
-  isValid(): IsValidResult {
-    throw new Error('Method not implemented.')
-  }
-  serialize(): string {
-    return encodeParams(this.leaf)
-  }
-
-  toString(): string {
-    throw new Error('Method not implemented.')
-  }
-}
+    // THEN: we expect the params to be the owner and 0x0
+    expect(mockCabinet.mock.calls[0]).toEqual([owner, constants.HashZero])
+  })
+})
