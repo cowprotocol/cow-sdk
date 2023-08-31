@@ -342,7 +342,7 @@ export class Multiplexer {
     chain: SupportedChainId,
     provider: providers.Provider,
     offChainInputFn?: (owner: string, params: ConditionalOrderParams) => Promise<string>
-  ): Promise<[GPv2Order.DataStructOutput, string]> {
+  ): Promise<[GPv2Order.DataStruct, string]> {
     const composableCow = getComposableCow(chain, provider)
 
     const offChainInput = offChainInputFn ? await offChainInputFn(owner, p.params) : '0x'

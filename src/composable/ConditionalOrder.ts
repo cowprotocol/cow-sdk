@@ -264,12 +264,12 @@ export abstract class ConditionalOrder<D, S> {
         return pollResult
       }
 
-      // Check if the owner authorised the order
+      // Check if the owner authorized the order
       const isAuthorized = await this.isAuthorized(params)
       if (!isAuthorized) {
         return {
           result: PollResultCode.DONT_TRY_AGAIN,
-          reason: `NotAuthorised: Order ${this.id} is not authorised for ${owner} on chain ${chainId}`,
+          reason: `NotAuthorized: Order ${this.id} is not authorized for ${owner} on chain ${chainId}`,
         }
       }
 
@@ -295,10 +295,10 @@ export abstract class ConditionalOrder<D, S> {
   }
 
   /**
-   * Checks if the owner authorised the conditional order.
+   * Checks if the owner authorized the conditional order.
    *
-   * @param params owner context, to be able to check if the order is authorised
-   * @returns true if the owner authorised the order, false otherwise.
+   * @param params owner context, to be able to check if the order is authorized
+   * @returns true if the owner authorized the order, false otherwise.
    */
   public isAuthorized(params: OwnerContext): Promise<boolean> {
     const { chainId, owner, provider } = params
