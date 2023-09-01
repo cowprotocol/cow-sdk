@@ -205,7 +205,6 @@ describe('Poll Single Orders', () => {
     ])
 
     // THEN: We expect a SUCCESS result, which returns the order and the signature
-    pollResult.result === PollResultCode.UNEXPECTED_ERROR && console.error(pollResult.error)
     expect(pollResult).toEqual({
       result: PollResultCode.SUCCESS,
       order: DISCRETE_ORDER,
