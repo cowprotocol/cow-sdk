@@ -14,7 +14,7 @@ export function getComposableCowInterface(): ComposableCoWInterface {
   return composableCowInterfaceCache
 }
 
-export function getComposableCow(chain: SupportedChainId, provider: providers.Provider) {
+export function getComposableCow(chain: SupportedChainId, provider: providers.Provider): ComposableCoW {
   if (!composableCowContractCache) {
     composableCowContractCache = ComposableCoW__factory.connect(COMPOSABLE_COW_CONTRACT_ADDRESS[chain], provider)
   }
