@@ -192,7 +192,7 @@ describe('Poll Single Orders', () => {
     // GIVEN: And a getTradeableOrderWithSignature that doesn't revert
     mockGetTradeableOrderWithSignature.mockReturnValue([DISCRETE_ORDER, signature])
 
-    // When we poll
+    // WHEN: we poll
     const pollResult = await SINGLE_ORDER.poll(param)
 
     // THEN: we expect a CALL to getTradeableOrderWithSignature with the owner, params, off-chain input, and no-proof
@@ -214,13 +214,13 @@ describe('Poll Single Orders', () => {
   })
 
   test.only('[DONT_TRY_AGAIN] Not authorised', async () => {
-    // GIVEN: An order that is authorised
+    // GIVEN: An order that is not authorised
     mockSingleOrders.mockReturnValue(false)
 
     // GIVEN: And a getTradeableOrderWithSignature that doesn't revert
     mockGetTradeableOrderWithSignature.mockReturnValue([DISCRETE_ORDER, signature])
 
-    // When we poll
+    // WHEN: we poll
     const pollResult = await SINGLE_ORDER.poll(param)
 
     // THEN: We expect an error. We shouldn't try again
