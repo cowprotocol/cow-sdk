@@ -265,8 +265,8 @@ export abstract class ConditionalOrder<D, S> {
       }
 
       // Check if the owner authorised the order
-      const isAuthorized = await this.isAuthorized(params)
-      if (!isAuthorized) {
+      const isAuthorised = await this.isAuthorised(params)
+      if (!isAuthorised) {
         return {
           result: PollResultCode.DONT_TRY_AGAIN,
           reason: `NotAuthorised: Order ${this.id} is not authorised for ${owner} on chain ${chainId}`,
@@ -300,7 +300,7 @@ export abstract class ConditionalOrder<D, S> {
    * @param params owner context, to be able to check if the order is authorised
    * @returns true if the owner authorised the order, false otherwise.
    */
-  public isAuthorized(params: OwnerContext): Promise<boolean> {
+  public isAuthorised(params: OwnerContext): Promise<boolean> {
     const { chainId, owner, provider } = params
     const composableCow = getComposableCow(chainId, provider)
     return composableCow.callStatic.singleOrders(owner, this.id)

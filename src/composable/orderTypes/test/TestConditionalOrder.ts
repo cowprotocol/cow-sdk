@@ -34,12 +34,12 @@ export class TestConditionalOrder extends ConditionalOrder<string, string> {
     return params
   }
 
-  protected pollValidate(): Promise<PollResultErrors | undefined> {
-    throw new Error('Method not implemented.')
+  protected async pollValidate(): Promise<PollResultErrors | undefined> {
+    return undefined
   }
 
   isValid(): IsValidResult {
-    throw new Error('Method not implemented.')
+    return { isValid: true }
   }
   serialize(): string {
     return encodeParams(this.leaf)

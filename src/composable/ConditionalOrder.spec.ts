@@ -4,6 +4,8 @@ import { Twap } from './orderTypes/Twap'
 
 import { getComposableCow } from './contracts'
 import { constants } from 'ethers'
+import { OwnerContext, PollParams, PollResultCode } from './types'
+import { BuyTokenDestination, OrderKind, SellTokenSource } from '../order-book/generated'
 
 jest.mock('./contracts')
 const mockGetComposableCow = getComposableCow as jest.MockedFunction<typeof getComposableCow>
@@ -30,19 +32,32 @@ const TWAP_SERIALIZED = (salt?: string, handler?: string): string => {
   )
 }
 
-const SINGLE_ORDER = new TestConditionalOrder(
-  '0x910d00a310f7Dc5B29FE73458F47f519be547D3d',
-  '0x9379a0bf532ff9a66ffde940f94b1a025d6f18803054c1aef52dc94b15255bbe',
-  '0x',
-  true
-)
+const createOrder = (isSingleOrder = true) =>
+  new TestConditionalOrder(
+    '0x910d00a310f7Dc5B29FE73458F47f519be547D3d',
+    '0x9379a0bf532ff9a66ffde940f94b1a025d6f18803054c1aef52dc94b15255bbe',
+    '0x',
+    isSingleOrder
+  )
 
-const MERKLE_ROOT_ORDER = new TestConditionalOrder(
-  '0x910d00a310f7Dc5B29FE73458F47f519be547D3d',
-  '0x9379a0bf532ff9a66ffde940f94b1a025d6f18803054c1aef52dc94b15255bbe',
-  '0x',
-  false
-)
+const OWNER = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+const SINGLE_ORDER = createOrder()
+const MERKLE_ROOT_ORDER = createOrder(false)
+const DISCRETE_ORDER = {
+  sellToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+  buyToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+  receiver: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+  sellAmount: '1234567890',
+  buyAmount: '1234567890',
+  validTo: 0,
+  appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
+  partiallyFillable: true,
+  sellTokenBalance: SellTokenSource.ERC20,
+  buyTokenBalance: BuyTokenDestination.ERC20,
+  from: '0x6810e776880c02933d47db1b9fc05908e5386b96',
+  kind: OrderKind.BUY,
+  class: 'market',
+}
 
 describe('Constructor', () => {
   test('Create TestConditionalOrder', () => {
@@ -102,21 +117,16 @@ describe('Compute orderUid', () => {
   })
 
   test('Derive OrderId from leaf data', () => {
-    const order = new TestConditionalOrder(
-      '0x910d00a310f7Dc5B29FE73458F47f519be547D3d',
-      '0x9379a0bf532ff9a66ffde940f94b1a025d6f18803054c1aef52dc94b15255bbe'
-    )
-    expect(ConditionalOrder.leafToId(order.leaf)).toEqual(
+    expect(ConditionalOrder.leafToId(SINGLE_ORDER.leaf)).toEqual(
       '0x88ca0698d8c5500b31015d84fa0166272e1812320d9af8b60e29ae00153363b3'
     )
   })
 })
 
-describe('cabinet', () => {
-  const owner = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+describe('Cabinet', () => {
   const cabinetValue = '000000000000000000000000000000000000000000000000000000064f0b353'
   const mockCabinet = jest.fn()
-  const param = { owner } as any
+  const param = { owner: OWNER } as OwnerContext
   beforeEach(() => {
     jest.resetAllMocks()
 
@@ -140,7 +150,7 @@ describe('cabinet', () => {
     expect(mockCabinet.mock.calls).toHaveLength(1)
 
     // THEN: we expect the params to be the owner and the order id
-    expect(mockCabinet.mock.calls[0]).toEqual([owner, SINGLE_ORDER.id])
+    expect(mockCabinet.mock.calls[0]).toEqual([OWNER, SINGLE_ORDER.id])
   })
 
   test('Merkle Root orders call the contract with the 0x0 as the ctx', () => {
@@ -153,6 +163,71 @@ describe('cabinet', () => {
     expect(mockCabinet.mock.calls).toHaveLength(1)
 
     // THEN: we expect the params to be the owner and 0x0
-    expect(mockCabinet.mock.calls[0]).toEqual([owner, constants.HashZero])
+    expect(mockCabinet.mock.calls[0]).toEqual([OWNER, constants.HashZero])
+  })
+})
+
+describe('Poll Single Orders', () => {
+  const mockSingleOrders = jest.fn()
+  const mockGetTradeableOrderWithSignature = jest.fn()
+  const param = { owner: OWNER, chainId: 1, provider: {} } as PollParams
+
+  const signature = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+  beforeEach(() => {
+    jest.resetAllMocks()
+
+    mockGetComposableCow.mockReturnValue({
+      callStatic: {
+        singleOrders: mockSingleOrders,
+      },
+      getTradeableOrderWithSignature: mockGetTradeableOrderWithSignature,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
+  })
+
+  test.only('[SUCCESS] Happy path', async () => {
+    // GIVEN: An order that is authorised
+    mockSingleOrders.mockReturnValue(true)
+
+    // GIVEN: And a getTradeableOrderWithSignature that doesn't revert
+    mockGetTradeableOrderWithSignature.mockReturnValue([DISCRETE_ORDER, signature])
+
+    // WHEN: we poll
+    const pollResult = await SINGLE_ORDER.poll(param)
+
+    // THEN: we expect a CALL to getTradeableOrderWithSignature with the owner, params, off-chain input, and no-proof
+    expect(mockGetTradeableOrderWithSignature.mock.calls).toHaveLength(1)
+    expect(mockGetTradeableOrderWithSignature.mock.calls[0]).toEqual([
+      OWNER,
+      SINGLE_ORDER.leaf,
+      SINGLE_ORDER.offChainInput,
+      [],
+    ])
+
+    // THEN: We expect a SUCCESS result, which returns the order and the signature
+    expect(pollResult).toEqual({
+      result: PollResultCode.SUCCESS,
+      order: DISCRETE_ORDER,
+      signature,
+    })
+  })
+
+  test.only('[DONT_TRY_AGAIN] Not authorised', async () => {
+    // GIVEN: An order that is not authorised
+    mockSingleOrders.mockReturnValue(false)
+
+    // GIVEN: And a getTradeableOrderWithSignature that doesn't revert
+    mockGetTradeableOrderWithSignature.mockReturnValue([DISCRETE_ORDER, signature])
+
+    // WHEN: we poll
+    const pollResult = await SINGLE_ORDER.poll(param)
+
+    // THEN: We expect an error. We shouldn't try again
+    pollResult.result === PollResultCode.UNEXPECTED_ERROR && console.error(pollResult.error)
+    expect(pollResult).toEqual({
+      result: PollResultCode.DONT_TRY_AGAIN,
+      reason:
+        'NotAuthorised: Order 0x88ca0698d8c5500b31015d84fa0166272e1812320d9af8b60e29ae00153363b3 is not authorised for 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 on chain 1',
+    })
   })
 })

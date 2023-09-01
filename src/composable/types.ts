@@ -88,8 +88,8 @@ export type OwnerContext = {
 }
 
 export type PollParams = OwnerContext & {
-  offchainInput: string
-  proof: string[]
+  offchainInput?: string
+  proof?: string[]
 
   /**
    * If present, it can be used for custom conditional order validations. If not present, the orders will need to get the block info themselves
@@ -121,7 +121,7 @@ export enum PollResultCode {
 }
 export interface PollResultSuccess {
   readonly result: PollResultCode.SUCCESS
-  readonly order: GPv2Order.DataStructOutput
+  readonly order: GPv2Order.DataStruct
   readonly signature: string
 }
 
