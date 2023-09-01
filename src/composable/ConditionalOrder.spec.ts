@@ -253,4 +253,30 @@ describe('Poll Single Orders', () => {
       reason: 'InvalidConditionalOrder. Reason: ' + validationError,
     })
   })
+
+  test('[UNEXPECTED_ERROR] getTradeableOrderWithSignature throws an error', async () => {
+    // GIVEN: getTradeableOrderWithSignature throws
+    const error = new Error(`I'm sorry, but is not a good time to trade`)
+    mockGetTradeableOrderWithSignature.mockImplementation(() => {
+      throw error
+    })
+
+    // GIVEN: Every validation is OK (auth + contract returns an order + order is valid)
+    const order = createOrder()
+    const mockIsValid = jest.fn(order.isValid).mockReturnValue({ isValid: true })
+    order.isValid = mockIsValid
+    mockSingleOrders.mockReturnValue(true)
+
+    // WHEN: we poll
+    const pollResult = await order.poll(param)
+
+    // THEN: we expect no CALLs to the
+    expect(mockGetTradeableOrderWithSignature).toBeCalledTimes(1)
+
+    // THEN: We expect a SUCCESS result, which returns the order and the signature
+    expect(pollResult).toEqual({
+      result: PollResultCode.UNEXPECTED_ERROR,
+      error,
+    })
+  })
 })
