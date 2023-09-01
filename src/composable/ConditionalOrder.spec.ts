@@ -1,10 +1,14 @@
-import { TestConditionalOrder } from './orderTypes/test/TestConditionalOrder'
+import {
+  DEFAULT_ORDER_PARAMS,
+  TestConditionalOrder,
+  createTestConditionalOrder,
+} from './orderTypes/test/TestConditionalOrder'
 import { ConditionalOrder } from './ConditionalOrder'
 import { Twap } from './orderTypes/Twap'
 
 import { getComposableCow } from './contracts'
 import { constants } from 'ethers'
-import { OwnerContext, PollParams, PollResultCode } from './types'
+import { OwnerContext, PollParams, PollResultCode, PollResultErrors } from './types'
 import { BuyTokenDestination, OrderKind, SellTokenSource } from '../order-book/generated'
 
 jest.mock('./contracts')
@@ -32,17 +36,9 @@ const TWAP_SERIALIZED = (salt?: string, handler?: string): string => {
   )
 }
 
-const createOrder = (isSingleOrder = true) =>
-  new TestConditionalOrder(
-    '0x910d00a310f7Dc5B29FE73458F47f519be547D3d',
-    '0x9379a0bf532ff9a66ffde940f94b1a025d6f18803054c1aef52dc94b15255bbe',
-    '0x',
-    isSingleOrder
-  )
-
 const OWNER = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
-const SINGLE_ORDER = createOrder()
-const MERKLE_ROOT_ORDER = createOrder(false)
+const SINGLE_ORDER = createTestConditionalOrder()
+const MERKLE_ROOT_ORDER = createTestConditionalOrder({ isSingleOrder: false })
 const DISCRETE_ORDER = {
   sellToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
   buyToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
@@ -58,38 +54,38 @@ const DISCRETE_ORDER = {
   kind: OrderKind.BUY,
   class: 'market',
 }
+const ERROR_REASON = 'Not valid, because I say so!'
 
 describe('Constructor', () => {
   test('Create TestConditionalOrder', () => {
     // bad address
-    expect(() => new TestConditionalOrder('0xdeadbeef')).toThrow('Invalid handler: 0xdeadbeef')
+    expect(createTestConditionalOrder({ handler: '0xdeadbeef' })).toThrow('Invalid handler: 0xdeadbeef')
   })
 
   test('Fail if bad address', () => {
     // bad address
-    expect(() => new TestConditionalOrder('0xdeadbeef')).toThrow('Invalid handler: 0xdeadbeef')
+    expect(createTestConditionalOrder({ handler: '0xdeadbeef' })).toThrow('Invalid handler: 0xdeadbeef')
   })
 
   describe('Fail if bad salt', () => {
     test('Fails if salt is not an hex', () => {
-      expect(() => new TestConditionalOrder('0x910d00a310f7Dc5B29FE73458F47f519be547D3d', 'cowtomoon')).toThrow(
-        'Invalid salt: cowtomoon'
-      )
+      expect(
+        createTestConditionalOrder({ handler: '0x910d00a310f7Dc5B29FE73458F47f519be547D3d', salt: 'cowtomoon' })
+      ).toThrow('Invalid salt: cowtomoon')
     })
 
     test('Fails if salt is too short (not 32 bytes)', () => {
-      expect(() => new TestConditionalOrder('0x910d00a310f7Dc5B29FE73458F47f519be547D3d', '0xdeadbeef')).toThrow(
-        'Invalid salt: 0xdeadbeef'
-      )
+      expect(
+        createTestConditionalOrder({ handler: '0x910d00a310f7Dc5B29FE73458F47f519be547D3d', salt: '0xdeadbeef' })
+      ).toThrow('Invalid salt: 0xdeadbeef')
     })
 
     test('Fails if salt is too long (not 32 bytes)', () => {
-      expect(
-        () =>
-          new TestConditionalOrder(
-            '0x910d00a310f7Dc5B29FE73458F47f519be547D3d',
-            '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
-          )
+      expect(() =>
+        createTestConditionalOrder({
+          handler: '0x910d00a310f7Dc5B29FE73458F47f519be547D3d',
+          salt: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
+        })
       ).toThrow(
         'Invalid salt: 0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
       )
@@ -105,8 +101,8 @@ describe('Deserialize: Decode static input', () => {
 })
 
 describe('Serialize: Encode static input', () => {
-  test('Serialize: Fails if invalid params', () => {
-    const order = new TestConditionalOrder('0x910d00a310f7Dc5B29FE73458F47f519be547D3d')
+  test('Serialize: Fails if wrong handler', () => {
+    const order = createTestConditionalOrder({ handler: '0x910d00a310f7Dc5B29FE73458F47f519be547D3d' })
     expect(() => order.testEncodeStaticInput()).toThrow()
   })
 })
@@ -172,6 +168,14 @@ describe('Poll Single Orders', () => {
   const mockGetTradeableOrderWithSignature = jest.fn()
   const param = { owner: OWNER, chainId: 1, provider: {} } as PollParams
 
+  const mockPollValidate = jest.fn<Promise<PollResultErrors | undefined>, [params: PollParams], any>()
+
+  class MockTestConditionalOrder extends TestConditionalOrder {
+    protected pollValidate(params: PollParams): Promise<PollResultErrors | undefined> {
+      return mockPollValidate(params)
+    }
+  }
+
   const signature = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
   beforeEach(() => {
     jest.resetAllMocks()
@@ -232,9 +236,8 @@ describe('Poll Single Orders', () => {
 
   test('[DONT_TRY_AGAIN] Invalid Conditional Order: Concrete order validation fails', async () => {
     // GIVEN: The concrete order implementation is not valid
-    const order = createOrder()
-    const validationError = 'Not valid, because I say so!'
-    const mockIsValid = jest.fn(order.isValid).mockReturnValue({ isValid: false, reason: validationError })
+    const order = createTestConditionalOrder()
+    const mockIsValid = jest.fn(order.isValid).mockReturnValue({ isValid: false, reason: ERROR_REASON })
     order.isValid = mockIsValid
 
     // GIVEN: Everything else is OK (auth + contract returns an order)
@@ -244,13 +247,75 @@ describe('Poll Single Orders', () => {
     // WHEN: we poll
     const pollResult = await order.poll(param)
 
-    // THEN: we expect no CALLs to the
+    // THEN: we expect no CALLs to the contract
     expect(mockGetTradeableOrderWithSignature).toBeCalledTimes(0)
 
-    // THEN: We expect a SUCCESS result, which returns the order and the signature
+    // THEN: We to fail the validation, and to instruct to not try again
     expect(pollResult).toEqual({
       result: PollResultCode.DONT_TRY_AGAIN,
-      reason: 'InvalidConditionalOrder. Reason: ' + validationError,
+      reason: 'InvalidConditionalOrder. Reason: ' + ERROR_REASON,
+    })
+  })
+
+  async function testPollValidateResult(result: PollResultErrors | undefined) {
+    // GIVEN: The pollValidate returns undefined
+    const order = new MockTestConditionalOrder(DEFAULT_ORDER_PARAMS)
+    const isSuccess = result == undefined
+    mockPollValidate.mockReturnValue(Promise.resolve(result))
+
+    // GIVEN: Everything else is OK (auth + contract returns an order)
+    mockSingleOrders.mockReturnValue(true)
+    mockGetTradeableOrderWithSignature.mockReturnValue([DISCRETE_ORDER, signature])
+
+    // WHEN: we poll
+    const pollResult = await order.poll(param)
+
+    // THEN: we expect no CALLs to the
+    expect(mockGetTradeableOrderWithSignature).toBeCalledTimes(isSuccess ? 1 : 0)
+
+    // THEN: We expect a SUCCESS result, which returns the order and the signature
+    expect(pollResult).toEqual(
+      isSuccess
+        ? {
+            result: PollResultCode.SUCCESS,
+            order: DISCRETE_ORDER,
+            signature,
+          }
+        : result
+    )
+  }
+
+  test('[pollValidate::SUCCESS] Return success when pollValidate returns undefined', async () => {
+    testPollValidateResult(undefined)
+  })
+
+  test(`[pollValidate::DONT_TRY_AGAIN] Don't try again when pollValidate says so`, async () => {
+    testPollValidateResult({
+      result: PollResultCode.DONT_TRY_AGAIN,
+      reason: ERROR_REASON,
+    })
+  })
+
+  test(`[pollValidate::TRY_AT_EPOCH] Try on an specific epoch when pollValidate says so`, async () => {
+    testPollValidateResult({
+      result: PollResultCode.TRY_AT_EPOCH,
+      epoch: 1234567890,
+      reason: ERROR_REASON,
+    })
+  })
+
+  test(`[pollValidate::TRY_NEXT_BLOCK] Try on next block when pollValidate says so`, async () => {
+    testPollValidateResult({
+      result: PollResultCode.TRY_NEXT_BLOCK,
+      reason: 'Not valid, because I say so!',
+    })
+  })
+
+  test(`[pollValidate::TRY_ON_BLOCK] Try on an specific block when pollValidate says so`, async () => {
+    testPollValidateResult({
+      result: PollResultCode.TRY_ON_BLOCK,
+      blockNumber: 1234567890,
+      reason: ERROR_REASON,
     })
   })
 
