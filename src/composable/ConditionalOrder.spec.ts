@@ -270,7 +270,7 @@ describe('Poll Single Orders', () => {
     // WHEN: we poll
     const pollResult = await order.poll(param)
 
-    // THEN: we expect no CALLs to the
+    // THEN: we expect 1 CALL to the
     expect(mockGetTradeableOrderWithSignature).toBeCalledTimes(1)
 
     // THEN: We receive an unexpected error
