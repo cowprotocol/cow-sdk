@@ -185,7 +185,7 @@ describe('Poll Single Orders', () => {
     } as any)
   })
 
-  test.only('[SUCCESS] Happy path', async () => {
+  test('[SUCCESS] Happy path', async () => {
     // GIVEN: An order that is authorized
     mockSingleOrders.mockReturnValue(true)
 
@@ -196,7 +196,7 @@ describe('Poll Single Orders', () => {
     const pollResult = await SINGLE_ORDER.poll(param)
 
     // THEN: we expect a CALL to getTradeableOrderWithSignature with the owner, params, off-chain input, and no-proof
-    expect(mockGetTradeableOrderWithSignature.mock.calls).toHaveLength(1)
+    expect(mockGetTradeableOrderWithSignature).toBeCalledTimes(1)
     expect(mockGetTradeableOrderWithSignature.mock.calls[0]).toEqual([
       OWNER,
       SINGLE_ORDER.leaf,
@@ -212,7 +212,7 @@ describe('Poll Single Orders', () => {
     })
   })
 
-  test.only('[DONT_TRY_AGAIN] Not authorized', async () => {
+  test('[DONT_TRY_AGAIN] Not authorized', async () => {
     // GIVEN: An order that is not authorized
     mockSingleOrders.mockReturnValue(false)
 
@@ -223,11 +223,34 @@ describe('Poll Single Orders', () => {
     const pollResult = await SINGLE_ORDER.poll(param)
 
     // THEN: We expect an error. We shouldn't try again
-    pollResult.result === PollResultCode.UNEXPECTED_ERROR && console.error(pollResult.error)
     expect(pollResult).toEqual({
       result: PollResultCode.DONT_TRY_AGAIN,
       reason:
         'NotAuthorized: Order 0x88ca0698d8c5500b31015d84fa0166272e1812320d9af8b60e29ae00153363b3 is not authorized for 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 on chain 1',
+    })
+  })
+
+  test('[DONT_TRY_AGAIN] Invalid Conditional Order: Concrete order validation fails', async () => {
+    // GIVEN: The concrete order implementation is not valid
+    const order = createOrder()
+    const validationError = 'Not valid, because I say so!'
+    const mockIsValid = jest.fn(order.isValid).mockReturnValue({ isValid: false, reason: validationError })
+    order.isValid = mockIsValid
+
+    // GIVEN: Everything else is OK (auth + contract returns an order)
+    mockSingleOrders.mockReturnValue(true)
+    mockGetTradeableOrderWithSignature.mockReturnValue([DISCRETE_ORDER, signature])
+
+    // WHEN: we poll
+    const pollResult = await order.poll(param)
+
+    // THEN: we expect no CALLs to the
+    expect(mockGetTradeableOrderWithSignature).toBeCalledTimes(0)
+
+    // THEN: We expect a SUCCESS result, which returns the order and the signature
+    expect(pollResult).toEqual({
+      result: PollResultCode.DONT_TRY_AGAIN,
+      reason: 'InvalidConditionalOrder. Reason: ' + validationError,
     })
   })
 })
