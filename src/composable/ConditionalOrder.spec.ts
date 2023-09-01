@@ -273,7 +273,7 @@ describe('Poll Single Orders', () => {
     // THEN: we expect no CALLs to the
     expect(mockGetTradeableOrderWithSignature).toBeCalledTimes(1)
 
-    // THEN: We expect a SUCCESS result, which returns the order and the signature
+    // THEN: We receive an unexpected error
     expect(pollResult).toEqual({
       result: PollResultCode.UNEXPECTED_ERROR,
       error,
