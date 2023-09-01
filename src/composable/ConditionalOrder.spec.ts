@@ -59,23 +59,23 @@ const ERROR_REASON = 'Not valid, because I say so!'
 describe('Constructor', () => {
   test('Create TestConditionalOrder', () => {
     // bad address
-    expect(createTestConditionalOrder({ handler: '0xdeadbeef' })).toThrow('Invalid handler: 0xdeadbeef')
+    expect(() => createTestConditionalOrder({ handler: '0xdeadbeef' })).toThrow('Invalid handler: 0xdeadbeef')
   })
 
   test('Fail if bad address', () => {
     // bad address
-    expect(createTestConditionalOrder({ handler: '0xdeadbeef' })).toThrow('Invalid handler: 0xdeadbeef')
+    expect(() => createTestConditionalOrder({ handler: '0xdeadbeef' })).toThrow('Invalid handler: 0xdeadbeef')
   })
 
   describe('Fail if bad salt', () => {
     test('Fails if salt is not an hex', () => {
-      expect(
+      expect(() =>
         createTestConditionalOrder({ handler: '0x910d00a310f7Dc5B29FE73458F47f519be547D3d', salt: 'cowtomoon' })
       ).toThrow('Invalid salt: cowtomoon')
     })
 
     test('Fails if salt is too short (not 32 bytes)', () => {
-      expect(
+      expect(() =>
         createTestConditionalOrder({ handler: '0x910d00a310f7Dc5B29FE73458F47f519be547D3d', salt: '0xdeadbeef' })
       ).toThrow('Invalid salt: 0xdeadbeef')
     })
@@ -257,11 +257,47 @@ describe('Poll Single Orders', () => {
     })
   })
 
-  async function testPollValidateResult(result: PollResultErrors | undefined) {
+  test('[UNEXPECTED_ERROR] getTradeableOrderWithSignature throws an error', async () => {
+    // GIVEN: getTradeableOrderWithSignature throws
+    const error = new Error(`I'm sorry, but is not a good time to trade`)
+    mockGetTradeableOrderWithSignature.mockImplementation(() => {
+      throw error
+    })
+
+    // GIVEN: Every validation is OK (auth + contract returns an order + order is valid)
+    const order = createTestConditionalOrder()
+    const mockIsValid = jest.fn(order.isValid).mockReturnValue({ isValid: true })
+    order.isValid = mockIsValid
+    mockSingleOrders.mockReturnValue(true)
+
+    // WHEN: we poll
+    const pollResult = await order.poll(param)
+
+    // THEN: we expect 1 CALL to the
+    expect(mockGetTradeableOrderWithSignature).toBeCalledTimes(1)
+
+    // THEN: We receive an unexpected error
+    expect(pollResult).toEqual({
+      result: PollResultCode.UNEXPECTED_ERROR,
+      error,
+    })
+  })
+
+  async function testPollValidateResult(result: PollResultErrors | undefined | Error) {
     // GIVEN: The pollValidate returns undefined
     const order = new MockTestConditionalOrder(DEFAULT_ORDER_PARAMS)
     const isSuccess = result == undefined
-    mockPollValidate.mockReturnValue(Promise.resolve(result))
+    const isUnhandledError = result instanceof Error
+
+    if (isUnhandledError) {
+      // Pretend pollValidate throws an error
+      mockPollValidate.mockImplementation(() => {
+        throw result
+      })
+    } else {
+      // Pretend pollValidate returns a result
+      mockPollValidate.mockReturnValue(Promise.resolve(result))
+    }
 
     // GIVEN: Everything else is OK (auth + contract returns an order)
     mockSingleOrders.mockReturnValue(true)
@@ -273,16 +309,23 @@ describe('Poll Single Orders', () => {
     // THEN: we expect no CALLs to the
     expect(mockGetTradeableOrderWithSignature).toBeCalledTimes(isSuccess ? 1 : 0)
 
-    // THEN: We expect a SUCCESS result, which returns the order and the signature
-    expect(pollResult).toEqual(
-      isSuccess
-        ? {
-            result: PollResultCode.SUCCESS,
-            order: DISCRETE_ORDER,
-            signature,
-          }
-        : result
-    )
+    if (isUnhandledError) {
+      // THEN: We expect an error
+      expect(pollResult).toEqual({
+        result: PollResultCode.UNEXPECTED_ERROR,
+        error: result,
+      })
+    } else if (isSuccess) {
+      // THEN: We expect a SUCCESS result (which returns the order and the signature)
+      expect(pollResult).toEqual({
+        result: PollResultCode.SUCCESS,
+        order: DISCRETE_ORDER,
+        signature,
+      })
+    } else {
+      // THEN: We expect the result from pollValidate
+      expect(pollResult).toEqual(result)
+    }
   }
 
   test('[pollValidate::SUCCESS] Return success when pollValidate returns undefined', async () => {
@@ -319,29 +362,7 @@ describe('Poll Single Orders', () => {
     })
   })
 
-  test('[UNEXPECTED_ERROR] getTradeableOrderWithSignature throws an error', async () => {
-    // GIVEN: getTradeableOrderWithSignature throws
-    const error = new Error(`I'm sorry, but is not a good time to trade`)
-    mockGetTradeableOrderWithSignature.mockImplementation(() => {
-      throw error
-    })
-
-    // GIVEN: Every validation is OK (auth + contract returns an order + order is valid)
-    const order = createOrder()
-    const mockIsValid = jest.fn(order.isValid).mockReturnValue({ isValid: true })
-    order.isValid = mockIsValid
-    mockSingleOrders.mockReturnValue(true)
-
-    // WHEN: we poll
-    const pollResult = await order.poll(param)
-
-    // THEN: we expect 1 CALL to the
-    expect(mockGetTradeableOrderWithSignature).toBeCalledTimes(1)
-
-    // THEN: We receive an unexpected error
-    expect(pollResult).toEqual({
-      result: PollResultCode.UNEXPECTED_ERROR,
-      error,
-    })
+  test(`[pollValidate::UNEXPECTED_ERROR] Return an unexpected error when pollValidate throws`, async () => {
+    testPollValidateResult(new Error(`There was an unexpected error while polling`))
   })
 })
