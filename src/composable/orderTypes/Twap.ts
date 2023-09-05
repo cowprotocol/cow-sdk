@@ -284,6 +284,25 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
   }
 
   /**
+   * Given the start timestamp of the TWAP, calculate the end timestamp.
+   * @dev As usually the `endTimestamp` is used when determining a TWAP's validity, we don't
+   *      do any lookup to the blockchain to determine the start timestamp, as this has likely
+   *      already been done during the verification flow.
+   * @dev Beware to handle the case of `span != 0` ie. `durationOfPart.durationType !== DurationType.AUTO`.
+   * @param startTimestamp The start timestamp of the TWAP.
+   * @returns The timestamp at which the TWAP will end.
+   */
+  private endTimestamp(startTimestamp: number): number {
+    const { numberOfParts, timeBetweenParts, durationOfPart } = this.data
+
+    if (durationOfPart && durationOfPart.durationType === DurationType.LIMIT_DURATION) {
+      return startTimestamp + numberOfParts.sub(1).mul(timeBetweenParts).add(durationOfPart.duration).toNumber()
+    }
+
+    return startTimestamp + numberOfParts.mul(timeBetweenParts).toNumber()
+  }
+
+  /**
    * Checks if the owner authorized the conditional order.
    *
    * @param owner The owner of the conditional order.
@@ -294,7 +313,6 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
   protected async pollValidate(params: PollParams): Promise<PollResultErrors | undefined> {
     const { blockInfo = await getBlockInfo(params.provider) } = params
     const { blockTimestamp } = blockInfo
-    const { numberOfParts, timeBetweenParts } = this.data
 
     const startTimestamp = await this.startTimestamp(params)
 
@@ -307,7 +325,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
       }
     }
 
-    const expirationTimestamp = startTimestamp + numberOfParts.mul(timeBetweenParts).toNumber()
+    const expirationTimestamp = this.endTimestamp(startTimestamp)
     if (blockTimestamp >= expirationTimestamp) {
       // The order has expired
       return {
