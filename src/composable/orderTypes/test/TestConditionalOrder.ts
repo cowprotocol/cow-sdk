@@ -2,12 +2,26 @@ import { ConditionalOrder } from '../../ConditionalOrder'
 import { IsValidResult, PollResultErrors } from '../../types'
 import { encodeParams } from '../../utils'
 
+export const DEFAULT_ORDER_PARAMS: TestConditionalOrderParams = {
+  handler: '0x910d00a310f7Dc5B29FE73458F47f519be547D3d',
+  salt: '0x9379a0bf532ff9a66ffde940f94b1a025d6f18803054c1aef52dc94b15255bbe',
+  data: '0x',
+  isSingleOrder: true,
+}
+
+export type TestConditionalOrderParams = {
+  handler: string
+  salt?: string
+  data: string
+  isSingleOrder: boolean
+}
 export class TestConditionalOrder extends ConditionalOrder<string, string> {
   isSingleOrder: boolean
 
-  constructor(address: string, salt?: string, data = '0x', isSingleOrder = true) {
+  constructor(params: TestConditionalOrderParams) {
+    const { handler, salt, data = '0x', isSingleOrder = true } = params
     super({
-      handler: address,
+      handler,
       salt,
       data,
     })
@@ -49,3 +63,9 @@ export class TestConditionalOrder extends ConditionalOrder<string, string> {
     throw new Error('Method not implemented.')
   }
 }
+
+export const createTestConditionalOrder = (params?: Partial<TestConditionalOrderParams>) =>
+  new TestConditionalOrder({
+    ...DEFAULT_ORDER_PARAMS,
+    ...params,
+  })
