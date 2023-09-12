@@ -1,4 +1,4 @@
-import { GPv2Order } from 'src/composable/generated/ComposableCoW'
+import { GPv2Order } from '../../generated/ComposableCoW'
 import { ConditionalOrder } from '../../ConditionalOrder'
 import { IsValidResult, PollParams, PollResultErrors } from '../../types'
 import { encodeParams } from '../../utils'
@@ -49,7 +49,7 @@ export class TestConditionalOrder extends ConditionalOrder<string, string> {
     return params
   }
 
-  protected async pollValidate(): Promise<PollResultErrors | undefined> {
+  protected async pollValidate(_params: PollParams): Promise<PollResultErrors | undefined> {
     return undefined
   }
   protected async polledOrderInOrderbook(

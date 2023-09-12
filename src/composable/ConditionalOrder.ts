@@ -292,16 +292,6 @@ export abstract class ConditionalOrder<D, S> {
         orderBookCache[chainId] = orderBookApi
       }
 
-      // TODO: Derive orderId from the order data
-      /*
-      {
-        name: "Gnosis Protocol",
-        version: "v2",
-        chainId: chainId,
-        verifyingContract: GPV2SETTLEMENT,
-      }
-      */
-
       const orderUid = await computeOrderUid(chainId, owner, order as Order)
 
       // Check if the order is already in the order book
