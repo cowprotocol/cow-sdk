@@ -351,7 +351,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     return undefined
   }
 
-  protected async polledOrderInOrderbook(
+  protected async handlePollFailedAlreadyPresent(
     _orderUid: string,
     _order: GPv2Order.DataStructOutput,
     _params: PollParams

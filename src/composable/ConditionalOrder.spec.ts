@@ -16,7 +16,7 @@ jest.mock('./contracts')
 jest.mock('../order-book/api', () => {
   return {
     OrderBookApi: class MockedOrderBookApi {
-      getOrder = mockGetOrder //jest.fn(),
+      getOrder = mockGetOrder
     },
   }
 })

@@ -302,7 +302,7 @@ export abstract class ConditionalOrder<D, S> {
 
       // Let the concrete Conditional Order decide about the poll result (in the case the order is already in the orderbook)
       if (isOrderInOrderbook) {
-        const pollResult = await this.polledOrderInOrderbook(orderUid, order, params)
+        const pollResult = await this.handlePollFailedAlreadyPresent(orderUid, order, params)
         if (pollResult) {
           return pollResult
         }
@@ -363,14 +363,14 @@ export abstract class ConditionalOrder<D, S> {
   protected abstract pollValidate(params: PollParams): Promise<PollResultErrors | undefined>
 
   /**
-   * This method lets the concrete conditional order decide what to do if the order yielded in the polling has been already created.
+   * This method lets the concrete conditional order decide what to do if the order yielded in the polling is already present in the Orderbook API.
    *
    * The concrete conditional order will have a chance to schedule the next poll.
-   * For example, a TWAP order that has the current part already in the orderbook, can signal that the next poll should be done at the time of the next part.
+   * For example, a TWAP order that has the current part already in the orderbook, can signal that the next poll should be done at the start time of the next part.
    *
    * @param params
    */
-  protected abstract polledOrderInOrderbook(
+  protected abstract handlePollFailedAlreadyPresent(
     orderUid: UID,
     order: GPv2Order.DataStructOutput,
     params: PollParams
