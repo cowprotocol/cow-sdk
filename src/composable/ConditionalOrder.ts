@@ -1,5 +1,5 @@
 import { BigNumber, constants, ethers, utils } from 'ethers'
-import { IConditionalOrder } from './generated/ComposableCoW'
+import { GPv2Order, IConditionalOrder } from './generated/ComposableCoW'
 
 import { decodeParams, encodeParams } from './utils'
 import {
@@ -14,6 +14,11 @@ import {
   PollResultErrors,
 } from './types'
 import { getComposableCow, getComposableCowInterface } from './contracts'
+import { OrderBookApi, UID } from 'src/order-book'
+import { computeOrderUid } from 'src/utils'
+import { Order } from '@cowprotocol/contracts'
+
+const orderBookCache: Record<string, OrderBookApi> = {}
 
 /**
  * An abstract base class from which all conditional orders should inherit.
@@ -281,6 +286,43 @@ export abstract class ConditionalOrder<D, S> {
         []
       )
 
+      let orderBookApi = orderBookCache[chainId]
+      if (!orderBookApi) {
+        orderBookApi = new OrderBookApi({ chainId })
+        orderBookCache[chainId] = orderBookApi
+      }
+
+      // TODO: Derive orderId from the order data
+      /*
+      {
+        name: "Gnosis Protocol",
+        version: "v2",
+        chainId: chainId,
+        verifyingContract: GPV2SETTLEMENT,
+      }
+      */
+
+      const orderUid = await computeOrderUid(chainId, owner, order as Order)
+
+      // Check if the order is already in the order book
+      const isOrderInOrderbook = await orderBookApi
+        .getOrder(orderUid)
+        .then(() => true)
+        .catch(() => false)
+
+      // Let the concrete Conditional Order decide about the poll result (in the case the order is already in the orderbook)
+      if (isOrderInOrderbook) {
+        const pollResult = await this.polledOrderInOrderbook(orderUid, order, params)
+        if (pollResult) {
+          return pollResult
+        }
+
+        return {
+          result: PollResultCode.TRY_NEXT_BLOCK,
+          reason: 'Order already in orderbook',
+        }
+      }
+
       return {
         result: PollResultCode.SUCCESS,
         order,
@@ -329,6 +371,20 @@ export abstract class ConditionalOrder<D, S> {
    * @returns undefined if the concrete order can't make a decision. Otherwise, it returns a PollResultErrors object.
    */
   protected abstract pollValidate(params: PollParams): Promise<PollResultErrors | undefined>
+
+  /**
+   * This method lets the concrete conditional order decide what to do if the order yielded in the polling has been already created.
+   *
+   * The concrete conditional order will have a chance to schedule the next poll.
+   * For example, a TWAP order that has the current part already in the orderbook, can signal that the next poll should be done at the time of the next part.
+   *
+   * @param params
+   */
+  protected abstract polledOrderInOrderbook(
+    orderUid: UID,
+    order: GPv2Order.DataStructOutput,
+    params: PollParams
+  ): Promise<PollResultErrors | undefined>
 
   /**
    * Convert the struct that the contract expect as an encoded `staticInput` into a friendly data object modelling the smart order.

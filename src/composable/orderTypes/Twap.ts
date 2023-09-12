@@ -12,6 +12,7 @@ import {
   PollResultErrors,
 } from '../types'
 import { encodeParams, formatEpoch, getBlockInfo, isValidAbi } from '../utils'
+import { GPv2Order } from '../generated/ComposableCoW'
 
 // The type of Conditional Order
 const TWAP_ORDER_TYPE = 'twap'
@@ -347,6 +348,14 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     // // Get current part number
     // const partNumber = Math.floor(blockTimestamp - startTimestamp / timeBetweenParts.toNumber())
 
+    return undefined
+  }
+
+  protected async polledOrderInOrderbook(
+    _orderUid: string,
+    _order: GPv2Order.DataStructOutput,
+    _params: PollParams
+  ): Promise<PollResultErrors | undefined> {
     return undefined
   }
 
