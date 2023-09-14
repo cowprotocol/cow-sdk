@@ -484,4 +484,22 @@ describe('Current TWAP part is in the Order Book', () => {
       epoch: 1700000200,
     })
   })
+
+  test(`We are in the last second of part 9/10`, async () => {
+    // GIVEN: Part 9 is about to end
+    const pollParams = getPollParams({
+      blockTimestamp: startTimestamp + 9 * timeBetweenParts - 1,
+    })
+
+    // WHEN: We invoke handlePollFailedAlreadyPresent
+    const result = await twap.handlePollFailedAlreadyPresent(orderId, order, pollParams)
+
+    // THEN: It should instruct we should wait for part 2 to start
+    expect(result).toEqual({
+      result: PollResultCode.TRY_AT_EPOCH,
+      reason:
+        "Current active TWAP part (9/10) is already in the Order Book. TWAP part 10 doesn't start until 1700000900 (2023-11-14T22:28:20.000Z)",
+      epoch: 1700000900,
+    })
+  })
 })
