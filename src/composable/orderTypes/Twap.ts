@@ -350,6 +350,14 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     const { numberOfParts } = this.data
     const startTimestamp = await this.startTimestamp(params)
 
+    if (blockTimestamp < startTimestamp) {
+      return {
+        result: PollResultCode.UNEXPECTED_ERROR,
+        reason: `TWAP part hash't started. First TWAP part start at ${startTimestamp} (${formatEpoch(startTimestamp)})`,
+        error: undefined,
+      }
+    }
+
     // Get current part number
     const currentPartNumber = Math.floor(blockTimestamp - startTimestamp / timeBetweenParts)
 

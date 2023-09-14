@@ -1,4 +1,5 @@
 import '../../order-book/__mock__/api'
+import { GPv2Order } from '../generated/ComposableCoW'
 import { OwnerContext, PollParams, PollResultCode, PollResultErrors } from '../types'
 import { DurationType, StartTimeValue, Twap, TWAP_ADDRESS, TwapData } from './Twap'
 import { BigNumber, utils, constants, providers } from 'ethers'
@@ -244,8 +245,8 @@ describe('Poll Validate', () => {
   } as PollParams
 
   class MockTwap extends Twap {
-    // Just make pollValidate so we can call it in isolation
-    public pollValidate(params: PollParams): Promise<PollResultErrors | undefined> {
+    // Just make pollValidate public so we can call it in isolation
+    public pollValidate(params): Promise<PollResultErrors | undefined> {
       return super.pollValidate(params)
     }
 
@@ -330,6 +331,60 @@ describe('Poll Validate', () => {
       result: PollResultCode.TRY_AT_EPOCH,
       epoch: startTime,
       reason: "TWAP hasn't started yet. Starts at 1700000001 (2023-11-14T22:13:21.000Z)",
+    })
+  })
+})
+
+describe('Handle Poll Failed because the order is Orderbook', () => {
+  const blockNumber = 123456
+  const blockTimestamp = 1700000000
+  const orderId = '0x1'
+  const order = {} as GPv2Order.DataStructOutput
+
+  const pollParams = {
+    owner: OWNER,
+    chainId: 1,
+    provider: {},
+    blockInfo: {
+      blockNumber,
+      blockTimestamp,
+    },
+  } as PollParams
+
+  class MockTwap extends Twap {
+    // Just make handlePollFailedAlreadyPresent public so we can call it in isolation
+    public handlePollFailedAlreadyPresent(orderId, order, params): Promise<PollResultErrors | undefined> {
+      return super.handlePollFailedAlreadyPresent(orderId, order, params)
+    }
+  }
+
+  beforeEach(() => {
+    jest.resetAllMocks()
+  })
+
+  test.only(`[UNEXPECTED_ERROR] Auction hasn't started`, async () => {
+    // GIVEN: The order hasn't started (starts 1 second after this block)
+    const twap = new MockTwap({
+      handler: TWAP_ADDRESS,
+      data: {
+        ...TWAP_PARAMS_TEST,
+        // timeBetweenParts: 100,
+        // numberOfParts: 10,
+        startTime: {
+          startType: StartTimeValue.AT_EPOCH,
+          epoch: BigNumber.from(blockTimestamp + 1),
+        },
+      },
+    })
+
+    // WHEN: We invoke handlePollFailedAlreadyPresent
+    const result = await twap.handlePollFailedAlreadyPresent(orderId, order, pollParams)
+
+    // THEN: It should raise an Unhandled error (it should never happen). This function should be invoked only if "pollValidate" who should already make sure the polling fails if it hasn't started the TWAP
+    expect(result).toEqual({
+      result: PollResultCode.UNEXPECTED_ERROR,
+      reason: "TWAP part hash't started. First TWAP part start at 1700000001 (2023-11-14T22:13:21.000Z)",
+      error: undefined,
     })
   })
 })
