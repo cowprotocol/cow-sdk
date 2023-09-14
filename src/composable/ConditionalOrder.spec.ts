@@ -374,4 +374,36 @@ describe('Poll Single Orders', () => {
   test(`[pollValidate::UNEXPECTED_ERROR] Return an unexpected error when pollValidate throws`, async () => {
     testPollValidateResult(new Error(`There was an unexpected error while polling`))
   })
+
+  test('[TRY_NEXT_BLOCK] When the order is already in the Orderbook', async () => {
+    // GIVEN: All validations are OK, and getTradeableOrderWithSignature returns a valid order
+    mockPollValidate.mockReturnValue(Promise.resolve(undefined))
+    mockSingleOrders.mockReturnValue(true)
+    mockGetTradeableOrderWithSignature.mockReturnValue([DISCRETE_ORDER, signature])
+
+    // GIVEN: This order "orderUid" is a specific one
+    const orderUid =
+      '0x69b7bedc70cf0f13900a369772c6195483830590b09678dc4776bc45bf7f382b79063d9173c09887d536924e2f6eadbabac099f5648998c5'
+    mockComputeOrderUid.mockReturnValue(Promise.resolve(orderUid))
+
+    // GIVEN: the API finds the order in the orderbook
+    mockGetOrder.mockImplementation(() => Promise.resolve({}))
+
+    // WHEN: we poll
+    const pollResult = await SINGLE_ORDER.poll(param)
+
+    // THEN: we expect a call to compute the OrderUid with the right params
+    expect(mockComputeOrderUid).toBeCalledTimes(1)
+    expect(mockComputeOrderUid.mock.calls[0]).toEqual([param.chainId, param.owner, DISCRETE_ORDER])
+
+    // THEN: we expect a call to the Orderbook API's getOrder function
+    expect(mockGetOrder).toBeCalledTimes(1)
+    expect(mockGetOrder.mock.calls[0]).toEqual([orderUid])
+
+    // THEN: we expect the result to be
+    expect(pollResult).toEqual({
+      result: PollResultCode.TRY_NEXT_BLOCK,
+      reason: 'Order already in orderbook',
+    })
+  })
 })
