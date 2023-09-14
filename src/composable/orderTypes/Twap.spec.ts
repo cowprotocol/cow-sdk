@@ -260,7 +260,7 @@ describe('Poll', () => {
     expect(result).toEqual(undefined)
   })
 
-  test.only(`[TRY_AT_EPOCH] TWAP has not started`, async () => {
+  test(`[TRY_AT_EPOCH] TWAP has not started`, async () => {
     // GIVEN: A TWAP that hasn't started (should start in 1 second ago, should finish in 2 second)
     const startTime = blockTimestamp + 1
     const twap = new MockTwap({ handler: TWAP_ADDRESS, data: TWAP_PARAMS_TEST })
@@ -275,6 +275,23 @@ describe('Poll', () => {
       result: PollResultCode.TRY_AT_EPOCH,
       epoch: startTime,
       reason: "TWAP hasn't started yet. Starts at 1700000001 (2023-11-14T22:13:21.000Z)",
+    })
+  })
+
+  test(`[TRY_AT_EPOCH] TWAP has expired`, async () => {
+    // GIVEN: A TWAP that has already expired (started 2 seconds ago, finished 1 second ago)
+    const expireTime = blockTimestamp - 1
+    const twap = new MockTwap({ handler: TWAP_ADDRESS, data: TWAP_PARAMS_TEST })
+    mockStartTimestamp.mockReturnValue(Promise.resolve(blockTimestamp - 2))
+    mockEndTimestamp.mockReturnValue(expireTime)
+
+    // WHEN: We poll
+    const result = await twap.pollValidate({ ...pollParams, blockInfo: { blockNumber, blockTimestamp } })
+
+    // THEN: Then, it will return an error instructing to try in 1 second (at start time)
+    expect(result).toEqual({
+      result: PollResultCode.DONT_TRY_AGAIN,
+      reason: 'TWAP has expired. Expired at 1699999999 (2023-11-14T22:13:19.000Z)',
     })
   })
 })
