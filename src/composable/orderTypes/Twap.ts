@@ -267,7 +267,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     return error ? { isValid: false, reason: error } : { isValid: true }
   }
 
-  private async startTimestamp(params: OwnerContext): Promise<number> {
+  protected async startTimestamp(params: OwnerContext): Promise<number> {
     const { startTime } = this.data
 
     if (startTime?.startType === StartTimeValue.AT_EPOCH) {
@@ -293,7 +293,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
    * @param startTimestamp The start timestamp of the TWAP.
    * @returns The timestamp at which the TWAP will end.
    */
-  private endTimestamp(startTimestamp: number): number {
+  protected endTimestamp(startTimestamp: number): number {
     const { numberOfParts, timeBetweenParts, durationOfPart } = this.data
 
     if (durationOfPart && durationOfPart.durationType === DurationType.LIMIT_DURATION) {

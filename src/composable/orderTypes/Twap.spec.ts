@@ -1,7 +1,9 @@
 import '../../order-book/__mock__/api'
+import { OwnerContext, PollParams, PollResultErrors } from '../types'
 import { DurationType, StartTimeValue, Twap, TWAP_ADDRESS, TwapData } from './Twap'
 import { BigNumber, utils, constants } from 'ethers'
 
+const OWNER = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
 export const TWAP_PARAMS_TEST: TwapData = {
   sellToken: '0x6810e776880C02933D47DB1b9fc05908e5386b96',
   buyToken: '0xDAE5F1590db13E3B40423B5b5c5fbf175515910b',
@@ -217,5 +219,44 @@ describe('To String', () => {
     ).toEqual(
       'twap: Sell total 0x6810e776880C02933D47DB1b9fc05908e5386b96@1000000000000000000 for a minimum of 0xDAE5F1590db13E3B40423B5b5c5fbf175515910b@1000000000000000000 over 10 parts with a spacing of 3600s beginning at epoch 1692876646'
     )
+  })
+})
+
+describe('Poll', () => {
+  const pollParams = { owner: OWNER, chainId: 1, provider: {} } as PollParams
+  const blockNumber = 123456
+  const blockTimestamp = 1694736000
+  const mockStartTimestamp: jest.MockedFunction<(params: OwnerContext) => Promise<number>> = jest.fn()
+  const mockEndTimestamp: jest.MockedFunction<(startTimestamp: number) => number> = jest.fn()
+
+  class MockTwap extends Twap {
+    // Just make pollValidate so we can call it in isolation
+    public pollValidate(params: PollParams): Promise<PollResultErrors | undefined> {
+      return super.pollValidate(params)
+    }
+
+    startTimestamp = mockStartTimestamp
+    endTimestamp = mockEndTimestamp
+  }
+
+  beforeEach(() => {
+    jest.resetAllMocks()
+  })
+
+  test(`Open TWAP, passes the validations`, async () => {
+    // GIVEN: A TWAP that should be active (should start 1 second ago, should finish in 1 second)
+    const twap = new MockTwap({ handler: TWAP_ADDRESS, data: TWAP_PARAMS_TEST })
+    mockStartTimestamp.mockReturnValue(Promise.resolve(blockTimestamp - 1))
+    mockEndTimestamp.mockReturnValue(blockTimestamp + 1)
+
+    // WHEN: We poll
+    const result = await twap.pollValidate({ ...pollParams, blockInfo: { blockNumber, blockTimestamp } })
+
+    // THEN: The start time and end time of the TWAP will be checked
+    expect(mockStartTimestamp).toBeCalledTimes(1)
+    expect(mockEndTimestamp).toBeCalledTimes(1)
+
+    // THEN: Successful validation
+    expect(result).toEqual(undefined)
   })
 })
