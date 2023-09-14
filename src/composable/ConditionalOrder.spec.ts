@@ -1,3 +1,4 @@
+import { mockGetOrder } from '../order-book/__mock__/api'
 import {
   DEFAULT_ORDER_PARAMS,
   TestConditionalOrder,
@@ -10,9 +11,14 @@ import { getComposableCow } from './contracts'
 import { constants } from 'ethers'
 import { OwnerContext, PollParams, PollResultCode, PollResultErrors } from './types'
 import { BuyTokenDestination, OrderKind, SellTokenSource } from '../order-book/generated'
+import { computeOrderUid } from '../utils'
 
 jest.mock('./contracts')
+
+jest.mock('../utils')
+
 const mockGetComposableCow = getComposableCow as jest.MockedFunction<typeof getComposableCow>
+const mockComputeOrderUid = computeOrderUid as jest.MockedFunction<typeof computeOrderUid>
 
 const TWAP_SERIALIZED = (salt?: string, handler?: string): string => {
   return (
@@ -187,6 +193,9 @@ describe('Poll Single Orders', () => {
       getTradeableOrderWithSignature: mockGetTradeableOrderWithSignature,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
+
+    mockComputeOrderUid.mockReturnValue(Promise.resolve(SINGLE_ORDER.id))
+    mockGetOrder.mockImplementation(() => Promise.reject('Pretend the order does not exist'))
   })
 
   test('[SUCCESS] Happy path', async () => {

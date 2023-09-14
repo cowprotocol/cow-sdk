@@ -1,5 +1,6 @@
+import { GPv2Order } from '../../generated/ComposableCoW'
 import { ConditionalOrder } from '../../ConditionalOrder'
-import { IsValidResult, PollResultErrors } from '../../types'
+import { IsValidResult, PollParams, PollResultErrors } from '../../types'
 import { encodeParams } from '../../utils'
 
 export const DEFAULT_ORDER_PARAMS: TestConditionalOrderParams = {
@@ -48,7 +49,14 @@ export class TestConditionalOrder extends ConditionalOrder<string, string> {
     return params
   }
 
-  protected async pollValidate(): Promise<PollResultErrors | undefined> {
+  protected async pollValidate(_params: PollParams): Promise<PollResultErrors | undefined> {
+    return undefined
+  }
+  protected async handlePollFailedAlreadyPresent(
+    _orderUid: string,
+    _order: GPv2Order.DataStructOutput,
+    _params: PollParams
+  ): Promise<PollResultErrors | undefined> {
     return undefined
   }
 

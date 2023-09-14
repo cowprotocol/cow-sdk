@@ -1,3 +1,4 @@
+import 'src/order-book/__mock__/api'
 import { utils, providers } from 'ethers'
 import {
   COMPOSABLE_COW_CONTRACT_ADDRESS,

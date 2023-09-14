@@ -1,3 +1,4 @@
+import 'src/order-book/__mock__/api'
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree'
 import { BigNumber, providers, utils } from 'ethers'
 
@@ -434,7 +435,7 @@ export class Multiplexer {
    */
   public static registerOrderType(
     orderType: string,
-    conditionalOrderClass: new (...args: unknown[]) => ConditionalOrder<unknown, unknown>
+    conditionalOrderClass: new (...args: any[]) => ConditionalOrder<unknown, unknown>
   ) {
     Multiplexer.orderTypeRegistry[orderType] = conditionalOrderClass
   }

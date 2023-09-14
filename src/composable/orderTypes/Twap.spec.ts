@@ -1,3 +1,4 @@
+import '../../order-book/__mock__/api'
 import { DurationType, StartTimeValue, Twap, TWAP_ADDRESS, TwapData } from './Twap'
 import { BigNumber, utils, constants } from 'ethers'
 
