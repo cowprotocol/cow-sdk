@@ -357,6 +357,14 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
         error: undefined,
       }
     }
+    const expireTime = numberOfParts.mul(timeBetweenParts).add(startTimestamp).toNumber()
+    if (blockTimestamp >= expireTime) {
+      return {
+        result: PollResultCode.UNEXPECTED_ERROR,
+        reason: `TWAP is expired. Expired at ${expireTime} (${formatEpoch(expireTime)})`,
+        error: undefined,
+      }
+    }
 
     // Get current part number
     const currentPartNumber = Math.floor(blockTimestamp - startTimestamp / timeBetweenParts)

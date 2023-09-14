@@ -335,7 +335,7 @@ describe('Poll Validate', () => {
   })
 })
 
-describe('Handle Poll Failed because the order is Orderbook', () => {
+describe('Current TWAP part is in the Order Book', () => {
   const blockNumber = 123456
   const blockTimestamp = 1700000000
   const orderId = '0x1'
@@ -362,14 +362,12 @@ describe('Handle Poll Failed because the order is Orderbook', () => {
     jest.resetAllMocks()
   })
 
-  test.only(`[UNEXPECTED_ERROR] Auction hasn't started`, async () => {
+  test(`[UNEXPECTED_ERROR] Twap hasn't started`, async () => {
     // GIVEN: The order hasn't started (starts 1 second after this block)
     const twap = new MockTwap({
       handler: TWAP_ADDRESS,
       data: {
         ...TWAP_PARAMS_TEST,
-        // timeBetweenParts: 100,
-        // numberOfParts: 10,
         startTime: {
           startType: StartTimeValue.AT_EPOCH,
           epoch: BigNumber.from(blockTimestamp + 1),
@@ -384,6 +382,35 @@ describe('Handle Poll Failed because the order is Orderbook', () => {
     expect(result).toEqual({
       result: PollResultCode.UNEXPECTED_ERROR,
       reason: "TWAP part hash't started. First TWAP part start at 1700000001 (2023-11-14T22:13:21.000Z)",
+      error: undefined,
+    })
+  })
+
+  test(`[UNEXPECTED_ERROR] Twap has expired`, async () => {
+    // GIVEN: The order has expired (starts 1 second after this block)
+    const timeBetweenParts = BigNumber.from(100)
+    const numberOfParts = BigNumber.from(10)
+    const totalDuration = timeBetweenParts.mul(numberOfParts)
+    const twap = new MockTwap({
+      handler: TWAP_ADDRESS,
+      data: {
+        ...TWAP_PARAMS_TEST,
+        timeBetweenParts,
+        numberOfParts,
+        startTime: {
+          startType: StartTimeValue.AT_EPOCH,
+          epoch: BigNumber.from(blockTimestamp).sub(totalDuration).sub(1), // TWAP expired 1 second ago
+        },
+      },
+    })
+
+    // WHEN: We invoke handlePollFailedAlreadyPresent
+    const result = await twap.handlePollFailedAlreadyPresent(orderId, order, pollParams)
+
+    // THEN: It should raise an Unhandled error (it should never happen). This function should be invoked only if "pollValidate" who should already make sure the polling fails if it hasn't started the TWAP
+    expect(result).toEqual({
+      result: PollResultCode.UNEXPECTED_ERROR,
+      reason: 'TWAP is expired. Expired at 1699999999 (2023-11-14T22:13:19.000Z)',
       error: undefined,
     })
   })
