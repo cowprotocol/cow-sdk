@@ -379,6 +379,113 @@ describe('Current TWAP part is in the Order Book', () => {
     jest.resetAllMocks()
   })
 
+  test(`Polling at the start of part 1/10`, async () => {
+    // GIVEN: The order starts precisely at the current block time
+    const pollParams = getPollParams({
+      blockTimestamp: startTimestamp,
+    })
+
+    // WHEN: We invoke handlePollFailedAlreadyPresent
+    const result = await twap.handlePollFailedAlreadyPresent(orderId, order, pollParams)
+
+    // THEN: It should instruct we should wait for part 2 to start
+    expect(result).toEqual({
+      result: PollResultCode.TRY_AT_EPOCH,
+      reason:
+        "Current active TWAP part (1/10) is already in the Order Book. TWAP part 2 doesn't start until 1700000100 (2023-11-14T22:15:00.000Z)",
+      epoch: 1700000100,
+    })
+  })
+
+  test(`Polling at the middle of part 1/10`, async () => {
+    // GIVEN: Polling at the middle of the first part
+    const pollParams = getPollParams({
+      blockTimestamp: startTimestamp + Math.floor(timeBetweenParts / 2),
+    })
+
+    // WHEN: We invoke handlePollFailedAlreadyPresent
+    const result = await twap.handlePollFailedAlreadyPresent(orderId, order, pollParams)
+
+    // THEN: It should instruct we should wait for part 2 to start
+    expect(result).toEqual({
+      result: PollResultCode.TRY_AT_EPOCH,
+      reason:
+        "Current active TWAP part (1/10) is already in the Order Book. TWAP part 2 doesn't start until 1700000100 (2023-11-14T22:15:00.000Z)",
+      epoch: 1700000100,
+    })
+  })
+
+  test(`Polling at the last second of part 1/10`, async () => {
+    // GIVEN: Polling at the last second of the first part
+    const pollParams = getPollParams({
+      blockTimestamp: startTimestamp + timeBetweenParts - 1,
+    })
+
+    // WHEN: We invoke handlePollFailedAlreadyPresent
+    const result = await twap.handlePollFailedAlreadyPresent(orderId, order, pollParams)
+
+    // THEN: It should instruct we should wait for part 2 to start
+    expect(result).toEqual({
+      result: PollResultCode.TRY_AT_EPOCH,
+      reason:
+        "Current active TWAP part (1/10) is already in the Order Book. TWAP part 2 doesn't start until 1700000100 (2023-11-14T22:15:00.000Z)",
+      epoch: 1700000100,
+    })
+  })
+
+  test(`Polling at the start of part 2/10`, async () => {
+    // GIVEN: Part 2 just started
+    const pollParams = getPollParams({
+      blockTimestamp: startTimestamp + timeBetweenParts,
+    })
+
+    // WHEN: We invoke handlePollFailedAlreadyPresent
+    const result = await twap.handlePollFailedAlreadyPresent(orderId, order, pollParams)
+
+    // THEN: It should instruct we should wait for part 2 to start
+    expect(result).toEqual({
+      result: PollResultCode.TRY_AT_EPOCH,
+      reason:
+        "Current active TWAP part (2/10) is already in the Order Book. TWAP part 3 doesn't start until 1700000200 (2023-11-14T22:16:40.000Z)",
+      epoch: 1700000200,
+    })
+  })
+
+  test(`Polling at the last second of part 9/10`, async () => {
+    // GIVEN: Part 9 is about to end
+    const pollParams = getPollParams({
+      blockTimestamp: startTimestamp + 9 * timeBetweenParts - 1,
+    })
+
+    // WHEN: We invoke handlePollFailedAlreadyPresent
+    const result = await twap.handlePollFailedAlreadyPresent(orderId, order, pollParams)
+
+    // THEN: It should instruct we should wait for part 2 to start
+    expect(result).toEqual({
+      result: PollResultCode.TRY_AT_EPOCH,
+      reason:
+        "Current active TWAP part (9/10) is already in the Order Book. TWAP part 10 doesn't start until 1700000900 (2023-11-14T22:28:20.000Z)",
+      epoch: 1700000900,
+    })
+  })
+
+  test(`Polling at the first second of part 10/10`, async () => {
+    // GIVEN: Part 10 is about to end
+    const pollParams = getPollParams({
+      blockTimestamp: startTimestamp + 9 * timeBetweenParts,
+    })
+
+    // WHEN: We invoke handlePollFailedAlreadyPresent
+    const result = await twap.handlePollFailedAlreadyPresent(orderId, order, pollParams)
+
+    // THEN: It should instruct we should wait for part 2 to start
+    expect(result).toEqual({
+      result: PollResultCode.DONT_TRY_AGAIN,
+      reason:
+        'Current active TWAP part (10/10) is already in the Order Book. This was the last TWAP part, nor more orders need to be placed',
+    })
+  })
+
   test(`[UNEXPECTED_ERROR] Twap hasn't started`, async () => {
     // GIVEN: The order hasn't started (starts 1 second after this block)
     const pollParams = getPollParams({
@@ -410,96 +517,6 @@ describe('Current TWAP part is in the Order Book', () => {
       result: PollResultCode.UNEXPECTED_ERROR,
       reason: 'TWAP is expired. Expired at 1700001000 (2023-11-14T22:30:00.000Z)',
       error: undefined,
-    })
-  })
-
-  test(`TWAP just started`, async () => {
-    // GIVEN: The order starts precisely at the current block time
-    const pollParams = getPollParams({
-      blockTimestamp: startTimestamp,
-    })
-
-    // WHEN: We invoke handlePollFailedAlreadyPresent
-    const result = await twap.handlePollFailedAlreadyPresent(orderId, order, pollParams)
-
-    // THEN: It should instruct we should wait for part 2 to start
-    expect(result).toEqual({
-      result: PollResultCode.TRY_AT_EPOCH,
-      reason:
-        "Current active TWAP part (1/10) is already in the Order Book. TWAP part 2 doesn't start until 1700000100 (2023-11-14T22:15:00.000Z)",
-      epoch: 1700000100,
-    })
-  })
-
-  test(`We are in the middle of part 1/10`, async () => {
-    // GIVEN: We are in the middle of the first part
-    const pollParams = getPollParams({
-      blockTimestamp: startTimestamp + Math.floor(timeBetweenParts / 2),
-    })
-
-    // WHEN: We invoke handlePollFailedAlreadyPresent
-    const result = await twap.handlePollFailedAlreadyPresent(orderId, order, pollParams)
-
-    // THEN: It should instruct we should wait for part 2 to start
-    expect(result).toEqual({
-      result: PollResultCode.TRY_AT_EPOCH,
-      reason:
-        "Current active TWAP part (1/10) is already in the Order Book. TWAP part 2 doesn't start until 1700000100 (2023-11-14T22:15:00.000Z)",
-      epoch: 1700000100,
-    })
-  })
-
-  test(`We are in the last second of part 1/10`, async () => {
-    // GIVEN: We are in the last second of the first part
-    const pollParams = getPollParams({
-      blockTimestamp: startTimestamp + timeBetweenParts - 1,
-    })
-
-    // WHEN: We invoke handlePollFailedAlreadyPresent
-    const result = await twap.handlePollFailedAlreadyPresent(orderId, order, pollParams)
-
-    // THEN: It should instruct we should wait for part 2 to start
-    expect(result).toEqual({
-      result: PollResultCode.TRY_AT_EPOCH,
-      reason:
-        "Current active TWAP part (1/10) is already in the Order Book. TWAP part 2 doesn't start until 1700000100 (2023-11-14T22:15:00.000Z)",
-      epoch: 1700000100,
-    })
-  })
-
-  test(`We are in the start of part 2/10`, async () => {
-    // GIVEN: Part 2 just started
-    const pollParams = getPollParams({
-      blockTimestamp: startTimestamp + timeBetweenParts,
-    })
-
-    // WHEN: We invoke handlePollFailedAlreadyPresent
-    const result = await twap.handlePollFailedAlreadyPresent(orderId, order, pollParams)
-
-    // THEN: It should instruct we should wait for part 2 to start
-    expect(result).toEqual({
-      result: PollResultCode.TRY_AT_EPOCH,
-      reason:
-        "Current active TWAP part (2/10) is already in the Order Book. TWAP part 3 doesn't start until 1700000200 (2023-11-14T22:16:40.000Z)",
-      epoch: 1700000200,
-    })
-  })
-
-  test(`We are in the last second of part 9/10`, async () => {
-    // GIVEN: Part 9 is about to end
-    const pollParams = getPollParams({
-      blockTimestamp: startTimestamp + 9 * timeBetweenParts - 1,
-    })
-
-    // WHEN: We invoke handlePollFailedAlreadyPresent
-    const result = await twap.handlePollFailedAlreadyPresent(orderId, order, pollParams)
-
-    // THEN: It should instruct we should wait for part 2 to start
-    expect(result).toEqual({
-      result: PollResultCode.TRY_AT_EPOCH,
-      reason:
-        "Current active TWAP part (9/10) is already in the Order Book. TWAP part 10 doesn't start until 1700000900 (2023-11-14T22:28:20.000Z)",
-      epoch: 1700000900,
     })
   })
 })
