@@ -1,3 +1,4 @@
+import { mockGetOrder } from '../order-book/__mock__/api'
 import {
   DEFAULT_ORDER_PARAMS,
   TestConditionalOrder,
@@ -13,18 +14,11 @@ import { BuyTokenDestination, OrderKind, SellTokenSource } from '../order-book/g
 import { computeOrderUid } from '../utils'
 
 jest.mock('./contracts')
-jest.mock('../order-book/api', () => {
-  return {
-    OrderBookApi: class MockedOrderBookApi {
-      getOrder = mockGetOrder
-    },
-  }
-})
+
 jest.mock('../utils')
 
 const mockGetComposableCow = getComposableCow as jest.MockedFunction<typeof getComposableCow>
 const mockComputeOrderUid = computeOrderUid as jest.MockedFunction<typeof computeOrderUid>
-const mockGetOrder = jest.fn()
 
 const TWAP_SERIALIZED = (salt?: string, handler?: string): string => {
   return (
