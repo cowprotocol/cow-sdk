@@ -370,7 +370,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     const currentPartNumber = Math.floor((blockTimestamp - startTimestamp) / timeBetweenParts)
 
     // Next part start time
-    const nextPartStartTime = blockTimestamp + (currentPartNumber + 1) * timeBetweenParts
+    const nextPartStartTime = startTimestamp + (currentPartNumber + 1) * timeBetweenParts
 
     /**
      * Given we know, that TWAP part that is due in the current block is already in the Orderbook,
