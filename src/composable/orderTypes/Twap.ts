@@ -335,28 +335,38 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
       }
     }
 
-    // TODO: Do not check between parts
-    //    - 1. Check whats the order parameters for the current partNumber
-    //    - 2. Derive discrete orderUid
-    //    - 3. Verify if this is already created in the API
-    //    - 4. If so, we know we should return
-    //   return {
-    //     result: PollResultCode.TRY_AT_EPOCH,
-    //     epoch: nextPartStartTime,
-    //     reason: `Current active TWAP part is already created. The next one doesn't start until ${nextPartStartTime} (${formatEpoch(nextPartStartTime)})`,
-    //   }
-    // // Get current part number
-    // const partNumber = Math.floor(blockTimestamp - startTimestamp / timeBetweenParts.toNumber())
-
     return undefined
   }
 
   protected async handlePollFailedAlreadyPresent(
     _orderUid: string,
     _order: GPv2Order.DataStructOutput,
-    _params: PollParams
+    params: PollParams
   ): Promise<PollResultErrors | undefined> {
-    return undefined
+    const { blockInfo = await getBlockInfo(params.provider) } = params
+    const { blockTimestamp } = blockInfo
+
+    const timeBetweenParts = this.data.timeBetweenParts.toNumber()
+    const { numberOfParts } = this.data
+    const startTimestamp = await this.startTimestamp(params)
+
+    // Get current part number
+    const currentPartNumber = Math.floor(blockTimestamp - startTimestamp / timeBetweenParts)
+
+    // Next part start time
+    const nextPartStartTime = (currentPartNumber + 1) * timeBetweenParts
+
+    /**
+     * Given we know, that TWAP part that is due in the current block is already in the Orderbook,
+     * Then, we can safely instruct that we should wait until the next TWAP part starts
+     */
+    return {
+      result: PollResultCode.TRY_AT_EPOCH,
+      epoch: nextPartStartTime,
+      reason: `Current active TWAP part (${currentPartNumber}/${numberOfParts}) is already in the Order Book. TWAP part ${currentPartNumber} doesn't start until ${nextPartStartTime} (${formatEpoch(
+        nextPartStartTime
+      )})`,
+    }
   }
 
   /**

@@ -222,7 +222,7 @@ describe('To String', () => {
   })
 })
 
-describe('Poll', () => {
+describe('Poll Validate', () => {
   const blockNumber = 123456
   const blockTimestamp = 1700000000
   const mockStartTimestamp: jest.MockedFunction<(params: OwnerContext) => Promise<number>> = jest.fn()
