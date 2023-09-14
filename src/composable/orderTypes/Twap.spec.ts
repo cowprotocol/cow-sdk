@@ -1,5 +1,5 @@
 import '../../order-book/__mock__/api'
-import { OwnerContext, PollParams, PollResultErrors } from '../types'
+import { OwnerContext, PollParams, PollResultCode, PollResultErrors } from '../types'
 import { DurationType, StartTimeValue, Twap, TWAP_ADDRESS, TwapData } from './Twap'
 import { BigNumber, utils, constants } from 'ethers'
 
@@ -225,7 +225,7 @@ describe('To String', () => {
 describe('Poll', () => {
   const pollParams = { owner: OWNER, chainId: 1, provider: {} } as PollParams
   const blockNumber = 123456
-  const blockTimestamp = 1694736000
+  const blockTimestamp = 1700000000
   const mockStartTimestamp: jest.MockedFunction<(params: OwnerContext) => Promise<number>> = jest.fn()
   const mockEndTimestamp: jest.MockedFunction<(startTimestamp: number) => number> = jest.fn()
 
@@ -258,5 +258,23 @@ describe('Poll', () => {
 
     // THEN: Successful validation
     expect(result).toEqual(undefined)
+  })
+
+  test.only(`[TRY_AT_EPOCH] TWAP has not started`, async () => {
+    // GIVEN: A TWAP that hasn't started (should start in 1 second ago, should finish in 2 second)
+    const startTime = blockTimestamp + 1
+    const twap = new MockTwap({ handler: TWAP_ADDRESS, data: TWAP_PARAMS_TEST })
+    mockStartTimestamp.mockReturnValue(Promise.resolve(startTime))
+    mockEndTimestamp.mockReturnValue(blockTimestamp + 2)
+
+    // WHEN: We poll
+    const result = await twap.pollValidate({ ...pollParams, blockInfo: { blockNumber, blockTimestamp } })
+
+    // THEN: Then, it will return an error instructing to try in 1 second (at start time)
+    expect(result).toEqual({
+      result: PollResultCode.TRY_AT_EPOCH,
+      epoch: startTime,
+      reason: "TWAP hasn't started yet. Starts at 1700000001 (2023-11-14T22:13:21.000Z)",
+    })
   })
 })
