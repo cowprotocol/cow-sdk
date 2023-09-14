@@ -415,7 +415,7 @@ describe('Current TWAP part is in the Order Book', () => {
     })
   })
 
-  test.only(`TWAP just started`, async () => {
+  test(`TWAP just started`, async () => {
     // GIVEN: The order starts precisely at the current block time
     const twap = new MockTwap({
       handler: TWAP_ADDRESS,
@@ -426,6 +426,33 @@ describe('Current TWAP part is in the Order Book', () => {
         startTime: {
           startType: StartTimeValue.AT_EPOCH,
           epoch: BigNumber.from(blockTimestamp),
+        },
+      },
+    })
+
+    // WHEN: We invoke handlePollFailedAlreadyPresent
+    const result = await twap.handlePollFailedAlreadyPresent(orderId, order, pollParams)
+
+    // THEN: It should raise an Unhandled error (it should never happen). This function should be invoked only if "pollValidate" who should already make sure the polling fails if it hasn't started the TWAP
+    expect(result).toEqual({
+      result: PollResultCode.TRY_AT_EPOCH,
+      reason:
+        "Current active TWAP part (1/10) is already in the Order Book. TWAP part 2 doesn't start until 1700000100 (2023-11-14T22:15:00.000Z)",
+      epoch: 1700000100,
+    })
+  })
+
+  test(`We are in the middle of part 1/10`, async () => {
+    // GIVEN: We are in the middle of the first part
+    const twap = new MockTwap({
+      handler: TWAP_ADDRESS,
+      data: {
+        ...TWAP_PARAMS_TEST,
+        timeBetweenParts: BigNumber.from(100),
+        numberOfParts: BigNumber.from(10),
+        startTime: {
+          startType: StartTimeValue.AT_EPOCH,
+          epoch: BigNumber.from(blockTimestamp).sub(50),
         },
       },
     })
