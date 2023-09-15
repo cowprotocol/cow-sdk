@@ -375,7 +375,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
         result: PollResultCode.DONT_TRY_AGAIN,
         reason: `Current active TWAP part (${
           currentPartNumber + 1
-        }/${numberOfParts}) is already in the Order Book. This was the last TWAP part, nor more orders need to be placed`,
+        }/${numberOfParts}) is already in the Order Book. This was the last TWAP part, no more orders need to be placed`,
       }
     }
 

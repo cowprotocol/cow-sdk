@@ -482,7 +482,7 @@ describe('Current TWAP part is in the Order Book', () => {
     expect(result).toEqual({
       result: PollResultCode.DONT_TRY_AGAIN,
       reason:
-        'Current active TWAP part (10/10) is already in the Order Book. This was the last TWAP part, nor more orders need to be placed',
+        'Current active TWAP part (10/10) is already in the Order Book. This was the last TWAP part, no more orders need to be placed',
     })
   })
 
