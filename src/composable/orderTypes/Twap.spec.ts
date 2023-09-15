@@ -235,7 +235,7 @@ describe('Poll Validate', () => {
 
   const provider = {
     getBlock: mockGetBlock,
-  } as any as providers.Provider
+  } as unknown as providers.Provider
 
   const pollParams = {
     owner: OWNER,
