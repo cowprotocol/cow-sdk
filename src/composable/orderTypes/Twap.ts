@@ -338,6 +338,15 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     return undefined
   }
 
+  /**
+   * Handles the error when the order is already present in the orderbook.
+   *
+   * Given the current part is in the book, it will signal to Watch Tower what to do:
+   *   - Wait until the next part starts
+   *   - Don't try again if current part is the last one
+   *
+   * NOTE: The error messages will refer to the parts 1-indexed, so first part is 1, second part is 2, etc.
+   */
   protected async handlePollFailedAlreadyPresent(
     _orderUid: string,
     _order: GPv2Order.DataStructOutput,
