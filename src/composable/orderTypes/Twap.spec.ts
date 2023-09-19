@@ -275,7 +275,7 @@ describe('Poll Validate', () => {
   })
 
   test(`[TRY_AT_EPOCH] TWAP has not started`, async () => {
-    // GIVEN: A TWAP that hasn't started (should start in 1 second ago, should finish in 2 second)
+    // GIVEN: A TWAP that hasn't started (should start in 1 second, should finish in 2 second)
     const startTime = blockTimestamp + 1
     mockStartTimestamp.mockReturnValue(Promise.resolve(startTime))
     mockEndTimestamp.mockReturnValue(blockTimestamp + 2)
@@ -325,7 +325,7 @@ describe('Poll Validate', () => {
     // WHEN: We poll
     const result = await twap.pollValidate({ ...pollParams, blockInfo })
 
-    // THEN: Then, we can see that uses the right block timestamp to validate the order
+    // THEN: Then, we can see that it uses the right block timestamp to validate the order
     expect(result).toEqual({
       result: PollResultCode.TRY_AT_EPOCH,
       epoch: startTime,
