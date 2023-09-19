@@ -347,7 +347,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
    */
   protected async handlePollFailedAlreadyPresent(
     _orderUid: string,
-    _order: GPv2Order.DataStructOutput,
+    _order: GPv2Order.DataStruct,
     params: PollParams
   ): Promise<PollResultErrors | undefined> {
     const { blockInfo = await getBlockInfo(params.provider) } = params

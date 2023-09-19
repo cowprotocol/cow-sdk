@@ -361,7 +361,7 @@ describe('Current TWAP part is in the Order Book', () => {
   const numberOfParts = 10
   const totalDuration = timeBetweenParts * numberOfParts
   const orderId = '0x1'
-  const order = {} as GPv2Order.DataStructOutput
+  const order = {} as GPv2Order.DataStruct
 
   const getPollParams = ({ blockTimestamp }: { blockTimestamp: number }) =>
     ({

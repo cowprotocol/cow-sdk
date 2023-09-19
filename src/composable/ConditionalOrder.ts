@@ -371,7 +371,7 @@ export abstract class ConditionalOrder<D, S> {
    */
   protected abstract handlePollFailedAlreadyPresent(
     orderUid: UID,
-    order: GPv2Order.DataStructOutput,
+    order: GPv2Order.DataStruct,
     params: PollParams
   ): Promise<PollResultErrors | undefined>
 
