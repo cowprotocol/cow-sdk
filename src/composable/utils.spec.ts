@@ -1,7 +1,8 @@
 import 'src/order-book/__mock__/api'
-import { decodeParams, encodeParams, isValidAbi } from './utils'
+import { decodeParams, encodeParams, fromStructToOrder, isValidAbi } from './utils'
 import { DurationType, StartTimeValue, TwapData, TwapStruct, transformDataToStruct } from './orderTypes/Twap'
 import { BigNumber, utils } from 'ethers'
+import { GPv2Order } from './generated/ComposableCoW'
 
 export const TWAP_PARAMS_TEST: TwapData = {
   sellToken: '0x6810e776880C02933D47DB1b9fc05908e5386b96',
@@ -62,5 +63,31 @@ describe('isValidAbi', () => {
 
   test('isValidAbi: Happy path', () => {
     expect(isValidAbi(TWAP_STRUCT_ABI, [TWAP_STRUCT])).toEqual(true)
+  })
+})
+
+describe('fromStructToOrder', () => {
+  test.only('Happy path', () => {
+    const orderData: GPv2Order.DataStruct = {
+      sellToken: '0x177127622c4A00F3d409B75571e12cB3c8973d3c',
+      buyToken: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',
+      receiver: '0x50736F4707eD0c7bae86bd801d65377BB3739550',
+      sellAmount: BigNumber.from('497154622979742700000'),
+      buyAmount: BigNumber.from('26618938443780026000'),
+      validTo: 1698723209,
+      appData: '0x7cc001e5e82772cf4262f2836ae90e1844d2c12ad2fbc346f27a76f5d1cc9d39',
+      feeAmount: BigNumber.from(0),
+      kind: '0xf3b277728b3fee749481eb3e0b3b48980dbbab78658fc419025cb16eee346775',
+      partiallyFillable: false,
+      sellTokenBalance: '0x5a28e9363bb942b639270062aa6bb295f434bcdfc42c97267bf003f272060dc9',
+      buyTokenBalance: '0x5a28e9363bb942b639270062aa6bb295f434bcdfc42c97267bf003f272060dc9',
+    }
+    console.log('fromStructToOrder(orderData)', fromStructToOrder(orderData))
+    expect(fromStructToOrder(orderData)).toEqual({
+      ...orderData,
+      kind: 'sell',
+      sellTokenBalance: 'erc20',
+      buyTokenBalance: 'erc20',
+    })
   })
 })
