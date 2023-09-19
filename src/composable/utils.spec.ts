@@ -82,7 +82,6 @@ describe('fromStructToOrder', () => {
       sellTokenBalance: '0x5a28e9363bb942b639270062aa6bb295f434bcdfc42c97267bf003f272060dc9',
       buyTokenBalance: '0x5a28e9363bb942b639270062aa6bb295f434bcdfc42c97267bf003f272060dc9',
     }
-    console.log('fromStructToOrder(orderData)', fromStructToOrder(orderData))
     expect(fromStructToOrder(orderData)).toEqual({
       ...orderData,
       kind: 'sell',
