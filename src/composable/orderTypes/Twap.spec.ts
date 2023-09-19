@@ -1,7 +1,9 @@
 import '../../order-book/__mock__/api'
+import { OwnerContext, PollParams, PollResultCode, PollResultErrors } from '../types'
 import { DurationType, StartTimeValue, Twap, TWAP_ADDRESS, TwapData } from './Twap'
-import { BigNumber, utils, constants } from 'ethers'
+import { BigNumber, utils, constants, providers } from 'ethers'
 
+const OWNER = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
 export const TWAP_PARAMS_TEST: TwapData = {
   sellToken: '0x6810e776880C02933D47DB1b9fc05908e5386b96',
   buyToken: '0xDAE5F1590db13E3B40423B5b5c5fbf175515910b',
@@ -217,5 +219,117 @@ describe('To String', () => {
     ).toEqual(
       'twap: Sell total 0x6810e776880C02933D47DB1b9fc05908e5386b96@1000000000000000000 for a minimum of 0xDAE5F1590db13E3B40423B5b5c5fbf175515910b@1000000000000000000 over 10 parts with a spacing of 3600s beginning at epoch 1692876646'
     )
+  })
+})
+
+describe('Poll Validate', () => {
+  const blockNumber = 123456
+  const blockTimestamp = 1700000000
+  const mockStartTimestamp: jest.MockedFunction<(params: OwnerContext) => Promise<number>> = jest.fn()
+  const mockEndTimestamp: jest.MockedFunction<(startTimestamp: number) => number> = jest.fn()
+  const mockGetBlock: jest.MockedFunction<
+    (
+      blockHashOrBlockTag: providers.BlockTag | string | Promise<providers.BlockTag | string>
+    ) => Promise<providers.Block>
+  > = jest.fn()
+
+  const provider = {
+    getBlock: mockGetBlock,
+  } as unknown as providers.Provider
+
+  const pollParams = {
+    owner: OWNER,
+    chainId: 1,
+    provider,
+  } as PollParams
+
+  class MockTwap extends Twap {
+    // Just make pollValidate so we can call it in isolation
+    public pollValidate(params: PollParams): Promise<PollResultErrors | undefined> {
+      return super.pollValidate(params)
+    }
+
+    startTimestamp = mockStartTimestamp
+    endTimestamp = mockEndTimestamp
+  }
+  const twap = new MockTwap({ handler: TWAP_ADDRESS, data: TWAP_PARAMS_TEST })
+
+  beforeEach(() => {
+    jest.resetAllMocks()
+  })
+
+  test(`Open TWAP, passes the validations`, async () => {
+    // GIVEN: A TWAP that should be active (should start 1 second ago, should finish in 1 second)
+    mockStartTimestamp.mockReturnValue(Promise.resolve(blockTimestamp - 1))
+    mockEndTimestamp.mockReturnValue(blockTimestamp + 1)
+
+    // WHEN: We poll
+    const result = await twap.pollValidate({ ...pollParams, blockInfo: { blockNumber, blockTimestamp } })
+
+    // THEN: The start time and end time of the TWAP will be checked
+    expect(mockStartTimestamp).toBeCalledTimes(1)
+    expect(mockEndTimestamp).toBeCalledTimes(1)
+
+    // THEN: Successful validation
+    expect(result).toEqual(undefined)
+  })
+
+  test(`[TRY_AT_EPOCH] TWAP has not started`, async () => {
+    // GIVEN: A TWAP that hasn't started (should start in 1 second, should finish in 2 second)
+    const startTime = blockTimestamp + 1
+    mockStartTimestamp.mockReturnValue(Promise.resolve(startTime))
+    mockEndTimestamp.mockReturnValue(blockTimestamp + 2)
+
+    // WHEN: We poll
+    const result = await twap.pollValidate({ ...pollParams, blockInfo: { blockNumber, blockTimestamp } })
+
+    // THEN: Then, it will return an error instructing to try in 1 second (at start time)
+    expect(result).toEqual({
+      result: PollResultCode.TRY_AT_EPOCH,
+      epoch: startTime,
+      reason: "TWAP hasn't started yet. Starts at 1700000001 (2023-11-14T22:13:21.000Z)",
+    })
+  })
+
+  test(`[TRY_AT_EPOCH] TWAP has expired`, async () => {
+    // GIVEN: A TWAP that has already expired (started 2 seconds ago, finished 1 second ago)
+    const expireTime = blockTimestamp - 1
+    mockStartTimestamp.mockReturnValue(Promise.resolve(blockTimestamp - 2))
+    mockEndTimestamp.mockReturnValue(expireTime)
+
+    // WHEN: We poll
+    const result = await twap.pollValidate({ ...pollParams, blockInfo: { blockNumber, blockTimestamp } })
+
+    // THEN: Then, it will return an error instructing to not try again (expired order is a final state, so there's no point to keep polling)
+    expect(result).toEqual({
+      result: PollResultCode.DONT_TRY_AGAIN,
+      reason: 'TWAP has expired. Expired at 1699999999 (2023-11-14T22:13:19.000Z)',
+    })
+  })
+
+  test(`If there's no blockInfo, it will fetch the latest block`, async () => {
+    // GIVEN: We don't provide the blockInfo with the poll params
+    const blockInfo = undefined
+
+    // GIVEN: The current block is before the start time
+    mockGetBlock.mockReturnValue(
+      Promise.resolve({
+        number: blockNumber,
+        timestamp: blockTimestamp,
+      } as providers.Block)
+    )
+    const startTime = blockTimestamp + 1
+    mockStartTimestamp.mockReturnValue(Promise.resolve(startTime))
+    mockEndTimestamp.mockReturnValue(blockTimestamp + 2)
+
+    // WHEN: We poll
+    const result = await twap.pollValidate({ ...pollParams, blockInfo })
+
+    // THEN: Then, we can see that it uses the right block timestamp to validate the order
+    expect(result).toEqual({
+      result: PollResultCode.TRY_AT_EPOCH,
+      epoch: startTime,
+      reason: "TWAP hasn't started yet. Starts at 1700000001 (2023-11-14T22:13:21.000Z)",
+    })
   })
 })
