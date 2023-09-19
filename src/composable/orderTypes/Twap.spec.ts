@@ -207,20 +207,39 @@ describe('Deserialize', () => {
 })
 
 describe('To String', () => {
-  test('toString: Formats correctly', () => {
+  test('toString: Default', () => {
     expect(Twap.fromData(TWAP_PARAMS_TEST).toString()).toEqual(
-      'twap: Sell total 0x6810e776880C02933D47DB1b9fc05908e5386b96@1000000000000000000 for a minimum of 0xDAE5F1590db13E3B40423B5b5c5fbf175515910b@1000000000000000000 over 10 parts with a spacing of 3600s beginning at time of mining'
-    )
-    const startEpoch = BigNumber.from(1692876646)
-    expect(
-      Twap.fromData({
-        ...TWAP_PARAMS_TEST,
-        startTime: { startType: StartTimeValue.AT_EPOCH, epoch: startEpoch },
-      }).toString()
-    ).toEqual(
-      'twap: Sell total 0x6810e776880C02933D47DB1b9fc05908e5386b96@1000000000000000000 for a minimum of 0xDAE5F1590db13E3B40423B5b5c5fbf175515910b@1000000000000000000 over 10 parts with a spacing of 3600s beginning at epoch 1692876646'
+      'twap: {"sellAmount":"1000000000000000000","sellToken":"0x6810e776880C02933D47DB1b9fc05908e5386b96","buyAmount":"1000000000000000000","buyToken":"0xDAE5F1590db13E3B40423B5b5c5fbf175515910b","numberOfParts":"10","startTime":"AT_MINING_TIME","timeBetweenParts":3600,"durationOfPart":"AUTO","receiver":"0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF","appData":"0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5"}'
     )
   })
+})
+
+test('toString: start time at epoch', () => {
+  expect(
+    Twap.fromData({
+      ...TWAP_PARAMS_TEST,
+      startTime: {
+        startType: StartTimeValue.AT_EPOCH,
+        epoch: BigNumber.from(1692876646),
+      },
+    }).toString()
+  ).toEqual(
+    'twap: {"sellAmount":"1000000000000000000","sellToken":"0x6810e776880C02933D47DB1b9fc05908e5386b96","buyAmount":"1000000000000000000","buyToken":"0xDAE5F1590db13E3B40423B5b5c5fbf175515910b","numberOfParts":"10","startTime":1692876646,"timeBetweenParts":3600,"durationOfPart":"AUTO","receiver":"0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF","appData":"0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5"}'
+  )
+})
+
+test('toString: limit duration', () => {
+  expect(
+    Twap.fromData({
+      ...TWAP_PARAMS_TEST,
+      durationOfPart: {
+        durationType: DurationType.LIMIT_DURATION,
+        duration: BigNumber.from(1000),
+      },
+    }).toString()
+  ).toEqual(
+    'twap: {"sellAmount":"1000000000000000000","sellToken":"0x6810e776880C02933D47DB1b9fc05908e5386b96","buyAmount":"1000000000000000000","buyToken":"0xDAE5F1590db13E3B40423B5b5c5fbf175515910b","numberOfParts":"10","startTime":"AT_MINING_TIME","timeBetweenParts":3600,"durationOfPart":1000,"receiver":"0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF","appData":"0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5"}'
+  )
 })
 
 describe('Poll Validate', () => {

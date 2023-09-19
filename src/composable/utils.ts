@@ -1,4 +1,4 @@
-import { utils, providers } from 'ethers'
+import { utils, providers, BigNumber } from 'ethers'
 import {
   COMPOSABLE_COW_CONTRACT_ADDRESS,
   EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS,
@@ -9,6 +9,8 @@ import { BlockInfo, ConditionalOrderParams } from './types'
 
 // Define the ABI tuple for the ConditionalOrderParams struct
 export const CONDITIONAL_ORDER_PARAMS_ABI = ['tuple(address handler, bytes32 salt, bytes staticInput)']
+
+export const DEFAULT_TOKEN_FORMATTER = (address: string, amount: BigNumber) => `${amount}@${address}`
 
 export function isExtensibleFallbackHandler(handler: string, chainId: SupportedChainId): boolean {
   return handler === EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS[chainId]
