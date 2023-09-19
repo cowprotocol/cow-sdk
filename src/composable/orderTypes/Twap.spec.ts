@@ -442,7 +442,7 @@ describe('Current TWAP part is in the Order Book', () => {
     // WHEN: We invoke handlePollFailedAlreadyPresent
     const result = await twap.handlePollFailedAlreadyPresent(orderId, order, pollParams)
 
-    // THEN: It should instruct we should wait for part 2 to start
+    // THEN: It should instruct we should wait for part 3 to start
     expect(result).toEqual({
       result: PollResultCode.TRY_AT_EPOCH,
       reason:
@@ -460,7 +460,7 @@ describe('Current TWAP part is in the Order Book', () => {
     // WHEN: We invoke handlePollFailedAlreadyPresent
     const result = await twap.handlePollFailedAlreadyPresent(orderId, order, pollParams)
 
-    // THEN: It should instruct we should wait for part 2 to start
+    // THEN: It should instruct we should wait for part 10 to start
     expect(result).toEqual({
       result: PollResultCode.TRY_AT_EPOCH,
       reason:
@@ -470,7 +470,7 @@ describe('Current TWAP part is in the Order Book', () => {
   })
 
   test(`Polling at the first second of part 10/10`, async () => {
-    // GIVEN: Part 10 is about to end
+    // GIVEN: Part 10 has just started
     const pollParams = getPollParams({
       blockTimestamp: startTimestamp + 9 * timeBetweenParts,
     })
@@ -478,7 +478,7 @@ describe('Current TWAP part is in the Order Book', () => {
     // WHEN: We invoke handlePollFailedAlreadyPresent
     const result = await twap.handlePollFailedAlreadyPresent(orderId, order, pollParams)
 
-    // THEN: It should instruct we should wait for part 2 to start
+    // THEN: It should instruct that this was the last TWAP part.
     expect(result).toEqual({
       result: PollResultCode.DONT_TRY_AGAIN,
       reason:
