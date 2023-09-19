@@ -67,7 +67,7 @@ describe('isValidAbi', () => {
 })
 
 describe('fromStructToOrder', () => {
-  test.only('Happy path', () => {
+  test('Happy path', () => {
     const orderData: GPv2Order.DataStruct = {
       sellToken: '0x177127622c4A00F3d409B75571e12cB3c8973d3c',
       buyToken: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',

@@ -1,7 +1,7 @@
 import { BigNumber, constants, ethers, utils } from 'ethers'
 import { GPv2Order, IConditionalOrder } from './generated/ComposableCoW'
 
-import { decodeParams, encodeParams } from './utils'
+import { decodeParams, encodeParams, fromStructToOrder } from './utils'
 import {
   ConditionalOrderArguments,
   ConditionalOrderParams,
@@ -16,7 +16,6 @@ import {
 import { getComposableCow, getComposableCowInterface } from './contracts'
 import { OrderBookApi, UID } from 'src/order-book'
 import { computeOrderUid } from 'src/utils'
-import { Order } from '@cowprotocol/contracts'
 
 const orderBookCache: Record<string, OrderBookApi> = {}
 
@@ -292,7 +291,7 @@ export abstract class ConditionalOrder<D, S> {
         orderBookCache[chainId] = orderBookApi
       }
 
-      const orderUid = await computeOrderUid(chainId, owner, order as Order)
+      const orderUid = await computeOrderUid(chainId, owner, fromStructToOrder(order))
 
       // Check if the order is already in the order book
       const isOrderInOrderbook = await orderBookApi
