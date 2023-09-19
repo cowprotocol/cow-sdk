@@ -1,3 +1,4 @@
+import 'src/order-book/__mock__/api'
 import { Multiplexer, Orders } from './Multiplexer'
 import { SupportedChainId } from '../common'
 import { ProofLocation } from './types'

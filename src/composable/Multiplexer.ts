@@ -1,4 +1,3 @@
-import 'src/order-book/__mock__/api'
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree'
 import { BigNumber, providers, utils } from 'ethers'
 
