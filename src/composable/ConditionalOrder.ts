@@ -14,8 +14,8 @@ import {
   PollResultErrors,
 } from './types'
 import { getComposableCow, getComposableCowInterface } from './contracts'
-import { OrderBookApi, UID } from 'src/order-book'
-import { computeOrderUid } from 'src/utils'
+import { OrderBookApi, UID } from '../order-book'
+import { computeOrderUid } from '../utils'
 
 const orderBookCache: Record<string, OrderBookApi> = {}
 
