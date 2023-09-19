@@ -338,6 +338,15 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     return undefined
   }
 
+  /**
+   * Handles the error when the order is already present in the orderbook.
+   *
+   * Given the current part is in the book, it will signal to Watch Tower what to do:
+   *   - Wait until the next part starts
+   *   - Don't try again if current part is the last one
+   *
+   * NOTE: The error messages will refer to the parts 1-indexed, so first part is 1, second part is 2, etc.
+   */
   protected async handlePollFailedAlreadyPresent(
     _orderUid: string,
     _order: GPv2Order.DataStructOutput,
@@ -350,11 +359,37 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     const { numberOfParts } = this.data
     const startTimestamp = await this.startTimestamp(params)
 
+    if (blockTimestamp < startTimestamp) {
+      return {
+        result: PollResultCode.UNEXPECTED_ERROR,
+        reason: `TWAP part hash't started. First TWAP part start at ${startTimestamp} (${formatEpoch(startTimestamp)})`,
+        error: undefined,
+      }
+    }
+    const expireTime = numberOfParts.mul(timeBetweenParts).add(startTimestamp).toNumber()
+    if (blockTimestamp >= expireTime) {
+      return {
+        result: PollResultCode.UNEXPECTED_ERROR,
+        reason: `TWAP is expired. Expired at ${expireTime} (${formatEpoch(expireTime)})`,
+        error: undefined,
+      }
+    }
+
     // Get current part number
-    const currentPartNumber = Math.floor(blockTimestamp - startTimestamp / timeBetweenParts)
+    const currentPartNumber = Math.floor((blockTimestamp - startTimestamp) / timeBetweenParts)
+
+    // If current part is the last one
+    if (currentPartNumber === numberOfParts.toNumber() - 1) {
+      return {
+        result: PollResultCode.DONT_TRY_AGAIN,
+        reason: `Current active TWAP part (${
+          currentPartNumber + 1
+        }/${numberOfParts}) is already in the Order Book. This was the last TWAP part, no more orders need to be placed`,
+      }
+    }
 
     // Next part start time
-    const nextPartStartTime = (currentPartNumber + 1) * timeBetweenParts
+    const nextPartStartTime = startTimestamp + (currentPartNumber + 1) * timeBetweenParts
 
     /**
      * Given we know, that TWAP part that is due in the current block is already in the Orderbook,
@@ -363,9 +398,11 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     return {
       result: PollResultCode.TRY_AT_EPOCH,
       epoch: nextPartStartTime,
-      reason: `Current active TWAP part (${currentPartNumber}/${numberOfParts}) is already in the Order Book. TWAP part ${currentPartNumber} doesn't start until ${nextPartStartTime} (${formatEpoch(
-        nextPartStartTime
-      )})`,
+      reason: `Current active TWAP part (${
+        currentPartNumber + 1
+      }/${numberOfParts}) is already in the Order Book. TWAP part ${
+        currentPartNumber + 2
+      } doesn't start until ${nextPartStartTime} (${formatEpoch(nextPartStartTime)})`,
     }
   }
 
