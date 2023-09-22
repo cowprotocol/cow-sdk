@@ -114,7 +114,7 @@ describe('Id', () => {
     expect(twap1.id).toEqual(twap2.id)
   })
 
-  test('Id changes for different params and same salt', () => {
+  test('Id changes for same params and different salt', () => {
     const twap1 = Twap.fromData({ ...TWAP_PARAMS_TEST }, SALT)
     const twap2 = Twap.fromData({ ...TWAP_PARAMS_TEST }, SALT_2)
 
@@ -122,7 +122,7 @@ describe('Id', () => {
     expect(twap2.id).toEqual(TWAP_ID_2)
   })
 
-  test('Id changes for same params and different salt', () => {
+  test('Id changes for different params and same salt', () => {
     const twap = Twap.fromData(
       { ...TWAP_PARAMS_TEST, startTime: { startType: StartTimeValue.AT_EPOCH, epoch: BigNumber.from(123456789) } },
       SALT
