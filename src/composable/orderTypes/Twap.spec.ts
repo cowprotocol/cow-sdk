@@ -107,7 +107,7 @@ describe('Id', () => {
     expect(twap.id).toEqual(TWAP_ID)
   })
 
-  test("Id don't change for the same params and same salt", () => {
+  test("Id doesn't change for the same params and salt", () => {
     const twap1 = Twap.fromData({ ...TWAP_PARAMS_TEST }, SALT)
     const twap2 = Twap.fromData({ ...TWAP_PARAMS_TEST }, SALT)
 
@@ -248,38 +248,37 @@ describe('To String', () => {
       'twap (0xd8a6889486a47d8ca8f4189f11573b39dbc04f605719ebf4050e44ae53c1bedf): {"sellAmount":"1000000000000000000","sellToken":"0x6810e776880C02933D47DB1b9fc05908e5386b96","buyAmount":"1000000000000000000","buyToken":"0xDAE5F1590db13E3B40423B5b5c5fbf175515910b","numberOfParts":"10","startTime":"AT_MINING_TIME","timeBetweenParts":3600,"durationOfPart":"AUTO","receiver":"0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF","appData":"0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5"}'
     )
   })
-})
-
-test('toString: start time at epoch', () => {
-  const twap = Twap.fromData(
-    {
-      ...TWAP_PARAMS_TEST,
-      startTime: {
-        startType: StartTimeValue.AT_EPOCH,
-        epoch: BigNumber.from(1692876646),
+  test('toString: start time at epoch', () => {
+    const twap = Twap.fromData(
+      {
+        ...TWAP_PARAMS_TEST,
+        startTime: {
+          startType: StartTimeValue.AT_EPOCH,
+          epoch: BigNumber.from(1692876646),
+        },
       },
-    },
-    SALT
-  )
-  expect(twap.toString()).toEqual(
-    'twap (0x28b19554c54f10b67f6ef7e72bdc552fb865b12d33b797ac51227768705fff0d): {"sellAmount":"1000000000000000000","sellToken":"0x6810e776880C02933D47DB1b9fc05908e5386b96","buyAmount":"1000000000000000000","buyToken":"0xDAE5F1590db13E3B40423B5b5c5fbf175515910b","numberOfParts":"10","startTime":1692876646,"timeBetweenParts":3600,"durationOfPart":"AUTO","receiver":"0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF","appData":"0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5"}'
-  )
-})
+      SALT
+    )
+    expect(twap.toString()).toEqual(
+      'twap (0x28b19554c54f10b67f6ef7e72bdc552fb865b12d33b797ac51227768705fff0d): {"sellAmount":"1000000000000000000","sellToken":"0x6810e776880C02933D47DB1b9fc05908e5386b96","buyAmount":"1000000000000000000","buyToken":"0xDAE5F1590db13E3B40423B5b5c5fbf175515910b","numberOfParts":"10","startTime":1692876646,"timeBetweenParts":3600,"durationOfPart":"AUTO","receiver":"0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF","appData":"0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5"}'
+    )
+  })
 
-test('toString: limit duration', () => {
-  const twap = Twap.fromData(
-    {
-      ...TWAP_PARAMS_TEST,
-      durationOfPart: {
-        durationType: DurationType.LIMIT_DURATION,
-        duration: BigNumber.from(1000),
+  test('toString: limit duration', () => {
+    const twap = Twap.fromData(
+      {
+        ...TWAP_PARAMS_TEST,
+        durationOfPart: {
+          durationType: DurationType.LIMIT_DURATION,
+          duration: BigNumber.from(1000),
+        },
       },
-    },
-    SALT
-  )
-  expect(twap.toString()).toEqual(
-    'twap (0x7352e87b6e5d7c4e27479a13b7ba8bc0d67a947d1692994bd995c9dcc94c166a): {"sellAmount":"1000000000000000000","sellToken":"0x6810e776880C02933D47DB1b9fc05908e5386b96","buyAmount":"1000000000000000000","buyToken":"0xDAE5F1590db13E3B40423B5b5c5fbf175515910b","numberOfParts":"10","startTime":"AT_MINING_TIME","timeBetweenParts":3600,"durationOfPart":1000,"receiver":"0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF","appData":"0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5"}'
-  )
+      SALT
+    )
+    expect(twap.toString()).toEqual(
+      'twap (0x7352e87b6e5d7c4e27479a13b7ba8bc0d67a947d1692994bd995c9dcc94c166a): {"sellAmount":"1000000000000000000","sellToken":"0x6810e776880C02933D47DB1b9fc05908e5386b96","buyAmount":"1000000000000000000","buyToken":"0xDAE5F1590db13E3B40423B5b5c5fbf175515910b","numberOfParts":"10","startTime":"AT_MINING_TIME","timeBetweenParts":3600,"durationOfPart":1000,"receiver":"0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF","appData":"0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5"}'
+    )
+  })
 })
 
 describe('Poll Validate', () => {
