@@ -184,8 +184,8 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
    * @param data The TWAP order parameters in a more user-friendly format.
    * @returns An instance of the TWAP order.
    */
-  static fromData(data: TwapData): Twap {
-    return new Twap({ handler: TWAP_ADDRESS, data })
+  static fromData(data: TwapData, salt?: string): Twap {
+    return new Twap({ handler: TWAP_ADDRESS, data, salt })
   }
 
   /**
@@ -475,7 +475,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
       appData,
     }
 
-    return `${this.orderType}: ${JSON.stringify(details)}`
+    return `${this.orderType} (${this.id}): ${JSON.stringify(details)}`
   }
 
   /**
