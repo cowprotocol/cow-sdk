@@ -54,7 +54,7 @@ export class TestConditionalOrder extends ConditionalOrder<string, string> {
   }
   protected async handlePollFailedAlreadyPresent(
     _orderUid: string,
-    _order: GPv2Order.DataStructOutput,
+    _order: GPv2Order.DataStruct,
     _params: PollParams
   ): Promise<PollResultErrors | undefined> {
     return undefined

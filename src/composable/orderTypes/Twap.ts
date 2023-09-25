@@ -33,8 +33,6 @@ const TWAP_STRUCT_ABI = [
   'tuple(address sellToken, address buyToken, address receiver, uint256 partSellAmount, uint256 minPartLimit, uint256 t0, uint256 n, uint256 t, uint256 span, bytes32 appData)',
 ]
 
-const DEFAULT_TOKEN_FORMATTER = (address: string, amount: BigNumber) => `${address}@${amount}`
-
 /**
  * Base parameters for a TWAP order. Shared by:
  *   - TwapStruct (modelling the contract's struct used for `staticInput`).
@@ -186,8 +184,8 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
    * @param data The TWAP order parameters in a more user-friendly format.
    * @returns An instance of the TWAP order.
    */
-  static fromData(data: TwapData): Twap {
-    return new Twap({ handler: TWAP_ADDRESS, data })
+  static fromData(data: TwapData, salt?: string): Twap {
+    return new Twap({ handler: TWAP_ADDRESS, data, salt })
   }
 
   /**
@@ -349,7 +347,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
    */
   protected async handlePollFailedAlreadyPresent(
     _orderUid: string,
-    _order: GPv2Order.DataStructOutput,
+    _order: GPv2Order.DataStruct,
     params: PollParams
   ): Promise<PollResultErrors | undefined> {
     const { blockInfo = await getBlockInfo(params.provider) } = params
@@ -443,26 +441,41 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
 
   /**
    * Create a human-readable string representation of the TWAP order.
-   * @param {((address: string, amount: BigNumber) => string) | undefined} tokenFormatter An optional
-   *        function that takes an address and an amount and returns a human-readable string.
    * @returns {string} A human-readable string representation of the TWAP order.
    */
-  toString(tokenFormatter = DEFAULT_TOKEN_FORMATTER): string {
+  toString(): string {
     const {
+      sellAmount,
       sellToken,
+      buyAmount,
       buyToken,
       numberOfParts,
-      timeBetweenParts = DEFAULT_DURATION_OF_PART,
       startTime = DEFAULT_START_TIME,
-      sellAmount,
-      buyAmount,
+      timeBetweenParts,
+      durationOfPart = DEFAULT_DURATION_OF_PART,
+      receiver,
+      appData,
     } = this.data
 
-    const sellAmountFormatted = tokenFormatter(sellToken, sellAmount)
-    const buyAmountFormatted = tokenFormatter(buyToken, buyAmount)
-    const t0Formatted =
-      startTime.startType === StartTimeValue.AT_MINING_TIME ? 'time of mining' : 'epoch ' + startTime.epoch.toString()
-    return `${this.orderType}: Sell total ${sellAmountFormatted} for a minimum of ${buyAmountFormatted} over ${numberOfParts} parts with a spacing of ${timeBetweenParts}s beginning at ${t0Formatted}`
+    const startTimeFormatted =
+      startTime.startType === StartTimeValue.AT_MINING_TIME ? 'AT_MINING_TIME' : startTime.epoch.toNumber()
+    const durationOfPartFormatted =
+      durationOfPart.durationType === DurationType.AUTO ? 'AUTO' : durationOfPart.duration.toNumber()
+
+    const details = {
+      sellAmount: sellAmount.toString(),
+      sellToken,
+      buyAmount: buyAmount.toString(),
+      buyToken,
+      numberOfParts: numberOfParts.toString(),
+      startTime: startTimeFormatted,
+      timeBetweenParts: timeBetweenParts.toNumber(),
+      durationOfPart: durationOfPartFormatted,
+      receiver,
+      appData,
+    }
+
+    return `${this.orderType} (${this.id}): ${JSON.stringify(details)}`
   }
 
   /**

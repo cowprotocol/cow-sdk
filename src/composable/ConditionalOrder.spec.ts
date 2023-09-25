@@ -12,6 +12,7 @@ import { constants } from 'ethers'
 import { OwnerContext, PollParams, PollResultCode, PollResultErrors } from './types'
 import { BuyTokenDestination, OrderKind, SellTokenSource } from '../order-book/generated'
 import { computeOrderUid } from '../utils'
+import { GPv2Order } from './generated/ComposableCoW'
 
 jest.mock('./contracts')
 
@@ -45,7 +46,7 @@ const TWAP_SERIALIZED = (salt?: string, handler?: string): string => {
 const OWNER = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
 const SINGLE_ORDER = createTestConditionalOrder()
 const MERKLE_ROOT_ORDER = createTestConditionalOrder({ isSingleOrder: false })
-const DISCRETE_ORDER = {
+const DISCRETE_ORDER: GPv2Order.DataStruct = {
   sellToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
   buyToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
   receiver: '0x6810e776880c02933d47db1b9fc05908e5386b96',
@@ -56,9 +57,8 @@ const DISCRETE_ORDER = {
   partiallyFillable: true,
   sellTokenBalance: SellTokenSource.ERC20,
   buyTokenBalance: BuyTokenDestination.ERC20,
-  from: '0x6810e776880c02933d47db1b9fc05908e5386b96',
   kind: OrderKind.BUY,
-  class: 'market',
+  feeAmount: '0',
 }
 const ERROR_REASON = 'Not valid, because I say so!'
 

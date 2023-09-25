@@ -1,7 +1,7 @@
 import { BigNumber, constants, ethers, utils } from 'ethers'
 import { GPv2Order, IConditionalOrder } from './generated/ComposableCoW'
 
-import { decodeParams, encodeParams } from './utils'
+import { decodeParams, encodeParams, fromStructToOrder } from './utils'
 import {
   ConditionalOrderArguments,
   ConditionalOrderParams,
@@ -14,9 +14,8 @@ import {
   PollResultErrors,
 } from './types'
 import { getComposableCow, getComposableCowInterface } from './contracts'
-import { OrderBookApi, UID } from 'src/order-book'
-import { computeOrderUid } from 'src/utils'
-import { Order } from '@cowprotocol/contracts'
+import { OrderBookApi, UID } from '../order-book'
+import { computeOrderUid } from '../utils'
 
 const orderBookCache: Record<string, OrderBookApi> = {}
 
@@ -292,7 +291,7 @@ export abstract class ConditionalOrder<D, S> {
         orderBookCache[chainId] = orderBookApi
       }
 
-      const orderUid = await computeOrderUid(chainId, owner, order as Order)
+      const orderUid = await computeOrderUid(chainId, owner, fromStructToOrder(order))
 
       // Check if the order is already in the order book
       const isOrderInOrderbook = await orderBookApi
@@ -372,7 +371,7 @@ export abstract class ConditionalOrder<D, S> {
    */
   protected abstract handlePollFailedAlreadyPresent(
     orderUid: UID,
-    order: GPv2Order.DataStructOutput,
+    order: GPv2Order.DataStruct,
     params: PollParams
   ): Promise<PollResultErrors | undefined>
 
