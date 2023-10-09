@@ -284,7 +284,7 @@ describe('To String', () => {
 describe('Poll Validate', () => {
   const blockNumber = 123456
   const blockTimestamp = 1700000000
-  const mockStartTimestamp: jest.MockedFunction<(params: OwnerContext) => Promise<number>> = jest.fn()
+  const mockCabinet: jest.MockedFunction<(params: OwnerContext) => Promise<string>> = jest.fn()
   const mockEndTimestamp: jest.MockedFunction<(startTimestamp: number) => number> = jest.fn()
   const mockGetBlock: jest.MockedFunction<
     (
@@ -308,7 +308,7 @@ describe('Poll Validate', () => {
       return super.pollValidate(params)
     }
 
-    startTimestamp = mockStartTimestamp
+    cabinet = mockCabinet
     endTimestamp = mockEndTimestamp
   }
   const twap = new MockTwap({ handler: TWAP_ADDRESS, data: TWAP_PARAMS_TEST })
@@ -319,15 +319,14 @@ describe('Poll Validate', () => {
 
   test(`Open TWAP, passes the validations`, async () => {
     // GIVEN: A TWAP that should be active (should start 1 second ago, should finish in 1 second)
-    mockStartTimestamp.mockReturnValue(Promise.resolve(blockTimestamp - 1))
+    mockCabinet.mockReturnValue(uint256Helper(blockTimestamp - 1))
     mockEndTimestamp.mockReturnValue(blockTimestamp + 1)
 
     // WHEN: We poll
     const result = await twap.pollValidate({ ...pollParams, blockInfo: { blockNumber, blockTimestamp } })
 
     // THEN: The start time and end time of the TWAP will be checked
-    expect(mockStartTimestamp).toBeCalledTimes(1)
-    expect(mockEndTimestamp).toBeCalledTimes(1)
+    expect(mockCabinet).toBeCalledTimes(1)
 
     // THEN: Successful validation
     expect(result).toEqual(undefined)
@@ -336,7 +335,7 @@ describe('Poll Validate', () => {
   test(`[TRY_AT_EPOCH] TWAP has not started`, async () => {
     // GIVEN: A TWAP that hasn't started (should start in 1 second, should finish in 2 second)
     const startTime = blockTimestamp + 1
-    mockStartTimestamp.mockReturnValue(Promise.resolve(startTime))
+    mockCabinet.mockReturnValue(uint256Helper(startTime))
     mockEndTimestamp.mockReturnValue(blockTimestamp + 2)
 
     // WHEN: We poll
@@ -353,7 +352,7 @@ describe('Poll Validate', () => {
   test(`[TRY_AT_EPOCH] TWAP has expired`, async () => {
     // GIVEN: A TWAP that has already expired (started 2 seconds ago, finished 1 second ago)
     const expireTime = blockTimestamp - 1
-    mockStartTimestamp.mockReturnValue(Promise.resolve(blockTimestamp - 2))
+    mockCabinet.mockReturnValue(uint256Helper(blockTimestamp - 2))
     mockEndTimestamp.mockReturnValue(expireTime)
 
     // WHEN: We poll
@@ -363,6 +362,20 @@ describe('Poll Validate', () => {
     expect(result).toEqual({
       result: PollResultCode.DONT_TRY_AGAIN,
       reason: 'TWAP has expired. Expired at 1699999999 (2023-11-14T22:13:19.000Z)',
+    })
+  })
+
+  test(`[CABINET OVERFLOW] The cabinet stored value is greater than uint32`, async () => {
+    // GIVEN: The cabinet stored value is greater than uint32
+    mockCabinet.mockReturnValue(uint256Helper(2 ** 32))
+
+    // WHEN: We poll
+    const result = await twap.pollValidate({ ...pollParams, blockInfo: { blockNumber, blockTimestamp } })
+
+    // THEN: Then, it will return an error instructing to not try again (expired order is a final state, so there's no point to keep polling)
+    expect(result).toEqual({
+      result: PollResultCode.DONT_TRY_AGAIN,
+      reason: 'Cabinet epoch out of range: 4294967296',
     })
   })
 
@@ -378,7 +391,7 @@ describe('Poll Validate', () => {
       } as providers.Block)
     )
     const startTime = blockTimestamp + 1
-    mockStartTimestamp.mockReturnValue(Promise.resolve(startTime))
+    mockCabinet.mockReturnValue(uint256Helper(startTime))
     mockEndTimestamp.mockReturnValue(blockTimestamp + 2)
 
     // WHEN: We poll
@@ -578,3 +591,5 @@ describe('Current TWAP part is in the Order Book', () => {
     })
   })
 })
+
+const uint256Helper = (n: number) => Promise.resolve(utils.defaultAbiCoder.encode(['uint256'], [n]))
