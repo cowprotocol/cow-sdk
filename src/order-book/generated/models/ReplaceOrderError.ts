@@ -14,7 +14,7 @@ export namespace ReplaceOrderError {
         ORDER_FULLY_EXECUTED = 'OrderFullyExecuted',
         ORDER_EXPIRED = 'OrderExpired',
         ON_CHAIN_ORDER = 'OnChainOrder',
-        DUPLICATE_ORDER = 'DuplicateOrder',
+        DUPLICATED_ORDER = 'DuplicatedOrder',
         INSUFFICIENT_FEE = 'InsufficientFee',
         INSUFFICIENT_ALLOWANCE = 'InsufficientAllowance',
         INSUFFICIENT_BALANCE = 'InsufficientBalance',
