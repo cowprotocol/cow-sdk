@@ -273,13 +273,21 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     }
 
     const cabinet = await this.cabinet(params)
-    const cabinetEpoch = utils.defaultAbiCoder.decode(['uint256'], cabinet)[0]
+    const rawCabinetEpoch = utils.defaultAbiCoder.decode(['uint256'], cabinet)[0] as BigNumber
+
+    // Guard against out-of-range cabinet epoch
+    if (rawCabinetEpoch.gt(MAX_UINT32)) {
+      throw new Error(`Cabinet epoch out of range: ${rawCabinetEpoch.toString()}`)
+    }
+
+    // Convert the cabinet epoch (bignumber) to a number.
+    const cabinetEpoch = rawCabinetEpoch.toNumber()
 
     if (cabinetEpoch === 0) {
       throw new Error('Cabinet is not set. Required for TWAP orders that start at mining time.')
     }
 
-    return parseInt(cabinet, 16)
+    return cabinetEpoch
   }
 
   /**
@@ -313,27 +321,49 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     const { blockInfo = await getBlockInfo(params.provider) } = params
     const { blockTimestamp } = blockInfo
 
-    const startTimestamp = await this.startTimestamp(params)
+    try {
+      const startTimestamp = await this.startTimestamp(params)
 
-    if (startTimestamp > blockTimestamp) {
-      // The start time hasn't started
+      if (startTimestamp > blockTimestamp) {
+        // The start time hasn't started
+        return {
+          result: PollResultCode.TRY_AT_EPOCH,
+          epoch: startTimestamp,
+          reason: `TWAP hasn't started yet. Starts at ${startTimestamp} (${formatEpoch(startTimestamp)})`,
+        }
+      }
+
+      const expirationTimestamp = this.endTimestamp(startTimestamp)
+      if (blockTimestamp >= expirationTimestamp) {
+        // The order has expired
+        return {
+          result: PollResultCode.DONT_TRY_AGAIN,
+          reason: `TWAP has expired. Expired at ${expirationTimestamp} (${formatEpoch(expirationTimestamp)})`,
+        }
+      }
+
+      return undefined
+    } catch (err: any) {
+      if (err?.message?.includes('Cabinet is not set')) {
+        // in this case we have a firm reason to not monitor this order as the cabinet is not set
+        return {
+          result: PollResultCode.DONT_TRY_AGAIN,
+          reason: `${err?.message}. User likely removed the order.`,
+        }
+      } else if (err?.message?.includes('Cabinet epoch out of range')) {
+        // in this case we have a firm reason to not monitor this order as the cabinet is not set correctly
+        return {
+          result: PollResultCode.DONT_TRY_AGAIN,
+          reason: `${err?.message}`,
+        }
+      }
+
       return {
-        result: PollResultCode.TRY_AT_EPOCH,
-        epoch: startTimestamp,
-        reason: `TWAP hasn't started yet. Starts at ${startTimestamp} (${formatEpoch(startTimestamp)})`,
+        result: PollResultCode.UNEXPECTED_ERROR,
+        reason: `Unexpected error: ${err.message}`,
+        error: err,
       }
     }
-
-    const expirationTimestamp = this.endTimestamp(startTimestamp)
-    if (blockTimestamp >= expirationTimestamp) {
-      // The order has expired
-      return {
-        result: PollResultCode.DONT_TRY_AGAIN,
-        reason: `TWAP has expired. Expired at ${expirationTimestamp} (${formatEpoch(expirationTimestamp)})`,
-      }
-    }
-
-    return undefined
   }
 
   /**
