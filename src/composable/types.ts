@@ -1,3 +1,4 @@
+import { OrderBookApi } from '../order-book'
 import { SupportedChainId } from '../common'
 import { GPv2Order } from './generated/ComposableCoW'
 import { providers } from 'ethers'
@@ -95,7 +96,14 @@ export type PollParams = OwnerContext & {
    * If present, it can be used for custom conditional order validations. If not present, the orders will need to get the block info themselves
    */
   blockInfo?: BlockInfo
+
+  /**
+   * Allows to optional pass the config of the orderbook API
+   */
+  orderbookApiConfig?: OrderBookApiConfig
 }
+
+export type OrderBookApiConfig = Omit<ConstructorParameters<typeof OrderBookApi>[0], 'chainId'>
 
 export type BlockInfo = {
   blockNumber: number

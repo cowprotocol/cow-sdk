@@ -249,7 +249,7 @@ export abstract class ConditionalOrder<D, S> {
    * @returns The tradeable `GPv2Order.Data` struct and the `signature` for the conditional order.
    */
   async poll(params: PollParams): Promise<PollResult> {
-    const { chainId, owner, provider } = params
+    const { chainId, owner, provider, orderbookApiConfig } = params
     const composableCow = getComposableCow(chainId, provider)
 
     try {
@@ -287,7 +287,7 @@ export abstract class ConditionalOrder<D, S> {
 
       let orderBookApi = orderBookCache[chainId]
       if (!orderBookApi) {
-        orderBookApi = new OrderBookApi({ chainId })
+        orderBookApi = new OrderBookApi({ ...orderbookApiConfig, chainId })
         orderBookCache[chainId] = orderBookApi
       }
 
