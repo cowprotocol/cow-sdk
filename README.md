@@ -4,7 +4,7 @@
 
 # CoW SDK
 
-## 📚 [SDK docs website](https://docs.cow.fi/cow-sdk)
+## 📚 [Docs website](https://docs.cow.fi/)
 
 ## Test coverage
 
@@ -14,7 +14,7 @@
 
 ## Getting started
 
-**Usage examples: [VanillaJS](./examples/vanilla/src/index.ts), [Create React App](./examples/cra/src/pages/getOrders/index.tsx), [NodeJS](./examples/nodejs/src/index.ts)**
+**Usage examples: [VanillaJS](https://github.com/cowprotocol/cow-sdk/blob/main/examples/vanilla/src/index.ts), [Create React App](https://github.com/cowprotocol/cow-sdk/blob/main/examples/cra/src/pages/getOrders/index.tsx), [NodeJS](https://github.com/cowprotocol/cow-sdk/blob/main/examples/nodejs/src/index.ts)**
 
 ### Installation
 
@@ -54,7 +54,7 @@ We will do the following operations:
 5. Get trades of the order
 6. Cancel the order (signing + sending)
 
-[You also can check this code in the CRA example](./examples/cra/src/pages/quickStart/index.tsx)
+[You also can check this code in the CRA example](https://github.com/cowprotocol/cow-sdk/blob/main/examples/cra/src/pages/quickStart/index.tsx)
 
 
 ```typescript
@@ -206,7 +206,7 @@ console.log(response)
 
 One way to make the most out of the SDK is to get familiar with its architecture.
 
-> See [SDK Architecture](./docs/architecture.md)
+> See [SDK Architecture](https://github.com/cowprotocol/cow-sdk/blob/main/docs/architecture.md)
 
 ## Development
 
