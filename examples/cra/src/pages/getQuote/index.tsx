@@ -1,6 +1,6 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react'
 import '../../pageStyles.css'
-import { OrderQuoteRequest, OrderQuoteResponse, OrderBookApi, OrderQuoteSide } from '@cowprotocol/cow-sdk'
+import { OrderQuoteRequest, OrderQuoteResponse, OrderBookApi, OrderQuoteSideKindSell } from '@cowprotocol/cow-sdk'
 import { useWeb3Info } from '../../hooks/useWeb3Info'
 import { JsonContent } from '../../components/jsonContent'
 import { useCurrentChainId } from '../../hooks/useCurrentChainId'
@@ -43,7 +43,7 @@ export function GetQuotePage() {
     from: account,
     receiver: account,
     sellAmountBeforeFee: (0.4 * 10 ** 18).toString(),
-    kind: OrderQuoteSide.kind.SELL,
+    kind: OrderQuoteSideKindSell.SELL,
   }
 
   return (
