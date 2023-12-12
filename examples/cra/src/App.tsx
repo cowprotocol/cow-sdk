@@ -10,6 +10,7 @@ import { FC, useEffect, useState } from 'react'
 import { useWeb3Info } from './hooks/useWeb3Info'
 import { ChainIdContext } from './context'
 import { QuickStartPage } from './pages/quickStart'
+import { SmartContractWallet } from './pages/smartContractWallet'
 
 const EXAMPLES: ExampleProps[] = [
   { title: 'Quick start', Component: QuickStartPage },
@@ -20,6 +21,7 @@ const EXAMPLES: ExampleProps[] = [
   { title: 'Sign and send order', Component: SignAndSendOrderPage },
   { title: 'Sign order cancellation', Component: SignOrderCancellationPage },
   { title: 'Send order cancellation', Component: SendOrderCancellationPage },
+  { title: 'Smart contract wallet', Component: SmartContractWallet },
 ]
 
 interface ExampleProps {
