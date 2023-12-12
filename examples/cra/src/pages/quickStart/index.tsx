@@ -1,6 +1,6 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react'
 import '../../pageStyles.css'
-import { OrderBookApi, OrderQuoteSide, OrderSigningUtils, OrderQuoteRequest, SigningScheme } from '@cowprotocol/cow-sdk'
+import { OrderBookApi, OrderQuoteSideKindSell, OrderSigningUtils, OrderQuoteRequest, SigningScheme } from '@cowprotocol/cow-sdk'
 import { useWeb3Info } from '../../hooks/useWeb3Info'
 import { useCurrentChainId } from '../../hooks/useCurrentChainId'
 import { ResultContent } from '../../components/resultContent'
@@ -29,7 +29,7 @@ export function QuickStartPage() {
         from: account,
         receiver: account,
         sellAmountBeforeFee: (0.4 * 10 ** 18).toString(), // 0.4 WETH
-        kind: OrderQuoteSide.kind.SELL,
+        kind: OrderQuoteSideKindSell.SELL,
       }
 
       // Get quote
@@ -49,7 +49,7 @@ export function QuickStartPage() {
       const order = await orderBookApi.getOrder(orderId)
 
       // Get order trades
-      const trades = await orderBookApi.getTrades({ orderId })
+      const trades = await orderBookApi.getTrades({ orderUid: orderId })
 
       // Sign order cancellation
       const orderCancellationSigningResult = await OrderSigningUtils.signOrderCancellations([orderId], chainId, signer)

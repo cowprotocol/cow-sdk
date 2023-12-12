@@ -8,7 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@cowprotocol/cow-sdk": "^2.0.0-alpha.4",
+    "@cowprotocol/cow-sdk": "^4.0.3",
     "ts-node": "^10.9.1"
   },
   "author": "",
