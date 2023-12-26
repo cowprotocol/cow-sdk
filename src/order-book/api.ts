@@ -39,6 +39,7 @@ export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.MAINNET]: 'https://api.cow.fi/mainnet',
   [SupportedChainId.GNOSIS_CHAIN]: 'https://api.cow.fi/xdai',
   [SupportedChainId.GOERLI]: 'https://api.cow.fi/goerli',
+  [SupportedChainId.SEPOLIA]: 'https://api.cow.fi/sepolia',
 }
 
 /**
@@ -48,6 +49,7 @@ export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.MAINNET]: 'https://barn.api.cow.fi/mainnet',
   [SupportedChainId.GNOSIS_CHAIN]: 'https://barn.api.cow.fi/xdai',
   [SupportedChainId.GOERLI]: 'https://barn.api.cow.fi/goerli',
+  [SupportedChainId.SEPOLIA]: 'https://barn.api.cow.fi/sepolia',
 }
 
 function cleanObjectFromUndefinedValues(obj: Record<string, string>): typeof obj {

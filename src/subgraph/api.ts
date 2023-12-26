@@ -18,6 +18,7 @@ export const SUBGRAPH_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.MAINNET]: SUBGRAPH_BASE_URL + '/cow',
   [SupportedChainId.GNOSIS_CHAIN]: SUBGRAPH_BASE_URL + '/cow-gc',
   [SupportedChainId.GOERLI]: SUBGRAPH_BASE_URL + '/cow-goerli',
+  [SupportedChainId.SEPOLIA]: '',
 }
 
 /**
@@ -30,6 +31,7 @@ export const SUBGRAPH_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.MAINNET]: SUBGRAPH_BASE_URL + '/cow-staging',
   [SupportedChainId.GNOSIS_CHAIN]: SUBGRAPH_BASE_URL + '/cow-gc-staging',
   [SupportedChainId.GOERLI]: '',
+  [SupportedChainId.SEPOLIA]: '',
 }
 
 /**
