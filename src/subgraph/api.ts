@@ -87,7 +87,10 @@ export class SubgraphApi {
    * @param {PartialSubgraphApiContext} contextOverride Override the context for this call only.
    * @returns The volume for the last N hours.
    */
-  async getLastHoursVolume(hours: number, contextOverride: PartialSubgraphApiContext = {}): Promise<LastHoursVolumeQuery> {
+  async getLastHoursVolume(
+    hours: number,
+    contextOverride: PartialSubgraphApiContext = {}
+  ): Promise<LastHoursVolumeQuery> {
     return this.runQuery<LastHoursVolumeQuery>(LAST_HOURS_VOLUME_QUERY, { hours }, contextOverride)
   }
 
