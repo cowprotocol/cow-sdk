@@ -3,12 +3,18 @@ import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphq
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
 import { DocumentNode } from 'graphql/index'
 import { request, Variables } from 'graphql-request'
-import { ApiContext, CowEnv, DEFAULT_COW_API_CONTEXT, PartialApiContext } from '../common/configs'
+import { ApiContext, CowEnv, DEFAULT_COW_API_CONTEXT } from '../common/configs'
 import { SupportedChainId } from '../common/chains'
 
 const SUBGRAPH_BASE_URL = 'https://api.thegraph.com/subgraphs/name/cowprotocol'
 
 type SubgraphApiBaseUrls = Record<SupportedChainId, string | null>
+
+interface SubgraphApiContext extends Omit<ApiContext, 'baseUrls'> {
+  baseUrls?: SubgraphApiBaseUrls
+}
+
+type PartialSubgraphApiContext = Partial<SubgraphApiContext>
 
 /**
  * CoW Protocol Production Subgraph API configuration.
@@ -42,13 +48,13 @@ export const SUBGRAPH_STAGING_CONFIG: SubgraphApiBaseUrls = {
 export class SubgraphApi {
   API_NAME = 'CoW Protocol Subgraph'
 
-  public context: ApiContext
+  public context: SubgraphApiContext
 
   /**
    * Create a new CoW Protocol API instance.
-   * @param context Any properties of the {@link ApiContext} may be overridden by passing a {@link PartialApiContext}.
+   * @param context Any properties of the {@link SubgraphApiContext} may be overridden by passing a {@link PartialSubgraphApiContext}.
    */
-  constructor(context: PartialApiContext = {}) {
+  constructor(context: PartialSubgraphApiContext = {}) {
     this.context = {
       ...DEFAULT_COW_API_CONTEXT,
       ...context,
@@ -60,7 +66,7 @@ export class SubgraphApi {
    * @param contextOverride Override the context for this call only.
    * @returns The totals for the CoW Protocol.
    */
-  async getTotals(contextOverride: PartialApiContext = {}): Promise<TotalsQuery['totals'][0]> {
+  async getTotals(contextOverride: PartialSubgraphApiContext = {}): Promise<TotalsQuery['totals'][0]> {
     const response = await this.runQuery<TotalsQuery>(TOTALS_QUERY, undefined, contextOverride)
     return response.totals[0]
   }
@@ -68,20 +74,20 @@ export class SubgraphApi {
   /**
    * Query the volume over the last N days from TheGraph for the CoW Protocol.
    * @param {number} days The number of days to query.
-   * @param {PartialApiContext} contextOverride Override the context for this call only.
+   * @param {PartialSubgraphApiContext} contextOverride Override the context for this call only.
    * @returns The volume for the last N days.
    */
-  async getLastDaysVolume(days: number, contextOverride: PartialApiContext = {}): Promise<LastDaysVolumeQuery> {
+  async getLastDaysVolume(days: number, contextOverride: PartialSubgraphApiContext = {}): Promise<LastDaysVolumeQuery> {
     return this.runQuery<LastDaysVolumeQuery>(LAST_DAYS_VOLUME_QUERY, { days }, contextOverride)
   }
 
   /**
    * Query the volume over the last N hours from TheGraph for the CoW Protocol.
    * @param {number} hours The number of hours to query.
-   * @param {PartialApiContext} contextOverride Override the context for this call only.
+   * @param {PartialSubgraphApiContext} contextOverride Override the context for this call only.
    * @returns The volume for the last N hours.
    */
-  async getLastHoursVolume(hours: number, contextOverride: PartialApiContext = {}): Promise<LastHoursVolumeQuery> {
+  async getLastHoursVolume(hours: number, contextOverride: PartialSubgraphApiContext = {}): Promise<LastHoursVolumeQuery> {
     return this.runQuery<LastHoursVolumeQuery>(LAST_HOURS_VOLUME_QUERY, { hours }, contextOverride)
   }
 
@@ -89,14 +95,14 @@ export class SubgraphApi {
    * Run a query against the CoW Protocol Subgraph.
    * @param {string | DocumentNode} query GQL query string or DocumentNode.
    * @param {Variables | undefined} variables To be passed to the query.
-   * @param {PartialApiContext} contextOverride Override the context for this call only.
+   * @param {PartialSubgraphApiContext} contextOverride Override the context for this call only.
    * @returns Results of the query.
    * @throws {@link CowError} if the query fails.
    */
   async runQuery<T>(
     query: string | DocumentNode,
     variables: Variables | undefined = undefined,
-    contextOverride: PartialApiContext = {}
+    contextOverride: PartialSubgraphApiContext = {}
   ): Promise<T> {
     const { chainId, env } = this.getContextWithOverride(contextOverride)
     const baseUrl = this.getEnvConfigs(env)[chainId]
@@ -117,10 +123,10 @@ export class SubgraphApi {
 
   /**
    * Override parts of the context for a specific call.
-   * @param {PartialApiContext} contextOverride Override the context for this call only.
-   * @returns {ApiContext} The context with the override applied.
+   * @param {PartialSubgraphApiContext} contextOverride Override the context for this call only.
+   * @returns {SubgraphApiContext} The context with the override applied.
    */
-  private getContextWithOverride(contextOverride: PartialApiContext = {}): ApiContext {
+  private getContextWithOverride(contextOverride: PartialSubgraphApiContext = {}): SubgraphApiContext {
     return { ...this.context, ...contextOverride }
   }
 
