@@ -8,7 +8,7 @@ import { SupportedChainId } from '../common/chains'
 
 const SUBGRAPH_BASE_URL = 'https://api.thegraph.com/subgraphs/name/cowprotocol'
 
-type SubgraphApiBaseUrls = Record<SupportedChainId, string | undefined>
+type SubgraphApiBaseUrls = Record<SupportedChainId, string | null>
 
 /**
  * CoW Protocol Production Subgraph API configuration.
@@ -20,7 +20,7 @@ export const SUBGRAPH_PROD_CONFIG: SubgraphApiBaseUrls = {
   [SupportedChainId.MAINNET]: SUBGRAPH_BASE_URL + '/cow',
   [SupportedChainId.GNOSIS_CHAIN]: SUBGRAPH_BASE_URL + '/cow-gc',
   [SupportedChainId.GOERLI]: SUBGRAPH_BASE_URL + '/cow-goerli',
-  [SupportedChainId.SEPOLIA]: undefined,
+  [SupportedChainId.SEPOLIA]: null,
 }
 
 /**
@@ -32,8 +32,8 @@ export const SUBGRAPH_PROD_CONFIG: SubgraphApiBaseUrls = {
 export const SUBGRAPH_STAGING_CONFIG: SubgraphApiBaseUrls = {
   [SupportedChainId.MAINNET]: SUBGRAPH_BASE_URL + '/cow-staging',
   [SupportedChainId.GNOSIS_CHAIN]: SUBGRAPH_BASE_URL + '/cow-gc-staging',
-  [SupportedChainId.GOERLI]: undefined,
-  [SupportedChainId.SEPOLIA]: undefined,
+  [SupportedChainId.GOERLI]: null,
+  [SupportedChainId.SEPOLIA]: null,
 }
 
 /**
@@ -101,7 +101,7 @@ export class SubgraphApi {
     const { chainId, env } = this.getContextWithOverride(contextOverride)
     const baseUrl = this.getEnvConfigs(env)[chainId]
 
-    if (baseUrl === undefined) {
+    if (baseUrl === null) {
       throw new Error('Unsupported Network. The subgraph API is not available in the Network ' + chainId)
     }
 
