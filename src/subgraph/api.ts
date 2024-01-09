@@ -3,10 +3,12 @@ import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphq
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
 import { DocumentNode } from 'graphql/index'
 import { request, Variables } from 'graphql-request'
-import { ApiContext, CowEnv, DEFAULT_COW_API_CONTEXT, ApiBaseUrls, PartialApiContext } from '../common/configs'
+import { ApiContext, CowEnv, DEFAULT_COW_API_CONTEXT, PartialApiContext } from '../common/configs'
 import { SupportedChainId } from '../common/chains'
 
 const SUBGRAPH_BASE_URL = 'https://api.thegraph.com/subgraphs/name/cowprotocol'
+
+type SubgraphApiBaseUrls = Record<SupportedChainId, string | null>
 
 /**
  * CoW Protocol Production Subgraph API configuration.
@@ -14,11 +16,11 @@ const SUBGRAPH_BASE_URL = 'https://api.thegraph.com/subgraphs/name/cowprotocol'
  * @see {@link https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc}
  * @see {@link https://api.thegraph.com/subgraphs/name/cowprotocol/cow-goerli}
  */
-export const SUBGRAPH_PROD_CONFIG: ApiBaseUrls = {
+export const SUBGRAPH_PROD_CONFIG: SubgraphApiBaseUrls = {
   [SupportedChainId.MAINNET]: SUBGRAPH_BASE_URL + '/cow',
   [SupportedChainId.GNOSIS_CHAIN]: SUBGRAPH_BASE_URL + '/cow-gc',
   [SupportedChainId.GOERLI]: SUBGRAPH_BASE_URL + '/cow-goerli',
-  [SupportedChainId.SEPOLIA]: '',
+  [SupportedChainId.SEPOLIA]: null,
 }
 
 /**
@@ -27,11 +29,11 @@ export const SUBGRAPH_PROD_CONFIG: ApiBaseUrls = {
  * @see {@link https://api.thegraph.com/subgraphs/name/cowprotocol/cow-staging}
  * @see {@link https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc-staging}
  */
-export const SUBGRAPH_STAGING_CONFIG: ApiBaseUrls = {
+export const SUBGRAPH_STAGING_CONFIG: SubgraphApiBaseUrls = {
   [SupportedChainId.MAINNET]: SUBGRAPH_BASE_URL + '/cow-staging',
   [SupportedChainId.GNOSIS_CHAIN]: SUBGRAPH_BASE_URL + '/cow-gc-staging',
-  [SupportedChainId.GOERLI]: '',
-  [SupportedChainId.SEPOLIA]: '',
+  [SupportedChainId.GOERLI]: null,
+  [SupportedChainId.SEPOLIA]: null,
 }
 
 /**
@@ -99,6 +101,10 @@ export class SubgraphApi {
     const { chainId, env } = this.getContextWithOverride(contextOverride)
     const baseUrl = this.getEnvConfigs(env)[chainId]
 
+    if (baseUrl === null) {
+      throw new Error('Unsupported Network. The subgraph API is not available in the Network ' + chainId)
+    }
+
     try {
       return await request(baseUrl, query, variables)
     } catch (error) {
@@ -123,7 +129,7 @@ export class SubgraphApi {
    * @param {CowEnv} env The environment to get the base URLs for.
    * @returns {ApiBaseUrls} The base URLs for the given environment.
    */
-  private getEnvConfigs(env: CowEnv): ApiBaseUrls {
+  private getEnvConfigs(env: CowEnv): SubgraphApiBaseUrls {
     if (this.context.baseUrls) return this.context.baseUrls
 
     return env === 'prod' ? SUBGRAPH_PROD_CONFIG : SUBGRAPH_STAGING_CONFIG
