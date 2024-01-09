@@ -3,7 +3,7 @@ import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphq
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
 import { DocumentNode } from 'graphql/index'
 import { request, Variables } from 'graphql-request'
-import { ApiContext, CowEnv, DEFAULT_COW_API_CONTEXT, ApiBaseUrls, PartialApiContext } from '../common/configs'
+import { ApiContext, CowEnv, DEFAULT_COW_API_CONTEXT, PartialApiContext } from '../common/configs'
 import { SupportedChainId } from '../common/chains'
 
 const SUBGRAPH_BASE_URL = 'https://api.thegraph.com/subgraphs/name/cowprotocol'
