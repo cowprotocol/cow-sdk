@@ -16,16 +16,23 @@ export function transformOrder(order: Order): EnrichedOrder {
 /**
  * Add the total fee to the order.
  *
- * The `executedSurplusFee` represents exactly the fee that was charged (regardless of the fee
- * signed with the order). So, while the protocol currently does not allow placing a limit order
- * with any other fee than 0 - the backend is designed to support these kinds of orders for the
- * future.
+ * The total fee of the order will be represented by the `totalFee` field, which is the sum of `executedSurplusFee`
+ * and `executedFeeAmount`.
+ *
+ * Note that either `executedSurplusFee` or `executedFeeAmount` may be `0`, or both might have a non `0` value.
+ *
+ * See https://cowservices.slack.com/archives/C036G0J90BU/p1705322037866779?thread_ts=1705083817.684659&cid=C036G0J90BU
+ *
  * @param dto The order to add the total fee to.
  * @returns The order with the total fee added.
  */
 function addTotalFeeToOrder(dto: Order): EnrichedOrder {
   const { executedFeeAmount, executedSurplusFee } = dto
-  const totalFee = executedSurplusFee ?? executedFeeAmount
+
+  const _executedFeeAmount = BigInt(executedFeeAmount || '0')
+  const _executedSurplusFee = BigInt(executedSurplusFee || '0')
+
+  const totalFee = String(_executedFeeAmount + _executedSurplusFee)
 
   return {
     ...dto,
