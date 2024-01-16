@@ -32,14 +32,14 @@ describe('transformOrder', () => {
       const rawOrder = { ...ORDER, executedFeeAmount: '1', executedSurplusFee: '0' }
       const transformedOrder = transformOrder(rawOrder)
 
-      expect(transformedOrder.totalFee).toEqual(rawOrder.executedFeeAmount)
+      expect(transformedOrder.totalFee).toEqual('1')
     })
 
     test('should use executedSurplusFee when executedFeeAmount is 0', () => {
       const rawOrder = { ...ORDER, executedFeeAmount: '0', executedSurplusFee: '1' }
       const transformedOrder = transformOrder(rawOrder)
 
-      expect(transformedOrder.totalFee).toEqual(rawOrder.executedSurplusFee)
+      expect(transformedOrder.totalFee).toEqual('1')
     })
 
     test('should use sum of executedFeeAmount and executedSurplusFee', () => {
@@ -53,7 +53,7 @@ describe('transformOrder', () => {
       const rawOrder = { ...ORDER, executedSurplusFee: null }
       const transformedOrder = transformOrder(rawOrder)
 
-      expect(transformedOrder.totalFee).toEqual(rawOrder.executedFeeAmount)
+      expect(transformedOrder.totalFee).toEqual('1234567890')
     })
   })
 })
