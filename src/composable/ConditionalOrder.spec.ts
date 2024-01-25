@@ -13,6 +13,7 @@ import { OwnerContext, PollParams, PollResultCode, PollResultErrors } from './ty
 import { BuyTokenDestination, OrderKind, SellTokenSource } from '../order-book/generated'
 import { computeOrderUid } from '../utils'
 import { GPv2Order } from './generated/ComposableCoW'
+import { OrderBookApi } from '../order-book'
 
 jest.mock('./contracts')
 
@@ -172,7 +173,9 @@ describe('Cabinet', () => {
 describe('Poll Single Orders', () => {
   const mockSingleOrders = jest.fn()
   const mockGetTradeableOrderWithSignature = jest.fn()
-  const param = { owner: OWNER, chainId: 1, provider: {} } as PollParams
+  const chainId = 1
+  const orderBookApi = new OrderBookApi({ chainId })
+  const param = { owner: OWNER, chainId, provider: {}, orderBookApi } as PollParams
 
   const mockPollValidate = jest.fn<Promise<PollResultErrors | undefined>, [params: PollParams], any>()
 

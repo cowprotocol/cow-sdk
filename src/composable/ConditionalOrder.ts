@@ -14,10 +14,8 @@ import {
   PollResultErrors,
 } from './types'
 import { getComposableCow, getComposableCowInterface } from './contracts'
-import { OrderBookApi, UID } from '../order-book'
+import { UID } from '../order-book'
 import { computeOrderUid } from '../utils'
-
-const orderBookCache: Record<string, OrderBookApi> = {}
 
 /**
  * An abstract base class from which all conditional orders should inherit.
@@ -249,7 +247,7 @@ export abstract class ConditionalOrder<D, S> {
    * @returns The tradeable `GPv2Order.Data` struct and the `signature` for the conditional order.
    */
   async poll(params: PollParams): Promise<PollResult> {
-    const { chainId, owner, provider, orderbookApiConfig } = params
+    const { chainId, owner, provider, orderBookApi } = params
     const composableCow = getComposableCow(chainId, provider)
 
     try {
@@ -284,12 +282,6 @@ export abstract class ConditionalOrder<D, S> {
         this.offChainInput,
         []
       )
-
-      let orderBookApi = orderBookCache[chainId]
-      if (!orderBookApi) {
-        orderBookApi = new OrderBookApi({ ...orderbookApiConfig, chainId })
-        orderBookCache[chainId] = orderBookApi
-      }
 
       const orderUid = await computeOrderUid(chainId, owner, fromStructToOrder(order))
 
