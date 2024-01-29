@@ -12,7 +12,6 @@ const SETTLEMENT_CONTRACT = '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'
  */
 export const ALL_SUPPORTED_CHAIN_IDS: SupportedChainId[] = [
   SupportedChainId.MAINNET,
-  SupportedChainId.GOERLI,
   SupportedChainId.GNOSIS_CHAIN,
   SupportedChainId.SEPOLIA,
 ]

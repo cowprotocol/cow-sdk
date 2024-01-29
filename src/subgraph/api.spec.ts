@@ -330,7 +330,7 @@ describe('CoW subgraph URL', () => {
     const customEnvConfig = {
       [SupportedChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-staging',
       [SupportedChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc-staging',
-      [SupportedChainId.GOERLI]: 'https://subgraph.satsuma-prod.com/94b7bd7c35c5/cow/cow-goerli/api',
+      [SupportedChainId.SEPOLIA]: null,
     }
 
     const customSubgraphApi = new SubgraphApi({
