@@ -18,7 +18,7 @@ const ethersUtils = () => import('ethers/lib/utils')
  * import { Web3Provider } from '@ethersproject/providers'
  *
  * const account = 'YOUR_WALLET_ADDRESS'
- * const chainId = 5 // Goerli
+ * const chainId = 100 // Gnosis chain
  * const provider = new Web3Provider(window.ethereum)
  * const signer = provider.getSigner()
  *

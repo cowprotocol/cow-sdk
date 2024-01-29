@@ -88,20 +88,20 @@ export type GetOrdersRequest = {
  * import { Web3Provider } from '@ethersproject/providers'
  *
  * const account = 'YOUR_WALLET_ADDRESS'
- * const chainId = 5 // Goerli
+ * const chainId = 100 // Gnosis chain
  * const provider = new Web3Provider(window.ethereum)
  * const signer = provider.getSigner()
  *
  * const quoteRequest = {
- *   sellToken: '0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6', // WETH goerli
- *   buyToken: '0x02abbdbaaa7b1bb64b5c878f7ac17f8dda169532', // GNO goerli
+ *   sellToken: '0x6a023ccd1ff6f2045c3309768ead9e68f978f6e1', // WETH gnosis chain
+ *   buyToken: '0x9c58bacc331c9aa871afd802db6379a98e80cedb', // GNO gnosis chain
  *   from: account,
  *   receiver: account,
  *   sellAmountBeforeFee: (0.4 * 10 ** 18).toString(), // 0.4 WETH
  *   kind: OrderQuoteSide.kind.SELL,
  * }
  *
- * const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.GOERLI })
+ * const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.GNOSIS_CHAIN })
  *
  * async function main() {
  *     const { quote } = await orderBookApi.getQuote(quoteRequest)
