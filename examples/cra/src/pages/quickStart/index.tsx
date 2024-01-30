@@ -1,6 +1,12 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react'
 import '../../pageStyles.css'
-import { OrderBookApi, OrderQuoteSideKindSell, OrderSigningUtils, OrderQuoteRequest, SigningScheme } from '@cowprotocol/cow-sdk'
+import {
+  OrderBookApi,
+  OrderQuoteRequest,
+  OrderQuoteSideKindSell,
+  OrderSigningUtils,
+  SigningScheme,
+} from '@cowprotocol/cow-sdk'
 import { useWeb3Info } from '../../hooks/useWeb3Info'
 import { useCurrentChainId } from '../../hooks/useCurrentChainId'
 import { ResultContent } from '../../components/resultContent'
@@ -22,10 +28,10 @@ export function QuickStartPage() {
 
       const signer = provider.getSigner()
 
-      // Sell 0.4 WETH for GNO on Goerli network
+      // Sell 0.4 WETH for GNO on Gnosis chain network
       const quoteRequest: OrderQuoteRequest = {
-        sellToken: '0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6', // WETH goerli
-        buyToken: '0x02abbdbaaa7b1bb64b5c878f7ac17f8dda169532', // GNO goerli
+        sellToken: '0x6a023ccd1ff6f2045c3309768ead9e68f978f6e1', // WETH gnosis chain
+        buyToken: '0x9c58bacc331c9aa871afd802db6379a98e80cedb', // GNO gnosis chain
         from: account,
         receiver: account,
         sellAmountBeforeFee: (0.4 * 10 ** 18).toString(), // 0.4 WETH

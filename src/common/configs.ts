@@ -41,8 +41,8 @@ export type PartialApiContext = Partial<ApiContext>
 
 /**
  * @property {string} [1] The base URL for the mainnet API.
- * @property {string} [5] The base URL for the Goerli testnet API.
  * @property {string} [100] The base URL for the Gnosis Chain API.
+ * @property {string} [11155111] The base URL for the Sepolia testnet API.
  */
 export type ApiBaseUrls = Record<SupportedChainId, string>
 
@@ -52,8 +52,8 @@ export type ApiBaseUrls = Record<SupportedChainId, string>
  * CoW Protocol is a set of smart contracts and off-chain services, deployed on **multiple chains**.
  * {@link SupportedChainId Supported chains} are:
  * - Mainnet
- * - Goerli
  * - Gnosis Chain
+ * - Sepolia
  *
  * Each chain has it's own API, and each API has it's own base URL.
  *

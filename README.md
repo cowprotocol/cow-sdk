@@ -44,7 +44,7 @@ const orderSigningUtils = new OrderSigningUtils()
 ### Sign, fetch, post and cancel order
 
 For clarity, let's look at the use of the API with a practical example:
-Exchanging `0.4 GNO` to `WETH` on `Goerli` network.
+Exchanging `0.4 GNO` to `WETH` on `Gnosis chain` network.
 
 We will do the following operations:
 1. Get a quote
@@ -62,20 +62,20 @@ import { OrderBookApi, OrderSigningUtils, SupportedChainId } from '@cowprotocol/
 import { Web3Provider } from '@ethersproject/providers'
 
 const account = 'YOUR_WALLET_ADDRESS'
-const chainId = 5 // Goerli
+const chainId = 100 // Gnosis chain
 const provider = new Web3Provider(window.ethereum)
 const signer = provider.getSigner()
 
 const quoteRequest = {
-  sellToken: '0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6', // WETH goerli
-  buyToken: '0x02abbdbaaa7b1bb64b5c878f7ac17f8dda169532', // GNO goerli
+  sellToken: '0x6a023ccd1ff6f2045c3309768ead9e68f978f6e1', // WETH gnosis chain
+  buyToken: '0x9c58bacc331c9aa871afd802db6379a98e80cedb', // GNO gnosis chain
   from: account,
   receiver: account,
   sellAmountBeforeFee: (0.4 * 10 ** 18).toString(), // 0.4 WETH
   kind: OrderQuoteSide.kind.SELL,
 }
 
-const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.GOERLI })
+const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.GNOSIS_CHAIN })
 
 async function main() {
     const { quote } = await orderBookApi.getQuote(quoteRequest)
@@ -103,7 +103,7 @@ Since the API supports different networks and environments, there are some optio
 
 #### Environment configuration
 
-`chainId` - can be one of `SupportedChainId.MAINNET`, `SupportedChainId.GNOSIS_CHAIN`, or `SupportedChainId.GOERLI`
+`chainId` - can be one of `SupportedChainId.MAINNET`, `SupportedChainId.GNOSIS_CHAIN`, or `SupportedChainId.SEPOLIA`
 
 `env` - this parameter affects which environment will be used:
  - `https://api.cow.fi` for `prod` (default)
@@ -113,7 +113,7 @@ Since the API supports different networks and environments, there are some optio
 import { OrderBookApi } from '@cowprotocol/cow-sdk'
 
 const orderBookApi = new OrderBookApi({
-  chainId: SupportedChainId.GOERLI,
+  chainId: SupportedChainId.GNOSIS_CHAIN,
   env: 'staging' // <-----
 })
 ```
@@ -126,11 +126,11 @@ In case you need to use custom endpoints (e.g. you use a proxy), you can do it t
 import { OrderBookApi } from '@cowprotocol/cow-sdk'
 
 const orderBookApi = new OrderBookApi({
-  chainId: SupportedChainId.GOERLI,
+  chainId: SupportedChainId.GNOSIS_CHAIN,
   baseUrls: { // <-----
     [SupportedChainId.MAINNET]: 'https://YOUR_ENDPOINT/mainnet',
-    [SupportedChainId.GNOSIS_CHAIN]: 'https://YOUR_ENDPOINT/xdai',
-    [SupportedChainId.GOERLI]: 'https://YOUR_ENDPOINT/goerli',
+    [SupportedChainId.GNOSIS_CHAIN]: 'https://YOUR_ENDPOINT/gnosis-chain',
+    [SupportedChainId.SEPOLIA]: 'https://YOUR_ENDPOINT/sepolia',
   }
 })
 ```
@@ -157,7 +157,7 @@ const backOffOpts: BackoffOptions = {
 }
 
 const orderBookApi = new OrderBookApi(
-  {chainId: SupportedChainId.GOERLI, limiterOpts, backOffOpts},
+  {chainId: SupportedChainId.GNOSIS_CHAIN, limiterOpts, backOffOpts},
 )
 ```
 

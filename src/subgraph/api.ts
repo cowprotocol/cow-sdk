@@ -20,12 +20,10 @@ type PartialSubgraphApiContext = Partial<SubgraphApiContext>
  * CoW Protocol Production Subgraph API configuration.
  * @see {@link https://api.thegraph.com/subgraphs/name/cowprotocol/cow}
  * @see {@link https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc}
- * @see {@link https://api.thegraph.com/subgraphs/name/cowprotocol/cow-goerli}
  */
 export const SUBGRAPH_PROD_CONFIG: SubgraphApiBaseUrls = {
   [SupportedChainId.MAINNET]: SUBGRAPH_BASE_URL + '/cow',
   [SupportedChainId.GNOSIS_CHAIN]: SUBGRAPH_BASE_URL + '/cow-gc',
-  [SupportedChainId.GOERLI]: SUBGRAPH_BASE_URL + '/cow-goerli',
   [SupportedChainId.SEPOLIA]: null,
 }
 
@@ -38,7 +36,6 @@ export const SUBGRAPH_PROD_CONFIG: SubgraphApiBaseUrls = {
 export const SUBGRAPH_STAGING_CONFIG: SubgraphApiBaseUrls = {
   [SupportedChainId.MAINNET]: SUBGRAPH_BASE_URL + '/cow-staging',
   [SupportedChainId.GNOSIS_CHAIN]: SUBGRAPH_BASE_URL + '/cow-gc-staging',
-  [SupportedChainId.GOERLI]: null,
   [SupportedChainId.SEPOLIA]: null,
 }
 
