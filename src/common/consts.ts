@@ -10,11 +10,9 @@ const SETTLEMENT_CONTRACT = '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'
 /**
  * The list of supported chains.
  */
-export const ALL_SUPPORTED_CHAIN_IDS: SupportedChainId[] = [
-  SupportedChainId.MAINNET,
-  SupportedChainId.GNOSIS_CHAIN,
-  SupportedChainId.SEPOLIA,
-]
+export const ALL_SUPPORTED_CHAIN_IDS: SupportedChainId[] = Object.values(SupportedChainId).filter(
+  (chainId) => typeof chainId === 'number'
+) as SupportedChainId[]
 
 export function mapSupportedNetworks<T>(value: (chainId: SupportedChainId) => T): Record<SupportedChainId, T>
 export function mapSupportedNetworks<T>(value: T): Record<SupportedChainId, T>
