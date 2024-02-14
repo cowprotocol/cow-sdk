@@ -29,12 +29,12 @@ export namespace OrderPostError {
         UNSUPPORTED_ORDER_TYPE = 'UnsupportedOrderType',
         INSUFFICIENT_VALID_TO = 'InsufficientValidTo',
         EXCESSIVE_VALID_TO = 'ExcessiveValidTo',
-        TRANSFER_ETH_TO_CONTRACT = 'TransferEthToContract',
-        INVALID_NATIVE_SELL_TOKEN_SAME_BUY_AND_SELL_TOKEN = 'InvalidNativeSellToken SameBuyAndSellToken',
-        UNSUPPORTED_SIGNATURE = 'UnsupportedSignature',
+        INVALID_NATIVE_SELL_TOKEN = 'InvalidNativeSellToken',
+        SAME_BUY_AND_SELL_TOKEN = 'SameBuyAndSellToken',
         UNSUPPORTED_TOKEN = 'UnsupportedToken',
-        UNSUPPORTED_CUSTOM_INTERACTION_INVALID_APP_DATA = 'UnsupportedCustomInteraction InvalidAppData',
+        INVALID_APP_DATA = 'InvalidAppData',
         APP_DATA_HASH_MISMATCH = 'AppDataHashMismatch',
+        APPDATA_FROM_MISMATCH = 'AppdataFromMismatch',
     }
 
 

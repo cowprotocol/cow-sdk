@@ -45,10 +45,6 @@ export type OrderQuoteRequest = (OrderQuoteSide & OrderQuoteValidity & {
      *
      */
     appDataHash?: AppDataHash;
-    /**
-     * Is the order fill-or-kill or partially fillable?
-     */
-    partiallyFillable?: boolean;
     sellTokenBalance?: SellTokenSource;
     buyTokenBalance?: BuyTokenDestination;
     from: Address;

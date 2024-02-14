@@ -9,7 +9,7 @@
  * Optimal: The price estimate is chosen among all price estimates.
  * Verified: The price estimate is chosen among all verified/simulated price estimates.
  *
- * **NOTE**: Orders are supposed to be created from `verified` price estimates.
+ * **NOTE**: Orders are supposed to be created from `verified` or `optimal` price estimates.
  *
  */
 export enum PriceQuality {

@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { AuctionOrder } from './AuctionOrder';
 import type { AuctionPrices } from './AuctionPrices';
-import type { Order } from './Order';
 
 /**
  * A batch auction for solving.
@@ -33,7 +33,7 @@ export type Auction = {
      * The solvable orders included in the auction.
      *
      */
-    orders?: Array<Order>;
+    orders?: Array<AuctionOrder>;
     prices?: AuctionPrices;
 };
 

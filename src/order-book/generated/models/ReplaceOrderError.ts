@@ -21,7 +21,6 @@ export namespace ReplaceOrderError {
         INSUFFICIENT_VALID_TO = 'InsufficientValidTo',
         EXCESSIVE_VALID_TO = 'ExcessiveValidTo',
         INVALID_SIGNATURE = 'InvalidSignature',
-        TRANSFER_ETH_TO_CONTRACT = 'TransferEthToContract',
         TRANSFER_SIMULATION_FAILED = 'TransferSimulationFailed',
         UNSUPPORTED_TOKEN = 'UnsupportedToken',
         WRONG_OWNER = 'WrongOwner',
@@ -30,7 +29,6 @@ export namespace ReplaceOrderError {
         UNSUPPORTED_BUY_TOKEN_DESTINATION = 'UnsupportedBuyTokenDestination',
         UNSUPPORTED_SELL_TOKEN_SOURCE = 'UnsupportedSellTokenSource',
         UNSUPPORTED_ORDER_TYPE = 'UnsupportedOrderType',
-        UNSUPPORTED_SIGNATURE = 'UnsupportedSignature',
     }
 
 
