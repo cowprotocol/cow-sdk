@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/cow-sdk",
-  "version": "5.0.0",
+  "version": "5.1.0",
   "license": "(MIT OR Apache-2.0)",
   "files": [
     "/dist"
@@ -27,7 +27,7 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "graphql:codegen": "graphql-codegen --config graphql-codegen.yml",
-    "swagger:codegen": " openapi --input https://raw.githubusercontent.com/cowprotocol/services/v2.227.1/crates/orderbook/openapi.yml --output src/order-book/generated --exportServices false --exportCore false",
+    "swagger:codegen": " openapi --input https://raw.githubusercontent.com/cowprotocol/services/v2.245.1/crates/orderbook/openapi.yml --output src/order-book/generated --exportServices false --exportCore false",
     "typechain:codegen": "typechain --target ethers-v5 --out-dir ./src/composable/generated './abi/*.json'"
   },
   "dependencies": {

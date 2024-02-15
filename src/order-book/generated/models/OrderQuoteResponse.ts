@@ -25,5 +25,10 @@ export type OrderQuoteResponse = {
      *
      */
     id?: number;
+    /**
+     * Whether it was possible to verify that the quoted amounts are accurate using a simulation.
+     *
+     */
+    verified: boolean;
 };
 
