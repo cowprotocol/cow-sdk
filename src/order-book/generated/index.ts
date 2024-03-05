@@ -41,7 +41,6 @@ export type { PreSignature } from './models/PreSignature';
 export { PriceEstimationError } from './models/PriceEstimationError';
 export { PriceQuality } from './models/PriceQuality';
 export type { ProtocolAppData } from './models/ProtocolAppData';
-export { ReplaceOrderError } from './models/ReplaceOrderError';
 export { SellTokenSource } from './models/SellTokenSource';
 export type { Signature } from './models/Signature';
 export { SigningScheme } from './models/SigningScheme';
