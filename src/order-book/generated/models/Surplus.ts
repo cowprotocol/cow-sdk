@@ -7,6 +7,6 @@
  */
 export type Surplus = {
     factor: number;
-    max_volume_factor: number;
+    maxVolumeFactor: number;
 };
 
