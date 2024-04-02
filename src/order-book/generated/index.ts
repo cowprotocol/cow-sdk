@@ -39,6 +39,7 @@ export type { OrderQuoteValidity } from './models/OrderQuoteValidity';
 export { OrderStatus } from './models/OrderStatus';
 export type { PreSignature } from './models/PreSignature';
 export { PriceEstimationError } from './models/PriceEstimationError';
+export type { PriceImprovement } from './models/PriceImprovement';
 export { PriceQuality } from './models/PriceQuality';
 export type { ProtocolAppData } from './models/ProtocolAppData';
 export { SellTokenSource } from './models/SellTokenSource';

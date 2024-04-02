@@ -14,6 +14,7 @@ export type Scalars = {
   BigInt: any;
   Bytes: any;
   Int8: any;
+  Timestamp: any;
 };
 
 export enum Aggregation_Interval {
