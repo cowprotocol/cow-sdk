@@ -1761,10 +1761,10 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@cowprotocol/contracts@^1.4.0":
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/@cowprotocol/contracts/-/contracts-1.4.0.tgz#e93e5f25aac76feeaa348fa57231903274676247"
-  integrity sha512-XLs3SlPmXD4lbiWIO7mxxuCn1eE5isuO6EUlE1cj17HqN/wukDAN0xXYPx6umOH/XdjGS33miMiPHELEyY9siw==
+"@cowprotocol/contracts@^1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@cowprotocol/contracts/-/contracts-1.6.0.tgz#d0fc83ed8c624b968d1a68bb5c74712c11ec81e0"
+  integrity sha512-+UKhYRzkvnqqviBru5D3btTLYc743n0O5YTG+wpYwGl4fb7VNKBkFHe28C5Mf1DF/kOfmqfu+0IAvX9Vuq5Dqw==
 
 "@cspotcode/source-map-support@^0.8.0":
   version "0.8.1"
