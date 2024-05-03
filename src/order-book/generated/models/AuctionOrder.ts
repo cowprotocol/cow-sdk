@@ -37,10 +37,6 @@ export type AuctionOrder = {
      */
     buyAmount: TokenAmount;
     /**
-     * see `OrderParameters::feeAmount`
-     */
-    userFee: TokenAmount;
-    /**
      * see `OrderParameters::validTo`
      */
     validTo: number;
