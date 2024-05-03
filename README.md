@@ -105,7 +105,7 @@ Since the API supports different networks and environments, there are some optio
 
 #### Environment configuration
 
-`chainId` - can be one of `SupportedChainId.MAINNET`, `SupportedChainId.GNOSIS_CHAIN`, `SupportedChainId.ARBITRUM` or `SupportedChainId.SEPOLIA`
+`chainId` - can be one of `SupportedChainId.MAINNET`, `SupportedChainId.GNOSIS_CHAIN`, `SupportedChainId.ARBITRUM_ONE` or `SupportedChainId.SEPOLIA`
 
 `env` - this parameter affects which environment will be used:
 
