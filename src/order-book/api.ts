@@ -38,7 +38,7 @@ import { EnrichedOrder } from './types'
 export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.MAINNET]: 'https://api.cow.fi/mainnet',
   [SupportedChainId.GNOSIS_CHAIN]: 'https://api.cow.fi/xdai',
-  [SupportedChainId.ARBITRUM]: 'https://api.cow.fi/arbitrum_one',
+  [SupportedChainId.ARBITRUM_ONE]: 'https://api.cow.fi/arbitrum_one',
   [SupportedChainId.SEPOLIA]: 'https://api.cow.fi/sepolia',
 }
 
@@ -48,7 +48,7 @@ export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
 export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.MAINNET]: 'https://barn.api.cow.fi/mainnet',
   [SupportedChainId.GNOSIS_CHAIN]: 'https://barn.api.cow.fi/xdai',
-  [SupportedChainId.ARBITRUM]: 'https://barn.api.cow.fi/arbitrum_one',
+  [SupportedChainId.ARBITRUM_ONE]: 'https://barn.api.cow.fi/arbitrum_one',
   [SupportedChainId.SEPOLIA]: 'https://barn.api.cow.fi/sepolia',
 }
 
