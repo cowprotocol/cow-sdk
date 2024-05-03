@@ -133,7 +133,7 @@ const orderBookApi = new OrderBookApi({
   baseUrls: {
     // <-----
     [SupportedChainId.MAINNET]: 'https://YOUR_ENDPOINT/mainnet',
-    [SupportedChainId.GNOSIS_CHAIN]: 'https://YOUR_ENDPOINT/gnosis-chain',
+    [SupportedChainId.GNOSIS_CHAIN]: 'https://YOUR_ENDPOINT/gnosis_chain',
     [SupportedChainId.ARBITRUM]: 'https://YOUR_ENDPOINT/arbitrum_one',
     [SupportedChainId.SEPOLIA]: 'https://YOUR_ENDPOINT/sepolia',
   },
