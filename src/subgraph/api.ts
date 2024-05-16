@@ -1,10 +1,10 @@
+import { Variables, request } from 'graphql-request'
+import { DocumentNode } from 'graphql/index'
+import { SupportedChainId } from '../common/chains'
+import { ApiContext, CowEnv, DEFAULT_COW_API_CONTEXT } from '../common/configs'
 import { CowError } from '../common/cow-error'
 import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphql'
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
-import { DocumentNode } from 'graphql/index'
-import { request, Variables } from 'graphql-request'
-import { ApiContext, CowEnv, DEFAULT_COW_API_CONTEXT } from '../common/configs'
-import { SupportedChainId } from '../common/chains'
 
 const SUBGRAPH_BASE_URL = 'https://api.thegraph.com/subgraphs/name/cowprotocol'
 
@@ -24,6 +24,7 @@ type PartialSubgraphApiContext = Partial<SubgraphApiContext>
 export const SUBGRAPH_PROD_CONFIG: SubgraphApiBaseUrls = {
   [SupportedChainId.MAINNET]: SUBGRAPH_BASE_URL + '/cow',
   [SupportedChainId.GNOSIS_CHAIN]: SUBGRAPH_BASE_URL + '/cow-gc',
+  [SupportedChainId.ARBITRUM_ONE]: null,
   [SupportedChainId.SEPOLIA]: null,
 }
 
@@ -36,6 +37,7 @@ export const SUBGRAPH_PROD_CONFIG: SubgraphApiBaseUrls = {
 export const SUBGRAPH_STAGING_CONFIG: SubgraphApiBaseUrls = {
   [SupportedChainId.MAINNET]: SUBGRAPH_BASE_URL + '/cow-staging',
   [SupportedChainId.GNOSIS_CHAIN]: SUBGRAPH_BASE_URL + '/cow-gc-staging',
+  [SupportedChainId.ARBITRUM_ONE]: null,
   [SupportedChainId.SEPOLIA]: null,
 }
 

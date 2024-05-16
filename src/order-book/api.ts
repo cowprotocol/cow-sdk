@@ -1,4 +1,15 @@
 import 'cross-fetch/polyfill'
+import { RateLimiter } from 'limiter'
+import { SupportedChainId } from '../common/chains'
+import {
+  ApiBaseUrls,
+  ApiContext,
+  CowEnv,
+  DEFAULT_COW_API_CONTEXT,
+  ENVS_LIST,
+  PartialApiContext,
+} from '../common/configs'
+import { CowError } from '../common/cow-error'
 import {
   Address,
   AppDataHash,
@@ -15,20 +26,9 @@ import {
   TransactionHash,
   UID,
 } from './generated'
-import { CowError } from '../common/cow-error'
-import {
-  ApiBaseUrls,
-  ApiContext,
-  CowEnv,
-  DEFAULT_COW_API_CONTEXT,
-  ENVS_LIST,
-  PartialApiContext,
-} from '../common/configs'
+import { DEFAULT_BACKOFF_OPTIONS, DEFAULT_LIMITER_OPTIONS, FetchParams, OrderBookApiError, request } from './request'
 import { transformOrder } from './transformOrder'
 import { EnrichedOrder } from './types'
-import { SupportedChainId } from '../common/chains'
-import { RateLimiter } from 'limiter'
-import { DEFAULT_BACKOFF_OPTIONS, DEFAULT_LIMITER_OPTIONS, FetchParams, OrderBookApiError, request } from './request'
 
 /**
  * An object containing *production* environment base URLs for each supported `chainId`.
@@ -37,6 +37,7 @@ import { DEFAULT_BACKOFF_OPTIONS, DEFAULT_LIMITER_OPTIONS, FetchParams, OrderBoo
 export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.MAINNET]: 'https://api.cow.fi/mainnet',
   [SupportedChainId.GNOSIS_CHAIN]: 'https://api.cow.fi/xdai',
+  [SupportedChainId.ARBITRUM_ONE]: 'https://api.cow.fi/arbitrum_one',
   [SupportedChainId.SEPOLIA]: 'https://api.cow.fi/sepolia',
 }
 
@@ -46,6 +47,7 @@ export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
 export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.MAINNET]: 'https://barn.api.cow.fi/mainnet',
   [SupportedChainId.GNOSIS_CHAIN]: 'https://barn.api.cow.fi/xdai',
+  [SupportedChainId.ARBITRUM_ONE]: 'https://barn.api.cow.fi/arbitrum_one',
   [SupportedChainId.SEPOLIA]: 'https://barn.api.cow.fi/sepolia',
 }
 

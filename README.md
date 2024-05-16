@@ -28,7 +28,6 @@ yarn add @cowprotocol/cow-sdk
 - `OrderSigningUtils` - serves to sign orders and cancel them using [EIP-712](https://eips.ethereum.org/EIPS/eip-712)
 - `SubgraphApi` - provides statistics data about CoW protocol from [Subgraph](https://github.com/cowprotocol/subgraph), such as trading volume, trade count and others
 
-
 ```typescript
 import { OrderBookApi, OrderSigningUtils, SubgraphApi } from '@cowprotocol/cow-sdk'
 
@@ -47,6 +46,7 @@ For clarity, let's look at the use of the API with a practical example:
 Exchanging `0.4 GNO` to `WETH` on `Gnosis chain` network.
 
 We will do the following operations:
+
 1. Get a quote
 2. Sign the order
 3. Send the order to the order-book
@@ -55,7 +55,6 @@ We will do the following operations:
 6. Cancel the order (signing + sending)
 
 [You also can check this code in the CRA example](https://github.com/cowprotocol/cow-sdk/blob/main/examples/cra/src/pages/quickStart/index.tsx)
-
 
 ```typescript
 import { OrderBookApi, OrderSigningUtils, SupportedChainId } from '@cowprotocol/cow-sdk'
@@ -78,21 +77,24 @@ const quoteRequest = {
 const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.GNOSIS_CHAIN })
 
 async function main() {
-    const { quote } = await orderBookApi.getQuote(quoteRequest)
+  const { quote } = await orderBookApi.getQuote(quoteRequest)
 
-    const orderSigningResult = await OrderSigningUtils.signOrder(quote, chainId, signer)
+  const orderSigningResult = await OrderSigningUtils.signOrder(quote, chainId, signer)
 
-    const orderId = await orderBookApi.sendOrder({ ...quote, ...orderSigningResult })
+  const orderId = await orderBookApi.sendOrder({ ...quote, ...orderSigningResult })
 
-    const order = await orderBookApi.getOrder(orderId)
+  const order = await orderBookApi.getOrder(orderId)
 
-    const trades = await orderBookApi.getTrades({ orderId })
+  const trades = await orderBookApi.getTrades({ orderId })
 
-    const orderCancellationSigningResult = await OrderSigningUtils.signOrderCancellations([orderId], chainId, signer)
+  const orderCancellationSigningResult = await OrderSigningUtils.signOrderCancellations([orderId], chainId, signer)
 
-    const cancellationResult = await orderBookApi.sendSignedOrderCancellations({...orderCancellationSigningResult, orderUids: [orderId] })
+  const cancellationResult = await orderBookApi.sendSignedOrderCancellations({
+    ...orderCancellationSigningResult,
+    orderUids: [orderId],
+  })
 
-    console.log('Results: ', { orderId, order, trades, orderCancellationSigningResult, cancellationResult })
+  console.log('Results: ', { orderId, order, trades, orderCancellationSigningResult, cancellationResult })
 }
 ```
 
@@ -103,18 +105,19 @@ Since the API supports different networks and environments, there are some optio
 
 #### Environment configuration
 
-`chainId` - can be one of `SupportedChainId.MAINNET`, `SupportedChainId.GNOSIS_CHAIN`, or `SupportedChainId.SEPOLIA`
+`chainId` - can be one of `SupportedChainId.MAINNET`, `SupportedChainId.GNOSIS_CHAIN`, `SupportedChainId.ARBITRUM_ONE` or `SupportedChainId.SEPOLIA`
 
 `env` - this parameter affects which environment will be used:
- - `https://api.cow.fi` for `prod` (default)
- - `https://barn.api.cow.fi` for `staging`
+
+- `https://api.cow.fi` for `prod` (default)
+- `https://barn.api.cow.fi` for `staging`
 
 ```typescript
 import { OrderBookApi } from '@cowprotocol/cow-sdk'
 
 const orderBookApi = new OrderBookApi({
   chainId: SupportedChainId.GNOSIS_CHAIN,
-  env: 'staging' // <-----
+  env: 'staging', // <-----
 })
 ```
 
@@ -127,19 +130,22 @@ import { OrderBookApi } from '@cowprotocol/cow-sdk'
 
 const orderBookApi = new OrderBookApi({
   chainId: SupportedChainId.GNOSIS_CHAIN,
-  baseUrls: { // <-----
+  baseUrls: {
+    // <-----
     [SupportedChainId.MAINNET]: 'https://YOUR_ENDPOINT/mainnet',
-    [SupportedChainId.GNOSIS_CHAIN]: 'https://YOUR_ENDPOINT/gnosis-chain',
+    [SupportedChainId.GNOSIS_CHAIN]: 'https://YOUR_ENDPOINT/gnosis_chain',
+    [SupportedChainId.ARBITRUM]: 'https://YOUR_ENDPOINT/arbitrum_one',
     [SupportedChainId.SEPOLIA]: 'https://YOUR_ENDPOINT/sepolia',
-  }
+  },
 })
 ```
 
 The [CoW Protocol API](https://api.cow.fi/docs/#/) has restrictions on the backend side to protect against DDOS and other issues.
 
->The main restriction is request rate limit of: **5 requests per second for each IP address**
+> The main restriction is request rate limit of: **5 requests per second for each IP address**
 
-The *client's* limiter settings can be configured as well:
+The _client's_ limiter settings can be configured as well:
+
 ```typescript
 import { OrderBookApi } from '@cowprotocol/cow-sdk'
 import { BackoffOptions } from 'exponential-backoff'
@@ -156,9 +162,7 @@ const backOffOpts: BackoffOptions = {
   jitter: 'none',
 }
 
-const orderBookApi = new OrderBookApi(
-  {chainId: SupportedChainId.GNOSIS_CHAIN, limiterOpts, backOffOpts},
-)
+const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.GNOSIS_CHAIN, limiterOpts, backOffOpts })
 ```
 
 ### Querying the CoW Subgraph
@@ -200,7 +204,6 @@ const variables = { n: 5 }
 const response = await cowSubgraphApi.runQuery(query, variables)
 console.log(response)
 ```
-
 
 ## Architecture
 
