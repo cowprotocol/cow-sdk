@@ -23,7 +23,6 @@ import {
   DEFAULT_COW_API_CONTEXT,
   ENVS_LIST,
   PartialApiContext,
-  RequestOptions,
 } from '../common/configs'
 import { transformOrder } from './transformOrder'
 import { EnrichedOrder } from './types'
@@ -126,7 +125,7 @@ export type GetOrdersRequest = {
  * @see {@link OrderBook API https://github.com/cowprotocol/services}
  */
 export class OrderBookApi {
-  public context: ApiContext & RequestOptions
+  public context: ApiContext
 
   private rateLimiter: RateLimiter
 
@@ -134,7 +133,7 @@ export class OrderBookApi {
    * Creates a new instance of the CoW Protocol OrderBook API client.
    * @param context - The API context to use. If not provided, the default context will be used.
    */
-  constructor(context: PartialApiContext & RequestOptions = {}) {
+  constructor(context: PartialApiContext = {}) {
     this.context = { ...DEFAULT_COW_API_CONTEXT, ...context }
     this.rateLimiter = new RateLimiter(context.limiterOpts || DEFAULT_LIMITER_OPTIONS)
   }
@@ -386,7 +385,7 @@ export class OrderBookApi {
    * @param contextOverride Optional context override for this request.
    * @returns New context with the override applied.
    */
-  private getContextWithOverride(contextOverride: PartialApiContext = {}): ApiContext & RequestOptions {
+  private getContextWithOverride(contextOverride: PartialApiContext = {}): ApiContext {
     return { ...this.context, ...contextOverride }
   }
 
@@ -408,9 +407,9 @@ export class OrderBookApi {
    * @returns The response from the API.
    */
   private fetch<T>(params: FetchParams, contextOverride: PartialApiContext = {}): Promise<T> {
-    const { chainId, env } = this.getContextWithOverride(contextOverride)
+    const { chainId, env, backoffOpts: _backoffOpts } = this.getContextWithOverride(contextOverride)
     const baseUrl = this.getApiBaseUrls(env)[chainId]
-    const backoffOpts = this.context.backoffOpts || DEFAULT_BACKOFF_OPTIONS
+    const backoffOpts = _backoffOpts || DEFAULT_BACKOFF_OPTIONS
 
     return request(baseUrl, params, this.rateLimiter, backoffOpts)
   }
