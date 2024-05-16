@@ -67,6 +67,8 @@ export interface ApiContext {
   chainId: SupportedChainId
   env: CowEnv
   baseUrls?: ApiBaseUrls
+  limiterOpts?: RateLimiterOpts
+  backoffOpts?: BackoffOptions
 }
 
 /**
