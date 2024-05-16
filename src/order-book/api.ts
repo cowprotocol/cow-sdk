@@ -412,7 +412,8 @@ export class OrderBookApi {
     const { chainId, env, backoffOpts: _backoffOpts } = this.getContextWithOverride(contextOverride)
     const baseUrl = this.getApiBaseUrls(env)[chainId]
     const backoffOpts = _backoffOpts || DEFAULT_BACKOFF_OPTIONS
+    const rateLimiter = contextOverride.limiterOpts ? new RateLimiter(contextOverride.limiterOpts) : this.rateLimiter
 
-    return request(baseUrl, params, this.rateLimiter, backoffOpts)
+    return request(baseUrl, params, rateLimiter, backoffOpts)
   }
 }
