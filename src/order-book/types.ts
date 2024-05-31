@@ -19,9 +19,10 @@ export interface EnrichedOrder extends Order {
  * For buy-orders the partner fee is added on top of the sell amount after network costs.
  */
 export interface QuoteAmountsAndCosts<
+  AmountType = bigint,
   Amounts = {
-    sellAmount: bigint
-    buyAmount: bigint
+    sellAmount: AmountType
+    buyAmount: AmountType
   }
 > {
   isSell: boolean
@@ -30,11 +31,11 @@ export interface QuoteAmountsAndCosts<
 
   costs: {
     networkFee: {
-      amountInSellCurrency: bigint
-      amountInBuyCurrency: bigint
+      amountInSellCurrency: AmountType
+      amountInBuyCurrency: AmountType
     }
     partnerFee: {
-      amount: bigint
+      amount: AmountType
       bps: number
     }
   }
