@@ -113,7 +113,9 @@ type BigNumber = {
  */
 function getBigNumber(value: string | bigint | number, decimals: number): BigNumber {
   if (typeof value === 'number') {
-    const big = BigInt((value * 10 ** decimals).toFixed())
+    const bigAsNumber = value * 10 ** decimals
+    const bigAsNumberString = bigAsNumber.toFixed()
+    const big = BigInt(bigAsNumberString.includes('e') ? bigAsNumber : bigAsNumberString)
 
     return { big, num: value }
   }
