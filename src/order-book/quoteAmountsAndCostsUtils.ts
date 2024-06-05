@@ -76,7 +76,6 @@ export function getQuoteAmountsAndCosts(params: Params): QuoteAmountsAndCosts {
 
   return {
     isSell,
-    quotePrice,
     costs: {
       networkFee: {
         amountInSellCurrency: networkCostAmount.big,

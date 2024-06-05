@@ -27,8 +27,6 @@ export interface QuoteAmountsAndCosts<
 > {
   isSell: boolean
 
-  quotePrice: number
-
   costs: {
     networkFee: {
       amountInSellCurrency: AmountType
