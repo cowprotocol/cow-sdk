@@ -9,6 +9,8 @@ interface Params {
   partnerFeeBps: number | undefined
 }
 
+const ONE_HUNDRED_BPS = BigInt(100 * 100)
+
 export function getQuoteAmountsAndCosts(params: Params): QuoteAmountsAndCosts {
   const { orderParams, sellDecimals, buyDecimals, slippagePercentBps } = params
   const partnerFeeBps = params.partnerFeeBps ?? 0
@@ -44,7 +46,7 @@ export function getQuoteAmountsAndCosts(params: Params): QuoteAmountsAndCosts {
    * Partner fee is always added on the surplus amount, for sell-orders it's buy amount, for buy-orders it's sell amount
    */
   const surplusAmount = isSell ? buyAmountBeforeNetworkCosts.big : sellAmountBeforeNetworkCosts.big
-  const partnerFeeAmount = partnerFeeBps > 0 ? surplusAmount / BigInt(partnerFeeBps) : BigInt(0)
+  const partnerFeeAmount = partnerFeeBps > 0 ? (surplusAmount * BigInt(partnerFeeBps)) / ONE_HUNDRED_BPS : BigInt(0)
 
   /**
    * Partner fee is always added on the surplus token, for sell-orders it's buy token, for buy-orders it's sell token
@@ -59,7 +61,7 @@ export function getQuoteAmountsAndCosts(params: Params): QuoteAmountsAndCosts {
         buyAmount: buyAmountAfterNetworkCosts.big,
       }
 
-  const getSlippageAmount = (amount: bigint) => (amount * BigInt(slippagePercentBps)) / BigInt(100 * 100)
+  const getSlippageAmount = (amount: bigint) => (amount * BigInt(slippagePercentBps)) / ONE_HUNDRED_BPS
 
   /**
    * Same rules apply for slippage as for partner fees
