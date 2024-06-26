@@ -1,53 +1,58 @@
-import { latest, LatestAppDataDocVersion } from '@cowprotocol/app-data'
-import type { Address, SupportedChainId, CowEnv } from '../../../src'
+import { latest, LatestAppDataDocVersion, AppDataParams } from '@cowprotocol/app-data'
+import { Address, SupportedChainId, CowEnv, OrderQuoteRequest, OrderKind } from '../../../src'
+import type { Signer } from '@ethersproject/abstract-signer'
 
-export interface SwapParameters {
-  privateKey: string
-  chainId: SupportedChainId
-  from: string
+export interface TradeBaseParameters {
+  kind: OrderKind
   sellToken: Address
   sellTokenDecimals: number
   buyToken: Address
   buyTokenDecimals: number
   amount: string
-  kind: 'sell' | 'buy'
+}
+
+export interface TradeOptionalParameters {
+  env?: CowEnv
   partiallyFillable?: boolean
-  receiver?: string
-  deadline?: number
   slippageBps?: number
+  receiver?: string
+  validFor?: number
+}
+
+export interface TraderParameters {
+  chainId: SupportedChainId
+  signer: Signer | string
+  appCode: string
+}
+
+export interface TradeParameters extends TradeBaseParameters, TradeOptionalParameters {}
+
+export interface SwapParameters extends TraderParameters, TradeParameters {}
+
+export interface LimitOrderParameters extends TraderParameters, Omit<TradeParameters, 'amount'> {
+  sellAmount: string
+  buyAmount: string
   validTo?: number
+  quoteId?: number
+}
+
+export interface SwapAdvancedSettings {
+  quoteRequest?: Partial<Omit<OrderQuoteRequest, 'kind'>>
+  appData?: AppDataParams
+}
+
+export interface LimitOrderAdvancedSettings {
+  appData?: AppDataParams
 }
 
 export type AppDataOrderClass = latest.OrderClass['orderClass']
 
-export type AppDataHooks = latest.OrderInteractionHooks
-
-export type AppDataWidget = latest.Widget
-
-export type AppDataPartnerFee = latest.PartnerFee
-
 export type AppDataRootSchema = latest.AppDataRootSchema
-
-export interface UtmParams {
-  utmSource?: string
-  utmMedium?: string
-  utmCampaign?: string
-  utmContent?: string
-  utmTerm?: string
-}
 
 export interface BuildAppDataParams {
   appCode: string
-  environment?: string
-  chainId: SupportedChainId
   slippageBps: number
   orderClass: AppDataOrderClass
-  referrerAccount?: string
-  utm: UtmParams | undefined
-  hooks?: AppDataHooks
-  widget?: AppDataWidget
-  partnerFee?: AppDataPartnerFee
-  replacedOrderUid?: string
 }
 
 export interface AppDataInfo {
