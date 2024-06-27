@@ -1,6 +1,7 @@
 import { latest, LatestAppDataDocVersion, AppDataParams } from '@cowprotocol/app-data'
-import { Address, SupportedChainId, CowEnv, OrderQuoteRequest, OrderKind } from '../../../src'
+import { Address, OrderQuoteRequest, OrderKind } from '../order-book'
 import type { Signer } from '@ethersproject/abstract-signer'
+import { CowEnv, SupportedChainId } from '../common'
 
 export interface TradeBaseParameters {
   kind: OrderKind

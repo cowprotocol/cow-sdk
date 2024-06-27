@@ -1,4 +1,4 @@
-import { EcdsaSigningScheme, SigningScheme } from '../../../src'
+import { EcdsaSigningScheme, SigningScheme } from '../order-book'
 
 export const log = (text: string) => console.log(`[SDK] ${text}`)
 

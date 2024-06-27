@@ -1,7 +1,7 @@
 import { LimitOrderAdvancedSettings, LimitOrderParameters } from './types'
 import { log } from './consts'
 import { ethers } from 'ethers'
-import { OrderBookApi } from '../../../src'
+import { OrderBookApi } from '../order-book'
 import { buildAppData } from './appDataUtils'
 import { postCoWProtocolTrade } from './postTrade'
 

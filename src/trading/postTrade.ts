@@ -1,13 +1,8 @@
-import {
-  getQuoteAmountsAndCosts,
-  OrderBookApi,
-  OrderCreation,
-  OrderSigningUtils,
-  type UnsignedOrder,
-} from '../../../src'
+import { getQuoteAmountsAndCosts, OrderBookApi, OrderCreation } from '../order-book'
 import { ethers } from 'ethers'
 import { AppDataInfo, LimitOrderParameters } from './types'
 import { DEFAULT_QUOTE_VALIDITY, log, SIGN_SCHEME_MAP } from './consts'
+import { OrderSigningUtils, UnsignedOrder } from '../order-signing'
 
 export async function postCoWProtocolTrade(
   orderBookApi: OrderBookApi,

@@ -1,6 +1,4 @@
-import { OrderKind, SupportedChainId } from '../../../src'
-import { postSwapOrder } from './postSwapOrder'
-import { postLimitOrder } from './postLimitOrder'
+import { SupportedChainId, OrderKind, postSwapOrder, postLimitOrder } from '../../../src'
 
 const privateKey = 'xxx'
 

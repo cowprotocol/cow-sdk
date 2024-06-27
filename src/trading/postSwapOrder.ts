@@ -8,7 +8,7 @@ import {
   OrderQuoteSideKindSell,
   PriceQuality,
   SigningScheme,
-} from '../../../src'
+} from '../order-book'
 import { buildAppData } from './appDataUtils'
 import { postCoWProtocolTrade } from './postTrade'
 
