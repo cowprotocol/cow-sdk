@@ -22,7 +22,7 @@ export async function postLimitOrder(params: LimitOrderParameters, advancedSetti
 
   const signer = typeof params.signer === 'string' ? new ethers.Wallet(params.signer) : params.signer
   const orderBookApi = new OrderBookApi({ chainId, env })
-  const feeAmount = '0'
+  const networkCostsAmount = '0'
 
   log('Building app data...')
 
@@ -35,16 +35,11 @@ export async function postLimitOrder(params: LimitOrderParameters, advancedSetti
     advancedSettings?.appData
   )
 
-  await postCoWProtocolTrade(
-    orderBookApi,
-    signer,
-    appDataInfo,
-    {
-      ...params,
-      quoteId,
-      sellAmount,
-      buyAmount,
-    },
-    feeAmount
-  )
+  await postCoWProtocolTrade(orderBookApi, signer, appDataInfo, {
+    ...params,
+    quoteId,
+    sellAmount,
+    buyAmount,
+    networkCostsAmount,
+  })
 }

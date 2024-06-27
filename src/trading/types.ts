@@ -18,6 +18,7 @@ export interface TradeOptionalParameters {
   slippageBps?: number
   receiver?: string
   validFor?: number
+  partnerFee?: latest.PartnerFee
 }
 
 export interface TraderParameters {
@@ -33,6 +34,7 @@ export interface SwapParameters extends TraderParameters, TradeParameters {}
 export interface LimitOrderParameters extends TraderParameters, Omit<TradeParameters, 'amount'> {
   sellAmount: string
   buyAmount: string
+  networkCostsAmount: string
   validTo?: number
   quoteId?: number
 }

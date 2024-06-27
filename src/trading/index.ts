@@ -1,2 +1,6 @@
+export * from './quoteUtils'
+export * from './types'
+export { getQuote } from './getQuote'
 export { postSwapOrder } from './postSwapOrder'
 export { postLimitOrder } from './postLimitOrder'
+export { postCoWProtocolTrade } from './postTrade'

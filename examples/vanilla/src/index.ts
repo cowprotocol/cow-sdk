@@ -1,18 +1,84 @@
-import { OrderBookApi, SubgraphApi, SupportedChainId } from '@cowprotocol/cow-sdk'
+import { SupportedChainId, getQuote, UnsignedOrder } from '../../../src'
 
-// See more examples in /examples/cra
+import { getOrderToSignFromQuoteResult, swapParamsToLimitOrderParams, postCoWProtocolTrade } from '../../../src/trading'
+
+import { TOKENS } from './tokens'
+import { atomsToAmount } from './utils'
+import { pageHtml } from './pageHtml'
+import { pageActions, printResult } from './pageActions'
+import { GetQuoteResult } from '../../../src/trading/getQuote'
+import { getFormState, getSwapParameters } from './formState'
+import './styles.css'
+
+// Run the example
 ;(async function () {
-  const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.MAINNET })
+  let getQuoteResult: GetQuoteResult | null = null
 
-  const order = await orderBookApi.getOrder(
-    '0xff2e2e54d178997f173266817c1e9ed6fee1a1aae4b43971c53b543cffcc2969845c6f5599fbb25dbdd1b9b013daf85c03f3c63763e4bc4a'
-  )
+  // Render page
+  const page = pageHtml()
+  document.body.appendChild(page)
 
-  const orderElement = document.createElement('textarea')
+  // Bind actions to the page
+  pageActions({
+    onFormReset() {
+      getQuoteResult = null
+    },
+    async onGetQuote() {
+      const {
+        slippageBps: _slippageBps,
+        chainId: _chainId,
+        sellToken: _sellToken,
+        buyToken: _buyToken,
+        amount: _amount,
+        kind,
+      } = getFormState()
 
-  orderElement.value = JSON.stringify({ order }, null, 4)
-  orderElement.style.minWidth = '950px'
-  orderElement.style.minHeight = '800px'
+      const chainId: SupportedChainId = +_chainId
+      const isSell = kind === 'sell'
+      const sellToken = TOKENS[chainId].find((t) => t.address === _sellToken)
+      const buyToken = TOKENS[chainId].find((t) => t.address === _buyToken)
 
-  document.body.appendChild(orderElement)
+      getQuoteResult = await getQuote(getSwapParameters())
+
+      const {
+        amountsAndCosts: { beforeNetworkCosts, afterSlippage },
+      } = getQuoteResult
+
+      console.log('Quote results:', getQuoteResult)
+
+      const outputToken = isSell ? buyToken : sellToken
+
+      printResult(`
+            Quote amount: ${atomsToAmount(
+              beforeNetworkCosts[isSell ? 'buyAmount' : 'sellAmount'],
+              outputToken.decimals
+            )} ${outputToken.symbol}
+            Amount to sign: ${atomsToAmount(
+              afterSlippage[isSell ? 'buyAmount' : 'sellAmount'],
+              outputToken.decimals
+            )} ${outputToken.symbol}
+            See more info in the console (Quote results)
+        `)
+    },
+    async onConfirmOrder() {
+      const orderToSign = await getOrderToSignFromQuoteResult(getQuoteResult, getSwapParameters())
+
+      printResult(`
+        You are going to sign:
+        ${JSON.stringify(orderToSign, null, 4)}
+      `)
+    },
+    async onSignAndSendOrder() {
+      const { orderBookApi, signer, appDataInfo, quoteResponse } = getQuoteResult
+
+      const orderId = await postCoWProtocolTrade(
+        orderBookApi,
+        signer,
+        appDataInfo,
+        swapParamsToLimitOrderParams(getSwapParameters(), quoteResponse)
+      )
+
+      printResult(`Order created, id: ${orderId}`)
+    },
+  })
 })()
