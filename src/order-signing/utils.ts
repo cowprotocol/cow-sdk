@@ -60,7 +60,7 @@ async function _signOrder(params: SignOrderParams): Promise<Signature> {
 
   const domain = getDomain(chainId)
 
-  return signOrderGp(domain, order as OrderFromContract, signer, mapSigningSchema[signingScheme])
+  return signOrderGp(domain, order as unknown as OrderFromContract, signer, mapSigningSchema[signingScheme])
 }
 
 async function _signOrderCancellation(params: SignOrderCancellationParams): Promise<Signature> {
