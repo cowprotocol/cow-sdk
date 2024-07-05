@@ -97,7 +97,11 @@ export async function getQuote(
     buyDecimals: buyTokenDecimals,
   })
 
-  const orderToSign = getOrderToSign(from, swapParamsToLimitOrderParams(swapParameters, quoteResponse), appDataInfo)
+  const orderToSign = getOrderToSign(
+    { from, networkCostsAmount: quoteResponse.quote.feeAmount },
+    swapParamsToLimitOrderParams(swapParameters, quoteResponse),
+    appDataInfo
+  )
 
   return { amountsAndCosts, quoteResponse, appDataInfo, orderBookApi, signer, orderToSign, swapParameters }
 }
