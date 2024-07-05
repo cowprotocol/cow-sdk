@@ -22,7 +22,6 @@ export async function postLimitOrder(params: LimitOrderParameters, advancedSetti
 
   const signer = typeof params.signer === 'string' ? new ethers.Wallet(params.signer) : params.signer
   const orderBookApi = new OrderBookApi({ chainId, env })
-  const networkCostsAmount = '0'
 
   log('Building app data...')
 
@@ -40,6 +39,5 @@ export async function postLimitOrder(params: LimitOrderParameters, advancedSetti
     quoteId,
     sellAmount,
     buyAmount,
-    networkCostsAmount,
   })
 }

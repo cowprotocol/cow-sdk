@@ -19,6 +19,7 @@ export async function postSwapOrderFromQuote({
     orderBookApi,
     signer,
     appDataInfo,
-    swapParamsToLimitOrderParams(swapParameters, quoteResponse)
+    swapParamsToLimitOrderParams(swapParameters, quoteResponse),
+    quoteResponse.quote.feeAmount
   )
 }

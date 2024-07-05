@@ -35,7 +35,6 @@ export interface SwapParameters extends TraderParameters, TradeParameters {}
 export interface LimitTradeParameters extends Omit<TradeParameters, 'amount'> {
   sellAmount: string
   buyAmount: string
-  networkCostsAmount: string // TODO: encapsulate the parameter
   validTo?: number
   quoteId?: number
 }

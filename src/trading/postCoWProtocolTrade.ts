@@ -9,14 +9,15 @@ export async function postCoWProtocolTrade(
   orderBookApi: OrderBookApi,
   signer: ethers.Signer,
   appData: AppDataInfo,
-  params: LimitOrderParameters
+  params: LimitOrderParameters,
+  networkCostsAmount = '0'
 ): Promise<string> {
   const { chainId, quoteId = null } = params
   const { appDataKeccak256, fullAppData } = appData
 
   const from = await signer.getAddress()
 
-  const orderToSign = getOrderToSign(from, params, appData)
+  const orderToSign = getOrderToSign({ from, networkCostsAmount }, params, appData)
 
   log('Signing order...')
 

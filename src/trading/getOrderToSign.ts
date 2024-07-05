@@ -3,7 +3,16 @@ import { UnsignedOrder } from '../order-signing'
 import { AppDataInfo, LimitOrderParameters } from './types'
 import { DEFAULT_QUOTE_VALIDITY } from './consts'
 
-export function getOrderToSign(from: string, params: LimitOrderParameters, appData: AppDataInfo): UnsignedOrder {
+interface OrderToSignParams {
+  from: string
+  networkCostsAmount: string
+}
+
+export function getOrderToSign(
+  { from, networkCostsAmount }: OrderToSignParams,
+  limitOrderParams: LimitOrderParameters,
+  appData: AppDataInfo
+): UnsignedOrder {
   const {
     sellAmount,
     buyAmount,
@@ -12,15 +21,14 @@ export function getOrderToSign(from: string, params: LimitOrderParameters, appDa
     buyToken,
     buyTokenDecimals,
     kind,
-    networkCostsAmount,
     partiallyFillable = false,
     slippageBps = 0,
     partnerFee,
     validFor,
-  } = params
+  } = limitOrderParams
 
-  const receiver = params.receiver || from
-  const validTo = params.validTo || Math.floor(Date.now() / 1000) + (validFor || DEFAULT_QUOTE_VALIDITY)
+  const receiver = limitOrderParams.receiver || from
+  const validTo = limitOrderParams.validTo || Math.floor(Date.now() / 1000) + (validFor || DEFAULT_QUOTE_VALIDITY)
   const { appDataKeccak256 } = appData
 
   const orderParams: OrderParameters = {
