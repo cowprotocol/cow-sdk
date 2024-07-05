@@ -1,7 +1,5 @@
-import { OrderKind, SupportedChainId, SwapParameters } from '../../../src'
+import { OrderKind, SupportedChainId, SwapParameters, TradeParameters } from '../../../src'
 import { TOKENS } from './tokens'
-
-const appCode = 'trade-sdk-example'
 
 interface FormState {
   privateKey: string
@@ -17,9 +15,8 @@ export const getFormState = (): FormState => {
   return Object.fromEntries(new FormData(document.getElementById('form') as HTMLFormElement)) as unknown as FormState
 }
 
-export const getSwapParameters = (): SwapParameters => {
+export const getTradeParameters = (): TradeParameters => {
   const {
-    privateKey,
     slippageBps: _slippageBps,
     chainId: _chainId,
     sellToken: _sellToken,
@@ -36,9 +33,6 @@ export const getSwapParameters = (): SwapParameters => {
   const slippageBps = _slippageBps ? +_slippageBps : undefined
 
   return {
-    appCode,
-    signer: privateKey,
-    chainId,
     sellToken: sellToken.address,
     sellTokenDecimals: sellToken.decimals,
     buyToken: buyToken.address,

@@ -3,7 +3,7 @@ import { log } from './consts'
 import { ethers } from 'ethers'
 import { OrderBookApi } from '../order-book'
 import { buildAppData } from './appDataUtils'
-import { postCoWProtocolTrade } from './postTrade'
+import { postCoWProtocolTrade } from './postCoWProtocolTrade'
 
 export async function postLimitOrder(params: LimitOrderParameters, advancedSettings?: LimitOrderAdvancedSettings) {
   const {
@@ -35,7 +35,7 @@ export async function postLimitOrder(params: LimitOrderParameters, advancedSetti
     advancedSettings?.appData
   )
 
-  await postCoWProtocolTrade(orderBookApi, signer, appDataInfo, {
+  return postCoWProtocolTrade(orderBookApi, signer, appDataInfo, {
     ...params,
     quoteId,
     sellAmount,

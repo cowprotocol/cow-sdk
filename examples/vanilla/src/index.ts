@@ -1,18 +1,19 @@
-import { SupportedChainId, getQuote, UnsignedOrder } from '../../../src'
+import { SupportedChainId } from '../../../src'
 
-import { getOrderToSignFromQuoteResult, swapParamsToLimitOrderParams, postCoWProtocolTrade } from '../../../src/trading'
+import { TradingSdk, QuoteAndPost } from '../../../src/trading'
 
 import { TOKENS } from './tokens'
 import { atomsToAmount } from './utils'
 import { pageHtml } from './pageHtml'
 import { pageActions, printResult } from './pageActions'
-import { GetQuoteResult } from '../../../src/trading/getQuote'
-import { getFormState, getSwapParameters } from './formState'
+import { getFormState, getTradeParameters } from './formState'
 import './styles.css'
+
+const appCode = 'trade-sdk-example'
 
 // Run the example
 ;(async function () {
-  let getQuoteResult: GetQuoteResult | null = null
+  let quoteAndPost: QuoteAndPost | null = null
 
   // Render page
   const page = pageHtml()
@@ -21,7 +22,7 @@ import './styles.css'
   // Bind actions to the page
   pageActions({
     onFormReset() {
-      getQuoteResult = null
+      quoteAndPost = null
     },
     async onGetQuote() {
       const {
@@ -31,6 +32,7 @@ import './styles.css'
         buyToken: _buyToken,
         amount: _amount,
         kind,
+        privateKey,
       } = getFormState()
 
       const chainId: SupportedChainId = +_chainId
@@ -38,13 +40,19 @@ import './styles.css'
       const sellToken = TOKENS[chainId].find((t) => t.address === _sellToken)
       const buyToken = TOKENS[chainId].find((t) => t.address === _buyToken)
 
-      getQuoteResult = await getQuote(getSwapParameters())
+      const sdk = new TradingSdk({
+        chainId,
+        signer: privateKey,
+        appCode,
+      })
+
+      quoteAndPost = await sdk.getQuote(getTradeParameters())
 
       const {
         amountsAndCosts: { beforeNetworkCosts, afterSlippage },
-      } = getQuoteResult
+      } = quoteAndPost.quoteResults
 
-      console.log('Quote results:', getQuoteResult)
+      console.log('Quote results:', quoteAndPost.quoteResults)
 
       const outputToken = isSell ? buyToken : sellToken
 
@@ -61,7 +69,7 @@ import './styles.css'
         `)
     },
     async onConfirmOrder() {
-      const orderToSign = await getOrderToSignFromQuoteResult(getQuoteResult, getSwapParameters())
+      const orderToSign = quoteAndPost.quoteResults.orderToSign
 
       printResult(`
         You are going to sign:
@@ -69,14 +77,7 @@ import './styles.css'
       `)
     },
     async onSignAndSendOrder() {
-      const { orderBookApi, signer, appDataInfo, quoteResponse } = getQuoteResult
-
-      const orderId = await postCoWProtocolTrade(
-        orderBookApi,
-        signer,
-        appDataInfo,
-        swapParamsToLimitOrderParams(getSwapParameters(), quoteResponse)
-      )
+      const orderId = await quoteAndPost.postSwapOrderFromQuote()
 
       printResult(`Order created, id: ${orderId}`)
     },

@@ -2,6 +2,7 @@ import { latest, LatestAppDataDocVersion, AppDataParams } from '@cowprotocol/app
 import { Address, OrderQuoteRequest, OrderKind } from '../order-book'
 import type { Signer } from '@ethersproject/abstract-signer'
 import { CowEnv, SupportedChainId } from '../common'
+import { QuoteResults } from './getQuote'
 
 export interface TradeBaseParameters {
   kind: OrderKind
@@ -31,13 +32,15 @@ export interface TradeParameters extends TradeBaseParameters, TradeOptionalParam
 
 export interface SwapParameters extends TraderParameters, TradeParameters {}
 
-export interface LimitOrderParameters extends TraderParameters, Omit<TradeParameters, 'amount'> {
+export interface LimitTradeParameters extends Omit<TradeParameters, 'amount'> {
   sellAmount: string
   buyAmount: string
-  networkCostsAmount: string
+  networkCostsAmount: string // TODO: encapsulate the parameter
   validTo?: number
   quoteId?: number
 }
+
+export interface LimitOrderParameters extends TraderParameters, LimitTradeParameters {}
 
 export interface SwapAdvancedSettings {
   quoteRequest?: Partial<Omit<OrderQuoteRequest, 'kind'>>
@@ -46,6 +49,11 @@ export interface SwapAdvancedSettings {
 
 export interface LimitOrderAdvancedSettings {
   appData?: AppDataParams
+}
+
+export interface QuoteAndPost {
+  quoteResults: QuoteResults
+  postSwapOrderFromQuote(): Promise<string>
 }
 
 export type AppDataOrderClass = latest.OrderClass['orderClass']

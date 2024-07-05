@@ -13,9 +13,14 @@ import {
   SigningScheme,
 } from '../order-book'
 import { buildAppData } from './appDataUtils'
+import { UnsignedOrder } from '../order-signing'
+import { getOrderToSign } from './getOrderToSign'
+import { swapParamsToLimitOrderParams } from './utils'
 
-export interface GetQuoteResult {
+export interface QuoteResults {
+  swapParameters: SwapParameters
   amountsAndCosts: QuoteAmountsAndCosts
+  orderToSign: UnsignedOrder
   quoteResponse: OrderQuoteResponse
   appDataInfo: AppDataInfo
   orderBookApi: OrderBookApi
@@ -23,9 +28,9 @@ export interface GetQuoteResult {
 }
 
 export async function getQuote(
-  params: SwapParameters,
+  swapParameters: SwapParameters,
   advancedSettings?: SwapAdvancedSettings
-): Promise<GetQuoteResult> {
+): Promise<QuoteResults> {
   const {
     appCode,
     chainId,
@@ -39,15 +44,16 @@ export async function getQuote(
     validFor = DEFAULT_QUOTE_VALIDITY,
     slippageBps = 0,
     env = 'prod',
-  } = params
+  } = swapParameters
 
   log(`Swap ${amount} ${sellToken} for ${buyToken} on chain ${chainId}`)
 
-  const signer = typeof params.signer === 'string' ? new ethers.Wallet(params.signer) : params.signer
+  const signer =
+    typeof swapParameters.signer === 'string' ? new ethers.Wallet(swapParameters.signer) : swapParameters.signer
   const orderBookApi = new OrderBookApi({ chainId, env })
 
   const from = await signer.getAddress()
-  const receiver = params.receiver || from
+  const receiver = swapParameters.receiver || from
   const isSell = kind === 'sell'
 
   log('Building app data...')
@@ -91,5 +97,7 @@ export async function getQuote(
     buyDecimals: buyTokenDecimals,
   })
 
-  return { amountsAndCosts, quoteResponse, appDataInfo, orderBookApi, signer }
+  const orderToSign = getOrderToSign(from, swapParamsToLimitOrderParams(swapParameters, quoteResponse), appDataInfo)
+
+  return { amountsAndCosts, quoteResponse, appDataInfo, orderBookApi, signer, orderToSign, swapParameters }
 }

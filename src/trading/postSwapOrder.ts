@@ -1,21 +1,24 @@
 import { SwapAdvancedSettings, SwapParameters } from './types'
 
-import { postCoWProtocolTrade } from './postTrade'
-import { getQuote } from './getQuote'
+import { postCoWProtocolTrade } from './postCoWProtocolTrade'
+import { getQuote, QuoteResults } from './getQuote'
+import { swapParamsToLimitOrderParams } from './utils'
 
 export async function postSwapOrder(params: SwapParameters, advancedSettings?: SwapAdvancedSettings) {
-  const {
+  return postSwapOrderFromQuote(await getQuote(params, advancedSettings))
+}
+
+export async function postSwapOrderFromQuote({
+  orderBookApi,
+  signer,
+  appDataInfo,
+  quoteResponse,
+  swapParameters,
+}: QuoteResults) {
+  return postCoWProtocolTrade(
     orderBookApi,
     signer,
-    quoteResponse: { quote, id: quoteId },
     appDataInfo,
-  } = await getQuote(params, advancedSettings)
-
-  await postCoWProtocolTrade(orderBookApi, signer, appDataInfo, {
-    ...params,
-    quoteId,
-    sellAmount: quote.sellAmount,
-    buyAmount: quote.buyAmount,
-    networkCostsAmount: quote.feeAmount,
-  })
+    swapParamsToLimitOrderParams(swapParameters, quoteResponse)
+  )
 }
