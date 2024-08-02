@@ -12,6 +12,7 @@ export namespace OrderPostError {
     export enum errorType {
         DUPLICATED_ORDER = 'DuplicatedOrder',
         QUOTE_NOT_FOUND = 'QuoteNotFound',
+        QUOTE_NOT_VERIFIED = 'QuoteNotVerified',
         INVALID_QUOTE = 'InvalidQuote',
         MISSING_FROM = 'MissingFrom',
         WRONG_OWNER = 'WrongOwner',

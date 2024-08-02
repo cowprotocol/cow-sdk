@@ -14,6 +14,7 @@ import {
   Address,
   AppDataHash,
   AppDataObject,
+  CompetitionOrderStatus,
   NativePriceResponse,
   Order,
   OrderCancellations,
@@ -225,6 +226,13 @@ export class OrderBookApi {
     return this.fetch<Order>({ path: `/api/v1/orders/${orderUid}`, method: 'GET' }, contextOverride).then((order) => {
       return transformOrder(order)
     })
+  }
+
+  /**
+   * Get the order status while open
+   */
+  getOrderCompetitionStatus(orderUid: UID, contextOverride: PartialApiContext = {}): Promise<CompetitionOrderStatus> {
+    return this.fetch({ path: `/api/v1/orders/${orderUid}/status`, method: 'GET' }, contextOverride)
   }
 
   /**
