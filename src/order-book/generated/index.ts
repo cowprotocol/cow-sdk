@@ -44,6 +44,7 @@ export { PriceEstimationError } from './models/PriceEstimationError';
 export type { PriceImprovement } from './models/PriceImprovement';
 export { PriceQuality } from './models/PriceQuality';
 export type { ProtocolAppData } from './models/ProtocolAppData';
+export type { Quote } from './models/Quote';
 export { SellTokenSource } from './models/SellTokenSource';
 export type { Signature } from './models/Signature';
 export { SigningScheme } from './models/SigningScheme';
