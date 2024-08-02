@@ -22,13 +22,13 @@ export type CompetitionOrderStatus = {
 export namespace CompetitionOrderStatus {
 
     export enum type {
-        OPEN = 'Open',
-        SCHEDULED = 'Scheduled',
-        ACTIVE = 'Active',
-        SOLVED = 'Solved',
-        EXECUTING = 'Executing',
-        TRADED = 'Traded',
-        CANCELLED = 'Cancelled',
+        OPEN = 'open',
+        SCHEDULED = 'scheduled',
+        ACTIVE = 'active',
+        SOLVED = 'solved',
+        EXECUTING = 'executing',
+        TRADED = 'traded',
+        CANCELLED = 'cancelled',
     }
 
 
