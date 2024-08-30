@@ -28,7 +28,7 @@
     "prepublishOnly": "npm test && npm run lint",
     "graphql:codegen": "graphql-codegen --config graphql-codegen.yml",
     "swagger:codegen": " openapi --input https://raw.githubusercontent.com/cowprotocol/services/v2.272.1/crates/orderbook/openapi.yml --output src/order-book/generated --exportServices false --exportCore false",
-    "typechain:codegen": "typechain --target ethers-v5 --out-dir ./src/composable/generated './abi/*.json'"
+    "typechain:codegen": "typechain --target ethers-v5 --out-dir ./src/common/generated './abi/*.json'"
   },
   "dependencies": {
     "@cowprotocol/contracts": "^1.6.0",

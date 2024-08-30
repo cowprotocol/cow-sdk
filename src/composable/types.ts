@@ -1,6 +1,6 @@
 import { OrderBookApi } from '../order-book'
 import { SupportedChainId } from '../common'
-import { GPv2Order } from './generated/ComposableCoW'
+import { GPv2Order } from '../common/generated/ComposableCoW'
 import { providers } from 'ethers'
 
 export interface ConditionalOrderArguments<T> {
