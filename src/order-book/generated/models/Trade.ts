@@ -4,6 +4,7 @@
 
 import type { Address } from './Address';
 import type { BigUint } from './BigUint';
+import type { FeePolicy } from './FeePolicy';
 import type { TokenAmount } from './TokenAmount';
 import type { TransactionHash } from './TransactionHash';
 import type { UID } from './UID';
@@ -53,5 +54,10 @@ export type Trade = {
      * Transaction hash of the corresponding settlement transaction containing the trade (if available).
      */
     txHash: TransactionHash | null;
+    /**
+     * The fee policies that were used to compute the fees for this trade. Listed in the order they got applied.
+     *
+     */
+    feePolicies?: Array<FeePolicy>;
 };
 

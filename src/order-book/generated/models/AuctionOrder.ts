@@ -9,6 +9,7 @@ import type { FeePolicy } from './FeePolicy';
 import type { InteractionData } from './InteractionData';
 import type { OrderClass } from './OrderClass';
 import type { OrderKind } from './OrderKind';
+import type { Quote } from './Quote';
 import type { SellTokenSource } from './SellTokenSource';
 import type { Signature } from './Signature';
 import type { TokenAmount } from './TokenAmount';
@@ -36,6 +37,10 @@ export type AuctionOrder = {
      * see `OrderParameters::buyAmount`
      */
     buyAmount: TokenAmount;
+    /**
+     * Creation time of the order. Denominated in epoch seconds.
+     */
+    created: string;
     /**
      * see `OrderParameters::validTo`
      */
@@ -84,5 +89,10 @@ export type AuctionOrder = {
      *
      */
     protocolFees: Array<FeePolicy>;
+    /**
+     * A winning quote.
+     *
+     */
+    quote?: Quote;
 };
 

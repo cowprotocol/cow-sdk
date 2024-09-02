@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { Address } from './Address';
 import type { AuctionOrder } from './AuctionOrder';
 import type { AuctionPrices } from './AuctionPrices';
 
@@ -35,5 +36,10 @@ export type Auction = {
      */
     orders?: Array<AuctionOrder>;
     prices?: AuctionPrices;
+    /**
+     * List of addresses on whose surplus will count towards the objective value of their solution (unlike other orders that were created by the solver).
+     *
+     */
+    surplusCapturingJitOrderOwners?: Array<Address>;
 };
 
