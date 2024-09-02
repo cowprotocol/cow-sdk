@@ -12,6 +12,12 @@ export interface ICoWShedCall {
   isDelegateCall: boolean
 }
 
+export interface ICoWShedOptions {
+  factoryAddress: string
+  proxyCreationCode?: string
+  implementationAddress: string
+}
+
 export const DOMAIN_TYPE = {
   EIP712Domain: [
     { type: 'string', name: 'name' },

@@ -4,14 +4,13 @@ import {
   getCreate2Address,
   joinSignature,
   solidityKeccak256,
-  solidityPack,
   splitSignature,
 } from 'ethers/lib/utils'
 import { COW_SHED_FACTORY, COW_SHED_IMPLEMENTATION, SupportedChainId } from 'src/common'
-import { COW_SHED_712_TYPES, ICoWShedCall } from './types'
+import { COW_SHED_712_TYPES, ICoWShedCall, ICoWShedOptions } from './types'
 import { COW_SHED_PROXY_INIT_CODE } from './proxyInitCode'
 import type { Signer } from '@ethersproject/abstract-signer'
-import { getCoWShedFactoryInterface, getCoWShedInterface } from './contracts'
+import { getCoWShedFactoryInterface } from './contracts'
 import { TypedDataDomain } from 'ethers'
 import {
   EcdsaSigningScheme,
@@ -22,74 +21,74 @@ import {
 } from '@cowprotocol/contracts'
 
 export class CowShedHooks {
-  static computeProxyAddress(user: string) {
+  constructor(private chainId: SupportedChainId, private customOptions?: ICoWShedOptions) {}
+
+  computeProxyAddress(user: string) {
     const salt = defaultAbiCoder.encode(['address'], [user])
     const initCodeHash = solidityKeccak256(
       ['bytes', 'bytes'],
-      [this.proxyCreationCode(), defaultAbiCoder.encode(['address', 'address'], [COW_SHED_IMPLEMENTATION, user])]
+      [
+        this.proxyCreationCode(),
+        defaultAbiCoder.encode(['address', 'address'], [this.getImplementationAddress(), user]),
+      ]
     )
-    return getCreate2Address(COW_SHED_FACTORY, salt, initCodeHash)
+    return getCreate2Address(this.getFactoryAddress(), salt, initCodeHash)
   }
 
-  static encodeExecuteHooksForFactory(
+  encodeExecuteHooksForFactory(
     calls: ICoWShedCall[],
     nonce: string,
     deadline: bigint,
     user: string,
     signature: string
-  ) {
-    // #TODO: fix ts error
-    // eslint-disable-next-line
-    // @ts-ignore
+  ): string {
     return getCoWShedFactoryInterface().encodeFunctionData('executeHooks', [calls, nonce, deadline, user, signature])
   }
-  static encodeExecuteHooksForProxy(calls: ICoWShedCall[], nonce: string, deadline: bigint, signature: string) {
-    return getCoWShedInterface().encodeFunctionData('executeHooks', [calls, nonce, deadline, signature])
-  }
 
-  static async signCalls(
+  async signCalls(
     calls: ICoWShedCall[],
     nonce: string,
     deadline: bigint,
-    chainId: SupportedChainId,
     signer: Signer,
     signingScheme: EcdsaSigningScheme
-  ) {
+  ): Promise<string> {
     const user = await signer.getAddress()
     const proxy = this.computeProxyAddress(user)
 
-    const { domain, types, message } = this.infoToSign(calls, nonce, deadline, proxy, chainId)
+    const { domain, types, message } = this.infoToSign(calls, nonce, deadline, proxy)
 
     return await ecdsaSignTypedData(signingScheme, signer, domain, types, message)
   }
 
-  static infoToSign(calls: ICoWShedCall[], nonce: string, deadline: bigint, proxy: string, chainId: SupportedChainId) {
+  infoToSign(calls: ICoWShedCall[], nonce: string, deadline: bigint, proxy: string) {
     const message = {
       calls,
       nonce,
       deadline,
     }
-    return { domain: this.getDomain(proxy, chainId), types: COW_SHED_712_TYPES, message }
+    return { domain: this.getDomain(proxy), types: COW_SHED_712_TYPES, message }
   }
 
-  static encodeEOASignature(signature: string) {
-    const r = BigInt(signature.slice(0, 66))
-    const s = BigInt(`0x${signature.slice(66, 130)}`)
-    const v = parseInt(signature.slice(130, 132), 16)
-    return solidityPack(['uint', 'uint', 'uint8'], [r, s, v])
-  }
-
-  static getDomain(proxy: string, chainId: SupportedChainId): TypedDataDomain {
+  getDomain(proxy: string): TypedDataDomain {
     const domain: TypedDataDomain = {
       name: 'COWShed',
       version: '1.0.0',
-      chainId: chainId,
+      chainId: this.chainId,
       verifyingContract: proxy,
     }
     return domain
   }
-  static proxyCreationCode() {
-    return COW_SHED_PROXY_INIT_CODE
+
+  proxyCreationCode() {
+    return this.customOptions?.proxyCreationCode ?? COW_SHED_PROXY_INIT_CODE
+  }
+
+  getFactoryAddress() {
+    return this.customOptions?.factoryAddress ?? COW_SHED_FACTORY
+  }
+
+  getImplementationAddress() {
+    return this.customOptions?.implementationAddress ?? COW_SHED_IMPLEMENTATION
   }
 }
 
