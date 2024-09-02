@@ -9,6 +9,7 @@ import { formatBytes32String, solidityPack } from 'ethers/lib/utils'
 import * as contracts from './contracts'
 
 // information from mint and dai example of cow-shed repository
+// https://github.com/cowdao-grants/cow-shed/blob/main/examples/mintDaiAndSwap.ts
 const MOCK_COW_SHED_FACTORY = '0xa9efDEf197130B945462163a0B852019BA529a66'
 const MOCK_COW_SHED_IMPLEMENTATION = '0x49AeF2C4005Bf572665b09014A563B5b9E46Df21'
 const MOCK_INIT_CODE =
