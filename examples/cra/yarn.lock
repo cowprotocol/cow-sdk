@@ -1087,6 +1087,23 @@
   resolved "https://registry.yarnpkg.com/@cowprotocol/contracts/-/contracts-1.4.0.tgz#e93e5f25aac76feeaa348fa57231903274676247"
   integrity sha512-XLs3SlPmXD4lbiWIO7mxxuCn1eE5isuO6EUlE1cj17HqN/wukDAN0xXYPx6umOH/XdjGS33miMiPHELEyY9siw==
 
+"@cowprotocol/contracts@^1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@cowprotocol/contracts/-/contracts-1.6.0.tgz#d0fc83ed8c624b968d1a68bb5c74712c11ec81e0"
+  integrity sha512-+UKhYRzkvnqqviBru5D3btTLYc743n0O5YTG+wpYwGl4fb7VNKBkFHe28C5Mf1DF/kOfmqfu+0IAvX9Vuq5Dqw==
+
+"@cowprotocol/cow-sdk@../../":
+  version "5.4.1"
+  dependencies:
+    "@cowprotocol/contracts" "^1.6.0"
+    "@ethersproject/abstract-signer" "^5.7.0"
+    "@openzeppelin/merkle-tree" "^1.0.5"
+    cross-fetch "^3.1.5"
+    exponential-backoff "^3.1.1"
+    graphql "^16.3.0"
+    graphql-request "^4.3.0"
+    limiter "^2.1.0"
+
 "@cowprotocol/cow-sdk@^4.0.3":
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/@cowprotocol/cow-sdk/-/cow-sdk-4.0.3.tgz#bd4da3e1821c33e6f5a29e04786aaa16c346bb02"
