@@ -1,6 +1,16 @@
 import { EcdsaSigningScheme, SigningScheme } from '../order-book'
 
-export const log = (text: string) => console.log(`[COW TRADING SDK] ${text}`)
+let isLogEnabled = true
+
+export const toggleLog = (enabled: boolean) => {
+  isLogEnabled = enabled
+}
+
+export const log = (text: string) => {
+  if (!isLogEnabled) return
+
+  console.log(`[COW TRADING SDK] ${text}`)
+}
 
 export const DEFAULT_QUOTE_VALIDITY = 60 * 10 // 10 min
 

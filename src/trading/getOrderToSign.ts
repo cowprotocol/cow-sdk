@@ -3,7 +3,7 @@ import { UnsignedOrder } from '../order-signing'
 import { AppDataInfo, LimitOrderParameters } from './types'
 import { DEFAULT_QUOTE_VALIDITY } from './consts'
 
-interface OrderToSignParams {
+export interface OrderToSignParams {
   from: string
   networkCostsAmount: string
 }

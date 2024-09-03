@@ -28,7 +28,9 @@
     "prepublishOnly": "npm test && npm run lint",
     "graphql:codegen": "graphql-codegen --config graphql-codegen.yml",
     "swagger:codegen": " openapi --input https://raw.githubusercontent.com/cowprotocol/services/v2.272.1/crates/orderbook/openapi.yml --output src/order-book/generated --exportServices false --exportCore false",
-    "typechain:codegen": "typechain --target ethers-v5 --out-dir ./src/composable/generated './abi/*.json'"
+    "typechain:codegen": "typechain --target ethers-v5 --out-dir ./src/composable/generated './abi/*.json'",
+    "trading-cli": "ts-node --project tsconfig.scripts.json ./src/trading/cli/index.ts",
+    "test-trading-cli-py": "python src/trading/example.py"
   },
   "dependencies": {
     "@cowprotocol/app-data": "^2.1.0",
@@ -55,6 +57,7 @@
     "@typechain/ethers-v5": "^11.0.0",
     "@types/jest": "^29.4.0",
     "@types/node": "^18.13.0",
+    "@types/prompts": "^2.4.9",
     "@typescript-eslint/eslint-plugin": "^5.51.0",
     "@typescript-eslint/parser": "^5.51.0",
     "babel-plugin-inline-import": "^3.0.0",
@@ -66,13 +69,16 @@
     "ethers": "^5.7.2",
     "jest": "^29.6.4",
     "jest-fetch-mock": "^3.0.3",
+    "kleur": "^4.1.5",
     "microbundle": "^0.15.1",
     "openapi-typescript-codegen": "^0.23.0",
     "prettier": "^2.5.1",
+    "prompts": "^2.4.2",
     "ts-mockito": "^2.6.1",
     "tsc-watch": "^6.0.0",
     "typechain": "^8.2.0",
-    "typescript": "^4.9.5"
+    "typescript": "^4.9.5",
+    "yargs": "^17.7.2"
   },
   "jest": {
     "automock": false,
