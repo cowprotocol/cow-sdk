@@ -8,7 +8,7 @@ import { ResultContent } from '../../components/resultContent'
 import { formatBytes32String } from 'ethers/lib/utils.js'
 import { SigningScheme } from '@cowprotocol/contracts'
 
-const DEADLINE = BigInt(1000000)
+const DEADLINE = BigInt(1_000_000)
 
 interface IInput {
   target: string
