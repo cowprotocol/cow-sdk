@@ -1,7 +1,7 @@
 import { providers } from 'ethers'
 import { COMPOSABLE_COW_CONTRACT_ADDRESS, SupportedChainId } from '../common'
-import { ComposableCoW, ComposableCoW__factory } from './generated'
-import { ComposableCoWInterface } from './generated/ComposableCoW'
+import { ComposableCoW, ComposableCoW__factory } from '../common/generated'
+import { ComposableCoWInterface } from '../common/generated/ComposableCoW'
 
 let composableCowInterfaceCache: ComposableCoWInterface | undefined
 let composableCowContractCache: ComposableCoW | undefined

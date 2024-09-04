@@ -3,7 +3,7 @@ import { BigNumber, providers, utils } from 'ethers'
 
 import { SupportedChainId } from '../common'
 
-import { ComposableCoW, GPv2Order } from './generated/ComposableCoW'
+import { ComposableCoW, GPv2Order } from '../common/generated/ComposableCoW'
 import { ProofLocation, ProofWithParams, ConditionalOrderParams } from './types'
 import { ConditionalOrder } from './ConditionalOrder'
 import { getComposableCow } from './contracts'
