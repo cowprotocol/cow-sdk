@@ -58,7 +58,7 @@ describe('CowShedHooks', () => {
 
   describe('computeProxyAddress', () => {
     it('should use the right parameters on the proxy address', () => {
-      const calculatedProxy = cowShed.computeProxyAddress(USER_MOCK)
+      const calculatedProxy = cowShed.proxyOf(USER_MOCK)
       expect(calculatedProxy).toBe(PROXY_MOCK)
     })
   })
