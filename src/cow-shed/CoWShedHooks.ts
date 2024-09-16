@@ -70,13 +70,12 @@ export class CowShedHooks {
   }
 
   getDomain(proxy: string): TypedDataDomain {
-    const domain: TypedDataDomain = {
+    return {
       name: 'COWShed',
       version: '1.0.0',
       chainId: this.chainId,
       verifyingContract: proxy,
     }
-    return domain
   }
 
   proxyCreationCode() {
