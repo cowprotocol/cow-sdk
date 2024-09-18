@@ -23,7 +23,7 @@ import {
 export class CowShedHooks {
   constructor(private chainId: SupportedChainId, private customOptions?: ICoWShedOptions) {}
 
-  computeProxyAddress(user: string) {
+  proxyOf(user: string) {
     const salt = defaultAbiCoder.encode(['address'], [user])
     const initCodeHash = solidityKeccak256(
       ['bytes', 'bytes'],
@@ -53,7 +53,7 @@ export class CowShedHooks {
     signingScheme: EcdsaSigningScheme
   ): Promise<string> {
     const user = await signer.getAddress()
-    const proxy = this.computeProxyAddress(user)
+    const proxy = this.proxyOf(user)
 
     const { domain, types, message } = this.infoToSign(calls, nonce, deadline, proxy)
 
@@ -70,13 +70,12 @@ export class CowShedHooks {
   }
 
   getDomain(proxy: string): TypedDataDomain {
-    const domain: TypedDataDomain = {
+    return {
       name: 'COWShed',
       version: '1.0.0',
       chainId: this.chainId,
       verifyingContract: proxy,
     }
-    return domain
   }
 
   proxyCreationCode() {
