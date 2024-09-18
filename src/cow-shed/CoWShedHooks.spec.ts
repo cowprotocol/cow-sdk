@@ -57,9 +57,15 @@ describe('CowShedHooks', () => {
   })
 
   describe('computeProxyAddress', () => {
-    it('should use the right parameters on the proxy address', () => {
+    it('should use the right parameters on the proxy address for custom values', () => {
       const calculatedProxy = cowShed.proxyOf(USER_MOCK)
       expect(calculatedProxy).toBe(PROXY_MOCK)
+    })
+
+    it('should use the right parameters on the proxy address for default values', () => {
+      const defaultCowShed = new CowShedHooks(1)
+      const calculatedProxy = defaultCowShed.proxyOf('0x76b0340e50BD9883D8B2CA5fd9f52439a9e7Cf58')
+      expect(calculatedProxy).toBe('0xe22E86b318DAc817b4444E2fE34cC2235cDF1B00')
     })
   })
 
