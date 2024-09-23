@@ -7,5 +7,5 @@ jest.results.json
 *.iml
 .yalc
 yalc.lock
-src/composable/generated
+src/common/generated
 docs/typedoc/
