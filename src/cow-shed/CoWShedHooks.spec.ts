@@ -1,5 +1,5 @@
 import { Wallet } from 'ethers'
-import { CowShedHooks } from './CowShedHooks'
+import { CowShedHooks } from './CoWShedHooks'
 import { AddressZero } from '@ethersproject/constants'
 import { ICoWShedCall } from './types'
 import { COW_SHED_FACTORY, COW_SHED_IMPLEMENTATION } from '../common/consts'
