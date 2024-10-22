@@ -18,6 +18,7 @@ export type { EcdsaSignature } from './models/EcdsaSignature';
 export { EcdsaSigningScheme } from './models/EcdsaSigningScheme';
 export type { EthflowData } from './models/EthflowData';
 export type { ExecutedAmounts } from './models/ExecutedAmounts';
+export type { ExecutedProtocolFee } from './models/ExecutedProtocolFee';
 export type { FeePolicy } from './models/FeePolicy';
 export type { InteractionData } from './models/InteractionData';
 export type { NativePriceResponse } from './models/NativePriceResponse';
