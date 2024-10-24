@@ -3,7 +3,6 @@
 /* eslint-disable */
 
 import type { BigUint } from './BigUint';
-import type { CallData } from './CallData';
 import type { UID } from './UID';
 
 export type SolverSettlement = {
@@ -45,19 +44,5 @@ export type SolverSettlement = {
         id?: UID;
         executedAmount?: BigUint;
     }>;
-    /**
-     * Transaction `calldata` that is executed on-chain if the settlement is executed.
-     */
-    callData?: CallData;
-    /**
-     * Full `calldata` as generated from the original solver output.
-     *
-     * It can be different from the executed transaction if part of the settlements are internalised
-     * (use internal liquidity in lieu of trading against on-chain liquidity).
-     *
-     * This field is omitted in case it coincides with `callData`.
-     *
-     */
-    uninternalizedCallData?: CallData;
 };
 
