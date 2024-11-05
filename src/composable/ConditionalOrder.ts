@@ -1,5 +1,5 @@
 import { BigNumber, constants, ethers, utils } from 'ethers'
-import { GPv2Order, IConditionalOrder } from './generated/ComposableCoW'
+import { GPv2Order, IConditionalOrder } from '../common/generated/ComposableCoW'
 
 import { decodeParams, encodeParams, fromStructToOrder } from './utils'
 import {

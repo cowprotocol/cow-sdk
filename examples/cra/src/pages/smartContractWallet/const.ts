@@ -9,4 +9,5 @@ export const SAFE_TRANSACTION_SERVICE_URL: Record<SupportedChainId, string> = {
   [SupportedChainId.MAINNET]: 'https://safe-transaction-mainnet.safe.global',
   [SupportedChainId.GNOSIS_CHAIN]: 'https://safe-transaction-gnosis-chain.safe.global',
   [SupportedChainId.SEPOLIA]: 'https://safe-transaction-sepolia.safe.global',
+  [SupportedChainId.ARBITRUM_ONE]: 'https://safe-transaction-arbitrum.safe.global',
 }

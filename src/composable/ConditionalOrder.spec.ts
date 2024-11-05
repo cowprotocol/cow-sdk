@@ -12,7 +12,7 @@ import { constants } from 'ethers'
 import { OwnerContext, PollParams, PollResultCode, PollResultErrors } from './types'
 import { BuyTokenDestination, OrderKind, SellTokenSource } from '../order-book/generated'
 import { computeOrderUid } from '../utils'
-import { GPv2Order } from './generated/ComposableCoW'
+import { GPv2Order } from '../common/generated/ComposableCoW'
 import { OrderBookApi } from '../order-book'
 
 jest.mock('./contracts')

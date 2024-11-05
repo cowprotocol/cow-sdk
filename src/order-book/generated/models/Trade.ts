@@ -4,7 +4,7 @@
 
 import type { Address } from './Address';
 import type { BigUint } from './BigUint';
-import type { FeePolicy } from './FeePolicy';
+import type { ExecutedProtocolFee } from './ExecutedProtocolFee';
 import type { TokenAmount } from './TokenAmount';
 import type { TransactionHash } from './TransactionHash';
 import type { UID } from './UID';
@@ -55,9 +55,9 @@ export type Trade = {
      */
     txHash: TransactionHash | null;
     /**
-     * The fee policies that were used to compute the fees for this trade. Listed in the order they got applied.
+     * Executed protocol fees for this trade, together with the fee policies used. Listed in the order they got applied.
      *
      */
-    feePolicies?: Array<FeePolicy>;
+    executedProtocolFees?: Array<ExecutedProtocolFee>;
 };
 

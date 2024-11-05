@@ -11,6 +11,7 @@ import { useWeb3Info } from './hooks/useWeb3Info'
 import { ChainIdContext } from './context'
 import { QuickStartPage } from './pages/quickStart'
 import { SmartContractWallet } from './pages/smartContractWallet'
+import { GenerateCowShedHookCallDataPage } from './pages/cowShedHook'
 
 const EXAMPLES: ExampleProps[] = [
   { title: 'Quick start', Component: QuickStartPage },
@@ -22,6 +23,7 @@ const EXAMPLES: ExampleProps[] = [
   { title: 'Sign order cancellation', Component: SignOrderCancellationPage },
   { title: 'Send order cancellation', Component: SendOrderCancellationPage },
   { title: 'Smart contract wallet', Component: SmartContractWallet },
+  { title: 'Generate hook with CoW Shed', Component: GenerateCowShedHookCallDataPage },
 ]
 
 interface ExampleProps {
