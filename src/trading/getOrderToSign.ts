@@ -5,11 +5,11 @@ import { DEFAULT_QUOTE_VALIDITY } from './consts'
 
 interface OrderToSignParams {
   from: string
-  networkCostsAmount: string
+  networkCostsAmount?: string
 }
 
 export function getOrderToSign(
-  { from, networkCostsAmount }: OrderToSignParams,
+  { from, networkCostsAmount = '0' }: OrderToSignParams,
   limitOrderParams: LimitOrderParameters,
   appData: AppDataInfo
 ): UnsignedOrder {
