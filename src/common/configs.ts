@@ -1,6 +1,6 @@
-import { SupportedChainId } from './chains'
 import { BackoffOptions } from 'exponential-backoff'
 import { RateLimiterOpts } from 'limiter/dist/esm'
+import { SupportedChainId } from './chains'
 
 /**
  * IPFS configuration.
@@ -42,6 +42,8 @@ export type PartialApiContext = Partial<ApiContext>
 /**
  * @property {string} [1] The base URL for the mainnet API.
  * @property {string} [100] The base URL for the Gnosis Chain API.
+ * @property {string} [42161] The base URL for the Arbitrum One API.
+ * @property {string} [8453] The base URL for the Base API.
  * @property {string} [11155111] The base URL for the Sepolia testnet API.
  */
 export type ApiBaseUrls = Record<SupportedChainId, string>
@@ -53,6 +55,8 @@ export type ApiBaseUrls = Record<SupportedChainId, string>
  * {@link SupportedChainId Supported chains} are:
  * - Mainnet
  * - Gnosis Chain
+ * - Arbitrum One
+ * - Base
  * - Sepolia
  *
  * Each chain has it's own API, and each API has it's own base URL.
