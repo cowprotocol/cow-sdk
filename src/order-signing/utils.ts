@@ -3,12 +3,16 @@ import type {
   Signature,
   TypedDataDomain,
   EcdsaSigningScheme as EcdsaSigningSchemeContract,
+  Order,
+  OrderUidParams,
 } from '@cowprotocol/contracts'
 import {
   domain as domainGp,
   EcdsaSignature,
   IntChainIdTypedDataV4Signer,
   SigningScheme,
+  hashOrder,
+  packOrderUidParams,
   signOrder as signOrderGp,
   signOrderCancellation as signOrderCancellationGp,
   signOrderCancellations as signOrderCancellationsGp,
@@ -229,4 +233,28 @@ export function getDomain(chainId: SupportedChainId): TypedDataDomain {
   }
 
   return domainGp(chainId, settlementContract)
+}
+
+/**
+ * Generate a deterministic order ID for the specified order.
+ * @param {SupportedChainId} chainId The chain Id
+ * @param {Order} order order to sign
+ * @param {Pick<OrderUidParams, 'owner'>} params order unique identifier parameters.
+ */
+export async function generateOrderId(
+  chainId: SupportedChainId,
+  order: Order,
+  params: Pick<OrderUidParams, 'owner'>
+): Promise<{ orderId: string; orderDigest: string }> {
+  const domain = await getDomain(chainId)
+  // Different validTo when signing because EthFlow contract expects it to be max for all orders
+  const orderDigest = hashOrder(domain, order)
+  // Generate the orderId from owner, orderDigest, and max validTo
+  const orderId = packOrderUidParams({
+    ...params,
+    orderDigest,
+    validTo: order.validTo,
+  })
+
+  return { orderId, orderDigest }
 }
