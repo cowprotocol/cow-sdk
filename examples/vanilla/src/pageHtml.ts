@@ -26,6 +26,9 @@ export function pageHtml() {
                   <div>
                       <label for="privateKey">Private key</label>
                       <div><input name="privateKey" type="password"/></div>
+                      <br/>
+                      <span>or</span>
+                      <button id="connectWallet">Connect wallet</button>
                   </div>
 
                   <div>

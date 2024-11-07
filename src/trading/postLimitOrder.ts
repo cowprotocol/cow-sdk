@@ -1,9 +1,9 @@
 import { LimitOrderAdvancedSettings, LimitOrderParameters } from './types'
 import { log } from './consts'
-import { ethers } from 'ethers'
 import { OrderBookApi } from '../order-book'
 import { buildAppData } from './appDataUtils'
 import { postCoWProtocolTrade } from './postCoWProtocolTrade'
+import { getSigner } from './utils'
 
 export async function postLimitOrder(params: LimitOrderParameters, advancedSettings?: LimitOrderAdvancedSettings) {
   const {
@@ -20,7 +20,7 @@ export async function postLimitOrder(params: LimitOrderParameters, advancedSetti
 
   log(`Limit order ${sellAmount} ${sellToken} for ${buyAmount} ${buyToken} on chain ${chainId}`)
 
-  const signer = typeof params.signer === 'string' ? new ethers.Wallet(params.signer) : params.signer
+  const signer = getSigner(params.signer)
   const orderBookApi = new OrderBookApi({ chainId, env })
 
   log('Building app data...')

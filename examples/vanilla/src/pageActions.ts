@@ -43,6 +43,23 @@ function onNetworkChange() {
 }
 
 function onGetQuote(actions: Actions) {
+  const connectWallet = document.getElementById('connectWallet') as HTMLButtonElement
+
+  connectWallet.addEventListener('click', async (event) => {
+    event.preventDefault()
+
+    try {
+      const accounts: string[] = await (window as any).ethereum.request({ method: 'eth_requestAccounts' })
+
+      if (accounts.length) {
+        connectWallet.disabled = true
+        connectWallet.innerText = 'Connected'
+      }
+    } catch (error) {
+      printError(error)
+    }
+  })
+
   document.getElementById('getQuote').addEventListener('click', (event) => {
     event.preventDefault()
 

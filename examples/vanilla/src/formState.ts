@@ -29,7 +29,9 @@ export const getTradeParameters = (): TradeParameters => {
   const isSell = kind === 'sell'
   const sellToken = TOKENS[chainId].find((t) => t.address === _sellToken)
   const buyToken = TOKENS[chainId].find((t) => t.address === _buyToken)
-  const amount = BigInt(_amount) * BigInt(10 ** (isSell ? sellToken.decimals : buyToken.decimals))
+  const decimals = isSell ? sellToken.decimals : buyToken.decimals
+  const multiplicator = decimals > 3 ? 3 : 0
+  const amount = BigInt(+_amount * 10 ** multiplicator) * BigInt(10 ** (decimals - multiplicator))
   const slippageBps = _slippageBps ? +_slippageBps : undefined
 
   return {

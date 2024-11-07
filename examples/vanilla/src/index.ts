@@ -42,7 +42,7 @@ const appCode = 'trade-sdk-example'
 
       const sdk = new TradingSdk({
         chainId,
-        signer: privateKey,
+        signer: privateKey || (window as any).ethereum,
         appCode,
       })
 

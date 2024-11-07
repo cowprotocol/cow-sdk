@@ -15,8 +15,9 @@ import {
 import { buildAppData } from './appDataUtils'
 import { UnsignedOrder } from '../order-signing'
 import { getOrderToSign } from './getOrderToSign'
-import { swapParamsToLimitOrderParams } from './utils'
-import { ethers, Signer } from 'ethers'
+import { getIsEthFlowOrder, getSigner, swapParamsToLimitOrderParams } from './utils'
+import { Signer } from 'ethers'
+import { WRAPPED_NATIVE_CURRENCIES } from '../common'
 
 export interface QuoteResults {
   swapParameters: SwapParameters
@@ -49,8 +50,7 @@ export async function getQuote(
 
   log(`Swap ${amount} ${sellToken} for ${buyToken} on chain ${chainId}`)
 
-  const signer =
-    typeof swapParameters.signer === 'string' ? new ethers.Wallet(swapParameters.signer) : swapParameters.signer
+  const signer = getSigner(swapParameters.signer)
   const orderBookApi = new OrderBookApi({ chainId, env })
 
   const from = await signer.getAddress()
@@ -72,13 +72,13 @@ export async function getQuote(
 
   const quoteRequest: OrderQuoteRequest = {
     from,
-    sellToken,
+    sellToken: getIsEthFlowOrder(swapParameters) ? WRAPPED_NATIVE_CURRENCIES[chainId] : sellToken,
     buyToken,
     receiver,
     validFor,
     appData: fullAppData,
     appDataHash: appDataKeccak256,
-    priceQuality: PriceQuality.OPTIMAL,
+    priceQuality: PriceQuality.OPTIMAL, // Do not change this parameter because we rely on the fact that quote has id
     signingScheme: SigningScheme.EIP712,
     ...(isSell
       ? { kind: OrderQuoteSideKindSell.SELL, sellAmountBeforeFee: amount }

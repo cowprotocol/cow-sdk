@@ -3,6 +3,7 @@ import { Address, OrderQuoteRequest, OrderKind } from '../order-book'
 import type { Signer } from '@ethersproject/abstract-signer'
 import { CowEnv, SupportedChainId } from '../common'
 import { QuoteResults } from './getQuote'
+import type { ExternalProvider } from '@ethersproject/providers'
 
 export interface TradeBaseParameters {
   kind: OrderKind
@@ -24,7 +25,7 @@ export interface TradeOptionalParameters {
 
 export interface TraderParameters {
   chainId: SupportedChainId
-  signer: Signer | string
+  signer: Signer | ExternalProvider | string
   appCode: string
 }
 

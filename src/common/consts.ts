@@ -61,6 +61,7 @@ export const WRAPPED_NATIVE_CURRENCIES: Record<SupportedChainId, string> = {
   [SupportedChainId.GNOSIS_CHAIN]: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',
   [SupportedChainId.ARBITRUM_ONE]: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
   [SupportedChainId.SEPOLIA]: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14',
+  [SupportedChainId.BASE]: '0x4200000000000000000000000000000000000006',
 }
 
 /**
@@ -71,6 +72,7 @@ export const ETH_FLOW_ADDRESSES: Record<SupportedChainId, string> = {
   [SupportedChainId.GNOSIS_CHAIN]: '0x40A50cf069e992AA4536211B23F286eF88752187',
   [SupportedChainId.ARBITRUM_ONE]: '0x552fcecc218158fff20e505c8f3ad24f8e1dd33c',
   [SupportedChainId.SEPOLIA]: '0x0b7795E18767259CC253a2dF471db34c72B49516',
+  [SupportedChainId.BASE]: 'TODO', // TODO
 }
 
 // const BARN_ETH_FLOW_ADDRESSES: Record<SupportedChainId, string> = {

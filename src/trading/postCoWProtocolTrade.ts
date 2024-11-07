@@ -4,8 +4,8 @@ import { AppDataInfo, LimitOrderParameters } from './types'
 import { log, SIGN_SCHEME_MAP } from './consts'
 import { OrderSigningUtils } from '../order-signing'
 import { getOrderToSign } from './getOrderToSign'
-import { ETH_ADDRESS } from '../common'
 import { postOnChainTrade } from './postOnChainTrade'
+import { getIsEthFlowOrder } from './utils'
 
 export async function postCoWProtocolTrade(
   orderBookApi: OrderBookApi,
@@ -14,10 +14,8 @@ export async function postCoWProtocolTrade(
   params: LimitOrderParameters,
   networkCostsAmount = '0'
 ): Promise<string> {
-  const isEthFlowOrder = params.sellToken.toLowerCase() === ETH_ADDRESS.toLowerCase()
-
-  if (isEthFlowOrder) {
-    const { orderId } = await postOnChainTrade(signer, appData, params, networkCostsAmount)
+  if (getIsEthFlowOrder(params)) {
+    const { orderId } = await postOnChainTrade(orderBookApi, signer, appData, params, networkCostsAmount)
 
     return orderId
   }

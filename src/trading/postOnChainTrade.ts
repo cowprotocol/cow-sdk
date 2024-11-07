@@ -4,10 +4,12 @@ import { calculateUniqueOrderId, EthFlowOrderExistsCallback } from './calculateU
 import { getOrderToSign } from './getOrderToSign'
 import { type EthFlow, EthFlow__factory } from '../common/generated'
 import { ETH_FLOW_ADDRESSES, SupportedChainId } from '../common'
-import { GAS_LIMIT_DEFAULT } from './consts'
+import { GAS_LIMIT_DEFAULT, log } from './consts'
 import type { EthFlowOrder } from '../common/generated/EthFlow'
+import { OrderBookApi } from '../order-book'
 
 export async function postOnChainTrade(
+  orderBookApi: OrderBookApi,
   signer: Signer,
   appData: AppDataInfo,
   params: LimitOrderParameters,
@@ -15,21 +17,25 @@ export async function postOnChainTrade(
   checkEthFlowOrderExists?: EthFlowOrderExistsCallback
 ): Promise<{ txHash: string; orderId: string }> {
   const { chainId, quoteId } = params
-  const { fullAppData } = appData
+  const { appDataKeccak256, fullAppData } = appData
 
   const from = await signer.getAddress()
 
   const contract = getEthFlowContract(chainId, signer)
-  const orderToSign = getOrderToSign({ from, networkCostsAmount }, params, appData.appDataKeccak256)
+  const orderToSign = getOrderToSign({ from, networkCostsAmount }, params, appDataKeccak256)
   const orderId = await calculateUniqueOrderId(chainId, orderToSign, checkEthFlowOrderExists)
 
   const ethOrderParams: EthFlowOrder.DataStruct = {
     ...orderToSign,
     quoteId,
-    appData: fullAppData,
+    appData: appDataKeccak256,
     validTo: orderToSign.validTo.toString(),
   }
 
+  log('Uploading app-data')
+  await orderBookApi.uploadAppData(appDataKeccak256, fullAppData)
+
+  log('Estimating on-chain order gas')
   const estimatedGas = await contract.estimateGas
     .createOrder(ethOrderParams, { value: orderToSign.sellAmount })
     .then((res) => BigInt(res.toHexString()))
@@ -39,11 +45,13 @@ export async function postOnChainTrade(
       return GAS_LIMIT_DEFAULT
     })
 
+  log('Sending on-chain order transaction')
   const txReceipt = await contract.createOrder(ethOrderParams, {
     value: orderToSign.sellAmount,
     gasLimit: calculateGasMargin(estimatedGas),
   })
 
+  log(`On-chain order transaction sent, txHash: ${txReceipt.hash}, order: ${orderId}`)
   return { txHash: txReceipt.hash, orderId }
 }
 

@@ -1,6 +1,6 @@
 import { OrderSigningUtils, UnsignedOrder } from '../order-signing'
 import { ETH_FLOW_ADDRESSES, MAX_VALID_TO_EPOCH, SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '../common'
-import type { Order } from '@cowprotocol/contracts'
+import type { Order, OrderBalance } from '@cowprotocol/contracts'
 
 export interface EthFlowOrderExistsCallback {
   (orderId: string, orderDigest: string): Promise<boolean>
@@ -15,6 +15,8 @@ export async function calculateUniqueOrderId(
     chainId,
     {
       ...order,
+      sellTokenBalance: order.sellTokenBalance as string as OrderBalance,
+      buyTokenBalance: order.buyTokenBalance as string as OrderBalance,
       validTo: MAX_VALID_TO_EPOCH,
       sellToken: WRAPPED_NATIVE_CURRENCIES[chainId],
     } as Order,
