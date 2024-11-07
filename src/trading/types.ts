@@ -35,8 +35,8 @@ export interface SwapParameters extends TraderParameters, TradeParameters {}
 export interface LimitTradeParameters extends Omit<TradeParameters, 'amount'> {
   sellAmount: string
   buyAmount: string
+  quoteId: number
   validTo?: number
-  quoteId?: number
 }
 
 export interface LimitOrderParameters extends TraderParameters, LimitTradeParameters {}

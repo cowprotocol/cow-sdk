@@ -1,6 +1,6 @@
 import { AppDataInfo, SwapAdvancedSettings, SwapParameters } from './types'
 import { DEFAULT_QUOTE_VALIDITY, log } from './consts'
-import { ethers } from 'ethers'
+
 import {
   getQuoteAmountsAndCosts,
   OrderBookApi,
@@ -16,6 +16,7 @@ import { buildAppData } from './appDataUtils'
 import { UnsignedOrder } from '../order-signing'
 import { getOrderToSign } from './getOrderToSign'
 import { swapParamsToLimitOrderParams } from './utils'
+import { ethers, Signer } from 'ethers'
 
 export interface QuoteResults {
   swapParameters: SwapParameters
@@ -24,7 +25,7 @@ export interface QuoteResults {
   quoteResponse: OrderQuoteResponse
   appDataInfo: AppDataInfo
   orderBookApi: OrderBookApi
-  signer: ethers.Signer
+  signer: Signer
 }
 
 export async function getQuote(
