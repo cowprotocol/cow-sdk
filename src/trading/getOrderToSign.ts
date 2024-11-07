@@ -1,6 +1,6 @@
 import { getQuoteAmountsAndCosts, type OrderParameters } from '../order-book'
 import { UnsignedOrder } from '../order-signing'
-import { AppDataInfo, LimitOrderParameters } from './types'
+import { LimitOrderParameters } from './types'
 import { DEFAULT_QUOTE_VALIDITY } from './consts'
 
 interface OrderToSignParams {
@@ -11,7 +11,7 @@ interface OrderToSignParams {
 export function getOrderToSign(
   { from, networkCostsAmount = '0' }: OrderToSignParams,
   limitOrderParams: LimitOrderParameters,
-  appData: AppDataInfo
+  appDataKeccak256: string
 ): UnsignedOrder {
   const {
     sellAmount,
@@ -29,7 +29,6 @@ export function getOrderToSign(
 
   const receiver = limitOrderParams.receiver || from
   const validTo = limitOrderParams.validTo || Math.floor(Date.now() / 1000) + (validFor || DEFAULT_QUOTE_VALIDITY)
-  const { appDataKeccak256 } = appData
 
   const orderParams: OrderParameters = {
     sellToken,

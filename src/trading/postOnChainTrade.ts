@@ -20,7 +20,7 @@ export async function postOnChainTrade(
   const from = await signer.getAddress()
 
   const contract = getEthFlowContract(chainId, signer)
-  const orderToSign = getOrderToSign({ from, networkCostsAmount }, params, appData)
+  const orderToSign = getOrderToSign({ from, networkCostsAmount }, params, appData.appDataKeccak256)
   const orderId = await calculateUniqueOrderId(chainId, orderToSign, checkEthFlowOrderExists)
 
   const ethOrderParams: EthFlowOrder.DataStruct = {

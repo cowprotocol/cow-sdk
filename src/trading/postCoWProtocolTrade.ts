@@ -27,7 +27,7 @@ export async function postCoWProtocolTrade(
 
   const from = await signer.getAddress()
 
-  const orderToSign = getOrderToSign({ from, networkCostsAmount }, params, appData)
+  const orderToSign = getOrderToSign({ from, networkCostsAmount }, params, appData.appDataKeccak256)
 
   log('Signing order...')
 

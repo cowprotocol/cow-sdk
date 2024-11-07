@@ -101,7 +101,7 @@ export async function getQuote(
   const orderToSign = getOrderToSign(
     { from, networkCostsAmount: quoteResponse.quote.feeAmount },
     swapParamsToLimitOrderParams(swapParameters, quoteResponse),
-    appDataInfo
+    appDataInfo.appDataKeccak256
   )
 
   return { amountsAndCosts, quoteResponse, appDataInfo, orderBookApi, signer, orderToSign, swapParameters }
