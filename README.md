@@ -105,7 +105,7 @@ Since the API supports different networks and environments, there are some optio
 
 #### Environment configuration
 
-`chainId` - can be one of `SupportedChainId.MAINNET`, `SupportedChainId.GNOSIS_CHAIN`, `SupportedChainId.ARBITRUM_ONE` or `SupportedChainId.SEPOLIA`
+`chainId` - can be one of `SupportedChainId.MAINNET`, `SupportedChainId.GNOSIS_CHAIN`, `SupportedChainId.ARBITRUM_ONE`, `SupportedChainId.BASE` or `SupportedChainId.SEPOLIA`
 
 `env` - this parameter affects which environment will be used:
 
@@ -135,6 +135,7 @@ const orderBookApi = new OrderBookApi({
     [SupportedChainId.MAINNET]: 'https://YOUR_ENDPOINT/mainnet',
     [SupportedChainId.GNOSIS_CHAIN]: 'https://YOUR_ENDPOINT/gnosis_chain',
     [SupportedChainId.ARBITRUM]: 'https://YOUR_ENDPOINT/arbitrum_one',
+    [SupportedChainId.BASE]: 'https://YOUR_ENDPOINT/base',
     [SupportedChainId.SEPOLIA]: 'https://YOUR_ENDPOINT/sepolia',
   },
 })
