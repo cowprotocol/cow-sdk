@@ -83,6 +83,8 @@ describe('postOnChainTrade', () => {
   afterEach(() => {
     uploadAppDataMock.mockReset()
     ethFlowContractFactoryMock.mockReset()
+    ethFlowContractMock.estimateGas.createOrder.mockReset()
+    ethFlowContractMock.createOrder.mockReset()
   })
 
   it('Should call checkEthFlowOrderExists if it is set', async () => {

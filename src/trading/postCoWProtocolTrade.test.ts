@@ -59,7 +59,11 @@ const sendOrderMock = jest.fn()
 const orderBookApiMock = {
   sendOrder: sendOrderMock,
 } as unknown as OrderBookApi
-const appDataMock = {} as unknown as AppDataInfo
+const appDataMock = {
+  appDataKeccak256: '0xaf1908d8e30f63bf4a6dbd41d2191eb092ac0af626b37c720596426130717658',
+  fullAppData:
+    '{\\"appCode\\":\\"CoW Swap\\",\\"environment\\":\\"barn\\",\\"metadata\\":{\\"orderClass\\":{\\"orderClass\\":\\"market\\"},\\"quote\\":{\\"slippageBips\\":201,\\"smartSlippage\\":true}},\\"version\\":\\"1.3.0\\"}',
+} as unknown as AppDataInfo
 
 describe('postCoWProtocolTrade', () => {
   let signOrderMock: jest.SpyInstance
@@ -101,10 +105,14 @@ describe('postCoWProtocolTrade', () => {
 
     expect(sendOrderMock).toHaveBeenCalledTimes(1)
     expect(callBody).toEqual({
+      appData: appDataMock.fullAppData,
+      appDataHash: appDataMock.appDataKeccak256,
       sellToken: '0xaaa',
       sellAmount: '1000000000000000000',
+      sellTokenBalance: 'erc20',
       buyToken: '0xbbb',
       buyAmount: '1990000000000000000', // Slippage is taken into account
+      buyTokenBalance: 'erc20',
       feeAmount: '0',
       from: '0x21c3de23d98caddc406e3d31b25e807addf33333',
       kind: 'sell',
