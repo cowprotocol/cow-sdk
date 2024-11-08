@@ -5,23 +5,17 @@ import { buildAppData } from './appDataUtils'
 import { postCoWProtocolTrade } from './postCoWProtocolTrade'
 import { getSigner } from './utils'
 
-export async function postLimitOrder(params: LimitOrderParameters, advancedSettings?: LimitOrderAdvancedSettings) {
-  const {
-    appCode,
-    chainId,
-    sellToken,
-    buyToken,
-    sellAmount,
-    buyAmount,
-    quoteId,
-    slippageBps = 0,
-    env = 'prod',
-  } = params
+export async function postLimitOrder(
+  params: LimitOrderParameters,
+  advancedSettings?: LimitOrderAdvancedSettings,
+  _orderBookApi?: OrderBookApi
+): Promise<string> {
+  const { appCode, chainId, sellToken, buyToken, sellAmount, buyAmount, slippageBps = 0, env = 'prod' } = params
 
   log(`Limit order ${sellAmount} ${sellToken} for ${buyAmount} ${buyToken} on chain ${chainId}`)
 
   const signer = getSigner(params.signer)
-  const orderBookApi = new OrderBookApi({ chainId, env })
+  const orderBookApi = _orderBookApi || new OrderBookApi({ chainId, env })
 
   log('Building app data...')
 
@@ -34,10 +28,5 @@ export async function postLimitOrder(params: LimitOrderParameters, advancedSetti
     advancedSettings?.appData
   )
 
-  return postCoWProtocolTrade(orderBookApi, signer, appDataInfo, {
-    ...params,
-    quoteId,
-    sellAmount,
-    buyAmount,
-  })
+  return postCoWProtocolTrade(orderBookApi, signer, appDataInfo, params)
 }

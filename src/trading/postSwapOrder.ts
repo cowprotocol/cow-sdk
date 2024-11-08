@@ -14,7 +14,7 @@ export async function postSwapOrderFromQuote({
   appDataInfo,
   quoteResponse,
   swapParameters,
-}: QuoteResults) {
+}: QuoteResults): Promise<string> {
   return postCoWProtocolTrade(
     orderBookApi,
     signer,
