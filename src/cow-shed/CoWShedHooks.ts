@@ -1,4 +1,13 @@
 import {
+  EcdsaSigningScheme,
+  hashTypedData,
+  isTypedDataSigner,
+  SigningScheme,
+  TypedDataTypes,
+} from '@cowprotocol/contracts'
+import type { Signer } from '@ethersproject/abstract-signer'
+import { TypedDataDomain } from 'ethers'
+import {
   arrayify,
   defaultAbiCoder,
   getCreate2Address,
@@ -7,18 +16,9 @@ import {
   splitSignature,
 } from 'ethers/lib/utils'
 import { COW_SHED_FACTORY, COW_SHED_IMPLEMENTATION, SupportedChainId } from '../common'
-import { COW_SHED_712_TYPES, ICoWShedCall, ICoWShedOptions } from './types'
-import { COW_SHED_PROXY_INIT_CODE } from './proxyInitCode'
-import type { Signer } from '@ethersproject/abstract-signer'
 import { getCoWShedFactoryInterface } from './contracts'
-import { TypedDataDomain } from 'ethers'
-import {
-  EcdsaSigningScheme,
-  hashTypedData,
-  isTypedDataSigner,
-  SigningScheme,
-  TypedDataTypes,
-} from '@cowprotocol/contracts'
+import { COW_SHED_PROXY_INIT_CODE } from './proxyInitCode'
+import { COW_SHED_712_TYPES, ICoWShedCall, ICoWShedOptions } from './types'
 
 export class CowShedHooks {
   constructor(private chainId: SupportedChainId, private customOptions?: ICoWShedOptions) {}
