@@ -1,4 +1,4 @@
-import { getQuoteAmountsAndCosts, type OrderParameters } from '../order-book'
+import { BuyTokenDestination, getQuoteAmountsAndCosts, type OrderParameters, SellTokenSource } from '../order-book'
 import { UnsignedOrder } from '../order-signing'
 import { LimitOrderParameters } from './types'
 import { DEFAULT_QUOTE_VALIDITY } from './consts'
@@ -62,5 +62,7 @@ export function getOrderToSign(
     appData: appDataKeccak256,
     receiver,
     feeAmount: '0',
+    sellTokenBalance: SellTokenSource.ERC20,
+    buyTokenBalance: BuyTokenDestination.ERC20,
   }
 }

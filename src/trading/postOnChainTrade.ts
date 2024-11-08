@@ -11,7 +11,7 @@ import { OrderBookApi } from '../order-book'
 export async function postOnChainTrade(
   orderBookApi: OrderBookApi,
   signer: Signer,
-  appData: AppDataInfo,
+  appData: Pick<AppDataInfo, 'fullAppData' | 'appDataKeccak256'>,
   params: LimitOrderParameters,
   networkCostsAmount = '0',
   checkEthFlowOrderExists?: EthFlowOrderExistsCallback
