@@ -1,21 +1,85 @@
-import { OrderBookApi, SubgraphApi, SupportedChainId } from '@cowprotocol/cow-sdk'
+import { SupportedChainId } from '../../../src'
 
-// See more examples in /examples/cra
+import { TradingSdk, QuoteAndPost } from '../../../src/trading'
+
+import { TOKENS } from './tokens'
+import { atomsToAmount } from './utils'
+import { pageHtml } from './pageHtml'
+import { pageActions, printResult } from './pageActions'
+import { getFormState, getTradeParameters } from './formState'
+import './styles.css'
+
+const appCode = 'trade-sdk-example'
+
+// Run the example
 ;(async function () {
-  const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.MAINNET })
-  const subgraphApi = new SubgraphApi({ chainId: SupportedChainId.MAINNET })
+  let quoteAndPost: QuoteAndPost | null = null
 
-  const order = await orderBookApi.getOrder(
-    '0xff2e2e54d178997f173266817c1e9ed6fee1a1aae4b43971c53b543cffcc2969845c6f5599fbb25dbdd1b9b013daf85c03f3c63763e4bc4a'
-  )
+  // Render page
+  const page = pageHtml()
+  document.body.appendChild(page)
 
-  const lastDaysVolume = await subgraphApi.getTotals()
+  // Bind actions to the page
+  pageActions({
+    onFormReset() {
+      quoteAndPost = null
+    },
+    async onGetQuote() {
+      const {
+        slippageBps: _slippageBps,
+        chainId: _chainId,
+        sellToken: _sellToken,
+        buyToken: _buyToken,
+        amount: _amount,
+        kind,
+        privateKey,
+      } = getFormState()
 
-  const orderElement = document.createElement('textarea')
+      const chainId: SupportedChainId = +_chainId
+      const isSell = kind === 'sell'
+      const sellToken = TOKENS[chainId].find((t) => t.address === _sellToken)
+      const buyToken = TOKENS[chainId].find((t) => t.address === _buyToken)
 
-  orderElement.value = JSON.stringify({ order, lastDaysVolume }, null, 4)
-  orderElement.style.minWidth = '950px'
-  orderElement.style.minHeight = '800px'
+      const sdk = new TradingSdk({
+        chainId,
+        signer: privateKey || (window as any).ethereum,
+        appCode,
+      })
 
-  document.body.appendChild(orderElement)
+      quoteAndPost = await sdk.getQuote(getTradeParameters())
+
+      const {
+        amountsAndCosts: { beforeNetworkCosts, afterSlippage },
+      } = quoteAndPost.quoteResults
+
+      console.log('Quote results:', quoteAndPost.quoteResults)
+
+      const outputToken = isSell ? buyToken : sellToken
+
+      printResult(`
+            Quote amount: ${atomsToAmount(
+              beforeNetworkCosts[isSell ? 'buyAmount' : 'sellAmount'],
+              outputToken.decimals
+            )} ${outputToken.symbol}
+            Amount to sign: ${atomsToAmount(
+              afterSlippage[isSell ? 'buyAmount' : 'sellAmount'],
+              outputToken.decimals
+            )} ${outputToken.symbol}
+            See more info in the console (Quote results)
+        `)
+    },
+    async onConfirmOrder() {
+      const orderToSign = quoteAndPost.quoteResults.orderToSign
+
+      printResult(`
+        You are going to sign:
+        ${JSON.stringify(orderToSign, null, 4)}
+      `)
+    },
+    async onSignAndSendOrder() {
+      const orderId = await quoteAndPost.postSwapOrderFromQuote()
+
+      printResult(`Order created, id: ${orderId}`)
+    },
+  })
 })()

@@ -1,6 +1,6 @@
 import type { SupportedChainId } from '../common'
 import type { Signer } from '@ethersproject/abstract-signer'
-import type { TypedDataDomain } from '@cowprotocol/contracts'
+import type { Order, TypedDataDomain, OrderUidParams } from '@cowprotocol/contracts'
 import type { SigningResult, UnsignedOrder } from './types'
 
 const getSignUtils = () => import('./utils')
@@ -76,7 +76,7 @@ export class OrderSigningUtils {
   /**
    * Sign a cancellation message of multiple order intents with the specified signer.
    * @param {string[]} orderUids An array of `orderUid` to cancel.
-   * @param {SupportedChainId} chainId The CoW Protocol protocol `chainId` context that's being used.
+   * @param {SupportedChainId} chainId The CoW Protocol `chainId` context that's being used.
    * @param {Signer} signer The signer who initially placed the order intents.
    * @returns {Promise<SigningResult>} Encoded signature including signing scheme for the cancellation.
    */
@@ -91,13 +91,28 @@ export class OrderSigningUtils {
 
   /**
    * Get the EIP-712 typed domain data being used for signing.
-   * @param {SupportedChainId} chainId The CoW Protocol protocol `chainId` context that's being used.
+   * @param {SupportedChainId} chainId The CoW Protocol `chainId` context that's being used.
    * @return The EIP-712 typed domain data.
    * @see https://eips.ethereum.org/EIPS/eip-712
    */
   static async getDomain(chainId: SupportedChainId): Promise<TypedDataDomain> {
     const { getDomain } = await getSignUtils()
     return getDomain(chainId)
+  }
+
+  /**
+   * Hashes the order intent and generate deterministic order ID.
+   * @param {SupportedChainId} chainId The CoW Protocol `chainId` context that's being used.
+   * @param {Order} order order to sign
+   * @param {Pick<OrderUidParams, 'owner'>} params order unique identifier parameters.
+   */
+  static async generateOrderId(
+    chainId: SupportedChainId,
+    order: Order,
+    params: Pick<OrderUidParams, 'owner'>
+  ): Promise<{ orderId: string; orderDigest: string }> {
+    const { generateOrderId } = await getSignUtils()
+    return generateOrderId(chainId, order, params)
   }
 
   /**
