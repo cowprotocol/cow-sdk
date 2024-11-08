@@ -3,7 +3,7 @@ import { AppDataInfo, LimitOrderParameters } from './types'
 import { calculateUniqueOrderId, EthFlowOrderExistsCallback } from './calculateUniqueOrderId'
 import { getOrderToSign } from './getOrderToSign'
 import { type EthFlow, EthFlow__factory } from '../common/generated'
-import { ETH_FLOW_ADDRESSES, SupportedChainId } from '../common'
+import { BARN_ETH_FLOW_ADDRESSES, CowEnv, ETH_FLOW_ADDRESSES, SupportedChainId } from '../common'
 import { GAS_LIMIT_DEFAULT, log } from './consts'
 import type { EthFlowOrder } from '../common/generated/EthFlow'
 import { OrderBookApi } from '../order-book'
@@ -21,9 +21,9 @@ export async function postOnChainTrade(
 
   const from = await signer.getAddress()
 
-  const contract = getEthFlowContract(chainId, signer)
+  const contract = getEthFlowContract(chainId, signer, params.env)
   const orderToSign = getOrderToSign({ from, networkCostsAmount }, params, appDataKeccak256)
-  const orderId = await calculateUniqueOrderId(chainId, orderToSign, checkEthFlowOrderExists)
+  const orderId = await calculateUniqueOrderId(chainId, orderToSign, checkEthFlowOrderExists, params.env)
 
   const ethOrderParams: EthFlowOrder.DataStruct = {
     ...orderToSign,
@@ -57,12 +57,15 @@ export async function postOnChainTrade(
 
 const ethFlowContractCache: Partial<Record<SupportedChainId, EthFlow | undefined>> = {}
 
-function getEthFlowContract(chainId: SupportedChainId, signer: Signer): EthFlow {
+function getEthFlowContract(chainId: SupportedChainId, signer: Signer, env?: CowEnv): EthFlow {
   const cache = ethFlowContractCache[chainId]
 
   if (cache) return cache
 
-  const contract = EthFlow__factory.connect(ETH_FLOW_ADDRESSES[chainId], signer)
+  const contract = EthFlow__factory.connect(
+    (env === 'staging' ? BARN_ETH_FLOW_ADDRESSES : ETH_FLOW_ADDRESSES)[chainId],
+    signer
+  )
 
   ethFlowContractCache[chainId] = contract
 
