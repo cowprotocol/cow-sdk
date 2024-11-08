@@ -9,6 +9,8 @@ import {
 import { postSwapOrder, postSwapOrderFromQuote } from './postSwapOrder'
 import { postLimitOrder } from './postLimitOrder'
 import { getQuote } from './getQuote'
+import { postOnChainTrade } from './postOnChainTrade'
+import { swapParamsToLimitOrderParams } from './utils'
 
 export class TradingSdk {
   constructor(public readonly traderParams: TraderParameters) {}
@@ -19,6 +21,17 @@ export class TradingSdk {
 
   async postLimitOrder(params: LimitTradeParameters, advancedSettings?: LimitOrderAdvancedSettings) {
     return postLimitOrder(this.mergeParams(params), advancedSettings)
+  }
+
+  async postOnChainTrade(params: TradeParameters, advancedSettings?: SwapAdvancedSettings) {
+    const quoteResults = await getQuote(this.mergeParams(params), advancedSettings)
+
+    return postOnChainTrade(
+      quoteResults.orderBookApi,
+      quoteResults.signer,
+      quoteResults.appDataInfo,
+      swapParamsToLimitOrderParams(quoteResults.swapParameters, quoteResults.quoteResponse)
+    )
   }
 
   async getQuote(params: TradeParameters, advancedSettings?: SwapAdvancedSettings): Promise<QuoteAndPost> {

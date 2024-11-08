@@ -54,6 +54,8 @@ The parameters required are:
  - `buyTokenDecimals` - the buy token decimals
  - `amount` - the amount to sell/buy in atoms
 
+> When sell token is a blockchain native token (ETH for Ethereum), then order will be created as an on-chain transaction. See [postOnChainTrade](#postOnChainTrade)
+
 #### Example
 
 ```typescript
@@ -176,6 +178,43 @@ const limitOrderParameters: LimitTradeParameters = {
 }
 
 const orderId = await sdk.postLimitOrder(limitOrderParameters)
+
+console.log('Order created, id: ', orderId)
+```
+
+### postOnChainTrade
+
+CoW Protocol supports on-chain trades for selling blockchain native tokens (ETH for Ethereum).
+In this case, the order is created as an on-chain transaction.
+You don't have to think about the case when you use `postSwapOrder` function, it will be handled automatically.
+But if you need more flexible way to create an on-chain order, you can use the `postOnChainTrade` function.
+
+> We consider the order as an on-chain trade if the sell token has '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' address.
+
+```typescript
+import {
+  SupportedChainId,
+  OrderKind,
+  TradeParameters,
+  TradingSdk
+} from '@cowprotocol/sdk'
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  signer: '<privateKeyOrEthersSigner>',
+  appCode: '<YOUR_APP_CODE>',
+})
+
+const parameters: TradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000'
+}
+
+const orderId = await sdk.postOnChainTrade(parameters)
 
 console.log('Order created, id: ', orderId)
 ```
