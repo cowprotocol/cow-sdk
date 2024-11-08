@@ -31,7 +31,8 @@ export interface QuoteResults {
 
 export async function getQuote(
   swapParameters: SwapParameters,
-  advancedSettings?: SwapAdvancedSettings
+  advancedSettings?: SwapAdvancedSettings,
+  _orderBookApi?: OrderBookApi
 ): Promise<QuoteResults> {
   const {
     appCode,
@@ -51,7 +52,7 @@ export async function getQuote(
   log(`Swap ${amount} ${sellToken} for ${buyToken} on chain ${chainId}`)
 
   const signer = getSigner(swapParameters.signer)
-  const orderBookApi = new OrderBookApi({ chainId, env })
+  const orderBookApi = _orderBookApi || new OrderBookApi({ chainId, env })
 
   const from = await signer.getAddress()
   const receiver = swapParameters.receiver || from
