@@ -34,7 +34,7 @@ The SDK requires the following parameters:
 
 #### Example
 ```typescript
-import { SupportedChainId, TradingSdk } from '@cowprotocol/sdk'
+import { SupportedChainId, TradingSdk } from '@cowprotocol/cow-sdk'
 
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
@@ -65,7 +65,7 @@ import {
   OrderKind,
   TradeParameters,
   TradingSdk
-} from '@cowprotocol/sdk'
+} from '@cowprotocol/cow-sdk'
 
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
@@ -113,7 +113,7 @@ import {
   OrderKind,
   TradeParameters,
   TradingSdk
-} from '@cowprotocol/sdk'
+} from '@cowprotocol/cow-sdk'
 
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
@@ -160,7 +160,7 @@ import {
   OrderKind,
   LimitTradeParameters,
   TradingSdk
-} from '@cowprotocol/sdk'
+} from '@cowprotocol/cow-sdk'
 
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
@@ -198,7 +198,7 @@ import {
   OrderKind,
   TradeParameters,
   TradingSdk
-} from '@cowprotocol/sdk'
+} from '@cowprotocol/cow-sdk'
 
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
@@ -240,7 +240,7 @@ import {
   TradingSdk,
   SwapAdvancedSettings,
   PriceQuality
-} from '@cowprotocol/sdk'
+} from '@cowprotocol/cow-sdk'
 
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
@@ -275,7 +275,7 @@ const advancedSettings: SwapAdvancedSettings = {
     }
   },
 }
-const orderId = await sdk.postSwapOrder(parameters)
+const orderId = await sdk.postSwapOrder(parameters, advancedSettings)
 
 console.log('Order created, id: ', orderId)
 ```
