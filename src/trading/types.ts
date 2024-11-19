@@ -1,9 +1,16 @@
-import { latest, LatestAppDataDocVersion, AppDataParams } from '@cowprotocol/app-data'
-import { Address, OrderQuoteRequest, OrderKind } from '../order-book'
+import type { AppDataParams, latest, LatestAppDataDocVersion } from '@cowprotocol/app-data'
+import type {
+  Address,
+  OrderBookApi,
+  OrderKind,
+  OrderQuoteRequest,
+  OrderQuoteResponse,
+  QuoteAmountsAndCosts,
+} from '../order-book'
 import type { Signer } from '@ethersproject/abstract-signer'
-import { CowEnv, SupportedChainId } from '../common'
-import { QuoteResults } from './getQuote'
+import type { CowEnv, SupportedChainId } from '../common'
 import type { ExternalProvider } from '@ethersproject/providers'
+import type { UnsignedOrder } from '../order-signing'
 
 export type PrivateKey = string // 64 characters
 export type AccountAddress = `0x${string}` // 42 characters
@@ -52,6 +59,15 @@ export interface SwapAdvancedSettings {
 
 export interface LimitOrderAdvancedSettings {
   appData?: AppDataParams
+}
+
+export interface QuoteResults {
+  tradeParameters: TradeParameters
+  amountsAndCosts: QuoteAmountsAndCosts
+  orderToSign: UnsignedOrder
+  quoteResponse: OrderQuoteResponse
+  appDataInfo: AppDataInfo
+  orderBookApi: OrderBookApi
 }
 
 export interface QuoteAndPost {

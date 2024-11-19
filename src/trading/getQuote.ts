@@ -1,6 +1,6 @@
 import {
   AccountAddress,
-  AppDataInfo,
+  QuoteResults,
   SwapAdvancedSettings,
   SwapParameters,
   TradeParameters,
@@ -12,28 +12,16 @@ import {
   getQuoteAmountsAndCosts,
   OrderBookApi,
   OrderQuoteRequest,
-  OrderQuoteResponse,
   OrderQuoteSideKindBuy,
   OrderQuoteSideKindSell,
   PriceQuality,
-  QuoteAmountsAndCosts,
   SigningScheme,
 } from '../order-book'
 import { buildAppData } from './appDataUtils'
-import { UnsignedOrder } from '../order-signing'
 import { getOrderToSign } from './getOrderToSign'
 import { getIsEthFlowOrder, getSigner, swapParamsToLimitOrderParams } from './utils'
 import { Signer } from 'ethers'
 import { WRAPPED_NATIVE_CURRENCIES } from '../common'
-
-export interface QuoteResults {
-  tradeParameters: TradeParameters
-  amountsAndCosts: QuoteAmountsAndCosts
-  orderToSign: UnsignedOrder
-  quoteResponse: OrderQuoteResponse
-  appDataInfo: AppDataInfo
-  orderBookApi: OrderBookApi
-}
 
 export type QuoteResultsWithSigner = QuoteResults & { signer: Signer }
 
