@@ -1,5 +1,5 @@
 import { Signer } from 'ethers'
-import { AppDataInfo, LimitOrderParameters } from './types'
+import { AppDataInfo, LimitTradeParameters } from './types'
 import { calculateUniqueOrderId, EthFlowOrderExistsCallback } from './calculateUniqueOrderId'
 import { getOrderToSign } from './getOrderToSign'
 import { type EthFlow, EthFlow__factory } from '../common/generated'
@@ -12,13 +12,14 @@ export async function postOnChainTrade(
   orderBookApi: OrderBookApi,
   signer: Signer,
   appData: Pick<AppDataInfo, 'fullAppData' | 'appDataKeccak256'>,
-  params: LimitOrderParameters,
+  params: LimitTradeParameters,
   networkCostsAmount = '0',
   checkEthFlowOrderExists?: EthFlowOrderExistsCallback
 ): Promise<{ txHash: string; orderId: string }> {
-  const { chainId, quoteId } = params
+  const { quoteId } = params
   const { appDataKeccak256, fullAppData } = appData
 
+  const chainId = await signer.getChainId()
   const from = await signer.getAddress()
 
   const contract = getEthFlowContract(chainId, signer, params.env)

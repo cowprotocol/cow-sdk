@@ -54,6 +54,7 @@ const currentTimestamp = 1487076708000
 const signatureMock = { signature: '0x000a1', signingScheme: 'eip712' }
 
 const signer = new VoidSigner('0x21c3de23d98caddc406e3d31b25e807addf33333')
+signer.getChainId = jest.fn().mockResolvedValue(SupportedChainId.GNOSIS_CHAIN)
 
 const sendOrderMock = jest.fn()
 const orderBookApiMock = {

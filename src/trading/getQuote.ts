@@ -1,4 +1,11 @@
-import { AppDataInfo, SwapAdvancedSettings, SwapParameters } from './types'
+import {
+  AccountAddress,
+  AppDataInfo,
+  SwapAdvancedSettings,
+  SwapParameters,
+  TradeParameters,
+  TraderParameters,
+} from './types'
 import { DEFAULT_QUOTE_VALIDITY, log } from './consts'
 
 import {
@@ -20,23 +27,23 @@ import { Signer } from 'ethers'
 import { WRAPPED_NATIVE_CURRENCIES } from '../common'
 
 export interface QuoteResults {
-  swapParameters: SwapParameters
+  tradeParameters: TradeParameters
   amountsAndCosts: QuoteAmountsAndCosts
   orderToSign: UnsignedOrder
   quoteResponse: OrderQuoteResponse
   appDataInfo: AppDataInfo
   orderBookApi: OrderBookApi
-  signer: Signer
 }
 
+export type QuoteResultsWithSigner = QuoteResults & { signer: Signer }
+
 export async function getQuote(
-  swapParameters: SwapParameters,
+  tradeParameters: TradeParameters,
+  trader: Omit<TraderParameters, 'signer'> & { account: AccountAddress },
   advancedSettings?: SwapAdvancedSettings,
   _orderBookApi?: OrderBookApi
 ): Promise<QuoteResults> {
   const {
-    appCode,
-    chainId,
     sellToken,
     sellTokenDecimals,
     buyToken,
@@ -47,15 +54,15 @@ export async function getQuote(
     validFor = DEFAULT_QUOTE_VALIDITY,
     slippageBps = 0,
     env = 'prod',
-  } = swapParameters
+  } = tradeParameters
+
+  const { appCode, chainId, account: from } = trader
 
   log(`Swap ${amount} ${sellToken} for ${buyToken} on chain ${chainId}`)
 
-  const signer = getSigner(swapParameters.signer)
   const orderBookApi = _orderBookApi || new OrderBookApi({ chainId, env })
 
-  const from = await signer.getAddress()
-  const receiver = swapParameters.receiver || from
+  const receiver = tradeParameters.receiver || from
   const isSell = kind === 'sell'
 
   log('Building app data...')
@@ -73,7 +80,7 @@ export async function getQuote(
 
   const quoteRequest: OrderQuoteRequest = {
     from,
-    sellToken: getIsEthFlowOrder(swapParameters) ? WRAPPED_NATIVE_CURRENCIES[chainId] : sellToken,
+    sellToken: getIsEthFlowOrder(tradeParameters) ? WRAPPED_NATIVE_CURRENCIES[chainId] : sellToken,
     buyToken,
     receiver,
     validFor,
@@ -101,9 +108,30 @@ export async function getQuote(
 
   const orderToSign = getOrderToSign(
     { from, networkCostsAmount: quoteResponse.quote.feeAmount },
-    swapParamsToLimitOrderParams(swapParameters, quoteResponse),
+    swapParamsToLimitOrderParams(tradeParameters, quoteResponse),
     appDataInfo.appDataKeccak256
   )
 
-  return { amountsAndCosts, quoteResponse, appDataInfo, orderBookApi, signer, orderToSign, swapParameters }
+  return { amountsAndCosts, quoteResponse, appDataInfo, orderBookApi, orderToSign, tradeParameters: tradeParameters }
+}
+
+export async function getQuoteWithSigner(
+  swapParameters: SwapParameters,
+  advancedSettings?: SwapAdvancedSettings,
+  orderBookApi?: OrderBookApi
+): Promise<QuoteResultsWithSigner> {
+  const signer = getSigner(swapParameters.signer)
+
+  const trader = {
+    chainId: swapParameters.chainId,
+    appCode: swapParameters.appCode,
+    account: (await signer.getAddress()) as AccountAddress,
+  }
+
+  const result = await getQuote(swapParameters, trader, advancedSettings, orderBookApi)
+
+  return {
+    ...result,
+    signer,
+  }
 }

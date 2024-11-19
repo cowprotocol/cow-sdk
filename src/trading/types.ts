@@ -5,6 +5,9 @@ import { CowEnv, SupportedChainId } from '../common'
 import { QuoteResults } from './getQuote'
 import type { ExternalProvider } from '@ethersproject/providers'
 
+export type PrivateKey = string // 64 characters
+export type AccountAddress = `0x${string}` // 42 characters
+
 export interface TradeBaseParameters {
   kind: OrderKind
   sellToken: Address
@@ -25,13 +28,13 @@ export interface TradeOptionalParameters {
 
 export interface TraderParameters {
   chainId: SupportedChainId
-  signer: Signer | ExternalProvider | string
   appCode: string
+  signer: Signer | ExternalProvider | PrivateKey
 }
 
 export interface TradeParameters extends TradeBaseParameters, TradeOptionalParameters {}
 
-export interface SwapParameters extends TraderParameters, TradeParameters {}
+export interface SwapParameters extends TradeParameters, TraderParameters {}
 
 export interface LimitTradeParameters extends Omit<TradeParameters, 'amount'> {
   sellAmount: string

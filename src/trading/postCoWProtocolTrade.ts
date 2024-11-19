@@ -1,6 +1,6 @@
 import { OrderBookApi, OrderCreation } from '../order-book'
 import type { Signer } from 'ethers'
-import { AppDataInfo, LimitOrderParameters } from './types'
+import { AppDataInfo, LimitTradeParameters } from './types'
 import { log, SIGN_SCHEME_MAP } from './consts'
 import { OrderSigningUtils } from '../order-signing'
 import { getOrderToSign } from './getOrderToSign'
@@ -11,7 +11,7 @@ export async function postCoWProtocolTrade(
   orderBookApi: OrderBookApi,
   signer: Signer,
   appData: AppDataInfo,
-  params: LimitOrderParameters,
+  params: LimitTradeParameters,
   networkCostsAmount = '0'
 ): Promise<string> {
   if (getIsEthFlowOrder(params)) {
@@ -20,9 +20,10 @@ export async function postCoWProtocolTrade(
     return orderId
   }
 
-  const { chainId, quoteId = null } = params
+  const { quoteId = null } = params
   const { appDataKeccak256, fullAppData } = appData
 
+  const chainId = await signer.getChainId()
   const from = await signer.getAddress()
 
   const orderToSign = getOrderToSign({ from, networkCostsAmount }, params, appData.appDataKeccak256)

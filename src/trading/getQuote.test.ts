@@ -10,7 +10,7 @@ jest.mock('cross-fetch', () => {
   }
 })
 
-import { getQuote } from './getQuote'
+import { getQuoteWithSigner } from './getQuote'
 import { SwapParameters } from './types'
 import { ETH_ADDRESS, SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '../common'
 import { OrderBookApi, OrderKind, OrderQuoteResponse } from '../order-book'
@@ -57,7 +57,7 @@ const orderBookApiMock = {
   getQuote: getQuoteMock,
 } as unknown as OrderBookApi
 
-describe('getQuote', () => {
+describe('getQuoteToSign', () => {
   beforeEach(() => {
     getQuoteMock.mockReset()
     getQuoteMock.mockResolvedValue(quoteResponseMock)
@@ -65,7 +65,7 @@ describe('getQuote', () => {
 
   describe('App data', () => {
     it('Should add slippageBps and appCode from parameters', async () => {
-      const result = await getQuote({ ...defaultOrderParams, slippageBps: 76 }, {}, orderBookApiMock)
+      const result = await getQuoteWithSigner({ ...defaultOrderParams, slippageBps: 76 }, {}, orderBookApiMock)
       const appData = JSON.parse(result.appDataInfo.fullAppData)
 
       expect(appData.metadata.quote.slippageBips).toBe(76)
@@ -73,7 +73,7 @@ describe('getQuote', () => {
     })
 
     it('Should add advanced appData parameters', async () => {
-      const result = await getQuote(
+      const result = await getQuoteWithSigner(
         defaultOrderParams,
         {
           appData: {
@@ -91,14 +91,14 @@ describe('getQuote', () => {
 
   describe('Quote request', () => {
     it('When sell ETH, then should override sell token with wrapped one', async () => {
-      await getQuote({ ...defaultOrderParams, sellToken: ETH_ADDRESS }, {}, orderBookApiMock)
+      await getQuoteWithSigner({ ...defaultOrderParams, sellToken: ETH_ADDRESS }, {}, orderBookApiMock)
 
       const call = getQuoteMock.mock.calls[0][0]
 
       expect(call.sellToken).toBe(WRAPPED_NATIVE_CURRENCIES[defaultOrderParams.chainId])
     })
     it('Should add appData to the request', async () => {
-      await getQuote(defaultOrderParams, {}, orderBookApiMock)
+      await getQuoteWithSigner(defaultOrderParams, {}, orderBookApiMock)
 
       const call = getQuoteMock.mock.calls[0][0]
       const appData = JSON.parse(call.appData)
@@ -107,28 +107,28 @@ describe('getQuote', () => {
       expect(appData.metadata.quote.slippageBips).toBe(defaultOrderParams.slippageBps)
     })
     it('priceQuality must always be OPTIMAL', async () => {
-      await getQuote(defaultOrderParams, {}, orderBookApiMock)
+      await getQuoteWithSigner(defaultOrderParams, {}, orderBookApiMock)
 
       const call = getQuoteMock.mock.calls[0][0]
 
       expect(call.priceQuality).toBe('optimal')
     })
     it('When is sell order, then should set sellAmountBeforeFee', async () => {
-      await getQuote({ ...defaultOrderParams, kind: OrderKind.SELL }, {}, orderBookApiMock)
+      await getQuoteWithSigner({ ...defaultOrderParams, kind: OrderKind.SELL }, {}, orderBookApiMock)
 
       const call = getQuoteMock.mock.calls[0][0]
 
       expect(call.sellAmountBeforeFee).toBe(defaultOrderParams.amount)
     })
     it('When is buy order, then should set buyAmountAfterFee', async () => {
-      await getQuote({ ...defaultOrderParams, kind: OrderKind.BUY }, {}, orderBookApiMock)
+      await getQuoteWithSigner({ ...defaultOrderParams, kind: OrderKind.BUY }, {}, orderBookApiMock)
 
       const call = getQuoteMock.mock.calls[0][0]
 
       expect(call.buyAmountAfterFee).toBe(defaultOrderParams.amount)
     })
     it('Should add advanced quote parameters', async () => {
-      await getQuote(defaultOrderParams, { quoteRequest: { onchainOrder: { foo: 'bar' } } }, orderBookApiMock)
+      await getQuoteWithSigner(defaultOrderParams, { quoteRequest: { onchainOrder: { foo: 'bar' } } }, orderBookApiMock)
 
       const call = getQuoteMock.mock.calls[0][0]
 
@@ -138,7 +138,7 @@ describe('getQuote', () => {
 
   describe('Amounts and costs', () => {
     it('Should take slippage value into account', async () => {
-      const result = await getQuote({ ...defaultOrderParams, slippageBps: 20 }, {}, orderBookApiMock)
+      const result = await getQuoteWithSigner({ ...defaultOrderParams, slippageBps: 20 }, {}, orderBookApiMock)
       const buyAmount = quoteResponseMock.quote.buyAmount
 
       expect(+result.amountsAndCosts.afterSlippage.buyAmount.toString()).toBe(
@@ -146,7 +146,7 @@ describe('getQuote', () => {
       )
     })
     it('Should calculate network costs based on quote API response', async () => {
-      const result = await getQuote(defaultOrderParams, {}, orderBookApiMock)
+      const result = await getQuoteWithSigner(defaultOrderParams, {}, orderBookApiMock)
 
       expect(result.amountsAndCosts.costs.networkFee.amountInSellCurrency.toString()).toBe(
         quoteResponseMock.quote.feeAmount
@@ -156,12 +156,12 @@ describe('getQuote', () => {
 
   describe('Order to sign', () => {
     it('feeAmount should always be zero', async () => {
-      const result = await getQuote(defaultOrderParams, {}, orderBookApiMock)
+      const result = await getQuoteWithSigner(defaultOrderParams, {}, orderBookApiMock)
 
       expect(result.orderToSign.feeAmount).toBe('0')
     })
     it('Should add appDataKeccak256 to the order', async () => {
-      const result = await getQuote(defaultOrderParams, {}, orderBookApiMock)
+      const result = await getQuoteWithSigner(defaultOrderParams, {}, orderBookApiMock)
 
       expect(result.orderToSign.appData.length).toBe(2 + 64)
     })

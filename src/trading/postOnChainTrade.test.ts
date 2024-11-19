@@ -47,6 +47,7 @@ const defaultOrderParams: LimitOrderParameters = {
 
 const account = '0x21c3de23d98caddc406e3d31b25e807addf33333'
 const signer = new VoidSigner(account)
+signer.getChainId = jest.fn().mockResolvedValue(SupportedChainId.GNOSIS_CHAIN)
 
 const currentTimestamp = 1487076708000
 

@@ -1,6 +1,6 @@
 import { BuyTokenDestination, getQuoteAmountsAndCosts, type OrderParameters, SellTokenSource } from '../order-book'
 import { UnsignedOrder } from '../order-signing'
-import { LimitOrderParameters } from './types'
+import { LimitTradeParameters } from './types'
 import { DEFAULT_QUOTE_VALIDITY } from './consts'
 
 interface OrderToSignParams {
@@ -10,7 +10,7 @@ interface OrderToSignParams {
 
 export function getOrderToSign(
   { from, networkCostsAmount = '0' }: OrderToSignParams,
-  limitOrderParams: LimitOrderParameters,
+  limitOrderParams: LimitTradeParameters,
   appDataKeccak256: string
 ): UnsignedOrder {
   const {
