@@ -32,6 +32,8 @@ export interface TraderParameters {
   signer: Signer | ExternalProvider | PrivateKey
 }
 
+export type QuoterParameters = Omit<TraderParameters, 'signer'> & { account: AccountAddress }
+
 export interface TradeParameters extends TradeBaseParameters, TradeOptionalParameters {}
 
 export interface SwapParameters extends TradeParameters, TraderParameters {}
@@ -57,6 +59,14 @@ export interface LimitOrderAdvancedSettings {
 export interface QuoteResults {
   tradeParameters: TradeParameters
   amountsAndCosts: QuoteAmountsAndCosts
+  orderToSign: UnsignedOrder
+  quoteResponse: OrderQuoteResponse
+  appDataInfo: AppDataInfo
+}
+
+export interface QuoteResultsSerialized {
+  tradeParameters: TradeParameters
+  amountsAndCosts: QuoteAmountsAndCosts<string>
   orderToSign: UnsignedOrder
   quoteResponse: OrderQuoteResponse
   appDataInfo: AppDataInfo

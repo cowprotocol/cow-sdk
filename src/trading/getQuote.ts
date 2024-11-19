@@ -1,10 +1,10 @@
 import {
   AccountAddress,
   QuoteResults,
+  QuoterParameters,
   SwapAdvancedSettings,
   SwapParameters,
   TradeParameters,
-  TraderParameters,
 } from './types'
 import { DEFAULT_QUOTE_VALIDITY, log } from './consts'
 
@@ -27,7 +27,7 @@ export type QuoteResultsWithSigner = { result: QuoteResults & { signer: Signer }
 
 export async function getQuote(
   tradeParameters: TradeParameters,
-  trader: Omit<TraderParameters, 'signer'> & { account: AccountAddress },
+  trader: QuoterParameters,
   advancedSettings?: SwapAdvancedSettings,
   _orderBookApi?: OrderBookApi
 ): Promise<{ result: QuoteResults; orderBookApi: OrderBookApi }> {
