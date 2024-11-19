@@ -10,10 +10,7 @@ export async function postSwapOrder(params: SwapParameters, advancedSettings?: S
 
 export async function postSwapOrderFromQuote({
   orderBookApi,
-  signer,
-  appDataInfo,
-  quoteResponse,
-  tradeParameters,
+  result: { signer, appDataInfo, quoteResponse, tradeParameters },
 }: QuoteResultsWithSigner): Promise<string> {
   return postCoWProtocolTrade(
     orderBookApi,

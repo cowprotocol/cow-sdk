@@ -65,7 +65,7 @@ describe('getQuoteToSign', () => {
 
   describe('App data', () => {
     it('Should add slippageBps and appCode from parameters', async () => {
-      const result = await getQuoteWithSigner({ ...defaultOrderParams, slippageBps: 76 }, {}, orderBookApiMock)
+      const { result } = await getQuoteWithSigner({ ...defaultOrderParams, slippageBps: 76 }, {}, orderBookApiMock)
       const appData = JSON.parse(result.appDataInfo.fullAppData)
 
       expect(appData.metadata.quote.slippageBips).toBe(76)
@@ -73,7 +73,7 @@ describe('getQuoteToSign', () => {
     })
 
     it('Should add advanced appData parameters', async () => {
-      const result = await getQuoteWithSigner(
+      const { result } = await getQuoteWithSigner(
         defaultOrderParams,
         {
           appData: {
@@ -138,7 +138,7 @@ describe('getQuoteToSign', () => {
 
   describe('Amounts and costs', () => {
     it('Should take slippage value into account', async () => {
-      const result = await getQuoteWithSigner({ ...defaultOrderParams, slippageBps: 20 }, {}, orderBookApiMock)
+      const { result } = await getQuoteWithSigner({ ...defaultOrderParams, slippageBps: 20 }, {}, orderBookApiMock)
       const buyAmount = quoteResponseMock.quote.buyAmount
 
       expect(+result.amountsAndCosts.afterSlippage.buyAmount.toString()).toBe(
@@ -146,7 +146,7 @@ describe('getQuoteToSign', () => {
       )
     })
     it('Should calculate network costs based on quote API response', async () => {
-      const result = await getQuoteWithSigner(defaultOrderParams, {}, orderBookApiMock)
+      const { result } = await getQuoteWithSigner(defaultOrderParams, {}, orderBookApiMock)
 
       expect(result.amountsAndCosts.costs.networkFee.amountInSellCurrency.toString()).toBe(
         quoteResponseMock.quote.feeAmount
@@ -156,12 +156,12 @@ describe('getQuoteToSign', () => {
 
   describe('Order to sign', () => {
     it('feeAmount should always be zero', async () => {
-      const result = await getQuoteWithSigner(defaultOrderParams, {}, orderBookApiMock)
+      const { result } = await getQuoteWithSigner(defaultOrderParams, {}, orderBookApiMock)
 
       expect(result.orderToSign.feeAmount).toBe('0')
     })
     it('Should add appDataKeccak256 to the order', async () => {
-      const result = await getQuoteWithSigner(defaultOrderParams, {}, orderBookApiMock)
+      const { result } = await getQuoteWithSigner(defaultOrderParams, {}, orderBookApiMock)
 
       expect(result.orderToSign.appData.length).toBe(2 + 64)
     })

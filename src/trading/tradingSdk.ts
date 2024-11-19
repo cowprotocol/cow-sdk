@@ -28,9 +28,9 @@ export class TradingSdk {
 
     return postOnChainTrade(
       quoteResults.orderBookApi,
-      quoteResults.signer,
-      quoteResults.appDataInfo,
-      swapParamsToLimitOrderParams(quoteResults.tradeParameters, quoteResults.quoteResponse)
+      quoteResults.result.signer,
+      quoteResults.result.appDataInfo,
+      swapParamsToLimitOrderParams(quoteResults.result.tradeParameters, quoteResults.result.quoteResponse)
     )
   }
 
@@ -38,7 +38,7 @@ export class TradingSdk {
     const quoteResults = await getQuoteWithSigner(this.mergeParams(params), advancedSettings)
 
     return {
-      quoteResults,
+      quoteResults: quoteResults.result,
       postSwapOrderFromQuote: () => postSwapOrderFromQuote(quoteResults),
     }
   }

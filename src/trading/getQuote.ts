@@ -23,14 +23,14 @@ import { getIsEthFlowOrder, getSigner, swapParamsToLimitOrderParams } from './ut
 import { Signer } from 'ethers'
 import { WRAPPED_NATIVE_CURRENCIES } from '../common'
 
-export type QuoteResultsWithSigner = QuoteResults & { signer: Signer }
+export type QuoteResultsWithSigner = { result: QuoteResults & { signer: Signer }; orderBookApi: OrderBookApi }
 
 export async function getQuote(
   tradeParameters: TradeParameters,
   trader: Omit<TraderParameters, 'signer'> & { account: AccountAddress },
   advancedSettings?: SwapAdvancedSettings,
   _orderBookApi?: OrderBookApi
-): Promise<QuoteResults> {
+): Promise<{ result: QuoteResults; orderBookApi: OrderBookApi }> {
   const {
     sellToken,
     sellTokenDecimals,
@@ -100,7 +100,10 @@ export async function getQuote(
     appDataInfo.appDataKeccak256
   )
 
-  return { amountsAndCosts, quoteResponse, appDataInfo, orderBookApi, orderToSign, tradeParameters: tradeParameters }
+  return {
+    result: { amountsAndCosts, quoteResponse, appDataInfo, orderToSign, tradeParameters: tradeParameters },
+    orderBookApi,
+  }
 }
 
 export async function getQuoteWithSigner(
@@ -119,7 +122,10 @@ export async function getQuoteWithSigner(
   const result = await getQuote(swapParameters, trader, advancedSettings, orderBookApi)
 
   return {
-    ...result,
-    signer,
+    result: {
+      ...result.result,
+      signer,
+    },
+    orderBookApi: result.orderBookApi,
   }
 }

@@ -1,12 +1,5 @@
 import type { AppDataParams, latest, LatestAppDataDocVersion } from '@cowprotocol/app-data'
-import type {
-  Address,
-  OrderBookApi,
-  OrderKind,
-  OrderQuoteRequest,
-  OrderQuoteResponse,
-  QuoteAmountsAndCosts,
-} from '../order-book'
+import type { Address, OrderKind, OrderQuoteRequest, OrderQuoteResponse, QuoteAmountsAndCosts } from '../order-book'
 import type { Signer } from '@ethersproject/abstract-signer'
 import type { CowEnv, SupportedChainId } from '../common'
 import type { ExternalProvider } from '@ethersproject/providers'
@@ -67,7 +60,6 @@ export interface QuoteResults {
   orderToSign: UnsignedOrder
   quoteResponse: OrderQuoteResponse
   appDataInfo: AppDataInfo
-  orderBookApi: OrderBookApi
 }
 
 export interface QuoteAndPost {

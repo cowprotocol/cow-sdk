@@ -28,7 +28,8 @@
     "prepublishOnly": "npm test && npm run lint",
     "graphql:codegen": "graphql-codegen --config graphql-codegen.yml",
     "swagger:codegen": " openapi --input https://raw.githubusercontent.com/cowprotocol/services/main/crates/orderbook/openapi.yml --output src/order-book/generated --exportServices false --exportCore false",
-    "typechain:codegen": "typechain --target ethers-v5 --out-dir ./src/common/generated './abi/*.json'"
+    "typechain:codegen": "typechain --target ethers-v5 --out-dir ./src/common/generated './abi/*.json'",
+    "trading:generateSchemas": "ts-node scripts/generateTradingSchemas.ts"
   },
   "dependencies": {
     "@cowprotocol/app-data": "^2.1.0",
@@ -54,7 +55,7 @@
     "@graphql-codegen/typescript-operations": "^3.0.0",
     "@typechain/ethers-v5": "^11.0.0",
     "@types/jest": "^29.4.0",
-    "@types/node": "^18.13.0",
+    "@types/node": "^22.9.0",
     "@typescript-eslint/eslint-plugin": "^5.51.0",
     "@typescript-eslint/parser": "^5.51.0",
     "babel-plugin-inline-import": "^3.0.0",
@@ -69,6 +70,7 @@
     "microbundle": "^0.15.1",
     "openapi-typescript-codegen": "^0.23.0",
     "prettier": "^2.5.1",
+    "ts-json-schema-generator": "^2.3.0",
     "ts-mockito": "^2.6.1",
     "tsc-watch": "^6.0.0",
     "typechain": "^8.2.0",
