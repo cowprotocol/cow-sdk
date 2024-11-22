@@ -22,6 +22,7 @@ import { getOrderToSign } from './getOrderToSign'
 import { getIsEthFlowOrder, getSigner, swapParamsToLimitOrderParams } from './utils'
 import { Signer } from 'ethers'
 import { WRAPPED_NATIVE_CURRENCIES } from '../common'
+import { getOrderTypedData } from './getOrderTypedData'
 
 export type QuoteResultsWithSigner = { result: QuoteResults & { signer: Signer }; orderBookApi: OrderBookApi }
 
@@ -100,8 +101,10 @@ export async function getQuote(
     appDataInfo.appDataKeccak256
   )
 
+  const orderTypedData = await getOrderTypedData(chainId, orderToSign)
+
   return {
-    result: { amountsAndCosts, quoteResponse, appDataInfo, orderToSign, tradeParameters: tradeParameters },
+    result: { amountsAndCosts, quoteResponse, appDataInfo, orderToSign, tradeParameters, orderTypedData },
     orderBookApi,
   }
 }

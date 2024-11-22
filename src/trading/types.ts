@@ -8,6 +8,29 @@ import type { UnsignedOrder } from '../order-signing'
 export type PrivateKey = string // 64 characters
 export type AccountAddress = `0x${string}` // 42 characters
 
+export const ORDER_PRIMARY_TYPE = 'Order' as const
+
+interface TypedDataDomain {
+  name: string
+  version: string
+  chainId: number
+  verifyingContract: string
+}
+
+interface TypedDataField {
+  name: string
+  type: string
+}
+
+export interface OrderTypedData {
+  domain: TypedDataDomain
+  primaryType: typeof ORDER_PRIMARY_TYPE
+  types: {
+    Order: TypedDataField[]
+  }
+  message: UnsignedOrder
+}
+
 export interface TradeBaseParameters {
   kind: OrderKind
   sellToken: Address
@@ -62,14 +85,11 @@ export interface QuoteResults {
   orderToSign: UnsignedOrder
   quoteResponse: OrderQuoteResponse
   appDataInfo: AppDataInfo
+  orderTypedData: OrderTypedData
 }
 
-export interface QuoteResultsSerialized {
-  tradeParameters: TradeParameters
+export interface QuoteResultsSerialized extends Omit<QuoteResults, 'amountsAndCosts'> {
   amountsAndCosts: QuoteAmountsAndCosts<string>
-  orderToSign: UnsignedOrder
-  quoteResponse: OrderQuoteResponse
-  appDataInfo: AppDataInfo
 }
 
 export interface QuoteAndPost {
