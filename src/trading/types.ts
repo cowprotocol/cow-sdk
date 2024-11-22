@@ -25,9 +25,7 @@ interface TypedDataField {
 export interface OrderTypedData {
   domain: TypedDataDomain
   primaryType: typeof ORDER_PRIMARY_TYPE
-  types: {
-    Order: TypedDataField[]
-  }
+  types: Record<string, TypedDataField[]>
   message: UnsignedOrder
 }
 
