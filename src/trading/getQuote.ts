@@ -104,7 +104,8 @@ export async function getQuote(
 
   const orderToSign = getOrderToSign(
     { from, networkCostsAmount: quoteResponse.quote.feeAmount },
-    swapParamsToLimitOrderParams(tradeParameters, quoteResponse),
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    swapParamsToLimitOrderParams(tradeParameters, quoteResponse.id!, amountsAndCosts),
     appDataInfo.appDataKeccak256
   )
 

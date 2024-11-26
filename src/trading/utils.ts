@@ -1,16 +1,20 @@
 import { AccountAddress, LimitTradeParameters, PrivateKey, TradeParameters } from './types'
-import { OrderQuoteResponse } from '../order-book'
+import { QuoteAmountsAndCosts } from '../order-book'
 import { ETH_ADDRESS } from '../common'
 import { ethers, Signer } from 'ethers'
 import { type ExternalProvider, Web3Provider } from '@ethersproject/providers'
 
 export function swapParamsToLimitOrderParams(
   params: TradeParameters,
-  { quote: { sellAmount, buyAmount }, id }: OrderQuoteResponse
+  quoteId: number,
+  amounts: QuoteAmountsAndCosts
 ): LimitTradeParameters {
-  // In this SDK we always use Optimal quotes which are always have id
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  return { ...params, sellAmount, buyAmount, quoteId: id! }
+  return {
+    ...params,
+    sellAmount: amounts.afterSlippage.sellAmount.toString(),
+    buyAmount: amounts.afterSlippage.buyAmount.toString(),
+    quoteId,
+  }
 }
 
 export function getIsEthFlowOrder(params: { sellToken: string }): boolean {

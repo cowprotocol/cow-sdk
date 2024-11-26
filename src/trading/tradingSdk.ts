@@ -26,11 +26,13 @@ export class TradingSdk {
   async postOnChainTrade(params: TradeParameters, advancedSettings?: SwapAdvancedSettings) {
     const quoteResults = await getQuoteWithSigner(this.mergeParams(params), advancedSettings)
 
+    const { tradeParameters, quoteResponse, amountsAndCosts } = quoteResults.result
     return postOnChainTrade(
       quoteResults.orderBookApi,
       quoteResults.result.signer,
       quoteResults.result.appDataInfo,
-      swapParamsToLimitOrderParams(quoteResults.result.tradeParameters, quoteResults.result.quoteResponse)
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      swapParamsToLimitOrderParams(tradeParameters, quoteResponse.id!, amountsAndCosts)
     )
   }
 
