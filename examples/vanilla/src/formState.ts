@@ -11,6 +11,20 @@ interface FormState {
   kind: 'sell' | 'buy'
 }
 
+const DECIMALS_SHIFT = 6
+
+/**
+ * This function converts input amount to the correct number of decimals.
+ * For example, if the input amount is 1.23 and the token has 18 decimals,
+ * the result will be 1230000000000000000.
+ * Since this is a simplified example, we only allow input amounts with maximum 6 decimals.
+ */
+const adjustDecimals = (amount: number, decimals: number) => {
+  const multiplicator = decimals > DECIMALS_SHIFT ? DECIMALS_SHIFT : 0
+
+  return BigInt(amount * 10 ** multiplicator) * BigInt(10 ** (decimals - multiplicator))
+}
+
 export const getFormState = (): FormState => {
   return Object.fromEntries(new FormData(document.getElementById('form') as HTMLFormElement)) as unknown as FormState
 }
@@ -30,8 +44,7 @@ export const getTradeParameters = (): TradeParameters => {
   const sellToken = TOKENS[chainId].find((t) => t.address === _sellToken)
   const buyToken = TOKENS[chainId].find((t) => t.address === _buyToken)
   const decimals = isSell ? sellToken.decimals : buyToken.decimals
-  const multiplicator = decimals > 3 ? 3 : 0
-  const amount = BigInt(+_amount * 10 ** multiplicator) * BigInt(10 ** (decimals - multiplicator))
+  const amount = adjustDecimals(+_amount, decimals)
   const slippageBps = _slippageBps ? +_slippageBps : undefined
 
   return {

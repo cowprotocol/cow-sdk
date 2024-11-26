@@ -48,9 +48,7 @@ const defaultOrderParams: LimitOrderParameters = {
 const account = '0x21c3de23d98caddc406e3d31b25e807addf33333'
 const signer = new VoidSigner(account)
 
-const sendTransactionMock = jest.fn().mockResolvedValue({ txHash: '0xccdd11', orderId: '0xabc22' })
 signer.getChainId = jest.fn().mockResolvedValue(SupportedChainId.GNOSIS_CHAIN)
-signer.sendTransaction = sendTransactionMock
 
 const callData = '0x123456'
 const currentTimestamp = 1487076708000
@@ -83,6 +81,9 @@ describe('postOnChainTrade', () => {
     ethFlowContractFactoryMock.mockReturnValue(ethFlowContractMock)
     uploadAppDataMock.mockResolvedValue(undefined)
     ethFlowContractMock.estimateGas.createOrder.mockResolvedValue({ toHexString: () => '0x1' })
+    signer.sendTransaction = jest.fn().mockImplementation(() => {
+      return Promise.resolve({ hash: '0xccdd11', orderId: '0xabc22' })
+    })
 
     Date.now = jest.fn(() => currentTimestamp)
   })
@@ -92,7 +93,6 @@ describe('postOnChainTrade', () => {
     ethFlowContractFactoryMock.mockReset()
     ethFlowContractMock.estimateGas.createOrder.mockReset()
     ethFlowContractMock.interface.encodeFunctionData.mockReset()
-    sendTransactionMock.mockReset()
   })
 
   it('Should call checkEthFlowOrderExists if it is set', async () => {
@@ -114,9 +114,9 @@ describe('postOnChainTrade', () => {
 
     await postOnChainTrade(orderBookApiMock, signer, appDataMock, defaultOrderParams)
 
-    const call = sendTransactionMock.mock.calls[0][0]
+    const call = (signer.sendTransaction as jest.Mock).mock.calls[0][0]
 
-    expect(call.gasLimit).toBe(BigInt(180000).toString()) // 150000 by default + 20%
+    expect(+call.gasLimit).toBe(180000) // 150000 by default + 20%
   })
 
   it('Should create an on-chain transaction with all specified parameters', async () => {
