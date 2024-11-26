@@ -36,3 +36,39 @@ export function getSigner(signer: Signer | ExternalProvider | PrivateKey): Signe
 export function isAccountAddress(address: any): address is AccountAddress {
   return typeof address === 'string' && /^0x[0-9a-fA-F]{40}$/.test(address)
 }
+
+export function mapQuoteAmountsAndCosts<T, R>(
+  value: QuoteAmountsAndCosts<T>,
+  mapper: (value: T) => R
+): QuoteAmountsAndCosts<R> {
+  const {
+    costs: { networkFee, partnerFee },
+  } = value
+
+  function serializeAmounts(value: { sellAmount: T; buyAmount: T }): { sellAmount: R; buyAmount: R } {
+    return {
+      sellAmount: mapper(value.sellAmount),
+      buyAmount: mapper(value.buyAmount),
+    }
+  }
+
+  return {
+    ...value,
+    costs: {
+      ...value.costs,
+      networkFee: {
+        ...networkFee,
+        amountInSellCurrency: mapper(networkFee.amountInSellCurrency),
+        amountInBuyCurrency: mapper(networkFee.amountInBuyCurrency),
+      },
+      partnerFee: {
+        ...partnerFee,
+        amount: mapper(partnerFee.amount),
+      },
+    },
+    beforeNetworkCosts: serializeAmounts(value.beforeNetworkCosts),
+    afterNetworkCosts: serializeAmounts(value.afterNetworkCosts),
+    afterPartnerFees: serializeAmounts(value.afterPartnerFees),
+    afterSlippage: serializeAmounts(value.afterSlippage),
+  }
+}
