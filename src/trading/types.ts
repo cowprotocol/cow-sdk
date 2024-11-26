@@ -111,3 +111,10 @@ export interface AppDataInfo {
   appDataKeccak256: string
   env?: CowEnv
 }
+
+export interface TransactionParams {
+  callData: string
+  gasLimit: string
+  to: string
+  value: string
+}

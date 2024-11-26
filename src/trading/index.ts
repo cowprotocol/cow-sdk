@@ -10,6 +10,7 @@ export { postLimitOrder } from './postLimitOrder'
 export { postCoWProtocolTrade } from './postCoWProtocolTrade'
 export { getOrderToSign } from './getOrderToSign'
 export { postOnChainTrade } from './postOnChainTrade'
+export { getEthFlowTransaction } from './getEthFlowTransaction'
 
 /**
  * Helpers

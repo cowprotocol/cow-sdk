@@ -111,7 +111,14 @@ export async function getQuote(
   const orderTypedData = await getOrderTypedData(chainId, orderToSign)
 
   return {
-    result: { amountsAndCosts, quoteResponse, appDataInfo, orderToSign, tradeParameters, orderTypedData },
+    result: {
+      amountsAndCosts,
+      quoteResponse,
+      appDataInfo,
+      orderToSign,
+      tradeParameters,
+      orderTypedData,
+    },
     orderBookApi,
   }
 }
