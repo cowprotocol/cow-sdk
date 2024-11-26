@@ -27,11 +27,20 @@ import { getOrderTypedData } from './getOrderTypedData'
 export type QuoteResultsWithSigner = { result: QuoteResults & { signer: Signer }; orderBookApi: OrderBookApi }
 
 export async function getQuote(
-  tradeParameters: TradeParameters,
+  _tradeParameters: TradeParameters,
   trader: QuoterParameters,
   advancedSettings?: SwapAdvancedSettings,
   _orderBookApi?: OrderBookApi
 ): Promise<{ result: QuoteResults; orderBookApi: OrderBookApi }> {
+  const { appCode, chainId, account: from } = trader
+
+  const tradeParameters = getIsEthFlowOrder(_tradeParameters)
+    ? {
+        ..._tradeParameters,
+        sellToken: WRAPPED_NATIVE_CURRENCIES[chainId],
+      }
+    : _tradeParameters
+
   const {
     sellToken,
     sellTokenDecimals,
@@ -44,8 +53,6 @@ export async function getQuote(
     slippageBps = 0,
     env = 'prod',
   } = tradeParameters
-
-  const { appCode, chainId, account: from } = trader
 
   log(`Swap ${amount} ${sellToken} for ${buyToken} on chain ${chainId}`)
 
@@ -69,7 +76,7 @@ export async function getQuote(
 
   const quoteRequest: OrderQuoteRequest = {
     from,
-    sellToken: getIsEthFlowOrder(tradeParameters) ? WRAPPED_NATIVE_CURRENCIES[chainId] : sellToken,
+    sellToken,
     buyToken,
     receiver,
     validFor,

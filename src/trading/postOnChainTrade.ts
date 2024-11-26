@@ -3,7 +3,13 @@ import { AppDataInfo, LimitTradeParameters } from './types'
 import { calculateUniqueOrderId, EthFlowOrderExistsCallback } from './calculateUniqueOrderId'
 import { getOrderToSign } from './getOrderToSign'
 import { type EthFlow, EthFlow__factory } from '../common/generated'
-import { BARN_ETH_FLOW_ADDRESSES, CowEnv, ETH_FLOW_ADDRESSES, SupportedChainId } from '../common'
+import {
+  BARN_ETH_FLOW_ADDRESSES,
+  CowEnv,
+  ETH_FLOW_ADDRESSES,
+  SupportedChainId,
+  WRAPPED_NATIVE_CURRENCIES,
+} from '../common'
 import { GAS_LIMIT_DEFAULT, log } from './consts'
 import type { EthFlowOrder } from '../common/generated/EthFlow'
 import { OrderBookApi } from '../order-book'
@@ -12,14 +18,19 @@ export async function postOnChainTrade(
   orderBookApi: OrderBookApi,
   signer: Signer,
   appData: Pick<AppDataInfo, 'fullAppData' | 'appDataKeccak256'>,
-  params: LimitTradeParameters,
+  _params: LimitTradeParameters,
   networkCostsAmount = '0',
   checkEthFlowOrderExists?: EthFlowOrderExistsCallback
 ): Promise<{ txHash: string; orderId: string }> {
+  const chainId = orderBookApi.context.chainId
+
+  const params = {
+    ..._params,
+    sellToken: WRAPPED_NATIVE_CURRENCIES[chainId],
+  }
   const { quoteId } = params
   const { appDataKeccak256, fullAppData } = appData
 
-  const chainId = await signer.getChainId()
   const from = await signer.getAddress()
 
   const contract = getEthFlowContract(chainId, signer, params.env)
