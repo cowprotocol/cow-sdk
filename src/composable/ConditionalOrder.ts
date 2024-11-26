@@ -6,7 +6,6 @@ import {
   ConditionalOrderArguments,
   ConditionalOrderParams,
   ContextFactory,
-  IsNotValid,
   IsValidResult,
   OwnerContext,
   PollParams,
@@ -96,7 +95,7 @@ export abstract class ConditionalOrder<D, S> {
   assertIsValid(): void {
     const isValidResult = this.isValid()
     if (!isValidResult.isValid) {
-      throw new Error(`Invalid order: ${(isValidResult as IsNotValid).reason}`)
+      throw new Error(`Invalid order: ${isValidResult.reason}`)
     }
   }
 
@@ -257,7 +256,7 @@ export abstract class ConditionalOrder<D, S> {
       if (!isValid.isValid) {
         return {
           result: PollResultCode.DONT_TRY_AGAIN,
-          reason: `InvalidConditionalOrder. Reason: ${(isValid as IsNotValid).reason}`,
+          reason: `InvalidConditionalOrder. Reason: ${isValid.reason}`,
         }
       }
 
