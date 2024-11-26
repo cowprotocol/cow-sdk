@@ -18,3 +18,4 @@ export { getEthFlowTransaction } from './getEthFlowTransaction'
 
 export * from './appDataUtils'
 export * from './calculateUniqueOrderId'
+export { swapParamsToLimitOrderParams } from './utils'
