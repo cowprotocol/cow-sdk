@@ -55,9 +55,9 @@ export async function getEthFlowTransaction(
     orderId,
     transaction: {
       callData,
-      gasLimit: calculateGasMargin(estimatedGas).toString(),
+      gasLimit: '0x' + calculateGasMargin(estimatedGas).toString(16),
       to: contract.address,
-      value: orderToSign.sellAmount,
+      value: '0x' + BigInt(orderToSign.sellAmount).toString(16),
     },
   }
 }
