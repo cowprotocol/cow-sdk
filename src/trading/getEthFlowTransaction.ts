@@ -50,13 +50,13 @@ export async function getEthFlowTransaction(
       return GAS_LIMIT_DEFAULT
     })
 
-  const callData = contract.interface.encodeFunctionData('createOrder', [ethOrderParams])
+  const data = contract.interface.encodeFunctionData('createOrder', [ethOrderParams])
 
   return {
     orderId,
     transaction: {
-      callData,
-      gasLimit: '0x' + calculateGasMargin(estimatedGas).toString(16),
+      data,
+      gas: '0x' + calculateGasMargin(estimatedGas).toString(16),
       to: contract.address,
       value: '0x' + BigInt(orderToSign.sellAmount).toString(16),
     },

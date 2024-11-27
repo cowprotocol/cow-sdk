@@ -27,8 +27,8 @@ export async function getPreSignTransaction(
     })
 
   return {
-    callData: preSignatureCall,
-    gasLimit: '0x' + calculateGasMargin(gas).toString(16),
+    data: preSignatureCall,
+    gas: '0x' + calculateGasMargin(gas).toString(16),
     to: settlementContractAddress,
     value: '0',
   }
