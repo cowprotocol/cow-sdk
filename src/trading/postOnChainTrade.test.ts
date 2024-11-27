@@ -116,7 +116,7 @@ describe('postOnChainTrade', () => {
 
     const call = (signer.sendTransaction as jest.Mock).mock.calls[0][0]
 
-    expect(+call.gasLimit).toBe(180000) // 150000 by default + 20%
+    expect(+call.gas).toBe(180000) // 150000 by default + 20%
   })
 
   it('Should create an on-chain transaction with all specified parameters', async () => {

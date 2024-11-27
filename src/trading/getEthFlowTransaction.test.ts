@@ -61,15 +61,15 @@ describe('getEthFlowTransaction', () => {
     const result = await getEthFlowTransaction(signer, appDataKeccak256, params)
     const wrappedToken = WRAPPED_NATIVE_CURRENCIES[chainId]
 
-    expect(result.transaction.callData.includes(params.sellToken.slice(2))).toBe(false)
-    expect(result.transaction.callData.includes(wrappedToken.slice(2))).toBe(false)
+    expect(result.transaction.data.includes(params.sellToken.slice(2))).toBe(false)
+    expect(result.transaction.data.includes(wrappedToken.slice(2))).toBe(false)
   })
 
   it('Should call gas estimation and return estimated value + 20%', async () => {
     const result = await getEthFlowTransaction(signer, appDataKeccak256, params)
     const gasNum = +GAS
 
-    expect(+result.transaction.gasLimit).toBe(gasNum + gasNum * 0.2)
+    expect(+result.transaction.gas).toBe(gasNum + gasNum * 0.2)
   })
 
   it('Transaction value should be equal to sell amount', async () => {
