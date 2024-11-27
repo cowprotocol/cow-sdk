@@ -137,7 +137,7 @@ describe('postOnChainTrade', () => {
         kind: defaultOrderParams.kind,
         quoteId: defaultOrderParams.quoteId,
         receiver: account,
-        validTo: defaultOrderParams.validTo!.toString(),
+        validTo: defaultOrderParams.validTo?.toString(),
       },
     ])
   })

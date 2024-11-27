@@ -11,6 +11,7 @@ export { postCoWProtocolTrade } from './postCoWProtocolTrade'
 export { getOrderToSign } from './getOrderToSign'
 export { postOnChainTrade } from './postOnChainTrade'
 export { getEthFlowTransaction } from './getEthFlowTransaction'
+export { getPreSignTransaction } from './getPreSignTransaction'
 
 /**
  * Helpers

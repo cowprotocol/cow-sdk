@@ -131,7 +131,7 @@ export class OrderSigningUtils {
    * signing orders using smart contracts, whereby this SDK cannot do the EIP-1271 signing for you.
    * @returns The EIP-712 types used for signing.
    */
-  static getEIP712Types(): Record<string, any> {
+  static getEIP712Types(): Record<string, unknown> {
     return {
       Order: [
         { name: 'sellToken', type: 'address' },

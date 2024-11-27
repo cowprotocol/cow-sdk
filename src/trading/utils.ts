@@ -33,8 +33,16 @@ export function getSigner(signer: Signer | ExternalProvider | PrivateKey): Signe
   return signer as Signer
 }
 
-export function isAccountAddress(address: any): address is AccountAddress {
+export function isAccountAddress(address: unknown): address is AccountAddress {
   return typeof address === 'string' && /^0x[0-9a-fA-F]{40}$/.test(address)
+}
+
+/**
+ * Returns the gas value plus a margin for unexpected or variable gas costs (20%)
+ * @param value the gas value to pad
+ */
+export function calculateGasMargin(value: bigint): bigint {
+  return value + (value * BigInt(20)) / BigInt(100)
 }
 
 export function mapQuoteAmountsAndCosts<T, R>(

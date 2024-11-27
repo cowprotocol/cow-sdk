@@ -12,6 +12,7 @@ import {
 } from '../common'
 import { GAS_LIMIT_DEFAULT } from './consts'
 import type { EthFlowOrder } from '../common/generated/EthFlow'
+import { calculateGasMargin } from './utils'
 
 export async function getEthFlowTransaction(
   signer: Signer,
@@ -64,12 +65,4 @@ export async function getEthFlowTransaction(
 
 function getEthFlowContract(chainId: SupportedChainId, signer: Signer, env?: CowEnv): EthFlow {
   return EthFlow__factory.connect((env === 'staging' ? BARN_ETH_FLOW_ADDRESSES : ETH_FLOW_ADDRESSES)[chainId], signer)
-}
-
-/**
- * Returns the gas value plus a margin for unexpected or variable gas costs (20%)
- * @param value the gas value to pad
- */
-function calculateGasMargin(value: bigint): bigint {
-  return value + (value * BigInt(20)) / BigInt(100)
 }
