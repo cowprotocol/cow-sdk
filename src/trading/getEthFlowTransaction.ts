@@ -62,21 +62,8 @@ export async function getEthFlowTransaction(
   }
 }
 
-const ethFlowContractCache: Partial<Record<SupportedChainId, EthFlow | undefined>> = {}
-
 function getEthFlowContract(chainId: SupportedChainId, signer: Signer, env?: CowEnv): EthFlow {
-  const cache = ethFlowContractCache[chainId]
-
-  if (cache) return cache
-
-  const contract = EthFlow__factory.connect(
-    (env === 'staging' ? BARN_ETH_FLOW_ADDRESSES : ETH_FLOW_ADDRESSES)[chainId],
-    signer
-  )
-
-  ethFlowContractCache[chainId] = contract
-
-  return contract
+  return EthFlow__factory.connect((env === 'staging' ? BARN_ETH_FLOW_ADDRESSES : ETH_FLOW_ADDRESSES)[chainId], signer)
 }
 
 /**
