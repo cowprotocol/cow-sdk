@@ -15,15 +15,18 @@ import { swapParamsToLimitOrderParams } from './utils'
 export class TradingSdk {
   constructor(public readonly traderParams: TraderParameters) {}
 
-  async postSwapOrder(params: TradeParameters, advancedSettings?: SwapAdvancedSettings) {
+  async postSwapOrder(params: TradeParameters, advancedSettings?: SwapAdvancedSettings): Promise<string> {
     return postSwapOrder(this.mergeParams(params), advancedSettings)
   }
 
-  async postLimitOrder(params: LimitTradeParameters, advancedSettings?: LimitOrderAdvancedSettings) {
+  async postLimitOrder(params: LimitTradeParameters, advancedSettings?: LimitOrderAdvancedSettings): Promise<string> {
     return postLimitOrder(this.mergeParams(params), advancedSettings)
   }
 
-  async postOnChainTrade(params: TradeParameters, advancedSettings?: SwapAdvancedSettings) {
+  async postOnChainTrade(
+    params: TradeParameters,
+    advancedSettings?: SwapAdvancedSettings
+  ): Promise<ReturnType<typeof postOnChainTrade>> {
     const quoteResults = await getQuoteWithSigner(this.mergeParams(params), advancedSettings)
 
     const { tradeParameters, quoteResponse, amountsAndCosts } = quoteResults.result

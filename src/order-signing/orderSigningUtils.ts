@@ -14,7 +14,7 @@ const ethersUtils = () => import('ethers/lib/utils')
  * @example
  *
  * ```typescript
- * import { OrderSigningUtils, SupportedChainId } from '@cowprotocol/cow-sdk'
+ * import { OrderSigningUtils, SupportedChainId, UnsignedOrder } from '@cowprotocol/cow-sdk'
  * import { Web3Provider } from '@ethersproject/providers'
  *
  * const account = 'YOUR_WALLET_ADDRESS'
@@ -23,10 +23,10 @@ const ethersUtils = () => import('ethers/lib/utils')
  * const signer = provider.getSigner()
  *
  * async function main() {
- *     const { order: Order } = { ... }
- *     const orderSigningResult = await OrderSigningUtils.signOrder(quote, chainId, signer)
+ *     const orderToSign: UnsignedOrder = { ... }
+ *     const orderSigningResult = await OrderSigningUtils.signOrder(orderToSign, chainId, signer)
  *
- *     const orderId = await orderBookApi.sendOrder({ ...quote, ...orderSigningResult })
+ *     const orderId = await orderBookApi.sendOrder({ ...orderToSign, ...orderSigningResult })
  *
  *     const order = await orderBookApi.getOrder(orderId)
  *

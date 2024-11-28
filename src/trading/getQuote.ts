@@ -113,11 +113,11 @@ export async function getQuote(
 
   return {
     result: {
+      tradeParameters,
       amountsAndCosts,
+      orderToSign,
       quoteResponse,
       appDataInfo,
-      orderToSign,
-      tradeParameters,
       orderTypedData,
     },
     orderBookApi,

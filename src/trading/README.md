@@ -93,14 +93,13 @@ In case if you want to get a quote and only then create an order, you can use th
 
 The parameters required are the same as for the `postSwapOrder` function.
 
-The function returns a quote object with the following fields:
- - `swapParameters` - the parameters used to get the quote
+The function returns `quoteResults` object with the following properties:
+ - `tradeParameters` - trade type, assets, amounts and other optional parameters
  - `amountsAndCosts` - the order sell/buy amounts including network costs, fees and slippage
- - `orderToSign` - the order to sign
+ - `orderToSign` - order parameters to sign (see [order signing](https://docs.cow.fi/cow-protocol/reference/sdks/cow-sdk/classes/OrderSigningUtils))
  - `quoteResponse` - DTO from [quote API](https://api.cow.fi/docs/#/default/post_api_v1_quote)
  - `appDataInfo` - [order's metadata](https://docs.cow.fi/cow-protocol/reference/sdks/app-data)
- - `orderBookApi` - instance of [`OrderBookApi`](../order-book/api.ts)
- - `signer` - instance if Ethers signer
+ - `orderTypedData` - EIP-712 typed data for signing
 
 Another parameter is returned by this function is `postSwapOrderFromQuote`.
 It can be used to create an order from the received quote.
