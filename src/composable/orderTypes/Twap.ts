@@ -578,7 +578,18 @@ export function transformDataToStruct(data: TwapData): TwapStruct {
  * @returns {TwapStruct} A formatted struct as expected by the smart contract.
  */
 export function transformStructToData(struct: TwapStruct): TwapData {
-  const { n: numberOfParts, partSellAmount, minPartLimit, t: timeBetweenParts, t0: startEpoch, span, ...rest } = struct
+  const {
+    n: numberOfParts,
+    partSellAmount,
+    minPartLimit,
+    t: timeBetweenParts,
+    t0: startEpoch,
+    span,
+    sellToken,
+    buyToken,
+    receiver,
+    appData,
+  } = struct
 
   const durationOfPart: DurationOfPart = span.isZero()
     ? { durationType: DurationType.AUTO }
@@ -595,6 +606,9 @@ export function transformStructToData(struct: TwapStruct): TwapData {
     numberOfParts,
     timeBetweenParts,
     durationOfPart,
-    ...rest,
+    sellToken,
+    buyToken,
+    receiver,
+    appData,
   }
 }
