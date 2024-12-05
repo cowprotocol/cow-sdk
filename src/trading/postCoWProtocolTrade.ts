@@ -4,7 +4,7 @@ import { AppDataInfo, LimitTradeParameters } from './types'
 import { log, SIGN_SCHEME_MAP } from './consts'
 import { OrderSigningUtils } from '../order-signing'
 import { getOrderToSign } from './getOrderToSign'
-import { postSellNativeCurrencyTrade } from './postSellNativeCurrencyTrade'
+import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getIsEthFlowOrder } from './utils'
 
 export async function postCoWProtocolTrade(
@@ -18,7 +18,7 @@ export async function postCoWProtocolTrade(
     const quoteId = params.quoteId
 
     if (typeof quoteId === 'number') {
-      const { orderId } = await postSellNativeCurrencyTrade(
+      const { orderId } = await postSellNativeCurrencyOrder(
         orderBookApi,
         signer,
         appData,

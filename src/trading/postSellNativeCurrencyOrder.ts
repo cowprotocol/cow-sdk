@@ -6,7 +6,7 @@ import { log } from './consts'
 import { OrderBookApi } from '../order-book'
 import { getEthFlowTransaction } from './getEthFlowTransaction'
 
-export async function postSellNativeCurrencyTrade(
+export async function postSellNativeCurrencyOrder(
   orderBookApi: OrderBookApi,
   signer: Signer,
   appData: Pick<AppDataInfo, 'fullAppData' | 'appDataKeccak256'>,
