@@ -1,0 +1,41 @@
+#layout {
+  margin: 0 auto;
+}
+
+#layout td {
+  vertical-align: top;
+}
+
+#form {
+  min-width: 400px;
+}
+
+#form > div {
+  border: 1px solid #d4d9de;
+  margin: 10px;
+  padding: 10px;
+}
+
+#form input, #form select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#form button {
+  background: #282c34;
+  color: #fff;
+  font-size: 18px;
+  padding: 5px 10px;
+  cursor: pointer;
+  border: 0;
+  border-radius: 4px;
+}
+
+#results {
+  min-height: 400px;
+  min-width: 600px;
+}
+
+#sendOrder {
+  display: none;
+}

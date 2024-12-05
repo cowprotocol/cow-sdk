@@ -2,7 +2,7 @@ name: Unit tests & Coverage
 on: [push, pull_request]
 
 env:
-  NODE_VERSION: lts/gallium
+  NODE_VERSION: lts/hydrogen
   COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
 jobs:
