@@ -72,7 +72,7 @@ export const ETH_FLOW_ADDRESSES: Record<SupportedChainId, string> = {
   [SupportedChainId.GNOSIS_CHAIN]: '0x40A50cf069e992AA4536211B23F286eF88752187',
   [SupportedChainId.ARBITRUM_ONE]: '0x552fcecc218158fff20e505c8f3ad24f8e1dd33c',
   [SupportedChainId.SEPOLIA]: '0x0b7795E18767259CC253a2dF471db34c72B49516',
-  [SupportedChainId.BASE]: '0x40A50cf069e992AA4536211B23F286eF88752187',
+  [SupportedChainId.BASE]: '0x3d1b389f1707DB3d4c5344d5669DBda6b5D6Ab51',
 }
 
 export const BARN_ETH_FLOW_ADDRESSES: Record<SupportedChainId, string> = {
@@ -80,7 +80,7 @@ export const BARN_ETH_FLOW_ADDRESSES: Record<SupportedChainId, string> = {
   [SupportedChainId.GNOSIS_CHAIN]: '0xD02De8Da0B71E1B59489794F423FaBBa2AdC4d93',
   [SupportedChainId.ARBITRUM_ONE]: '0x6dfe75b5ddce1ade279d4fa6bd6aef3cbb6f49db',
   [SupportedChainId.SEPOLIA]: '0x2671994c7D224ac4799ac2cf6Ef9EF187d42C69f',
-  [SupportedChainId.BASE]: '0xD02De8Da0B71E1B59489794F423FaBBa2AdC4d93',
+  [SupportedChainId.BASE]: '0x3C3eA1829891BC9bEC3d06A81d5d169e52a415e3',
 }
 
 export const MAX_VALID_TO_EPOCH = 4294967295 // Max uint32 (Feb 07 2106 07:28:15 GMT+0100)
