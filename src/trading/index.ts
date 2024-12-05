@@ -9,7 +9,7 @@ export { postSwapOrder, postSwapOrderFromQuote } from './postSwapOrder'
 export { postLimitOrder } from './postLimitOrder'
 export { postCoWProtocolTrade } from './postCoWProtocolTrade'
 export { getOrderToSign } from './getOrderToSign'
-export { postOnChainTrade } from './postOnChainTrade'
+export { postSellNativeCurrencyTrade } from './postSellNativeCurrencyTrade'
 export { getEthFlowTransaction } from './getEthFlowTransaction'
 export { getPreSignTransaction } from './getPreSignTransaction'
 

@@ -9,7 +9,7 @@ import {
 import { postSwapOrder, postSwapOrderFromQuote } from './postSwapOrder'
 import { postLimitOrder } from './postLimitOrder'
 import { getQuoteWithSigner } from './getQuote'
-import { postOnChainTrade } from './postOnChainTrade'
+import { postSellNativeCurrencyTrade } from './postSellNativeCurrencyTrade'
 import { swapParamsToLimitOrderParams } from './utils'
 
 export class TradingSdk {
@@ -23,14 +23,14 @@ export class TradingSdk {
     return postLimitOrder(this.mergeParams(params), advancedSettings)
   }
 
-  async postOnChainTrade(
+  async postSellNativeCurrencyTrade(
     params: TradeParameters,
     advancedSettings?: SwapAdvancedSettings
-  ): Promise<ReturnType<typeof postOnChainTrade>> {
+  ): Promise<ReturnType<typeof postSellNativeCurrencyTrade>> {
     const quoteResults = await getQuoteWithSigner(this.mergeParams(params), advancedSettings)
 
     const { tradeParameters, quoteResponse, amountsAndCosts } = quoteResults.result
-    return postOnChainTrade(
+    return postSellNativeCurrencyTrade(
       quoteResults.orderBookApi,
       quoteResults.result.signer,
       quoteResults.result.appDataInfo,

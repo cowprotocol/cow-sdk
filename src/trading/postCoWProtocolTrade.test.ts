@@ -20,13 +20,13 @@ jest.mock('../order-signing', () => {
   }
 })
 
-jest.mock('./postOnChainTrade', () => {
+jest.mock('./postSellNativeCurrencyTrade', () => {
   return {
-    postOnChainTrade: jest.fn(),
+    postSellNativeCurrencyTrade: jest.fn(),
   }
 })
 
-import { postOnChainTrade } from './postOnChainTrade'
+import { postSellNativeCurrencyTrade } from './postSellNativeCurrencyTrade'
 
 import { AppDataInfo, LimitOrderParameters } from './types'
 import { ETH_ADDRESS, SupportedChainId } from '../common'
@@ -68,11 +68,11 @@ const appDataMock = {
 
 describe('postCoWProtocolTrade', () => {
   let signOrderMock: jest.SpyInstance
-  let postOnChainTradeMock: jest.SpyInstance
+  let postSellNativeCurrencyTradeMock: jest.SpyInstance
 
   beforeAll(() => {
     signOrderMock = OrderSigningUtilsMock.signOrder as unknown as jest.SpyInstance
-    postOnChainTradeMock = postOnChainTrade as unknown as jest.SpyInstance
+    postSellNativeCurrencyTradeMock = postSellNativeCurrencyTrade as unknown as jest.SpyInstance
   })
 
   beforeEach(() => {
@@ -82,18 +82,18 @@ describe('postCoWProtocolTrade', () => {
 
   afterEach(() => {
     signOrderMock.mockReset()
-    postOnChainTradeMock.mockReset()
+    postSellNativeCurrencyTradeMock.mockReset()
     sendOrderMock.mockReset()
   })
 
   it('When sell token is native, then should post on-chain order', async () => {
-    postOnChainTradeMock.mockResolvedValue({ orderId: '0x01' })
+    postSellNativeCurrencyTradeMock.mockResolvedValue({ orderId: '0x01' })
 
     const order = { ...defaultOrderParams, sellToken: ETH_ADDRESS }
     await postCoWProtocolTrade(orderBookApiMock, signer, appDataMock, order)
 
-    expect(postOnChainTradeMock).toHaveBeenCalledTimes(1)
-    expect(postOnChainTradeMock).toHaveBeenCalledWith(orderBookApiMock, signer, appDataMock, order, '0')
+    expect(postSellNativeCurrencyTradeMock).toHaveBeenCalledTimes(1)
+    expect(postSellNativeCurrencyTradeMock).toHaveBeenCalledWith(orderBookApiMock, signer, appDataMock, order, '0')
   })
 
   it('API request should contain all specified parameters', async () => {

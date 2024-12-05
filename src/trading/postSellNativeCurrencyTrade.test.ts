@@ -1,4 +1,9 @@
 import { EthFlow__factory } from '../common/generated'
+import { VoidSigner } from '@ethersproject/abstract-signer'
+import { AppDataInfo, LimitOrderParameters } from './types'
+import { SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '../common'
+import { OrderBookApi, OrderKind } from '../order-book'
+import { postSellNativeCurrencyTrade } from './postSellNativeCurrencyTrade'
 
 jest.mock('cross-fetch', () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -23,13 +28,7 @@ jest.mock('../common/generated', () => {
   }
 })
 
-import { VoidSigner } from '@ethersproject/abstract-signer'
-import { AppDataInfo, LimitOrderParameters } from './types'
-import { SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '../common'
-import { OrderBookApi, OrderKind } from '../order-book'
-import { postOnChainTrade } from './postOnChainTrade'
-
-const defaultOrderParams: LimitOrderParameters = {
+const defaultOrderParams: LimitOrderParameters & { quoteId: number } = {
   chainId: SupportedChainId.GNOSIS_CHAIN,
   signer: '1bb337bafb276f779c3035874b8914e4b851bb989dbb34e776397076576f3804',
   appCode: '0x007',
@@ -72,7 +71,7 @@ const ethFlowContractMock = {
   },
 }
 
-describe('postOnChainTrade', () => {
+describe('postSellNativeCurrencyTrade', () => {
   beforeAll(() => {
     ethFlowContractFactoryMock = EthFlow__factory.connect as unknown as jest.SpyInstance
   })
@@ -98,13 +97,20 @@ describe('postOnChainTrade', () => {
   it('Should call checkEthFlowOrderExists if it is set', async () => {
     const checkEthFlowOrderExists = jest.fn().mockResolvedValue(false)
 
-    await postOnChainTrade(orderBookApiMock, signer, appDataMock, defaultOrderParams, '0', checkEthFlowOrderExists)
+    await postSellNativeCurrencyTrade(
+      orderBookApiMock,
+      signer,
+      appDataMock,
+      defaultOrderParams,
+      '0',
+      checkEthFlowOrderExists
+    )
 
     expect(checkEthFlowOrderExists).toHaveBeenCalledTimes(1)
   })
 
   it('Should upload appData', async () => {
-    await postOnChainTrade(orderBookApiMock, signer, appDataMock, defaultOrderParams)
+    await postSellNativeCurrencyTrade(orderBookApiMock, signer, appDataMock, defaultOrderParams)
 
     expect(uploadAppDataMock).toHaveBeenCalledWith(appDataMock.appDataKeccak256, appDataMock.fullAppData)
   })
@@ -112,7 +118,7 @@ describe('postOnChainTrade', () => {
   it('When transaction gas estimation is failed, then should use fallback value + 20%', async () => {
     ethFlowContractMock.estimateGas.createOrder.mockRejectedValue(new Error('Estimation failed'))
 
-    await postOnChainTrade(orderBookApiMock, signer, appDataMock, defaultOrderParams)
+    await postSellNativeCurrencyTrade(orderBookApiMock, signer, appDataMock, defaultOrderParams)
 
     const call = (signer.sendTransaction as jest.Mock).mock.calls[0][0]
 
@@ -120,7 +126,7 @@ describe('postOnChainTrade', () => {
   })
 
   it('Should create an on-chain transaction with all specified parameters', async () => {
-    await postOnChainTrade(orderBookApiMock, signer, appDataMock, defaultOrderParams)
+    await postSellNativeCurrencyTrade(orderBookApiMock, signer, appDataMock, defaultOrderParams)
 
     expect(ethFlowContractMock.interface.encodeFunctionData).toHaveBeenCalledTimes(1)
     expect(ethFlowContractMock.interface.encodeFunctionData).toHaveBeenCalledWith('createOrder', [
