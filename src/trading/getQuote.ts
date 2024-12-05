@@ -24,6 +24,16 @@ import { Signer } from 'ethers'
 import { WRAPPED_NATIVE_CURRENCIES } from '../common'
 import { getOrderTypedData } from './getOrderTypedData'
 
+// ETH-FLOW orders require different quote params
+// check the isEthFlow flag and set in quote req obj
+const ETH_FLOW_AUX_QUOTE_PARAMS = {
+  signingScheme: SigningScheme.EIP1271,
+  onchainOrder: true,
+  // Ethflow orders are subsidized in the backend.
+  // This means we can assume the verification gas costs are zero for the quote/fee estimation
+  verificationGasLimit: 0,
+}
+
 export type QuoteResultsWithSigner = { result: QuoteResults & { signer: Signer }; orderBookApi: OrderBookApi }
 
 export async function getQuote(
@@ -33,8 +43,9 @@ export async function getQuote(
   _orderBookApi?: OrderBookApi
 ): Promise<{ result: QuoteResults; orderBookApi: OrderBookApi }> {
   const { appCode, chainId, account: from } = trader
+  const isEthFlow = getIsEthFlowOrder(_tradeParameters)
 
-  const tradeParameters = getIsEthFlowOrder(_tradeParameters)
+  const tradeParameters = isEthFlow
     ? {
         ..._tradeParameters,
         sellToken: WRAPPED_NATIVE_CURRENCIES[chainId],
@@ -84,6 +95,7 @@ export async function getQuote(
     appDataHash: appDataKeccak256,
     priceQuality: PriceQuality.OPTIMAL, // Do not change this parameter because we rely on the fact that quote has id
     signingScheme: SigningScheme.EIP712,
+    ...(isEthFlow ? ETH_FLOW_AUX_QUOTE_PARAMS : {}),
     ...(isSell
       ? { kind: OrderQuoteSideKindSell.SELL, sellAmountBeforeFee: amount }
       : { kind: OrderQuoteSideKindBuy.BUY, buyAmountAfterFee: amount }),
