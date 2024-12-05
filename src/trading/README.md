@@ -223,6 +223,49 @@ const orderId = await sdk.postSellNativeCurrencyTrade(parameters)
 console.log('Order created, id: ', orderId)
 ```
 
+### Optional parameters
+
+Both `postSwapOrder` and `postLimitOrder` functions have optional parameters.
+See `TradeOptionalParameters` type for more details.
+
+| **Parameter**        | **Type**        | **Default Value** | **Description**                                                                                                                                                 |
+|-----------------------|-----------------|-------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `env`                | `Env`          | `prod`            | The environment to use (`prod` or `staging`).                                                                                                                   |
+| `partiallyFillable`  | `boolean`      | `false`           | Indicates whether the order is fill-or-kill or partially fillable.                                                                                              |
+| `slippageBps`        | `number`       | 0                 | Slippage tolerance applied to the order to get the limit price. Expressed in Basis Points (BPS). One basis point is equivalent to 0.01% (1/100th of a percent). |
+| `receiver`           | `string`       | order creator     | The address that will receive the order's tokens.                                                                                                               |
+| `validFor`           | `number`       | 10 mins           | The order expiration time in seconds.                                                                                                                           |
+| `partnerFee`         | `PartnerFee`   | -                 | Partners of the protocol can specify their fee for the order, including the fee in basis points (BPS) and the fee recipient address. [Read more](https://docs.cow.fi/governance/fees/partner-fee)                  |
+
+##### Example
+
+```typescript
+import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  signer: '<privateKeyOrEthersSigner>',
+  appCode: '<YOUR_APP_CODE>',
+})
+
+const parameters: TradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000',
+  // Optional parameters
+  slippageBps: 200, // 2%
+  validFor: 1200, // 20 mins
+  receiver: '0xdef1ca1fb7f1232777520aa7f396b4e015f497ab' // Just a random address, don't use it!
+}
+
+const orderId = await sdk.postSwapOrder(parameters)
+
+console.log('Order created, id: ', orderId)
+```
+
 ### Advanced swap order creation
 
 By default, the SDK requires only the basic parameters to create an order.
