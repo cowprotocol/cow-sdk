@@ -49,7 +49,7 @@ describe('getPreSignTransaction', () => {
     const result = await getPreSignTransaction(signer, chainId, account, orderId)
     const gasNum = +GAS
 
-    expect(+result.gas).toBe(gasNum + gasNum * 0.2)
+    expect(+result.gas).toBe(gasNum * 1.2)
   })
 
   it('Tx value should always be zero', async () => {

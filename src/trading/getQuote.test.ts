@@ -139,10 +139,10 @@ describe('getQuoteToSign', () => {
   describe('Amounts and costs', () => {
     it('Should take slippage value into account', async () => {
       const { result } = await getQuoteWithSigner({ ...defaultOrderParams, slippageBps: 20 }, {}, orderBookApiMock)
-      const buyAmount = quoteResponseMock.quote.buyAmount
+      const buyAmount = +quoteResponseMock.quote.buyAmount
 
       expect(+result.amountsAndCosts.afterSlippage.buyAmount.toString()).toBe(
-        +buyAmount - (+buyAmount * 20) / (100 * 100)
+        buyAmount - (buyAmount * 20) / (100 * 100)
       )
     })
     it('Should calculate network costs based on quote API response', async () => {
