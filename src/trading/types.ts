@@ -95,8 +95,12 @@ export interface LimitTradeParameters extends Omit<TradeParameters, 'amount'> {
   /**
    * Id of the quote to be used for the limit order.
    */
-  quoteId: number
+  quoteId?: number
   validTo?: OrderParameters['validTo']
+}
+
+export interface LimitTradeParametersFromQuote extends LimitTradeParameters {
+  quoteId: number
 }
 
 export interface LimitOrderParameters extends TraderParameters, LimitTradeParameters {}

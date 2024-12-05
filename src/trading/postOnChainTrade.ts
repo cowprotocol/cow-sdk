@@ -1,5 +1,5 @@
 import { Signer } from 'ethers'
-import { AppDataInfo, LimitTradeParameters } from './types'
+import { AppDataInfo, LimitTradeParametersFromQuote } from './types'
 import { EthFlowOrderExistsCallback } from './calculateUniqueOrderId'
 
 import { log } from './consts'
@@ -10,7 +10,7 @@ export async function postOnChainTrade(
   orderBookApi: OrderBookApi,
   signer: Signer,
   appData: Pick<AppDataInfo, 'fullAppData' | 'appDataKeccak256'>,
-  _params: LimitTradeParameters,
+  _params: LimitTradeParametersFromQuote,
   networkCostsAmount = '0',
   checkEthFlowOrderExists?: EthFlowOrderExistsCallback
 ): Promise<{ txHash: string; orderId: string }> {

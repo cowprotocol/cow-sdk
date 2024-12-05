@@ -142,7 +142,7 @@ if (confirm(`You will get at least: ${buyAmount}, ok?`)) {
 
 ### postLimitOrder
 
-This function is simpler than the `postSwapOrder` function, because it doesn't require a quote.
+This main difference between this function and `postSwapOrder` is that here you need to specify both sell and buy amounts.
 
 You need to provide the following parameters:
  - `kind` - the order kind (sell/buy)
@@ -152,6 +152,10 @@ You need to provide the following parameters:
  - `buyTokenDecimals` - the buy token decimals
  - `sellAmount` - the amount to sell in atoms
  - `buyAmount` - the amount to buy in atoms
+
+And optional parameters:
+ - `quoteId` - id of the quote from the quote API (see getQuote function)
+ - `validTo` - the order expiration time in seconds
 
 ```typescript
 import {

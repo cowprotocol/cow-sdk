@@ -1,5 +1,5 @@
 import { Signer } from 'ethers'
-import { LimitTradeParameters, TransactionParams } from './types'
+import { LimitTradeParametersFromQuote, TransactionParams } from './types'
 import { calculateUniqueOrderId, EthFlowOrderExistsCallback } from './calculateUniqueOrderId'
 import { getOrderToSign } from './getOrderToSign'
 import { type EthFlow, EthFlow__factory } from '../common/generated'
@@ -17,7 +17,7 @@ import { calculateGasMargin } from './utils'
 export async function getEthFlowTransaction(
   signer: Signer,
   appDataKeccak256: string,
-  _params: LimitTradeParameters,
+  _params: LimitTradeParametersFromQuote,
   networkCostsAmount = '0',
   checkEthFlowOrderExists?: EthFlowOrderExistsCallback
 ): Promise<{ orderId: string; transaction: TransactionParams }> {

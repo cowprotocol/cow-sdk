@@ -15,9 +15,21 @@ export async function postCoWProtocolTrade(
   networkCostsAmount = '0'
 ): Promise<string> {
   if (getIsEthFlowOrder(params)) {
-    const { orderId } = await postOnChainTrade(orderBookApi, signer, appData, params, networkCostsAmount)
+    const quoteId = params.quoteId
 
-    return orderId
+    if (typeof quoteId === 'number') {
+      const { orderId } = await postOnChainTrade(
+        orderBookApi,
+        signer,
+        appData,
+        { ...params, quoteId },
+        networkCostsAmount
+      )
+
+      return orderId
+    } else {
+      throw new Error('quoteId is required for EthFlow orders')
+    }
   }
 
   const { quoteId = null } = params

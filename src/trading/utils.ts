@@ -1,4 +1,4 @@
-import { AccountAddress, LimitTradeParameters, PrivateKey, TradeParameters } from './types'
+import { LimitTradeParametersFromQuote, PrivateKey, TradeParameters } from './types'
 import { QuoteAmountsAndCosts } from '../order-book'
 import { ETH_ADDRESS } from '../common'
 import { ethers, Signer } from 'ethers'
@@ -8,7 +8,7 @@ export function swapParamsToLimitOrderParams(
   params: TradeParameters,
   quoteId: number,
   amounts: QuoteAmountsAndCosts
-): LimitTradeParameters {
+): LimitTradeParametersFromQuote {
   return {
     ...params,
     sellAmount: amounts.afterSlippage.sellAmount.toString(),
@@ -31,10 +31,6 @@ export function getSigner(signer: Signer | ExternalProvider | PrivateKey): Signe
   }
 
   return signer as Signer
-}
-
-export function isAccountAddress(address: unknown): address is AccountAddress {
-  return typeof address === 'string' && /^0x[0-9a-fA-F]{40}$/.test(address)
 }
 
 /**

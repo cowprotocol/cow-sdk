@@ -247,12 +247,12 @@ export async function generateOrderId(
   params: Pick<OrderUidParams, 'owner'>
 ): Promise<{ orderId: string; orderDigest: string }> {
   const domain = await getDomain(chainId)
-  // Different validTo when signing because EthFlow contract expects it to be max for all orders
   const orderDigest = hashOrder(domain, order)
   // Generate the orderId from owner, orderDigest, and max validTo
   const orderId = packOrderUidParams({
     ...params,
     orderDigest,
+    // Different validTo when signing because EthFlow contract expects it to be max for all orders
     validTo: order.validTo,
   })
 
