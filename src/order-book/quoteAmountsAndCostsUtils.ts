@@ -16,7 +16,7 @@ export function getQuoteAmountsAndCosts(params: Params): QuoteAmountsAndCosts {
   const partnerFeeBps = params.partnerFeeBps ?? 0
   const isSell = orderParams.kind === OrderKind.SELL
   /**
-   * Wrap raw values into CurrencyAmount objects
+   * Wrap raw values into bigNumbers
    * We also make amounts names more specific with "beforeNetworkCosts" and "afterNetworkCosts" suffixes
    */
   const networkCostAmount = getBigNumber(orderParams.feeAmount, sellDecimals)

@@ -15,7 +15,7 @@ import { CowError } from '../common/cow-error'
 import { OrderBookApi } from './api'
 import { BuyTokenDestination, EcdsaSigningScheme, OrderKind, SellTokenSource, SigningScheme } from './generated'
 import { SupportedChainId } from '../common/chains'
-import { BUY_ETH_ADDRESS } from '../common/consts'
+import { ETH_ADDRESS } from '../common/consts'
 import { AUCTION } from './mock'
 
 enableFetchMocks()
@@ -534,7 +534,7 @@ describe('CoW Api', () => {
       // then
       expect(order?.owner).toEqual(order?.onchainUser)
       expect(order?.validTo).toEqual(order?.ethflowData?.userValidTo)
-      expect(order?.sellToken).toEqual(BUY_ETH_ADDRESS)
+      expect(order?.sellToken).toEqual(ETH_ADDRESS)
     })
 
     test('getOrders', async () => {
@@ -553,7 +553,7 @@ describe('CoW Api', () => {
       // eth flow order
       expect(orders[0].owner).toEqual(orders[0].onchainUser)
       expect(orders[0].validTo).toEqual(orders[0].ethflowData?.userValidTo)
-      expect(orders[0].sellToken).toEqual(BUY_ETH_ADDRESS)
+      expect(orders[0].sellToken).toEqual(ETH_ADDRESS)
       // regular order
       expect(orders[1].owner).toEqual(ORDER_RESPONSE.owner)
       expect(orders[1].validTo).toEqual(ORDER_RESPONSE.validTo)
@@ -573,7 +573,7 @@ describe('CoW Api', () => {
       // eth flow order
       expect(txOrders[0].owner).toEqual(txOrders[0].onchainUser)
       expect(txOrders[0].validTo).toEqual(txOrders[0].ethflowData?.userValidTo)
-      expect(txOrders[0].sellToken).toEqual(BUY_ETH_ADDRESS)
+      expect(txOrders[0].sellToken).toEqual(ETH_ADDRESS)
       // regular order
       expect(txOrders[1].owner).toEqual(ORDER_RESPONSE.owner)
       expect(txOrders[1].validTo).toEqual(ORDER_RESPONSE.validTo)
