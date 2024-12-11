@@ -184,6 +184,52 @@ const { quoteResults } = await sdk.getQuote(parameters)
 console.log('Quote:', quoteResults)
 ````
 
+### Create an order with smart-contract wallet
+
+If you want to create an order with a smart-contract wallet, you should specify the `signingScheme` parameter in the `postSwapOrder` function.
+And then you need to send a transaction from `getPreSignTransaction` result in order to sign the order.
+
+#### Example
+
+```typescript
+import {
+  SupportedChainId,
+  OrderKind,
+  TradeParameters,
+  TradingSdk
+} from '@cowprotocol/cow-sdk'
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  signer: '<privateKeyOrEthersSigner>',
+  appCode: '<YOUR_APP_CODE>',
+})
+
+const parameters: TradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000'
+}
+
+const advancedParameters: SwapAdvancedSettings = {
+  quoteRequest: {
+    // Specify the signing scheme
+    signingScheme: SigningScheme.PRESIGN
+  }
+}
+
+const smartContractWalletAddress = '0x<smartContractWalletAddress>'
+const orderId = await sdk.postSwapOrder(parameters, advancedParameters)
+const preSignTransaction = await sdk.getPreSignTransaction({ orderId, account: smartContractWalletAddress })
+
+console.log('Order created with "pre-sign" state, id: ', orderId)
+console.log('Execute the transaction to sign the order', preSignTransaction)
+```
+
+
 ### postLimitOrder
 
 This main difference between this function and `postSwapOrder` is that here you need to specify both sell and buy amounts.
