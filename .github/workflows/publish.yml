@@ -5,7 +5,7 @@ on:
     types: [published]
 
 env:
-  NODE_VERSION: lts/gallium
+  NODE_VERSION: lts/hydrogen
 
 jobs:
   deploy:

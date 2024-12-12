@@ -1,4 +1,4 @@
-import { BUY_ETH_ADDRESS } from '../common/consts'
+import { ETH_ADDRESS } from '../common/consts'
 import { Order } from './generated'
 import { EnrichedOrder } from './types'
 
@@ -58,7 +58,7 @@ function transformEthFlowOrder(order: EnrichedOrder): EnrichedOrder {
 
   const { userValidTo: validTo } = ethflowData
   const owner = order.onchainUser || order.owner
-  const sellToken = BUY_ETH_ADDRESS
+  const sellToken = ETH_ADDRESS
 
   return { ...order, validTo, owner, sellToken }
 }

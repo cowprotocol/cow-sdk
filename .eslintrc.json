@@ -22,5 +22,5 @@
     ]
   },
 
-  "ignorePatterns": ["dist", "node_modules", "src/subgraph/graphql.ts", "examples"]
+  "ignorePatterns": ["dist", "node_modules", "src/subgraph/graphql.ts", "examples", "schemas"]
 }
