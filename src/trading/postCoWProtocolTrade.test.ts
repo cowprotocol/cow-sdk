@@ -20,10 +20,11 @@ jest.mock('../order-signing', () => {
 
 jest.mock('./postSellNativeCurrencyOrder', () => {
   return {
-    postSellNativeCurrencyTrade: jest.fn(),
+    postSellNativeCurrencyOrder: jest.fn(),
   }
 })
 
+import { postCoWProtocolTrade } from './postCoWProtocolTrade'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 
 import { AppDataInfo, LimitOrderParameters } from './types'
@@ -31,8 +32,6 @@ import { ETH_ADDRESS, SupportedChainId } from '../common'
 import { OrderBookApi, OrderKind } from '../order-book'
 import { OrderSigningUtils as OrderSigningUtilsMock } from '../order-signing'
 import { VoidSigner } from '@ethersproject/abstract-signer'
-
-const quoteId = 31
 
 const defaultOrderParams: LimitOrderParameters = {
   chainId: SupportedChainId.GNOSIS_CHAIN,
@@ -45,7 +44,7 @@ const defaultOrderParams: LimitOrderParameters = {
   sellAmount: '1000000000000000000',
   buyAmount: '2000000000000000000',
   kind: OrderKind.SELL,
-  quoteId,
+  quoteId: 31,
   slippageBps: 50,
 }
 
@@ -66,13 +65,13 @@ const appDataMock = {
     '{\\"appCode\\":\\"CoW Swap\\",\\"environment\\":\\"barn\\",\\"metadata\\":{\\"orderClass\\":{\\"orderClass\\":\\"market\\"},\\"quote\\":{\\"slippageBips\\":201,\\"smartSlippage\\":true}},\\"version\\":\\"1.3.0\\"}',
 } as unknown as AppDataInfo
 
-describe('postSellNativeCurrencyOrder', () => {
+describe('postCoWProtocolTrade', () => {
   let signOrderMock: jest.SpyInstance
-  let postSellNativeCurrencyTradeMock: jest.SpyInstance
+  let postSellNativeCurrencyOrderMock: jest.SpyInstance
 
   beforeAll(() => {
     signOrderMock = OrderSigningUtilsMock.signOrder as unknown as jest.SpyInstance
-    postSellNativeCurrencyTradeMock = postSellNativeCurrencyOrder as unknown as jest.SpyInstance
+    postSellNativeCurrencyOrderMock = postSellNativeCurrencyOrder as unknown as jest.SpyInstance
   })
 
   beforeEach(() => {
@@ -82,25 +81,25 @@ describe('postSellNativeCurrencyOrder', () => {
 
   afterEach(() => {
     signOrderMock.mockReset()
-    postSellNativeCurrencyTradeMock.mockReset()
+    postSellNativeCurrencyOrderMock.mockReset()
     sendOrderMock.mockReset()
   })
 
   it('When sell token is native, then should post on-chain order', async () => {
-    postSellNativeCurrencyTradeMock.mockResolvedValue({ orderId: '0x01' })
+    postSellNativeCurrencyOrderMock.mockResolvedValue({ orderId: '0x01' })
 
-    const order = { ...defaultOrderParams, sellToken: ETH_ADDRESS, quoteId }
-    await postSellNativeCurrencyOrder(orderBookApiMock, signer, appDataMock, order)
+    const order = { ...defaultOrderParams, sellToken: ETH_ADDRESS }
+    await postCoWProtocolTrade(orderBookApiMock, signer, appDataMock, order)
 
-    expect(postSellNativeCurrencyTradeMock).toHaveBeenCalledTimes(1)
-    expect(postSellNativeCurrencyTradeMock).toHaveBeenCalledWith(orderBookApiMock, signer, appDataMock, order, '0')
+    expect(postSellNativeCurrencyOrderMock).toHaveBeenCalledTimes(1)
+    expect(postSellNativeCurrencyOrderMock).toHaveBeenCalledWith(orderBookApiMock, signer, appDataMock, order, '0')
   })
 
   it('API request should contain all specified parameters', async () => {
     sendOrderMock.mockResolvedValue('0x02')
 
-    const order = { ...defaultOrderParams, quoteId }
-    await postSellNativeCurrencyOrder(orderBookApiMock, signer, appDataMock, order)
+    const order = { ...defaultOrderParams }
+    await postCoWProtocolTrade(orderBookApiMock, signer, appDataMock, order)
 
     const callBody = sendOrderMock.mock.calls[0][0]
 
