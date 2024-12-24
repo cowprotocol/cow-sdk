@@ -22,7 +22,50 @@
 yarn add @cowprotocol/cow-sdk
 ```
 
-### Content
+## [Trading SDK](./src/trading/README.md)
+
+CoW Protocol is intent based, decentralized trading protocol that allows users to trade ERC-20 tokens.
+
+The basic swap flow:
+1. 🔎 Get a quote (price) for a trade (_or define your own price with a limit order_)
+2. ✍️ Sign the order
+3. ✅ Post the order to the order-book
+
+The easiest way to start trading is to use the `TradingSdk`:
+
+```typescript
+import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
+
+// Initialize the SDK
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  signer: '<privateKeyOrEthersSigner>',
+  appCode: '<YOUR_APP_CODE>',
+})
+
+// Define trade parameters
+const parameters: TradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000'
+}
+
+// Post the order
+const orderId = await sdk.postSwapOrder(parameters)
+
+console.log('Order created, id: ', orderId)
+```
+
+This example is the simplest way to trade on CoW Protocol.
+
+You might want to use more advanced parameters like `receiver`, `partiallyFillable`, `validTo` and others.
+Check the [Trading SDK documentation](./src/trading/README.md) for more details.
+
+
+## Other utilities
 
 - `OrderBookApi` - provides the ability to retrieve orders and trades from the CoW Protocol order-book, as well as add and cancel them
 - `OrderSigningUtils` - serves to sign orders and cancel them using [EIP-712](https://eips.ethereum.org/EIPS/eip-712)
@@ -37,8 +80,6 @@ const orderBookApi = new OrderBookApi({ chainId })
 const subgraphApi = new SubgraphApi({ chainId })
 const orderSigningUtils = new OrderSigningUtils()
 ```
-
-## Quick start
 
 ### Sign, fetch, post and cancel order
 

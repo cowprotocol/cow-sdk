@@ -1,5 +1,12 @@
 # Trading SDK
 
+CoW Protocol is intent based, decentralized trading protocol that allows users to trade ERC-20 tokens.
+
+The basic swap flow:
+1. 🔎 Get a quote (price) for a trade
+2. ✍️ Sign the order
+3. ✅ Post the order to the order-book
+
 The CoW Protocol provides very flexible and powerful trading capabilities.
 However, this flexibility comes with a cost: the complexity of the protocol.
 This SDK serves to simplify the interaction with the CoW Protocol.
@@ -24,6 +31,10 @@ The SDK provides three main functions:
  - `postSwapOrder` - get quote with market price and create a swap order
  - `postLimitOrder` - create a limit order
  - `getQuote` - fetch a quote for a swap order
+
+And two for specific cases:
+ - `postSellNativeCurrencyOrder` - create an order to sell blockchain native tokens (ETH for Ethereum)
+ - `getPreSignTransaction` - get a transaction to sign the order with a smart-contract wallet (EIP-1271)
 
 ### Initialization
 
