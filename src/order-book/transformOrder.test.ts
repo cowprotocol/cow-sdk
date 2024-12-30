@@ -28,29 +28,29 @@ const ORDER: Order = {
 
 describe('transformOrder', () => {
   describe('addTotalFeeToOrder', () => {
-    test('should use executedFeeAmount when executedSurplusFee is 0', () => {
-      const rawOrder = { ...ORDER, executedFeeAmount: '1', executedSurplusFee: '0' }
+    test('should use executedFeeAmount when executedFee is 0', () => {
+      const rawOrder = { ...ORDER, executedFeeAmount: '1', executedFee: '0' }
       const transformedOrder = transformOrder(rawOrder)
 
       expect(transformedOrder.totalFee).toEqual('1')
     })
 
-    test('should use executedSurplusFee when executedFeeAmount is 0', () => {
-      const rawOrder = { ...ORDER, executedFeeAmount: '0', executedSurplusFee: '1' }
+    test('should use executedFee when executedFeeAmount is 0', () => {
+      const rawOrder = { ...ORDER, executedFeeAmount: '0', executedFee: '1' }
       const transformedOrder = transformOrder(rawOrder)
 
       expect(transformedOrder.totalFee).toEqual('1')
     })
 
-    test('should use sum of executedFeeAmount and executedSurplusFee', () => {
-      const rawOrder = { ...ORDER, executedFeeAmount: '1', executedSurplusFee: '1' }
+    test('should use sum of executedFeeAmount and executedFee', () => {
+      const rawOrder = { ...ORDER, executedFeeAmount: '1', executedFee: '1' }
       const transformedOrder = transformOrder(rawOrder)
 
       expect(transformedOrder.totalFee).toEqual('2')
     })
 
-    test('should not fail when executedSurplusFee is falsy', () => {
-      const rawOrder = { ...ORDER, executedSurplusFee: null }
+    test('should not fail when executedFee is falsy', () => {
+      const rawOrder = { ...ORDER, executedFee: undefined }
       const transformedOrder = transformOrder(rawOrder)
 
       expect(transformedOrder.totalFee).toEqual('1234567890')
