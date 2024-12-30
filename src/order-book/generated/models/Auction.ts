@@ -17,19 +17,10 @@ export type Auction = {
      */
     id?: number;
     /**
-     * The block number for the auction. Orders and prices are guaranteed to be valid on this
-     * block. Proposed settlements should be valid for this block as well.
+     * The block number for the auction. Orders and prices are guaranteed to be valid on this block. Proposed settlements should be valid for this block as well.
      *
      */
     block?: number;
-    /**
-     * The latest block on which a settlement has been processed.
-     *
-     * **NOTE**: Under certain conditions it is possible for a settlement to have been mined as
-     * part of `block` but not have yet been processed.
-     *
-     */
-    latestSettlementBlock?: number;
     /**
      * The solvable orders included in the auction.
      *

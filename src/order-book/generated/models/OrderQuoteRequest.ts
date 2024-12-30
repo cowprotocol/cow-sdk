@@ -32,17 +32,22 @@ export type OrderQuoteRequest = (OrderQuoteSide & OrderQuoteValidity & {
     receiver?: Address | null;
     /**
      * AppData which will be assigned to the order.
-     * Expects either a string JSON doc as defined on [AppData](https://github.com/cowprotocol/app-data) or a
-     * hex encoded string for backwards compatibility.
-     * When the first format is used, it's possible to provide the derived appDataHash field.
      *
+     * Expects either a string JSON doc as defined on
+     * [AppData](https://github.com/cowprotocol/app-data) or a hex
+     * encoded string for backwards compatibility.
+     *
+     * When the first format is used, it's possible to provide the
+     * derived appDataHash field.
      */
     appData?: (AppData | AppDataHash);
     /**
      * The hash of the stringified JSON appData doc.
-     * If present, `appData` field must be set with the aforementioned data where this hash is derived from.
-     * In case they differ, the call will fail.
      *
+     * If present, `appData` field must be set with the aforementioned
+     * data where this hash is derived from.
+     *
+     * In case they differ, the call will fail.
      */
     appDataHash?: AppDataHash;
     sellTokenBalance?: SellTokenSource;
@@ -51,8 +56,7 @@ export type OrderQuoteRequest = (OrderQuoteSide & OrderQuoteValidity & {
     priceQuality?: PriceQuality;
     signingScheme?: SigningScheme;
     /**
-     * Flag to signal whether the order is intended for on-chain order placement. Only valid
-     * for non ECDSA-signed orders."
+     * Flag to signal whether the order is intended for on-chain order placement. Only valid for non ECDSA-signed orders."
      *
      */
     onchainOrder?: any;

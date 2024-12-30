@@ -63,30 +63,22 @@ export type OrderCreation = {
     signingScheme: SigningScheme;
     signature: Signature;
     /**
-     * If set, the backend enforces that this address matches what is decoded as the *signer* of
-     * the signature. This helps catch errors with invalid signature encodings as the backend
-     * might otherwise silently work with an unexpected address that for example does not have
-     * any balance.
+     * If set, the backend enforces that this address matches what is decoded as the *signer* of the signature. This helps catch errors with invalid signature encodings as the backend might otherwise silently work with an unexpected address that for example does not have any balance.
      *
      */
     from?: Address | null;
     /**
-     * Orders can optionally include a quote ID. This way the order can be linked to a quote
-     * and enable providing more metadata when analysing order slippage.
+     * Orders can optionally include a quote ID. This way the order can be linked to a quote and enable providing more metadata when analysing order slippage.
      *
      */
     quoteId?: number | null;
     /**
-     * This field comes in two forms for backward compatibility. The hash form will eventually
-     * stop being accepted.
+     * This field comes in two forms for backward compatibility. The hash form will eventually stop being accepted.
      *
      */
     appData: (AppData | AppDataHash);
     /**
-     * May be set for debugging purposes. If set, this field is compared to what the backend
-     * internally calculates as the app data hash based on the contents of `appData`. If the
-     * hash does not match, an error is returned. If this field is set, then `appData` **MUST** be
-     * a string encoding of a JSON object.
+     * May be set for debugging purposes. If set, this field is compared to what the backend internally calculates as the app data hash based on the contents of `appData`. If the hash does not match, an error is returned. If this field is set, then `appData` **MUST** be a string encoding of a JSON object.
      *
      */
     appDataHash?: AppDataHash | null;

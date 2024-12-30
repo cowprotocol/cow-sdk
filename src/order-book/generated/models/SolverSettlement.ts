@@ -12,8 +12,9 @@ export type SolverSettlement = {
     solver?: string;
     /**
      * The address used by the solver to execute the settlement on-chain.
-     * This field is missing for old settlements, the zero address has been used instead.
      *
+     * This field is missing for old settlements, the zero address has been
+     * used instead.
      */
     solverAddress?: string;
     objective?: {
@@ -44,5 +45,9 @@ export type SolverSettlement = {
         id?: UID;
         executedAmount?: BigUint;
     }>;
+    /**
+     * whether the solution is a winner (received the right to get executed) or not
+     */
+    isWinner?: boolean;
 };
 

@@ -20,8 +20,7 @@ export type OrderQuoteResponse = {
      */
     expiration: string;
     /**
-     * Quote ID linked to a quote to enable providing more metadata when analysing
-     * order slippage.
+     * Quote ID linked to a quote to enable providing more metadata when analysing order slippage.
      *
      */
     id?: number;
