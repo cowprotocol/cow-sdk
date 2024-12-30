@@ -8,13 +8,7 @@ import type { TokenAmount } from './TokenAmount';
 
 export type ExecutedProtocolFee = {
     policy?: FeePolicy;
-    /**
-     * Fee amount taken
-     */
     amount?: TokenAmount;
-    /**
-     * The token in which the fee is taken
-     */
     token?: Address;
 };
 

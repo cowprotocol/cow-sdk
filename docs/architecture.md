@@ -111,7 +111,7 @@ class OrderMetaData {
   + fullFeeAmount?: TokenAmount;
   + isLiquidityOrder?: boolean;
   + onchainUser?: Address;
-  + executedSurplusFee?: BigUint | null;
+  + executedFee?: BigUint | null;
 }
 
 class OrderStatus {

@@ -23,8 +23,7 @@ export type OrderParameters = {
      */
     buyToken: Address;
     /**
-     * An optional Ethereum address to receive the proceeds of the trade instead
-     * of the owner (i.e. the order signer).
+     * An optional Ethereum address to receive the proceeds of the trade instead of the owner (i.e. the order signer).
      *
      */
     receiver?: Address | null;

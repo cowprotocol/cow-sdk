@@ -12,8 +12,7 @@ import type { TokenAmount } from './TokenAmount';
 export type OrderQuoteSide = ({
     kind: OrderQuoteSideKindSell;
     /**
-     * The total amount that is available for the order. From this value, the fee
-     * is deducted and the buy amount is calculated.
+     * The total amount that is available for the order. From this value, the fee is deducted and the buy amount is calculated.
      *
      */
     sellAmountBeforeFee: TokenAmount;

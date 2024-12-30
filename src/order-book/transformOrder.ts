@@ -16,10 +16,10 @@ export function transformOrder(order: Order): EnrichedOrder {
 /**
  * Add the total fee to the order.
  *
- * The total fee of the order will be represented by the `totalFee` field, which is the sum of `executedSurplusFee`
+ * The total fee of the order will be represented by the `totalFee` field, which is the sum of `executedFee`
  * and `executedFeeAmount`.
  *
- * Note that either `executedSurplusFee` or `executedFeeAmount` may be `0`, or both might have a non `0` value.
+ * Note that either `executedFee` or `executedFeeAmount` may be `0`, or both might have a non `0` value.
  *
  * See https://cowservices.slack.com/archives/C036G0J90BU/p1705322037866779?thread_ts=1705083817.684659&cid=C036G0J90BU
  *
@@ -27,12 +27,12 @@ export function transformOrder(order: Order): EnrichedOrder {
  * @returns The order with the total fee added.
  */
 function addTotalFeeToOrder(dto: Order): EnrichedOrder {
-  const { executedFeeAmount, executedSurplusFee } = dto
+  const { executedFeeAmount, executedFee } = dto
 
   const _executedFeeAmount = BigInt(executedFeeAmount || '0')
-  const _executedSurplusFee = BigInt(executedSurplusFee || '0')
+  const _executedFee = BigInt(executedFee || '0')
 
-  const totalFee = String(_executedFeeAmount + _executedSurplusFee)
+  const totalFee = String(_executedFeeAmount + _executedFee)
 
   return {
     ...dto,

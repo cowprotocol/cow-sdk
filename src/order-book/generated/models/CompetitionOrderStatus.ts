@@ -7,9 +7,11 @@ import type { ExecutedAmounts } from './ExecutedAmounts';
 export type CompetitionOrderStatus = {
     type: CompetitionOrderStatus.type;
     /**
-     * A list of solvers who participated in the latest competition, sorted by score in ascending order, where the last element is the winner.
-     * The presence of executed amounts defines whether the solver provided a solution for the desired order.
+     * A list of solvers who participated in the latest competition, sorted
+     * by score in ascending order, where the last element is the winner.
      *
+     * The presence of executed amounts defines whether the solver provided
+     * a solution for the desired order.
      */
     value?: Array<{
         /**
