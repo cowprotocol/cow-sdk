@@ -22,7 +22,7 @@
 yarn add @cowprotocol/cow-sdk
 ```
 
-## [Trading SDK](./src/trading/README.md)
+## [Trading SDK](src/trading/README.md)
 
 CoW Protocol is intent based, decentralized trading protocol that allows users to trade ERC-20 tokens.
 
