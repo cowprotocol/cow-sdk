@@ -22,7 +22,7 @@
 yarn add @cowprotocol/cow-sdk
 ```
 
-## [Trading SDK](./src/trading/README.md)
+## [Trading SDK](https://github.com/cowprotocol/cow-sdk/blob/main/src/trading/README.md)
 
 CoW Protocol is intent based, decentralized trading protocol that allows users to trade ERC-20 tokens.
 
@@ -62,7 +62,7 @@ console.log('Order created, id: ', orderId)
 This example is the simplest way to trade on CoW Protocol.
 
 You might want to use more advanced parameters like `receiver`, `partiallyFillable`, `validTo` and others.
-Check the [Trading SDK documentation](./src/trading/README.md) for more details.
+Check the [Trading SDK documentation](https://github.com/cowprotocol/cow-sdk/blob/main/src/trading/README.md) for more details.
 
 
 ## Other utilities
