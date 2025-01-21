@@ -57,6 +57,9 @@ signer.getChainId = jest.fn().mockResolvedValue(SupportedChainId.GNOSIS_CHAIN)
 
 const sendOrderMock = jest.fn()
 const orderBookApiMock = {
+  context: {
+    chainId: defaultOrderParams.chainId,
+  },
   sendOrder: sendOrderMock,
 } as unknown as OrderBookApi
 const appDataMock = {

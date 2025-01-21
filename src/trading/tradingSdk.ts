@@ -39,14 +39,14 @@ export class TradingSdk {
   ): Promise<ReturnType<typeof postSellNativeCurrencyOrder>> {
     const quoteResults = await getQuoteWithSigner(this.mergeParams(params), advancedSettings)
 
-    const { tradeParameters, quoteResponse, amountsAndCosts } = quoteResults.result
+    const { tradeParameters, quoteResponse } = quoteResults.result
     return postSellNativeCurrencyOrder(
       quoteResults.orderBookApi,
       quoteResults.result.signer,
       quoteResults.result.appDataInfo,
       // Quote response response always has an id
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      swapParamsToLimitOrderParams(tradeParameters, quoteResponse.id!, amountsAndCosts)
+      swapParamsToLimitOrderParams(tradeParameters, quoteResponse)
     )
   }
 
