@@ -10,14 +10,14 @@ export async function postSwapOrder(params: SwapParameters, advancedSettings?: S
 
 export async function postSwapOrderFromQuote({
   orderBookApi,
-  result: { signer, appDataInfo, quoteResponse, tradeParameters, amountsAndCosts },
+  result: { signer, appDataInfo, quoteResponse, tradeParameters },
 }: QuoteResultsWithSigner): Promise<string> {
   return postCoWProtocolTrade(
     orderBookApi,
     signer,
     appDataInfo,
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    swapParamsToLimitOrderParams(tradeParameters, quoteResponse.id!, amountsAndCosts),
+    swapParamsToLimitOrderParams(tradeParameters, quoteResponse),
     quoteResponse.quote.feeAmount
   )
 }

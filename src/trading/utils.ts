@@ -1,19 +1,19 @@
 import { LimitTradeParametersFromQuote, PrivateKey, TradeParameters } from './types'
-import { QuoteAmountsAndCosts } from '../order-book'
+import { OrderQuoteResponse, QuoteAmountsAndCosts } from '../order-book'
 import { ETH_ADDRESS } from '../common'
 import { ethers, Signer } from 'ethers'
 import { type ExternalProvider, Web3Provider } from '@ethersproject/providers'
 
 export function swapParamsToLimitOrderParams(
   params: TradeParameters,
-  quoteId: number,
-  amounts: QuoteAmountsAndCosts
+  quoteResponse: OrderQuoteResponse
 ): LimitTradeParametersFromQuote {
   return {
     ...params,
-    sellAmount: amounts.afterSlippage.sellAmount.toString(),
-    buyAmount: amounts.afterSlippage.buyAmount.toString(),
-    quoteId,
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    quoteId: quoteResponse.id!,
+    sellAmount: quoteResponse.quote.sellAmount,
+    buyAmount: quoteResponse.quote.buyAmount,
   }
 }
 
