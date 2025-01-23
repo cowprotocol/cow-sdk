@@ -79,6 +79,7 @@ export async function getQuote(
       slippageBps,
       orderClass: 'market',
       appCode,
+      partnerFee,
     },
     advancedSettings?.appData
   )
