@@ -10,7 +10,17 @@ export async function postLimitOrder(
   advancedSettings?: LimitOrderAdvancedSettings,
   _orderBookApi?: OrderBookApi
 ): Promise<string> {
-  const { appCode, chainId, sellToken, buyToken, sellAmount, buyAmount, slippageBps = 0, env = 'prod' } = params
+  const {
+    appCode,
+    chainId,
+    sellToken,
+    buyToken,
+    sellAmount,
+    buyAmount,
+    partnerFee,
+    slippageBps = 0,
+    env = 'prod',
+  } = params
 
   log(`Limit order ${sellAmount} ${sellToken} for ${buyAmount} ${buyToken} on chain ${chainId}`)
 
@@ -24,6 +34,7 @@ export async function postLimitOrder(
       slippageBps,
       orderClass: 'limit',
       appCode,
+      partnerFee,
     },
     advancedSettings?.appData
   )
