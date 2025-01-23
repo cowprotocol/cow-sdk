@@ -6,7 +6,7 @@ import {
   SwapParameters,
   TradeParameters,
 } from './types'
-import { DEFAULT_QUOTE_VALIDITY, log } from './consts'
+import { DEFAULT_QUOTE_VALIDITY, DEFAULT_SLIPPAGE_BPS, log } from './consts'
 
 import {
   getQuoteAmountsAndCosts,
@@ -61,7 +61,7 @@ export async function getQuote(
     kind,
     partnerFee,
     validFor = DEFAULT_QUOTE_VALIDITY,
-    slippageBps = 0,
+    slippageBps = DEFAULT_SLIPPAGE_BPS,
     env = 'prod',
   } = tradeParameters
 
