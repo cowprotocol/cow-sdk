@@ -1,4 +1,4 @@
-import { OrderBookApi, OrderCreation } from '../order-book'
+import { OrderBookApi, OrderCreation, SigningScheme } from '../order-book'
 import type { Signer } from 'ethers'
 import { AppDataInfo, LimitTradeParameters } from './types'
 import { log, SIGN_SCHEME_MAP } from './consts'
@@ -12,7 +12,8 @@ export async function postCoWProtocolTrade(
   signer: Signer,
   appData: AppDataInfo,
   params: LimitTradeParameters,
-  networkCostsAmount = '0'
+  networkCostsAmount = '0',
+  _signingScheme: SigningScheme = SigningScheme.EIP712
 ): Promise<string> {
   if (getIsEthFlowOrder(params)) {
     const quoteId = params.quoteId
@@ -37,18 +38,25 @@ export async function postCoWProtocolTrade(
 
   const chainId = orderBookApi.context.chainId
   const from = await signer.getAddress()
-
   const orderToSign = getOrderToSign({ from, networkCostsAmount }, params, appData.appDataKeccak256)
 
   log('Signing order...')
 
-  const { signature, signingScheme } = await OrderSigningUtils.signOrder(orderToSign, chainId, signer)
+  const { signature, signingScheme } = await (async () => {
+    if (_signingScheme === SigningScheme.PRESIGN) {
+      return { signature: from, signingScheme: SigningScheme.PRESIGN }
+    } else {
+      const signingResult = await OrderSigningUtils.signOrder(orderToSign, chainId, signer)
+
+      return { signature: signingResult.signature, signingScheme: SIGN_SCHEME_MAP[signingResult.signingScheme] }
+    }
+  })()
 
   const orderBody: OrderCreation = {
     ...orderToSign,
     from,
     signature,
-    signingScheme: SIGN_SCHEME_MAP[signingScheme],
+    signingScheme,
     quoteId,
     appData: fullAppData,
     appDataHash: appDataKeccak256,
