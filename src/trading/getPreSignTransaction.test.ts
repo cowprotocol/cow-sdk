@@ -45,11 +45,10 @@ describe('getPreSignTransaction', () => {
   signer.getChainId = jest.fn().mockResolvedValue(chainId)
   signer.getAddress = jest.fn().mockResolvedValue(account)
 
-  it('Should call gas estimation and return estimated value + 20%', async () => {
+  it('Gas limit should always be 50k', async () => {
     const result = await getPreSignTransaction(signer, chainId, account, orderId)
-    const gasNum = +GAS
 
-    expect(+result.gas).toBe(gasNum * 1.2)
+    expect(+result.gas).toBe(50_000)
   })
 
   it('Tx value should always be zero', async () => {
