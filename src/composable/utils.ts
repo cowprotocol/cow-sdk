@@ -5,7 +5,7 @@ import {
   SupportedChainId,
 } from '../common'
 import { ExtensibleFallbackHandler__factory } from '../common/generated'
-import { BlockInfo, ConditionalOrderParams } from './types'
+import { BlockInfo, ConditionalOrderParams, IsValid, IsValidResult } from './types'
 import { Order, OrderBalance, OrderKind } from '@cowprotocol/contracts'
 import { GPv2Order } from '../common/generated/ComposableCoW'
 
@@ -162,4 +162,8 @@ export function fromStructToOrder(order: GPv2Order.DataStruct): Order {
     sellTokenBalance: balanceToString(sellTokenBalance.toString()),
     buyTokenBalance: balanceToString(buyTokenBalance.toString()),
   }
+}
+
+export function getIsValidResult(result: IsValidResult): result is IsValid {
+  return result.isValid
 }
