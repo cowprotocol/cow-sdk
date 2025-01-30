@@ -74,7 +74,7 @@ describe('TradingSdk', () => {
           appCode: 'test',
           signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
         },
-        { logs: false, orderBookApi }
+        { enableLogging: false, orderBookApi }
       )
 
       await sdk.getQuote(defaultOrderParams)
@@ -91,7 +91,7 @@ describe('TradingSdk', () => {
           appCode: 'test',
           signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
         },
-        { logs: true, orderBookApi }
+        { enableLogging: true, orderBookApi }
       )
 
       await sdk.getQuote(defaultOrderParams)

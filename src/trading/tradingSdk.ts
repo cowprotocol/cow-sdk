@@ -16,16 +16,16 @@ import { log } from './consts'
 import { OrderBookApi } from '../order-book'
 
 interface TradingSdkOptions {
-  logs: boolean
+  enableLogging: boolean
   orderBookApi: OrderBookApi
 }
 
 export class TradingSdk {
   constructor(
     public readonly traderParams: TraderParameters,
-    public readonly options: Partial<TradingSdkOptions> = { logs: false }
+    public readonly options: Partial<TradingSdkOptions> = { enableLogging: false }
   ) {
-    if (options.logs) {
+    if (options.enableLogging) {
       log.enabled = true
     }
   }
