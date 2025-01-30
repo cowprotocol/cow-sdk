@@ -12,12 +12,26 @@ import { getQuoteWithSigner } from './getQuote'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getSigner, swapParamsToLimitOrderParams } from './utils'
 import { getPreSignTransaction } from './getPreSignTransaction'
+import { log } from './consts'
+import { OrderBookApi } from '../order-book'
+
+interface TradingSdkOptions {
+  enableLogging: boolean
+  orderBookApi: OrderBookApi
+}
 
 export class TradingSdk {
-  constructor(public readonly traderParams: TraderParameters) {}
+  constructor(
+    public readonly traderParams: TraderParameters,
+    public readonly options: Partial<TradingSdkOptions> = { enableLogging: false }
+  ) {
+    if (options.enableLogging) {
+      log.enabled = true
+    }
+  }
 
   async getQuote(params: TradeParameters, advancedSettings?: SwapAdvancedSettings): Promise<QuoteAndPost> {
-    const quoteResults = await getQuoteWithSigner(this.mergeParams(params), advancedSettings)
+    const quoteResults = await getQuoteWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
 
     return {
       quoteResults: quoteResults.result,
@@ -26,18 +40,18 @@ export class TradingSdk {
   }
 
   async postSwapOrder(params: TradeParameters, advancedSettings?: SwapAdvancedSettings): Promise<string> {
-    return postSwapOrder(this.mergeParams(params), advancedSettings)
+    return postSwapOrder(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
   }
 
   async postLimitOrder(params: LimitTradeParameters, advancedSettings?: LimitOrderAdvancedSettings): Promise<string> {
-    return postLimitOrder(this.mergeParams(params), advancedSettings)
+    return postLimitOrder(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
   }
 
   async postSellNativeCurrencyOrder(
     params: TradeParameters,
     advancedSettings?: SwapAdvancedSettings
   ): Promise<ReturnType<typeof postSellNativeCurrencyOrder>> {
-    const quoteResults = await getQuoteWithSigner(this.mergeParams(params), advancedSettings)
+    const quoteResults = await getQuoteWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
 
     const { tradeParameters, quoteResponse } = quoteResults.result
     return postSellNativeCurrencyOrder(
