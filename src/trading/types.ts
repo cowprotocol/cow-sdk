@@ -143,6 +143,7 @@ export interface BuildAppDataParams {
   appCode: latest.AppCode
   slippageBps: latest.SlippageBips
   orderClass: latest.OrderClass['orderClass']
+  partnerFee?: latest.PartnerFee
 }
 
 /**

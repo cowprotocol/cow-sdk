@@ -1,7 +1,7 @@
 import { BuyTokenDestination, getQuoteAmountsAndCosts, type OrderParameters, SellTokenSource } from '../order-book'
 import { UnsignedOrder } from '../order-signing'
 import { LimitTradeParameters } from './types'
-import { DEFAULT_QUOTE_VALIDITY } from './consts'
+import { DEFAULT_QUOTE_VALIDITY, DEFAULT_SLIPPAGE_BPS } from './consts'
 
 interface OrderToSignParams {
   from: string
@@ -22,7 +22,7 @@ export function getOrderToSign(
     buyTokenDecimals,
     kind,
     partiallyFillable = false,
-    slippageBps = 0,
+    slippageBps = DEFAULT_SLIPPAGE_BPS,
     partnerFee,
     validFor,
   } = limitOrderParams
