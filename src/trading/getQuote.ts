@@ -83,7 +83,6 @@ export async function getQuote(
     advancedSettings?.appData
   )
 
-  advancedSettings?.quoteRequest?.signingScheme
   const { appDataKeccak256, fullAppData } = appDataInfo
 
   const quoteRequest: OrderQuoteRequest = {
