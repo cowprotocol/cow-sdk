@@ -3,7 +3,7 @@ import { AppDataParams, MetadataApi, stringifyDeterministic } from '@cowprotocol
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils'
 
 export async function buildAppData(
-  { slippageBps, appCode, orderClass: orderClassName }: BuildAppDataParams,
+  { slippageBps, appCode, orderClass: orderClassName, partnerFee }: BuildAppDataParams,
   advancedParams?: AppDataParams
 ): Promise<AppDataInfo> {
   const metadataApiSDK = new MetadataApi()
@@ -16,6 +16,7 @@ export async function buildAppData(
     metadata: {
       quote: quoteParams,
       orderClass,
+      partnerFee,
     },
     ...advancedParams,
   })
