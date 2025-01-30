@@ -10,7 +10,7 @@ import { postSwapOrder, postSwapOrderFromQuote } from './postSwapOrder'
 import { postLimitOrder } from './postLimitOrder'
 import { getQuoteWithSigner } from './getQuote'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
-import { getSigner, swapParamsToLimitOrderParams } from './utils'
+import { getSigner, getTradeParametersAfterQuote, swapParamsToLimitOrderParams } from './utils'
 import { getPreSignTransaction } from './getPreSignTransaction'
 import { log } from './consts'
 import { OrderBookApi } from '../order-book'
@@ -35,7 +35,17 @@ export class TradingSdk {
 
     return {
       quoteResults: quoteResults.result,
-      postSwapOrderFromQuote: () => postSwapOrderFromQuote(quoteResults),
+      postSwapOrderFromQuote: () =>
+        postSwapOrderFromQuote({
+          ...quoteResults,
+          result: {
+            ...quoteResults.result,
+            tradeParameters: getTradeParametersAfterQuote({
+              quoteParameters: quoteResults.result.tradeParameters,
+              orderParameters: params,
+            }),
+          },
+        }),
     }
   }
 
@@ -60,7 +70,10 @@ export class TradingSdk {
       quoteResults.result.appDataInfo,
       // Quote response response always has an id
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      swapParamsToLimitOrderParams(tradeParameters, quoteResponse)
+      swapParamsToLimitOrderParams(
+        getTradeParametersAfterQuote({ quoteParameters: tradeParameters, orderParameters: params }),
+        quoteResponse
+      )
     )
   }
 

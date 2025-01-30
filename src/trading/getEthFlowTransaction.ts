@@ -18,10 +18,10 @@ export async function getEthFlowTransaction(
   signer: Signer,
   appDataKeccak256: string,
   _params: LimitTradeParametersFromQuote,
+  chainId: SupportedChainId,
   networkCostsAmount = '0',
   checkEthFlowOrderExists?: EthFlowOrderExistsCallback
 ): Promise<{ orderId: string; transaction: TransactionParams }> {
-  const chainId = (await signer.getChainId()) as SupportedChainId
   const from = await signer.getAddress()
 
   const params = {
@@ -56,7 +56,7 @@ export async function getEthFlowTransaction(
     orderId,
     transaction: {
       data,
-      gas: '0x' + calculateGasMargin(estimatedGas).toString(16),
+      gasLimit: '0x' + calculateGasMargin(estimatedGas).toString(16),
       to: contract.address,
       value: '0x' + BigInt(orderToSign.sellAmount).toString(16),
     },

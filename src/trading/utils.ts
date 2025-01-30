@@ -76,3 +76,17 @@ export function mapQuoteAmountsAndCosts<T, R>(
     afterSlippage: serializeAmounts(value.afterSlippage),
   }
 }
+
+/**
+ * Set sell token to the initial one
+ * Because for ETH-flow orders we do quote requests with wrapped token
+ */
+export function getTradeParametersAfterQuote({
+  quoteParameters,
+  orderParameters,
+}: {
+  quoteParameters: TradeParameters
+  orderParameters: TradeParameters
+}): TradeParameters {
+  return { ...quoteParameters, sellToken: orderParameters.sellToken }
+}
