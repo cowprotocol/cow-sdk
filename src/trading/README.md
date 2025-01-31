@@ -1,8 +1,9 @@
 # Trading SDK
 
 CoW Protocol is intent based, decentralized trading protocol that allows users to trade ERC-20 tokens.
+This SDK makes it easier to interact with CoW Protocol by handling order parameters, calculating amounts, and signing orders.
 
-The basic swap flow:
+### Basic Trading Flow
 1. 🔎 Get a quote (price) for a trade
 2. ✍️ Sign the order
 3. ✅ Post the order to the order-book
@@ -12,37 +13,34 @@ However, this flexibility comes with a cost: the complexity of the protocol.
 This SDK serves to simplify the interaction with the CoW Protocol.
 It will put all necessary parameters to your order, calculates proper amounts, and signs the order.
 
-> You can find an example of the SDK usage in the [examples](../../examples/vanilla/src/index.ts).
+### Why Use This SDK?
 
-### What constitutes the complexity?
+ - [App-data](https://docs.cow.fi/cow-protocol/reference/sdks/app-data) (order metadata)
+ - [Order signing](https://docs.cow.fi/cow-protocol/reference/sdks/cow-sdk/classes/OrderSigningUtils)
+ - Network costs, fees, and slippage
+ - Order parameters (validity, partial fills, etc.)
+ - Quote API settings (price quality, signing scheme, etc.)
+ - Order types (market, limit, on-chain trades, etc.)
 
- - [app-data](https://docs.cow.fi/cow-protocol/reference/sdks/app-data) (order's metadata)
- - [order signing](https://docs.cow.fi/cow-protocol/reference/sdks/cow-sdk/classes/OrderSigningUtils)
- - network costs, partner fee and slippage
- - order parameters (validTo, partiallyFillable, etc.)
- - quote API (priceQuality, signingScheme, etc.)
- - order kind (sell/buy)
- - order class (swap/limit/and others)
- - on-chain trades
+> See the [examples](../../examples/vanilla/src/index.ts) for usage.
 
-## TradingSdk
+## TradingSdk Functions
 
-The SDK provides three main functions:
- - `postSwapOrder` - get quote with market price and create a swap order
- - `postLimitOrder` - create a limit order
- - `getQuote` - fetch a quote for a swap order
+Main functions:
+- `postSwapOrder` - Get a quote and create a swap order.
+- `postLimitOrder` - Create a limit order.
+- `getQuote` - Fetch a quote for a swap order.
 
-And two for specific cases:
- - `postSellNativeCurrencyOrder` - create an order to sell blockchain native tokens (ETH for Ethereum)
- - `getPreSignTransaction` - get a transaction to sign the order with a smart-contract wallet (EIP-1271)
+Special cases:
+- `postSellNativeCurrencyOrder` - Sell blockchain native tokens (e.g., ETH on Ethereum).
+- `getPreSignTransaction` - Sign an order using a smart contract wallet.
 
-### Initialization
+### Setup
 
-The SDK requires the following parameters:
- - `chainId` - one of supported chain ids (see [`SupportedChainId`](../common/chains.ts))
- - `signer` - private key or ethers signer or `Eip1193` provider. The signer is used to sign the order. If you use a private key, the SDK will create an ethers signer from it. If you use an ethers signer, the SDK will use it directly.
- - `appCode` - a unique identifier for your application. It is used to identify orders created by your application.
-
+You need:
+- `chainId` - Supported chain ID ([see list](../common/chains.ts)).
+- `signer` - Private key, ethers signer, or `Eip1193` provider.
+- `appCode` - Unique app identifier for tracking orders.
 #### Example
 ```typescript
 import { SupportedChainId, TradingSdk } from '@cowprotocol/cow-sdk'
