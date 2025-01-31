@@ -7,7 +7,7 @@ export function log(text: string) {
 
 log.enabled = false
 
-export const DEFAULT_QUOTE_VALIDITY = 60 * 10 // 10 min
+export const DEFAULT_QUOTE_VALIDITY = 60 * 30 // 30 min
 
 export const DEFAULT_SLIPPAGE_BPS = 50 // 0.5%
 

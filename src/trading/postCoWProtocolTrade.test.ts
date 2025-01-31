@@ -124,7 +124,7 @@ describe('postCoWProtocolTrade', () => {
       receiver: '0x21c3de23d98caddc406e3d31b25e807addf33333',
       signature: '0x000a1',
       signingScheme: 'eip712',
-      validTo: 1487077308,
+      validTo: 1487078508,
     })
   })
 })
