@@ -41,6 +41,7 @@ You need:
 - `chainId` - Supported chain ID ([see list](../common/chains.ts)).
 - `signer` - Private key, ethers signer, or `Eip1193` provider.
 - `appCode` - Unique app identifier for tracking orders.
+
 #### Example
 ```typescript
 import { SupportedChainId, TradingSdk } from '@cowprotocol/cow-sdk'
@@ -50,6 +51,26 @@ const sdk = new TradingSdk({
   signer: '<privateKeyOrEthersSigner>',
   appCode: '<YOUR_APP_CODE>',
 })
+```
+
+### Options
+
+For detailed information about trading steps you can enable the SDK logging:
+
+```typescript
+import { SupportedChainId, TradingSdk, TradingSdkOptions } from '@cowprotocol/cow-sdk'
+
+const traderParams = {
+  chainId: SupportedChainId.SEPOLIA,
+  signer: '<privateKeyOrEthersSigner>',
+  appCode: '<YOUR_APP_CODE>',
+}
+
+const sdkOptions: TradingSdkOptions = {
+  enableLogging: true // <--
+}
+
+const sdk = new TradingSdk(traderParams, sdkOptions)
 ```
 
 ### getQuote
