@@ -1,8 +1,9 @@
 # Trading SDK
 
 CoW Protocol is intent based, decentralized trading protocol that allows users to trade ERC-20 tokens.
+This SDK makes it easier to interact with CoW Protocol by handling order parameters, calculating amounts, and signing orders.
 
-The basic swap flow:
+### Basic Trading Flow
 1. 🔎 Get a quote (price) for a trade
 2. ✍️ Sign the order
 3. ✅ Post the order to the order-book
@@ -12,36 +13,34 @@ However, this flexibility comes with a cost: the complexity of the protocol.
 This SDK serves to simplify the interaction with the CoW Protocol.
 It will put all necessary parameters to your order, calculates proper amounts, and signs the order.
 
-> You can find an example of the SDK usage in the [examples](../../examples/vanilla/src/index.ts).
+### Why Use This SDK?
 
-### What constitutes the complexity?
+ - [App-data](https://docs.cow.fi/cow-protocol/reference/sdks/app-data) (order metadata)
+ - [Order signing](https://docs.cow.fi/cow-protocol/reference/sdks/cow-sdk/classes/OrderSigningUtils)
+ - Network costs, fees, and slippage
+ - Order parameters (validity, partial fills, etc.)
+ - Quote API settings (price quality, signing scheme, etc.)
+ - Order types (market, limit, on-chain trades, etc.)
 
- - [app-data](https://docs.cow.fi/cow-protocol/reference/sdks/app-data) (order's metadata)
- - [order signing](https://docs.cow.fi/cow-protocol/reference/sdks/cow-sdk/classes/OrderSigningUtils)
- - network costs, partner fee and slippage
- - order parameters (validTo, partiallyFillable, etc.)
- - quote API (priceQuality, signingScheme, etc.)
- - order kind (sell/buy)
- - order class (swap/limit/and others)
- - on-chain trades
+> See the [examples](../../examples/vanilla/src/index.ts) for usage.
 
-## TradingSdk
+## TradingSdk Functions
 
-The SDK provides three main functions:
- - `postSwapOrder` - get quote with market price and create a swap order
- - `postLimitOrder` - create a limit order
- - `getQuote` - fetch a quote for a swap order
+Main functions:
+- `postSwapOrder` - Get a quote and create a swap order.
+- `postLimitOrder` - Create a limit order.
+- `getQuote` - Fetch a quote for a swap order.
 
-And two for specific cases:
- - `postSellNativeCurrencyOrder` - create an order to sell blockchain native tokens (ETH for Ethereum)
- - `getPreSignTransaction` - get a transaction to sign the order with a smart-contract wallet (EIP-1271)
+Special cases:
+- `postSellNativeCurrencyOrder` - Sell blockchain native tokens (e.g., ETH on Ethereum).
+- `getPreSignTransaction` - Sign an order using a smart contract wallet.
 
-### Initialization
+### Setup
 
-The SDK requires the following parameters:
- - `chainId` - one of supported chain ids (see [`SupportedChainId`](../common/chains.ts))
- - `signer` - private key or ethers signer or `Eip1193` provider. The signer is used to sign the order. If you use a private key, the SDK will create an ethers signer from it. If you use an ethers signer, the SDK will use it directly.
- - `appCode` - a unique identifier for your application. It is used to identify orders created by your application.
+You need:
+- `chainId` - Supported chain ID ([see list](../common/chains.ts)).
+- `signer` - Private key, ethers signer, or `Eip1193` provider.
+- `appCode` - Unique app identifier for tracking orders.
 
 #### Example
 ```typescript
@@ -54,48 +53,24 @@ const sdk = new TradingSdk({
 })
 ```
 
-### postSwapOrder
+### Options
 
-This function fetches a quote for a swap order and just creates the order.
-
-The parameters required are:
- - `kind` - the order kind (sell/buy)
- - `sellToken` - the sell token address
- - `sellTokenDecimals` - the sell token decimals
- - `buyToken` - the buy token address
- - `buyTokenDecimals` - the buy token decimals
- - `amount` - the amount to sell/buy in atoms
-
-> When sell token is a blockchain native token (ETH for Ethereum), then order will be created as an on-chain transaction. See [postSellNativeCurrencyOrder](#postSellNativeCurrencyOrder)
-
-#### Example
+For detailed information about trading steps you can enable the SDK logging:
 
 ```typescript
-import {
-  SupportedChainId,
-  OrderKind,
-  TradeParameters,
-  TradingSdk
-} from '@cowprotocol/cow-sdk'
+import { SupportedChainId, TradingSdk, TradingSdkOptions } from '@cowprotocol/cow-sdk'
 
-const sdk = new TradingSdk({
+const traderParams = {
   chainId: SupportedChainId.SEPOLIA,
   signer: '<privateKeyOrEthersSigner>',
   appCode: '<YOUR_APP_CODE>',
-})
-
-const parameters: TradeParameters = {
-  kind: OrderKind.BUY,
-  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
-  sellTokenDecimals: 18,
-  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
-  buyTokenDecimals: 18,
-  amount: '120000000000000000'
 }
 
-const orderId = await sdk.postSwapOrder(parameters)
+const sdkOptions: TradingSdkOptions = {
+  enableLogging: true // <--
+}
 
-console.log('Order created, id: ', orderId)
+const sdk = new TradingSdk(traderParams, sdkOptions)
 ```
 
 ### getQuote
@@ -150,6 +125,134 @@ if (confirm(`You will get at least: ${buyAmount}, ok?`)) {
   console.log('Order created, id: ', orderId)
 }
 ```
+
+### postSwapOrder
+
+This function fetches a quote for a swap order and just creates the order.
+
+The parameters required are:
+- `kind` - the order kind (sell/buy)
+- `sellToken` - the sell token address
+- `sellTokenDecimals` - the sell token decimals
+- `buyToken` - the buy token address
+- `buyTokenDecimals` - the buy token decimals
+- `amount` - the amount to sell/buy in atoms
+
+> When sell token is a blockchain native token (ETH for Ethereum), then order will be created as an on-chain transaction. See [postSellNativeCurrencyOrder](#postSellNativeCurrencyOrder)
+
+#### Example
+
+```typescript
+import {
+  SupportedChainId,
+  OrderKind,
+  TradeParameters,
+  TradingSdk
+} from '@cowprotocol/cow-sdk'
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  signer: '<privateKeyOrEthersSigner>',
+  appCode: '<YOUR_APP_CODE>',
+})
+
+const parameters: TradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000'
+}
+
+const orderId = await sdk.postSwapOrder(parameters)
+
+console.log('Order created, id: ', orderId)
+```
+
+### postLimitOrder
+
+This main difference between this function and `postSwapOrder` is that here you need to specify both sell and buy amounts.
+
+You need to provide the following parameters:
+ - `kind` - the order kind (sell/buy)
+ - `sellToken` - the sell token address
+ - `sellTokenDecimals` - the sell token decimals
+ - `buyToken` - the buy token address
+ - `buyTokenDecimals` - the buy token decimals
+ - `sellAmount` - the amount to sell in atoms
+ - `buyAmount` - the amount to buy in atoms
+
+And optional parameters:
+ - `quoteId` - id of the quote from the quote API (see getQuote function)
+ - `validTo` - the order expiration time in seconds
+
+```typescript
+import {
+  SupportedChainId,
+  OrderKind,
+  LimitTradeParameters,
+  TradingSdk
+} from '@cowprotocol/cow-sdk'
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  signer: '<privateKeyOrEthersSigner>',
+  appCode: '<YOUR_APP_CODE>',
+})
+
+const limitOrderParameters: LimitTradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  sellAmount: '120000000000000000',
+  buyAmount: '66600000000000000000',
+}
+
+const orderId = await sdk.postLimitOrder(limitOrderParameters)
+
+console.log('Order created, id: ', orderId)
+```
+
+### postSellNativeCurrencyOrder
+
+CoW Protocol supports on-chain trades for selling blockchain native tokens (ETH for Ethereum).
+In this case, the order is created as an on-chain transaction.
+You don't have to think about the case when you use `postSwapOrder` function, it will be handled automatically.
+But if you need more flexible way to create an order to sell native token, you can use the `postSellNativeCurrencyOrder` function.
+
+> We consider the order as native token selling order if the sell token has '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' address.
+
+```typescript
+import {
+  SupportedChainId,
+  OrderKind,
+  TradeParameters,
+  TradingSdk
+} from '@cowprotocol/cow-sdk'
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  signer: '<privateKeyOrEthersSigner>',
+  appCode: '<YOUR_APP_CODE>',
+})
+
+const parameters: TradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000'
+}
+
+const orderId = await sdk.postSellNativeCurrencyOrder(parameters)
+
+console.log('Order created, id: ', orderId)
+```
+
 
 ### Get quote for a smart-contract wallet
 
@@ -240,90 +343,6 @@ console.log('Order created with "pre-sign" state, id: ', orderId)
 console.log('Execute the transaction to sign the order', preSignTransaction)
 ```
 
-
-### postLimitOrder
-
-This main difference between this function and `postSwapOrder` is that here you need to specify both sell and buy amounts.
-
-You need to provide the following parameters:
- - `kind` - the order kind (sell/buy)
- - `sellToken` - the sell token address
- - `sellTokenDecimals` - the sell token decimals
- - `buyToken` - the buy token address
- - `buyTokenDecimals` - the buy token decimals
- - `sellAmount` - the amount to sell in atoms
- - `buyAmount` - the amount to buy in atoms
-
-And optional parameters:
- - `quoteId` - id of the quote from the quote API (see getQuote function)
- - `validTo` - the order expiration time in seconds
-
-```typescript
-import {
-  SupportedChainId,
-  OrderKind,
-  LimitTradeParameters,
-  TradingSdk
-} from '@cowprotocol/cow-sdk'
-
-const sdk = new TradingSdk({
-  chainId: SupportedChainId.SEPOLIA,
-  signer: '<privateKeyOrEthersSigner>',
-  appCode: '<YOUR_APP_CODE>',
-})
-
-const limitOrderParameters: LimitTradeParameters = {
-  kind: OrderKind.BUY,
-  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
-  sellTokenDecimals: 18,
-  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
-  buyTokenDecimals: 18,
-  sellAmount: '120000000000000000',
-  buyAmount: '66600000000000000000',
-}
-
-const orderId = await sdk.postLimitOrder(limitOrderParameters)
-
-console.log('Order created, id: ', orderId)
-```
-
-### postSellNativeCurrencyOrder
-
-CoW Protocol supports on-chain trades for selling blockchain native tokens (ETH for Ethereum).
-In this case, the order is created as an on-chain transaction.
-You don't have to think about the case when you use `postSwapOrder` function, it will be handled automatically.
-But if you need more flexible way to create an order to sell native token, you can use the `postSellNativeCurrencyOrder` function.
-
-> We consider the order as native token selling order if the sell token has '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' address.
-
-```typescript
-import {
-  SupportedChainId,
-  OrderKind,
-  TradeParameters,
-  TradingSdk
-} from '@cowprotocol/cow-sdk'
-
-const sdk = new TradingSdk({
-  chainId: SupportedChainId.SEPOLIA,
-  signer: '<privateKeyOrEthersSigner>',
-  appCode: '<YOUR_APP_CODE>',
-})
-
-const parameters: TradeParameters = {
-  kind: OrderKind.BUY,
-  sellToken: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-  sellTokenDecimals: 18,
-  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
-  buyTokenDecimals: 18,
-  amount: '120000000000000000'
-}
-
-const orderId = await sdk.postSellNativeCurrencyOrder(parameters)
-
-console.log('Order created, id: ', orderId)
-```
-
 ### Optional parameters
 
 Both `postSwapOrder` and `postLimitOrder` functions have optional parameters.
@@ -335,7 +354,7 @@ See `TradeOptionalParameters` type for more details.
 | `partiallyFillable`  | `boolean`      | `false`           | Indicates whether the order is fill-or-kill or partially fillable.                                                                                              |
 | `slippageBps`        | `number`       | 50                | Slippage tolerance applied to the order to get the limit price. Expressed in Basis Points (BPS). One basis point is equivalent to 0.01% (1/100th of a percent). |
 | `receiver`           | `string`       | order creator     | The address that will receive the order's tokens.                                                                                                               |
-| `validFor`           | `number`       | 10 mins           | The order expiration time in seconds.                                                                                                                           |
+| `validFor`           | `number`       | 30 mins           | The order expiration time in seconds.                                                                                                                           |
 | `partnerFee`         | `PartnerFee`   | -                 | Partners of the protocol can specify their fee for the order, including the fee in basis points (BPS) and the fee recipient address. [Read more](https://docs.cow.fi/governance/fees/partner-fee)                  |
 
 ##### Example
