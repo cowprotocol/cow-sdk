@@ -20,6 +20,7 @@ export async function postSellNativeCurrencyOrder(
     signer,
     appDataKeccak256,
     _params,
+    orderBookApi.context.chainId,
     networkCostsAmount,
     checkEthFlowOrderExists
   )

@@ -53,7 +53,10 @@ const callData = '0x123456'
 const currentTimestamp = 1487076708000
 
 const uploadAppDataMock = jest.fn()
-const orderBookApiMock = { uploadAppData: uploadAppDataMock } as unknown as OrderBookApi
+const orderBookApiMock = {
+  uploadAppData: uploadAppDataMock,
+  context: { chainId: SupportedChainId.GNOSIS_CHAIN },
+} as unknown as OrderBookApi
 const appDataMock = {
   appDataKeccak256: '0xaf1908d8e30f63bf4a6dbd41d2191eb092ac0af626b37c720596426130717658',
   fullAppData:
@@ -122,7 +125,7 @@ describe('postSellNativeCurrencyTrade', () => {
 
     const call = (signer.sendTransaction as jest.Mock).mock.calls[0][0]
 
-    expect(+call.gas).toBe(180000) // 150000 by default + 20%
+    expect(+call.gasLimit).toBe(180000) // 150000 by default + 20%
   })
 
   it('Should create an on-chain transaction with all specified parameters', async () => {

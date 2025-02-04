@@ -33,12 +33,12 @@ jest.mock('../common/generated', () => {
 import { getEthFlowTransaction } from './getEthFlowTransaction'
 import { VoidSigner } from '@ethersproject/abstract-signer'
 import { SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '../common'
-import { LimitTradeParameters } from './types'
+import { LimitTradeParametersFromQuote } from './types'
 import { OrderKind } from '../order-book'
 
 const appDataKeccak256 = '0x578c975b1cfd3e24c21fb599076c4f7879c4268efd33eed3eb9efa5e30efac21'
 
-const params: LimitTradeParameters = {
+const params: LimitTradeParametersFromQuote = {
   kind: OrderKind.SELL,
   sellToken: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
   buyToken: '0xdef1ca1fb7fbcdc777520aa7f396b4e015f497ab',
@@ -58,7 +58,7 @@ describe('getEthFlowTransaction', () => {
   signer.getAddress = jest.fn().mockResolvedValue(account)
 
   it('Should always override sell token with wrapped native token', async () => {
-    const result = await getEthFlowTransaction(signer, appDataKeccak256, params)
+    const result = await getEthFlowTransaction(signer, appDataKeccak256, params, chainId)
     const wrappedToken = WRAPPED_NATIVE_CURRENCIES[chainId]
 
     expect(result.transaction.data.includes(params.sellToken.slice(2))).toBe(false)
@@ -66,14 +66,14 @@ describe('getEthFlowTransaction', () => {
   })
 
   it('Should call gas estimation and return estimated value + 20%', async () => {
-    const result = await getEthFlowTransaction(signer, appDataKeccak256, params)
+    const result = await getEthFlowTransaction(signer, appDataKeccak256, params, chainId)
     const gasNum = +GAS
 
-    expect(+result.transaction.gas).toBe(gasNum + gasNum * 0.2)
+    expect(+result.transaction.gasLimit).toBe(gasNum + gasNum * 0.2)
   })
 
   it('Transaction value should be equal to sell amount', async () => {
-    const result = await getEthFlowTransaction(signer, appDataKeccak256, params)
+    const result = await getEthFlowTransaction(signer, appDataKeccak256, params, chainId)
 
     expect(result.transaction.value).toBe('0x' + BigInt(params.sellAmount).toString(16))
   })

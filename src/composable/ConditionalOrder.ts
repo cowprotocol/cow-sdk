@@ -1,7 +1,7 @@
 import { BigNumber, constants, ethers, utils } from 'ethers'
 import { GPv2Order, IConditionalOrder } from '../common/generated/ComposableCoW'
 
-import { decodeParams, encodeParams, fromStructToOrder } from './utils'
+import { decodeParams, encodeParams, fromStructToOrder, getIsValidResult } from './utils'
 import {
   ConditionalOrderArguments,
   ConditionalOrderParams,
@@ -94,7 +94,7 @@ export abstract class ConditionalOrder<D, S> {
 
   assertIsValid(): void {
     const isValidResult = this.isValid()
-    if (!isValidResult.isValid) {
+    if (!getIsValidResult(isValidResult)) {
       throw new Error(`Invalid order: ${isValidResult.reason}`)
     }
   }
@@ -253,7 +253,7 @@ export abstract class ConditionalOrder<D, S> {
     try {
       const isValid = this.isValid()
       // Do a validation first
-      if (!isValid.isValid) {
+      if (!getIsValidResult(isValid)) {
         return {
           result: PollResultCode.DONT_TRY_AGAIN,
           reason: `InvalidConditionalOrder. Reason: ${isValid.reason}`,

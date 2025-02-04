@@ -160,7 +160,7 @@ export interface AppDataInfo {
  */
 export interface TransactionParams {
   data: string
-  gas: string
+  gasLimit: string
   to: string
   value: string
 }
