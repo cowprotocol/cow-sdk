@@ -10,6 +10,7 @@ log.enabled = false
 export const DEFAULT_QUOTE_VALIDITY = 60 * 30 // 30 min
 
 export const DEFAULT_SLIPPAGE_BPS = 50 // 0.5%
+export const ETH_FLOW_DEFAULT_SLIPPAGE_BPS = 200 // 2%
 
 export const SIGN_SCHEME_MAP = {
   [EcdsaSigningScheme.EIP712]: SigningScheme.EIP712,

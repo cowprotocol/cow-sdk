@@ -1,3 +1,5 @@
+import { ETH_FLOW_DEFAULT_SLIPPAGE_BPS } from './consts'
+
 jest.mock('cross-fetch', () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const fetchMock = require('jest-fetch-mock')
@@ -90,13 +92,33 @@ describe('getQuoteToSign', () => {
   })
 
   describe('Quote request', () => {
-    it('When sell ETH, then should override sell token with wrapped one', async () => {
-      await getQuoteWithSigner({ ...defaultOrderParams, sellToken: ETH_ADDRESS }, {}, orderBookApiMock)
+    describe('When sell ETH', () => {
+      it('Then should override sell token with wrapped one', async () => {
+        await getQuoteWithSigner(
+          { ...defaultOrderParams, sellToken: ETH_ADDRESS, slippageBps: undefined },
+          {},
+          orderBookApiMock
+        )
 
-      const call = getQuoteMock.mock.calls[0][0]
+        const call = getQuoteMock.mock.calls[0][0]
 
-      expect(call.sellToken).toBe(WRAPPED_NATIVE_CURRENCIES[defaultOrderParams.chainId])
+        expect(call.sellToken).toBe(WRAPPED_NATIVE_CURRENCIES[defaultOrderParams.chainId])
+      })
+
+      it('Default slippage should be 2%', async () => {
+        await getQuoteWithSigner(
+          { ...defaultOrderParams, sellToken: ETH_ADDRESS, slippageBps: undefined },
+          {},
+          orderBookApiMock
+        )
+
+        const call = getQuoteMock.mock.calls[0][0]
+        const appData = JSON.parse(call.appData)
+
+        expect(appData.metadata.quote.slippageBips).toBe(ETH_FLOW_DEFAULT_SLIPPAGE_BPS)
+      })
     })
+
     it('Should add appData to the request', async () => {
       await getQuoteWithSigner(defaultOrderParams, {}, orderBookApiMock)
 
@@ -106,6 +128,7 @@ describe('getQuoteToSign', () => {
       expect(appData.appCode).toBe(defaultOrderParams.appCode)
       expect(appData.metadata.quote.slippageBips).toBe(defaultOrderParams.slippageBps)
     })
+
     it('priceQuality must always be OPTIMAL', async () => {
       await getQuoteWithSigner(defaultOrderParams, {}, orderBookApiMock)
 
@@ -113,6 +136,7 @@ describe('getQuoteToSign', () => {
 
       expect(call.priceQuality).toBe('optimal')
     })
+
     it('When is sell order, then should set sellAmountBeforeFee', async () => {
       await getQuoteWithSigner({ ...defaultOrderParams, kind: OrderKind.SELL }, {}, orderBookApiMock)
 
@@ -120,6 +144,7 @@ describe('getQuoteToSign', () => {
 
       expect(call.sellAmountBeforeFee).toBe(defaultOrderParams.amount)
     })
+
     it('When is buy order, then should set buyAmountAfterFee', async () => {
       await getQuoteWithSigner({ ...defaultOrderParams, kind: OrderKind.BUY }, {}, orderBookApiMock)
 
@@ -127,6 +152,7 @@ describe('getQuoteToSign', () => {
 
       expect(call.buyAmountAfterFee).toBe(defaultOrderParams.amount)
     })
+
     it('Should add advanced quote parameters', async () => {
       await getQuoteWithSigner(defaultOrderParams, { quoteRequest: { onchainOrder: { foo: 'bar' } } }, orderBookApiMock)
 
@@ -145,12 +171,27 @@ describe('getQuoteToSign', () => {
         buyAmount - (buyAmount * 20) / (100 * 100)
       )
     })
+
     it('Should calculate network costs based on quote API response', async () => {
       const { result } = await getQuoteWithSigner(defaultOrderParams, {}, orderBookApiMock)
 
       expect(result.amountsAndCosts.costs.networkFee.amountInSellCurrency.toString()).toBe(
         quoteResponseMock.quote.feeAmount
       )
+    })
+
+    describe('When sell ETH', () => {
+      it('Default slippage should be 2%', async () => {
+        const { result } = await getQuoteWithSigner(
+          { ...defaultOrderParams, sellToken: ETH_ADDRESS, slippageBps: undefined },
+          {},
+          orderBookApiMock
+        )
+        const buyAmount = +quoteResponseMock.quote.buyAmount
+
+        // 2% slippage
+        expect(+result.amountsAndCosts.afterSlippage.buyAmount.toString()).toBe(buyAmount - (buyAmount * 2) / 100)
+      })
     })
   })
 
