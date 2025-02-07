@@ -115,7 +115,7 @@ describe('getQuoteToSign', () => {
         const call = getQuoteMock.mock.calls[0][0]
         const appData = JSON.parse(call.appData)
 
-        expect(appData.metadata.quote.slippageBips).toBe(ETH_FLOW_DEFAULT_SLIPPAGE_BPS)
+        expect(appData.metadata.quote.slippageBips).toBe(ETH_FLOW_DEFAULT_SLIPPAGE_BPS[defaultOrderParams.chainId])
       })
     })
 
