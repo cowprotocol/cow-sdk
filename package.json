@@ -41,7 +41,7 @@
     "exponential-backoff": "^3.1.1",
     "graphql": "^16.3.0",
     "graphql-request": "^4.3.0",
-    "limiter": "^2.1.0"
+    "limiter": "^3.0.0"
   },
   "peerDependencies": {
     "ethers": "^5.7.2"
