@@ -3,16 +3,10 @@ import { LimitTradeParametersFromQuote, TransactionParams } from './types'
 import { calculateUniqueOrderId, EthFlowOrderExistsCallback } from './calculateUniqueOrderId'
 import { getOrderToSign } from './getOrderToSign'
 import { type EthFlow, EthFlow__factory } from '../common/generated'
-import {
-  BARN_ETH_FLOW_ADDRESSES,
-  CowEnv,
-  ETH_FLOW_ADDRESSES,
-  SupportedChainId,
-  WRAPPED_NATIVE_CURRENCIES,
-} from '../common'
+import { BARN_ETH_FLOW_ADDRESSES, CowEnv, ETH_FLOW_ADDRESSES, SupportedChainId } from '../common'
 import { GAS_LIMIT_DEFAULT } from './consts'
 import type { EthFlowOrder } from '../common/generated/EthFlow'
-import { calculateGasMargin } from './utils'
+import { adjustEthFlowOrderParams, calculateGasMargin } from './utils'
 
 export async function getEthFlowTransaction(
   signer: Signer,
@@ -26,7 +20,7 @@ export async function getEthFlowTransaction(
 
   const params = {
     ..._params,
-    sellToken: WRAPPED_NATIVE_CURRENCIES[chainId],
+    ...adjustEthFlowOrderParams(chainId, _params),
   }
   const { quoteId } = params
 
