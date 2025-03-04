@@ -64,23 +64,18 @@ export const WRAPPED_NATIVE_CURRENCIES: Record<SupportedChainId, string> = {
   [SupportedChainId.BASE]: '0x4200000000000000000000000000000000000006',
 }
 
+export const ETH_FLOW_ADDRESS = '0xba3cb449bd2b4adddbc894d8697f5170800eadec'
+export const BARN_ETH_FLOW_ADDRESS = '0x04501b9b1d52e67f6862d157e00d13419d2d6e95'
 /**
  * An object containing the addresses of ETH flow contracts for each supported chain.
+ * @deprecated use ETH_FLOW_ADDRESS instead
  */
-export const ETH_FLOW_ADDRESSES: Record<SupportedChainId, string> = {
-  [SupportedChainId.MAINNET]: '0x40A50cf069e992AA4536211B23F286eF88752187',
-  [SupportedChainId.GNOSIS_CHAIN]: '0x40A50cf069e992AA4536211B23F286eF88752187',
-  [SupportedChainId.ARBITRUM_ONE]: '0x552fcecc218158fff20e505c8f3ad24f8e1dd33c',
-  [SupportedChainId.SEPOLIA]: '0x0b7795E18767259CC253a2dF471db34c72B49516',
-  [SupportedChainId.BASE]: '0x3d1b389f1707DB3d4c5344d5669DBda6b5D6Ab51',
-}
+export const ETH_FLOW_ADDRESSES: Record<SupportedChainId, string> = mapAddressToSupportedNetworks(ETH_FLOW_ADDRESS)
 
-export const BARN_ETH_FLOW_ADDRESSES: Record<SupportedChainId, string> = {
-  [SupportedChainId.MAINNET]: '0xD02De8Da0B71E1B59489794F423FaBBa2AdC4d93',
-  [SupportedChainId.GNOSIS_CHAIN]: '0xD02De8Da0B71E1B59489794F423FaBBa2AdC4d93',
-  [SupportedChainId.ARBITRUM_ONE]: '0x6dfe75b5ddce1ade279d4fa6bd6aef3cbb6f49db',
-  [SupportedChainId.SEPOLIA]: '0x2671994c7D224ac4799ac2cf6Ef9EF187d42C69f',
-  [SupportedChainId.BASE]: '0x3C3eA1829891BC9bEC3d06A81d5d169e52a415e3',
-}
+/**
+ * @deprecated use BARN_ETH_FLOW_ADDRESS instead
+ */
+export const BARN_ETH_FLOW_ADDRESSES: Record<SupportedChainId, string> =
+  mapAddressToSupportedNetworks(BARN_ETH_FLOW_ADDRESS)
 
 export const MAX_VALID_TO_EPOCH = 4294967295 // Max uint32 (Feb 07 2106 07:28:15 GMT+0100)
