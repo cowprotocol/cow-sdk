@@ -19,9 +19,8 @@ import {
 } from '../order-book'
 import { buildAppData } from './appDataUtils'
 import { getOrderToSign } from './getOrderToSign'
-import { getIsEthFlowOrder, getSigner, swapParamsToLimitOrderParams } from './utils'
+import { adjustEthFlowOrderParams, getIsEthFlowOrder, getSigner, swapParamsToLimitOrderParams } from './utils'
 import { Signer } from 'ethers'
-import { WRAPPED_NATIVE_CURRENCIES } from '../common'
 import { getOrderTypedData } from './getOrderTypedData'
 
 // ETH-FLOW orders require different quote params
@@ -48,7 +47,7 @@ export async function getQuote(
   const tradeParameters = isEthFlow
     ? {
         ..._tradeParameters,
-        sellToken: WRAPPED_NATIVE_CURRENCIES[chainId],
+        ...adjustEthFlowOrderParams(chainId, _tradeParameters),
       }
     : _tradeParameters
 
