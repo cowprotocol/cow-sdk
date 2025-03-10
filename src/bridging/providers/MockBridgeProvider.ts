@@ -11,7 +11,7 @@ import {
   GetBuyTokensParams,
   QuoteBridgeRequest,
 } from '../types'
-import { ChainInfo } from '../../common'
+import { ChainInfo, EthereumLogo, mainnet, sepolia } from '../../common'
 import { EvmCall } from '../../common/transaction'
 import { TokenInfo } from '../../common/tokens'
 
@@ -23,51 +23,47 @@ const MOCK_TX: EvmCall = {
   isDelegateCall: true,
 }
 
-// https://github.com/wevm/viem/blob/main/src/chains/definitions/mainnet.ts
-const mainnet: ChainInfo = {
-  id: 1,
-  name: 'Ethereum',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-  rpcUrl: 'https://eth.merkle.io',
-  blockExplorer: {
-    name: 'Etherscan',
-    url: 'https://etherscan.io',
-  },
-  isSupported: true,
-  isTestnet: false,
-  logoUrl: 'https://swap.cow.fi/assets/network-mainnet-logo-BJe1wK_m.svg',
-  mainColor: '#627EEA',
-}
-
-//github.com/wevm/viem/blob/main/src/chains/definitions/optimism.ts
+//See https://github.com/wevm/viem/blob/main/src/chains/definitions/optimism.ts
 const optimism: ChainInfo = {
-  id: 1,
-  name: 'Ethereum',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-  rpcUrl: 'https://eth.merkle.io',
-  blockExplorer: {
-    name: 'Etherscan',
-    url: 'https://etherscan.io',
+  id: 10,
+  name: 'optimism',
+  label: 'Optimism',
+  logo: { light: EthereumLogo, dark: EthereumLogo },
+  nativeCurrency: {
+    chainId: 10,
+    address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+    decimals: 18,
+    name: 'Wrapped Ether',
+    symbol: 'WETH',
+    logoUrl:
+      'https://raw.githubusercontent.com/cowprotocol/token-lists/main/src/public/images/1/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2/logo.png',
   },
-  isSupported: false,
+  addressPrefix: 'op',
   isTestnet: false,
-  logoUrl: 'https://cryptologos.cc/logos/optimism-ethereum-op-logo.png?v=040',
-  mainColor: '#627EEA',
-}
-
-const sepolia: ChainInfo = {
-  id: 11_155_111,
-  name: 'Sepolia',
-  nativeCurrency: { name: 'Sepolia Ether', symbol: 'ETH', decimals: 18 },
-  rpcUrl: 'https://sepolia.drpc.org',
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 4286263,
+    },
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://mainnet.optimism.io'],
+    },
+  },
+  color: '#ff0420',
+  website: {
+    name: 'Optimism',
+    url: 'https://optimism.io',
+  },
+  docs: {
+    name: 'Optimism Docs',
+    url: 'https://docs.optimism.io',
+  },
   blockExplorer: {
     name: 'Etherscan',
-    url: 'https://sepolia.etherscan.io',
+    url: 'https://optimistic.etherscan.io',
   },
-  isSupported: true,
-  isTestnet: true,
-  logoUrl: 'https://swap.cow.fi/assets/network-sepolia-logo-k9KE4z50.svg',
-  mainColor: '#627EEA',
 }
 
 export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {

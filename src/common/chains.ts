@@ -126,7 +126,7 @@ export interface ChainInfo {
 }
 
 const CHAIN_ASSETS = 'https://raw.githubusercontent.com/cowprotocol/cowswap/refs/heads/develop/libs/assets/src/cow-swap'
-const EthereumLogo = `${CHAIN_ASSETS}/network-mainnet-logo.svg`
+export const EthereumLogo = `${CHAIN_ASSETS}/network-mainnet-logo.svg`
 const GnosisChainLogo = `${CHAIN_ASSETS}/network-gnosis-chain-logo.svg`
 const ArbitrumOneLogoLight = `${CHAIN_ASSETS}/network-arbitrum-one-logo-blue.svg`
 const ArbitrumOneLogoDark = `${CHAIN_ASSETS}/network-arbitrum-one-logo-white.svg`
