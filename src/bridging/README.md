@@ -10,7 +10,6 @@ This documentation is a WIP as this feature remains in development, as the SDK i
 import { SupportedChainId, BridgingSdk, QuoteBridgeRequest, OrderKind } from '@cowprotocol/cow-sdk'
 
 const sdk = new BridgingSdk({
-  chainId: SupportedChainId.SEPOLIA,
   signer: '<privateKeyOrEthersSigner>',
   appCode: '<YOUR_APP_CODE>',
 })
