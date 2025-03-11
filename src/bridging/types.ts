@@ -33,7 +33,8 @@ export interface GetBuyTokensParams extends Partial<WithSellToken> {
  * Parameters for getting a bridge quote
  */
 export interface QuoteBridgeRequest extends WithSellToken, WithBuyToken {
-  sellTokenAmount: string
+  type: 'SELL' // We make it explicit that only SELL is supported for now
+  amount: string
   recipient: string
 }
 
