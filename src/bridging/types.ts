@@ -53,6 +53,7 @@ export interface BridgeHook {
 }
 
 export enum BridgeStatus {
+  NOT_INITIATED = 'not_initiated',
   INITIATED = 'initiated',
   EXECUTED = 'executed',
   FAILED = 'failed',
