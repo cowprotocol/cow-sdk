@@ -11,7 +11,7 @@ import { ethers } from 'ethers'
 import { CowShedSdk, ICoWShedCall, SupportedChainId } from '@cowprotocol/cow-shed'
 
 const cowShedSdk = new CowShedSdk({
-  signer: '<privateKeyOrEthersSigner>',
+  signer: '<privateKeyOrEthersSigner>', // You can provide the signer in the constructor, or the `signCalls` method
 })
 
 // Get the cow-shed account for any given chainId and owner's address
