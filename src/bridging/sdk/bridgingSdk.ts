@@ -6,12 +6,8 @@ export interface BridgingSdkOptions {
   providers: BridgeProvider<BridgeQuoteResult>[]
 }
 
-
 export class BridgingSdk {
-  constructor(
-    public readonly traderParams: TraderParameters, 
-    public readonly options: BridgingSdkOptions
-  ) {
+  constructor(public readonly traderParams: TraderParameters, public readonly options: BridgingSdkOptions) {
     const { providers } = this.options
 
     // For simplicity, we support only a single provider in the initial implementation
@@ -45,5 +41,4 @@ export class BridgingSdk {
   getQuote(_params: QuoteBridgeRequest): Promise<QuoteAndPost> {
     throw new Error('Not implemented yet!')
   }
-
-  
+}
