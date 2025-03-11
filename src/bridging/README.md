@@ -35,7 +35,7 @@ const parameters: QuoteBridgeRequest = {
 
 const { quoteResults, postSwapOrderFromQuote } = await sdk.getQuote(parameters)
 
-const buyAmount = quoteResults.amountsAndCosts.afterSlippage.buyAmount
+const { buyAmount } = quoteResults.amountsAndCosts.afterSlippage
 
 if (confirm(`You will get at least: ${buyAmount}, ok?`)) {
   const orderId = await postSwapOrderFromQuote()
