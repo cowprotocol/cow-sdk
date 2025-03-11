@@ -125,6 +125,7 @@ export interface ChainInfo {
   }
 }
 
+// TODO: Not use a reference from CoW Swap repo in the sdk repo.
 const CHAIN_ASSETS = 'https://raw.githubusercontent.com/cowprotocol/cowswap/refs/heads/develop/libs/assets/src/cow-swap'
 export const EthereumLogo = `${CHAIN_ASSETS}/network-mainnet-logo.svg`
 const GnosisChainLogo = `${CHAIN_ASSETS}/network-gnosis-chain-logo.svg`
