@@ -133,6 +133,7 @@ export const baseNativeCurrency: Omit<TokenInfo, 'chainId'> = {
   decimals: 18,
   name: 'Ether',
   symbol: 'ETH',
+  logoUrl: WRAPPED_NATIVE_CURRENCIES[SupportedChainId.MAINNET].logoUrl,
 }
 
 export const EthereumLogo = `${CHAIN_ASSETS}/network-mainnet-logo.svg`
@@ -205,6 +206,7 @@ export const gnosisChain: ChainInfo = {
     chainId: SupportedChainId.GNOSIS_CHAIN,
     name: 'xDAI',
     symbol: 'xDAI',
+    logoUrl: WRAPPED_NATIVE_CURRENCIES[SupportedChainId.GNOSIS_CHAIN].logoUrl,
   },
   addressPrefix: 'gno',
   isTestnet: false,
