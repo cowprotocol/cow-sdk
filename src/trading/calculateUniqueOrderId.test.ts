@@ -53,7 +53,7 @@ describe('calculateUniqueOrderId', () => {
     const [chainId, order] = generateOrderId.mock.calls[0]
 
     expect(chainId).toBe(SupportedChainId.MAINNET)
-    expect(order.sellToken).toBe(WRAPPED_NATIVE_CURRENCIES[SupportedChainId.MAINNET])
+    expect(order.sellToken).toBe(WRAPPED_NATIVE_CURRENCIES[SupportedChainId.MAINNET].address)
   })
 
   describe('When checkEthFlowOrderExists is set', () => {

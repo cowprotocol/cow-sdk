@@ -135,7 +135,7 @@ describe('postSellNativeCurrencyTrade', () => {
     expect(ethFlowContractMock.interface.encodeFunctionData).toHaveBeenCalledWith('createOrder', [
       {
         appData: appDataMock.appDataKeccak256,
-        sellToken: WRAPPED_NATIVE_CURRENCIES[defaultOrderParams.chainId],
+        sellToken: WRAPPED_NATIVE_CURRENCIES[defaultOrderParams.chainId].address,
         sellAmount: defaultOrderParams.sellAmount,
         sellTokenBalance: 'erc20',
         buyAmount: '1990000000000000000', // defaultOrderParams.buyAmount - slippage

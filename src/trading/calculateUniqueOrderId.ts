@@ -26,7 +26,7 @@ export async function calculateUniqueOrderId(
       sellTokenBalance: order.sellTokenBalance as string as OrderBalance,
       buyTokenBalance: order.buyTokenBalance as string as OrderBalance,
       validTo: MAX_VALID_TO_EPOCH,
-      sellToken: WRAPPED_NATIVE_CURRENCIES[chainId],
+      sellToken: WRAPPED_NATIVE_CURRENCIES[chainId].address,
     } as Order,
     {
       owner: (env === 'staging' ? BARN_ETH_FLOW_ADDRESSES : ETH_FLOW_ADDRESSES)[chainId],

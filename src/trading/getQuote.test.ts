@@ -101,7 +101,7 @@ describe('getQuoteToSign', () => {
 
         const call = getQuoteMock.mock.calls[0][0]
 
-        expect(call.sellToken).toBe(WRAPPED_NATIVE_CURRENCIES[defaultOrderParams.chainId])
+        expect(call.sellToken).toBe(WRAPPED_NATIVE_CURRENCIES[defaultOrderParams.chainId].address)
       })
 
       it('Default slippage should be 2%', async () => {
