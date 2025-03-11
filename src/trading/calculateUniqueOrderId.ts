@@ -1,8 +1,8 @@
 import { OrderSigningUtils, UnsignedOrder } from '../order-signing'
 import {
-  BARN_ETH_FLOW_ADDRESSES,
+  BARN_ETH_FLOW_ADDRESS,
   CowEnv,
-  ETH_FLOW_ADDRESSES,
+  ETH_FLOW_ADDRESS,
   MAX_VALID_TO_EPOCH,
   SupportedChainId,
   WRAPPED_NATIVE_CURRENCIES,
@@ -29,7 +29,7 @@ export async function calculateUniqueOrderId(
       sellToken: WRAPPED_NATIVE_CURRENCIES[chainId].address,
     } as Order,
     {
-      owner: (env === 'staging' ? BARN_ETH_FLOW_ADDRESSES : ETH_FLOW_ADDRESSES)[chainId],
+      owner: (env === 'staging' ? BARN_ETH_FLOW_ADDRESS : ETH_FLOW_ADDRESS)[chainId],
     }
   )
 
