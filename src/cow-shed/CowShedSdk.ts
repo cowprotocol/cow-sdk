@@ -73,8 +73,7 @@ export class CowShedSdk {
    *
    * This single call will create the cow-shed account if it doesn't exist yet, then will execute the calls.
    *
-   * @param param
-   * @returns
+   * @returns pre-authorized multicall details
    */
   async signCalls({
     calls,
