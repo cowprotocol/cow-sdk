@@ -1,12 +1,12 @@
 import { Wallet } from 'ethers'
 import { CowShedHooks } from './CoWShedHooks'
 import { AddressZero } from '@ethersproject/constants'
-import { ICoWShedCall } from './types'
-import { COW_SHED_FACTORY, COW_SHED_IMPLEMENTATION } from '../common'
-import { COW_SHED_PROXY_INIT_CODE } from './proxyInitCode'
+import { ICoWShedCall } from '../types'
+import { COW_SHED_FACTORY, COW_SHED_IMPLEMENTATION } from '../../common'
+import { COW_SHED_PROXY_INIT_CODE } from './const'
 import { SigningScheme } from '@cowprotocol/contracts'
 import { formatBytes32String, solidityPack } from 'ethers/lib/utils'
-import * as contracts from './contracts'
+import * as contracts from './utils'
 
 // information from mint and dai example of cow-shed repository
 // https://github.com/cowdao-grants/cow-shed/blob/main/examples/mintDaiAndSwap.ts

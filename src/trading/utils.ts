@@ -1,8 +1,6 @@
-import { LimitTradeParametersFromQuote, PrivateKey, TradeParameters } from './types'
+import { LimitTradeParametersFromQuote, TradeParameters } from './types'
 import { OrderQuoteResponse, QuoteAmountsAndCosts } from '../order-book'
 import { ETH_ADDRESS, SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '../common'
-import { ethers, Signer } from 'ethers'
-import { type ExternalProvider, Web3Provider } from '@ethersproject/providers'
 import { ETH_FLOW_DEFAULT_SLIPPAGE_BPS } from './consts'
 
 export function swapParamsToLimitOrderParams(
@@ -20,18 +18,6 @@ export function swapParamsToLimitOrderParams(
 
 export function getIsEthFlowOrder(params: { sellToken: string }): boolean {
   return params.sellToken.toLowerCase() === ETH_ADDRESS.toLowerCase()
-}
-
-export function getSigner(signer: Signer | ExternalProvider | PrivateKey): Signer {
-  if (typeof signer === 'string') return new ethers.Wallet(signer)
-
-  if ('request' in signer || 'send' in signer) {
-    const provider = new Web3Provider(signer)
-
-    return provider.getSigner()
-  }
-
-  return signer as Signer
 }
 
 /**
