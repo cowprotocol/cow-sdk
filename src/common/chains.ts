@@ -328,8 +328,8 @@ export const base: ChainInfo = {
     url: 'https://sepolia.dev',
   },
   docs: {
-    name: 'Sepolia resources',
-    url: 'https://sepolia.dev',
+    name: 'Base Docs',
+    url: 'https://docs.base.org',
   },
   blockExplorer: {
     name: 'BaseScan',
