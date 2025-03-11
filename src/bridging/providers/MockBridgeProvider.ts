@@ -11,7 +11,7 @@ import {
   GetBuyTokensParams,
   QuoteBridgeRequest,
 } from '../types'
-import { ChainInfo, EthereumLogo, mainnet, sepolia } from '../../common'
+import { baseNativeCurrency, ChainInfo, EthereumLogo, mainnet, sepolia } from '../../common'
 import { EvmCall } from '../../common/transaction'
 import { TokenInfo } from '../../common/tokens'
 import { OrderKind } from 'src/order-book'
@@ -31,11 +31,8 @@ const optimism: ChainInfo = {
   label: 'Optimism',
   logo: { light: EthereumLogo, dark: EthereumLogo },
   nativeCurrency: {
+    ...baseNativeCurrency,
     chainId: 10,
-    address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-    decimals: 18,
-    name: 'Wrapped Ether',
-    symbol: 'WETH',
     logoUrl:
       'https://raw.githubusercontent.com/cowprotocol/token-lists/main/src/public/images/1/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2/logo.png',
   },

@@ -324,8 +324,8 @@ export const base: ChainInfo = {
   logo: { light: BaseLogo, dark: BaseLogo },
 
   website: {
-    name: 'Sepolia resources',
-    url: 'https://sepolia.dev',
+    name: 'Base',
+    url: 'https://base.org',
   },
   docs: {
     name: 'Base Docs',
