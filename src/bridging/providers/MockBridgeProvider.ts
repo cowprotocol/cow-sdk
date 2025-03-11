@@ -14,6 +14,7 @@ import {
 import { ChainInfo, EthereumLogo, mainnet, sepolia } from '../../common'
 import { EvmCall } from '../../common/transaction'
 import { TokenInfo } from '../../common/tokens'
+import { OrderKind } from 'src/order-book'
 
 const BRIDGING_ID = '123456789asdfg'
 const MOCK_TX: EvmCall = {
@@ -138,6 +139,7 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
   }
   async decodeBridgeHook(_hook: BridgeHook): Promise<BridgeDeposit> {
     return {
+      type: OrderKind.SELL,
       provider: this.info,
 
       sellTokenChainId: 1,

@@ -2,7 +2,7 @@ import { latest as latestAppData } from '@cowprotocol/app-data'
 import { ethers } from 'ethers'
 import { ChainInfo, ChainId } from '../common'
 import { TokenInfo } from '../common/tokens'
-import { Address } from '../order-book'
+import { Address, OrderKind } from '../order-book'
 import { EvmCall } from '../common/transaction'
 
 export interface BridgeProviderInfo {
@@ -30,7 +30,7 @@ export interface GetBuyTokensParams extends Partial<WithSellToken> {
  * Parameters for getting a bridge quote
  */
 export interface QuoteBridgeRequest extends WithSellToken, WithBuyToken {
-  type: 'SELL' // We make it explicit that only SELL is supported for now
+  type: OrderKind.SELL // We make it explicit that only SELL is supported for now
   amount: string
   recipient: string
 }
@@ -71,8 +71,10 @@ export interface BridgeStatusResult {
  * It models the minimum information needed to initiate a bridge and that it can also be extracted from the cow hook.
  *
  */
-export interface BridgeDeposit extends QuoteBridgeRequest {
+export interface BridgeDeposit extends Omit<QuoteBridgeRequest, 'amount'> {
   provider: BridgeProviderInfo
+
+  sellTokenAmount: string
   minBuyAmount: string
 }
 

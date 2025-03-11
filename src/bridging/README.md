@@ -7,7 +7,7 @@ This documentation is a WIP as this feature remains in development, as the SDK i
 ## Usage
 
 ```ts
-import { SupportedChainId, BridgingSdk, QuoteBridgeRequest } from '@cowprotocol/cow-sdk'
+import { SupportedChainId, BridgingSdk, QuoteBridgeRequest, OrderKind } from '@cowprotocol/cow-sdk'
 
 const sdk = new BridgingSdk({
   chainId: SupportedChainId.SEPOLIA,
