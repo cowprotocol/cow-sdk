@@ -26,7 +26,7 @@ export interface WebUrl {
 
 export type ChainRpcUrls = {
   http: readonly string[]
-  webSocket?: readonly string[] | undefined
+  webSocket?: readonly string[]
 }
 
 export type ChainContract = {
