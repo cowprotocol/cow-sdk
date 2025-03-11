@@ -1,6 +1,3 @@
-// ---------------------------------------------------------------------------------------------------------------------
-// TODO: These types should probably be moved to a new the "model" package. For now adding for drafting the SDK
-
 import { latest as latestAppData } from '@cowprotocol/app-data'
 import { ethers } from 'ethers'
 import { ChainInfo, ChainId } from '../common'
