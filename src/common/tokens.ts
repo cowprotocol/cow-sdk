@@ -56,7 +56,7 @@ export const WRAPPED_NATIVE_CURRENCIES: Record<SupportedChainId, TokenInfo> = {
   },
 
   [SupportedChainId.SEPOLIA]: {
-    chainId: SupportedChainId.BASE,
+    chainId: SupportedChainId.SEPOLIA,
     address: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14',
     decimals: 18,
     name: 'Wrapped Ether',
