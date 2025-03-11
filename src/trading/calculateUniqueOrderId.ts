@@ -29,7 +29,7 @@ export async function calculateUniqueOrderId(
       sellToken: WRAPPED_NATIVE_CURRENCIES[chainId].address,
     } as Order,
     {
-      owner: (env === 'staging' ? BARN_ETH_FLOW_ADDRESS : ETH_FLOW_ADDRESS)[chainId],
+      owner: env === 'staging' ? BARN_ETH_FLOW_ADDRESS : ETH_FLOW_ADDRESS,
     }
   )
 

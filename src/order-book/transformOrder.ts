@@ -1,4 +1,4 @@
-import { ETH_ADDRESS } from '../common/consts'
+import { ETH_ADDRESS } from '../common/consts/contracts'
 import { Order } from './generated'
 import { EnrichedOrder } from './types'
 

@@ -1,15 +1,8 @@
 import 'cross-fetch/polyfill'
 import { RateLimiter } from 'limiter'
-import { SupportedChainId } from '../common/chains'
-import {
-  ApiBaseUrls,
-  ApiContext,
-  CowEnv,
-  DEFAULT_COW_API_CONTEXT,
-  ENVS_LIST,
-  PartialApiContext,
-} from '../common/configs'
-import { CowError } from '../common/cow-error'
+import { SupportedChainId } from '../common/types/chains'
+import { ApiBaseUrls, ApiContext, CowEnv, PartialApiContext } from '../common/types/config'
+import { CowError } from '../common/types/cow-error'
 import {
   Address,
   AppDataHash,
@@ -30,6 +23,7 @@ import {
 import { DEFAULT_BACKOFF_OPTIONS, DEFAULT_LIMITER_OPTIONS, FetchParams, OrderBookApiError, request } from './request'
 import { transformOrder } from './transformOrder'
 import { EnrichedOrder } from './types'
+import { DEFAULT_COW_API_CONTEXT, ENVS_LIST } from '../common'
 
 /**
  * An object containing *production* environment base URLs for each supported `chainId`.

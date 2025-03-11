@@ -1,4 +1,5 @@
-import { ALL_SUPPORTED_CHAIN_IDS, SupportedChainId } from './chains'
+import { SupportedChainId } from '../types/chains'
+import { mapAddressToSupportedNetworks } from '../utils/config'
 
 export const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 export const EXTENSIBLE_FALLBACK_HANDLER = '0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5'
@@ -9,22 +10,6 @@ export const COW_SHED_IMPLEMENTATION = '0x2CFFA8cf11B90C9F437567b86352169dF4009F
 
 const VAULT_RELAYER = '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110'
 const SETTLEMENT_CONTRACT = '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'
-
-export function mapSupportedNetworks<T>(value: (chainId: SupportedChainId) => T): Record<SupportedChainId, T>
-export function mapSupportedNetworks<T>(value: T): Record<SupportedChainId, T>
-export function mapSupportedNetworks<T>(value: T | ((chainId: SupportedChainId) => T)): Record<SupportedChainId, T> {
-  return ALL_SUPPORTED_CHAIN_IDS.reduce<Record<number, T>>(
-    (acc, chainId) => ({
-      ...acc,
-      [chainId]: typeof value === 'function' ? (value as (chainId: SupportedChainId) => T)(chainId) : value,
-    }),
-    {}
-  )
-}
-
-export function mapAddressToSupportedNetworks(address: string): Record<SupportedChainId, string> {
-  return mapSupportedNetworks(address)
-}
 
 /**
  * An object containing the addresses of the CoW Protocol settlement contracts for each supported chain.

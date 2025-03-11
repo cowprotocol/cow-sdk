@@ -1,17 +1,5 @@
-import { ChainId, SupportedChainId } from './chains'
-
-/**
- * Token on a chain.
- */
-export interface TokenInfo {
-  chainId: ChainId
-  address: string
-  decimals: number
-
-  name?: string
-  symbol?: string
-  logoUrl?: string
-}
+import { SupportedChainId } from '../types/chains'
+import { TokenInfo } from '../types/tokens'
 
 export const NATIVE_CURRENCY_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 const tokenListBaseUrl = 'https://raw.githubusercontent.com/cowprotocol/token-lists/main/src/public/images'

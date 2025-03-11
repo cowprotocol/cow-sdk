@@ -6,5 +6,3 @@ export class CowError extends Error {
     this.error_code = error_code
   }
 }
-
-export const logPrefix = 'cow-sdk:'

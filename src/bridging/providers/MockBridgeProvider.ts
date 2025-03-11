@@ -12,8 +12,8 @@ import {
   QuoteBridgeRequest,
 } from '../types'
 import { baseNativeCurrency, ChainInfo, EthereumLogo, mainnet, sepolia } from '../../common'
-import { EvmCall } from '../../common/transaction'
-import { TokenInfo } from '../../common/tokens'
+import { EvmCall } from '../../common/types/ethereum'
+import { TokenInfo } from '../../common/types/tokens'
 import { OrderKind } from 'src/order-book'
 
 const BRIDGING_ID = '123456789asdfg'
