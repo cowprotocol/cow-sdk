@@ -15,10 +15,25 @@ import {
   solidityKeccak256,
   splitSignature,
 } from 'ethers/lib/utils'
-import { COW_SHED_FACTORY, COW_SHED_IMPLEMENTATION, SupportedChainId } from '../common'
-import { getCoWShedFactoryInterface } from './contracts'
-import { COW_SHED_PROXY_INIT_CODE } from './proxyInitCode'
-import { COW_SHED_712_TYPES, ICoWShedCall, ICoWShedOptions } from './types'
+import { COW_SHED_FACTORY, COW_SHED_IMPLEMENTATION, SupportedChainId } from '../../common'
+import { getCoWShedFactoryInterface } from './utils'
+import { COW_SHED_PROXY_INIT_CODE } from './const'
+import { ICoWShedCall, ICoWShedOptions } from '../types'
+
+export const COW_SHED_712_TYPES = {
+  ExecuteHooks: [
+    { type: 'Call[]', name: 'calls' },
+    { type: 'bytes32', name: 'nonce' },
+    { type: 'uint256', name: 'deadline' },
+  ],
+  Call: [
+    { type: 'address', name: 'target' },
+    { type: 'uint256', name: 'value' },
+    { type: 'bytes', name: 'callData' },
+    { type: 'bool', name: 'allowFailure' },
+    { type: 'bool', name: 'isDelegateCall' },
+  ],
+}
 
 export class CowShedHooks {
   constructor(private chainId: SupportedChainId, private customOptions?: ICoWShedOptions) {}

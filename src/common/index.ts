@@ -4,6 +4,7 @@ export * from './types/config'
 export * from './types/cow-error'
 export * from './types/ethereum'
 export * from './types/tokens'
+export * from './types/wallets'
 
 // Constants
 export * from './consts/chains'
