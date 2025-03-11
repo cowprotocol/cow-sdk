@@ -1,4 +1,4 @@
-import { TokenInfo, WRAPPED_NATIVE_CURRENCIES } from './tokens'
+import { NATIVE_CURRENCY_ADDRESS, TokenInfo, WRAPPED_NATIVE_CURRENCIES } from './tokens'
 
 /**
  * Supported chains and their `chainId` for the SDK.
@@ -127,6 +127,14 @@ export interface ChainInfo {
 
 // TODO: Not use a reference from CoW Swap repo in the sdk repo.
 const CHAIN_ASSETS = 'https://raw.githubusercontent.com/cowprotocol/cowswap/refs/heads/develop/libs/assets/src/cow-swap'
+
+export const baseNativeCurrency: Omit<TokenInfo, 'chainId'> = {
+  address: NATIVE_CURRENCY_ADDRESS,
+  decimals: 18,
+  name: 'Ether',
+  symbol: 'ETH',
+}
+
 export const EthereumLogo = `${CHAIN_ASSETS}/network-mainnet-logo.svg`
 const GnosisChainLogo = `${CHAIN_ASSETS}/network-gnosis-chain-logo.svg`
 const ArbitrumOneLogoLight = `${CHAIN_ASSETS}/network-arbitrum-one-logo-blue.svg`
@@ -142,7 +150,10 @@ export const mainnet: ChainInfo = {
   id: SupportedChainId.MAINNET,
   name: 'mainnet',
   label: 'Ethereum',
-  nativeCurrency: WRAPPED_NATIVE_CURRENCIES[SupportedChainId.MAINNET],
+  nativeCurrency: {
+    ...baseNativeCurrency,
+    chainId: SupportedChainId.MAINNET,
+  },
   addressPrefix: 'eth',
   isTestnet: false,
   contracts: {
@@ -189,7 +200,12 @@ export const gnosisChain: ChainInfo = {
   id: SupportedChainId.GNOSIS_CHAIN,
   name: 'gnosis_chain',
   label: 'Gnosis Chain',
-  nativeCurrency: WRAPPED_NATIVE_CURRENCIES[SupportedChainId.GNOSIS_CHAIN],
+  nativeCurrency: {
+    ...baseNativeCurrency,
+    chainId: SupportedChainId.GNOSIS_CHAIN,
+    name: 'xDAI',
+    symbol: 'xDAI',
+  },
   addressPrefix: 'gno',
   isTestnet: false,
   contracts: {
@@ -236,7 +252,10 @@ export const arbitrumOne: ChainInfo = {
   id: SupportedChainId.ARBITRUM_ONE,
   name: 'arbitrum_one',
   label: 'Arbitrum One',
-  nativeCurrency: WRAPPED_NATIVE_CURRENCIES[SupportedChainId.ARBITRUM_ONE],
+  nativeCurrency: {
+    ...baseNativeCurrency,
+    chainId: SupportedChainId.ARBITRUM_ONE,
+  },
   addressPrefix: 'arb1',
   isTestnet: false,
   contracts: {
@@ -282,7 +301,10 @@ export const base: ChainInfo = {
   id: SupportedChainId.BASE,
   name: 'base',
   label: 'Base',
-  nativeCurrency: WRAPPED_NATIVE_CURRENCIES[SupportedChainId.BASE],
+  nativeCurrency: {
+    ...baseNativeCurrency,
+    chainId: SupportedChainId.BASE,
+  },
   addressPrefix: 'base',
   isTestnet: false,
   contracts: {
