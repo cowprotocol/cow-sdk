@@ -1,4 +1,4 @@
-import { ChainId, ChainInfo, SupportedChainId } from '../types/chains'
+import { ChainInfo, SupportedChainId } from '../types/chains'
 import { TokenInfo } from '../types/tokens'
 import { NATIVE_CURRENCY_ADDRESS, WRAPPED_NATIVE_CURRENCIES } from './tokens'
 
@@ -274,7 +274,7 @@ export const sepolia: ChainInfo = {
 /**
  * Details of all supported chains.
  */
-export const ALL_SUPPORTED_CHAINS_MAP: Record<ChainId, ChainInfo> = {
+export const ALL_SUPPORTED_CHAINS_MAP: Record<SupportedChainId, ChainInfo> = {
   [SupportedChainId.MAINNET]: mainnet,
   [SupportedChainId.GNOSIS_CHAIN]: gnosisChain,
   [SupportedChainId.ARBITRUM_ONE]: arbitrumOne,
