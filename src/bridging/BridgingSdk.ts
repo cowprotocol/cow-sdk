@@ -31,15 +31,15 @@ export class BridgingSdk {
     return ALL_SUPPORTED_CHAINS
   }
 
-  getTargetNetworks(): Promise<ChainInfo[]> {
+  async getTargetNetworks(): Promise<ChainInfo[]> {
     return this.provider.getNetworks()
   }
 
-  getBuyTokens(param: GetBuyTokensParams): Promise<TokenInfo[]> {
+  async getBuyTokens(param: GetBuyTokensParams): Promise<TokenInfo[]> {
     return this.provider.getBuyTokens(param)
   }
 
-  getQuote(_params: QuoteBridgeRequest): Promise<QuoteAndPost> {
+  async getQuote(_params: QuoteBridgeRequest): Promise<QuoteAndPost> {
     throw new Error('Not implemented yet!')
   }
 }
