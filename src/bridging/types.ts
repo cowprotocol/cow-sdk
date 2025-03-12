@@ -36,13 +36,8 @@ export interface QuoteBridgeRequest extends WithSellToken, WithBuyToken {
   recipient?: string
 }
 
-export interface QuoteFee {
-  type: 'fixed' | 'percent'
-  value: number
-}
-
 export interface BridgeQuoteResult {
-  fee: QuoteFee
+  feeBps: number
   slippageBps: number
   buyAmount: string
   fillTimeInSeconds?: number
