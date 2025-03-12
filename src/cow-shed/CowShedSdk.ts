@@ -1,7 +1,7 @@
 import { ethers } from 'ethers'
 import { EvmCall, SignerLike, SupportedChainId } from '../common'
 import { CowShedHooks } from './contracts/CoWShedHooks'
-import { SigningScheme } from '@cowprotocol/contracts'
+import { EcdsaSigningScheme, SigningScheme } from '@cowprotocol/contracts'
 import { ICoWShedCall, ICoWShedOptions } from './types'
 import { getSigner } from 'src/common/utils/wallet'
 
@@ -38,6 +38,11 @@ export interface SignAndEncodeTxArgs {
    * Default gas limit to use for the transaction. If not provided, it will throw an error if the gas limit cannot be estimated.
    */
   defaultGasLimit?: ethers.BigNumber
+
+  /**
+   * Signing scheme to use for the transaction.
+   */
+  signingScheme?: EcdsaSigningScheme
 }
 
 export interface CowShedCall {
@@ -82,6 +87,7 @@ export class CowShedSdk {
     nonce = CowShedSdk.getNonce(),
     deadline = CowShedSdk.getNonExpiringDeadline(),
     defaultGasLimit,
+    signingScheme = SigningScheme.EIP712,
   }: SignAndEncodeTxArgs): Promise<CowShedCall> {
     // Get the cow-shed for the wallet
     const cowShedHooks = CowShedSdk.getCowShedHooks(chainId)
@@ -97,7 +103,7 @@ export class CowShedSdk {
     const cowShedAccount = cowShedHooks.proxyOf(ownerAddress)
 
     // Sign the calls using cow-shed's owner
-    const signature = await cowShedHooks.signCalls(calls, nonce, deadline, signer, SigningScheme.EIP712)
+    const signature = await cowShedHooks.signCalls(calls, nonce, deadline, signer, signingScheme)
 
     //  Get the signed transaction's calldata
     const callData = cowShedHooks.encodeExecuteHooksForFactory(calls, nonce, deadline, ownerAddress, signature)
