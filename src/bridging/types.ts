@@ -32,7 +32,8 @@ export interface GetBuyTokensParams extends Partial<WithSellToken> {
 export interface QuoteBridgeRequest extends WithSellToken, WithBuyToken {
   type: OrderKind.SELL // We make it explicit that only SELL is supported for now
   amount: string
-  recipient: string
+  owner: string
+  recipient?: string
 }
 
 export interface QuoteFee {
