@@ -34,6 +34,8 @@ export interface QuoteBridgeRequest extends WithSellToken, WithBuyToken {
   amount: string
   owner: string
   recipient?: string
+  feeBps?: number
+  feeRecipient?: string
 }
 
 export interface BridgeQuoteResult {
