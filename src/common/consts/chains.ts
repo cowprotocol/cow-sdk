@@ -255,7 +255,7 @@ export const sepolia: ChainInfo = {
   },
   docs: {
     name: 'Sepolia Docs',
-    url: 'https://sepolia.dev',
+    url: 'https://ethereum.org/en/developers/docs/networks/#sepolia',
   },
   blockExplorer: {
     name: 'Etherscan',
