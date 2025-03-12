@@ -60,6 +60,7 @@ describe('getEthFlowTransaction', () => {
 
   afterEach(() => {
     jest.restoreAllMocks()
+    mockConnect.interface.encodeFunctionData.mockReset()
   })
 
   it('Should always override sell token with wrapped native token', async () => {
@@ -83,8 +84,8 @@ describe('getEthFlowTransaction', () => {
     expect(result.transaction.value).toBe('0x' + BigInt(params.sellAmount).toString(16))
   })
 
-  it('Default slippage must be 2%', async () => {
-    await getEthFlowTransaction(signer, appDataKeccak256, params, chainId)
+  it('Default slippage must be 2% in Mainnet', async () => {
+    await getEthFlowTransaction(signer, appDataKeccak256, params, SupportedChainId.MAINNET)
     const orderData = mockConnect.interface.encodeFunctionData.mock.calls[0][1][0]
     const buyAmountBeforeSlippage = BigInt(params.buyAmount)
     // 2% slippage

@@ -1,4 +1,8 @@
 import { ETH_FLOW_DEFAULT_SLIPPAGE_BPS } from './consts'
+import { getQuoteWithSigner } from './getQuote'
+import { SwapParameters } from './types'
+import { ETH_ADDRESS, SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '../common'
+import { OrderBookApi, OrderKind, OrderQuoteResponse } from '../order-book'
 
 jest.mock('cross-fetch', () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -11,11 +15,6 @@ jest.mock('cross-fetch', () => {
     default: fetchMock,
   }
 })
-
-import { getQuoteWithSigner } from './getQuote'
-import { SwapParameters } from './types'
-import { ETH_ADDRESS, SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '../common'
-import { OrderBookApi, OrderKind, OrderQuoteResponse } from '../order-book'
 
 const quoteResponseMock = {
   quote: {
@@ -181,9 +180,9 @@ describe('getQuoteToSign', () => {
     })
 
     describe('When sell ETH', () => {
-      it('Default slippage should be 2%', async () => {
+      it('Default slippage should be 2%  in Mainnet', async () => {
         const { result } = await getQuoteWithSigner(
-          { ...defaultOrderParams, sellToken: ETH_ADDRESS, slippageBps: undefined },
+          { ...defaultOrderParams, chainId: SupportedChainId.MAINNET, sellToken: ETH_ADDRESS, slippageBps: undefined },
           {},
           orderBookApiMock
         )
