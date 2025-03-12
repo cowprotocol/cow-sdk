@@ -1,4 +1,13 @@
 const GAS = '0x1e848' // 125000
+const mockConnect = {
+  address: '0xaa1',
+  estimateGas: {
+    createOrder: jest.fn().mockResolvedValue({ toHexString: () => GAS }),
+  },
+  interface: {
+    encodeFunctionData: jest.fn().mockReturnValue('0x0ac'),
+  },
+}
 
 jest.mock('cross-fetch', () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -17,15 +26,7 @@ jest.mock('../common/generated', () => {
   return {
     ...original,
     EthFlow__factory: {
-      connect: jest.fn().mockReturnValue({
-        address: '0xaa1',
-        estimateGas: {
-          createOrder: jest.fn().mockResolvedValue({ toHexString: () => GAS }),
-        },
-        interface: {
-          encodeFunctionData: jest.fn().mockReturnValue('0x0ac'),
-        },
-      }),
+      connect: jest.fn().mockImplementation(() => mockConnect),
     },
   }
 })
@@ -57,6 +58,11 @@ describe('getEthFlowTransaction', () => {
   signer.getChainId = jest.fn().mockResolvedValue(chainId)
   signer.getAddress = jest.fn().mockResolvedValue(account)
 
+  afterEach(() => {
+    jest.restoreAllMocks()
+    mockConnect.interface.encodeFunctionData.mockReset()
+  })
+
   it('Should always override sell token with wrapped native token', async () => {
     const result = await getEthFlowTransaction(signer, appDataKeccak256, params, chainId)
     const wrappedToken = WRAPPED_NATIVE_CURRENCIES[chainId]
@@ -76,5 +82,15 @@ describe('getEthFlowTransaction', () => {
     const result = await getEthFlowTransaction(signer, appDataKeccak256, params, chainId)
 
     expect(result.transaction.value).toBe('0x' + BigInt(params.sellAmount).toString(16))
+  })
+
+  it('Default slippage must be 2% in Mainnet', async () => {
+    await getEthFlowTransaction(signer, appDataKeccak256, params, SupportedChainId.MAINNET)
+    const orderData = mockConnect.interface.encodeFunctionData.mock.calls[0][1][0]
+    const buyAmountBeforeSlippage = BigInt(params.buyAmount)
+    // 2% slippage
+    const buyAmountAfterSlippage = buyAmountBeforeSlippage - (buyAmountBeforeSlippage * BigInt(2)) / BigInt(100)
+
+    expect(orderData.buyAmount).toBe(buyAmountAfterSlippage.toString())
   })
 })
