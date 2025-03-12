@@ -249,12 +249,6 @@ export async function generateOrderId(
   const domain = await getDomain(chainId)
   const orderDigest = hashOrder(domain, order)
   // Generate the orderId from owner, orderDigest, and max validTo
-  console.log('params GEN', {
-    ...params,
-    orderDigest,
-    // Different validTo when signing because EthFlow contract expects it to be max for all orders
-    validTo: order.validTo,
-  })
   const orderId = packOrderUidParams({
     ...params,
     orderDigest,
