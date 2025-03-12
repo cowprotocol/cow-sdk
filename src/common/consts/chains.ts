@@ -26,7 +26,6 @@ const SepoliaLogo = `${CHAIN_ASSETS}/network-sepolia-logo.svg`
  */
 export const mainnet: ChainInfo = {
   id: SupportedChainId.MAINNET,
-  name: 'mainnet',
   label: 'Ethereum',
   nativeCurrency: {
     ...baseNativeCurrency,
@@ -76,7 +75,6 @@ export const mainnet: ChainInfo = {
  */
 export const gnosisChain: ChainInfo = {
   id: SupportedChainId.GNOSIS_CHAIN,
-  name: 'gnosis_chain',
   label: 'Gnosis Chain',
   nativeCurrency: {
     ...baseNativeCurrency,
@@ -129,7 +127,6 @@ export const gnosisChain: ChainInfo = {
  */
 export const arbitrumOne: ChainInfo = {
   id: SupportedChainId.ARBITRUM_ONE,
-  name: 'arbitrum_one',
   label: 'Arbitrum One',
   nativeCurrency: {
     ...baseNativeCurrency,
@@ -178,7 +175,6 @@ export const arbitrumOne: ChainInfo = {
  */
 export const base: ChainInfo = {
   id: SupportedChainId.BASE,
-  name: 'base',
   label: 'Base',
   nativeCurrency: {
     ...baseNativeCurrency,
@@ -227,7 +223,6 @@ export const base: ChainInfo = {
  */
 export const sepolia: ChainInfo = {
   id: SupportedChainId.SEPOLIA,
-  name: 'sepolia',
   label: 'Sepolia',
   nativeCurrency: WRAPPED_NATIVE_CURRENCIES[SupportedChainId.SEPOLIA],
   addressPrefix: 'sep',

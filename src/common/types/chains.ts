@@ -55,11 +55,6 @@ export interface ChainInfo {
   readonly id: ChainId
 
   /**
-   * Name of the chain as defined in
-   */
-  readonly name: string
-
-  /**
    * Label of the chain. Field used for display purposes.
    */
   readonly label: string
