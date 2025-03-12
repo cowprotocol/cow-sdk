@@ -1,4 +1,5 @@
-import { SupportedChainId, ApiContext, CowEnv } from '..'
+import { SupportedChainId } from '../types/chains'
+import { ApiContext, CowEnv } from '../types/config'
 
 /**
  * The list of available environments.
