@@ -224,7 +224,10 @@ export const base: ChainInfo = {
 export const sepolia: ChainInfo = {
   id: SupportedChainId.SEPOLIA,
   label: 'Sepolia',
-  nativeCurrency: WRAPPED_NATIVE_CURRENCIES[SupportedChainId.SEPOLIA],
+  nativeCurrency: {
+    ...baseNativeCurrency,
+    chainId: SupportedChainId.SEPOLIA,
+  },
   addressPrefix: 'sep',
   isTestnet: true,
   contracts: {
