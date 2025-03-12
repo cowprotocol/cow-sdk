@@ -258,12 +258,6 @@ export const sepolia: ChainInfo = {
     name: 'Etherscan',
     url: 'https://sepolia.etherscan.io',
   },
-  bridges: [
-    {
-      name: 'Gnosis Chain Bridge',
-      url: 'https://bridge.gnosischain.com',
-    },
-  ],
 }
 
 /**
