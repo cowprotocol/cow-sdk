@@ -248,11 +248,11 @@ export const sepolia: ChainInfo = {
 
   website: {
     name: 'Ethereum',
-    url: 'https://ethereum.org',
+    url: 'https://sepolia.dev',
   },
   docs: {
     name: 'Sepolia Docs',
-    url: 'https://docs.cow.fi',
+    url: 'https://sepolia.dev',
   },
   blockExplorer: {
     name: 'Etherscan',
