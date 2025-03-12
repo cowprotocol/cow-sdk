@@ -5,6 +5,8 @@ import { EcdsaSigningScheme, SigningScheme } from '@cowprotocol/contracts'
 import { ICoWShedCall, ICoWShedOptions } from './types'
 import { getSigner } from 'src/common/utils/wallet'
 
+const NON_EXPIRING_DEADLINE = ethers.constants.MaxUint256.toBigInt()
+
 export interface SignAndEncodeTxArgs {
   /**
    * Calls to pre-authorize on the cow-shed account
@@ -85,7 +87,7 @@ export class CowShedSdk {
     signer: signerParam,
     chainId,
     nonce = CowShedSdk.getNonce(),
-    deadline = CowShedSdk.getNonExpiringDeadline(),
+    deadline = NON_EXPIRING_DEADLINE,
     defaultGasLimit,
     signingScheme = SigningScheme.EIP712,
   }: SignAndEncodeTxArgs): Promise<CowShedCall> {
@@ -151,9 +153,5 @@ export class CowShedSdk {
 
   protected static getNonce(): string {
     return ethers.utils.formatBytes32String(Date.now().toString())
-  }
-
-  protected static getNonExpiringDeadline(): bigint {
-    return ethers.constants.MaxUint256.toBigInt()
   }
 }
