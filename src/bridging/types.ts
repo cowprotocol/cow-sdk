@@ -52,7 +52,7 @@ export interface BridgeHook {
 
 export enum BridgeStatus {
   NOT_INITIATED = 'not_initiated',
-  INITIATED = 'initiated',
+  IN_PROGRESS = 'in_progress',
   EXECUTED = 'executed',
   FAILED = 'failed',
   EXPIRED = 'expired',
