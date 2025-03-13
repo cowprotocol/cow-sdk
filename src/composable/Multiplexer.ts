@@ -1,7 +1,7 @@
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree'
 import { BigNumber, providers, utils } from 'ethers'
 
-import { SupportedChainId } from '../common'
+import { SupportedChainId } from '../chains'
 
 import { ComposableCoW, GPv2Order } from '../common/generated/ComposableCoW'
 import { ProofLocation, ProofWithParams, ConditionalOrderParams } from './types'

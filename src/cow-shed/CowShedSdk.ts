@@ -1,5 +1,6 @@
 import { ethers } from 'ethers'
-import { EvmCall, SignerLike, SupportedChainId } from '../common'
+import { EvmCall, SignerLike } from '../common'
+import { SupportedChainId } from '../chains'
 import { CowShedHooks } from './contracts/CoWShedHooks'
 import { EcdsaSigningScheme, SigningScheme } from '@cowprotocol/contracts'
 import { ICoWShedCall, ICoWShedOptions } from './types'

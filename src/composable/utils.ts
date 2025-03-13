@@ -1,9 +1,6 @@
 import { utils, providers, BigNumber } from 'ethers'
-import {
-  COMPOSABLE_COW_CONTRACT_ADDRESS,
-  EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS,
-  SupportedChainId,
-} from '../common'
+import { SupportedChainId } from '../chains'
+import { COMPOSABLE_COW_CONTRACT_ADDRESS, EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS } from '../common'
 import { ExtensibleFallbackHandler__factory } from '../common/generated'
 import { BlockInfo, ConditionalOrderParams, IsValid, IsValidResult } from './types'
 import { Order, OrderBalance, OrderKind } from '@cowprotocol/contracts'

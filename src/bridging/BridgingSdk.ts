@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { QuoteAndPost, TraderParameters } from '../trading'
 import { BridgeProvider, BridgeQuoteResult, GetBuyTokensParams, QuoteBridgeRequest } from './types'
-import { ALL_SUPPORTED_CHAINS, ChainInfo, TokenInfo } from '../common'
-
+import { ALL_SUPPORTED_CHAINS, TokenInfo } from '../common'
+import type { ChainInfo } from '../chains'
 export interface BridgingSdkOptions {
   /**
    * Providers for the bridging.

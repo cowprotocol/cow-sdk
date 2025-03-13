@@ -1,7 +1,7 @@
 import { EthFlow__factory } from '../common/generated'
 import { VoidSigner } from '@ethersproject/abstract-signer'
 import { AppDataInfo, LimitOrderParameters } from './types'
-import { SupportedChainId } from '../common/types/chains'
+import { SupportedChainId } from '../chains/types'
 import { OrderBookApi, OrderKind } from '../order-book'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { WRAPPED_NATIVE_CURRENCIES } from '../common'

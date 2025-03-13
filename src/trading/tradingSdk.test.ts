@@ -1,5 +1,5 @@
 import { TradingSdk } from './tradingSdk'
-import { SupportedChainId } from '../common'
+import { SupportedChainId } from '../chains'
 import { TradeBaseParameters } from './types'
 import { OrderBookApi, OrderKind } from '../order-book'
 

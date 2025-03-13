@@ -4,9 +4,9 @@ import {
   CowEnv,
   ETH_FLOW_ADDRESS,
   MAX_VALID_TO_EPOCH,
-  SupportedChainId,
   WRAPPED_NATIVE_CURRENCIES,
 } from '../common'
+import { SupportedChainId } from '../chains'
 import type { Order, OrderBalance } from '@cowprotocol/contracts'
 
 export interface EthFlowOrderExistsCallback {

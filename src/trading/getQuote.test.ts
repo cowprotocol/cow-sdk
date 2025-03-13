@@ -1,7 +1,8 @@
 import { ETH_FLOW_DEFAULT_SLIPPAGE_BPS } from './consts'
 import { getQuoteWithSigner } from './getQuote'
 import { SwapParameters } from './types'
-import { ETH_ADDRESS, SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '../common'
+import { ETH_ADDRESS, WRAPPED_NATIVE_CURRENCIES } from '../common'
+import { SupportedChainId } from '../chains'
 import { OrderBookApi, OrderKind, OrderQuoteResponse } from '../order-book'
 
 const quoteResponseMock = {
