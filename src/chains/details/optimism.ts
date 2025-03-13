@@ -1,4 +1,4 @@
-import { baseNativeCurrency } from '../../common'
+import { nativeCurrencyTemplate } from '../../common/consts/tokens'
 import { ChainInfo } from '../types'
 import { RAW_CHAINS_FILES_PATH } from '../const'
 
@@ -10,7 +10,7 @@ export const optimism: ChainInfo = {
   label: 'Optimism',
   logo: { light: optimismLogo, dark: optimismLogo },
   nativeCurrency: {
-    ...baseNativeCurrency,
+    ...nativeCurrencyTemplate,
     chainId: 10,
     logoUrl:
       'https://raw.githubusercontent.com/cowprotocol/token-lists/main/src/public/images/1/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2/logo.png',

@@ -1,5 +1,5 @@
 import { ChainInfo, SupportedChainId } from '../types'
-import { baseNativeCurrency } from '../../common/consts/tokens'
+import { nativeCurrencyTemplate } from '../../common/consts/tokens'
 import { RAW_CHAINS_FILES_PATH } from '../const'
 
 const sepoliaLogo = `${RAW_CHAINS_FILES_PATH}/images/sepolia-logo.svg`
@@ -13,7 +13,7 @@ export const sepolia: ChainInfo = {
   id: SupportedChainId.SEPOLIA,
   label: 'Sepolia',
   nativeCurrency: {
-    ...baseNativeCurrency,
+    ...nativeCurrencyTemplate,
     chainId: SupportedChainId.SEPOLIA,
   },
   addressPrefix: 'sep',

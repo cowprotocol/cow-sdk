@@ -1,5 +1,5 @@
 import { ChainInfo, SupportedChainId } from '../types'
-import { baseNativeCurrency } from '../../common/consts/tokens'
+import { nativeCurrencyTemplate } from '../../common/consts/tokens'
 import { RAW_CHAINS_FILES_PATH } from '../const'
 
 const arbitrumOneLogoLight = `${RAW_CHAINS_FILES_PATH}/images/arbitrum-one-logo-light.svg`
@@ -14,7 +14,7 @@ export const arbitrumOne: ChainInfo = {
   id: SupportedChainId.ARBITRUM_ONE,
   label: 'Arbitrum One',
   nativeCurrency: {
-    ...baseNativeCurrency,
+    ...nativeCurrencyTemplate,
     chainId: SupportedChainId.ARBITRUM_ONE,
   },
   addressPrefix: 'arb1',

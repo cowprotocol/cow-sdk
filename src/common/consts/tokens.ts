@@ -46,7 +46,10 @@ export const WRAPPED_NATIVE_CURRENCIES: Record<SupportedChainId, TokenInfo> = {
   },
 }
 
-export const baseNativeCurrency: Omit<TokenInfo, 'chainId'> = {
+/**
+ * Just a base template for the native currency, handy to define new networks.
+ */
+export const nativeCurrencyTemplate: Omit<TokenInfo, 'chainId'> = {
   address: NATIVE_CURRENCY_ADDRESS,
   decimals: 18,
   name: 'Ether',

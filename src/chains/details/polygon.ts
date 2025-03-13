@@ -1,4 +1,4 @@
-import { baseNativeCurrency } from '../../common'
+import { nativeCurrencyTemplate } from '../../common/consts/tokens'
 import { ChainInfo } from '../types'
 import { RAW_CHAINS_FILES_PATH } from '../const'
 
@@ -10,7 +10,7 @@ export const polygon: ChainInfo = {
   label: 'Polygon',
   logo: { light: polygonLogo, dark: polygonLogo },
   nativeCurrency: {
-    ...baseNativeCurrency,
+    ...nativeCurrencyTemplate,
     chainId: 137,
     name: 'POL',
     symbol: 'POL',

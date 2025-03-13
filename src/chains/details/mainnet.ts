@@ -1,4 +1,4 @@
-import { baseNativeCurrency } from 'src/common/consts/tokens'
+import { nativeCurrencyTemplate } from 'src/common/consts/tokens'
 import { ChainInfo, SupportedChainId } from '../types'
 import { RAW_CHAINS_FILES_PATH } from '../const'
 
@@ -13,7 +13,7 @@ export const mainnet: ChainInfo = {
   id: SupportedChainId.MAINNET,
   label: 'Ethereum',
   nativeCurrency: {
-    ...baseNativeCurrency,
+    ...nativeCurrencyTemplate,
     chainId: SupportedChainId.MAINNET,
   },
   addressPrefix: 'eth',
