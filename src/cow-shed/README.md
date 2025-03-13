@@ -8,7 +8,7 @@ In essence, CoW Shed acts as a user owned smart contract (1/1 multisig if you wi
 
 ```ts
 import { ethers } from 'ethers'
-import { CowShedSdk, ICoWShedCall, SupportedChainId } from '@cowprotocol/cow-shed'
+import { CowShedSdk, ICoWShedCall, SupportedChainId } from '@cowprotocol/cow-sdk'
 
 const cowShedSdk = new CowShedSdk({
   signer: '<privateKeyOrEthersSigner>', // You can provide the signer in the constructor, or the `signCalls` method
