@@ -45,3 +45,11 @@ export const WRAPPED_NATIVE_CURRENCIES: Record<SupportedChainId, TokenInfo> = {
     address: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14',
   },
 }
+
+export const baseNativeCurrency: Omit<TokenInfo, 'chainId'> = {
+  address: NATIVE_CURRENCY_ADDRESS,
+  decimals: 18,
+  name: 'Ether',
+  symbol: 'ETH',
+  logoUrl: WRAPPED_NATIVE_CURRENCIES[SupportedChainId.MAINNET].logoUrl,
+}
