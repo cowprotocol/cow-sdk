@@ -15,7 +15,6 @@ import { nativeCurrencyTemplate } from '../../common'
 import { ChainInfo } from '../../chains'
 import { mainnet } from '../../chains/details/mainnet'
 import { sepolia } from '../../chains/details/sepolia'
-// import { baseNativeCurrency, ChainInfo, EthereumLogo, mainnet, sepolia } from '../../chains/details/sepolia'
 
 import { EvmCall } from '../../common/types/ethereum'
 import { TokenInfo } from '../../common/types/tokens'
