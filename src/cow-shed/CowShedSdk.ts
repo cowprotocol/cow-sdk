@@ -3,7 +3,10 @@ import { EvmCall, SignerLike, SupportedChainId } from '../common'
 import { CowShedHooks } from './contracts/CoWShedHooks'
 import { EcdsaSigningScheme, SigningScheme } from '@cowprotocol/contracts'
 import { ICoWShedCall, ICoWShedOptions } from './types'
-import { getSigner } from 'src/common/utils/wallet'
+import { getSigner } from '../common/utils/wallet'
+
+// FIXME: I will refactor into a new PR (log needs to be moved to the common package)
+import { log } from '../trading/consts'
 
 const NON_EXPIRING_DEADLINE = ethers.constants.MaxUint256.toBigInt()
 
@@ -118,19 +121,17 @@ export class CowShedSdk {
       value: BigInt(0),
     }
     const gasEstimate = await signer.estimateGas(factoryCall).catch((error) => {
-      console.error(
-        'Error estimating gas for the cow-shed call: ' +
-          JSON.stringify({ ...factoryCall, value: factoryCall.value.toString() }),
-        error
-      )
+      const factoryCallString = JSON.stringify(factoryCall, null, 2)
+      const errorMessage = `Error estimating gas for the cow-shed call: ${factoryCallString}. Review the factory call`
 
       // Return the default gas limit if provided
       if (defaultGasLimit) {
+        log(`${errorMessage}, using the default gas limit.`)
         return defaultGasLimit
       }
 
       // Re-throw the error if no default gas limit is provided
-      throw error
+      throw new Error(`${errorMessage}, or provide the defaultGasLimit parameter.`, { cause: error })
     })
 
     // Return the details, including the signed transaction data
