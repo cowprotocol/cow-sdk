@@ -1,6 +1,7 @@
 import { CommandFlags, createWeirollDelegateCall } from './index'
 import { Planner, Contract as WeirollContract } from '@weiroll/weiroll.js'
 import { ethers } from 'ethers'
+import { EvmCall } from '../common'
 
 const ERC20_ABI = [
   'function balanceOf(address account) external view returns (uint256)',
@@ -12,17 +13,21 @@ const contract = new ethers.Contract('0x6b175474e89094c44da98b954eedeac495271d0f
 const daiContract = WeirollContract.createContract(contract, CommandFlags.CALL)
 
 describe('createWeirollTx', () => {
-  it('should throw if nothing is added to the plan', () => {
+  it('should handle an empty plan', () => {
     // GIVEN: a function that doesn't add anything to the planner
     const addToPlanner = jest.fn()
 
-    // WHEN: we create the weiroll transaction
-    expect(() => createWeirollDelegateCall(addToPlanner))
-      // THEN: Expect it to throw an error
-      .toThrow('Empty plan')
+    const tx = createWeirollDelegateCall(addToPlanner)
 
     // THEN: the planner was called oince
     expect(addToPlanner).toHaveBeenCalledTimes(1)
+
+    // THEN: the transaction should be encoded correctly
+    assertDelegateCall(tx, {
+      to: '0x9585c3062Df1C247d5E373Cfca9167F7dC2b5963',
+      data: '0xde792d5f0000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      value: 0n,
+    })
   })
 
   it('should encode the transaction correctly', () => {
@@ -41,13 +46,21 @@ describe('createWeirollTx', () => {
     const tx = createWeirollDelegateCall(addToPlanner)
 
     // THEN: The delegate call should have the expected data
-    expect({
-      ...tx,
-      value: tx.value.toString(),
-    }).toEqual({
+    assertDelegateCall(tx, {
       to: '0x9585c3062Df1C247d5E373Cfca9167F7dC2b5963',
       data: '0xde792d5f000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000000270a082310100ffffffffff006b175474e89094c44da98b954eedeac495271d0fa9059cbb010100ffffffffff6b175474e89094c44da98b954eedeac495271d0f0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000020000000000000000000000000f6e72db5454dd049d0788e411b06cfaf168530420000000000000000000000000000000000000000000000000000000000000020000000000000000000000000d8da6bf26964af9d7eed9e03e53415d37aa96045',
-      value: '0',
+      value: 0n,
     })
   })
 })
+
+function assertDelegateCall(tx: EvmCall, expected: EvmCall) {
+  expect(toPrintable(tx)).toEqual(toPrintable(expected))
+}
+
+function toPrintable(tx: EvmCall) {
+  return {
+    ...tx,
+    value: tx.value.toString(),
+  }
+}

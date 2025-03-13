@@ -1,5 +1,5 @@
 import { Planner } from '@weiroll/weiroll.js'
-import { ethers } from 'ethers'
+import { Interface } from '@ethersproject/abi'
 import { EvmCall } from '../common'
 export type { Contract as WeirollContract } from '@weiroll/weiroll.js'
 
@@ -39,14 +39,9 @@ const WEIROLL_ABI = [
 
 function getWeirollCalldata(planner: Planner) {
   const planResult = planner.plan()
-
-  if (!planResult) {
-    throw new Error('Empty plan')
-  }
-
   const { commands, state } = planResult
 
-  const weirollInterface = new ethers.utils.Interface(WEIROLL_ABI)
+  const weirollInterface = new Interface(WEIROLL_ABI)
 
   return weirollInterface.encodeFunctionData('execute', [commands, state])
 }
