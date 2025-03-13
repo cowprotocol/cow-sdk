@@ -1,9 +1,10 @@
 import { EthFlow__factory } from '../common/generated'
 import { VoidSigner } from '@ethersproject/abstract-signer'
 import { AppDataInfo, LimitOrderParameters } from './types'
-import { SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '../common'
+import { SupportedChainId } from '../common/types/chains'
 import { OrderBookApi, OrderKind } from '../order-book'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
+import { WRAPPED_NATIVE_CURRENCIES } from '../common'
 
 jest.mock('cross-fetch', () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -135,7 +136,7 @@ describe('postSellNativeCurrencyTrade', () => {
     expect(ethFlowContractMock.interface.encodeFunctionData).toHaveBeenCalledWith('createOrder', [
       {
         appData: appDataMock.appDataKeccak256,
-        sellToken: WRAPPED_NATIVE_CURRENCIES[defaultOrderParams.chainId],
+        sellToken: WRAPPED_NATIVE_CURRENCIES[defaultOrderParams.chainId].address,
         sellAmount: defaultOrderParams.sellAmount,
         sellTokenBalance: 'erc20',
         buyAmount: '1990000000000000000', // defaultOrderParams.buyAmount - slippage

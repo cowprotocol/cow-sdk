@@ -1,7 +1,6 @@
 import { gql } from 'graphql-request'
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
-import { SupportedChainId } from '../common/chains'
-import { CowError } from '../common/cow-error'
+import { SupportedChainId, CowError } from '../common'
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
 import { SUBGRAPH_PROD_CONFIG, SubgraphApi } from './api'
 

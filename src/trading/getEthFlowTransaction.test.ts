@@ -65,7 +65,7 @@ describe('getEthFlowTransaction', () => {
 
   it('Should always override sell token with wrapped native token', async () => {
     const result = await getEthFlowTransaction(signer, appDataKeccak256, params, chainId)
-    const wrappedToken = WRAPPED_NATIVE_CURRENCIES[chainId]
+    const wrappedToken = WRAPPED_NATIVE_CURRENCIES[chainId].address
 
     expect(result.transaction.data.includes(params.sellToken.slice(2))).toBe(false)
     expect(result.transaction.data.includes(wrappedToken.slice(2))).toBe(false)

@@ -1,10 +1,11 @@
 import { Variables, request } from 'graphql-request'
 import { DocumentNode } from 'graphql/index'
-import { SupportedChainId } from '../common/chains'
-import { ApiContext, CowEnv, DEFAULT_COW_API_CONTEXT } from '../common/configs'
-import { CowError } from '../common/cow-error'
+import { SupportedChainId } from '../common/types/chains'
+import { ApiContext, CowEnv } from '../common/types/config'
+import { CowError } from '../common/types/cow-error'
 import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphql'
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
+import { DEFAULT_COW_API_CONTEXT } from 'src/common'
 
 const SUBGRAPH_BASE_URL = 'https://api.thegraph.com/subgraphs/name/cowprotocol'
 

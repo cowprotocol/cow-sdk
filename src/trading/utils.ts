@@ -103,7 +103,7 @@ export function adjustEthFlowOrderParams(
 ): typeof params {
   return {
     ...params,
-    sellToken: WRAPPED_NATIVE_CURRENCIES[chainId],
+    sellToken: WRAPPED_NATIVE_CURRENCIES[chainId].address,
     slippageBps: typeof params.slippageBps === 'number' ? params.slippageBps : ETH_FLOW_DEFAULT_SLIPPAGE_BPS[chainId],
   }
 }
