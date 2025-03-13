@@ -2,7 +2,7 @@ import { CowShedSdk } from './CowShedSdk'
 import { SupportedChainId } from '../common'
 import { ICoWShedCall } from './types'
 import { AddressZero } from '@ethersproject/constants'
-import { BigNumber, Wallet } from 'ethers'
+import { Wallet } from 'ethers'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { getCoWShedFactoryInterface } from './contracts/utils'
 import { SigningScheme } from '@cowprotocol/contracts'
@@ -65,7 +65,7 @@ describe('CowShedSdk', () => {
         calls: CALLS_MOCK,
         signer: PRIVATE_KEY, // Signer with no provider
         chainId: SupportedChainId.SEPOLIA,
-        defaultGasLimit: BigNumber.from('1000000'),
+        defaultGasLimit: 1000000n,
       })
 
       expect(result.gasLimit.toString()).toBe('1000000')
@@ -90,7 +90,7 @@ describe('CowShedSdk', () => {
         calls: CALLS_MOCK,
         signer: PRIVATE_KEY,
         chainId: SupportedChainId.MAINNET,
-        defaultGasLimit: BigNumber.from('1000000'),
+        defaultGasLimit: 1000000n,
       })
 
       expect(result.signedMulticall.value).toBe(BigInt(0))
@@ -106,7 +106,7 @@ describe('CowShedSdk', () => {
         calls: CALLS_MOCK,
         signer: PRIVATE_KEY,
         chainId: SupportedChainId.MAINNET,
-        defaultGasLimit: BigNumber.from('1000000'),
+        defaultGasLimit: 1000000n,
         nonce,
         deadline,
         signingScheme,
