@@ -70,12 +70,12 @@ export interface CowShedSdkOptions {
 }
 
 export class CowShedSdk {
-  static COW_SHED_CACHE = new Map<SupportedChainId, CowShedHooks>()
+  protected hooksCache = new Map<SupportedChainId, CowShedHooks>()
 
   constructor(private options: CowShedSdkOptions = {}) {}
 
   getCowShedAccount(chainId: SupportedChainId, ownerAddress: string): string {
-    const cowShedHooks = CowShedSdk.getCowShedHooks(chainId, this.options?.factoryOptions)
+    const cowShedHooks = this.getCowShedHooks(chainId, this.options?.factoryOptions)
     return cowShedHooks.proxyOf(ownerAddress)
   }
 
@@ -96,7 +96,7 @@ export class CowShedSdk {
     signingScheme = SigningScheme.EIP712,
   }: SignAndEncodeTxArgs): Promise<CowShedCall> {
     // Get the cow-shed for the wallet
-    const cowShedHooks = CowShedSdk.getCowShedHooks(chainId)
+    const cowShedHooks = this.getCowShedHooks(chainId)
 
     // Get the signer, or throw an error if not provided
     const signerLike = signerParam || this.options?.signer
@@ -143,8 +143,8 @@ export class CowShedSdk {
     }
   }
 
-  protected static getCowShedHooks(chainId: SupportedChainId, customOptions?: ICoWShedOptions) {
-    let cowShedHooks = CowShedSdk.COW_SHED_CACHE.get(chainId)
+  protected getCowShedHooks(chainId: SupportedChainId, customOptions?: ICoWShedOptions) {
+    let cowShedHooks = this.hooksCache.get(chainId)
 
     if (cowShedHooks) {
       // Return cached cow-shed hooks
@@ -153,7 +153,7 @@ export class CowShedSdk {
 
     // Create new cow-shed hooks and cache it
     cowShedHooks = new CowShedHooks(chainId, customOptions)
-    CowShedSdk.COW_SHED_CACHE.set(chainId, cowShedHooks)
+    this.hooksCache.set(chainId, cowShedHooks)
     return cowShedHooks
   }
 
