@@ -2,7 +2,7 @@ import { ChainInfo, SupportedChainId } from '../types'
 import { baseNativeCurrency } from '../../common/consts/tokens'
 import { RAW_CHAINS_FILES_PATH } from '../const'
 
-export const sepoliaLogo = `${RAW_CHAINS_FILES_PATH}/images/sepolia-logo.svg`
+const sepoliaLogo = `${RAW_CHAINS_FILES_PATH}/images/sepolia-logo.svg`
 
 /**
  * Sepolia chain info.

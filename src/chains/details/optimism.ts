@@ -1,7 +1,8 @@
-import { baseNativeCurrency, ChainInfo } from '../../common'
+import { baseNativeCurrency } from '../../common'
+import { ChainInfo } from '../types'
 import { RAW_CHAINS_FILES_PATH } from '../const'
 
-export const optimismLogo = `${RAW_CHAINS_FILES_PATH}/images/optimism-logo.svg`
+const optimismLogo = `${RAW_CHAINS_FILES_PATH}/images/optimism-logo.svg`
 
 // See https://github.com/wevm/viem/blob/main/src/chains/definitions/optimism.ts
 export const optimism: ChainInfo = {

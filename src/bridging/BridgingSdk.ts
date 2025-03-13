@@ -2,7 +2,7 @@
 import { QuoteAndPost, TraderParameters } from '../trading'
 import { BridgeProvider, BridgeQuoteResult, GetBuyTokensParams, QuoteBridgeRequest } from './types'
 import { ALL_SUPPORTED_CHAINS, TokenInfo } from '../common'
-import type { ChainInfo } from '../chains'
+import { ChainInfo } from '../chains'
 export interface BridgingSdkOptions {
   /**
    * Providers for the bridging.

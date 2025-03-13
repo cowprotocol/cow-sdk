@@ -2,8 +2,8 @@ import { ChainInfo, SupportedChainId } from '../types'
 import { baseNativeCurrency } from '../../common/consts/tokens'
 import { RAW_CHAINS_FILES_PATH } from '../const'
 
-export const arbitrumOneLogoLight = `${RAW_CHAINS_FILES_PATH}/images/arbitrum-one-logo-light.svg`
-export const arbitrumOneLogoDark = `${RAW_CHAINS_FILES_PATH}/images/arbitrum-one-logo-dark.svg`
+const arbitrumOneLogoLight = `${RAW_CHAINS_FILES_PATH}/images/arbitrum-one-logo-light.svg`
+const arbitrumOneLogoDark = `${RAW_CHAINS_FILES_PATH}/images/arbitrum-one-logo-dark.svg`
 
 /**
  * Arbitrum chain info.
