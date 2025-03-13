@@ -39,7 +39,7 @@ describe('CowShedSdk', () => {
         calls: CALLS_MOCK,
         signer: PRIVATE_KEY,
         chainId: SupportedChainId.MAINNET,
-        defaultGasLimit: BigNumber.from('1000000'),
+        defaultGasLimit: 1000000n,
       })
 
       expect(result.cowShedAccount).toBe('0xf35a93a2c62E2F1c7712a9ADFC607a5fD175a584')
