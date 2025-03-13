@@ -118,7 +118,11 @@ export class CowShedSdk {
       value: BigInt(0),
     }
     const gasEstimate = await signer.estimateGas(factoryCall).catch((error) => {
-      console.error('Error estimating gas for the cow-shed call: ' + JSON.stringify(factoryCall), error)
+      console.error(
+        'Error estimating gas for the cow-shed call: ' +
+          JSON.stringify({ ...factoryCall, value: factoryCall.value.toString() }),
+        error
+      )
 
       // Return the default gas limit if provided
       if (defaultGasLimit) {
