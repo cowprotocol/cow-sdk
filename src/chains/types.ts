@@ -1,4 +1,4 @@
-import { TokenInfo } from './tokens'
+import { TokenInfo } from '../common/types/tokens'
 
 /**
  * Supported chains and their `chainId` for the SDK.

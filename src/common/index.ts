@@ -1,5 +1,4 @@
 // Types
-export * from './types/chains'
 export * from './types/config'
 export * from './types/cow-error'
 export * from './types/ethereum'

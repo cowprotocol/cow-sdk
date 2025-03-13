@@ -1,4 +1,4 @@
-import { ChainId } from './chains'
+import { ChainId } from '../../chains/types'
 
 /**
  * Token on a chain.

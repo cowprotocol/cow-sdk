@@ -1,6 +1,6 @@
 import { BackoffOptions } from 'exponential-backoff'
 import { RateLimiterOpts } from 'limiter/dist/esm'
-import { SupportedChainId } from './chains'
+import { SupportedChainId } from '../../chains/types'
 
 /**
  * IPFS configuration.

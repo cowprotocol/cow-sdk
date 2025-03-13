@@ -1,6 +1,6 @@
 import { Variables, request } from 'graphql-request'
 import { DocumentNode } from 'graphql/index'
-import { SupportedChainId } from '../common/types/chains'
+import { SupportedChainId } from '../chains/types'
 import { ApiContext, CowEnv } from '../common/types/config'
 import { CowError } from '../common/types/cow-error'
 import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphql'

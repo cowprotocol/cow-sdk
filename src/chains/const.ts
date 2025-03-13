@@ -1,4 +1,4 @@
-import { ChainInfo, SupportedChainId } from '../common/types/chains'
+import { ChainInfo, SupportedChainId } from './types'
 
 import { mainnet } from './details/mainnet'
 import { gnosisChain } from './details/gnosis'

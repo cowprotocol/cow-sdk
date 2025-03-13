@@ -1,4 +1,4 @@
-import { SupportedChainId } from '../types/chains'
+import { SupportedChainId } from '../../chains/types'
 import { TokenInfo } from '../types/tokens'
 
 export const NATIVE_CURRENCY_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'

@@ -1,4 +1,4 @@
-import { ChainInfo, SupportedChainId } from '../../common/types/chains'
+import { ChainInfo, SupportedChainId } from '../types'
 import { baseNativeCurrency, WRAPPED_NATIVE_CURRENCIES } from '../../common/consts/tokens'
 import { RAW_CHAINS_FILES_PATH } from '../const'
 
