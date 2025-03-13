@@ -20,14 +20,12 @@ const BRIDGING_ID = '123456789asdfg'
 const MOCK_TX: EvmCall = {
   to: '0x0000000000000000000000000000000000000001',
   data: '0x0',
-  value: '0x0',
-  isDelegateCall: true,
+  value: BigInt(0),
 }
 
 //See https://github.com/wevm/viem/blob/main/src/chains/definitions/optimism.ts
 const optimism: ChainInfo = {
   id: 10,
-  name: 'optimism',
   label: 'Optimism',
   logo: { light: EthereumLogo, dark: EthereumLogo },
   nativeCurrency: {
@@ -110,10 +108,7 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
 
   async getQuote(_request: QuoteBridgeRequest): Promise<BridgeQuoteResult> {
     return {
-      fee: {
-        type: 'fixed',
-        value: 0,
-      },
+      feeBps: 10,
       slippageBps: 0,
       buyAmount: '123456',
       fillTimeInSeconds: 128,
@@ -138,7 +133,8 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
     return {
       type: OrderKind.SELL,
       provider: this.info,
-
+      owner: '0x0000000000000000000000000000000000000001',
+      feeBps: 10,
       sellTokenChainId: 1,
       sellTokenAddress: '0x0000000000000000000000000000000000000001',
       sellTokenAmount: '123456',
