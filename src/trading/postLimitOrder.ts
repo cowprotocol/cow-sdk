@@ -3,7 +3,7 @@ import { log } from './consts'
 import { OrderBookApi } from '../order-book'
 import { buildAppData } from './appDataUtils'
 import { postCoWProtocolTrade } from './postCoWProtocolTrade'
-import { getSigner } from './utils'
+import { getSigner } from '../common/utils/wallet'
 
 export async function postLimitOrder(
   params: LimitOrderParameters,

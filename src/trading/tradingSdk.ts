@@ -10,10 +10,11 @@ import { postSwapOrder, postSwapOrderFromQuote } from './postSwapOrder'
 import { postLimitOrder } from './postLimitOrder'
 import { getQuoteWithSigner } from './getQuote'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
-import { getSigner, getTradeParametersAfterQuote, swapParamsToLimitOrderParams } from './utils'
+import { getTradeParametersAfterQuote, swapParamsToLimitOrderParams } from './utils'
 import { getPreSignTransaction } from './getPreSignTransaction'
 import { log } from './consts'
 import { OrderBookApi } from '../order-book'
+import { getSigner } from '../common/utils/wallet'
 
 interface TradingSdkOptions {
   enableLogging: boolean

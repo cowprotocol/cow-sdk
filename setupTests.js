@@ -1,7 +1,15 @@
-import fetchMock from 'jest-fetch-mock'
+jest.mock('cross-fetch', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const fetchMock = require('jest-fetch-mock')
 
-fetchMock.enableMocks()
+  // Require the original module to not be mocked...
+  const originalFetch = jest.requireActual('cross-fetch')
 
-jest.setMock('cross-fetch', fetchMock)
+  return {
+    __esModule: true,
+    ...originalFetch,
+    default: fetchMock,
+  }
+})
 
 global.window = global

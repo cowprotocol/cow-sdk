@@ -9,13 +9,8 @@ import {
   QuoteAmountsAndCosts,
   TokenAmount,
 } from '../order-book'
-import type { Signer } from '@ethersproject/abstract-signer'
-import type { CowEnv, SupportedChainId } from '../common'
-import type { ExternalProvider } from '@ethersproject/providers'
+import type { AccountAddress, CowEnv, SignerLike, SupportedChainId } from '../common'
 import type { UnsignedOrder } from '../order-signing'
-
-export type PrivateKey = string // 64 characters
-export type AccountAddress = `0x${string}` // 42 characters
 
 export const ORDER_PRIMARY_TYPE = 'Order' as const
 
@@ -77,7 +72,7 @@ export interface TradeOptionalParameters {
 export interface TraderParameters {
   chainId: SupportedChainId
   appCode: latest.AppCode
-  signer: Signer | ExternalProvider | PrivateKey
+  signer: SignerLike
 }
 
 export type QuoterParameters = Omit<TraderParameters, 'signer'> & { account: AccountAddress }

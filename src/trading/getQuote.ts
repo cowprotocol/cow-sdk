@@ -1,11 +1,4 @@
-import {
-  AccountAddress,
-  QuoteResults,
-  QuoterParameters,
-  SwapAdvancedSettings,
-  SwapParameters,
-  TradeParameters,
-} from './types'
+import { QuoteResults, QuoterParameters, SwapAdvancedSettings, SwapParameters, TradeParameters } from './types'
 import { DEFAULT_QUOTE_VALIDITY, DEFAULT_SLIPPAGE_BPS, log } from './consts'
 
 import {
@@ -19,9 +12,11 @@ import {
 } from '../order-book'
 import { buildAppData } from './appDataUtils'
 import { getOrderToSign } from './getOrderToSign'
-import { adjustEthFlowOrderParams, getIsEthFlowOrder, getSigner, swapParamsToLimitOrderParams } from './utils'
+import { adjustEthFlowOrderParams, getIsEthFlowOrder, swapParamsToLimitOrderParams } from './utils'
 import { Signer } from 'ethers'
+import { AccountAddress } from '../common'
 import { getOrderTypedData } from './getOrderTypedData'
+import { getSigner } from '../common/utils/wallet'
 
 // ETH-FLOW orders require different quote params
 // check the isEthFlow flag and set in quote req obj
