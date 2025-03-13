@@ -4,18 +4,6 @@ import { SwapParameters } from './types'
 import { ETH_ADDRESS, SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '../common'
 import { OrderBookApi, OrderKind, OrderQuoteResponse } from '../order-book'
 
-jest.mock('cross-fetch', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const fetchMock = require('jest-fetch-mock')
-  // Require the original module to not be mocked...
-  const originalFetch = jest.requireActual('cross-fetch')
-  return {
-    __esModule: true,
-    ...originalFetch,
-    default: fetchMock,
-  }
-})
-
 const quoteResponseMock = {
   quote: {
     sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
