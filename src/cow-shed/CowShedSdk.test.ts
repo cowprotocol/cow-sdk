@@ -1,11 +1,13 @@
-import { CowShedSdk } from './CowShedSdk'
-import { SupportedChainId } from '../common'
-import { ICoWShedCall } from './types'
-import { AddressZero } from '@ethersproject/constants'
 import { Wallet } from 'ethers'
+import { AddressZero } from '@ethersproject/constants'
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { getCoWShedFactoryInterface } from './contracts/utils'
+
 import { SigningScheme } from '@cowprotocol/contracts'
+import { CowShedSdk } from './CowShedSdk'
+import { SupportedChainId } from '../common/types/chains'
+import { ICoWShedCall } from './types'
+
+import { getCoWShedFactoryInterface } from './contracts/utils'
 
 const MOCK_CALL_DATA = '0xabcdef'
 
