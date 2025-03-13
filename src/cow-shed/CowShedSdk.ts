@@ -7,6 +7,7 @@ import { getSigner } from '../common/utils/wallet'
 
 // FIXME: I will refactor into a new PR (log needs to be moved to the common package)
 import { log } from '../trading/consts'
+import { jsonReplacer } from 'src/common/utils/serialize'
 
 const NON_EXPIRING_DEADLINE = ethers.constants.MaxUint256.toBigInt()
 
@@ -121,7 +122,7 @@ export class CowShedSdk {
       value: BigInt(0),
     }
     const gasEstimate = await signer.estimateGas(factoryCall).catch((error) => {
-      const factoryCallString = JSON.stringify(factoryCall, null, 2)
+      const factoryCallString = JSON.stringify(factoryCall, jsonReplacer, 2)
       const errorMessage = `Error estimating gas for the cow-shed call: ${factoryCallString}. Review the factory call`
 
       // Return the default gas limit if provided
