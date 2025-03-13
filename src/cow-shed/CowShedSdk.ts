@@ -43,7 +43,7 @@ export interface SignAndEncodeTxArgs {
   /**
    * Default gas limit to use for the transaction. If not provided, it will throw an error if the gas limit cannot be estimated.
    */
-  defaultGasLimit?: ethers.BigNumber
+  defaultGasLimit?: bigint
 
   /**
    * Signing scheme to use for the transaction.
@@ -139,7 +139,7 @@ export class CowShedSdk {
     return {
       cowShedAccount,
       signedMulticall: factoryCall,
-      gasLimit: gasEstimate.toBigInt(),
+      gasLimit: BigInt(gasEstimate.toString()),
     }
   }
 
