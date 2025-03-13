@@ -1,6 +1,6 @@
-import { ChainInfo, SupportedChainId } from '../common/types/chains'
-import { baseNativeCurrency } from '../common/consts/tokens'
-import { RAW_CHAINS_FILES_PATH } from './const'
+import { ChainInfo, SupportedChainId } from '../../common/types/chains'
+import { baseNativeCurrency } from '../../common/consts/tokens'
+import { RAW_CHAINS_FILES_PATH } from '../const'
 
 export const baseLogo = `${RAW_CHAINS_FILES_PATH}/images/base-logo.svg`
 

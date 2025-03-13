@@ -1,5 +1,5 @@
-import { baseNativeCurrency, ChainInfo } from '../common'
-import { RAW_CHAINS_FILES_PATH } from '../bridging/const'
+import { baseNativeCurrency, ChainInfo } from '../../common'
+import { RAW_CHAINS_FILES_PATH } from '../const'
 
 const polygonLogo = `${RAW_CHAINS_FILES_PATH}/polygon-logo.svg`
 

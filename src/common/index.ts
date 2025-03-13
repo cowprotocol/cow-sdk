@@ -7,7 +7,7 @@ export * from './types/tokens'
 export * from './types/wallets'
 
 // Constants
-export * from './consts/chains'
+export * from '../chains/const'
 export * from './consts/config'
 export * from './consts/contracts'
 export * from './consts/ipfs'

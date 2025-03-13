@@ -1,5 +1,5 @@
-import { baseNativeCurrency, ChainInfo } from '../common'
-import { RAW_CHAINS_FILES_PATH } from './const'
+import { baseNativeCurrency, ChainInfo } from '../../common'
+import { RAW_CHAINS_FILES_PATH } from '../const'
 
 export const optimismLogo = `${RAW_CHAINS_FILES_PATH}/images/optimism-logo.svg`
 

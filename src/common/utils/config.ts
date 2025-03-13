@@ -1,4 +1,4 @@
-import { ALL_SUPPORTED_CHAIN_IDS } from '../consts/chains'
+import { ALL_SUPPORTED_CHAIN_IDS } from '../../chains/const'
 import { SupportedChainId } from '../types/chains'
 
 export function mapSupportedNetworks<T>(value: (chainId: SupportedChainId) => T): Record<SupportedChainId, T>
