@@ -2,13 +2,13 @@ import { SupportedChainId } from '../../chains/types'
 import { TokenInfo } from '../types/tokens'
 
 export const NATIVE_CURRENCY_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
-const tokenListBaseUrl = 'https://raw.githubusercontent.com/cowprotocol/token-lists/main/src/public/images'
+export const TOKEN_LIST_IMAGES_PATH = 'https://raw.githubusercontent.com/cowprotocol/token-lists/main/src/public/images'
 
 const wrappedNativeCurrencyEth = {
   decimals: 18,
   name: 'Wrapped Ether',
   symbol: 'WETH',
-  logoUrl: `${tokenListBaseUrl}/1/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2/logo.png`,
+  logoUrl: `${TOKEN_LIST_IMAGES_PATH}/1/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2/logo.png`,
 }
 
 export const WRAPPED_NATIVE_CURRENCIES: Record<SupportedChainId, TokenInfo> = {
@@ -24,7 +24,7 @@ export const WRAPPED_NATIVE_CURRENCIES: Record<SupportedChainId, TokenInfo> = {
     decimals: 18,
     name: 'Wrapped XDAI',
     symbol: 'WXDAI',
-    logoUrl: `${tokenListBaseUrl}/100/0xe91d153e0b41518a2ce8dd3d7944fa863463a97d/logo.png`,
+    logoUrl: `${TOKEN_LIST_IMAGES_PATH}/100/0xe91d153e0b41518a2ce8dd3d7944fa863463a97d/logo.png`,
   },
 
   [SupportedChainId.ARBITRUM_ONE]: {
@@ -54,5 +54,5 @@ export const nativeCurrencyTemplate: Omit<TokenInfo, 'chainId'> = {
   decimals: 18,
   name: 'Ether',
   symbol: 'ETH',
-  logoUrl: WRAPPED_NATIVE_CURRENCIES[SupportedChainId.MAINNET].logoUrl,
+  logoUrl: `${TOKEN_LIST_IMAGES_PATH}/1/${NATIVE_CURRENCY_ADDRESS}/logo.png`,
 }

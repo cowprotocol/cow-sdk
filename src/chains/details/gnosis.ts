@@ -1,5 +1,5 @@
 import { ChainInfo, SupportedChainId } from '../types'
-import { nativeCurrencyTemplate, WRAPPED_NATIVE_CURRENCIES } from '../../common/consts/tokens'
+import { NATIVE_CURRENCY_ADDRESS, nativeCurrencyTemplate, TOKEN_LIST_IMAGES_PATH } from '../../common/consts/tokens'
 import { RAW_CHAINS_FILES_PATH } from '../const'
 
 const gnosisChainLogo = `${RAW_CHAINS_FILES_PATH}/images/gnosis-logo.svg`
@@ -17,7 +17,7 @@ export const gnosisChain: ChainInfo = {
     chainId: SupportedChainId.GNOSIS_CHAIN,
     name: 'xDAI',
     symbol: 'xDAI',
-    logoUrl: WRAPPED_NATIVE_CURRENCIES[SupportedChainId.GNOSIS_CHAIN].logoUrl,
+    logoUrl: `${TOKEN_LIST_IMAGES_PATH}/100/${NATIVE_CURRENCY_ADDRESS}/logo.png`,
   },
   addressPrefix: 'gno',
   isTestnet: false,
