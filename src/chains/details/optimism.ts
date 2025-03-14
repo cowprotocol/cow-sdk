@@ -12,8 +12,6 @@ export const optimism: ChainInfo = {
   nativeCurrency: {
     ...nativeCurrencyTemplate,
     chainId: 10,
-    logoUrl:
-      'https://raw.githubusercontent.com/cowprotocol/token-lists/main/src/public/images/1/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2/logo.png',
   },
   addressPrefix: 'op',
   isTestnet: false,
