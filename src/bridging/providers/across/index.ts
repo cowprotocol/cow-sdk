@@ -1,13 +1,13 @@
 import { ethers } from 'ethers'
 import { BaseTransaction } from '../../types'
 import { SupportedChainId } from '@cowprotocol/cow-sdk'
-import { acrossSpokePoolMapping, mathContractMapping } from './acrossSpokePoolMapping'
+import { acrossSpokePoolMapping, mathContractMapping } from './const/contracts'
 import { getCowShedAccount } from '../cowShed'
 import { Planner as WeirollPlanner, Contract as WeirollContract } from '@weiroll/weiroll.js'
-import { getAcrossQuote } from '../acrossApi'
+import { getAcrossQuote } from './api'
 import { getErc20Contract } from '../erc20'
 import { CommandFlags, getWeirollTx } from '../weiroll'
-import { acrossSpokePoolAbi } from './acrossSpokePoolAbi'
+import { acrossSpokePoolAbi } from './abi'
 import { mathContractAbi } from './acrossMathContractAbi'
 
 export interface BridgeWithAcrossParams {
@@ -117,4 +117,4 @@ export async function bridgeWithAcross(params: BridgeWithAcrossParams): Promise<
   return getWeirollTx({ planner })
 }
 
-export { getIntermediateTokenFromTargetToken } from '../acrossApi'
+export { getIntermediateTokenFromTargetToken } from './api'

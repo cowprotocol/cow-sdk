@@ -1,5 +1,4 @@
-import { SupportedChainId } from '@cowprotocol/cow-sdk'
-import type { Address } from 'viem'
+import { SupportedChainId } from '../../../../chains'
 
 export const acrossSpokePoolMapping: Record<SupportedChainId, string | undefined> = {
   /**
@@ -13,7 +12,7 @@ export const acrossSpokePoolMapping: Record<SupportedChainId, string | undefined
   [SupportedChainId.BASE]: '0x09aea4b2242abC8bb4BB78D537A67a245A7bEC64',
 }
 
-export const mathContractMapping: Record<SupportedChainId, Address | undefined> = {
+export const mathContractMapping: Record<SupportedChainId, string | undefined> = {
   /**
    * #CHAIN-INTEGRATION
    * This needs to be changed if you want to support a new chain
