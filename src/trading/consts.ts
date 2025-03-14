@@ -1,5 +1,5 @@
 import { EcdsaSigningScheme, SigningScheme } from '../order-book'
-import { SupportedChainId } from '../common'
+import { SupportedChainId } from '../chains'
 
 export function log(text: string) {
   if (!log.enabled) return

@@ -9,8 +9,9 @@ import {
   QuoteAmountsAndCosts,
   TokenAmount,
 } from '../order-book'
-import type { AccountAddress, CowEnv, SignerLike, SupportedChainId } from '../common'
+import type { AccountAddress, CowEnv, SignerLike } from '../common'
 import type { UnsignedOrder } from '../order-signing'
+import type { SupportedChainId } from '../chains'
 
 export const ORDER_PRIMARY_TYPE = 'Order' as const
 

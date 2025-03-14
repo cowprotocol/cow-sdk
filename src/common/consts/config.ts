@@ -1,4 +1,4 @@
-import { SupportedChainId } from '../types/chains'
+import { SupportedChainId } from '../../chains/types'
 import { ApiContext, CowEnv } from '../types/config'
 
 /**

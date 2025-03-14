@@ -4,7 +4,7 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 
 import { SigningScheme } from '@cowprotocol/contracts'
 import { CowShedSdk } from './CowShedSdk'
-import { SupportedChainId } from '../common/types/chains'
+import { SupportedChainId } from '../chains/types'
 import { ICoWShedCall } from './types'
 
 import { getCoWShedFactoryInterface } from './contracts/utils'

@@ -1,5 +1,5 @@
 import { OrderBookApi } from '../order-book'
-import { SupportedChainId } from '../common'
+import { SupportedChainId } from '../chains'
 import { GPv2Order } from '../common/generated/ComposableCoW'
 import { providers } from 'ethers'
 

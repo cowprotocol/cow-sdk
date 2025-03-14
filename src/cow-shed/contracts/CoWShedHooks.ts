@@ -5,6 +5,7 @@ import {
   SigningScheme,
   TypedDataTypes,
 } from '@cowprotocol/contracts'
+import { SupportedChainId } from '../../chains'
 import type { Signer } from '@ethersproject/abstract-signer'
 import { TypedDataDomain } from 'ethers'
 import {
@@ -15,7 +16,7 @@ import {
   solidityKeccak256,
   splitSignature,
 } from 'ethers/lib/utils'
-import { COW_SHED_FACTORY, COW_SHED_IMPLEMENTATION, SupportedChainId } from '../../common'
+import { COW_SHED_FACTORY, COW_SHED_IMPLEMENTATION } from '../../common'
 import { getCoWShedFactoryInterface } from './utils'
 
 import { ICoWShedCall, ICoWShedOptions } from '../types'

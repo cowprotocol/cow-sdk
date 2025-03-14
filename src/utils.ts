@@ -1,5 +1,5 @@
 import type { Order } from '@cowprotocol/contracts'
-import type { SupportedChainId } from './common'
+import type { SupportedChainId } from './chains'
 import { OrderSigningUtils } from './order-signing'
 
 export async function computeOrderUid(chainId: SupportedChainId, owner: string, order: Order): Promise<string> {

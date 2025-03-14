@@ -3,6 +3,7 @@ import { writeFileSync, mkdirSync } from 'fs'
 
 const config: Config = {
   path: 'src/trading/types.ts',
+  tsconfig: './tsconfig.json',
   expose: 'none',
   topRef: false,
 }

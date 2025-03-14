@@ -1,4 +1,5 @@
-import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId } from '../common'
+import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS } from '../common'
+import { SupportedChainId } from '../chains'
 import type { Signer } from 'ethers'
 import { GAS_LIMIT_DEFAULT } from './consts'
 import { calculateGasMargin } from './utils'

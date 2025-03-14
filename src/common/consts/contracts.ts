@@ -1,4 +1,4 @@
-import { SupportedChainId } from '../types/chains'
+import { SupportedChainId } from '../../chains/types'
 import { mapAddressToSupportedNetworks } from '../utils/config'
 
 export const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'

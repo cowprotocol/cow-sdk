@@ -22,7 +22,8 @@ import type { Signer } from '@ethersproject/abstract-signer'
 import type { SigningResult, SignOrderParams, SignOrderCancellationParams, UnsignedOrder } from './types'
 
 import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS } from '../common/consts/contracts'
-import { CowError, SupportedChainId } from '../common'
+import { CowError } from '../common'
+import type { SupportedChainId } from '../chains'
 import { EcdsaSigningScheme } from '../order-book'
 import { SignOrderCancellationsParams } from './types'
 

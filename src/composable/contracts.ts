@@ -1,5 +1,6 @@
 import { providers } from 'ethers'
-import { COMPOSABLE_COW_CONTRACT_ADDRESS, SupportedChainId } from '../common'
+import { COMPOSABLE_COW_CONTRACT_ADDRESS } from '../common'
+import { SupportedChainId } from '../chains'
 import { ComposableCoW, ComposableCoW__factory } from '../common/generated'
 import { ComposableCoWInterface } from '../common/generated/ComposableCoW'
 

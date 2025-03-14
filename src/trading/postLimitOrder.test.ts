@@ -14,7 +14,7 @@ import { postCoWProtocolTrade } from './postCoWProtocolTrade'
 import { buildAppData } from './appDataUtils'
 
 import { AppDataInfo, LimitOrderParameters } from './types'
-import { SupportedChainId } from '../common'
+import { SupportedChainId } from '../chains'
 import { OrderBookApi, OrderKind } from '../order-book'
 import { postLimitOrder } from './postLimitOrder'
 

@@ -1,6 +1,7 @@
 import { LimitTradeParametersFromQuote, TradeParameters } from './types'
 import { OrderQuoteResponse, QuoteAmountsAndCosts } from '../order-book'
-import { ETH_ADDRESS, SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '../common'
+import { ETH_ADDRESS, WRAPPED_NATIVE_CURRENCIES } from '../common'
+import { SupportedChainId } from '../chains'
 import { ETH_FLOW_DEFAULT_SLIPPAGE_BPS } from './consts'
 
 export function swapParamsToLimitOrderParams(

@@ -5,7 +5,8 @@ jest.mock('../order-signing', () => ({
 }))
 
 import { calculateUniqueOrderId } from './calculateUniqueOrderId'
-import { MAX_VALID_TO_EPOCH, SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '../common'
+import { MAX_VALID_TO_EPOCH, WRAPPED_NATIVE_CURRENCIES } from '../common'
+import { SupportedChainId } from '../chains'
 import { OrderSigningUtils as OrderSigningUtilsMock, UnsignedOrder } from '../order-signing'
 import { BuyTokenDestination, OrderKind, SellTokenSource } from '../order-book/generated'
 

@@ -1,7 +1,7 @@
 import { ORDER_TYPE_FIELDS } from '@cowprotocol/contracts'
 import { ORDER_PRIMARY_TYPE, OrderTypedData } from './types'
 import { OrderSigningUtils, UnsignedOrder } from '../order-signing'
-import { SupportedChainId } from '../common'
+import { SupportedChainId } from '../chains'
 
 const EIP712DomainTypes = [
   { name: 'name', type: 'string' },

@@ -1,6 +1,6 @@
 import 'cross-fetch/polyfill'
 import { RateLimiter } from 'limiter'
-import { SupportedChainId } from '../common/types/chains'
+import { SupportedChainId } from '../chains/types'
 import { ApiBaseUrls, ApiContext, CowEnv, PartialApiContext } from '../common/types/config'
 import { CowError } from '../common/types/cow-error'
 import {

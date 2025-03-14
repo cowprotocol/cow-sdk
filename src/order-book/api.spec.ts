@@ -2,7 +2,7 @@ import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { CowError } from '../common/types/cow-error'
 import { OrderBookApi } from './api'
 import { BuyTokenDestination, EcdsaSigningScheme, OrderKind, SellTokenSource, SigningScheme } from './generated'
-import { SupportedChainId } from '../common/types/chains'
+import { SupportedChainId } from '../chains/types'
 import { ETH_ADDRESS } from '../common/consts/contracts'
 import { AUCTION } from './mock'
 
