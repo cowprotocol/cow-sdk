@@ -19,6 +19,11 @@ export enum SupportedChainId {
  */
 export type ChainId = number
 
+export interface ThemedImage {
+  light: string
+  dark: string
+}
+
 export interface WebUrl {
   url: string
   name: string
@@ -89,7 +94,7 @@ export interface ChainInfo {
   /**
    * Logo of the chain.
    */
-  readonly logo: { light: string; dark: string }
+  readonly logo: ThemedImage
 
   /**
    * Documentation of the chain.
