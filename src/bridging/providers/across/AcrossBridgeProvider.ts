@@ -14,9 +14,9 @@ import {
 
 import { RAW_PROVIDERS_FILES_PATH } from '../../const'
 
-import { ChainId, ChainInfo, TargetChainId } from '../../../chains'
+import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
 
-import { acrossTokenMapping } from './const/tokens'
+import { AcrossChainConfig, acrossTokenMapping } from './const/tokens'
 import { EvmCall, TokenInfo } from '../../../common'
 
 import { mainnet } from '../../../chains/details/mainnet'
@@ -54,8 +54,20 @@ export class AcrossBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
     return this.options.getTokenInfos(targetChainId, tokenAddresses)
   }
 
-  async getIntermediateTokens(_request: QuoteBridgeRequest): Promise<string[]> {
-    throw new Error('Not implemented')
+  async getIntermediateTokens(request: QuoteBridgeRequest): Promise<string[]> {
+    const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
+    const chainConfigs = getChainConfigs(sellTokenChainId, buyTokenChainId)
+    if (!chainConfigs) return []
+
+    const { sourceChainConfig, targetChainConfig } = chainConfigs
+
+    // Find the token symbol for the target token
+    const targetTokenSymbol = getTokenSymbol(buyTokenAddress, targetChainConfig)
+    if (!targetTokenSymbol) return []
+
+    // Use the tokenSymbol to find the outputToken in the target chain
+    const intermediateToken = getTokenAddress(targetTokenSymbol, sourceChainConfig)
+    return intermediateToken ? [intermediateToken] : []
   }
 
   async getQuote(_request: QuoteBridgeRequest): Promise<BridgeQuoteResult> {
@@ -95,4 +107,28 @@ export class AcrossBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
   async getRefundBridgingTx(_bridgingId: string): Promise<EvmCall> {
     throw new Error('Not implemented')
   }
+}
+
+function getChainConfigs(
+  sourceChainId: SupportedChainId,
+  targetChainId: SupportedChainId
+): { sourceChainConfig: AcrossChainConfig; targetChainConfig: AcrossChainConfig } | undefined {
+  const sourceChainConfig = getChainConfig(sourceChainId)
+  const targetChainConfig = getChainConfig(targetChainId)
+
+  if (!sourceChainConfig || !targetChainConfig) return
+
+  return { sourceChainConfig, targetChainConfig }
+}
+
+function getChainConfig(chainId: number): AcrossChainConfig | undefined {
+  return Object.values(acrossTokenMapping).find((config) => config.chainId === chainId)
+}
+
+function getTokenSymbol(tokenAddress: string, chainConfig: AcrossChainConfig): string | undefined {
+  return Object.keys(chainConfig.tokens).find((key) => chainConfig.tokens[key] === tokenAddress)
+}
+
+function getTokenAddress(tokenSymbol: string, chainConfig: AcrossChainConfig): string | undefined {
+  return chainConfig.tokens[tokenSymbol as keyof AcrossChainConfig] as string | undefined
 }
