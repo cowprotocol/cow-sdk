@@ -14,7 +14,7 @@ export const polygon: ChainInfo = {
     chainId: 137,
     name: 'POL',
     symbol: 'POL',
-    logoUrl: `${RAW_CHAINS_FILES_PATH}/polygon-logo.svg`,
+    logoUrl: polygonLogo,
   },
   addressPrefix: 'op',
   isTestnet: false,
