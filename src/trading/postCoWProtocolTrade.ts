@@ -33,11 +33,11 @@ export async function postCoWProtocolTrade(
     }
   }
 
-  const { quoteId = null } = params
+  const { quoteId = null, owner } = params
   const { appDataKeccak256, fullAppData } = appData
 
   const chainId = orderBookApi.context.chainId
-  const from = await signer.getAddress()
+  const from = owner || (await signer.getAddress())
   const orderToSign = getOrderToSign({ from, networkCostsAmount }, params, appData.appDataKeccak256)
 
   log('Signing order...')

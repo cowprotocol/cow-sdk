@@ -137,11 +137,12 @@ export async function getQuoteWithSigner(
   orderBookApi?: OrderBookApi
 ): Promise<QuoteResultsWithSigner> {
   const signer = getSigner(swapParameters.signer)
+  const account = swapParameters.owner || ((await getSigner(swapParameters.signer).getAddress()) as AccountAddress)
 
   const trader = {
     chainId: swapParameters.chainId,
     appCode: swapParameters.appCode,
-    account: (await signer.getAddress()) as AccountAddress,
+    account,
   }
 
   const result = await getQuote(swapParameters, trader, advancedSettings, orderBookApi)
