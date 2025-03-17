@@ -1,4 +1,4 @@
-import { TokenInfo } from './tokens'
+import { TokenInfo } from '../common/types/tokens'
 
 /**
  * Supported chains and their `chainId` for the SDK.
@@ -18,6 +18,11 @@ export enum SupportedChainId {
  * TODO: Should we generalize it even more to allow non-EVM chains? We should probably revisit also the chain interface, and some other types.
  */
 export type ChainId = number
+
+export interface ThemedImage {
+  light: string
+  dark: string
+}
 
 export interface WebUrl {
   url: string
@@ -89,7 +94,7 @@ export interface ChainInfo {
   /**
    * Logo of the chain.
    */
-  readonly logo: { light: string; dark: string }
+  readonly logo: ThemedImage
 
   /**
    * Documentation of the chain.

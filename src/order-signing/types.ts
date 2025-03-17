@@ -1,4 +1,4 @@
-import type { SupportedChainId } from '../common'
+import type { SupportedChainId } from '../chains'
 import type { Signer } from '@ethersproject/abstract-signer'
 import type { OrderParameters, EcdsaSigningScheme } from '../order-book'
 

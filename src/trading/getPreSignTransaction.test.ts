@@ -19,7 +19,7 @@ jest.mock('../common/generated', () => {
   }
 })
 
-import { SupportedChainId } from '../common'
+import { SupportedChainId } from '../chains'
 import { VoidSigner } from '@ethersproject/abstract-signer'
 import { getPreSignTransaction } from './getPreSignTransaction'
 

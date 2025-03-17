@@ -1,6 +1,6 @@
 import 'src/order-book/__mock__/api'
 import { Multiplexer, Orders } from './Multiplexer'
-import { SupportedChainId } from '../common'
+import { SupportedChainId } from '../chains'
 import { ProofLocation } from './types'
 import { Twap } from './orderTypes/Twap'
 import { TWAP_PARAMS_TEST, generateRandomTWAPData } from './orderTypes/Twap.spec'

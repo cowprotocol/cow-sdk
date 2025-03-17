@@ -1,6 +1,6 @@
 import { getOrderToSign } from './getOrderToSign'
 import { LimitOrderParameters } from './types'
-import { SupportedChainId } from '../common'
+import { SupportedChainId } from '../chains'
 import { OrderKind } from '../order-book'
 import { DEFAULT_QUOTE_VALIDITY } from './consts'
 

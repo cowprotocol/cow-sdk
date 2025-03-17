@@ -1,5 +1,5 @@
 import { OrderSigningUtils } from './orderSigningUtils'
-import { SupportedChainId } from '../common'
+import { SupportedChainId } from '../chains'
 import { UnsignedOrder } from './types'
 import { OrderKind } from '../order-book'
 import { mock, instance, when, anything, capture } from 'ts-mockito'

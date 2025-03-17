@@ -22,7 +22,8 @@ jest.mock('../common/generated', () => {
 
 import { getEthFlowTransaction } from './getEthFlowTransaction'
 import { VoidSigner } from '@ethersproject/abstract-signer'
-import { SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '../common'
+import { WRAPPED_NATIVE_CURRENCIES } from '../common'
+import { SupportedChainId } from '../chains'
 import { LimitTradeParametersFromQuote } from './types'
 import { OrderKind } from '../order-book'
 
