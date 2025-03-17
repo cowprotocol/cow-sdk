@@ -83,12 +83,13 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
 
   async getQuote(request: QuoteBridgeRequest): Promise<AcrossQuoteResult> {
     const { sellTokenAddress, sellTokenChainId, buyTokenChainId, amount, recipient } = request
+
     const suggestedFees = await this.api.getSuggestedFees({
       token: sellTokenAddress,
       // inputToken: sellTokenAddress,
       // outputToken: buyTokenAddress,
-      originChainId: sellTokenChainId.toString(),
-      destinationChainId: buyTokenChainId.toString(),
+      originChainId: sellTokenChainId,
+      destinationChainId: buyTokenChainId,
       amount,
       recipient,
     })
