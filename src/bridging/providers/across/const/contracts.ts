@@ -1,10 +1,6 @@
 import { SupportedChainId } from '../../../../chains'
 
-export const acrossSpokePoolMapping: Record<SupportedChainId, string | undefined> = {
-  /**
-   * #CHAIN-INTEGRATION
-   * This needs to be changed if you want to support a new chain
-   */
+export const ACROSS_SPOOK_CONTRACT_ADDRESSES: Record<SupportedChainId, string | undefined> = {
   [SupportedChainId.MAINNET]: '0x5c7BCd6E7De5423a257D81B442095A1a6ced35C5',
   [SupportedChainId.GNOSIS_CHAIN]: undefined,
   [SupportedChainId.ARBITRUM_ONE]: '0xe35e9842fceaca96570b734083f4a58e8f7c5f2a',
@@ -12,7 +8,7 @@ export const acrossSpokePoolMapping: Record<SupportedChainId, string | undefined
   [SupportedChainId.BASE]: '0x09aea4b2242abC8bb4BB78D537A67a245A7bEC64',
 }
 
-export const mathContractMapping: Record<SupportedChainId, string | undefined> = {
+export const ACROSS_MATH_CONTRACT_ADDRESSES: Record<SupportedChainId, string | undefined> = {
   /**
    * #CHAIN-INTEGRATION
    * This needs to be changed if you want to support a new chain

@@ -1,4 +1,17 @@
-export const acrossSpokePoolAbi = [
+export const ACROSS_MATH_ABI = [
+  {
+    inputs: [
+      { internalType: 'uint256', name: '_a', type: 'uint256' },
+      { internalType: 'uint256', name: '_b', type: 'uint256' },
+    ],
+    name: 'multiplyAndSubtract',
+    outputs: [{ internalType: 'uint256', name: 'result', type: 'uint256' }],
+    stateMutability: 'pure',
+    type: 'function',
+  },
+]
+
+export const ACROSS_SPOKE_POOL_ABI = [
   {
     inputs: [
       {
@@ -1757,17 +1770,4 @@ export const acrossSpokePoolAbi = [
     type: 'function',
   },
   { stateMutability: 'payable', type: 'receive' },
-]
-
-export const mathContractAbi = [
-  {
-    inputs: [
-      { internalType: 'uint256', name: '_a', type: 'uint256' },
-      { internalType: 'uint256', name: '_b', type: 'uint256' },
-    ],
-    name: 'multiplyAndSubtract',
-    outputs: [{ internalType: 'uint256', name: 'result', type: 'uint256' }],
-    stateMutability: 'pure',
-    type: 'function',
-  },
 ]

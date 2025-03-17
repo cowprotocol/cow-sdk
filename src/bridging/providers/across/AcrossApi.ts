@@ -197,8 +197,12 @@ export interface PctFee {
   total: string
 }
 
+export interface AcrossApiOptions {
+  apiBaseUrl?: string
+}
+
 export class AcrossApi {
-  constructor(private readonly apiBaseUrl: string = ACROSS_API_URL) {}
+  constructor(private readonly options: AcrossApiOptions = {}) {}
 
   /**
    * Retrieve available routes for transfers
@@ -252,7 +256,7 @@ export class AcrossApi {
   }
 
   protected async fetchApi<T>(path: string, params: Record<string, string>): Promise<T> {
-    const baseUrl = this.apiBaseUrl || ACROSS_API_URL
+    const baseUrl = this.options.apiBaseUrl || ACROSS_API_URL
     const url = `${baseUrl}${path}?${new URLSearchParams(params).toString()}`
 
     const response = await fetch(url, {
