@@ -1,11 +1,11 @@
-import { SupportedChainId } from '../../../chains'
-import { SuggestedFeesResponse } from './acrossApi'
+import { TargetChainId } from '../../../chains'
+import { SuggestedFeesResponse } from './AcrossApi'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { AcrossChainConfig, acrossTokenMapping } from './const/tokens'
 
 export function getChainConfigs(
-  sourceChainId: SupportedChainId,
-  targetChainId: SupportedChainId
+  sourceChainId: TargetChainId,
+  targetChainId: TargetChainId
 ): { sourceChainConfig: AcrossChainConfig; targetChainConfig: AcrossChainConfig } | undefined {
   const sourceChainConfig = getChainConfig(sourceChainId)
   const targetChainConfig = getChainConfig(targetChainId)
