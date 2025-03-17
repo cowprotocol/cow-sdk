@@ -5,12 +5,11 @@ import { ETH_ADDRESS, WRAPPED_NATIVE_CURRENCIES } from '../common'
 import { SupportedChainId } from '../chains'
 import { OrderBookApi, OrderKind, OrderQuoteResponse } from '../order-book'
 
-const signerAddress = '0x0236554f17Eff6F49fF7e56cF3676a2d6F2B8601'
 const quoteResponseMock = {
   quote: {
     sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
     buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
-    receiver: signerAddress,
+    receiver: '0xfb3c7eb936caa12b5a884d612393969a557d4307',
     sellAmount: '98115217044683860',
     buyAmount: '984440000000',
     validTo: 1731059375,
@@ -24,7 +23,7 @@ const quoteResponseMock = {
     buyTokenBalance: 'erc20',
     signingScheme: 'eip712',
   },
-  from: signerAddress,
+  from: '0xfb3c7eb936caa12b5a884d612393969a557d4307',
   expiration: '2024-11-08T09:21:35.442772888Z',
   id: 486289,
   verified: true,
@@ -51,12 +50,7 @@ const orderBookApiMock = {
 describe('getQuoteToSign', () => {
   beforeEach(() => {
     getQuoteMock.mockReset()
-    getQuoteMock.mockImplementation((params) => {
-      return {
-        ...quoteResponseMock,
-        from: params.from,
-      }
-    })
+    getQuoteMock.mockResolvedValue(quoteResponseMock)
   })
 
   describe('App data', () => {
@@ -153,36 +147,6 @@ describe('getQuoteToSign', () => {
       const call = getQuoteMock.mock.calls[0][0]
 
       expect(call.onchainOrder).toEqual({ foo: 'bar' })
-    })
-
-    it.only('should use the signer as the default owner', async () => {
-      const quoteRequest: SwapParameters = {
-        ...defaultOrderParams,
-        owner: undefined,
-      }
-
-      // Call getQuote with the request
-      const result = await getQuoteWithSigner(quoteRequest, {}, orderBookApiMock)
-
-      // Verify the owner is undefined, and therefore the quote response has the signer address
-      expect(result.result.tradeParameters.owner).toBe(undefined)
-      expect(result.result.quoteResponse.from).toBe(signerAddress)
-    })
-
-    it('should allow to override the owner', async () => {
-      const ownerAddress = '0x1234567890123456789012345678901234567890'
-      const quoteRequest: SwapParameters = {
-        ...defaultOrderParams,
-        owner: ownerAddress,
-      }
-
-      // Call getQuote with the request
-      const result = await getQuoteWithSigner(quoteRequest, {}, orderBookApiMock)
-
-      // Verify the owner in the quote response is the expected owner
-      expect(result.result.tradeParameters.owner).toBe(ownerAddress)
-      expect(result.result.quoteResponse.from).toBe(ownerAddress)
-      expect(result.result.quoteResponse.from).not.toBe(signerAddress)
     })
   })
 

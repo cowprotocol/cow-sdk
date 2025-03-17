@@ -116,4 +116,22 @@ describe('postCoWProtocolTrade', () => {
       validTo: 1487078508,
     })
   })
+
+  it('should use owner address as "from" parameter in sendOrder', async () => {
+    const ownerAddress = '0x1234567890123456789012345678901234567890'
+    const order: LimitOrderParameters = {
+      ...defaultOrderParams,
+      owner: ownerAddress,
+    }
+
+    await postCoWProtocolTrade(orderBookApiMock, signer, appDataMock, order)
+
+    // Verify the from parameter matches the owner address
+    expect(sendOrderMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: ownerAddress,
+        receiver: ownerAddress,
+      })
+    )
+  })
 })
