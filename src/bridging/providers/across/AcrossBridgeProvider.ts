@@ -34,7 +34,7 @@ import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
 import { CommandFlags, createWeirollDelegateCall } from '../../../weiroll'
 import { ACROSS_MATH_ABI, ACROSS_SPOKE_POOL_ABI } from './abi'
 
-const HOOK_DAPP_ID = 'AcrossBridgeProvider-depositIntoSpokePool'
+const HOOK_DAPP_ID = 'cow-sdk://bridging/providers/across'
 const ERC20_BALANCE_OF_ABI = ['function balanceOf(address account) external view returns (uint256)'] as const
 
 const ERC20_APPROVE_OF_ABI = ['function approve(address spender, uint256 amount) external returns (bool)'] as const
