@@ -129,10 +129,10 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    *
    * This hook will include the pre-authorization (signature) of the owner of the cow-shed account (the trader).
    *
-   * @param unsignedTx
+   * @param unsignedCall
    * @param signer
    */
-  getSignedHook(unsignedTx: EvmCall, signer: ethers.Signer): Promise<BridgeHook>
+  getSignedHook(chainId: SupportedChainId, unsignedCall: EvmCall, signer: ethers.Signer): Promise<BridgeHook>
 
   /**
    * Decode a bridge hook into a bridge deposit information.

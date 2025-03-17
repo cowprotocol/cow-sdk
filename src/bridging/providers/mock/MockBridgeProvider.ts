@@ -17,7 +17,7 @@ import { mainnet } from 'src/chains/details/mainnet'
 import { optimism } from 'src/chains/details/optimism'
 import { sepolia } from 'src/chains/details/sepolia'
 import { EvmCall, TokenInfo } from 'src/common'
-import { ChainInfo } from 'src/chains'
+import { ChainInfo, SupportedChainId } from '../../../chains'
 import { RAW_PROVIDERS_FILES_PATH } from '../../const'
 
 const BRIDGING_ID = '123456789asdfg'
@@ -83,7 +83,7 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
   async getUnsignedBridgeTx(_request: QuoteBridgeRequest, _quote: BridgeQuoteResult): Promise<EvmCall> {
     return MOCK_TX
   }
-  async getSignedHook(_unsignedTx: EvmCall, _signer: Signer): Promise<BridgeHook> {
+  async getSignedHook(_chainId: SupportedChainId, _unsignedCall: EvmCall, _signer: Signer): Promise<BridgeHook> {
     return {
       recipient: '0x0000000000000000000000000000000000000001',
       postHook: {

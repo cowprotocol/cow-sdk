@@ -17,7 +17,7 @@ import {
 
 import { RAW_PROVIDERS_FILES_PATH } from '../../const'
 
-import { ChainId, ChainInfo, TargetChainId } from '../../../chains'
+import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
 
 import { acrossTokenMapping } from './const/tokens'
 import { EvmCall, TokenInfo } from '../../../common'
@@ -34,6 +34,7 @@ import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
 import { CommandFlags, createWeirollDelegateCall } from '../../../weiroll'
 import { ACROSS_MATH_ABI, ACROSS_SPOKE_POOL_ABI } from './abi'
 
+const DEPOSIT_SPOOK_DAPP_ID = 'AcrossBridgeProvider-depositIntoSpokePool'
 const ERC20_BALANCE_OF_ABI = ['function balanceOf(address account) external view returns (uint256)'] as const
 
 const ERC20_APPROVE_OF_ABI = ['function approve(address spender, uint256 amount) external returns (bool)'] as const
@@ -211,8 +212,33 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     // Return the deposit into spoke pool call
     return depositCall
   }
-  async getSignedHook(_unsignedTx: EvmCall, _signer: Signer): Promise<BridgeHook> {
-    throw new Error('Not implemented')
+
+  async getSignedHook(chainId: SupportedChainId, unsignedCall: EvmCall, signer: Signer): Promise<BridgeHook> {
+    // Sign the multicall
+    const { signedMulticall, cowShedAccount, gasLimit } = await this.cowShedSdk.signCalls({
+      calls: [
+        {
+          target: unsignedCall.to,
+          value: unsignedCall.value,
+          callData: unsignedCall.data,
+          allowFailure: false,
+          isDelegateCall: true,
+        },
+      ],
+      chainId,
+      signer,
+    })
+
+    const { to, data } = signedMulticall
+    return {
+      postHook: {
+        target: to,
+        callData: data,
+        gasLimit: gasLimit.toString(),
+        dappId: DEPOSIT_SPOOK_DAPP_ID, // TODO: I think we should have some additional parameter to type the hook (using dappId for now)
+      },
+      recipient: cowShedAccount,
+    }
   }
   async decodeBridgeHook(_hook: BridgeHook): Promise<BridgeDeposit> {
     throw new Error('Not implemented')
