@@ -22,6 +22,7 @@ import { OrderBookApi, OrderKind } from '../order-book'
 import { OrderSigningUtils as OrderSigningUtilsMock } from '../order-signing'
 import { VoidSigner } from '@ethersproject/abstract-signer'
 
+const signerAddress = '0x21c3de23d98caddc406e3d31b25e807addf33333'
 const defaultOrderParams: LimitOrderParameters = {
   chainId: SupportedChainId.GNOSIS_CHAIN,
   signer: '0x006',
@@ -41,7 +42,7 @@ const currentTimestamp = 1487076708000
 
 const signatureMock = { signature: '0x000a1', signingScheme: 'eip712' }
 
-const signer = new VoidSigner('0x21c3de23d98caddc406e3d31b25e807addf33333')
+const signer = new VoidSigner(signerAddress)
 signer.getChainId = jest.fn().mockResolvedValue(SupportedChainId.GNOSIS_CHAIN)
 
 const sendOrderMock = jest.fn()
@@ -106,11 +107,11 @@ describe('postCoWProtocolTrade', () => {
       buyAmount: '1990000000000000000', // Slippage is taken into account
       buyTokenBalance: 'erc20',
       feeAmount: '0',
-      from: '0x21c3de23d98caddc406e3d31b25e807addf33333',
+      from: signerAddress,
       kind: 'sell',
       partiallyFillable: false,
       quoteId: 31,
-      receiver: '0x21c3de23d98caddc406e3d31b25e807addf33333',
+      receiver: signerAddress,
       signature: '0x000a1',
       signingScheme: 'eip712',
       validTo: 1487078508,
@@ -126,11 +127,29 @@ describe('postCoWProtocolTrade', () => {
 
     await postCoWProtocolTrade(orderBookApiMock, signer, appDataMock, order)
 
-    // Verify the from parameter matches the owner address
+    // Verify the from parameter matches the owner address (which is different from the signer address)
     expect(sendOrderMock).toHaveBeenCalledWith(
       expect.objectContaining({
         from: ownerAddress,
         receiver: ownerAddress,
+      })
+    )
+    expect(ownerAddress).not.toBe(signerAddress)
+  })
+
+  it('should use the signer "from" parameter if the owner is not specified', async () => {
+    const order: LimitOrderParameters = {
+      ...defaultOrderParams,
+      owner: undefined,
+    }
+
+    await postCoWProtocolTrade(orderBookApiMock, signer, appDataMock, order)
+
+    // Verify the from parameter matches the owner address
+    expect(sendOrderMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: signerAddress,
+        receiver: signerAddress,
       })
     )
   })
