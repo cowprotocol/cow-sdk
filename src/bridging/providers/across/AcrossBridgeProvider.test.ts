@@ -138,4 +138,40 @@ describe('AcrossBridgeProvider', () => {
       })
     })
   })
+
+  describe('decodeBridgeHook', () => {
+    it('should return bridging id', async () => {
+      await expect(provider.decodeBridgeHook({})).rejects.toThrowError('Not implemented')
+    })
+  })
+
+  describe('getBridgingId', () => {
+    it('should return bridging id', async () => {
+      await expect(provider.getBridgingId('123', '123')).rejects.toThrowError('Not implemented')
+    })
+  })
+
+  describe('getExplorerUrl', () => {
+    it('should return explorer url', () => {
+      expect(provider.getExplorerUrl('123')).toEqual('https://app.across.to/transactions/123')
+    })
+  })
+
+  describe('getStatus', () => {
+    it('should return status', async () => {
+      await expect(provider.getStatus('123')).rejects.toThrowError('Not implemented')
+    })
+  })
+
+  describe('getCancelBridgingTx', () => {
+    it('should return cancel bridging tx', async () => {
+      await expect(provider.getCancelBridgingTx('123')).rejects.toThrowError('Not implemented')
+    })
+  })
+
+  describe('getRefundBridgingTx', () => {
+    it('should return refund bridging tx', async () => {
+      await expect(provider.getRefundBridgingTx('123')).rejects.toThrowError('Not implemented')
+    })
+  })
 })
