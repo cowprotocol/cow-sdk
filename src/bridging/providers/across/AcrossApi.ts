@@ -1,3 +1,5 @@
+import { TargetChainId } from 'src/chains'
+
 const ACROSS_API_URL = 'https://app.across.to/api'
 
 export interface AvailableRoutesRequest {
@@ -20,8 +22,8 @@ export interface SuggestedFeesRequest {
   token: string
   // inputToken: string
   // outputToken: string
-  originChainId: string
-  destinationChainId: string
+  originChainId: TargetChainId
+  destinationChainId: TargetChainId
 
   /**
    * Amount of the token to transfer.
@@ -251,7 +253,9 @@ export class AcrossApi {
 
   protected async fetchApi<T>(path: string, params: Record<string, string>): Promise<T> {
     const baseUrl = this.apiBaseUrl || ACROSS_API_URL
-    const response = await fetch(`${baseUrl}/${path}${params ? `?${new URLSearchParams(params).toString()}` : ''}`, {
+    const url = `${baseUrl}${path}?${new URLSearchParams(params).toString()}`
+
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
