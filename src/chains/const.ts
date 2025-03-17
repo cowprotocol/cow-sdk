@@ -31,7 +31,7 @@ export const ALL_SUPPORTED_CHAINS = Object.values(ALL_SUPPORTED_CHAINS_MAP)
 /**
  * The list of supported chains.
  */
-export const ALL_SUPPORTED_CHAIN_IDS: SupportedChainId[] = ALL_SUPPORTED_CHAINS.map(
+export const ALL_SUPPORTED_CHAIN_IDS: SupportedChainId[] = ALL_SUPPORTED_CHAINS.filter(Boolean).map(
   (chain) => chain.id
 ) as SupportedChainId[]
 
@@ -46,7 +46,7 @@ export const ADDITIONAL_TARGET_CHAINS_MAP: Record<AdditionalTargetChainId, Chain
 /**
  * All chains (both supported by CoW Protocol, or chains where you can bridge to)
  */
-export const ALL_CHAINS = ALL_SUPPORTED_CHAINS.concat(Object.values(ADDITIONAL_TARGET_CHAINS_MAP))
+export const ALL_CHAINS = ALL_SUPPORTED_CHAINS.concat(Object.values(ADDITIONAL_TARGET_CHAINS_MAP)).filter(Boolean)
 
 /**
  * All chain ids (both supported by CoW Protocol, or chains where you can bridge to)

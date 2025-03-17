@@ -1,7 +1,7 @@
 import { TargetChainId } from '../../../chains'
 import { SuggestedFeesResponse } from './AcrossApi'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
-import { AcrossChainConfig, acrossTokenMapping } from './const/tokens'
+import { AcrossChainConfig, ACROSS_TOKEN_MAPPING } from './const/tokens'
 
 export function getChainConfigs(
   sourceChainId: TargetChainId,
@@ -16,7 +16,7 @@ export function getChainConfigs(
 }
 
 function getChainConfig(chainId: number): AcrossChainConfig | undefined {
-  return Object.values(acrossTokenMapping).find((config) => config.chainId === chainId)
+  return Object.values(ACROSS_TOKEN_MAPPING).find((config) => config.chainId === chainId)
 }
 
 export function getTokenSymbol(tokenAddress: string, chainConfig: AcrossChainConfig): string | undefined {

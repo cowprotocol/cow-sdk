@@ -4,4 +4,5 @@ export * from './types'
 export * from './BridgingSdk'
 
 // Providers
-export * from './providers/MockBridgeProvider'
+export { MockBridgeProvider } from './providers/mock/MockBridgeProvider'
+export { AcrossBridgeProvider, AcrossQuoteResult } from './providers/across/AcrossBridgeProvider'

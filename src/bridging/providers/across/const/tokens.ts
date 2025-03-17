@@ -13,7 +13,7 @@ export interface AcrossChainConfig {
  *
  * It will be used to connect one token to another token in a different chain by symbol
  */
-export const acrossTokenMapping: Partial<Record<TargetChainId, AcrossChainConfig>> = {
+export const ACROSS_TOKEN_MAPPING: Partial<Record<TargetChainId, AcrossChainConfig>> = {
   [SupportedChainId.MAINNET]: {
     chainId: SupportedChainId.MAINNET,
     tokens: {
@@ -65,5 +65,5 @@ export const acrossTokenMapping: Partial<Record<TargetChainId, AcrossChainConfig
 } as const
 
 export function getChainNameById(chainId: number): string | undefined {
-  return Object.entries(acrossTokenMapping).find(([, config]) => config.chainId === chainId)?.[0]
+  return Object.entries(ACROSS_TOKEN_MAPPING).find(([, config]) => config.chainId === chainId)?.[0]
 }

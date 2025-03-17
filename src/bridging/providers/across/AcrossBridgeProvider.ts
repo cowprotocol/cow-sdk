@@ -19,7 +19,7 @@ import { RAW_PROVIDERS_FILES_PATH } from '../../const'
 
 import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
 
-import { acrossTokenMapping } from './const/tokens'
+import { ACROSS_TOKEN_MAPPING } from './const/tokens'
 import { EvmCall, TokenInfo } from '../../../common'
 
 import { mainnet } from '../../../chains/details/mainnet'
@@ -34,10 +34,11 @@ import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
 import { CommandFlags, createWeirollDelegateCall } from '../../../weiroll'
 import { ACROSS_MATH_ABI, ACROSS_SPOKE_POOL_ABI } from './abi'
 
-const DEPOSIT_SPOOK_DAPP_ID = 'AcrossBridgeProvider-depositIntoSpokePool'
+const HOOK_DAPP_ID = 'AcrossBridgeProvider-depositIntoSpokePool'
 const ERC20_BALANCE_OF_ABI = ['function balanceOf(address account) external view returns (uint256)'] as const
 
 const ERC20_APPROVE_OF_ABI = ['function approve(address spender, uint256 amount) external returns (bool)'] as const
+export const ACROSS_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
 
 interface AcrossBridgeProviderOptions {
   /**
@@ -74,13 +75,13 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
   }
 
   async getNetworks(): Promise<ChainInfo[]> {
-    return [mainnet, polygon, arbitrumOne, base, optimism]
+    return ACROSS_SUPPORTED_NETWORKS
   }
 
   async getBuyTokens(param: GetBuyTokensParams): Promise<TokenInfo[]> {
     const { targetChainId } = param
 
-    const chainConfig = acrossTokenMapping[targetChainId as TargetChainId]
+    const chainConfig = ACROSS_TOKEN_MAPPING[targetChainId as TargetChainId]
     if (!chainConfig) {
       return []
     }
@@ -118,6 +119,8 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
       amount,
       recipient,
     })
+
+    console.log('suggestedFees', suggestedFees)
 
     // TODO: The suggested fees contain way more information. As we review more bridge providers we should revisit the
     // facade of the quote result.
@@ -235,11 +238,12 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
         target: to,
         callData: data,
         gasLimit: gasLimit.toString(),
-        dappId: DEPOSIT_SPOOK_DAPP_ID, // TODO: I think we should have some additional parameter to type the hook (using dappId for now)
+        dappId: HOOK_DAPP_ID, // TODO: I think we should have some additional parameter to type the hook (using dappId for now)
       },
       recipient: cowShedAccount,
     }
   }
+
   async decodeBridgeHook(_hook: BridgeHook): Promise<BridgeDeposit> {
     throw new Error('Not implemented')
   }
