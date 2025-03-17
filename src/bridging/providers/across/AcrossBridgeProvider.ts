@@ -245,11 +245,13 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
   }
 
   async getBridgingId(_orderUid: string, _settlementTx: string): Promise<string> {
+    // TODO: get events from the mined transaction, extract the deposit id
     throw new Error('Not implemented')
   }
 
-  getExplorerUrl(_bridgingId: string): string {
-    throw new Error('Not implemented')
+  getExplorerUrl(bridgingId: string): string {
+    // TODO: Review with across how we get the explorer url based on the bridgingId
+    return `https://app.across.to/transactions/${bridgingId}`
   }
 
   async getStatus(_bridgingId: string): Promise<BridgeStatusResult> {
