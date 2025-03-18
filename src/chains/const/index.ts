@@ -1,16 +1,13 @@
-import { AdditionalTargetChainId, ChainInfo, SupportedChainId } from './types'
+import { AdditionalTargetChainId, ChainInfo, SupportedChainId } from '../types'
 
-import { mainnet } from './details/mainnet'
-import { gnosisChain } from './details/gnosis'
-import { arbitrumOne } from './details/arbitrum'
-import { base } from './details/base'
-import { sepolia } from './details/sepolia'
+import { mainnet } from '../details/mainnet'
+import { gnosisChain } from '../details/gnosis'
+import { arbitrumOne } from '../details/arbitrum'
+import { base } from '../details/base'
+import { sepolia } from '../details/sepolia'
 
-import { RAW_FILES_PATH } from '../common/consts/path'
-import { optimism } from './details/optimism'
-import { polygon } from './details/polygon'
-
-export const RAW_CHAINS_FILES_PATH = `${RAW_FILES_PATH}/src/chains`
+import { optimism } from '../details/optimism'
+import { polygon } from '../details/polygon'
 
 /**
  * Details of all supported chains.

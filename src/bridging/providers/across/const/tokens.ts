@@ -4,17 +4,12 @@ import { TargetChainId, SupportedChainId, AdditionalTargetChainId } from '../../
  * Chain config for Across. Includes all the supported tokens for the chain.
  */
 export interface AcrossChainConfig {
-  chainId: number
+  chainId: TargetChainId
   tokens: { [name: string]: string }
 }
 
-/**
- * This is a mapping to help implementing a very basic intermediate token selection algorithm.
- *
- * It will be used to connect one token to another token in a different chain by symbol
- */
-export const ACROSS_TOKEN_MAPPING: Partial<Record<TargetChainId, AcrossChainConfig>> = {
-  [SupportedChainId.MAINNET]: {
+const ACROSS_CHAIN_CONFIGS: AcrossChainConfig[] = [
+  {
     chainId: SupportedChainId.MAINNET,
     tokens: {
       usdc: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
@@ -24,7 +19,7 @@ export const ACROSS_TOKEN_MAPPING: Partial<Record<TargetChainId, AcrossChainConf
       usdt: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
     },
   },
-  [AdditionalTargetChainId.POLYGON]: {
+  {
     chainId: AdditionalTargetChainId.POLYGON,
     tokens: {
       usdc: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
@@ -34,7 +29,7 @@ export const ACROSS_TOKEN_MAPPING: Partial<Record<TargetChainId, AcrossChainConf
       usdt: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
     },
   },
-  [SupportedChainId.ARBITRUM_ONE]: {
+  {
     chainId: SupportedChainId.ARBITRUM_ONE,
     tokens: {
       usdc: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
@@ -44,7 +39,7 @@ export const ACROSS_TOKEN_MAPPING: Partial<Record<TargetChainId, AcrossChainConf
       usdt: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',
     },
   },
-  [SupportedChainId.BASE]: {
+  {
     chainId: SupportedChainId.BASE,
     tokens: {
       usdc: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
@@ -52,7 +47,7 @@ export const ACROSS_TOKEN_MAPPING: Partial<Record<TargetChainId, AcrossChainConf
       dai: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb',
     },
   },
-  [AdditionalTargetChainId.OPTIMISM]: {
+  {
     chainId: AdditionalTargetChainId.OPTIMISM,
     tokens: {
       usdc: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
@@ -62,8 +57,12 @@ export const ACROSS_TOKEN_MAPPING: Partial<Record<TargetChainId, AcrossChainConf
       usdt: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
     },
   },
-} as const
+]
 
-export function getChainNameById(chainId: number): string | undefined {
-  return Object.entries(ACROSS_TOKEN_MAPPING).find(([, config]) => config.chainId === chainId)?.[0]
-}
+export const ACROSS_TOKEN_MAPPING: Partial<Record<TargetChainId, AcrossChainConfig>> = ACROSS_CHAIN_CONFIGS.reduce(
+  (acc, config) => {
+    acc[config.chainId] = config
+    return acc
+  },
+  {} as Record<number, AcrossChainConfig>
+)
