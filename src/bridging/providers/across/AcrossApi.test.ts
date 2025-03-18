@@ -150,7 +150,7 @@ describe('AcrossApi', () => {
   describe('custom API URL', () => {
     it('should use custom API URL when provided', async () => {
       const customUrl = 'https://custom-api.example.com'
-      const customApi = new AcrossApi(customUrl)
+      const customApi = new AcrossApi({ apiBaseUrl: customUrl })
 
       mockFetch.mockResolvedValue({
         ok: true,
