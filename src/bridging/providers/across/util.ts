@@ -20,11 +20,13 @@ function getChainConfig(chainId: number): AcrossChainConfig | undefined {
 }
 
 export function getTokenSymbol(tokenAddress: string, chainConfig: AcrossChainConfig): string | undefined {
-  return Object.keys(chainConfig.tokens).find((key) => chainConfig.tokens[key] === tokenAddress)
+  const tokenAddressLower = tokenAddress.toLowerCase()
+  return Object.keys(chainConfig.tokens).find((key) => chainConfig.tokens[key].toLowerCase() === tokenAddressLower)
 }
 
 export function getTokenAddress(tokenSymbol: string, chainConfig: AcrossChainConfig): string | undefined {
-  return chainConfig.tokens[tokenSymbol as keyof AcrossChainConfig] as string | undefined
+  const tokenSymbolLower = tokenSymbol.toLowerCase()
+  return chainConfig.tokens[tokenSymbolLower as keyof AcrossChainConfig] as string | undefined
 }
 
 export function toBridgeQuoteResult(amount: string, suggestedFees: SuggestedFeesResponse): AcrossQuoteResult {
