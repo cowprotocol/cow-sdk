@@ -48,6 +48,7 @@ export interface OrderTypedData {
  */
 export interface TradeBaseParameters {
   kind: OrderKind
+  owner?: AccountAddress
   sellToken: OrderParameters['sellToken']
   sellTokenDecimals: number
   buyToken: OrderParameters['buyToken']
