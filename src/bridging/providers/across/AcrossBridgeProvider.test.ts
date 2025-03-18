@@ -1,7 +1,7 @@
 import { AdditionalTargetChainId, SupportedChainId, TargetChainId } from '../../../chains'
 import { TokenInfo } from '../../../common'
 import { OrderKind } from '../../../order-book'
-import { QuoteBridgeRequest } from '../../types'
+import { BridgeHook, QuoteBridgeRequest } from '../../types'
 import { AcrossApi } from './AcrossApi'
 import { ACROSS_SUPPORTED_NETWORKS, AcrossBridgeProvider } from './AcrossBridgeProvider'
 
@@ -98,6 +98,7 @@ describe('AcrossBridgeProvider', () => {
     beforeEach(() => {
       const mockAcrossApi = new AcrossApi()
       jest.spyOn(mockAcrossApi, 'getSuggestedFees').mockResolvedValue(mockSuggestedFees)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(provider as any).api = mockAcrossApi
     })
 
@@ -141,7 +142,7 @@ describe('AcrossBridgeProvider', () => {
 
   describe('decodeBridgeHook', () => {
     it('should return bridging id', async () => {
-      await expect(provider.decodeBridgeHook({})).rejects.toThrowError('Not implemented')
+      await expect(provider.decodeBridgeHook({} as BridgeHook)).rejects.toThrowError('Not implemented')
     })
   })
 
