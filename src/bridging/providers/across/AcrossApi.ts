@@ -35,7 +35,7 @@ export interface SuggestedFeesRequest {
    *
    * Example: 1000000000000000000
    */
-  amount: string
+  amount: bigint
 
   /**
    * Recipient of the deposit. Can be an EOA or a contract. If this is an EOA and message is defined, then the API will throw a 4xx error.
@@ -242,7 +242,7 @@ export class AcrossApi {
       token: request.token,
       originChainId: request.originChainId.toString(),
       destinationChainId: request.destinationChainId.toString(),
-      amount: request.amount,
+      amount: request.amount.toString(),
     }
 
     if (request.recipient) {
