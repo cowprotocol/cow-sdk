@@ -29,16 +29,17 @@ export function getTokenAddress(tokenSymbol: string, chainConfig: AcrossChainCon
   return chainConfig.tokens[tokenSymbol]
 }
 
-export function toBridgeQuoteResult(amount: string, suggestedFees: SuggestedFeesResponse): AcrossQuoteResult {
+export function toBridgeQuoteResult(amount: bigint, suggestedFees: SuggestedFeesResponse): AcrossQuoteResult {
   // TODO: Do we need to use all the other fees, or they are included in totalRelayFee? I know 'lpFee' fee is, as stated in the docs, but not sure about the others.
   // const relayerCapitalFee = suggestedFees.relayerCapitalFee
   // const relayerGasFee = suggestedFees.relayerGasFee
   // const lpFee = suggestedFees.lpFee
 
+  const pct = BigInt(suggestedFees.totalRelayFee.pct)
   return {
     suggestedFees,
-    buyAmount: applyFee(amount, suggestedFees.totalRelayFee.pct),
-    feeBps: pctToBps(suggestedFees.totalRelayFee.pct),
+    buyAmount: applyFee(amount, pct),
+    feeBps: pctToBps(pct),
     slippageBps: 0, // TODO: Can I set slippage to zero? are quotes enforced?
   }
 }
@@ -51,21 +52,17 @@ export function toBridgeQuoteResult(amount: string, suggestedFees: SuggestedFees
  * Bps is a percentage in basis points (1/100th of a percent). For example, 1% is 100 bps.
  *
  */
-export function pctToBps(pct: string): number {
-  const pctBigInt = BigInt(pct)
-  return Number((pctBigInt * 10_000n) / PCT_100_PERCENT)
+export function pctToBps(pct: bigint): number {
+  return Number((pct * 10_000n) / PCT_100_PERCENT)
 }
 
-export function applyFee(amount: string, pct: string): string {
-  const amountBigInt = BigInt(amount)
-  const pctBigInt = BigInt(pct)
-
-  if (pctBigInt > PCT_100_PERCENT) {
+export function applyFee(amount: bigint, pct: bigint): bigint {
+  if (pct > PCT_100_PERCENT) {
     throw new Error('Fee cannot exceed 100%')
   }
 
   // Compute amount after fee: amount * (1 - pct / 1e18)
-  const amountAfterFee = (amountBigInt * (PCT_100_PERCENT - pctBigInt)) / PCT_100_PERCENT
+  const amountAfterFee = (amount * (PCT_100_PERCENT - pct)) / PCT_100_PERCENT
 
-  return amountAfterFee.toString()
+  return amountAfterFee
 }

@@ -12,7 +12,7 @@ import {
   QuoteBridgeRequest,
 } from '../../types'
 
-import { RAW_PROVIDERS_FILES_PATH } from '../../const'
+import { DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION, RAW_PROVIDERS_FILES_PATH } from '../../const'
 
 import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
 
@@ -112,8 +112,6 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
       recipient,
     })
 
-    console.log('suggestedFees', suggestedFees)
-
     // TODO: The suggested fees contain way more information. As we review more bridge providers we should revisit the
     // facade of the quote result.
     //
@@ -130,6 +128,10 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
       quote,
       cowShedSdk: this.cowShedSdk,
     })
+  }
+
+  getGasLimitEstimationForHook(_request: QuoteBridgeRequest): number {
+    return DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION
   }
 
   async getSignedHook(chainId: SupportedChainId, unsignedCall: EvmCall, signer: Signer): Promise<BridgeHook> {

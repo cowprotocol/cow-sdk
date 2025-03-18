@@ -54,7 +54,7 @@ describe('Across Utils', () => {
   })
 
   describe('toBridgeQuoteResult', () => {
-    const mockAmount = '1000000000000000000' // 1 ETH
+    const mockAmount = 1000000000000000000n // 1 ETH
     const mockSuggestedFees: SuggestedFeesResponse = {
       totalRelayFee: {
         pct: '100000000000000000', // 0.1 or 10% in contract format
@@ -92,7 +92,7 @@ describe('Across Utils', () => {
     it('should convert to bridge quote result correctly', () => {
       const result = toBridgeQuoteResult(mockAmount, mockSuggestedFees)
       expect(result).toBeDefined()
-      expect(result.buyAmount).toBe('900000000000000000') // 0.9 (10% fee applied to 1 ETH)
+      expect(result.buyAmount).toBe(900000000000000000n) // 0.9 (10% fee applied to 1 ETH)
       expect(result.suggestedFees).toBeDefined()
       expect(result.feeBps).toBe(1000) // 10% = 1000 bps
       expect(result.slippageBps).toBe(0)
@@ -101,23 +101,23 @@ describe('Across Utils', () => {
 
   describe('pctToBps', () => {
     it('should convert percentage to basis points', () => {
-      expect(pctToBps('0')).toBe(0) // 0%
-      expect(pctToBps('10000000000000000')).toBe(100) // 1%
-      expect(pctToBps('100000000000000000')).toBe(1000) // 10%
-      expect(pctToBps('1000000000000000000')).toBe(10000) // 100%
+      expect(pctToBps(0n)).toBe(0) // 0%
+      expect(pctToBps(10000000000000000n)).toBe(100) // 1%
+      expect(pctToBps(100000000000000000n)).toBe(1000) // 10%
+      expect(pctToBps(1000000000000000000n)).toBe(10000) // 100%
     })
   })
 
   describe('applyFee', () => {
     it('should apply fee percentage correctly', () => {
-      expect(applyFee('1000000000000000000', '100000000000000000')).toBe('900000000000000000') // 0.9 (10% of 1 ETH)
-      expect(applyFee('1000000000000000000', '50000000000000000')).toBe('950000000000000000') // 0.95 (5% of 1 ETH)
-      expect(applyFee('1000000000000000000', '0')).toBe('1000000000000000000') // 1 (0% fee)
-      expect(applyFee('0', '100000000000000000')).toBe('0') // 0 (0% fee)
+      expect(applyFee(1000000000000000000n, 100000000000000000n)).toBe(900000000000000000n) // 0.9 (10% of 1 ETH)
+      expect(applyFee(1000000000000000000n, 50000000000000000n)).toBe(950000000000000000n) // 0.95 (5% of 1 ETH)
+      expect(applyFee(1000000000000000000n, 0n)).toBe(1000000000000000000n) // 1 (0% fee)
+      expect(applyFee(0n, 100000000000000000n)).toBe(0n) // 0 (0% fee)
     })
 
     it('should throw an error if fee percentage exceeds 100%', () => {
-      expect(() => applyFee('1000000000000000000', '1000000000000000001')).toThrow('Fee cannot exceed 100%')
+      expect(() => applyFee(1000000000000000000n, 1000000000000000001n)).toThrow('Fee cannot exceed 100%')
     })
   })
 })

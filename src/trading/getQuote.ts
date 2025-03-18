@@ -28,7 +28,10 @@ const ETH_FLOW_AUX_QUOTE_PARAMS = {
   verificationGasLimit: 0,
 }
 
-export type QuoteResultsWithSigner = { result: QuoteResults & { signer: Signer }; orderBookApi: OrderBookApi }
+export type QuoteResultsWithSigner = {
+  result: QuoteResults & { signer: Signer }
+  orderBookApi: OrderBookApi
+}
 
 export async function getQuote(
   _tradeParameters: TradeParameters,

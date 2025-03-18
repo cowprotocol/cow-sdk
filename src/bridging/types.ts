@@ -4,6 +4,7 @@ import { ChainInfo, SupportedChainId, TargetChainId } from '../chains'
 import { TokenInfo } from '../common/types/tokens'
 import { Address, OrderKind } from '../order-book'
 import { EvmCall } from '../common/types/ethereum'
+import { QuoterParameters, TradeOptionalParameters, TraderParameters } from '../trading'
 
 export interface BridgeProviderInfo {
   name: string
@@ -29,19 +30,25 @@ export interface GetBuyTokensParams extends Partial<WithSellToken> {
 /**
  * Parameters for getting a bridge quote
  */
-export interface QuoteBridgeRequest extends WithSellToken, WithBuyToken {
-  type: OrderKind.SELL // We make it explicit that only SELL is supported for now
-  amount: string
-  owner: string
+export interface QuoteBridgeRequest
+  extends WithSellToken,
+    WithBuyToken,
+    TradeOptionalParameters,
+    Omit<QuoterParameters, 'chainId'>,
+    Pick<TraderParameters, 'signer'> {
+  kind: OrderKind.SELL // We make it explicit that only SELL is supported for now
+  amount: bigint
   recipient?: string
   feeBps?: number
   feeRecipient?: string
 }
 
+export type QuoteBridgeRequestWithoutAmount = Omit<QuoteBridgeRequest, 'amount'>
+
 export interface BridgeQuoteResult {
   feeBps: number
   slippageBps: number
-  buyAmount: string
+  buyAmount: bigint
   fillTimeInSeconds?: number
 }
 
@@ -107,7 +114,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
   getQuote(request: QuoteBridgeRequest): Promise<Q>
 
   /**
-   * Get an unsigned bridge transaction for a quote.
+   * Get an unsigned bridge call for a quote.
    *
    * The transaction details should be executed in the context of cow-shed account.
    *
@@ -115,7 +122,19 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    * @param quote - The quote
    * @returns The unsigned transaction details that cow-shed needs to sign
    */
-  getUnsignedBridgeTx(request: QuoteBridgeRequest, quote: Q): Promise<EvmCall>
+  getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: Q): Promise<EvmCall>
+
+  /**
+   * Returns the estimated gas cost for executing the bridge hook.
+   *
+   * This method helps calculate the final amount of tokens the user will receive more accurately.
+   * The estimation is done without the amount parameter to break a circular dependency:
+   * 1. Hook gas costs affect the final amount
+   * 2. The final amount could affect hook gas costs
+   *
+   * By estimating gas costs independently, we can resolve this dependency cycle.
+   */
+  getGasLimitEstimationForHook(request: Omit<QuoteBridgeRequest, 'amount'>): number
 
   /**
    * Get a pre-authorized hook for initiating a bridge.

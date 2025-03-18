@@ -47,8 +47,8 @@ export function createAcrossDepositCall(params: {
   quote: AcrossQuoteResult
   cowShedSdk: CowShedSdk
 }): EvmCall {
-  const { quote, cowShedSdk } = params
-  const { sellTokenChainId, sellTokenAddress, buyTokenChainId, buyTokenAddress, owner, recipient } = request
+  const { request, quote, cowShedSdk } = params
+  const { sellTokenChainId, sellTokenAddress, buyTokenChainId, buyTokenAddress, account, recipient } = request
 
   // Create the relevant weiroll contracts
   const spokePoolContract = getSpookPoolContract(sellTokenChainId)
@@ -57,7 +57,7 @@ export function createAcrossDepositCall(params: {
   const approveSellTokenContract = getApproveSellTokenContract(sellTokenAddress)
 
   // Get the cow shed account
-  const cowShedAccount = cowShedSdk.getCowShedAccount(sellTokenChainId, owner)
+  const cowShedAccount = cowShedSdk.getCowShedAccount(sellTokenChainId, account)
 
   const { suggestedFees } = quote
 

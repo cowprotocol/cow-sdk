@@ -2,6 +2,7 @@ import {
   LimitOrderAdvancedSettings,
   LimitTradeParameters,
   QuoteAndPost,
+  QuoteResults,
   SwapAdvancedSettings,
   TradeParameters,
   TraderParameters,
@@ -16,9 +17,9 @@ import { log } from './consts'
 import { OrderBookApi } from '../order-book'
 import { getSigner } from '../common/utils/wallet'
 
-type WithPartialTraderParams<T> = T & Partial<TraderParameters>
+export type WithPartialTraderParams<T> = T & Partial<TraderParameters>
 
-interface TradingSdkOptions {
+export interface TradingSdkOptions {
   enableLogging: boolean
   orderBookApi: OrderBookApi
 }
@@ -44,6 +45,7 @@ export class TradingSdk {
     advancedSettings?: SwapAdvancedSettings
   ): Promise<QuoteAndPost> {
     const quoteResults = await getQuoteWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
+    quoteResults.orderBookApi
 
     return {
       quoteResults: quoteResults.result,
@@ -62,6 +64,11 @@ export class TradingSdk {
           advancedSettings
         ),
     }
+  }
+
+  async getQuoteResults(params: TradeParameters, advancedSettings?: SwapAdvancedSettings): Promise<QuoteResults> {
+    const quoteResults = await getQuoteWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
+    return quoteResults.result
   }
 
   async postSwapOrder(

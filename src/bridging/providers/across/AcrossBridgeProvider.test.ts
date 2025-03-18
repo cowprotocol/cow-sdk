@@ -119,18 +119,20 @@ describe('AcrossBridgeProvider', () => {
 
     it('should return quote with suggested fees', async () => {
       const request: QuoteBridgeRequest = {
-        type: OrderKind.SELL,
+        kind: OrderKind.SELL,
         sellTokenAddress: '0x123',
         sellTokenChainId: SupportedChainId.MAINNET,
         buyTokenChainId: AdditionalTargetChainId.POLYGON,
-        amount: '1000000000000000000',
+        amount: 1000000000000000000n,
         recipient: '0x789',
-        owner: '0x123',
+        account: '0x123',
         sellTokenDecimals: 18,
         buyTokenAddress: '0x456',
         buyTokenDecimals: 6,
         feeBps: 0,
         feeRecipient: '0x789',
+        appCode: '0x123',
+        signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
       }
 
       const { suggestedFees, ...quote } = await provider.getQuote(request)
@@ -139,7 +141,7 @@ describe('AcrossBridgeProvider', () => {
       expect(suggestedFees).toEqual(mockSuggestedFees)
 
       expect(quote).toEqual({
-        buyAmount: '999900000000000000',
+        buyAmount: 999900000000000000n,
         feeBps: 1,
         slippageBps: 0,
       })
