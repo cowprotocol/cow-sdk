@@ -5,7 +5,7 @@ import { TargetChainId, SupportedChainId, AdditionalTargetChainId } from '../../
  */
 export interface AcrossChainConfig {
   chainId: TargetChainId
-  tokens: { [name: string]: string }
+  tokens: { [name: string]: string | undefined }
 }
 
 const ACROSS_CHAIN_CONFIGS: AcrossChainConfig[] = [
