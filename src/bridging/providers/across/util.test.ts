@@ -115,5 +115,9 @@ describe('Across Utils', () => {
       expect(applyFee('1000000000000000000', '0')).toBe('1000000000000000000') // 1 (0% fee)
       expect(applyFee('0', '100000000000000000')).toBe('0') // 0 (0% fee)
     })
+
+    it('should throw an error if fee percentage exceeds 100%', () => {
+      expect(() => applyFee('1000000000000000000', '1000000000000000001')).toThrow('Fee cannot exceed 100%')
+    })
   })
 })

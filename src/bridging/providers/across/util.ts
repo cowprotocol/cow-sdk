@@ -20,13 +20,11 @@ function getChainConfig(chainId: number): AcrossChainConfig | undefined {
 }
 
 export function getTokenSymbol(tokenAddress: string, chainConfig: AcrossChainConfig): string | undefined {
-  const tokenAddressLower = tokenAddress.toLowerCase()
-  return Object.keys(chainConfig.tokens).find((key) => chainConfig.tokens[key].toLowerCase() === tokenAddressLower)
+  return Object.keys(chainConfig.tokens).find((key) => chainConfig.tokens[key] === tokenAddress)
 }
 
 export function getTokenAddress(tokenSymbol: string, chainConfig: AcrossChainConfig): string | undefined {
-  const tokenSymbolLower = tokenSymbol.toLowerCase()
-  return chainConfig.tokens[tokenSymbolLower as keyof AcrossChainConfig] as string | undefined
+  return chainConfig.tokens[tokenSymbol]
 }
 
 export function toBridgeQuoteResult(amount: string, suggestedFees: SuggestedFeesResponse): AcrossQuoteResult {
@@ -59,6 +57,10 @@ export function pctToBps(pct: string): number {
 export function applyFee(amount: string, pct: string): string {
   const amountBigInt = BigInt(amount)
   const pctBigInt = BigInt(pct)
+
+  if (pctBigInt > 10n ** 18n) {
+    throw new Error('Fee cannot exceed 100%')
+  }
 
   // Compute amount after fee: amount * (1 - pct / 1e18)
   const amountAfterFee = (amountBigInt * (10n ** 18n - pctBigInt)) / 10n ** 18n
