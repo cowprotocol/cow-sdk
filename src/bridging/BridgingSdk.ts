@@ -159,14 +159,11 @@ export class BridgingSdk {
       signer
     )
 
-    // Define trade parameters. Sell sell token for intermediary token, to be received by cow-shed
-    const parameters: TradeParameters = {
-      ...swapParams,
-      receiver: bridgeHook.recipient,
-    }
+    // Update the receiver required by the hook (cow-shed)
+    swapParams.receiver = bridgeHook.recipient
 
+    // Generate the app data for the hook
     const metadataApi = new MetadataApi()
-
     const appData = await metadataApi.generateAppDataDoc({
       ...swapQuote.appDataInfo.doc,
       metadata: {
@@ -176,9 +173,11 @@ export class BridgingSdk {
       },
     })
 
-    return tradingSdk.getQuote(parameters, { appData })
+    // Return the quote and the postSwapOrderFromQuote method to post the cross-chain order
+    return tradingSdk.getQuote(swapParams, { appData })
 
     // TODO: Review for final implementation. Its possible we don't want to do the second quote if we trust the first estimation, we can re-use it and calculate create the postSwapOrderFromQuote method
+    // TODO: The swap amounts in the quote result referrs to the intermediate tokens. I still didn't think in this enough, but very likely we will want to return the cross-chain information and we need to change the return type
     // TODO: Uncomment the following code if we want to re-use the quote.
     //   const overallQuoteResults = toQuoteResultsFromQuotes({
     //     quoteBridgeRequest: quoteBridgeRequest,
