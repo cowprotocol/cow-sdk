@@ -3,21 +3,37 @@ import { TokenInfo } from '../../../common'
 import { OrderKind } from '../../../order-book'
 import { BridgeHook, QuoteBridgeRequest } from '../../types'
 import { AcrossApi } from './AcrossApi'
-import { ACROSS_SUPPORTED_NETWORKS, AcrossBridgeProvider } from './AcrossBridgeProvider'
+import { ACROSS_SUPPORTED_NETWORKS, AcrossBridgeProvider, AcrossBridgeProviderOptions } from './AcrossBridgeProvider'
 
 // Mock AcrossApi
 jest.mock('./AcrossApi')
 
+class AcrossBridgeProviderTest extends AcrossBridgeProvider {
+  constructor(options: AcrossBridgeProviderOptions) {
+    super(options)
+  }
+
+  // Re-expose the API for testing
+  public getApi() {
+    return this.api
+  }
+
+  // Allow to set the API for testing
+  public setApi(api: AcrossApi) {
+    this.api = api
+  }
+}
+
 describe('AcrossBridgeProvider', () => {
   const mockGetTokenInfos = jest.fn()
-  let provider: AcrossBridgeProvider
+  let provider: AcrossBridgeProviderTest
 
   beforeEach(() => {
     const options = {
       getTokenInfos: mockGetTokenInfos,
       apiOptions: {},
     }
-    provider = new AcrossBridgeProvider(options)
+    provider = new AcrossBridgeProviderTest(options)
   })
 
   afterEach(() => {
@@ -98,8 +114,7 @@ describe('AcrossBridgeProvider', () => {
     beforeEach(() => {
       const mockAcrossApi = new AcrossApi()
       jest.spyOn(mockAcrossApi, 'getSuggestedFees').mockResolvedValue(mockSuggestedFees)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(provider as any).api = mockAcrossApi
+      provider.setApi(mockAcrossApi)
     })
 
     it('should return quote with suggested fees', async () => {

@@ -40,7 +40,7 @@ const ERC20_BALANCE_OF_ABI = ['function balanceOf(address account) external view
 const ERC20_APPROVE_OF_ABI = ['function approve(address spender, uint256 amount) external returns (bool)'] as const
 export const ACROSS_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
 
-interface AcrossBridgeProviderOptions {
+export interface AcrossBridgeProviderOptions {
   /**
    * Token info provider
    * @param chainId - The chain ID
@@ -61,8 +61,8 @@ export interface AcrossQuoteResult extends BridgeQuoteResult {
 }
 
 export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
-  private api: AcrossApi
-  private cowShedSdk: CowShedSdk
+  protected api: AcrossApi
+  protected cowShedSdk: CowShedSdk
 
   constructor(private options: AcrossBridgeProviderOptions) {
     this.api = new AcrossApi(options.apiOptions)
