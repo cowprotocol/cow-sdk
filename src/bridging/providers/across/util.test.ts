@@ -2,14 +2,6 @@ import { AdditionalTargetChainId, SupportedChainId } from '../../../chains'
 import { SuggestedFeesResponse } from './AcrossApi'
 import { getChainConfigs, getTokenSymbol, getTokenAddress, toBridgeQuoteResult, pctToBps, applyFee } from './util'
 
-// const ACROSS_CHAINS = [
-//   SupportedChainId.MAINNET,
-//   SupportedChainId.BASE,
-//   SupportedChainId.ARBITRUM_ONE,
-//   AdditionalTargetChainId.POLYGON,
-//   AdditionalTargetChainId.OPTIMISM,
-// ]
-
 describe('Across Utils', () => {
   describe('getChainConfigs', () => {
     it('should return chain configs for supported chains', () => {
