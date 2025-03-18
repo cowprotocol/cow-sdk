@@ -14,9 +14,9 @@ import { buildAppData } from './appDataUtils'
 import { getOrderToSign } from './getOrderToSign'
 import { adjustEthFlowOrderParams, getIsEthFlowOrder, swapParamsToLimitOrderParams } from './utils'
 import { Signer } from 'ethers'
-import { AccountAddress } from '../common'
 import { getOrderTypedData } from './getOrderTypedData'
 import { getSigner } from '../common/utils/wallet'
+import { AccountAddress } from 'src/common'
 
 // ETH-FLOW orders require different quote params
 // check the isEthFlow flag and set in quote req obj
@@ -137,9 +137,9 @@ export async function getQuoteWithSigner(
   orderBookApi?: OrderBookApi
 ): Promise<QuoteResultsWithSigner> {
   const signer = getSigner(swapParameters.signer)
-  const account = swapParameters.owner || ((await getSigner(swapParameters.signer).getAddress()) as AccountAddress)
+  const account = swapParameters.owner || ((await signer.getAddress()) as AccountAddress)
 
-  const trader = {
+  const trader: QuoterParameters = {
     chainId: swapParameters.chainId,
     appCode: swapParameters.appCode,
     account,
