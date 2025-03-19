@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { QuoteAndPost, SwapAdvancedSettings, TraderParameters, TradingSdk, TradingSdkOptions } from '../../trading'
 import { BridgeProvider, BridgeQuoteResult, GetBuyTokensParams, QuoteBridgeRequest } from '../types'
 import { ALL_SUPPORTED_CHAINS, TokenInfo } from '../../common'

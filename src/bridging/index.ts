@@ -1,4 +1,5 @@
 export * from './types'
+export * from './utils'
 
 // SDK
 export * from './BridgingSdk/BridgingSdk'

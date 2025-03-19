@@ -1,9 +1,9 @@
 import { latest as latestAppData } from '@cowprotocol/app-data'
 import { ChainInfo, SupportedChainId, TargetChainId } from '../chains'
 import { TokenInfo } from '../common/types/tokens'
-import { Address, OrderKind } from '../order-book'
+import { Address, Amounts, OrderKind, QuoteAmountsAndCosts } from '../order-book'
 import { EvmCall } from '../common/types/ethereum'
-import { QuoterParameters, TradeOptionalParameters, TraderParameters } from '../trading'
+import { QuoteAndPost, QuoteResults, QuoterParameters, TradeOptionalParameters, TraderParameters } from '../trading'
 import { Signer } from '@ethersproject/abstract-signer'
 
 export interface BridgeProviderInfo {
@@ -71,9 +71,9 @@ export interface BridgeStatusResult {
 }
 
 /**
- * A bridge deposit. It includes the sell amount and the minimum buy amount.
+ * A bridge deposit. It includes the provideer information, sell amount and the minimum buy amount.
  *
- * It models the minimum information needed to initiate a bridge and that it can also be extracted from the cow hook.
+ * It models the minimal information for a bridging order.
  *
  */
 export interface BridgeDeposit extends Omit<QuoteBridgeRequest, 'amount'> {
@@ -191,6 +191,95 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
   // Get a transaction to refund a bridging transaction.
   // TODO: Review if we support refunding bridging
   getRefundBridgingTx(bridgingId: string): Promise<EvmCall>
+}
+
+/**
+ * A quote and post for a cross-chain swap.
+ *
+ * If the order happens in a single chain, it returns the quote and post details for CoW Protocol.
+ * If the order happens in multiple chains, it returns the quote and post details for CoW Protocol, the bridging
+ * details, and a summary of the overall multi-step order.
+ */
+export type CrossChainQuoteAndPost = QuoteAndPost | BridgeQuoteAndPost
+
+export interface BridgeQuoteAndPost {
+  /**
+   * The summary quote results for the cross-chain swap
+   */
+  quoteResults: OverallBridgeQuoteResults
+
+  /**
+   * The quote results for the CoW Protocol order. Includes a hook to initiate the bridging.
+   */
+  swapQuoteResults: QuoteResults
+
+  /**
+   * The quote results for the bridging.
+   *
+   * Includes the bridging details.
+   */
+  bridgeQuoteResults: BridgeQuoteResults
+
+  /**
+   * Callback to post the swap order.
+   */
+  postSwapOrderFromQuote(): Promise<string>
+}
+
+/**
+ * A summary of the quote result for a cross-chain swap.
+ *
+ * It will include the aggregated details of the two stops (the swap and the bridge)
+ */
+export interface OverallBridgeQuoteResults<T = bigint> {
+  /**
+   * Quote request for the cross-chain swap.
+   */
+  quoteBridgeRequest: QuoteBridgeRequest
+
+  /**
+   * Summary of all the costs aggregated (swap and bridge)
+   */
+  amountsAndCosts: QuoteAmountsAndCosts<T>
+}
+
+interface BridgeQuoteAmountsAndCosts<T = bigint> {
+  beforeFee: Amounts<T>
+  afterFee: Amounts<T>
+  afterSlippage: Amounts<T>
+}
+
+export interface BridgeQuoteResults {
+  /**
+   * Information about the bridge deposit, including the provider information
+   */
+  bridgeDeposit: BridgeDeposit
+
+  /**
+   * Details about costs and amounts and fees of the bridging.
+   */
+  amountsAndCosts: BridgeQuoteAmountsAndCosts
+
+  /**
+   * Address of the intermediate token being bridged
+   */
+  intermediateTokenAddress: string
+
+  /**
+   * Unsigned call to initiate the bridge. This call should be executed in the context of user's cow-shed account.
+   */
+  unsignedBridgeCall: EvmCall
+
+  /**
+   * Pre-authorized hook to initiate the bridge. This hook has been signed, and is ready to be executed by the
+   * CoW Protocol Trampoline contract after settling the swap order that buys the intermediate token.
+   */
+  preAuthorizedBridgingHook: BridgeHook
+
+  /**
+   * Information about the quote response from the order book API.
+   */
+  quoteResponse: BridgeQuoteResult
 }
 
 export type GetErc20Decimals = (chainId: TargetChainId, tokenAddress: string) => Promise<number>
