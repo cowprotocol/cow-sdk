@@ -8,7 +8,7 @@ import { MaxUint256 } from '@ethersproject/constants'
 
 // FIXME: I will refactor into a new PR (log needs to be moved to the common package)
 import { log } from '../trading/consts'
-import { jsonReplacer } from 'src/common/utils/serialize'
+import { jsonReplacer } from '../common/utils/serialize'
 import { formatBytes32String } from 'ethers/lib/utils'
 
 const NON_EXPIRING_DEADLINE = MaxUint256.toBigInt()

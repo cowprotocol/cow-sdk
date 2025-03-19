@@ -21,7 +21,7 @@ import { EvmCall, TokenInfo } from '../../../common'
 
 import { mainnet } from '../../../chains/details/mainnet'
 import { polygon } from '../../../chains/details/polygon'
-import { arbitrumOne } from 'src/chains/details/arbitrum'
+import { arbitrumOne } from '../../../chains/details/arbitrum'
 import { base } from '../../../chains/details/base'
 import { optimism } from '../../../chains/details/optimism'
 import { AcrossApi, AcrossApiOptions, SuggestedFeesResponse } from './AcrossApi'

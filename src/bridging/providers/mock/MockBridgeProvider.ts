@@ -11,11 +11,11 @@ import {
   QuoteBridgeRequest,
 } from '../../types'
 
-import { OrderKind } from 'src/order-book'
-import { mainnet } from 'src/chains/details/mainnet'
-import { optimism } from 'src/chains/details/optimism'
-import { sepolia } from 'src/chains/details/sepolia'
-import { EvmCall, TokenInfo } from 'src/common'
+import { OrderKind } from '../../../order-book'
+import { mainnet } from '../../../chains/details/mainnet'
+import { optimism } from '../../../chains/details/optimism'
+import { sepolia } from '../../../chains/details/sepolia'
+import { EvmCall, TokenInfo } from '../../../common'
 import { ChainInfo, SupportedChainId } from '../../../chains'
 import { RAW_PROVIDERS_FILES_PATH } from '../../const'
 import { Signer } from '@ethersproject/abstract-signer'
