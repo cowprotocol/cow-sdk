@@ -2,14 +2,13 @@ import {
   LimitOrderAdvancedSettings,
   LimitTradeParameters,
   QuoteAndPost,
-  QuoteResults,
   SwapAdvancedSettings,
   TradeParameters,
   TraderParameters,
 } from './types'
 import { postSwapOrder, postSwapOrderFromQuote } from './postSwapOrder'
 import { postLimitOrder } from './postLimitOrder'
-import { getQuoteWithSigner } from './getQuote'
+import { getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getTradeParametersAfterQuote, swapParamsToLimitOrderParams } from './utils'
 import { getPreSignTransaction } from './getPreSignTransaction'
@@ -66,9 +65,11 @@ export class TradingSdk {
     }
   }
 
-  async getQuoteResults(params: TradeParameters, advancedSettings?: SwapAdvancedSettings): Promise<QuoteResults> {
-    const quoteResults = await getQuoteWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
-    return quoteResults.result
+  async getQuoteResults(
+    params: TradeParameters,
+    advancedSettings?: SwapAdvancedSettings
+  ): Promise<QuoteResultsWithSigner> {
+    return getQuoteWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
   }
 
   async postSwapOrder(
