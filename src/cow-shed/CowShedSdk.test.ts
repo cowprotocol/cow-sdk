@@ -1,4 +1,4 @@
-import { Wallet } from 'ethers'
+import { Wallet } from '@ethersproject/wallet'
 import { AddressZero } from '@ethersproject/constants'
 import { JsonRpcProvider } from '@ethersproject/providers'
 

@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Signer } from 'ethers'
 import {
   BridgeDeposit,
   BridgeHook,
@@ -19,6 +18,7 @@ import { sepolia } from 'src/chains/details/sepolia'
 import { EvmCall, TokenInfo } from 'src/common'
 import { ChainInfo, SupportedChainId } from '../../../chains'
 import { RAW_PROVIDERS_FILES_PATH } from '../../const'
+import { Signer } from '@ethersproject/abstract-signer'
 
 const BRIDGING_ID = '123456789asdfg'
 const MOCK_CALL: EvmCall = {

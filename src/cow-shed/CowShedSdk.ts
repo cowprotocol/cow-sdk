@@ -1,16 +1,17 @@
-import { ethers } from 'ethers'
 import { EvmCall, SignerLike } from '../common'
 import { SupportedChainId } from '../chains'
 import { CowShedHooks } from './contracts/CoWShedHooks'
 import { EcdsaSigningScheme, SigningScheme } from '@cowprotocol/contracts'
 import { ICoWShedCall, ICoWShedOptions } from './types'
 import { getSigner } from '../common/utils/wallet'
+import { MaxUint256 } from '@ethersproject/constants'
 
 // FIXME: I will refactor into a new PR (log needs to be moved to the common package)
 import { log } from '../trading/consts'
 import { jsonReplacer } from 'src/common/utils/serialize'
+import { formatBytes32String } from 'ethers/lib/utils'
 
-const NON_EXPIRING_DEADLINE = ethers.constants.MaxUint256.toBigInt()
+const NON_EXPIRING_DEADLINE = MaxUint256.toBigInt()
 
 export interface SignAndEncodeTxArgs {
   /**
@@ -159,6 +160,6 @@ export class CowShedSdk {
   }
 
   protected static getNonce(): string {
-    return ethers.utils.formatBytes32String(Date.now().toString())
+    return formatBytes32String(Date.now().toString())
   }
 }
