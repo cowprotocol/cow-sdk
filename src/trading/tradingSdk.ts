@@ -16,6 +16,8 @@ import { log } from './consts'
 import { OrderBookApi } from '../order-book'
 import { getSigner } from '../common/utils/wallet'
 
+type WithPartialTraderParams<T> = T & Partial<TraderParameters>
+
 interface TradingSdkOptions {
   enableLogging: boolean
   orderBookApi: OrderBookApi
@@ -37,7 +39,10 @@ export class TradingSdk {
     return this
   }
 
-  async getQuote(params: TradeParameters, advancedSettings?: SwapAdvancedSettings): Promise<QuoteAndPost> {
+  async getQuote(
+    params: WithPartialTraderParams<TradeParameters>,
+    advancedSettings?: SwapAdvancedSettings
+  ): Promise<QuoteAndPost> {
     const quoteResults = await getQuoteWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
 
     return {
@@ -56,16 +61,22 @@ export class TradingSdk {
     }
   }
 
-  async postSwapOrder(params: TradeParameters, advancedSettings?: SwapAdvancedSettings): Promise<string> {
+  async postSwapOrder(
+    params: WithPartialTraderParams<TradeParameters>,
+    advancedSettings?: SwapAdvancedSettings
+  ): Promise<string> {
     return postSwapOrder(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
   }
 
-  async postLimitOrder(params: LimitTradeParameters, advancedSettings?: LimitOrderAdvancedSettings): Promise<string> {
+  async postLimitOrder(
+    params: WithPartialTraderParams<LimitTradeParameters>,
+    advancedSettings?: LimitOrderAdvancedSettings
+  ): Promise<string> {
     return postLimitOrder(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
   }
 
   async postSellNativeCurrencyOrder(
-    params: TradeParameters,
+    params: WithPartialTraderParams<TradeParameters>,
     advancedSettings?: SwapAdvancedSettings
   ): Promise<ReturnType<typeof postSellNativeCurrencyOrder>> {
     const quoteResults = await getQuoteWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
@@ -84,13 +95,21 @@ export class TradingSdk {
     )
   }
 
-  async getPreSignTransaction(params: { orderId: string; account: string }): ReturnType<typeof getPreSignTransaction> {
-    const signer = getSigner(this.traderParams.signer)
+  async getPreSignTransaction(
+    params: WithPartialTraderParams<{ orderId: string; account: string }>
+  ): ReturnType<typeof getPreSignTransaction> {
+    const traderParams = this.mergeParams(params)
+    const signer = getSigner(traderParams.signer)
 
-    return getPreSignTransaction(signer, this.traderParams.chainId, params.account, params.orderId)
+    return getPreSignTransaction(signer, traderParams.chainId, params.account, params.orderId)
   }
 
-  private mergeParams<T>(params: T): T & TraderParameters {
-    return { ...params, ...this.traderParams }
+  private mergeParams<T>(params: T & Partial<TraderParameters>): T & TraderParameters {
+    return {
+      ...params,
+      chainId: params.chainId || this.traderParams.chainId,
+      signer: params.signer || this.traderParams.signer,
+      appCode: params.appCode || this.traderParams.appCode,
+    }
   }
 }
