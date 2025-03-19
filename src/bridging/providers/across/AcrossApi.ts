@@ -252,10 +252,16 @@ export class AcrossApi {
     //
     // TODO: The API documented params don't match with the example above. Ideally I would use 'inputToken' and 'outputToken', but the example above uses 'token'. This will work for current implementation, since we bridge the canonical token, but this will need to be reviewed
     //       https://app.across.to/api/suggested-fees?inputToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&originChainId=8453&destinationChainId=137&outputToken=0xc2132D05D31c914a87C6611C10748AEb04B58e8F&amount=100000000
-    return this.fetchApi('/suggested-fees', params)
+    const fees = await this.fetchApi('/suggested-fees', params, isValidSuggestedFeesResponse)
+
+    return fees
   }
 
-  protected async fetchApi<T>(path: string, params: Record<string, string>): Promise<T> {
+  protected async fetchApi<T>(
+    path: string,
+    params: Record<string, string>,
+    isValidResponse?: (response: unknown) => response is T
+  ): Promise<T> {
     const baseUrl = this.options.apiBaseUrl || ACROSS_API_URL
     const url = `${baseUrl}${path}?${new URLSearchParams(params).toString()}`
 
@@ -270,6 +276,43 @@ export class AcrossApi {
       throw new Error(`HTTP error! Status: ${response.status}`)
     }
 
+    // Validate the response
+    const json = await response.json()
+    if (isValidResponse) {
+      if (isValidResponse(json)) {
+        return json
+      } else {
+        throw new Error(
+          `Invalid response for Across API call ${path}. The response doesn't pass the validation. Did the API chainge?`
+        )
+      }
+    }
+
     return response.json()
   }
+}
+
+/**
+ * Validate the response from the Across API is a SuggestedFeesResponse
+ *
+ * @param response - The response from the Across API
+ * @returns True if the response is a SuggestedFeesResponse, false otherwise
+ */
+function isValidSuggestedFeesResponse(response: unknown): response is SuggestedFeesResponse {
+  return (
+    typeof response === 'object' &&
+    response !== null &&
+    'totalRelayFee' in response &&
+    'relayerCapitalFee' in response &&
+    'relayerGasFee' in response &&
+    'lpFee' in response &&
+    'timestamp' in response &&
+    'isAmountTooLow' in response &&
+    'quoteBlock' in response &&
+    'spokePoolAddress' in response &&
+    'exclusiveRelayer' in response &&
+    'exclusivityDeadline' in response &&
+    'expectedFillTimeSec' in response &&
+    'fillDeadline' in response
+  )
 }
