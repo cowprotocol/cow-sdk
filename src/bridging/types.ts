@@ -70,7 +70,7 @@ export interface BridgeStatusResult {
  *
  */
 export interface BridgeDeposit extends Omit<QuoteBridgeRequest, 'amount'> {
-  provider: BridgeProviderInfo
+  readonly provider: BridgeProviderInfo
 
   sellTokenAmount: string
   minBuyAmount: string
