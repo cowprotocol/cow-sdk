@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { MetadataApi } from '@cowprotocol/app-data'
 import { getHookMockForCostEstimation } from '../../hooks/utils'
 import { QuoteAndPost, SwapAdvancedSettings, TradeParameters, TradingSdk } from '../../trading'
@@ -12,10 +11,10 @@ import {
 import { getSigner } from '../../common/utils/wallet'
 
 export async function getQuoteWithBridge<T extends BridgeQuoteResult>(params: {
-  provider: BridgeProvider<T>
-  tradingSdk: TradingSdk
   quoteBridgeRequest: QuoteBridgeRequest
   advancedSettings?: SwapAdvancedSettings
+  provider: BridgeProvider<T>
+  tradingSdk: TradingSdk
   getErc20Decimals: GetErc20Decimals
 }): Promise<QuoteAndPost> {
   const { provider, tradingSdk, getErc20Decimals, quoteBridgeRequest, advancedSettings } = params
