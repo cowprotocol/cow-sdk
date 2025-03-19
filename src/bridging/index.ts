@@ -1,7 +1,7 @@
 export * from './types'
 
 // SDK
-export * from './BridgingSdk'
+export * from './BridgingSdk/BridgingSdk'
 
 // Providers
 export { MockBridgeProvider } from './providers/mock/MockBridgeProvider'

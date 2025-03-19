@@ -1,10 +1,10 @@
 import { latest as latestAppData } from '@cowprotocol/app-data'
-import { ethers } from 'ethers'
 import { ChainInfo, SupportedChainId, TargetChainId } from '../chains'
 import { TokenInfo } from '../common/types/tokens'
 import { Address, OrderKind } from '../order-book'
 import { EvmCall } from '../common/types/ethereum'
 import { QuoterParameters, TradeOptionalParameters, TraderParameters } from '../trading'
+import { Signer } from '@ethersproject/abstract-signer'
 
 export interface BridgeProviderInfo {
   name: string
@@ -151,7 +151,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    * @param unsignedCall
    * @param signer
    */
-  getSignedHook(chainId: SupportedChainId, unsignedCall: EvmCall, signer: ethers.Signer): Promise<BridgeHook>
+  getSignedHook(chainId: SupportedChainId, unsignedCall: EvmCall, signer: Signer): Promise<BridgeHook>
 
   /**
    * Decode a bridge hook into a bridge deposit information.
@@ -192,3 +192,5 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
   // TODO: Review if we support refunding bridging
   getRefundBridgingTx(bridgingId: string): Promise<EvmCall>
 }
+
+export type GetErc20Decimals = (chainId: TargetChainId, tokenAddress: string) => Promise<number>
