@@ -1,14 +1,19 @@
 import { MetadataApi } from '@cowprotocol/app-data'
 import { getHookMockForCostEstimation } from '../../hooks/utils'
-import { QuoteAndPost, SwapAdvancedSettings, TradeParameters, TradingSdk } from '../../trading'
+import { QuoteResults, SwapAdvancedSettings, TradeParameters, TradingSdk } from '../../trading'
 import {
   BridgeProvider,
+  BridgeQuoteAmountsAndCosts,
+  BridgeQuoteAndPost,
   BridgeQuoteResult,
+  BridgeQuoteResults,
   GetErc20Decimals,
+  OverallBridgeQuoteResults,
   QuoteBridgeRequest,
   QuoteBridgeRequestWithoutAmount,
 } from '../types'
 import { getSigner } from '../../common/utils/wallet'
+import { QuoteAmountsAndCosts } from 'src/order-book'
 
 export async function getQuoteWithBridge<T extends BridgeQuoteResult>(params: {
   quoteBridgeRequest: QuoteBridgeRequest
@@ -16,7 +21,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(params: {
   provider: BridgeProvider<T>
   tradingSdk: TradingSdk
   getErc20Decimals: GetErc20Decimals
-}): Promise<QuoteAndPost> {
+}): Promise<BridgeQuoteAndPost> {
   const { provider, tradingSdk, getErc20Decimals, quoteBridgeRequest, advancedSettings } = params
   const { sellTokenChainId, sellTokenAddress, amount, signer: signerLike, ...rest } = quoteBridgeRequest
 
@@ -88,62 +93,58 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(params: {
     },
   })
 
-  // Return the quote and the postSwapOrderFromQuote method to post the cross-chain order
-  return tradingSdk.getQuote(swapParams, { appData })
+  const bridgeResults: BridgeQuoteResults = {
+    providerInfo: provider.info,
+    amountsAndCosts: toAmountAndCosts(quoteBridgeRequest, bridgingQuote),
+    intermediateTokenAddress: intermediateTokenAddress,
+    unsignedBridgeCall: unsignedBridgeCall,
+    preAuthorizedBridgingHook: bridgeHook,
+    quoteResponse: bridgingQuote,
+  }
 
-  // TODO: Review for final implementation. Its possible we don't want to do the second quote if we trust the first estimation, we can re-use it and calculate create the postSwapOrderFromQuote method
-  // TODO: The swap amounts in the quote result referrs to the intermediate tokens. I still didn't think in this enough, but very likely we will want to return the cross-chain information and we need to change the return type
-  // TODO: Uncomment the following code if we want to re-use the quote.
-  //   const overallQuoteResults = toQuoteResultsFromQuotes({
-  //     quoteBridgeRequest: quoteBridgeRequest,
-  //     bridgeQuote: bridgingQuote,
-  //     swapQuote: swapQuote,
-  //     bridgeHook: bridgeHook,
-  //   })
+  const overallResults: OverallBridgeQuoteResults = {
+    params: quoteBridgeRequest,
+    amountsAndCosts: getOverallAmountsAndCosts(quoteBridgeRequest, bridgingQuote, swapQuote),
+  }
 
-  //   return {
-  //     quoteResults: overallQuoteResults,
-  //     postSwapOrderFromQuote: () => {
-  //       postSwapOrderFromQuote({
-  //         ...overallQuoteResults,
-  //         result: {
-  //           signer,
-  //           // quoteResults: overallQuoteResults,
-  //           orderBookApi,
-  //           tradeParameters: getTradeParametersAfterQuote({
-  //             quoteParameters: overallQuoteResults.tradeParameters,
-  //             orderParameters: swapParams,
-  //           }),
-  //         },
-  //       })
-  //     },
-  //   }
+  return {
+    overallResults,
+    swapResults: swapQuote,
+    bridgeResults,
+    async postSwapOrderFromQuote() {
+      // TODO: Implement
+      console.log('Post order!', { swapParams, appData })
+      return '0xfc4dd62471d2f39b2f58f672dfe4725de11dd2efc0f68d116571a6d3da0cee2479063d9173c09887d536924e2f6eadbabac099f567843020'
+    },
+  }
 }
 
-// function toQuoteResultsFromQuotes(quoteResults: {
-//   quoteBridgeRequest: QuoteBridgeRequest
-//   bridgeQuote: BridgeQuoteResult
-//   swapQuote: QuoteResults
-//   bridgeHook: BridgeHook
-// }): QuoteResults {
-//   const { quoteBridgeRequest, bridgeQuote, swapQuote, bridgeHook } = quoteResults
+function toAmountAndCosts(
+  _quoteBridgeRequest: QuoteBridgeRequest,
+  _bridgingQuote: BridgeQuoteResult
+): BridgeQuoteAmountsAndCosts {
+  // TODO: Implement
+  return {
+    beforeFee: {
+      sellAmount: 0n,
+      buyAmount: 0n,
+    },
+    afterFee: {
+      sellAmount: 0n,
+      buyAmount: 0n,
+    },
+    afterSlippage: {
+      sellAmount: 0n,
+      buyAmount: 0n,
+    },
+  }
+}
 
-//   // TODO: Use hook in appData!
-
-//   return {
-//     amountsAndCosts: {
-//       sellAmount: quoteBridgeRequest.amount,
-//       buyAmount: bridgeQuote.buyAmount,
-//       afterSlippage: {
-//         sellAmount: quoteBridgeRequest.amount,
-//         buyAmount: bridgeQuote.buyAmount,
-//       },
-//       // Include other costs from intermediate and final quotes as needed
-//     },
-//     appDataInfo: swapQuote.appDataInfo,
-//     tradeParameters: quoteBridgeRequest,
-//     orderToSign: swapQuote.orderToSign,
-//     quoteResponse: swapQuote.quoteResponse,
-//     orderTypedData: swapQuote.orderTypedData,
-//   }
-// }
+function getOverallAmountsAndCosts(
+  _quoteBridgeRequest: QuoteBridgeRequest,
+  _bridgingQuote: BridgeQuoteResult,
+  swapQuote: QuoteResults
+): QuoteAmountsAndCosts {
+  // TODO: Implement. We need to add the bridging costs
+  return swapQuote.amountsAndCosts,
+}
