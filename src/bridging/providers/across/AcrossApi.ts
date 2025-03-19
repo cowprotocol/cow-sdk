@@ -1,4 +1,4 @@
-import { TargetChainId } from 'src/chains'
+import { TargetChainId } from '../../../chains'
 
 const ACROSS_API_URL = 'https://app.across.to/api'
 
