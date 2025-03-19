@@ -16,7 +16,7 @@ export function getChainConfigs(
 }
 
 function getChainConfig(chainId: number): AcrossChainConfig | undefined {
-  return Object.values(ACROSS_TOKEN_MAPPING).find((config) => config.chainId === chainId)
+  return ACROSS_TOKEN_MAPPING[chainId as unknown as TargetChainId]
 }
 
 export function getTokenSymbol(tokenAddress: string, chainConfig: AcrossChainConfig): string | undefined {
