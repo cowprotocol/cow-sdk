@@ -1,6 +1,6 @@
 import { MetadataApi } from '@cowprotocol/app-data'
 import { getHookMockForCostEstimation } from '../../hooks/utils'
-import { QuoteResults, SwapAdvancedSettings, TradeParameters, TradingSdk } from '../../trading'
+import { postSwapOrderFromQuote, QuoteResults, SwapAdvancedSettings, TradeParameters, TradingSdk } from '../../trading'
 import {
   BridgeProvider,
   BridgeQuoteAmountsAndCosts,
@@ -56,7 +56,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(params: {
     buyTokenDecimals: intermediaryTokenDecimals,
     amount: amount.toString(),
   }
-  const swapQuote = await tradingSdk.getQuoteResults(swapParams, {
+  const { result: swapQuote, orderBookApi } = await tradingSdk.getQuoteResults(swapParams, {
     ...advancedSettings,
     appData: {
       metadata: {
@@ -107,14 +107,22 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(params: {
     amountsAndCosts: getOverallAmountsAndCosts(quoteBridgeRequest, bridgingQuote, swapQuote),
   }
 
+
+
   return {
     overallResults,
     swapResults: swapQuote,
     bridgeResults,
     async postSwapOrderFromQuote() {
-      // TODO: Implement
-      console.log('Post order!', { swapParams, appData })
-      return '0xfc4dd62471d2f39b2f58f672dfe4725de11dd2efc0f68d116571a6d3da0cee2479063d9173c09887d536924e2f6eadbabac099f567843020'
+      const quoteResults = { 
+        result: {
+          ...swapQuote,
+          signer,
+        }, 
+        orderBookApi 
+      }
+      
+      return postSwapOrderFromQuote(quoteResults, { ...advancedSettings, appData })
     },
   }
 }
