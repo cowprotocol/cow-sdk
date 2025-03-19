@@ -76,7 +76,9 @@ export class BridgingSdk {
   }
 
   /**
-   * Get quote for bridging tokens between chains.
+   * Get quote details, including a callback function to post the order on-chain.
+   *
+   * This method support both, cross-chain swaps and single-chain swap.
    *
    * @throws Error if no path is found
    */
@@ -88,6 +90,7 @@ export class BridgingSdk {
     const tradingSdk = this.config.tradingSdkFactory({ chainId: sellTokenChainId, appCode, signer }, {})
 
     if (sellTokenChainId !== buyTokenChainId) {
+      // Cross-chain swap
       return getQuoteWithBridge({
         quoteBridgeRequest,
         advancedSettings,
@@ -96,6 +99,7 @@ export class BridgingSdk {
         getErc20Decimals: this.config.getErc20Decimals,
       })
     } else {
+      // Single-chain swap
       return getQuoteWithoutBridge({
         quoteBridgeRequest,
         advancedSettings,
