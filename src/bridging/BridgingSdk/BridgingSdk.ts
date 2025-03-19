@@ -1,5 +1,11 @@
-import { QuoteAndPost, SwapAdvancedSettings, TraderParameters, TradingSdk, TradingSdkOptions } from '../../trading'
-import { BridgeProvider, BridgeQuoteResult, GetBuyTokensParams, QuoteBridgeRequest } from '../types'
+import { SwapAdvancedSettings, TraderParameters, TradingSdk, TradingSdkOptions } from '../../trading'
+import {
+  BridgeProvider,
+  BridgeQuoteResult,
+  CrossChainQuoteAndPost,
+  GetBuyTokensParams,
+  QuoteBridgeRequest,
+} from '../types'
 import { ALL_SUPPORTED_CHAINS, TokenInfo } from '../../common'
 import { ChainInfo, TargetChainId } from '../../chains'
 import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
@@ -84,7 +90,7 @@ export class BridgingSdk {
   async getQuote(
     quoteBridgeRequest: QuoteBridgeRequest,
     advancedSettings?: SwapAdvancedSettings
-  ): Promise<QuoteAndPost> {
+  ): Promise<CrossChainQuoteAndPost> {
     const { sellTokenChainId, buyTokenChainId, appCode, signer } = quoteBridgeRequest
     const tradingSdk = this.config.tradingSdkFactory({ chainId: sellTokenChainId, appCode, signer }, {})
 

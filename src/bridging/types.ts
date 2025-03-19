@@ -206,19 +206,19 @@ export interface BridgeQuoteAndPost {
   /**
    * The summary quote results for the cross-chain swap
    */
-  quoteResults: OverallBridgeQuoteResults
+  overallResults: OverallBridgeQuoteResults
 
   /**
    * The quote results for the CoW Protocol order. Includes a hook to initiate the bridging.
    */
-  swapQuoteResults: QuoteResults
+  swapResults: QuoteResults
 
   /**
    * The quote results for the bridging.
    *
    * Includes the bridging details.
    */
-  bridgeQuoteResults: BridgeQuoteResults
+  bridgeResults: BridgeQuoteResults
 
   /**
    * Callback to post the swap order.
@@ -235,7 +235,7 @@ export interface OverallBridgeQuoteResults<T = bigint> {
   /**
    * Quote request for the cross-chain swap.
    */
-  quoteBridgeRequest: QuoteBridgeRequest
+  params: QuoteBridgeRequest
 
   /**
    * Summary of all the costs aggregated (swap and bridge)
@@ -243,7 +243,7 @@ export interface OverallBridgeQuoteResults<T = bigint> {
   amountsAndCosts: QuoteAmountsAndCosts<T>
 }
 
-interface BridgeQuoteAmountsAndCosts<T = bigint> {
+export interface BridgeQuoteAmountsAndCosts<T = bigint> {
   beforeFee: Amounts<T>
   afterFee: Amounts<T>
   afterSlippage: Amounts<T>
@@ -251,9 +251,9 @@ interface BridgeQuoteAmountsAndCosts<T = bigint> {
 
 export interface BridgeQuoteResults {
   /**
-   * Information about the bridge deposit, including the provider information
+   * Bridge provider information
    */
-  bridgeDeposit: BridgeDeposit
+  providerInfo: BridgeProviderInfo
 
   /**
    * Details about costs and amounts and fees of the bridging.
