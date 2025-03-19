@@ -1,9 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Signer } from 'ethers'
 
-import { Contract as WeirollContract } from '@weiroll/weiroll.js'
-import { Contract as EthersContract } from '@ethersproject/contracts'
-
 import {
   BridgeDeposit,
   BridgeHook,
@@ -29,15 +26,10 @@ import { base } from '../../../chains/details/base'
 import { optimism } from '../../../chains/details/optimism'
 import { AcrossApi, AcrossApiOptions, SuggestedFeesResponse } from './AcrossApi'
 import { getChainConfigs, getTokenAddress, getTokenSymbol, toBridgeQuoteResult } from './util'
-import { ACROSS_MATH_CONTRACT_ADDRESSES, ACROSS_SPOOK_CONTRACT_ADDRESSES } from './const/contracts'
 import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
-import { CommandFlags, createWeirollDelegateCall } from '../../../weiroll'
-import { ACROSS_MATH_ABI, ACROSS_SPOKE_POOL_ABI } from './abi'
+import { createAcrossDepositCall } from './createAcrossDepositCall'
 
 const HOOK_DAPP_ID = 'cow-sdk://bridging/providers/across'
-const ERC20_BALANCE_OF_ABI = ['function balanceOf(address account) external view returns (uint256)'] as const
-
-const ERC20_APPROVE_OF_ABI = ['function approve(address spender, uint256 amount) external returns (bool)'] as const
 export const ACROSS_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
 
 export interface AcrossBridgeProviderOptions {
@@ -86,7 +78,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
       return []
     }
 
-    const tokenAddresses = Object.values(chainConfig.tokens)
+    const tokenAddresses = Object.values(chainConfig.tokens).filter((address) => address !== undefined)
     return this.options.getTokenInfos(targetChainId, tokenAddresses)
   }
 
@@ -133,87 +125,11 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
   }
 
   async getUnsignedBridgeTx(request: QuoteBridgeRequest, quote: AcrossQuoteResult): Promise<EvmCall> {
-    const { sellTokenChainId, sellTokenAddress, buyTokenChainId, buyTokenAddress, owner, recipient } = request
-
-    // Create SpokePool contract
-    const spokePoolAddress = ACROSS_SPOOK_CONTRACT_ADDRESSES[sellTokenChainId]
-    if (!spokePoolAddress) {
-      throw new Error('Spoke pool address not found for chain: ' + sellTokenChainId)
-    }
-    const spokePoolContract = WeirollContract.createContract(
-      new EthersContract(spokePoolAddress, ACROSS_SPOKE_POOL_ABI),
-      CommandFlags.CALL
-    )
-
-    // Create Math contract
-    const mathContractAddress = ACROSS_MATH_CONTRACT_ADDRESSES[sellTokenChainId]
-    if (!mathContractAddress) {
-      throw new Error('Math contract address not found for chain: ' + sellTokenChainId)
-    }
-    const mathContract = WeirollContract.createContract(
-      new EthersContract(mathContractAddress, ACROSS_MATH_ABI),
-      CommandFlags.CALL
-    )
-
-    // Create 'balanceOf' static call contract for the sell token
-    const balanceOfSellTokenContract = WeirollContract.createContract(
-      new EthersContract(sellTokenAddress, ERC20_BALANCE_OF_ABI),
-      CommandFlags.STATICCALL
-    )
-
-    // Create 'approve' call contract for the sell token
-    const approveSellTokenContract = WeirollContract.createContract(
-      new EthersContract(sellTokenAddress, ERC20_APPROVE_OF_ABI),
-      CommandFlags.CALL
-    )
-
-    // Get the cow shed account
-    const cowShedAccount = this.cowShedSdk.getCowShedAccount(sellTokenChainId, owner)
-
-    const { suggestedFees } = quote
-
-    // Get the weiroll call of the deposit into spoke pool
-    const depositCall = createWeirollDelegateCall((planner) => {
-      // Get bridged amount (balance of the intermediate token at swap time)
-      const sourceAmountIncludingSurplus = planner.add(balanceOfSellTokenContract.balanceOf(cowShedAccount))
-
-      // Calculate the new output amount using the actual received intermediate tokens (uses the original quoted fee)
-      const relayFeePercentage = BigInt(suggestedFees.totalRelayFee.pct)
-      const outputAmountIncludingSurplus = planner.add(
-        mathContract.multiplyAndSubtract(sourceAmountIncludingSurplus, relayFeePercentage)
-      )
-
-      // Set allowance for SpokePool to transfer bridged tokens
-      planner.add(approveSellTokenContract.approve(spokePoolAddress, sourceAmountIncludingSurplus))
-
-      // Prepare deposit params
-      const quoteTimestamp = BigInt(suggestedFees.timestamp)
-      const fillDeadline = suggestedFees.fillDeadline
-      const exclusivityDeadline = suggestedFees.exclusivityDeadline
-      const exclusiveRelayer = suggestedFees.exclusiveRelayer
-      const message = '0x'
-
-      // Deposit into spoke pool
-      planner.add(
-        spokePoolContract.depositV3(
-          cowShedAccount,
-          recipient,
-          sellTokenAddress,
-          buyTokenAddress,
-          sourceAmountIncludingSurplus,
-          outputAmountIncludingSurplus,
-          buyTokenChainId,
-          exclusiveRelayer,
-          quoteTimestamp,
-          fillDeadline,
-          exclusivityDeadline,
-          message
-        )
-      )
+    return createAcrossDepositCall({
+      request,
+      quote,
+      cowShedSdk: this.cowShedSdk,
     })
-
-    // Return the deposit into spoke pool call
-    return depositCall
   }
 
   async getSignedHook(chainId: SupportedChainId, unsignedCall: EvmCall, signer: Signer): Promise<BridgeHook> {
