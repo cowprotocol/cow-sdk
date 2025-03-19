@@ -32,6 +32,7 @@ Main functions:
 - `getQuote` - Fetch a quote for a swap order.
 
 Special cases:
+- 'setTraderParams' - In case if you work with different chains and need to switch between them in runtime.
 - `postSellNativeCurrencyOrder` - Sell blockchain native tokens (e.g., ETH on Ethereum).
 - `getPreSignTransaction` - Sign an order using a smart contract wallet.
 

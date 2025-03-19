@@ -23,12 +23,18 @@ interface TradingSdkOptions {
 
 export class TradingSdk {
   constructor(
-    public readonly traderParams: TraderParameters,
+    public traderParams: TraderParameters,
     public readonly options: Partial<TradingSdkOptions> = { enableLogging: false }
   ) {
     if (options.enableLogging) {
       log.enabled = true
     }
+  }
+
+  setTraderParams(params: Partial<TraderParameters>) {
+    this.traderParams = { ...this.traderParams, ...params }
+
+    return this
   }
 
   async getQuote(params: TradeParameters, advancedSettings?: SwapAdvancedSettings): Promise<QuoteAndPost> {
