@@ -1,6 +1,9 @@
+import { OrderKind } from '@cowprotocol/contracts'
 import { AdditionalTargetChainId, SupportedChainId } from '../../../chains'
+import { QuoteBridgeRequest } from '../../types'
 import { SuggestedFeesResponse } from './AcrossApi'
 import { getChainConfigs, getTokenSymbol, getTokenAddress, toBridgeQuoteResult, pctToBps, applyFee } from './util'
+import { AcrossQuoteResult } from './AcrossBridgeProvider'
 
 describe('Across Utils', () => {
   describe('getChainConfigs', () => {
@@ -78,7 +81,7 @@ describe('Across Utils', () => {
       quoteBlock: '1715808000',
       spokePoolAddress: '0x1234567890123456789012345678901234567890',
       exclusivityDeadline: '1742114891',
-      expectedFillTimeSec: '1742111891',
+      expectedFillTimeSec: '1742111892',
       fillDeadline: '1742122091',
       limits: {
         maxDeposit: '50000000000000000000',
@@ -90,12 +93,44 @@ describe('Across Utils', () => {
     }
 
     it('should convert to bridge quote result correctly', () => {
-      const result = toBridgeQuoteResult(mockAmount, mockSuggestedFees)
-      expect(result).toBeDefined()
-      expect(result.buyAmount).toBe(900000000000000000n) // 0.9 (10% fee applied to 1 ETH)
-      expect(result.suggestedFees).toBeDefined()
-      expect(result.feeBps).toBe(1000) // 10% = 1000 bps
-      expect(result.slippageBps).toBe(0)
+      const request: QuoteBridgeRequest = {
+        kind: OrderKind.SELL,
+        sellTokenChainId: SupportedChainId.MAINNET,
+        sellTokenAddress: '0x1234567890123456789012345678901234567890',
+        sellTokenDecimals: 18,
+        buyTokenChainId: AdditionalTargetChainId.POLYGON,
+        buyTokenAddress: '0x1234567890123456789012345678901234567890',
+        buyTokenDecimals: 6,
+        amount: mockAmount,
+        appCode: 'test',
+        account: '0x1234567890123456789012345678901234567890',
+        signer: '0x1234567890123456789012345678901234567890',
+      }
+
+      const slippageBps = 30
+      const result = toBridgeQuoteResult(request as unknown as QuoteBridgeRequest, slippageBps, mockSuggestedFees)
+
+      const expected: AcrossQuoteResult = {
+        isSell: true,
+        amountsAndCosts: {
+          beforeFee: { sellAmount: 1000000000000000000n, buyAmount: 1000000n }, // 1:1 (different decimals)
+          afterFee: { sellAmount: 1000000000000000000n, buyAmount: 900000n }, // 1:0.9 (10% fee applied)
+          afterSlippage: { sellAmount: 1000000000000000000n, buyAmount: 897300n }, // 1:0.8973 (30 BPS = 0.3% slippage applied)
+          costs: {
+            bridgingFee: {
+              feeBps: 1000,
+              amountInSellCurrency: 100000000000000000n,
+              amountInBuyCurrency: 100000n,
+            },
+            slippageBps: 30,
+          },
+        },
+        quoteTimestamp: 1742111291,
+        expectedFillTimeSeconds: 1742111892,
+        suggestedFees: mockSuggestedFees, // Returns the original suggested fees
+      }
+
+      expect(result).toEqual(expected)
     })
   })
 

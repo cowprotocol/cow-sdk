@@ -129,5 +129,5 @@ export function applyFee(amount: bigint, pct: bigint): bigint {
 }
 
 export function applyBps(amount: bigint, bps: number): bigint {
-  return (amount * (10000n + BigInt(bps))) / 10000n
+  return (amount * BigInt(10_000 - bps)) / 10_000n
 }
