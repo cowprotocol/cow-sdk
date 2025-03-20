@@ -281,11 +281,6 @@ export interface BridgeQuoteResults extends BridgeQuoteResult {
   providerInfo: BridgeProviderInfo
 
   /**
-   * Address of the intermediate token being bridged
-   */
-  intermediateTokenAddress: string
-
-  /**
    * Unsigned call to initiate the bridge. This call should be executed in the context of user's cow-shed account.
    */
   unsignedBridgeCall: EvmCall
