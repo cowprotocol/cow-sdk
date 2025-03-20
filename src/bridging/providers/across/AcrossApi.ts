@@ -290,7 +290,7 @@ export class AcrossApi {
       }
     }
 
-    return response.json()
+    return json
   }
 }
 
