@@ -1,7 +1,7 @@
 import { latest as latestAppData } from '@cowprotocol/app-data'
 import { ChainInfo, SupportedChainId, TargetChainId } from '../chains'
 import { TokenInfo } from '../common/types/tokens'
-import { Address, Amounts, OrderKind, QuoteAmountsAndCosts } from '../order-book'
+import { Address, Amounts, OrderKind } from '../order-book'
 import { EvmCall } from '../common/types/ethereum'
 import { QuoteAndPost, QuoteResults, QuoterParameters, TradeOptionalParameters, TraderParameters } from '../trading'
 import { Signer } from '@ethersproject/abstract-signer'
@@ -46,10 +46,25 @@ export interface QuoteBridgeRequest
 export type QuoteBridgeRequestWithoutAmount = Omit<QuoteBridgeRequest, 'amount'>
 
 export interface BridgeQuoteResult {
-  feeBps: number
-  slippageBps: number
-  buyAmount: bigint
-  fillTimeInSeconds?: number
+  /**
+   * Whether the quote is a sell or buy order.
+   */
+  isSell: boolean
+
+  /**
+   * Costs and amounts of the bridging.
+   */
+  amountsAndCosts: BridgeQuoteAmountsAndCosts
+
+  /**
+   * The estimated time in seconds it takes to fill the order.
+   */
+  expectedFillTimeSeconds?: number
+
+  /**
+   * The timestamp of the quote.
+   */
+  quoteTimestamp: number
 }
 
 export interface BridgeHook {
@@ -204,21 +219,16 @@ export type CrossChainQuoteAndPost = QuoteAndPost | BridgeQuoteAndPost
 
 export interface BridgeQuoteAndPost {
   /**
-   * The summary quote results for the cross-chain swap
+   * The quote results for the CoW Protocol order.
    */
-  overallResults: OverallBridgeQuoteResults
-
-  /**
-   * The quote results for the CoW Protocol order. Includes a hook to initiate the bridging.
-   */
-  swapResults: QuoteResults
+  swap: QuoteResults
 
   /**
    * The quote results for the bridging.
    *
    * Includes the bridging details.
    */
-  bridgeResults: BridgeQuoteResults
+  bridge: BridgeQuoteResults
 
   /**
    * Callback to post the swap order.
@@ -226,39 +236,49 @@ export interface BridgeQuoteAndPost {
   postSwapOrderFromQuote(): Promise<string>
 }
 
-/**
- * A summary of the quote result for a cross-chain swap.
- *
- * It will include the aggregated details of the two stops (the swap and the bridge)
- */
-export interface OverallBridgeQuoteResults<T = bigint> {
-  /**
-   * Quote request for the cross-chain swap.
-   */
-  params: QuoteBridgeRequest
+export interface BridgeCosts<T = bigint> {
+  bridgingFee: {
+    feeBps: number
+    amountInSellCurrency: T
+    amountInBuyCurrency: T
+  }
+  slippageBps: number
 
-  /**
-   * Summary of all the costs aggregated (swap and bridge)
-   */
-  amountsAndCosts: QuoteAmountsAndCosts<T>
+  // TODO: I could see here some additional flags that might be useful in the UI, but as this is a prototype. Leaving it until we get some experience with bridging. Leaving it as comments for future consideration.
+  // needToClaimInDestinationChain: boolean
+  // automaticRefundOnExpiration: boolean
+  // automaticRefundOnFailure: boolean
 }
 
 export interface BridgeQuoteAmountsAndCosts<T = bigint> {
+  /**
+   * Costs of the bridging.
+   */
+  costs: BridgeCosts<T>
+
+  /**
+   * Amounts before fees
+   */
   beforeFee: Amounts<T>
+
+  /**
+   * Amounts after fees.
+   */
   afterFee: Amounts<T>
+
+  /**
+   * Amounts after slippage tolerance.
+   *
+   * It includes the fees and the slippage tolerance, so its the minimum amount that the user will receive.
+   */
   afterSlippage: Amounts<T>
 }
 
-export interface BridgeQuoteResults {
+export interface BridgeQuoteResults extends BridgeQuoteResult {
   /**
    * Bridge provider information
    */
   providerInfo: BridgeProviderInfo
-
-  /**
-   * Details about costs and amounts and fees of the bridging.
-   */
-  amountsAndCosts: BridgeQuoteAmountsAndCosts
 
   /**
    * Address of the intermediate token being bridged

@@ -73,10 +73,31 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
 
   async getQuote(_request: QuoteBridgeRequest): Promise<BridgeQuoteResult> {
     return {
-      feeBps: 10,
-      slippageBps: 0,
-      buyAmount: 123456n,
-      fillTimeInSeconds: 128,
+      isSell: true,
+      amountsAndCosts: {
+        costs: {
+          bridgingFee: {
+            feeBps: 10,
+            amountInSellCurrency: 123456n,
+            amountInBuyCurrency: 123456n,
+          },
+          slippageBps: 0,
+        },
+        beforeFee: {
+          sellAmount: 123456n,
+          buyAmount: 123456n,
+        },
+        afterFee: {
+          sellAmount: 123456n,
+          buyAmount: 123456n,
+        },
+        afterSlippage: {
+          sellAmount: 123456n,
+          buyAmount: 123456n,
+        },
+      },
+      quoteTimestamp: Date.now(),
+      expectedFillTimeSeconds: 128,
     }
   }
 

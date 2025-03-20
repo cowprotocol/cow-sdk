@@ -14,11 +14,11 @@ export interface Amounts<T> {
 
 export interface Costs<T> {
   networkFee: {
-    amountInSellCurrency: Amounts<T>
-    amountInBuyCurrency: Amounts<T>
+    amountInSellCurrency: T
+    amountInBuyCurrency: T
   }
   partnerFee: {
-    amount: Amounts<T>
+    amount: T
     bps: number
   }
 }
