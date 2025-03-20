@@ -3,6 +3,8 @@ import { SuggestedFeesResponse } from './AcrossApi'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { AcrossChainConfig, ACROSS_TOKEN_MAPPING } from './const/tokens'
 
+const PCT_100_PERCENT = 10n ** 18n
+
 export function getChainConfigs(
   sourceChainId: TargetChainId,
   targetChainId: TargetChainId
@@ -51,19 +53,19 @@ export function toBridgeQuoteResult(amount: string, suggestedFees: SuggestedFees
  */
 export function pctToBps(pct: string): number {
   const pctBigInt = BigInt(pct)
-  return Number((pctBigInt * 10_000n) / 10n ** 18n)
+  return Number((pctBigInt * 10_000n) / PCT_100_PERCENT)
 }
 
 export function applyFee(amount: string, pct: string): string {
   const amountBigInt = BigInt(amount)
   const pctBigInt = BigInt(pct)
 
-  if (pctBigInt > 10n ** 18n) {
+  if (pctBigInt > PCT_100_PERCENT) {
     throw new Error('Fee cannot exceed 100%')
   }
 
   // Compute amount after fee: amount * (1 - pct / 1e18)
-  const amountAfterFee = (amountBigInt * (10n ** 18n - pctBigInt)) / 10n ** 18n
+  const amountAfterFee = (amountBigInt * (PCT_100_PERCENT - pctBigInt)) / PCT_100_PERCENT
 
   return amountAfterFee.toString()
 }
