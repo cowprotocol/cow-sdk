@@ -1,7 +1,7 @@
 import { AdditionalTargetChainId, SupportedChainId, TargetChainId } from '../../../chains'
 import { TokenInfo } from '../../../common'
 import { OrderKind } from '../../../order-book'
-import { BridgeHook, QuoteBridgeRequest } from '../../types'
+import { BridgeHook, BridgeQuoteResult, QuoteBridgeRequest } from '../../types'
 import { AcrossApi } from './AcrossApi'
 import { ACROSS_SUPPORTED_NETWORKS, AcrossBridgeProvider, AcrossBridgeProviderOptions } from './AcrossBridgeProvider'
 
@@ -140,11 +140,27 @@ describe('AcrossBridgeProvider', () => {
       // The quote contains the suggested fees returned by the API
       expect(suggestedFees).toEqual(mockSuggestedFees)
 
-      expect(quote).toEqual({
-        buyAmount: 999900000000000000n,
-        feeBps: 1,
-        slippageBps: 0,
-      })
+      console.log('quote', quote.amountsAndCosts.costs)
+      const expectedQuote: BridgeQuoteResult = {
+        isSell: true,
+        amountsAndCosts: {
+          beforeFee: { sellAmount: 1000000000000000000n, buyAmount: 1000000n },
+          afterFee: { sellAmount: 1000000000000000000n, buyAmount: 999900n },
+          afterSlippage: { sellAmount: 1000000000000000000n, buyAmount: 999900n },
+          costs: {
+            bridgingFee: {
+              feeBps: 1,
+              amountInSellCurrency: 100000000000000n,
+              amountInBuyCurrency: 100n,
+            },
+            slippageBps: 0,
+          },
+        },
+        quoteTimestamp: 1234567890,
+        expectedFillTimeSeconds: 300,
+      }
+
+      expect(quote).toEqual(expectedQuote)
     })
   })
 
