@@ -68,6 +68,50 @@ export interface SuggestedFeesRequest {
   relayer?: string
 }
 
+export interface SuggestedFeesLimits {
+  /**
+   * The minimum deposit size in the tokens' units.
+   *
+   * Note: USDC has 6 decimals, so this value would be the number of USDC multiplied by 1e6. For WETH, that would be 1e18.
+   */
+  minDeposit: string
+
+  /**
+   * The maximum deposit size in the tokens' units. Note: The formatting of this number is the same as minDeposit.
+   */
+  maxDeposit: string
+
+  /**
+   * The max deposit size that can be relayed "instantly" on the destination chain.
+   *
+   * Instantly means that there is relayer capital readily available and that a relayer is expected to relay within
+   * seconds to 5 minutes of the deposit.
+   */
+  maxDepositInstant: string
+
+  /**
+   * The max deposit size that can be relayed with a "short delay" on the destination chain.
+   *
+   * This means that there is relayer capital available on mainnet and that a relayer will immediately begin moving
+   * that capital over the canonical bridge to relay the deposit. Depending on the chain, the time for this can vary.
+   *
+   * Polygon is the worst case where it can take between 20 and 35 minutes for the relayer to receive the funds
+   * and relay.
+   *
+   * Arbitrum is much faster, with a range between 5 and 15 minutes. Note: if the transfer size is greater than this,
+   * the estimate should be between 2-4 hours for a slow relay to be processed from the mainnet pool.
+   */
+  maxDepositShortDelay: string
+
+  /**
+   * The recommended deposit size that can be relayed "instantly" on the destination chain.
+   *
+   * Instantly means that there is relayer capital readily available and that a relayer is expected to relay
+   * within seconds to 5 minutes of the deposit. Value is in the smallest unit of the respective token.
+   */
+  recommendedDepositInstant: string
+}
+
 export interface SuggestedFeesResponse {
   /**
    * Percentage of the transfer amount that should go to the relayer as a fee in total. The value is inclusive of lpFee.pct.
@@ -141,49 +185,7 @@ export interface SuggestedFeesResponse {
    */
   fillDeadline: string
 
-  limits: {
-    /**
-     * The minimum deposit size in the tokens' units.
-     *
-     * Note: USDC has 6 decimals, so this value would be the number of USDC multiplied by 1e6. For WETH, that would be 1e18.
-     */
-    minDeposit: string
-
-    /**
-     * The maximum deposit size in the tokens' units. Note: The formatting of this number is the same as minDeposit.
-     */
-    maxDeposit: string
-
-    /**
-     * The max deposit size that can be relayed "instantly" on the destination chain.
-     *
-     * Instantly means that there is relayer capital readily available and that a relayer is expected to relay within
-     * seconds to 5 minutes of the deposit.
-     */
-    maxDepositInstant: string
-
-    /**
-     * The max deposit size that can be relayed with a "short delay" on the destination chain.
-     *
-     * This means that there is relayer capital available on mainnet and that a relayer will immediately begin moving
-     * that capital over the canonical bridge to relay the deposit. Depending on the chain, the time for this can vary.
-     *
-     * Polygon is the worst case where it can take between 20 and 35 minutes for the relayer to receive the funds
-     * and relay.
-     *
-     * Arbitrum is much faster, with a range between 5 and 15 minutes. Note: if the transfer size is greater than this,
-     * the estimate should be between 2-4 hours for a slow relay to be processed from the mainnet pool.
-     */
-    maxDepositShortDelay: string
-
-    /**
-     * The recommended deposit size that can be relayed "instantly" on the destination chain.
-     *
-     * Instantly means that there is relayer capital readily available and that a relayer is expected to relay
-     * within seconds to 5 minutes of the deposit. Value is in the smallest unit of the respective token.
-     */
-    recommendedDepositInstant: string
-  }
+  limits: SuggestedFeesLimits
 }
 
 export interface PctFee {
@@ -224,7 +226,7 @@ export class AcrossApi {
     if (destinationChainId) params.destinationChainId = destinationChainId
     if (destinationToken) params.destinationToken = destinationToken
 
-    return this.fetchApi('/available-routes', params)
+    return this.fetchApi('/available-routes', params, isValidRoutes)
   }
 
   /**
@@ -283,7 +285,7 @@ export class AcrossApi {
         return json
       } else {
         throw new Error(
-          `Invalid response for Across API call ${path}. The response doesn't pass the validation. Did the API chainge?`
+          `Invalid response for Across API call ${path}. The response doesn't pass the validation. Did the API change?`
         )
       }
     }
@@ -303,9 +305,13 @@ function isValidSuggestedFeesResponse(response: unknown): response is SuggestedF
     typeof response === 'object' &&
     response !== null &&
     'totalRelayFee' in response &&
+    isValidPctFee(response.totalRelayFee) &&
     'relayerCapitalFee' in response &&
+    isValidPctFee(response.relayerCapitalFee) &&
     'relayerGasFee' in response &&
+    isValidPctFee(response.relayerGasFee) &&
     'lpFee' in response &&
+    isValidPctFee(response.lpFee) &&
     'timestamp' in response &&
     'isAmountTooLow' in response &&
     'quoteBlock' in response &&
@@ -313,6 +319,53 @@ function isValidSuggestedFeesResponse(response: unknown): response is SuggestedF
     'exclusiveRelayer' in response &&
     'exclusivityDeadline' in response &&
     'expectedFillTimeSec' in response &&
-    'fillDeadline' in response
+    'fillDeadline' in response &&
+    'limits' in response &&
+    isValidSuggestedFeeLimits(response.limits)
+  )
+}
+
+function isValidPctFee(pctFee: unknown): pctFee is PctFee {
+  return typeof pctFee === 'object' && pctFee !== null && 'pct' in pctFee && 'total' in pctFee
+}
+
+function isValidSuggestedFeeLimits(limits: unknown): limits is SuggestedFeesLimits {
+  return (
+    typeof limits === 'object' &&
+    limits !== null &&
+    'minDeposit' in limits &&
+    'maxDeposit' in limits &&
+    'maxDepositInstant' in limits &&
+    'maxDepositShortDelay' in limits &&
+    'recommendedDepositInstant' in limits
+  )
+}
+
+/**
+ * Validate the response from the Across API is an AvailableRoutesResponse
+ *
+ * @param response - The response from the Across API
+ * @returns True if the response is an AvailableRoutesResponse, false otherwise
+ */
+function isValidRoutes(response: unknown): response is Route[] {
+  // make sure the response is an array
+  if (!Array.isArray(response)) {
+    return false
+  }
+
+  // make sure each item in the array is an AvailableRoutesResponseItem
+  return response.every((item) => isValidRoute(item))
+}
+
+function isValidRoute(item: unknown): item is Route {
+  return (
+    typeof item === 'object' &&
+    item !== null &&
+    'originChainId' in item &&
+    'originToken' in item &&
+    'destinationChainId' in item &&
+    'destinationToken' in item &&
+    'originTokenSymbol' in item &&
+    'destinationTokenSymbol' in item
   )
 }
