@@ -1,19 +1,16 @@
 import { MetadataApi } from '@cowprotocol/app-data'
 import { getHookMockForCostEstimation } from '../../hooks/utils'
-import { postSwapOrderFromQuote, QuoteResults, SwapAdvancedSettings, TradeParameters, TradingSdk } from '../../trading'
+import { postSwapOrderFromQuote, SwapAdvancedSettings, TradeParameters, TradingSdk } from '../../trading'
 import {
   BridgeProvider,
-  BridgeQuoteAmountsAndCosts,
   BridgeQuoteAndPost,
   BridgeQuoteResult,
   BridgeQuoteResults,
   GetErc20Decimals,
-  OverallBridgeQuoteResults,
   QuoteBridgeRequest,
   QuoteBridgeRequestWithoutAmount,
 } from '../types'
 import { getSigner } from '../../common/utils/wallet'
-import { QuoteAmountsAndCosts } from 'src/order-book'
 
 export async function getQuoteWithBridge<T extends BridgeQuoteResult>(params: {
   quoteBridgeRequest: QuoteBridgeRequest
@@ -56,7 +53,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(params: {
     buyTokenDecimals: intermediaryTokenDecimals,
     amount: amount.toString(),
   }
-  const { result: swapQuote, orderBookApi } = await tradingSdk.getQuoteResults(swapParams, {
+  const { result: swapResult, orderBookApi } = await tradingSdk.getQuoteResults(swapParams, {
     ...advancedSettings,
     appData: {
       metadata: {
@@ -64,7 +61,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(params: {
       },
     },
   })
-  const intermediateTokenAmount = swapQuote.amountsAndCosts.afterSlippage.buyAmount // Estimated, as
+  const intermediateTokenAmount = swapResult.amountsAndCosts.afterSlippage.buyAmount // Estimated, as
 
   // Get the quote for the bridging of the intermediate token to the final token
   const bridgingQuote = await provider.getQuote({
@@ -85,7 +82,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(params: {
   // Generate the app data for the hook
   const metadataApi = new MetadataApi()
   const appData = await metadataApi.generateAppDataDoc({
-    ...swapQuote.appDataInfo.doc,
+    ...swapResult.appDataInfo.doc,
     metadata: {
       hooks: {
         post: [bridgeHook.postHook],
@@ -93,66 +90,30 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(params: {
     },
   })
 
-  const bridgeResults: BridgeQuoteResults = {
+  // Prepare the bridge result
+  const bridgeResult: BridgeQuoteResults = {
+    ...bridgingQuote,
     providerInfo: provider.info,
-    amountsAndCosts: toAmountAndCosts(quoteBridgeRequest, bridgingQuote),
     intermediateTokenAddress: intermediateTokenAddress,
     unsignedBridgeCall: unsignedBridgeCall,
     preAuthorizedBridgingHook: bridgeHook,
     quoteResponse: bridgingQuote,
   }
 
-  const overallResults: OverallBridgeQuoteResults = {
-    params: quoteBridgeRequest,
-    amountsAndCosts: getOverallAmountsAndCosts(quoteBridgeRequest, bridgingQuote, swapQuote),
-  }
-
-
-
+  // Return the quote results with the post swap order function
   return {
-    overallResults,
-    swapResults: swapQuote,
-    bridgeResults,
+    swap: swapResult,
+    bridge: bridgeResult,
     async postSwapOrderFromQuote() {
-      const quoteResults = { 
+      const quoteResults = {
         result: {
-          ...swapQuote,
+          ...swapResult,
           signer,
-        }, 
-        orderBookApi 
+        },
+        orderBookApi,
       }
-      
+
       return postSwapOrderFromQuote(quoteResults, { ...advancedSettings, appData })
     },
   }
-}
-
-function toAmountAndCosts(
-  _quoteBridgeRequest: QuoteBridgeRequest,
-  _bridgingQuote: BridgeQuoteResult
-): BridgeQuoteAmountsAndCosts {
-  // TODO: Implement
-  return {
-    beforeFee: {
-      sellAmount: 0n,
-      buyAmount: 0n,
-    },
-    afterFee: {
-      sellAmount: 0n,
-      buyAmount: 0n,
-    },
-    afterSlippage: {
-      sellAmount: 0n,
-      buyAmount: 0n,
-    },
-  }
-}
-
-function getOverallAmountsAndCosts(
-  _quoteBridgeRequest: QuoteBridgeRequest,
-  _bridgingQuote: BridgeQuoteResult,
-  swapQuote: QuoteResults
-): QuoteAmountsAndCosts {
-  // TODO: Implement. We need to add the bridging costs
-  return swapQuote.amountsAndCosts,
 }

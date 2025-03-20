@@ -28,10 +28,13 @@ import { AcrossApi, AcrossApiOptions, SuggestedFeesResponse } from './AcrossApi'
 import { getChainConfigs, getTokenAddress, getTokenSymbol, toBridgeQuoteResult } from './util'
 import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
 import { createAcrossDepositCall } from './createAcrossDepositCall'
+import { OrderKind } from '@cowprotocol/contracts'
 
 const HOOK_DAPP_ID = 'cow-sdk://bridging/providers/across'
 export const ACROSS_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
 
+// We need to review if we should set an additional slippage tolerance, for now assuming the quote gives you the exact price of bridging and no further slippage is needed
+const SLIPPAGE_TOLERANCE_BPS = 0
 export interface AcrossBridgeProviderOptions {
   /**
    * Token info provider
@@ -83,7 +86,10 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
   }
 
   async getIntermediateTokens(request: QuoteBridgeRequest): Promise<string[]> {
-    // TODO: This is a temporary implementation. We should use the Across API to get the intermediate tokens (see this.getAvailableRoutes())
+    if (request.kind !== OrderKind.SELL) {
+      throw new Error('Only SELL is supported for now')
+    }
+
     const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
     const chainConfigs = getChainConfigs(sellTokenChainId, buyTokenChainId)
     if (!chainConfigs) return []
@@ -119,10 +125,10 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     // potentially, this could be cached for a short period of time in the SDK so we can resolve quotes with less
     // requests.
 
-    return toBridgeQuoteResult(amount, suggestedFees)
+    return toBridgeQuoteResult(request, SLIPPAGE_TOLERANCE_BPS, suggestedFees)
   }
 
-  async getUnsignedBridgeTx(request: QuoteBridgeRequest, quote: AcrossQuoteResult): Promise<EvmCall> {
+  async getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: AcrossQuoteResult): Promise<EvmCall> {
     return createAcrossDepositCall({
       request,
       quote,
