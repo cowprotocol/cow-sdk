@@ -275,7 +275,8 @@ export class AcrossApi {
     })
 
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`)
+      const errorBody = await response.text()
+      throw new Error(`HTTP error! Status: ${response.status}, Body: ${errorBody}`)
     }
 
     // Validate the response
