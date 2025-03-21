@@ -81,7 +81,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
       return []
     }
 
-    const tokenAddresses = Object.values(chainConfig.tokens).filter((address) => address !== undefined)
+    const tokenAddresses = Object.values(chainConfig.tokens).filter((address): address is string => Boolean(address))
     return this.options.getTokenInfos(targetChainId, tokenAddresses)
   }
 
