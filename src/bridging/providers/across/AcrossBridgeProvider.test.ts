@@ -140,7 +140,6 @@ describe('AcrossBridgeProvider', () => {
       // The quote contains the suggested fees returned by the API
       expect(suggestedFees).toEqual(mockSuggestedFees)
 
-      console.log('quote', quote.amountsAndCosts.costs)
       const expectedQuote: BridgeQuoteResult = {
         isSell: true,
         amountsAndCosts: {
