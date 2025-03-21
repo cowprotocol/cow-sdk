@@ -179,9 +179,11 @@ async function getBridgeResult(params: {
   const bridgeResult: BridgeQuoteResults = {
     ...bridgingQuote,
     providerInfo: provider.info,
-    unsignedBridgeCall: unsignedBridgeCall,
-    preAuthorizedBridgingHook: bridgeHook,
-    quoteResponse: bridgingQuote,
+    tradeParameters: quoteBridgeRequest,
+    bridgeCallDetails: {
+      unsignedBridgeCall: unsignedBridgeCall,
+      preAuthorizedBridgingHook: bridgeHook,
+    },
   }
 
   return { bridgeResult, bridgeHook, appData }

@@ -2,12 +2,10 @@
 
 SDK for swapping between chains.
 
-This documentation is a WIP as this feature remains in development, as the SDK is subject to change.
-
 ## Usage
 
 ```ts
-import { SupportedChainId, BridgingSdk, QuoteBridgeRequest, OrderKind } from '@cowprotocol/cow-sdk'
+import { SupportedChainId, BridgingSdk, QuoteBridgeRequest, OrderKind, assertIsBridgeQuoteAndPost } from '@cowprotocol/cow-sdk'
 
 const sdk = new BridgingSdk()
 
@@ -35,7 +33,9 @@ const parameters: QuoteBridgeRequest = {
 }
 
 // Get a quote (and the post callback) for a cross-chain swap
-const { swap, bridge, postSwapOrderFromQuote } = await sdk.getQuote(parameters)
+const quoteResult = await sdk.getQuote(parameters)
+assertIsBridgeQuoteAndPost(quoteResult) // Assert that the quote result is of type BridgeQuoteAndPost (type for cross-chain quotes, as opposed to QuoteAndPost for single-chain quotes). The assertion makes typescript happy.
+const { swap, bridge, postSwapOrderFromQuote } = quoteResult
 
 // Display all data related to the swap (costs, amounts, appData including the bridging hook, etc.) 🐮
 console.log('Swap info', swap)
