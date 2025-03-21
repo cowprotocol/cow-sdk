@@ -42,7 +42,7 @@ export interface AcrossBridgeProviderOptions {
    * @param addresses - The addresses of the tokens to get the info for
    * @returns The token infos
    */
-  getTokenInfos: (chainId: ChainId, addresses: string[]) => Promise<TokenInfo[]>
+  getTokenInfos?: (chainId: ChainId, addresses: string[]) => Promise<TokenInfo[]>
 
   // API options
   apiOptions?: AcrossApiOptions
@@ -59,7 +59,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
   protected api: AcrossApi
   protected cowShedSdk: CowShedSdk
 
-  constructor(private options: AcrossBridgeProviderOptions) {
+  constructor(private options: AcrossBridgeProviderOptions = {}) {
     this.api = new AcrossApi(options.apiOptions)
     this.cowShedSdk = new CowShedSdk(options.cowShedOptions)
   }
@@ -74,6 +74,10 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
   }
 
   async getBuyTokens(param: GetBuyTokensParams): Promise<TokenInfo[]> {
+    if (!this.options.getTokenInfos) {
+      throw new Error("'getTokenInfos' parameter is required for AcrossBridgeProvider constructor")
+    }
+
     const { targetChainId } = param
 
     const chainConfig = ACROSS_TOKEN_MAPPING[targetChainId as TargetChainId]
