@@ -1,8 +1,18 @@
-import { Planner as WeirollPlanner } from '@weiroll/weiroll.js'
+import { Planner as WeirollPlanner, Contract as WeirollContract } from '@weiroll/weiroll.js'
 import { Interface } from '@ethersproject/abi'
 import { EvmCall } from '../common'
 export { Contract as WeirollContract, Planner as WeirollPlanner } from '@weiroll/weiroll.js'
-export { CommandFlags as WeirollCommandFlags } from '@weiroll/weiroll.js/dist/planner'
+import { Contract as EthersContract } from '@ethersproject/contracts'
+
+export enum WeirollCommandFlags {
+  DELEGATECALL = 0,
+  CALL = 1,
+  STATICCALL = 2,
+  CALL_WITH_VALUE = 3,
+  CALLTYPE_MASK = 3,
+  EXTENDED_COMMAND = 64,
+  TUPLE_RETURN = 128,
+}
 
 const WEIROLL_ADDRESS = '0x9585c3062Df1C247d5E373Cfca9167F7dC2b5963'
 
@@ -57,4 +67,15 @@ export function createWeirollDelegateCall(addToPlanner: (planner: WeirollPlanner
     value: BigInt(0),
     data: getWeirollCalldata(planner),
   }
+}
+
+export function createWeirollContract(contract: EthersContract, commandflags?: WeirollCommandFlags): WeirollContract {
+  return WeirollContract.createContract(
+    contract,
+    commandflags as unknown as Parameters<typeof WeirollContract.createContract>[1]
+  )
+}
+
+export function createWeirollLibrary(contract: EthersContract): WeirollContract {
+  return WeirollContract.createLibrary(contract)
 }
