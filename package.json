@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/cow-sdk",
-  "version": "6.0.0-RC.4",
+  "version": "6.0.0-RC.5",
   "license": "(MIT OR Apache-2.0)",
   "files": [
     "/dist"
