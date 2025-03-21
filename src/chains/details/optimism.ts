@@ -1,6 +1,6 @@
 import { nativeCurrencyTemplate } from '../../common/consts/tokens'
 import { ChainInfo } from '../types'
-import { RAW_CHAINS_FILES_PATH } from '../const'
+import { RAW_CHAINS_FILES_PATH } from '../const/path'
 
 const optimismLogo = `${RAW_CHAINS_FILES_PATH}/images/optimism-logo.svg`
 

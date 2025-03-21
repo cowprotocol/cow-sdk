@@ -1,6 +1,6 @@
 import { latest as latestAppData } from '@cowprotocol/app-data'
 import { ethers } from 'ethers'
-import { ChainInfo, ChainId } from '../chains'
+import { ChainInfo, SupportedChainId, TargetChainId } from '../chains'
 import { TokenInfo } from '../common/types/tokens'
 import { Address, OrderKind } from '../order-book'
 import { EvmCall } from '../common/types/ethereum'
@@ -11,19 +11,19 @@ export interface BridgeProviderInfo {
 }
 
 export interface WithSellToken {
-  sellTokenChainId: ChainId
+  sellTokenChainId: SupportedChainId
   sellTokenAddress: Address
   sellTokenDecimals: number
 }
 
 export interface WithBuyToken {
-  buyTokenChainId: ChainId
+  buyTokenChainId: TargetChainId
   buyTokenAddress: Address
   buyTokenDecimals: number
 }
 
 export interface GetBuyTokensParams extends Partial<WithSellToken> {
-  targetChainId: ChainId
+  targetChainId: TargetChainId
 }
 
 /**
@@ -70,7 +70,7 @@ export interface BridgeStatusResult {
  *
  */
 export interface BridgeDeposit extends Omit<QuoteBridgeRequest, 'amount'> {
-  provider: BridgeProviderInfo
+  readonly provider: BridgeProviderInfo
 
   sellTokenAmount: string
   minBuyAmount: string
@@ -129,10 +129,10 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    *
    * This hook will include the pre-authorization (signature) of the owner of the cow-shed account (the trader).
    *
-   * @param unsignedTx
+   * @param unsignedCall
    * @param signer
    */
-  getSignedHook(unsignedTx: EvmCall, signer: ethers.Signer): Promise<BridgeHook>
+  getSignedHook(chainId: SupportedChainId, unsignedCall: EvmCall, signer: ethers.Signer): Promise<BridgeHook>
 
   /**
    * Decode a bridge hook into a bridge deposit information.

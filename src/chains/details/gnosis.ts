@@ -1,6 +1,6 @@
 import { ChainInfo, SupportedChainId } from '../types'
 import { NATIVE_CURRENCY_ADDRESS, nativeCurrencyTemplate, TOKEN_LIST_IMAGES_PATH } from '../../common/consts/tokens'
-import { RAW_CHAINS_FILES_PATH } from '../const'
+import { RAW_CHAINS_FILES_PATH } from '../const/path'
 
 const gnosisChainLogo = `${RAW_CHAINS_FILES_PATH}/images/gnosis-logo.svg`
 
