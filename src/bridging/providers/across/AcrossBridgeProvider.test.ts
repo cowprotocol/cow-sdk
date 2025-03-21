@@ -1,7 +1,7 @@
 import { AdditionalTargetChainId, SupportedChainId, TargetChainId } from '../../../chains'
 import { TokenInfo } from '../../../common'
 import { OrderKind } from '../../../order-book'
-import { BridgeHook, QuoteBridgeRequest } from '../../types'
+import { BridgeHook, BridgeQuoteResult, QuoteBridgeRequest } from '../../types'
 import { AcrossApi } from './AcrossApi'
 import { ACROSS_SUPPORTED_NETWORKS, AcrossBridgeProvider, AcrossBridgeProviderOptions } from './AcrossBridgeProvider'
 
@@ -119,18 +119,18 @@ describe('AcrossBridgeProvider', () => {
 
     it('should return quote with suggested fees', async () => {
       const request: QuoteBridgeRequest = {
-        type: OrderKind.SELL,
+        kind: OrderKind.SELL,
         sellTokenAddress: '0x123',
         sellTokenChainId: SupportedChainId.MAINNET,
         buyTokenChainId: AdditionalTargetChainId.POLYGON,
-        amount: '1000000000000000000',
-        recipient: '0x789',
-        owner: '0x123',
+        amount: 1000000000000000000n,
+        receiver: '0x789',
+        account: '0x123',
         sellTokenDecimals: 18,
         buyTokenAddress: '0x456',
         buyTokenDecimals: 6,
-        feeBps: 0,
-        feeRecipient: '0x789',
+        appCode: '0x123',
+        signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
       }
 
       const { suggestedFees, ...quote } = await provider.getQuote(request)
@@ -138,11 +138,26 @@ describe('AcrossBridgeProvider', () => {
       // The quote contains the suggested fees returned by the API
       expect(suggestedFees).toEqual(mockSuggestedFees)
 
-      expect(quote).toEqual({
-        buyAmount: '999900000000000000',
-        feeBps: 1,
-        slippageBps: 0,
-      })
+      const expectedQuote: BridgeQuoteResult = {
+        isSell: true,
+        amountsAndCosts: {
+          beforeFee: { sellAmount: 1000000000000000000n, buyAmount: 1000000n },
+          afterFee: { sellAmount: 1000000000000000000n, buyAmount: 999900n },
+          afterSlippage: { sellAmount: 1000000000000000000n, buyAmount: 999900n },
+          costs: {
+            bridgingFee: {
+              feeBps: 1,
+              amountInSellCurrency: 100000000000000n,
+              amountInBuyCurrency: 100n,
+            },
+          },
+          slippageBps: 0,
+        },
+        quoteTimestamp: 1234567890,
+        expectedFillTimeSeconds: 300,
+      }
+
+      expect(quote).toEqual(expectedQuote)
     })
   })
 

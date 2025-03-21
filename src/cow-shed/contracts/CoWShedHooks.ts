@@ -6,8 +6,8 @@ import {
   TypedDataTypes,
 } from '@cowprotocol/contracts'
 import { SupportedChainId } from '../../chains'
-import type { Signer } from '@ethersproject/abstract-signer'
-import { TypedDataDomain } from 'ethers'
+import type { Signer, TypedDataDomain } from '@ethersproject/abstract-signer'
+
 import {
   arrayify,
   defaultAbiCoder,

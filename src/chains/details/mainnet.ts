@@ -1,4 +1,4 @@
-import { nativeCurrencyTemplate } from 'src/common/consts/tokens'
+import { nativeCurrencyTemplate } from '../../common/consts/tokens'
 import { ChainInfo, SupportedChainId } from '../types'
 import { RAW_CHAINS_FILES_PATH } from '../const/path'
 

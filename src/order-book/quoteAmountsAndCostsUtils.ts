@@ -1,7 +1,7 @@
 import { QuoteAmountsAndCosts } from './types'
 import { OrderKind, type OrderParameters } from './generated'
 
-interface Params {
+export interface QuoteAmountsAndCostsParams {
   orderParams: OrderParameters
   sellDecimals: number
   buyDecimals: number
@@ -11,7 +11,7 @@ interface Params {
 
 const ONE_HUNDRED_BPS = BigInt(100 * 100)
 
-export function getQuoteAmountsAndCosts(params: Params): QuoteAmountsAndCosts {
+export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): QuoteAmountsAndCosts {
   const { orderParams, sellDecimals, buyDecimals, slippagePercentBps } = params
   const partnerFeeBps = params.partnerFeeBps ?? 0
   const isSell = orderParams.kind === OrderKind.SELL
@@ -112,7 +112,7 @@ type BigNumber = {
  * @param value
  * @param decimals
  */
-function getBigNumber(value: string | bigint | number, decimals: number): BigNumber {
+export function getBigNumber(value: string | bigint | number, decimals: number): BigNumber {
   if (typeof value === 'number') {
     const bigAsNumber = value * 10 ** decimals
     const bigAsNumberString = bigAsNumber.toFixed()

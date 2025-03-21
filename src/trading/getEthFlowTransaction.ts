@@ -1,4 +1,3 @@
-import { Signer } from 'ethers'
 import { LimitTradeParametersFromQuote, PostTradeAdditionalParams, TransactionParams } from './types'
 import { calculateUniqueOrderId } from './calculateUniqueOrderId'
 import { getOrderToSign } from './getOrderToSign'
@@ -8,6 +7,7 @@ import { SupportedChainId } from '../chains'
 import { GAS_LIMIT_DEFAULT } from './consts'
 import type { EthFlowOrder } from '../common/generated/EthFlow'
 import { adjustEthFlowOrderParams, calculateGasMargin } from './utils'
+import { Signer } from '@ethersproject/abstract-signer'
 
 export async function getEthFlowTransaction(
   signer: Signer,

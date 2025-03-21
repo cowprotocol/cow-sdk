@@ -1,5 +1,5 @@
 import { OrderBookApi, OrderCreation, SigningScheme } from '../order-book'
-import type { Signer } from 'ethers'
+import type { Signer } from '@ethersproject/abstract-signer'
 import { AppDataInfo, LimitTradeParameters, PostTradeAdditionalParams } from './types'
 import { log, SIGN_SCHEME_MAP } from './consts'
 import { OrderSigningUtils } from '../order-signing'

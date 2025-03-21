@@ -1,15 +1,14 @@
 import '../../pageStyles.css'
-import { FormEvent, useCallback, useEffect, useState } from 'react'
-import { CowShedHooks } from '@cowprotocol/cow-sdk'
+import { FormEvent, useCallback, useState } from 'react'
+import { CowShedSdk } from '@cowprotocol/cow-sdk'
 import { useCurrentChainId } from 'hooks/useCurrentChainId'
 import { useWeb3Info } from 'hooks/useWeb3Info'
 import { JsonContent } from '../../components/jsonContent'
 import { ResultContent } from '../../components/resultContent'
 import { formatBytes32String } from 'ethers/lib/utils.js'
-import { SigningScheme } from '@cowprotocol/contracts'
 
 const DEADLINE = BigInt(1_000_000)
-
+const cowShedSdk = new CowShedSdk()
 interface IInput {
   target: string
   value: number
@@ -21,21 +20,14 @@ export function GenerateCowShedHookCallDataPage() {
   const { account, provider } = useWeb3Info()
   const chainId = useCurrentChainId()
 
-  const [cowShed, setCowShed] = useState<CowShedHooks>()
   const [input, setInput] = useState<IInput>()
   const [output, setOutput] = useState<string>()
-
-  useEffect(() => {
-    if (!chainId) return
-    setCowShed(new CowShedHooks(chainId))
-  }, [chainId])
 
   const generateHook = useCallback(
     async (event: FormEvent) => {
       event.preventDefault()
 
       if (!input) return
-      if (!cowShed) return
 
       try {
         setOutput('Waiting signature...')
@@ -54,14 +46,15 @@ export function GenerateCowShedHookCallDataPage() {
           },
         ]
 
-        console.log('calls', calls)
-        const signature = await cowShed.signCalls(calls, nonce, DEADLINE, signer, SigningScheme.EIP712)
+        const cowShedCall = await cowShedSdk.signCalls({
+          chainId,
+          calls,
+          nonce,
+          deadline: DEADLINE,
+          signer,
+        })
 
-        setOutput('Building hook...')
-
-        const hookCallData = cowShed.encodeExecuteHooksForFactory(calls, nonce, DEADLINE, account, signature)
-
-        setOutput(hookCallData)
+        setOutput(JSON.stringify(cowShedCall, null, 2))
       } finally {
         setOutput('Error generating hook')
       }

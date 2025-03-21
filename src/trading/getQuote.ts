@@ -13,10 +13,10 @@ import {
 import { buildAppData } from './appDataUtils'
 import { getOrderToSign } from './getOrderToSign'
 import { adjustEthFlowOrderParams, getIsEthFlowOrder, swapParamsToLimitOrderParams } from './utils'
-import { Signer } from 'ethers'
+import { Signer } from '@ethersproject/abstract-signer'
 import { getOrderTypedData } from './getOrderTypedData'
 import { getSigner } from '../common/utils/wallet'
-import { AccountAddress } from 'src/common'
+import { AccountAddress } from '../common/types/wallets'
 
 // ETH-FLOW orders require different quote params
 // check the isEthFlow flag and set in quote req obj
@@ -28,7 +28,10 @@ const ETH_FLOW_AUX_QUOTE_PARAMS = {
   verificationGasLimit: 0,
 }
 
-export type QuoteResultsWithSigner = { result: QuoteResults & { signer: Signer }; orderBookApi: OrderBookApi }
+export type QuoteResultsWithSigner = {
+  result: QuoteResults & { signer: Signer }
+  orderBookApi: OrderBookApi
+}
 
 export async function getQuote(
   _tradeParameters: TradeParameters,

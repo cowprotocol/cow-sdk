@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/cow-sdk",
-  "version": "5.10.2-RC.0",
+  "version": "6.0.0-RC.10",
   "license": "(MIT OR Apache-2.0)",
   "files": [
     "/dist"
@@ -80,6 +80,7 @@
     "typescript": "^4.9.5"
   },
   "jest": {
+    "maxWorkers": 1,
     "automock": false,
     "resetMocks": false,
     "setupFiles": [

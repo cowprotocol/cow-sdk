@@ -5,7 +5,7 @@ import { ApiContext, CowEnv } from '../common/types/config'
 import { CowError } from '../common/types/cow-error'
 import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphql'
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
-import { DEFAULT_COW_API_CONTEXT } from 'src/common'
+import { DEFAULT_COW_API_CONTEXT } from '../common/consts/config'
 
 const SUBGRAPH_BASE_URL = 'https://api.thegraph.com/subgraphs/name/cowprotocol'
 

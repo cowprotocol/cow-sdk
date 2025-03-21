@@ -1,4 +1,4 @@
-import { Wallet } from 'ethers'
+import { Wallet } from '@ethersproject/wallet'
 import { CowShedHooks } from './CoWShedHooks'
 import { AddressZero } from '@ethersproject/constants'
 import { ICoWShedCall } from '../types'
@@ -6,6 +6,7 @@ import { COW_SHED_FACTORY, COW_SHED_IMPLEMENTATION } from '../../common'
 import { SigningScheme } from '@cowprotocol/contracts'
 import { formatBytes32String, solidityPack } from 'ethers/lib/utils'
 import * as contracts from './utils'
+import { CoWShedFactoryInterface } from '../../common/generated/CoWShedFactory'
 
 // information from mint and dai example of cow-shed repository
 // https://github.com/cowdao-grants/cow-shed/blob/main/examples/mintDaiAndSwap.ts
@@ -115,7 +116,9 @@ describe('CowShedHooks', () => {
         encodeFunctionData: mockEncodeFunctionData,
       }
 
-      jest.spyOn(contracts, 'getCoWShedFactoryInterface').mockReturnValue(mockInterface)
+      jest
+        .spyOn(contracts, 'getCoWShedFactoryInterface')
+        .mockReturnValue(mockInterface as unknown as CoWShedFactoryInterface)
 
       const result = cowShed.encodeExecuteHooksForFactory(CALLS_MOCK, mockNonce, mockDeadline, USER_MOCK, mockSignature)
 

@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Signer } from 'ethers'
 import {
   BridgeDeposit,
   BridgeHook,
@@ -12,16 +11,17 @@ import {
   QuoteBridgeRequest,
 } from '../../types'
 
-import { OrderKind } from 'src/order-book'
-import { mainnet } from 'src/chains/details/mainnet'
-import { optimism } from 'src/chains/details/optimism'
-import { sepolia } from 'src/chains/details/sepolia'
-import { EvmCall, TokenInfo } from 'src/common'
+import { OrderKind } from '../../../order-book'
+import { mainnet } from '../../../chains/details/mainnet'
+import { optimism } from '../../../chains/details/optimism'
+import { sepolia } from '../../../chains/details/sepolia'
+import { EvmCall, TokenInfo } from '../../../common'
 import { ChainInfo, SupportedChainId } from '../../../chains'
 import { RAW_PROVIDERS_FILES_PATH } from '../../const'
+import { Signer } from '@ethersproject/abstract-signer'
 
 const BRIDGING_ID = '123456789asdfg'
-const MOCK_TX: EvmCall = {
+const MOCK_CALL: EvmCall = {
   to: '0x0000000000000000000000000000000000000001',
   data: '0x0',
   value: BigInt(0),
@@ -73,15 +73,40 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
 
   async getQuote(_request: QuoteBridgeRequest): Promise<BridgeQuoteResult> {
     return {
-      feeBps: 10,
-      slippageBps: 0,
-      buyAmount: '123456',
-      fillTimeInSeconds: 128,
+      isSell: true,
+      amountsAndCosts: {
+        costs: {
+          bridgingFee: {
+            feeBps: 10,
+            amountInSellCurrency: 123456n,
+            amountInBuyCurrency: 123456n,
+          },
+        },
+        beforeFee: {
+          sellAmount: 123456n,
+          buyAmount: 123456n,
+        },
+        afterFee: {
+          sellAmount: 123456n,
+          buyAmount: 123456n,
+        },
+        afterSlippage: {
+          sellAmount: 123456n,
+          buyAmount: 123456n,
+        },
+        slippageBps: 0,
+      },
+      quoteTimestamp: Date.now(),
+      expectedFillTimeSeconds: 128,
     }
   }
 
-  async getUnsignedBridgeTx(_request: QuoteBridgeRequest, _quote: BridgeQuoteResult): Promise<EvmCall> {
-    return MOCK_TX
+  getGasLimitEstimationForHook(_request: QuoteBridgeRequest): number {
+    return 110_000
+  }
+
+  async getUnsignedBridgeCall(_request: QuoteBridgeRequest, _quote: BridgeQuoteResult): Promise<EvmCall> {
+    return MOCK_CALL
   }
   async getSignedHook(_chainId: SupportedChainId, _unsignedCall: EvmCall, _signer: Signer): Promise<BridgeHook> {
     return {
@@ -96,10 +121,9 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
   }
   async decodeBridgeHook(_hook: BridgeHook): Promise<BridgeDeposit> {
     return {
-      type: OrderKind.SELL,
+      kind: OrderKind.SELL,
       provider: this.info,
-      owner: '0x0000000000000000000000000000000000000001',
-      feeBps: 10,
+      account: '0x0000000000000000000000000000000000000001',
       sellTokenChainId: 1,
       sellTokenAddress: '0x0000000000000000000000000000000000000001',
       sellTokenAmount: '123456',
@@ -111,7 +135,9 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
 
       minBuyAmount: '123456',
 
-      recipient: '0x0000000000000000000000000000000000000001',
+      receiver: '0x0000000000000000000000000000000000000001',
+      signer: '',
+      appCode: 'MOCK',
     }
   }
 
@@ -131,9 +157,9 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
   }
 
   async getCancelBridgingTx(_bridgingId: string): Promise<EvmCall> {
-    return MOCK_TX
+    return MOCK_CALL
   }
   async getRefundBridgingTx(_bridgingId: string): Promise<EvmCall> {
-    return MOCK_TX
+    return MOCK_CALL
   }
 }
