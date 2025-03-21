@@ -9,10 +9,7 @@ This documentation is a WIP as this feature remains in development, as the SDK i
 ```ts
 import { SupportedChainId, BridgingSdk, QuoteBridgeRequest, OrderKind } from '@cowprotocol/cow-sdk'
 
-const sdk = new BridgingSdk({
-  signer: '<privateKeyOrEthersSigner>',
-  appCode: '<YOUR_APP_CODE>',
-})
+const sdk = new BridgingSdk()
 
 const parameters: QuoteBridgeRequest = {
   // Cross-chain orders, are always SELL orders (BUY not supported yet)
@@ -30,11 +27,24 @@ const parameters: QuoteBridgeRequest = {
 
   // Amount to sell
   amount: '120000000000000000'
+
+  signer: '<privateKeyOrEthersSigner>',
+
+  // Optional parameters
+  appCode: '<YOUR_APP_CODE>',
 }
 
-const { quoteResults, postSwapOrderFromQuote } = await sdk.getQuote(parameters)
+// Get a quote (and the post callback) for a cross-chain swap
+const { swap, bridge, postSwapOrderFromQuote } = await sdk.getQuote(parameters)
 
-const { buyAmount } = quoteResults.amountsAndCosts.afterSlippage
+// Display all data related to the swap (costs, amounts, appData including the bridging hook, etc.) 🐮
+console.log('Swap info', swap)
+
+// Display all data related to the bridge (costs, amounts, provider info, hook, and the bridging quote) ✉️
+console.log('Bridge info', bridge)
+
+// Get the buy amount after slippage in the target chain
+const { buyAmount } = bridge.amountsAndCosts.afterSlippage
 
 if (confirm(`You will get at least: ${buyAmount}, ok?`)) {
   const orderId = await postSwapOrderFromQuote()
