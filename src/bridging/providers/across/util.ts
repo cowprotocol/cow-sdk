@@ -100,8 +100,8 @@ function toAmountsAndCosts(
         amountInSellCurrency: feeSellToken,
         amountInBuyCurrency: feeBuyToken,
       },
-      slippageBps,
     },
+    slippageBps,
   }
 }
 

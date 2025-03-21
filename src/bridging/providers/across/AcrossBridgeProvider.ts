@@ -110,7 +110,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<AcrossQuoteResult> {
-    const { sellTokenAddress, sellTokenChainId, buyTokenChainId, amount, recipient } = request
+    const { sellTokenAddress, sellTokenChainId, buyTokenChainId, amount, receiver } = request
 
     const suggestedFees = await this.api.getSuggestedFees({
       token: sellTokenAddress,
@@ -119,7 +119,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
       originChainId: sellTokenChainId,
       destinationChainId: buyTokenChainId,
       amount,
-      recipient,
+      recipient: receiver ?? undefined,
     })
 
     // TODO: The suggested fees contain way more information. As we review more bridge providers we should revisit the

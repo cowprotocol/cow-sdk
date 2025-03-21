@@ -241,7 +241,6 @@ export interface BridgeCosts<T = bigint> {
     amountInSellCurrency: T
     amountInBuyCurrency: T
   }
-  slippageBps: number
 
   // TODO: I could see here some additional flags that might be useful in the UI, but as this is a prototype. Leaving it until we get some experience with bridging. Leaving it as comments for future consideration.
   // needToClaimInDestinationChain: boolean
@@ -271,6 +270,11 @@ export interface BridgeQuoteAmountsAndCosts<T = bigint> {
    * It includes the fees and the slippage tolerance, so its the minimum amount that the user will receive.
    */
   afterSlippage: Amounts<T>
+
+  /**
+   * The slippage tolerance in basis points.
+   */
+  slippageBps: number
 }
 
 export interface BridgeQuoteResults extends BridgeQuoteResult {

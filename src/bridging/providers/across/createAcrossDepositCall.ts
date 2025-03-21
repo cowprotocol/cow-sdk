@@ -48,7 +48,7 @@ export function createAcrossDepositCall(params: {
   cowShedSdk: CowShedSdk
 }): EvmCall {
   const { request, quote, cowShedSdk } = params
-  const { sellTokenChainId, sellTokenAddress, buyTokenChainId, buyTokenAddress, account, recipient } = request
+  const { sellTokenChainId, sellTokenAddress, buyTokenChainId, buyTokenAddress, account, receiver } = request
 
   // Create the relevant weiroll contracts
   const spokePoolContract = getSpookPoolContract(sellTokenChainId)
@@ -86,7 +86,7 @@ export function createAcrossDepositCall(params: {
     planner.add(
       spokePoolContract.depositV3(
         cowShedAccount,
-        recipient,
+        receiver || account,
         sellTokenAddress,
         buyTokenAddress,
         sourceAmountIncludingSurplus,
