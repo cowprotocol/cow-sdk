@@ -65,7 +65,7 @@ export class TradingSdk {
   }
 
   async getQuoteResults(
-    params: TradeParameters,
+    params: WithPartialTraderParams<TradeParameters>,
     advancedSettings?: SwapAdvancedSettings
   ): Promise<QuoteResultsWithSigner> {
     return getQuoteWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
