@@ -1,6 +1,6 @@
 import { OrderBookApi, OrderCreation, SigningScheme } from '../order-book'
 import type { Signer } from 'ethers'
-import { AppDataInfo, LimitTradeParameters } from './types'
+import { AppDataInfo, LimitTradeParameters, PostTradeAdditionalParams } from './types'
 import { log, SIGN_SCHEME_MAP } from './consts'
 import { OrderSigningUtils } from '../order-signing'
 import { getOrderToSign } from './getOrderToSign'
@@ -12,9 +12,10 @@ export async function postCoWProtocolTrade(
   signer: Signer,
   appData: AppDataInfo,
   params: LimitTradeParameters,
-  networkCostsAmount = '0',
-  _signingScheme: SigningScheme = SigningScheme.EIP712
+  additionalParams: PostTradeAdditionalParams = {}
 ): Promise<string> {
+  const { networkCostsAmount = '0', signingScheme: _signingScheme = SigningScheme.EIP712 } = additionalParams
+
   if (getIsEthFlowOrder(params)) {
     const quoteId = params.quoteId
 
@@ -24,7 +25,7 @@ export async function postCoWProtocolTrade(
         signer,
         appData,
         { ...params, quoteId },
-        networkCostsAmount
+        additionalParams
       )
 
       return orderId

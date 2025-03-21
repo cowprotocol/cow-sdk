@@ -1,6 +1,5 @@
 import { Signer } from 'ethers'
-import { AppDataInfo, LimitTradeParametersFromQuote } from './types'
-import { EthFlowOrderExistsCallback } from './calculateUniqueOrderId'
+import { AppDataInfo, LimitTradeParametersFromQuote, PostTradeAdditionalParams } from './types'
 
 import { log } from './consts'
 import { OrderBookApi } from '../order-book'
@@ -11,8 +10,7 @@ export async function postSellNativeCurrencyOrder(
   signer: Signer,
   appData: Pick<AppDataInfo, 'fullAppData' | 'appDataKeccak256'>,
   _params: LimitTradeParametersFromQuote,
-  networkCostsAmount = '0',
-  checkEthFlowOrderExists?: EthFlowOrderExistsCallback
+  additionalParams: PostTradeAdditionalParams = {}
 ): Promise<{ txHash: string; orderId: string }> {
   const { appDataKeccak256, fullAppData } = appData
 
@@ -21,8 +19,7 @@ export async function postSellNativeCurrencyOrder(
     appDataKeccak256,
     _params,
     orderBookApi.context.chainId,
-    networkCostsAmount,
-    checkEthFlowOrderExists
+    additionalParams
   )
 
   log('Uploading app-data')

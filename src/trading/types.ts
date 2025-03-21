@@ -7,6 +7,7 @@ import {
   OrderQuoteRequest,
   OrderQuoteResponse,
   QuoteAmountsAndCosts,
+  SigningScheme,
   TokenAmount,
 } from '../order-book'
 import type { AccountAddress, CowEnv, SignerLike } from '../common'
@@ -105,10 +106,12 @@ export interface LimitOrderParameters extends TraderParameters, LimitTradeParame
 export interface SwapAdvancedSettings {
   quoteRequest?: Partial<Omit<OrderQuoteRequest, 'kind'>>
   appData?: AppDataParams
+  additionalParams?: PostTradeAdditionalParams
 }
 
 export interface LimitOrderAdvancedSettings {
   appData?: AppDataParams
+  additionalParams?: PostTradeAdditionalParams
 }
 
 /**
@@ -131,7 +134,7 @@ export interface QuoteResultsSerialized extends Omit<QuoteResults, 'amountsAndCo
 export interface QuoteAndPost {
   quoteResults: QuoteResults
 
-  postSwapOrderFromQuote(): Promise<string>
+  postSwapOrderFromQuote(advancedSettings?: SwapAdvancedSettings): Promise<string>
 }
 
 export type AppDataRootSchema = latest.AppDataRootSchema
@@ -160,4 +163,34 @@ export interface TransactionParams {
   gasLimit: string
   to: string
   value: string
+}
+
+export interface EthFlowOrderExistsCallback {
+  (orderId: string, orderDigest: string): Promise<boolean>
+}
+
+/**
+ * Additional parameters for posting orders.
+ * In most of the cases you don't need to use them.
+ */
+export interface PostTradeAdditionalParams {
+  /**
+   * Selling native token orders are special, because they are created from smart-contract,
+   * and their validTo is always the same.
+   * Because of that, you might get the same orderId when trying to create an order with the same parameters
+   * The callback is needed to check if there is already an order with the same orderId
+   *
+   * @see https://github.com/cowprotocol/ethflowcontract/blob/main/src/libraries/EthFlowOrder.sol#L90
+   */
+  checkEthFlowOrderExists?: EthFlowOrderExistsCallback
+  /**
+   * Cost of executing the order onchain.
+   * The value is used in getQuoteAmountsAndCosts in order to calculate proper amounts
+   */
+  networkCostsAmount?: string
+  /**
+   * By default, is EIP712 for EOA wallets.
+   * You might need other types of signing, for example PRESIGN when sign order via Smart Contract wallets.
+   */
+  signingScheme?: SigningScheme
 }

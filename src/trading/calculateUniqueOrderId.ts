@@ -8,10 +8,7 @@ import {
 } from '../common'
 import { SupportedChainId } from '../chains'
 import type { Order, OrderBalance } from '@cowprotocol/contracts'
-
-export interface EthFlowOrderExistsCallback {
-  (orderId: string, orderDigest: string): Promise<boolean>
-}
+import { EthFlowOrderExistsCallback } from './types'
 
 export async function calculateUniqueOrderId(
   chainId: SupportedChainId,

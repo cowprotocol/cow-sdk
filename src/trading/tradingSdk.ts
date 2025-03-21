@@ -47,17 +47,20 @@ export class TradingSdk {
 
     return {
       quoteResults: quoteResults.result,
-      postSwapOrderFromQuote: () =>
-        postSwapOrderFromQuote({
-          ...quoteResults,
-          result: {
-            ...quoteResults.result,
-            tradeParameters: getTradeParametersAfterQuote({
-              quoteParameters: quoteResults.result.tradeParameters,
-              orderParameters: params,
-            }),
+      postSwapOrderFromQuote: (advancedSettings?: SwapAdvancedSettings) =>
+        postSwapOrderFromQuote(
+          {
+            ...quoteResults,
+            result: {
+              ...quoteResults.result,
+              tradeParameters: getTradeParametersAfterQuote({
+                quoteParameters: quoteResults.result.tradeParameters,
+                orderParameters: params,
+              }),
+            },
           },
-        }),
+          advancedSettings
+        ),
     }
   }
 
@@ -91,7 +94,8 @@ export class TradingSdk {
       swapParamsToLimitOrderParams(
         getTradeParametersAfterQuote({ quoteParameters: tradeParameters, orderParameters: params }),
         quoteResponse
-      )
+      ),
+      advancedSettings?.additionalParams
     )
   }
 

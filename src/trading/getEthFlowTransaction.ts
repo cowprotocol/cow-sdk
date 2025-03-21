@@ -1,6 +1,6 @@
 import { Signer } from 'ethers'
-import { LimitTradeParametersFromQuote, TransactionParams } from './types'
-import { calculateUniqueOrderId, EthFlowOrderExistsCallback } from './calculateUniqueOrderId'
+import { LimitTradeParametersFromQuote, PostTradeAdditionalParams, TransactionParams } from './types'
+import { calculateUniqueOrderId } from './calculateUniqueOrderId'
 import { getOrderToSign } from './getOrderToSign'
 import { type EthFlow, EthFlow__factory } from '../common/generated'
 import { BARN_ETH_FLOW_ADDRESS, CowEnv, ETH_FLOW_ADDRESS } from '../common'
@@ -14,9 +14,9 @@ export async function getEthFlowTransaction(
   appDataKeccak256: string,
   _params: LimitTradeParametersFromQuote,
   chainId: SupportedChainId,
-  networkCostsAmount = '0',
-  checkEthFlowOrderExists?: EthFlowOrderExistsCallback
+  additionalParams: PostTradeAdditionalParams = {}
 ): Promise<{ orderId: string; transaction: TransactionParams }> {
+  const { networkCostsAmount = '0', checkEthFlowOrderExists } = additionalParams
   const from = await signer.getAddress()
 
   const params = {

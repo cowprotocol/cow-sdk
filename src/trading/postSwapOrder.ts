@@ -23,7 +23,10 @@ export async function postSwapOrderFromQuote(
     appDataInfo,
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     swapParamsToLimitOrderParams(tradeParameters, quoteResponse),
-    quoteResponse.quote.feeAmount,
-    advancedSettings?.quoteRequest?.signingScheme
+    {
+      signingScheme: advancedSettings?.quoteRequest?.signingScheme,
+      networkCostsAmount: quoteResponse.quote.feeAmount,
+      ...advancedSettings?.additionalParams,
+    }
   )
 }

@@ -89,14 +89,10 @@ describe('postSellNativeCurrencyTrade', () => {
   it('Should call checkEthFlowOrderExists if it is set', async () => {
     const checkEthFlowOrderExists = jest.fn().mockResolvedValue(false)
 
-    await postSellNativeCurrencyOrder(
-      orderBookApiMock,
-      signer,
-      appDataMock,
-      defaultOrderParams,
-      '0',
-      checkEthFlowOrderExists
-    )
+    await postSellNativeCurrencyOrder(orderBookApiMock, signer, appDataMock, defaultOrderParams, {
+      networkCostsAmount: '0',
+      checkEthFlowOrderExists,
+    })
 
     expect(checkEthFlowOrderExists).toHaveBeenCalledTimes(1)
   })
