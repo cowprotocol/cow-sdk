@@ -4,24 +4,35 @@ import {
   BridgeQuoteResult,
   CrossChainQuoteAndPost,
   GetBuyTokensParams,
+  GetErc20Decimals,
   QuoteBridgeRequest,
 } from '../types'
 import { ALL_SUPPORTED_CHAINS, TokenInfo } from '../../common'
-import { ChainInfo, TargetChainId } from '../../chains'
+import { ChainInfo } from '../../chains'
 import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
 import { getQuoteWithBridge } from './getQuoteWithBridging'
+import { getSigner } from '../../common/utils/wallet'
+import { factoryGetErc20Decimals } from './getErc20Decimals'
 
 export interface BridgingSdkOptions {
-  getErc20Decimals(chainId: TargetChainId, tokenAddress: string): Promise<number>
-  tradingSdk?: TradingSdk
-
   /**
    * Providers for the bridging.
    */
   providers: BridgeProvider<BridgeQuoteResult>[]
+
+  /**
+   * Function to get the decimals of the ERC20 tokens
+   */
+  getErc20Decimals?: GetErc20Decimals
+
+  /**
+   * Trading SDK.
+   */
+  tradingSdk?: TradingSdk
 }
 
-export type BridgingSdkConfig = Required<BridgingSdkOptions>
+export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'getErc20Decimals'>> &
+  Pick<BridgingSdkOptions, 'getErc20Decimals'>
 
 /**
  * SDK for bridging for swapping tokens between different chains.
@@ -97,13 +108,16 @@ export class BridgingSdk {
     const tradingSdk = this.config.tradingSdk
 
     if (sellTokenChainId !== buyTokenChainId) {
+      const signer = getSigner(quoteBridgeRequest.signer)
+      const getErc20Decimals = factoryGetErc20Decimals(signer)
+
       // Cross-chain swap
       return getQuoteWithBridge({
         quoteBridgeRequest,
         advancedSettings,
         tradingSdk,
         provider: this.provider,
-        getErc20Decimals: this.config.getErc20Decimals,
+        getErc20Decimals,
       })
     } else {
       // Single-chain swap
