@@ -2,16 +2,7 @@ import { Planner as WeirollPlanner } from '@weiroll/weiroll.js'
 import { Interface } from '@ethersproject/abi'
 import { EvmCall } from '../common'
 export { Contract as WeirollContract, Planner as WeirollPlanner } from '@weiroll/weiroll.js'
-
-export enum CommandFlags {
-  DELEGATECALL = 0,
-  CALL = 1,
-  STATICCALL = 2,
-  CALL_WITH_VALUE = 3,
-  CALLTYPE_MASK = 3,
-  EXTENDED_COMMAND = 64,
-  TUPLE_RETURN = 128,
-}
+export { CommandFlags as WeirollCommandFlags } from '@weiroll/weiroll.js/dist/planner'
 
 const WEIROLL_ADDRESS = '0x9585c3062Df1C247d5E373Cfca9167F7dC2b5963'
 
