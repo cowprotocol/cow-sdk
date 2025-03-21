@@ -61,7 +61,7 @@ describe('postLimitOrder', () => {
   it('Should add advanced appData parameters', async () => {
     const advancedData = { appData: { environment: 'sandbox' } }
 
-    await postLimitOrder(defaultOrderParams, advancedData, undefined, orderBookApiMock)
+    await postLimitOrder(defaultOrderParams, advancedData, orderBookApiMock)
 
     const call = buildAppDataMock.mock.calls[0][1]
 
@@ -69,7 +69,7 @@ describe('postLimitOrder', () => {
   })
 
   it('Should call order posting with all specified parameters', async () => {
-    await postLimitOrder(defaultOrderParams, {}, undefined, orderBookApiMock)
+    await postLimitOrder(defaultOrderParams, {}, orderBookApiMock)
 
     expect(postCoWProtocolTradeMock).toHaveBeenCalledTimes(1)
     expect(postCoWProtocolTradeMock).toHaveBeenCalledWith(

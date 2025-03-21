@@ -1,4 +1,4 @@
-import { PostTradeAdditionalParams, SwapAdvancedSettings, SwapParameters } from './types'
+import { SwapAdvancedSettings, SwapParameters } from './types'
 
 import { postCoWProtocolTrade } from './postCoWProtocolTrade'
 import { getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
@@ -8,20 +8,14 @@ import { OrderBookApi } from '../order-book'
 export async function postSwapOrder(
   params: SwapParameters,
   advancedSettings?: SwapAdvancedSettings,
-  additionalParams?: PostTradeAdditionalParams,
   orderBookApi?: OrderBookApi
 ) {
-  return postSwapOrderFromQuote(
-    await getQuoteWithSigner(params, advancedSettings, orderBookApi),
-    advancedSettings,
-    additionalParams
-  )
+  return postSwapOrderFromQuote(await getQuoteWithSigner(params, advancedSettings, orderBookApi), advancedSettings)
 }
 
 export async function postSwapOrderFromQuote(
   { orderBookApi, result: { signer, appDataInfo, quoteResponse, tradeParameters } }: QuoteResultsWithSigner,
-  advancedSettings?: SwapAdvancedSettings,
-  additionalParams?: PostTradeAdditionalParams
+  advancedSettings?: SwapAdvancedSettings
 ): Promise<string> {
   return postCoWProtocolTrade(
     orderBookApi,
@@ -32,7 +26,7 @@ export async function postSwapOrderFromQuote(
     {
       signingScheme: advancedSettings?.quoteRequest?.signingScheme,
       networkCostsAmount: quoteResponse.quote.feeAmount,
-      ...additionalParams,
+      ...advancedSettings?.additionalParams,
     }
   )
 }

@@ -1,4 +1,4 @@
-import { LimitOrderAdvancedSettings, LimitOrderParameters, PostTradeAdditionalParams } from './types'
+import { LimitOrderAdvancedSettings, LimitOrderParameters } from './types'
 import { log } from './consts'
 import { OrderBookApi } from '../order-book'
 import { buildAppData } from './appDataUtils'
@@ -8,7 +8,6 @@ import { getSigner } from '../common/utils/wallet'
 export async function postLimitOrder(
   params: LimitOrderParameters,
   advancedSettings?: LimitOrderAdvancedSettings,
-  additionalParams?: PostTradeAdditionalParams,
   _orderBookApi?: OrderBookApi
 ): Promise<string> {
   const {
@@ -40,5 +39,5 @@ export async function postLimitOrder(
     advancedSettings?.appData
   )
 
-  return postCoWProtocolTrade(orderBookApi, signer, appDataInfo, params, additionalParams)
+  return postCoWProtocolTrade(orderBookApi, signer, appDataInfo, params, advancedSettings?.additionalParams)
 }

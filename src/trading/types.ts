@@ -106,10 +106,12 @@ export interface LimitOrderParameters extends TraderParameters, LimitTradeParame
 export interface SwapAdvancedSettings {
   quoteRequest?: Partial<Omit<OrderQuoteRequest, 'kind'>>
   appData?: AppDataParams
+  additionalParams?: PostTradeAdditionalParams
 }
 
 export interface LimitOrderAdvancedSettings {
   appData?: AppDataParams
+  additionalParams?: PostTradeAdditionalParams
 }
 
 /**
@@ -132,10 +134,7 @@ export interface QuoteResultsSerialized extends Omit<QuoteResults, 'amountsAndCo
 export interface QuoteAndPost {
   quoteResults: QuoteResults
 
-  postSwapOrderFromQuote(
-    advancedSettings?: SwapAdvancedSettings,
-    additionalParams?: PostTradeAdditionalParams
-  ): Promise<string>
+  postSwapOrderFromQuote(advancedSettings?: SwapAdvancedSettings): Promise<string>
 }
 
 export type AppDataRootSchema = latest.AppDataRootSchema
