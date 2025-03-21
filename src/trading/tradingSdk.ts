@@ -44,7 +44,6 @@ export class TradingSdk {
     advancedSettings?: SwapAdvancedSettings
   ): Promise<QuoteAndPost> {
     const quoteResults = await getQuoteWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
-    quoteResults.orderBookApi
 
     return {
       quoteResults: quoteResults.result,
