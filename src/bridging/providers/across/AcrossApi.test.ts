@@ -1,4 +1,4 @@
-import { AcrossApi } from './AcrossApi'
+import { AcrossApi, SuggestedFeesRequest } from './AcrossApi'
 import { AdditionalTargetChainId, SupportedChainId } from '../../../chains'
 
 // Mock fetch globally
@@ -98,11 +98,11 @@ describe('AcrossApi', () => {
     })
 
     it('should fetch suggested fees with required parameters', async () => {
-      const request = {
+      const request: SuggestedFeesRequest = {
         token: '0x0000000000000000000000000000000000000001',
         originChainId: SupportedChainId.MAINNET,
         destinationChainId: AdditionalTargetChainId.POLYGON,
-        amount: '1000000000000000000',
+        amount: 1000000000000000000n,
       }
 
       const fees = await api.getSuggestedFees(request)
@@ -115,11 +115,11 @@ describe('AcrossApi', () => {
     })
 
     it('should include recipient when provided', async () => {
-      const request = {
+      const request: SuggestedFeesRequest = {
         token: '0x0000000000000000000000000000000000000001',
         originChainId: SupportedChainId.MAINNET,
         destinationChainId: AdditionalTargetChainId.POLYGON,
-        amount: '1000000000000000000',
+        amount: 1000000000000000000n,
         recipient: '0x9876',
       }
 

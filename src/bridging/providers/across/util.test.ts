@@ -2,7 +2,7 @@ import { OrderKind } from '@cowprotocol/contracts'
 import { AdditionalTargetChainId, SupportedChainId } from '../../../chains'
 import { QuoteBridgeRequest } from '../../types'
 import { SuggestedFeesResponse } from './AcrossApi'
-import { getChainConfigs, getTokenSymbol, getTokenAddress, toBridgeQuoteResult, pctToBps, applyFee } from './util'
+import { getChainConfigs, getTokenSymbol, getTokenAddress, toBridgeQuoteResult, pctToBps, applyPctFee } from './util'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 
 describe('Across Utils', () => {
@@ -145,14 +145,14 @@ describe('Across Utils', () => {
 
   describe('applyFee', () => {
     it('should apply fee percentage correctly', () => {
-      expect(applyFee(1000000000000000000n, 100000000000000000n)).toBe(900000000000000000n) // 0.9 (10% of 1 ETH)
-      expect(applyFee(1000000000000000000n, 50000000000000000n)).toBe(950000000000000000n) // 0.95 (5% of 1 ETH)
-      expect(applyFee(1000000000000000000n, 0n)).toBe(1000000000000000000n) // 1 (0% fee)
-      expect(applyFee(0n, 100000000000000000n)).toBe(0n) // 0 (0% fee)
+      expect(applyPctFee(1000000000000000000n, 100000000000000000n)).toBe(900000000000000000n) // 0.9 (10% of 1 ETH)
+      expect(applyPctFee(1000000000000000000n, 50000000000000000n)).toBe(950000000000000000n) // 0.95 (5% of 1 ETH)
+      expect(applyPctFee(1000000000000000000n, 0n)).toBe(1000000000000000000n) // 1 (0% fee)
+      expect(applyPctFee(0n, 100000000000000000n)).toBe(0n) // 0 (0% fee)
     })
 
     it('should throw an error if fee percentage exceeds 100%', () => {
-      expect(() => applyFee(1000000000000000000n, 1000000000000000001n)).toThrow('Fee cannot exceed 100%')
+      expect(() => applyPctFee(1000000000000000000n, 1000000000000000001n)).toThrow('Fee cannot exceed 100%')
     })
   })
 })

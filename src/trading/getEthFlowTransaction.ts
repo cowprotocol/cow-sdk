@@ -1,4 +1,4 @@
-import { LimitTradeParametersFromQuote, TransactionParams } from './types'
+import { LimitTradeParametersFromQuote, PostTradeAdditionalParams, TransactionParams } from './types'
 import { calculateUniqueOrderId } from './calculateUniqueOrderId'
 import { getOrderToSign } from './getOrderToSign'
 import { type EthFlow, EthFlow__factory } from '../common/generated'
