@@ -1,4 +1,4 @@
-import { SwapAdvancedSettings, SwapParameters } from './types'
+import { PostTradeAdditionalParams, SwapAdvancedSettings, SwapParameters } from './types'
 
 import { postCoWProtocolTrade } from './postCoWProtocolTrade'
 import { getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
@@ -8,14 +8,20 @@ import { OrderBookApi } from '../order-book'
 export async function postSwapOrder(
   params: SwapParameters,
   advancedSettings?: SwapAdvancedSettings,
+  additionalParams?: PostTradeAdditionalParams,
   orderBookApi?: OrderBookApi
 ) {
-  return postSwapOrderFromQuote(await getQuoteWithSigner(params, advancedSettings, orderBookApi), advancedSettings)
+  return postSwapOrderFromQuote(
+    await getQuoteWithSigner(params, advancedSettings, orderBookApi),
+    advancedSettings,
+    additionalParams
+  )
 }
 
 export async function postSwapOrderFromQuote(
   { orderBookApi, result: { signer, appDataInfo, quoteResponse, tradeParameters } }: QuoteResultsWithSigner,
-  advancedSettings?: SwapAdvancedSettings
+  advancedSettings?: SwapAdvancedSettings,
+  additionalParams?: PostTradeAdditionalParams
 ): Promise<string> {
   return postCoWProtocolTrade(
     orderBookApi,
@@ -23,7 +29,10 @@ export async function postSwapOrderFromQuote(
     appDataInfo,
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     swapParamsToLimitOrderParams(tradeParameters, quoteResponse),
-    quoteResponse.quote.feeAmount,
-    advancedSettings?.quoteRequest?.signingScheme
+    {
+      signingScheme: advancedSettings?.quoteRequest?.signingScheme,
+      networkCostsAmount: quoteResponse.quote.feeAmount,
+      ...additionalParams,
+    }
   )
 }

@@ -1,6 +1,7 @@
 import {
   LimitOrderAdvancedSettings,
   LimitTradeParameters,
+  PostTradeAdditionalParams,
   QuoteAndPost,
   SwapAdvancedSettings,
   TradeParameters,
@@ -47,37 +48,44 @@ export class TradingSdk {
 
     return {
       quoteResults: quoteResults.result,
-      postSwapOrderFromQuote: () =>
-        postSwapOrderFromQuote({
-          ...quoteResults,
-          result: {
-            ...quoteResults.result,
-            tradeParameters: getTradeParametersAfterQuote({
-              quoteParameters: quoteResults.result.tradeParameters,
-              orderParameters: params,
-            }),
+      postSwapOrderFromQuote: (advancedSettings?: SwapAdvancedSettings, additionalParams?: PostTradeAdditionalParams) =>
+        postSwapOrderFromQuote(
+          {
+            ...quoteResults,
+            result: {
+              ...quoteResults.result,
+              tradeParameters: getTradeParametersAfterQuote({
+                quoteParameters: quoteResults.result.tradeParameters,
+                orderParameters: params,
+              }),
+            },
           },
-        }),
+          advancedSettings,
+          additionalParams
+        ),
     }
   }
 
   async postSwapOrder(
     params: WithPartialTraderParams<TradeParameters>,
-    advancedSettings?: SwapAdvancedSettings
+    advancedSettings?: SwapAdvancedSettings,
+    additionalParams?: PostTradeAdditionalParams
   ): Promise<string> {
-    return postSwapOrder(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
+    return postSwapOrder(this.mergeParams(params), advancedSettings, additionalParams, this.options.orderBookApi)
   }
 
   async postLimitOrder(
     params: WithPartialTraderParams<LimitTradeParameters>,
-    advancedSettings?: LimitOrderAdvancedSettings
+    advancedSettings?: LimitOrderAdvancedSettings,
+    additionalParams?: PostTradeAdditionalParams
   ): Promise<string> {
-    return postLimitOrder(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
+    return postLimitOrder(this.mergeParams(params), advancedSettings, additionalParams, this.options.orderBookApi)
   }
 
   async postSellNativeCurrencyOrder(
     params: WithPartialTraderParams<TradeParameters>,
-    advancedSettings?: SwapAdvancedSettings
+    advancedSettings?: SwapAdvancedSettings,
+    additionalParams?: PostTradeAdditionalParams
   ): Promise<ReturnType<typeof postSellNativeCurrencyOrder>> {
     const quoteResults = await getQuoteWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
 
@@ -91,7 +99,8 @@ export class TradingSdk {
       swapParamsToLimitOrderParams(
         getTradeParametersAfterQuote({ quoteParameters: tradeParameters, orderParameters: params }),
         quoteResponse
-      )
+      ),
+      additionalParams
     )
   }
 

@@ -85,7 +85,7 @@ describe('postCoWProtocolTrade', () => {
     await postCoWProtocolTrade(orderBookApiMock, signer, appDataMock, order)
 
     expect(postSellNativeCurrencyOrderMock).toHaveBeenCalledTimes(1)
-    expect(postSellNativeCurrencyOrderMock).toHaveBeenCalledWith(orderBookApiMock, signer, appDataMock, order, '0')
+    expect(postSellNativeCurrencyOrderMock).toHaveBeenCalledWith(orderBookApiMock, signer, appDataMock, order, {})
   })
 
   it('API request should contain all specified parameters', async () => {
