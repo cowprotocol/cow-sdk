@@ -8,6 +8,7 @@ import {
   SwapAdvancedSettings,
   TradeParameters,
   TradingSdk,
+  WithPartialTraderParams,
 } from '../../trading'
 import {
   BridgeHook,
@@ -30,7 +31,8 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(params: {
   getErc20Decimals: GetErc20Decimals
 }): Promise<BridgeQuoteAndPost> {
   const { provider, quoteBridgeRequest, advancedSettings, getErc20Decimals, tradingSdk } = params
-  const { sellTokenAddress, amount, signer: signerLike, ...rest } = quoteBridgeRequest
+  const { sellTokenChainId, sellTokenAddress, amount, signer: signerLike, ...rest } = quoteBridgeRequest
+  const signer = getSigner(signerLike)
 
   // Get the mocked hook (for estimating the additional swap costs)
   const bridgeQuoteRequestWithoutAmount = await getBaseBridgeQuoteRequest({
@@ -47,12 +49,14 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(params: {
     bridgeQuoteRequestWithoutAmount
 
   // Estimate the expected amount of intermediate tokens received in CoW Protocol's swap
-  const swapParams: TradeParameters = {
+  const swapParams: WithPartialTraderParams<TradeParameters> = {
     ...rest,
+    chainId: sellTokenChainId,
     sellToken: sellTokenAddress,
     buyToken: intermediateToken,
     buyTokenDecimals: intermediaryTokenDecimals,
     amount: amount.toString(),
+    signer,
   }
   const { result: swapResult, orderBookApi } = await tradingSdk.getQuoteResults(swapParams, {
     ...advancedSettings,
@@ -65,7 +69,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(params: {
   const intermediateTokenAmount = swapResult.amountsAndCosts.afterSlippage.buyAmount // Estimated, as it will likely have surplus
 
   // Get the bridge result
-  const signer = getSigner(signerLike)
+
   const { bridgeResult, bridgeHook, appData } = await getBridgeResult({
     quoteBridgeRequest,
     swapResult,
