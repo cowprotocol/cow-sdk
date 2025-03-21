@@ -85,6 +85,8 @@ export class BridgingSdk {
    *
    * This method support both, cross-chain swaps and single-chain swap.
    *
+   * The return type will be either `QuoteAndPost` or `BridgeQuoteAndPost`. To safely assert the type in Typescript, you can use `isBridgeQuoteAndPost(result)` utility.
+   *
    * @throws Error if no path is found
    */
   async getQuote(
