@@ -2,16 +2,16 @@ import { AppDataInfo, AppDataRootSchema, BuildAppDataParams } from './types'
 import { AppDataParams, MetadataApi, stringifyDeterministic } from '@cowprotocol/app-data'
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils'
 
+const metadataApiSdk = new MetadataApi()
+
 export async function buildAppData(
   { slippageBps, appCode, orderClass: orderClassName, partnerFee }: BuildAppDataParams,
   advancedParams?: AppDataParams
 ): Promise<AppDataInfo> {
-  const metadataApiSDK = new MetadataApi()
-
   const quoteParams = { slippageBips: slippageBps }
   const orderClass = { orderClass: orderClassName }
 
-  const doc = await metadataApiSDK.generateAppDataDoc({
+  const doc = await metadataApiSdk.generateAppDataDoc({
     appCode,
     metadata: {
       quote: quoteParams,
