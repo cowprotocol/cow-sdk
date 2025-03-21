@@ -81,7 +81,6 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
             amountInSellCurrency: 123456n,
             amountInBuyCurrency: 123456n,
           },
-          slippageBps: 0,
         },
         beforeFee: {
           sellAmount: 123456n,
@@ -95,6 +94,7 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
           sellAmount: 123456n,
           buyAmount: 123456n,
         },
+        slippageBps: 0,
       },
       quoteTimestamp: Date.now(),
       expectedFillTimeSeconds: 128,
@@ -124,7 +124,6 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
       kind: OrderKind.SELL,
       provider: this.info,
       account: '0x0000000000000000000000000000000000000001',
-      feeBps: 10,
       sellTokenChainId: 1,
       sellTokenAddress: '0x0000000000000000000000000000000000000001',
       sellTokenAmount: '123456',
@@ -136,7 +135,7 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
 
       minBuyAmount: '123456',
 
-      recipient: '0x0000000000000000000000000000000000000001',
+      receiver: '0x0000000000000000000000000000000000000001',
       signer: '',
       appCode: 'MOCK',
     }
