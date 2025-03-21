@@ -11,37 +11,36 @@ export interface BridgeProviderInfo {
   logoUrl: string
 }
 
-export interface WithSellToken {
+export interface GetBuyTokensParams extends Partial<WithSellToken> {
+  targetChainId: TargetChainId
+}
+
+interface WithSellToken {
   sellTokenChainId: SupportedChainId
   sellTokenAddress: Address
   sellTokenDecimals: number
 }
 
-export interface WithBuyToken {
+interface WithBuyToken {
   buyTokenChainId: TargetChainId
   buyTokenAddress: Address
   buyTokenDecimals: number
 }
 
-export interface GetBuyTokensParams extends Partial<WithSellToken> {
-  targetChainId: TargetChainId
-}
+type WithQuoter = Omit<QuoterParameters, 'chainId'>
+type WithTrader = Pick<TraderParameters, 'signer'>
 
 /**
  * Parameters for getting a bridge quote
  */
-export interface QuoteBridgeRequest
-  extends WithSellToken,
-    WithBuyToken,
-    TradeOptionalParameters,
-    Omit<QuoterParameters, 'chainId'>,
-    Pick<TraderParameters, 'signer'> {
+export type QuoteBridgeRequest = {
   kind: OrderKind.SELL // We make it explicit that only SELL is supported for now
   amount: bigint
-  recipient?: string
-  feeBps?: number
-  feeRecipient?: string
-}
+} & WithSellToken &
+  WithBuyToken &
+  WithQuoter &
+  WithTrader &
+  TradeOptionalParameters
 
 export type QuoteBridgeRequestWithoutAmount = Omit<QuoteBridgeRequest, 'amount'>
 
@@ -281,20 +280,25 @@ export interface BridgeQuoteResults extends BridgeQuoteResult {
   providerInfo: BridgeProviderInfo
 
   /**
-   * Unsigned call to initiate the bridge. This call should be executed in the context of user's cow-shed account.
+   * Trade parameters
    */
-  unsignedBridgeCall: EvmCall
+  tradeParameters: QuoteBridgeRequest
 
   /**
-   * Pre-authorized hook to initiate the bridge. This hook has been signed, and is ready to be executed by the
-   * CoW Protocol Trampoline contract after settling the swap order that buys the intermediate token.
+   * Bridge call details
    */
-  preAuthorizedBridgingHook: BridgeHook
+  bridgeCallDetails: {
+    /**
+     * Unsigned call to initiate the bridge. This call should be executed in the context of user's cow-shed account.
+     */
+    unsignedBridgeCall: EvmCall
 
-  /**
-   * Information about the quote response from the order book API.
-   */
-  quoteResponse: BridgeQuoteResult
+    /**
+     * Pre-authorized hook to initiate the bridge. This hook has been signed, and is ready to be executed by the
+     * CoW Protocol Trampoline contract after settling the swap order that buys the intermediate token.
+     */
+    preAuthorizedBridgingHook: BridgeHook
+  }
 }
 
 export type GetErc20Decimals = (chainId: TargetChainId, tokenAddress: string) => Promise<number>
