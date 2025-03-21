@@ -1,4 +1,4 @@
-import { SwapAdvancedSettings, TraderParameters, TradingSdk, TradingSdkOptions } from '../../trading'
+import { SwapAdvancedSettings, TradingSdk } from '../../trading'
 import {
   BridgeProvider,
   BridgeQuoteResult,
@@ -13,7 +13,7 @@ import { getQuoteWithBridge } from './getQuoteWithBridging'
 
 export interface BridgingSdkOptions {
   getErc20Decimals(chainId: TargetChainId, tokenAddress: string): Promise<number>
-  tradingSdkFactory?: (traderParams: TraderParameters, options: Partial<TradingSdkOptions>) => TradingSdk // TODO: I think tradingSDK should not require traderParams, so we should use the same instance no matter the chains. I consider this out of the scope in this PR so I will focus on making bridging SDK to allow to handle all chains with the same instance
+  tradingSdk?: TradingSdk
 
   /**
    * Providers for the bridging.
@@ -29,7 +29,7 @@ export type BridgingSdkConfig = Required<BridgingSdkOptions>
 export class BridgingSdk {
   protected config: BridgingSdkConfig
   constructor(readonly options: BridgingSdkOptions) {
-    const { providers, tradingSdkFactory, ...restOptions } = options
+    const { providers, tradingSdk, ...restOptions } = options
 
     // For simplicity, we support only a single provider in the initial implementation
     if (!providers || providers.length !== 1) {
@@ -39,7 +39,7 @@ export class BridgingSdk {
     this.config = {
       providers,
       ...restOptions,
-      tradingSdkFactory: tradingSdkFactory ?? ((tradeParams, options) => new TradingSdk(tradeParams, options)),
+      tradingSdk: tradingSdk ?? new TradingSdk(),
     }
   }
 
@@ -91,8 +91,8 @@ export class BridgingSdk {
     quoteBridgeRequest: QuoteBridgeRequest,
     advancedSettings?: SwapAdvancedSettings
   ): Promise<CrossChainQuoteAndPost> {
-    const { sellTokenChainId, buyTokenChainId, appCode, signer } = quoteBridgeRequest
-    const tradingSdk = this.config.tradingSdkFactory({ chainId: sellTokenChainId, appCode, signer }, {})
+    const { sellTokenChainId, buyTokenChainId } = quoteBridgeRequest
+    const tradingSdk = this.config.tradingSdk
 
     if (sellTokenChainId !== buyTokenChainId) {
       // Cross-chain swap

@@ -25,7 +25,7 @@ export interface TradingSdkOptions {
 
 export class TradingSdk {
   constructor(
-    public traderParams: TraderParameters,
+    public traderParams: Partial<TraderParameters> = {},
     public readonly options: Partial<TradingSdkOptions> = { enableLogging: false }
   ) {
     if (options.enableLogging) {
@@ -116,11 +116,35 @@ export class TradingSdk {
   }
 
   private mergeParams<T>(params: T & Partial<TraderParameters>): T & TraderParameters {
+    const { chainId, signer, appCode } = params
+    const traderParams: Partial<TraderParameters> = {
+      chainId: chainId || this.traderParams.chainId,
+      signer: signer || this.traderParams.signer,
+      appCode: appCode || this.traderParams.appCode,
+    }
+    assertTraderParams(traderParams)
+
     return {
       ...params,
-      chainId: params.chainId || this.traderParams.chainId,
-      signer: params.signer || this.traderParams.signer,
-      appCode: params.appCode || this.traderParams.appCode,
+      ...traderParams,
     }
   }
+}
+
+function assertTraderParams(params: Partial<TraderParameters>): asserts params is TraderParameters {
+  if (!isTraderParameters(params)) {
+    throw new Error('Missing trader parameters: ' + getMissingTraderParams(params).join(', '))
+  }
+}
+
+function getMissingTraderParams(params: Partial<TraderParameters>): string[] {
+  const missingParams = []
+  if (!params.chainId) missingParams.push('chainId')
+  if (!params.signer) missingParams.push('signer')
+  if (!params.appCode) missingParams.push('appCode')
+  return missingParams
+}
+
+function isTraderParameters(params: Partial<TraderParameters>): params is TraderParameters {
+  return getMissingTraderParams(params).length === 0
 }
