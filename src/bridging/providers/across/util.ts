@@ -67,10 +67,10 @@ function toAmountsAndCosts(
 
   // Apply the fee to the buy amount (sell amount doesn't change)
   const totalRelayerFeePct = BigInt(suggestedFees.totalRelayFee.pct)
-  const buyAmountAfterFee = applyFee(buyAmountBeforeFee, totalRelayerFeePct)
+  const buyAmountAfterFee = applyPctFee(buyAmountBeforeFee, totalRelayerFeePct)
 
   // Calculate the fee
-  const feeSellToken = sellAmountBeforeFee - applyFee(sellAmountBeforeFee, totalRelayerFeePct)
+  const feeSellToken = sellAmountBeforeFee - applyPctFee(sellAmountBeforeFee, totalRelayerFeePct)
   const feeBuyToken = buyAmountBeforeFee - buyAmountAfterFee
   // TODO: Do we need to use any of the other fees, or they are included in totalRelayFee? I know 'lpFee' fee is, as stated in the docs, but not sure about the others.
   // const relayerCapitalFee = suggestedFees.relayerCapitalFee
@@ -106,21 +106,41 @@ function toAmountsAndCosts(
 }
 
 /**
+ * Assert that a percentage is valid.
+ */
+function assertValidPct(pct: bigint): void {
+  if (pct > PCT_100_PERCENT || pct < 0n) {
+    throw new Error('Fee cannot exceed 100% or be negative')
+  }
+}
+
+/**
  * pct is a represents a percentage.
  *
  * Note: 1% is represented as 1e16, 100% is 1e18, 50% is 5e17, etc. These values are in the same format that the contract understands.
  *
  * Bps is a percentage in basis points (1/100th of a percent). For example, 1% is 100 bps.
  *
+ * @param pct - The percentage to convert to bps
+ * @returns The percentage in bps
+ * @throws If the percentage is greater than 100% or less than 0%
  */
 export function pctToBps(pct: bigint): number {
+  assertValidPct(pct)
+
   return Number((pct * 10_000n) / PCT_100_PERCENT)
 }
 
-export function applyFee(amount: bigint, pct: bigint): bigint {
-  if (pct > PCT_100_PERCENT) {
-    throw new Error('Fee cannot exceed 100%')
-  }
+/**
+ * Apply a percentage fee to an amount.
+ *
+ * @param amount - The amount to apply the fee to
+ * @param pct - The percentage fee to apply
+ * @throws If the percentage fee is greater than 100% or less than 0%
+ * @returns The amount after the fee has been applied
+ */
+export function applyPctFee(amount: bigint, pct: bigint): bigint {
+  assertValidPct(pct)
 
   // Compute amount after fee: amount * (1 - pct / 1e18)
   const amountAfterFee = (amount * (PCT_100_PERCENT - pct)) / PCT_100_PERCENT
