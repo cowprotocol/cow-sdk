@@ -53,6 +53,7 @@ describe('AcrossApi', () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 400,
+        text: () => Promise.resolve('Internal Server Error'),
       })
 
       await expect(
@@ -134,6 +135,7 @@ describe('AcrossApi', () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 500,
+        text: () => Promise.resolve('Internal Server Error'),
       })
 
       await expect(
