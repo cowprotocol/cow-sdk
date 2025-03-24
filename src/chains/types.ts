@@ -2,6 +2,9 @@ import { TokenInfo } from '../common/types/tokens'
 
 /**
  * Supported chains and their `chainId` for the SDK.
+ *
+ * A supported chain, is a chain where CoW Protocol is deployed, so you can sell tokens from there.
+ *
  * @enum
  */
 export enum SupportedChainId {
@@ -11,6 +14,21 @@ export enum SupportedChainId {
   BASE = 8453,
   SEPOLIA = 11155111,
 }
+
+/**
+ * Chains where you can buy tokens using the bridge functionality. This enum contains chains that are not already included in the SupportedChainId enum.
+ */
+export enum AdditionalTargetChainId {
+  POLYGON = 137,
+  OPTIMISM = 10,
+}
+
+/**
+ * Chains where you can buy tokens using the bridge functionality.
+ *
+ * This enum contains all the supported chains and some additional ones supported by the different bridges.
+ */
+export type TargetChainId = SupportedChainId | AdditionalTargetChainId
 
 /**
  * The chain id of the chain.

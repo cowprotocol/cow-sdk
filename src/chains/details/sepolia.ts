@@ -1,6 +1,6 @@
 import { ChainInfo, SupportedChainId } from '../types'
 import { nativeCurrencyTemplate } from '../../common/consts/tokens'
-import { RAW_CHAINS_FILES_PATH } from '../const'
+import { RAW_CHAINS_FILES_PATH } from '../const/path'
 
 const sepoliaLogo = `${RAW_CHAINS_FILES_PATH}/images/sepolia-logo.svg`
 
