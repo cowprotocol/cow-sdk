@@ -112,8 +112,6 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
       recipient,
     })
 
-    console.log('suggestedFees', suggestedFees)
-
     // TODO: The suggested fees contain way more information. As we review more bridge providers we should revisit the
     // facade of the quote result.
     //
