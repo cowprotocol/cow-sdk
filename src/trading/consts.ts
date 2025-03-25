@@ -1,13 +1,6 @@
 import { EcdsaSigningScheme, SigningScheme } from '../order-book'
 import { SupportedChainId } from '../chains'
 
-export function log(text: string) {
-  if (!log.enabled) return
-  console.log(`[COW TRADING SDK] ${text}`)
-}
-
-log.enabled = false
-
 export const DEFAULT_QUOTE_VALIDITY = 60 * 30 // 30 min
 
 export const DEFAULT_SLIPPAGE_BPS = 50 // 0.5%

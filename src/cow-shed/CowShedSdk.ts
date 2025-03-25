@@ -7,9 +7,9 @@ import { getSigner } from '../common/utils/wallet'
 import { MaxUint256 } from '@ethersproject/constants'
 
 // FIXME: I will refactor into a new PR (log needs to be moved to the common package)
-import { log } from '../trading/consts'
 import { jsonWithBigintReplacer } from '../common/utils/serialize'
 import { formatBytes32String } from 'ethers/lib/utils'
+import { log } from '../common/utils/log'
 
 const NON_EXPIRING_DEADLINE = MaxUint256.toBigInt()
 

@@ -12,7 +12,7 @@ import { getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getTradeParametersAfterQuote, swapParamsToLimitOrderParams } from './utils'
 import { getPreSignTransaction } from './getPreSignTransaction'
-import { log } from './consts'
+import { log } from '../common/utils/log'
 import { OrderBookApi } from '../order-book'
 import { getSigner } from '../common/utils/wallet'
 

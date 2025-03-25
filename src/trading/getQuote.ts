@@ -1,5 +1,6 @@
 import { QuoteResults, QuoterParameters, SwapAdvancedSettings, SwapParameters, TradeParameters } from './types'
-import { DEFAULT_QUOTE_VALIDITY, DEFAULT_SLIPPAGE_BPS, log } from './consts'
+import { DEFAULT_QUOTE_VALIDITY, DEFAULT_SLIPPAGE_BPS } from './consts'
+import { log } from '../common/utils/log'
 
 import {
   getQuoteAmountsAndCosts,
