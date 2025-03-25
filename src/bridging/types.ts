@@ -11,10 +11,6 @@ export interface BridgeProviderInfo {
   logoUrl: string
 }
 
-export interface GetBuyTokensParams extends Partial<WithSellToken> {
-  targetChainId: TargetChainId
-}
-
 interface WithSellToken {
   sellTokenChainId: SupportedChainId
   sellTokenAddress: Address
@@ -108,7 +104,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
   /**
    * Get supported tokens for a chain
    */
-  getBuyTokens(chainId: GetBuyTokensParams): Promise<TokenInfo[]>
+  getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]>
 
   /**
    * Get intermediate tokens given a quote request.
@@ -277,6 +273,22 @@ export interface BridgeQuoteAmountsAndCosts<T = bigint> {
   slippageBps: number
 }
 
+/**
+ * Details about the bridge call.
+ */
+export interface BridgeCallDetails {
+  /**
+   * Unsigned call to initiate the bridge. This call should be executed in the context of user's cow-shed account.
+   */
+  unsignedBridgeCall: EvmCall
+
+  /**
+   * Pre-authorized hook to initiate the bridge. This hook has been signed, and is ready to be executed by the
+   * CoW Protocol Trampoline contract after settling the swap order that buys the intermediate token.
+   */
+  preAuthorizedBridgingHook: BridgeHook
+}
+
 export interface BridgeQuoteResults extends BridgeQuoteResult {
   /**
    * Bridge provider information
@@ -291,18 +303,7 @@ export interface BridgeQuoteResults extends BridgeQuoteResult {
   /**
    * Bridge call details
    */
-  bridgeCallDetails: {
-    /**
-     * Unsigned call to initiate the bridge. This call should be executed in the context of user's cow-shed account.
-     */
-    unsignedBridgeCall: EvmCall
-
-    /**
-     * Pre-authorized hook to initiate the bridge. This hook has been signed, and is ready to be executed by the
-     * CoW Protocol Trampoline contract after settling the swap order that buys the intermediate token.
-     */
-    preAuthorizedBridgingHook: BridgeHook
-  }
+  bridgeCallDetails: BridgeCallDetails
 }
 
 export type GetErc20Decimals = (chainId: TargetChainId, tokenAddress: string) => Promise<number>

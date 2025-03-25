@@ -3,12 +3,11 @@ import {
   BridgeProvider,
   BridgeQuoteResult,
   CrossChainQuoteAndPost,
-  GetBuyTokensParams,
   GetErc20Decimals,
   QuoteBridgeRequest,
 } from '../types'
 import { ALL_SUPPORTED_CHAINS, TokenInfo } from '../../common'
-import { ChainInfo } from '../../chains'
+import { ChainInfo, TargetChainId } from '../../chains'
 import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
 import { getQuoteWithBridge } from './getQuoteWithBridging'
 import { getSigner } from '../../common/utils/wallet'
@@ -87,8 +86,8 @@ export class BridgingSdk {
    * @param param
    * @returns
    */
-  async getBuyTokens(param: GetBuyTokensParams): Promise<TokenInfo[]> {
-    return this.provider.getBuyTokens(param)
+  async getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]> {
+    return this.provider.getBuyTokens(targetChainId)
   }
 
   /**
@@ -115,11 +114,11 @@ export class BridgingSdk {
 
     if (sellTokenChainId !== buyTokenChainId) {
       const signer = getSigner(quoteBridgeRequest.signer)
-      const getErc20Decimals = factoryGetErc20Decimals(signer)
+      const getErc20Decimals = this.config.getErc20Decimals ?? factoryGetErc20Decimals(signer)
 
       // Cross-chain swap
       return getQuoteWithBridge({
-        quoteBridgeRequest,
+        swapAndBridgeRequest: quoteBridgeRequest,
         advancedSettings,
         tradingSdk,
         provider: this.provider,

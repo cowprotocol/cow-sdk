@@ -23,30 +23,53 @@ import {
 import { Signer } from '@ethersproject/abstract-signer'
 import { getSigner } from '../../common/utils/wallet'
 
-export async function getQuoteWithBridge<T extends BridgeQuoteResult>(params: {
-  quoteBridgeRequest: QuoteBridgeRequest
+type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
+  /**
+   * Overall request for the swap and the bridge.
+   */
+  swapAndBridgeRequest: QuoteBridgeRequest
+
+  /**
+   * Advanced settings for the swap.
+   */
   advancedSettings?: SwapAdvancedSettings
+
+  /**
+   * Provider for the bridge.
+   */
   provider: BridgeProvider<T>
+
+  /**
+   * Trading SDK.
+   */
   tradingSdk: TradingSdk
+
+  /**
+   * Function to get the decimals of the ERC20 tokens.
+   */
   getErc20Decimals: GetErc20Decimals
-}): Promise<BridgeQuoteAndPost> {
-  const { provider, quoteBridgeRequest, advancedSettings, getErc20Decimals, tradingSdk } = params
-  const { sellTokenChainId, sellTokenAddress, amount, signer: signerLike, ...rest } = quoteBridgeRequest
+}
+
+export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
+  params: GetQuoteWithBridgeParams<T>
+): Promise<BridgeQuoteAndPost> {
+  const { provider, swapAndBridgeRequest, advancedSettings, getErc20Decimals, tradingSdk } = params
+  const { sellTokenChainId, sellTokenAddress, amount, signer: signerLike, ...rest } = swapAndBridgeRequest
   const signer = getSigner(signerLike)
 
   // Get the mocked hook (for estimating the additional swap costs)
-  const bridgeQuoteRequestWithoutAmount = await getBaseBridgeQuoteRequest({
-    quoteBridgeRequest,
+  const bridgeRequestWithoutAmount = await getBaseBridgeQuoteRequest({
+    swapAndBridgeRequest: swapAndBridgeRequest,
     provider,
     getErc20Decimals,
   })
 
   // Get the hook mock for cost estimation
-  const gasLimit = provider.getGasLimitEstimationForHook(bridgeQuoteRequestWithoutAmount)
+  const gasLimit = provider.getGasLimitEstimationForHook(bridgeRequestWithoutAmount)
   const mockedHook = getHookMockForCostEstimation(gasLimit)
 
   const { sellTokenAddress: intermediateToken, sellTokenDecimals: intermediaryTokenDecimals } =
-    bridgeQuoteRequestWithoutAmount
+    bridgeRequestWithoutAmount
 
   // Estimate the expected amount of intermediate tokens received in CoW Protocol's swap
   const swapParams: WithPartialTraderParams<TradeParameters> = {
@@ -71,9 +94,9 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(params: {
   // Get the bridge result
 
   const { bridgeResult, bridgeHook, appData } = await getBridgeResult({
-    quoteBridgeRequest,
+    swapAndBridgeRequest,
     swapResult,
-    bridgeQuoteRequestWithoutAmount,
+    bridgeRequestWithoutAmount,
     provider,
     intermediateTokenAmount,
     signer,
@@ -110,11 +133,11 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(params: {
  * Ge the base params (without the amount) for the bridge quote request
  */
 async function getBaseBridgeQuoteRequest<T extends BridgeQuoteResult>(params: {
-  quoteBridgeRequest: QuoteBridgeRequest
+  swapAndBridgeRequest: QuoteBridgeRequest
   provider: BridgeProvider<T>
   getErc20Decimals: GetErc20Decimals
 }): Promise<QuoteBridgeRequestWithoutAmount> {
-  const { provider, getErc20Decimals, quoteBridgeRequest } = params
+  const { provider, getErc20Decimals, swapAndBridgeRequest: quoteBridgeRequest } = params
   const { sellTokenChainId } = quoteBridgeRequest
 
   const intermediateTokens = await provider.getIntermediateTokens(quoteBridgeRequest)
@@ -130,13 +153,13 @@ async function getBaseBridgeQuoteRequest<T extends BridgeQuoteResult>(params: {
   const intermediaryTokenDecimals = await getErc20Decimals(sellTokenChainId, intermediateTokenAddress)
 
   // Get the gas limit estimation for the hook
-  const bridgeQuoteRequestWithoutAmount: QuoteBridgeRequestWithoutAmount = {
+  const bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount = {
     ...quoteBridgeRequest,
     sellTokenAddress: intermediateTokenAddress,
     sellTokenDecimals: intermediaryTokenDecimals,
   }
 
-  return bridgeQuoteRequestWithoutAmount
+  return bridgeRequestWithoutAmount
 }
 
 interface GetBridgeResultResult {
@@ -146,27 +169,35 @@ interface GetBridgeResultResult {
 }
 
 async function getBridgeResult(params: {
-  quoteBridgeRequest: QuoteBridgeRequest
+  swapAndBridgeRequest: QuoteBridgeRequest
   swapResult: QuoteResults
   intermediateTokenAmount: bigint
-  bridgeQuoteRequestWithoutAmount: QuoteBridgeRequestWithoutAmount
+  bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount
   provider: BridgeProvider<BridgeQuoteResult>
   signer: Signer
 }): Promise<GetBridgeResultResult> {
-  const { swapResult, bridgeQuoteRequestWithoutAmount, provider, quoteBridgeRequest, intermediateTokenAmount, signer } =
-    params
+  const {
+    swapResult,
+    bridgeRequestWithoutAmount,
+    provider,
+    swapAndBridgeRequest: overallBridgeRequest,
+    intermediateTokenAmount,
+    signer,
+  } = params
+
+  const bridgeRequest: QuoteBridgeRequest = {
+    ...bridgeRequestWithoutAmount,
+    amount: intermediateTokenAmount,
+  }
 
   // Get the quote for the bridging of the intermediate token to the final token
-  const bridgingQuote = await provider.getQuote({
-    ...bridgeQuoteRequestWithoutAmount,
-    amount: intermediateTokenAmount,
-  })
+  const bridgingQuote = await provider.getQuote(bridgeRequest)
 
   // Get the bridging call
-  const unsignedBridgeCall = await provider.getUnsignedBridgeCall(quoteBridgeRequest, bridgingQuote)
+  const unsignedBridgeCall = await provider.getUnsignedBridgeCall(overallBridgeRequest, bridgingQuote)
 
   // Get the pre-authorized hook
-  const bridgeHook = await provider.getSignedHook(quoteBridgeRequest.sellTokenChainId, unsignedBridgeCall, signer)
+  const bridgeHook = await provider.getSignedHook(overallBridgeRequest.sellTokenChainId, unsignedBridgeCall, signer)
 
   // Generate the app data for the hook
   const metadataApi = new MetadataApi()
@@ -183,7 +214,7 @@ async function getBridgeResult(params: {
   const bridgeResult: BridgeQuoteResults = {
     ...bridgingQuote,
     providerInfo: provider.info,
-    tradeParameters: quoteBridgeRequest,
+    tradeParameters: bridgeRequest, // Just the bridge (not the swap & bridge)
     bridgeCallDetails: {
       unsignedBridgeCall: unsignedBridgeCall,
       preAuthorizedBridgingHook: bridgeHook,

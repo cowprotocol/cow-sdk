@@ -60,9 +60,7 @@ describe('AcrossBridgeProvider', () => {
     })
 
     it('should return tokens for supported chain', async () => {
-      const tokens = await provider.getBuyTokens({
-        targetChainId: AdditionalTargetChainId.POLYGON,
-      })
+      const tokens = await provider.getBuyTokens(AdditionalTargetChainId.POLYGON)
 
       expect(tokens).toEqual(mockTokens)
       // mockGetTokenInfos was called with a list of addresses which includes 0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359 and 0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619

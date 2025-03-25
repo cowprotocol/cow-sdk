@@ -8,7 +8,6 @@ import {
   BridgeProviderInfo,
   BridgeQuoteResult,
   BridgeStatusResult,
-  GetBuyTokensParams,
   QuoteBridgeRequest,
 } from '../../types'
 
@@ -73,12 +72,10 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     return ACROSS_SUPPORTED_NETWORKS
   }
 
-  async getBuyTokens(param: GetBuyTokensParams): Promise<TokenInfo[]> {
+  async getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]> {
     if (!this.options.getTokenInfos) {
       throw new Error("'getTokenInfos' parameter is required for AcrossBridgeProvider constructor")
     }
-
-    const { targetChainId } = param
 
     const chainConfig = ACROSS_TOKEN_MAPPING[targetChainId as TargetChainId]
     if (!chainConfig) {

@@ -2,7 +2,7 @@ import { QuoteAndPost } from '../trading'
 import { BridgeQuoteAndPost, CrossChainQuoteAndPost } from './types'
 
 export function isBridgeQuoteAndPost(quote: CrossChainQuoteAndPost): quote is BridgeQuoteAndPost {
-  return 'bridgeQuoteResults' in quote
+  return 'bridge' in quote
 }
 
 export function isQuoteAndPost(quote: CrossChainQuoteAndPost): quote is QuoteAndPost {
