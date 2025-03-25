@@ -52,7 +52,9 @@ export class BridgingSdk {
       throw new Error('Current implementation only supports a single bridge provider')
     }
 
-    enableLogging(options.enableLogging ?? false)
+    if (options.enableLogging !== undefined) {
+      enableLogging(options.enableLogging)
+    }
 
     this.config = {
       providers,

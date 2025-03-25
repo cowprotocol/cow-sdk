@@ -28,7 +28,9 @@ export class TradingSdk {
     public traderParams: Partial<TraderParameters> = {},
     public readonly options: Partial<TradingSdkOptions> = { enableLogging: false }
   ) {
-    enableLogging(options.enableLogging ?? false)
+    if (options.enableLogging !== undefined) {
+      enableLogging(options.enableLogging)
+    }
   }
 
   setTraderParams(params: Partial<TraderParameters>) {
