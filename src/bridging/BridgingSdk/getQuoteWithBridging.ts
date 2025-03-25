@@ -208,14 +208,7 @@ async function getBridgeResult(params: {
   provider: BridgeProvider<BridgeQuoteResult>
   signer: Signer
 }): Promise<GetBridgeResultResult> {
-  const {
-    swapResult,
-    bridgeRequestWithoutAmount,
-    provider,
-    swapAndBridgeRequest: overallBridgeRequest,
-    intermediateTokenAmount,
-    signer,
-  } = params
+  const { swapResult, bridgeRequestWithoutAmount, provider, intermediateTokenAmount, signer } = params
 
   const bridgeRequest: QuoteBridgeRequest = {
     ...bridgeRequestWithoutAmount,
@@ -226,10 +219,10 @@ async function getBridgeResult(params: {
   const bridgingQuote = await provider.getQuote(bridgeRequest)
 
   // Get the bridging call
-  const unsignedBridgeCall = await provider.getUnsignedBridgeCall(overallBridgeRequest, bridgingQuote)
+  const unsignedBridgeCall = await provider.getUnsignedBridgeCall(bridgeRequest, bridgingQuote)
 
   // Get the pre-authorized hook
-  const bridgeHook = await provider.getSignedHook(overallBridgeRequest.sellTokenChainId, unsignedBridgeCall, signer)
+  const bridgeHook = await provider.getSignedHook(bridgeRequest.sellTokenChainId, unsignedBridgeCall, signer)
 
   // Generate the app data for the hook
   const metadataApi = new MetadataApi()
