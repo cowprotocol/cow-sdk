@@ -284,6 +284,13 @@ describe('BridgingSdk', () => {
     })
   })
 
+  describe('getProviders', () => {
+    it('returns the providers', () => {
+      const providers = bridgingSdk.getProviders()
+      expect(providers).toEqual([mockProvider])
+    })
+  })
+
   describe('getSourceNetworks', () => {
     it('no networks are supported', async () => {
       const networks = await bridgingSdk.getSourceNetworks()
