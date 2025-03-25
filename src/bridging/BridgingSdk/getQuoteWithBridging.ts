@@ -153,13 +153,11 @@ async function getBaseBridgeQuoteRequest<T extends BridgeQuoteResult>(params: {
   const intermediaryTokenDecimals = await getErc20Decimals(sellTokenChainId, intermediateTokenAddress)
 
   // Get the gas limit estimation for the hook
-  const bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount = {
+  return {
     ...quoteBridgeRequest,
     sellTokenAddress: intermediateTokenAddress,
     sellTokenDecimals: intermediaryTokenDecimals,
   }
-
-  return bridgeRequestWithoutAmount
 }
 
 interface GetBridgeResultResult {
