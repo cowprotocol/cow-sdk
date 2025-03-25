@@ -11,12 +11,12 @@ export function isQuoteAndPost(quote: CrossChainQuoteAndPost): quote is QuoteAnd
 
 export function assertIsBridgeQuoteAndPost(quote: CrossChainQuoteAndPost): asserts quote is BridgeQuoteAndPost {
   if (!isBridgeQuoteAndPost(quote)) {
-    throw new Error('Quote result is not of type BridgeQuoteAndPost. Are you the sell and buy chains are different?')
+    throw new Error('Quote result is not of type BridgeQuoteAndPost. Are you sure the sell and buy chains different?')
   }
 }
 
 export function assertIsQuoteAndPost(quote: CrossChainQuoteAndPost): asserts quote is QuoteAndPost {
   if (!isQuoteAndPost(quote)) {
-    throw new Error('Quote result is not of type QuoteAndPost. Are you the sell and buy chains are the same?')
+    throw new Error('Quote result is not of type QuoteAndPost. Are you sure the sell and buy chains are the same?')
   }
 }
