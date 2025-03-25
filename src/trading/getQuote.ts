@@ -83,6 +83,7 @@ export async function getQuote(
   )
 
   const { appDataKeccak256, fullAppData } = appDataInfo
+  log(`App data: appDataKeccak256=${appDataKeccak256} fullAppData=${fullAppData}`)
 
   const quoteRequest: OrderQuoteRequest = {
     from,
