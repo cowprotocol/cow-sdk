@@ -1,6 +1,6 @@
 import { OrderBookApi, OrderCreation, SigningScheme } from '../order-book'
 import type { Signer } from 'ethers'
-import { AppDataInfo, LimitTradeParameters, PostTradeAdditionalParams } from './types'
+import { AppDataInfo, LimitTradeParameters, OrderPostingResult, PostTradeAdditionalParams } from './types'
 import { log, SIGN_SCHEME_MAP } from './consts'
 import { OrderSigningUtils } from '../order-signing'
 import { getOrderToSign } from './getOrderToSign'
@@ -13,22 +13,14 @@ export async function postCoWProtocolTrade(
   appData: AppDataInfo,
   params: LimitTradeParameters,
   additionalParams: PostTradeAdditionalParams = {}
-): Promise<string> {
+): Promise<OrderPostingResult> {
   const { networkCostsAmount = '0', signingScheme: _signingScheme = SigningScheme.EIP712 } = additionalParams
 
   if (getIsEthFlowOrder(params)) {
     const quoteId = params.quoteId
 
     if (typeof quoteId === 'number') {
-      const { orderId } = await postSellNativeCurrencyOrder(
-        orderBookApi,
-        signer,
-        appData,
-        { ...params, quoteId },
-        additionalParams
-      )
-
-      return orderId
+      return postSellNativeCurrencyOrder(orderBookApi, signer, appData, { ...params, quoteId }, additionalParams)
     } else {
       throw new Error('quoteId is required for EthFlow orders')
     }
@@ -69,5 +61,5 @@ export async function postCoWProtocolTrade(
 
   log(`Order created, id: ${orderId}`)
 
-  return orderId
+  return { orderId, signature, signingScheme }
 }

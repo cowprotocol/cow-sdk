@@ -56,7 +56,7 @@ describe('postSwapOrder', () => {
       sendOrder: jest.fn().mockResolvedValue('0x01'),
     }
 
-    const orderId = await postSwapOrderFromQuote(
+    const { orderId } = await postSwapOrderFromQuote(
       await getQuoteWithSigner(SELL_ORDER_PARAMS, undefined, orderBookApi as any)
     )
 

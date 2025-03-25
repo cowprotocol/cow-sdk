@@ -36,7 +36,6 @@ const privateKey = 'xxx'
     buyTokenDecimals: 18,
     sellAmount: '120000000000000000',
     buyAmount: '66600000000000000000',
-    networkCostsAmount: '0',
   })
 })()
 

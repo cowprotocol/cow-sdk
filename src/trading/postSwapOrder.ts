@@ -1,4 +1,4 @@
-import { SwapAdvancedSettings, SwapParameters } from './types'
+import { OrderPostingResult, SwapAdvancedSettings, SwapParameters } from './types'
 
 import { postCoWProtocolTrade } from './postCoWProtocolTrade'
 import { getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
@@ -16,17 +16,21 @@ export async function postSwapOrder(
 export async function postSwapOrderFromQuote(
   { orderBookApi, result: { signer, appDataInfo, quoteResponse, tradeParameters } }: QuoteResultsWithSigner,
   advancedSettings?: SwapAdvancedSettings
-): Promise<string> {
-  return postCoWProtocolTrade(
-    orderBookApi,
-    signer,
-    appDataInfo,
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    swapParamsToLimitOrderParams(tradeParameters, quoteResponse),
-    {
-      signingScheme: advancedSettings?.quoteRequest?.signingScheme,
-      networkCostsAmount: quoteResponse.quote.feeAmount,
-      ...advancedSettings?.additionalParams,
-    }
-  )
+): Promise<OrderPostingResult> {
+  const params = swapParamsToLimitOrderParams(tradeParameters, quoteResponse)
+  const appDataSlippage = advancedSettings?.appData?.metadata?.quote?.slippageBips
+
+  /**
+   * Special case for CoW Swap where we have smart slippage
+   * We update appData slippage without refetching quote
+   */
+  if (typeof appDataSlippage !== 'undefined') {
+    params.slippageBps = appDataSlippage
+  }
+
+  return postCoWProtocolTrade(orderBookApi, signer, appDataInfo, params, {
+    signingScheme: advancedSettings?.quoteRequest?.signingScheme,
+    networkCostsAmount: quoteResponse.quote.feeAmount,
+    ...advancedSettings?.additionalParams,
+  })
 }

@@ -11,3 +11,6 @@ export * from './consts/config'
 export * from './consts/contracts'
 export * from './consts/ipfs'
 export * from './consts/tokens'
+
+// Utils
+export * from './utils/config'

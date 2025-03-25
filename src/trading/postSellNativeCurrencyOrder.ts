@@ -1,8 +1,8 @@
 import { Signer } from 'ethers'
-import { AppDataInfo, LimitTradeParametersFromQuote, PostTradeAdditionalParams } from './types'
+import { AppDataInfo, LimitTradeParametersFromQuote, OrderPostingResult, PostTradeAdditionalParams } from './types'
 
 import { log } from './consts'
-import { OrderBookApi } from '../order-book'
+import { OrderBookApi, SigningScheme } from '../order-book'
 import { getEthFlowTransaction } from './getEthFlowTransaction'
 
 export async function postSellNativeCurrencyOrder(
@@ -11,7 +11,7 @@ export async function postSellNativeCurrencyOrder(
   appData: Pick<AppDataInfo, 'fullAppData' | 'appDataKeccak256'>,
   _params: LimitTradeParametersFromQuote,
   additionalParams: PostTradeAdditionalParams = {}
-): Promise<{ txHash: string; orderId: string }> {
+): Promise<OrderPostingResult> {
   const { appDataKeccak256, fullAppData } = appData
 
   const { orderId, transaction } = await getEthFlowTransaction(
@@ -29,5 +29,5 @@ export async function postSellNativeCurrencyOrder(
   const txReceipt = await signer.sendTransaction(transaction)
 
   log(`On-chain order transaction sent, txHash: ${txReceipt.hash}, order: ${orderId}`)
-  return { txHash: txReceipt.hash, orderId }
+  return { txHash: txReceipt.hash, orderId, signature: '', signingScheme: SigningScheme.EIP1271 }
 }
