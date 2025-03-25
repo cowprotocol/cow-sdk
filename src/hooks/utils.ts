@@ -6,7 +6,7 @@ export function getHookMockForCostEstimation(gasLimit: number): latest.OrderInte
       {
         callData: '0x0',
         gasLimit: gasLimit.toString(),
-        target: '0x0',
+        target: '0x0000000000000000000000000000000000000000',
       },
     ],
   }
