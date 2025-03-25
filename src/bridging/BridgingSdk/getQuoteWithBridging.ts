@@ -24,6 +24,7 @@ import {
 import { Signer } from '@ethersproject/abstract-signer'
 import { getSigner } from '../../common/utils/wallet'
 import { log } from '../../common/utils/log'
+import { jsonWithBigintReplacer } from '../../common/utils/serialize'
 
 type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
   /**
@@ -99,7 +100,12 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
     amount: amount.toString(),
     signer,
   }
-  log(`Getting a quote for the swap (sell token to buy intermediate token): ${JSON.stringify(swapParams)}`)
+  log(
+    `Getting a quote for the swap (sell token to buy intermediate token). Delegate to trading SDK with params: ${JSON.stringify(
+      swapParams,
+      jsonWithBigintReplacer
+    )}`
+  )
   const { result: swapResult, orderBookApi } = await tradingSdk.getQuoteResults(swapParams, {
     ...advancedSettings,
     appData: {

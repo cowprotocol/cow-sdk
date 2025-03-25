@@ -12,6 +12,7 @@ import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
 import { getQuoteWithBridge } from './getQuoteWithBridging'
 import { getSigner } from '../../common/utils/wallet'
 import { factoryGetErc20Decimals } from './getErc20Decimals'
+import { log } from '../../common/utils/log'
 
 export interface BridgingSdkOptions {
   /**
@@ -28,9 +29,14 @@ export interface BridgingSdkOptions {
    * Trading SDK.
    */
   tradingSdk?: TradingSdk
+
+  /**
+   * Enable logging for the bridging SDK.
+   */
+  enableLogging?: boolean
 }
 
-export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'getErc20Decimals'>> &
+export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'enableLogging' | 'getErc20Decimals'>> &
   Pick<BridgingSdkOptions, 'getErc20Decimals'>
 
 /**
@@ -44,6 +50,10 @@ export class BridgingSdk {
     // For simplicity, we support only a single provider in the initial implementation
     if (!providers || providers.length !== 1) {
       throw new Error('Current implementation only supports a single bridge provider')
+    }
+
+    if (options.enableLogging) {
+      log.enabled = true
     }
 
     this.config = {
@@ -126,6 +136,7 @@ export class BridgingSdk {
       })
     } else {
       // Single-chain swap
+
       return getQuoteWithoutBridge({
         quoteBridgeRequest,
         advancedSettings,
