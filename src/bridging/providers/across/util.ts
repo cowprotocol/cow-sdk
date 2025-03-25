@@ -143,9 +143,7 @@ export function applyPctFee(amount: bigint, pct: bigint): bigint {
   assertValidPct(pct)
 
   // Compute amount after fee: amount * (1 - pct / 1e18)
-  const amountAfterFee = (amount * (PCT_100_PERCENT - pct)) / PCT_100_PERCENT
-
-  return amountAfterFee
+  return (amount * (PCT_100_PERCENT - pct)) / PCT_100_PERCENT
 }
 
 export function applyBps(amount: bigint, bps: number): bigint {
