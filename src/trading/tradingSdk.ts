@@ -12,7 +12,7 @@ import { getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getTradeParametersAfterQuote, swapParamsToLimitOrderParams } from './utils'
 import { getPreSignTransaction } from './getPreSignTransaction'
-import { log } from '../common/utils/log'
+import { enableLogging } from '../common/utils/log'
 import { OrderBookApi } from '../order-book'
 import { getSigner } from '../common/utils/wallet'
 
@@ -28,9 +28,7 @@ export class TradingSdk {
     public traderParams: Partial<TraderParameters> = {},
     public readonly options: Partial<TradingSdkOptions> = { enableLogging: false }
   ) {
-    if (options.enableLogging) {
-      log.enabled = true
-    }
+    enableLogging(options.enableLogging ?? false)
   }
 
   setTraderParams(params: Partial<TraderParameters>) {

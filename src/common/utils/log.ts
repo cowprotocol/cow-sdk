@@ -1,6 +1,10 @@
+let logEnabled = false
+
 export function log(text: string) {
-  if (!log.enabled) return
+  if (!logEnabled) return
   console.log(`[COW TRADING SDK] ${text}`)
 }
 
-log.enabled = false
+export function enableLogging(enabled: boolean) {
+  logEnabled = enabled
+}

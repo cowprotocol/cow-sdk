@@ -12,7 +12,7 @@ import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
 import { getQuoteWithBridge } from './getQuoteWithBridging'
 import { getSigner } from '../../common/utils/wallet'
 import { factoryGetErc20Decimals } from './getErc20Decimals'
-import { log } from '../../common/utils/log'
+import { enableLogging } from '../../common/utils/log'
 
 export interface BridgingSdkOptions {
   /**
@@ -52,9 +52,7 @@ export class BridgingSdk {
       throw new Error('Current implementation only supports a single bridge provider')
     }
 
-    if (options.enableLogging) {
-      log.enabled = true
-    }
+    enableLogging(options.enableLogging ?? false)
 
     this.config = {
       providers,
