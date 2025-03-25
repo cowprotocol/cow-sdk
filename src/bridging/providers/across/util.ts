@@ -83,7 +83,7 @@ function toAmountsAndCosts(
   return {
     beforeFee: {
       sellAmount: sellAmountBeforeFee,
-      buyAmount: buyAmountBeforeFee, // Assuming the price is 1:1 (before fee). This is because we are exchanges the same asset
+      buyAmount: buyAmountBeforeFee, // Assuming the price is 1:1 (before fee). This is because we are exchanging the same asset
     },
     afterFee: {
       sellAmount: sellAmountBeforeFee, // Sell amount does't change (fee is applied to the buy amount)
