@@ -2,7 +2,7 @@ import { AdditionalTargetChainId, SupportedChainId, TargetChainId } from '../../
 import { TokenInfo } from '../../../common'
 import { OrderKind } from '../../../order-book'
 import { BridgeHook, BridgeQuoteResult, QuoteBridgeRequest } from '../../types'
-import { AcrossApi } from './AcrossApi'
+import { AcrossApi, SuggestedFeesResponse } from './AcrossApi'
 import { ACROSS_SUPPORTED_NETWORKS, AcrossBridgeProvider, AcrossBridgeProviderOptions } from './AcrossBridgeProvider'
 
 // Mock AcrossApi
@@ -87,7 +87,7 @@ describe('AcrossBridgeProvider', () => {
   })
 
   describe('getQuote', () => {
-    const mockSuggestedFees = {
+    const mockSuggestedFees: SuggestedFeesResponse = {
       totalRelayFee: { pct: '100000000000000', total: '100000' },
       relayerCapitalFee: { pct: '50000000000000', total: '50000' },
       relayerGasFee: { pct: '50000000000000', total: '50000' },
@@ -98,7 +98,7 @@ describe('AcrossBridgeProvider', () => {
       spokePoolAddress: '0xabcd',
       exclusiveRelayer: '0x0000000000000000000000000000000000000000',
       exclusivityDeadline: '0',
-      expectedFillTimeSec: '300',
+      estimatedFillTimeSec: '300',
       fillDeadline: '1234567890',
       limits: {
         minDeposit: '1000000',

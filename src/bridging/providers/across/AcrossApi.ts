@@ -179,7 +179,7 @@ export interface SuggestedFeesResponse {
   /**
    * The expected time (in seconds) for a fill to be made. Represents 75th percentile of the 7-day rolling average of times (updated daily). Times are dynamic by origin/destination token/chain for a given amount.
    */
-  expectedFillTimeSec: string
+  estimatedFillTimeSec: string
 
   /**
    * The recommended deadline (UNIX timestamp in seconds) for the relayer to fill the deposit. After this destination chain timestamp, the fill will revert on the destination chain.
@@ -289,7 +289,9 @@ export class AcrossApi {
         return json
       } else {
         throw new Error(
-          `Invalid response for Across API call ${path}. The response doesn't pass the validation. Did the API change?`
+          `Invalid response for Across API call ${path}. The response doesn't pass the validation. Did the API change? Result: ${JSON.stringify(
+            json
+          )}`
         )
       }
     }
@@ -322,7 +324,7 @@ function isValidSuggestedFeesResponse(response: unknown): response is SuggestedF
     'spokePoolAddress' in response &&
     'exclusiveRelayer' in response &&
     'exclusivityDeadline' in response &&
-    'expectedFillTimeSec' in response &&
+    'estimatedFillTimeSec' in response &&
     'fillDeadline' in response &&
     'limits' in response &&
     isValidSuggestedFeeLimits(response.limits)

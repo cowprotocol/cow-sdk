@@ -81,7 +81,7 @@ describe('Across Utils', () => {
       quoteBlock: '1715808000',
       spokePoolAddress: '0x1234567890123456789012345678901234567890',
       exclusivityDeadline: '1742114891',
-      expectedFillTimeSec: '1742111892',
+      estimatedFillTimeSec: '1742111892',
       fillDeadline: '1742122091',
       limits: {
         maxDeposit: '50000000000000000000',

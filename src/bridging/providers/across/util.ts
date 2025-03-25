@@ -48,7 +48,7 @@ export function toBridgeQuoteResult(
     isSell: kind === OrderKind.SELL,
     amountsAndCosts: toAmountsAndCosts(request, slippageBps, suggestedFees),
     quoteTimestamp: Number(suggestedFees.timestamp),
-    expectedFillTimeSeconds: Number(suggestedFees.expectedFillTimeSec),
+    expectedFillTimeSeconds: Number(suggestedFees.estimatedFillTimeSec),
     suggestedFees,
   }
 }
