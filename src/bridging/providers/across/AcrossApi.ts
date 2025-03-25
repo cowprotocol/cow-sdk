@@ -1,3 +1,4 @@
+import { log } from '../../../common/utils/log'
 import { TargetChainId } from '../../../chains'
 
 const ACROSS_API_URL = 'https://app.across.to/api'
@@ -266,6 +267,8 @@ export class AcrossApi {
   ): Promise<T> {
     const baseUrl = this.options.apiBaseUrl || ACROSS_API_URL
     const url = `${baseUrl}${path}?${new URLSearchParams(params).toString()}`
+
+    log(`Fetching Across API: GET ${url}. Params: ${JSON.stringify(params)}`)
 
     const response = await fetch(url, {
       method: 'GET',
