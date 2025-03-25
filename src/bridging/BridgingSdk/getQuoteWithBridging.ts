@@ -1,6 +1,7 @@
 import { latest } from '@cowprotocol/app-data'
 import { MetadataApi } from '@cowprotocol/app-data'
 import { getHookMockForCostEstimation } from '../../hooks/utils'
+import { parseUnits } from '@ethersproject/units'
 import {
   generateAppDataFromDoc,
   postSwapOrderFromQuote,
@@ -22,6 +23,7 @@ import {
 } from '../types'
 import { Signer } from '@ethersproject/abstract-signer'
 import { getSigner } from '../../common/utils/wallet'
+import { log } from '../../common/utils/log'
 
 type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
   /**
@@ -54,8 +56,22 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   params: GetQuoteWithBridgeParams<T>
 ): Promise<BridgeQuoteAndPost> {
   const { provider, swapAndBridgeRequest, advancedSettings, getErc20Decimals, tradingSdk } = params
-  const { sellTokenChainId, sellTokenAddress, amount, signer: signerLike, ...rest } = swapAndBridgeRequest
+  const {
+    kind,
+    sellTokenChainId,
+    sellTokenAddress,
+    buyTokenChainId,
+    buyTokenAddress,
+    amount,
+    signer: signerLike,
+    ...rest
+  } = swapAndBridgeRequest
+
   const signer = getSigner(signerLike)
+
+  log(
+    `Cross-chain ${kind} ${amount} ${sellTokenAddress} (source chain ${sellTokenChainId}) for ${buyTokenAddress} (target chain ${buyTokenChainId})`
+  )
 
   // Get the mocked hook (for estimating the additional swap costs)
   const bridgeRequestWithoutAmount = await getBaseBridgeQuoteRequest({
@@ -67,6 +83,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   // Get the hook mock for cost estimation
   const gasLimit = provider.getGasLimitEstimationForHook(bridgeRequestWithoutAmount)
   const mockedHook = getHookMockForCostEstimation(gasLimit)
+  log(`Using mocked hook for swap gas estimation: ${JSON.stringify(mockedHook)}`)
 
   const { sellTokenAddress: intermediateToken, sellTokenDecimals: intermediaryTokenDecimals } =
     bridgeRequestWithoutAmount
@@ -74,6 +91,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   // Estimate the expected amount of intermediate tokens received in CoW Protocol's swap
   const swapParams: WithPartialTraderParams<TradeParameters> = {
     ...rest,
+    kind,
     chainId: sellTokenChainId,
     sellToken: sellTokenAddress,
     buyToken: intermediateToken,
@@ -81,6 +99,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
     amount: amount.toString(),
     signer,
   }
+  log(`Getting a quote for the swap (sell token to buy intermediate token): ${JSON.stringify(swapParams)}`)
   const { result: swapResult, orderBookApi } = await tradingSdk.getQuoteResults(swapParams, {
     ...advancedSettings,
     appData: {
@@ -90,6 +109,12 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
     },
   })
   const intermediateTokenAmount = swapResult.amountsAndCosts.afterSlippage.buyAmount // Estimated, as it will likely have surplus
+  log(
+    `Expected to receive ${intermediateTokenAmount} of the intermediate token (${parseUnits(
+      intermediateTokenAmount.toString(),
+      intermediaryTokenDecimals
+    ).toString()})`
+  )
 
   // Get the bridge result
 
@@ -101,10 +126,12 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
     intermediateTokenAmount,
     signer,
   })
+  log(`Bridge hook for swap: ${JSON.stringify(bridgeHook)}`)
 
   // Update the receiver and appData (both were mocked before we had the bridge hook)
   swapResult.tradeParameters.receiver = bridgeHook.recipient
   const { fullAppData, appDataKeccak256 } = await generateAppDataFromDoc(appData)
+  log(`App data for swap: appDataKeccak256=${appDataKeccak256}, fullAppData="${fullAppData}"`)
   swapResult.appDataInfo = {
     fullAppData,
     appDataKeccak256,
@@ -143,11 +170,12 @@ async function getBaseBridgeQuoteRequest<T extends BridgeQuoteResult>(params: {
   const intermediateTokens = await provider.getIntermediateTokens(quoteBridgeRequest)
 
   if (intermediateTokens.length === 0) {
-    throw new Error('No path found')
+    throw new Error('No path found (not intermediate token for bridging)')
   }
 
   // We just pick the first intermediate token for now
   const intermediateTokenAddress = intermediateTokens[0]
+  log(`Using ${intermediateTokenAddress} as intermediate tokens`)
 
   // Get intermediate token decimals
   const intermediaryTokenDecimals = await getErc20Decimals(sellTokenChainId, intermediateTokenAddress)

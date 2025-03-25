@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { log } from '../../common/utils/log'
 import { QuoteAndPost, SwapAdvancedSettings, TradeParameters, TradingSdk, WithPartialTraderParams } from '../../trading'
 import { QuoteBridgeRequest } from '../types'
 
@@ -17,5 +18,6 @@ export function getQuoteWithoutBridge(params: {
     amount: amount.toString(),
   }
 
+  log(`Single-chain swap: Delegate to trading SDK`)
   return tradingSdk.getQuote(swapParams, advancedSettings)
 }
