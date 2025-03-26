@@ -177,6 +177,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
 
   async getBridgingId(_orderUid: string, _settlementTx: string, _logIndex: number): Promise<string> {
     // TODO: get events from the mined transaction, extract the deposit id
+    // Important. A settlement could have many bridge-and-swap transactions, maybe even using different providers, this is why the log index might be handy to find which of the depositIds corresponds to the bridging transaction
     throw new Error('Not implemented')
   }
 
