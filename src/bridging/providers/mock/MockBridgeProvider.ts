@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { latest as latestAppData } from '@cowprotocol/app-data'
 import {
   BridgeDeposit,
   BridgeHook,
@@ -133,7 +134,7 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
       },
     }
   }
-  async decodeBridgeHook(_hook: BridgeHook): Promise<BridgeDeposit> {
+  async decodeBridgeHook(_hook: latestAppData.CoWHook): Promise<BridgeDeposit> {
     return {
       kind: OrderKind.SELL,
       provider: this.info,
