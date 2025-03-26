@@ -156,7 +156,7 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
     }
   }
 
-  async getBridgingId(_orderUid: string, _settlementTx: string): Promise<string> {
+  async getBridgingId(_orderUid: string, _settlementTx: string, _logIndex: number): Promise<string> {
     return BRIDGING_ID
   }
 

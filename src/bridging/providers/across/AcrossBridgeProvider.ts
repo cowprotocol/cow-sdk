@@ -175,7 +175,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     throw new Error('Not implemented')
   }
 
-  async getBridgingId(_orderUid: string, _settlementTx: string): Promise<string> {
+  async getBridgingId(_orderUid: string, _settlementTx: string, _logIndex: number): Promise<string> {
     // TODO: get events from the mined transaction, extract the deposit id
     throw new Error('Not implemented')
   }
