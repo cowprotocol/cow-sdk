@@ -184,8 +184,9 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    * Get the identifier of the bridging transaction from the settlement transaction.
    * @param orderUid - The unique identifier of the order
    * @param settlementTx - The settlement transaction in which the bridging post-hook was executed
+   * @param logIndex - The log index of the trade within the settlement transaction
    */
-  getBridgingId(orderUid: string, settlementTx: string): Promise<string>
+  getBridgingId(orderUid: string, settlementTx: string, logIndex: number): Promise<string>
 
   /**
    * Get the explorer url for a bridging id.

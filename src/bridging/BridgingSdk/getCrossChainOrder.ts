@@ -52,8 +52,8 @@ export async function getCrossChainOrder(params: {
       throw new Error(`No tx hash found for order ${orderId} . First trade, with log index ${firstTrade.logIndex}`)
     }
 
-    // We need to get all Trade events from the TX in the settlement contract, because the deposit event will be
-    const bridgingId = await provider.getBridgingId(orderId, firstTrade.txHash)
+    // Get bridging id for this order
+    const bridgingId = await provider.getBridgingId(orderId, firstTrade.txHash, firstTrade.logIndex)
     const { status, fillTimeInSeconds } = await provider.getStatus(bridgingId)
     const explorerUrl = provider.getExplorerUrl(bridgingId)
 
