@@ -41,9 +41,21 @@ export async function generateAppDataFromDoc(
 }
 
 export async function mergeAppDataDoc(
-  doc: LatestAppDataDocVersion,
+  _doc: LatestAppDataDocVersion,
   appDataOverride: AppDataParams
 ): Promise<AppDataInfo> {
+  // Do not merge hooks if there are overrides
+  // Otherwise we will just append hooks instead of overriding
+  const doc = appDataOverride.metadata?.hooks
+    ? {
+        ..._doc,
+        metadata: {
+          ..._doc.metadata,
+          hooks: {},
+        },
+      }
+    : _doc
+
   const appData = (appDataOverride ? deepmerge(doc, appDataOverride) : doc) as LatestAppDataDocVersion
   const { fullAppData, appDataKeccak256 } = await generateAppDataFromDoc(appData)
 
