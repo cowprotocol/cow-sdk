@@ -4,6 +4,7 @@ import { postCoWProtocolTrade } from './postCoWProtocolTrade'
 import { getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
 import { swapParamsToLimitOrderParams } from './utils'
 import { OrderBookApi } from '../order-book'
+import { mergeAppDataDoc } from './appDataUtils'
 
 export async function postSwapOrder(
   params: SwapParameters,
@@ -14,18 +15,23 @@ export async function postSwapOrder(
 }
 
 export async function postSwapOrderFromQuote(
-  { orderBookApi, result: { signer, appDataInfo, quoteResponse, tradeParameters } }: QuoteResultsWithSigner,
+  {
+    orderBookApi,
+    result: { signer, appDataInfo: _appDataInfo, quoteResponse, tradeParameters },
+  }: QuoteResultsWithSigner,
   advancedSettings?: SwapAdvancedSettings
 ): Promise<OrderPostingResult> {
   const params = swapParamsToLimitOrderParams(tradeParameters, quoteResponse)
-  const appDataSlippage = advancedSettings?.appData?.metadata?.quote?.slippageBips
+  const appDataOverride = advancedSettings?.appData
+  const appDataInfo = appDataOverride ? await mergeAppDataDoc(_appDataInfo.doc, appDataOverride) : _appDataInfo
+  const appDataSlippageOverride = appDataOverride?.metadata?.quote?.slippageBips
 
   /**
    * Special case for CoW Swap where we have smart slippage
    * We update appData slippage without refetching quote
    */
-  if (typeof appDataSlippage !== 'undefined') {
-    params.slippageBps = appDataSlippage
+  if (typeof appDataSlippageOverride !== 'undefined') {
+    params.slippageBps = appDataSlippageOverride
   }
 
   return postCoWProtocolTrade(orderBookApi, signer, appDataInfo, params, {
