@@ -115,7 +115,7 @@ function assertValidPct(pct: bigint): void {
 }
 
 /**
- * pct is a represents a percentage.
+ * pct represents a percentage.
  *
  * Note: 1% is represented as 1e16, 100% is 1e18, 50% is 5e17, etc. These values are in the same format that the contract understands.
  *

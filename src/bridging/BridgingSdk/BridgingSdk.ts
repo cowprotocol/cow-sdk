@@ -136,7 +136,6 @@ export class BridgingSdk {
       })
     } else {
       // Single-chain swap
-
       return getQuoteWithoutBridge({
         quoteBridgeRequest,
         advancedSettings,
