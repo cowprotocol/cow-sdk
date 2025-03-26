@@ -42,6 +42,10 @@ if ! [ "$version_tag" = "$latest_tag" ]; then
   exit 1
 fi
 
-yarn publish --access public
+if [[ "$version_tag" == *"RC"* ]]; then
+  yarn publish --access public --tag next
+else
+  yarn publish --access public
+fi
 
 echo "Package $package_name version $version successfully published."
