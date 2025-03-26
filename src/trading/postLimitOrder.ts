@@ -1,9 +1,9 @@
 import { LimitOrderAdvancedSettings, LimitOrderParameters } from './types'
-import { log } from './consts'
 import { OrderBookApi } from '../order-book'
 import { buildAppData } from './appDataUtils'
 import { postCoWProtocolTrade } from './postCoWProtocolTrade'
 import { getSigner } from '../common/utils/wallet'
+import { log } from '../common/utils/log'
 
 export async function postLimitOrder(
   params: LimitOrderParameters,

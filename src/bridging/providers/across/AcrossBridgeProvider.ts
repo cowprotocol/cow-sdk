@@ -8,11 +8,10 @@ import {
   BridgeProviderInfo,
   BridgeQuoteResult,
   BridgeStatusResult,
-  GetBuyTokensParams,
   QuoteBridgeRequest,
 } from '../../types'
 
-import { RAW_PROVIDERS_FILES_PATH } from '../../const'
+import { DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION, RAW_PROVIDERS_FILES_PATH } from '../../const'
 
 import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
 
@@ -21,17 +20,20 @@ import { EvmCall, TokenInfo } from '../../../common'
 
 import { mainnet } from '../../../chains/details/mainnet'
 import { polygon } from '../../../chains/details/polygon'
-import { arbitrumOne } from 'src/chains/details/arbitrum'
+import { arbitrumOne } from '../../../chains/details/arbitrum'
 import { base } from '../../../chains/details/base'
 import { optimism } from '../../../chains/details/optimism'
 import { AcrossApi, AcrossApiOptions, SuggestedFeesResponse } from './AcrossApi'
 import { getChainConfigs, getTokenAddress, getTokenSymbol, toBridgeQuoteResult } from './util'
 import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
 import { createAcrossDepositCall } from './createAcrossDepositCall'
+import { OrderKind } from '@cowprotocol/contracts'
 
 const HOOK_DAPP_ID = 'cow-sdk://bridging/providers/across'
 export const ACROSS_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
 
+// We need to review if we should set an additional slippage tolerance, for now assuming the quote gives you the exact price of bridging and no further slippage is needed
+const SLIPPAGE_TOLERANCE_BPS = 0
 export interface AcrossBridgeProviderOptions {
   /**
    * Token info provider
@@ -39,7 +41,7 @@ export interface AcrossBridgeProviderOptions {
    * @param addresses - The addresses of the tokens to get the info for
    * @returns The token infos
    */
-  getTokenInfos: (chainId: ChainId, addresses: string[]) => Promise<TokenInfo[]>
+  getTokenInfos?: (chainId: ChainId, addresses: string[]) => Promise<TokenInfo[]>
 
   // API options
   apiOptions?: AcrossApiOptions
@@ -56,7 +58,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
   protected api: AcrossApi
   protected cowShedSdk: CowShedSdk
 
-  constructor(private options: AcrossBridgeProviderOptions) {
+  constructor(private options: AcrossBridgeProviderOptions = {}) {
     this.api = new AcrossApi(options.apiOptions)
     this.cowShedSdk = new CowShedSdk(options.cowShedOptions)
   }
@@ -70,20 +72,25 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     return ACROSS_SUPPORTED_NETWORKS
   }
 
-  async getBuyTokens(param: GetBuyTokensParams): Promise<TokenInfo[]> {
-    const { targetChainId } = param
+  async getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]> {
+    if (!this.options.getTokenInfos) {
+      throw new Error("'getTokenInfos' parameter is required for AcrossBridgeProvider constructor")
+    }
 
     const chainConfig = ACROSS_TOKEN_MAPPING[targetChainId as TargetChainId]
     if (!chainConfig) {
       return []
     }
 
-    const tokenAddresses = Object.values(chainConfig.tokens).filter((address) => address !== undefined)
+    const tokenAddresses = Object.values(chainConfig.tokens).filter((address): address is string => Boolean(address))
     return this.options.getTokenInfos(targetChainId, tokenAddresses)
   }
 
   async getIntermediateTokens(request: QuoteBridgeRequest): Promise<string[]> {
-    // TODO: This is a temporary implementation. We should use the Across API to get the intermediate tokens (see this.getAvailableRoutes())
+    if (request.kind !== OrderKind.SELL) {
+      throw new Error('Only SELL is supported for now')
+    }
+
     const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
     const chainConfigs = getChainConfigs(sellTokenChainId, buyTokenChainId)
     if (!chainConfigs) return []
@@ -100,7 +107,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<AcrossQuoteResult> {
-    const { sellTokenAddress, sellTokenChainId, buyTokenChainId, amount, recipient } = request
+    const { sellTokenAddress, sellTokenChainId, buyTokenChainId, amount, receiver } = request
 
     const suggestedFees = await this.api.getSuggestedFees({
       token: sellTokenAddress,
@@ -109,7 +116,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
       originChainId: sellTokenChainId,
       destinationChainId: buyTokenChainId,
       amount,
-      recipient,
+      recipient: receiver ?? undefined,
     })
 
     // TODO: The suggested fees contain way more information. As we review more bridge providers we should revisit the
@@ -119,15 +126,19 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     // potentially, this could be cached for a short period of time in the SDK so we can resolve quotes with less
     // requests.
 
-    return toBridgeQuoteResult(amount, suggestedFees)
+    return toBridgeQuoteResult(request, SLIPPAGE_TOLERANCE_BPS, suggestedFees)
   }
 
-  async getUnsignedBridgeTx(request: QuoteBridgeRequest, quote: AcrossQuoteResult): Promise<EvmCall> {
+  async getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: AcrossQuoteResult): Promise<EvmCall> {
     return createAcrossDepositCall({
       request,
       quote,
       cowShedSdk: this.cowShedSdk,
     })
+  }
+
+  getGasLimitEstimationForHook(_request: QuoteBridgeRequest): number {
+    return DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION
   }
 
   async getSignedHook(chainId: SupportedChainId, unsignedCall: EvmCall, signer: Signer): Promise<BridgeHook> {

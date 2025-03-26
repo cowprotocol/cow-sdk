@@ -4,14 +4,17 @@ This module some utilities to simplify the use of the [Weiroll contract](https:/
 
 Weiroll is a simple and efficient operation-chaining/scripting language for the EVM. 
 
-The main utility function is `createWeirollDelegateCall` which returns an EVM `delegatecall` with some plan encoded as Weiroll calldata. 
+The main utilities function are:
+- `createWeirollContract` which creates a Weiroll contract from an ethers contract to perform evm calls.
+- `createWeirollLibrary` which creates a Weiroll library from an ethers contract to perform static calls.
+- `createWeirollDelegateCall` which returns an EVM `delegatecall` with some plan encoded as Weiroll calldata. 
 
 To understand how this works, let's see an example:
 
 ## Usage
 
 ```ts
-import { CommandFlags, createWeirollDelegateCall } from './index'
+import { CommandFlags, createWeirollDelegateCall, createWeirollContract } from './index'
 import { Planner, Contract as WeirollContract } from '@weiroll/weiroll.js'
 import { ethers } from 'ethers'
 
@@ -25,7 +28,7 @@ const contract = new ethers.Contract('0x6b175474e89094c44da98b954eedeac495271d0f
 
 // Create the Weiroll contract (wrapping the ethers contract)
 // You can choose between different command flags, like `CALL`, `DELEGATECALL`, `STATICCALL`, etc.
-const daiContract = WeirollContract.createContract(contract, CommandFlags.CALL)
+const daiContract = createWeirollContract(contract, CommandFlags.CALL)
 
 // Let's pretend we have a smart contract that wants to transfer all DAI to Vitalik
 const ownerContractAddress = '0xf6e72Db5454dd049d0788e411b06CfAF16853042'

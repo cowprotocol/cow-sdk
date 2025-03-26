@@ -1,4 +1,4 @@
-import { AcrossApi } from './AcrossApi'
+import { AcrossApi, SuggestedFeesRequest, SuggestedFeesResponse } from './AcrossApi'
 import { AdditionalTargetChainId, SupportedChainId } from '../../../chains'
 
 // Mock fetch globally
@@ -53,7 +53,7 @@ describe('AcrossApi', () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 400,
-        text: () => Promise.resolve('Internal Server Error'),
+        text: () => Promise.resolve('Error message'),
       })
 
       await expect(
@@ -68,7 +68,7 @@ describe('AcrossApi', () => {
   })
 
   describe('getSuggestedFees', () => {
-    const mockResponse = {
+    const mockResponse: SuggestedFeesResponse = {
       totalRelayFee: { pct: '100000000000000', total: '100000' },
       relayerCapitalFee: { pct: '50000000000000', total: '50000' },
       relayerGasFee: { pct: '50000000000000', total: '50000' },
@@ -79,7 +79,7 @@ describe('AcrossApi', () => {
       spokePoolAddress: '0xabcd',
       exclusiveRelayer: '0x0000000000000000000000000000000000000001',
       exclusivityDeadline: '0',
-      expectedFillTimeSec: '300',
+      estimatedFillTimeSec: '300',
       fillDeadline: '1234567890',
       limits: {
         minDeposit: '1000000',
@@ -98,11 +98,11 @@ describe('AcrossApi', () => {
     })
 
     it('should fetch suggested fees with required parameters', async () => {
-      const request = {
+      const request: SuggestedFeesRequest = {
         token: '0x0000000000000000000000000000000000000001',
         originChainId: SupportedChainId.MAINNET,
         destinationChainId: AdditionalTargetChainId.POLYGON,
-        amount: '1000000000000000000',
+        amount: 1000000000000000000n,
       }
 
       const fees = await api.getSuggestedFees(request)
@@ -115,11 +115,11 @@ describe('AcrossApi', () => {
     })
 
     it('should include recipient when provided', async () => {
-      const request = {
+      const request: SuggestedFeesRequest = {
         token: '0x0000000000000000000000000000000000000001',
         originChainId: SupportedChainId.MAINNET,
         destinationChainId: AdditionalTargetChainId.POLYGON,
-        amount: '1000000000000000000',
+        amount: 1000000000000000000n,
         recipient: '0x9876',
       }
 
@@ -143,7 +143,7 @@ describe('AcrossApi', () => {
           token: '0x0000000000000000000000000000000000000001',
           originChainId: SupportedChainId.MAINNET,
           destinationChainId: AdditionalTargetChainId.POLYGON,
-          amount: '1000000000000000000',
+          amount: 1000000000000000000n,
         })
       ).rejects.toThrow('HTTP error! Status: 500')
     })

@@ -4,7 +4,7 @@ import { Contract as EthersContract } from '@ethersproject/contracts'
 import { EvmCall } from '../../../common'
 
 import { ACROSS_MATH_CONTRACT_ADDRESSES, ACROSS_SPOOK_CONTRACT_ADDRESSES } from './const/contracts'
-import { CommandFlags, createWeirollDelegateCall } from '../../../weiroll'
+import { WeirollCommandFlags, createWeirollContract, createWeirollDelegateCall } from '../../../weiroll'
 import { ACROSS_MATH_ABI, ACROSS_SPOKE_POOL_ABI } from './abi'
 import { TargetChainId } from '../../../chains/types'
 import { CowShedSdk } from '../../../cow-shed'
@@ -19,7 +19,7 @@ function getSpookPoolContract(sellTokenChainId: TargetChainId): WeirollContract 
   if (!spokePoolAddress) {
     throw new Error('Spoke pool address not found for chain: ' + sellTokenChainId)
   }
-  return WeirollContract.createContract(new EthersContract(spokePoolAddress, ACROSS_SPOKE_POOL_ABI), CommandFlags.CALL)
+  return createWeirollContract(new EthersContract(spokePoolAddress, ACROSS_SPOKE_POOL_ABI), WeirollCommandFlags.CALL)
 }
 
 function getMathContract(sellTokenChainId: TargetChainId): WeirollContract {
@@ -28,18 +28,18 @@ function getMathContract(sellTokenChainId: TargetChainId): WeirollContract {
     throw new Error('Math contract address not found for chain: ' + sellTokenChainId)
   }
 
-  return WeirollContract.createContract(new EthersContract(mathContractAddress, ACROSS_MATH_ABI), CommandFlags.CALL)
+  return createWeirollContract(new EthersContract(mathContractAddress, ACROSS_MATH_ABI), WeirollCommandFlags.CALL)
 }
 
 function getBalanceOfSellTokenContract(sellTokenAddress: string): WeirollContract {
-  return WeirollContract.createContract(
+  return createWeirollContract(
     new EthersContract(sellTokenAddress, ERC20_BALANCE_OF_ABI),
-    CommandFlags.STATICCALL
+    WeirollCommandFlags.STATICCALL
   )
 }
 
 function getApproveSellTokenContract(sellTokenAddress: string): WeirollContract {
-  return WeirollContract.createContract(new EthersContract(sellTokenAddress, ERC20_APPROVE_OF_ABI), CommandFlags.CALL)
+  return createWeirollContract(new EthersContract(sellTokenAddress, ERC20_APPROVE_OF_ABI), WeirollCommandFlags.CALL)
 }
 
 export function createAcrossDepositCall(params: {
@@ -47,8 +47,8 @@ export function createAcrossDepositCall(params: {
   quote: AcrossQuoteResult
   cowShedSdk: CowShedSdk
 }): EvmCall {
-  const { quote, cowShedSdk } = params
-  const { sellTokenChainId, sellTokenAddress, buyTokenChainId, buyTokenAddress, owner, recipient } = request
+  const { request, quote, cowShedSdk } = params
+  const { sellTokenChainId, sellTokenAddress, buyTokenChainId, buyTokenAddress, account, receiver } = request
 
   // Create the relevant weiroll contracts
   const spokePoolContract = getSpookPoolContract(sellTokenChainId)
@@ -57,7 +57,7 @@ export function createAcrossDepositCall(params: {
   const approveSellTokenContract = getApproveSellTokenContract(sellTokenAddress)
 
   // Get the cow shed account
-  const cowShedAccount = cowShedSdk.getCowShedAccount(sellTokenChainId, owner)
+  const cowShedAccount = cowShedSdk.getCowShedAccount(sellTokenChainId, account)
 
   const { suggestedFees } = quote
 
@@ -86,7 +86,7 @@ export function createAcrossDepositCall(params: {
     planner.add(
       spokePoolContract.depositV3(
         cowShedAccount,
-        recipient,
+        receiver || account,
         sellTokenAddress,
         buyTokenAddress,
         sourceAmountIncludingSurplus,

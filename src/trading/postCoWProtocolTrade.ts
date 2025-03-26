@@ -1,11 +1,12 @@
 import { OrderBookApi, OrderCreation, SigningScheme } from '../order-book'
-import type { Signer } from 'ethers'
+import type { Signer } from '@ethersproject/abstract-signer'
 import { AppDataInfo, LimitTradeParameters, PostTradeAdditionalParams } from './types'
-import { log, SIGN_SCHEME_MAP } from './consts'
+import { SIGN_SCHEME_MAP } from './consts'
 import { OrderSigningUtils } from '../order-signing'
 import { getOrderToSign } from './getOrderToSign'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getIsEthFlowOrder } from './utils'
+import { log } from '../common/utils/log'
 
 export async function postCoWProtocolTrade(
   orderBookApi: OrderBookApi,

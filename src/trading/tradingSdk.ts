@@ -8,28 +8,28 @@ import {
 } from './types'
 import { postSwapOrder, postSwapOrderFromQuote } from './postSwapOrder'
 import { postLimitOrder } from './postLimitOrder'
-import { getQuoteWithSigner } from './getQuote'
+import { getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getTradeParametersAfterQuote, swapParamsToLimitOrderParams } from './utils'
 import { getPreSignTransaction } from './getPreSignTransaction'
-import { log } from './consts'
+import { enableLogging } from '../common/utils/log'
 import { OrderBookApi } from '../order-book'
 import { getSigner } from '../common/utils/wallet'
 
-type WithPartialTraderParams<T> = T & Partial<TraderParameters>
+export type WithPartialTraderParams<T> = T & Partial<TraderParameters>
 
-interface TradingSdkOptions {
+export interface TradingSdkOptions {
   enableLogging: boolean
   orderBookApi: OrderBookApi
 }
 
 export class TradingSdk {
   constructor(
-    public traderParams: TraderParameters,
-    public readonly options: Partial<TradingSdkOptions> = { enableLogging: false }
+    public traderParams: Partial<TraderParameters> = {},
+    public readonly options: Partial<TradingSdkOptions> = {}
   ) {
-    if (options.enableLogging) {
-      log.enabled = true
+    if (options.enableLogging !== undefined) {
+      enableLogging(options.enableLogging)
     }
   }
 
@@ -62,6 +62,13 @@ export class TradingSdk {
           advancedSettings
         ),
     }
+  }
+
+  async getQuoteResults(
+    params: WithPartialTraderParams<TradeParameters>,
+    advancedSettings?: SwapAdvancedSettings
+  ): Promise<QuoteResultsWithSigner> {
+    return getQuoteWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
   }
 
   async postSwapOrder(
@@ -109,11 +116,35 @@ export class TradingSdk {
   }
 
   private mergeParams<T>(params: T & Partial<TraderParameters>): T & TraderParameters {
+    const { chainId, signer, appCode } = params
+    const traderParams: Partial<TraderParameters> = {
+      chainId: chainId || this.traderParams.chainId,
+      signer: signer || this.traderParams.signer,
+      appCode: appCode || this.traderParams.appCode,
+    }
+    assertTraderParams(traderParams)
+
     return {
       ...params,
-      chainId: params.chainId || this.traderParams.chainId,
-      signer: params.signer || this.traderParams.signer,
-      appCode: params.appCode || this.traderParams.appCode,
+      ...traderParams,
     }
   }
+}
+
+function assertTraderParams(params: Partial<TraderParameters>): asserts params is TraderParameters {
+  if (!isTraderParameters(params)) {
+    throw new Error('Missing trader parameters: ' + getMissingTraderParams(params).join(', '))
+  }
+}
+
+function getMissingTraderParams(params: Partial<TraderParameters>): string[] {
+  const missingParams = []
+  if (!params.chainId) missingParams.push('chainId')
+  if (!params.signer) missingParams.push('signer')
+  if (!params.appCode) missingParams.push('appCode')
+  return missingParams
+}
+
+function isTraderParameters(params: Partial<TraderParameters>): params is TraderParameters {
+  return getMissingTraderParams(params).length === 0
 }

@@ -2,17 +2,12 @@
 
 SDK for swapping between chains.
 
-This documentation is a WIP as this feature remains in development, as the SDK is subject to change.
-
 ## Usage
 
 ```ts
-import { SupportedChainId, BridgingSdk, QuoteBridgeRequest, OrderKind } from '@cowprotocol/cow-sdk'
+import { SupportedChainId, BridgingSdk, QuoteBridgeRequest, OrderKind, assertIsBridgeQuoteAndPost } from '@cowprotocol/cow-sdk'
 
-const sdk = new BridgingSdk({
-  signer: '<privateKeyOrEthersSigner>',
-  appCode: '<YOUR_APP_CODE>',
-})
+const sdk = new BridgingSdk()
 
 const parameters: QuoteBridgeRequest = {
   // Cross-chain orders, are always SELL orders (BUY not supported yet)
@@ -30,11 +25,26 @@ const parameters: QuoteBridgeRequest = {
 
   // Amount to sell
   amount: '120000000000000000'
+
+  signer: '<privateKeyOrEthersSigner>',
+
+  // Optional parameters
+  appCode: '<YOUR_APP_CODE>',
 }
 
-const { quoteResults, postSwapOrderFromQuote } = await sdk.getQuote(parameters)
+// Get a quote (and the post callback) for a cross-chain swap
+const quoteResult = await sdk.getQuote(parameters)
+assertIsBridgeQuoteAndPost(quoteResult) // Assert that the quote result is of type BridgeQuoteAndPost (type for cross-chain quotes, as opposed to QuoteAndPost for single-chain quotes). The assertion makes typescript happy.
+const { swap, bridge, postSwapOrderFromQuote } = quoteResult
 
-const { buyAmount } = quoteResults.amountsAndCosts.afterSlippage
+// Display all data related to the swap (costs, amounts, appData including the bridging hook, etc.) 🐮
+console.log('Swap info', swap)
+
+// Display all data related to the bridge (costs, amounts, provider info, hook, and the bridging quote) ✉️
+console.log('Bridge info', bridge)
+
+// Get the buy amount after slippage in the target chain
+const { buyAmount } = bridge.amountsAndCosts.afterSlippage
 
 if (confirm(`You will get at least: ${buyAmount}, ok?`)) {
   const orderId = await postSwapOrderFromQuote()
