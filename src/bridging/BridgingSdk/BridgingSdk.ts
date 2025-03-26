@@ -2,17 +2,20 @@ import { SwapAdvancedSettings, TradingSdk } from '../../trading'
 import {
   BridgeProvider,
   BridgeQuoteResult,
+  CrossChainOrder,
   CrossChainQuoteAndPost,
   GetErc20Decimals,
   QuoteBridgeRequest,
 } from '../types'
 import { ALL_SUPPORTED_CHAINS, TokenInfo } from '../../common'
-import { ChainInfo, TargetChainId } from '../../chains'
+import { ChainInfo, SupportedChainId, TargetChainId } from '../../chains'
 import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
 import { getQuoteWithBridge } from './getQuoteWithBridging'
 import { getSigner } from '../../common/utils/wallet'
 import { factoryGetErc20Decimals } from './getErc20Decimals'
 import { enableLogging } from '../../common/utils/log'
+import { OrderBookApi } from 'src/order-book'
+import { getCrossChainOrder } from './getCrossChainOrder'
 
 export interface BridgingSdkOptions {
   /**
@@ -31,6 +34,11 @@ export interface BridgingSdkOptions {
   tradingSdk?: TradingSdk
 
   /**
+   * Order book API.
+   */
+  orderBookApi: OrderBookApi
+
+  /**
    * Enable logging for the bridging SDK.
    */
   enableLogging?: boolean
@@ -44,8 +52,9 @@ export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'enableLogging
  */
 export class BridgingSdk {
   protected config: BridgingSdkConfig
+
   constructor(readonly options: BridgingSdkOptions) {
-    const { providers, tradingSdk, ...restOptions } = options
+    const { providers, ...restOptions } = options
 
     // For simplicity, we support only a single provider in the initial implementation
     if (!providers || providers.length !== 1) {
@@ -56,10 +65,14 @@ export class BridgingSdk {
       enableLogging(options.enableLogging)
     }
 
+    const tradingSdk = options.tradingSdk ?? new TradingSdk()
+    const orderBookApi = tradingSdk?.options.orderBookApi ?? new OrderBookApi()
+
     this.config = {
-      providers,
       ...restOptions,
-      tradingSdk: tradingSdk ?? new TradingSdk(),
+      providers,
+      tradingSdk,
+      orderBookApi,
     }
   }
 
@@ -142,5 +155,16 @@ export class BridgingSdk {
         tradingSdk,
       })
     }
+  }
+
+  async getOrder(orderId: string, chainId: SupportedChainId): Promise<CrossChainOrder> {
+    const { orderBookApi } = this.config
+
+    return getCrossChainOrder({
+      orderId,
+      chainId,
+      orderBookApi,
+      providers: this.config.providers,
+    })
   }
 }
