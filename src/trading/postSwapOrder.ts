@@ -25,6 +25,7 @@ export async function postSwapOrderFromQuote(
   const appDataOverride = advancedSettings?.appData
   const appDataInfo = appDataOverride ? await mergeAppDataDoc(_appDataInfo.doc, appDataOverride) : _appDataInfo
   const appDataSlippageOverride = appDataOverride?.metadata?.quote?.slippageBips
+  const partnerFeeOverride = appDataOverride?.metadata?.partnerFee
 
   /**
    * Special case for CoW Swap where we have smart slippage
@@ -32,6 +33,13 @@ export async function postSwapOrderFromQuote(
    */
   if (typeof appDataSlippageOverride !== 'undefined') {
     params.slippageBps = appDataSlippageOverride
+  }
+
+  /**
+   * Same as above, in case if partnerFee dynamically changed
+   */
+  if (partnerFeeOverride) {
+    params.partnerFee = partnerFeeOverride
   }
 
   return postCoWProtocolTrade(orderBookApi, signer, appDataInfo, params, {

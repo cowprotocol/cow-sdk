@@ -10,8 +10,8 @@ export async function postLimitOrder(
   advancedSettings?: LimitOrderAdvancedSettings,
   _orderBookApi?: OrderBookApi
 ): Promise<OrderPostingResult> {
-  const { appCode, chainId, sellToken, buyToken, sellAmount, buyAmount, partnerFee } = params
   const appDataSlippage = advancedSettings?.appData?.metadata?.quote?.slippageBips
+  const partnerFeeOverride = advancedSettings?.appData?.metadata?.partnerFee
 
   /**
    * Special case for CoW Swap where we have smart slippage
@@ -21,6 +21,13 @@ export async function postLimitOrder(
     params.slippageBps = appDataSlippage
   }
 
+  /**
+   * Same as above, in case if partnerFee dynamically changed
+   */
+  if (partnerFeeOverride) {
+    params.partnerFee = partnerFeeOverride
+  }
+
   if (!params.slippageBps) {
     params.slippageBps = 0
   }
@@ -28,6 +35,8 @@ export async function postLimitOrder(
   if (!params.env) {
     params.env = 'prod'
   }
+
+  const { appCode, chainId, sellToken, buyToken, sellAmount, buyAmount, partnerFee } = params
 
   log(`Limit order ${sellAmount} ${sellToken} for ${buyAmount} ${buyToken} on chain ${chainId}`)
 
