@@ -24,6 +24,8 @@ import { DEFAULT_BACKOFF_OPTIONS, DEFAULT_LIMITER_OPTIONS, FetchParams, OrderBoo
 import { transformOrder } from './transformOrder'
 import { EnrichedOrder } from './types'
 import { DEFAULT_COW_API_CONTEXT, ENVS_LIST } from '../common'
+import { log } from '../common/utils/log'
+import { jsonWithBigintReplacer } from 'src/common/utils/serialize'
 
 /**
  * An object containing *production* environment base URLs for each supported `chainId`.
@@ -417,6 +419,8 @@ export class OrderBookApi {
     const baseUrl = this.getApiBaseUrls(env)[chainId]
     const backoffOpts = _backoffOpts || DEFAULT_BACKOFF_OPTIONS
     const rateLimiter = contextOverride.limiterOpts ? new RateLimiter(contextOverride.limiterOpts) : this.rateLimiter
+
+    log(`Fetching OrderBook API: ${baseUrl}${params.path}. Params: ${JSON.stringify(params, jsonWithBigintReplacer)}`)
 
     return request(baseUrl, params, rateLimiter, backoffOpts)
   }

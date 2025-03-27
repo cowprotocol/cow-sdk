@@ -1,7 +1,6 @@
-import { CommandFlags, createWeirollDelegateCall } from './index'
-import { Planner, Contract as WeirollContract } from '@weiroll/weiroll.js'
-import { ethers } from 'ethers'
+import { createWeirollDelegateCall, createWeirollContract, WeirollCommandFlags, WeirollPlanner } from './index'
 import { EvmCall } from '../common'
+import { Contract as EthersContract } from '@ethersproject/contracts'
 
 const ERC20_ABI = [
   'function balanceOf(address account) external view returns (uint256)',
@@ -9,8 +8,8 @@ const ERC20_ABI = [
 ] as const
 
 // Create DAI contract
-const contract = new ethers.Contract('0x6b175474e89094c44da98b954eedeac495271d0f', ERC20_ABI)
-const daiContract = WeirollContract.createContract(contract, CommandFlags.CALL)
+const contract = new EthersContract('0x6b175474e89094c44da98b954eedeac495271d0f', ERC20_ABI)
+const daiContract = createWeirollContract(contract, WeirollCommandFlags.CALL)
 
 describe('createWeirollTx', () => {
   it('should handle an empty plan', () => {
@@ -35,7 +34,7 @@ describe('createWeirollTx', () => {
     const sender = '0xf6e72Db5454dd049d0788e411b06CfAF16853042'
 
     // GIVEN: A function that adds to weiroll planner getting the balance and transferring it to vitalik
-    const addToPlanner = (planner: Planner) => {
+    const addToPlanner = (planner: WeirollPlanner) => {
       const daiBalance = planner.add(daiContract.balanceOf(sender))
 
       // Add to plan: Transfer all balance to Vitalik

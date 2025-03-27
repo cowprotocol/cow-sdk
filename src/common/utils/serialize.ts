@@ -1,4 +1,4 @@
-export const jsonReplacer = (_key: string, value: unknown) => {
+export const jsonWithBigintReplacer = (_key: string, value: unknown) => {
   // Handle BigInt
   if (typeof value === 'bigint') {
     return value.toString()

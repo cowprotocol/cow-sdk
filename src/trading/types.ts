@@ -117,15 +117,41 @@ export interface LimitOrderAdvancedSettings {
 }
 
 /**
- * Exhaustive set of data which includes information about trade, quote, order, "app-data", and more.
+ * Quote information for the CoW Protocol order, including information about the trade, quote, order, "app-data", and more.
+ *
  * This data is used to create a trade, sign an order, and post it to the order book.
  */
 export interface QuoteResults {
+  /**
+   * Information about the trade, including the kind of order, the owner, the sell and buy tokens, and the amount.
+   */
   tradeParameters: TradeParameters
+
+  /**
+   * Details about costs and amounts, costs and fees of a quote.
+   */
   amountsAndCosts: QuoteAmountsAndCosts
+
+  /**
+   * Information about the order to be signed.
+   *
+   * For signining, please use orderTypedData (EIP-712 typed data, which also includes the unsigned order)
+   */
   orderToSign: UnsignedOrder
+
+  /**
+   * Information about the quote response from the order book API.
+   */
   quoteResponse: OrderQuoteResponse
+
+  /**
+   * Information about the app-data, including the JSON document and the keccak256 hash of the full document.
+   */
   appDataInfo: AppDataInfo
+
+  /**
+   * EIP-712 typed data for the order ready to be signed.
+   */
   orderTypedData: OrderTypedData
 }
 
@@ -156,7 +182,9 @@ export interface BuildAppDataParams {
 }
 
 /**
- * https://github.com/cowprotocol/app-data
+ * Information about the app-data, including the JSON document and the keccak256 hash of the full document.
+ *
+ * See https://github.com/cowprotocol/app-data
  */
 export interface AppDataInfo {
   doc: LatestAppDataDocVersion

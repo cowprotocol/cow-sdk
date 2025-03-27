@@ -4,6 +4,7 @@ export * from './types/cow-error'
 export * from './types/ethereum'
 export * from './types/tokens'
 export * from './types/wallets'
+export { enableLogging } from './utils/log'
 
 // Constants
 export * from '../chains/const'

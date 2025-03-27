@@ -1,9 +1,10 @@
 import { Signer } from 'ethers'
 import { AppDataInfo, LimitTradeParametersFromQuote, OrderPostingResult, PostTradeAdditionalParams } from './types'
 
-import { log } from './consts'
 import { OrderBookApi, SigningScheme } from '../order-book'
 import { getEthFlowTransaction } from './getEthFlowTransaction'
+
+import { log } from '../common/utils/log'
 
 export async function postSellNativeCurrencyOrder(
   orderBookApi: OrderBookApi,

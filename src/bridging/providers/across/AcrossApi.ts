@@ -1,4 +1,5 @@
-import { TargetChainId } from 'src/chains'
+import { log } from '../../../common/utils/log'
+import { TargetChainId } from '../../../chains'
 
 const ACROSS_API_URL = 'https://app.across.to/api'
 
@@ -35,7 +36,7 @@ export interface SuggestedFeesRequest {
    *
    * Example: 1000000000000000000
    */
-  amount: string
+  amount: bigint
 
   /**
    * Recipient of the deposit. Can be an EOA or a contract. If this is an EOA and message is defined, then the API will throw a 4xx error.
@@ -178,7 +179,7 @@ export interface SuggestedFeesResponse {
   /**
    * The expected time (in seconds) for a fill to be made. Represents 75th percentile of the 7-day rolling average of times (updated daily). Times are dynamic by origin/destination token/chain for a given amount.
    */
-  expectedFillTimeSec: string
+  estimatedFillTimeSec: string
 
   /**
    * The recommended deadline (UNIX timestamp in seconds) for the relayer to fill the deposit. After this destination chain timestamp, the fill will revert on the destination chain.
@@ -242,7 +243,7 @@ export class AcrossApi {
       token: request.token,
       originChainId: request.originChainId.toString(),
       destinationChainId: request.destinationChainId.toString(),
-      amount: request.amount,
+      amount: request.amount.toString(),
     }
 
     if (request.recipient) {
@@ -267,6 +268,8 @@ export class AcrossApi {
     const baseUrl = this.options.apiBaseUrl || ACROSS_API_URL
     const url = `${baseUrl}${path}?${new URLSearchParams(params).toString()}`
 
+    log(`Fetching Across API: GET ${url}. Params: ${JSON.stringify(params)}`)
+
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -286,7 +289,9 @@ export class AcrossApi {
         return json
       } else {
         throw new Error(
-          `Invalid response for Across API call ${path}. The response doesn't pass the validation. Did the API change?`
+          `Invalid response for Across API call ${path}. The response doesn't pass the validation. Did the API change? Result: ${JSON.stringify(
+            json
+          )}`
         )
       }
     }
@@ -319,7 +324,7 @@ function isValidSuggestedFeesResponse(response: unknown): response is SuggestedF
     'spokePoolAddress' in response &&
     'exclusiveRelayer' in response &&
     'exclusivityDeadline' in response &&
-    'expectedFillTimeSec' in response &&
+    'estimatedFillTimeSec' in response &&
     'fillDeadline' in response &&
     'limits' in response &&
     isValidSuggestedFeeLimits(response.limits)

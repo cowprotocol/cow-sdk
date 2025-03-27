@@ -1,8 +1,8 @@
 import { AdditionalTargetChainId, SupportedChainId, TargetChainId } from '../../../chains'
 import { TokenInfo } from '../../../common'
 import { OrderKind } from '../../../order-book'
-import { BridgeHook, QuoteBridgeRequest } from '../../types'
-import { AcrossApi } from './AcrossApi'
+import { BridgeHook, BridgeQuoteResult, QuoteBridgeRequest } from '../../types'
+import { AcrossApi, SuggestedFeesResponse } from './AcrossApi'
 import { ACROSS_SUPPORTED_NETWORKS, AcrossBridgeProvider, AcrossBridgeProviderOptions } from './AcrossBridgeProvider'
 
 // Mock AcrossApi
@@ -60,9 +60,7 @@ describe('AcrossBridgeProvider', () => {
     })
 
     it('should return tokens for supported chain', async () => {
-      const tokens = await provider.getBuyTokens({
-        targetChainId: AdditionalTargetChainId.POLYGON,
-      })
+      const tokens = await provider.getBuyTokens(AdditionalTargetChainId.POLYGON)
 
       expect(tokens).toEqual(mockTokens)
       // mockGetTokenInfos was called with a list of addresses which includes 0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359 and 0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619
@@ -89,7 +87,7 @@ describe('AcrossBridgeProvider', () => {
   })
 
   describe('getQuote', () => {
-    const mockSuggestedFees = {
+    const mockSuggestedFees: SuggestedFeesResponse = {
       totalRelayFee: { pct: '100000000000000', total: '100000' },
       relayerCapitalFee: { pct: '50000000000000', total: '50000' },
       relayerGasFee: { pct: '50000000000000', total: '50000' },
@@ -100,7 +98,7 @@ describe('AcrossBridgeProvider', () => {
       spokePoolAddress: '0xabcd',
       exclusiveRelayer: '0x0000000000000000000000000000000000000000',
       exclusivityDeadline: '0',
-      expectedFillTimeSec: '300',
+      estimatedFillTimeSec: '300',
       fillDeadline: '1234567890',
       limits: {
         minDeposit: '1000000',
@@ -119,18 +117,18 @@ describe('AcrossBridgeProvider', () => {
 
     it('should return quote with suggested fees', async () => {
       const request: QuoteBridgeRequest = {
-        type: OrderKind.SELL,
+        kind: OrderKind.SELL,
         sellTokenAddress: '0x123',
         sellTokenChainId: SupportedChainId.MAINNET,
         buyTokenChainId: AdditionalTargetChainId.POLYGON,
-        amount: '1000000000000000000',
-        recipient: '0x789',
-        owner: '0x123',
+        amount: 1000000000000000000n,
+        receiver: '0x789',
+        account: '0x123',
         sellTokenDecimals: 18,
         buyTokenAddress: '0x456',
         buyTokenDecimals: 6,
-        feeBps: 0,
-        feeRecipient: '0x789',
+        appCode: '0x123',
+        signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
       }
 
       const { suggestedFees, ...quote } = await provider.getQuote(request)
@@ -138,11 +136,26 @@ describe('AcrossBridgeProvider', () => {
       // The quote contains the suggested fees returned by the API
       expect(suggestedFees).toEqual(mockSuggestedFees)
 
-      expect(quote).toEqual({
-        buyAmount: '999900000000000000',
-        feeBps: 1,
-        slippageBps: 0,
-      })
+      const expectedQuote: BridgeQuoteResult = {
+        isSell: true,
+        amountsAndCosts: {
+          beforeFee: { sellAmount: 1000000000000000000n, buyAmount: 1000000n },
+          afterFee: { sellAmount: 1000000000000000000n, buyAmount: 999900n },
+          afterSlippage: { sellAmount: 1000000000000000000n, buyAmount: 999900n },
+          costs: {
+            bridgingFee: {
+              feeBps: 1,
+              amountInSellCurrency: 100000000000000n,
+              amountInBuyCurrency: 100n,
+            },
+          },
+          slippageBps: 0,
+        },
+        quoteTimestamp: 1234567890,
+        expectedFillTimeSeconds: 300,
+      }
+
+      expect(quote).toEqual(expectedQuote)
     })
   })
 
