@@ -33,7 +33,7 @@
     "trading:generateSchemas": "ts-node scripts/generateTradingSchemas.ts"
   },
   "dependencies": {
-    "@cowprotocol/app-data": "^2.4.0",
+    "@cowprotocol/app-data": "^2.5.1",
     "@cowprotocol/contracts": "^1.6.0",
     "@ethersproject/abstract-signer": "^5.7.0",
     "@openzeppelin/merkle-tree": "^1.0.5",
