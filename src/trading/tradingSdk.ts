@@ -1,6 +1,7 @@
 import {
   LimitOrderAdvancedSettings,
   LimitTradeParameters,
+  OrderPostingResult,
   QuoteAndPost,
   SwapAdvancedSettings,
   TradeParameters,
@@ -74,14 +75,14 @@ export class TradingSdk {
   async postSwapOrder(
     params: WithPartialTraderParams<TradeParameters>,
     advancedSettings?: SwapAdvancedSettings
-  ): Promise<string> {
+  ): Promise<OrderPostingResult> {
     return postSwapOrder(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
   }
 
   async postLimitOrder(
     params: WithPartialTraderParams<LimitTradeParameters>,
     advancedSettings?: LimitOrderAdvancedSettings
-  ): Promise<string> {
+  ): Promise<OrderPostingResult> {
     return postLimitOrder(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
   }
 
@@ -116,11 +117,12 @@ export class TradingSdk {
   }
 
   private mergeParams<T>(params: T & Partial<TraderParameters>): T & TraderParameters {
-    const { chainId, signer, appCode } = params
+    const { chainId, signer, appCode, env } = params
     const traderParams: Partial<TraderParameters> = {
       chainId: chainId || this.traderParams.chainId,
       signer: signer || this.traderParams.signer,
       appCode: appCode || this.traderParams.appCode,
+      env: env || this.traderParams.env,
     }
     assertTraderParams(traderParams)
 

@@ -3,7 +3,14 @@ import { ChainInfo, SupportedChainId, TargetChainId } from '../chains'
 import { TokenInfo } from '../common/types/tokens'
 import { Address, Amounts, OrderKind } from '../order-book'
 import { EvmCall } from '../common/types/ethereum'
-import { QuoteAndPost, QuoteResults, QuoterParameters, TradeOptionalParameters, TraderParameters } from '../trading'
+import {
+  OrderPostingResult,
+  QuoteAndPost,
+  QuoteResults,
+  QuoterParameters,
+  TradeOptionalParameters,
+  TraderParameters,
+} from '../trading'
 import { Signer } from '@ethersproject/abstract-signer'
 
 export interface BridgeProviderInfo {
@@ -228,7 +235,7 @@ export interface BridgeQuoteAndPost {
   /**
    * Callback to post the swap order.
    */
-  postSwapOrderFromQuote(): Promise<string>
+  postSwapOrderFromQuote(): Promise<OrderPostingResult>
 }
 
 export interface BridgeCosts<T = bigint> {

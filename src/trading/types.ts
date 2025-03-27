@@ -7,6 +7,7 @@ import {
   OrderQuoteRequest,
   OrderQuoteResponse,
   QuoteAmountsAndCosts,
+  type Signature,
   SigningScheme,
   TokenAmount,
 } from '../order-book'
@@ -76,6 +77,7 @@ export interface TraderParameters {
   chainId: SupportedChainId
   appCode: latest.AppCode
   signer: SignerLike
+  env?: CowEnv
 }
 
 export type QuoterParameters = Omit<TraderParameters, 'signer'> & { account: AccountAddress }
@@ -157,10 +159,17 @@ export interface QuoteResultsSerialized extends Omit<QuoteResults, 'amountsAndCo
   amountsAndCosts: QuoteAmountsAndCosts<string>
 }
 
+export interface OrderPostingResult {
+  orderId: string
+  txHash?: string
+  signingScheme: SigningScheme
+  signature: Signature
+}
+
 export interface QuoteAndPost {
   quoteResults: QuoteResults
 
-  postSwapOrderFromQuote(advancedSettings?: SwapAdvancedSettings): Promise<string>
+  postSwapOrderFromQuote(advancedSettings?: SwapAdvancedSettings): Promise<OrderPostingResult>
 }
 
 export type AppDataRootSchema = latest.AppDataRootSchema

@@ -1,9 +1,10 @@
-import { SwapAdvancedSettings, SwapParameters } from './types'
+import { OrderPostingResult, SwapAdvancedSettings, SwapParameters } from './types'
 
 import { postCoWProtocolTrade } from './postCoWProtocolTrade'
 import { getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
 import { swapParamsToLimitOrderParams } from './utils'
 import { OrderBookApi } from '../order-book'
+import { mergeAppDataDoc } from './appDataUtils'
 
 export async function postSwapOrder(
   params: SwapParameters,
@@ -14,24 +15,36 @@ export async function postSwapOrder(
 }
 
 export async function postSwapOrderFromQuote(
-  quoteResults: QuoteResultsWithSigner,
+  {
+    orderBookApi,
+    result: { signer, appDataInfo: _appDataInfo, quoteResponse, tradeParameters },
+  }: QuoteResultsWithSigner,
   advancedSettings?: SwapAdvancedSettings
-): Promise<string> {
-  const {
-    orderBookApi,
-    result: { signer, appDataInfo, quoteResponse, tradeParameters },
-  } = quoteResults
+): Promise<OrderPostingResult> {
+  const params = swapParamsToLimitOrderParams(tradeParameters, quoteResponse)
+  const appDataOverride = advancedSettings?.appData
+  const appDataInfo = appDataOverride ? await mergeAppDataDoc(_appDataInfo.doc, appDataOverride) : _appDataInfo
+  const appDataSlippageOverride = appDataOverride?.metadata?.quote?.slippageBips
+  const partnerFeeOverride = appDataOverride?.metadata?.partnerFee
 
-  return postCoWProtocolTrade(
-    orderBookApi,
-    signer,
-    appDataInfo,
+  /**
+   * Special case for CoW Swap where we have smart slippage
+   * We update appData slippage without refetching quote
+   */
+  if (typeof appDataSlippageOverride !== 'undefined') {
+    params.slippageBps = appDataSlippageOverride
+  }
 
-    swapParamsToLimitOrderParams(tradeParameters, quoteResponse),
-    {
-      signingScheme: advancedSettings?.quoteRequest?.signingScheme,
-      networkCostsAmount: quoteResponse.quote.feeAmount,
-      ...advancedSettings?.additionalParams,
-    }
-  )
+  /**
+   * Same as above, in case if partnerFee dynamically changed
+   */
+  if (partnerFeeOverride) {
+    params.partnerFee = partnerFeeOverride
+  }
+
+  return postCoWProtocolTrade(orderBookApi, signer, appDataInfo, params, {
+    signingScheme: advancedSettings?.quoteRequest?.signingScheme,
+    networkCostsAmount: quoteResponse.quote.feeAmount,
+    ...advancedSettings?.additionalParams,
+  })
 }

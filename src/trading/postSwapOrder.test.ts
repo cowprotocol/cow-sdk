@@ -15,7 +15,7 @@ const SELL_ORDER_QUOTE_MOCK = {
     buyToken: COW_ADDRESS.toLowerCase(),
     receiver: '0xc8c753ee51e8fc80e199ab297fb575634a1ac1d3',
     sellAmount: '98646335338956442',
-    buyAmount: '39562052700191266415',
+    buyAmount: '30000000000000000000',
     validTo: 1737464594,
     appData:
       '{"appCode":"test","metadata":{"orderClass":{"orderClass":"market"},"quote":{"slippageBips":50}},"version":"1.3.0"}',
@@ -56,7 +56,7 @@ describe('postSwapOrder', () => {
       sendOrder: jest.fn().mockResolvedValue('0x01'),
     }
 
-    const orderId = await postSwapOrderFromQuote(
+    const { orderId } = await postSwapOrderFromQuote(
       await getQuoteWithSigner(SELL_ORDER_PARAMS, undefined, orderBookApi as any)
     )
 
@@ -67,8 +67,8 @@ describe('postSwapOrder', () => {
     // 98646335338956442 + 1353664661043558 = 100000000000000000
     expect(call.sellAmount).toBe('100000000000000000')
     // quoteResponseMock.buyAmount - 0.5%
-    // BigInt('39562052700191266415') - ((BigInt('39562052700191266415') * BigInt(50)) / 10000n) = 39364242436690310083
-    expect(call.buyAmount).toBe('39364242436690310083')
+    // BigInt('30000000000000000000') - ((BigInt('30000000000000000000') * BigInt(50)) / 10000n) = 29850000000000000000
+    expect(call.buyAmount).toBe('29850000000000000000')
   })
 
   it('Buy order amounts should take fees and slippage into account', async () => {
@@ -117,7 +117,9 @@ describe('postSwapOrder', () => {
       sendOrder: jest.fn().mockResolvedValue('0x01'),
     }
 
-    const orderId = await postSwapOrderFromQuote(await getQuoteWithSigner(parameters, undefined, orderBookApi as any))
+    const { orderId } = await postSwapOrderFromQuote(
+      await getQuoteWithSigner(parameters, undefined, orderBookApi as any)
+    )
 
     const call = orderBookApi.sendOrder.mock.calls[0][0]
 
@@ -154,5 +156,32 @@ describe('postSwapOrder', () => {
     const call = orderBookApi.sendOrder.mock.calls[0][0]
 
     expect(JSON.parse(call.appData).metadata.partnerFee).toEqual(orderParams.partnerFee)
+  })
+
+  it('When slippage is present in advancedSettings appData, then it should end up in the order', async () => {
+    const orderBookApi = {
+      context: {
+        chainId: SELL_ORDER_PARAMS.chainId,
+      },
+      getQuote: jest.fn().mockResolvedValue(SELL_ORDER_QUOTE_MOCK),
+      sendOrder: jest.fn().mockResolvedValue('0x01'),
+    }
+    const slippageBips = 800
+
+    await postSwapOrderFromQuote(await getQuoteWithSigner(SELL_ORDER_PARAMS, undefined, orderBookApi as any), {
+      appData: {
+        metadata: {
+          quote: {
+            slippageBips,
+          },
+        },
+      },
+    })
+
+    const call = orderBookApi.sendOrder.mock.calls[0][0]
+
+    expect(JSON.parse(call.appData).metadata.quote.slippageBips).toBe(slippageBips)
+    // 30000000000000000000 - (30000000000000000000 * 8 / 100) = 27600000000000000000
+    expect(call.buyAmount).toBe('27600000000000000000')
   })
 })

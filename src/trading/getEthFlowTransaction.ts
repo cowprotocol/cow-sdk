@@ -25,7 +25,7 @@ export async function getEthFlowTransaction(
   }
   const { quoteId } = params
 
-  const contract = getEthFlowContract(chainId, signer, params.env)
+  const contract = getEthFlowContract(signer, params.env)
   const orderToSign = getOrderToSign({ from, networkCostsAmount }, params, appDataKeccak256)
   const orderId = await calculateUniqueOrderId(chainId, orderToSign, checkEthFlowOrderExists, params.env)
 
@@ -58,6 +58,6 @@ export async function getEthFlowTransaction(
   }
 }
 
-function getEthFlowContract(chainId: SupportedChainId, signer: Signer, env?: CowEnv): EthFlow {
-  return EthFlow__factory.connect((env === 'staging' ? BARN_ETH_FLOW_ADDRESS : ETH_FLOW_ADDRESS)[chainId], signer)
+function getEthFlowContract(signer: Signer, env?: CowEnv): EthFlow {
+  return EthFlow__factory.connect(env === 'staging' ? BARN_ETH_FLOW_ADDRESS : ETH_FLOW_ADDRESS, signer)
 }
