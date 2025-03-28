@@ -26,7 +26,8 @@ export async function getCrossChainOrder(params: {
   })
 
   if (!bridgingHook) {
-    throw new Error('Order ${orderId} is not a cross-chain order')
+    throw new Error(`Order ${orderId} is not a cross-chain order`)
+  }
   }
   // Bridge provider would be the last part of the dappId
   const bridgeProviderName = bridgingHook.dappId?.split(HOOK_DAPP_BRIDGE_PROVIDER_PREFIX).pop()
