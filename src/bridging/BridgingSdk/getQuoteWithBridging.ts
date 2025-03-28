@@ -25,6 +25,7 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { getSigner } from '../../common/utils/wallet'
 import { log } from '../../common/utils/log'
 import { jsonWithBigintReplacer } from '../../common/utils/serialize'
+import { OrderKind } from '../../order-book'
 
 type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
   /**
@@ -69,6 +70,10 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   } = swapAndBridgeRequest
 
   const signer = getSigner(signerLike)
+
+  if (kind !== OrderKind.SELL) {
+    throw new Error('Bridging only support SELL orders')
+  }
 
   log(
     `Cross-chain ${kind} ${amount} ${sellTokenAddress} (source chain ${sellTokenChainId}) for ${buyTokenAddress} (target chain ${buyTokenChainId})`
