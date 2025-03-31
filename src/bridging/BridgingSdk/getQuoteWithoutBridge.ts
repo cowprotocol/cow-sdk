@@ -19,6 +19,8 @@ export function getQuoteWithoutBridge(params: {
     amount: amount.toString(),
   }
 
-  log(`Single-chain swap: Delegate to trading SDK with params ${JSON.stringify(swapParams, jsonWithBigintReplacer)}`)
+  const { signer: _, ...paramsToLog } = swapParams
+
+  log(`Single-chain swap: Delegate to trading SDK with params ${JSON.stringify(paramsToLog, jsonWithBigintReplacer)}`)
   return tradingSdk.getQuote(swapParams, advancedSettings)
 }
