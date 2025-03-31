@@ -15,7 +15,7 @@ export async function postSellNativeCurrencyOrder(
 ): Promise<OrderPostingResult> {
   const { appDataKeccak256, fullAppData } = appData
 
-  const { orderId, transaction } = await getEthFlowTransaction(
+  const { orderId, transaction, orderToSign } = await getEthFlowTransaction(
     signer,
     appDataKeccak256,
     _params,
@@ -30,5 +30,5 @@ export async function postSellNativeCurrencyOrder(
   const txReceipt = await signer.sendTransaction(transaction)
 
   log(`On-chain order transaction sent, txHash: ${txReceipt.hash}, order: ${orderId}`)
-  return { txHash: txReceipt.hash, orderId, signature: '', signingScheme: SigningScheme.EIP1271 }
+  return { txHash: txReceipt.hash, orderId, orderToSign, signature: '', signingScheme: SigningScheme.EIP1271 }
 }
