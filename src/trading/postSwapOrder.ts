@@ -42,6 +42,16 @@ export async function postSwapOrderFromQuote(
     params.partnerFee = partnerFeeOverride
   }
 
+  /**
+   * Override receiver and validTo in params
+   */
+  if (advancedSettings?.quoteRequest) {
+    const { receiver, validTo } = advancedSettings.quoteRequest
+
+    if (receiver) params.receiver = receiver
+    if (validTo) params.validTo = validTo
+  }
+
   return postCoWProtocolTrade(orderBookApi, signer, appDataInfo, params, {
     signingScheme: advancedSettings?.quoteRequest?.signingScheme,
     networkCostsAmount: quoteResponse.quote.feeAmount,
