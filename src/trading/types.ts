@@ -164,6 +164,7 @@ export interface OrderPostingResult {
   txHash?: string
   signingScheme: SigningScheme
   signature: Signature
+  orderToSign: UnsignedOrder
 }
 
 export interface QuoteAndPost {
