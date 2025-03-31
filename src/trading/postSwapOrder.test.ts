@@ -184,4 +184,25 @@ describe('postSwapOrder', () => {
     // 30000000000000000000 - (30000000000000000000 * 8 / 100) = 27600000000000000000
     expect(call.buyAmount).toBe('27600000000000000000')
   })
+
+  it('When receiver/validTo is present in advancedSettings quoteRequest, then it should end up in the order', async () => {
+    const orderBookApi = {
+      context: {
+        chainId: SELL_ORDER_PARAMS.chainId,
+      },
+      getQuote: jest.fn().mockResolvedValue(SELL_ORDER_QUOTE_MOCK),
+      sendOrder: jest.fn().mockResolvedValue('0x01'),
+    }
+    const validTo = 5600000
+    const receiver = '0x974caa59e49682cda0ad2bbe82983419a2ecc400'
+
+    await postSwapOrderFromQuote(await getQuoteWithSigner(SELL_ORDER_PARAMS, undefined, orderBookApi as any), {
+      quoteRequest: { receiver, validTo },
+    })
+
+    const call = orderBookApi.sendOrder.mock.calls[0][0]
+
+    expect(call.receiver).toBe(receiver)
+    expect(call.validTo).toBe(validTo)
+  })
 })

@@ -106,7 +106,7 @@ export interface LimitTradeParametersFromQuote extends LimitTradeParameters {
 export interface LimitOrderParameters extends TraderParameters, LimitTradeParameters {}
 
 export interface SwapAdvancedSettings {
-  quoteRequest?: Partial<Omit<OrderQuoteRequest, 'kind'>>
+  quoteRequest?: Partial<Omit<OrderQuoteRequest, 'kind'> & { validTo: number }>
   appData?: AppDataParams
   additionalParams?: PostTradeAdditionalParams
 }
