@@ -62,5 +62,5 @@ export async function postCoWProtocolTrade(
 
   log(`Order created, id: ${orderId}`)
 
-  return { orderId, signature, signingScheme }
+  return { orderId, signature, signingScheme, orderToSign }
 }

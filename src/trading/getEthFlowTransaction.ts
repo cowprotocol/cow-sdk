@@ -8,6 +8,7 @@ import { GAS_LIMIT_DEFAULT } from './consts'
 import type { EthFlowOrder } from '../common/generated/EthFlow'
 import { adjustEthFlowOrderParams, calculateGasMargin } from './utils'
 import { Signer } from '@ethersproject/abstract-signer'
+import type { UnsignedOrder } from '../order-signing'
 
 export async function getEthFlowTransaction(
   signer: Signer,
@@ -15,7 +16,7 @@ export async function getEthFlowTransaction(
   _params: LimitTradeParametersFromQuote,
   chainId: SupportedChainId,
   additionalParams: PostTradeAdditionalParams = {}
-): Promise<{ orderId: string; transaction: TransactionParams }> {
+): Promise<{ orderId: string; transaction: TransactionParams; orderToSign: UnsignedOrder }> {
   const { networkCostsAmount = '0', checkEthFlowOrderExists } = additionalParams
   const from = await signer.getAddress()
 
@@ -49,6 +50,7 @@ export async function getEthFlowTransaction(
 
   return {
     orderId,
+    orderToSign,
     transaction: {
       data,
       gasLimit: '0x' + calculateGasMargin(estimatedGas).toString(16),
