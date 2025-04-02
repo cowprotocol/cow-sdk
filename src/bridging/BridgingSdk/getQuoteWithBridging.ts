@@ -24,6 +24,8 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { getSigner } from '../../common/utils/wallet'
 import { log } from '../../common/utils/log'
 import { OrderKind } from '../../order-book'
+import { jsonWithBigintReplacer } from '../../common/utils/serialize'
+import { parseUnits } from '@ethersproject/units'
 
 type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
   /**
@@ -103,12 +105,14 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
     amount: amount.toString(),
     signer,
   }
-  // log(
-  //   `Getting a quote for the swap (sell token to buy intermediate token). Delegate to trading SDK with params: ${JSON.stringify(
-  //     swapParams,
-  //     jsonWithBigintReplacer
-  //   )}`
-  // )
+  const { signer: _, ...swapParamsToLog } = swapParams
+
+  log(
+    `Getting a quote for the swap (sell token to buy intermediate token). Delegate to trading SDK with params: ${JSON.stringify(
+      swapParamsToLog,
+      jsonWithBigintReplacer
+    )}`
+  )
   const { result: swapResult, orderBookApi } = await tradingSdk.getQuoteResults(swapParams, {
     ...advancedSettings,
     appData: {
@@ -118,12 +122,12 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
     },
   })
   const intermediateTokenAmount = swapResult.amountsAndCosts.afterSlippage.buyAmount // Estimated, as it will likely have surplus
-  // log(
-  //   `Expected to receive ${intermediateTokenAmount} of the intermediate token (${parseUnits(
-  //     intermediateTokenAmount.toString(),
-  //     intermediaryTokenDecimals
-  //   ).toString()})`
-  // )
+  log(
+    `Expected to receive ${intermediateTokenAmount} of the intermediate token (${parseUnits(
+      intermediateTokenAmount.toString(),
+      intermediaryTokenDecimals
+    ).toString()})`
+  )
 
   // Get the bridge result
 
@@ -135,12 +139,12 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
     intermediateTokenAmount,
     signer,
   })
-  // log(`Bridge hook for swap: ${JSON.stringify(bridgeHook)}`)
+  log(`Bridge hook for swap: ${JSON.stringify(bridgeHook)}`)
 
   // Update the receiver and appData (both were mocked before we had the bridge hook)
   swapResult.tradeParameters.receiver = bridgeHook.recipient
   const { fullAppData, appDataKeccak256 } = await generateAppDataFromDoc(appData)
-  // log(`App data for swap: appDataKeccak256=${appDataKeccak256}, fullAppData="${fullAppData}"`)
+  log(`App data for swap: appDataKeccak256=${appDataKeccak256}, fullAppData="${fullAppData}"`)
   swapResult.appDataInfo = {
     fullAppData,
     appDataKeccak256,
