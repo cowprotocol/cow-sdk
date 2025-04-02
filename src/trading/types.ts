@@ -109,6 +109,8 @@ export interface SwapAdvancedSettings {
   quoteRequest?: Partial<Omit<OrderQuoteRequest, 'kind'> & { validTo: number }>
   appData?: AppDataParams
   additionalParams?: PostTradeAdditionalParams
+  // In special case, when you want to fetch quote with a different signer
+  quoteSigner?: SignerLike
 }
 
 export interface LimitOrderAdvancedSettings {
