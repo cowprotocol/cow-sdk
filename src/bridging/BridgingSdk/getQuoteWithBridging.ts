@@ -128,7 +128,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   // Get the bridge result
 
   const { bridgeResult, bridgeHook, appData } = await getBridgeResult({
-    swapAndBridgeRequest,
+    swapAndBridgeRequest: { ...swapAndBridgeRequest, kind: OrderKind.SELL },
     swapResult,
     bridgeRequestWithoutAmount,
     provider,
