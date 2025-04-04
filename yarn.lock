@@ -1773,10 +1773,10 @@
     json-stringify-deterministic "^1.0.8"
     multiformats "^9.6.4"
 
-"@cowprotocol/contracts@^1.6.0":
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/@cowprotocol/contracts/-/contracts-1.6.0.tgz#d0fc83ed8c624b968d1a68bb5c74712c11ec81e0"
-  integrity sha512-+UKhYRzkvnqqviBru5D3btTLYc743n0O5YTG+wpYwGl4fb7VNKBkFHe28C5Mf1DF/kOfmqfu+0IAvX9Vuq5Dqw==
+"@cowprotocol/contracts@^1.7.0":
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/@cowprotocol/contracts/-/contracts-1.7.0.tgz#a3b93bebfe768b4911de54841b9d7b39b8bd0b99"
+  integrity sha512-tog/0igLaWZv6kK30+aFJ267+yNyMINx6qDHaJQFKZs051XUXnzNFlZgCEfICwDz/821XYjZxOnNbe449tgD5w==
 
 "@cspotcode/source-map-support@^0.8.0":
   version "0.8.1"
