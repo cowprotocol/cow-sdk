@@ -3,6 +3,7 @@ import { ChainInfo, SupportedChainId, TargetChainId } from '../chains'
 import { TokenInfo } from '../common/types/tokens'
 import { Address, Amounts, OrderKind } from '../order-book'
 import { EvmCall } from '../common/types/ethereum'
+import type { AccountAddress } from '../common/types/wallets'
 import {
   OrderPostingResult,
   QuoteAndPost,
@@ -37,8 +38,9 @@ type WithTrader = Pick<TraderParameters, 'signer'>
  * Parameters for getting a bridge quote
  */
 export type QuoteBridgeRequest = {
-  kind: OrderKind.SELL // We make it explicit that only SELL is supported for now
+  kind: OrderKind
   amount: bigint
+  owner?: AccountAddress
 } & WithSellToken &
   WithBuyToken &
   WithQuoter &

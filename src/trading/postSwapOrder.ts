@@ -43,13 +43,15 @@ export async function postSwapOrderFromQuote(
   }
 
   /**
-   * Override receiver and validTo in params
+   * Override order parameters with advanced settings
    */
   if (advancedSettings?.quoteRequest) {
-    const { receiver, validTo } = advancedSettings.quoteRequest
+    const { receiver, validTo, sellToken, buyToken } = advancedSettings.quoteRequest
 
     if (receiver) params.receiver = receiver
     if (validTo) params.validTo = validTo
+    if (sellToken) params.sellToken = sellToken
+    if (buyToken) params.buyToken = buyToken
   }
 
   return postCoWProtocolTrade(orderBookApi, signer, appDataInfo, params, {

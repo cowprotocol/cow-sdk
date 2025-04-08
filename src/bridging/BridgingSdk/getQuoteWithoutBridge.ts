@@ -19,6 +19,7 @@ export function getQuoteWithoutBridge(params: {
     amount: amount.toString(),
   }
 
+  // Signer cannot be stringified
   const { signer: _, ...paramsToLog } = swapParams
 
   log(`Single-chain swap: Delegate to trading SDK with params ${JSON.stringify(paramsToLog, jsonWithBigintReplacer)}`)
