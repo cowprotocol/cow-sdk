@@ -236,6 +236,41 @@ describe('Deserialize', () => {
     expect(Twap.deserialize(TWAP_SERIALIZED(twap.salt))).toMatchObject(twap)
   })
 
+  test('Deserializes correctly order with t0 set to an epoch', () => {
+    const twap = Twap.deserialize(
+      '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000006cf1e9ca41f7611def408122793c358a3d11e5a541617665537761707065722d545741502d537761700000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000001400000000000000000000000007fc66500c84a76ad7e9c93437bfc5ac33e2ddae9000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000003765a685a401622c060e5d700d9ad89413363a9100000000000000000000000000000000000000000000000009b6e64a8ec6000000000000000000000000000000000000000000000000000000000000055d4a800000000000000000000000000000000000000000000000000000000067f702df0000000000000000000000000000000000000000000000000000000000000005000000000000000000000000000000000000000000000000000000000001518000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+    )
+
+    expect(twap.handler).toEqual('0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5')
+    expect(twap.salt).toEqual('0x41617665537761707065722d545741502d537761700000000000000000000000')
+    expect(twap.staticInput).toEqual({
+      sellToken: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
+      buyToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+      partSellAmount: BigNumber.from(700000000000000000n),
+      minPartLimit: BigNumber.from(90000000),
+      receiver: '0x3765A685a401622C060E5D700D9ad89413363a91',
+      t0: BigNumber.from(1744241375),
+      n: BigNumber.from(5),
+      t: BigNumber.from(86400),
+      span: BigNumber.from(0),
+      appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    })
+    expect(twap.data).toEqual({
+      sellToken: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
+      buyToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+      sellAmount: BigNumber.from(3500000000000000000n),
+      buyAmount: BigNumber.from(450000000),
+      receiver: '0x3765A685a401622C060E5D700D9ad89413363a91',
+      startTime: { startType: StartTimeValue.AT_EPOCH, epoch: BigNumber.from(1744241375) },
+      numberOfParts: BigNumber.from(5),
+      timeBetweenParts: BigNumber.from(86400),
+      durationOfPart: { durationType: DurationType.AUTO },
+      appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    })
+    expect(twap.hasOffChainInput).toEqual(false)
+    expect(twap.isSingleOrder).toEqual(true)
+  })
+
   test('Throws if invalid', () => {
     expect(() => Twap.deserialize('0x')).toThrow('InvalidSerializedConditionalOrder')
   })
@@ -317,8 +352,8 @@ describe('Poll Validate', () => {
     jest.resetAllMocks()
   })
 
-  test(`Open TWAP, passes the validations`, async () => {
-    // GIVEN: A TWAP that should be active (should start 1 second ago, should finish in 1 second)
+  test(`Open TWAP, passes the validations (t=0)`, async () => {
+    // GIVEN: An active TWAP (creation was mined 1 second ago and should finish in 1 second)
     mockCabinet.mockReturnValue(uint256Helper(blockTimestamp - 1))
     mockEndTimestamp.mockReturnValue(blockTimestamp + 1)
 
@@ -327,6 +362,27 @@ describe('Poll Validate', () => {
 
     // THEN: The start time and end time of the TWAP will be checked
     expect(mockCabinet).toBeCalledTimes(1)
+
+    // THEN: Successful validation
+    expect(result).toEqual(undefined)
+  })
+
+  test(`Open TWAP, passes the validations (t0 set to an epoch)`, async () => {
+    // GIVEN: A TWAP that starts at a specific epoch (1 second ago)
+    const twap = new MockTwap({
+      handler: TWAP_ADDRESS,
+      data: {
+        ...TWAP_PARAMS_TEST,
+        startTime: { startType: StartTimeValue.AT_EPOCH, epoch: BigNumber.from(blockTimestamp - 1) },
+      },
+    })
+
+    // GIVEN: A TWAP that is active (expires in 1 second)
+    mockEndTimestamp.mockReturnValue(blockTimestamp + 1)
+    mockCabinet.mockReturnValue(uint256Helper(0)) // No cabinet value is needed when t0=epoch
+
+    // WHEN: We poll
+    const result = await twap.pollValidate({ ...pollParams, blockInfo: { blockNumber, blockTimestamp } })
 
     // THEN: Successful validation
     expect(result).toEqual(undefined)

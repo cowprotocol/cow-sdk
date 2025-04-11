@@ -540,7 +540,7 @@ export function transformDataToStruct(data: TwapData): TwapStruct {
     sellAmount,
     buyAmount,
     numberOfParts,
-    startTime: startTime = DEFAULT_START_TIME,
+    startTime = DEFAULT_START_TIME,
     timeBetweenParts,
     durationOfPart = DEFAULT_DURATION_OF_PART,
     ...rest
@@ -595,7 +595,7 @@ export function transformStructToData(struct: TwapStruct): TwapData {
     ? { durationType: DurationType.AUTO }
     : { durationType: DurationType.LIMIT_DURATION, duration: span }
 
-  const startTime: StartTime = span.isZero()
+  const startTime: StartTime = startEpoch.isZero()
     ? { startType: StartTimeValue.AT_MINING_TIME }
     : { startType: StartTimeValue.AT_EPOCH, epoch: startEpoch }
 
