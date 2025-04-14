@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@cowprotocol/cow-sdk": "5.10.2",
+    "@cowprotocol/cow-sdk": "../..",
     "@safe-global/api-kit": "^2.4.0",
     "@safe-global/protocol-kit": "^5.0.0",
     "@testing-library/jest-dom": "^6.1.6",
