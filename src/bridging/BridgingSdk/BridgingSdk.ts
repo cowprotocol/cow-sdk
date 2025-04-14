@@ -7,7 +7,7 @@ import {
   GetErc20Decimals,
   QuoteBridgeRequest,
 } from '../types'
-import { ALL_SUPPORTED_CHAINS, TokenInfo } from '../../common'
+import { ALL_SUPPORTED_CHAINS, CowEnv, TokenInfo } from '../../common'
 import { ChainInfo, SupportedChainId, TargetChainId } from '../../chains'
 import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
 import { getQuoteWithBridge } from './getQuoteWithBridging'
@@ -42,6 +42,26 @@ export interface BridgingSdkOptions {
    * Enable logging for the bridging SDK.
    */
   enableLogging?: boolean
+}
+
+/**
+ * Parameters for the `getOrder` method.
+ */
+export interface GetOrderParams {
+  /**
+   * The unique identifier of the order.
+   */
+  orderId: string
+
+  /**
+   * The chain ID of the order.
+   */
+  chainId: SupportedChainId
+
+  /**
+   * The environment of the order
+   */
+  env?: CowEnv
 }
 
 export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'enableLogging' | 'getErc20Decimals'>> &
@@ -157,14 +177,15 @@ export class BridgingSdk {
     }
   }
 
-  async getOrder(orderId: string, chainId: SupportedChainId): Promise<CrossChainOrder> {
+  async getOrder(params: GetOrderParams): Promise<CrossChainOrder> {
     const { orderBookApi } = this.config
-
+    const { orderId, chainId, env } = params
     return getCrossChainOrder({
       orderId,
       chainId,
       orderBookApi,
       providers: this.config.providers,
+      env: env || orderBookApi.context.env,
     })
   }
 }

@@ -3,6 +3,7 @@ import { SupportedChainId } from '../../chains'
 import { OrderBookApi } from 'src/order-book'
 import { getPostHooks } from '../utils'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from '../providers/across/const/misc'
+import { CowEnv } from '../../common'
 
 /**
  * Fetch a cross-chain order and its status.
@@ -12,10 +13,11 @@ export async function getCrossChainOrder(params: {
   chainId: SupportedChainId
   orderBookApi: OrderBookApi
   providers: BridgeProvider<BridgeQuoteResult>[]
+  env: CowEnv
 }): Promise<CrossChainOrder> {
-  const { orderId, chainId, orderBookApi, providers } = params
+  const { orderId, chainId, orderBookApi, providers, env } = params
 
-  const chainContext = { chainId }
+  const chainContext = { chainId, env }
   const order = await orderBookApi.getOrder(orderId, chainContext)
 
   const postHooks = getPostHooks(order.fullAppData ?? undefined)
