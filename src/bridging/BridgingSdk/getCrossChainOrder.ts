@@ -68,7 +68,7 @@ export async function getCrossChainOrder(params: {
       fillTimeInSeconds,
     }
   } else {
-    // Bridging initiated yet
+    // Bridging not initiated yet
     return {
       chainId,
       order,
