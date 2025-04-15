@@ -5,7 +5,7 @@ on:
     types: [published]
 
 env:
-  NODE_VERSION: lts/hydrogen
+  NODE_VERSION: lts/jod
 
 jobs:
   deploy:
