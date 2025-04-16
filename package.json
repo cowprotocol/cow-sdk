@@ -38,7 +38,7 @@
     "@ethersproject/abstract-signer": "^5.8.0",
     "@openzeppelin/merkle-tree": "^1.0.8",
     "@weiroll/weiroll.js": "^0.3.0",
-    "cross-fetch": "^3.1.5",
+    "cross-fetch": "^3.2.0",
     "deepmerge": "^4.3.1",
     "exponential-backoff": "^3.1.2",
     "graphql": "^16.10.0",
