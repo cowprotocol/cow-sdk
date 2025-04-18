@@ -1,7 +1,7 @@
 import { latest as latestAppData } from '@cowprotocol/app-data'
 import { ChainInfo, SupportedChainId, TargetChainId } from '../chains'
 import { TokenInfo } from '../common/types/tokens'
-import { Address, Amounts, OrderKind } from '../order-book'
+import { Address, Amounts, EnrichedOrder, OrderKind } from '../order-book'
 import { EvmCall } from '../common/types/ethereum'
 import {
   OrderPostingResult,
@@ -178,14 +178,15 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    *
    * @param hook - The bridge hook
    */
-  decodeBridgeHook(hook: BridgeHook): Promise<BridgeDeposit>
+  decodeBridgeHook(hook: latestAppData.CoWHook): Promise<BridgeDeposit>
 
   /**
    * Get the identifier of the bridging transaction from the settlement transaction.
    * @param orderUid - The unique identifier of the order
    * @param settlementTx - The settlement transaction in which the bridging post-hook was executed
+   * @param logIndex - The log index of the trade within the settlement transaction
    */
-  getBridgingId(orderUid: string, settlementTx: string): Promise<string>
+  getBridgingId(orderUid: string, settlementTx: string, logIndex: number): Promise<string>
 
   /**
    * Get the explorer url for a bridging id.
@@ -314,3 +315,12 @@ export interface BridgeQuoteResults extends BridgeQuoteResult {
 }
 
 export type GetErc20Decimals = (chainId: TargetChainId, tokenAddress: string) => Promise<number>
+
+export interface CrossChainOrder {
+  chainId: SupportedChainId
+  order: EnrichedOrder
+  status: BridgeStatus
+  bridgingId?: string
+  explorerUrl?: string
+  fillTimeInSeconds?: number
+}
