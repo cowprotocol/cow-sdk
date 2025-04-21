@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Signer } from 'ethers'
+import { latest as latestAppData } from '@cowprotocol/app-data'
 
 import {
   BridgeDeposit,
@@ -28,8 +29,9 @@ import { getChainConfigs, getTokenAddress, getTokenSymbol, toBridgeQuoteResult }
 import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
 import { createAcrossDepositCall } from './createAcrossDepositCall'
 import { OrderKind } from '@cowprotocol/contracts'
+import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
 
-const HOOK_DAPP_ID = 'cow-sdk://bridging/providers/across'
+const HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/across`
 export const ACROSS_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
 
 // We need to review if we should set an additional slippage tolerance, for now assuming the quote gives you the exact price of bridging and no further slippage is needed
@@ -169,12 +171,13 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     }
   }
 
-  async decodeBridgeHook(_hook: BridgeHook): Promise<BridgeDeposit> {
+  async decodeBridgeHook(_hook: latestAppData.CoWHook): Promise<BridgeDeposit> {
     throw new Error('Not implemented')
   }
 
-  async getBridgingId(_orderUid: string, _settlementTx: string): Promise<string> {
+  async getBridgingId(_orderUid: string, _settlementTx: string, _logIndex: number): Promise<string> {
     // TODO: get events from the mined transaction, extract the deposit id
+    // Important. A settlement could have many bridge-and-swap transactions, maybe even using different providers, this is why the log index might be handy to find which of the depositIds corresponds to the bridging transaction
     throw new Error('Not implemented')
   }
 

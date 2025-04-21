@@ -176,7 +176,7 @@ describe('AcrossBridgeProvider', () => {
 
   describe('getBridgingId', () => {
     it('should return bridging id', async () => {
-      await expect(provider.getBridgingId('123', '123')).rejects.toThrowError('Not implemented')
+      await expect(provider.getBridgingId('123', '123', 1)).rejects.toThrowError('Not implemented')
     })
   })
 

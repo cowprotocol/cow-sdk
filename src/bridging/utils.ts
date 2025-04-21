@@ -1,4 +1,5 @@
 import { QuoteAndPost } from '../trading'
+import { latest as latestAppData } from '@cowprotocol/app-data'
 import { BridgeQuoteAndPost, CrossChainQuoteAndPost } from './types'
 
 export function isBridgeQuoteAndPost(quote: CrossChainQuoteAndPost): quote is BridgeQuoteAndPost {
@@ -19,4 +20,26 @@ export function assertIsQuoteAndPost(quote: CrossChainQuoteAndPost): asserts quo
   if (!isQuoteAndPost(quote)) {
     throw new Error('Quote result is not of type QuoteAndPost. Are you sure the sell and buy chains are the same?')
   }
+}
+
+export function getPostHooks(fullAppData?: string): latestAppData.CoWHook[] {
+  if (!fullAppData) {
+    return []
+  }
+
+  const appData = JSON.parse(fullAppData)
+  if (!isAppDoc(appData)) {
+    return []
+  }
+
+  if (!appData.metadata.hooks) {
+    return []
+  }
+
+  return appData.metadata.hooks.post || []
+}
+
+// TODO: Move to app-data project
+export function isAppDoc(appData: unknown): appData is latestAppData.AppDataRootSchema {
+  return typeof appData === 'object' && appData !== null && 'version' in appData && 'metadata' in appData
 }
