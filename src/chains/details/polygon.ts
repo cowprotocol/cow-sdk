@@ -2,7 +2,7 @@ import { nativeCurrencyTemplate } from '../../common/consts/tokens'
 import { ChainInfo } from '../types'
 import { RAW_CHAINS_FILES_PATH } from '../const/path'
 
-const polygonLogo = `${RAW_CHAINS_FILES_PATH}/polygon-logo.svg`
+const polygonLogo = `${RAW_CHAINS_FILES_PATH}/images/polygon-logo.svg`
 
 // See https://github.com/wevm/viem/blob/main/src/chains/definitions/polygon.ts
 export const polygon: ChainInfo = {
