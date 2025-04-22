@@ -1,5 +1,5 @@
 import { latest } from '@cowprotocol/app-data'
-import { getHookMockForCostEstimation } from '../../hooks/utils'
+import { areHooksEqual, getHookMockForCostEstimation } from '../../hooks/utils'
 import {
   AppDataInfo,
   mergeAppDataDoc,
@@ -119,14 +119,21 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
       jsonWithBigintReplacer
     )}`
   )
+
+  const advancedSettingsHooks = advancedSettings?.appData?.metadata?.hooks
+
   const { result: swapResult, orderBookApi } = await tradingSdk.getQuoteResults(swapParams, {
     ...advancedSettings,
     appData: {
       metadata: {
-        hooks: mockedHook,
+        hooks: {
+          pre: advancedSettingsHooks?.pre,
+          post: [...(advancedSettingsHooks?.post || []), mockedHook],
+        },
       },
     },
   })
+
   const intermediateTokenAmount = swapResult.amountsAndCosts.afterSlippage.buyAmount // Estimated, as it will likely have surplus
   log(
     `Expected to receive ${intermediateTokenAmount} of the intermediate token (${parseUnits(
@@ -150,6 +157,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
       provider,
       intermediateTokenAmount,
       signer,
+      mockedHook,
     })
     log(`Bridge hook for swap: ${JSON.stringify(bridgeHook)}`)
 
@@ -249,8 +257,9 @@ async function getBridgeResult(params: {
   bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount
   provider: BridgeProvider<BridgeQuoteResult>
   signer: Signer
+  mockedHook: latest.CoWHook
 }): Promise<GetBridgeResultResult> {
-  const { swapResult, bridgeRequestWithoutAmount, provider, intermediateTokenAmount, signer } = params
+  const { swapResult, bridgeRequestWithoutAmount, provider, intermediateTokenAmount, signer, mockedHook } = params
 
   const bridgeRequest: QuoteBridgeRequest = {
     ...bridgeRequestWithoutAmount,
@@ -266,10 +275,19 @@ async function getBridgeResult(params: {
   // Get the pre-authorized hook
   const bridgeHook = await provider.getSignedHook(bridgeRequest.sellTokenChainId, unsignedBridgeCall, signer)
 
+  const swapResultHooks = swapResult.appDataInfo.doc.metadata.hooks
+  const postHooks = swapResultHooks?.post || []
+
+  const isBridgeHookAlreadyPresent = postHooks.some((hook) => areHooksEqual(hook, bridgeHook.postHook))
+
   const appDataInfo = await mergeAppDataDoc(swapResult.appDataInfo.doc, {
     metadata: {
       hooks: {
-        post: [bridgeHook.postHook],
+        pre: swapResultHooks?.pre,
+        // Remove the mocked hook from the post hooks after receiving quote
+        post: [...(swapResultHooks?.post || []), ...(isBridgeHookAlreadyPresent ? [] : [bridgeHook.postHook])].filter(
+          (hook) => !areHooksEqual(hook, mockedHook)
+        ),
       },
     },
   })
