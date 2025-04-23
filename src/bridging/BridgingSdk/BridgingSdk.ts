@@ -166,6 +166,7 @@ export class BridgingSdk {
         tradingSdk,
         provider: this.provider,
         getErc20Decimals,
+        bridgeHookSigner: advancedSettings?.quoteSigner,
       })
     } else {
       // Single-chain swap
