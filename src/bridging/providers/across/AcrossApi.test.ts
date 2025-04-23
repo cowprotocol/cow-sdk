@@ -1,5 +1,6 @@
-import { AcrossApi, SuggestedFeesRequest, SuggestedFeesResponse } from './AcrossApi'
+import { AcrossApi } from './AcrossApi'
 import { AdditionalTargetChainId, SupportedChainId } from '../../../chains'
+import { SuggestedFeesRequest, SuggestedFeesResponse } from './types'
 
 // Mock fetch globally
 const mockFetch = jest.fn()

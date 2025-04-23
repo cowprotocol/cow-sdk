@@ -1,10 +1,10 @@
 import { BridgeQuoteAmountsAndCosts, QuoteBridgeRequest } from '../../../bridging/types'
 import { TargetChainId } from '../../../chains'
-import { SuggestedFeesResponse } from './AcrossApi'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { AcrossChainConfig, ACROSS_TOKEN_MAPPING } from './const/tokens'
 import { getBigNumber } from '../../../order-book'
 import { OrderKind } from '@cowprotocol/contracts'
+import { SuggestedFeesResponse } from './types'
 
 const PCT_100_PERCENT = 10n ** 18n
 
