@@ -1,9 +1,9 @@
 import { OrderKind } from '@cowprotocol/contracts'
 import { AdditionalTargetChainId, SupportedChainId } from '../../../chains'
 import { QuoteBridgeRequest } from '../../types'
-import { SuggestedFeesResponse } from './AcrossApi'
 import { getChainConfigs, getTokenSymbol, getTokenAddress, toBridgeQuoteResult, pctToBps, applyPctFee } from './util'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
+import { SuggestedFeesResponse } from './types'
 
 describe('Across Utils', () => {
   describe('getChainConfigs', () => {

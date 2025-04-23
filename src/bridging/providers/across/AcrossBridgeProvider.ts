@@ -24,12 +24,13 @@ import { polygon } from '../../../chains/details/polygon'
 import { arbitrumOne } from '../../../chains/details/arbitrum'
 import { base } from '../../../chains/details/base'
 import { optimism } from '../../../chains/details/optimism'
-import { AcrossApi, AcrossApiOptions, SuggestedFeesResponse } from './AcrossApi'
+import { AcrossApi, AcrossApiOptions } from './AcrossApi'
 import { getChainConfigs, getTokenAddress, getTokenSymbol, toBridgeQuoteResult } from './util'
 import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
 import { createAcrossDepositCall } from './createAcrossDepositCall'
 import { OrderKind } from '@cowprotocol/contracts'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
+import { SuggestedFeesResponse } from './types'
 
 const HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/across`
 export const ACROSS_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]

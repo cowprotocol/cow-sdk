@@ -1,9 +1,11 @@
 import { AdditionalTargetChainId, SupportedChainId, TargetChainId } from '../../../chains'
 import { TokenInfo } from '../../../common'
 import { OrderKind } from '../../../order-book'
-import { BridgeHook, BridgeQuoteResult, QuoteBridgeRequest } from '../../types'
-import { AcrossApi, SuggestedFeesResponse } from './AcrossApi'
+import { BridgeQuoteResult, QuoteBridgeRequest } from '../../types'
+import { AcrossApi } from './AcrossApi'
 import { ACROSS_SUPPORTED_NETWORKS, AcrossBridgeProvider, AcrossBridgeProviderOptions } from './AcrossBridgeProvider'
+import { SuggestedFeesResponse } from './types'
+import { latest as latestAppData } from '@cowprotocol/app-data/dist/generatedTypes'
 
 // Mock AcrossApi
 jest.mock('./AcrossApi')
@@ -76,9 +78,7 @@ describe('AcrossBridgeProvider', () => {
     })
 
     it('should return empty array for unsupported chain', async () => {
-      const tokens = await provider.getBuyTokens({
-        targetChainId: 12345 as TargetChainId, // unsupported chain
-      })
+      const tokens = await provider.getBuyTokens(12345 as TargetChainId)
 
       // The token result is empty and we don't call getTokenInfos
       expect(tokens).toEqual([])
@@ -170,7 +170,9 @@ describe('AcrossBridgeProvider', () => {
 
   describe('decodeBridgeHook', () => {
     it('should return bridging id', async () => {
-      await expect(provider.decodeBridgeHook({} as BridgeHook)).rejects.toThrowError('Not implemented')
+      await expect(provider.decodeBridgeHook({} as unknown as latestAppData.CoWHook)).rejects.toThrowError(
+        'Not implemented'
+      )
     })
   })
 
