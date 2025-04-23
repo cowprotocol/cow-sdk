@@ -66,7 +66,7 @@ export class AcrossApi {
     //
     // TODO: The API documented params don't match with the example above. Ideally I would use 'inputToken' and 'outputToken', but the example above uses 'token'. This will work for current implementation, since we bridge the canonical token, but this will need to be reviewed
     //       https://app.across.to/api/suggested-fees?inputToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&originChainId=8453&destinationChainId=137&outputToken=0xc2132D05D31c914a87C6611C10748AEb04B58e8F&amount=100000000
-    return await this.fetchApi('/suggested-fees', params, isValidSuggestedFeesResponse)
+    return this.fetchApi('/suggested-fees', params, isValidSuggestedFeesResponse)
   }
 
   protected async fetchApi<T>(

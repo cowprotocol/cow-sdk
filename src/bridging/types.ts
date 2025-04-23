@@ -73,10 +73,12 @@ export interface BridgeQuoteResult {
   fees: {
     /**
      * The amount that should go to the relayer as a fee to cover relayer capital costs.
+     * In token atoms.
      */
     bridgeFee: bigint
     /**
      * The amount that should go to the relayer as a fee to cover relayer gas costs.
+     * In token atoms.
      */
     destinationGasFee: bigint
   }
@@ -84,10 +86,12 @@ export interface BridgeQuoteResult {
   limits: {
     /**
      * The minimum amount that should be deposited in the source chain.
+     * In token atoms.
      */
     minDeposit: bigint
     /**
      * The maximum amount that can be deposited in the source chain.
+     * In token atoms.
      */
     maxDeposit: bigint
   }
