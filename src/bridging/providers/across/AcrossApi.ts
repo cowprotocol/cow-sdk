@@ -7,6 +7,7 @@ import {
   SuggestedFeesRequest,
   SuggestedFeesResponse,
 } from './types'
+import { BridgeProviderQuoteError } from '../../errors'
 
 const ACROSS_API_URL = 'https://app.across.to/api'
 
@@ -65,9 +66,7 @@ export class AcrossApi {
     //
     // TODO: The API documented params don't match with the example above. Ideally I would use 'inputToken' and 'outputToken', but the example above uses 'token'. This will work for current implementation, since we bridge the canonical token, but this will need to be reviewed
     //       https://app.across.to/api/suggested-fees?inputToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&originChainId=8453&destinationChainId=137&outputToken=0xc2132D05D31c914a87C6611C10748AEb04B58e8F&amount=100000000
-    const fees = await this.fetchApi('/suggested-fees', params, isValidSuggestedFeesResponse)
-
-    return fees
+    return await this.fetchApi('/suggested-fees', params, isValidSuggestedFeesResponse)
   }
 
   protected async fetchApi<T>(
@@ -82,14 +81,11 @@ export class AcrossApi {
 
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     })
 
     if (!response.ok) {
-      const errorBody = await response.text()
-      throw new Error(`HTTP error! Status: ${response.status}, Body: ${errorBody}`)
+      const errorBody = await response.json()
+      throw new BridgeProviderQuoteError('Across Api Error', errorBody)
     }
 
     // Validate the response
@@ -98,10 +94,9 @@ export class AcrossApi {
       if (isValidResponse(json)) {
         return json
       } else {
-        throw new Error(
-          `Invalid response for Across API call ${path}. The response doesn't pass the validation. Did the API change? Result: ${JSON.stringify(
-            json
-          )}`
+        throw new BridgeProviderQuoteError(
+          `Invalid response for Across API call ${path}. The response doesn't pass the validation. Did the API change?`,
+          json
         )
       }
     }
