@@ -294,13 +294,18 @@ async function getBridgeResult(params: {
 
   // Prepare the bridge result
   const bridgeResult: BridgeQuoteResults = {
-    ...bridgingQuote,
     providerInfo: provider.info,
     tradeParameters: bridgeRequest, // Just the bridge (not the swap & bridge)
     bridgeCallDetails: {
       unsignedBridgeCall: unsignedBridgeCall,
       preAuthorizedBridgingHook: bridgeHook,
     },
+    isSell: bridgingQuote.isSell,
+    expectedFillTimeSeconds: bridgingQuote.expectedFillTimeSeconds,
+    fees: bridgingQuote.fees,
+    limits: bridgingQuote.limits,
+    quoteTimestamp: bridgingQuote.quoteTimestamp,
+    amountsAndCosts: bridgingQuote.amountsAndCosts,
   }
 
   return { bridgeResult, bridgeHook, appDataInfo }

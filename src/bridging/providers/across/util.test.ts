@@ -127,6 +127,14 @@ describe('Across Utils', () => {
         },
         quoteTimestamp: 1742111291,
         expectedFillTimeSeconds: 1742111892,
+        fees: {
+          bridgeFee: 150000000000000000n,
+          destinationGasFee: 200000000000000000n,
+        },
+        limits: {
+          minDeposit: 10000000000000000000n,
+          maxDeposit: 50000000000000000000n,
+        },
         suggestedFees: mockSuggestedFees, // Returns the original suggested fees
       }
 

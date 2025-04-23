@@ -153,6 +153,14 @@ describe('AcrossBridgeProvider', () => {
         },
         quoteTimestamp: 1234567890,
         expectedFillTimeSeconds: 300,
+        fees: {
+          bridgeFee: 50000n,
+          destinationGasFee: 50000n,
+        },
+        limits: {
+          minDeposit: 1000000n,
+          maxDeposit: 1000000000000n,
+        },
       }
 
       expect(quote).toEqual(expectedQuote)

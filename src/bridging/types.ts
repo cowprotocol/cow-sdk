@@ -69,6 +69,32 @@ export interface BridgeQuoteResult {
    * The timestamp of the quote.
    */
   quoteTimestamp: number
+
+  fees: {
+    /**
+     * The amount that should go to the relayer as a fee to cover relayer capital costs.
+     * In token atoms.
+     */
+    bridgeFee: bigint
+    /**
+     * The amount that should go to the relayer as a fee to cover relayer gas costs.
+     * In token atoms.
+     */
+    destinationGasFee: bigint
+  }
+
+  limits: {
+    /**
+     * The minimum amount that should be deposited in the source chain.
+     * In token atoms.
+     */
+    minDeposit: bigint
+    /**
+     * The maximum amount that can be deposited in the source chain.
+     * In token atoms.
+     */
+    maxDeposit: bigint
+  }
 }
 
 export interface BridgeHook {

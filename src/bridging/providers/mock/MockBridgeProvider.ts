@@ -113,6 +113,14 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
       },
       quoteTimestamp: Date.now(),
       expectedFillTimeSeconds: 128,
+      fees: {
+        bridgeFee: 1n,
+        destinationGasFee: 2n,
+      },
+      limits: {
+        minDeposit: 1n,
+        maxDeposit: 100_000n,
+      },
     }
   }
 

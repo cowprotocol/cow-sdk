@@ -54,7 +54,7 @@ describe('AcrossApi', () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 400,
-        text: () => Promise.resolve('Error message'),
+        json: () => Promise.resolve({ text: 'Error message' }),
       })
 
       await expect(
@@ -64,7 +64,7 @@ describe('AcrossApi', () => {
           destinationChainId: '137',
           destinationToken: '0x0000000000000000000000000000000000000002',
         })
-      ).rejects.toThrow('HTTP error! Status: 400')
+      ).rejects.toThrow('Across Api Error')
     })
   })
 
@@ -136,7 +136,7 @@ describe('AcrossApi', () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 500,
-        text: () => Promise.resolve('Internal Server Error'),
+        json: () => Promise.resolve({ text: 'Internal Server Error' }),
       })
 
       await expect(
@@ -146,7 +146,7 @@ describe('AcrossApi', () => {
           destinationChainId: AdditionalTargetChainId.POLYGON,
           amount: 1000000000000000000n,
         })
-      ).rejects.toThrow('HTTP error! Status: 500')
+      ).rejects.toThrow('Across Api Error')
     })
   })
 
