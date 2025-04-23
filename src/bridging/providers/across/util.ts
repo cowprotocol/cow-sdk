@@ -49,6 +49,14 @@ export function toBridgeQuoteResult(
     amountsAndCosts: toAmountsAndCosts(request, slippageBps, suggestedFees),
     quoteTimestamp: Number(suggestedFees.timestamp),
     expectedFillTimeSeconds: Number(suggestedFees.estimatedFillTimeSec),
+    fees: {
+      bridgeFee: BigInt(suggestedFees.relayerCapitalFee.total),
+      destinationGasFee: BigInt(suggestedFees.relayerGasFee.total),
+    },
+    limits: {
+      minDeposit: BigInt(suggestedFees.limits.minDeposit),
+      maxDeposit: BigInt(suggestedFees.limits.maxDeposit),
+    },
     suggestedFees,
   }
 }
