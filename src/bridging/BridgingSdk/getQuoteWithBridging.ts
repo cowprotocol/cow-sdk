@@ -28,6 +28,7 @@ import { jsonWithBigintReplacer } from '../../common/utils/serialize'
 import { parseUnits } from '@ethersproject/units'
 import { SignerLike } from '../../common'
 import { QuoteResultsWithSigner } from '../../trading/getQuote'
+import { BridgeProviderQuoteError } from '../errors'
 
 type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
   /**
@@ -223,7 +224,7 @@ async function getBaseBridgeQuoteRequest<T extends BridgeQuoteResult>(params: {
   const intermediateTokens = await provider.getIntermediateTokens(quoteBridgeRequest)
 
   if (intermediateTokens.length === 0) {
-    throw new Error('No path found (not intermediate token for bridging)')
+    throw new BridgeProviderQuoteError('No path found (not intermediate token for bridging)', {})
   }
 
   // We just pick the first intermediate token for now
