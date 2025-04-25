@@ -27,6 +27,8 @@ import { OrderKind } from '../../order-book'
 import { jsonWithBigintReplacer } from '../../common/utils/serialize'
 import { parseUnits } from '@ethersproject/units'
 import { SignerLike } from '../../common'
+import { QuoteResultsWithSigner } from '../../trading/getQuote'
+import { BridgeProviderQuoteError } from '../errors'
 
 type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
   /**
@@ -125,6 +127,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   const { result: swapResult, orderBookApi } = await tradingSdk.getQuoteResults(swapParams, {
     ...advancedSettings,
     appData: {
+      ...advancedSettings?.appData,
       metadata: {
         hooks: {
           pre: advancedSettingsHooks?.pre,
@@ -144,8 +147,9 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
 
   // Get the bridge result
   async function signHooksAndSetSwapResult(
-    signer: Signer
-  ): Promise<{ appData: latest.AppDataRootSchema; swapResult: QuoteResults; bridgeResult: BridgeQuoteResults }> {
+    signer: Signer,
+    appDataOverride?: SwapAdvancedSettings['appData']
+  ): Promise<{ swapResult: QuoteResults; bridgeResult: BridgeQuoteResults }> {
     const {
       bridgeHook,
       appDataInfo: { doc: appData, fullAppData, appDataKeccak256 },
@@ -158,6 +162,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
       intermediateTokenAmount,
       signer,
       mockedHook,
+      appDataOverride,
     })
     log(`Bridge hook for swap: ${JSON.stringify(bridgeHook)}`)
 
@@ -172,15 +177,9 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
     }
 
     return {
-      appData,
       bridgeResult,
       swapResult: {
         ...swapResult,
-        appDataInfo: {
-          fullAppData,
-          appDataKeccak256,
-          doc: appData,
-        },
         tradeParameters: {
           ...swapResult.tradeParameters,
           receiver: bridgeHook.recipient,
@@ -195,11 +194,11 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   return {
     swap: result.swapResult,
     bridge: result.bridgeResult,
-    async postSwapOrderFromQuote() {
+    async postSwapOrderFromQuote(advancedSettings?: SwapAdvancedSettings) {
       // Sign the hooks with the real signer
-      const { swapResult, appData } = await signHooksAndSetSwapResult(signer)
+      const { swapResult } = await signHooksAndSetSwapResult(signer, advancedSettings?.appData)
 
-      const quoteResults = {
+      const quoteResults: QuoteResultsWithSigner = {
         result: {
           ...swapResult,
           signer,
@@ -207,7 +206,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
         orderBookApi,
       }
 
-      return postSwapOrderFromQuote(quoteResults, { ...advancedSettings, appData })
+      return postSwapOrderFromQuote(quoteResults, { ...advancedSettings, appData: swapResult.appDataInfo.doc })
     },
   }
 }
@@ -226,7 +225,7 @@ async function getBaseBridgeQuoteRequest<T extends BridgeQuoteResult>(params: {
   const intermediateTokens = await provider.getIntermediateTokens(quoteBridgeRequest)
 
   if (intermediateTokens.length === 0) {
-    throw new Error('No path found (not intermediate token for bridging)')
+    throw new BridgeProviderQuoteError('No path found (not intermediate token for bridging)', {})
   }
 
   // We just pick the first intermediate token for now
@@ -250,7 +249,7 @@ interface GetBridgeResultResult {
   appDataInfo: AppDataInfo
 }
 
-async function getBridgeResult(params: {
+interface BridgeResultContext {
   swapAndBridgeRequest: QuoteBridgeRequest
   swapResult: QuoteResults
   intermediateTokenAmount: bigint
@@ -258,8 +257,19 @@ async function getBridgeResult(params: {
   provider: BridgeProvider<BridgeQuoteResult>
   signer: Signer
   mockedHook: latest.CoWHook
-}): Promise<GetBridgeResultResult> {
-  const { swapResult, bridgeRequestWithoutAmount, provider, intermediateTokenAmount, signer, mockedHook } = params
+  appDataOverride?: SwapAdvancedSettings['appData']
+}
+
+async function getBridgeResult(context: BridgeResultContext): Promise<GetBridgeResultResult> {
+  const {
+    swapResult,
+    bridgeRequestWithoutAmount,
+    provider,
+    intermediateTokenAmount,
+    signer,
+    mockedHook,
+    appDataOverride,
+  } = context
 
   const bridgeRequest: QuoteBridgeRequest = {
     ...bridgeRequestWithoutAmount,
@@ -275,12 +285,14 @@ async function getBridgeResult(params: {
   // Get the pre-authorized hook
   const bridgeHook = await provider.getSignedHook(bridgeRequest.sellTokenChainId, unsignedBridgeCall, signer)
 
-  const swapResultHooks = swapResult.appDataInfo.doc.metadata.hooks
+  const swapAppData = await mergeAppDataDoc(swapResult.appDataInfo.doc, appDataOverride || {})
+
+  const swapResultHooks = swapAppData.doc.metadata.hooks
   const postHooks = swapResultHooks?.post || []
 
   const isBridgeHookAlreadyPresent = postHooks.some((hook) => areHooksEqual(hook, bridgeHook.postHook))
 
-  const appDataInfo = await mergeAppDataDoc(swapResult.appDataInfo.doc, {
+  const appDataInfo = await mergeAppDataDoc(swapAppData.doc, {
     metadata: {
       hooks: {
         pre: swapResultHooks?.pre,
