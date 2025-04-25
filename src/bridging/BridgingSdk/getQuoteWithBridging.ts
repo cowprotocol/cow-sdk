@@ -127,6 +127,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   const { result: swapResult, orderBookApi } = await tradingSdk.getQuoteResults(swapParams, {
     ...advancedSettings,
     appData: {
+      ...advancedSettings?.appData,
       metadata: {
         hooks: {
           pre: advancedSettingsHooks?.pre,
