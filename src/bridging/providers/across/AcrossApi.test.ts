@@ -1,6 +1,6 @@
 import { AcrossApi } from './AcrossApi'
 import { AdditionalTargetChainId, SupportedChainId } from '../../../chains'
-import { SuggestedFeesRequest, SuggestedFeesResponse } from './types'
+import { DepositStatusRequest, DepositStatusResponse, SuggestedFeesRequest, SuggestedFeesResponse } from './types'
 
 // Mock fetch globally
 const mockFetch = jest.fn()
@@ -168,6 +168,51 @@ describe('AcrossApi', () => {
       })
 
       expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining(customUrl), expect.any(Object))
+    })
+  })
+
+  describe('getDepositStatus', () => {
+    const mockResponse: DepositStatusResponse = {
+      status: 'filled',
+      fillTx: '0x1234567890',
+      destinationChainId: '137',
+    }
+
+    beforeEach(() => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      })
+    })
+
+    it('should fetch deposit status with required parameters', async () => {
+      const request: DepositStatusRequest = {
+        originChainId: '1',
+        depositId: '1234567890',
+      }
+
+      const status = await api.getDepositStatus(request)
+
+      expect(status).toEqual(mockResponse)
+      expect(mockFetch).toHaveBeenCalledWith(
+        `https://app.across.to/api/deposit/status?originChainId=${request.originChainId}&depositId=${request.depositId}`,
+        expect.any(Object)
+      )
+    })
+
+    it('should handle API errors', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve({ text: 'Internal Server Error' }),
+      })
+
+      await expect(
+        api.getDepositStatus({
+          originChainId: '1',
+          depositId: '1234567890',
+        })
+      ).rejects.toThrow('Across Api Error')
     })
   })
 })

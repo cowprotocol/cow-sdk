@@ -25,7 +25,13 @@ import { arbitrumOne } from '../../../chains/details/arbitrum'
 import { base } from '../../../chains/details/base'
 import { optimism } from '../../../chains/details/optimism'
 import { AcrossApi, AcrossApiOptions } from './AcrossApi'
-import { getChainConfigs, getTokenAddress, getTokenSymbol, toBridgeQuoteResult } from './util'
+import {
+  getChainConfigs,
+  getTokenAddress,
+  getTokenSymbol,
+  mapAcrossStatusToBridgeStatus,
+  toBridgeQuoteResult,
+} from './util'
 import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
 import { createAcrossDepositCall } from './createAcrossDepositCall'
 import { OrderKind } from '@cowprotocol/contracts'
@@ -187,8 +193,16 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     return `https://app.across.to/transactions/${bridgingId}`
   }
 
-  async getStatus(_bridgingId: string): Promise<BridgeStatusResult> {
-    throw new Error('Not implemented')
+  async getStatus(bridgingId: string, sellTokenChainId: ChainId): Promise<BridgeStatusResult> {
+    const depositStatus = await this.api.getDepositStatus({
+      originChainId: sellTokenChainId.toString(),
+      depositId: bridgingId,
+    })
+
+    return {
+      status: mapAcrossStatusToBridgeStatus(depositStatus.status),
+      fillTimeInSeconds: 0, // TODO: get the fill time from the deposit status ?
+    }
   }
 
   async getCancelBridgingTx(_bridgingId: string): Promise<EvmCall> {

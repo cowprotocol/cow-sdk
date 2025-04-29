@@ -1,10 +1,10 @@
-import { BridgeQuoteAmountsAndCosts, QuoteBridgeRequest } from '../../../bridging/types'
+import { BridgeQuoteAmountsAndCosts, BridgeStatus, QuoteBridgeRequest } from '../../../bridging/types'
 import { TargetChainId } from '../../../chains'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { AcrossChainConfig, ACROSS_TOKEN_MAPPING } from './const/tokens'
 import { getBigNumber } from '../../../order-book'
 import { OrderKind } from '@cowprotocol/contracts'
-import { SuggestedFeesResponse } from './types'
+import { DepositStatusResponse, SuggestedFeesResponse } from './types'
 
 const PCT_100_PERCENT = 10n ** 18n
 
@@ -156,4 +156,20 @@ export function applyPctFee(amount: bigint, pct: bigint): bigint {
 
 export function applyBps(amount: bigint, bps: number): bigint {
   return (amount * BigInt(10_000 - bps)) / 10_000n
+}
+
+export function mapAcrossStatusToBridgeStatus(status: DepositStatusResponse['status']): BridgeStatus {
+  switch (status) {
+    case 'filled':
+    case 'slowFillRequested':
+      return BridgeStatus.EXECUTED
+    case 'pending':
+      return BridgeStatus.IN_PROGRESS
+    case 'expired':
+      return BridgeStatus.EXPIRED
+    case 'refunded':
+      return BridgeStatus.REFUND
+    default:
+      return BridgeStatus.FAILED
+  }
 }

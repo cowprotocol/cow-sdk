@@ -1,5 +1,5 @@
 import { latest as latestAppData } from '@cowprotocol/app-data'
-import { ChainInfo, SupportedChainId, TargetChainId } from '../chains'
+import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../chains'
 import { TokenInfo } from '../common/types/tokens'
 import { Address, Amounts, EnrichedOrder, OrderKind } from '../order-book'
 import { EvmCall } from '../common/types/ethereum'
@@ -108,6 +108,7 @@ export enum BridgeStatus {
   EXECUTED = 'executed',
   FAILED = 'failed',
   EXPIRED = 'expired',
+  REFUND = 'refund',
 }
 
 export interface BridgeStatusResult {
@@ -228,7 +229,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    *
    * @param bridgingId - The bridging id
    */
-  getStatus(bridgingId: string): Promise<BridgeStatusResult>
+  getStatus(bridgingId: string, originTokenChainId: ChainId): Promise<BridgeStatusResult>
 
   // Get a transaction to cancel a bridging transaction.
   // TODO: Review if we support cancelling bridging
