@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Signer } from 'ethers'
+import { providers, Signer } from 'ethers'
 import { latest as latestAppData } from '@cowprotocol/app-data'
 
 import {
@@ -25,12 +25,19 @@ import { arbitrumOne } from '../../../chains/details/arbitrum'
 import { base } from '../../../chains/details/base'
 import { optimism } from '../../../chains/details/optimism'
 import { AcrossApi, AcrossApiOptions } from './AcrossApi'
-import { getChainConfigs, getTokenAddress, getTokenSymbol, toBridgeQuoteResult } from './util'
+import {
+  getChainConfigs,
+  getTokenAddress,
+  getTokenSymbol,
+  mapAcrossStatusToBridgeStatus,
+  toBridgeQuoteResult,
+} from './util'
 import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
 import { createAcrossDepositCall } from './createAcrossDepositCall'
 import { OrderKind } from '@cowprotocol/contracts'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
 import { SuggestedFeesResponse } from './types'
+import { getDepositId } from './getDepositId'
 
 const HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/across`
 export const ACROSS_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
@@ -176,10 +183,14 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     throw new Error('Not implemented')
   }
 
-  async getBridgingId(_orderUid: string, _settlementTx: string, _logIndex: number): Promise<string> {
-    // TODO: get events from the mined transaction, extract the deposit id
-    // Important. A settlement could have many bridge-and-swap transactions, maybe even using different providers, this is why the log index might be handy to find which of the depositIds corresponds to the bridging transaction
-    throw new Error('Not implemented')
+  async getBridgingId(
+    chainId: SupportedChainId,
+    orderUid: string,
+    txHash: string,
+    provider: providers.JsonRpcProvider
+  ): Promise<string> {
+    const txReceipt = await provider.getTransactionReceipt(txHash)
+    return getDepositId(chainId, orderUid, txReceipt)
   }
 
   getExplorerUrl(bridgingId: string): string {
@@ -187,8 +198,16 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     return `https://app.across.to/transactions/${bridgingId}`
   }
 
-  async getStatus(_bridgingId: string): Promise<BridgeStatusResult> {
-    throw new Error('Not implemented')
+  async getStatus(bridgingId: string, chainId: SupportedChainId): Promise<BridgeStatusResult> {
+    const depositStatus = await this.api.getDepositStatus({
+      originChainId: chainId.toString(),
+      depositId: bridgingId,
+    })
+
+    return {
+      status: mapAcrossStatusToBridgeStatus(depositStatus.status),
+      fillTimeInSeconds: 0, // TODO: get the fill time from the deposit status ?
+    }
   }
 
   async getCancelBridgingTx(_bridgingId: string): Promise<EvmCall> {
