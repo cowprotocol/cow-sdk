@@ -1,10 +1,10 @@
-import { BridgeQuoteAmountsAndCosts, QuoteBridgeRequest } from '../../../bridging/types'
+import { BridgeQuoteAmountsAndCosts, BridgeStatus, QuoteBridgeRequest } from '../../../bridging/types'
 import { TargetChainId } from '../../../chains'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { AcrossChainConfig, ACROSS_TOKEN_MAPPING } from './const/tokens'
 import { getBigNumber } from '../../../order-book'
 import { OrderKind } from '@cowprotocol/contracts'
-import { SuggestedFeesResponse } from './types'
+import { DepositStatusResponse, SuggestedFeesResponse } from './types'
 
 const PCT_100_PERCENT = 10n ** 18n
 
@@ -15,7 +15,7 @@ const PCT_100_PERCENT = 10n ** 18n
  */
 export function getChainConfigs(
   sourceChainId: TargetChainId,
-  targetChainId: TargetChainId
+  targetChainId: TargetChainId,
 ): { sourceChainConfig: AcrossChainConfig; targetChainConfig: AcrossChainConfig } | undefined {
   const sourceChainConfig = getChainConfig(sourceChainId)
   const targetChainConfig = getChainConfig(targetChainId)
@@ -40,7 +40,7 @@ export function getTokenAddress(tokenSymbol: string, chainConfig: AcrossChainCon
 export function toBridgeQuoteResult(
   request: QuoteBridgeRequest,
   slippageBps: number,
-  suggestedFees: SuggestedFeesResponse
+  suggestedFees: SuggestedFeesResponse,
 ): AcrossQuoteResult {
   const { kind } = request
 
@@ -64,7 +64,7 @@ export function toBridgeQuoteResult(
 function toAmountsAndCosts(
   request: QuoteBridgeRequest,
   slippageBps: number,
-  suggestedFees: SuggestedFeesResponse
+  suggestedFees: SuggestedFeesResponse,
 ): BridgeQuoteAmountsAndCosts {
   const { amount, sellTokenDecimals, buyTokenDecimals } = request
 
@@ -156,4 +156,16 @@ export function applyPctFee(amount: bigint, pct: bigint): bigint {
 
 export function applyBps(amount: bigint, bps: number): bigint {
   return (amount * BigInt(10_000 - bps)) / 10_000n
+}
+
+const AcrossStatusToBridgeStatus: Record<DepositStatusResponse['status'], BridgeStatus> = {
+  filled: BridgeStatus.EXECUTED,
+  slowFillRequested: BridgeStatus.EXECUTED,
+  pending: BridgeStatus.IN_PROGRESS,
+  expired: BridgeStatus.EXPIRED,
+  refunded: BridgeStatus.REFUND,
+}
+
+export function mapAcrossStatusToBridgeStatus(status: DepositStatusResponse['status']): BridgeStatus {
+  return AcrossStatusToBridgeStatus[status]
 }

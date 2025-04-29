@@ -1,7 +1,15 @@
 import { OrderKind } from '@cowprotocol/contracts'
 import { AdditionalTargetChainId, SupportedChainId } from '../../../chains'
-import { QuoteBridgeRequest } from '../../types'
-import { getChainConfigs, getTokenSymbol, getTokenAddress, toBridgeQuoteResult, pctToBps, applyPctFee } from './util'
+import { QuoteBridgeRequest, BridgeStatus } from '../../types'
+import {
+  getChainConfigs,
+  getTokenSymbol,
+  getTokenAddress,
+  toBridgeQuoteResult,
+  pctToBps,
+  applyPctFee,
+  mapAcrossStatusToBridgeStatus,
+} from './util'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { SuggestedFeesResponse } from './types'
 
@@ -161,6 +169,16 @@ describe('Across Utils', () => {
 
     it('should throw an error if fee percentage exceeds 100%', () => {
       expect(() => applyPctFee(1000000000000000000n, 1000000000000000001n)).toThrow('Fee cannot exceed 100%')
+    })
+  })
+
+  describe('mapAcrossStatusToBridgeStatus', () => {
+    it('should map Across deposit status to Bridge status', () => {
+      expect(mapAcrossStatusToBridgeStatus('filled')).toBe(BridgeStatus.EXECUTED)
+      expect(mapAcrossStatusToBridgeStatus('pending')).toBe(BridgeStatus.IN_PROGRESS)
+      expect(mapAcrossStatusToBridgeStatus('expired')).toBe(BridgeStatus.EXPIRED)
+      expect(mapAcrossStatusToBridgeStatus('refunded')).toBe(BridgeStatus.REFUND)
+      expect(mapAcrossStatusToBridgeStatus('slowFillRequested')).toBe(BridgeStatus.EXECUTED)
     })
   })
 })

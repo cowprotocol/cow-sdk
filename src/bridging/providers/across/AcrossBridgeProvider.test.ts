@@ -1,6 +1,6 @@
 import { SupportedChainId, TargetChainId } from '../../../chains'
 import { OrderKind } from '../../../order-book'
-import { BridgeQuoteResult, QuoteBridgeRequest } from '../../types'
+import { BridgeQuoteResult, BridgeStatus, QuoteBridgeRequest } from '../../types'
 import { AcrossApi } from './AcrossApi'
 import { ACROSS_SUPPORTED_NETWORKS, AcrossBridgeProvider, AcrossBridgeProviderOptions } from './AcrossBridgeProvider'
 import { SuggestedFeesResponse } from './types'
@@ -186,8 +186,28 @@ describe('AcrossBridgeProvider', () => {
   })
 
   describe('getStatus', () => {
-    it('should return status', async () => {
-      await expect(provider.getStatus('123')).rejects.toThrowError('Not implemented')
+    const mockDepositStatus = {
+      status: 'filled' as const,
+    }
+
+    beforeEach(() => {
+      const mockAcrossApi = new AcrossApi()
+      jest.spyOn(mockAcrossApi, 'getDepositStatus').mockResolvedValue(mockDepositStatus)
+      provider.setApi(mockAcrossApi)
+    })
+
+    it('should return a valid status when passed a valid bridging id', async () => {
+      const status = await provider.getStatus('123', SupportedChainId.MAINNET)
+
+      expect(status).toEqual({
+        status: BridgeStatus.EXECUTED,
+        fillTimeInSeconds: 0,
+      })
+
+      expect(provider.getApi().getDepositStatus).toHaveBeenCalledWith({
+        originChainId: SupportedChainId.MAINNET.toString(),
+        depositId: '123',
+      })
     })
   })
 

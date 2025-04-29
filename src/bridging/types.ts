@@ -109,6 +109,7 @@ export enum BridgeStatus {
   EXECUTED = 'executed',
   FAILED = 'failed',
   EXPIRED = 'expired',
+  REFUND = 'refund',
 }
 
 export interface BridgeStatusResult {
@@ -230,8 +231,9 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    * Get the status of a bridging transaction.
    *
    * @param bridgingId - The bridging id
+   * @param originChainId - id of network where funds were deposited
    */
-  getStatus(bridgingId: string): Promise<BridgeStatusResult>
+  getStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult>
 
   // Get a transaction to cancel a bridging transaction.
   // TODO: Review if we support cancelling bridging

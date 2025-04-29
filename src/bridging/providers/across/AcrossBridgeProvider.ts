@@ -23,7 +23,7 @@ import { arbitrumOne } from '../../../chains/details/arbitrum'
 import { base } from '../../../chains/details/base'
 import { optimism } from '../../../chains/details/optimism'
 import { AcrossApi, AcrossApiOptions } from './AcrossApi'
-import { toBridgeQuoteResult } from './util'
+import { mapAcrossStatusToBridgeStatus, toBridgeQuoteResult } from './util'
 import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
 import { createAcrossDepositCall } from './createAcrossDepositCall'
 import { OrderKind } from '@cowprotocol/contracts'
@@ -179,8 +179,15 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     return `https://app.across.to/transactions/${bridgingId}`
   }
 
-  async getStatus(_bridgingId: string): Promise<BridgeStatusResult> {
-    throw new Error('Not implemented')
+  async getStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult> {
+    const depositStatus = await this.api.getDepositStatus({
+      originChainId: originChainId.toString(),
+      depositId: bridgingId,
+    })
+
+    return {
+      status: mapAcrossStatusToBridgeStatus(depositStatus.status),
+    }
   }
 
   async getCancelBridgingTx(_bridgingId: string): Promise<EvmCall> {

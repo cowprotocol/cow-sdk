@@ -37,7 +37,7 @@ export async function getCrossChainOrder(params: {
   const provider = providers.find((provider) => provider.info.name === bridgeProviderName)
   if (!provider) {
     throw new Error(
-      `Unknown Bridge provider: ${bridgeProviderName}. Add provider to the SDK config to be able to decode the order`
+      `Unknown Bridge provider: ${bridgeProviderName}. Add provider to the SDK config to be able to decode the order`,
     )
   }
 
@@ -56,7 +56,7 @@ export async function getCrossChainOrder(params: {
 
     // Get bridging id for this order
     const bridgingId = await provider.getBridgingId(orderId, firstTrade.txHash, firstTrade.logIndex)
-    const { status, fillTimeInSeconds } = await provider.getStatus(bridgingId)
+    const { status, fillTimeInSeconds } = await provider.getStatus(bridgingId, chainId)
     const explorerUrl = provider.getExplorerUrl(bridgingId)
 
     return {

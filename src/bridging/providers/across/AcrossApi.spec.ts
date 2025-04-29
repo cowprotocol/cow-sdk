@@ -1,6 +1,6 @@
-import { SupportedChainId } from '../../../chains'
+import { AdditionalTargetChainId, SupportedChainId } from '../../../chains'
 import { AcrossApi } from './AcrossApi'
-
+import { DepositStatusResponse } from './types'
 describe('AcrossApi: Shape of API response', () => {
   let api: AcrossApi
 
@@ -61,5 +61,22 @@ describe('AcrossApi: Shape of API response', () => {
     })
 
     expect(result).toBeDefined()
+  })
+
+  it('getDepositStatus', async () => {
+    // Attempt to make a REAL API call. The API implementation will assert the result shape matches the expected object
+    const result: DepositStatusResponse = await api.getDepositStatus({
+      originChainId: AdditionalTargetChainId.OPTIMISM.toString(),
+      depositId: '1349975',
+    })
+
+    expect(result).toBeDefined()
+    expect(result.status).toBe('filled')
+    expect(result.depositTxHash).toBe('0x2bb3be895fd9be20522562cd62b52ae8d58eb00b31548c2caa7fcb557708f4cf')
+    expect(result.fillTx).toBe('0xee2087bfb253c4d50e2ee8ddbae14a625540534569b9e54ea31a7cb13584a3ef')
+    expect(result.destinationChainId).toBe(8453)
+    expect(result.depositRefundTxHash).toBeNull()
+    expect(result.pagination).toBeDefined()
+    expect(result.pagination?.currentIndex).toBe(0)
   })
 })
