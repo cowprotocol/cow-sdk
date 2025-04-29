@@ -1,10 +1,17 @@
-import { BridgeQuoteAmountsAndCosts, BridgeStatus, QuoteBridgeRequest } from '../../../bridging/types'
-import { TargetChainId } from '../../../chains'
-import { AcrossQuoteResult } from './AcrossBridgeProvider'
-import { AcrossChainConfig, ACROSS_TOKEN_MAPPING } from './const/tokens'
-import { getBigNumber } from '../../../order-book'
+import { providers } from 'ethers'
+import { latest as latestAppData } from '@cowprotocol/app-data'
 import { OrderKind } from '@cowprotocol/contracts'
-import { DepositStatusResponse, SuggestedFeesResponse } from './types'
+
+import { BridgeQuoteAmountsAndCosts, BridgeStatus, QuoteBridgeRequest } from '../../../bridging/types'
+import { SupportedChainId, TargetChainId } from '../../../chains'
+import { getBigNumber } from '../../../order-book'
+
+import { AcrossDepositEvent, CowTradeEvent, DepositStatusResponse, SuggestedFeesResponse } from './types'
+import { AcrossQuoteResult } from './AcrossBridgeProvider'
+import { ACROSS_DEPOSIT_EVENT_INTERFACE, COW_TRADE_EVENT_INTERFACE } from './const/interfaces'
+import { AcrossChainConfig, ACROSS_TOKEN_MAPPING } from './const/tokens'
+import { ACROSS_DEPOSIT_EVENT_TOPIC, COW_TRADE_EVENT_TOPIC } from './const/misc'
+import { ACROSS_SPOOK_CONTRACT_ADDRESSES } from './const/contracts'
 
 const PCT_100_PERCENT = 10n ** 18n
 
@@ -172,4 +179,93 @@ export function mapAcrossStatusToBridgeStatus(status: DepositStatusResponse['sta
     default:
       return BridgeStatus.FAILED
   }
+}
+
+export function getPostHooks(fullAppData?: string): latestAppData.CoWHook[] {
+  if (!fullAppData) {
+    return []
+  }
+
+  const appData = JSON.parse(fullAppData)
+  if (!isAppDoc(appData)) {
+    return []
+  }
+
+  if (!appData.metadata.hooks) {
+    return []
+  }
+
+  return appData.metadata.hooks.post || []
+}
+
+export function getAcrossDepositEvents(chainId: SupportedChainId, logs: providers.Log[]): AcrossDepositEvent[] {
+  const spookContractAddress = ACROSS_SPOOK_CONTRACT_ADDRESSES[chainId]?.toLowerCase()
+
+  if (!spookContractAddress) {
+    return []
+  }
+
+  // Get accross deposit events
+  const depositEvents = logs.filter((log) => {
+    return log.address.toLocaleLowerCase() === spookContractAddress && log.topics[0] === ACROSS_DEPOSIT_EVENT_TOPIC
+  })
+
+  // Parse logs
+  return depositEvents.map((event) => {
+    const {
+      inputToken,
+      outputToken,
+      inputAmount,
+      outputAmount,
+      destinationChainId,
+      depositId,
+      quoteTimestamp,
+      fillDeadline,
+      exclusivityDeadline,
+      depositor,
+      recipient,
+      exclusiveRelayer,
+      message,
+    } = ACROSS_DEPOSIT_EVENT_INTERFACE.parseLog(event).args as unknown as AcrossDepositEvent
+    return {
+      inputToken,
+      outputToken,
+      inputAmount,
+      outputAmount,
+      destinationChainId,
+      depositId,
+      quoteTimestamp,
+      fillDeadline,
+      exclusivityDeadline,
+      depositor,
+      recipient,
+      exclusiveRelayer,
+      message,
+    }
+  })
+}
+
+export function getCowTradeEvents(logs: providers.Log[]): CowTradeEvent[] {
+  const cowTradeEvents = logs.filter((log) => {
+    return log.address.toLocaleLowerCase() === COW_TRADE_EVENT_TOPIC
+  })
+
+  return cowTradeEvents.map((event) => {
+    const { owner, sellToken, buyToken, sellAmount, buyAmount, feeAmount, orderUid } =
+      COW_TRADE_EVENT_INTERFACE.parseLog(event).args as unknown as CowTradeEvent
+    return {
+      owner,
+      sellToken,
+      buyToken,
+      sellAmount,
+      buyAmount,
+      feeAmount,
+      orderUid,
+    }
+  })
+}
+
+// TODO: Move to app-data project
+export function isAppDoc(appData: unknown): appData is latestAppData.AppDataRootSchema {
+  return typeof appData === 'object' && appData !== null && 'version' in appData && 'metadata' in appData
 }

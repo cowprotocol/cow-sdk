@@ -4,7 +4,7 @@ import { OrderBookApi } from 'src/order-book'
 import { getPostHooks } from '../utils'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from '../providers/across/const/misc'
 import { CowEnv } from '../../common'
-
+import { providers } from 'ethers'
 /**
  * Fetch a cross-chain order and its status.
  */
@@ -13,9 +13,10 @@ export async function getCrossChainOrder(params: {
   chainId: SupportedChainId
   orderBookApi: OrderBookApi
   providers: BridgeProvider<BridgeQuoteResult>[]
+  rpcProvider: providers.JsonRpcProvider
   env: CowEnv
 }): Promise<CrossChainOrder> {
-  const { orderId, chainId, orderBookApi, providers, env } = params
+  const { orderId, chainId, orderBookApi, providers, rpcProvider, env } = params
 
   const chainContext = { chainId, env }
   const order = await orderBookApi.getOrder(orderId, chainContext)
@@ -55,7 +56,7 @@ export async function getCrossChainOrder(params: {
     }
 
     // Get bridging id for this order
-    const bridgingId = await provider.getBridgingId(orderId, firstTrade.txHash, firstTrade.logIndex)
+    const bridgingId = await provider.getBridgingId(chainId, orderId, firstTrade.txHash, rpcProvider)
     const { status, fillTimeInSeconds } = await provider.getStatus(bridgingId, chainId)
     const explorerUrl = provider.getExplorerUrl(bridgingId)
 

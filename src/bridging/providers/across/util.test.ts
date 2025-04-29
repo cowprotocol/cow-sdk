@@ -9,6 +9,8 @@ import {
   pctToBps,
   applyPctFee,
   mapAcrossStatusToBridgeStatus,
+  getPostHooks,
+  getAcrossDepositEvents,
 } from './util'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { SuggestedFeesResponse } from './types'
@@ -180,6 +182,39 @@ describe('Across Utils', () => {
       expect(mapAcrossStatusToBridgeStatus('refunded')).toBe(BridgeStatus.REFUND)
       expect(mapAcrossStatusToBridgeStatus('slowFillRequested')).toBe(BridgeStatus.EXECUTED)
       expect(mapAcrossStatusToBridgeStatus(undefined)).toBe(BridgeStatus.FAILED)
+    })
+  })
+  describe('getPostHooks', () => {
+    it('should return empty array if passing nothing', () => {
+      const result = getPostHooks()
+      expect(result).toEqual([])
+    })
+
+    it('should return empty array if passing undefined', () => {
+      const result = getPostHooks(undefined)
+      expect(result).toEqual([])
+    })
+
+    it('should return empty array if passing an object that is not a valid App Doc', () => {
+      const result = getPostHooks('{ "myProperty": "myValue" }')
+      expect(result).toEqual([])
+    })
+
+    it('should return empty array if passing an App Doc without hooks', () => {
+      const result = getPostHooks('{ "version": "1", "metadata": {} }')
+      expect(result).toEqual([])
+    })
+
+    it('should return the post hooks if passing a valid App Doc with hooks', () => {
+      const result = getPostHooks('{ "version": "1", "metadata": { "hooks": { "post": [{ "dappId": "myDappId" }] } } }')
+      expect(result).toEqual([{ dappId: 'myDappId' }])
+    })
+  })
+
+  describe('getAcrossDepositEvents', () => {
+    it('should return empty array if passing nothing', () => {
+      const result = getAcrossDepositEvents(SupportedChainId.MAINNET, [])
+      expect(result).toEqual([])
     })
   })
 })

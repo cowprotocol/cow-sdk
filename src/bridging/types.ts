@@ -1,4 +1,6 @@
 import { latest as latestAppData } from '@cowprotocol/app-data'
+import { Signer } from '@ethersproject/abstract-signer'
+import { providers } from 'ethers'
 import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../chains'
 import { TokenInfo } from '../common/types/tokens'
 import { Address, Amounts, EnrichedOrder, OrderKind } from '../order-book'
@@ -12,7 +14,6 @@ import {
   TradeOptionalParameters,
   TraderParameters,
 } from '../trading'
-import { Signer } from '@ethersproject/abstract-signer'
 
 export interface BridgeProviderInfo {
   name: string
@@ -211,11 +212,17 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
 
   /**
    * Get the identifier of the bridging transaction from the settlement transaction.
+   * @param chainId - The chain id of the order
    * @param orderUid - The unique identifier of the order
-   * @param settlementTx - The settlement transaction in which the bridging post-hook was executed
-   * @param logIndex - The log index of the trade within the settlement transaction
+   * @param txHash - The hash of the settlement transaction in which the bridging post-hook was executed
+   * @param provider - The provider to get the transaction receipt
    */
-  getBridgingId(orderUid: string, settlementTx: string, logIndex: number): Promise<string>
+  getBridgingId(
+    chainId: SupportedChainId,
+    orderUid: string,
+    txHash: string,
+    provider: providers.JsonRpcProvider
+  ): Promise<string>
 
   /**
    * Get the explorer url for a bridging id.

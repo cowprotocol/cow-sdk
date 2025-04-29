@@ -1,3 +1,5 @@
+import { providers } from 'ethers'
+import { latest as latestAppData } from '@cowprotocol/app-data/dist/generatedTypes'
 import { AdditionalTargetChainId, SupportedChainId, TargetChainId } from '../../../chains'
 import { TokenInfo } from '../../../common'
 import { OrderKind } from '../../../order-book'
@@ -5,7 +7,6 @@ import { BridgeQuoteResult, BridgeStatus, QuoteBridgeRequest } from '../../types
 import { AcrossApi } from './AcrossApi'
 import { ACROSS_SUPPORTED_NETWORKS, AcrossBridgeProvider, AcrossBridgeProviderOptions } from './AcrossBridgeProvider'
 import { SuggestedFeesResponse } from './types'
-import { latest as latestAppData } from '@cowprotocol/app-data/dist/generatedTypes'
 
 // Mock AcrossApi
 jest.mock('./AcrossApi')
@@ -185,8 +186,22 @@ describe('AcrossBridgeProvider', () => {
   })
 
   describe('getBridgingId', () => {
-    it('should return bridging id', async () => {
-      await expect(provider.getBridgingId('123', '123', 1)).rejects.toThrowError('Not implemented')
+    const mockProvider = {
+      getTransactionReceipt: jest.fn().mockResolvedValue({
+        status: 'success',
+        logs: [
+          {
+            address: '0x123',
+            topics: ['0x123'],
+          },
+        ],
+      }),
+    } as unknown as providers.JsonRpcProvider
+
+    it('should return an error message if the transaction receipt has no deposit events', async () => {
+      await expect(provider.getBridgingId(SupportedChainId.MAINNET, '123', '123', mockProvider)).rejects.toThrowError(
+        'No deposit events found in the settlement tx. Are you sure the hook was triggered?'
+      )
     })
   })
 

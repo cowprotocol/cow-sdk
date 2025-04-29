@@ -264,3 +264,29 @@ export interface DepositStatusResponse {
    */
   message?: string
 }
+
+export interface AcrossDepositEvent {
+  inputToken: string
+  outputToken: string
+  inputAmount: string
+  outputAmount: string
+  destinationChainId: string
+  depositId: string
+  quoteTimestamp: string
+  fillDeadline: string
+  exclusivityDeadline: string
+  depositor: string
+  recipient: string
+  exclusiveRelayer: string
+  message: string
+}
+
+export interface CowTradeEvent {
+  owner: string
+  sellToken: string
+  buyToken: string
+  sellAmount: string
+  buyAmount: string
+  feeAmount: string
+  orderUid: string
+}
