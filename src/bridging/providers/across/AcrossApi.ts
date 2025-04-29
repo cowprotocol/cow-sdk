@@ -164,7 +164,7 @@ function isValidSuggestedFeeLimits(limits: unknown): limits is SuggestedFeesLimi
 }
 
 function isValidDepositStatusResponse(response: unknown): response is DepositStatusResponse {
-  return true
+  return typeof response === 'object' && response !== null
 }
 
 /**

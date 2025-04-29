@@ -200,6 +200,31 @@ describe('AcrossApi', () => {
       )
     })
 
+    it('should return an error if the deposit status is not found', async () => {
+      const mockNotFoundResponse: DepositStatusResponse = {
+        error: 'DepositNotFoundException',
+        message: 'Deposit not found given the provided constraints',
+      }
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockNotFoundResponse),
+      })
+
+      const request: DepositStatusRequest = {
+        originChainId: '8453',
+        depositId: '66666666',
+      }
+
+      const status = await api.getDepositStatus(request)
+
+      expect(status).toEqual(mockNotFoundResponse)
+      expect(mockFetch).toHaveBeenCalledWith(
+        `https://app.across.to/api/deposit/status?originChainId=${request.originChainId}&depositId=${request.depositId}`,
+        expect.any(Object)
+      )
+    })
+
     it('should handle API errors', async () => {
       mockFetch.mockResolvedValue({
         ok: false,

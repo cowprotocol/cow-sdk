@@ -253,4 +253,14 @@ export interface DepositStatusResponse {
     currentIndex: number
     maxIndex: number
   }
+
+  /**
+   * Error code if the deposit status is not found.
+   */
+  error?: string
+
+  /**
+   * Error message if the deposit status is not found.
+   */
+  message?: string
 }
