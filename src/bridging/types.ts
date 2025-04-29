@@ -1,5 +1,5 @@
 import { latest as latestAppData } from '@cowprotocol/app-data'
-import { ChainInfo, SupportedChainId, TargetChainId } from '../chains'
+import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../chains'
 import { TokenInfo } from '../common/types/tokens'
 import { Address, Amounts, EnrichedOrder, OrderKind } from '../order-book'
 import { EvmCall } from '../common/types/ethereum'
@@ -14,10 +14,12 @@ import {
   TraderParameters,
 } from '../trading'
 import { Signer } from '@ethersproject/abstract-signer'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 export interface BridgeProviderInfo {
   name: string
   logoUrl: string
+  dappId: string
 }
 
 interface WithSellToken {
@@ -104,10 +106,8 @@ export interface BridgeHook {
 }
 
 export enum BridgeStatus {
-  NOT_INITIATED = 'not_initiated',
   IN_PROGRESS = 'in_progress',
   EXECUTED = 'executed',
-  FAILED = 'failed',
   EXPIRED = 'expired',
   REFUND = 'refund',
 }
@@ -214,11 +214,12 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
 
   /**
    * Get the identifier of the bridging transaction from the settlement transaction.
+   * @param chainId
+   * @param provider - Provider is needed in order to get transaction details from blockchain.
    * @param orderUid - The unique identifier of the order
-   * @param settlementTx - The settlement transaction in which the bridging post-hook was executed
-   * @param logIndex - The log index of the trade within the settlement transaction
+   * @param txHash - The hash of the settlement transaction in which the bridging post-hook was executed
    */
-  getBridgingId(orderUid: string, settlementTx: string, logIndex: number): Promise<string>
+  getBridgingId(chainId: ChainId, provider: JsonRpcProvider, orderUid: string, txHash: string): Promise<string | null>
 
   /**
    * Get the explorer url for a bridging id.
@@ -351,7 +352,8 @@ export interface CrossChainOrder {
   chainId: SupportedChainId
   order: EnrichedOrder
   status: BridgeStatus
-  bridgingId?: string
+  bridgingId: string
+  tradeTxHash: string
   explorerUrl?: string
   fillTimeInSeconds?: number
 }

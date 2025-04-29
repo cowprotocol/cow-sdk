@@ -29,6 +29,8 @@ import { createAcrossDepositCall } from './createAcrossDepositCall'
 import { OrderKind } from '@cowprotocol/contracts'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
 import { SuggestedFeesResponse } from './types'
+import { getDepositId } from './getDepositId'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 type SupportedTokensState = Record<ChainId, Record<string, TokenInfo>>
 
@@ -64,6 +66,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
   info: BridgeProviderInfo = {
     name: 'Across',
     logoUrl: `${RAW_PROVIDERS_FILES_PATH}/across/across-logo.png`,
+    dappId: HOOK_DAPP_ID,
   }
 
   async getNetworks(): Promise<ChainInfo[]> {
@@ -168,10 +171,15 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     throw new Error('Not implemented')
   }
 
-  async getBridgingId(_orderUid: string, _settlementTx: string, _logIndex: number): Promise<string> {
-    // TODO: get events from the mined transaction, extract the deposit id
-    // Important. A settlement could have many bridge-and-swap transactions, maybe even using different providers, this is why the log index might be handy to find which of the depositIds corresponds to the bridging transaction
-    throw new Error('Not implemented')
+  async getBridgingId(
+    chainId: ChainId,
+    provider: JsonRpcProvider,
+    orderUid: string,
+    txHash: string,
+  ): Promise<string | null> {
+    const txReceipt = await provider.getTransactionReceipt(txHash)
+
+    return getDepositId(chainId, orderUid, txReceipt)
   }
 
   getExplorerUrl(bridgingId: string): string {
@@ -193,6 +201,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
   async getCancelBridgingTx(_bridgingId: string): Promise<EvmCall> {
     throw new Error('Not implemented')
   }
+
   async getRefundBridgingTx(_bridgingId: string): Promise<EvmCall> {
     throw new Error('Not implemented')
   }

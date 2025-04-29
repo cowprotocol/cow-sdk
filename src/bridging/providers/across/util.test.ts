@@ -9,6 +9,7 @@ import {
   pctToBps,
   applyPctFee,
   mapAcrossStatusToBridgeStatus,
+  getAcrossDepositEvents,
 } from './util'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { SuggestedFeesResponse } from './types'
@@ -179,6 +180,13 @@ describe('Across Utils', () => {
       expect(mapAcrossStatusToBridgeStatus('expired')).toBe(BridgeStatus.EXPIRED)
       expect(mapAcrossStatusToBridgeStatus('refunded')).toBe(BridgeStatus.REFUND)
       expect(mapAcrossStatusToBridgeStatus('slowFillRequested')).toBe(BridgeStatus.EXECUTED)
+    })
+  })
+
+  describe('getAcrossDepositEvents', () => {
+    it('should return empty array if passing nothing', () => {
+      const result = getAcrossDepositEvents(SupportedChainId.MAINNET, [])
+      expect(result).toEqual([])
     })
   })
 })

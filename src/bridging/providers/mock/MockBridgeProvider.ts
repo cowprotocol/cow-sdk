@@ -15,9 +15,10 @@ import { mainnet } from '../../../chains/details/mainnet'
 import { optimism } from '../../../chains/details/optimism'
 import { sepolia } from '../../../chains/details/sepolia'
 import { EvmCall, TokenInfo } from '../../../common'
-import { AdditionalTargetChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
+import { AdditionalTargetChainId, ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
 import { RAW_PROVIDERS_FILES_PATH } from '../../const'
 import { Signer } from '@ethersproject/abstract-signer'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 const BRIDGING_ID = '123456789asdfg'
 const MOCK_CALL: EvmCall = {
@@ -95,6 +96,7 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
   info: BridgeProviderInfo = {
     name: 'Mock',
     logoUrl: `${RAW_PROVIDERS_FILES_PATH}/mock/mock-logo.png`,
+    dappId: 'mockProvider',
   }
 
   async getNetworks(): Promise<ChainInfo[]> {
@@ -187,7 +189,12 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
     }
   }
 
-  async getBridgingId(_orderUid: string, _settlementTx: string, _logIndex: number): Promise<string> {
+  async getBridgingId(
+    _chainId: ChainId,
+    _provider: JsonRpcProvider,
+    _orderUid: string,
+    _txHash: string,
+  ): Promise<string> {
     return BRIDGING_ID
   }
 

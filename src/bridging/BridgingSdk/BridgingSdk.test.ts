@@ -27,6 +27,8 @@ import {
   quoteBridgeRequest,
   tradeParameters,
 } from './mock/bridgeRequestMocks'
+import { AcrossBridgeProvider } from '../providers/across/AcrossBridgeProvider'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 const signer = getSigner(quoteBridgeRequest.signer)
 
@@ -225,5 +227,30 @@ describe('BridgingSdk', () => {
       // Verify postSwapOrderFromQuote
       expect(postSwapOrderFromQuote).toBeDefined()
     })
+  })
+})
+
+describe('BridgingSDK getOrder', () => {
+  it('Get real bridging order details from Across', async () => {
+    const acrossProvider = new AcrossBridgeProvider()
+    const sdk = new BridgingSdk({
+      providers: [acrossProvider],
+      orderBookApi: new OrderBookApi({
+        backoffOpts: {
+          maxDelay: 0,
+          numOfAttempts: 0,
+        },
+      }),
+    })
+
+    const data = await sdk.getOrder({
+      chainId: SupportedChainId.MAINNET,
+      env: 'staging',
+      rpcProvider: new JsonRpcProvider('https://mainnet.gateway.tenderly.co'),
+      orderId:
+        '0xb8aeae0626654ea134614a42044dcf081544981e19f35082e20c967d5210834dfb3c7eb936caa12b5a884d612393969a557d430768248d30',
+    })
+
+    expect(data).toEqual({ a: 2 })
   })
 })

@@ -1,10 +1,11 @@
 import { SupportedChainId, TargetChainId } from '../../../chains'
+import { latest as latestAppData } from '@cowprotocol/app-data/dist/generatedTypes'
 import { OrderKind } from '../../../order-book'
 import { BridgeQuoteResult, BridgeStatus, QuoteBridgeRequest } from '../../types'
 import { AcrossApi } from './AcrossApi'
 import { ACROSS_SUPPORTED_NETWORKS, AcrossBridgeProvider, AcrossBridgeProviderOptions } from './AcrossBridgeProvider'
 import { SuggestedFeesResponse } from './types'
-import { latest as latestAppData } from '@cowprotocol/app-data/dist/generatedTypes'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 // Mock AcrossApi
 jest.mock('./AcrossApi')
@@ -174,8 +175,21 @@ describe('AcrossBridgeProvider', () => {
   })
 
   describe('getBridgingId', () => {
-    it('should return bridging id', async () => {
-      await expect(provider.getBridgingId('123', '123', 1)).rejects.toThrowError('Not implemented')
+    const mockProvider = {
+      getNetwork: jest.fn().mockResolvedValue({ chainId: 100 }),
+      getTransactionReceipt: jest.fn().mockResolvedValue({
+        status: 'success',
+        logs: [
+          {
+            address: '0x123',
+            topics: ['0x123'],
+          },
+        ],
+      }),
+    } as unknown as JsonRpcProvider
+
+    it('should return null if the transaction receipt has no deposit events', async () => {
+      expect(await provider.getBridgingId(10, mockProvider, '123', '123')).toBe(null)
     })
   })
 
@@ -188,6 +202,8 @@ describe('AcrossBridgeProvider', () => {
   describe('getStatus', () => {
     const mockDepositStatus = {
       status: 'filled' as const,
+      originChainId: '',
+      depositId: '',
     }
 
     beforeEach(() => {
@@ -201,7 +217,6 @@ describe('AcrossBridgeProvider', () => {
 
       expect(status).toEqual({
         status: BridgeStatus.EXECUTED,
-        fillTimeInSeconds: 0,
       })
 
       expect(provider.getApi().getDepositStatus).toHaveBeenCalledWith({
