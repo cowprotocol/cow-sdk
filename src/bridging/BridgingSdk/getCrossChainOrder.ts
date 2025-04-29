@@ -56,7 +56,7 @@ export async function getCrossChainOrder(params: {
 
     // Get bridging id for this order
     const bridgingId = await provider.getBridgingId(orderId, firstTrade.txHash, firstTrade.logIndex)
-    const { status, fillTimeInSeconds } = await provider.getStatus(bridgingId)
+    const { status, fillTimeInSeconds } = await provider.getStatus(bridgingId, chainId)
     const explorerUrl = provider.getExplorerUrl(bridgingId)
 
     return {
