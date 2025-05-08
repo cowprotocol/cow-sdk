@@ -1762,10 +1762,10 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@cowprotocol/app-data@^2.5.1":
-  version "2.5.1"
-  resolved "https://registry.yarnpkg.com/@cowprotocol/app-data/-/app-data-2.5.1.tgz#c674ddfd161afd9a2ff425468b90a4b2f94d4341"
-  integrity sha512-GvcLQ44ZUHKdSAXiZ+YCaIehtme/OIvbvL/4go1UqNLTj3jDTDkagPh7CH/z2IPwFWTADyNZO/RSzKrW5UDNaA==
+"@cowprotocol/app-data@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@cowprotocol/app-data/-/app-data-3.0.0.tgz#e5e7676ee8884c5348553883d0e65562c2f09e66"
+  integrity sha512-EyNoyoq3VnVIzvylLdn4Q1r0tU7HOikkjXzYY9PXJ/DUfj9gka7lOyNK7Ot8En2eUYTl3DNAle9RP7kt2sEpeg==
   dependencies:
     ajv "^8.11.0"
     cross-fetch "^3.1.5"

@@ -15,7 +15,7 @@ import {
   WithPartialTraderParams,
 } from '../../trading'
 import { BridgeCallDetails, BridgeQuoteResult, QuoteBridgeRequest } from '../types'
-import { latestAppData } from '@cowprotocol/app-data'
+import { latest as latestAppData } from '@cowprotocol/app-data'
 import {
   BuyTokenDestination,
   OrderBookApi,
