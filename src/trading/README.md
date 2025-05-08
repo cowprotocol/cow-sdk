@@ -166,7 +166,7 @@ const parameters: TradeParameters = {
   amount: '120000000000000000'
 }
 
-const orderId = await sdk.postSwapOrder(parameters)
+const { orderId } = await sdk.postSwapOrder(parameters)
 
 console.log('Order created, id: ', orderId)
 ```
@@ -212,7 +212,7 @@ const limitOrderParameters: LimitTradeParameters = {
   buyAmount: '66600000000000000000',
 }
 
-const orderId = await sdk.postLimitOrder(limitOrderParameters)
+const { orderId } = await sdk.postLimitOrder(limitOrderParameters)
 
 console.log('Order created, id: ', orderId)
 ```
@@ -249,7 +249,7 @@ const parameters: TradeParameters = {
   amount: '120000000000000000'
 }
 
-const orderId = await sdk.postSellNativeCurrencyOrder(parameters)
+const { orderId } = await sdk.postSellNativeCurrencyOrder(parameters)
 
 console.log('Order created, id: ', orderId)
 ```
@@ -304,7 +304,7 @@ console.log('Quote:', quoteResults)
 If you want to create an order with a smart-contract wallet, you should specify the `signingScheme` parameter in the `postSwapOrder` function.
 And then you need to send a transaction from `getPreSignTransaction` result in order to sign the order.
 
-#### Example
+#### Example of Swap order
 
 ```typescript
 import {
@@ -337,12 +337,59 @@ const advancedParameters: SwapAdvancedSettings = {
 }
 
 const smartContractWalletAddress = '0x<smartContractWalletAddress>'
-const orderId = await sdk.postSwapOrder(parameters, advancedParameters)
+const { orderId } = await sdk.postSwapOrder(parameters, advancedParameters)
 const preSignTransaction = await sdk.getPreSignTransaction({ orderId, account: smartContractWalletAddress })
 
 console.log('Order created with "pre-sign" state, id: ', orderId)
 console.log('Execute the transaction to sign the order', preSignTransaction)
 ```
+
+#### Example of Limit order
+
+```typescript
+import {
+  SupportedChainId,
+  OrderKind,
+  LimitTradeParameters,
+  LimitOrderAdvancedSettings,
+  SigningScheme,
+  TradingSdk
+} from '@cowprotocol/cow-sdk'
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  signer: '<privateKeyOrEthersSigner>',
+  appCode: '<YOUR_APP_CODE>',
+})
+
+const smartContractWalletAddress = '0x<smartContractWalletAddress>'
+
+const limitOrderParameters: LimitTradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  sellAmount: '120000000000000000',
+  buyAmount: '66600000000000000000',
+  owner: smartContractWalletAddress // See note bellow why you need to specify the parameter
+}
+
+const advancedParameters: LimitOrderAdvancedSettings = {
+  additionalParams: {
+    signingScheme: SigningScheme.PRESIGN
+  }
+}
+
+const { orderId } = await sdk.postLimitOrder(limitOrderParameters, advancedParameters)
+const preSignTransaction = await sdk.getPreSignTransaction({ orderId, account: smartContractWalletAddress })
+
+console.log('Order created with "pre-sign" state, id: ', orderId)
+console.log('Execute the transaction to sign the order', preSignTransaction)
+```
+
+> **Note:** it's important to specify the `owner` parameter if you create an order with a smart-contract wallet, and it differs from the signer (for example Safe).
+> CoW Protocol will use `owner` in order to check the order owner balance, allowance and other things.
 
 ### Optional parameters
 
@@ -382,7 +429,7 @@ const parameters: TradeParameters = {
   receiver: '0xdef1ca1fb7f1232777520aa7f396b4e015f497ab' // Just a random address, don't use it!
 }
 
-const orderId = await sdk.postSwapOrder(parameters)
+const { orderId } = await sdk.postSwapOrder(parameters)
 
 console.log('Order created, id: ', orderId)
 ```
@@ -442,7 +489,7 @@ const advancedSettings: SwapAdvancedSettings = {
     }
   },
 }
-const orderId = await sdk.postSwapOrder(parameters, advancedSettings)
+const { orderId } = await sdk.postSwapOrder(parameters, advancedSettings)
 
 console.log('Order created, id: ', orderId)
 ```
