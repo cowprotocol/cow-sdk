@@ -60,7 +60,7 @@ const ACROSS_CHAIN_CONFIGS: AcrossChainConfig[] = [
   {
     chainId: SupportedChainId.AVALANCHE, // TODO: check
     tokens: {
-      usdc: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
+      usdc: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
     },
   },
 ]
