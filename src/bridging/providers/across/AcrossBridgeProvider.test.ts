@@ -1,4 +1,4 @@
-import { AdditionalTargetChainId, SupportedChainId, TargetChainId } from '../../../chains'
+import { SupportedChainId, TargetChainId } from '../../../chains'
 import { TokenInfo } from '../../../common'
 import { OrderKind } from '../../../order-book'
 import { BridgeQuoteResult, QuoteBridgeRequest } from '../../types'
@@ -53,8 +53,8 @@ describe('AcrossBridgeProvider', () => {
 
   describe('getBuyTokens', () => {
     const mockTokens: TokenInfo[] = [
-      { chainId: AdditionalTargetChainId.POLYGON, address: '0x123', decimals: 18, symbol: 'TOKEN1', name: 'Token 1' },
-      { chainId: AdditionalTargetChainId.POLYGON, address: '0x456', decimals: 6, symbol: 'TOKEN2', name: 'Token 2' },
+      { chainId: SupportedChainId.POLYGON, address: '0x123', decimals: 18, symbol: 'TOKEN1', name: 'Token 1' },
+      { chainId: SupportedChainId.POLYGON, address: '0x456', decimals: 6, symbol: 'TOKEN2', name: 'Token 2' },
     ]
 
     beforeEach(() => {
@@ -62,14 +62,14 @@ describe('AcrossBridgeProvider', () => {
     })
 
     it('should return tokens for supported chain', async () => {
-      const tokens = await provider.getBuyTokens(AdditionalTargetChainId.POLYGON)
+      const tokens = await provider.getBuyTokens(SupportedChainId.POLYGON)
 
       expect(tokens).toEqual(mockTokens)
       // mockGetTokenInfos was called with a list of addresses which includes 0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359 and 0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619
 
       // The token result contains USDC and WETH in polygon
       expect(mockGetTokenInfos).toHaveBeenCalledWith(
-        AdditionalTargetChainId.POLYGON,
+        SupportedChainId.POLYGON,
         expect.arrayContaining([
           '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
           '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
@@ -120,7 +120,7 @@ describe('AcrossBridgeProvider', () => {
         kind: OrderKind.SELL,
         sellTokenAddress: '0x123',
         sellTokenChainId: SupportedChainId.MAINNET,
-        buyTokenChainId: AdditionalTargetChainId.POLYGON,
+        buyTokenChainId: SupportedChainId.POLYGON,
         amount: 1000000000000000000n,
         receiver: '0x789',
         account: '0x123',

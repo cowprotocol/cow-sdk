@@ -13,13 +13,14 @@ export enum SupportedChainId {
   ARBITRUM_ONE = 42161,
   BASE = 8453,
   SEPOLIA = 11155111,
+  POLYGON = 137,
+  AVALANCHE = 43114,
 }
 
 /**
  * Chains where you can buy tokens using the bridge functionality. This enum contains chains that are not already included in the SupportedChainId enum.
  */
 export enum AdditionalTargetChainId {
-  POLYGON = 137,
   OPTIMISM = 10,
 }
 

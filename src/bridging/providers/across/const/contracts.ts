@@ -5,11 +5,12 @@ export const ACROSS_SPOOK_CONTRACT_ADDRESSES: Record<TargetChainId, string | und
   [SupportedChainId.ARBITRUM_ONE]: '0xe35e9842fceaca96570b734083f4a58e8f7c5f2a',
   [SupportedChainId.BASE]: '0x09aea4b2242abC8bb4BB78D537A67a245A7bEC64',
   [SupportedChainId.SEPOLIA]: '0x5ef6C01E11889d86803e0B23e3cB3F9E9d97B662',
+  [SupportedChainId.POLYGON]: '0x9295ee1d8C5b022Be115A2AD3c30C72E34e7F096',
 
   // Not supported chains
   // TODO: This first integration is a draft, some of this chains might be supported, so we will need to update here as we iterate on the provider
   [SupportedChainId.GNOSIS_CHAIN]: undefined,
-  [AdditionalTargetChainId.POLYGON]: undefined,
+  [SupportedChainId.AVALANCHE]: undefined,
   [AdditionalTargetChainId.OPTIMISM]: undefined,
 }
 
@@ -22,6 +23,7 @@ export const ACROSS_MATH_CONTRACT_ADDRESSES: Record<TargetChainId, string | unde
   // TODO: This first integration is a draft, some of this chains might be supported, so we will need to update here as we iterate on the provider
   [SupportedChainId.GNOSIS_CHAIN]: undefined,
   [SupportedChainId.SEPOLIA]: undefined,
-  [AdditionalTargetChainId.POLYGON]: undefined,
+  [SupportedChainId.POLYGON]: undefined,
   [AdditionalTargetChainId.OPTIMISM]: undefined,
+  [SupportedChainId.AVALANCHE]: undefined,
 }

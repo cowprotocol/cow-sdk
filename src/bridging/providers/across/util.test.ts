@@ -98,7 +98,7 @@ describe('Across Utils', () => {
         sellTokenChainId: SupportedChainId.MAINNET,
         sellTokenAddress: '0x1234567890123456789012345678901234567890',
         sellTokenDecimals: 18,
-        buyTokenChainId: AdditionalTargetChainId.POLYGON,
+        buyTokenChainId: SupportedChainId.POLYGON,
         buyTokenAddress: '0x1234567890123456789012345678901234567890',
         buyTokenDecimals: 6,
         amount: mockAmount,

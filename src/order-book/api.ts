@@ -37,6 +37,8 @@ export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.ARBITRUM_ONE]: 'https://api.cow.fi/arbitrum_one',
   [SupportedChainId.BASE]: 'https://api.cow.fi/base',
   [SupportedChainId.SEPOLIA]: 'https://api.cow.fi/sepolia',
+  [SupportedChainId.POLYGON]: 'https://api.cow.fi/polygon',
+  [SupportedChainId.AVALANCHE]: 'https://api.cow.fi/avalanche',
 }
 
 /**
@@ -48,6 +50,8 @@ export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.ARBITRUM_ONE]: 'https://barn.api.cow.fi/arbitrum_one',
   [SupportedChainId.BASE]: 'https://barn.api.cow.fi/base',
   [SupportedChainId.SEPOLIA]: 'https://barn.api.cow.fi/sepolia',
+  [SupportedChainId.POLYGON]: 'https://barn.api.cow.fi/polygon',
+  [SupportedChainId.AVALANCHE]: 'https://barn.api.cow.fi/avalanche',
 }
 
 function cleanObjectFromUndefinedValues(obj: Record<string, string>): typeof obj {

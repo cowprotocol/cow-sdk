@@ -20,7 +20,7 @@ const ACROSS_CHAIN_CONFIGS: AcrossChainConfig[] = [
     },
   },
   {
-    chainId: AdditionalTargetChainId.POLYGON,
+    chainId: SupportedChainId.POLYGON,
     tokens: {
       usdc: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
       weth: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
@@ -55,6 +55,12 @@ const ACROSS_CHAIN_CONFIGS: AcrossChainConfig[] = [
       wbtc: '0x68f180fcCe6836688e9084f035309E29Bf0A2095',
       dai: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
       usdt: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
+    },
+  },
+  {
+    chainId: SupportedChainId.AVALANCHE, // TODO: check
+    tokens: {
+      usdc: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
     },
   },
 ]
