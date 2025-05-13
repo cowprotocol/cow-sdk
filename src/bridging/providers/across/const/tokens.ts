@@ -57,10 +57,6 @@ const ACROSS_CHAIN_CONFIGS: AcrossChainConfig[] = [
       usdt: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
     },
   },
-  {
-    chainId: SupportedChainId.AVALANCHE,
-    tokens: {}, // ACROSS does not support AVALANCHE (yet)
-  },
 ]
 
 export const ACROSS_TOKEN_MAPPING: Partial<Record<TargetChainId, AcrossChainConfig>> = ACROSS_CHAIN_CONFIGS.reduce(

@@ -12,9 +12,9 @@ export enum SupportedChainId {
   GNOSIS_CHAIN = 100,
   ARBITRUM_ONE = 42161,
   BASE = 8453,
-  SEPOLIA = 11155111,
   POLYGON = 137,
   AVALANCHE = 43114,
+  SEPOLIA = 11155111,
 }
 
 /**

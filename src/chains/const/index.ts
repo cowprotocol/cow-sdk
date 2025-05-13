@@ -18,9 +18,9 @@ export const ALL_SUPPORTED_CHAINS_MAP: Record<SupportedChainId, ChainInfo> = {
   [SupportedChainId.GNOSIS_CHAIN]: gnosisChain,
   [SupportedChainId.ARBITRUM_ONE]: arbitrumOne,
   [SupportedChainId.BASE]: base,
-  [SupportedChainId.SEPOLIA]: sepolia,
   [SupportedChainId.AVALANCHE]: avalanche,
   [SupportedChainId.POLYGON]: polygon,
+  [SupportedChainId.SEPOLIA]: sepolia,
 }
 
 /**
