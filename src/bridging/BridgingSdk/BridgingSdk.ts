@@ -150,7 +150,7 @@ export class BridgingSdk {
    */
   async getQuote(
     quoteBridgeRequest: QuoteBridgeRequest,
-    advancedSettings?: SwapAdvancedSettings,
+    advancedSettings?: SwapAdvancedSettings
   ): Promise<CrossChainQuoteAndPost> {
     const { sellTokenChainId, buyTokenChainId } = quoteBridgeRequest
     const tradingSdk = this.config.tradingSdk
