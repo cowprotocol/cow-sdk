@@ -16,7 +16,7 @@ import { getPreSignTransaction } from './getPreSignTransaction'
 import { enableLogging } from '../common/utils/log'
 import { OrderBookApi } from '../order-book'
 import { getSigner } from '../common/utils/wallet'
-import { getSmartSlippageBpsWithSigner } from './getSmartSlippage'
+import { getSuggestedSlippageBpsWithSigner } from './getSuggestedSlippage'
 
 export type WithPartialTraderParams<T> = T & Partial<TraderParameters>
 
@@ -73,11 +73,11 @@ export class TradingSdk {
     return getQuoteWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
   }
 
-  async getSmartSlippageBps(
+  async getSuggestedSlippageBps(
     params: WithPartialTraderParams<TradeParameters>,
     advancedSettings?: SwapAdvancedSettings
   ): Promise<number> {
-    return getSmartSlippageBpsWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
+    return getSuggestedSlippageBpsWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
   }
 
   async postSwapOrder(

@@ -30,7 +30,7 @@ Main functions:
 - `postSwapOrder` - Get a quote and create a swap order.
 - `postLimitOrder` - Create a limit order.
 - `getQuote` - Fetch a quote for a swap order.
-- `getSmartSlippageBps` - Fetch a smart slippage for a swap order.
+- `getSuggestedSlippageBps` - Suggests a slippage for a swap order.
 
 Special cases:
 - 'setTraderParams' - In case if you work with different chains and need to switch between them in runtime.
