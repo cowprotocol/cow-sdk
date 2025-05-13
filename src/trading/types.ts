@@ -135,6 +135,12 @@ export interface QuoteResults {
   tradeParameters: TradeParameters
 
   /**
+   * The suggested slippage based on the quote.
+   *
+   */
+  suggestedSlippageBps: number
+
+  /**
    * Details about costs and amounts, costs and fees of a quote.
    */
   amountsAndCosts: QuoteAmountsAndCosts
