@@ -97,6 +97,7 @@ export class Multiplexer {
    */
   static fromJSON(s: string): Multiplexer {
     // reviver function to deserialize the orders
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const reviver = (k: string, v: any) => {
       if (k === 'orders' && typeof v === 'object' && v !== null) {
         const orders: Orders = {}
@@ -434,6 +435,7 @@ export class Multiplexer {
    */
   public static registerOrderType(
     orderType: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     conditionalOrderClass: new (...args: any[]) => ConditionalOrder<unknown, unknown>,
   ) {
     Multiplexer.orderTypeRegistry[orderType] = conditionalOrderClass

@@ -86,6 +86,7 @@ async function _signOrderCancellations(params: SignOrderCancellationsParams): Pr
 
 async function _signPayload(
   payload: PayloadParams,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   signFn: (params: any) => Promise<Signature>,
   signer: Signer,
   signingMethod: 'default' | 'v4' | 'int_v4' | 'v3' | 'eth_sign' = 'v4',
@@ -114,7 +115,7 @@ async function _signPayload(
 
   try {
     signature = (await signFn({ ...payload, signer: _signer, signingScheme })) as EcdsaSignature // Only ECDSA signing supported for now
-  } catch (e: any) {
+  } catch (e: unknown) {
     if (!isProviderRpcError(e)) {
       // Some other error signing. Let it bubble up.
       console.error(e)

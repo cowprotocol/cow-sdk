@@ -15,7 +15,7 @@ export default tseslint.config(
       },
       rules: {
         '@typescript-eslint/no-non-null-assertion': 'error',
-        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-explicit-any': 'error',
         'no-prototype-builtins': 'off',
         'unused-imports/no-unused-imports': 'error',
         'unused-imports/no-unused-vars': [

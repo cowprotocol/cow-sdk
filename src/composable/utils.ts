@@ -73,6 +73,7 @@ export function decodeParams(encoded: string): ConditionalOrderParams {
  * @param values The values to validate.
  * @returns {boolean} Whether the values are valid ABI for the given types.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isValidAbi(types: readonly (string | utils.ParamType)[], values: any[]): boolean {
   try {
     utils.defaultAbiCoder.encode(types, values)

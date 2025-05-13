@@ -137,6 +137,7 @@ describe('Cabinet', () => {
       callStatic: {
         cabinet: mockCabinet,
       },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
 
     mockCabinet.mockReturnValue(cabinetValue)
@@ -176,6 +177,7 @@ describe('Poll Single Orders', () => {
   const orderBookApi = new OrderBookApi({ chainId })
   const param = { owner: OWNER, chainId, provider: {}, orderBookApi } as PollParams
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mockPollValidate = jest.fn<Promise<PollResultErrors | undefined>, [params: PollParams], any>()
 
   class MockTestConditionalOrder extends TestConditionalOrder {
@@ -193,6 +195,7 @@ describe('Poll Single Orders', () => {
         singleOrders: mockSingleOrders,
       },
       getTradeableOrderWithSignature: mockGetTradeableOrderWithSignature,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
 
     mockComputeOrderUid.mockReturnValue(Promise.resolve(SINGLE_ORDER.id))
