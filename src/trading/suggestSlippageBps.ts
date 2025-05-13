@@ -1,6 +1,8 @@
-import { OrderQuoteResponse } from '../order-book'
-import { DEFAULT_SLIPPAGE_BPS } from './consts'
+import { getQuoteAmountsWithCosts, OrderQuoteResponse } from '../order-book'
+import { suggestSlippageBpsFromFee } from './suggestSlippageBpsFromFee'
 import { QuoterParameters, SwapAdvancedSettings, TradeParameters } from './types'
+
+const SLIPPAGE_FEE_MULTIPLIER_PERCENT = 50
 
 export interface SuggestSlippageBps {
   tradeParameters: TradeParameters
@@ -9,7 +11,30 @@ export interface SuggestSlippageBps {
   advancedSettings?: SwapAdvancedSettings
 }
 
-export function suggestSlippageBps(_params: SuggestSlippageBps): number {
-  // TODO: Do something really smart here :)
-  return DEFAULT_SLIPPAGE_BPS
+/**
+ * Return the slippage in BPS that would allow the fee to increase by the multiplying factor percent.
+ */
+export function suggestSlippageBps(params: SuggestSlippageBps): number {
+  const { quote, tradeParameters } = params
+  const { sellTokenDecimals, buyTokenDecimals } = tradeParameters
+
+  // Calculate the amount of the sell token before and after network costs
+  const { isSell, sellAmountBeforeNetworkCosts, sellAmountAfterNetworkCosts } = getQuoteAmountsWithCosts({
+    sellDecimals: sellTokenDecimals,
+    buyDecimals: buyTokenDecimals,
+    orderParams: quote.quote,
+  })
+
+  // Get the relevant amount of the sell token (depending on the order kind)
+  const sellAmount = isSell ? sellAmountAfterNetworkCosts : sellAmountBeforeNetworkCosts
+  const { feeAmount } = quote.quote
+
+  const suggestedSlippageBps = suggestSlippageBpsFromFee({
+    feeAmount: BigInt(feeAmount),
+    sellAmount,
+    isSell,
+    multiplyingFactorPercent: SLIPPAGE_FEE_MULTIPLIER_PERCENT,
+  })
+
+  return suggestedSlippageBps
 }
