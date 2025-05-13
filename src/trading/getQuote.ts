@@ -137,7 +137,7 @@ export async function getQuoteRaw(
     if (suggestedSlippageBps > DEFAULT_SLIPPAGE_BPS) {
       // Recursive call, this time using the suggested slippage
       log(
-        `Suggested slippage is greater than ${DEFAULT_SLIPPAGE_BPS} BPS (default), calling getQuote again with suggested slippage=${suggestedSlippageBps}`
+        `Suggested slippage is greater than ${DEFAULT_SLIPPAGE_BPS} BPS (default), using the suggested slippage (${suggestedSlippageBps} BPS)`
       )
 
       return {
