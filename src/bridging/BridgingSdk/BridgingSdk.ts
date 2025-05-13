@@ -10,7 +10,7 @@ import {
 import { ALL_SUPPORTED_CHAINS, CowEnv, TokenInfo } from '../../common'
 import { ChainInfo, SupportedChainId, TargetChainId } from '../../chains'
 import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
-import { getQuoteWithBridge } from './getQuoteWithBridging'
+import { getQuoteWithBridge } from './getQuoteWithBridge'
 import { getSigner } from '../../common/utils/wallet'
 import { factoryGetErc20Decimals } from './getErc20Decimals'
 import { enableLogging } from '../../common/utils/log'
@@ -36,7 +36,7 @@ export interface BridgingSdkOptions {
   /**
    * Order book API.
    */
-  orderBookApi: OrderBookApi
+  orderBookApi?: OrderBookApi
 
   /**
    * Enable logging for the bridging SDK.
@@ -150,7 +150,7 @@ export class BridgingSdk {
    */
   async getQuote(
     quoteBridgeRequest: QuoteBridgeRequest,
-    advancedSettings?: SwapAdvancedSettings
+    advancedSettings?: SwapAdvancedSettings,
   ): Promise<CrossChainQuoteAndPost> {
     const { sellTokenChainId, buyTokenChainId } = quoteBridgeRequest
     const tradingSdk = this.config.tradingSdk
@@ -180,6 +180,7 @@ export class BridgingSdk {
 
   async getOrder(params: GetOrderParams): Promise<CrossChainOrder> {
     const { orderBookApi } = this.config
+
     const { orderId, chainId, env } = params
     return getCrossChainOrder({
       orderId,
