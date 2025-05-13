@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@cowprotocol/app-data": "^3.0.0",
-    "@cowprotocol/contracts": "^1.7.0",
+    "@cowprotocol/contracts": "^1.8.0",
     "@ethersproject/abstract-signer": "^5.8.0",
     "@openzeppelin/merkle-tree": "^1.0.8",
     "@weiroll/weiroll.js": "^0.3.0",
