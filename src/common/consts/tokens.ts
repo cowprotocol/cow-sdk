@@ -46,16 +46,15 @@ export const WRAPPED_NATIVE_CURRENCIES: Record<SupportedChainId, TokenInfo> = {
   },
 
   [SupportedChainId.POLYGON]: {
-    ...wrappedNativeCurrencyEth,
     chainId: SupportedChainId.POLYGON,
     address: '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270',
+    decimals: 18,
     name: 'Wrapped POL',
     symbol: 'WPOL',
     logoUrl: `${TOKEN_LIST_IMAGES_PATH}/137/0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270/logo.png`,
   },
 
   [SupportedChainId.AVALANCHE]: {
-    ...wrappedNativeCurrencyEth,
     chainId: SupportedChainId.AVALANCHE,
     address: '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',
     decimals: 18,
