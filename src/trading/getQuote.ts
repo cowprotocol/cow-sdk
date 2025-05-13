@@ -140,17 +140,22 @@ export async function getQuoteRaw(
         `Suggested slippage is greater than ${DEFAULT_SLIPPAGE_BPS} BPS (default), using the suggested slippage (${suggestedSlippageBps} BPS)`
       )
 
+      const newAppDataInfo = await buildAppData(
+        {
+          ...buildAppDataParams,
+          slippageBps: suggestedSlippageBps,
+        },
+        advancedSettings?.appData
+      )
+      log(
+        `App data with new suggested slippage: appDataKeccak256=${newAppDataInfo.appDataKeccak256} fullAppData=${newAppDataInfo.fullAppData}`
+      )
+
       return {
         slippageBps: suggestedSlippageBps,
         suggestedSlippageBps,
         tradeParameters: { ..._tradeParameters, slippageBps: suggestedSlippageBps },
-        appDataInfo: await buildAppData(
-          {
-            ...buildAppDataParams,
-            slippageBps: suggestedSlippageBps,
-          },
-          advancedSettings?.appData
-        ),
+        appDataInfo: newAppDataInfo,
 
         // We reuse the quote, because the slippage has no fundamental impact on the quote
         quote,
