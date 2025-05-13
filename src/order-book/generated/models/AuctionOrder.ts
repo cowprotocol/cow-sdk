@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { Address } from './Address';
 import type { AppDataHash } from './AppDataHash';
 import type { BuyTokenDestination } from './BuyTokenDestination';
@@ -14,7 +14,6 @@ import type { SellTokenSource } from './SellTokenSource';
 import type { Signature } from './Signature';
 import type { TokenAmount } from './TokenAmount';
 import type { UID } from './UID';
-
 /**
  * A solvable order included in the current batch auction. Contains the data forwarded to solvers for solving.
  *

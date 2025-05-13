@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { Address } from './Address';
 import type { AppDataHash } from './AppDataHash';
 import type { BuyTokenDestination } from './BuyTokenDestination';
@@ -9,7 +9,6 @@ import type { OrderKind } from './OrderKind';
 import type { SellTokenSource } from './SellTokenSource';
 import type { SigningScheme } from './SigningScheme';
 import type { TokenAmount } from './TokenAmount';
-
 /**
  * Order parameters.
  */

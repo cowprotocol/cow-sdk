@@ -27,7 +27,7 @@ export interface TradingSdkOptions {
 export class TradingSdk {
   constructor(
     public traderParams: Partial<TraderParameters> = {},
-    public readonly options: Partial<TradingSdkOptions> = {}
+    public readonly options: Partial<TradingSdkOptions> = {},
   ) {
     if (options.enableLogging !== undefined) {
       enableLogging(options.enableLogging)
@@ -42,7 +42,7 @@ export class TradingSdk {
 
   async getQuote(
     params: WithPartialTraderParams<TradeParameters>,
-    advancedSettings?: SwapAdvancedSettings
+    advancedSettings?: SwapAdvancedSettings,
   ): Promise<QuoteAndPost> {
     const quoteResults = await getQuoteWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
 
@@ -60,35 +60,35 @@ export class TradingSdk {
               }),
             },
           },
-          advancedSettings
+          advancedSettings,
         ),
     }
   }
 
   async getQuoteResults(
     params: WithPartialTraderParams<TradeParameters>,
-    advancedSettings?: SwapAdvancedSettings
+    advancedSettings?: SwapAdvancedSettings,
   ): Promise<QuoteResultsWithSigner> {
     return getQuoteWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
   }
 
   async postSwapOrder(
     params: WithPartialTraderParams<TradeParameters>,
-    advancedSettings?: SwapAdvancedSettings
+    advancedSettings?: SwapAdvancedSettings,
   ): Promise<OrderPostingResult> {
     return postSwapOrder(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
   }
 
   async postLimitOrder(
     params: WithPartialTraderParams<LimitTradeParameters>,
-    advancedSettings?: LimitOrderAdvancedSettings
+    advancedSettings?: LimitOrderAdvancedSettings,
   ): Promise<OrderPostingResult> {
     return postLimitOrder(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
   }
 
   async postSellNativeCurrencyOrder(
     params: WithPartialTraderParams<TradeParameters>,
-    advancedSettings?: SwapAdvancedSettings
+    advancedSettings?: SwapAdvancedSettings,
   ): Promise<ReturnType<typeof postSellNativeCurrencyOrder>> {
     const quoteResults = await getQuoteWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
 
@@ -97,18 +97,17 @@ export class TradingSdk {
       quoteResults.orderBookApi,
       quoteResults.result.signer,
       quoteResults.result.appDataInfo,
-      // Quote response response always has an id
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      // Quote response always has an id
       swapParamsToLimitOrderParams(
         getTradeParametersAfterQuote({ quoteParameters: tradeParameters, orderParameters: params }),
-        quoteResponse
+        quoteResponse,
       ),
-      advancedSettings?.additionalParams
+      advancedSettings?.additionalParams,
     )
   }
 
   async getPreSignTransaction(
-    params: WithPartialTraderParams<{ orderId: string; account: string }>
+    params: WithPartialTraderParams<{ orderId: string; account: string }>,
   ): ReturnType<typeof getPreSignTransaction> {
     const traderParams = this.mergeParams(params)
     const signer = getSigner(traderParams.signer)

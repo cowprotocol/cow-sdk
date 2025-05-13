@@ -1,9 +1,8 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { ExecutedAmounts } from './ExecutedAmounts';
-
 export type CompetitionOrderStatus = {
     type: CompetitionOrderStatus.type;
     /**
@@ -21,9 +20,7 @@ export type CompetitionOrderStatus = {
         executedAmounts?: ExecutedAmounts;
     }>;
 };
-
 export namespace CompetitionOrderStatus {
-
     export enum type {
         OPEN = 'open',
         SCHEDULED = 'scheduled',
@@ -33,7 +30,5 @@ export namespace CompetitionOrderStatus {
         TRADED = 'traded',
         CANCELLED = 'cancelled',
     }
-
-
 }
 

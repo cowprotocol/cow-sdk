@@ -29,6 +29,7 @@ import { UnsignedOrder } from '../../order-signing'
 import { getSigner } from '../../common/utils/wallet'
 import { assertIsBridgeQuoteAndPost, assertIsQuoteAndPost } from '../utils'
 import { expectToEqual } from '../../test/utils'
+import { EvmCall } from '../../common'
 
 // Sell token: USDC (mainnet)
 const sellTokenChainId = SupportedChainId.MAINNET
@@ -273,7 +274,8 @@ describe('BridgingSdk', () => {
 
     bridgingSdk = new BridgingSdk({
       providers: [mockProvider],
-      getErc20Decimals: async (chainId: TargetChainId, tokenAddress: string) => {
+      orderBookApi: new OrderBookApi(),
+      getErc20Decimals: async (_: TargetChainId, tokenAddress: string) => {
         if (tokenAddress !== intermediateToken) {
           throw new Error('This mock its supposed to be used for intermediate token')
         }

@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { Address } from './Address';
 import type { AppData } from './AppData';
 import type { AppDataHash } from './AppDataHash';
@@ -11,7 +11,6 @@ import type { SellTokenSource } from './SellTokenSource';
 import type { Signature } from './Signature';
 import type { SigningScheme } from './SigningScheme';
 import type { TokenAmount } from './TokenAmount';
-
 /**
  * Data a user provides when creating a new order.
  */

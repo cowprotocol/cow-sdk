@@ -86,10 +86,9 @@ async function _signOrderCancellations(params: SignOrderCancellationsParams): Pr
 
 async function _signPayload(
   payload: PayloadParams,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   signFn: (params: any) => Promise<Signature>,
   signer: Signer,
-  signingMethod: 'default' | 'v4' | 'int_v4' | 'v3' | 'eth_sign' = 'v4'
+  signingMethod: 'default' | 'v4' | 'int_v4' | 'v3' | 'eth_sign' = 'v4',
 ): Promise<SigningResult> {
   const signingScheme: EcdsaSigningScheme =
     signingMethod === 'eth_sign' ? EcdsaSigningScheme.ETHSIGN : EcdsaSigningScheme.EIP712
@@ -115,7 +114,6 @@ async function _signPayload(
 
   try {
     signature = (await signFn({ ...payload, signer: _signer, signingScheme })) as EcdsaSignature // Only ECDSA signing supported for now
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     if (!isProviderRpcError(e)) {
       // Some other error signing. Let it bubble up.
@@ -125,7 +123,7 @@ async function _signPayload(
 
     const regexErrorCheck = [METHOD_NOT_FOUND_ERROR_MSG_REGEX, RPC_REQUEST_FAILED_REGEX].some((regex) =>
       // for example 1Inch error doesn't have e.message so we will check the output of toString()
-      [e.message, e.toString()].some((msg) => regex.test(msg))
+      [e.message, e.toString()].some((msg) => regex.test(msg)),
     )
 
     if (e.code === METHOD_NOT_FOUND_ERROR_CODE || regexErrorCheck) {
@@ -181,7 +179,7 @@ async function _signPayload(
 export async function signOrder(
   order: UnsignedOrder,
   chainId: SupportedChainId,
-  signer: Signer
+  signer: Signer,
 ): Promise<SigningResult> {
   return _signPayload({ order, chainId }, _signOrder, signer)
 }
@@ -197,7 +195,7 @@ export async function signOrder(
 export async function signOrderCancellation(
   orderUid: string,
   chainId: SupportedChainId,
-  signer: Signer
+  signer: Signer,
 ): Promise<SigningResult> {
   return _signPayload({ orderUid, chainId }, _signOrderCancellation, signer)
 }
@@ -214,7 +212,7 @@ export async function signOrderCancellation(
 export async function signOrderCancellations(
   orderUids: string[],
   chainId: SupportedChainId,
-  signer: Signer
+  signer: Signer,
 ): Promise<SigningResult> {
   return _signPayload({ orderUids, chainId }, _signOrderCancellations, signer)
 }
@@ -245,7 +243,7 @@ export function getDomain(chainId: SupportedChainId): TypedDataDomain {
 export async function generateOrderId(
   chainId: SupportedChainId,
   order: Order,
-  params: Pick<OrderUidParams, 'owner'>
+  params: Pick<OrderUidParams, 'owner'>,
 ): Promise<{ orderId: string; orderDigest: string }> {
   const domain = await getDomain(chainId)
   const orderDigest = hashOrder(domain, order)

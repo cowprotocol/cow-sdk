@@ -43,7 +43,7 @@ export class Multiplexer {
     chain: SupportedChainId,
     orders?: Orders,
     root?: string,
-    location: ProofLocation = ProofLocation.PRIVATE
+    location: ProofLocation = ProofLocation.PRIVATE,
   ) {
     this.chain = chain
     this.location = location
@@ -188,7 +188,7 @@ export class Multiplexer {
    */
   update(
     id: string,
-    updater: (order: ConditionalOrder<unknown, unknown>, ctx?: string) => ConditionalOrder<unknown, unknown>
+    updater: (order: ConditionalOrder<unknown, unknown>, ctx?: string) => ConditionalOrder<unknown, unknown>,
   ): void {
     // copy the existing order and update it, given the existing context (if any)
     const order = updater(this.orders[id], this.ctx)
@@ -244,7 +244,7 @@ export class Multiplexer {
     if (!this.tree) {
       this.tree = StandardMerkleTree.of(
         Object.values(this.orders).map((order) => [...Object.values(order.leaf)]),
-        CONDITIONAL_ORDER_LEAF_ABI
+        CONDITIONAL_ORDER_LEAF_ABI,
       )
     }
 
@@ -280,7 +280,7 @@ export class Multiplexer {
   async prepareProofStruct(
     location: ProofLocation = this.location,
     filter?: (v: string[]) => boolean,
-    uploader?: (offChainEncoded: string) => Promise<string>
+    uploader?: (offChainEncoded: string) => Promise<string>,
   ): Promise<ComposableCoW.ProofStruct> {
     const data = async (): Promise<string> => {
       switch (location) {
@@ -317,7 +317,7 @@ export class Multiplexer {
             location,
             data: d,
           }
-        } catch (e) {
+        } catch {
           throw new Error(`data returned by uploader is invalid`)
         }
       })
@@ -341,7 +341,7 @@ export class Multiplexer {
     p: ProofWithParams,
     chain: SupportedChainId,
     provider: providers.Provider,
-    offChainInputFn?: (owner: string, params: ConditionalOrderParams) => Promise<string>
+    offChainInputFn?: (owner: string, params: ConditionalOrderParams) => Promise<string>,
   ): Promise<[GPv2Order.DataStruct, string]> {
     const composableCow = getComposableCow(chain, provider)
 
@@ -434,7 +434,7 @@ export class Multiplexer {
    */
   public static registerOrderType(
     orderType: string,
-    conditionalOrderClass: new (...args: any[]) => ConditionalOrder<unknown, unknown>
+    conditionalOrderClass: new (...args: any[]) => ConditionalOrder<unknown, unknown>,
   ) {
     Multiplexer.orderTypeRegistry[orderType] = conditionalOrderClass
   }
