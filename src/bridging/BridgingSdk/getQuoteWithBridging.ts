@@ -63,7 +63,7 @@ type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
 }
 
 export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
-  params: GetQuoteWithBridgeParams<T>
+  params: GetQuoteWithBridgeParams<T>,
 ): Promise<BridgeQuoteAndPost> {
   const { provider, swapAndBridgeRequest, advancedSettings, getErc20Decimals, tradingSdk, bridgeHookSigner } = params
   const {
@@ -84,7 +84,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   }
 
   log(
-    `Cross-chain ${kind} ${amount} ${sellTokenAddress} (source chain ${sellTokenChainId}) for ${buyTokenAddress} (target chain ${buyTokenChainId})`
+    `Cross-chain ${kind} ${amount} ${sellTokenAddress} (source chain ${sellTokenChainId}) for ${buyTokenAddress} (target chain ${buyTokenChainId})`,
   )
 
   // Get the mocked hook (for estimating the additional swap costs)
@@ -118,8 +118,8 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   log(
     `Getting a quote for the swap (sell token to buy intermediate token). Delegate to trading SDK with params: ${JSON.stringify(
       swapParamsToLog,
-      jsonWithBigintReplacer
-    )}`
+      jsonWithBigintReplacer,
+    )}`,
   )
 
   const advancedSettingsHooks = advancedSettings?.appData?.metadata?.hooks
@@ -141,15 +141,18 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   log(
     `Expected to receive ${intermediateTokenAmount} of the intermediate token (${parseUnits(
       intermediateTokenAmount.toString(),
-      intermediaryTokenDecimals
-    ).toString()})`
+      intermediaryTokenDecimals,
+    ).toString()})`,
   )
 
   // Get the bridge result
   async function signHooksAndSetSwapResult(
     signer: Signer,
-    appDataOverride?: SwapAdvancedSettings['appData']
+    advancedSettings?: SwapAdvancedSettings,
   ): Promise<{ swapResult: QuoteResults; bridgeResult: BridgeQuoteResults }> {
+    const appDataOverride = advancedSettings?.appData
+    const receiverOverride = advancedSettings?.quoteRequest?.receiver
+
     const {
       bridgeHook,
       appDataInfo: { doc: appData, fullAppData, appDataKeccak256 },
@@ -157,7 +160,10 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
     } = await getBridgeResult({
       swapAndBridgeRequest: { ...swapAndBridgeRequest, kind: OrderKind.SELL },
       swapResult,
-      bridgeRequestWithoutAmount,
+      bridgeRequestWithoutAmount: {
+        ...bridgeRequestWithoutAmount,
+        receiver: receiverOverride || bridgeRequestWithoutAmount.receiver,
+      },
       provider,
       intermediateTokenAmount,
       signer,
@@ -196,7 +202,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
     bridge: result.bridgeResult,
     async postSwapOrderFromQuote(advancedSettings?: SwapAdvancedSettings) {
       // Sign the hooks with the real signer
-      const { swapResult } = await signHooksAndSetSwapResult(signer, advancedSettings?.appData)
+      const { swapResult } = await signHooksAndSetSwapResult(signer, advancedSettings)
 
       const quoteResults: QuoteResultsWithSigner = {
         result: {
@@ -206,7 +212,15 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
         orderBookApi,
       }
 
-      return postSwapOrderFromQuote(quoteResults, { ...advancedSettings, appData: swapResult.appDataInfo.doc })
+      return postSwapOrderFromQuote(quoteResults, {
+        ...advancedSettings,
+        appData: swapResult.appDataInfo.doc,
+        quoteRequest: {
+          ...advancedSettings?.quoteRequest,
+          // Changing receiver back to account proxy
+          receiver: swapResult.tradeParameters.receiver,
+        },
+      })
     },
   }
 }
@@ -298,7 +312,7 @@ async function getBridgeResult(context: BridgeResultContext): Promise<GetBridgeR
         pre: swapResultHooks?.pre,
         // Remove the mocked hook from the post hooks after receiving quote
         post: [...(swapResultHooks?.post || []), ...(isBridgeHookAlreadyPresent ? [] : [bridgeHook.postHook])].filter(
-          (hook) => !areHooksEqual(hook, mockedHook)
+          (hook) => !areHooksEqual(hook, mockedHook),
         ),
       },
     },
