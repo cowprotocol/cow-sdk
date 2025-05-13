@@ -56,7 +56,7 @@ describe('AcrossApi: Shape of API response', () => {
       originChainId: SupportedChainId.POLYGON.toString(),
       originToken: '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270', // wpol
 
-      destinationChainId: SupportedChainId.BASE.toString(),
+      destinationChainId: SupportedChainId.ARBITRUM_ONE.toString(),
       destinationToken: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', // weth
     })
 
