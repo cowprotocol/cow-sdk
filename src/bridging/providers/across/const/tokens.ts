@@ -58,10 +58,8 @@ const ACROSS_CHAIN_CONFIGS: AcrossChainConfig[] = [
     },
   },
   {
-    chainId: SupportedChainId.AVALANCHE, // TODO: check
-    tokens: {
-      usdc: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
-    },
+    chainId: SupportedChainId.AVALANCHE,
+    tokens: {}, // ACROSS does not support AVALANCHE (yet)
   },
 ]
 
