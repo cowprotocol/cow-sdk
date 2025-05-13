@@ -1,4 +1,12 @@
-import { QuoteResults, QuoterParameters, SwapAdvancedSettings, SwapParameters, TradeParameters } from './types'
+import {
+  AppDataInfo,
+  BuildAppDataParams,
+  QuoteResults,
+  QuoterParameters,
+  SwapAdvancedSettings,
+  SwapParameters,
+  TradeParameters,
+} from './types'
 import { DEFAULT_QUOTE_VALIDITY, DEFAULT_SLIPPAGE_BPS } from './consts'
 import { log } from '../common/utils/log'
 
@@ -6,6 +14,7 @@ import {
   getQuoteAmountsAndCosts,
   OrderBookApi,
   OrderQuoteRequest,
+  OrderQuoteResponse,
   OrderQuoteSideKindBuy,
   OrderQuoteSideKindSell,
   PriceQuality,
@@ -35,12 +44,21 @@ export type QuoteResultsWithSigner = {
   orderBookApi: OrderBookApi
 }
 
+interface GetQuoteRawResult {
+  quote: OrderQuoteResponse
+  appDataInfo: AppDataInfo
+  orderBookApi: OrderBookApi
+  tradeParameters: TradeParameters
+  slippageBps: number
+  suggestedSlippageBps: number
+}
+
 export async function getQuoteRaw(
   _tradeParameters: TradeParameters,
   trader: QuoterParameters,
   advancedSettings?: SwapAdvancedSettings,
   _orderBookApi?: OrderBookApi
-) {
+): Promise<GetQuoteRawResult> {
   const { appCode, chainId, account: from } = trader
   const isEthFlow = getIsEthFlowOrder(_tradeParameters)
 
@@ -75,17 +93,16 @@ export async function getQuoteRaw(
 
   log('Building app data...')
 
-  const slippageBpsToUse = slippageBps ?? DEFAULT_SLIPPAGE_BPS
+  // If slippageBps is undefined, we use the default slippage
+  const slippageBpsOrDefault = slippageBps ?? DEFAULT_SLIPPAGE_BPS
 
-  const appDataInfo = await buildAppData(
-    {
-      slippageBps: slippageBpsToUse,
-      orderClass: 'market',
-      appCode,
-      partnerFee,
-    },
-    advancedSettings?.appData
-  )
+  const buildAppDataParams: BuildAppDataParams = {
+    slippageBps: slippageBpsOrDefault,
+    orderClass: 'market',
+    appCode,
+    partnerFee,
+  }
+  const appDataInfo = await buildAppData(buildAppDataParams, advancedSettings?.appData)
 
   const { appDataKeccak256, fullAppData } = appDataInfo
   log(`App data: appDataKeccak256=${appDataKeccak256} fullAppData=${fullAppData}`)
@@ -111,12 +128,48 @@ export async function getQuoteRaw(
 
   const quote = await orderBookApi.getQuote(quoteRequest)
 
+  // Get the suggested slippage based on the quote
+  const suggestedSlippageBps = suggestSlippageBps({ quote, tradeParameters, trader, advancedSettings })
+
+  // If no slippage is specified. AUTO slippage is used
+  if (slippageBps === undefined) {
+    // If suggested slippage is greater than default, we use the suggested slippage
+    if (suggestedSlippageBps > DEFAULT_SLIPPAGE_BPS) {
+      // Recursive call, this time using the suggested slippage
+      log(
+        `Suggested slippage is greater than ${DEFAULT_SLIPPAGE_BPS} BPS (default), calling getQuote again with suggested slippage=${suggestedSlippageBps}`
+      )
+
+      return {
+        slippageBps: suggestedSlippageBps,
+        suggestedSlippageBps,
+        tradeParameters: { ..._tradeParameters, slippageBps: suggestedSlippageBps },
+        appDataInfo: await buildAppData(
+          {
+            ...buildAppDataParams,
+            slippageBps: suggestedSlippageBps,
+          },
+          advancedSettings?.appData
+        ),
+
+        // We reuse the quote, because the slippage has no fundamental impact on the quote
+        quote,
+        orderBookApi,
+      }
+    } else {
+      log(
+        `Suggested slippage is only ${suggestedSlippageBps} BPS. Using the default slippage (${DEFAULT_SLIPPAGE_BPS} BPS)`
+      )
+    }
+  }
+
   return {
     quote,
     appDataInfo,
     orderBookApi,
     tradeParameters,
-    slippageBpsToUse,
+    slippageBps: slippageBpsOrDefault,
+    suggestedSlippageBps,
   }
 }
 
@@ -126,37 +179,18 @@ export async function getQuote(
   advancedSettings?: SwapAdvancedSettings,
   _orderBookApi?: OrderBookApi
 ): Promise<{ result: QuoteResults; orderBookApi: OrderBookApi }> {
-  const { quote, orderBookApi, tradeParameters, slippageBpsToUse, appDataInfo } = await getQuoteRaw(
+  const { quote, orderBookApi, tradeParameters, slippageBps, suggestedSlippageBps, appDataInfo } = await getQuoteRaw(
     _tradeParameters,
     trader,
     advancedSettings,
     _orderBookApi
   )
-  const { partnerFee, slippageBps, sellTokenDecimals, buyTokenDecimals } = tradeParameters
+  const { partnerFee, sellTokenDecimals, buyTokenDecimals } = tradeParameters
   const { chainId, account: from } = trader
-
-  // If AUTO slippage is used, we need to calculate the suggested slippage based on the quote)
-  if (slippageBps === undefined) {
-    const suggestedSlippageBps = suggestSlippageBps({ quote, tradeParameters, trader, advancedSettings })
-
-    // If suggested slippage is greater than default, we use the suggested slippage
-    if (suggestedSlippageBps > DEFAULT_SLIPPAGE_BPS) {
-      // Recursive call, this time using the suggested slippage
-      log(
-        `Suggested slippage is greater than ${DEFAULT_SLIPPAGE_BPS} BPS (default), calling getQuote again with suggested slippage=${suggestedSlippageBps}`
-      )
-      const newTradeParameters = { ..._tradeParameters, slippageBps: suggestedSlippageBps }
-      return getQuote(newTradeParameters, trader, advancedSettings, orderBookApi)
-    } else {
-      log(
-        `Suggested slippage is only ${suggestedSlippageBps} BPS. Using the default slippage (${DEFAULT_SLIPPAGE_BPS} BPS)`
-      )
-    }
-  }
 
   const amountsAndCosts = getQuoteAmountsAndCosts({
     orderParams: quote.quote,
-    slippagePercentBps: slippageBpsToUse,
+    slippagePercentBps: slippageBps,
     partnerFeeBps: partnerFee?.bps,
     sellDecimals: sellTokenDecimals,
     buyDecimals: buyTokenDecimals,
@@ -173,6 +207,7 @@ export async function getQuote(
   return {
     result: {
       tradeParameters,
+      suggestedSlippageBps,
       amountsAndCosts,
       orderToSign,
       quoteResponse: quote,
