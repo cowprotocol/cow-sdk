@@ -162,6 +162,14 @@ const bridgeQuoteResult: BridgeQuoteResult = {
       },
     },
   },
+  fees: {
+    bridgeFee: 50000n,
+    destinationGasFee: 50000n,
+  },
+  limits: {
+    minDeposit: 1000000n,
+    maxDeposit: 1000000000000n,
+  },
 }
 
 const unsignedBridgeCall: EvmCall = {
@@ -404,7 +412,13 @@ describe('BridgingSdk', () => {
           appDataInfo,
           orderTypedData,
         },
-        postSwapOrderFromQuote: () => Promise.resolve('0x01'),
+        postSwapOrderFromQuote: () =>
+          Promise.resolve({
+            orderId: '0x01',
+            signingScheme: SigningScheme.EIP712,
+            signature: '0x02',
+            orderToSign,
+          }),
       }
       tradingSdk.getQuote = jest.fn().mockResolvedValue(singleChainQuoteResult)
 
