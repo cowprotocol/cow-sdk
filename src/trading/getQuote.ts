@@ -82,7 +82,7 @@ export async function getQuoteRaw(
 
   log(
     `getQuote for: Swap ${amount} ${sellToken} for ${buyToken} on chain ${chainId} with ${
-      slippageBps ? slippageBps + ' BPS' : 'AUTO'
+      slippageBps !== undefined ? `${slippageBps} BPS` : 'AUTO'
     } slippage`
   )
 
