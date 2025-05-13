@@ -12,6 +12,8 @@ export enum SupportedChainId {
   GNOSIS_CHAIN = 100,
   ARBITRUM_ONE = 42161,
   BASE = 8453,
+  POLYGON = 137,
+  AVALANCHE = 43114,
   SEPOLIA = 11155111,
 }
 
@@ -19,7 +21,6 @@ export enum SupportedChainId {
  * Chains where you can buy tokens using the bridge functionality. This enum contains chains that are not already included in the SupportedChainId enum.
  */
 export enum AdditionalTargetChainId {
-  POLYGON = 137,
   OPTIMISM = 10,
 }
 

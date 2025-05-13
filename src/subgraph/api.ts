@@ -28,6 +28,8 @@ export const SUBGRAPH_PROD_CONFIG: SubgraphApiBaseUrls = {
   [SupportedChainId.ARBITRUM_ONE]: null,
   [SupportedChainId.BASE]: null,
   [SupportedChainId.SEPOLIA]: null,
+  [SupportedChainId.POLYGON]: null,
+  [SupportedChainId.AVALANCHE]: null,
 }
 
 /**
@@ -42,6 +44,8 @@ export const SUBGRAPH_STAGING_CONFIG: SubgraphApiBaseUrls = {
   [SupportedChainId.ARBITRUM_ONE]: null,
   [SupportedChainId.BASE]: null,
   [SupportedChainId.SEPOLIA]: null,
+  [SupportedChainId.POLYGON]: null,
+  [SupportedChainId.AVALANCHE]: null,
 }
 
 /**

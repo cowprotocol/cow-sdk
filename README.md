@@ -178,6 +178,8 @@ const orderBookApi = new OrderBookApi({
     [SupportedChainId.ARBITRUM]: 'https://YOUR_ENDPOINT/arbitrum_one',
     [SupportedChainId.BASE]: 'https://YOUR_ENDPOINT/base',
     [SupportedChainId.SEPOLIA]: 'https://YOUR_ENDPOINT/sepolia',
+    [SupportedChainId.POLYGON]: 'https://YOUR_ENDPOINT/polygon',
+    [SupportedChainId.AVALANCHE]: 'https://YOUR_ENDPOINT/avalanche',
   },
 })
 ```

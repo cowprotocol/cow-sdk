@@ -6,6 +6,7 @@ import { arbitrumOne } from '../details/arbitrum'
 import { base } from '../details/base'
 import { sepolia } from '../details/sepolia'
 
+import { avalanche } from '../details/avalanche'
 import { optimism } from '../details/optimism'
 import { polygon } from '../details/polygon'
 
@@ -17,6 +18,8 @@ export const ALL_SUPPORTED_CHAINS_MAP: Record<SupportedChainId, ChainInfo> = {
   [SupportedChainId.GNOSIS_CHAIN]: gnosisChain,
   [SupportedChainId.ARBITRUM_ONE]: arbitrumOne,
   [SupportedChainId.BASE]: base,
+  [SupportedChainId.AVALANCHE]: avalanche,
+  [SupportedChainId.POLYGON]: polygon,
   [SupportedChainId.SEPOLIA]: sepolia,
 }
 
@@ -37,7 +40,6 @@ export const ALL_SUPPORTED_CHAIN_IDS: SupportedChainId[] = ALL_SUPPORTED_CHAINS.
  */
 export const ADDITIONAL_TARGET_CHAINS_MAP: Record<AdditionalTargetChainId, ChainInfo> = {
   [AdditionalTargetChainId.OPTIMISM]: optimism,
-  [AdditionalTargetChainId.POLYGON]: polygon,
 }
 
 /**

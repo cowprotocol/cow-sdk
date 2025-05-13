@@ -1,5 +1,5 @@
 import { AcrossApi } from './AcrossApi'
-import { AdditionalTargetChainId, SupportedChainId } from '../../../chains'
+import { SupportedChainId } from '../../../chains'
 import { SuggestedFeesRequest, SuggestedFeesResponse } from './types'
 
 // Mock fetch globally
@@ -102,7 +102,7 @@ describe('AcrossApi', () => {
       const request: SuggestedFeesRequest = {
         token: '0x0000000000000000000000000000000000000001',
         originChainId: SupportedChainId.MAINNET,
-        destinationChainId: AdditionalTargetChainId.POLYGON,
+        destinationChainId: SupportedChainId.POLYGON,
         amount: 1000000000000000000n,
       }
 
@@ -119,7 +119,7 @@ describe('AcrossApi', () => {
       const request: SuggestedFeesRequest = {
         token: '0x0000000000000000000000000000000000000001',
         originChainId: SupportedChainId.MAINNET,
-        destinationChainId: AdditionalTargetChainId.POLYGON,
+        destinationChainId: SupportedChainId.POLYGON,
         amount: 1000000000000000000n,
         recipient: '0x9876',
       }
@@ -143,7 +143,7 @@ describe('AcrossApi', () => {
         api.getSuggestedFees({
           token: '0x0000000000000000000000000000000000000001',
           originChainId: SupportedChainId.MAINNET,
-          destinationChainId: AdditionalTargetChainId.POLYGON,
+          destinationChainId: SupportedChainId.POLYGON,
           amount: 1000000000000000000n,
         })
       ).rejects.toThrow('Across Api Error')
