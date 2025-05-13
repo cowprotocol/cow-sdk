@@ -5,6 +5,7 @@ export * from './tradingSdk'
  * Main trading functions
  */
 export { getQuote, getQuoteWithSigner } from './getQuote'
+export { calculateSmartSlippageBps, getSmartSlippageBpsWithSigner } from './getSmartSlippage'
 export { postSwapOrder, postSwapOrderFromQuote } from './postSwapOrder'
 export { postLimitOrder } from './postLimitOrder'
 export { postCoWProtocolTrade } from './postCoWProtocolTrade'
