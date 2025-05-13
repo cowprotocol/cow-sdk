@@ -6,14 +6,15 @@ interface SuggestedFeeTest {
   factor: number
   expected: number | string
   description?: string
+  only?: boolean
 }
 
 describe('Sell orders', () => {
   const isSell = true
 
   assertCases('handle different factors', isSell, [
-    // expected = 1 - (100 - 20 * 1.00) / (100 - 20) = 0
-    { fee: 20n, sell: 100n, factor: 0, expected: 0 },
+    // expected = 1 - (100 - ceil(20 * 1.01)) / (100 - 20) = 0
+    { fee: 20n, sell: 100n, factor: 1, expected: 125 },
 
     // expected = 1 - (100 - 20 * 1.25) / (100 - 20) = 0.125
     { fee: 20n, sell: 100n, factor: 25, expected: 625 },
@@ -36,7 +37,7 @@ describe('Sell orders', () => {
 
   assertCases('Handle atoms', isSell, [
     // expected = 1 - (1 - 0.2 * 1) / (1 - 0.2) = 0
-    { fee: atoms(0.2), sell: atoms(1), factor: 0, expected: 0 },
+    { fee: atoms(0.2), sell: atoms(1), factor: 0, expected: 50 },
 
     // expected = 1 - (1 - 0.2 * 1.25) / (1 - 0.2) = 0.125
     { fee: atoms(0.2), sell: atoms(1), factor: 25, expected: 625 },
@@ -51,6 +52,20 @@ describe('Sell orders', () => {
     { fee: atoms(0.2), sell: atoms(1), factor: 100, expected: 2500 },
   ])
 
+  assertCases('Handle minimum BPS', isSell, [
+    // expected = 1 - (100 - 20 * 1.00) / (100 - 20) = 0
+    { fee: 20n, sell: 100n, factor: 0, expected: 50 },
+
+    // Fee is 0: returns maximum slippage
+    {
+      fee: 1n,
+      sell: 10000n,
+      factor: 50,
+      expected: 50,
+      description: 'If suggested slippage is too small, returns the minimum slippage (50 BPS)',
+    },
+  ])
+
   assertCases('Handle edge case with sellAmount', isSell, [
     // Fee is 0: returns maximum slippage
     { fee: 0n, sell: 0n, factor: 50, expected: 10_000, description: 'amount is 0, fee is 0' },
@@ -62,7 +77,7 @@ describe('Sell orders', () => {
   assertCases('Handle edge case with fees', isSell, [
     // Fee is 0
     //   expected = 1 - (100 - 20 * 1.5) / (100 - 20) = 0.125
-    { fee: 0n, sell: 100n, factor: 50, expected: 0, description: 'fee is 0' },
+    { fee: 0n, sell: 100n, factor: 50, expected: 50, description: 'fee is 0' },
 
     // Fee is all the sell amount
     //   expected = 1 - (100 - 20 * 1.5) / (100 - 20) = 0.125
@@ -88,7 +103,7 @@ describe('Buy orders', () => {
 
   assertCases('handle different factors', isSell, [
     // // expected = (100 + 20 * 1) / (100 + 20) - 1 = 0
-    { fee: 20n, sell: 100n, factor: 0, expected: 0 },
+    { fee: 20n, sell: 100n, factor: 0, expected: 50 },
 
     // // expected = 1 - (100 + 20 * 1.25) / (100 + 20) - 1 = 0.125
     { fee: 20n, sell: 100n, factor: 25, expected: 417 },
@@ -116,14 +131,15 @@ function atoms(amount: number) {
 
 function assertCases(description: string, isSell: boolean, testCases: SuggestedFeeTest[]) {
   describe(description, () => {
-    testCases.forEach(({ sell, fee, factor, expected, description: testCaseDescription }) => {
+    testCases.forEach(({ sell, fee, factor, expected, description: testCaseDescription, only }) => {
       const shouldThrow = typeof expected === 'string'
       const expectedDescription = shouldThrow ? `should throw "${expected}"` : `should return ${expected} BPS`
       const caseDescription = testCaseDescription
         ? `When ${testCaseDescription}, ${expectedDescription}`
         : `suggestSlippageBpsFromFee(sell=${sell}, fee=${fee}, factor=${factor}) ${expectedDescription}`
 
-      it(`[${isSell ? 'sell' : 'buy'}] ${caseDescription}`, () => {
+      const runTest = only ? it.only : it
+      runTest(`[${isSell ? 'sell' : 'buy'}] ${caseDescription}`, () => {
         // If expected is a string, it should throw an error
         const params = {
           feeAmount: fee,
