@@ -27,7 +27,7 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { getOrderTypedData } from './getOrderTypedData'
 import { getSigner } from '../common/utils/wallet'
 import { AccountAddress } from '../common/types/wallets'
-import { suggestSlippageBps } from './getSuggestedSlippage'
+import { suggestSlippageBps } from './suggestSlippageBps'
 
 // ETH-FLOW orders require different quote params
 // check the isEthFlow flag and set in quote req obj
