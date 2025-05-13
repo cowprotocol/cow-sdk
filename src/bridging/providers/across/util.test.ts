@@ -1,7 +1,17 @@
 import { OrderKind } from '@cowprotocol/contracts'
 import { AdditionalTargetChainId, SupportedChainId } from '../../../chains'
-import { QuoteBridgeRequest } from '../../types'
-import { getChainConfigs, getTokenSymbol, getTokenAddress, toBridgeQuoteResult, pctToBps, applyPctFee } from './util'
+import { QuoteBridgeRequest, BridgeStatus } from '../../types'
+import {
+  getChainConfigs,
+  getTokenSymbol,
+  getTokenAddress,
+  toBridgeQuoteResult,
+  pctToBps,
+  applyPctFee,
+  mapAcrossStatusToBridgeStatus,
+  getPostHooks,
+  getAcrossDepositEvents,
+} from './util'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { SuggestedFeesResponse } from './types'
 
@@ -161,6 +171,50 @@ describe('Across Utils', () => {
 
     it('should throw an error if fee percentage exceeds 100%', () => {
       expect(() => applyPctFee(1000000000000000000n, 1000000000000000001n)).toThrow('Fee cannot exceed 100%')
+    })
+  })
+
+  describe('mapAcrossStatusToBridgeStatus', () => {
+    it('should map Across deposit status to Bridge status', () => {
+      expect(mapAcrossStatusToBridgeStatus('filled')).toBe(BridgeStatus.EXECUTED)
+      expect(mapAcrossStatusToBridgeStatus('pending')).toBe(BridgeStatus.IN_PROGRESS)
+      expect(mapAcrossStatusToBridgeStatus('expired')).toBe(BridgeStatus.EXPIRED)
+      expect(mapAcrossStatusToBridgeStatus('refunded')).toBe(BridgeStatus.REFUND)
+      expect(mapAcrossStatusToBridgeStatus('slowFillRequested')).toBe(BridgeStatus.EXECUTED)
+      expect(mapAcrossStatusToBridgeStatus(undefined)).toBe(BridgeStatus.FAILED)
+    })
+  })
+  describe('getPostHooks', () => {
+    it('should return empty array if passing nothing', () => {
+      const result = getPostHooks()
+      expect(result).toEqual([])
+    })
+
+    it('should return empty array if passing undefined', () => {
+      const result = getPostHooks(undefined)
+      expect(result).toEqual([])
+    })
+
+    it('should return empty array if passing an object that is not a valid App Doc', () => {
+      const result = getPostHooks('{ "myProperty": "myValue" }')
+      expect(result).toEqual([])
+    })
+
+    it('should return empty array if passing an App Doc without hooks', () => {
+      const result = getPostHooks('{ "version": "1", "metadata": {} }')
+      expect(result).toEqual([])
+    })
+
+    it('should return the post hooks if passing a valid App Doc with hooks', () => {
+      const result = getPostHooks('{ "version": "1", "metadata": { "hooks": { "post": [{ "dappId": "myDappId" }] } } }')
+      expect(result).toEqual([{ dappId: 'myDappId' }])
+    })
+  })
+
+  describe('getAcrossDepositEvents', () => {
+    it('should return empty array if passing nothing', () => {
+      const result = getAcrossDepositEvents(SupportedChainId.MAINNET, [])
+      expect(result).toEqual([])
     })
   })
 })

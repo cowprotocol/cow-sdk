@@ -16,6 +16,7 @@ import { factoryGetErc20Decimals } from './getErc20Decimals'
 import { enableLogging } from '../../common/utils/log'
 import { OrderBookApi } from 'src/order-book'
 import { getCrossChainOrder } from './getCrossChainOrder'
+import { providers } from 'ethers'
 
 export interface BridgingSdkOptions {
   /**
@@ -42,6 +43,11 @@ export interface BridgingSdkOptions {
    * Enable logging for the bridging SDK.
    */
   enableLogging?: boolean
+
+  /**
+   * RPC provider.
+   */
+  rpcProvider: providers.JsonRpcProvider
 }
 
 /**
@@ -186,6 +192,7 @@ export class BridgingSdk {
       chainId,
       orderBookApi,
       providers: this.config.providers,
+      rpcProvider: this.config.rpcProvider,
       env: env || orderBookApi.context.env,
     })
   }
