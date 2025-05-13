@@ -1,8 +1,9 @@
 import { applyPercentage, percentageToBps } from 'src/common/utils/math'
 
-const SCALE = BigInt(1e18) // 18 decimal places of precision. Used to avoid depending on Big Decimal libraries
-
+const MIN_SLIPPAGE_BPS = 50
 const MAX_SLIPPAGE_BPS = 10_000 // 100% (this is)
+
+const SCALE = BigInt(1e18) // 18 decimal places of precision. Used to avoid depending on Big Decimal libraries
 
 export interface SuggestSlippageBpsFromFeeParams {
   /**
@@ -37,6 +38,13 @@ export interface SuggestSlippageBpsFromFeeParams {
  * If the fees are bigger or equal to the sell amount, it returns the 10_000 BPS (100% slippage).
  */
 export function suggestSlippageBpsFromFee(params: SuggestSlippageBpsFromFeeParams): number {
+  const slippagePercent = suggestSlippagePercent(params)
+  const slippageBps = percentageToBps(slippagePercent)
+
+  return Math.max(Math.min(slippageBps, MAX_SLIPPAGE_BPS), MIN_SLIPPAGE_BPS)
+}
+
+export function suggestSlippagePercent(params: SuggestSlippageBpsFromFeeParams): number {
   const { feeAmount, sellAmount, isSell, multiplyingFactorPercent } = params
 
   // Negative fees are not allowed
@@ -69,7 +77,7 @@ export function suggestSlippageBpsFromFee(params: SuggestSlippageBpsFromFeeParam
     //    suggestSlippageBpsFromFee = 26,315,789,473,684,210 / 1e18 = 0.02631578947
     const percentageInScale = SCALE - (SCALE * (sellAmount - feeAfterIncrease)) / sellAmountAccountingFee
 
-    return Math.min(percentageToBps(Number(percentageInScale) / Number(SCALE)), MAX_SLIPPAGE_BPS)
+    return Number(percentageInScale) / Number(SCALE)
   } else {
     // For buy orders:
     // ((sellAmount + feeAmount * feeMultiplierFactor) / (sellAmount + feeAmount)) - 1
@@ -79,6 +87,6 @@ export function suggestSlippageBpsFromFee(params: SuggestSlippageBpsFromFeeParam
     //    suggestSlippageBpsFromFee = 23,809,523,809,523,809 / 1e18 = 0.02380952381
     const percentageInScale = (SCALE * (sellAmount + feeAfterIncrease)) / sellAmountAccountingFee - SCALE
 
-    return Math.min(percentageToBps(Number(percentageInScale) / Number(SCALE)), MAX_SLIPPAGE_BPS)
+    return Number(percentageInScale) / Number(SCALE)
   }
 }

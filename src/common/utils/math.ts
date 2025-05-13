@@ -13,10 +13,16 @@ export function percentageToBps(percentage: number | bigint): number {
 
 /**
  * Apply a percentage to a bigint value
+ *
+ * Rounds up.
+ *
  * @param value - The value to apply the percentage to
  * @param percentage - The percentage to apply
  * @returns The value after applying the percentage
  */
 export function applyPercentage(value: bigint, percentage: number): bigint {
-  return (value * BigInt(percentage)) / 100n
+  const valueMultiplied = value * BigInt(percentage)
+  const roundUp = valueMultiplied % 100n !== 0n ? 1n : 0n
+
+  return valueMultiplied / 100n + roundUp
 }

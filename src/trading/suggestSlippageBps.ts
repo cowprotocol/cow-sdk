@@ -29,12 +29,10 @@ export function suggestSlippageBps(params: SuggestSlippageBps): number {
   const sellAmount = isSell ? sellAmountAfterNetworkCosts : sellAmountBeforeNetworkCosts
   const { feeAmount } = quote.quote
 
-  const suggestedSlippageBps = suggestSlippageBpsFromFee({
+  return suggestSlippageBpsFromFee({
     feeAmount: BigInt(feeAmount),
     sellAmount,
     isSell,
     multiplyingFactorPercent: SLIPPAGE_FEE_MULTIPLIER_PERCENT,
   })
-
-  return suggestedSlippageBps
 }
