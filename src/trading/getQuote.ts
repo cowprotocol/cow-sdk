@@ -18,7 +18,7 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { getOrderTypedData } from './getOrderTypedData'
 import { getSigner } from '../common/utils/wallet'
 import { AccountAddress } from '../common/types/wallets'
-import { calculateSmartSlippageBps } from './getSmartSlippage'
+import { suggestSlippageBps } from './getSuggestedSlippage'
 
 // ETH-FLOW orders require different quote params
 // check the isEthFlow flag and set in quote req obj
@@ -135,20 +135,22 @@ export async function getQuote(
   const { partnerFee, slippageBps, sellTokenDecimals, buyTokenDecimals } = tradeParameters
   const { chainId, account: from } = trader
 
-  // If AUTO slippage is used, we need to calculate the smart slippage based on the quote)
+  // If AUTO slippage is used, we need to calculate the suggested slippage based on the quote)
   if (slippageBps === undefined) {
-    const smartSlippageBps = calculateSmartSlippageBps({ quote, tradeParameters, trader, advancedSettings })
+    const suggestedSlippageBps = suggestSlippageBps({ quote, tradeParameters, trader, advancedSettings })
 
-    // If smart slippage is greater than default, we use the smart slippage
-    if (smartSlippageBps > DEFAULT_SLIPPAGE_BPS) {
+    // If suggested slippage is greater than default, we use the suggested slippage
+    if (suggestedSlippageBps > DEFAULT_SLIPPAGE_BPS) {
       // Recursive call, this time using the suggested slippage
       log(
-        `Smart slippage is greater than ${DEFAULT_SLIPPAGE_BPS} BPS (default), calling getQuote again with smart slippage=${smartSlippageBps}`
+        `Suggested slippage is greater than ${DEFAULT_SLIPPAGE_BPS} BPS (default), calling getQuote again with suggested slippage=${suggestedSlippageBps}`
       )
-      const newTradeParameters = { ..._tradeParameters, slippageBps: smartSlippageBps }
+      const newTradeParameters = { ..._tradeParameters, slippageBps: suggestedSlippageBps }
       return getQuote(newTradeParameters, trader, advancedSettings, orderBookApi)
     } else {
-      log(`Smart slippage is only ${smartSlippageBps} BPS. Using the default slippage (${DEFAULT_SLIPPAGE_BPS} BPS)`)
+      log(
+        `Suggested slippage is only ${suggestedSlippageBps} BPS. Using the default slippage (${DEFAULT_SLIPPAGE_BPS} BPS)`
+      )
     }
   }
 

@@ -4,19 +4,19 @@ import { DEFAULT_SLIPPAGE_BPS } from './consts'
 import { getQuoteRaw, getTrader } from './getQuote'
 import { QuoterParameters, SwapAdvancedSettings, SwapParameters, TradeParameters } from './types'
 
-export interface CalculateSmartSlippageBps {
+export interface SuggestSlippageBps {
   tradeParameters: TradeParameters
   quote: OrderQuoteResponse
   trader: QuoterParameters
   advancedSettings?: SwapAdvancedSettings
 }
 
-export function calculateSmartSlippageBps(_params: CalculateSmartSlippageBps): number {
+export function suggestSlippageBps(_params: SuggestSlippageBps): number {
   // TODO: Do something really smart here :)
   return DEFAULT_SLIPPAGE_BPS
 }
 
-export async function getSmartSlippageBpsWithSigner(
+export async function getSuggestedSlippageBpsWithSigner(
   swapParameters: SwapParameters,
   advancedSettings?: SwapAdvancedSettings,
   _orderBookApi?: OrderBookApi
@@ -27,6 +27,5 @@ export async function getSmartSlippageBpsWithSigner(
   // Get quote
   const { quote, tradeParameters } = await getQuoteRaw(swapParameters, trader, advancedSettings, _orderBookApi)
 
-  // Calculate smart slippage
-  return calculateSmartSlippageBps({ quote, tradeParameters, trader, advancedSettings })
+  return suggestSlippageBps({ quote, tradeParameters, trader, advancedSettings })
 }
