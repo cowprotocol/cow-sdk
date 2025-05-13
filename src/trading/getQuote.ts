@@ -18,6 +18,7 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { getOrderTypedData } from './getOrderTypedData'
 import { getSigner } from '../common/utils/wallet'
 import { AccountAddress } from '../common/types/wallets'
+import { calculateSmartSlippageBps } from './getSmartSlippage'
 
 // ETH-FLOW orders require different quote params
 // check the isEthFlow flag and set in quote req obj
@@ -34,12 +35,12 @@ export type QuoteResultsWithSigner = {
   orderBookApi: OrderBookApi
 }
 
-export async function getQuote(
+export async function getQuoteRaw(
   _tradeParameters: TradeParameters,
   trader: QuoterParameters,
   advancedSettings?: SwapAdvancedSettings,
-  _orderBookApi?: OrderBookApi,
-): Promise<{ result: QuoteResults; orderBookApi: OrderBookApi }> {
+  _orderBookApi?: OrderBookApi
+) {
   const { appCode, chainId, account: from } = trader
   const isEthFlow = getIsEthFlowOrder(_tradeParameters)
 
@@ -52,18 +53,20 @@ export async function getQuote(
 
   const {
     sellToken,
-    sellTokenDecimals,
     buyToken,
-    buyTokenDecimals,
     amount,
     kind,
     partnerFee,
     validFor = DEFAULT_QUOTE_VALIDITY,
-    slippageBps = DEFAULT_SLIPPAGE_BPS,
+    slippageBps,
     env = 'prod',
   } = tradeParameters
 
-  log(`Swap ${amount} ${sellToken} for ${buyToken} on chain ${chainId}`)
+  log(
+    `getQuote for: Swap ${amount} ${sellToken} for ${buyToken} on chain ${chainId} with ${
+      slippageBps ? slippageBps + ' BPS' : 'AUTO'
+    } slippage`
+  )
 
   const orderBookApi = _orderBookApi || new OrderBookApi({ chainId, env })
 
@@ -72,14 +75,16 @@ export async function getQuote(
 
   log('Building app data...')
 
+  const slippageBpsToUse = slippageBps ?? DEFAULT_SLIPPAGE_BPS
+
   const appDataInfo = await buildAppData(
     {
-      slippageBps,
+      slippageBps: slippageBpsToUse,
       orderClass: 'market',
       appCode,
       partnerFee,
     },
-    advancedSettings?.appData,
+    advancedSettings?.appData
   )
 
   const { appDataKeccak256, fullAppData } = appDataInfo
@@ -104,20 +109,61 @@ export async function getQuote(
 
   log('Getting quote...')
 
-  const quoteResponse = await orderBookApi.getQuote(quoteRequest)
+  const quote = await orderBookApi.getQuote(quoteRequest)
+
+  return {
+    quote,
+    appDataInfo,
+    orderBookApi,
+    tradeParameters,
+    slippageBpsToUse,
+  }
+}
+
+export async function getQuote(
+  _tradeParameters: TradeParameters,
+  trader: QuoterParameters,
+  advancedSettings?: SwapAdvancedSettings,
+  _orderBookApi?: OrderBookApi
+): Promise<{ result: QuoteResults; orderBookApi: OrderBookApi }> {
+  const { quote, orderBookApi, tradeParameters, slippageBpsToUse, appDataInfo } = await getQuoteRaw(
+    _tradeParameters,
+    trader,
+    advancedSettings,
+    _orderBookApi
+  )
+  const { partnerFee, slippageBps, sellTokenDecimals, buyTokenDecimals } = tradeParameters
+  const { chainId, account: from } = trader
+
+  // If AUTO slippage is used, we need to calculate the smart slippage based on the quote)
+  if (slippageBps === undefined) {
+    const smartSlippageBps = calculateSmartSlippageBps({ quote, tradeParameters, trader, advancedSettings })
+
+    // If smart slippage is greater than default, we use the smart slippage
+    if (smartSlippageBps > DEFAULT_SLIPPAGE_BPS) {
+      // Recursive call, this time using the suggested slippage
+      log(
+        `Smart slippage is greater than ${DEFAULT_SLIPPAGE_BPS} BPS (default), calling getQuote again with smart slippage=${smartSlippageBps}`
+      )
+      const newTradeParameters = { ..._tradeParameters, slippageBps: smartSlippageBps }
+      return getQuote(newTradeParameters, trader, advancedSettings, orderBookApi)
+    } else {
+      log(`Smart slippage is only ${smartSlippageBps} BPS. Using the default slippage (${DEFAULT_SLIPPAGE_BPS} BPS)`)
+    }
+  }
 
   const amountsAndCosts = getQuoteAmountsAndCosts({
-    orderParams: quoteResponse.quote,
-    slippagePercentBps: slippageBps,
+    orderParams: quote.quote,
+    slippagePercentBps: slippageBpsToUse,
     partnerFeeBps: partnerFee?.bps,
     sellDecimals: sellTokenDecimals,
     buyDecimals: buyTokenDecimals,
   })
 
   const orderToSign = getOrderToSign(
-    { from, networkCostsAmount: quoteResponse.quote.feeAmount },
-    swapParamsToLimitOrderParams(tradeParameters, quoteResponse),
-    appDataInfo.appDataKeccak256,
+    { from, networkCostsAmount: quote.quote.feeAmount },
+    swapParamsToLimitOrderParams(tradeParameters, quote),
+    appDataInfo.appDataKeccak256
   )
 
   const orderTypedData = await getOrderTypedData(chainId, orderToSign)
@@ -127,7 +173,7 @@ export async function getQuote(
       tradeParameters,
       amountsAndCosts,
       orderToSign,
-      quoteResponse,
+      quoteResponse: quote,
       appDataInfo,
       orderTypedData,
     },
@@ -135,20 +181,23 @@ export async function getQuote(
   }
 }
 
-export async function getQuoteWithSigner(
-  swapParameters: SwapParameters,
-  advancedSettings?: SwapAdvancedSettings,
-  orderBookApi?: OrderBookApi,
-): Promise<QuoteResultsWithSigner> {
-  const signer = getSigner(swapParameters.signer)
+export async function getTrader(signer: Signer, swapParameters: SwapParameters): Promise<QuoterParameters> {
   const account = swapParameters.owner || ((await signer.getAddress()) as AccountAddress)
 
-  const trader: QuoterParameters = {
+  return {
     chainId: swapParameters.chainId,
     appCode: swapParameters.appCode,
     account,
   }
+}
 
+export async function getQuoteWithSigner(
+  swapParameters: SwapParameters,
+  advancedSettings?: SwapAdvancedSettings,
+  orderBookApi?: OrderBookApi
+): Promise<QuoteResultsWithSigner> {
+  const signer = getSigner(swapParameters.signer)
+  const trader = await getTrader(signer, swapParameters)
   const result = await getQuote(swapParameters, trader, advancedSettings, orderBookApi)
 
   return {
