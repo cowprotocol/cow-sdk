@@ -1,14 +1,13 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { Address } from './Address';
 import type { BigUint } from './BigUint';
 import type { ExecutedProtocolFee } from './ExecutedProtocolFee';
 import type { TokenAmount } from './TokenAmount';
 import type { TransactionHash } from './TransactionHash';
 import type { UID } from './UID';
-
 /**
  * Trade data such as executed amounts, fees, `orderUid` and `block` number.
  *

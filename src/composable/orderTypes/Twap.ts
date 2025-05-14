@@ -343,7 +343,8 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
       }
 
       return undefined
-    } catch (err: any) {
+    } catch (error: unknown) {
+      const err = error as Error
       if (err?.message?.includes('Cabinet is not set')) {
         // in this case we have a firm reason to not monitor this order as the cabinet is not set
         return {
@@ -378,7 +379,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
   protected async handlePollFailedAlreadyPresent(
     _orderUid: string,
     _order: GPv2Order.DataStruct,
-    params: PollParams
+    params: PollParams,
   ): Promise<PollResultErrors | undefined> {
     const { blockInfo = await getBlockInfo(params.provider) } = params
     const { blockTimestamp } = blockInfo
@@ -465,7 +466,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
           handler: TWAP_ADDRESS,
           salt,
           data: transformStructToData(struct),
-        })
+        }),
     )
   }
 

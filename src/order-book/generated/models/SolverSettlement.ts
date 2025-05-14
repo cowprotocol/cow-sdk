@@ -1,10 +1,9 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { BigUint } from './BigUint';
 import type { UID } from './UID';
-
 export type SolverSettlement = {
     /**
      * Name of the solver.

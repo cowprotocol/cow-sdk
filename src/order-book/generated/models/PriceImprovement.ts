@@ -1,9 +1,8 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { Quote } from './Quote';
-
 /**
  * The protocol fee is taken as a percent of the order price improvement which is a difference between the executed price and the best quote.
  */

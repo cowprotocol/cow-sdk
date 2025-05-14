@@ -29,6 +29,7 @@ import { UnsignedOrder } from '../../order-signing'
 import { getSigner } from '../../common/utils/wallet'
 import { assertIsBridgeQuoteAndPost, assertIsQuoteAndPost } from '../utils'
 import { expectToEqual } from '../../test/utils'
+import { EvmCall } from '../../common'
 
 // Sell token: USDC (mainnet)
 const sellTokenChainId = SupportedChainId.MAINNET
@@ -161,6 +162,14 @@ const bridgeQuoteResult: BridgeQuoteResult = {
       },
     },
   },
+  fees: {
+    bridgeFee: 50000n,
+    destinationGasFee: 50000n,
+  },
+  limits: {
+    minDeposit: 1000000n,
+    maxDeposit: 1000000000000n,
+  },
 }
 
 const unsignedBridgeCall: EvmCall = {
@@ -273,7 +282,8 @@ describe('BridgingSdk', () => {
 
     bridgingSdk = new BridgingSdk({
       providers: [mockProvider],
-      getErc20Decimals: async (chainId: TargetChainId, tokenAddress: string) => {
+      orderBookApi: new OrderBookApi(),
+      getErc20Decimals: async (_: TargetChainId, tokenAddress: string) => {
         if (tokenAddress !== intermediateToken) {
           throw new Error('This mock its supposed to be used for intermediate token')
         }
@@ -402,7 +412,13 @@ describe('BridgingSdk', () => {
           appDataInfo,
           orderTypedData,
         },
-        postSwapOrderFromQuote: () => Promise.resolve('0x01'),
+        postSwapOrderFromQuote: () =>
+          Promise.resolve({
+            orderId: '0x01',
+            signingScheme: SigningScheme.EIP712,
+            signature: '0x02',
+            orderToSign,
+          }),
       }
       tradingSdk.getQuote = jest.fn().mockResolvedValue(singleChainQuoteResult)
 

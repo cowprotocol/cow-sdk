@@ -1,11 +1,10 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { OrderQuoteSideKindBuy } from './OrderQuoteSideKindBuy';
 import type { OrderQuoteSideKindSell } from './OrderQuoteSideKindSell';
 import type { TokenAmount } from './TokenAmount';
-
 /**
  * The buy or sell side when quoting an order.
  */

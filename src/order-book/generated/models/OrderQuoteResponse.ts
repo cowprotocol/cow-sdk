@@ -1,10 +1,9 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { Address } from './Address';
 import type { OrderParameters } from './OrderParameters';
-
 /**
  * An order quoted by the backend that can be directly signed and
  * submitted to the order creation backend.

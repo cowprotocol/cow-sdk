@@ -57,7 +57,8 @@ describe('postSwapOrder', () => {
     }
 
     const { orderId } = await postSwapOrderFromQuote(
-      await getQuoteWithSigner(SELL_ORDER_PARAMS, undefined, orderBookApi as any)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await getQuoteWithSigner(SELL_ORDER_PARAMS, undefined, orderBookApi as any),
     )
 
     const call = orderBookApi.sendOrder.mock.calls[0][0]
@@ -118,7 +119,8 @@ describe('postSwapOrder', () => {
     }
 
     const { orderId } = await postSwapOrderFromQuote(
-      await getQuoteWithSigner(parameters, undefined, orderBookApi as any)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await getQuoteWithSigner(parameters, undefined, orderBookApi as any),
     )
 
     const call = orderBookApi.sendOrder.mock.calls[0][0]
@@ -151,6 +153,7 @@ describe('postSwapOrder', () => {
       },
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await postSwapOrderFromQuote(await getQuoteWithSigner(orderParams, undefined, orderBookApi as any))
 
     const call = orderBookApi.sendOrder.mock.calls[0][0]
@@ -168,6 +171,7 @@ describe('postSwapOrder', () => {
     }
     const slippageBips = 800
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await postSwapOrderFromQuote(await getQuoteWithSigner(SELL_ORDER_PARAMS, undefined, orderBookApi as any), {
       appData: {
         metadata: {
@@ -196,6 +200,7 @@ describe('postSwapOrder', () => {
     const validTo = 5600000
     const receiver = '0x974caa59e49682cda0ad2bbe82983419a2ecc400'
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await postSwapOrderFromQuote(await getQuoteWithSigner(SELL_ORDER_PARAMS, undefined, orderBookApi as any), {
       quoteRequest: { receiver, validTo },
     })

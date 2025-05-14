@@ -1,5 +1,4 @@
 jest.mock('cross-fetch', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const fetchMock = require('jest-fetch-mock')
 
   // Require the original module to not be mocked...

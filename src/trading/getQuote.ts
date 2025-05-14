@@ -38,7 +38,7 @@ export async function getQuote(
   _tradeParameters: TradeParameters,
   trader: QuoterParameters,
   advancedSettings?: SwapAdvancedSettings,
-  _orderBookApi?: OrderBookApi
+  _orderBookApi?: OrderBookApi,
 ): Promise<{ result: QuoteResults; orderBookApi: OrderBookApi }> {
   const { appCode, chainId, account: from } = trader
   const isEthFlow = getIsEthFlowOrder(_tradeParameters)
@@ -79,7 +79,7 @@ export async function getQuote(
       appCode,
       partnerFee,
     },
-    advancedSettings?.appData
+    advancedSettings?.appData,
   )
 
   const { appDataKeccak256, fullAppData } = appDataInfo
@@ -116,9 +116,8 @@ export async function getQuote(
 
   const orderToSign = getOrderToSign(
     { from, networkCostsAmount: quoteResponse.quote.feeAmount },
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     swapParamsToLimitOrderParams(tradeParameters, quoteResponse),
-    appDataInfo.appDataKeccak256
+    appDataInfo.appDataKeccak256,
   )
 
   const orderTypedData = await getOrderTypedData(chainId, orderToSign)
@@ -139,7 +138,7 @@ export async function getQuote(
 export async function getQuoteWithSigner(
   swapParameters: SwapParameters,
   advancedSettings?: SwapAdvancedSettings,
-  orderBookApi?: OrderBookApi
+  orderBookApi?: OrderBookApi,
 ): Promise<QuoteResultsWithSigner> {
   const signer = getSigner(swapParameters.signer)
   const account = swapParameters.owner || ((await signer.getAddress()) as AccountAddress)

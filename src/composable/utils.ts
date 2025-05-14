@@ -29,11 +29,11 @@ export async function getDomainVerifier(
   safe: string,
   domain: string,
   chainId: SupportedChainId,
-  provider: providers.Provider
+  provider: providers.Provider,
 ): Promise<string> {
   const contract = ExtensibleFallbackHandler__factory.connect(
     EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS[chainId],
-    provider
+    provider,
   )
   return await contract.callStatic.domainVerifiers(safe, domain)
 }
@@ -73,10 +73,11 @@ export function decodeParams(encoded: string): ConditionalOrderParams {
  * @param values The values to validate.
  * @returns {boolean} Whether the values are valid ABI for the given types.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isValidAbi(types: readonly (string | utils.ParamType)[], values: any[]): boolean {
   try {
     utils.defaultAbiCoder.encode(types, values)
-  } catch (e) {
+  } catch {
     return false
   }
   return true
