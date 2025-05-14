@@ -56,7 +56,7 @@ export class TradingSdk {
               ...quoteResults.result,
               tradeParameters: getTradeParametersAfterQuote({
                 quoteParameters: quoteResults.result.tradeParameters,
-                orderParameters: params,
+                sellToken: params.sellToken,
               }),
             },
           },
@@ -99,7 +99,7 @@ export class TradingSdk {
       quoteResults.result.appDataInfo,
       // Quote response always has an id
       swapParamsToLimitOrderParams(
-        getTradeParametersAfterQuote({ quoteParameters: tradeParameters, orderParameters: params }),
+        getTradeParametersAfterQuote({ quoteParameters: tradeParameters, sellToken: params.sellToken }),
         quoteResponse,
       ),
       advancedSettings?.additionalParams,

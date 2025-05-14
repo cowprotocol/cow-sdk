@@ -4,7 +4,6 @@ import { AppDataInfo, LimitOrderParameters } from './types'
 import { SupportedChainId } from '../chains/types'
 import { OrderBookApi, OrderKind } from '../order-book'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
-import { WRAPPED_NATIVE_CURRENCIES } from '../common'
 
 jest.mock('../common/generated', () => {
   const original = jest.requireActual('../common/generated')
@@ -120,15 +119,11 @@ describe('postSellNativeCurrencyTrade', () => {
     expect(ethFlowContractMock.interface.encodeFunctionData).toHaveBeenCalledWith('createOrder', [
       {
         appData: appDataMock.appDataKeccak256,
-        sellToken: WRAPPED_NATIVE_CURRENCIES[defaultOrderParams.chainId].address,
         sellAmount: defaultOrderParams.sellAmount,
-        sellTokenBalance: 'erc20',
         buyAmount: '1990000000000000000', // defaultOrderParams.buyAmount - slippage
         buyToken: defaultOrderParams.buyToken,
-        buyTokenBalance: 'erc20',
         feeAmount: '0',
         partiallyFillable: false,
-        kind: defaultOrderParams.kind,
         quoteId: defaultOrderParams.quoteId,
         receiver: account,
         validTo: defaultOrderParams.validTo?.toString(),

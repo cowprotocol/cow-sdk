@@ -31,7 +31,12 @@ export async function getEthFlowTransaction(
   const orderId = await calculateUniqueOrderId(chainId, orderToSign, checkEthFlowOrderExists, params.env)
 
   const ethOrderParams: EthFlowOrder.DataStruct = {
-    ...orderToSign,
+    buyToken: orderToSign.buyToken,
+    receiver: orderToSign.receiver,
+    sellAmount: orderToSign.sellAmount,
+    buyAmount: orderToSign.buyAmount,
+    feeAmount: orderToSign.feeAmount,
+    partiallyFillable: orderToSign.partiallyFillable,
     quoteId,
     appData: appDataKeccak256,
     validTo: orderToSign.validTo.toString(),
@@ -60,6 +65,6 @@ export async function getEthFlowTransaction(
   }
 }
 
-function getEthFlowContract(signer: Signer, env?: CowEnv): EthFlow {
+export function getEthFlowContract(signer: Signer, env?: CowEnv): EthFlow {
   return EthFlow__factory.connect(env === 'staging' ? BARN_ETH_FLOW_ADDRESS : ETH_FLOW_ADDRESS, signer)
 }

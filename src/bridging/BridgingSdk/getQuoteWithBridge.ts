@@ -29,6 +29,7 @@ import { parseUnits } from '@ethersproject/units'
 import { SignerLike } from '../../common'
 import { QuoteResultsWithSigner } from '../../trading/getQuote'
 import { BridgeProviderQuoteError } from '../errors'
+import { getTradeParametersAfterQuote } from '../../trading/utils'
 
 type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
   /**
@@ -148,8 +149,11 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   // Get the bridge result
   async function signHooksAndSetSwapResult(
     signer: Signer,
-    appDataOverride?: SwapAdvancedSettings['appData']
+    advancedSettings?: SwapAdvancedSettings
   ): Promise<{ swapResult: QuoteResults; bridgeResult: BridgeQuoteResults }> {
+    const appDataOverride = advancedSettings?.appData
+    const receiverOverride = advancedSettings?.quoteRequest?.receiver
+
     const {
       bridgeHook,
       appDataInfo: { doc: appData, fullAppData, appDataKeccak256 },
@@ -157,7 +161,10 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
     } = await getBridgeResult({
       swapAndBridgeRequest: { ...swapAndBridgeRequest, kind: OrderKind.SELL },
       swapResult,
-      bridgeRequestWithoutAmount,
+      bridgeRequestWithoutAmount: {
+        ...bridgeRequestWithoutAmount,
+        receiver: receiverOverride || bridgeRequestWithoutAmount.receiver,
+      },
       provider,
       intermediateTokenAmount,
       signer,
@@ -196,17 +203,29 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
     bridge: result.bridgeResult,
     async postSwapOrderFromQuote(advancedSettings?: SwapAdvancedSettings) {
       // Sign the hooks with the real signer
-      const { swapResult } = await signHooksAndSetSwapResult(signer, advancedSettings?.appData)
+      const { swapResult } = await signHooksAndSetSwapResult(signer, advancedSettings)
 
       const quoteResults: QuoteResultsWithSigner = {
         result: {
           ...swapResult,
+          tradeParameters: getTradeParametersAfterQuote({
+            quoteParameters: swapResult.tradeParameters,
+            sellToken: sellTokenAddress,
+          }),
           signer,
         },
         orderBookApi,
       }
 
-      return postSwapOrderFromQuote(quoteResults, { ...advancedSettings, appData: swapResult.appDataInfo.doc })
+      return postSwapOrderFromQuote(quoteResults, {
+        ...advancedSettings,
+        appData: swapResult.appDataInfo.doc,
+        quoteRequest: {
+          ...advancedSettings?.quoteRequest,
+          // Changing receiver back to account proxy
+          receiver: swapResult.tradeParameters.receiver,
+        },
+      })
     },
   }
 }
