@@ -1,7 +1,8 @@
 import { applyPercentage, percentageToBps } from 'src/common/utils/math'
 
 const MIN_SLIPPAGE_BPS = 50
-const MAX_SLIPPAGE_BPS = 10_000 // 100% (this is)
+const MAX_SLIPPAGE_BPS = 10_000 // 100% in BPS
+const ONE_HUNDRED_PERCENT_DECIMAL = 1 // 100 in decimal percentage
 
 const SCALE = 10n ** 18n // 18 decimal places of precision. Used to avoid depending on Big Decimal libraries
 
@@ -60,12 +61,13 @@ export function suggestSlippagePercent(params: SuggestSlippageBpsFromFeeParams):
   // Get the amount we want to account for our slippage
   const feeAfterIncrease = applyPercentage(feeAmount, 100 + multiplyingFactorPercent)
 
-  // Account fee (fee is deducted to sell amount for sell orders and added to sell amount for buy orders)
+  // Account fee (fee is deducted to sell amount for sell orders and added for buy orders)
   const sellAmountAccountingFee = isSell ? sellAmount - feeAmount : sellAmount + feeAmount
 
   // Return maximum slippage if the sellAmount after accounting for the fee is 0 or negative
   if (sellAmountAccountingFee <= 0n) {
-    return MAX_SLIPPAGE_BPS
+    // Return 1 (== 100 %) so that later conversion to BPS is consistent
+    return ONE_HUNDRED_PERCENT_DECIMAL
   }
 
   if (isSell) {
