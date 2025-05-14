@@ -15,7 +15,7 @@ export interface SuggestSlippageBpsFromFeeParams {
   /**
    * Actual amount to be sold
    *
-   * For sell orders, its expected the sell amount after applying the fee is applied
+   * For sell orders, its expected the sell amount after the fee is applied
    * For buy orders, its expected to be the sell amount before the fee is applied
    */
   sellAmount: bigint
