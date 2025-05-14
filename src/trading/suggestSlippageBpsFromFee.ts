@@ -4,7 +4,7 @@ const MIN_SLIPPAGE_BPS = 50
 const MAX_SLIPPAGE_BPS = 10_000 // 100% in BPS
 const ONE_HUNDRED_PERCENT_DECIMAL = 1 // 100 in decimal percentage
 
-const SCALE = 10n ** 18n // 18 decimal places of precision. Used to avoid depending on Big Decimal libraries
+const SCALE = 10n ** 6n // 6 decimal places of precision. Used to avoid depending on Big Decimal libraries
 
 export interface SuggestSlippageBpsFromFeeParams {
   /**
