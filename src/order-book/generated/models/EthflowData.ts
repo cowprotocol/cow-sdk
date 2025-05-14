@@ -1,9 +1,8 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { TransactionHash } from './TransactionHash';
-
 /**
  * Provides the additional data for ethflow orders.
  */

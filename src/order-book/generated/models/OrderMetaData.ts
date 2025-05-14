@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { Address } from './Address';
 import type { BigUint } from './BigUint';
 import type { EthflowData } from './EthflowData';
@@ -10,7 +10,6 @@ import type { OrderClass } from './OrderClass';
 import type { OrderStatus } from './OrderStatus';
 import type { TokenAmount } from './TokenAmount';
 import type { UID } from './UID';
-
 /**
  * Extra order data that is returned to users when querying orders but not provided by users when creating orders.
  *

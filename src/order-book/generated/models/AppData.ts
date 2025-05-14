@@ -1,7 +1,7 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 /**
  * The string encoding of a JSON object representing some `appData`. The
  * format of the JSON expected in the `appData` field is defined

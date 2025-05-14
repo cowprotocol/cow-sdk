@@ -1,9 +1,8 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { AppData } from './AppData';
-
 /**
  * An `appData` document that is registered with the API.
  */

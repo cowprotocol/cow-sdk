@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { jsonWithBigintReplacer } from '../../common/utils/serialize'
 import { log } from '../../common/utils/log'
 import { QuoteAndPost, SwapAdvancedSettings, TradeParameters, TradingSdk, WithPartialTraderParams } from '../../trading'

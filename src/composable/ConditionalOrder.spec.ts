@@ -77,13 +77,13 @@ describe('Constructor', () => {
   describe('Fail if bad salt', () => {
     test('Fails if salt is not an hex', () => {
       expect(() =>
-        createTestConditionalOrder({ handler: '0x910d00a310f7Dc5B29FE73458F47f519be547D3d', salt: 'cowtomoon' })
+        createTestConditionalOrder({ handler: '0x910d00a310f7Dc5B29FE73458F47f519be547D3d', salt: 'cowtomoon' }),
       ).toThrow('Invalid salt: cowtomoon')
     })
 
     test('Fails if salt is too short (not 32 bytes)', () => {
       expect(() =>
-        createTestConditionalOrder({ handler: '0x910d00a310f7Dc5B29FE73458F47f519be547D3d', salt: '0xdeadbeef' })
+        createTestConditionalOrder({ handler: '0x910d00a310f7Dc5B29FE73458F47f519be547D3d', salt: '0xdeadbeef' }),
       ).toThrow('Invalid salt: 0xdeadbeef')
     })
 
@@ -92,9 +92,9 @@ describe('Constructor', () => {
         createTestConditionalOrder({
           handler: '0x910d00a310f7Dc5B29FE73458F47f519be547D3d',
           salt: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
-        })
+        }),
       ).toThrow(
-        'Invalid salt: 0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
+        'Invalid salt: 0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
       )
     })
   })
@@ -102,7 +102,7 @@ describe('Constructor', () => {
 describe('Deserialize: Decode static input', () => {
   test('Fails if handler mismatch', () => {
     expect(() => Twap.deserialize(TWAP_SERIALIZED(undefined, '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'))).toThrow(
-      'HandlerMismatch'
+      'HandlerMismatch',
     )
   })
 })
@@ -121,7 +121,7 @@ describe('Compute orderUid', () => {
 
   test('Derive OrderId from leaf data', () => {
     expect(ConditionalOrder.leafToId(SINGLE_ORDER.leaf)).toEqual(
-      '0x88ca0698d8c5500b31015d84fa0166272e1812320d9af8b60e29ae00153363b3'
+      '0x88ca0698d8c5500b31015d84fa0166272e1812320d9af8b60e29ae00153363b3',
     )
   })
 })
@@ -177,6 +177,7 @@ describe('Poll Single Orders', () => {
   const orderBookApi = new OrderBookApi({ chainId })
   const param = { owner: OWNER, chainId, provider: {}, orderBookApi } as PollParams
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mockPollValidate = jest.fn<Promise<PollResultErrors | undefined>, [params: PollParams], any>()
 
   class MockTestConditionalOrder extends TestConditionalOrder {

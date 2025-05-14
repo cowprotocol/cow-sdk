@@ -9,6 +9,7 @@ export enum WeirollCommandFlags {
   CALL = 1,
   STATICCALL = 2,
   CALL_WITH_VALUE = 3,
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   CALLTYPE_MASK = 3,
   EXTENDED_COMMAND = 64,
   TUPLE_RETURN = 128,
@@ -72,7 +73,7 @@ export function createWeirollDelegateCall(addToPlanner: (planner: WeirollPlanner
 export function createWeirollContract(contract: EthersContract, commandflags?: WeirollCommandFlags): WeirollContract {
   return WeirollContract.createContract(
     contract,
-    commandflags as unknown as Parameters<typeof WeirollContract.createContract>[1]
+    commandflags as unknown as Parameters<typeof WeirollContract.createContract>[1],
   )
 }
 

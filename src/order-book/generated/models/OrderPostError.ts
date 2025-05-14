@@ -1,14 +1,12 @@
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 export type OrderPostError = {
     errorType: OrderPostError.errorType;
     description: string;
 };
-
 export namespace OrderPostError {
-
     export enum errorType {
         DUPLICATED_ORDER = 'DuplicatedOrder',
         QUOTE_NOT_FOUND = 'QuoteNotFound',
@@ -38,7 +36,5 @@ export namespace OrderPostError {
         APP_DATA_HASH_MISMATCH = 'AppDataHashMismatch',
         APPDATA_FROM_MISMATCH = 'AppdataFromMismatch',
     }
-
-
 }
 

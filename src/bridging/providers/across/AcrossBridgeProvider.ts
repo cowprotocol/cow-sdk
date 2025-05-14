@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Signer } from 'ethers'
 import { latest as latestAppData } from '@cowprotocol/app-data'
 

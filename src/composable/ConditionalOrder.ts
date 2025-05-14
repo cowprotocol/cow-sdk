@@ -280,7 +280,7 @@ export abstract class ConditionalOrder<D, S> {
         owner,
         this.leaf,
         this.offChainInput,
-        []
+        [],
       )
 
       const orderUid = await computeOrderUid(chainId, owner, fromStructToOrder(order))
@@ -364,7 +364,7 @@ export abstract class ConditionalOrder<D, S> {
   protected abstract handlePollFailedAlreadyPresent(
     orderUid: UID,
     order: GPv2Order.DataStruct,
-    params: PollParams
+    params: PollParams,
   ): Promise<PollResultErrors | undefined>
 
   /**
@@ -401,7 +401,8 @@ export abstract class ConditionalOrder<D, S> {
     s: string,
     handler: string,
     orderDataTypes: string[],
-    callback: (d: any, salt: string) => T
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    callback: (d: any, salt: string) => T,
   ): T {
     try {
       // First, decode the `IConditionalOrder.Params` struct
@@ -415,8 +416,8 @@ export abstract class ConditionalOrder<D, S> {
 
       // Create a new instance of the class
       return callback(d, salt)
-    } catch (e: any) {
-      if (e.message === 'HandlerMismatch') {
+    } catch (e: unknown) {
+      if ((e as Error).message === 'HandlerMismatch') {
         throw e
       } else {
         throw new Error('InvalidSerializedConditionalOrder')
