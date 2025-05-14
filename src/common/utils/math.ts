@@ -1,3 +1,5 @@
+const BPS_FACTOR = 10_000n
+
 /**
  * Convert a percentage to a bps value.
  *
@@ -7,7 +9,7 @@
  * @returns The bps value
  */
 export function percentageToBps(percentage: number | bigint): number {
-  const bps = typeof percentage === 'bigint' ? Number(percentage * 10_000n) : percentage * 10_000
+  const bps = typeof percentage === 'bigint' ? Number(percentage * BPS_FACTOR) : percentage * Number(BPS_FACTOR)
   return Math.ceil(bps)
 }
 
