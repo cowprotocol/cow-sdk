@@ -6,7 +6,7 @@ import { BARN_ETH_FLOW_ADDRESS, CowEnv, ETH_FLOW_ADDRESS } from '../common'
 import { SupportedChainId } from '../chains'
 import { GAS_LIMIT_DEFAULT } from './consts'
 import type { EthFlowOrder } from '../common/generated/EthFlow'
-import { adjustEthFlowOrderParams, calculateGasMargin } from './utils'
+import { adjustEthFlowOrderParams, calculateGasMargin } from './utils/misc'
 import { Signer } from '@ethersproject/abstract-signer'
 import type { UnsignedOrder } from '../order-signing'
 
@@ -15,7 +15,7 @@ export async function getEthFlowTransaction(
   appDataKeccak256: string,
   _params: LimitTradeParametersFromQuote,
   chainId: SupportedChainId,
-  additionalParams: PostTradeAdditionalParams = {}
+  additionalParams: PostTradeAdditionalParams = {},
 ): Promise<{ orderId: string; transaction: TransactionParams; orderToSign: UnsignedOrder }> {
   const { networkCostsAmount = '0', checkEthFlowOrderExists } = additionalParams
   const from = await signer.getAddress()
