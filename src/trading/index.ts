@@ -20,4 +20,4 @@ export { getPreSignTransaction } from './getPreSignTransaction'
 
 export * from './appDataUtils'
 export * from './calculateUniqueOrderId'
-export { swapParamsToLimitOrderParams, mapQuoteAmountsAndCosts } from './utils'
+export { swapParamsToLimitOrderParams, mapQuoteAmountsAndCosts } from './utils/misc'
