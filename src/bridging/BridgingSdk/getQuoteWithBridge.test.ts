@@ -6,12 +6,16 @@ import {
   cowShedForAccount,
   intermediateToken,
   intermediateTokenDecimals,
+  mockSigner,
   orderQuoteResponse,
   quoteBridgeRequest,
 } from './mock/bridgeRequestMocks'
 import { MockBridgeProvider } from '../providers/mock/MockBridgeProvider'
 import { TradingSdk } from '../../trading'
 import { SupportedChainId, TargetChainId } from '../../chains'
+import { QuoteBridgeRequest } from '../types'
+import { NATIVE_CURRENCY_ADDRESS } from '../../common'
+import { getEthFlowContract } from '../../trading/getEthFlowTransaction'
 
 describe('getQuoteWithBridge', () => {
   let tradingSdk: TradingSdk
@@ -38,15 +42,16 @@ describe('getQuoteWithBridge', () => {
         chainId: SupportedChainId.GNOSIS_CHAIN,
       },
       getQuote: jest.fn().mockResolvedValue(orderQuoteResponse),
+      uploadAppData: jest.fn().mockResolvedValue(''),
       sendOrder: sendOrderMock,
     } as unknown as OrderBookApi
 
     tradingSdk = new TradingSdk({}, { orderBookApi })
   })
 
-  async function postOrderWithCustomReceiver(customReceiver: string) {
-    const { postSwapOrderFromQuote } = await getQuoteWithBridge({
-      swapAndBridgeRequest: quoteBridgeRequest,
+  async function postOrder(request: QuoteBridgeRequest) {
+    return getQuoteWithBridge({
+      swapAndBridgeRequest: request,
       provider: mockProvider,
       tradingSdk,
       getErc20Decimals: async (_: TargetChainId, tokenAddress: string) => {
@@ -57,6 +62,10 @@ describe('getQuoteWithBridge', () => {
         return intermediateTokenDecimals
       },
     })
+  }
+
+  async function postOrderWithCustomReceiver(customReceiver: string) {
+    const { postSwapOrderFromQuote } = await postOrder(quoteBridgeRequest)
 
     await postSwapOrderFromQuote({
       quoteRequest: {
@@ -87,5 +96,21 @@ describe('getQuoteWithBridge', () => {
     await postOrderWithCustomReceiver(customReceiver)
 
     expect(sendOrderMock.mock.calls[0][0].receiver).toBe(cowShedForAccount)
+  })
+
+  it('When selling ETH, then should make createOrder transaction', async () => {
+    const { postSwapOrderFromQuote } = await postOrder({
+      ...quoteBridgeRequest,
+      sellTokenAddress: NATIVE_CURRENCY_ADDRESS,
+    })
+
+    await postSwapOrderFromQuote()
+
+    const ethFlowContract = getEthFlowContract(mockSigner)
+    const sendTxCall = (mockSigner.sendTransaction as unknown as jest.Mock).mock.calls[0][0]
+    const data = ethFlowContract.interface.decodeFunctionData('createOrder', sendTxCall.data)
+
+    expect(data.order.buyToken).toBe(intermediateToken)
+    expect(data.order.receiver).toEqual(cowShedForAccount)
   })
 })

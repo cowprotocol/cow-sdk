@@ -14,6 +14,8 @@ import { EvmCall } from '../../../common'
 import { latest as latestAppData } from '@cowprotocol/app-data/dist/generatedTypes/latest'
 import { AppDataInfo, OrderTypedData, TradeParameters } from '../../../trading'
 import { UnsignedOrder } from '../../../order-signing'
+import { Wallet } from '@ethersproject/wallet'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 // Sell token: USDC (mainnet)
 const sellTokenChainId = SupportedChainId.MAINNET
@@ -36,6 +38,9 @@ const amount = parseUnits('100', 6).toBigInt()
 const pk = '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca'
 const account = '0xc8C753ee51E8fC80E199AB297fB575634A1AC1D3'
 const receiver = '0x79063d9173C09887d536924E2F6eADbaBAc099f5'
+export const mockSigner = new Wallet(pk, new JsonRpcProvider('https://sepolia.gateway.tenderly.co'))
+
+mockSigner.sendTransaction = jest.fn().mockResolvedValue({ hash: '0x0005555' })
 
 // Receiver of SWAP (cow-shed)
 export const cowShedForAccount = '0x1111111111111111111111111111111111111111'
@@ -53,7 +58,7 @@ export const quoteBridgeRequest: QuoteBridgeRequest = {
   buyTokenChainId,
   buyTokenAddress,
   buyTokenDecimals,
-  signer: pk,
+  signer: mockSigner,
   amount,
   appCode: 'BridgeSdk Test',
   account,

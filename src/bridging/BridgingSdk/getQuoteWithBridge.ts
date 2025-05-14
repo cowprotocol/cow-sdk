@@ -29,6 +29,7 @@ import { parseUnits } from '@ethersproject/units'
 import { SignerLike } from '../../common'
 import { QuoteResultsWithSigner } from '../../trading/getQuote'
 import { BridgeProviderQuoteError } from '../errors'
+import { getTradeParametersAfterQuote } from '../../trading/utils'
 
 type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
   /**
@@ -207,6 +208,10 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
       const quoteResults: QuoteResultsWithSigner = {
         result: {
           ...swapResult,
+          tradeParameters: getTradeParametersAfterQuote({
+            quoteParameters: swapResult.tradeParameters,
+            sellToken: sellTokenAddress,
+          }),
           signer,
         },
         orderBookApi,

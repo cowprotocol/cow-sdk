@@ -56,7 +56,7 @@ export class TradingSdk {
               ...quoteResults.result,
               tradeParameters: getTradeParametersAfterQuote({
                 quoteParameters: quoteResults.result.tradeParameters,
-                orderParameters: params,
+                sellToken: params.sellToken,
               }),
             },
           },
@@ -100,7 +100,7 @@ export class TradingSdk {
       // Quote response response always has an id
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       swapParamsToLimitOrderParams(
-        getTradeParametersAfterQuote({ quoteParameters: tradeParameters, orderParameters: params }),
+        getTradeParametersAfterQuote({ quoteParameters: tradeParameters, sellToken: params.sellToken }),
         quoteResponse
       ),
       advancedSettings?.additionalParams

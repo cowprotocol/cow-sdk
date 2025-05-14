@@ -71,12 +71,12 @@ export function mapQuoteAmountsAndCosts<T, R>(
  */
 export function getTradeParametersAfterQuote({
   quoteParameters,
-  orderParameters,
+  sellToken,
 }: {
   quoteParameters: TradeParameters
-  orderParameters: TradeParameters
+  sellToken: string
 }): TradeParameters {
-  return { ...quoteParameters, sellToken: orderParameters.sellToken }
+  return { ...quoteParameters, sellToken }
 }
 
 /**
