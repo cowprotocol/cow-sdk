@@ -105,19 +105,19 @@ describe('Buy orders', () => {
     // // expected = (100 + 20 * 1) / (100 + 20) - 1 = 0
     { fee: 20n, sell: 100n, factor: 0, expected: 50 },
 
-    // // expected = 1 - (100 + 20 * 1.25) / (100 + 20) - 1 = 0.125
+    // // expected = (100 + 20 * 1.25) / (100 + 20) - 1 = 0.04166666667
     { fee: 20n, sell: 100n, factor: 25, expected: 417 },
 
-    // expected = (100 + 20 * 1.5) / (100 + 20) - 1 = 0.125
+    // expected = (100 + 20 * 1.5) / (100 + 20) - 1 = 0.08333333333
     { fee: 20n, sell: 100n, factor: 50, expected: 834 },
 
-    // // expected = 1 - (100 + 20 * 1.75) / (100 + 20) - 1 = 0.125
+    // // expected = (100 + 20 * 1.75) / (100 + 20) - 1 = 0.125
     { fee: 20n, sell: 100n, factor: 75, expected: 1250 },
 
-    // // expected = 1 - (100 + 20 * 1.5) / (100 + 20) - 1 = 0.125
+    // expected = (100 + 20 * 2) / (100 + 20) - 1 = 0.1666666667
     { fee: 20n, sell: 100n, factor: 100, expected: 1667 },
 
-    // expected = 1 - (100 + 20 * 1.5) / (100 + 20) - 1 = 0.125
+    // expected = (100 + 20 * 3) / (100 + 20) - 1 = 0.3333333333
     { fee: 20n, sell: 100n, factor: 200, expected: 3334 },
 
     // Absurd factor, returns max slippage
