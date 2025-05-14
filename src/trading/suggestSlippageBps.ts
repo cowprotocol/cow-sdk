@@ -57,7 +57,6 @@ export function suggestSlippageBps(params: SuggestSlippageBps): number {
     sellAmountBeforeNetworkCosts,
     sellAmountAfterNetworkCosts,
     slippage: totalSlippageBps,
-    feeAmount,
   })
 
   // Convert to BPS
