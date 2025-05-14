@@ -3,7 +3,7 @@ import { applyPercentage, percentageToBps } from 'src/common/utils/math'
 const MIN_SLIPPAGE_BPS = 50
 const MAX_SLIPPAGE_BPS = 10_000 // 100% (this is)
 
-const SCALE = BigInt(1e18) // 18 decimal places of precision. Used to avoid depending on Big Decimal libraries
+const SCALE = 10n ** 18n // 18 decimal places of precision. Used to avoid depending on Big Decimal libraries
 
 export interface SuggestSlippageBpsFromFeeParams {
   /**
@@ -12,7 +12,7 @@ export interface SuggestSlippageBpsFromFeeParams {
   feeAmount: bigint
 
   /**
-   * Actual mount to be sold
+   * Actual amount to be sold
    *
    * For sell orders, its expected the sell amount after applying the fee is applied
    * For buy orders, its expected to be the sell amount before the fee is applied
