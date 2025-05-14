@@ -14,7 +14,7 @@ export async function postLimitOrder(
   const partnerFeeOverride = advancedSettings?.appData?.metadata?.partnerFee
 
   /**
-   * Special case for CoW Swap where we have smart slippage
+   * Special case for CoW Swap where we have suggested slippage
    * We update appData slippage without refetching quote
    */
   if (typeof appDataSlippage !== 'undefined') {
