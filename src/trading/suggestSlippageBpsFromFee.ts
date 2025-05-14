@@ -53,7 +53,7 @@ export function suggestSlippagePercent(params: SuggestSlippageBpsFromFeeParams):
   }
 
   // Multiplying factor must be a valid percentage
-  if (multiplyingFactorPercent < 0n) {
+  if (multiplyingFactorPercent < 0) {
     throw new Error('multiplyingFactorPercent must be a percentage: ' + multiplyingFactorPercent)
   }
 
