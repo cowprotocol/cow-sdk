@@ -5,7 +5,7 @@ import { SIGN_SCHEME_MAP } from './consts'
 import { OrderSigningUtils } from '../order-signing'
 import { getOrderToSign } from './getOrderToSign'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
-import { getIsEthFlowOrder } from './utils'
+import { getIsEthFlowOrder } from './utils/misc'
 import { log } from '../common/utils/log'
 
 export async function postCoWProtocolTrade(
@@ -13,7 +13,7 @@ export async function postCoWProtocolTrade(
   signer: Signer,
   appData: AppDataInfo,
   params: LimitTradeParameters,
-  additionalParams: PostTradeAdditionalParams = {}
+  additionalParams: PostTradeAdditionalParams = {},
 ): Promise<OrderPostingResult> {
   const { networkCostsAmount = '0', signingScheme: _signingScheme = SigningScheme.EIP712 } = additionalParams
 
