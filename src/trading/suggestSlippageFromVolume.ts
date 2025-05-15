@@ -17,12 +17,12 @@ export function suggestSlippageFromVolume(params: SuggestSlippageFromVolumeParam
 
   // Negative fees are not allowed
   if (sellAmount < 0n) {
-    throw new Error('sellAmount cannot be negative: ' + sellAmount)
+    throw new Error('sellAmount must be non-negative: ' + sellAmount)
   }
 
   // Multiplying factor must be a valid percentage
   if (slippagePercent < 0) {
-    throw new Error('slippagePercent must be a positive: ' + slippagePercent)
+    throw new Error('slippagePercent must be non-negative: ' + slippagePercent)
   }
 
   return applyPercentage(sellAmount, slippagePercent)

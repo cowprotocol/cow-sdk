@@ -23,12 +23,12 @@ export function suggestSlippageFromFee(params: SuggestSlippageFromFeeParams): bi
 
   // Negative fees are not allowed
   if (feeAmount < 0n) {
-    throw new Error('Fee amount cannot be negative: ' + feeAmount)
+    throw new Error('Fee amount must be non-negative: ' + feeAmount)
   }
 
   // Multiplying factor must be a valid percentage
   if (multiplyingFactorPercent < 0) {
-    throw new Error('multiplyingFactorPercent must be a positive: ' + multiplyingFactorPercent)
+    throw new Error('multiplyingFactorPercent must be non-negative: ' + multiplyingFactorPercent)
   }
 
   // Get the amount we want to account for our slippage

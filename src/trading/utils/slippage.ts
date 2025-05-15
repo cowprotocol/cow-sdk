@@ -20,11 +20,11 @@ export function getSlippagePercent(params: {
 
   // Return maximum slippage if the sellAmount after accounting for the fee is 0 or negative
   if (sellAmount < 0n) {
-    throw new Error('sellAmount cannot be negative: ' + sellAmount)
+    throw new Error('sellAmount must be non-negative: ' + sellAmount)
   }
 
   if (slippage < 0n) {
-    throw new Error('slippage cannot be negative: ' + slippage)
+    throw new Error('slippage must be non-negative: ' + slippage)
   }
 
   if (isSell) {

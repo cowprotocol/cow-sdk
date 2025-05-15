@@ -32,7 +32,7 @@ assertCases('Handle fee edge cases', [
   {
     fee: -100n,
     factor: 50,
-    expected: 'Fee amount cannot be negative: -100',
+    expected: 'Fee amount must be non-negative: -100',
     description: 'fee is negative',
   },
 
@@ -40,7 +40,7 @@ assertCases('Handle fee edge cases', [
   {
     fee: 100n,
     factor: -50,
-    expected: 'multiplyingFactorPercent must be a positive: -50',
+    expected: 'multiplyingFactorPercent must be non-negative: -50',
     description: 'multiplyingFactorPercent is negative',
   },
 ])
