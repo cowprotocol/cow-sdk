@@ -1,4 +1,4 @@
-const SCALE = 10e6 // 6 decimal places of precision. Used to avoid depending on Big Decimal libraries
+const SCALE = 1e6 // 6 decimal places of precision. Used to avoid depending on Big Decimal libraries
 const SCALE_BIGINT = BigInt(SCALE)
 const BPS_FACTOR = 10_000n
 
