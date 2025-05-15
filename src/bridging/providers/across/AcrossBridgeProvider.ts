@@ -143,7 +143,12 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     return DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION
   }
 
-  async getSignedHook(chainId: SupportedChainId, unsignedCall: EvmCall, signer: Signer): Promise<BridgeHook> {
+  async getSignedHook(
+    chainId: SupportedChainId,
+    unsignedCall: EvmCall,
+    signer: Signer,
+    defaultGasLimit?: bigint
+  ): Promise<BridgeHook> {
     // Sign the multicall
     const { signedMulticall, cowShedAccount, gasLimit } = await this.cowShedSdk.signCalls({
       calls: [
@@ -157,6 +162,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
       ],
       chainId,
       signer,
+      defaultGasLimit,
     })
 
     const { to, data } = signedMulticall
