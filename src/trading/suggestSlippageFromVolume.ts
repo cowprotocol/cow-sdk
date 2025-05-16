@@ -15,12 +15,12 @@ export function suggestSlippageFromVolume(params: SuggestSlippageFromVolumeParam
 
   const sellAmount = isSell ? sellAmountAfterNetworkCosts : sellAmountBeforeNetworkCosts
 
-  // Negative fees are not allowed
+  // Negative sell amounts are not allowed
   if (sellAmount < 0n) {
     throw new Error('sellAmount must be non-negative: ' + sellAmount)
   }
 
-  // Multiplying factor must be a valid percentage
+  // Slippage percentage must be non-negative
   if (slippagePercent < 0) {
     throw new Error('slippagePercent must be non-negative: ' + slippagePercent)
   }

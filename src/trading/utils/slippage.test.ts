@@ -26,7 +26,7 @@ describe('getSlippagePercent', () => {
     ])
 
     assertCases('handle error cases', isSell, [
-      { ...baseParams, sellAfter: -10n, slippage: 20n, expected: 'sellAmount must be non-negative: -10' },
+      { ...baseParams, sellAfter: -10n, slippage: 20n, expected: 'sellAmount must be greater than 0: -10' },
       { ...baseParams, slippage: -1n, expected: 'slippage must be non-negative: -1' },
     ])
 
@@ -49,7 +49,7 @@ describe('getSlippagePercent', () => {
     ])
 
     assertCases('handle error cases', isSell, [
-      { ...baseParams, sellBefore: -10n, slippage: 20n, expected: 'sellAmount must be non-negative: -10' },
+      { ...baseParams, sellBefore: -10n, slippage: 20n, expected: 'sellAmount must be greater than 0: -10' },
       { ...baseParams, slippage: -1n, expected: 'slippage must be non-negative: -1' },
     ])
 
