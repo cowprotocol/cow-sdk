@@ -19,8 +19,8 @@ export function getSlippagePercent(params: {
   const sellAmount = isSell ? sellAmountAfterNetworkCosts : sellAmountBeforeNetworkCosts
 
   // Check that the sellAmount after accounting for the fee is not negative
-  if (sellAmount < 0n) {
-    throw new Error('sellAmount must be non-negative: ' + sellAmount)
+  if (sellAmount <= 0n) {
+    throw new Error('sellAmount must be greater than 0: ' + sellAmount)
   }
 
   if (slippage < 0n) {

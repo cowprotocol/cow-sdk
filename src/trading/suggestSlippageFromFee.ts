@@ -17,6 +17,8 @@ export interface SuggestSlippageFromFeeParams {
 /**
  * Return the absolute slippage in the sell token that would allow the order to execute, even if the fee increases by the multiplying factor percent.
  *
+ * @returns The slippage amount in the same units as the fee (sell token amount)
+ * @throws Error if feeAmount or multiplyingFactorPercent is negative
  */
 export function suggestSlippageFromFee(params: SuggestSlippageFromFeeParams): bigint {
   const { feeAmount, multiplyingFactorPercent } = params
