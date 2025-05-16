@@ -1,3 +1,5 @@
+const SCALE = 1e6 // 6 decimal places of precision. Used to avoid depending on Big Decimal libraries
+const SCALE_BIGINT = BigInt(SCALE)
 const BPS_FACTOR = 10_000n
 
 /**
@@ -23,7 +25,7 @@ export function percentageToBps(percentage: number | bigint): number {
  * @returns The value after applying the percentage
  */
 export function applyPercentage(value: bigint, percentage: number): bigint {
-  const valueMultiplied = value * BigInt(percentage)
+  const valueMultiplied = (value * BigInt(Math.floor(percentage * SCALE))) / SCALE_BIGINT
   const roundUp = valueMultiplied % 100n !== 0n ? 1n : 0n
 
   return valueMultiplied / 100n + roundUp
