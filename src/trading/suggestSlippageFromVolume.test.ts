@@ -94,7 +94,7 @@ function assertCases(description: string, isSell: boolean, testCases: SuggestedF
       const expectedDescription = shouldThrow ? `should throw "${expected}"` : `should return ${expected} tokens`
       const caseDescription = testCaseDescription
         ? `When ${testCaseDescription}, ${expectedDescription}`
-        : `suggestSlippageBpsFromFee(sellAmountBeforeNetworkCosts=${sellBefore}, sellAmountAfterNetworkCosts=${sellAfter}, slippagePercent=${percentage}) ${expectedDescription}`
+        : `suggestSlippageFromVolume(sellAmountBeforeNetworkCosts=${sellBefore}, sellAmountAfterNetworkCosts=${sellAfter}, slippagePercent=${percentage}) ${expectedDescription}`
 
       const runTest = only ? it.only : it
       runTest(`[${isSell ? 'sell' : 'buy'}] ${caseDescription}`, () => {
