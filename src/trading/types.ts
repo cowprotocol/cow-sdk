@@ -64,6 +64,11 @@ export interface TradeBaseParameters {
 export interface TradeOptionalParameters {
   env?: CowEnv
   partiallyFillable?: OrderParameters['partiallyFillable']
+
+  /**
+   * Slippage in basis points.
+   * If not provided, it will use AUTO slippage, which would suggest a slippage based on the quote.
+   */
   slippageBps?: latest.SlippageBips
   receiver?: OrderParameters['receiver']
   validFor?: OrderParameters['validTo']
@@ -128,6 +133,12 @@ export interface QuoteResults {
    * Information about the trade, including the kind of order, the owner, the sell and buy tokens, and the amount.
    */
   tradeParameters: TradeParameters
+
+  /**
+   * The suggested slippage based on the quote.
+   *
+   */
+  suggestedSlippageBps: number
 
   /**
    * Details about costs and amounts, costs and fees of a quote.

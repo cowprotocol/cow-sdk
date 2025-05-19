@@ -11,9 +11,40 @@ export interface QuoteAmountsAndCostsParams {
 
 const ONE_HUNDRED_BPS = BigInt(100 * 100)
 
-export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): QuoteAmountsAndCosts {
-  const { orderParams, sellDecimals, buyDecimals, slippagePercentBps } = params
-  const partnerFeeBps = params.partnerFeeBps ?? 0
+export function getQuoteAmountsWithCosts(params: {
+  sellDecimals: number
+  buyDecimals: number
+  orderParams: OrderParameters
+}) {
+  const { sellDecimals, buyDecimals, orderParams } = params
+
+  const {
+    sellAmountAfterNetworkCosts,
+    buyAmountAfterNetworkCosts,
+    buyAmountBeforeNetworkCosts,
+    isSell,
+    networkCostAmount,
+    quotePrice,
+    sellAmountBeforeNetworkCosts,
+  } = _getQuoteAmountsWithCosts({ sellDecimals, buyDecimals, orderParams })
+
+  return {
+    isSell,
+    quotePrice,
+    sellAmountAfterNetworkCosts: sellAmountAfterNetworkCosts.big,
+    buyAmountAfterNetworkCosts: buyAmountAfterNetworkCosts.big,
+    buyAmountBeforeNetworkCosts: buyAmountBeforeNetworkCosts.big,
+    networkCostAmount: networkCostAmount.big,
+    sellAmountBeforeNetworkCosts: sellAmountBeforeNetworkCosts.big,
+  }
+}
+
+function _getQuoteAmountsWithCosts(params: {
+  sellDecimals: number
+  buyDecimals: number
+  orderParams: OrderParameters
+}) {
+  const { sellDecimals, buyDecimals, orderParams } = params
   const isSell = orderParams.kind === OrderKind.SELL
   /**
    * Wrap raw values into bigNumbers
@@ -42,6 +73,34 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
    */
   const buyAmountBeforeNetworkCosts = getBigNumber(quotePrice * sellAmountAfterNetworkCosts.num, buyDecimals)
 
+  return {
+    isSell,
+    quotePrice,
+    networkCostAmount,
+    sellAmountBeforeNetworkCosts,
+    buyAmountAfterNetworkCosts,
+    sellAmountAfterNetworkCosts,
+    buyAmountBeforeNetworkCosts,
+  }
+}
+
+function getQuoteAmountsWithPartnerFee(params: {
+  sellAmountAfterNetworkCosts: BigNumber
+  buyAmountAfterNetworkCosts: BigNumber
+  buyAmountBeforeNetworkCosts: BigNumber
+  sellAmountBeforeNetworkCosts: BigNumber
+  isSell: boolean
+  partnerFeeBps: number
+}) {
+  const {
+    sellAmountAfterNetworkCosts,
+    buyAmountAfterNetworkCosts,
+    buyAmountBeforeNetworkCosts,
+    sellAmountBeforeNetworkCosts,
+    isSell,
+    partnerFeeBps,
+  } = params
+
   /**
    * Partner fee is always added on the surplus amount, for sell-orders it's buy amount, for buy-orders it's sell amount
    */
@@ -61,6 +120,18 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
         buyAmount: buyAmountAfterNetworkCosts.big,
       }
 
+  return {
+    partnerFeeAmount,
+    afterPartnerFees,
+  }
+}
+
+function getQuoteAmountsWithSlippage(params: {
+  afterPartnerFees: { sellAmount: bigint; buyAmount: bigint }
+  isSell: boolean
+  slippagePercentBps: number
+}) {
+  const { afterPartnerFees, isSell, slippagePercentBps } = params
   const getSlippageAmount = (amount: bigint) => (amount * BigInt(slippagePercentBps)) / ONE_HUNDRED_BPS
 
   /**
@@ -75,6 +146,43 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
         sellAmount: afterPartnerFees.sellAmount + getSlippageAmount(afterPartnerFees.sellAmount),
         buyAmount: afterPartnerFees.buyAmount,
       }
+
+  return {
+    afterSlippage,
+  }
+}
+
+export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): QuoteAmountsAndCosts {
+  const { orderParams, sellDecimals, buyDecimals, slippagePercentBps } = params
+  const partnerFeeBps = params.partnerFeeBps ?? 0
+
+  // Get amounts including network costs
+  const {
+    isSell,
+    networkCostAmount,
+    sellAmountBeforeNetworkCosts,
+    buyAmountAfterNetworkCosts,
+    sellAmountAfterNetworkCosts,
+    buyAmountBeforeNetworkCosts,
+    quotePrice,
+  } = _getQuoteAmountsWithCosts({ sellDecimals, buyDecimals, orderParams })
+
+  // Get amounts including partner fees
+  const { afterPartnerFees, partnerFeeAmount } = getQuoteAmountsWithPartnerFee({
+    sellAmountAfterNetworkCosts,
+    buyAmountAfterNetworkCosts,
+    buyAmountBeforeNetworkCosts,
+    sellAmountBeforeNetworkCosts,
+    isSell,
+    partnerFeeBps,
+  })
+
+  // Get amounts including slippage
+  const { afterSlippage } = getQuoteAmountsWithSlippage({
+    afterPartnerFees,
+    isSell,
+    slippagePercentBps,
+  })
 
   return {
     isSell,
