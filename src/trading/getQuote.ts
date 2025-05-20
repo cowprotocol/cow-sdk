@@ -22,7 +22,7 @@ import {
 } from '../order-book'
 import { buildAppData } from './appDataUtils'
 import { getOrderToSign } from './getOrderToSign'
-import { adjustEthFlowOrderParams, getIsEthFlowOrder, swapParamsToLimitOrderParams } from './utils'
+import { adjustEthFlowOrderParams, getIsEthFlowOrder, swapParamsToLimitOrderParams } from './utils/misc'
 import { Signer } from '@ethersproject/abstract-signer'
 import { getOrderTypedData } from './getOrderTypedData'
 import { getSigner } from '../common/utils/wallet'

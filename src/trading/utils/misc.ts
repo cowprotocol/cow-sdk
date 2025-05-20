@@ -1,12 +1,12 @@
-import { LimitTradeParametersFromQuote, TradeParameters } from './types'
-import { OrderQuoteResponse, QuoteAmountsAndCosts } from '../order-book'
-import { ETH_ADDRESS, WRAPPED_NATIVE_CURRENCIES } from '../common'
-import { SupportedChainId } from '../chains'
-import { ETH_FLOW_DEFAULT_SLIPPAGE_BPS } from './consts'
+import { LimitTradeParametersFromQuote, TradeParameters } from '../types'
+import { OrderQuoteResponse, QuoteAmountsAndCosts } from '../../order-book'
+import { ETH_ADDRESS, WRAPPED_NATIVE_CURRENCIES } from '../../common'
+import { SupportedChainId } from '../../chains'
+import { ETH_FLOW_DEFAULT_SLIPPAGE_BPS } from '../consts'
 
 export function swapParamsToLimitOrderParams(
   params: TradeParameters,
-  quoteResponse: OrderQuoteResponse
+  quoteResponse: OrderQuoteResponse,
 ): LimitTradeParametersFromQuote {
   return {
     ...params,
@@ -31,7 +31,7 @@ export function calculateGasMargin(value: bigint): bigint {
 
 export function mapQuoteAmountsAndCosts<T, R>(
   value: QuoteAmountsAndCosts<T>,
-  mapper: (value: T) => R
+  mapper: (value: T) => R,
 ): QuoteAmountsAndCosts<R> {
   const {
     costs: { networkFee, partnerFee },
@@ -86,7 +86,7 @@ export function getTradeParametersAfterQuote({
  */
 export function adjustEthFlowOrderParams(
   chainId: SupportedChainId,
-  params: TradeParameters | LimitTradeParametersFromQuote
+  params: TradeParameters | LimitTradeParametersFromQuote,
 ): typeof params {
   return {
     ...params,
