@@ -38,7 +38,7 @@ describe('Sell orders', () => {
       ...baseParams,
       sellAfter: -10n,
       percentage: 0.5,
-      expected: 'sellAmount must be non-negative: -10',
+      expected: 'sellAmount must be greater than 0: -10',
       description: 'sellAmountAfterFees is 0, sellBefore is 0',
     },
 
@@ -77,7 +77,7 @@ describe('Buy orders', () => {
       ...baseParams,
       sellBefore: -10n,
       percentage: 0.5,
-      expected: 'sellAmount must be non-negative: -10',
+      expected: 'sellAmount must be greater than 0: -10',
       description: 'sellAmountAfterFees is 0, sellBefore is 0',
     },
   ])
