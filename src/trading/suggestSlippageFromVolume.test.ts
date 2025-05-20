@@ -72,12 +72,21 @@ describe('Buy orders', () => {
   ])
 
   assertCases('Handle edge case with sellAmount', isSell, [
-    // sellBefore is 0: returns maximum slippage
+    // sellBefore is negative: it throws an error
     {
       ...baseParams,
       sellBefore: -10n,
       percentage: 0.5,
       expected: 'sellAmount must be greater than 0: -10',
+      description: 'sellAmountAfterFees is 0, sellBefore is 0',
+    },
+
+    // sellBefore is 0: it throws an error
+    {
+      ...baseParams,
+      sellBefore: 0n,
+      percentage: 0.5,
+      expected: 'sellAmount must be greater than 0: 0',
       description: 'sellAmountAfterFees is 0, sellBefore is 0',
     },
   ])
