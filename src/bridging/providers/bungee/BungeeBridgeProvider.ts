@@ -29,9 +29,13 @@ import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
 import { createBungeeDepositCall } from './createBungeeDepositCall'
 import { OrderKind } from '@cowprotocol/contracts'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
+import { BungeeQuote, BungeeQuoteAPIRequest } from './types'
 
 const HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/bungee`
 export const BUNGEE_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
+
+/** There will be no dex swaps happening while bridging. Hence slippage will be zero */
+const SLIPPAGE_TOLERANCE_BPS = 0
 
 export interface BungeeBridgeProviderOptions {
   // API options
@@ -41,7 +45,9 @@ export interface BungeeBridgeProviderOptions {
   cowShedOptions?: CowShedSdkOptions
 }
 
-export interface BungeeQuoteResult extends BridgeQuoteResult {}
+export interface BungeeQuoteResult extends BridgeQuoteResult {
+  bungeeQuote: BungeeQuote
+}
 
 export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   protected api: BungeeApi
@@ -94,8 +100,37 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<BungeeQuoteResult> {
-    // TODO implement
-    throw new Error('TODO implement')
+    const { sellTokenAddress, sellTokenChainId, buyTokenChainId, buyTokenAddress, amount, receiver, account, owner } =
+      request
+
+    // fetch intermediate token from request
+    const intermediateToken = await this.getIntermediateTokens(request)
+    if (intermediateToken.length === 0) {
+      throw new Error('No intermediate token found')
+    }
+
+    // @note bungee api requires the sender address
+    //       sender address would be the cowshed account
+    // fetch the cowshed account
+    const ownerAddress = owner ?? account
+    const cowshedAccount = this.cowShedSdk.getCowShedAccount(sellTokenChainId, ownerAddress)
+
+    // fetch quote from bungee api
+    const bungeeQuoteRequest: BungeeQuoteAPIRequest = {
+      userAddress: cowshedAccount,
+      originChainId: sellTokenChainId.toString(),
+      destinationChainId: buyTokenChainId.toString(),
+      inputToken: intermediateToken[0], // use intermediate token for the bridging quote
+      inputAmount: amount.toString(), // TODO this is wrong. should be using the quoted swap output amount of intermediate token
+      receiverAddress: receiver ?? account, // receiver is required on bungee api
+      outputToken: buyTokenAddress,
+      includeBridges: this.api.SUPPORTED_BRIDGES,
+      enableManual: true,
+    }
+    const quote = await this.api.getBungeeQuote(bungeeQuoteRequest)
+
+    // convert bungee quote response to BridgeQuoteResult
+    return toBridgeQuoteResult(request, SLIPPAGE_TOLERANCE_BPS, quote)
   }
 
   async getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: BungeeQuoteResult): Promise<EvmCall> {
@@ -107,6 +142,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   }
 
   getGasLimitEstimationForHook(_request: QuoteBridgeRequest): number {
+    // TODO sim and replace gas limit
     return DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION
   }
 
