@@ -58,11 +58,11 @@ const privateKey = 'xxx'
       appData: {
         metadata: {
           partnerFee: {
-            bps: 100,
+            volumeBps: 100,
             recipient: '0xfb3c7eb936cAA12B5A884d612393969A557d4307',
           },
         },
       },
-    }
+    },
   )
 })()

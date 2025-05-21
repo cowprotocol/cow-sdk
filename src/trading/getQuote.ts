@@ -1,3 +1,5 @@
+import { log } from '../common/utils/log'
+import { DEFAULT_QUOTE_VALIDITY, DEFAULT_SLIPPAGE_BPS } from './consts'
 import {
   AppDataInfo,
   BuildAppDataParams,
@@ -7,9 +9,10 @@ import {
   SwapParameters,
   TradeParameters,
 } from './types'
-import { DEFAULT_QUOTE_VALIDITY, DEFAULT_SLIPPAGE_BPS } from './consts'
-import { log } from '../common/utils/log'
 
+import { Signer } from '@ethersproject/abstract-signer'
+import { AccountAddress } from '../common/types/wallets'
+import { getSigner } from '../common/utils/wallet'
 import {
   getQuoteAmountsAndCosts,
   OrderBookApi,
@@ -22,12 +25,10 @@ import {
 } from '../order-book'
 import { buildAppData } from './appDataUtils'
 import { getOrderToSign } from './getOrderToSign'
-import { adjustEthFlowOrderParams, getIsEthFlowOrder, swapParamsToLimitOrderParams } from './utils/misc'
-import { Signer } from '@ethersproject/abstract-signer'
 import { getOrderTypedData } from './getOrderTypedData'
-import { getSigner } from '../common/utils/wallet'
-import { AccountAddress } from '../common/types/wallets'
 import { suggestSlippageBps } from './suggestSlippageBps'
+import { getPartnerFeeBps } from './utils/getPartnerFeeBps'
+import { adjustEthFlowOrderParams, getIsEthFlowOrder, swapParamsToLimitOrderParams } from './utils/misc'
 
 // ETH-FLOW orders require different quote params
 // check the isEthFlow flag and set in quote req obj
@@ -57,7 +58,7 @@ export async function getQuoteRaw(
   _tradeParameters: TradeParameters,
   trader: QuoterParameters,
   advancedSettings?: SwapAdvancedSettings,
-  _orderBookApi?: OrderBookApi
+  _orderBookApi?: OrderBookApi,
 ): Promise<GetQuoteRawResult> {
   const { appCode, chainId, account: from } = trader
   const isEthFlow = getIsEthFlowOrder(_tradeParameters)
@@ -83,7 +84,7 @@ export async function getQuoteRaw(
   log(
     `getQuote for: Swap ${amount} ${sellToken} for ${buyToken} on chain ${chainId} with ${
       slippageBps !== undefined ? `${slippageBps} BPS` : 'AUTO'
-    } slippage`
+    } slippage`,
   )
 
   const orderBookApi = _orderBookApi || new OrderBookApi({ chainId, env })
@@ -137,7 +138,7 @@ export async function getQuoteRaw(
     if (suggestedSlippageBps > DEFAULT_SLIPPAGE_BPS) {
       // Recursive call, this time using the suggested slippage
       log(
-        `Suggested slippage is greater than ${DEFAULT_SLIPPAGE_BPS} BPS (default), using the suggested slippage (${suggestedSlippageBps} BPS)`
+        `Suggested slippage is greater than ${DEFAULT_SLIPPAGE_BPS} BPS (default), using the suggested slippage (${suggestedSlippageBps} BPS)`,
       )
 
       const newAppDataInfo = await buildAppData(
@@ -145,10 +146,10 @@ export async function getQuoteRaw(
           ...buildAppDataParams,
           slippageBps: suggestedSlippageBps,
         },
-        advancedSettings?.appData
+        advancedSettings?.appData,
       )
       log(
-        `App data with new suggested slippage: appDataKeccak256=${newAppDataInfo.appDataKeccak256} fullAppData=${newAppDataInfo.fullAppData}`
+        `App data with new suggested slippage: appDataKeccak256=${newAppDataInfo.appDataKeccak256} fullAppData=${newAppDataInfo.fullAppData}`,
       )
 
       return {
@@ -163,7 +164,7 @@ export async function getQuoteRaw(
       }
     } else {
       log(
-        `Suggested slippage is only ${suggestedSlippageBps} BPS. Using the default slippage (${DEFAULT_SLIPPAGE_BPS} BPS)`
+        `Suggested slippage is only ${suggestedSlippageBps} BPS. Using the default slippage (${DEFAULT_SLIPPAGE_BPS} BPS)`,
       )
     }
   }
@@ -182,13 +183,13 @@ export async function getQuote(
   _tradeParameters: TradeParameters,
   trader: QuoterParameters,
   advancedSettings?: SwapAdvancedSettings,
-  _orderBookApi?: OrderBookApi
+  _orderBookApi?: OrderBookApi,
 ): Promise<{ result: QuoteResults; orderBookApi: OrderBookApi }> {
   const { quote, orderBookApi, tradeParameters, slippageBps, suggestedSlippageBps, appDataInfo } = await getQuoteRaw(
     _tradeParameters,
     trader,
     advancedSettings,
-    _orderBookApi
+    _orderBookApi,
   )
   const { partnerFee, sellTokenDecimals, buyTokenDecimals } = tradeParameters
   const { chainId, account: from } = trader
@@ -196,7 +197,7 @@ export async function getQuote(
   const amountsAndCosts = getQuoteAmountsAndCosts({
     orderParams: quote.quote,
     slippagePercentBps: slippageBps,
-    partnerFeeBps: partnerFee?.bps,
+    partnerFeeBps: getPartnerFeeBps(partnerFee),
     sellDecimals: sellTokenDecimals,
     buyDecimals: buyTokenDecimals,
   })
@@ -204,7 +205,7 @@ export async function getQuote(
   const orderToSign = getOrderToSign(
     { from, networkCostsAmount: quote.quote.feeAmount },
     swapParamsToLimitOrderParams(tradeParameters, quote),
-    appDataInfo.appDataKeccak256
+    appDataInfo.appDataKeccak256,
   )
 
   const orderTypedData = await getOrderTypedData(chainId, orderToSign)
@@ -236,7 +237,7 @@ export async function getTrader(signer: Signer, swapParameters: SwapParameters):
 export async function getQuoteWithSigner(
   swapParameters: SwapParameters,
   advancedSettings?: SwapAdvancedSettings,
-  orderBookApi?: OrderBookApi
+  orderBookApi?: OrderBookApi,
 ): Promise<QuoteResultsWithSigner> {
   const signer = getSigner(swapParameters.signer)
   const trader = await getTrader(signer, swapParameters)

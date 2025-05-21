@@ -1,7 +1,8 @@
 import { BuyTokenDestination, getQuoteAmountsAndCosts, type OrderParameters, SellTokenSource } from '../order-book'
 import { UnsignedOrder } from '../order-signing'
-import { LimitTradeParameters } from './types'
 import { DEFAULT_QUOTE_VALIDITY, DEFAULT_SLIPPAGE_BPS } from './consts'
+import { LimitTradeParameters } from './types'
+import { getPartnerFeeBps } from './utils/getPartnerFeeBps'
 
 interface OrderToSignParams {
   from: string
@@ -11,7 +12,7 @@ interface OrderToSignParams {
 export function getOrderToSign(
   { from, networkCostsAmount = '0' }: OrderToSignParams,
   limitOrderParams: LimitTradeParameters,
-  appDataKeccak256: string
+  appDataKeccak256: string,
 ): UnsignedOrder {
   const {
     sellAmount,
@@ -46,7 +47,7 @@ export function getOrderToSign(
   const { afterSlippage } = getQuoteAmountsAndCosts({
     orderParams,
     slippagePercentBps: slippageBps,
-    partnerFeeBps: partnerFee?.bps,
+    partnerFeeBps: getPartnerFeeBps(partnerFee),
     sellDecimals: sellTokenDecimals,
     buyDecimals: buyTokenDecimals,
   })
