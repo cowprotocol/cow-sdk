@@ -141,31 +141,6 @@ export function decodeBungeeBridgeTxData(txData: string) {
   return { routeId, encodedFunctionData, functionSelector }
 }
 
-// TODO use common/math utils
-/**
- * pct represents a percentage.
- *
- * bps is a percentage in basis points (1/100th of a percent). For example, 1% is 100 bps.
- *
- * @param pct - The percentage to convert to bps
- * @returns The percentage in bps
- * @throws If the percentage is greater than 100% or less than 0%
- */
-export function pctToBpsNumber(pct: number): number {
-  if (pct > 100 || pct < 0) {
-    throw new Error('Fee cannot exceed 100% or be negative')
-  }
-
-  return Math.round(pct * 100)
-}
-export function pctToBpsBigInt(pct: bigint): bigint {
-  if (pct > 100n || pct < 0n) {
-    throw new Error('Fee cannot exceed 100% or be negative')
-  }
-
-  return (pct * 100n) / 100n
-}
-
 export function applyBps(amount: bigint, bps: number): bigint {
   return (amount * BigInt(10_000 - bps)) / 10_000n
 }
