@@ -39,6 +39,14 @@ export const BUNGEE_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, o
 const SLIPPAGE_TOLERANCE_BPS = 0
 
 export interface BungeeBridgeProviderOptions {
+  /**
+   * Token info provider
+   * @param chainId - The chain ID
+   * @param addresses - The addresses of the tokens to get the info for
+   * @returns The token infos
+   */
+  getTokenInfos?: (chainId: ChainId, addresses: string[]) => Promise<TokenInfo[]>
+
   // API options
   apiOptions?: BungeeApiOptions
 
@@ -70,6 +78,10 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   }
 
   async getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]> {
+    if (!this.options.getTokenInfos) {
+      throw new Error("'getTokenInfos' parameter is required for AcrossBridgeProvider constructor")
+    }
+
     const chainConfig = BUNGEE_TOKEN_MAPPING[targetChainId as TargetChainId]
     if (!chainConfig) {
       return []
@@ -77,8 +89,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
 
     const tokenAddresses = Object.values(chainConfig.tokens).filter((address): address is string => Boolean(address))
 
-    // TODO use an api to get token details
-    throw new Error('TODO use an api to get token details')
+    return this.options.getTokenInfos(targetChainId, tokenAddresses)
   }
 
   async getIntermediateTokens(request: QuoteBridgeRequest): Promise<string[]> {
