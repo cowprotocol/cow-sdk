@@ -1,18 +1,18 @@
-export * from './types'
 export * from './tradingSdk'
+export * from './types'
 
 /**
  * Main trading functions
  */
-export { getQuote, getQuoteWithSigner } from './getQuote'
-export { suggestSlippageBps } from './suggestSlippageBps'
-export { postSwapOrder, postSwapOrderFromQuote } from './postSwapOrder'
-export { postLimitOrder } from './postLimitOrder'
-export { postCoWProtocolTrade } from './postCoWProtocolTrade'
-export { getOrderToSign } from './getOrderToSign'
-export { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 export { getEthFlowTransaction } from './getEthFlowTransaction'
+export { getOrderToSign } from './getOrderToSign'
 export { getPreSignTransaction } from './getPreSignTransaction'
+export { getQuote, getQuoteWithSigner } from './getQuote'
+export { postCoWProtocolTrade } from './postCoWProtocolTrade'
+export { postLimitOrder } from './postLimitOrder'
+export { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
+export { postSwapOrder, postSwapOrderFromQuote } from './postSwapOrder'
+export { suggestSlippageBps } from './suggestSlippageBps'
 
 /**
  * Helpers
@@ -20,4 +20,5 @@ export { getPreSignTransaction } from './getPreSignTransaction'
 
 export * from './appDataUtils'
 export * from './calculateUniqueOrderId'
-export { swapParamsToLimitOrderParams, mapQuoteAmountsAndCosts } from './utils/misc'
+export { getPartnerFeeBps } from './utils/getPartnerFeeBps'
+export { mapQuoteAmountsAndCosts, swapParamsToLimitOrderParams } from './utils/misc'
