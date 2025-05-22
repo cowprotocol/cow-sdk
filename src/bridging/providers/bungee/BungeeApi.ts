@@ -1,5 +1,5 @@
 import { log } from '../../../common/utils/log'
-import { objectToSearchParams } from './util'
+import { getBungeeBridgeFromDisplayName, objectToSearchParams } from './util'
 import {
   BungeeBuildTx,
   BungeeBuildTxAPIResponse,
@@ -62,8 +62,14 @@ export class BungeeApi {
       }
       // prepare quote timestamp from current timestamp
       const quoteTimestamp = Math.floor(Date.now() / 1000)
+      // validate bridge name
+      const bridgeName = getBungeeBridgeFromDisplayName(response.result.manualRoutes[0].routeDetails.name)
+      if (!bridgeName) {
+        throw new Error('Invalid bridge name')
+      }
 
       // sort manual routes by output
+      // @todo do we give users the option to choose bw time and output and any other factors?
       const { manualRoutes } = response.result
       const sortedManualRoutes = manualRoutes.sort((a, b) => {
         return Number(b.output.amount) - Number(a.output.amount)
@@ -77,6 +83,7 @@ export class BungeeApi {
         receiverAddress: response.result.receiverAddress,
         input: response.result.input,
         route: sortedManualRoutes[0],
+        routeBridge: bridgeName,
         quoteTimestamp,
       }
 

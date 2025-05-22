@@ -6,6 +6,12 @@ import { BridgeQuoteAmountsAndCosts, QuoteBridgeRequest } from 'src/bridging/typ
 import { OrderKind } from '@cowprotocol/contracts'
 import { BungeeQuote, BungeeQuoteWithBuildTx } from './types'
 import { getBigNumber } from 'src/order-book'
+import { SignerLike } from 'src/common'
+import { ethers } from 'ethers'
+import { ERC20_ABI } from './abi'
+import { getSigner } from 'src/common/utils/wallet'
+import { BungeeTxDataBytesIndices } from './const/misc'
+import { BungeeBridge, BungeeBridgeNames } from './types'
 
 export function getChainConfigs(
   sourceChainId: TargetChainId,
@@ -176,4 +182,77 @@ export function objectToSearchParams(params: { [key: string]: any }): URLSearchP
   })
 
   return searchParams
+}
+
+export async function fetchTokenAllowance(params: {
+  tokenAddress: string
+  ownerAddress: string
+  spenderAddress: string
+  signer: SignerLike
+}): Promise<bigint> {
+  const { tokenAddress, ownerAddress, spenderAddress, signer } = params
+
+  // @todo does this actually work and connect to source chain id ¿
+  const _signer = getSigner(signer)
+  const tokenContract = getErc20Contract(tokenAddress, _signer)
+  const allowance = await tokenContract.allowance(ownerAddress, spenderAddress)
+  return allowance
+}
+
+export function getErc20Contract(
+  tokenAddress: string,
+  signer?: ethers.Signer | ethers.providers.Provider,
+): ethers.Contract {
+  return new ethers.Contract(tokenAddress, ERC20_ABI, signer)
+}
+
+export const decodeBungeeTxData = (txData: string) => {
+  // remove first two characters = 0x
+  const txDataWithout0x = txData.slice(2)
+  // first four bytes are the routeId
+  const routeId = `0x${txDataWithout0x.slice(0, 8)}`
+  // rest is the encoded function data
+  const encodedFunctionData = `0x${txDataWithout0x.slice(8)}`
+  return { routeId, encodedFunctionData }
+}
+
+// Helper function to get enum value from display name
+export const getBungeeBridgeFromDisplayName = (displayName: string): BungeeBridge | undefined => {
+  return BungeeBridgeNames[displayName]
+}
+
+// Helper function to get display name from enum value
+export const getDisplayNameFromBungeeBridge = (bridge: BungeeBridge): string | undefined => {
+  return Object.entries(BungeeBridge).find(([_, value]) => value === bridge)?.[0]
+}
+
+export const decodeAmountsBungeeTxData = (txData: string, bridge: BungeeBridge) => {
+  // decode input amount
+  const inputAmountBytes = `0x${txData.slice(
+    BungeeTxDataBytesIndices[bridge].inputAmount.bytesString_startIndex,
+    BungeeTxDataBytesIndices[bridge].inputAmount.bytesString_startIndex +
+      BungeeTxDataBytesIndices[bridge].inputAmount.bytesString_length,
+  )}`
+  const inputAmountBigNumber = ethers.BigNumber.from(inputAmountBytes)
+
+  // decode output amount if available
+  // check if output amount is available
+  if (bridge === BungeeBridge.Across) {
+    const outputAmountBytes = `0x${txData.slice(
+      BungeeTxDataBytesIndices[bridge].outputAmount.bytesString_startIndex,
+      BungeeTxDataBytesIndices[bridge].outputAmount.bytesString_startIndex +
+        BungeeTxDataBytesIndices[bridge].outputAmount.bytesString_length,
+    )}`
+    const outputAmountBigNumber = ethers.BigNumber.from(outputAmountBytes)
+    return {
+      inputAmountBytes,
+      inputAmountBigNumber,
+      outputAmountBytes,
+      outputAmountBigNumber,
+    }
+  }
+  return {
+    inputAmountBytes,
+    inputAmountBigNumber,
+  }
 }

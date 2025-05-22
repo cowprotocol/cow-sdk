@@ -104,6 +104,17 @@ export interface BungeeQuoteAPIResponse {
   }
 }
 
+export enum BungeeBridge {
+  'Across' = 'across',
+  'Circle CCTP' = 'cctp',
+}
+
+// Map display names to enum values
+export const BungeeBridgeNames: Record<string, BungeeBridge> = {
+  Across: BungeeBridge.Across,
+  'Circle CCTP': BungeeBridge['Circle CCTP'],
+}
+
 export interface BungeeQuote {
   originChainId: number
   destinationChainId: number
@@ -111,6 +122,7 @@ export interface BungeeQuote {
   receiverAddress: string
   input: BungeeQuoteAPIResponse['result']['input']
   route: BungeeQuoteAPIResponse['result']['manualRoutes'][0]
+  routeBridge: BungeeBridge
   quoteTimestamp: number
 }
 
@@ -140,3 +152,29 @@ export interface BungeeBuildTxAPIResponse {
 }
 
 export type BungeeBuildTx = BungeeBuildTxAPIResponse['result']
+
+interface InputAmountTxDataBytesIndices {
+  inputAmount: {
+    bytes_startIndex: number
+    bytes_length: number
+    bytesString_startIndex: number
+    bytesString_length: number
+  }
+}
+
+interface OutputAmountTxDataBytesIndices {
+  outputAmount: {
+    bytes_startIndex: number
+    bytes_length: number
+    bytesString_startIndex: number
+    bytesString_length: number
+  }
+}
+
+interface InputOutputAmountTxDataBytesIndices extends InputAmountTxDataBytesIndices, OutputAmountTxDataBytesIndices {}
+
+export type BungeeTxDataBytesIndicesType = {
+  [K in BungeeBridge]: K extends BungeeBridge.Across
+    ? InputOutputAmountTxDataBytesIndices // across has both input and output amounts
+    : InputAmountTxDataBytesIndices // cctp has only input amount
+}
