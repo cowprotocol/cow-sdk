@@ -13,3 +13,8 @@ export const BUNGEE_COWSWAP_LIB_ABI = [
 export const SOCKET_GATEWAY_ABI = [
   'function executeRoute(uint32 routeId, bytes calldata routeData) external payable returns (bytes memory)',
 ]
+
+export const SOCKET_VERIFIER_ABI = [
+  'function validateRotueId(bytes calldata callData, uint32 expectedRouteId) external',
+  'function validateSocketRequest(bytes calldata callData, UserRequestValidation calldata expectedRequest) external',
+]

@@ -1,5 +1,5 @@
 import { log } from '../../../common/utils/log'
-import { getBungeeBridgeFromDisplayName, objectToSearchParams } from './util'
+import { decodeBungeeBridgeTxData, getBungeeBridgeFromDisplayName, objectToSearchParams } from './util'
 import {
   BungeeBuildTx,
   BungeeBuildTxAPIResponse,
@@ -7,9 +7,17 @@ import {
   BungeeQuoteAPIRequest,
   BungeeQuoteAPIResponse,
   BungeeQuoteWithBuildTx,
+  SocketRequest,
   SupportedBridge,
+  UserRequestValidation,
 } from './types'
 import { BridgeProviderQuoteError } from '../../errors'
+import { SocketVerifierAddresses } from './const/contracts'
+import { SupportedChainId } from 'src/chains'
+import { SignerLike } from 'src/common'
+import { getSigner } from 'src/common/utils/wallet'
+import { ethers } from 'ethers'
+import { SOCKET_VERIFIER_ABI } from './abi'
 
 const BUNGEE_API_URL = 'https://public-backend.bungee.exchange/api/v1'
 
@@ -106,6 +114,79 @@ export class BungeeApi {
       throw new BridgeProviderQuoteError('Bungee Api Error: Build tx failed', response)
     }
     return response.result
+  }
+
+  /**
+   * Verifies the build tx data for a quote using the SocketVerifier contract
+   * @param quote - The quote object
+   * @param buildTx - The build tx object
+   * @param signer - The signer object
+   * @returns True if the build tx data is valid, false otherwise
+   */
+  async verifyBungeeBuildTx(quote: BungeeQuote, buildTx: BungeeBuildTx, signer: SignerLike): Promise<boolean> {
+    const { routeId, encodedFunctionData, functionSelector } = decodeBungeeBridgeTxData(buildTx.txData.data)
+
+    const expectedSocketRequest: SocketRequest = {
+      amount: quote.input.amount,
+      recipient: quote.receiverAddress,
+      toChainId: quote.destinationChainId.toString(),
+      token: quote.input.token.address,
+      signature: functionSelector,
+    }
+    return this.verifyBungeeBuildTxData(
+      quote.originChainId,
+      encodedFunctionData,
+      routeId,
+      expectedSocketRequest,
+      signer,
+    )
+  }
+
+  /**
+   * Verifies the bungee tx data using the SocketVerifier contract
+   * @param originChainId - The origin chain id
+   * @param txData - The tx data
+   * @param routeId - The route id
+   * @param expectedSocketRequest - The expected socket request
+   * @param signer - The signer object
+   * @returns True if the bungee tx data is valid, false otherwise
+   */
+  async verifyBungeeBuildTxData(
+    originChainId: SupportedChainId,
+    txData: string,
+    routeId: string,
+    expectedSocketRequest: SocketRequest,
+    signer: SignerLike,
+  ): Promise<boolean> {
+    const _signer = getSigner(signer)
+    const socketVerifierAddress = SocketVerifierAddresses[originChainId]
+    if (!socketVerifierAddress) {
+      throw new Error(`Socket verifier not found for chainId: ${originChainId}`)
+    }
+    const SocketVerifier = new ethers.Contract(socketVerifierAddress, SOCKET_VERIFIER_ABI, _signer)
+
+    // should not revert
+    try {
+      await SocketVerifier.callStatic.validateRotueId(txData, routeId)
+    } catch (error) {
+      console.error('🔴 Error validating routeId:', error)
+      return false
+    }
+
+    const expectedUserRequestValidation: UserRequestValidation = {
+      routeId,
+      socketRequest: expectedSocketRequest,
+    }
+
+    // should not revert
+    try {
+      await SocketVerifier.callStatic.validateSocketRequest(txData, expectedUserRequestValidation)
+    } catch (error) {
+      console.error('🔴 Error validating socket request:', error)
+      return false
+    }
+
+    return true
   }
 
   protected async get<T>(

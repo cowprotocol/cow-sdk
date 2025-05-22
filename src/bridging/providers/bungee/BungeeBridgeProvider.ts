@@ -30,6 +30,7 @@ import { createBungeeDepositCall } from './createBungeeDepositCall'
 import { OrderKind } from '@cowprotocol/contracts'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
 import { BungeeBuildTx, BungeeQuote, BungeeQuoteAPIRequest } from './types'
+import { getSigner } from 'src/common/utils/wallet'
 
 const HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/bungee`
 export const BUNGEE_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
@@ -124,6 +125,16 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
       enableManual: true,
     }
     const quoteWithBuildTx = await this.api.getBungeeQuoteWithBuildTx(bungeeQuoteRequest)
+
+    // verify build-tx data
+    const isBuildTxValid = await this.api.verifyBungeeBuildTx(
+      quoteWithBuildTx.bungeeQuote,
+      quoteWithBuildTx.buildTx,
+      getSigner(request.signer),
+    )
+    if (!isBuildTxValid) {
+      throw new Error('Build tx data is invalid')
+    }
 
     // convert bungee quote response to BridgeQuoteResult
     return toBridgeQuoteResult(request, SLIPPAGE_TOLERANCE_BPS, quoteWithBuildTx)

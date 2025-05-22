@@ -178,3 +178,16 @@ export type BungeeTxDataBytesIndicesType = {
     ? InputOutputAmountTxDataBytesIndices // across has both input and output amounts
     : InputAmountTxDataBytesIndices // cctp has only input amount
 }
+
+export type SocketRequest = {
+  amount: string
+  recipient: string
+  toChainId: string
+  token: string
+  signature: string
+}
+
+export type UserRequestValidation = {
+  routeId: string
+  socketRequest: SocketRequest
+}

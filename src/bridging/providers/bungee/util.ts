@@ -125,6 +125,24 @@ function toAmountsAndCosts(
 }
 
 /**
+ * Decodes the txData from Bungee API
+ * @param txData - The txData to decode
+ * @returns The routeId and encoded function data
+ */
+export function decodeBungeeBridgeTxData(txData: string) {
+  // remove first two characters = 0x
+  const txDataWithout0x = txData.slice(2)
+  // first four bytes are the routeId
+  const routeId = `0x${txDataWithout0x.slice(0, 8)}`
+  // rest is the encoded function data
+  const encodedFunctionData = `0x${txDataWithout0x.slice(8)}`
+  // first 2+8 characters of encodedFunctionData are the function selector
+  const functionSelector = `${encodedFunctionData.slice(0, 10)}`
+  return { routeId, encodedFunctionData, functionSelector }
+}
+
+// TODO use common/math utils
+/**
  * pct represents a percentage.
  *
  * bps is a percentage in basis points (1/100th of a percent). For example, 1% is 100 bps.
