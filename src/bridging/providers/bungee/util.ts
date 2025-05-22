@@ -77,11 +77,9 @@ function toAmountsAndCosts(
   slippageBps: number,
   bungeeQuote: BungeeQuote,
 ): BridgeQuoteAmountsAndCosts {
-  // TODO this should be src swap output amount, not sell token
   const { amount, sellTokenDecimals, buyTokenDecimals } = request
 
   // Get the amounts before fees
-  // TODO this should be src chain intermediate token, not sell token
   const sellAmountBeforeFeeBig = getBigNumber(amount, sellTokenDecimals)
   const sellAmountBeforeFee = sellAmountBeforeFeeBig.big
   const buyAmountFromBungeeQuote = bungeeQuote.route.output.amount
@@ -90,7 +88,6 @@ function toAmountsAndCosts(
   const buyAmountAfterFee = buyAmountBeforeFee
 
   // Calculate the fee
-  // TODO this should be src chain intermediate token, not sell token
   const feeSellToken = bungeeQuote.route.routeDetails.routeFee.amount
   // @note feeBuyToken is 0, since routeFee is taken in the src chain intermediate token
   const feeBuyToken = 0

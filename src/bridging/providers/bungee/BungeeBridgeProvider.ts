@@ -101,17 +101,12 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<BungeeQuoteResult> {
+    // @note sellTokenAddress here will be the intermediate token in usage. the naming might be a bit misleading
+    //       see getQuoteWithBridge.ts::getBaseBridgeQuoteRequest()
     const { sellTokenAddress, sellTokenChainId, buyTokenChainId, buyTokenAddress, amount, receiver, account, owner } =
       request
 
-    // fetch intermediate token from request
-    const intermediateToken = await this.getIntermediateTokens(request)
-    if (intermediateToken.length === 0) {
-      throw new Error('No intermediate token found')
-    }
-
-    // @note bungee api requires the sender address
-    //       sender address would be the cowshed account
+    // @note bungee api requires the sender address. sender address would be the cowshed account
     // fetch the cowshed account
     const ownerAddress = owner ?? account
     const cowshedAccount = this.cowShedSdk.getCowShedAccount(sellTokenChainId, ownerAddress)
@@ -121,8 +116,8 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
       userAddress: cowshedAccount,
       originChainId: sellTokenChainId.toString(),
       destinationChainId: buyTokenChainId.toString(),
-      inputToken: intermediateToken[0], // use intermediate token for the bridging quote
-      inputAmount: amount.toString(), // TODO this is wrong. should be using the quoted swap output amount of intermediate token
+      inputToken: sellTokenAddress, // use intermediate token for the bridging quote
+      inputAmount: amount.toString(),
       receiverAddress: receiver ?? account, // receiver is required on bungee api
       outputToken: buyTokenAddress,
       includeBridges: this.api.SUPPORTED_BRIDGES,

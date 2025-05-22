@@ -12,7 +12,6 @@ import { BungeeCowswapLibAddresses } from './const/contracts'
 import { BungeeTxDataBytesIndices } from './const/misc'
 import { BungeeBridge } from './types'
 
-// TODO this should be intermediate token contract
 function getSellTokenContract(sellTokenAddress: string): WeirollContract {
   return createWeirollContract(new EthersContract(sellTokenAddress, ERC20_ABI), WeirollCommandFlags.CALL)
 }
@@ -45,7 +44,6 @@ export async function createBungeeDepositCall(params: {
   const cowShedAccount = cowShedSdk.getCowShedAccount(request.sellTokenChainId, request.account)
 
   // prep all weiroll contracts
-  // TODO this should be intermediate token contract
   const SellTokenContract = getSellTokenContract(request.sellTokenAddress)
   const BungeeCowswapLibContract = getBungeeCowswapLibContact(request.sellTokenChainId)
   const socketGatewayContract = getSocketGatewayContract(buildTx.txData.to)
@@ -54,7 +52,7 @@ export async function createBungeeDepositCall(params: {
   // check if allowance is sufficient
   let setAllowance = false
   const allowance = await fetchTokenAllowance({
-    tokenAddress: request.sellTokenAddress, // TODO should be intermediate token address
+    tokenAddress: request.sellTokenAddress,
     ownerAddress: cowShedAccount, // approval should be from cowshed account
     spenderAddress: buildTx.approvalData.spenderAddress,
     signer: request.signer,
@@ -71,7 +69,6 @@ export async function createBungeeDepositCall(params: {
 
     // Get bridged amount (balance of the intermediate token at swap time)
     // fetching raw value in bytes since we need to replace bytes in the encoded function data
-    // TODO this should be intermediate token, not sell token
     const sourceAmountIncludingSurplusBytes = planner.add(SellTokenContract.balanceOf(cowShedAccount).rawValue())
     // add weiroll action to replace input amount with new input amount
     const encodedFunctionDataWithNewInputAmount = planner.add(
