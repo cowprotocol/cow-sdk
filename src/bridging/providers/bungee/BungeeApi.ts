@@ -1,6 +1,14 @@
 import { log } from '../../../common/utils/log'
 import { objectToSearchParams } from './util'
-import { BungeeQuote, BungeeQuoteAPIRequest, BungeeQuoteAPIResponse, SupportedBridge } from './types'
+import {
+  BungeeBuildTx,
+  BungeeBuildTxAPIResponse,
+  BungeeQuote,
+  BungeeQuoteAPIRequest,
+  BungeeQuoteAPIResponse,
+  BungeeQuoteWithBuildTx,
+  SupportedBridge,
+} from './types'
 import { BridgeProviderQuoteError } from '../../errors'
 
 const BUNGEE_API_URL = 'https://public-backend.bungee.exchange/api/v1'
@@ -17,6 +25,18 @@ export class BungeeApi {
       apiBaseUrl: BUNGEE_API_URL,
     },
   ) {}
+
+  /**
+   * Makes a GET request to Bungee APIs for quote and build tx
+   */
+  async getBungeeQuoteWithBuildTx(params: BungeeQuoteAPIRequest): Promise<BungeeQuoteWithBuildTx> {
+    const bungeeQuote = await this.getBungeeQuote(params)
+    const buildTx = await this.getBungeeBuildTx(bungeeQuote)
+    return {
+      bungeeQuote,
+      buildTx,
+    }
+  }
 
   /**
    * Makes a GET request to Bungee APIs for quote
@@ -38,7 +58,7 @@ export class BungeeApi {
       const urlParams = objectToSearchParams(params)
       const response = await this.get<BungeeQuoteAPIResponse>('/quote', urlParams, isValidQuoteResponse)
       if (!response.success) {
-        throw new BridgeProviderQuoteError('Bungee Api Error: Not successful', response)
+        throw new BridgeProviderQuoteError('Bungee Api Error: Quote failed', response)
       }
       // prepare quote timestamp from current timestamp
       const quoteTimestamp = Math.floor(Date.now() / 1000)
@@ -65,6 +85,20 @@ export class BungeeApi {
       console.error('🔴 Error getting bungee quote:', error)
       throw error
     }
+  }
+
+  /**
+   * Makes a GET request to Bungee APIs for build tx
+   * https://docs.bungee.exchange/bungee-api/api-reference/bungee-controller-build-tx-v-1
+   */
+  async getBungeeBuildTx(quote: BungeeQuote): Promise<BungeeBuildTx> {
+    const response = await this.get<BungeeBuildTxAPIResponse>('/build-tx', {
+      quoteId: quote.route.quoteId,
+    })
+    if (!response.success) {
+      throw new BridgeProviderQuoteError('Bungee Api Error: Build tx failed', response)
+    }
+    return response.result
   }
 
   protected async get<T>(

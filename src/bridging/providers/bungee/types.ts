@@ -113,3 +113,30 @@ export interface BungeeQuote {
   route: BungeeQuoteAPIResponse['result']['manualRoutes'][0]
   quoteTimestamp: number
 }
+
+export type BungeeQuoteWithBuildTx = {
+  bungeeQuote: BungeeQuote
+  buildTx: BungeeBuildTx
+}
+
+export interface BungeeBuildTxAPIResponse {
+  success: boolean
+  statusCode: number
+  result: {
+    approvalData: {
+      spenderAddress: string
+      amount: string
+      tokenAddress: string
+      userAddress: string
+    }
+    txData: {
+      data: string
+      to: string
+      chainId: number
+      value: string
+    }
+    userOp: string
+  }
+}
+
+export type BungeeBuildTx = BungeeBuildTxAPIResponse['result']

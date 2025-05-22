@@ -29,7 +29,7 @@ import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
 import { createBungeeDepositCall } from './createBungeeDepositCall'
 import { OrderKind } from '@cowprotocol/contracts'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
-import { BungeeQuote, BungeeQuoteAPIRequest } from './types'
+import { BungeeBuildTx, BungeeQuote, BungeeQuoteAPIRequest } from './types'
 
 const HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/bungee`
 export const BUNGEE_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
@@ -47,6 +47,7 @@ export interface BungeeBridgeProviderOptions {
 
 export interface BungeeQuoteResult extends BridgeQuoteResult {
   bungeeQuote: BungeeQuote
+  buildTx: BungeeBuildTx
 }
 
 export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
@@ -127,10 +128,10 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
       includeBridges: this.api.SUPPORTED_BRIDGES,
       enableManual: true,
     }
-    const quote = await this.api.getBungeeQuote(bungeeQuoteRequest)
+    const quoteWithBuildTx = await this.api.getBungeeQuoteWithBuildTx(bungeeQuoteRequest)
 
     // convert bungee quote response to BridgeQuoteResult
-    return toBridgeQuoteResult(request, SLIPPAGE_TOLERANCE_BPS, quote)
+    return toBridgeQuoteResult(request, SLIPPAGE_TOLERANCE_BPS, quoteWithBuildTx)
   }
 
   async getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: BungeeQuoteResult): Promise<EvmCall> {

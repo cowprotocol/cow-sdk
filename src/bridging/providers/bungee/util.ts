@@ -4,7 +4,7 @@ import { BUNGEE_TOKEN_MAPPING } from './const/tokens'
 import { BungeeChainConfig } from './const/tokens'
 import { BridgeQuoteAmountsAndCosts, QuoteBridgeRequest } from 'src/bridging/types'
 import { OrderKind } from '@cowprotocol/contracts'
-import { BungeeQuote } from './types'
+import { BungeeQuote, BungeeQuoteWithBuildTx } from './types'
 import { getBigNumber } from 'src/order-book'
 
 export function getChainConfigs(
@@ -39,9 +39,10 @@ export function getTokenAddress(tokenSymbol: string, chainConfig: BungeeChainCon
 export function toBridgeQuoteResult(
   request: QuoteBridgeRequest,
   slippageBps: number,
-  bungeeQuote: BungeeQuote,
+  bungeeQuoteWithBuildTx: BungeeQuoteWithBuildTx,
 ): BungeeQuoteResult {
   const { kind } = request
+  const { bungeeQuote, buildTx } = bungeeQuoteWithBuildTx
 
   return {
     isSell: kind === OrderKind.SELL,
@@ -61,6 +62,7 @@ export function toBridgeQuoteResult(
       maxDeposit: BigInt(0),
     },
     bungeeQuote,
+    buildTx,
   }
 }
 
