@@ -1,11 +1,15 @@
+# Turborepo
+.turbo
+
+# Dependencies
 node_modules
+.pnp
+
 dist
 coverage
 .coveralls.yml
 jest.results.json
 .idea
 *.iml
-.yalc
-yalc.lock
-src/common/generated
-docs/typedoc/
+packages/cow-sdk/src/common/generated
+packages/cow-sdk/docs/typedoc/
