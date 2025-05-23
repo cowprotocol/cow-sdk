@@ -6,6 +6,7 @@ const config: Config = {
   tsconfig: './tsconfig.json',
   expose: 'none',
   topRef: false,
+  skipTypeCheck: true,
 }
 
 const types = [

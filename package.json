@@ -14,28 +14,34 @@
   },
   "types": "dist/index.d.ts",
   "scripts": {
-    "prebuild": "rm -rf dist && yarn run codegen",
+    "prebuild": "rm -rf dist && pnpm run codegen",
     "build": "microbundle -f modern,esm,cjs",
     "start": "microbundle -f modern,esm,cjs watch",
     "copy-md-files": "npx cpx \"**/*.md\" dist",
-    "postbuild": "cp package.json dist && yarn copy-md-files && yarn run trading:generateSchemas",
+    "postbuild": "cp package.json dist && pnpm copy-md-files && pnpm run trading:generateSchemas",
     "lint": "eslint ./src",
     "format": "prettier --write \"src/**/*.+(ts|json)\"",
     "test": "jest",
     "test:coverage": "jest --coverage --json --outputFile=jest.results.json && cat ./coverage/lcov.info | coveralls",
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
-    "codegen": "npm run swagger:codegen && npm run typechain:codegen",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm test && npm run lint",
+    "codegen": "pnpm run swagger:codegen && pnpm run typechain:codegen",
+    "prepare": "pnpm run build",
+    "prepublishOnly": "pnpm test && pnpm run lint",
     "graphql:codegen": "graphql-codegen --config graphql-codegen.yml",
-    "swagger:codegen": " openapi --input https://raw.githubusercontent.com/cowprotocol/services/v2.291.0/crates/orderbook/openapi.yml --output src/order-book/generated --exportServices false --exportCore false",
+    "swagger:codegen": "openapi --input https://raw.githubusercontent.com/cowprotocol/services/v2.291.0/crates/orderbook/openapi.yml --output src/order-book/generated --exportServices false --exportCore false",
     "typechain:codegen": "typechain --target ethers-v5 --out-dir ./src/common/generated './abi/*.json'",
     "trading:generateSchemas": "ts-node scripts/generateTradingSchemas.ts"
   },
   "dependencies": {
     "@cowprotocol/app-data": "^3.1.0",
     "@cowprotocol/contracts": "^1.8.0",
+    "@ethersproject/abi": "^5.8.0",
     "@ethersproject/abstract-signer": "^5.8.0",
+    "@ethersproject/constants": "^5.8.0",
+    "@ethersproject/contracts": "^5.8.0",
+    "@ethersproject/providers": "^5.8.0",
+    "@ethersproject/units": "^5.8.0",
+    "@ethersproject/wallet": "^5.8.0",
     "@openzeppelin/merkle-tree": "^1.0.8",
     "@weiroll/weiroll.js": "^0.3.0",
     "cross-fetch": "^3.2.0",
@@ -105,5 +111,6 @@
     "crypto",
     "typescript",
     "subgraph"
-  ]
+  ],
+  "packageManager": "pnpm@10.8.0+sha512.0e82714d1b5b43c74610193cb20734897c1d00de89d0e18420aebc5977fa13d780a9cb05734624e81ebd81cc876cd464794850641c48b9544326b5622ca29971"
 }
