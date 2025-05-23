@@ -37,7 +37,7 @@ export async function getCrossChainOrder(params: {
   const provider = providers.find((provider) => provider.info.name === bridgeProviderName)
   if (!provider) {
     throw new Error(
-      `Unknown Bridge provider: ${bridgeProviderName}. Add provider to the SDK config to be able to decode the order`
+      `Unknown Bridge provider: ${bridgeProviderName}. Add provider to the SDK config to be able to decode the order`,
     )
   }
 

@@ -40,7 +40,10 @@ export const COW_SHED_712_TYPES = {
 }
 
 export class CowShedHooks {
-  constructor(private chainId: SupportedChainId, private customOptions?: ICoWShedOptions) {}
+  constructor(
+    private chainId: SupportedChainId,
+    private customOptions?: ICoWShedOptions,
+  ) {}
 
   proxyOf(user: string) {
     const salt = defaultAbiCoder.encode(['address'], [user])
@@ -49,7 +52,7 @@ export class CowShedHooks {
       [
         this.proxyCreationCode(),
         defaultAbiCoder.encode(['address', 'address'], [this.getImplementationAddress(), user]),
-      ]
+      ],
     )
     return getCreate2Address(this.getFactoryAddress(), salt, initCodeHash)
   }
@@ -59,7 +62,7 @@ export class CowShedHooks {
     nonce: string,
     deadline: bigint,
     user: string,
-    signature: string
+    signature: string,
   ): string {
     return getCoWShedFactoryInterface().encodeFunctionData('executeHooks', [calls, nonce, deadline, user, signature])
   }
@@ -69,7 +72,7 @@ export class CowShedHooks {
     nonce: string,
     deadline: bigint,
     signer: Signer,
-    signingScheme: EcdsaSigningScheme
+    signingScheme: EcdsaSigningScheme,
   ): Promise<string> {
     const user = await signer.getAddress()
     const proxy = this.proxyOf(user)
@@ -116,7 +119,7 @@ async function ecdsaSignTypedData(
   owner: Signer,
   domain: TypedDataDomain,
   types: TypedDataTypes,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
 ): Promise<string> {
   let signature: string | null = null
 

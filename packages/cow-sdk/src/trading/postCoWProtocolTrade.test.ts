@@ -132,7 +132,7 @@ describe('postCoWProtocolTrade', () => {
       expect.objectContaining({
         from: ownerAddress,
         receiver: ownerAddress,
-      })
+      }),
     )
     expect(ownerAddress).not.toBe(signerAddress)
   })
@@ -150,7 +150,7 @@ describe('postCoWProtocolTrade', () => {
       expect.objectContaining({
         from: signerAddress,
         receiver: signerAddress,
-      })
+      }),
     )
   })
 })

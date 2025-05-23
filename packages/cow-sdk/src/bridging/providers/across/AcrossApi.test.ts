@@ -46,7 +46,7 @@ describe('AcrossApi', () => {
       expect(routes).toEqual(mockRoutes)
       expect(mockFetch).toHaveBeenCalledWith(
         'https://app.across.to/api/available-routes?originChainId=1&originToken=0x0000000000000000000000000000000000000001&destinationChainId=137&destinationToken=0x0000000000000000000000000000000000000002',
-        expect.any(Object)
+        expect.any(Object),
       )
     })
 
@@ -63,7 +63,7 @@ describe('AcrossApi', () => {
           originToken: '0x0000000000000000000000000000000000000001',
           destinationChainId: '137',
           destinationToken: '0x0000000000000000000000000000000000000002',
-        })
+        }),
       ).rejects.toThrow('Across Api Error')
     })
   })
@@ -111,7 +111,7 @@ describe('AcrossApi', () => {
       expect(fees).toEqual(mockResponse)
       expect(mockFetch).toHaveBeenCalledWith(
         `https://app.across.to/api/suggested-fees?token=${request.token}&originChainId=${request.originChainId}&destinationChainId=${request.destinationChainId}&amount=${request.amount}`,
-        expect.any(Object)
+        expect.any(Object),
       )
     })
 
@@ -128,7 +128,7 @@ describe('AcrossApi', () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining(`recipient=${request.recipient}`),
-        expect.any(Object)
+        expect.any(Object),
       )
     })
 
@@ -145,7 +145,7 @@ describe('AcrossApi', () => {
           originChainId: SupportedChainId.MAINNET,
           destinationChainId: SupportedChainId.POLYGON,
           amount: 1000000000000000000n,
-        })
+        }),
       ).rejects.toThrow('Across Api Error')
     })
   })

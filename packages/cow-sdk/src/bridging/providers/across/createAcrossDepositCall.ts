@@ -34,7 +34,7 @@ function getMathContract(sellTokenChainId: TargetChainId): WeirollContract {
 function getBalanceOfSellTokenContract(sellTokenAddress: string): WeirollContract {
   return createWeirollContract(
     new EthersContract(sellTokenAddress, ERC20_BALANCE_OF_ABI),
-    WeirollCommandFlags.STATICCALL
+    WeirollCommandFlags.STATICCALL,
   )
 }
 
@@ -69,7 +69,7 @@ export function createAcrossDepositCall(params: {
     // Calculate the new output amount using the actual received intermediate tokens (uses the original quoted fee)
     const relayFeePercentage = BigInt(suggestedFees.totalRelayFee.pct)
     const outputAmountIncludingSurplus = planner.add(
-      mathContract.multiplyAndSubtract(sourceAmountIncludingSurplus, relayFeePercentage)
+      mathContract.multiplyAndSubtract(sourceAmountIncludingSurplus, relayFeePercentage),
     )
 
     // Set allowance for SpokePool to transfer bridged tokens
@@ -96,8 +96,8 @@ export function createAcrossDepositCall(params: {
         quoteTimestamp,
         fillDeadline,
         exclusivityDeadline,
-        message
-      )
+        message,
+      ),
     )
   })
 

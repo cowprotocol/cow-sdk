@@ -67,7 +67,7 @@ export class OrderSigningUtils {
   static async signOrderCancellation(
     orderUid: string,
     chainId: SupportedChainId,
-    signer: Signer
+    signer: Signer,
   ): Promise<SigningResult> {
     const { signOrderCancellation } = await getSignUtils()
     return signOrderCancellation(orderUid, chainId, signer)
@@ -83,7 +83,7 @@ export class OrderSigningUtils {
   static async signOrderCancellations(
     orderUids: string[],
     chainId: SupportedChainId,
-    signer: Signer
+    signer: Signer,
   ): Promise<SigningResult> {
     const { signOrderCancellations } = await getSignUtils()
     return signOrderCancellations(orderUids, chainId, signer)
@@ -109,7 +109,7 @@ export class OrderSigningUtils {
   static async generateOrderId(
     chainId: SupportedChainId,
     order: Order,
-    params: Pick<OrderUidParams, 'owner'>
+    params: Pick<OrderUidParams, 'owner'>,
   ): Promise<{ orderId: string; orderDigest: string }> {
     const { generateOrderId } = await getSignUtils()
     return generateOrderId(chainId, order, params)

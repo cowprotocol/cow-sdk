@@ -2,12 +2,13 @@
 
 This module some utilities to simplify the use of the [Weiroll contract](https://github.com/weiroll/weiroll).
 
-Weiroll is a simple and efficient operation-chaining/scripting language for the EVM. 
+Weiroll is a simple and efficient operation-chaining/scripting language for the EVM.
 
 The main utilities function are:
+
 - `createWeirollContract` which creates a Weiroll contract from an ethers contract to perform evm calls.
 - `createWeirollLibrary` which creates a Weiroll library from an ethers contract to perform static calls.
-- `createWeirollDelegateCall` which returns an EVM `delegatecall` with some plan encoded as Weiroll calldata. 
+- `createWeirollDelegateCall` which returns an EVM `delegatecall` with some plan encoded as Weiroll calldata.
 
 To understand how this works, let's see an example:
 
@@ -34,7 +35,7 @@ const daiContract = createWeirollContract(contract, CommandFlags.CALL)
 const ownerContractAddress = '0xf6e72Db5454dd049d0788e411b06CfAF16853042'
 
 // Main function to create the delegatecall
-const { to, value, data } = createWeirollDelegateCall((planner: Planner) => {  
+const { to, value, data } = createWeirollDelegateCall((planner: Planner) => {
   // Add to plan: Get the balance of the token
   const daiBalance = planner.add(daiContract.balanceOf(ownerContractAddress))
 
@@ -42,17 +43,13 @@ const { to, value, data } = createWeirollDelegateCall((planner: Planner) => {
   planner.add(daiContract.transfer('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045', daiBalance))
 })
 
-// Execute the delegatecall from "ownerContract" context. 
+// Execute the delegatecall from "ownerContract" context.
 // For illustration purposes, lets imagine there's a contract with a function `executeDelegateCall` (not a very realistic example because this would likely need a signature to be safe)
 
 // Create instance of owner contract
-const SMART_ACCOUNT_ABI = [
-  'function executeDelegateCall(address,uint256,bytes)',
-]
+const SMART_ACCOUNT_ABI = ['function executeDelegateCall(address,uint256,bytes)']
 const ownerContract = new ethers.Contract(ownerContractAddress, SMART_ACCOUNT_ABI)
-  
+
 // Execute the delegatecall, transferring all DAI to Vitalik
 const tx = await ownerContract.executeDelegateCall(to, value, data)
 ```
-
-

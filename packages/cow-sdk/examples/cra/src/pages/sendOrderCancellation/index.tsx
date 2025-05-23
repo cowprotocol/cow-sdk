@@ -32,7 +32,7 @@ export function SendOrderCancellationPage() {
           setOutput(error.toString())
         })
     },
-    [input]
+    [input],
   )
 
   const defaultValue: OrderCancellations = {

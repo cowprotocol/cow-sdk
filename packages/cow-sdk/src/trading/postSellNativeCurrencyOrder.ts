@@ -11,7 +11,7 @@ export async function postSellNativeCurrencyOrder(
   signer: Signer,
   appData: Pick<AppDataInfo, 'fullAppData' | 'appDataKeccak256'>,
   _params: LimitTradeParametersFromQuote,
-  additionalParams: PostTradeAdditionalParams = {}
+  additionalParams: PostTradeAdditionalParams = {},
 ): Promise<OrderPostingResult> {
   const { appDataKeccak256, fullAppData } = appData
 
@@ -20,7 +20,7 @@ export async function postSellNativeCurrencyOrder(
     appDataKeccak256,
     _params,
     orderBookApi.context.chainId,
-    additionalParams
+    additionalParams,
   )
 
   log('Uploading app-data')

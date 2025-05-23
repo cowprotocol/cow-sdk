@@ -9,7 +9,7 @@ export function mapSupportedNetworks<T>(value: T | ((chainId: SupportedChainId) 
       ...acc,
       [chainId]: typeof value === 'function' ? (value as (chainId: SupportedChainId) => T)(chainId) : value,
     }),
-    {}
+    {},
   )
 }
 

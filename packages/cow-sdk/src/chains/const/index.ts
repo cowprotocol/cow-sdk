@@ -32,7 +32,7 @@ export const ALL_SUPPORTED_CHAINS = Object.values(ALL_SUPPORTED_CHAINS_MAP)
  * The list of supported chains.
  */
 export const ALL_SUPPORTED_CHAIN_IDS: SupportedChainId[] = ALL_SUPPORTED_CHAINS.map(
-  (chain) => chain.id
+  (chain) => chain.id,
 ) as SupportedChainId[]
 
 /**

@@ -59,11 +59,11 @@ const appCode = 'trade-sdk-example'
       printResult(`
             Quote amount: ${atomsToAmount(
               beforeNetworkCosts[isSell ? 'buyAmount' : 'sellAmount'],
-              outputToken.decimals
+              outputToken.decimals,
             )} ${outputToken.symbol}
             Amount to sign: ${atomsToAmount(
               afterSlippage[isSell ? 'buyAmount' : 'sellAmount'],
-              outputToken.decimals
+              outputToken.decimals,
             )} ${outputToken.symbol}
             See more info in the console (Quote results)
         `)

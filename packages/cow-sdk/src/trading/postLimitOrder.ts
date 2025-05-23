@@ -8,7 +8,7 @@ import { log } from '../common/utils/log'
 export async function postLimitOrder(
   params: LimitOrderParameters,
   advancedSettings?: LimitOrderAdvancedSettings,
-  _orderBookApi?: OrderBookApi
+  _orderBookApi?: OrderBookApi,
 ): Promise<OrderPostingResult> {
   const appDataSlippage = advancedSettings?.appData?.metadata?.quote?.slippageBips
   const partnerFeeOverride = advancedSettings?.appData?.metadata?.partnerFee
@@ -52,7 +52,7 @@ export async function postLimitOrder(
       appCode,
       partnerFee,
     },
-    advancedSettings?.appData
+    advancedSettings?.appData,
   )
 
   return postCoWProtocolTrade(orderBookApi, signer, appDataInfo, params, advancedSettings?.additionalParams)

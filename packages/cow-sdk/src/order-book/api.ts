@@ -55,11 +55,14 @@ export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
 }
 
 function cleanObjectFromUndefinedValues(obj: Record<string, string>): typeof obj {
-  return Object.keys(obj).reduce((acc, key) => {
-    const val = obj[key]
-    if (typeof val !== 'undefined') acc[key] = val
-    return acc
-  }, {} as typeof obj)
+  return Object.keys(obj).reduce(
+    (acc, key) => {
+      const val = obj[key]
+      if (typeof val !== 'undefined') acc[key] = val
+      return acc
+    },
+    {} as typeof obj,
+  )
 }
 
 /**
@@ -165,7 +168,7 @@ export class OrderBookApi {
    */
   getTrades(
     request: { owner?: Address; orderUid?: UID },
-    contextOverride: PartialApiContext = {}
+    contextOverride: PartialApiContext = {},
   ): Promise<Array<Trade>> {
     if (request.owner && request.orderUid) {
       return Promise.reject(new CowError('Cannot specify both owner and orderId'))
@@ -188,15 +191,15 @@ export class OrderBookApi {
    */
   getOrders(
     { owner, offset = 0, limit = 1000 }: GetOrdersRequest,
-    contextOverride: PartialApiContext = {}
+    contextOverride: PartialApiContext = {},
   ): Promise<Array<EnrichedOrder>> {
     const query = new URLSearchParams(
-      cleanObjectFromUndefinedValues({ offset: offset.toString(), limit: limit.toString() })
+      cleanObjectFromUndefinedValues({ offset: offset.toString(), limit: limit.toString() }),
     )
 
     return this.fetch<Array<EnrichedOrder>>(
       { path: `/api/v1/account/${owner}/orders`, method: 'GET', query },
-      contextOverride
+      contextOverride,
     ).then((orders) => {
       return orders.map(transformOrder)
     })
@@ -212,7 +215,7 @@ export class OrderBookApi {
   getTxOrders(txHash: TransactionHash, contextOverride: PartialApiContext = {}): Promise<Array<EnrichedOrder>> {
     return this.fetch<Array<EnrichedOrder>>(
       { path: `/api/v1/transactions/${txHash}/orders`, method: 'GET' },
-      contextOverride
+      contextOverride,
     ).then((orders) => {
       return orders.map(transformOrder)
     })
@@ -292,7 +295,7 @@ export class OrderBookApi {
    */
   sendSignedOrderCancellations(
     requestBody: OrderCancellations,
-    contextOverride: PartialApiContext = {}
+    contextOverride: PartialApiContext = {},
   ): Promise<void> {
     return this.fetch({ path: '/api/v1/orders', method: 'DELETE', body: requestBody }, contextOverride)
   }
@@ -350,11 +353,11 @@ export class OrderBookApi {
   uploadAppData(
     appDataHash: AppDataHash,
     fullAppData: string,
-    contextOverride: PartialApiContext = {}
+    contextOverride: PartialApiContext = {},
   ): Promise<AppDataObject> {
     return this.fetch(
       { path: `/api/v1/app_data/${appDataHash}`, method: 'PUT', body: { fullAppData } },
-      contextOverride
+      contextOverride,
     )
   }
 
@@ -370,14 +373,14 @@ export class OrderBookApi {
    */
   getSolverCompetition(
     auctionIdorTx: number | string,
-    contextOverride: PartialApiContext = {}
+    contextOverride: PartialApiContext = {},
   ): Promise<SolverCompetitionResponse> {
     return this.fetch(
       {
         path: `/api/v1/solver_competition${typeof auctionIdorTx === 'string' ? '/by_tx_hash' : ''}/${auctionIdorTx}`,
         method: 'GET',
       },
-      contextOverride
+      contextOverride,
     )
   }
 

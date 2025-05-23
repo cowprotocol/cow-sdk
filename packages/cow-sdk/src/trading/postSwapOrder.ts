@@ -9,7 +9,7 @@ import { mergeAppDataDoc } from './appDataUtils'
 export async function postSwapOrder(
   params: SwapParameters,
   advancedSettings?: SwapAdvancedSettings,
-  orderBookApi?: OrderBookApi
+  orderBookApi?: OrderBookApi,
 ) {
   return postSwapOrderFromQuote(await getQuoteWithSigner(params, advancedSettings, orderBookApi), advancedSettings)
 }
@@ -19,7 +19,7 @@ export async function postSwapOrderFromQuote(
     orderBookApi,
     result: { signer, appDataInfo: _appDataInfo, quoteResponse, tradeParameters },
   }: QuoteResultsWithSigner,
-  advancedSettings?: SwapAdvancedSettings
+  advancedSettings?: SwapAdvancedSettings,
 ): Promise<OrderPostingResult> {
   const params = swapParamsToLimitOrderParams(tradeParameters, quoteResponse)
   const appDataOverride = advancedSettings?.appData

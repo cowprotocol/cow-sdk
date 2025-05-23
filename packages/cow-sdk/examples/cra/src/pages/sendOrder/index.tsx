@@ -45,7 +45,7 @@ export function SignAndSendOrderPage() {
           setOutput(error.toString())
         })
     },
-    [input, chainId, provider]
+    [input, chainId, provider],
   )
 
   const defaultValue: UnsignedOrder = {

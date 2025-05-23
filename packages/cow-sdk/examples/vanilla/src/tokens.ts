@@ -6,7 +6,7 @@ class Token {
     public readonly address: string,
     public readonly decimals: number,
     public readonly symbol: string,
-    public readonly name: string
+    public readonly name: string,
   ) {}
 }
 
@@ -28,7 +28,7 @@ export const TOKENS: Record<SupportedChainId, Token[]> = {
       '0x177127622c4A00F3d409B75571e12cB3c8973d3c',
       18,
       'COW',
-      'CoW Protocol Token'
+      'CoW Protocol Token',
     ),
   ],
   [SupportedChainId.ARBITRUM_ONE]: [
@@ -41,7 +41,7 @@ export const TOKENS: Record<SupportedChainId, Token[]> = {
       '0xcb8b5cd20bdcaea9a010ac1f8d835824f5c87a04',
       18,
       'COW',
-      'CoW Protocol Token'
+      'CoW Protocol Token',
     ),
   ],
   [SupportedChainId.SEPOLIA]: [

@@ -70,7 +70,7 @@ describe('getQuoteToSign', () => {
             environment: 'barn',
           },
         },
-        orderBookApiMock
+        orderBookApiMock,
       )
 
       const appData = JSON.parse(result.appDataInfo.fullAppData)
@@ -85,7 +85,7 @@ describe('getQuoteToSign', () => {
         await getQuoteWithSigner(
           { ...defaultOrderParams, sellToken: ETH_ADDRESS, slippageBps: undefined },
           {},
-          orderBookApiMock
+          orderBookApiMock,
         )
 
         const call = getQuoteMock.mock.calls[0][0]
@@ -97,7 +97,7 @@ describe('getQuoteToSign', () => {
         await getQuoteWithSigner(
           { ...defaultOrderParams, sellToken: ETH_ADDRESS, slippageBps: undefined },
           {},
-          orderBookApiMock
+          orderBookApiMock,
         )
 
         const call = getQuoteMock.mock.calls[0][0]
@@ -156,7 +156,7 @@ describe('getQuoteToSign', () => {
       const buyAmount = +quoteResponseMock.quote.buyAmount
 
       expect(+result.amountsAndCosts.afterSlippage.buyAmount.toString()).toBe(
-        buyAmount - (buyAmount * 20) / (100 * 100)
+        buyAmount - (buyAmount * 20) / (100 * 100),
       )
     })
 
@@ -164,7 +164,7 @@ describe('getQuoteToSign', () => {
       const { result } = await getQuoteWithSigner(defaultOrderParams, {}, orderBookApiMock)
 
       expect(result.amountsAndCosts.costs.networkFee.amountInSellCurrency.toString()).toBe(
-        quoteResponseMock.quote.feeAmount
+        quoteResponseMock.quote.feeAmount,
       )
     })
 
@@ -173,7 +173,7 @@ describe('getQuoteToSign', () => {
         const { result } = await getQuoteWithSigner(
           { ...defaultOrderParams, chainId: SupportedChainId.MAINNET, sellToken: ETH_ADDRESS, slippageBps: undefined },
           {},
-          orderBookApiMock
+          orderBookApiMock,
         )
         const buyAmount = +quoteResponseMock.quote.buyAmount
 

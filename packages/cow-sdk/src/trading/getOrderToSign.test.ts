@@ -39,7 +39,7 @@ describe('getOrderToSign', () => {
     const result = getOrderToSign(
       params,
       { ...defaultOrderParams, validTo: undefined, validFor: 600 },
-      appDataKeccak256
+      appDataKeccak256,
     )
 
     expect(result.validTo).toBe(currentTimestamp / 1000 + 600)
@@ -49,7 +49,7 @@ describe('getOrderToSign', () => {
     const result = getOrderToSign(
       params,
       { ...defaultOrderParams, validTo: undefined, validFor: undefined },
-      appDataKeccak256
+      appDataKeccak256,
     )
 
     expect(result.validTo).toBe(currentTimestamp / 1000 + DEFAULT_QUOTE_VALIDITY)

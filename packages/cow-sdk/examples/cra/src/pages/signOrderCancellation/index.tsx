@@ -30,7 +30,7 @@ export function SignOrderCancellationPage() {
           setOutput(error.toString())
         })
     },
-    [provider, input, chainId]
+    [provider, input, chainId],
   )
 
   const defaultValue = [

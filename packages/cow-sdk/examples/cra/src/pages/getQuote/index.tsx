@@ -34,7 +34,7 @@ export function GetQuotePage() {
           setOutput(error.toString())
         })
     },
-    [input]
+    [input],
   )
 
   const defaultValue: OrderQuoteRequest = {

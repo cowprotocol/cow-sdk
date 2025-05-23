@@ -1,4 +1,4 @@
-import {FormEvent, useCallback, useEffect, useMemo, useState} from 'react'
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Contract } from '@ethersproject/contracts'
 import { OrderBookApi, OrderCreation, OrderKind, SigningScheme, UnsignedOrder } from '@cowprotocol/cow-sdk'
@@ -11,43 +11,44 @@ import { useCurrentChainId } from '../../hooks/useCurrentChainId'
 import { SETTLEMENT_CONTRACT_ABI, SETTLEMENT_CONTRACT_ADDRESS } from './const'
 import { useSafeSdkAndKit } from './useSafeSdkAndKit'
 
-const appData = '{"appCode":"CoW Swap-SafeApp","environment":"local","metadata":{"orderClass":{"orderClass":"limit"},"quote":{"slippageBips":"0"}},"version":"0.11.0"}'
+const appData =
+  '{"appCode":"CoW Swap-SafeApp","environment":"local","metadata":{"orderClass":{"orderClass":"limit"},"quote":{"slippageBips":"0"}},"version":"0.11.0"}'
 const appDataHash = '0x6bb009e9730f09d18011327b6a1e4b9df70a3eb4d49e7cb622f79caadac5751a'
-
 
 const orderBookApi = new OrderBookApi()
 const settlementContract = new Contract(SETTLEMENT_CONTRACT_ADDRESS, SETTLEMENT_CONTRACT_ABI)
 
 export function SmartContractWallet() {
-  const {provider, account} = useWeb3Info()
+  const { provider, account } = useWeb3Info()
   const chainId = useCurrentChainId()
 
   const [safeAddress, setSafeAddress] = useState<string | null>(null)
   const [input, setInput] = useState<UnsignedOrder | null>(null)
   const [output, setOutput] = useState<any>('')
 
-  const {safeSdk, safeApiKit} = useSafeSdkAndKit(safeAddress, chainId, provider)
+  const { safeSdk, safeApiKit } = useSafeSdkAndKit(safeAddress, chainId, provider)
 
   const defaultOrder: UnsignedOrder | null = useMemo(() => {
-    return safeAddress ? {
-      receiver: safeAddress,
-      buyAmount: '650942340000000000000',
-      buyToken: '0x91056D4A53E1faa1A84306D4deAEc71085394bC8',
-      sellAmount: '100000000000000000',
-      sellToken: '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
-      validTo: Math.round((Date.now() + 900_000) / 1000),
-      appData: '0x',
-      feeAmount: '0',
-      kind: OrderKind.SELL,
-      partiallyFillable: true,
-      signingScheme: SigningScheme.PRESIGN,
-    } : null
+    return safeAddress
+      ? {
+          receiver: safeAddress,
+          buyAmount: '650942340000000000000',
+          buyToken: '0x91056D4A53E1faa1A84306D4deAEc71085394bC8',
+          sellAmount: '100000000000000000',
+          sellToken: '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
+          validTo: Math.round((Date.now() + 900_000) / 1000),
+          appData: '0x',
+          feeAmount: '0',
+          kind: OrderKind.SELL,
+          partiallyFillable: true,
+          signingScheme: SigningScheme.PRESIGN,
+        }
+      : null
   }, [safeAddress])
 
   useEffect(() => {
     orderBookApi.context.chainId = chainId
   }, [chainId])
-
 
   const signOrder = useCallback(
     async (event: FormEvent) => {
@@ -75,10 +76,7 @@ export function SmartContractWallet() {
         // Send order to CoW Protocol order-book
         const orderId = await orderBookApi.sendOrder(orderCreation)
 
-        const presignCallData = settlementContract.interface.encodeFunctionData('setPreSignature', [
-          orderId,
-          true,
-        ])
+        const presignCallData = settlementContract.interface.encodeFunctionData('setPreSignature', [orderId, true])
 
         const presignRawTx = {
           to: settlementContract.address,
@@ -88,7 +86,7 @@ export function SmartContractWallet() {
 
         // Sending pre-signature transaction to settlement contract
         // In this example we are using the Safe SDK, but you can use any other smart-contract wallet
-        const safeTx = await safeSdk.createTransaction({safeTransactionData: presignRawTx})
+        const safeTx = await safeSdk.createTransaction({ safeTransactionData: presignRawTx })
         const signedSafeTx = await safeSdk.signTransaction(safeTx)
         const safeTxHash = await safeSdk.getTransactionHash(signedSafeTx)
         const senderSignature = signedSafeTx.signatures.get(account.toLowerCase())?.data || ''
@@ -106,7 +104,7 @@ export function SmartContractWallet() {
         setOutput(e.toString())
       }
     },
-    [chainId, input, provider, setOutput, safeSdk, safeApiKit]
+    [chainId, input, provider, setOutput, safeSdk, safeApiKit],
   )
 
   return (
@@ -114,13 +112,15 @@ export function SmartContractWallet() {
       <div className="form">
         <div>
           <h1>Safe address:</h1>
-          <input type="text"
-                 style={{width: '600px'}}
-                 value={safeAddress || ''}
-                 onChange={e => setSafeAddress(e.target.value)}/>
+          <input
+            type="text"
+            style={{ width: '600px' }}
+            value={safeAddress || ''}
+            onChange={(e) => setSafeAddress(e.target.value)}
+          />
 
           <h1>Order:</h1>
-          <JsonContent defaultValue={defaultOrder} onChange={setInput}/>
+          <JsonContent defaultValue={defaultOrder} onChange={setInput} />
         </div>
 
         <div>
@@ -128,7 +128,7 @@ export function SmartContractWallet() {
         </div>
       </div>
 
-      <ResultContent data={output}/>
+      <ResultContent data={output} />
     </div>
   )
 }

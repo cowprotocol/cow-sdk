@@ -15,7 +15,7 @@ const PCT_100_PERCENT = 10n ** 18n
  */
 export function getChainConfigs(
   sourceChainId: TargetChainId,
-  targetChainId: TargetChainId
+  targetChainId: TargetChainId,
 ): { sourceChainConfig: AcrossChainConfig; targetChainConfig: AcrossChainConfig } | undefined {
   const sourceChainConfig = getChainConfig(sourceChainId)
   const targetChainConfig = getChainConfig(targetChainId)
@@ -40,7 +40,7 @@ export function getTokenAddress(tokenSymbol: string, chainConfig: AcrossChainCon
 export function toBridgeQuoteResult(
   request: QuoteBridgeRequest,
   slippageBps: number,
-  suggestedFees: SuggestedFeesResponse
+  suggestedFees: SuggestedFeesResponse,
 ): AcrossQuoteResult {
   const { kind } = request
 
@@ -64,7 +64,7 @@ export function toBridgeQuoteResult(
 function toAmountsAndCosts(
   request: QuoteBridgeRequest,
   slippageBps: number,
-  suggestedFees: SuggestedFeesResponse
+  suggestedFees: SuggestedFeesResponse,
 ): BridgeQuoteAmountsAndCosts {
   const { amount, sellTokenDecimals, buyTokenDecimals } = request
 

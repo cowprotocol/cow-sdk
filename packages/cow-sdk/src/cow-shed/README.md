@@ -32,7 +32,7 @@ const calls: ICoWShedCall[] = [
     value: 0n,
     isDelegateCall: true,
     allowFailure: false,
-  }
+  },
 ]
 
 // Sign the calls
@@ -47,14 +47,11 @@ const { signedMulticall, gasLimit, cowShedAccount } = preAuthorizedCall
 const { to, data, value } = signedMulticall
 
 // Execute the transaction using any wallet. The calldata has been pre-authed, so you don't need any special permissions to send this transaction
-let anotherWallet = new ethers.Wallet('<another-private-key>');
+let anotherWallet = new ethers.Wallet('<another-private-key>')
 const tx = await anotherWallet.sendTransaction({
   to,
   data,
   value,
-  gasLimit,  
+  gasLimit,
 })
 ```
-
-
-

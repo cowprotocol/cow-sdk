@@ -7,7 +7,7 @@ const metadataApiSdk = new MetadataApi()
 
 export async function buildAppData(
   { slippageBps, appCode, orderClass: orderClassName, partnerFee }: BuildAppDataParams,
-  advancedParams?: AppDataParams
+  advancedParams?: AppDataParams,
 ): Promise<AppDataInfo> {
   const quoteParams = { slippageBips: slippageBps }
   const orderClass = { orderClass: orderClassName }
@@ -22,8 +22,8 @@ export async function buildAppData(
           partnerFee,
         },
       },
-      advancedParams || {}
-    )
+      advancedParams || {},
+    ),
   )
 
   const { fullAppData, appDataKeccak256 } = await generateAppDataFromDoc(doc)
@@ -32,7 +32,7 @@ export async function buildAppData(
 }
 
 export async function generateAppDataFromDoc(
-  doc: AppDataRootSchema
+  doc: AppDataRootSchema,
 ): Promise<Pick<AppDataInfo, 'fullAppData' | 'appDataKeccak256'>> {
   const fullAppData = await stringifyDeterministic(doc)
   const appDataKeccak256 = keccak256(toUtf8Bytes(fullAppData))
@@ -42,7 +42,7 @@ export async function generateAppDataFromDoc(
 
 export async function mergeAppDataDoc(
   _doc: LatestAppDataDocVersion,
-  appDataOverride: AppDataParams
+  appDataOverride: AppDataParams,
 ): Promise<AppDataInfo> {
   // Do not merge hooks if there are overrides
   // Otherwise we will just append hooks instead of overriding

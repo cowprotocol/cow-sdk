@@ -72,7 +72,7 @@ export class AcrossApi {
   protected async fetchApi<T>(
     path: string,
     params: Record<string, string>,
-    isValidResponse?: (response: unknown) => response is T
+    isValidResponse?: (response: unknown) => response is T,
   ): Promise<T> {
     const baseUrl = this.options.apiBaseUrl || ACROSS_API_URL
     const url = `${baseUrl}${path}?${new URLSearchParams(params).toString()}`
@@ -96,7 +96,7 @@ export class AcrossApi {
       } else {
         throw new BridgeProviderQuoteError(
           `Invalid response for Across API call ${path}. The response doesn't pass the validation. Did the API change?`,
-          json
+          json,
         )
       }
     }

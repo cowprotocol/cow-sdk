@@ -14,7 +14,7 @@ export async function calculateUniqueOrderId(
   chainId: SupportedChainId,
   order: UnsignedOrder,
   checkEthFlowOrderExists?: EthFlowOrderExistsCallback,
-  env?: CowEnv
+  env?: CowEnv,
 ): Promise<string> {
   const { orderDigest, orderId } = await OrderSigningUtils.generateOrderId(
     chainId,
@@ -27,7 +27,7 @@ export async function calculateUniqueOrderId(
     } as Order,
     {
       owner: env === 'staging' ? BARN_ETH_FLOW_ADDRESS : ETH_FLOW_ADDRESS,
-    }
+    },
   )
 
   if (checkEthFlowOrderExists && (await checkEthFlowOrderExists(orderId, orderDigest))) {

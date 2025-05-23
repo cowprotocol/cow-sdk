@@ -27,6 +27,7 @@ yarn add @cowprotocol/cow-sdk
 CoW Protocol is intent based, decentralized trading protocol that allows users to trade ERC-20 tokens.
 
 The basic swap flow:
+
 1. 🔎 Get a quote (price) for a trade (_or define your own price with a limit order_)
 2. ✍️ Sign the order
 3. ✅ Post the order to the order-book
@@ -50,7 +51,7 @@ const parameters: TradeParameters = {
   sellTokenDecimals: 18,
   buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
   buyTokenDecimals: 18,
-  amount: '120000000000000000'
+  amount: '120000000000000000',
 }
 
 // Post the order
@@ -63,7 +64,6 @@ This example is the simplest way to trade on CoW Protocol.
 
 You might want to use more advanced parameters like `receiver`, `partiallyFillable`, `validTo` and others.
 Check the [Trading SDK documentation](https://github.com/cowprotocol/cow-sdk/blob/main/src/trading/README.md) for more details.
-
 
 ## Other utilities
 

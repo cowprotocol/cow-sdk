@@ -73,7 +73,7 @@ describe('AcrossBridgeProvider', () => {
         expect.arrayContaining([
           '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
           '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
-        ])
+        ]),
       )
     })
 
@@ -179,7 +179,7 @@ describe('AcrossBridgeProvider', () => {
   describe('decodeBridgeHook', () => {
     it('should return bridging id', async () => {
       await expect(provider.decodeBridgeHook({} as unknown as latestAppData.CoWHook)).rejects.toThrowError(
-        'Not implemented'
+        'Not implemented',
       )
     })
   })

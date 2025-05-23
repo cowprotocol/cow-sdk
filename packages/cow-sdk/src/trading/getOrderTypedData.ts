@@ -12,7 +12,7 @@ const EIP712DomainTypes = [
 
 export async function getOrderTypedData(
   chainId: SupportedChainId,
-  orderToSign: UnsignedOrder
+  orderToSign: UnsignedOrder,
 ): Promise<OrderTypedData> {
   const domain = (await OrderSigningUtils.getDomain(chainId)) as OrderTypedData['domain']
 

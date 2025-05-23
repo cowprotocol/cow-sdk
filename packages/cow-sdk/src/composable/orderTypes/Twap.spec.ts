@@ -78,7 +78,7 @@ describe('Constructor', () => {
 
   test('Create Twap with invalid handler', () => {
     expect(() => new Twap({ handler: '0xdeaddeaddeaddeaddeaddeaddeaddeaddeaddead', data: TWAP_PARAMS_TEST })).toThrow(
-      'InvalidHandler'
+      'InvalidHandler',
     )
   })
 })
@@ -125,7 +125,7 @@ describe('Id', () => {
   test('Id changes for different params and same salt', () => {
     const twap = Twap.fromData(
       { ...TWAP_PARAMS_TEST, startTime: { startType: StartTimeValue.AT_EPOCH, epoch: BigNumber.from(123456789) } },
-      SALT
+      SALT,
     )
 
     expect(twap.id).toEqual('0xe993544057dbc8504c4e38a6fe35845a81e0849c11242a6070f9d25152598df6')
@@ -177,7 +177,7 @@ describe('Validate', () => {
       Twap.fromData({
         ...TWAP_PARAMS_TEST,
         startTime: { startType: StartTimeValue.AT_EPOCH, epoch: BigNumber.from(-1) },
-      }).isValid()
+      }).isValid(),
     ).toEqual({
       isValid: false,
       reason: 'InvalidStartTime',
@@ -206,7 +206,7 @@ describe('Validate', () => {
           durationType: DurationType.LIMIT_DURATION,
           duration: TWAP_PARAMS_TEST.timeBetweenParts.add(1),
         },
-      }).isValid()
+      }).isValid(),
     ).toEqual({
       isValid: false,
       reason: 'InvalidSpan',
@@ -238,7 +238,7 @@ describe('Deserialize', () => {
 
   test('Deserializes correctly order with t0 set to an epoch', () => {
     const twap = Twap.deserialize(
-      '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000006cf1e9ca41f7611def408122793c358a3d11e5a541617665537761707065722d545741502d537761700000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000001400000000000000000000000007fc66500c84a76ad7e9c93437bfc5ac33e2ddae9000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000003765a685a401622c060e5d700d9ad89413363a9100000000000000000000000000000000000000000000000009b6e64a8ec6000000000000000000000000000000000000000000000000000000000000055d4a800000000000000000000000000000000000000000000000000000000067f702df0000000000000000000000000000000000000000000000000000000000000005000000000000000000000000000000000000000000000000000000000001518000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+      '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000006cf1e9ca41f7611def408122793c358a3d11e5a541617665537761707065722d545741502d537761700000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000001400000000000000000000000007fc66500c84a76ad7e9c93437bfc5ac33e2ddae9000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000003765a685a401622c060e5d700d9ad89413363a9100000000000000000000000000000000000000000000000009b6e64a8ec6000000000000000000000000000000000000000000000000000000000000055d4a800000000000000000000000000000000000000000000000000000000067f702df0000000000000000000000000000000000000000000000000000000000000005000000000000000000000000000000000000000000000000000000000001518000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
     )
 
     expect(twap.handler).toEqual('0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5')
@@ -280,7 +280,7 @@ describe('To String', () => {
   test('toString: Default', () => {
     const twap = Twap.fromData(TWAP_PARAMS_TEST, SALT)
     expect(twap.toString()).toEqual(
-      'twap (0xd8a6889486a47d8ca8f4189f11573b39dbc04f605719ebf4050e44ae53c1bedf): {"sellAmount":"1000000000000000000","sellToken":"0x6810e776880C02933D47DB1b9fc05908e5386b96","buyAmount":"1000000000000000000","buyToken":"0xDAE5F1590db13E3B40423B5b5c5fbf175515910b","numberOfParts":"10","startTime":"AT_MINING_TIME","timeBetweenParts":3600,"durationOfPart":"AUTO","receiver":"0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF","appData":"0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5"}'
+      'twap (0xd8a6889486a47d8ca8f4189f11573b39dbc04f605719ebf4050e44ae53c1bedf): {"sellAmount":"1000000000000000000","sellToken":"0x6810e776880C02933D47DB1b9fc05908e5386b96","buyAmount":"1000000000000000000","buyToken":"0xDAE5F1590db13E3B40423B5b5c5fbf175515910b","numberOfParts":"10","startTime":"AT_MINING_TIME","timeBetweenParts":3600,"durationOfPart":"AUTO","receiver":"0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF","appData":"0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5"}',
     )
   })
   test('toString: start time at epoch', () => {
@@ -292,10 +292,10 @@ describe('To String', () => {
           epoch: BigNumber.from(1692876646),
         },
       },
-      SALT
+      SALT,
     )
     expect(twap.toString()).toEqual(
-      'twap (0x28b19554c54f10b67f6ef7e72bdc552fb865b12d33b797ac51227768705fff0d): {"sellAmount":"1000000000000000000","sellToken":"0x6810e776880C02933D47DB1b9fc05908e5386b96","buyAmount":"1000000000000000000","buyToken":"0xDAE5F1590db13E3B40423B5b5c5fbf175515910b","numberOfParts":"10","startTime":1692876646,"timeBetweenParts":3600,"durationOfPart":"AUTO","receiver":"0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF","appData":"0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5"}'
+      'twap (0x28b19554c54f10b67f6ef7e72bdc552fb865b12d33b797ac51227768705fff0d): {"sellAmount":"1000000000000000000","sellToken":"0x6810e776880C02933D47DB1b9fc05908e5386b96","buyAmount":"1000000000000000000","buyToken":"0xDAE5F1590db13E3B40423B5b5c5fbf175515910b","numberOfParts":"10","startTime":1692876646,"timeBetweenParts":3600,"durationOfPart":"AUTO","receiver":"0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF","appData":"0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5"}',
     )
   })
 
@@ -308,10 +308,10 @@ describe('To String', () => {
           duration: BigNumber.from(1000),
         },
       },
-      SALT
+      SALT,
     )
     expect(twap.toString()).toEqual(
-      'twap (0x7352e87b6e5d7c4e27479a13b7ba8bc0d67a947d1692994bd995c9dcc94c166a): {"sellAmount":"1000000000000000000","sellToken":"0x6810e776880C02933D47DB1b9fc05908e5386b96","buyAmount":"1000000000000000000","buyToken":"0xDAE5F1590db13E3B40423B5b5c5fbf175515910b","numberOfParts":"10","startTime":"AT_MINING_TIME","timeBetweenParts":3600,"durationOfPart":1000,"receiver":"0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF","appData":"0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5"}'
+      'twap (0x7352e87b6e5d7c4e27479a13b7ba8bc0d67a947d1692994bd995c9dcc94c166a): {"sellAmount":"1000000000000000000","sellToken":"0x6810e776880C02933D47DB1b9fc05908e5386b96","buyAmount":"1000000000000000000","buyToken":"0xDAE5F1590db13E3B40423B5b5c5fbf175515910b","numberOfParts":"10","startTime":"AT_MINING_TIME","timeBetweenParts":3600,"durationOfPart":1000,"receiver":"0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF","appData":"0xd51f28edffcaaa76be4a22f6375ad289272c037f3cc072345676e88d92ced8b5"}',
     )
   })
 })
@@ -323,7 +323,7 @@ describe('Poll Validate', () => {
   const mockEndTimestamp: jest.MockedFunction<(startTimestamp: number) => number> = jest.fn()
   const mockGetBlock: jest.MockedFunction<
     (
-      blockHashOrBlockTag: providers.BlockTag | string | Promise<providers.BlockTag | string>
+      blockHashOrBlockTag: providers.BlockTag | string | Promise<providers.BlockTag | string>,
     ) => Promise<providers.Block>
   > = jest.fn()
 
@@ -444,7 +444,7 @@ describe('Poll Validate', () => {
       Promise.resolve({
         number: blockNumber,
         timestamp: blockTimestamp,
-      } as providers.Block)
+      } as providers.Block),
     )
     const startTime = blockTimestamp + 1
     mockCabinet.mockReturnValue(uint256Helper(startTime))
@@ -480,7 +480,7 @@ describe('Current TWAP part is in the Order Book', () => {
         blockNumber,
         blockTimestamp,
       },
-    } as PollParams)
+    }) as PollParams
 
   class MockTwap extends Twap {
     // Just make handlePollFailedAlreadyPresent public so we can call it in isolation

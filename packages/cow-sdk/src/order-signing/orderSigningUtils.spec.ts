@@ -57,7 +57,7 @@ describe('OrderSigningApi', () => {
     const result = await OrderSigningUtils.signOrderCancellations(
       ordersUids,
       SupportedChainId.MAINNET,
-      instance(signer)
+      instance(signer),
     )
 
     const [domain, typedData, ids] = capture(signer._signTypedData).first()

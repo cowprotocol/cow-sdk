@@ -279,7 +279,7 @@ describe('Multiplexer (ComposableCoW)', () => {
       await m.prepareProofStruct(ProofLocation.IPFS, undefined, upload2)
     } catch (e) {
       expect(e.message).toMatch(
-        'Error preparing proof struct: Error: Error uploading to decentralized storage 5: Error: bad'
+        'Error preparing proof struct: Error: Error uploading to decentralized storage 5: Error: bad',
       )
     }
   })

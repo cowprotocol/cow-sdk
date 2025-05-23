@@ -77,7 +77,7 @@ describe('calculateUniqueOrderId', () => {
               alreadyCalled = true
 
               return true
-            })()
+            })(),
           )
         })
         await calculateUniqueOrderId(SupportedChainId.MAINNET, orderMock, checkEthFlowOrderExists)

@@ -59,7 +59,7 @@ export function GenerateCowShedHookCallDataPage() {
         setOutput('Error generating hook')
       }
     },
-    [input]
+    [input],
   )
 
   const defaultValue = {

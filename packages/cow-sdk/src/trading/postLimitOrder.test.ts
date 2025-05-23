@@ -77,7 +77,7 @@ describe('postLimitOrder', () => {
       expect.anything(),
       appDataMock,
       defaultOrderParams,
-      undefined
+      undefined,
     )
   })
 })

@@ -95,7 +95,7 @@ export class SubgraphApi {
    */
   async getLastHoursVolume(
     hours: number,
-    contextOverride: PartialSubgraphApiContext = {}
+    contextOverride: PartialSubgraphApiContext = {},
   ): Promise<LastHoursVolumeQuery> {
     return this.runQuery<LastHoursVolumeQuery>(LAST_HOURS_VOLUME_QUERY, { hours }, contextOverride)
   }
@@ -111,7 +111,7 @@ export class SubgraphApi {
   async runQuery<T>(
     query: string | DocumentNode,
     variables: Variables | undefined = undefined,
-    contextOverride: PartialSubgraphApiContext = {}
+    contextOverride: PartialSubgraphApiContext = {},
   ): Promise<T> {
     const { chainId, env } = this.getContextWithOverride(contextOverride)
     const baseUrl = this.getEnvConfigs(env)[chainId]
@@ -125,7 +125,7 @@ export class SubgraphApi {
     } catch (error) {
       console.error(`[subgraph:${this.API_NAME}]`, error)
       throw new CowError(
-        `Error running query: ${query}. Variables: ${JSON.stringify(variables)}. API: ${baseUrl}. Inner Error: ${error}`
+        `Error running query: ${query}. Variables: ${JSON.stringify(variables)}. API: ${baseUrl}. Inner Error: ${error}`,
       )
     }
   }

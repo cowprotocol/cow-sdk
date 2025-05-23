@@ -147,7 +147,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     chainId: SupportedChainId,
     unsignedCall: EvmCall,
     signer: Signer,
-    defaultGasLimit?: bigint
+    defaultGasLimit?: bigint,
   ): Promise<BridgeHook> {
     // Sign the multicall
     const { signedMulticall, cowShedAccount, gasLimit } = await this.cowShedSdk.signCalls({

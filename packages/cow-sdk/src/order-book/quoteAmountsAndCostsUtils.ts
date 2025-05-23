@@ -64,7 +64,7 @@ function _getQuoteAmountsWithCosts(params: {
    */
   const sellAmountAfterNetworkCosts = getBigNumber(
     sellAmountBeforeNetworkCosts.big + networkCostAmount.big,
-    sellDecimals
+    sellDecimals,
   )
 
   /**
