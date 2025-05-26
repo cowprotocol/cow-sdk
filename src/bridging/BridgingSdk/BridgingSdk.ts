@@ -4,15 +4,12 @@ import {
   BridgeQuoteResult,
   CrossChainOrder,
   CrossChainQuoteAndPost,
-  GetErc20Decimals,
   QuoteBridgeRequest,
 } from '../types'
 import { ALL_SUPPORTED_CHAINS, CowEnv, TokenInfo } from '../../common'
 import { ChainInfo, SupportedChainId, TargetChainId } from '../../chains'
 import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
 import { getQuoteWithBridge } from './getQuoteWithBridge'
-import { getSigner } from '../../common/utils/wallet'
-import { factoryGetErc20Decimals } from './getErc20Decimals'
 import { enableLogging } from '../../common/utils/log'
 import { OrderBookApi } from 'src/order-book'
 import { getCrossChainOrder } from './getCrossChainOrder'
@@ -22,11 +19,6 @@ export interface BridgingSdkOptions {
    * Providers for the bridging.
    */
   providers: BridgeProvider<BridgeQuoteResult>[]
-
-  /**
-   * Function to get the decimals of the ERC20 tokens
-   */
-  getErc20Decimals?: GetErc20Decimals
 
   /**
    * Trading SDK.
@@ -64,8 +56,7 @@ export interface GetOrderParams {
   env?: CowEnv
 }
 
-export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'enableLogging' | 'getErc20Decimals'>> &
-  Pick<BridgingSdkOptions, 'getErc20Decimals'>
+export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'enableLogging'>>
 
 /**
  * SDK for bridging for swapping tokens between different chains.
@@ -150,22 +141,18 @@ export class BridgingSdk {
    */
   async getQuote(
     quoteBridgeRequest: QuoteBridgeRequest,
-    advancedSettings?: SwapAdvancedSettings
+    advancedSettings?: SwapAdvancedSettings,
   ): Promise<CrossChainQuoteAndPost> {
     const { sellTokenChainId, buyTokenChainId } = quoteBridgeRequest
     const tradingSdk = this.config.tradingSdk
 
     if (sellTokenChainId !== buyTokenChainId) {
-      const signer = getSigner(quoteBridgeRequest.signer)
-      const getErc20Decimals = this.config.getErc20Decimals ?? factoryGetErc20Decimals(signer)
-
       // Cross-chain swap
       return getQuoteWithBridge({
         swapAndBridgeRequest: quoteBridgeRequest,
         advancedSettings,
         tradingSdk,
         provider: this.provider,
-        getErc20Decimals,
         bridgeHookSigner: advancedSettings?.quoteSigner,
       })
     } else {

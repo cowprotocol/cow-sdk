@@ -1,5 +1,4 @@
 import { SupportedChainId, TargetChainId } from '../../../chains'
-import { TokenInfo } from '../../../common'
 import { OrderKind } from '../../../order-book'
 import { BridgeQuoteResult, QuoteBridgeRequest } from '../../types'
 import { AcrossApi } from './AcrossApi'
@@ -9,6 +8,11 @@ import { latest as latestAppData } from '@cowprotocol/app-data/dist/generatedTyp
 
 // Mock AcrossApi
 jest.mock('./AcrossApi')
+
+const mockTokens = [
+  { chainId: SupportedChainId.POLYGON, address: '0x123', decimals: 18, symbol: 'TOKEN1', name: 'Token 1' },
+  { chainId: SupportedChainId.POLYGON, address: '0x456', decimals: 6, symbol: 'TOKEN2', name: 'Token 2' },
+]
 
 class AcrossBridgeProviderTest extends AcrossBridgeProvider {
   constructor(options: AcrossBridgeProviderOptions) {
@@ -27,12 +31,10 @@ class AcrossBridgeProviderTest extends AcrossBridgeProvider {
 }
 
 describe('AcrossBridgeProvider', () => {
-  const mockGetTokenInfos = jest.fn()
   let provider: AcrossBridgeProviderTest
 
   beforeEach(() => {
     const options = {
-      getTokenInfos: mockGetTokenInfos,
       apiOptions: {},
     }
     provider = new AcrossBridgeProviderTest(options)
@@ -52,13 +54,10 @@ describe('AcrossBridgeProvider', () => {
   })
 
   describe('getBuyTokens', () => {
-    const mockTokens: TokenInfo[] = [
-      { chainId: SupportedChainId.POLYGON, address: '0x123', decimals: 18, symbol: 'TOKEN1', name: 'Token 1' },
-      { chainId: SupportedChainId.POLYGON, address: '0x456', decimals: 6, symbol: 'TOKEN2', name: 'Token 2' },
-    ]
-
     beforeEach(() => {
-      mockGetTokenInfos.mockResolvedValue(mockTokens)
+      const mockAcrossApi = new AcrossApi()
+      jest.spyOn(mockAcrossApi, 'getSupportedTokens').mockResolvedValue(mockTokens)
+      provider.setApi(mockAcrossApi)
     })
 
     it('should return tokens for supported chain', async () => {
@@ -66,15 +65,6 @@ describe('AcrossBridgeProvider', () => {
 
       expect(tokens).toEqual(mockTokens)
       // mockGetTokenInfos was called with a list of addresses which includes 0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359 and 0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619
-
-      // The token result contains USDC and WETH in polygon
-      expect(mockGetTokenInfos).toHaveBeenCalledWith(
-        SupportedChainId.POLYGON,
-        expect.arrayContaining([
-          '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
-          '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
-        ])
-      )
     })
 
     it('should return empty array for unsupported chain', async () => {
@@ -82,7 +72,6 @@ describe('AcrossBridgeProvider', () => {
 
       // The token result is empty and we don't call getTokenInfos
       expect(tokens).toEqual([])
-      expect(mockGetTokenInfos).not.toHaveBeenCalled()
     })
   })
 
@@ -179,7 +168,7 @@ describe('AcrossBridgeProvider', () => {
   describe('decodeBridgeHook', () => {
     it('should return bridging id', async () => {
       await expect(provider.decodeBridgeHook({} as unknown as latestAppData.CoWHook)).rejects.toThrowError(
-        'Not implemented'
+        'Not implemented',
       )
     })
   })

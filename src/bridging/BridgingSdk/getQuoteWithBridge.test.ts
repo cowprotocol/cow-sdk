@@ -5,14 +5,13 @@ import {
   bridgeQuoteResult,
   cowShedForAccount,
   intermediateToken,
-  intermediateTokenDecimals,
   mockSigner,
   orderQuoteResponse,
   quoteBridgeRequest,
 } from './mock/bridgeRequestMocks'
 import { MockBridgeProvider } from '../providers/mock/MockBridgeProvider'
 import { TradingSdk } from '../../trading'
-import { SupportedChainId, TargetChainId } from '../../chains'
+import { SupportedChainId } from '../../chains'
 import { QuoteBridgeRequest } from '../types'
 import { NATIVE_CURRENCY_ADDRESS } from '../../common'
 import { getEthFlowContract } from '../../trading/getEthFlowTransaction'
@@ -54,13 +53,6 @@ describe('getQuoteWithBridge', () => {
       swapAndBridgeRequest: request,
       provider: mockProvider,
       tradingSdk,
-      getErc20Decimals: async (_: TargetChainId, tokenAddress: string) => {
-        if (tokenAddress !== intermediateToken) {
-          throw new Error('This mock its supposed to be used for intermediate token')
-        }
-
-        return intermediateTokenDecimals
-      },
     })
   }
 

@@ -8,6 +8,7 @@ import {
   SuggestedFeesResponse,
 } from './types'
 import { BridgeProviderQuoteError } from '../../errors'
+import { TokenInfo } from '../../../common'
 
 const ACROSS_API_URL = 'https://app.across.to/api'
 
@@ -69,10 +70,16 @@ export class AcrossApi {
     return this.fetchApi('/suggested-fees', params, isValidSuggestedFeesResponse)
   }
 
+  async getSupportedTokens(): Promise<TokenInfo[]> {
+    return this.fetchApi<(TokenInfo & { logoURI?: string })[]>('/token-list', {}).then((tokens) =>
+      tokens.map((token) => ({ ...token, logoUrl: token.logoURI })),
+    )
+  }
+
   protected async fetchApi<T>(
     path: string,
     params: Record<string, string>,
-    isValidResponse?: (response: unknown) => response is T
+    isValidResponse?: (response: unknown) => response is T,
   ): Promise<T> {
     const baseUrl = this.options.apiBaseUrl || ACROSS_API_URL
     const url = `${baseUrl}${path}?${new URLSearchParams(params).toString()}`
@@ -96,7 +103,7 @@ export class AcrossApi {
       } else {
         throw new BridgeProviderQuoteError(
           `Invalid response for Across API call ${path}. The response doesn't pass the validation. Did the API change?`,
-          json
+          json,
         )
       }
     }
