@@ -25,19 +25,19 @@ describe('AppData utils', () => {
         environment: 'staging',
         metadata: {
           partnerFee: {
-            bps: 66,
+            volumeBps: 66,
             recipient: '0xccc',
           },
           replacedOrder: {
             uid: '0xaaa',
           },
         },
-      }
+      },
     )
     const parsedData = JSON.parse(data.fullAppData)
 
     expect(parsedData.environment).toBe('staging')
-    expect(parsedData.metadata.partnerFee.bps).toBe(66)
+    expect(parsedData.metadata.partnerFee.volumeBps).toBe(66)
     expect(parsedData.metadata.partnerFee.recipient).toBe('0xccc')
     expect(parsedData.metadata.replacedOrder.uid).toBe('0xaaa')
   })
