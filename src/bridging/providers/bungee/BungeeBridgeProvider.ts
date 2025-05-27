@@ -138,7 +138,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
       inputAmount: amount.toString(),
       receiverAddress: receiver ?? account, // receiver is required on bungee api
       outputToken: buyTokenAddress,
-      includeBridges: this.api.SUPPORTED_BRIDGES,
+      includeBridges: this.options.apiOptions?.includeBridges,
       enableManual: true,
       disableSwapping: true,
       disableAuto: true,

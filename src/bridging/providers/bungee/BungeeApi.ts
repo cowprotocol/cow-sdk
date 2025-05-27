@@ -23,6 +23,7 @@ const BUNGEE_API_URL = 'https://public-backend.bungee.exchange/api/v1/bungee'
 
 export interface BungeeApiOptions {
   apiBaseUrl?: string
+  includeBridges?: SupportedBridge[]
 }
 
 export class BungeeApi {
@@ -31,8 +32,20 @@ export class BungeeApi {
   constructor(
     private readonly options: BungeeApiOptions = {
       apiBaseUrl: BUNGEE_API_URL,
+      includeBridges: this.SUPPORTED_BRIDGES,
     },
-  ) {}
+  ) {
+    // throw if any bridge is not supported
+    this.validateBridges(this.options.includeBridges ?? this.SUPPORTED_BRIDGES)
+  }
+
+  validateBridges(includeBridges: SupportedBridge[]): void {
+    if (includeBridges && includeBridges.some((bridge) => !this.SUPPORTED_BRIDGES.includes(bridge))) {
+      throw new Error(
+        `Unsupported bridge: ${includeBridges.filter((bridge) => !this.SUPPORTED_BRIDGES.includes(bridge)).join(', ')}`,
+      )
+    }
+  }
 
   /**
    * Makes a GET request to Bungee APIs for quote and build tx
@@ -52,16 +65,11 @@ export class BungeeApi {
    */
   async getBungeeQuote(params: BungeeQuoteAPIRequest): Promise<BungeeQuote> {
     try {
-      // throw if any bridge is not supported
-      if (params.includeBridges && params.includeBridges.some((bridge) => !this.SUPPORTED_BRIDGES.includes(bridge))) {
-        throw new Error(
-          `Unsupported bridge: ${params.includeBridges.filter((bridge) => !this.SUPPORTED_BRIDGES.includes(bridge)).join(', ')}`,
-        )
-      }
       // if no bridges are provided, use all supported bridges
-      if (!params.includeBridges) {
-        params.includeBridges = this.SUPPORTED_BRIDGES
-      }
+      params.includeBridges = params.includeBridges ?? this.options.includeBridges ?? this.SUPPORTED_BRIDGES
+
+      // throw if any bridge is not supported
+      this.validateBridges(params.includeBridges)
 
       const urlParams = objectToSearchParams(params)
       const response = await this.get<BungeeQuoteAPIResponse>('/quote', urlParams, isValidQuoteResponse)
@@ -70,16 +78,17 @@ export class BungeeApi {
       }
       // prepare quote timestamp from current timestamp
       const quoteTimestamp = Math.floor(Date.now() / 1000)
-      // validate bridge name
-      const bridgeName = getBungeeBridgeFromDisplayName(response.result.manualRoutes[0].routeDetails.name)
-      if (!bridgeName) {
-        throw new Error('Invalid bridge name')
-      }
 
       // check if manualRoutes is empty
       const { manualRoutes } = response.result
       if (manualRoutes.length === 0) {
         throw new Error('No routes found')
+      }
+
+      // validate bridge name
+      const bridgeName = getBungeeBridgeFromDisplayName(response.result.manualRoutes[0].routeDetails.name)
+      if (!bridgeName) {
+        throw new Error('Invalid bridge name')
       }
 
       // sort manual routes by output
