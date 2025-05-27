@@ -11,9 +11,6 @@ import { TargetChainId } from 'src/chains'
 import { BungeeCowswapLibAddresses } from './const/contracts'
 import { BungeeTxDataBytesIndices } from './const/misc'
 import { BungeeBridge } from './types'
-import { BigNumber, ethers } from 'ethers'
-import { getSigner } from 'src/common/utils/wallet'
-import { factoryGetErc20Decimals } from 'src/bridging/BridgingSdk/getErc20Decimals'
 
 function getSellTokenContract(sellTokenAddress: string): WeirollContract {
   return createWeirollContract(new EthersContract(sellTokenAddress, ERC20_ABI), WeirollCommandFlags.CALL)
@@ -53,14 +50,13 @@ export async function createBungeeDepositCall(params: {
   const socketGatewayContract = getSocketGatewayContract(buildTx.txData.to)
 
   // Check & set allowance for SocketGateway to transfer bridged tokens
-  // check if allowance is sufficient
+  // check if allowance is sufficient is not native token
   let setAllowance = false
-  let allowanceToSet = BigNumber.from(0)
-  // check if token is not native token
-  const isNativeToken = request.sellTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase()
-  if (!isNativeToken) {
-    const signer = getSigner(request.signer)
-    const tokenDecimals = await factoryGetErc20Decimals(signer)(request.sellTokenChainId, request.sellTokenAddress)
+  let allowanceToSet = 0n
+  if (!(request.sellTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase())) {
+    // set more allowance if current allowance is less than 120% of the bridge quote
+    const bridgeQuoteBigIntWithEstimateSurplus =
+      BigInt(buildTx.approvalData.amount) + (BigInt(buildTx.approvalData.amount) * 20n) / 100n
     const allowance = await fetchTokenAllowance({
       chainId: request.sellTokenChainId,
       tokenAddress: request.sellTokenAddress,
@@ -68,24 +64,22 @@ export async function createBungeeDepositCall(params: {
       spenderAddress: buildTx.approvalData.spenderAddress,
       signer: request.signer,
     })
-    if (allowance < BigInt(buildTx.approvalData.amount)) {
+    if (allowance < bridgeQuoteBigIntWithEstimateSurplus) {
       setAllowance = true
-      // TODO test if the rawValue balance bytes can be used for approval
-      // @note using higher allowance for saving gas on subsequent txs
-      allowanceToSet = ethers.utils.parseUnits('1000', tokenDecimals)
+      // approve 3x the amount to account for the surplus
+      // and save some gas for subsequent swaps
+      allowanceToSet = 3n * BigInt(buildTx.approvalData.amount)
     }
   }
 
   const bridgeDepositCall = createWeirollDelegateCall((planner) => {
-    // add weiroll action to approve token to socket gateway
     if (setAllowance) {
+      // add weiroll action to approve token to socket gateway
       planner.add(SellTokenContract.approve(buildTx.approvalData.spenderAddress, allowanceToSet))
     }
-
-    // Get bridged amount (balance of the intermediate token at swap time)
+    // add weiroll action to replace input amount with new input amount
     // fetching raw value in bytes since we need to replace bytes in the encoded function data
     const sourceAmountIncludingSurplusBytes = planner.add(SellTokenContract.balanceOf(cowShedAccount).rawValue())
-    // add weiroll action to replace input amount with new input amount
     const encodedFunctionDataWithNewInputAmount = planner.add(
       BungeeCowswapLibContract.replaceBytes(
         encodedFunctionData,
