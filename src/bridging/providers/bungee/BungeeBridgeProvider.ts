@@ -79,7 +79,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
 
   async getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]> {
     if (!this.options.getTokenInfos) {
-      throw new Error("'getTokenInfos' parameter is required for AcrossBridgeProvider constructor")
+      throw new Error("'getTokenInfos' parameter is required for BungeeBridgeProvider constructor")
     }
 
     const chainConfig = BUNGEE_TOKEN_MAPPING[targetChainId as TargetChainId]

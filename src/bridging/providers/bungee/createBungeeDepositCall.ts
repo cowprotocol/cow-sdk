@@ -6,11 +6,13 @@ import { CowShedSdk } from '../../../cow-shed'
 import { BungeeQuoteResult } from './BungeeBridgeProvider'
 import { QuoteBridgeRequest } from '../../types'
 import { BUNGEE_COWSWAP_LIB_ABI, ERC20_ABI, SOCKET_GATEWAY_ABI } from './abi'
-import { decodeAmountsBungeeTxData, decodeBungeeTxData, fetchTokenAllowance } from './util'
+import { decodeAmountsBungeeTxData, decodeBungeeBridgeTxData, fetchTokenAllowance, getErc20Contract } from './util'
 import { TargetChainId } from 'src/chains'
 import { BungeeCowswapLibAddresses } from './const/contracts'
 import { BungeeTxDataBytesIndices } from './const/misc'
 import { BungeeBridge } from './types'
+import { BigNumber, ethers } from 'ethers'
+import { getSigner } from 'src/common/utils/wallet'
 
 function getSellTokenContract(sellTokenAddress: string): WeirollContract {
   return createWeirollContract(new EthersContract(sellTokenAddress, ERC20_ABI), WeirollCommandFlags.CALL)
@@ -38,10 +40,11 @@ export async function createBungeeDepositCall(params: {
 }): Promise<EvmCall> {
   const { request, quote, cowShedSdk } = params
   const { bungeeQuote, buildTx } = quote
-  const { routeId, encodedFunctionData } = decodeBungeeTxData(buildTx.txData.data)
+  const { routeId, encodedFunctionData } = decodeBungeeBridgeTxData(buildTx.txData.data)
 
   // get cowShed account address
-  const cowShedAccount = cowShedSdk.getCowShedAccount(request.sellTokenChainId, request.account)
+  const ownerAddress = request.owner ?? request.account
+  const cowShedAccount = cowShedSdk.getCowShedAccount(request.sellTokenChainId, ownerAddress)
 
   // prep all weiroll contracts
   const SellTokenContract = getSellTokenContract(request.sellTokenAddress)
@@ -51,7 +54,11 @@ export async function createBungeeDepositCall(params: {
   // Check & set allowance for SocketGateway to transfer bridged tokens
   // check if allowance is sufficient
   let setAllowance = false
+  let allowanceToSet = BigNumber.from(0)
+  const signer = getSigner(request.signer)
+  const tokenDecimals = await getErc20Contract(request.sellTokenAddress, signer).decimals()
   const allowance = await fetchTokenAllowance({
+    chainId: request.sellTokenChainId,
     tokenAddress: request.sellTokenAddress,
     ownerAddress: cowShedAccount, // approval should be from cowshed account
     spenderAddress: buildTx.approvalData.spenderAddress,
@@ -59,12 +66,15 @@ export async function createBungeeDepositCall(params: {
   })
   if (allowance < BigInt(buildTx.approvalData.amount)) {
     setAllowance = true
+    // TODO test if the rawValue balance bytes can be used for approval
+    // @note using higher allowance for saving gas on subsequent txs
+    allowanceToSet = ethers.utils.parseUnits('1000', tokenDecimals)
   }
 
   const bridgeDepositCall = createWeirollDelegateCall((planner) => {
     // add weiroll action to approve token to socket gateway
     if (setAllowance) {
-      planner.add(SellTokenContract.approve(buildTx.approvalData.spenderAddress, buildTx.approvalData.amount))
+      planner.add(SellTokenContract.approve(buildTx.approvalData.spenderAddress, allowanceToSet))
     }
 
     // Get bridged amount (balance of the intermediate token at swap time)

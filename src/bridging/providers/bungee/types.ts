@@ -34,8 +34,8 @@ export interface BungeeQuoteAPIResponse {
       priceInUsd: number
       valueInUsd: number
     }
-    destinationExec: any
-    autoRoute: any
+    destinationExec: unknown
+    autoRoute: unknown
     manualRoutes: Array<{
       quoteId: string
       quoteExpiry: number
@@ -55,7 +55,7 @@ export interface BungeeQuoteAPIResponse {
         minAmountOut: string
         effectiveReceivedInUsd: number
       }
-      affiliateFee: any
+      affiliateFee: unknown
       approvalData: {
         spenderAddress: string
         amount: string
@@ -71,7 +71,7 @@ export interface BungeeQuoteAPIResponse {
           decimals: number
           icon: string
           logoURI: string
-          chainAgnosticId: any
+          chainAgnosticId: unknown
         }
         gasLimit: string
         gasPrice: string
@@ -97,22 +97,22 @@ export interface BungeeQuoteAPIResponse {
           feeInUsd: number
           priceInUsd: number
         }
-        dexDetails: any
+        dexDetails: unknown
       }
-      refuel: any
+      refuel: unknown
     }>
   }
 }
 
 export enum BungeeBridge {
   'Across' = 'across',
-  'Circle CCTP' = 'cctp',
+  'CircleCCTP' = 'cctp',
 }
 
 // Map display names to enum values
 export const BungeeBridgeNames: Record<string, BungeeBridge> = {
   Across: BungeeBridge.Across,
-  'Circle CCTP': BungeeBridge['Circle CCTP'],
+  'Circle CCTP': BungeeBridge.CircleCCTP,
 }
 
 export interface BungeeQuote {

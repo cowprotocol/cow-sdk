@@ -7,7 +7,7 @@ import { OrderKind } from '@cowprotocol/contracts'
 import { BungeeQuote, BungeeQuoteWithBuildTx } from './types'
 import { getBigNumber } from 'src/order-book'
 import { SignerLike } from 'src/common'
-import { ethers } from 'ethers'
+import { ethers, Signer } from 'ethers'
 import { ERC20_ABI } from './abi'
 import { getSigner } from 'src/common/utils/wallet'
 import { BungeeTxDataBytesIndices } from './const/misc'
@@ -158,7 +158,9 @@ export function applyBps(amount: bigint, bps: number): bigint {
  * const searchParams = objectToSearchParams(params)
  * Results in: ?userAddress=0x123&includeBridges=across&includeBridges=cctp
  */
-export function objectToSearchParams(params: { [key: string]: any }): URLSearchParams {
+export function objectToSearchParams(params: {
+  [key: string]: string | number | boolean | (string | number | boolean)[]
+}): URLSearchParams {
   const searchParams = new URLSearchParams()
 
   Object.entries(params).forEach(([key, value]) => {
@@ -174,16 +176,25 @@ export function objectToSearchParams(params: { [key: string]: any }): URLSearchP
   return searchParams
 }
 
+export async function getSignerForChainId(chainId: number, signer: SignerLike): Promise<Signer> {
+  const _signer = getSigner(signer)
+  const connectedChainId = await _signer.getChainId()
+  if (connectedChainId !== chainId) {
+    throw new Error(`Signer chainId ${connectedChainId} does not match expected sourceChainId ${chainId}`)
+  }
+  return _signer
+}
+
 export async function fetchTokenAllowance(params: {
+  chainId: number
   tokenAddress: string
   ownerAddress: string
   spenderAddress: string
   signer: SignerLike
 }): Promise<bigint> {
-  const { tokenAddress, ownerAddress, spenderAddress, signer } = params
+  const { chainId, tokenAddress, ownerAddress, spenderAddress, signer } = params
 
-  // @todo does this actually work and connect to source chain id ¿
-  const _signer = getSigner(signer)
+  const _signer = await getSignerForChainId(chainId, signer)
   const tokenContract = getErc20Contract(tokenAddress, _signer)
   const allowance = await tokenContract.allowance(ownerAddress, spenderAddress)
   return allowance
@@ -194,16 +205,6 @@ export function getErc20Contract(
   signer?: ethers.Signer | ethers.providers.Provider,
 ): ethers.Contract {
   return new ethers.Contract(tokenAddress, ERC20_ABI, signer)
-}
-
-export const decodeBungeeTxData = (txData: string) => {
-  // remove first two characters = 0x
-  const txDataWithout0x = txData.slice(2)
-  // first four bytes are the routeId
-  const routeId = `0x${txDataWithout0x.slice(0, 8)}`
-  // rest is the encoded function data
-  const encodedFunctionData = `0x${txDataWithout0x.slice(8)}`
-  return { routeId, encodedFunctionData }
 }
 
 // Helper function to get enum value from display name
