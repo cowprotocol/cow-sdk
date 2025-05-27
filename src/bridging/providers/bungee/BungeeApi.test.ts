@@ -1,16 +1,16 @@
-import { BungeeApi } from './BungeeApi'
-
 // Mock fetch globally
 const mockFetch = jest.fn()
 global.fetch = mockFetch
 
 describe('BungeeApi', () => {
-  let api: BungeeApi
+  // let api: BungeeApi
 
   beforeEach(() => {
-    api = new BungeeApi()
+    // api = new BungeeApi()
     mockFetch.mockClear()
   })
 
-  describe('', () => {})
+  describe('', () => {
+    it('', () => {})
+  })
 })

@@ -1,7 +1,5 @@
 import { SupportedChainId, TargetChainId } from '../../../chains'
 import { TokenInfo } from '../../../common'
-import { OrderKind } from '../../../order-book'
-import { BridgeQuoteResult, QuoteBridgeRequest } from '../../types'
 import { BungeeApi } from './BungeeApi'
 import { BUNGEE_SUPPORTED_NETWORKS, BungeeBridgeProvider, BungeeBridgeProviderOptions } from './BungeeBridgeProvider'
 import { latest as latestAppData } from '@cowprotocol/app-data'

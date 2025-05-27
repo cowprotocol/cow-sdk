@@ -1,11 +1,9 @@
-import { BungeeApi } from './BungeeApi'
-
 describe('BungeeApi: Shape of API response', () => {
-  let api: BungeeApi
+  // let api: BungeeApi
 
   beforeEach(() => {
     // Use the real API (not mocked)
-    api = new BungeeApi()
+    // api = new BungeeApi()
   })
 
   it('', async () => {})

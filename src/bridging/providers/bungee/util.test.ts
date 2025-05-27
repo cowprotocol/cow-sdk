@@ -1,3 +1,5 @@
 describe('Bungee Utils', () => {
-  describe('', () => {})
+  describe('', () => {
+    it('', () => {})
+  })
 })
