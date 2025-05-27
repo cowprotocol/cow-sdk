@@ -45,6 +45,16 @@ export default [
           ignoreRestSiblings: true,
         },
       ],
+      'eol-last': ['error', 'always'],
+    },
+  },
+  {
+    files: ['**/*.test.ts', '**/*.spec.ts', '**/__mock__/**/*.ts'],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        project: './tsconfig.test.json',
+      },
     },
   },
 ]
