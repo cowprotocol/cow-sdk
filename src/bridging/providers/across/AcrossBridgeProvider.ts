@@ -88,7 +88,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     const targetTokens = supportedTokensState[buyTokenChainId]
 
     // Find the token symbol for the target token
-    const targetTokenSymbol = targetTokens && targetTokens[buyTokenAddressLower]?.symbol
+    const targetTokenSymbol = targetTokens && targetTokens[buyTokenAddressLower]?.symbol?.toLowerCase()
     if (!targetTokenSymbol) return []
 
     // Use the tokenSymbol to find the outputToken in the target chain
