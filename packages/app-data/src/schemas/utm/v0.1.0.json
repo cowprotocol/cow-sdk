@@ -1,0 +1,54 @@
+{
+  "$id": "#utm/v0.1.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "required": [],
+  "title": "UTM Codes",
+  "type": "object",
+  "properties": {
+    "utmSource": {
+      "$id": "#/properties/utmSource",
+      "title": "UTM Source",
+      "type": "string",
+      "examples": [
+        "twitter"
+      ],
+      "description": "Tracks in which medium the traffic originated from (twitter, facebook, etc.)"
+    },
+    "utmMedium": {
+      "$id": "#/properties/utmMedium",
+      "title": "UTM Medium",
+      "type": "string",
+      "examples": [
+        "email"
+      ],
+      "description": "Tracks in which medium the traffic originated from (mail, CPC, social, etc.)"
+    },
+    "utmCampaign": {
+      "$id": "#/properties/utmCampagin",
+      "title": "UTM Campaign",
+      "type": "string",
+      "examples": [
+        "everyone-loves-cows-2023"
+      ],
+      "description": "Track the performance of a specific campaign"
+    },
+    "utmContent": {
+      "$id": "#/properties/utmContent",
+      "title": "UTM Content",
+      "type": "string",
+      "examples": [
+        "big-fat-button"
+      ],
+      "description": "Track which link was clicked"
+    },
+    "utmTerm": {
+      "$id": "#/properties/utmTem",
+      "title": "UTM Keyword Term",
+      "type": "string",
+      "examples": [
+        "coincidence+of+wants"
+      ],
+      "description": "Track which keyword term a website visitor came from"
+    }
+  }
+}
