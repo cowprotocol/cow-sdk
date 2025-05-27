@@ -107,6 +107,12 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     const targetTokenSymbol = getTokenSymbol(buyTokenAddress, targetChainConfig)
     if (!targetTokenSymbol) return []
 
+    // if target token is native token, use weth as intermediate token
+    if (targetTokenSymbol === 'eth') {
+      const wethAddress = getTokenAddress('weth', sourceChainConfig)
+      return wethAddress ? [wethAddress] : []
+    }
+
     // Use the tokenSymbol to find the outputToken in the target chain
     const intermediateToken = getTokenAddress(targetTokenSymbol, sourceChainConfig)
     return intermediateToken ? [intermediateToken] : []
@@ -134,6 +140,8 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
       outputToken: buyTokenAddress,
       includeBridges: this.api.SUPPORTED_BRIDGES,
       enableManual: true,
+      disableSwapping: true,
+      disableAuto: true,
     }
     const quoteWithBuildTx = await this.api.getBungeeQuoteWithBuildTx(bungeeQuoteRequest)
 

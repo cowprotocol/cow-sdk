@@ -19,7 +19,7 @@ import { getSigner } from 'src/common/utils/wallet'
 import { ethers } from 'ethers'
 import { SOCKET_VERIFIER_ABI } from './abi'
 
-const BUNGEE_API_URL = 'https://public-backend.bungee.exchange/api/v1'
+const BUNGEE_API_URL = 'https://public-backend.bungee.exchange/api/v1/bungee'
 
 export interface BungeeApiOptions {
   apiBaseUrl?: string
@@ -76,9 +76,14 @@ export class BungeeApi {
         throw new Error('Invalid bridge name')
       }
 
+      // check if manualRoutes is empty
+      const { manualRoutes } = response.result
+      if (manualRoutes.length === 0) {
+        throw new Error('No routes found')
+      }
+
       // sort manual routes by output
       // @todo do we give users the option to choose bw time and output and any other factors?
-      const { manualRoutes } = response.result
       const sortedManualRoutes = manualRoutes.sort((a, b) => {
         return Number(b.output.amount) - Number(a.output.amount)
       })
@@ -124,7 +129,7 @@ export class BungeeApi {
    * @returns True if the build tx data is valid, false otherwise
    */
   async verifyBungeeBuildTx(quote: BungeeQuote, buildTx: BungeeBuildTx, signer: SignerLike): Promise<boolean> {
-    const { routeId, encodedFunctionData, functionSelector } = decodeBungeeBridgeTxData(buildTx.txData.data)
+    const { routeId, functionSelector } = decodeBungeeBridgeTxData(buildTx.txData.data)
 
     const expectedSocketRequest: SocketRequest = {
       amount: quote.input.amount,
@@ -135,7 +140,7 @@ export class BungeeApi {
     }
     return this.verifyBungeeBuildTxData(
       quote.originChainId,
-      encodedFunctionData,
+      buildTx.txData.data,
       routeId,
       expectedSocketRequest,
       signer,

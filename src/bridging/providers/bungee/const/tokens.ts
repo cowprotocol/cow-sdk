@@ -1,3 +1,4 @@
+import { ETH_ADDRESS } from 'src/common'
 import { TargetChainId, SupportedChainId, AdditionalTargetChainId } from '../../../../chains/types'
 
 /**
@@ -18,6 +19,7 @@ const BUNGEE_CHAIN_CONFIGS: BungeeChainConfig[] = [
       wbtc: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
       dai: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
       usdt: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+      eth: ETH_ADDRESS.toLowerCase(),
     },
   },
   {
@@ -28,6 +30,7 @@ const BUNGEE_CHAIN_CONFIGS: BungeeChainConfig[] = [
       wbtc: '0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6',
       dai: '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063',
       usdt: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
+      eth: ETH_ADDRESS.toLowerCase(),
     },
   },
   {
@@ -38,6 +41,7 @@ const BUNGEE_CHAIN_CONFIGS: BungeeChainConfig[] = [
       wbtc: '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f',
       dai: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
       usdt: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',
+      eth: ETH_ADDRESS.toLowerCase(),
     },
   },
   {
@@ -46,6 +50,7 @@ const BUNGEE_CHAIN_CONFIGS: BungeeChainConfig[] = [
       usdc: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
       weth: '0x4200000000000000000000000000000000000006',
       dai: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb',
+      eth: ETH_ADDRESS.toLowerCase(),
     },
   },
   {
@@ -56,6 +61,7 @@ const BUNGEE_CHAIN_CONFIGS: BungeeChainConfig[] = [
       wbtc: '0x68f180fcCe6836688e9084f035309E29Bf0A2095',
       dai: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
       usdt: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
+      eth: ETH_ADDRESS.toLowerCase(),
     },
   },
 ]

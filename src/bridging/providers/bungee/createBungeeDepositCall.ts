@@ -1,18 +1,19 @@
 import { WeirollCommandFlags, createWeirollContract, createWeirollDelegateCall } from '../../../weiroll'
 import { Contract as WeirollContract } from '@weiroll/weiroll.js'
 import { Contract as EthersContract } from '@ethersproject/contracts'
-import { EvmCall } from '../../../common'
+import { ETH_ADDRESS, EvmCall } from '../../../common'
 import { CowShedSdk } from '../../../cow-shed'
 import { BungeeQuoteResult } from './BungeeBridgeProvider'
 import { QuoteBridgeRequest } from '../../types'
 import { BUNGEE_COWSWAP_LIB_ABI, ERC20_ABI, SOCKET_GATEWAY_ABI } from './abi'
-import { decodeAmountsBungeeTxData, decodeBungeeBridgeTxData, fetchTokenAllowance, getErc20Contract } from './util'
+import { decodeAmountsBungeeTxData, decodeBungeeBridgeTxData, fetchTokenAllowance } from './util'
 import { TargetChainId } from 'src/chains'
 import { BungeeCowswapLibAddresses } from './const/contracts'
 import { BungeeTxDataBytesIndices } from './const/misc'
 import { BungeeBridge } from './types'
 import { BigNumber, ethers } from 'ethers'
 import { getSigner } from 'src/common/utils/wallet'
+import { factoryGetErc20Decimals } from 'src/bridging/BridgingSdk/getErc20Decimals'
 
 function getSellTokenContract(sellTokenAddress: string): WeirollContract {
   return createWeirollContract(new EthersContract(sellTokenAddress, ERC20_ABI), WeirollCommandFlags.CALL)
@@ -55,20 +56,24 @@ export async function createBungeeDepositCall(params: {
   // check if allowance is sufficient
   let setAllowance = false
   let allowanceToSet = BigNumber.from(0)
-  const signer = getSigner(request.signer)
-  const tokenDecimals = await getErc20Contract(request.sellTokenAddress, signer).decimals()
-  const allowance = await fetchTokenAllowance({
-    chainId: request.sellTokenChainId,
-    tokenAddress: request.sellTokenAddress,
-    ownerAddress: cowShedAccount, // approval should be from cowshed account
-    spenderAddress: buildTx.approvalData.spenderAddress,
-    signer: request.signer,
-  })
-  if (allowance < BigInt(buildTx.approvalData.amount)) {
-    setAllowance = true
-    // TODO test if the rawValue balance bytes can be used for approval
-    // @note using higher allowance for saving gas on subsequent txs
-    allowanceToSet = ethers.utils.parseUnits('1000', tokenDecimals)
+  // check if token is not native token
+  const isNativeToken = request.sellTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase()
+  if (!isNativeToken) {
+    const signer = getSigner(request.signer)
+    const tokenDecimals = await factoryGetErc20Decimals(signer)(request.sellTokenChainId, request.sellTokenAddress)
+    const allowance = await fetchTokenAllowance({
+      chainId: request.sellTokenChainId,
+      tokenAddress: request.sellTokenAddress,
+      ownerAddress: cowShedAccount, // approval should be from cowshed account
+      spenderAddress: buildTx.approvalData.spenderAddress,
+      signer: request.signer,
+    })
+    if (allowance < BigInt(buildTx.approvalData.amount)) {
+      setAllowance = true
+      // TODO test if the rawValue balance bytes can be used for approval
+      // @note using higher allowance for saving gas on subsequent txs
+      allowanceToSet = ethers.utils.parseUnits('1000', tokenDecimals)
+    }
   }
 
   const bridgeDepositCall = createWeirollDelegateCall((planner) => {

@@ -9,6 +9,8 @@ export interface BungeeQuoteAPIRequest {
   receiverAddress: string
   outputToken: string
   enableManual: true
+  disableSwapping: true
+  disableAuto: true
   includeBridges?: SupportedBridge[]
 }
 

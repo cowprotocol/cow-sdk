@@ -146,7 +146,7 @@ export function applyBps(amount: bigint, bps: number): bigint {
 }
 
 /**
- * Converts an object to URLSearchParams, handling arrays by creating multiple parameters
+ * Converts an object to URLSearchParams, handling arrays by joining values with commas
  * @param params Object to convert to URLSearchParams
  * @returns URLSearchParams instance
  *
@@ -156,18 +156,14 @@ export function applyBps(amount: bigint, bps: number): bigint {
  *   includeBridges: ['across', 'cctp']
  * }
  * const searchParams = objectToSearchParams(params)
- * Results in: ?userAddress=0x123&includeBridges=across&includeBridges=cctp
+ * Results in: ?userAddress=0x123&includeBridges=across,cctp
  */
-export function objectToSearchParams(params: {
-  [key: string]: string | number | boolean | (string | number | boolean)[]
-}): URLSearchParams {
+export function objectToSearchParams(params: object): URLSearchParams {
   const searchParams = new URLSearchParams()
 
   Object.entries(params).forEach(([key, value]) => {
     if (Array.isArray(value)) {
-      value.forEach((item) => {
-        searchParams.append(key, String(item))
-      })
+      searchParams.append(key, value.join(','))
     } else {
       searchParams.append(key, String(value))
     }
