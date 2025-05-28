@@ -1,5 +1,5 @@
 import { log } from '../common/utils/log'
-import { DEFAULT_QUOTE_VALIDITY, DEFAULT_SLIPPAGE_BPS } from './consts'
+import { DEFAULT_QUOTE_VALIDITY } from './consts'
 import {
   AppDataInfo,
   BuildAppDataParams,
@@ -28,7 +28,9 @@ import { getOrderToSign } from './getOrderToSign'
 import { getOrderTypedData } from './getOrderTypedData'
 import { suggestSlippageBps } from './suggestSlippageBps'
 import { getPartnerFeeBps } from './utils/getPartnerFeeBps'
-import { adjustEthFlowOrderParams, getIsEthFlowOrder, swapParamsToLimitOrderParams } from './utils/misc'
+import { getIsEthFlowOrder, swapParamsToLimitOrderParams } from './utils/misc'
+import { WRAPPED_NATIVE_CURRENCIES } from 'src/common'
+import { getDefaultSlippageBps } from './utils/slippage'
 
 // ETH-FLOW orders require different quote params
 // check the isEthFlow flag and set in quote req obj
@@ -46,6 +48,7 @@ export type QuoteResultsWithSigner = {
 }
 
 interface GetQuoteRawResult {
+  isEthFlow: boolean
   quote: OrderQuoteResponse
   appDataInfo: AppDataInfo
   orderBookApi: OrderBookApi
@@ -66,7 +69,7 @@ export async function getQuoteRaw(
   const tradeParameters = isEthFlow
     ? {
         ..._tradeParameters,
-        ...adjustEthFlowOrderParams(chainId, _tradeParameters),
+        sellToken: WRAPPED_NATIVE_CURRENCIES[chainId].address,
       }
     : _tradeParameters
 
@@ -95,7 +98,8 @@ export async function getQuoteRaw(
   log('Building app data...')
 
   // If slippageBps is undefined, we use the default slippage
-  const slippageBpsOrDefault = slippageBps ?? DEFAULT_SLIPPAGE_BPS
+  const defaultSlippageBps = getDefaultSlippageBps(chainId, _tradeParameters.sellToken)
+  const slippageBpsOrDefault = slippageBps ?? defaultSlippageBps
 
   const buildAppDataParams: BuildAppDataParams = {
     slippageBps: slippageBpsOrDefault,
@@ -130,15 +134,21 @@ export async function getQuoteRaw(
   const quote = await orderBookApi.getQuote(quoteRequest)
 
   // Get the suggested slippage based on the quote
-  const suggestedSlippageBps = suggestSlippageBps({ quote, tradeParameters, trader, advancedSettings })
+  const suggestedSlippageBps = suggestSlippageBps({
+    isEthFlow,
+    quote,
+    tradeParameters,
+    trader,
+    advancedSettings,
+  })
 
   // If no slippage is specified. AUTO slippage is used
   if (slippageBps === undefined) {
     // If suggested slippage is greater than default, we use the suggested slippage
-    if (suggestedSlippageBps > DEFAULT_SLIPPAGE_BPS) {
+    if (suggestedSlippageBps > defaultSlippageBps) {
       // Recursive call, this time using the suggested slippage
       log(
-        `Suggested slippage is greater than ${DEFAULT_SLIPPAGE_BPS} BPS (default), using the suggested slippage (${suggestedSlippageBps} BPS)`,
+        `Suggested slippage is greater than ${defaultSlippageBps} BPS (default), using the suggested slippage (${suggestedSlippageBps} BPS)`,
       )
 
       const newAppDataInfo = await buildAppData(
@@ -153,6 +163,7 @@ export async function getQuoteRaw(
       )
 
       return {
+        isEthFlow,
         slippageBps: suggestedSlippageBps,
         suggestedSlippageBps,
         tradeParameters: { ..._tradeParameters, slippageBps: suggestedSlippageBps },
@@ -164,12 +175,13 @@ export async function getQuoteRaw(
       }
     } else {
       log(
-        `Suggested slippage is only ${suggestedSlippageBps} BPS. Using the default slippage (${DEFAULT_SLIPPAGE_BPS} BPS)`,
+        `Suggested slippage is only ${suggestedSlippageBps} BPS. Using the default slippage (${defaultSlippageBps} BPS)`,
       )
     }
   }
 
   return {
+    isEthFlow,
     quote,
     appDataInfo,
     orderBookApi,
@@ -185,12 +197,9 @@ export async function getQuote(
   advancedSettings?: SwapAdvancedSettings,
   _orderBookApi?: OrderBookApi,
 ): Promise<{ result: QuoteResults; orderBookApi: OrderBookApi }> {
-  const { quote, orderBookApi, tradeParameters, slippageBps, suggestedSlippageBps, appDataInfo } = await getQuoteRaw(
-    _tradeParameters,
-    trader,
-    advancedSettings,
-    _orderBookApi,
-  )
+  const { quote, orderBookApi, tradeParameters, slippageBps, suggestedSlippageBps, appDataInfo, isEthFlow } =
+    await getQuoteRaw(_tradeParameters, trader, advancedSettings, _orderBookApi)
+
   const { partnerFee, sellTokenDecimals, buyTokenDecimals } = tradeParameters
   const { chainId, account: from } = trader
 
@@ -203,7 +212,7 @@ export async function getQuote(
   })
 
   const orderToSign = getOrderToSign(
-    { from, networkCostsAmount: quote.quote.feeAmount },
+    { chainId, from, networkCostsAmount: quote.quote.feeAmount, isEthFlow },
     swapParamsToLimitOrderParams(tradeParameters, quote),
     appDataInfo.appDataKeccak256,
   )
