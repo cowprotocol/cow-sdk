@@ -128,6 +128,10 @@ export class EthersV5Utils implements AdapterUtils {
     return ethers.utils.solidityKeccak256(types, values)
   }
 
+  hashDomain(domain: TypedDataDomain): string {
+    return ethers.utils._TypedDataEncoder.hashDomain(domain)
+  }
+
   async grantRequiredRoles(
     authorizerAddress: string,
     authorizerAbi: Abi,
