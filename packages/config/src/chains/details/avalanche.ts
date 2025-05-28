@@ -1,6 +1,6 @@
-import { nativeCurrencyTemplate } from '../../common/consts/tokens'
+import { nativeCurrencyTemplate } from '../../constants/tokens'
 import { ChainInfo, SupportedChainId } from '../types'
-import { RAW_CHAINS_FILES_PATH } from '../const/path'
+import { RAW_CHAINS_FILES_PATH } from '../../constants/paths'
 
 // TODO: this is the AVAX token logo, we should add Avalanche symbol logo as well
 const avaxLogo = `${RAW_CHAINS_FILES_PATH}/images/avax-logo.svg`

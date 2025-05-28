@@ -1,6 +1,6 @@
 import { ChainInfo, SupportedChainId } from '../types'
-import { nativeCurrencyTemplate } from '../../common/consts/tokens'
-import { RAW_CHAINS_FILES_PATH } from '../const/path'
+import { nativeCurrencyTemplate } from '../../constants/tokens'
+import { RAW_CHAINS_FILES_PATH } from '../../constants/paths'
 
 const arbitrumOneLogoLight = `${RAW_CHAINS_FILES_PATH}/images/arbitrum-logo-light.svg`
 const arbitrumOneLogoDark = `${RAW_CHAINS_FILES_PATH}/images/arbitrum-logo-dark.svg`

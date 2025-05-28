@@ -1,6 +1,6 @@
 import { BackoffOptions } from 'exponential-backoff'
-import { RateLimiterOpts } from 'limiter/dist/esm'
-import { SupportedChainId } from '../../chains/types'
+import { RateLimiterOpts } from 'limiter'
+import { SupportedChainId } from '../chains'
 
 /**
  * IPFS configuration.
@@ -73,4 +73,17 @@ export interface ApiContext {
   baseUrls?: ApiBaseUrls
   limiterOpts?: RateLimiterOpts
   backoffOpts?: BackoffOptions
+}
+
+/**
+ * The list of available environments.
+ */
+export const ENVS_LIST: CowEnv[] = ['prod', 'staging']
+
+/**
+ * The default CoW Protocol API context.
+ */
+export const DEFAULT_COW_API_CONTEXT: ApiContext = {
+  env: 'prod',
+  chainId: SupportedChainId.MAINNET,
 }
