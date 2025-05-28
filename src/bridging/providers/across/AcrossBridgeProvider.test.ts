@@ -190,7 +190,7 @@ describe('AcrossBridgeProvider', () => {
     } as unknown as JsonRpcProvider
 
     it('should return null if the transaction receipt has no deposit events', async () => {
-      expect(await provider.getBridgingId(10, mockProvider, '123', '123')).toBe(null)
+      expect(await provider.getBridgingParams(10, mockProvider, '123', '123')).toBe(null)
     })
   })
 

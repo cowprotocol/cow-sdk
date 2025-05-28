@@ -1,12 +1,11 @@
 import { BridgeProvider, BridgeQuoteResult, CrossChainOrder } from '../types'
 
-import { getPostHooks } from '../utils'
-import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from '../providers/across/const/misc'
 import { CowEnv } from '../../common'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { BridgeOrderParsingError } from '../errors'
 import { SupportedChainId } from '../../chains'
 import { OrderBookApi } from '../../order-book'
+import { findBridgeProviderFromHook } from './findBridgeProviderFromHook'
 
 interface GetCrossChainOrderParams {
   chainId: SupportedChainId
@@ -26,24 +25,11 @@ export async function getCrossChainOrder(params: GetCrossChainOrderParams): Prom
   const chainContext = { chainId, env }
   const order = await orderBookApi.getOrder(orderId, chainContext)
 
-  const postHooks = getPostHooks(order.fullAppData ?? undefined)
-
-  // Assuming we only have one bridging hook
-  const bridgingHook = postHooks.find((hook) => {
-    return hook.dappId?.startsWith(HOOK_DAPP_BRIDGE_PROVIDER_PREFIX)
-  })
-
-  if (!bridgingHook) {
-    throw new BridgeOrderParsingError(`Order ${orderId} is not a cross-chain order`)
-  }
-  // Bridge provider would be the last part of the dappId
-  const bridgeProviderName = bridgingHook.dappId
-
   // Find the provider by name (note that I could just have use this.provider, but just wanted to leave it ready in case we implement multiple providers)
-  const provider = providers.find((provider) => provider.info.dappId === bridgeProviderName)
+  const provider = order.fullAppData && findBridgeProviderFromHook(order.fullAppData, providers)
   if (!provider) {
     throw new BridgeOrderParsingError(
-      `Unknown Bridge provider: ${bridgeProviderName}. Add provider to the SDK config to be able to decode the order`,
+      `Unknown Bridge provider in order ${order.uid}. Add provider to the SDK config to be able to decode the order`,
     )
   }
 
@@ -65,20 +51,20 @@ export async function getCrossChainOrder(params: GetCrossChainOrderParams): Prom
     }
 
     // Get bridging id for this order
-    const bridgingId = await provider.getBridgingId(chainId, rpcProvider, orderId, tradeTxHash)
+    const bridgingParams = await provider.getBridgingParams(chainId, rpcProvider, orderId, tradeTxHash)
 
-    if (!bridgingId) {
-      throw new BridgeOrderParsingError(`Bridging id cannot be derived from transaction: ${tradeTxHash}`)
+    if (!bridgingParams) {
+      throw new BridgeOrderParsingError(`Bridging params cannot be derived from transaction: ${tradeTxHash}`)
     }
 
-    const { status, fillTimeInSeconds } = await provider.getStatus(bridgingId, chainId)
-    const explorerUrl = provider.getExplorerUrl(bridgingId)
+    const { status, fillTimeInSeconds } = await provider.getStatus(bridgingParams.bridgingId, chainId)
+    const explorerUrl = provider.getExplorerUrl(bridgingParams.bridgingId)
 
     return {
       chainId,
       order,
       status,
-      bridgingId,
+      bridgingParams,
       tradeTxHash,
       explorerUrl,
       fillTimeInSeconds,

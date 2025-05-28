@@ -12,6 +12,7 @@ import { ACROSS_TOKEN_MAPPING, AcrossChainConfig } from './const/tokens'
 import { ACROSS_DEPOSIT_EVENT_TOPIC, COW_TRADE_EVENT_TOPIC } from './const/misc'
 import { ACROSS_SPOOK_CONTRACT_ADDRESSES } from './const/contracts'
 import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS } from '../../../common'
+import { defaultAbiCoder } from 'ethers/lib/utils'
 
 const PCT_100_PERCENT = 10n ** 18n
 
@@ -120,6 +121,10 @@ function toAmountsAndCosts(
   }
 }
 
+function bytes32ToAddress(address: string): string {
+  return defaultAbiCoder.decode(['address'], address).toString()
+}
+
 /**
  * Assert that a percentage is valid.
  */
@@ -207,8 +212,8 @@ export function getAcrossDepositEvents(chainId: SupportedChainId, logs: Log[]): 
       message,
     } = ACROSS_DEPOSIT_EVENT_INTERFACE.parseLog(event).args as unknown as AcrossDepositEvent
     return {
-      inputToken,
-      outputToken,
+      inputToken: bytes32ToAddress(inputToken),
+      outputToken: bytes32ToAddress(outputToken),
       inputAmount,
       outputAmount,
       destinationChainId,
@@ -216,8 +221,8 @@ export function getAcrossDepositEvents(chainId: SupportedChainId, logs: Log[]): 
       quoteTimestamp,
       fillDeadline,
       exclusivityDeadline,
-      depositor,
-      recipient,
+      depositor: bytes32ToAddress(depositor),
+      recipient: bytes32ToAddress(recipient),
       exclusiveRelayer,
       message,
     }

@@ -14,6 +14,7 @@ import { getQuoteWithBridge } from './getQuoteWithBridge'
 import { getCrossChainOrder } from './getCrossChainOrder'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { OrderBookApi } from '../../order-book'
+import { findBridgeProviderFromHook } from './findBridgeProviderFromHook'
 
 export interface BridgingSdkOptions {
   /**
@@ -186,5 +187,9 @@ export class BridgingSdk {
 
   async getOrderBridgingStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult> {
     return this.provider.getStatus(bridgingId, originChainId)
+  }
+
+  getProviderFromAppData(fullAppData: string): BridgeProvider<BridgeQuoteResult> | undefined {
+    return findBridgeProviderFromHook(fullAppData, this.getProviders())
   }
 }

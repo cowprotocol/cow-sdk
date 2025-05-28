@@ -219,7 +219,12 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    * @param orderUid - The unique identifier of the order
    * @param txHash - The hash of the settlement transaction in which the bridging post-hook was executed
    */
-  getBridgingId(chainId: ChainId, provider: JsonRpcProvider, orderUid: string, txHash: string): Promise<string | null>
+  getBridgingParams(
+    chainId: ChainId,
+    provider: JsonRpcProvider,
+    orderUid: string,
+    txHash: string,
+  ): Promise<BridgingDepositParams | null>
 
   /**
    * Get the explorer url for a bridging id.
@@ -348,11 +353,25 @@ export interface BridgeQuoteResults extends BridgeQuoteResult {
   bridgeCallDetails: BridgeCallDetails
 }
 
+export interface BridgingDepositParams {
+  inputTokenAddress: Address
+  outputTokenAddress: Address
+  inputAmount: bigint
+  outputAmount: bigint
+  owner: Address
+  quoteTimestamp: number
+  fillDeadline: number
+  recipient: Address
+  sourceChainId: number
+  destinationChainId: number
+  bridgingId: string
+}
+
 export interface CrossChainOrder {
   chainId: SupportedChainId
   order: EnrichedOrder
   status: BridgeStatus
-  bridgingId: string
+  bridgingParams: BridgingDepositParams
   tradeTxHash: string
   explorerUrl?: string
   fillTimeInSeconds?: number

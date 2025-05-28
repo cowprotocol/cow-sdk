@@ -8,10 +8,15 @@ import {
   BridgeProviderInfo,
   BridgeQuoteResult,
   BridgeStatusResult,
+  BridgingDepositParams,
   QuoteBridgeRequest,
 } from '../../types'
 
-import { DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION, RAW_PROVIDERS_FILES_PATH } from '../../const'
+import {
+  DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION,
+  HOOK_DAPP_BRIDGE_PROVIDER_PREFIX,
+  RAW_PROVIDERS_FILES_PATH,
+} from '../../const'
 
 import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
 
@@ -27,9 +32,8 @@ import { mapAcrossStatusToBridgeStatus, toBridgeQuoteResult } from './util'
 import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
 import { createAcrossDepositCall } from './createAcrossDepositCall'
 import { OrderKind } from '@cowprotocol/contracts'
-import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
 import { SuggestedFeesResponse } from './types'
-import { getDepositId } from './getDepositId'
+import { getDepositParams } from './getDepositParams'
 import { JsonRpcProvider } from '@ethersproject/providers'
 
 type SupportedTokensState = Record<ChainId, Record<string, TokenInfo>>
@@ -171,15 +175,15 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     throw new Error('Not implemented')
   }
 
-  async getBridgingId(
+  async getBridgingParams(
     chainId: ChainId,
     provider: JsonRpcProvider,
     orderUid: string,
     txHash: string,
-  ): Promise<string | null> {
+  ): Promise<BridgingDepositParams | null> {
     const txReceipt = await provider.getTransactionReceipt(txHash)
 
-    return getDepositId(chainId, orderUid, txReceipt)
+    return getDepositParams(chainId, orderUid, txReceipt)
   }
 
   getExplorerUrl(bridgingId: string): string {
