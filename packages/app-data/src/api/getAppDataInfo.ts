@@ -1,3 +1,4 @@
+import { getGlobalAdapter } from '@cowprotocol/sdk-common'
 import { MetaDataError } from '../consts'
 import { AnyAppDataDocVersion } from '../generatedTypes'
 import { AppDataInfo } from '../types'
@@ -66,21 +67,21 @@ export async function getAppDataInfoLegacy(fullAppData: string): Promise<AppData
  * @returns
  */
 export async function getAppDataInfoLegacy(
-  appDataAux: AnyAppDataDocVersion | string
+  appDataAux: AnyAppDataDocVersion | string,
 ): Promise<AppDataInfo | undefined> {
-  // For the legacy-mode we use plain JSON.stringify to mantain backwards compatibility, however this is not a good idea to do since JSON.stringify. Better specify the doc as a fullAppData string or use stringifyDeterministic
+  // For the legacy-mode we use plain JSON.stringify to maintain backwards compatibility, however this is not a good idea to do since JSON.stringify. Better specify the doc as a fullAppData string or use stringifyDeterministic
   const fullAppData = JSON.stringify(appDataAux)
   return _appDataToCidAux(fullAppData, _appDataToCidLegacy)
 }
 
 export async function _appDataToCidAux(
   appDataAux: AnyAppDataDocVersion | string,
-  deriveCid: (fullAppData: string) => Promise<string>
+  deriveCid: (fullAppData: string) => Promise<string>,
 ): Promise<AppDataInfo> {
   const [appDataDoc, fullAppData] =
     typeof appDataAux === 'string'
       ? [JSON.parse(appDataAux), appDataAux]
-      : [appDataAux, await stringifyDeterministic(appDataAux)]
+      : [appDataAux, await stringifyDeterministic(appDataAux as Record<string, unknown>)]
 
   const validation = await validateAppDataDoc(appDataDoc)
 
@@ -105,21 +106,25 @@ export async function _appDataToCidAux(
 }
 
 /**
- *  Derive the IPFS CID v0 from the full appData JSON content
+ * Derive the IPFS CID v0 from the full appData JSON content
  *
- * @param fullAppData string with the full AppData in JSON format. It is a string to make the hashing deterministic (do not rely on stringification of objects)
+ * @param fullAppDataJson string with the full AppData in JSON format. It is a string to make the hashing deterministic (do not rely on stringification of objects)
  * @returns the IPFS CID v0 of the content
  */
 async function _appDataToCid(fullAppDataJson: string): Promise<string> {
-  const module = await import('ethers/lib/utils')
-  const { keccak256, toUtf8Bytes } = module.default || module
-
-  const appDataHex = await keccak256(toUtf8Bytes(fullAppDataJson))
+  const adapter = getGlobalAdapter()
+  const appDataHex = adapter.utils.keccak256(adapter.utils.toUtf8Bytes(fullAppDataJson))
   return appDataHexToCid(appDataHex)
 }
 
+/**
+ * Derive CID using legacy method
+ *
+ * @param doc App data document or JSON string
+ * @returns IPFS CID
+ */
 export async function _appDataToCidLegacy(doc: AnyAppDataDocVersion | string): Promise<string> {
-  const fullAppData = typeof doc === 'string' ? doc : stringifyDeterministic(doc)
+  const fullAppData = typeof doc === 'string' ? doc : await stringifyDeterministic(doc as Record<string, unknown>)
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
