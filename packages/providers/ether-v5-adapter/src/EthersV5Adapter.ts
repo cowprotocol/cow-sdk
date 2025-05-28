@@ -1,10 +1,10 @@
-import { BigNumberish, BytesLike, ethers } from 'ethers'
-import type { TypedDataDomain, TypedDataField, TypedDataSigner } from '@ethersproject/abstract-signer'
+import { BytesLike, ethers } from 'ethers'
+import type { TypedDataSigner } from '@ethersproject/abstract-signer'
 import { AbstractProviderAdapter, AdapterTypes } from '@cowprotocol/sdk-common'
 import { EthersV5Utils } from './EthersV5Utils'
 
-type Abi = ConstructorParameters<typeof ethers.utils.Interface>[0]
-type Interface = ethers.utils.Interface
+// type Abi = ConstructorParameters<typeof ethers.utils.Interface>[0]
+// type Interface = ethers.utils.Interface
 
 export interface EthersV5Types extends AdapterTypes {
   Bytes: BytesLike

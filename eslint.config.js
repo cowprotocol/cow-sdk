@@ -50,11 +50,5 @@ export default [
   },
   {
     files: ['**/*.test.ts', '**/*.spec.ts', '**/__mock__/**/*.ts'],
-    languageOptions: {
-      parser: tseslint.parser,
-      parserOptions: {
-        project: './tsconfig.test.json',
-      },
-    },
   },
 ]
