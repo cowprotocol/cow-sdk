@@ -1,9 +1,10 @@
-import { utils } from "ethers";
+import { getGlobalAdapter, type Abi, type Address } from '@cowprotocol/sdk-common'
 
 /**
  * The salt used when deterministically deploying smart contracts.
+ * SALT = ethers.utils.formatBytes32String("Mattresses in Berlin!");
  */
-export const SALT = utils.formatBytes32String("Mattresses in Berlin!");
+export const SALT = '0x4d61747472657373657320696e204265726c696e210000000000000000000000'
 
 /**
  * The contract used to deploy contracts deterministically with CREATE2.
@@ -12,59 +13,52 @@ export const SALT = utils.formatBytes32String("Mattresses in Berlin!");
  *
  * https://github.com/Arachnid/deterministic-deployment-proxy
  */
-export const DEPLOYER_CONTRACT = "0x4e59b44847b379578588920ca78fbf26c0b4956c";
+export const DEPLOYER_CONTRACT = '0x4e59b44847b379578588920ca78fbf26c0b4956c'
 
 /**
  * Dictionary containing all deployed contract names.
  */
 export const CONTRACT_NAMES = {
-  authenticator: "GPv2AllowListAuthentication",
-  settlement: "GPv2Settlement",
-  tradeSimulator: "GPv2TradeSimulator",
-} as const;
+  authenticator: 'GPv2AllowListAuthentication',
+  settlement: 'GPv2Settlement',
+  tradeSimulator: 'GPv2TradeSimulator',
+} as const
 
 /**
  * The name of a deployed contract.
  */
-export type ContractName = (typeof CONTRACT_NAMES)[keyof typeof CONTRACT_NAMES];
+export type ContractName = (typeof CONTRACT_NAMES)[keyof typeof CONTRACT_NAMES]
 
 /**
  * The deployment args for a contract.
  */
-export type DeploymentArguments<T> =
-  T extends typeof CONTRACT_NAMES.authenticator
-    ? never
-    : T extends typeof CONTRACT_NAMES.settlement
+export type DeploymentArguments<T> = T extends typeof CONTRACT_NAMES.authenticator
+  ? never
+  : T extends typeof CONTRACT_NAMES.settlement
     ? [string, string]
     : T extends typeof CONTRACT_NAMES.tradeSimulator
-    ? []
-    : unknown[];
-
-/**
- * Allowed ABI definition types by Ethers.js.
- */
-export type Abi = ConstructorParameters<typeof utils.Interface>[0];
+      ? []
+      : unknown[]
 
 /**
  * Artifact information important for computing deterministic deployments.
  */
 export interface ArtifactDeployment {
-  abi: Abi;
-  bytecode: string;
+  abi: Abi
+  bytecode: string
 }
 
 /**
  * An artifact with a contract name matching one of the deterministically
  * deployed contracts.
  */
-export interface NamedArtifactDeployment<C extends ContractName>
-  extends ArtifactDeployment {
-  contractName: C;
+export interface NamedArtifactDeployment<C extends ContractName> extends ArtifactDeployment {
+  contractName: C
 }
 
-type MaybeNamedArtifactArtifactDeployment<C> = C extends ContractName
+export type MaybeNamedArtifactArtifactDeployment<C> = C extends ContractName
   ? NamedArtifactDeployment<C>
-  : ArtifactDeployment;
+  : ArtifactDeployment
 
 /**
  * Computes the deterministic address at which the contract will be deployed.
@@ -75,18 +69,12 @@ type MaybeNamedArtifactArtifactDeployment<C> = C extends ContractName
  * @returns The address that is expected to store the deployed code.
  */
 export function deterministicDeploymentAddress<C>(
-  { abi, bytecode }: MaybeNamedArtifactArtifactDeployment<C>,
+  { bytecode }: MaybeNamedArtifactArtifactDeployment<C>,
   deploymentArguments: DeploymentArguments<C>,
-): string {
-  const contractInterface = new utils.Interface(abi);
-  const deployData = utils.hexConcat([
-    bytecode,
-    contractInterface.encodeDeploy(deploymentArguments),
-  ]);
+): Address {
+  const adapter = getGlobalAdapter()
 
-  return utils.getCreate2Address(
-    DEPLOYER_CONTRACT,
-    SALT,
-    utils.keccak256(deployData),
-  );
+  const bytecodeHash = adapter.utils.keccak256(adapter.utils.hexConcat([bytecode, ...deploymentArguments]))
+
+  return adapter.utils.getCreate2Address(DEPLOYER_CONTRACT, SALT, bytecodeHash)
 }

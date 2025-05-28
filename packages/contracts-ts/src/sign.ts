@@ -1,83 +1,19 @@
-import { BytesLike, ethers, Signer } from "ethers";
-
-import {
-  ORDER_TYPE_FIELDS,
-  CANCELLATIONS_TYPE_FIELDS,
-  Order,
-  normalizeOrder,
-  hashTypedData,
-} from "./order";
-import {
-  TypedDataTypes,
-  SignatureLike,
-  isTypedDataSigner,
-  TypedDataDomain,
-} from "./types/ethers";
+import { Bytes, getGlobalAdapter, Signer, TypedDataDomain, TypedDataTypes } from '@cowprotocol/sdk-common'
+import { CANCELLATIONS_TYPE_FIELDS, ORDER_TYPE_FIELDS, normalizeOrder } from './order'
+import { EcdsaSigningScheme, SigningScheme, Order, EcdsaSignature } from './types'
 
 /**
  * Value returned by a call to `isValidSignature` if the signature was verified
  * successfully. The value is defined in the EIP-1271 standard as:
  * bytes4(keccak256("isValidSignature(bytes32,bytes)"))
  */
-export const EIP1271_MAGICVALUE = ethers.utils.hexDataSlice(
-  ethers.utils.id("isValidSignature(bytes32,bytes)"),
-  0,
-  4,
-);
+export const EIP1271_MAGICVALUE = '0x1626ba7e'
 
 /**
  * Marker value indicating a presignature is set.
+ * const PRE_SIGNED = ethersV5.utils.id("GPv2Signing.Scheme.PreSign");
  */
-export const PRE_SIGNED = ethers.utils.id("GPv2Signing.Scheme.PreSign");
-
-/**
- * The signing scheme used to sign the order.
- */
-export enum SigningScheme {
-  /**
-   * The EIP-712 typed data signing scheme. This is the preferred scheme as it
-   * provides more infomation to wallets performing the signature on the data
-   * being signed.
-   *
-   * <https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md#definition-of-domainseparator>
-   */
-  EIP712 = 0b00,
-  /**
-   * Message signed using eth_sign RPC call.
-   */
-  ETHSIGN = 0b01,
-  /**
-   * Smart contract signatures as defined in EIP-1271.
-   *
-   * <https://eips.ethereum.org/EIPS/eip-1271>
-   */
-  EIP1271 = 0b10,
-  /**
-   * Pre-signed order.
-   */
-  PRESIGN = 0b11,
-}
-
-export type EcdsaSigningScheme = SigningScheme.EIP712 | SigningScheme.ETHSIGN;
-
-/**
- * The signature of an order.
- */
-export type Signature = EcdsaSignature | Eip1271Signature | PreSignSignature;
-
-/**
- * ECDSA signature of an order.
- */
-export interface EcdsaSignature {
-  /**
-   * The signing scheme used in the signature.
-   */
-  scheme: EcdsaSigningScheme;
-  /**
-   * The ECDSA signature.
-   */
-  data: SignatureLike;
-}
+export const PRE_SIGNED = '0xf59c009283ff87aa78203fc4d9c2df025ee851130fb69cc3e068941f6b5e2d6f'
 
 /**
  * EIP-1271 signature data.
@@ -86,11 +22,11 @@ export interface Eip1271SignatureData {
   /**
    * The verifying contract address.
    */
-  verifier: string;
+  verifier: string
   /**
    * The arbitrary signature data used for verification.
    */
-  signature: BytesLike;
+  signature: Bytes
 }
 
 /**
@@ -100,11 +36,11 @@ export interface Eip1271Signature {
   /**
    * The signing scheme used in the signature.
    */
-  scheme: SigningScheme.EIP1271;
+  scheme: SigningScheme.EIP1271
   /**
    * The signature data.
    */
-  data: Eip1271SignatureData;
+  data: Eip1271SignatureData
 }
 
 /**
@@ -114,11 +50,11 @@ export interface PreSignSignature {
   /**
    * The signing scheme used in the signature.
    */
-  scheme: SigningScheme.PRESIGN;
+  scheme: SigningScheme.PRESIGN
   /**
    * The address of the signer.
    */
-  data: string;
+  data: string
 }
 
 async function ecdsaSignTypedData(
@@ -128,28 +64,25 @@ async function ecdsaSignTypedData(
   types: TypedDataTypes,
   data: Record<string, unknown>,
 ): Promise<string> {
-  let signature: string | null = null;
+  let signature: string | null = null
+  const adapter = getGlobalAdapter()
+  const signer = new adapter.Signer(owner)
 
   switch (scheme) {
     case SigningScheme.EIP712:
-      if (!isTypedDataSigner(owner)) {
-        throw new Error("signer does not support signing typed data");
-      }
-      signature = await owner._signTypedData(domain, types, data);
-      break;
+      signature = await signer.signTypedData(domain, types, data)
+      break
     case SigningScheme.ETHSIGN:
-      signature = await owner.signMessage(
-        ethers.utils.arrayify(hashTypedData(domain, types, data)),
-      );
-      break;
+      signature = await signer.signMessage(adapter.utils.arrayify(adapter.utils.hashTypedData(domain, types, data)))
+      break
     default:
-      throw new Error("invalid signing scheme");
+      throw new Error('invalid signing scheme')
   }
 
   // Passing the signature through split/join to normalize the `v` byte.
   // Some wallets do not pad it with `27`, which causes a signature failure
   // `splitSignature` pads it if needed, and `joinSignature` simply puts it back together
-  return ethers.utils.joinSignature(ethers.utils.splitSignature(signature));
+  return adapter.utils.joinSignature(adapter.utils.splitSignature(signature))
 }
 
 /**
@@ -174,14 +107,38 @@ export async function signOrder(
 ): Promise<EcdsaSignature> {
   return {
     scheme,
-    data: await ecdsaSignTypedData(
-      scheme,
-      owner,
-      domain,
-      { Order: ORDER_TYPE_FIELDS },
-      normalizeOrder(order),
-    ),
-  };
+    data: await ecdsaSignTypedData(scheme, owner, domain, { Order: ORDER_TYPE_FIELDS }, normalizeOrder(order)),
+  }
+}
+
+/**
+ * Encodes the necessary data required for the Gnosis Protocol contracts to
+ * verify an EIP-1271 signature.
+ *
+ * @param signature The EIP-1271 signature data to encode.
+ */
+export function encodeEip1271SignatureData({ verifier, signature }: Eip1271SignatureData): string {
+  const adapter = getGlobalAdapter()
+  return adapter.utils.solidityPack(['address', 'bytes'], [adapter.utils.getChecksumAddress(verifier), signature])
+}
+
+/**
+ * Decodes a GPv2 EIP-1271-type signature into the actual EIP-1271 signature
+ * and the verifier contract.
+ *
+ * @param signature The EIP-1271 signature data to decode.
+ * @returns decodedSignature The decoded signature object, composed of an
+ * EIP-1271 signature and a verifier.
+ */
+export function decodeEip1271SignatureData(signature: Bytes): Eip1271SignatureData {
+  const adapter = getGlobalAdapter()
+  //@ts-expect-error: bytes type is unknown
+  const arrayifiedSignature = adapter.utils.arrayify(signature)
+  const verifier = adapter.utils.getChecksumAddress(adapter.utils.hexlify(arrayifiedSignature.slice(0, 20)))
+  return {
+    verifier,
+    signature: adapter.utils.hexlify(arrayifiedSignature.slice(20)),
+  }
 }
 
 /**
@@ -197,11 +154,11 @@ export async function signOrder(
  */
 export async function signOrderCancellation(
   domain: TypedDataDomain,
-  orderUid: BytesLike,
+  orderUid: Bytes,
   owner: Signer,
   scheme: EcdsaSigningScheme,
 ): Promise<EcdsaSignature> {
-  return signOrderCancellations(domain, [orderUid], owner, scheme);
+  return signOrderCancellations(domain, [orderUid], owner, scheme)
 }
 
 /**
@@ -217,7 +174,7 @@ export async function signOrderCancellation(
  */
 export async function signOrderCancellations(
   domain: TypedDataDomain,
-  orderUids: BytesLike[],
+  orderUids: Bytes[],
   owner: Signer,
   scheme: EcdsaSigningScheme,
 ): Promise<EcdsaSignature> {
@@ -230,39 +187,5 @@ export async function signOrderCancellations(
       { OrderCancellations: CANCELLATIONS_TYPE_FIELDS },
       { orderUids },
     ),
-  };
-}
-
-/**
- * Encodes the necessary data required for the Gnosis Protocol contracts to
- * verify an EIP-1271 signature.
- *
- * @param signature The EIP-1271 signature data to encode.
- */
-export function encodeEip1271SignatureData({
-  verifier,
-  signature,
-}: Eip1271SignatureData): string {
-  return ethers.utils.solidityPack(["address", "bytes"], [verifier, signature]);
-}
-
-/**
- * Decodes a GPv2 EIP-1271-type signature into the actual EIP-1271 signature
- * and the verifier contract.
- *
- * @param signature The EIP-1271 signature data to decode.
- * @returns decodedSignature The decoded signature object, composed of an
- * EIP-1271 signature and a verifier.
- */
-export function decodeEip1271SignatureData(
-  signature: BytesLike,
-): Eip1271SignatureData {
-  const arrayifiedSignature = ethers.utils.arrayify(signature);
-  const verifier = ethers.utils.getAddress(
-    ethers.utils.hexlify(arrayifiedSignature.slice(0, 20)),
-  );
-  return {
-    verifier,
-    signature: arrayifiedSignature.slice(20),
-  };
+  }
 }

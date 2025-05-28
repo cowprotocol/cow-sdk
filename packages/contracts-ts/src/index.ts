@@ -1,33 +1,28 @@
-import { TypedDataDomain } from "./types/ethers";
-
 /**
- * Return the Gnosis Protocol v2 domain used for signing.
- * @param chainId The EIP-155 chain ID.
- * @param verifyingContract The address of the contract that will verify the
- * signature.
- * @return An EIP-712 compatible typed domain data.
+ * TypeScript contract bindings for CoW Protocol SDK
+ * @module @cowprotocol/sdk-contracts-ts
  */
-export function domain(
-  chainId: number,
-  verifyingContract: string,
-): TypedDataDomain {
-  return {
-    name: "Gnosis Protocol",
-    version: "v2",
-    chainId,
-    verifyingContract,
-  };
-}
 
-export * from "./api";
-export * from "./deploy";
-export * from "./interaction";
-export * from "./order";
-export * from "./proxy";
-export * from "./reader";
-export * from "./settlement";
-export * from "./sign";
-export * from "./signers";
-export * from "./swap";
-export * from "./vault";
-export * from "./types/ethers";
+export * from './ContractsTs'
+export * from './deploy'
+export * from './interaction'
+export * from './order'
+export * from './proxy'
+export * from './settlement'
+export * from './sign'
+export * from './swap'
+export * from './vault'
+export * from './api'
+export * from './reader'
+export * from './signers'
+
+export { SigningScheme as ContractsSigningScheme, OrderKind as ContractsOrderKind } from './types'
+
+export type {
+  EcdsaSigningScheme as ContractsEcdsaSigningScheme,
+  Signature as ContractsSignature,
+  EcdsaSignature as ContractsEcdsaSignature,
+  Trade as ContractsTrade,
+  Order as ContractsOrder,
+  OrderCancellations as ContractsOrderCancellations,
+} from './types'

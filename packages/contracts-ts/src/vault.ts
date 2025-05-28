@@ -1,15 +1,4 @@
-import { ethers, Contract } from "ethers";
-
-/**
- * Balancer Vault partial ABI interface.
- *
- * This definition only contains the Vault methods that are used by GPv2 Vault
- * relayer. It is copied here to avoid relying on build artifacts.
- */
-export const VAULT_INTERFACE = new ethers.utils.Interface([
-  "function manageUserBalance((uint8, address, uint256, address, address)[])",
-  "function batchSwap(uint8, (bytes32, uint256, uint256, uint256, bytes)[], address[], (address, bool, address, bool), int256[], uint256)",
-]);
+import { Abi, getGlobalAdapter } from '@cowprotocol/sdk-common'
 
 /**
  * Grants the required roles to the specified Vault relayer.
@@ -18,22 +7,24 @@ export const VAULT_INTERFACE = new ethers.utils.Interface([
  * traders. It is included in the exported TypeScript library for completeness
  * and "documentation".
  *
- * @param authorizer The Vault authorizer contract that manages access.
+ * @param authorizerAddress The address of the Vault authorizer contract that manages access.
+ * @param authorizerAbi The ABI of the authorizer contract.
  * @param vaultAddress The address to the Vault.
  * @param vaultRelayerAddress The address to the GPv2 Vault relayer contract.
+ * @param contractCall Function to execute the contract call (provided by the adapter).
  */
 export async function grantRequiredRoles(
-  authorizer: Contract,
+  authorizerAddress: string,
+  authorizerAbi: Abi,
   vaultAddress: string,
   vaultRelayerAddress: string,
+  contractCall: (address: string, abi: Abi, functionName: string, args: unknown[]) => Promise<void>,
 ): Promise<void> {
-  for (const name in VAULT_INTERFACE.functions) {
-    await authorizer.grantRole(
-      ethers.utils.solidityKeccak256(
-        ["uint256", "bytes4"],
-        [vaultAddress, VAULT_INTERFACE.getSighash(name)],
-      ),
-      vaultRelayerAddress,
-    );
-  }
+  return getGlobalAdapter().utils.grantRequiredRoles(
+    authorizerAddress,
+    authorizerAbi,
+    vaultAddress,
+    vaultRelayerAddress,
+    contractCall,
+  )
 }

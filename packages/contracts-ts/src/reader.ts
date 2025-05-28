@@ -1,8 +1,8 @@
-import { BigNumber, BytesLike, Contract, ethers } from "ethers";
-
-import { InteractionLike, normalizeInteractions } from "./interaction";
-import { Order, OrderBalance } from "./order";
-import { InteractionStage } from "./settlement";
+import { InteractionLike, normalizeInteractions } from './interaction'
+import { OrderBalance } from './order'
+import { InteractionStage } from './settlement'
+import { Abi, Address, BigIntish, Bytes, getGlobalAdapter, Provider } from '@cowprotocol/sdk-common'
+import { Order } from './types'
 
 /**
  * A generic method used to obfuscate the complexity of reading storage
@@ -12,17 +12,23 @@ import { InteractionStage } from "./settlement";
  * 3. Decodes the returned bytes from the storage read into expected return value.
  */
 async function readStorage(
-  base: Contract,
-  reader: Contract,
+  baseAddress: Address,
+  baseAbi: Abi,
+  readerAddress: Address,
+  readerAbi: Abi,
+  provider: Provider,
   method: string,
   parameters: unknown[],
 ) {
-  const encodedCall = reader.interface.encodeFunctionData(method, parameters);
-  const resultBytes = await base.callStatic.simulateDelegatecall(
-    reader.address,
-    encodedCall,
-  );
-  return reader.interface.decodeFunctionResult(method, resultBytes)[0];
+  return getGlobalAdapter().utils.readStorage(
+    baseAddress,
+    baseAbi,
+    readerAddress,
+    readerAbi,
+    provider,
+    method,
+    parameters,
+  )
 }
 
 /**
@@ -31,15 +37,28 @@ async function readStorage(
  */
 export class AllowListReader {
   constructor(
-    public readonly allowList: Contract,
-    public readonly reader: Contract,
+    public readonly allowListAddress: Address,
+    public readonly allowListAbi: Abi,
+    public readonly readerAddress: Address,
+    public readonly readerAbi: Abi,
+    public readonly provider: Provider,
   ) {}
 
   /**
    * Returns true if all the specified addresses are allowed solvers.
    */
-  public areSolvers(solvers: BytesLike[]): Promise<string> {
-    return readStorage(this.allowList, this.reader, "areSolvers", [solvers]);
+  public async areSolvers(solvers: Bytes[]): Promise<string> {
+    return String(
+      await readStorage(
+        this.allowListAddress,
+        this.allowListAbi,
+        this.readerAddress,
+        this.readerAbi,
+        this.provider,
+        'areSolvers',
+        [solvers],
+      ),
+    )
   }
 }
 
@@ -49,17 +68,26 @@ export class AllowListReader {
  */
 export class SettlementReader {
   constructor(
-    public readonly settlement: Contract,
-    public readonly reader: Contract,
+    public readonly settlementAddress: Address,
+    public readonly settlementAbi: Abi,
+    public readonly readerAddress: Address,
+    public readonly readerAbi: Abi,
+    public readonly provider: Provider,
   ) {}
 
   /**
    * Read and return filled amounts for a list of orders
    */
-  public filledAmountsForOrders(orderUids: BytesLike[]): Promise<BigNumber[]> {
-    return readStorage(this.settlement, this.reader, "filledAmountsForOrders", [
-      orderUids,
-    ]);
+  public async filledAmountsForOrders(orderUids: Bytes[]): Promise<BigIntish[]> {
+    return await readStorage(
+      this.settlementAddress,
+      this.settlementAbi,
+      this.readerAddress,
+      this.readerAbi,
+      this.provider,
+      'filledAmountsForOrders',
+      [orderUids],
+    )
   }
 }
 
@@ -68,37 +96,31 @@ export class SettlementReader {
  */
 export type TradeSimulation = Pick<
   Order,
-  | "sellToken"
-  | "buyToken"
-  | "receiver"
-  | "sellAmount"
-  | "buyAmount"
-  | "sellTokenBalance"
-  | "buyTokenBalance"
+  'sellToken' | 'buyToken' | 'receiver' | 'sellAmount' | 'buyAmount' | 'sellTokenBalance' | 'buyTokenBalance'
 > & {
   /**
    * The address of the owner of the trade. For an actual settlement, this would
    * usually this would be determinied by recovering an order signature.
    */
-  owner: string;
-};
+  owner: string
+}
 
 /**
  * Account balance changes in a trade simulation
  */
 export interface TradeSimulationBalanceDelta {
-  sellTokenDelta: BigNumber;
-  buyTokenDelta: BigNumber;
+  sellTokenDelta: BigIntish
+  buyTokenDelta: BigIntish
 }
 
 /**
  * The result of a trade simulation.
  */
 export interface TradeSimulationResult {
-  gasUsed: BigNumber;
-  executedBuyAmount: BigNumber;
-  contractBalance: TradeSimulationBalanceDelta;
-  ownerBalance: TradeSimulationBalanceDelta;
+  gasUsed: BigIntish
+  executedBuyAmount: BigIntish
+  contractBalance: TradeSimulationBalanceDelta
+  ownerBalance: TradeSimulationBalanceDelta
 }
 
 /**
@@ -106,36 +128,42 @@ export interface TradeSimulationResult {
  */
 export class TradeSimulator {
   constructor(
-    public readonly settlement: Contract,
-    public readonly simulator: Contract,
+    public readonly settlementAddress: Address,
+    public readonly settlementAbi: Abi,
+    public readonly simulatorAddress: Address,
+    public readonly simulatorAbi: Abi,
+    public readonly provider: Provider,
   ) {}
 
   /**
    * Simulates the single order settlement for an executed trade and a set of
    * interactions.
    */
-  public simulateTrade(
+  public async simulateTrade(
     trade: TradeSimulation,
     interactions: Partial<Record<InteractionStage, InteractionLike[]>>,
   ): Promise<TradeSimulationResult> {
+    const adapter = getGlobalAdapter()
     const normalizedTrade = {
       ...trade,
-      receiver: trade.receiver ?? ethers.constants.AddressZero,
-      sellTokenBalance: ethers.utils.id(
-        trade.sellTokenBalance ?? OrderBalance.ERC20,
-      ),
-      buyTokenBalance: ethers.utils.id(
-        trade.buyTokenBalance ?? OrderBalance.ERC20,
-      ),
-    };
+      receiver: trade.receiver ?? adapter.ZERO_ADDRESS,
+      sellTokenBalance: adapter.utils.id(trade.sellTokenBalance ?? OrderBalance.ERC20),
+      buyTokenBalance: adapter.utils.id(trade.buyTokenBalance ?? OrderBalance.ERC20),
+    }
     const normalizedInteractions = [
       normalizeInteractions(interactions[InteractionStage.PRE] ?? []),
       normalizeInteractions(interactions[InteractionStage.INTRA] ?? []),
       normalizeInteractions(interactions[InteractionStage.POST] ?? []),
-    ];
-    return readStorage(this.settlement, this.simulator, "simulateTrade", [
-      normalizedTrade,
-      normalizedInteractions,
-    ]);
+    ]
+
+    return await readStorage(
+      this.settlementAddress,
+      this.settlementAbi,
+      this.simulatorAddress,
+      this.simulatorAbi,
+      this.provider,
+      'simulateTrade',
+      [normalizedTrade, normalizedInteractions],
+    )
   }
 }

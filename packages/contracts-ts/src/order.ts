@@ -1,86 +1,5 @@
-import { BigNumberish, BytesLike, ethers } from "ethers";
-
-import { TypedDataDomain, TypedDataTypes } from "./types/ethers";
-
-/**
- * Gnosis Protocol v2 order data.
- */
-export interface Order {
-  /**
-   * Sell token address.
-   */
-  sellToken: string;
-  /**
-   * Buy token address.
-   */
-  buyToken: string;
-  /**
-   * An optional address to receive the proceeds of the trade instead of the
-   * owner (i.e. the order signer).
-   */
-  receiver?: string;
-  /**
-   * The order sell amount.
-   *
-   * For fill or kill sell orders, this amount represents the exact sell amount
-   * that will be executed in the trade. For fill or kill buy orders, this
-   * amount represents the maximum sell amount that can be executed. For partial
-   * fill orders, this represents a component of the limit price fraction.
-   */
-  sellAmount: BigNumberish;
-  /**
-   * The order buy amount.
-   *
-   * For fill or kill sell orders, this amount represents the minimum buy amount
-   * that can be executed in the trade. For fill or kill buy orders, this amount
-   * represents the exact buy amount that will be executed. For partial fill
-   * orders, this represents a component of the limit price fraction.
-   */
-  buyAmount: BigNumberish;
-  /**
-   * The timestamp this order is valid until
-   */
-  validTo: Timestamp;
-  /**
-   * Arbitrary application specific data that can be added to an order. This can
-   * also be used to ensure uniqueness between two orders with otherwise the
-   * exact same parameters.
-   */
-  appData: HashLike;
-  /**
-   * Fee to give to the protocol.
-   */
-  feeAmount: BigNumberish;
-  /**
-   * The order kind.
-   */
-  kind: OrderKind;
-  /**
-   * Specifies whether or not the order is partially fillable.
-   */
-  partiallyFillable: boolean;
-  /**
-   * Specifies how the sell token balance will be withdrawn. It can either be
-   * taken using ERC20 token allowances made directly to the Vault relayer
-   * (default) or using Balancer Vault internal or external balances.
-   */
-  sellTokenBalance?: OrderBalance;
-  /**
-   * Specifies how the buy token balance will be paid. It can either be paid
-   * directly in ERC20 tokens (default) in Balancer Vault internal balances.
-   */
-  buyTokenBalance?: OrderBalance;
-}
-
-/**
- * Gnosis Protocol v2 order cancellation data.
- */
-export interface OrderCancellations {
-  /**
-   * The unique identifier of the order to be cancelled.
-   */
-  orderUids: BytesLike[];
-}
+import { Bytes, getGlobalAdapter, TypedDataDomain, TypedDataTypes } from '@cowprotocol/sdk-common'
+import { Order } from './types'
 
 /**
  * Marker address to indicate that an order is buying Ether.
@@ -89,39 +8,22 @@ export interface OrderCancellations {
  * be treated as a ERC20 token address in the `sellToken` position, causing the
  * settlement to revert.
  */
-export const BUY_ETH_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+export const BUY_ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 
 /**
  * Gnosis Protocol v2 order flags.
  */
-export type OrderFlags = Pick<
-  Order,
-  "kind" | "partiallyFillable" | "sellTokenBalance" | "buyTokenBalance"
->;
+export type OrderFlags = Pick<Order, 'kind' | 'partiallyFillable' | 'sellTokenBalance' | 'buyTokenBalance'>
 
 /**
  * A timestamp value.
  */
-export type Timestamp = number | Date;
+export type Timestamp = number | Date
 
 /**
  * A hash-like app data value.
  */
-export type HashLike = BytesLike | number;
-
-/**
- * Order kind.
- */
-export enum OrderKind {
-  /**
-   * A sell order.
-   */
-  SELL = "sell",
-  /**
-   * A buy order.
-   */
-  BUY = "buy",
-}
+export type HashLike = Bytes | number
 
 /**
  * Order balance configuration.
@@ -130,7 +32,7 @@ export enum OrderBalance {
   /**
    * Use ERC20 token balances.
    */
-  ERC20 = "erc20",
+  ERC20 = 'erc20',
   /**
    * Use Balancer Vault external balances.
    *
@@ -138,46 +40,45 @@ export enum OrderBalance {
    * to re-use Vault ERC20 allowances. When specified for the buy balance, it
    * will be treated as {@link OrderBalance.ERC20}.
    */
-  EXTERNAL = "external",
+  EXTERNAL = 'external',
   /**
    * Use Balancer Vault internal balances.
    */
-  INTERNAL = "internal",
+  INTERNAL = 'internal',
 }
 
 /**
  * The EIP-712 type fields definition for a Gnosis Protocol v2 order.
  */
 export const ORDER_TYPE_FIELDS = [
-  { name: "sellToken", type: "address" },
-  { name: "buyToken", type: "address" },
-  { name: "receiver", type: "address" },
-  { name: "sellAmount", type: "uint256" },
-  { name: "buyAmount", type: "uint256" },
-  { name: "validTo", type: "uint32" },
-  { name: "appData", type: "bytes32" },
-  { name: "feeAmount", type: "uint256" },
-  { name: "kind", type: "string" },
-  { name: "partiallyFillable", type: "bool" },
-  { name: "sellTokenBalance", type: "string" },
-  { name: "buyTokenBalance", type: "string" },
-];
-
-/**
- * The EIP-712 type fields definition for a Gnosis Protocol v2 order.
- */
-export const CANCELLATIONS_TYPE_FIELDS = [
-  { name: "orderUids", type: "bytes[]" },
-];
+  { name: 'sellToken', type: 'address' },
+  { name: 'buyToken', type: 'address' },
+  { name: 'receiver', type: 'address' },
+  { name: 'sellAmount', type: 'uint256' },
+  { name: 'buyAmount', type: 'uint256' },
+  { name: 'validTo', type: 'uint32' },
+  { name: 'appData', type: 'bytes32' },
+  { name: 'feeAmount', type: 'uint256' },
+  { name: 'kind', type: 'string' },
+  { name: 'partiallyFillable', type: 'bool' },
+  { name: 'sellTokenBalance', type: 'string' },
+  { name: 'buyTokenBalance', type: 'string' },
+]
 
 /**
  * The EIP-712 type hash for a Gnosis Protocol v2 order.
- */
-export const ORDER_TYPE_HASH = ethers.utils.id(
+ * ethersV5.utils.id(
   `Order(${ORDER_TYPE_FIELDS.map(({ name, type }) => `${type} ${name}`).join(
     ",",
   )})`,
 );
+ */
+export const ORDER_TYPE_HASH = '0xd5a25ba2e97094ad7d83dc28a6572da797d6b3e7fc6663bd93efb789fc17e489'
+
+/**
+ * The EIP-712 type fields definition for a Gnosis Protocol v2 order.
+ */
+export const CANCELLATIONS_TYPE_FIELDS = [{ name: 'orderUids', type: 'bytes[]' }]
 
 /**
  * Normalizes a timestamp value to a Unix timestamp.
@@ -185,7 +86,7 @@ export const ORDER_TYPE_HASH = ethers.utils.id(
  * @return Unix timestamp or number of seconds since the Unix Epoch.
  */
 export function timestamp(t: Timestamp): number {
-  return typeof t === "number" ? t : ~~(t.getTime() / 1000);
+  return typeof t === 'number' ? t : ~~(t.getTime() / 1000)
 }
 
 /**
@@ -194,9 +95,7 @@ export function timestamp(t: Timestamp): number {
  * @returns A 32-byte hash encoded as a hex-string.
  */
 export function hashify(h: HashLike): string {
-  return typeof h === "number"
-    ? `0x${h.toString(16).padStart(64, "0")}`
-    : ethers.utils.hexZeroPad(h, 32);
+  return typeof h === 'number' ? `0x${h.toString(16).padStart(64, '0')}` : getGlobalAdapter().utils.hexZeroPad(h, 32)
 }
 
 /**
@@ -214,28 +113,25 @@ export function normalizeBuyTokenBalance(
     case undefined:
     case OrderBalance.ERC20:
     case OrderBalance.EXTERNAL:
-      return OrderBalance.ERC20;
+      return OrderBalance.ERC20
     case OrderBalance.INTERNAL:
-      return OrderBalance.INTERNAL;
+      return OrderBalance.INTERNAL
     default:
-      throw new Error(`invalid order balance ${balance}`);
+      throw new Error(`invalid order balance ${balance}`)
   }
 }
 
 /**
  * Normalized representation of an {@link Order} for EIP-712 operations.
  */
-export type NormalizedOrder = Omit<
-  Order,
-  "validTo" | "appData" | "kind" | "sellTokenBalance" | "buyTokenBalance"
-> & {
-  receiver: string;
-  validTo: number;
-  appData: string;
-  kind: "sell" | "buy";
-  sellTokenBalance: "erc20" | "external" | "internal";
-  buyTokenBalance: "erc20" | "internal";
-};
+export type NormalizedOrder = Omit<Order, 'validTo' | 'appData' | 'kind' | 'sellTokenBalance' | 'buyTokenBalance'> & {
+  receiver: string
+  validTo: number
+  appData: string
+  kind: 'sell' | 'buy'
+  sellTokenBalance: 'erc20' | 'external' | 'internal'
+  buyTokenBalance: 'erc20' | 'internal'
+}
 
 /**
  * Normalizes an order for hashing and signing, so that it can be used with
@@ -244,19 +140,20 @@ export type NormalizedOrder = Omit<
  * @returns A 32-byte hash encoded as a hex-string.
  */
 export function normalizeOrder(order: Order): NormalizedOrder {
-  if (order.receiver === ethers.constants.AddressZero) {
-    throw new Error("receiver cannot be address(0)");
+  const adapter = getGlobalAdapter()
+  if (order.receiver === adapter.ZERO_ADDRESS) {
+    throw new Error('receiver cannot be address(0)')
   }
 
   const normalizedOrder = {
     ...order,
     sellTokenBalance: order.sellTokenBalance ?? OrderBalance.ERC20,
-    receiver: order.receiver ?? ethers.constants.AddressZero,
+    receiver: order.receiver ?? adapter.ZERO_ADDRESS,
     validTo: timestamp(order.validTo),
     appData: hashify(order.appData),
     buyTokenBalance: normalizeBuyTokenBalance(order.buyTokenBalance),
-  };
-  return normalizedOrder;
+  }
+  return normalizedOrder
 }
 
 /**
@@ -266,12 +163,8 @@ export function normalizeOrder(order: Order): NormalizedOrder {
  * @param types The order to compute the digest for.
  * @return Hex-encoded 32-byte order digest.
  */
-export function hashTypedData(
-  domain: TypedDataDomain,
-  types: TypedDataTypes,
-  data: Record<string, unknown>,
-): string {
-  return ethers.utils._TypedDataEncoder.hash(domain, types, data);
+export function hashTypedData(domain: TypedDataDomain, types: TypedDataTypes, data: Record<string, unknown>): string {
+  return getGlobalAdapter().utils.hashTypedData(domain, types, data)
 }
 
 /**
@@ -282,49 +175,13 @@ export function hashTypedData(
  * @return Hex-encoded 32-byte order digest.
  */
 export function hashOrder(domain: TypedDataDomain, order: Order): string {
-  return hashTypedData(
-    domain,
-    { Order: ORDER_TYPE_FIELDS },
-    normalizeOrder(order),
-  );
-}
-
-/**
- * Compute the 32-byte signing hash for the specified cancellation.
- *
- * @param domain The EIP-712 domain separator to compute the hash for.
- * @param orderUid The unique identifier of the order to cancel.
- * @return Hex-encoded 32-byte order digest.
- */
-export function hashOrderCancellation(
-  domain: TypedDataDomain,
-  orderUid: BytesLike,
-): string {
-  return hashOrderCancellations(domain, [orderUid]);
-}
-
-/**
- * Compute the 32-byte signing hash for the specified order cancellations.
- *
- * @param domain The EIP-712 domain separator to compute the hash for.
- * @param orderUids The unique identifiers of the orders to cancel.
- * @return Hex-encoded 32-byte order digest.
- */
-export function hashOrderCancellations(
-  domain: TypedDataDomain,
-  orderUids: BytesLike[],
-): string {
-  return hashTypedData(
-    domain,
-    { OrderCancellations: CANCELLATIONS_TYPE_FIELDS },
-    { orderUids },
-  );
+  return hashTypedData(domain, { Order: ORDER_TYPE_FIELDS }, normalizeOrder(order))
 }
 
 /**
  * The byte length of an order UID.
  */
-export const ORDER_UID_LENGTH = 56;
+export const ORDER_UID_LENGTH = 56
 
 /**
  * Order unique identifier parameters.
@@ -333,30 +190,26 @@ export interface OrderUidParams {
   /**
    * The EIP-712 order struct hash.
    */
-  orderDigest: string;
+  orderDigest: string
   /**
    * The owner of the order.
    */
-  owner: string;
+  owner: string
   /**
    * The timestamp this order is valid until.
    */
-  validTo: number | Date;
+  validTo: number | Date
 }
 
 /**
  * Computes the order UID for an order and the given owner.
  */
-export function computeOrderUid(
-  domain: TypedDataDomain,
-  order: Order,
-  owner: string,
-): string {
+export function computeOrderUid(domain: TypedDataDomain, order: Order, owner: string): string {
   return packOrderUidParams({
     orderDigest: hashOrder(domain, order),
     owner,
     validTo: order.validTo,
-  });
+  })
 }
 
 /**
@@ -367,15 +220,11 @@ export function computeOrderUid(
  * identifier.
  * @returns A string that unequivocally identifies the order of the user.
  */
-export function packOrderUidParams({
-  orderDigest,
-  owner,
-  validTo,
-}: OrderUidParams): string {
-  return ethers.utils.solidityPack(
-    ["bytes32", "address", "uint32"],
+export function packOrderUidParams({ orderDigest, owner, validTo }: OrderUidParams): string {
+  return getGlobalAdapter().utils.solidityPack(
+    ['bytes32', 'address', 'uint32'],
     [orderDigest, owner, timestamp(validTo)],
-  );
+  )
 }
 
 /**
@@ -385,17 +234,38 @@ export function packOrderUidParams({
  * @returns The extracted order UID parameters.
  */
 export function extractOrderUidParams(orderUid: string): OrderUidParams {
-  const bytes = ethers.utils.arrayify(orderUid);
+  const adapter = getGlobalAdapter()
+  const bytes = adapter.utils.arrayify(orderUid)
   if (bytes.length != ORDER_UID_LENGTH) {
-    throw new Error("invalid order UID length");
+    throw new Error('invalid order UID length')
   }
 
-  const view = new DataView(bytes.buffer);
+  const view = new DataView(bytes.buffer)
   return {
-    orderDigest: ethers.utils.hexlify(bytes.subarray(0, 32)),
-    owner: ethers.utils.getAddress(
-      ethers.utils.hexlify(bytes.subarray(32, 52)),
-    ),
+    orderDigest: adapter.utils.hexlify(bytes.subarray(0, 32)),
+    owner: adapter.utils.getChecksumAddress(adapter.utils.hexlify(bytes.subarray(32, 52))),
     validTo: view.getUint32(52),
-  };
+  }
+}
+
+/**
+ * Compute the 32-byte signing hash for the specified cancellation.
+ *
+ * @param domain The EIP-712 domain separator to compute the hash for.
+ * @param orderUid The unique identifier of the order to cancel.
+ * @return Hex-encoded 32-byte order digest.
+ */
+export function hashOrderCancellation(domain: TypedDataDomain, orderUid: Bytes): string {
+  return hashOrderCancellations(domain, [orderUid])
+}
+
+/**
+ * Compute the 32-byte signing hash for the specified order cancellations.
+ *
+ * @param domain The EIP-712 domain separator to compute the hash for.
+ * @param orderUids The unique identifiers of the orders to cancel.
+ * @return Hex-encoded 32-byte order digest.
+ */
+export function hashOrderCancellations(domain: TypedDataDomain, orderUids: Bytes[]): string {
+  return hashTypedData(domain, { OrderCancellations: CANCELLATIONS_TYPE_FIELDS }, { orderUids })
 }
