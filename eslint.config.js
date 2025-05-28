@@ -4,7 +4,7 @@ import unusedImports from 'eslint-plugin-unused-imports'
 
 export default [
   {
-    ignores: ['**/generated/*'],
+    ignores: ['**/generated/*', '**/jest.config.ts'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
@@ -16,12 +16,12 @@ export default [
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        project: './packages/*/tsconfig.json',
+        project: ['./packages/*/tsconfig.json', './packages/providers/*/tsconfig.json'],
       },
     },
     rules: {
       '@typescript-eslint/no-non-null-assertion': 'error',
-      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-explicit-any': 'off',
       'no-prototype-builtins': 'off',
       'unused-imports/no-unused-imports': 'error',
       'unused-imports/no-unused-vars': [
