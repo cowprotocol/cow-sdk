@@ -14,7 +14,9 @@
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "dev": "tsup src/index.ts --format esm,cjs --watch --dts",
     "lint": "eslint src/**/*.ts",
-    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@cowprotocol/sdk-common": "workspace:*",
