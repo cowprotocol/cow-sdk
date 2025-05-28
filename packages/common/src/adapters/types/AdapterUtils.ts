@@ -155,6 +155,11 @@ export abstract class AdapterUtils {
   abstract createInterface(abi: unknown): ContractInterface
 
   /**
+   * Get the hash of a typed data domain
+   */
+  abstract hashDomain(domain: TypedDataDomain, types?: unknown): string
+
+  /**
    * Grants the required roles to the specified Vault relayer.
    * Framework-agnostic method that delegates contract instantiation and calling to the adapter.
    *
