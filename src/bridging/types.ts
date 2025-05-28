@@ -150,7 +150,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    *
    * @param request - The quote request
    */
-  getIntermediateTokens(request: QuoteBridgeRequest): Promise<string[]>
+  getIntermediateTokens(request: QuoteBridgeRequest): Promise<TokenInfo[]>
 
   /**
    * Get a quote for a bridge request.
@@ -198,7 +198,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
     chainId: SupportedChainId,
     unsignedCall: EvmCall,
     signer: Signer,
-    defaultGasLimit?: bigint
+    defaultGasLimit?: bigint,
   ): Promise<BridgeHook>
 
   /**
@@ -344,8 +344,6 @@ export interface BridgeQuoteResults extends BridgeQuoteResult {
    */
   bridgeCallDetails: BridgeCallDetails
 }
-
-export type GetErc20Decimals = (chainId: TargetChainId, tokenAddress: string) => Promise<number>
 
 export interface CrossChainOrder {
   chainId: SupportedChainId

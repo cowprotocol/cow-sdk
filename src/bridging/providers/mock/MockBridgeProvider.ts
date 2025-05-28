@@ -61,10 +61,34 @@ const BUY_TOKENS = [
   },
 ]
 
-const INTERMEDIATE_TOKENS: Partial<Record<TargetChainId, string[]>> = {
-  [SupportedChainId.MAINNET]: ['0xDEf1CA1fb7FBcDC777520aa7f396b4E015F497aB'],
-  [AdditionalTargetChainId.OPTIMISM]: ['0x68f180fcCe6836688e9084f035309E29Bf0A2095'],
-  [SupportedChainId.SEPOLIA]: ['0xB4F1737Af37711e9A5890D9510c9bB60e170CB0D'],
+const INTERMEDIATE_TOKENS: Partial<Record<TargetChainId, TokenInfo[]>> = {
+  [SupportedChainId.MAINNET]: [
+    {
+      address: '0xDEf1CA1fb7FBcDC777520aa7f396b4E015F497aB',
+      chainId: SupportedChainId.MAINNET,
+      name: 'COW',
+      symbol: 'COW',
+      decimals: 18,
+    },
+  ],
+  [AdditionalTargetChainId.OPTIMISM]: [
+    {
+      address: '0x68f180fcCe6836688e9084f035309E29Bf0A2095',
+      chainId: AdditionalTargetChainId.OPTIMISM,
+      name: 'Wrapped BTC ',
+      symbol: 'WBTC',
+      decimals: 8,
+    },
+  ],
+  [SupportedChainId.SEPOLIA]: [
+    {
+      address: '0xB4F1737Af37711e9A5890D9510c9bB60e170CB0D',
+      chainId: SupportedChainId.SEPOLIA,
+      name: 'DAI (test)',
+      symbol: 'DAI',
+      decimals: 18,
+    },
+  ],
 }
 
 export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
@@ -81,7 +105,7 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
     return BUY_TOKENS.filter((token) => token.chainId === targetChainId)
   }
 
-  async getIntermediateTokens({ sellTokenChainId }: QuoteBridgeRequest): Promise<string[]> {
+  async getIntermediateTokens({ sellTokenChainId }: QuoteBridgeRequest): Promise<TokenInfo[]> {
     return INTERMEDIATE_TOKENS[sellTokenChainId] ?? []
   }
 
