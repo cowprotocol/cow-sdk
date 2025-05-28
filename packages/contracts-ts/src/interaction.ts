@@ -1,4 +1,4 @@
-import type { BigNumberish, BytesLike } from "ethers";
+import { BigIntish, Bytes } from '@cowprotocol/sdk-common'
 
 /**
  * Gnosis Protocol v2 interaction data.
@@ -7,19 +7,18 @@ export interface Interaction {
   /**
    * Address of the smart contract to be called in this interaction.
    */
-  target: string;
+  target: string
   /**
    * Call value in wei for the interaction, allowing Ether to be sent.
    */
-  value: BigNumberish;
+  value: BigIntish
   /**
    * Call data used in the interaction with a smart contract.
    */
-  callData: BytesLike;
+  callData: Bytes
 }
 
-export type InteractionLike = Pick<Interaction, "target"> &
-  Partial<Interaction>;
+export type InteractionLike = Pick<Interaction, 'target'> & Partial<Interaction>
 
 /**
  * Normalizes interaction data so that it is ready to be be ABI encoded.
@@ -27,14 +26,12 @@ export type InteractionLike = Pick<Interaction, "target"> &
  * @param interaction The interaction to normalize.
  * @return The normalized interaction.
  */
-export function normalizeInteraction(
-  interaction: InteractionLike,
-): Interaction {
+export function normalizeInteraction(interaction: InteractionLike): Interaction {
   return {
     value: 0,
-    callData: "0x",
+    callData: '0x',
     ...interaction,
-  };
+  }
 }
 
 /**
@@ -44,8 +41,6 @@ export function normalizeInteraction(
  * @param interactions The interactions to normalize.
  * @return The normalized interactions.
  */
-export function normalizeInteractions(
-  interactions: InteractionLike[],
-): Interaction[] {
-  return interactions.map(normalizeInteraction);
+export function normalizeInteractions(interactions: InteractionLike[]): Interaction[] {
+  return interactions.map(normalizeInteraction)
 }
