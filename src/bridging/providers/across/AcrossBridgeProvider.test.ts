@@ -160,6 +160,7 @@ describe('AcrossBridgeProvider', () => {
   describe('info', () => {
     it('should return provider info', () => {
       expect(provider.info).toEqual({
+        dappId: 'cow-sdk://bridging/providers/across',
         name: 'Across',
         logoUrl: expect.stringContaining('across-logo.png'),
       })
