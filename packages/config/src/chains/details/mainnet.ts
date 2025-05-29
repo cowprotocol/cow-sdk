@@ -1,6 +1,6 @@
-import { nativeCurrencyTemplate } from '../../common/consts/tokens'
+import { nativeCurrencyTemplate } from '../../constants/tokens'
 import { ChainInfo, SupportedChainId } from '../types'
-import { RAW_CHAINS_FILES_PATH } from '../const/path'
+import { RAW_CHAINS_FILES_PATH } from '../../constants/paths'
 
 const ethereumLogo = `${RAW_CHAINS_FILES_PATH}/images/mainnet-logo.svg`
 
