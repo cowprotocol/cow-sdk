@@ -6,7 +6,7 @@ import { AnyAppDataDocVersion } from '../generatedTypes'
 import { importSchema } from '../importSchema'
 
 let _ajvPromise: Promise<AjvType> | undefined
-let _validatorPromises: Record<string, Promise<AnyValidateFunction<unknown>> | undefined> = {}
+const _validatorPromises: Record<string, Promise<AnyValidateFunction<unknown>> | undefined> = {}
 
 async function getAjv(): Promise<AjvType> {
   if (!_ajvPromise) {

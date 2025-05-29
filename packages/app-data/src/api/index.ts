@@ -1,15 +1,29 @@
+import { AbstractProviderAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { appDataHexToCid, appDataHexToCidLegacy } from './appDataHexToCid'
-import { getAppDataInfo, getAppDataInfoLegacy } from './getAppDataInfo'
 import { cidToAppDataHex } from './cidToAppDataHex'
 import { fetchDocFromAppDataHex, fetchDocFromAppDataHexLegacy } from './fetchDocFromAppData'
 import { fetchDocFromCid } from './fetchDocFromCid'
 
 import { generateAppDataDoc } from './generateAppDataDoc'
+import { getAppDataInfo, getAppDataInfoLegacy } from './getAppDataInfo'
 import { getAppDataSchema } from './getAppDataSchema'
 import { uploadMetadataDocToIpfsLegacy } from './uploadMetadataDocToIpfsLegacy'
 import { validateAppDataDoc } from './validateAppDataDoc'
 
+/**
+ * MetadataApi provides a convenient interface for interacting with CoW Protocol's
+ * app-data functionality. It supports both direct method calls and object-oriented usage.
+ */
 export class MetadataApi {
+  /**
+   * Creates a new MetadataApi instance
+   *
+   * @param adapter Provider adapter implementation
+   */
+  constructor(adapter: AbstractProviderAdapter) {
+    setGlobalAdapter(adapter)
+  }
+
   // Schema & Doc generation/validation
   getAppDataSchema = getAppDataSchema
   generateAppDataDoc = generateAppDataDoc
@@ -23,6 +37,7 @@ export class MetadataApi {
   // Fetch from IPFS
   fetchDocFromAppDataHex = fetchDocFromAppDataHex // appDataHex --> appData
 
+  // Legacy methods
   legacy = {
     // Fetch appData document from IPFS (deprecated)
     fetchDocFromCid: fetchDocFromCid, // cid --> document
