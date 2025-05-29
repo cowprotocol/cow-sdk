@@ -1,11 +1,28 @@
 import { AnyAppDataDocVersion } from './generatedTypes'
+import * as fs from 'fs'
+import * as path from 'path'
+
+const SCHEMAS_DIR = path.resolve(process.cwd(), 'schemas')
+const schemaCache: Record<string, AnyAppDataDocVersion> = {}
 
 export async function importSchema(version: string): Promise<AnyAppDataDocVersion> {
   if (!/^\d+\.\d+\.\d+$/.test(version)) {
     throw new Error(`AppData version ${version} is not a valid version`)
   }
+
+  if (schemaCache[version]) {
+    return schemaCache[version]
+  }
+
   try {
-    return await import(`../schemas/v${version}.json`)
+    const schemaPath = path.join(SCHEMAS_DIR, `v${version}.json`)
+
+    const content = fs.readFileSync(schemaPath, 'utf8')
+    const schema = JSON.parse(content) as AnyAppDataDocVersion
+
+    schemaCache[version] = schema
+
+    return schema
   } catch (e) {
     throw new Error(`AppData version ${version} doesn't exist`)
   }

@@ -5,7 +5,7 @@
   "scripts": {
     "build": "turbo run build --filter='!@cowprotocol/cow-sdk'",
     "dev": "turbo run dev",
-    "lint": "turbo run lint -- --fix",
+    "lint": "turbo run lint --filter=!@cowprotocol/cow-sdk -- --fix",
     "test": "turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },

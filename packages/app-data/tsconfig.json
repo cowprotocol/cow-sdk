@@ -1,15 +1,14 @@
 {
+  "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
+    "outDir": "./dist",
     "moduleResolution": "node",
     "module": "ESNext",
     "target": "ESNext",
-    "strict": true,
-    "alwaysStrict": true,
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "noUnusedLocals": true,
+    "baseUrl": "src",
     "skipLibCheck": true,
-    "baseUrl": "src"
-  }
+    "types": ["jest"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

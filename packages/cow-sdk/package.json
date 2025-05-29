@@ -25,7 +25,6 @@
     "test:coverage": "jest --coverage --json --outputFile=jest.results.json && cat ./coverage/lcov.info | coveralls",
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
     "codegen": "pnpm run swagger:codegen && pnpm run typechain:codegen",
-    "prepare": "pnpm run build",
     "prepublishOnly": "pnpm test && pnpm run lint",
     "graphql:codegen": "graphql-codegen --config graphql-codegen.yml",
     "swagger:codegen": "openapi --input https://raw.githubusercontent.com/cowprotocol/services/v2.291.0/crates/orderbook/openapi.yml --output src/order-book/generated --exportServices false --exportCore false",
