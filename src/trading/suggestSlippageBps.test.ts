@@ -119,7 +119,7 @@ describe('suggestSlippageBps', () => {
       expect(result).toBe(75)
     })
 
-    it('should return volume slippage if slippage from fee is 0', () => {
+    it('should return fee slippage if slippage from volume is 0', () => {
       // Mock the dependencies to return known values
       mockedSuggestSlippageFromFee.mockReturnValue(75n) // 75 atoms from fee
       mockedSuggestSlippageFromVolume.mockReturnValue(0n) // 0 atoms from volume
@@ -154,7 +154,7 @@ describe('suggestSlippageBps', () => {
     it('should respect maximum slippage of 10000 bps (100%)', () => {
       // Mock the dependencies to return very large values
       mockedSuggestSlippageFromFee.mockReturnValue(6000n) // 6000 atoms from fee
-      mockedSuggestSlippageFromVolume.mockReturnValue(5000n) // 500 0atoms from volume
+      mockedSuggestSlippageFromVolume.mockReturnValue(5000n) // 5000 atoms from volume
 
       const result = suggestSlippageBps({
         quote: mockQuote,
@@ -180,7 +180,7 @@ describe('suggestSlippageBps', () => {
         isEthFlow: true,
       })
 
-      // Should be at least 50 bps for eth flow on gnosis chain
+      // Should be at least 200 bps for eth flow on mainnet
       expect(result).toBe(200)
     })
 
