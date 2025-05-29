@@ -2,6 +2,7 @@ import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { getAcrossDepositEvents, getCowTradeEvents } from './util'
 import { SupportedChainId } from '../../../chains'
 import { BridgingDepositParams } from '../../types'
+import { log } from '../../../common/utils/log'
 
 export async function getDepositParams(
   chainId: SupportedChainId,
@@ -22,6 +23,11 @@ export async function getDepositParams(
   if (orderTradeIndex < 0) return null
 
   const depositEvent = depositEvents[orderTradeIndex]
+
+  if (!depositEvent) {
+    log(`Trade event found at index ${orderTradeIndex} but only ${depositEvents.length} deposit events available`)
+    return null
+  }
 
   return {
     inputTokenAddress: depositEvent.inputToken,
