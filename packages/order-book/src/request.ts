@@ -11,10 +11,7 @@ export class OrderBookApiError<T = unknown> extends Error {
    * @param body The body of the response.
    * @constructor
    */
-  constructor(
-    public readonly response: Response,
-    public readonly body: T,
-  ) {
+  constructor(public readonly response: Response, public readonly body: T) {
     super(typeof body === 'string' ? body : response.statusText)
   }
 }
@@ -108,7 +105,7 @@ export async function request<T>(
   baseUrl: string,
   { path, query, method, body }: FetchParams,
   rateLimiter: RateLimiter,
-  backoffOpts: BackoffOptions,
+  backoffOpts: BackoffOptions
 ): Promise<T> {
   const queryString = query ? '?' + query : ''
   const headers = {
