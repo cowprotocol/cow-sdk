@@ -16,7 +16,7 @@ export const polygon: ChainInfo = {
     symbol: 'POL',
     logoUrl: polygonLogo,
   },
-  addressPrefix: 'polygon',
+  addressPrefix: 'matic',
   isTestnet: false,
   contracts: {
     multicall3: {
@@ -29,7 +29,7 @@ export const polygon: ChainInfo = {
       http: ['https://polygon-rpc.com'],
     },
   },
-  color: '#ff0420',
+  color: '#8247e5',
   website: {
     name: 'Polygon',
     url: 'https://polygon.technology',
