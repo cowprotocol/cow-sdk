@@ -1,4 +1,4 @@
-import { BridgeProvider, BridgeQuoteResult, CrossChainOrder } from '../types'
+import { BridgeProvider, BridgeQuoteResult, BridgeStatus, CrossChainOrder } from '../types'
 
 import { CowEnv } from '../../common'
 import { JsonRpcProvider } from '@ethersproject/providers'
@@ -57,17 +57,27 @@ export async function getCrossChainOrder(params: GetCrossChainOrderParams): Prom
       throw new BridgeOrderParsingError(`Bridging params cannot be derived from transaction: ${tradeTxHash}`)
     }
 
-    const { status, fillTimeInSeconds } = await provider.getStatus(bridgingParams.bridgingId, chainId)
-    const explorerUrl = provider.getExplorerUrl(bridgingParams.bridgingId)
-
-    return {
+    const state: CrossChainOrder = {
       chainId,
       order,
-      status,
+      status: BridgeStatus.UNKNOWN,
       bridgingParams,
       tradeTxHash,
-      explorerUrl,
-      fillTimeInSeconds,
+    }
+
+    try {
+      const { status, fillTimeInSeconds } = await provider.getStatus(bridgingParams.bridgingId, chainId)
+      const explorerUrl = provider.getExplorerUrl(bridgingParams.bridgingId)
+
+      return {
+        ...state,
+        status,
+        explorerUrl,
+        fillTimeInSeconds,
+      }
+    } catch (e) {
+      console.error('Cannot get bridging status', e)
+      return state
     }
   }
 

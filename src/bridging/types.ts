@@ -110,6 +110,7 @@ export enum BridgeStatus {
   EXECUTED = 'executed',
   EXPIRED = 'expired',
   REFUND = 'refund',
+  UNKNOWN = 'unknown',
 }
 
 export interface BridgeStatusResult {
