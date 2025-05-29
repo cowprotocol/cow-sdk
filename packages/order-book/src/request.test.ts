@@ -20,7 +20,7 @@ beforeEach(() => {
   fetchMock.mockClear()
 })
 
-function mockAndFailUntilAttempt(attempt: number) {
+function mockAndFailUntilAttempt(attempt: number): void {
   let count = 0
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore

@@ -1,0 +1,40 @@
+{
+  "name": "@cowprotocol/sdk-subgraph",
+  "version": "0.1.0",
+  "description": "CowProtocol subgraph",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "license": "MIT",
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "lint": "eslint src/**/*.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+    "graphql:codegen": "graphql-codegen --config graphql-codegen.yml"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@graphql-codegen/cli": "5.0.6",
+    "@graphql-codegen/typescript": "4.1.6",
+    "@graphql-codegen/typescript-operations": "^4.6.1",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.17.31",
+    "ts-node": "^10.8.2",
+    "tsup": "^7.2.0",
+    "typescript": "^5.2.2",
+    "jest": "^29.4.2",
+    "jest-fetch-mock": "^3.0.3"
+  },
+  "dependencies": {
+    "@cowprotocol/sdk-common": "workspace:*",
+    "@cowprotocol/sdk-config": "workspace:*",
+    "graphql": "^16.11.0",
+    "graphql-request": "^4.3.0"
+  }
+}

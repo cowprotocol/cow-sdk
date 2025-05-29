@@ -1,4 +1,4 @@
-import { ETH_ADDRESS } from '../common/consts/contracts'
+import { ETH_ADDRESS } from '@cowprotocol/sdk-config'
 import { Order } from './generated'
 import { EnrichedOrder } from './types'
 
