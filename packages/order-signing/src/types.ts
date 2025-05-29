@@ -1,6 +1,6 @@
-import type { SupportedChainId } from '../chains'
-import type { Signer } from '@ethersproject/abstract-signer'
-import type { OrderParameters, EcdsaSigningScheme } from '../order-book'
+import type { Signer } from '@cowprotocol/sdk-common'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
+import type { OrderParameters, EcdsaSigningScheme } from '@cowprotocol/sdk-order-book'
 
 /**
  * Unsigned order intent to be placed.

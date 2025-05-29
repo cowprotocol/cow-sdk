@@ -195,6 +195,10 @@ export class EthersV6Utils implements AdapterUtils {
     return new Interface(abi)
   }
 
+  hashDomain(domain: TypedDataDomain): string {
+    return TypedDataEncoder.hashDomain(domain)
+  }
+
   async grantRequiredRoles(
     authorizerAddress: string,
     authorizerAbi: Abi,

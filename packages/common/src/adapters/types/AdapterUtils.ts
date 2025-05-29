@@ -23,7 +23,7 @@ export abstract class AdapterUtils {
   /**
    * Encodes deployment arguments for a contract
    */
-  abstract encodeDeploy<C>(encodeDeployArgs: unknown, abi: Abi): string
+  abstract encodeDeploy(encodeDeployArgs: unknown, abi: Abi): string
 
   /**
    * Computes a CREATE2 address
@@ -153,6 +153,11 @@ export abstract class AdapterUtils {
    * Creates an Interface instance from an ABI
    */
   abstract createInterface(abi: unknown): ContractInterface
+
+  /**
+   * Get the hash of a typed data domain
+   */
+  abstract hashDomain(domain: TypedDataDomain, types?: unknown): string
 
   /**
    * Grants the required roles to the specified Vault relayer.

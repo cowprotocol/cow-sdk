@@ -1,10 +1,8 @@
-import type { SupportedChainId } from '../chains'
-import type { Signer } from '@ethersproject/abstract-signer'
-import type { Order, TypedDataDomain, OrderUidParams } from '@cowprotocol/contracts'
+import type { SupportedChainId } from '@cowprotocol/sdk-config'
+import type { ContractsOrder as Order, OrderUidParams } from '@cowprotocol/sdk-contracts-ts'
 import type { SigningResult, UnsignedOrder } from './types'
-
-const getSignUtils = () => import('./utils')
-const ethersUtils = () => import('ethers/lib/utils')
+import { getGlobalAdapter, Signer, TypedDataDomain } from '@cowprotocol/sdk-common'
+import { generateOrderId, getDomain, signOrder, signOrderCancellation, signOrderCancellations } from './utils'
 
 /**
  * Utility class for signing order intents and cancellations.
@@ -53,7 +51,6 @@ export class OrderSigningUtils {
    * @returns {Promise<SigningResult>} Encoded signature including signing scheme for the order.
    */
   static async signOrder(order: UnsignedOrder, chainId: SupportedChainId, signer: Signer): Promise<SigningResult> {
-    const { signOrder } = await getSignUtils()
     return signOrder(order, chainId, signer)
   }
 
@@ -69,7 +66,6 @@ export class OrderSigningUtils {
     chainId: SupportedChainId,
     signer: Signer,
   ): Promise<SigningResult> {
-    const { signOrderCancellation } = await getSignUtils()
     return signOrderCancellation(orderUid, chainId, signer)
   }
 
@@ -85,7 +81,6 @@ export class OrderSigningUtils {
     chainId: SupportedChainId,
     signer: Signer,
   ): Promise<SigningResult> {
-    const { signOrderCancellations } = await getSignUtils()
     return signOrderCancellations(orderUids, chainId, signer)
   }
 
@@ -96,7 +91,6 @@ export class OrderSigningUtils {
    * @see https://eips.ethereum.org/EIPS/eip-712
    */
   static async getDomain(chainId: SupportedChainId): Promise<TypedDataDomain> {
-    const { getDomain } = await getSignUtils()
     return getDomain(chainId)
   }
 
@@ -111,7 +105,6 @@ export class OrderSigningUtils {
     order: Order,
     params: Pick<OrderUidParams, 'owner'>,
   ): Promise<{ orderId: string; orderDigest: string }> {
-    const { generateOrderId } = await getSignUtils()
     return generateOrderId(chainId, order, params)
   }
 
@@ -121,9 +114,14 @@ export class OrderSigningUtils {
    * @returns A string representation of the EIP-712 typed domain data hash.
    */
   static async getDomainSeparator(chainId: SupportedChainId): Promise<string> {
-    const { getDomain } = await getSignUtils()
-    const { _TypedDataEncoder } = await ethersUtils()
-    return _TypedDataEncoder.hashDomain(getDomain(chainId))
+    const adapter = getGlobalAdapter()
+    const types = [
+      { name: 'name', type: 'string' },
+      { name: 'version', type: 'string' },
+      { name: 'chainId', type: 'uint256' },
+      { name: 'verifyingContract', type: 'address' },
+    ]
+    return adapter.utils.hashDomain(getDomain(chainId), types)
   }
 
   /**

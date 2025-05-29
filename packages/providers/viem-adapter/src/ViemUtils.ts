@@ -27,6 +27,7 @@ import {
   AbiFunction,
   PublicClient,
   decodeFunctionResult,
+  toHex,
 } from 'viem'
 
 export class ViemUtils implements AdapterUtils {
@@ -232,6 +233,42 @@ export class ViemUtils implements AdapterUtils {
 
   createInterface(abi: string[]) {
     return parseAbi(abi)
+  }
+
+  hashDomain(domain: TypedDataDomain): string {
+    // 1. Define the EIP712Domain type hash
+    const EIP712_DOMAIN_TYPEHASH = keccak256(
+      toHex('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'),
+    )
+
+    // 2. Hash individual domain fields
+    const nameHash = domain.name
+      ? keccak256(toHex(domain.name))
+      : '0x0000000000000000000000000000000000000000000000000000000000000000'
+    const versionHash = domain.version
+      ? keccak256(toHex(domain.version))
+      : '0x0000000000000000000000000000000000000000000000000000000000000000'
+
+    // 3. Encode the domain struct according to EIP-712
+    const encodedDomain = encodeAbiParameters(
+      [
+        { type: 'bytes32' }, // typeHash
+        { type: 'bytes32' }, // nameHash
+        { type: 'bytes32' }, // versionHash
+        { type: 'uint256' }, // chainId
+        { type: 'address' }, // verifyingContract
+      ],
+      [
+        EIP712_DOMAIN_TYPEHASH,
+        nameHash,
+        versionHash,
+        BigInt(domain.chainId || 0),
+        (domain.verifyingContract as `0x${string}`) || '0x0000000000000000000000000000000000000000',
+      ],
+    )
+
+    // 4. Hash the encoded domain
+    return keccak256(encodedDomain)
   }
 
   async grantRequiredRoles(

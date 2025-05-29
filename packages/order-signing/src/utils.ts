@@ -1,31 +1,27 @@
 import type {
-  Order as OrderFromContract,
-  Signature,
-  TypedDataDomain,
-  EcdsaSigningScheme as EcdsaSigningSchemeContract,
-  Order,
+  ContractsOrder as OrderFromContract,
+  ContractsSignature as Signature,
+  ContractsEcdsaSigningScheme as EcdsaSigningSchemeContract,
+  ContractsOrder as Order,
   OrderUidParams,
-} from '@cowprotocol/contracts'
+} from '@cowprotocol/sdk-contracts-ts'
 import {
-  domain as domainGp,
-  EcdsaSignature,
-  IntChainIdTypedDataV4Signer,
-  SigningScheme,
+  ContractsTs,
+  ContractsSigningScheme as SigningScheme,
+  getIntChainIdTypedDataV4Signer,
+  getTypedDataVersionedSigner,
   hashOrder,
   packOrderUidParams,
   signOrder as signOrderGp,
   signOrderCancellation as signOrderCancellationGp,
   signOrderCancellations as signOrderCancellationsGp,
-  TypedDataVersionedSigner,
-} from '@cowprotocol/contracts'
-import type { Signer } from '@ethersproject/abstract-signer'
+} from '@cowprotocol/sdk-contracts-ts'
+import { CowError, TypedDataDomain, type Signer } from '@cowprotocol/sdk-common'
 import type { SigningResult, SignOrderParams, SignOrderCancellationParams, UnsignedOrder } from './types'
 
-import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS } from '../common/consts/contracts'
-import { CowError } from '../common'
-import type { SupportedChainId } from '../chains'
-import { EcdsaSigningScheme } from '../order-book'
+import { EcdsaSigningScheme } from '@cowprotocol/sdk-order-book'
 import { SignOrderCancellationsParams } from './types'
+import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
 
 // For error codes, see:
 // - https://eth.wiki/json-rpc/json-rpc-error-codes-improvement-proposal
@@ -100,10 +96,10 @@ async function _signPayload(
     switch (signingMethod) {
       case 'default':
       case 'v3':
-        _signer = new TypedDataVersionedSigner(signer)
+        _signer = getTypedDataVersionedSigner(signer, 'v3')
         break
       case 'int_v4':
-        _signer = new IntChainIdTypedDataV4Signer(signer)
+        _signer = getIntChainIdTypedDataV4Signer(signer)
         break
       default:
         _signer = signer
@@ -114,7 +110,7 @@ async function _signPayload(
   }
 
   try {
-    signature = (await signFn({ ...payload, signer: _signer, signingScheme })) as EcdsaSignature // Only ECDSA signing supported for now
+    signature = (await signFn({ ...payload, signer: _signer, signingScheme })) as Signature // Only ECDSA signing supported for now
   } catch (e: unknown) {
     if (!isProviderRpcError(e)) {
       // Some other error signing. Let it bubble up.
@@ -232,7 +228,7 @@ export function getDomain(chainId: SupportedChainId): TypedDataDomain {
     throw new CowError('Unsupported network. Settlement contract is not deployed')
   }
 
-  return domainGp(chainId, settlementContract)
+  return ContractsTs.domain(chainId, settlementContract)
 }
 
 /**

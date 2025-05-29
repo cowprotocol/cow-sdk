@@ -55,7 +55,7 @@ export class EthersV5SignerAdapter extends AbstractSigner {
 
   private _formatTxParams(txParams: TransactionParams) {
     // Convert bigint values to BigNumber for ethers v5
-     
+
     const formatted: any = { ...txParams }
 
     if (typeof formatted.value === 'bigint') {
