@@ -12,9 +12,9 @@
   ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
-    "lint": "eslint src/**/*.ts",
+    "lint": "eslint src/**/*.ts --quiet",
     "test": "jest",
-    "clean": "rm -rf dist/*"
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
