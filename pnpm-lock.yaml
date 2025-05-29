@@ -164,6 +164,9 @@ importers:
       '@cowprotocol/sdk-viem-adapter':
         specifier: workspace:*
         version: link:../providers/viem-adapter
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
