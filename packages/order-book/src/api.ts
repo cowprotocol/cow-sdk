@@ -1,8 +1,15 @@
 import 'cross-fetch/polyfill'
 import { RateLimiter } from 'limiter'
-import { SupportedChainId } from '../chains/types'
-import { ApiBaseUrls, ApiContext, CowEnv, PartialApiContext } from '../common/types/config'
-import { CowError } from '../common/types/cow-error'
+import {
+  SupportedChainId,
+  DEFAULT_COW_API_CONTEXT,
+  ENVS_LIST,
+  ApiBaseUrls,
+  ApiContext,
+  CowEnv,
+  PartialApiContext,
+} from '@cowprotocol/sdk-config'
+import { CowError, log, jsonWithBigintReplacer } from '@cowprotocol/sdk-common'
 import {
   Address,
   AppDataHash,
@@ -23,9 +30,6 @@ import {
 import { DEFAULT_BACKOFF_OPTIONS, DEFAULT_LIMITER_OPTIONS, FetchParams, OrderBookApiError, request } from './request'
 import { transformOrder } from './transformOrder'
 import { EnrichedOrder } from './types'
-import { DEFAULT_COW_API_CONTEXT, ENVS_LIST } from '../common'
-import { log } from '../common/utils/log'
-import { jsonWithBigintReplacer } from 'src/common/utils/serialize'
 
 /**
  * An object containing *production* environment base URLs for each supported `chainId`.
@@ -73,7 +77,7 @@ export type GetOrdersRequest = {
   offset?: number
   limit?: number
 }
-
+// TODO: Review and update the documentation
 /**
  * The CoW Protocol OrderBook API client.
  *

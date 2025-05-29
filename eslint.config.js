@@ -4,7 +4,7 @@ import unusedImports from 'eslint-plugin-unused-imports'
 
 export default [
   {
-    ignores: ['**/generated/*', '**/jest.config.ts'],
+    ignores: ['**/generated/*', '**/jest.config.ts', '**/generated/**/*'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
@@ -50,11 +50,5 @@ export default [
   },
   {
     files: ['**/*.test.ts', '**/*.spec.ts', '**/__mock__/**/*.ts'],
-    languageOptions: {
-      parser: tseslint.parser,
-      parserOptions: {
-        project: './tsconfig.test.json',
-      },
-    },
   },
 ]

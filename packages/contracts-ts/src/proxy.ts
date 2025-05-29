@@ -10,7 +10,7 @@ const OWNER_STORAGE_SLOT = '0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6
  * @param proxy Address of the proxy contract.
  * @returns The address of the contract storing the proxy implementation.
  */
-export async function implementationAddress(provider: Provider, proxy: string): Promise<string> {
+export async function implementationAddress(_provider: Provider, proxy: string): Promise<string> {
   const adapter = getGlobalAdapter()
   const [implementation] = adapter.utils.decodeAbi(
     ['address'],

@@ -5,11 +5,23 @@
 node_modules
 .pnp
 
+# Build
 dist
 coverage
 .coveralls.yml
 jest.results.json
+
+# IDE
 .idea
 *.iml
+
+# macOS
+.DS_Store
+
+# Generated files
 packages/cow-sdk/src/common/generated
 packages/cow-sdk/docs/typedoc/
+
+
+#app-data
+packages/app-data/schemas/

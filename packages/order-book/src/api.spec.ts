@@ -1,9 +1,8 @@
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
-import { CowError } from '../common/types/cow-error'
+import { CowError } from '@cowprotocol/sdk-common'
 import { OrderBookApi } from './api'
 import { BuyTokenDestination, EcdsaSigningScheme, OrderKind, SellTokenSource, SigningScheme } from './generated'
-import { SupportedChainId } from '../chains/types'
-import { ETH_ADDRESS } from '../common/consts/contracts'
+import { SupportedChainId, ETH_ADDRESS } from '@cowprotocol/sdk-config'
 import { AUCTION } from './mock'
 
 enableFetchMocks()
@@ -539,13 +538,13 @@ describe('CoW Api', () => {
 
       // then
       // eth flow order
-      expect(orders[0].owner).toEqual(orders[0].onchainUser)
-      expect(orders[0].validTo).toEqual(orders[0].ethflowData?.userValidTo)
-      expect(orders[0].sellToken).toEqual(ETH_ADDRESS)
+      expect(orders[0]?.owner).toEqual(orders[0]?.onchainUser)
+      expect(orders[0]?.validTo).toEqual(orders[0]?.ethflowData?.userValidTo)
+      expect(orders[0]?.sellToken).toEqual(ETH_ADDRESS)
       // regular order
-      expect(orders[1].owner).toEqual(ORDER_RESPONSE.owner)
-      expect(orders[1].validTo).toEqual(ORDER_RESPONSE.validTo)
-      expect(orders[1].sellToken).toEqual(ORDER_RESPONSE.sellToken)
+      expect(orders[1]?.owner).toEqual(ORDER_RESPONSE.owner)
+      expect(orders[1]?.validTo).toEqual(ORDER_RESPONSE.validTo)
+      expect(orders[1]?.sellToken).toEqual(ORDER_RESPONSE.sellToken)
     })
 
     test('getTxOrders', async () => {
@@ -559,13 +558,13 @@ describe('CoW Api', () => {
 
       // then
       // eth flow order
-      expect(txOrders[0].owner).toEqual(txOrders[0].onchainUser)
-      expect(txOrders[0].validTo).toEqual(txOrders[0].ethflowData?.userValidTo)
-      expect(txOrders[0].sellToken).toEqual(ETH_ADDRESS)
+      expect(txOrders[0]?.owner).toEqual(txOrders[0]?.onchainUser)
+      expect(txOrders[0]?.validTo).toEqual(txOrders[0]?.ethflowData?.userValidTo)
+      expect(txOrders[0]?.sellToken).toEqual(ETH_ADDRESS)
       // regular order
-      expect(txOrders[1].owner).toEqual(ORDER_RESPONSE.owner)
-      expect(txOrders[1].validTo).toEqual(ORDER_RESPONSE.validTo)
-      expect(txOrders[1].sellToken).toEqual(ORDER_RESPONSE.sellToken)
+      expect(txOrders[1]?.owner).toEqual(ORDER_RESPONSE.owner)
+      expect(txOrders[1]?.validTo).toEqual(ORDER_RESPONSE.validTo)
+      expect(txOrders[1]?.sellToken).toEqual(ORDER_RESPONSE.sellToken)
     })
   })
 

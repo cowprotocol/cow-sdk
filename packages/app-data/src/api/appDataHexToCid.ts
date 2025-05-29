@@ -1,3 +1,4 @@
+import { getGlobalAdapter } from '@cowprotocol/sdk-common'
 import { MetaDataError } from '../consts'
 
 /**
@@ -9,7 +10,6 @@ import { MetaDataError } from '../consts'
 export async function appDataHexToCid(appDataHex: string): Promise<string> {
   const cid = await _appDataHexToCid(appDataHex)
   _assertCid(cid, appDataHex)
-
   return cid
 }
 
@@ -67,7 +67,7 @@ async function _appDataHexToCidLegacy(appDataHex: string): Promise<string> {
   return CID.decode(cidBytes).toV0().toString()
 }
 
-interface ToCidParmams {
+interface ToCidParams {
   version: number
   multicodec: number
   hashingAlgorithm: number
@@ -75,20 +75,12 @@ interface ToCidParmams {
   multihashHex: string
 }
 
-async function _toCidBytes({
-  version,
-  multicodec,
-  hashingAlgorithm,
-  hashingLength,
-  multihashHex,
-}: ToCidParmams): Promise<Uint8Array> {
-  const module = await import('ethers/lib/utils')
-  const { arrayify } = module.default || module
-  const hashBytes = arrayify(multihashHex)
+async function _toCidBytes(params: ToCidParams): Promise<Uint8Array> {
+  const hashBytes = getGlobalAdapter().utils.arrayify(params.multihashHex)
 
   // Concat prefix and multihash
-  const cidPrefix = Uint8Array.from([version, multicodec, hashingAlgorithm, hashingLength])
-  var cidBytes = new Uint8Array(cidPrefix.length + hashBytes.length)
+  const cidPrefix = Uint8Array.from([params.version, params.multicodec, params.hashingAlgorithm, params.hashingLength])
+  const cidBytes = new Uint8Array(cidPrefix.length + hashBytes.length)
   cidBytes.set(cidPrefix)
   cidBytes.set(hashBytes, cidPrefix.length)
 
