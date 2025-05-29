@@ -1,12 +1,8 @@
 {
-  "extends": "../../packages/typescript-config/base.json",
+  "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "moduleResolution": "node",
-    "module": "ESNext",
-    "target": "ESNext",
-    "baseUrl": "src",
-    "skipLibCheck": true
+    "baseUrl": "src"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
