@@ -199,6 +199,8 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
 
     return {
       status: mapAcrossStatusToBridgeStatus(depositStatus.status),
+      depositTxHash: depositStatus.depositTxHash,
+      fillTxHash: depositStatus.fillTx,
     }
   }
 

@@ -116,6 +116,15 @@ export enum BridgeStatus {
 export interface BridgeStatusResult {
   status: BridgeStatus
   fillTimeInSeconds?: number
+  /**
+   * Transaction hash of the deposit on the origin chain.
+   */
+  depositTxHash?: string
+  /**
+   * Transaction hash of the fill on the destination chain.
+   * Only present when fillStatus is 'filled'.
+   */
+  fillTxHash?: string
 }
 
 /**
@@ -371,9 +380,8 @@ export interface BridgingDepositParams {
 export interface CrossChainOrder {
   chainId: SupportedChainId
   order: EnrichedOrder
-  status: BridgeStatus
+  statusResult: BridgeStatusResult
   bridgingParams: BridgingDepositParams
   tradeTxHash: string
   explorerUrl?: string
-  fillTimeInSeconds?: number
 }

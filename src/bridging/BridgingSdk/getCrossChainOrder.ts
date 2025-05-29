@@ -60,20 +60,21 @@ export async function getCrossChainOrder(params: GetCrossChainOrderParams): Prom
     const state: CrossChainOrder = {
       chainId,
       order,
-      status: BridgeStatus.UNKNOWN,
+      statusResult: {
+        status: BridgeStatus.UNKNOWN,
+      },
       bridgingParams,
       tradeTxHash,
     }
 
     try {
-      const { status, fillTimeInSeconds } = await provider.getStatus(bridgingParams.bridgingId, chainId)
+      const statusResult = await provider.getStatus(bridgingParams.bridgingId, chainId)
       const explorerUrl = provider.getExplorerUrl(bridgingParams.bridgingId)
 
       return {
         ...state,
-        status,
+        statusResult,
         explorerUrl,
-        fillTimeInSeconds,
       }
     } catch (e) {
       console.error('Cannot get bridging status', e)
