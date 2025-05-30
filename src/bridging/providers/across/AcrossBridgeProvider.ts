@@ -8,10 +8,15 @@ import {
   BridgeProviderInfo,
   BridgeQuoteResult,
   BridgeStatusResult,
+  BridgingDepositParams,
   QuoteBridgeRequest,
 } from '../../types'
 
-import { DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION, RAW_PROVIDERS_FILES_PATH } from '../../const'
+import {
+  DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION,
+  HOOK_DAPP_BRIDGE_PROVIDER_PREFIX,
+  RAW_PROVIDERS_FILES_PATH,
+} from '../../const'
 
 import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
 
@@ -23,16 +28,17 @@ import { arbitrumOne } from '../../../chains/details/arbitrum'
 import { base } from '../../../chains/details/base'
 import { optimism } from '../../../chains/details/optimism'
 import { AcrossApi, AcrossApiOptions } from './AcrossApi'
-import { toBridgeQuoteResult } from './util'
+import { mapAcrossStatusToBridgeStatus, toBridgeQuoteResult } from './util'
 import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
 import { createAcrossDepositCall } from './createAcrossDepositCall'
 import { OrderKind } from '@cowprotocol/contracts'
-import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
 import { SuggestedFeesResponse } from './types'
+import { getDepositParams } from './getDepositParams'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 type SupportedTokensState = Record<ChainId, Record<string, TokenInfo>>
 
-const HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/across`
+export const ACROSS_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/across`
 export const ACROSS_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
 
 // We need to review if we should set an additional slippage tolerance, for now assuming the quote gives you the exact price of bridging and no further slippage is needed
@@ -64,6 +70,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
   info: BridgeProviderInfo = {
     name: 'Across',
     logoUrl: `${RAW_PROVIDERS_FILES_PATH}/across/across-logo.png`,
+    dappId: ACROSS_HOOK_DAPP_ID,
   }
 
   async getNetworks(): Promise<ChainInfo[]> {
@@ -158,7 +165,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
         target: to,
         callData: data,
         gasLimit: gasLimit.toString(),
-        dappId: HOOK_DAPP_ID, // TODO: I think we should have some additional parameter to type the hook (using dappId for now)
+        dappId: ACROSS_HOOK_DAPP_ID, // TODO: I think we should have some additional parameter to type the hook (using dappId for now)
       },
       recipient: cowShedAccount,
     }
@@ -168,10 +175,15 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     throw new Error('Not implemented')
   }
 
-  async getBridgingId(_orderUid: string, _settlementTx: string, _logIndex: number): Promise<string> {
-    // TODO: get events from the mined transaction, extract the deposit id
-    // Important. A settlement could have many bridge-and-swap transactions, maybe even using different providers, this is why the log index might be handy to find which of the depositIds corresponds to the bridging transaction
-    throw new Error('Not implemented')
+  async getBridgingParams(
+    chainId: ChainId,
+    provider: JsonRpcProvider,
+    orderUid: string,
+    txHash: string,
+  ): Promise<BridgingDepositParams | null> {
+    const txReceipt = await provider.getTransactionReceipt(txHash)
+
+    return getDepositParams(chainId, orderUid, txReceipt)
   }
 
   getExplorerUrl(bridgingId: string): string {
@@ -179,13 +191,23 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     return `https://app.across.to/transactions/${bridgingId}`
   }
 
-  async getStatus(_bridgingId: string): Promise<BridgeStatusResult> {
-    throw new Error('Not implemented')
+  async getStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult> {
+    const depositStatus = await this.api.getDepositStatus({
+      originChainId: originChainId.toString(),
+      depositId: bridgingId,
+    })
+
+    return {
+      status: mapAcrossStatusToBridgeStatus(depositStatus.status),
+      depositTxHash: depositStatus.depositTxHash,
+      fillTxHash: depositStatus.fillTx,
+    }
   }
 
   async getCancelBridgingTx(_bridgingId: string): Promise<EvmCall> {
     throw new Error('Not implemented')
   }
+
   async getRefundBridgingTx(_bridgingId: string): Promise<EvmCall> {
     throw new Error('Not implemented')
   }

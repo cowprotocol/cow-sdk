@@ -1,4 +1,4 @@
-import { applyPercentage } from 'src/common/utils/math'
+import { applyPercentage } from '../common/utils/math'
 
 export interface SuggestSlippageFromVolumeParams {
   sellAmountBeforeNetworkCosts: bigint

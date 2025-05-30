@@ -7,6 +7,7 @@ import {
   BridgeQuoteResult,
   BridgeStatus,
   BridgeStatusResult,
+  BridgingDepositParams,
   QuoteBridgeRequest,
 } from '../../types'
 
@@ -15,11 +16,24 @@ import { mainnet } from '../../../chains/details/mainnet'
 import { optimism } from '../../../chains/details/optimism'
 import { sepolia } from '../../../chains/details/sepolia'
 import { EvmCall, TokenInfo } from '../../../common'
-import { AdditionalTargetChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
+import { AdditionalTargetChainId, ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
 import { RAW_PROVIDERS_FILES_PATH } from '../../const'
 import { Signer } from '@ethersproject/abstract-signer'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
-const BRIDGING_ID = '123456789asdfg'
+const BRIDGING_PARAMS: BridgingDepositParams = {
+  inputTokenAddress: '0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+  outputTokenAddress: '0x000000000000000000000000833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+  inputAmount: 24023409n,
+  outputAmount: 24020093n,
+  owner: '0x0000000000000000000000002bfcacf7ff137289a2c4841ea90413ab51103032',
+  quoteTimestamp: 1747223915,
+  fillDeadline: 1747235809,
+  recipient: '0x000000000000000000000000bbcf91605c18a9859c1d47abfeed5d2cca7097cf',
+  sourceChainId: 1,
+  destinationChainId: 8453,
+  bridgingId: '2595561',
+}
 const MOCK_CALL: EvmCall = {
   to: '0x0000000000000000000000000000000000000001',
   data: '0x0',
@@ -95,6 +109,7 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
   info: BridgeProviderInfo = {
     name: 'Mock',
     logoUrl: `${RAW_PROVIDERS_FILES_PATH}/mock/mock-logo.png`,
+    dappId: 'mockProvider',
   }
 
   async getNetworks(): Promise<ChainInfo[]> {
@@ -187,8 +202,13 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
     }
   }
 
-  async getBridgingId(_orderUid: string, _settlementTx: string, _logIndex: number): Promise<string> {
-    return BRIDGING_ID
+  async getBridgingParams(
+    _chainId: ChainId,
+    _provider: JsonRpcProvider,
+    _orderUid: string,
+    _txHash: string,
+  ): Promise<BridgingDepositParams> {
+    return BRIDGING_PARAMS
   }
 
   getExplorerUrl(bridgingId: string): string {

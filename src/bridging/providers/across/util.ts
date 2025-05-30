@@ -1,10 +1,18 @@
-import { BridgeQuoteAmountsAndCosts, QuoteBridgeRequest } from '../../../bridging/types'
-import { TargetChainId } from '../../../chains'
-import { AcrossQuoteResult } from './AcrossBridgeProvider'
-import { AcrossChainConfig, ACROSS_TOKEN_MAPPING } from './const/tokens'
-import { getBigNumber } from '../../../order-book'
+import { Log } from '@ethersproject/providers'
 import { OrderKind } from '@cowprotocol/contracts'
-import { SuggestedFeesResponse } from './types'
+
+import { BridgeQuoteAmountsAndCosts, BridgeStatus, QuoteBridgeRequest } from '../../types'
+import { SupportedChainId, TargetChainId } from '../../../chains'
+import { getBigNumber } from '../../../order-book'
+
+import { AcrossDepositEvent, CowTradeEvent, DepositStatusResponse, SuggestedFeesResponse } from './types'
+import { AcrossQuoteResult } from './AcrossBridgeProvider'
+import { ACROSS_DEPOSIT_EVENT_INTERFACE, COW_TRADE_EVENT_INTERFACE } from './const/interfaces'
+import { ACROSS_TOKEN_MAPPING, AcrossChainConfig } from './const/tokens'
+import { ACROSS_DEPOSIT_EVENT_TOPIC, COW_TRADE_EVENT_TOPIC } from './const/misc'
+import { ACROSS_SPOOK_CONTRACT_ADDRESSES } from './const/contracts'
+import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS } from '../../../common'
+import { defaultAbiCoder } from 'ethers/lib/utils'
 
 const PCT_100_PERCENT = 10n ** 18n
 
@@ -15,12 +23,12 @@ const PCT_100_PERCENT = 10n ** 18n
  */
 export function getChainConfigs(
   sourceChainId: TargetChainId,
-  targetChainId: TargetChainId
+  targetChainId: TargetChainId,
 ): { sourceChainConfig: AcrossChainConfig; targetChainConfig: AcrossChainConfig } | undefined {
   const sourceChainConfig = getChainConfig(sourceChainId)
   const targetChainConfig = getChainConfig(targetChainId)
 
-  if (!sourceChainConfig || !targetChainConfig) return
+  if (!sourceChainConfig || !targetChainConfig) return undefined
 
   return { sourceChainConfig, targetChainConfig }
 }
@@ -40,7 +48,7 @@ export function getTokenAddress(tokenSymbol: string, chainConfig: AcrossChainCon
 export function toBridgeQuoteResult(
   request: QuoteBridgeRequest,
   slippageBps: number,
-  suggestedFees: SuggestedFeesResponse
+  suggestedFees: SuggestedFeesResponse,
 ): AcrossQuoteResult {
   const { kind } = request
 
@@ -64,7 +72,7 @@ export function toBridgeQuoteResult(
 function toAmountsAndCosts(
   request: QuoteBridgeRequest,
   slippageBps: number,
-  suggestedFees: SuggestedFeesResponse
+  suggestedFees: SuggestedFeesResponse,
 ): BridgeQuoteAmountsAndCosts {
   const { amount, sellTokenDecimals, buyTokenDecimals } = request
 
@@ -113,6 +121,10 @@ function toAmountsAndCosts(
   }
 }
 
+function bytes32ToAddress(address: string): string {
+  return defaultAbiCoder.decode(['address'], address).toString()
+}
+
 /**
  * Assert that a percentage is valid.
  */
@@ -156,4 +168,90 @@ export function applyPctFee(amount: bigint, pct: bigint): bigint {
 
 export function applyBps(amount: bigint, bps: number): bigint {
   return (amount * BigInt(10_000 - bps)) / 10_000n
+}
+
+const AcrossStatusToBridgeStatus: Record<DepositStatusResponse['status'], BridgeStatus> = {
+  filled: BridgeStatus.EXECUTED,
+  slowFillRequested: BridgeStatus.EXECUTED,
+  pending: BridgeStatus.IN_PROGRESS,
+  expired: BridgeStatus.EXPIRED,
+  refunded: BridgeStatus.REFUND,
+}
+
+export function mapAcrossStatusToBridgeStatus(status: DepositStatusResponse['status']): BridgeStatus {
+  return AcrossStatusToBridgeStatus[status]
+}
+
+export function getAcrossDepositEvents(chainId: SupportedChainId, logs: Log[]): AcrossDepositEvent[] {
+  const spookContractAddress = ACROSS_SPOOK_CONTRACT_ADDRESSES[chainId]?.toLowerCase()
+
+  if (!spookContractAddress) {
+    return []
+  }
+
+  // Get accross deposit events
+  const depositEvents = logs.filter((log) => {
+    return log.address.toLocaleLowerCase() === spookContractAddress && log.topics[0] === ACROSS_DEPOSIT_EVENT_TOPIC
+  })
+
+  // Parse logs
+  return depositEvents.map((event) => {
+    const {
+      inputToken,
+      outputToken,
+      inputAmount,
+      outputAmount,
+      destinationChainId,
+      depositId,
+      quoteTimestamp,
+      fillDeadline,
+      exclusivityDeadline,
+      depositor,
+      recipient,
+      exclusiveRelayer,
+      message,
+    } = ACROSS_DEPOSIT_EVENT_INTERFACE.parseLog(event).args as unknown as AcrossDepositEvent
+    return {
+      inputToken: bytes32ToAddress(inputToken),
+      outputToken: bytes32ToAddress(outputToken),
+      inputAmount,
+      outputAmount,
+      destinationChainId,
+      depositId,
+      quoteTimestamp,
+      fillDeadline,
+      exclusivityDeadline,
+      depositor: bytes32ToAddress(depositor),
+      recipient: bytes32ToAddress(recipient),
+      exclusiveRelayer,
+      message,
+    }
+  })
+}
+
+export function getCowTradeEvents(chainId: SupportedChainId, logs: Log[]): CowTradeEvent[] {
+  const cowTradeEvents = logs.filter((log) => {
+    return (
+      log.address.toLowerCase() === COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[chainId].toLowerCase() &&
+      log.topics[0] === COW_TRADE_EVENT_TOPIC
+    )
+  })
+
+  return cowTradeEvents.map((event) => {
+    const result = COW_TRADE_EVENT_INTERFACE.parseLog(event).args as unknown as CowTradeEvent
+
+    const { owner, sellToken, buyToken, sellAmount, buyAmount, feeAmount } = result
+    // TODO: idk, ethers cannot parse orderUid because it's bytes and ethers tries to cast it as a number
+    const orderUid = '0x' + event.data.slice(450, 450 + 112)
+
+    return {
+      owner,
+      sellToken,
+      buyToken,
+      sellAmount,
+      buyAmount,
+      feeAmount,
+      orderUid,
+    }
+  })
 }

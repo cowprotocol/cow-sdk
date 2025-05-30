@@ -1,9 +1,9 @@
-import { percentageToBps } from 'src/common/utils/math'
 import { getQuoteAmountsWithCosts, OrderQuoteResponse } from '../order-book'
 import { getDefaultSlippageBps, getSlippagePercent } from './utils/slippage'
 import { suggestSlippageFromFee } from './suggestSlippageFromFee'
 import { suggestSlippageFromVolume } from './suggestSlippageFromVolume'
 import { QuoterParameters, SwapAdvancedSettings, TradeParameters } from './types'
+import { percentageToBps } from '../common/utils/math'
 
 const MAX_SLIPPAGE_BPS = 10_000 // 100% in BPS (max slippage)
 

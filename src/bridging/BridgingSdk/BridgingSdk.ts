@@ -2,17 +2,19 @@ import { SwapAdvancedSettings, TradingSdk } from '../../trading'
 import {
   BridgeProvider,
   BridgeQuoteResult,
+  BridgeStatusResult,
   CrossChainOrder,
   CrossChainQuoteAndPost,
   QuoteBridgeRequest,
 } from '../types'
-import { ALL_SUPPORTED_CHAINS, CowEnv, TokenInfo } from '../../common'
+import { ALL_SUPPORTED_CHAINS, CowEnv, TokenInfo, enableLogging } from '../../common'
 import { ChainInfo, SupportedChainId, TargetChainId } from '../../chains'
 import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
 import { getQuoteWithBridge } from './getQuoteWithBridge'
-import { enableLogging } from '../../common/utils/log'
-import { OrderBookApi } from 'src/order-book'
 import { getCrossChainOrder } from './getCrossChainOrder'
+import { JsonRpcProvider } from '@ethersproject/providers'
+import { OrderBookApi } from '../../order-book'
+import { findBridgeProviderFromHook } from './findBridgeProviderFromHook'
 
 export interface BridgingSdkOptions {
   /**
@@ -41,14 +43,18 @@ export interface BridgingSdkOptions {
  */
 export interface GetOrderParams {
   /**
+   * Id of a network where order was settled
+   */
+  chainId: SupportedChainId
+  /**
    * The unique identifier of the order.
    */
   orderId: string
 
   /**
-   * The chain ID of the order.
+   * RPC provider to get order transactions details
    */
-  chainId: SupportedChainId
+  rpcProvider: JsonRpcProvider
 
   /**
    * The environment of the order
@@ -116,9 +122,8 @@ export class BridgingSdk {
 
   /**
    * Get the available buy tokens for buying in a specific target chain
-   *
-   * @param param
-   * @returns
+
+   * @param targetChainId
    */
   async getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]> {
     return this.provider.getBuyTokens(targetChainId)
@@ -165,16 +170,26 @@ export class BridgingSdk {
     }
   }
 
-  async getOrder(params: GetOrderParams): Promise<CrossChainOrder> {
+  async getOrder(params: GetOrderParams): Promise<CrossChainOrder | null> {
     const { orderBookApi } = this.config
 
-    const { orderId, chainId, env } = params
+    const { chainId, orderId, rpcProvider, env = orderBookApi.context.env } = params
+
     return getCrossChainOrder({
-      orderId,
       chainId,
+      orderId,
+      rpcProvider,
       orderBookApi,
+      env,
       providers: this.config.providers,
-      env: env || orderBookApi.context.env,
     })
+  }
+
+  async getOrderBridgingStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult> {
+    return this.provider.getStatus(bridgingId, originChainId)
+  }
+
+  getProviderFromAppData(fullAppData: string): BridgeProvider<BridgeQuoteResult> | undefined {
+    return findBridgeProviderFromHook(fullAppData, this.getProviders())
   }
 }

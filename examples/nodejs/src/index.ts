@@ -1,4 +1,16 @@
-import { SupportedChainId, OrderKind, postSwapOrder, postLimitOrder } from '../../../src'
+import {
+  SupportedChainId,
+  OrderKind,
+  postSwapOrder,
+  postLimitOrder,
+  enableLogging,
+  AcrossBridgeProvider,
+  BridgingSdk,
+  OrderBookApi,
+} from '../../../src'
+import { JsonRpcProvider } from '@ethersproject/providers'
+
+enableLogging(true)
 
 const privateKey = 'xxx'
 
@@ -41,6 +53,8 @@ const privateKey = 'xxx'
 
 // Swap with partner fee
 ;(async function () {
+  return
+
   postSwapOrder(
     {
       appCode: 'cow-sdk-example',
@@ -65,4 +79,30 @@ const privateKey = 'xxx'
       },
     },
   )
+})()
+
+// Get bridging order
+;(async function () {
+  return
+
+  const acrossProvider = new AcrossBridgeProvider()
+  const sdk = new BridgingSdk({
+    providers: [acrossProvider],
+    orderBookApi: new OrderBookApi({
+      backoffOpts: {
+        maxDelay: 0,
+        numOfAttempts: 0,
+      },
+    }),
+  })
+
+  const data = await sdk.getOrder({
+    chainId: SupportedChainId.MAINNET,
+    env: 'staging',
+    rpcProvider: new JsonRpcProvider('https://mainnet.gateway.tenderly.co'),
+    orderId:
+      '0xb8aeae0626654ea134614a42044dcf081544981e19f35082e20c967d5210834dfb3c7eb936caa12b5a884d612393969a557d430768248d30',
+  })
+
+  console.log('Bidging order data', data)
 })()

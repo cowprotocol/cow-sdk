@@ -1,6 +1,8 @@
 import { log } from '../../../common/utils/log'
 import {
   AvailableRoutesRequest,
+  DepositStatusRequest,
+  DepositStatusResponse,
   PctFee,
   Route,
   SuggestedFeesLimits,
@@ -74,6 +76,15 @@ export class AcrossApi {
     return this.fetchApi<(TokenInfo & { logoURI?: string })[]>('/token-list', {}).then((tokens) =>
       tokens.map((token) => ({ ...token, logoUrl: token.logoURI })),
     )
+  }
+
+  async getDepositStatus(request: DepositStatusRequest): Promise<DepositStatusResponse> {
+    const params: Record<string, string> = {
+      originChainId: request.originChainId,
+      depositId: request.depositId,
+    }
+
+    return this.fetchApi('/deposit/status', params)
   }
 
   protected async fetchApi<T>(
