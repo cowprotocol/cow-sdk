@@ -11,3 +11,8 @@ export {
   AcrossQuoteResult,
   AcrossBridgeProviderOptions,
 } from './providers/across/AcrossBridgeProvider'
+export {
+  BungeeBridgeProvider,
+  BungeeQuoteResult,
+  BungeeBridgeProviderOptions,
+} from './providers/bungee/BungeeBridgeProvider'
