@@ -6,7 +6,7 @@ import { CowShedSdk } from '../../../cow-shed'
 import { BungeeQuoteResult } from './BungeeBridgeProvider'
 import { QuoteBridgeRequest } from '../../types'
 import { BUNGEE_COWSWAP_LIB_ABI, ERC20_ABI, SOCKET_GATEWAY_ABI } from './abi'
-import { decodeAmountsBungeeTxData, decodeBungeeBridgeTxData, fetchTokenAllowance } from './util'
+import { decodeAmountsBungeeTxData, decodeBungeeBridgeTxData } from './util'
 import { TargetChainId } from 'src/chains'
 import { BungeeCowswapLibAddresses } from './const/contracts'
 import { BungeeTxDataBytesIndices } from './const/misc'
@@ -50,36 +50,22 @@ export async function createBungeeDepositCall(params: {
   const socketGatewayContract = getSocketGatewayContract(buildTx.txData.to)
 
   // Check & set allowance for SocketGateway to transfer bridged tokens
-  // check if allowance is sufficient is not native token
+  // set allowance if not native token
   let setAllowance = false
-  let allowanceToSet = 0n
   if (!(request.sellTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase())) {
-    // set more allowance if current allowance is less than 120% of the bridge quote
-    const bridgeQuoteBigIntWithEstimateSurplus =
-      BigInt(buildTx.approvalData.amount) + (BigInt(buildTx.approvalData.amount) * 20n) / 100n
-    const allowance = await fetchTokenAllowance({
-      chainId: request.sellTokenChainId,
-      tokenAddress: request.sellTokenAddress,
-      ownerAddress: cowShedAccount, // approval should be from cowshed account
-      spenderAddress: buildTx.approvalData.spenderAddress,
-      signer: request.signer,
-    })
-    if (allowance < bridgeQuoteBigIntWithEstimateSurplus) {
-      setAllowance = true
-      // approve 3x the amount to account for the surplus
-      // and save some gas for subsequent swaps
-      allowanceToSet = 3n * BigInt(buildTx.approvalData.amount)
-    }
+    setAllowance = true
   }
 
   const bridgeDepositCall = createWeirollDelegateCall((planner) => {
-    if (setAllowance) {
-      // add weiroll action to approve token to socket gateway
-      planner.add(SellTokenContract.approve(buildTx.approvalData.spenderAddress, allowanceToSet))
-    }
     // add weiroll action to replace input amount with new input amount
     // fetching raw value in bytes since we need to replace bytes in the encoded function data
     const sourceAmountIncludingSurplusBytes = planner.add(SellTokenContract.balanceOf(cowShedAccount).rawValue())
+
+    // add weiroll action to approve token to socket gateway
+    if (setAllowance) {
+      planner.add(SellTokenContract.approve(buildTx.approvalData.spenderAddress, sourceAmountIncludingSurplusBytes))
+    }
+
     const encodedFunctionDataWithNewInputAmount = planner.add(
       BungeeCowswapLibContract.replaceBytes(
         encodedFunctionData,
