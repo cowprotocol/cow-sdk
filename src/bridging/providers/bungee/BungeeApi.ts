@@ -1,8 +1,12 @@
 import { log } from '../../../common/utils/log'
 import { decodeBungeeBridgeTxData, getBungeeBridgeFromDisplayName, objectToSearchParams } from './util'
 import {
+  AcrossStatus,
+  AcrossStatusAPIResponse,
   BungeeBuildTx,
   BungeeBuildTxAPIResponse,
+  BungeeEvent,
+  BungeeEventsAPIResponse,
   BungeeQuote,
   BungeeQuoteAPIRequest,
   BungeeQuoteAPIResponse,
@@ -20,9 +24,13 @@ import { ethers } from 'ethers'
 import { SOCKET_VERIFIER_ABI } from './abi'
 
 const BUNGEE_API_URL = 'https://public-backend.bungee.exchange/api/v1/bungee'
+const BUNGEE_EVENTS_API_URL = 'https://microservices.socket.tech/loki'
+const ACROSS_API_URL = 'https://app.across.to/api'
 
 export interface BungeeApiOptions {
   apiBaseUrl?: string
+  eventsApiBaseUrl?: string
+  acrossApiBaseUrl?: string
   includeBridges?: SupportedBridge[]
 }
 
@@ -32,6 +40,8 @@ export class BungeeApi {
   constructor(
     private readonly options: BungeeApiOptions = {
       apiBaseUrl: BUNGEE_API_URL,
+      eventsApiBaseUrl: BUNGEE_EVENTS_API_URL,
+      acrossApiBaseUrl: ACROSS_API_URL,
       includeBridges: this.SUPPORTED_BRIDGES,
     },
   ) {
@@ -203,6 +213,101 @@ export class BungeeApi {
     return true
   }
 
+  async getEvents(params: { orderId: string }): Promise<BungeeEvent[]> {
+    const response = await this.getEventsApi<BungeeEventsAPIResponse>(
+      '/order',
+      {
+        orderId: params.orderId,
+      },
+      isValidBungeeEventsResponse,
+    )
+    if (!response.success) {
+      throw new BridgeProviderQuoteError('Bungee Events Api Error', response)
+    }
+    return response.result
+  }
+
+  async getAcrossStatus(depositTxHash: string): Promise<AcrossStatus> {
+    const response = await this.getAcrossApi<AcrossStatusAPIResponse>(
+      '/deposit/status',
+      {
+        depositTxHash,
+      },
+      isValidAcrossStatusResponse,
+    )
+    return response.status
+  }
+
+  protected async getEventsApi<T>(
+    path: string,
+    params: Record<string, string> | URLSearchParams,
+    isValidResponse?: (response: unknown) => response is T,
+  ): Promise<T> {
+    const baseUrl = this.options.eventsApiBaseUrl || BUNGEE_EVENTS_API_URL
+    const url = `${baseUrl}${path}?${new URLSearchParams(params).toString()}`
+
+    log(`Fetching Bungee Events API: GET ${url}. Params: ${JSON.stringify(params)}`)
+
+    const response = await fetch(url, {
+      method: 'GET',
+    })
+
+    if (!response.ok) {
+      const errorBody = await response.json()
+      throw new BridgeProviderQuoteError('Bungee Events Api Error', errorBody)
+    }
+
+    // Validate the response
+    const json = await response.json()
+    if (isValidResponse) {
+      if (isValidResponse(json)) {
+        return json
+      } else {
+        throw new BridgeProviderQuoteError(
+          `Invalid response for Bungee Events API call ${path}. The response doesn't pass the validation. Did the API change?`,
+          json,
+        )
+      }
+    }
+
+    return json
+  }
+
+  protected async getAcrossApi<T>(
+    path: string,
+    params: Record<string, string> | URLSearchParams,
+    isValidResponse?: (response: unknown) => response is T,
+  ): Promise<T> {
+    const baseUrl = this.options.acrossApiBaseUrl || ACROSS_API_URL
+    const url = `${baseUrl}${path}?${new URLSearchParams(params).toString()}`
+
+    log(`Fetching Across API: GET ${url}. Params: ${JSON.stringify(params)}`)
+
+    const response = await fetch(url, {
+      method: 'GET',
+    })
+
+    if (!response.ok) {
+      const errorBody = await response.json()
+      throw new BridgeProviderQuoteError('Across Api Error', errorBody)
+    }
+
+    // Validate the response
+    const json = await response.json()
+    if (isValidResponse) {
+      if (isValidResponse(json)) {
+        return json
+      } else {
+        throw new BridgeProviderQuoteError(
+          `Invalid response for Across API call ${path}. The response doesn't pass the validation. Did the API change?`,
+          json,
+        )
+      }
+    }
+
+    return json
+  }
+
   protected async get<T>(
     path: string,
     params: Record<string, string> | URLSearchParams,
@@ -312,4 +417,55 @@ function isValidQuoteResponse(response: unknown): response is BungeeQuoteAPIResp
       'routeDetails' in r
     )
   })
+}
+
+function isValidBungeeEventsResponse(response: unknown): response is BungeeEventsAPIResponse {
+  if (typeof response !== 'object' || response === null) {
+    return false
+  }
+
+  const resp = response as Record<string, unknown>
+
+  // Check top level fields
+  if (!('success' in resp) || !('result' in resp) || typeof resp.success !== 'boolean' || !Array.isArray(resp.result)) {
+    return false
+  }
+
+  // Validate each event in the result array
+  return resp.result.every((event) => {
+    if (typeof event !== 'object' || event === null) {
+      return false
+    }
+
+    const e = event as Record<string, unknown>
+
+    // Check required fields
+    return (
+      'identifier' in e &&
+      'srcTransactionHash' in e &&
+      'bridgeName' in e &&
+      'fromChainId' in e &&
+      'isCowswapTrade' in e &&
+      'orderId' in e &&
+      'recipient' in e &&
+      'sender' in e &&
+      'destTransactionHash' in e &&
+      'srcTxStatus' in e &&
+      'destTxStatus' in e
+    )
+  })
+}
+
+function isValidAcrossStatusResponse(response: unknown): response is AcrossStatusAPIResponse {
+  if (typeof response !== 'object' || response === null) {
+    return false
+  }
+
+  const resp = response as Record<string, unknown>
+
+  if (!('status' in resp)) {
+    return false
+  }
+
+  return true
 }

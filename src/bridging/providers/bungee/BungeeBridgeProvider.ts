@@ -7,6 +7,7 @@ import {
   BridgeProvider,
   BridgeProviderInfo,
   BridgeQuoteResult,
+  BridgeStatus,
   BridgeStatusResult,
   BridgingDepositParams,
   QuoteBridgeRequest,
@@ -30,7 +31,7 @@ import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
 import { createBungeeDepositCall } from './createBungeeDepositCall'
 import { OrderKind } from '@cowprotocol/contracts'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
-import { BungeeBuildTx, BungeeQuote, BungeeQuoteAPIRequest } from './types'
+import { BungeeBridgeName, BungeeBuildTx, BungeeEventStatus, BungeeQuote, BungeeQuoteAPIRequest } from './types'
 import { getSigner } from 'src/common/utils/wallet'
 import { isTruthy } from '../../../common/utils/common'
 import { JsonRpcProvider } from '@ethersproject/providers'
@@ -227,7 +228,48 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   }
 
   async getStatus(_bridgingId: string): Promise<BridgeStatusResult> {
-    throw new Error('Not implemented')
+    // fetch indexed event from api
+    const events = await this.api.getEvents({ orderId: _bridgingId })
+
+    // if empty, return not_initiated
+    // order id exists so order is valid, but
+    // - bungee may not have indexed the event yet, which it will do eventually
+    // - or the order is not filled yet on cowswap
+    if (events.length === 0) {
+      return { status: BridgeStatus.NOT_INITIATED }
+    }
+    const event = events[0]
+
+    // if srcTxStatus = pending, return in_progress
+    if (event.srcTxStatus === BungeeEventStatus.PENDING) {
+      return { status: BridgeStatus.IN_PROGRESS }
+    }
+
+    // if srcTxStatus = completed & destTxStatus = pending,
+    if (event.srcTxStatus === BungeeEventStatus.COMPLETED && event.destTxStatus === BungeeEventStatus.PENDING) {
+      // if bridgeName = across,
+      if (event.bridgeName === BungeeBridgeName.ACROSS) {
+        // check across api to check status is expired or refunded
+        const acrossStatus = await this.api.getAcrossStatus(event.orderId)
+        if (acrossStatus === 'expired') {
+          return { status: BridgeStatus.EXPIRED }
+        }
+        if (acrossStatus === 'refunded') {
+          // refunded means failed
+          return { status: BridgeStatus.FAILED }
+        }
+      }
+      // if not across, waiting for dest tx, return in_progress
+      return { status: BridgeStatus.IN_PROGRESS }
+    }
+
+    // if srcTxStatus = completed & destTxStatus = completed, return executed
+    if (event.srcTxStatus === BungeeEventStatus.COMPLETED && event.destTxStatus === BungeeEventStatus.COMPLETED) {
+      return { status: BridgeStatus.EXECUTED }
+    }
+
+    // there is no failed case for across - gets auto-refunded - or cctp - attestation can be relayed by anyone on destination chain
+    throw new Error('Unknown status')
   }
 
   async getCancelBridgingTx(_bridgingId: string): Promise<EvmCall> {
