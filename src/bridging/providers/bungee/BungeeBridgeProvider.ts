@@ -7,8 +7,8 @@ import {
   BridgeProvider,
   BridgeProviderInfo,
   BridgeQuoteResult,
-  BridgeStatus,
   BridgeStatusResult,
+  BridgingDepositParams,
   QuoteBridgeRequest,
 } from '../../types'
 
@@ -16,7 +16,7 @@ import { DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION, RAW_PROVIDERS_FILES_PATH } from '
 
 import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
 
-import { BUNGEE_TOKEN_MAPPING } from './const/tokens'
+import { BUNGEE_CHAIN_TOKENS } from './const/tokens'
 import { EvmCall, TokenInfo } from '../../../common'
 
 import { mainnet } from '../../../chains/details/mainnet'
@@ -25,29 +25,23 @@ import { arbitrumOne } from '../../../chains/details/arbitrum'
 import { base } from '../../../chains/details/base'
 import { optimism } from '../../../chains/details/optimism'
 import { BungeeApi, BungeeApiOptions } from './BungeeApi'
-import { getChainConfigs, getTokenAddress, getTokenSymbol, toBridgeQuoteResult } from './util'
+import { toBridgeQuoteResult } from './util'
 import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
 import { createBungeeDepositCall } from './createBungeeDepositCall'
 import { OrderKind } from '@cowprotocol/contracts'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
-import { BungeeBridgeName, BungeeBuildTx, BungeeEventStatus, BungeeQuote, BungeeQuoteAPIRequest } from './types'
+import { BungeeBuildTx, BungeeQuote, BungeeQuoteAPIRequest } from './types'
 import { getSigner } from 'src/common/utils/wallet'
+import { isTruthy } from '../../../common/utils/common'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
-const HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/bungee`
+export const BUNGEE_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/bungee`
 export const BUNGEE_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
 
 /** There will be no dex swaps happening while bridging. Hence slippage will be zero */
 const SLIPPAGE_TOLERANCE_BPS = 0
 
 export interface BungeeBridgeProviderOptions {
-  /**
-   * Token info provider
-   * @param chainId - The chain ID
-   * @param addresses - The addresses of the tokens to get the info for
-   * @returns The token infos
-   */
-  getTokenInfos?: (chainId: ChainId, addresses: string[]) => Promise<TokenInfo[]>
-
   // API options
   apiOptions?: BungeeApiOptions
 
@@ -71,7 +65,8 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
 
   info: BridgeProviderInfo = {
     name: 'Bungee',
-    logoUrl: `${RAW_PROVIDERS_FILES_PATH}/bungee/bungee-logo.png`,
+    logoUrl: `${RAW_PROVIDERS_FILES_PATH}/bungee/bungee-logo.png`, // TODO: set valid logo
+    dappId: BUNGEE_HOOK_DAPP_ID,
   }
 
   async getNetworks(): Promise<ChainInfo[]> {
@@ -79,44 +74,44 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   }
 
   async getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]> {
-    if (!this.options.getTokenInfos) {
-      throw new Error("'getTokenInfos' parameter is required for BungeeBridgeProvider constructor")
-    }
-
-    const chainConfig = BUNGEE_TOKEN_MAPPING[targetChainId as TargetChainId]
+    const chainConfig = BUNGEE_CHAIN_TOKENS[targetChainId as TargetChainId]
     if (!chainConfig) {
       return []
     }
 
-    const tokenAddresses = Object.values(chainConfig.tokens).filter((address): address is string => Boolean(address))
-
-    return this.options.getTokenInfos(targetChainId, tokenAddresses)
+    return Object.values(chainConfig).filter(isTruthy)
   }
 
-  async getIntermediateTokens(request: QuoteBridgeRequest): Promise<string[]> {
+  async getIntermediateTokens(request: QuoteBridgeRequest): Promise<TokenInfo[]> {
     if (request.kind !== OrderKind.SELL) {
       throw new Error('Only SELL is supported for now')
     }
 
     const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
-    const chainConfigs = getChainConfigs(sellTokenChainId, buyTokenChainId)
-    if (!chainConfigs) return []
 
-    const { sourceChainConfig, targetChainConfig } = chainConfigs
+    const buyTokenAddressLower = buyTokenAddress.toLowerCase()
+
+    const sourceTokens = BUNGEE_CHAIN_TOKENS[sellTokenChainId]
+    const targetTokens = BUNGEE_CHAIN_TOKENS[buyTokenChainId]
+
+    if (!sourceTokens || !targetTokens) return []
 
     // Find the token symbol for the target token
-    const targetTokenSymbol = getTokenSymbol(buyTokenAddress, targetChainConfig)
+    const targetTokenSymbol = targetTokens && targetTokens[buyTokenAddressLower]?.symbol?.toLowerCase()
+
     if (!targetTokenSymbol) return []
 
     // if target token is native token, use weth as intermediate token
     if (targetTokenSymbol === 'eth') {
-      const wethAddress = getTokenAddress('weth', sourceChainConfig)
-      return wethAddress ? [wethAddress] : []
+      const weth = Object.values(sourceTokens).find((token) => token?.symbol?.toLowerCase() === 'weth')
+      return weth ? [weth] : []
     }
 
     // Use the tokenSymbol to find the outputToken in the target chain
-    const intermediateToken = getTokenAddress(targetTokenSymbol, sourceChainConfig)
-    return intermediateToken ? [intermediateToken] : []
+    // Use the tokenSymbol to find the outputToken in the target chain
+    return Object.values(sourceTokens)
+      .filter((token) => token?.symbol?.toLowerCase() === targetTokenSymbol)
+      .filter(isTruthy)
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<BungeeQuoteResult> {
@@ -201,10 +196,21 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
         target: to,
         callData: data,
         gasLimit: gasLimit.toString(),
-        dappId: HOOK_DAPP_ID,
+        dappId: BUNGEE_HOOK_DAPP_ID,
       },
       recipient: cowShedAccount,
     }
+  }
+
+  async getBridgingParams(
+    _chainId: ChainId,
+    _provider: JsonRpcProvider,
+    _orderUid: string,
+    _txHash: string,
+  ): Promise<BridgingDepositParams | null> {
+    console.log('getBridgingParams() Method not implemented in BungeeBridgeProvider.')
+
+    return null
   }
 
   async decodeBridgeHook(_hook: latestAppData.CoWHook): Promise<BridgeDeposit> {
@@ -221,48 +227,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   }
 
   async getStatus(_bridgingId: string): Promise<BridgeStatusResult> {
-    // fetch indexed event from api
-    const events = await this.api.getEvents({ orderId: _bridgingId })
-
-    // if empty, return not_initiated
-    // order id exists so order is valid, but
-    // - bungee may not have indexed the event yet, which it will do eventually
-    // - or the order is not filled yet on cowswap
-    if (events.length === 0) {
-      return { status: BridgeStatus.NOT_INITIATED }
-    }
-    const event = events[0]
-
-    // if srcTxStatus = pending, return in_progress
-    if (event.srcTxStatus === BungeeEventStatus.PENDING) {
-      return { status: BridgeStatus.IN_PROGRESS }
-    }
-
-    // if srcTxStatus = completed & destTxStatus = pending,
-    if (event.srcTxStatus === BungeeEventStatus.COMPLETED && event.destTxStatus === BungeeEventStatus.PENDING) {
-      // if bridgeName = across,
-      if (event.bridgeName === BungeeBridgeName.ACROSS) {
-        // check across api to check status is expired or refunded
-        const acrossStatus = await this.api.getAcrossStatus(event.orderId)
-        if (acrossStatus === 'expired') {
-          return { status: BridgeStatus.EXPIRED }
-        }
-        if (acrossStatus === 'refunded') {
-          // refunded means failed
-          return { status: BridgeStatus.FAILED }
-        }
-      }
-      // if not across, waiting for dest tx, return in_progress
-      return { status: BridgeStatus.IN_PROGRESS }
-    }
-
-    // if srcTxStatus = completed & destTxStatus = completed, return executed
-    if (event.srcTxStatus === BungeeEventStatus.COMPLETED && event.destTxStatus === BungeeEventStatus.COMPLETED) {
-      return { status: BridgeStatus.EXECUTED }
-    }
-
-    // there is no failed case for across - gets auto-refunded - or cctp - attestation can be relayed by anyone on destination chain
-    throw new Error('Unknown status')
+    throw new Error('Not implemented')
   }
 
   async getCancelBridgingTx(_bridgingId: string): Promise<EvmCall> {
