@@ -72,7 +72,7 @@ function toAmountsAndCosts(
 
   // Calculate bridge fee bps from input amount routeFee
   // input amount and routeFee would be in token decimals so we need to convert to bigInt
-  const bridgeFeeBps = Number((BigInt(bungeeQuote.route.routeDetails.routeFee.amount) * 10_000n) / BigInt(amount))
+  const bridgeFeeBps = calculateFeeBps(BigInt(bungeeQuote.route.routeDetails.routeFee.amount), BigInt(amount))
 
   return {
     beforeFee: {
@@ -135,6 +135,21 @@ export function decodeBungeeBridgeTxData(txData: string) {
 
 export function applyBps(amount: bigint, bps: number): bigint {
   return (amount * BigInt(10_000 - bps)) / 10_000n
+}
+
+export function calculateFeeBps(feeAmountBig: bigint, amountBig: bigint): number {
+  if (amountBig === 0n) {
+    throw new Error('Denominator is 0')
+  }
+
+  if (feeAmountBig > amountBig) {
+    throw new Error('Fee amount is greater than amount')
+  }
+
+  // feeAmount will always be less than amount
+  // so the max value for the bps will be 10_000
+  // so Number conversion here should be safe
+  return Number((feeAmountBig * 10_000n + amountBig / 2n) / amountBig)
 }
 
 /**
