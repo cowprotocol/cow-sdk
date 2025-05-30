@@ -60,10 +60,11 @@ export async function createBungeeDepositCall(params: {
     // add weiroll action to replace input amount with new input amount
     // fetching raw value in bytes since we need to replace bytes in the encoded function data
     const sourceAmountIncludingSurplusBytes = planner.add(SellTokenContract.balanceOf(cowShedAccount).rawValue())
+    const sourceAmountIncludingSurplus = planner.add(SellTokenContract.balanceOf(cowShedAccount))
 
     // add weiroll action to approve token to socket gateway
     if (setAllowance) {
-      planner.add(SellTokenContract.approve(buildTx.approvalData.spenderAddress, sourceAmountIncludingSurplusBytes))
+      planner.add(SellTokenContract.approve(buildTx.approvalData.spenderAddress, sourceAmountIncludingSurplus))
     }
 
     const encodedFunctionDataWithNewInputAmount = planner.add(
