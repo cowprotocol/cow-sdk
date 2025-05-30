@@ -252,20 +252,24 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
         // check across api to check status is expired or refunded
         const acrossStatus = await this.api.getAcrossStatus(event.orderId)
         if (acrossStatus === 'expired') {
-          return { status: BridgeStatus.EXPIRED }
+          return { status: BridgeStatus.EXPIRED, depositTxHash: event.srcTransactionHash }
         }
         if (acrossStatus === 'refunded') {
           // refunded means failed
-          return { status: BridgeStatus.REFUND }
+          return { status: BridgeStatus.REFUND, depositTxHash: event.srcTransactionHash }
         }
       }
       // if not across, waiting for dest tx, return in_progress
-      return { status: BridgeStatus.IN_PROGRESS }
+      return { status: BridgeStatus.IN_PROGRESS, depositTxHash: event.srcTransactionHash }
     }
 
     // if srcTxStatus = completed & destTxStatus = completed, return executed
     if (event.srcTxStatus === BungeeEventStatus.COMPLETED && event.destTxStatus === BungeeEventStatus.COMPLETED) {
-      return { status: BridgeStatus.EXECUTED }
+      return {
+        status: BridgeStatus.EXECUTED,
+        depositTxHash: event.srcTransactionHash,
+        fillTxHash: event.destTransactionHash,
+      }
     }
 
     // there is no failed case for across - gets auto-refunded - or cctp - attestation can be relayed by anyone on destination chain
