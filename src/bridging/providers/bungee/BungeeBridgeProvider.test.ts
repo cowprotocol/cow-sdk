@@ -5,7 +5,7 @@ import {
   BUNGEE_HOOK_DAPP_ID,
   BUNGEE_SUPPORTED_NETWORKS,
   BungeeBridgeProvider,
-  BungeeBridgeProviderOptions
+  BungeeBridgeProviderOptions,
 } from './BungeeBridgeProvider'
 import { latest as latestAppData } from '@cowprotocol/app-data'
 
@@ -69,6 +69,22 @@ describe('BungeeBridgeProvider', () => {
       // The token result is empty and we don't call getTokenInfos
       expect(tokens).toEqual([])
       expect(mockGetTokenInfos).not.toHaveBeenCalled()
+    })
+
+    it('should return tokens for supported chain', async () => {
+      const tokens = await provider.getBuyTokens(SupportedChainId.POLYGON)
+
+      expect(tokens.length).toBeGreaterThan(0)
+      expect(tokens).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            chainId: SupportedChainId.POLYGON,
+            address: expect.any(String),
+            decimals: expect.any(Number),
+          }),
+        ]),
+      )
+      expect(mockGetTokenInfos).not.toHaveBeenCalled() // Should use static config, not dynamic fetching
     })
   })
 
