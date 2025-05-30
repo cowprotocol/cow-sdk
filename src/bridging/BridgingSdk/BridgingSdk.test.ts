@@ -1,5 +1,5 @@
 import { parseUnits } from '@ethersproject/units'
-import { ALL_SUPPORTED_CHAINS, SupportedChainId, TargetChainId } from '../../chains'
+import { ALL_SUPPORTED_CHAINS, SupportedChainId } from '../../chains'
 import { BridgingSdk } from './BridgingSdk'
 import { MockBridgeProvider } from '../providers/mock/MockBridgeProvider'
 import { mainnet } from '../../chains/details/mainnet'
@@ -63,19 +63,13 @@ describe('BridgingSdk', () => {
         quoteResponse: orderQuoteResponse,
         orderTypedData,
         signer,
+        suggestedSlippageBps: 0,
       },
     }
     tradingSdk.getQuoteResults = jest.fn().mockResolvedValue(quoteResult)
 
     bridgingSdk = new BridgingSdk({
       providers: [mockProvider],
-      getErc20Decimals: async (_: TargetChainId, tokenAddress: string) => {
-        if (tokenAddress !== intermediateToken) {
-          throw new Error('This mock its supposed to be used for intermediate token')
-        }
-
-        return intermediateTokenDecimals
-      },
       tradingSdk,
     })
   })
@@ -198,6 +192,7 @@ describe('BridgingSdk', () => {
           quoteResponse: orderQuoteResponse,
           appDataInfo,
           orderTypedData,
+          suggestedSlippageBps: 0,
         },
         postSwapOrderFromQuote: () =>
           Promise.resolve({

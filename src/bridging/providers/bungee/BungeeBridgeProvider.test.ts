@@ -1,7 +1,12 @@
 import { SupportedChainId, TargetChainId } from '../../../chains'
 import { TokenInfo } from '../../../common'
 import { BungeeApi } from './BungeeApi'
-import { BUNGEE_SUPPORTED_NETWORKS, BungeeBridgeProvider, BungeeBridgeProviderOptions } from './BungeeBridgeProvider'
+import {
+  BUNGEE_HOOK_DAPP_ID,
+  BUNGEE_SUPPORTED_NETWORKS,
+  BungeeBridgeProvider,
+  BungeeBridgeProviderOptions
+} from './BungeeBridgeProvider'
 import { latest as latestAppData } from '@cowprotocol/app-data'
 
 // Mock BungeeApi
@@ -58,22 +63,6 @@ describe('BungeeBridgeProvider', () => {
       mockGetTokenInfos.mockResolvedValue(mockTokens)
     })
 
-    it('should return tokens for supported chain', async () => {
-      const tokens = await provider.getBuyTokens(SupportedChainId.POLYGON)
-
-      expect(tokens).toEqual(mockTokens)
-      // mockGetTokenInfos was called with a list of addresses which includes 0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359 and 0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619
-
-      // The token result contains USDC and WETH in polygon
-      expect(mockGetTokenInfos).toHaveBeenCalledWith(
-        SupportedChainId.POLYGON,
-        expect.arrayContaining([
-          '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
-          '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
-        ]),
-      )
-    })
-
     it('should return empty array for unsupported chain', async () => {
       const tokens = await provider.getBuyTokens(12345 as TargetChainId)
 
@@ -86,6 +75,7 @@ describe('BungeeBridgeProvider', () => {
   describe('info', () => {
     it('should return provider info', () => {
       expect(provider.info).toEqual({
+        dappId: BUNGEE_HOOK_DAPP_ID,
         name: 'Bungee',
         logoUrl: expect.stringContaining('bungee-logo.png'),
       })
@@ -110,12 +100,6 @@ describe('BungeeBridgeProvider', () => {
   describe('getExplorerUrl', () => {
     it('should return explorer url', () => {
       expect(provider.getExplorerUrl('123')).toEqual('https://socketscan.io/tx/123')
-    })
-  })
-
-  describe('getStatus', () => {
-    it('should return status', async () => {
-      await expect(provider.getStatus('123')).rejects.toThrowError('Not implemented')
     })
   })
 

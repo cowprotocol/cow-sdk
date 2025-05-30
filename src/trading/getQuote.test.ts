@@ -1,4 +1,3 @@
-import { ETH_FLOW_DEFAULT_SLIPPAGE_BPS } from './consts'
 import { getQuoteWithSigner } from './getQuote'
 import { SwapParameters } from './types'
 import { ETH_ADDRESS, WRAPPED_NATIVE_CURRENCIES } from '../common'
@@ -70,7 +69,7 @@ describe('getQuoteToSign', () => {
             environment: 'barn',
           },
         },
-        orderBookApiMock
+        orderBookApiMock,
       )
 
       const appData = JSON.parse(result.appDataInfo.fullAppData)
@@ -85,7 +84,7 @@ describe('getQuoteToSign', () => {
         await getQuoteWithSigner(
           { ...defaultOrderParams, sellToken: ETH_ADDRESS, slippageBps: undefined },
           {},
-          orderBookApiMock
+          orderBookApiMock,
         )
 
         const call = getQuoteMock.mock.calls[0][0]
@@ -93,17 +92,17 @@ describe('getQuoteToSign', () => {
         expect(call.sellToken).toBe(WRAPPED_NATIVE_CURRENCIES[defaultOrderParams.chainId].address)
       })
 
-      it('Default slippage should be 2%', async () => {
+      it('Default slippage should be 2% in mainnet', async () => {
         await getQuoteWithSigner(
-          { ...defaultOrderParams, sellToken: ETH_ADDRESS, slippageBps: undefined },
+          { ...defaultOrderParams, chainId: SupportedChainId.MAINNET, sellToken: ETH_ADDRESS, slippageBps: undefined },
           {},
-          orderBookApiMock
+          orderBookApiMock,
         )
 
         const call = getQuoteMock.mock.calls[0][0]
         const appData = JSON.parse(call.appData)
 
-        expect(appData.metadata.quote.slippageBips).toBe(ETH_FLOW_DEFAULT_SLIPPAGE_BPS[defaultOrderParams.chainId])
+        expect(appData.metadata.quote.slippageBips).toBe(200)
       })
     })
 
@@ -156,7 +155,7 @@ describe('getQuoteToSign', () => {
       const buyAmount = +quoteResponseMock.quote.buyAmount
 
       expect(+result.amountsAndCosts.afterSlippage.buyAmount.toString()).toBe(
-        buyAmount - (buyAmount * 20) / (100 * 100)
+        buyAmount - (buyAmount * 20) / (100 * 100),
       )
     })
 
@@ -164,16 +163,16 @@ describe('getQuoteToSign', () => {
       const { result } = await getQuoteWithSigner(defaultOrderParams, {}, orderBookApiMock)
 
       expect(result.amountsAndCosts.costs.networkFee.amountInSellCurrency.toString()).toBe(
-        quoteResponseMock.quote.feeAmount
+        quoteResponseMock.quote.feeAmount,
       )
     })
 
     describe('When sell ETH', () => {
-      it('Default slippage should be 2%  in Mainnet', async () => {
+      it('Default slippage should be 2% in Mainnet', async () => {
         const { result } = await getQuoteWithSigner(
           { ...defaultOrderParams, chainId: SupportedChainId.MAINNET, sellToken: ETH_ADDRESS, slippageBps: undefined },
           {},
-          orderBookApiMock
+          orderBookApiMock,
         )
         const buyAmount = +quoteResponseMock.quote.buyAmount
 

@@ -1,22 +1,22 @@
 import { nativeCurrencyTemplate } from '../../common/consts/tokens'
-import { ChainInfo } from '../types'
+import { ChainInfo, SupportedChainId } from '../types'
 import { RAW_CHAINS_FILES_PATH } from '../const/path'
 
 const polygonLogo = `${RAW_CHAINS_FILES_PATH}/images/polygon-logo.svg`
 
 // See https://github.com/wevm/viem/blob/main/src/chains/definitions/polygon.ts
 export const polygon: ChainInfo = {
-  id: 137,
+  id: SupportedChainId.POLYGON,
   label: 'Polygon',
   logo: { light: polygonLogo, dark: polygonLogo },
   nativeCurrency: {
     ...nativeCurrencyTemplate,
-    chainId: 137,
+    chainId: SupportedChainId.POLYGON,
     name: 'POL',
     symbol: 'POL',
     logoUrl: polygonLogo,
   },
-  addressPrefix: 'op',
+  addressPrefix: 'matic',
   isTestnet: false,
   contracts: {
     multicall3: {
@@ -29,7 +29,7 @@ export const polygon: ChainInfo = {
       http: ['https://polygon-rpc.com'],
     },
   },
-  color: '#ff0420',
+  color: '#8247e5',
   website: {
     name: 'Polygon',
     url: 'https://polygon.technology',
