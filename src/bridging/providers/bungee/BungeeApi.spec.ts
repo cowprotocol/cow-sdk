@@ -85,7 +85,7 @@ describe('BungeeApi: Shape of API response', () => {
     // Note: This test requires a valid orderId from a previous transaction
     // Using a known orderId from a previous transaction
     const result = await api.getEvents({
-      orderId: '0x3424e00ba25b0c35219d19d50706d6e8b15e8a51f6a6cdbd083c93d508f09d43daee4d2156de6fe6f7d50ca047136d758f96a6f06835d4d2',
+      orderId: '0x0bfa5c44e95964a907d5f0d69ea65221e3a8fb1871e41aa3195e446c4ce855bbdaee4d2156de6fe6f7d50ca047136d758f96a6f067ee7474',
     })
 
     expect(result).toBeDefined()
