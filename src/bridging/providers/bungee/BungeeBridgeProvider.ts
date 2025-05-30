@@ -235,8 +235,8 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     // order id exists so order is valid, but
     // - bungee may not have indexed the event yet, which it will do eventually
     // - or the order is not filled yet on cowswap
-    if (events.length === 0) {
-      return { status: BridgeStatus.NOT_INITIATED }
+    if (!events?.length) {
+      return { status: BridgeStatus.UNKNOWN }
     }
     const event = events[0]
 
@@ -256,7 +256,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
         }
         if (acrossStatus === 'refunded') {
           // refunded means failed
-          return { status: BridgeStatus.FAILED }
+          return { status: BridgeStatus.REFUND }
         }
       }
       // if not across, waiting for dest tx, return in_progress
