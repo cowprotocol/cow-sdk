@@ -193,3 +193,71 @@ export type UserRequestValidation = {
   routeId: string
   socketRequest: SocketRequest
 }
+
+export enum BungeeEventStatus {
+  COMPLETED = 'COMPLETED',
+  PENDING = 'PENDING',
+}
+
+export enum BungeeBridgeName {
+  ACROSS = 'across',
+  CCTP = 'cctp',
+}
+
+export type BungeeEvent = {
+  identifier: string
+  srcTransactionHash: string
+  bridgeName: BungeeBridgeName
+  fromChainId: number
+  gasUsed: string
+  isCowswapTrade: boolean
+  isSocketTx: boolean
+  metadata: string
+  orderId: string
+  recipient: string
+  sender: string
+  socketContractVersion: string
+  srcAmount: string
+  srcBlockHash: string
+  srcBlockNumber: number
+  srcBlockTimeStamp: number
+  srcTokenAddress: string
+  srcTokenDecimals: number
+  srcTokenLogoURI: string
+  srcTokenName: string
+  srcTokenSymbol: string
+  to: string
+  toChainId: number
+  destTransactionHash: string
+  destAmount: string
+  destBlockHash: string
+  destBlockNumber: number
+  destBlockTimeStamp: number
+  destTokenAddress: string
+  destTokenDecimals: number
+  destTokenLogoURI: string
+  destTokenName: string
+  destTokenSymbol: string
+  srcTxStatus: BungeeEventStatus
+  destTxStatus: BungeeEventStatus
+}
+export type BungeeEventsAPIResponse = {
+  success: boolean
+  result: Array<BungeeEvent>
+}
+
+export interface AcrossStatusAPIResponse {
+  status: 'filled' | 'pending' | 'expired' | 'refunded' | 'slowFillRequested'
+  originChainId: string
+  depositId: string
+  depositTxHash?: string
+  fillTx?: string
+  destinationChainId?: string
+  depositRefundTxHash?: string
+  pagination?: {
+    currentIndex: number
+    maxIndex: number
+  }
+}
+
+export type AcrossStatus = AcrossStatusAPIResponse['status']
