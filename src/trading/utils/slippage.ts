@@ -1,4 +1,18 @@
+import { SupportedChainId } from 'src/chains'
+import { getIsEthFlowOrder } from './misc'
+
 const SCALE = 10n ** 6n // 6 decimal places of precision. Used to avoid depending on Big Decimal libraries
+const DEFAULT_SLIPPAGE_BPS = 50 // 0.5%
+
+const ETH_FLOW_DEFAULT_SLIPPAGE_BPS: Record<SupportedChainId, number> = {
+  [SupportedChainId.MAINNET]: 200, // 2%,
+  [SupportedChainId.ARBITRUM_ONE]: 50, // 0.5%,
+  [SupportedChainId.BASE]: 50, // 0.5%,
+  [SupportedChainId.GNOSIS_CHAIN]: 50, // 0.5%,
+  [SupportedChainId.SEPOLIA]: 50, // 0.5%,
+  [SupportedChainId.POLYGON]: 50, // 0.5%,
+  [SupportedChainId.AVALANCHE]: 50, // 0.5%,
+}
 
 /**
  * Get the slippage percentage for a given absolute slippage.
@@ -47,5 +61,22 @@ export function getSlippagePercent(params: {
     const percentageInScale = (SCALE * (sellAmount + slippage)) / sellAmount - SCALE
 
     return Number(percentageInScale) / Number(SCALE)
+  }
+}
+
+export function getDefaultSlippageBps(chainId: SupportedChainId, isEthFlowOrder: boolean): number
+
+export function getDefaultSlippageBps(chainId: SupportedChainId, sellToken: string): number
+
+export function getDefaultSlippageBps(chainId: SupportedChainId, isEthFlowOrSellToken: boolean | string): number {
+  const isEthFlow =
+    typeof isEthFlowOrSellToken === 'boolean'
+      ? isEthFlowOrSellToken
+      : getIsEthFlowOrder({ sellToken: isEthFlowOrSellToken })
+
+  if (isEthFlow) {
+    return ETH_FLOW_DEFAULT_SLIPPAGE_BPS[chainId]
+  } else {
+    return DEFAULT_SLIPPAGE_BPS
   }
 }

@@ -16,7 +16,6 @@ import {
   BridgeQuoteAndPost,
   BridgeQuoteResult,
   BridgeQuoteResults,
-  GetErc20Decimals,
   QuoteBridgeRequest,
   QuoteBridgeRequestWithoutAmount,
 } from '../types'
@@ -53,10 +52,6 @@ type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
   tradingSdk: TradingSdk
 
   /**
-   * Function to get the decimals of the ERC20 tokens.
-   */
-  getErc20Decimals: GetErc20Decimals
-  /**
    * For quote fetching we have to sign bridging hooks.
    * But we won't do that using users wallet and will use some static PK.
    */
@@ -66,7 +61,7 @@ type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
 export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   params: GetQuoteWithBridgeParams<T>,
 ): Promise<BridgeQuoteAndPost> {
-  const { provider, swapAndBridgeRequest, advancedSettings, getErc20Decimals, tradingSdk, bridgeHookSigner } = params
+  const { provider, swapAndBridgeRequest, advancedSettings, tradingSdk, bridgeHookSigner } = params
   const {
     kind,
     sellTokenChainId,
@@ -92,7 +87,6 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   const bridgeRequestWithoutAmount = await getBaseBridgeQuoteRequest({
     swapAndBridgeRequest: swapAndBridgeRequest,
     provider,
-    getErc20Decimals,
   })
 
   // Get the hook mock for cost estimation
@@ -245,10 +239,8 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
 async function getBaseBridgeQuoteRequest<T extends BridgeQuoteResult>(params: {
   swapAndBridgeRequest: QuoteBridgeRequest
   provider: BridgeProvider<T>
-  getErc20Decimals: GetErc20Decimals
 }): Promise<QuoteBridgeRequestWithoutAmount> {
-  const { provider, getErc20Decimals, swapAndBridgeRequest: quoteBridgeRequest } = params
-  const { sellTokenChainId } = quoteBridgeRequest
+  const { provider, swapAndBridgeRequest: quoteBridgeRequest } = params
 
   const intermediateTokens = await provider.getIntermediateTokens(quoteBridgeRequest)
 
@@ -257,17 +249,14 @@ async function getBaseBridgeQuoteRequest<T extends BridgeQuoteResult>(params: {
   }
 
   // We just pick the first intermediate token for now
-  const intermediateTokenAddress = intermediateTokens[0]
-  log(`Using ${intermediateTokenAddress} as intermediate tokens`)
-
-  // Get intermediate token decimals
-  const intermediaryTokenDecimals = await getErc20Decimals(sellTokenChainId, intermediateTokenAddress)
+  const intermediateToken = intermediateTokens[0]
+  log(`Using ${intermediateToken} as intermediate tokens`)
 
   // Get the gas limit estimation for the hook
   return {
     ...quoteBridgeRequest,
-    sellTokenAddress: intermediateTokenAddress,
-    sellTokenDecimals: intermediaryTokenDecimals,
+    sellTokenAddress: intermediateToken.address,
+    sellTokenDecimals: intermediateToken.decimals,
   }
 }
 

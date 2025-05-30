@@ -8,14 +8,18 @@ import {
   BridgeProviderInfo,
   BridgeQuoteResult,
   BridgeStatusResult,
+  BridgingDepositParams,
   QuoteBridgeRequest,
 } from '../../types'
 
-import { DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION, RAW_PROVIDERS_FILES_PATH } from '../../const'
+import {
+  DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION,
+  HOOK_DAPP_BRIDGE_PROVIDER_PREFIX,
+  RAW_PROVIDERS_FILES_PATH,
+} from '../../const'
 
 import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
 
-import { ACROSS_TOKEN_MAPPING } from './const/tokens'
 import { EvmCall, TokenInfo } from '../../../common'
 
 import { mainnet } from '../../../chains/details/mainnet'
@@ -24,27 +28,23 @@ import { arbitrumOne } from '../../../chains/details/arbitrum'
 import { base } from '../../../chains/details/base'
 import { optimism } from '../../../chains/details/optimism'
 import { AcrossApi, AcrossApiOptions } from './AcrossApi'
-import { getChainConfigs, getTokenAddress, getTokenSymbol, toBridgeQuoteResult } from './util'
+import { mapAcrossStatusToBridgeStatus, toBridgeQuoteResult } from './util'
 import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
 import { createAcrossDepositCall } from './createAcrossDepositCall'
 import { OrderKind } from '@cowprotocol/contracts'
-import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
 import { SuggestedFeesResponse } from './types'
+import { getDepositParams } from './getDepositParams'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
-const HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/across`
+type SupportedTokensState = Record<ChainId, Record<string, TokenInfo>>
+
+export const ACROSS_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/across`
 export const ACROSS_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
 
 // We need to review if we should set an additional slippage tolerance, for now assuming the quote gives you the exact price of bridging and no further slippage is needed
 const SLIPPAGE_TOLERANCE_BPS = 0
-export interface AcrossBridgeProviderOptions {
-  /**
-   * Token info provider
-   * @param chainId - The chain ID
-   * @param addresses - The addresses of the tokens to get the info for
-   * @returns The token infos
-   */
-  getTokenInfos?: (chainId: ChainId, addresses: string[]) => Promise<TokenInfo[]>
 
+export interface AcrossBridgeProviderOptions {
   // API options
   apiOptions?: AcrossApiOptions
 
@@ -60,7 +60,9 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
   protected api: AcrossApi
   protected cowShedSdk: CowShedSdk
 
-  constructor(private options: AcrossBridgeProviderOptions = {}) {
+  private supportedTokens: SupportedTokensState | null = null
+
+  constructor(options: AcrossBridgeProviderOptions = {}) {
     this.api = new AcrossApi(options.apiOptions)
     this.cowShedSdk = new CowShedSdk(options.cowShedOptions)
   }
@@ -68,6 +70,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
   info: BridgeProviderInfo = {
     name: 'Across',
     logoUrl: `${RAW_PROVIDERS_FILES_PATH}/across/across-logo.png`,
+    dappId: ACROSS_HOOK_DAPP_ID,
   }
 
   async getNetworks(): Promise<ChainInfo[]> {
@@ -75,37 +78,28 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
   }
 
   async getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]> {
-    if (!this.options.getTokenInfos) {
-      throw new Error("'getTokenInfos' parameter is required for AcrossBridgeProvider constructor")
-    }
-
-    const chainConfig = ACROSS_TOKEN_MAPPING[targetChainId as TargetChainId]
-    if (!chainConfig) {
-      return []
-    }
-
-    const tokenAddresses = Object.values(chainConfig.tokens).filter((address): address is string => Boolean(address))
-    return this.options.getTokenInfos(targetChainId, tokenAddresses)
+    return Object.values((await this.getSupportedTokensState())[targetChainId] || {})
   }
 
-  async getIntermediateTokens(request: QuoteBridgeRequest): Promise<string[]> {
+  async getIntermediateTokens(request: QuoteBridgeRequest): Promise<TokenInfo[]> {
     if (request.kind !== OrderKind.SELL) {
       throw new Error('Only SELL is supported for now')
     }
 
     const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
-    const chainConfigs = getChainConfigs(sellTokenChainId, buyTokenChainId)
-    if (!chainConfigs) return []
 
-    const { sourceChainConfig, targetChainConfig } = chainConfigs
+    const supportedTokensState = await this.getSupportedTokensState()
+    const buyTokenAddressLower = buyTokenAddress.toLowerCase()
+
+    const sourceTokens = supportedTokensState[sellTokenChainId]
+    const targetTokens = supportedTokensState[buyTokenChainId]
 
     // Find the token symbol for the target token
-    const targetTokenSymbol = getTokenSymbol(buyTokenAddress, targetChainConfig)
+    const targetTokenSymbol = targetTokens && targetTokens[buyTokenAddressLower]?.symbol?.toLowerCase()
     if (!targetTokenSymbol) return []
 
     // Use the tokenSymbol to find the outputToken in the target chain
-    const intermediateToken = getTokenAddress(targetTokenSymbol, sourceChainConfig)
-    return intermediateToken ? [intermediateToken] : []
+    return Object.values(sourceTokens || {}).filter((token) => token.symbol?.toLowerCase() === targetTokenSymbol)
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<AcrossQuoteResult> {
@@ -147,7 +141,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     chainId: SupportedChainId,
     unsignedCall: EvmCall,
     signer: Signer,
-    defaultGasLimit?: bigint
+    defaultGasLimit?: bigint,
   ): Promise<BridgeHook> {
     // Sign the multicall
     const { signedMulticall, cowShedAccount, gasLimit } = await this.cowShedSdk.signCalls({
@@ -171,7 +165,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
         target: to,
         callData: data,
         gasLimit: gasLimit.toString(),
-        dappId: HOOK_DAPP_ID, // TODO: I think we should have some additional parameter to type the hook (using dappId for now)
+        dappId: ACROSS_HOOK_DAPP_ID, // TODO: I think we should have some additional parameter to type the hook (using dappId for now)
       },
       recipient: cowShedAccount,
     }
@@ -181,10 +175,15 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     throw new Error('Not implemented')
   }
 
-  async getBridgingId(_orderUid: string, _settlementTx: string, _logIndex: number): Promise<string> {
-    // TODO: get events from the mined transaction, extract the deposit id
-    // Important. A settlement could have many bridge-and-swap transactions, maybe even using different providers, this is why the log index might be handy to find which of the depositIds corresponds to the bridging transaction
-    throw new Error('Not implemented')
+  async getBridgingParams(
+    chainId: ChainId,
+    provider: JsonRpcProvider,
+    orderUid: string,
+    txHash: string,
+  ): Promise<BridgingDepositParams | null> {
+    const txReceipt = await provider.getTransactionReceipt(txHash)
+
+    return getDepositParams(chainId, orderUid, txReceipt)
   }
 
   getExplorerUrl(bridgingId: string): string {
@@ -192,14 +191,38 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     return `https://app.across.to/transactions/${bridgingId}`
   }
 
-  async getStatus(_bridgingId: string): Promise<BridgeStatusResult> {
-    throw new Error('Not implemented')
+  async getStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult> {
+    const depositStatus = await this.api.getDepositStatus({
+      originChainId: originChainId.toString(),
+      depositId: bridgingId,
+    })
+
+    return {
+      status: mapAcrossStatusToBridgeStatus(depositStatus.status),
+      depositTxHash: depositStatus.depositTxHash,
+      fillTxHash: depositStatus.fillTx,
+    }
   }
 
   async getCancelBridgingTx(_bridgingId: string): Promise<EvmCall> {
     throw new Error('Not implemented')
   }
+
   async getRefundBridgingTx(_bridgingId: string): Promise<EvmCall> {
     throw new Error('Not implemented')
+  }
+
+  private async getSupportedTokensState(): Promise<SupportedTokensState> {
+    if (!this.supportedTokens) {
+      this.supportedTokens = (await this.api.getSupportedTokens()).reduce((acc, val) => {
+        acc[val.chainId] = acc[val.chainId] || {}
+
+        acc[val.chainId][val.address.toLowerCase()] = val
+
+        return acc
+      }, {} as SupportedTokensState)
+    }
+
+    return this.supportedTokens
   }
 }

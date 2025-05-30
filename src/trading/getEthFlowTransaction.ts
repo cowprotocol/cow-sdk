@@ -2,13 +2,14 @@ import { LimitTradeParametersFromQuote, PostTradeAdditionalParams, TransactionPa
 import { calculateUniqueOrderId } from './calculateUniqueOrderId'
 import { getOrderToSign } from './getOrderToSign'
 import { type EthFlow, EthFlow__factory } from '../common/generated'
-import { BARN_ETH_FLOW_ADDRESS, CowEnv, ETH_FLOW_ADDRESS } from '../common'
+import { BARN_ETH_FLOW_ADDRESS, CowEnv, ETH_FLOW_ADDRESS, WRAPPED_NATIVE_CURRENCIES } from '../common'
 import { SupportedChainId } from '../chains'
 import { GAS_LIMIT_DEFAULT } from './consts'
 import type { EthFlowOrder } from '../common/generated/EthFlow'
-import { adjustEthFlowOrderParams, calculateGasMargin } from './utils/misc'
+import { calculateGasMargin } from './utils/misc'
 import { Signer } from '@ethersproject/abstract-signer'
 import type { UnsignedOrder } from '../order-signing'
+import { getDefaultSlippageBps } from './utils/slippage'
 
 export async function getEthFlowTransaction(
   signer: Signer,
@@ -19,15 +20,26 @@ export async function getEthFlowTransaction(
 ): Promise<{ orderId: string; transaction: TransactionParams; orderToSign: UnsignedOrder }> {
   const { networkCostsAmount = '0', checkEthFlowOrderExists } = additionalParams
   const from = await signer.getAddress()
+  const slippageBps = _params.slippageBps ?? getDefaultSlippageBps(chainId, true)
 
   const params = {
     ..._params,
-    ...adjustEthFlowOrderParams(chainId, _params),
+    sellToken: WRAPPED_NATIVE_CURRENCIES[chainId].address,
+    slippageBps,
   }
   const { quoteId } = params
 
   const contract = getEthFlowContract(signer, params.env)
-  const orderToSign = getOrderToSign({ from, networkCostsAmount }, params, appDataKeccak256)
+  const orderToSign = getOrderToSign(
+    {
+      chainId,
+      isEthFlow: true,
+      from,
+      networkCostsAmount,
+    },
+    params,
+    appDataKeccak256,
+  )
   const orderId = await calculateUniqueOrderId(chainId, orderToSign, checkEthFlowOrderExists, params.env)
 
   const ethOrderParams: EthFlowOrder.DataStruct = {

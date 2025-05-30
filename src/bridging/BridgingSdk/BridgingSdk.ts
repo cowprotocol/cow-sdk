@@ -2,31 +2,25 @@ import { SwapAdvancedSettings, TradingSdk } from '../../trading'
 import {
   BridgeProvider,
   BridgeQuoteResult,
+  BridgeStatusResult,
   CrossChainOrder,
   CrossChainQuoteAndPost,
-  GetErc20Decimals,
   QuoteBridgeRequest,
 } from '../types'
-import { ALL_SUPPORTED_CHAINS, CowEnv, TokenInfo } from '../../common'
+import { ALL_SUPPORTED_CHAINS, CowEnv, TokenInfo, enableLogging } from '../../common'
 import { ChainInfo, SupportedChainId, TargetChainId } from '../../chains'
 import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
 import { getQuoteWithBridge } from './getQuoteWithBridge'
-import { getSigner } from '../../common/utils/wallet'
-import { factoryGetErc20Decimals } from './getErc20Decimals'
-import { enableLogging } from '../../common/utils/log'
-import { OrderBookApi } from 'src/order-book'
 import { getCrossChainOrder } from './getCrossChainOrder'
+import { JsonRpcProvider } from '@ethersproject/providers'
+import { OrderBookApi } from '../../order-book'
+import { findBridgeProviderFromHook } from './findBridgeProviderFromHook'
 
 export interface BridgingSdkOptions {
   /**
    * Providers for the bridging.
    */
   providers: BridgeProvider<BridgeQuoteResult>[]
-
-  /**
-   * Function to get the decimals of the ERC20 tokens
-   */
-  getErc20Decimals?: GetErc20Decimals
 
   /**
    * Trading SDK.
@@ -49,14 +43,18 @@ export interface BridgingSdkOptions {
  */
 export interface GetOrderParams {
   /**
+   * Id of a network where order was settled
+   */
+  chainId: SupportedChainId
+  /**
    * The unique identifier of the order.
    */
   orderId: string
 
   /**
-   * The chain ID of the order.
+   * RPC provider to get order transactions details
    */
-  chainId: SupportedChainId
+  rpcProvider: JsonRpcProvider
 
   /**
    * The environment of the order
@@ -64,8 +62,7 @@ export interface GetOrderParams {
   env?: CowEnv
 }
 
-export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'enableLogging' | 'getErc20Decimals'>> &
-  Pick<BridgingSdkOptions, 'getErc20Decimals'>
+export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'enableLogging'>>
 
 /**
  * SDK for bridging for swapping tokens between different chains.
@@ -125,9 +122,8 @@ export class BridgingSdk {
 
   /**
    * Get the available buy tokens for buying in a specific target chain
-   *
-   * @param param
-   * @returns
+
+   * @param targetChainId
    */
   async getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]> {
     return this.provider.getBuyTokens(targetChainId)
@@ -150,22 +146,18 @@ export class BridgingSdk {
    */
   async getQuote(
     quoteBridgeRequest: QuoteBridgeRequest,
-    advancedSettings?: SwapAdvancedSettings
+    advancedSettings?: SwapAdvancedSettings,
   ): Promise<CrossChainQuoteAndPost> {
     const { sellTokenChainId, buyTokenChainId } = quoteBridgeRequest
     const tradingSdk = this.config.tradingSdk
 
     if (sellTokenChainId !== buyTokenChainId) {
-      const signer = getSigner(quoteBridgeRequest.signer)
-      const getErc20Decimals = this.config.getErc20Decimals ?? factoryGetErc20Decimals(signer)
-
       // Cross-chain swap
       return getQuoteWithBridge({
         swapAndBridgeRequest: quoteBridgeRequest,
         advancedSettings,
         tradingSdk,
         provider: this.provider,
-        getErc20Decimals,
         bridgeHookSigner: advancedSettings?.quoteSigner,
       })
     } else {
@@ -178,16 +170,26 @@ export class BridgingSdk {
     }
   }
 
-  async getOrder(params: GetOrderParams): Promise<CrossChainOrder> {
+  async getOrder(params: GetOrderParams): Promise<CrossChainOrder | null> {
     const { orderBookApi } = this.config
 
-    const { orderId, chainId, env } = params
+    const { chainId, orderId, rpcProvider, env = orderBookApi.context.env } = params
+
     return getCrossChainOrder({
-      orderId,
       chainId,
+      orderId,
+      rpcProvider,
       orderBookApi,
+      env,
       providers: this.config.providers,
-      env: env || orderBookApi.context.env,
     })
+  }
+
+  async getOrderBridgingStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult> {
+    return this.provider.getStatus(bridgingId, originChainId)
+  }
+
+  getProviderFromAppData(fullAppData: string): BridgeProvider<BridgeQuoteResult> | undefined {
+    return findBridgeProviderFromHook(fullAppData, this.getProviders())
   }
 }

@@ -1,14 +1,24 @@
 import { SupportedChainId, TargetChainId } from '../../../chains'
-import { TokenInfo } from '../../../common'
-import { OrderKind } from '../../../order-book'
-import { BridgeQuoteResult, QuoteBridgeRequest } from '../../types'
-import { AcrossApi } from './AcrossApi'
-import { ACROSS_SUPPORTED_NETWORKS, AcrossBridgeProvider, AcrossBridgeProviderOptions } from './AcrossBridgeProvider'
-import { SuggestedFeesResponse } from './types'
 import { latest as latestAppData } from '@cowprotocol/app-data/dist/generatedTypes'
+import { OrderKind } from '../../../order-book'
+import { BridgeQuoteResult, BridgeStatus, QuoteBridgeRequest } from '../../types'
+import { AcrossApi } from './AcrossApi'
+import {
+  ACROSS_HOOK_DAPP_ID,
+  ACROSS_SUPPORTED_NETWORKS,
+  AcrossBridgeProvider,
+  AcrossBridgeProviderOptions,
+} from './AcrossBridgeProvider'
+import { SuggestedFeesResponse } from './types'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 // Mock AcrossApi
 jest.mock('./AcrossApi')
+
+const mockTokens = [
+  { chainId: SupportedChainId.POLYGON, address: '0x123', decimals: 18, symbol: 'TOKEN1', name: 'Token 1' },
+  { chainId: SupportedChainId.POLYGON, address: '0x456', decimals: 6, symbol: 'TOKEN2', name: 'Token 2' },
+]
 
 class AcrossBridgeProviderTest extends AcrossBridgeProvider {
   constructor(options: AcrossBridgeProviderOptions) {
@@ -27,12 +37,10 @@ class AcrossBridgeProviderTest extends AcrossBridgeProvider {
 }
 
 describe('AcrossBridgeProvider', () => {
-  const mockGetTokenInfos = jest.fn()
   let provider: AcrossBridgeProviderTest
 
   beforeEach(() => {
     const options = {
-      getTokenInfos: mockGetTokenInfos,
       apiOptions: {},
     }
     provider = new AcrossBridgeProviderTest(options)
@@ -52,13 +60,10 @@ describe('AcrossBridgeProvider', () => {
   })
 
   describe('getBuyTokens', () => {
-    const mockTokens: TokenInfo[] = [
-      { chainId: SupportedChainId.POLYGON, address: '0x123', decimals: 18, symbol: 'TOKEN1', name: 'Token 1' },
-      { chainId: SupportedChainId.POLYGON, address: '0x456', decimals: 6, symbol: 'TOKEN2', name: 'Token 2' },
-    ]
-
     beforeEach(() => {
-      mockGetTokenInfos.mockResolvedValue(mockTokens)
+      const mockAcrossApi = new AcrossApi()
+      jest.spyOn(mockAcrossApi, 'getSupportedTokens').mockResolvedValue(mockTokens)
+      provider.setApi(mockAcrossApi)
     })
 
     it('should return tokens for supported chain', async () => {
@@ -66,15 +71,6 @@ describe('AcrossBridgeProvider', () => {
 
       expect(tokens).toEqual(mockTokens)
       // mockGetTokenInfos was called with a list of addresses which includes 0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359 and 0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619
-
-      // The token result contains USDC and WETH in polygon
-      expect(mockGetTokenInfos).toHaveBeenCalledWith(
-        SupportedChainId.POLYGON,
-        expect.arrayContaining([
-          '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
-          '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
-        ])
-      )
     })
 
     it('should return empty array for unsupported chain', async () => {
@@ -82,7 +78,6 @@ describe('AcrossBridgeProvider', () => {
 
       // The token result is empty and we don't call getTokenInfos
       expect(tokens).toEqual([])
-      expect(mockGetTokenInfos).not.toHaveBeenCalled()
     })
   })
 
@@ -170,6 +165,7 @@ describe('AcrossBridgeProvider', () => {
   describe('info', () => {
     it('should return provider info', () => {
       expect(provider.info).toEqual({
+        dappId: ACROSS_HOOK_DAPP_ID,
         name: 'Across',
         logoUrl: expect.stringContaining('across-logo.png'),
       })
@@ -179,14 +175,27 @@ describe('AcrossBridgeProvider', () => {
   describe('decodeBridgeHook', () => {
     it('should return bridging id', async () => {
       await expect(provider.decodeBridgeHook({} as unknown as latestAppData.CoWHook)).rejects.toThrowError(
-        'Not implemented'
+        'Not implemented',
       )
     })
   })
 
   describe('getBridgingId', () => {
-    it('should return bridging id', async () => {
-      await expect(provider.getBridgingId('123', '123', 1)).rejects.toThrowError('Not implemented')
+    const mockProvider = {
+      getNetwork: jest.fn().mockResolvedValue({ chainId: 100 }),
+      getTransactionReceipt: jest.fn().mockResolvedValue({
+        status: 'success',
+        logs: [
+          {
+            address: '0x123',
+            topics: ['0x123'],
+          },
+        ],
+      }),
+    } as unknown as JsonRpcProvider
+
+    it('should return null if the transaction receipt has no deposit events', async () => {
+      expect(await provider.getBridgingParams(10, mockProvider, '123', '123')).toBe(null)
     })
   })
 
@@ -197,8 +206,29 @@ describe('AcrossBridgeProvider', () => {
   })
 
   describe('getStatus', () => {
-    it('should return status', async () => {
-      await expect(provider.getStatus('123')).rejects.toThrowError('Not implemented')
+    const mockDepositStatus = {
+      status: 'filled' as const,
+      originChainId: '',
+      depositId: '',
+    }
+
+    beforeEach(() => {
+      const mockAcrossApi = new AcrossApi()
+      jest.spyOn(mockAcrossApi, 'getDepositStatus').mockResolvedValue(mockDepositStatus)
+      provider.setApi(mockAcrossApi)
+    })
+
+    it('should return a valid status when passed a valid bridging id', async () => {
+      const status = await provider.getStatus('123', SupportedChainId.MAINNET)
+
+      expect(status).toEqual({
+        status: BridgeStatus.EXECUTED,
+      })
+
+      expect(provider.getApi().getDepositStatus).toHaveBeenCalledWith({
+        originChainId: SupportedChainId.MAINNET.toString(),
+        depositId: '123',
+      })
     })
   })
 

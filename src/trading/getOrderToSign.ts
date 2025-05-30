@@ -1,17 +1,22 @@
 import { BuyTokenDestination, getQuoteAmountsAndCosts, type OrderParameters, SellTokenSource } from '../order-book'
 import { UnsignedOrder } from '../order-signing'
+import { DEFAULT_QUOTE_VALIDITY } from './consts'
 import { LimitTradeParameters } from './types'
-import { DEFAULT_QUOTE_VALIDITY, DEFAULT_SLIPPAGE_BPS } from './consts'
+import { getPartnerFeeBps } from './utils/getPartnerFeeBps'
+import { SupportedChainId } from 'src/chains'
+import { getDefaultSlippageBps } from './utils/slippage'
 
 interface OrderToSignParams {
+  chainId: SupportedChainId
+  isEthFlow: boolean
   from: string
   networkCostsAmount?: string
 }
 
 export function getOrderToSign(
-  { from, networkCostsAmount = '0' }: OrderToSignParams,
+  { chainId, from, networkCostsAmount = '0', isEthFlow }: OrderToSignParams,
   limitOrderParams: LimitTradeParameters,
-  appDataKeccak256: string
+  appDataKeccak256: string,
 ): UnsignedOrder {
   const {
     sellAmount,
@@ -22,7 +27,7 @@ export function getOrderToSign(
     buyTokenDecimals,
     kind,
     partiallyFillable = false,
-    slippageBps = DEFAULT_SLIPPAGE_BPS,
+    slippageBps = getDefaultSlippageBps(chainId, isEthFlow),
     partnerFee,
     validFor,
   } = limitOrderParams
@@ -46,7 +51,7 @@ export function getOrderToSign(
   const { afterSlippage } = getQuoteAmountsAndCosts({
     orderParams,
     slippagePercentBps: slippageBps,
-    partnerFeeBps: partnerFee?.bps,
+    partnerFeeBps: getPartnerFeeBps(partnerFee),
     sellDecimals: sellTokenDecimals,
     buyDecimals: buyTokenDecimals,
   })

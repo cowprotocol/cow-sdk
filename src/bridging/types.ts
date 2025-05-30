@@ -1,5 +1,5 @@
 import { latest as latestAppData } from '@cowprotocol/app-data'
-import { ChainInfo, SupportedChainId, TargetChainId } from '../chains'
+import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../chains'
 import { TokenInfo } from '../common/types/tokens'
 import { Address, Amounts, EnrichedOrder, OrderKind } from '../order-book'
 import { EvmCall } from '../common/types/ethereum'
@@ -14,10 +14,12 @@ import {
   TraderParameters,
 } from '../trading'
 import { Signer } from '@ethersproject/abstract-signer'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 export interface BridgeProviderInfo {
   name: string
   logoUrl: string
+  dappId: string
 }
 
 interface WithSellToken {
@@ -104,16 +106,25 @@ export interface BridgeHook {
 }
 
 export enum BridgeStatus {
-  NOT_INITIATED = 'not_initiated',
   IN_PROGRESS = 'in_progress',
   EXECUTED = 'executed',
-  FAILED = 'failed',
   EXPIRED = 'expired',
+  REFUND = 'refund',
+  UNKNOWN = 'unknown',
 }
 
 export interface BridgeStatusResult {
   status: BridgeStatus
   fillTimeInSeconds?: number
+  /**
+   * Transaction hash of the deposit on the origin chain.
+   */
+  depositTxHash?: string
+  /**
+   * Transaction hash of the fill on the destination chain.
+   * Only present when fillStatus is 'filled'.
+   */
+  fillTxHash?: string
 }
 
 /**
@@ -150,7 +161,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    *
    * @param request - The quote request
    */
-  getIntermediateTokens(request: QuoteBridgeRequest): Promise<string[]>
+  getIntermediateTokens(request: QuoteBridgeRequest): Promise<TokenInfo[]>
 
   /**
    * Get a quote for a bridge request.
@@ -198,7 +209,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
     chainId: SupportedChainId,
     unsignedCall: EvmCall,
     signer: Signer,
-    defaultGasLimit?: bigint
+    defaultGasLimit?: bigint,
   ): Promise<BridgeHook>
 
   /**
@@ -213,11 +224,17 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
 
   /**
    * Get the identifier of the bridging transaction from the settlement transaction.
+   * @param chainId
+   * @param provider - Provider is needed in order to get transaction details from blockchain.
    * @param orderUid - The unique identifier of the order
-   * @param settlementTx - The settlement transaction in which the bridging post-hook was executed
-   * @param logIndex - The log index of the trade within the settlement transaction
+   * @param txHash - The hash of the settlement transaction in which the bridging post-hook was executed
    */
-  getBridgingId(orderUid: string, settlementTx: string, logIndex: number): Promise<string>
+  getBridgingParams(
+    chainId: ChainId,
+    provider: JsonRpcProvider,
+    orderUid: string,
+    txHash: string,
+  ): Promise<BridgingDepositParams | null>
 
   /**
    * Get the explorer url for a bridging id.
@@ -230,8 +247,9 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    * Get the status of a bridging transaction.
    *
    * @param bridgingId - The bridging id
+   * @param originChainId - id of network where funds were deposited
    */
-  getStatus(bridgingId: string): Promise<BridgeStatusResult>
+  getStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult>
 
   // Get a transaction to cancel a bridging transaction.
   // TODO: Review if we support cancelling bridging
@@ -345,13 +363,25 @@ export interface BridgeQuoteResults extends BridgeQuoteResult {
   bridgeCallDetails: BridgeCallDetails
 }
 
-export type GetErc20Decimals = (chainId: TargetChainId, tokenAddress: string) => Promise<number>
+export interface BridgingDepositParams {
+  inputTokenAddress: Address
+  outputTokenAddress: Address
+  inputAmount: bigint
+  outputAmount: bigint
+  owner: Address
+  quoteTimestamp: number
+  fillDeadline: number
+  recipient: Address
+  sourceChainId: number
+  destinationChainId: number
+  bridgingId: string
+}
 
 export interface CrossChainOrder {
   chainId: SupportedChainId
   order: EnrichedOrder
-  status: BridgeStatus
-  bridgingId?: string
+  statusResult: BridgeStatusResult
+  bridgingParams: BridgingDepositParams
+  tradeTxHash: string
   explorerUrl?: string
-  fillTimeInSeconds?: number
 }

@@ -1,10 +1,10 @@
 import { getQuoteWithSigner } from './getQuote'
 
-import { postSwapOrderFromQuote } from './postSwapOrder'
-import { SwapParameters } from './types'
-import { OrderKind } from '../order-book'
 import { parseUnits } from 'ethers/lib/utils'
 import { SupportedChainId } from '../chains'
+import { OrderKind } from '../order-book'
+import { postSwapOrderFromQuote } from './postSwapOrder'
+import { SwapParameters } from './types'
 
 const WETH_ADDRESS = '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14'
 const COW_ADDRESS = '0x0625aFB445C3B6B7B929342a04A22599fd5dBB59'
@@ -148,7 +148,7 @@ describe('postSwapOrder', () => {
     const orderParams = {
       ...SELL_ORDER_PARAMS,
       partnerFee: {
-        bps: 50,
+        volumeBps: 50,
         recipient: '0x444cc',
       },
     }
