@@ -221,6 +221,15 @@ export const getDisplayNameFromBungeeBridge = (bridge: BungeeBridge): string | u
 }
 
 export const decodeAmountsBungeeTxData = (txData: string, bridge: BungeeBridge) => {
+  if (!txData || !txData.startsWith('0x')) {
+    throw new Error('Invalid txData format')
+  }
+
+  const bridgeIndices = BungeeTxDataBytesIndices[bridge]
+  if (!bridgeIndices) {
+    throw new Error(`Unsupported bridge type: ${bridge}`)
+  }
+
   // decode input amount
   const inputAmountBytes = `0x${txData.slice(
     BungeeTxDataBytesIndices[bridge].inputAmount.bytesString_startIndex,
@@ -232,10 +241,14 @@ export const decodeAmountsBungeeTxData = (txData: string, bridge: BungeeBridge) 
   // decode output amount if available
   // check if output amount is available
   if (bridge === BungeeBridge.Across) {
+    const acrossBridgeIndices = BungeeTxDataBytesIndices[bridge]
+    if (!acrossBridgeIndices) {
+      throw new Error(`Unsupported bridge type: ${bridge}`)
+    }
+
     const outputAmountBytes = `0x${txData.slice(
-      BungeeTxDataBytesIndices[bridge].outputAmount.bytesString_startIndex,
-      BungeeTxDataBytesIndices[bridge].outputAmount.bytesString_startIndex +
-        BungeeTxDataBytesIndices[bridge].outputAmount.bytesString_length,
+      acrossBridgeIndices.outputAmount.bytesString_startIndex,
+      acrossBridgeIndices.outputAmount.bytesString_startIndex + acrossBridgeIndices.outputAmount.bytesString_length,
     )}`
     const outputAmountBigNumber = ethers.BigNumber.from(outputAmountBytes)
     return {

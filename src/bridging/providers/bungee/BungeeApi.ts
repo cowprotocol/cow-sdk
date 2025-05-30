@@ -95,8 +95,14 @@ export class BungeeApi {
         throw new Error('No routes found')
       }
 
+      // Ensure we have a valid route with details
+      const firstRoute = manualRoutes[0]
+      if (!firstRoute?.routeDetails?.name) {
+        throw new Error('Invalid route: missing route details or name')
+      }
+
       // validate bridge name
-      const bridgeName = getBungeeBridgeFromDisplayName(response.result.manualRoutes[0].routeDetails.name)
+      const bridgeName = getBungeeBridgeFromDisplayName(firstRoute.routeDetails.name)
       if (!bridgeName) {
         throw new Error('Invalid bridge name')
       }
@@ -394,6 +400,11 @@ function isValidQuoteResponse(response: unknown): response is BungeeQuoteAPIResp
     }
 
     const r = route
+
+    // Check if routeDetails exists
+    if (!('routeDetails' in r) || typeof r.routeDetails !== 'object' || r.routeDetails === null) {
+      return false
+    }
 
     // Validate if route.routeDetails.routeFee.amount exists
     if (!('routeFee' in r.routeDetails)) {
