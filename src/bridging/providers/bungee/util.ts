@@ -105,14 +105,31 @@ function toAmountsAndCosts(
  * @returns The routeId and encoded function data
  */
 export function decodeBungeeBridgeTxData(txData: string) {
+  if (!txData || txData.length < 10) {
+    throw new Error('Invalid txData: too short')
+  }
+  if (!txData.startsWith('0x')) {
+    throw new Error('Invalid txData: must start with 0x')
+  }
+
   // remove first two characters = 0x
   const txDataWithout0x = txData.slice(2)
+  if (txDataWithout0x.length < 8) {
+    throw new Error('Invalid txData: insufficient data for routeId')
+  }
+
   // first four bytes are the routeId
   const routeId = `0x${txDataWithout0x.slice(0, 8)}`
+
   // rest is the encoded function data
   const encodedFunctionData = `0x${txDataWithout0x.slice(8)}`
+  if (encodedFunctionData.length < 10) {
+    throw new Error('Invalid txData: insufficient data for function selector')
+  }
+
   // first 2+8 characters of encodedFunctionData are the function selector
   const functionSelector = `${encodedFunctionData.slice(0, 10)}`
+
   return { routeId, encodedFunctionData, functionSelector }
 }
 
