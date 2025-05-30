@@ -50,7 +50,7 @@ export class BungeeApi {
   }
 
   validateBridges(includeBridges: SupportedBridge[]): void {
-    if (includeBridges && includeBridges.some((bridge) => !this.SUPPORTED_BRIDGES.includes(bridge))) {
+    if (includeBridges?.some((bridge) => !this.SUPPORTED_BRIDGES.includes(bridge))) {
       throw new Error(
         `Unsupported bridge: ${includeBridges.filter((bridge) => !this.SUPPORTED_BRIDGES.includes(bridge)).join(', ')}`,
       )
@@ -82,7 +82,12 @@ export class BungeeApi {
       this.validateBridges(params.includeBridges)
 
       const urlParams = objectToSearchParams(params)
-      const response = await this.get<BungeeQuoteAPIResponse>('/quote', urlParams, isValidQuoteResponse)
+      const response = await this.makeApiCall<BungeeQuoteAPIResponse>(
+        'bungee',
+        '/quote',
+        urlParams,
+        isValidQuoteResponse,
+      )
       if (!response.success) {
         throw new BridgeProviderQuoteError('Bungee Api Error: Quote failed', response)
       }
@@ -137,7 +142,7 @@ export class BungeeApi {
    * https://docs.bungee.exchange/bungee-api/api-reference/bungee-controller-build-tx-v-1
    */
   async getBungeeBuildTx(quote: BungeeQuote): Promise<BungeeBuildTx> {
-    const response = await this.get<BungeeBuildTxAPIResponse>('/build-tx', {
+    const response = await this.makeApiCall<BungeeBuildTxAPIResponse>('bungee', '/build-tx', {
       quoteId: quote.route.quoteId,
     })
     if (!response.success) {
@@ -220,7 +225,8 @@ export class BungeeApi {
   }
 
   async getEvents(params: { orderId: string }): Promise<BungeeEvent[]> {
-    const response = await this.getEventsApi<BungeeEventsAPIResponse>(
+    const response = await this.makeApiCall<BungeeEventsAPIResponse>(
+      'events',
       '/order',
       {
         orderId: params.orderId,
@@ -234,7 +240,8 @@ export class BungeeApi {
   }
 
   async getAcrossStatus(depositTxHash: string): Promise<AcrossStatus> {
-    const response = await this.getAcrossApi<AcrossStatusAPIResponse>(
+    const response = await this.makeApiCall<AcrossStatusAPIResponse>(
+      'across',
       '/deposit/status',
       {
         depositTxHash,
@@ -244,106 +251,42 @@ export class BungeeApi {
     return response.status
   }
 
-  protected async getEventsApi<T>(
+  private async makeApiCall<T>(
+    apiType: 'bungee' | 'events' | 'across',
     path: string,
     params: Record<string, string> | URLSearchParams,
     isValidResponse?: (response: unknown) => response is T,
   ): Promise<T> {
-    const baseUrl = this.options.eventsApiBaseUrl || BUNGEE_EVENTS_API_URL
+    const baseUrlMap = {
+      bungee: this.options.apiBaseUrl || BUNGEE_API_URL,
+      events: this.options.eventsApiBaseUrl || BUNGEE_EVENTS_API_URL,
+      across: this.options.acrossApiBaseUrl || ACROSS_API_URL,
+    }
+
+    const errorMessageMap = {
+      bungee: 'Bungee Api Error',
+      events: 'Bungee Events Api Error',
+      across: 'Across Api Error',
+    }
+
+    const baseUrl = baseUrlMap[apiType]
     const url = `${baseUrl}${path}?${new URLSearchParams(params).toString()}`
 
-    log(`Fetching Bungee Events API: GET ${url}. Params: ${JSON.stringify(params)}`)
+    log(`Fetching ${apiType} API: GET ${url}. Params: ${JSON.stringify(params)}`)
 
-    const response = await fetch(url, {
-      method: 'GET',
-    })
+    const response = await fetch(url, { method: 'GET' })
 
     if (!response.ok) {
       const errorBody = await response.json()
-      throw new BridgeProviderQuoteError('Bungee Events Api Error', errorBody)
+      throw new BridgeProviderQuoteError(errorMessageMap[apiType], errorBody)
     }
 
-    // Validate the response
     const json = await response.json()
-    if (isValidResponse) {
-      if (isValidResponse(json)) {
-        return json
-      } else {
-        throw new BridgeProviderQuoteError(
-          `Invalid response for Bungee Events API call ${path}. The response doesn't pass the validation. Did the API change?`,
-          json,
-        )
-      }
-    }
-
-    return json
-  }
-
-  protected async getAcrossApi<T>(
-    path: string,
-    params: Record<string, string> | URLSearchParams,
-    isValidResponse?: (response: unknown) => response is T,
-  ): Promise<T> {
-    const baseUrl = this.options.acrossApiBaseUrl || ACROSS_API_URL
-    const url = `${baseUrl}${path}?${new URLSearchParams(params).toString()}`
-
-    log(`Fetching Across API: GET ${url}. Params: ${JSON.stringify(params)}`)
-
-    const response = await fetch(url, {
-      method: 'GET',
-    })
-
-    if (!response.ok) {
-      const errorBody = await response.json()
-      throw new BridgeProviderQuoteError('Across Api Error', errorBody)
-    }
-
-    // Validate the response
-    const json = await response.json()
-    if (isValidResponse) {
-      if (isValidResponse(json)) {
-        return json
-      } else {
-        throw new BridgeProviderQuoteError(
-          `Invalid response for Across API call ${path}. The response doesn't pass the validation. Did the API change?`,
-          json,
-        )
-      }
-    }
-
-    return json
-  }
-
-  protected async get<T>(
-    path: string,
-    params: Record<string, string> | URLSearchParams,
-    isValidResponse?: (response: unknown) => response is T,
-  ): Promise<T> {
-    const baseUrl = this.options.apiBaseUrl || BUNGEE_API_URL
-    const url = `${baseUrl}${path}?${new URLSearchParams(params).toString()}`
-
-    log(`Fetching Bungee API: GET ${url}. Params: ${JSON.stringify(params)}`)
-
-    const response = await fetch(url, {
-      method: 'GET',
-    })
-
-    if (!response.ok) {
-      const errorBody = await response.json()
-      throw new BridgeProviderQuoteError('Bungee Api Error', errorBody)
-    }
-
-    // Validate the response
-    const json = await response.json()
-    if (isValidResponse) {
-      if (isValidResponse(json)) {
-        return json
-      } else {
-        throw new BridgeProviderQuoteError(
-          `Invalid response for Bungee API call ${path}. The response doesn't pass the validation. Did the API change?`,
-          json,
-        )
-      }
+    if (isValidResponse && !isValidResponse(json)) {
+      throw new BridgeProviderQuoteError(
+        `Invalid response for ${apiType} API call ${path}. The response doesn't pass the validation. Did the API change?`,
+        json,
+      )
     }
 
     return json

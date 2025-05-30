@@ -16,7 +16,7 @@ function getSellTokenContract(sellTokenAddress: string): WeirollContract {
   return createWeirollContract(new EthersContract(sellTokenAddress, ERC20_ABI), WeirollCommandFlags.CALL)
 }
 
-function getBungeeCowswapLibContact(sourceChainId: TargetChainId): WeirollContract {
+function getBungeeCowswapLibContract(sourceChainId: TargetChainId): WeirollContract {
   const bungeeCowswapLibContractAddress = BungeeCowswapLibAddresses[sourceChainId]
   if (!bungeeCowswapLibContractAddress) {
     throw new Error('BungeeCowswapLib contract not found')
@@ -46,7 +46,7 @@ export async function createBungeeDepositCall(params: {
 
   // prep all weiroll contracts
   const SellTokenContract = getSellTokenContract(request.sellTokenAddress)
-  const BungeeCowswapLibContract = getBungeeCowswapLibContact(request.sellTokenChainId)
+  const BungeeCowswapLibContract = getBungeeCowswapLibContract(request.sellTokenChainId)
   const socketGatewayContract = getSocketGatewayContract(buildTx.txData.to)
 
   // Check & set allowance for SocketGateway to transfer bridged tokens

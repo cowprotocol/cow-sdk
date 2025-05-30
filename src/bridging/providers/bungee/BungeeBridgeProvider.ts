@@ -98,7 +98,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     if (!sourceTokens || !targetTokens) return []
 
     // Find the token symbol for the target token
-    const targetTokenSymbol = targetTokens && targetTokens[buyTokenAddressLower]?.symbol?.toLowerCase()
+    const targetTokenSymbol = targetTokens?.[buyTokenAddressLower]?.symbol?.toLowerCase()
 
     if (!targetTokenSymbol) return []
 
@@ -280,14 +280,14 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   }
 
   async getCancelBridgingTx(_bridgingId: string): Promise<EvmCall> {
-    // Support for cancellation will depend on the actual bridge an order went through. 
+    // Support for cancellation will depend on the actual bridge an order went through.
     // Across & CCTP doesn't support cancellation.
     // Therefore, not implementing cancellation
     throw new Error('Not implemented')
   }
-  
+
   async getRefundBridgingTx(_bridgingId: string): Promise<EvmCall> {
-    // Support for refund will depend on the actual bridge an order went through. 
+    // Support for refund will depend on the actual bridge an order went through.
     // CCTP doesn't support refund.
     // Across auto-relays refund txns some time after the order expires. No user action needed.
     // Therefore, not implementing refund
