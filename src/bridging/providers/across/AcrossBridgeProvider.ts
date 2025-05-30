@@ -38,7 +38,7 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 
 type SupportedTokensState = Record<ChainId, Record<string, TokenInfo>>
 
-const HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/across`
+export const ACROSS_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/across`
 export const ACROSS_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
 
 // We need to review if we should set an additional slippage tolerance, for now assuming the quote gives you the exact price of bridging and no further slippage is needed
@@ -70,7 +70,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
   info: BridgeProviderInfo = {
     name: 'Across',
     logoUrl: `${RAW_PROVIDERS_FILES_PATH}/across/across-logo.png`,
-    dappId: HOOK_DAPP_ID,
+    dappId: ACROSS_HOOK_DAPP_ID,
   }
 
   async getNetworks(): Promise<ChainInfo[]> {
@@ -165,7 +165,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
         target: to,
         callData: data,
         gasLimit: gasLimit.toString(),
-        dappId: HOOK_DAPP_ID, // TODO: I think we should have some additional parameter to type the hook (using dappId for now)
+        dappId: ACROSS_HOOK_DAPP_ID, // TODO: I think we should have some additional parameter to type the hook (using dappId for now)
       },
       recipient: cowShedAccount,
     }

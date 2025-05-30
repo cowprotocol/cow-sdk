@@ -3,7 +3,12 @@ import { latest as latestAppData } from '@cowprotocol/app-data/dist/generatedTyp
 import { OrderKind } from '../../../order-book'
 import { BridgeQuoteResult, BridgeStatus, QuoteBridgeRequest } from '../../types'
 import { AcrossApi } from './AcrossApi'
-import { ACROSS_SUPPORTED_NETWORKS, AcrossBridgeProvider, AcrossBridgeProviderOptions } from './AcrossBridgeProvider'
+import {
+  ACROSS_HOOK_DAPP_ID,
+  ACROSS_SUPPORTED_NETWORKS,
+  AcrossBridgeProvider,
+  AcrossBridgeProviderOptions,
+} from './AcrossBridgeProvider'
 import { SuggestedFeesResponse } from './types'
 import { JsonRpcProvider } from '@ethersproject/providers'
 
@@ -160,7 +165,7 @@ describe('AcrossBridgeProvider', () => {
   describe('info', () => {
     it('should return provider info', () => {
       expect(provider.info).toEqual({
-        dappId: 'cow-sdk://bridging/providers/across',
+        dappId: ACROSS_HOOK_DAPP_ID,
         name: 'Across',
         logoUrl: expect.stringContaining('across-logo.png'),
       })
