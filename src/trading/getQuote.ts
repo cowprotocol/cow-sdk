@@ -29,8 +29,8 @@ import { getOrderTypedData } from './getOrderTypedData'
 import { suggestSlippageBps } from './suggestSlippageBps'
 import { getPartnerFeeBps } from './utils/getPartnerFeeBps'
 import { getIsEthFlowOrder, swapParamsToLimitOrderParams } from './utils/misc'
-import { WRAPPED_NATIVE_CURRENCIES } from 'src/common'
 import { getDefaultSlippageBps } from './utils/slippage'
+import { WRAPPED_NATIVE_CURRENCIES } from '../common'
 
 // ETH-FLOW orders require different quote params
 // check the isEthFlow flag and set in quote req obj

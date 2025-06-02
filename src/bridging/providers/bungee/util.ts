@@ -1,14 +1,14 @@
 import { BungeeQuoteResult } from './BungeeBridgeProvider'
-import { BridgeQuoteAmountsAndCosts, QuoteBridgeRequest } from 'src/bridging/types'
 import { OrderKind } from '@cowprotocol/contracts'
 import { BungeeQuote, BungeeQuoteWithBuildTx } from './types'
-import { getBigNumber } from 'src/order-book'
-import { SignerLike } from 'src/common'
 import { ethers, Signer } from 'ethers'
 import { ERC20_ABI } from './abi'
-import { getSigner } from 'src/common/utils/wallet'
 import { BungeeTxDataBytesIndices } from './const/misc'
 import { BungeeBridge, BungeeBridgeNames } from './types'
+import { BridgeQuoteAmountsAndCosts, QuoteBridgeRequest } from '../../types'
+import { getBigNumber } from '../../../order-book'
+import { SignerLike } from '../../../common'
+import { getSigner } from '../../../common/utils/wallet'
 
 /**
  * Convert a QuoteBridgeRequest to a BungeeQuoteResult

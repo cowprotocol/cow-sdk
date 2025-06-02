@@ -1,6 +1,6 @@
-import { AdditionalTargetChainId, SupportedChainId, TargetChainId } from 'src/chains'
-
 // TODO deploy on all chains
+import { AdditionalTargetChainId, SupportedChainId, TargetChainId } from '../../../../chains'
+
 export const BungeeCowswapLibAddresses: Record<TargetChainId, string | undefined> = {
   [SupportedChainId.MAINNET]: undefined,
   [SupportedChainId.GNOSIS_CHAIN]: undefined,

@@ -3,8 +3,8 @@ import { UnsignedOrder } from '../order-signing'
 import { DEFAULT_QUOTE_VALIDITY } from './consts'
 import { LimitTradeParameters } from './types'
 import { getPartnerFeeBps } from './utils/getPartnerFeeBps'
-import { SupportedChainId } from 'src/chains'
 import { getDefaultSlippageBps } from './utils/slippage'
+import { SupportedChainId } from '../chains'
 
 interface OrderToSignParams {
   chainId: SupportedChainId

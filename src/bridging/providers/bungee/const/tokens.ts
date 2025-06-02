@@ -1,5 +1,5 @@
-import { ETH_ADDRESS, TokenInfo } from 'src/common'
 import { SupportedChainId, AdditionalTargetChainId, ChainId } from '../../../../chains/types'
+import { ETH_ADDRESS, TokenInfo } from '../../../../common'
 
 /**
  * Chain config for Bungee. Includes all the supported tokens for the chain.
