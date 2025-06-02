@@ -191,12 +191,14 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
     }
   }
 
+  const defaultGasLimit = bridgeHookSigner ? BigInt(hookEstimatedGasLimit) : undefined
+  log(`Using gas limit: ${defaultGasLimit}`)
   const result = await signHooksAndSetSwapResult(
     // Sign the hooks with bridgeHookSigner if provided
     bridgeHookSigner ? getSigner(bridgeHookSigner) : signer,
     // Use estimated hook gas limit if bridgeHookSigner is provided, so we don't have to estimate the hook gas limit twice
     // Moreover, since bridgeHookSigner is not the real signer, the estimation will fail
-    bridgeHookSigner ? BigInt(hookEstimatedGasLimit) : undefined,
+    defaultGasLimit,
   )
 
   return {
@@ -204,7 +206,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
     bridge: result.bridgeResult,
     async postSwapOrderFromQuote(advancedSettings?: SwapAdvancedSettings) {
       // Sign the hooks with the real signer
-      const { swapResult } = await signHooksAndSetSwapResult(signer, undefined, advancedSettings)
+      const { swapResult } = await signHooksAndSetSwapResult(signer, defaultGasLimit, advancedSettings)
 
       const quoteResults: QuoteResultsWithSigner = {
         result: {
