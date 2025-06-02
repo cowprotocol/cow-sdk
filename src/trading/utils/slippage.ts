@@ -1,5 +1,5 @@
-import { SupportedChainId } from 'src/chains'
 import { getIsEthFlowOrder } from './misc'
+import { SupportedChainId } from '../../chains'
 
 const SCALE = 10n ** 6n // 6 decimal places of precision. Used to avoid depending on Big Decimal libraries
 const DEFAULT_SLIPPAGE_BPS = 50 // 0.5%
