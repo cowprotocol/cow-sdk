@@ -58,8 +58,6 @@ export async function createBungeeDepositCall(params: {
 
   const bridgeDepositCall = createWeirollDelegateCall((planner) => {
     // add weiroll action to replace input amount with new input amount
-    // fetching raw value in bytes since we need to replace bytes in the encoded function data
-    const sourceAmountIncludingSurplusBytes = planner.add(SellTokenContract.balanceOf(cowShedAccount).rawValue())
     const sourceAmountIncludingSurplus = planner.add(SellTokenContract.balanceOf(cowShedAccount))
 
     // add weiroll action to approve token to socket gateway
@@ -68,11 +66,10 @@ export async function createBungeeDepositCall(params: {
     }
 
     const encodedFunctionDataWithNewInputAmount = planner.add(
-      BungeeCowswapLibContract.replaceBytes(
-        encodedFunctionData,
-        BungeeTxDataBytesIndices[bungeeQuote.routeBridge].inputAmount.bytes_startIndex,
-        BungeeTxDataBytesIndices[bungeeQuote.routeBridge].inputAmount.bytes_length,
-        sourceAmountIncludingSurplusBytes,
+      BungeeCowswapLibContract.replaceUint256(
+        encodedFunctionData, // original encoded function data
+        BungeeTxDataBytesIndices[bungeeQuote.routeBridge].inputAmount.bytes_startIndex, // start index of input amount
+        sourceAmountIncludingSurplus, // new input amount
       ),
     )
     let finalEncodedFunctionData = encodedFunctionDataWithNewInputAmount
@@ -85,25 +82,20 @@ export async function createBungeeDepositCall(params: {
         bungeeQuote.routeBridge,
       )
 
-      // new input amount
-      const newInputAmount = sourceAmountIncludingSurplusBytes
-
       // weiroll: increase output amount by pctDiff
       const newOutputAmount = planner.add(
         BungeeCowswapLibContract.applyPctDiff(
           inputAmountBigNumber, // base
-          newInputAmount, // compare
+          sourceAmountIncludingSurplus, // compare - new input amount
           outputAmountBigNumber, // target
-        ).rawValue(),
+        ),
       )
       // weiroll: replace output amount bytes with newOutputAmount
-      // TODO will write a new cheaper replaceBytes function on the contract and use that
       const encodedFunctionDataWithNewInputAndOutputAmount = planner.add(
-        BungeeCowswapLibContract.replaceBytes(
-          finalEncodedFunctionData,
-          BungeeTxDataBytesIndices[bungeeQuote.routeBridge].outputAmount.bytes_startIndex,
-          BungeeTxDataBytesIndices[bungeeQuote.routeBridge].outputAmount.bytes_length,
-          newOutputAmount,
+        BungeeCowswapLibContract.replaceUint256(
+          finalEncodedFunctionData, // original encoded function data
+          BungeeTxDataBytesIndices[bungeeQuote.routeBridge].outputAmount.bytes_startIndex, // start index of output amount
+          newOutputAmount, // new output amount
         ),
       )
       finalEncodedFunctionData = encodedFunctionDataWithNewInputAndOutputAmount
