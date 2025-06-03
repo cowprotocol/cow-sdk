@@ -35,6 +35,7 @@ import { OrderKind } from '@cowprotocol/contracts'
 import { SuggestedFeesResponse } from './types'
 import { getDepositParams } from './getDepositParams'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import { BridgeProviderQuoteError } from '../../errors'
 
 type SupportedTokensState = Record<ChainId, Record<string, TokenInfo>>
 
@@ -83,7 +84,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
 
   async getIntermediateTokens(request: QuoteBridgeRequest): Promise<TokenInfo[]> {
     if (request.kind !== OrderKind.SELL) {
-      throw new Error('Only SELL is supported for now')
+      throw new BridgeProviderQuoteError('Only SELL is supported for now', { kind: request.kind })
     }
 
     const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request

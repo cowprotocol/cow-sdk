@@ -35,6 +35,7 @@ import { BungeeBridgeName, BungeeBuildTx, BungeeEventStatus, BungeeQuote, Bungee
 import { isTruthy } from '../../../common/utils/common'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { getSigner } from '../../../common/utils/wallet'
+import { BridgeProviderQuoteError } from '../../errors'
 
 export const BUNGEE_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/bungee`
 export const BUNGEE_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
@@ -85,7 +86,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
 
   async getIntermediateTokens(request: QuoteBridgeRequest): Promise<TokenInfo[]> {
     if (request.kind !== OrderKind.SELL) {
-      throw new Error('Only SELL is supported for now')
+      throw new BridgeProviderQuoteError('Only SELL is supported for now', { kind: request.kind })
     }
 
     const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
@@ -148,8 +149,9 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
       quoteWithBuildTx.buildTx,
       getSigner(request.signer),
     )
+
     if (!isBuildTxValid) {
-      throw new Error('Build tx data is invalid')
+      throw new BridgeProviderQuoteError('Build tx data is invalid', quoteWithBuildTx)
     }
 
     // convert bungee quote response to BridgeQuoteResult
