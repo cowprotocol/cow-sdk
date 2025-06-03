@@ -1,6 +1,6 @@
 import { AdditionalTargetChainId, SupportedChainId, TargetChainId } from '../../../../chains'
 
-const BUNGEE_COWSWAP_LIB_ADDRESS = '0x411b20d4593fee999b37bdb4a9d0ff862bdc0c77'
+const BUNGEE_COWSWAP_LIB_ADDRESS = '0x75b6ba5fcab20848ca00f132d253638fea82e598'
 export const BungeeCowswapLibAddresses: Record<TargetChainId, string | undefined> = {
   [SupportedChainId.MAINNET]: BUNGEE_COWSWAP_LIB_ADDRESS,
   [SupportedChainId.GNOSIS_CHAIN]: BUNGEE_COWSWAP_LIB_ADDRESS,
