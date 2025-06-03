@@ -400,14 +400,12 @@ function isValidBungeeEventsResponse(response: unknown): response is BungeeEvent
     // Check required fields
     return (
       'identifier' in e &&
-      'srcTransactionHash' in e &&
       'bridgeName' in e &&
       'fromChainId' in e &&
       'isCowswapTrade' in e &&
       'orderId' in e &&
       'recipient' in e &&
       'sender' in e &&
-      'destTransactionHash' in e &&
       'srcTxStatus' in e &&
       'destTxStatus' in e
     )

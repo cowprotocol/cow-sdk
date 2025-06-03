@@ -369,8 +369,8 @@ export interface BridgingDepositParams {
   inputAmount: bigint
   outputAmount: bigint
   owner: Address
-  quoteTimestamp: number
-  fillDeadline: number
+  quoteTimestamp: number | null
+  fillDeadline: number | null
   recipient: Address
   sourceChainId: number
   destinationChainId: number

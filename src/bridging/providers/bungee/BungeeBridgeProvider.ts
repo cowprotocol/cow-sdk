@@ -208,12 +208,27 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   async getBridgingParams(
     _chainId: ChainId,
     _provider: JsonRpcProvider,
-    _orderUid: string,
+    orderId: string,
     _txHash: string,
   ): Promise<BridgingDepositParams | null> {
-    console.log('getBridgingParams() Method not implemented in BungeeBridgeProvider.')
+    const events = await this.api.getEvents({ orderId })
+    const event = events[0]
 
-    return null
+    if (!event) return null
+
+    return {
+      inputTokenAddress: event.srcTokenAddress,
+      outputTokenAddress: event.destTokenAddress,
+      inputAmount: BigInt(event.srcAmount),
+      outputAmount: BigInt(event.destAmount),
+      owner: event.sender,
+      quoteTimestamp: null,
+      fillDeadline: null,
+      recipient: event.recipient,
+      sourceChainId: event.fromChainId,
+      destinationChainId: event.toChainId,
+      bridgingId: orderId,
+    }
   }
 
   async decodeBridgeHook(_hook: latestAppData.CoWHook): Promise<BridgeDeposit> {

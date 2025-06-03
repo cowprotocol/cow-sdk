@@ -206,7 +206,8 @@ export enum BungeeBridgeName {
 
 export type BungeeEvent = {
   identifier: string
-  srcTransactionHash: string
+  // When srcTxStatus is PENDING the tx hash is undefined
+  srcTransactionHash?: string
   bridgeName: BungeeBridgeName
   fromChainId: number
   gasUsed: string
@@ -228,7 +229,8 @@ export type BungeeEvent = {
   srcTokenSymbol: string
   to: string
   toChainId: number
-  destTransactionHash: string
+  // When destTxStatus is PENDING the tx hash is undefined
+  destTransactionHash?: string
   destAmount: string
   destBlockHash: string
   destBlockNumber: number
