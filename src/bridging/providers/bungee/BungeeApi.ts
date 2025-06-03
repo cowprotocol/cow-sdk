@@ -51,8 +51,9 @@ export class BungeeApi {
 
   validateBridges(includeBridges: SupportedBridge[]): void {
     if (includeBridges?.some((bridge) => !this.SUPPORTED_BRIDGES.includes(bridge))) {
-      throw new Error(
+      throw new BridgeProviderQuoteError(
         `Unsupported bridge: ${includeBridges.filter((bridge) => !this.SUPPORTED_BRIDGES.includes(bridge)).join(', ')}`,
+        { includeBridges },
       )
     }
   }
@@ -97,19 +98,20 @@ export class BungeeApi {
       // check if manualRoutes is empty
       const { manualRoutes } = response.result
       if (manualRoutes.length === 0) {
-        throw new Error('No routes found')
+        throw new BridgeProviderQuoteError('No routes found', response.result)
       }
 
       // Ensure we have a valid route with details
       const firstRoute = manualRoutes[0]
       if (!firstRoute?.routeDetails?.name) {
-        throw new Error('Invalid route: missing route details or name')
+        throw new BridgeProviderQuoteError('Invalid route: missing route details or name', { manualRoutes })
       }
 
       // validate bridge name
       const bridgeName = getBungeeBridgeFromDisplayName(firstRoute.routeDetails.name)
+
       if (!bridgeName) {
-        throw new Error('Invalid bridge name')
+        throw new BridgeProviderQuoteError('Invalid bridge name', { firstRoute })
       }
 
       // sort manual routes by output
@@ -195,9 +197,11 @@ export class BungeeApi {
   ): Promise<boolean> {
     const _signer = getSigner(signer)
     const socketVerifierAddress = SocketVerifierAddresses[originChainId]
+
     if (!socketVerifierAddress) {
-      throw new Error(`Socket verifier not found for chainId: ${originChainId}`)
+      throw new BridgeProviderQuoteError(`Socket verifier not found`, { originChainId })
     }
+
     const SocketVerifier = new ethers.Contract(socketVerifierAddress, SOCKET_VERIFIER_ABI, _signer)
 
     // should not revert
