@@ -269,17 +269,21 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     if (event.srcTxStatus === BungeeEventStatus.COMPLETED && event.destTxStatus === BungeeEventStatus.PENDING) {
       // if bridgeName = across,
       if (event.bridgeName === BungeeBridgeName.ACROSS) {
-        // check across api to check status is expired or refunded
-        const acrossStatus = await this.api.getAcrossStatus(event.orderId)
-        if (acrossStatus === 'expired') {
-          return { status: BridgeStatus.EXPIRED, depositTxHash: event.srcTransactionHash }
-        }
-        if (acrossStatus === 'refunded') {
-          // refunded means failed
-          return { status: BridgeStatus.REFUND, depositTxHash: event.srcTransactionHash }
+        try {
+          // check across api to check status is expired or refunded
+          const acrossStatus = await this.api.getAcrossStatus(event.orderId)
+          if (acrossStatus === 'expired') {
+            return { status: BridgeStatus.EXPIRED, depositTxHash: event.srcTransactionHash }
+          }
+          if (acrossStatus === 'refunded') {
+            // refunded means failed
+            return { status: BridgeStatus.REFUND, depositTxHash: event.srcTransactionHash }
+          }
+        } catch (e) {
+          console.error('BungeeBridgeProvider get across status error', e)
         }
       }
-      // if not across, waiting for dest tx, return in_progress
+      // if not across or across API fails, waiting for dest tx, return in_progress
       return { status: BridgeStatus.IN_PROGRESS, depositTxHash: event.srcTransactionHash }
     }
 
