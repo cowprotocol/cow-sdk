@@ -57,7 +57,7 @@ export interface PreSignSignature {
   data: string
 }
 
-async function ecdsaSignTypedData(
+export async function ecdsaSignTypedData(
   scheme: EcdsaSigningScheme,
   owner: Signer,
   domain: TypedDataDomain,

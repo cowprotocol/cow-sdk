@@ -134,7 +134,7 @@ export abstract class AdapterUtils {
    * Encodes a function call
    */
   abstract encodeFunction(
-    abi: Array<{ name: string; inputs: Array<{ type: string }> }>,
+    abi: Abi,
     functionName: string,
     args: unknown[],
   ): Bytes

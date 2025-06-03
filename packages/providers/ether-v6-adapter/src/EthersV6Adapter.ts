@@ -48,6 +48,7 @@ export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
   constructor(providerOrSigner: Provider | Signer) {
     super()
     this.ZERO_ADDRESS = ZeroAddress
+
     if (
       providerOrSigner instanceof JsonRpcSigner ||
       providerOrSigner instanceof VoidSigner ||

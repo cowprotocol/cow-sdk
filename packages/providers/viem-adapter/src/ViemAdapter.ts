@@ -13,11 +13,6 @@ import {
   zeroAddress,
 } from 'viem'
 
-import { AdapterTypes, AbstractProviderAdapter } from '@cowprotocol/sdk-common'
-
-export interface ViemTypes extends AdapterTypes {
-  Bytes: `0x${string}`
-}
 import { ViemUtils } from './ViemUtils'
 import {
   IntChainIdTypedDataV4Signer,
@@ -25,6 +20,7 @@ import {
   TypedDataVersionedSigner,
   ViemSignerAdapter,
 } from './ViemSignerAdapter'
+import { AdapterTypes, AbstractProviderAdapter } from '@cowprotocol/sdk-common'
 
 export interface ViemTypes extends AdapterTypes {
   Abi: Abi
@@ -43,6 +39,7 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
   private publicClient: PublicClient
   private account?: Account
   private walletClient: WalletClient
+  private transport: Transport
   public utils: ViemUtils
   public Signer = ViemSignerAdapter
   public TypedDataVersionedSigner = TypedDataVersionedSigner
@@ -52,6 +49,7 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
   constructor(chain: Chain, transport: Transport = http(), account?: Account | `0x${string}`) {
     super()
     this.ZERO_ADDRESS = zeroAddress
+    this.transport = transport
     this.publicClient = createPublicClient({
       chain,
       transport,

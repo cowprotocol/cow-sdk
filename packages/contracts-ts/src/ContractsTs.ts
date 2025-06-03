@@ -14,7 +14,7 @@ import {
 } from './order'
 import { deterministicDeploymentAddress } from './deploy'
 import { normalizeInteraction, normalizeInteractions } from './interaction'
-import { implementationAddress, ownerAddress, proxyInterface } from './proxy'
+import { implementationAddress, ownerAddress } from './proxy'
 import { decodeEip1271SignatureData, encodeEip1271SignatureData, signOrder } from './sign'
 import { grantRequiredRoles } from './vault'
 import {
@@ -70,7 +70,6 @@ export class ContractsTs {
   //proxy
   implementationAddress = implementationAddress
   ownerAddress = ownerAddress
-  proxyInterface = proxyInterface
 
   //sign
   signOrder = signOrder

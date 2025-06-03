@@ -1,4 +1,6 @@
 export * from './AdapterUtils'
+export * from './constants'
+export * from './wallets'
 
 export type Abi = unknown
 
@@ -15,7 +17,6 @@ export type TypedDataDomain = unknown
 export type TypedDataTypes = unknown
 
 export interface Provider {
-  // eslint-disable-next-line
   getStorageAt?: (...args: any[]) => unknown
   getStorage?: (...args: any[]) => unknown
 }
