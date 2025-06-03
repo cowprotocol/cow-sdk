@@ -10,4 +10,5 @@ export abstract class AbstractSigner {
   abstract signTransaction(txParams: TransactionParams): Promise<string>
   abstract signTypedData(domain: unknown, types: unknown, value: Record<string, unknown>): Promise<string>
   abstract sendTransaction(txParams: TransactionParams): Promise<TransactionResponse>
+  abstract estimateGas(txParams: TransactionParams): Promise<bigint>
 }

@@ -1,16 +1,27 @@
-import { Account, WalletClient, PublicClient, Address, TypedDataDomain, TypedDataParameter } from 'viem'
+import {
+  Account,
+  WalletClient,
+  PublicClient,
+  Address,
+  TypedDataDomain,
+  TypedDataParameter,
+  createPublicClient,
+  Transport,
+} from 'viem'
 import { AbstractSigner, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
 
 export class ViemSignerAdapter extends AbstractSigner {
   protected _client: WalletClient
   protected _account: Account
   protected _publicClient?: PublicClient
+  protected _transport?: Transport
 
   constructor(client: WalletClient) {
     super()
     this._client = client
     if (!client?.account) throw new Error('Signer is missing account')
     this._account = client.account
+    this._transport = client.transport as any as Transport
   }
 
   async getAddress(): Promise<string> {
@@ -88,6 +99,34 @@ export class ViemSignerAdapter extends AbstractSigner {
         }
       },
     }
+  }
+
+  async estimateGas(txParams: TransactionParams): Promise<bigint> {
+    // For Viem, we need access to PublicClient to estimate gas
+    // The WalletClient doesn't have estimateGas method
+    if (!this._publicClient) {
+      // Try to get public client from the wallet client's chain
+      if (this._client.chain && this._transport) {
+        this._publicClient = createPublicClient({
+          chain: this._client.chain,
+          transport: this._transport,
+        })
+      } else {
+        throw new Error('Cannot estimate gas: no public client available and cannot create one')
+      }
+    }
+
+    const formattedTx = this._formatTxParams(txParams)
+
+    return await this._publicClient.estimateGas({
+      account: this._account,
+      ...formattedTx,
+    })
+  }
+
+  // Method to set public client if available
+  setPublicClient(publicClient: PublicClient) {
+    this._publicClient = publicClient
   }
 
   private _formatTxParams(txParams: TransactionParams) {

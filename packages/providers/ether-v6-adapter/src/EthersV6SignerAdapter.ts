@@ -51,6 +51,15 @@ export class EthersV6SignerAdapter extends AbstractSigner {
     }
   }
 
+  async estimateGas(txParams: TransactionParams): Promise<bigint> {
+    if (!this._signer.provider) {
+      throw new Error('Signer must have a provider to estimate gas')
+    }
+
+    const estimate = await this._signer.provider.estimateGas(this._formatTxParams(txParams))
+    return BigInt(estimate.toString())
+  }
+
   private _formatTxParams(txParams: TransactionParams) {
     // No need to convert bigint in ethers v6, as it's natively supported
     return { ...txParams }
