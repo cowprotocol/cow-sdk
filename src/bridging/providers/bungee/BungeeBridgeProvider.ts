@@ -220,7 +220,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
       inputTokenAddress: event.srcTokenAddress,
       outputTokenAddress: event.destTokenAddress,
       inputAmount: BigInt(event.srcAmount),
-      outputAmount: BigInt(event.destAmount),
+      outputAmount: event.destAmount ? BigInt(event.destAmount) : null,
       owner: event.sender,
       quoteTimestamp: null,
       fillDeadline: null,

@@ -229,9 +229,9 @@ export type BungeeEvent = {
   srcTokenSymbol: string
   to: string
   toChainId: number
-  // When destTxStatus is PENDING the tx hash is undefined
+  // When destTxStatus is PENDING the tx hash and destAmount are undefined
   destTransactionHash?: string
-  destAmount: string
+  destAmount?: string
   destBlockHash: string
   destBlockNumber: number
   destBlockTimeStamp: number
