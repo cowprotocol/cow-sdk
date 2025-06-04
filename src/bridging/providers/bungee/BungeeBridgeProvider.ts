@@ -67,7 +67,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
 
   info: BridgeProviderInfo = {
     name: 'Bungee',
-    logoUrl: `${RAW_PROVIDERS_FILES_PATH}/bungee/bungee-logo.png`, // TODO: set valid logo
+    logoUrl: `${RAW_PROVIDERS_FILES_PATH}/bungee/bungee-logo.png`,
     dappId: BUNGEE_HOOK_DAPP_ID,
   }
 
@@ -167,7 +167,6 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   }
 
   getGasLimitEstimationForHook(_request: QuoteBridgeRequest): number {
-    // TODO sim and replace gas limit
     return DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION
   }
 

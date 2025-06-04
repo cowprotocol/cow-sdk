@@ -200,6 +200,11 @@ export const BUNGEE_COWSWAP_LIB_ABI = [
     type: 'error',
   },
   {
+    inputs: [],
+    name: 'PositionOutOfBounds',
+    type: 'error',
+  },
+  {
     inputs: [
       {
         internalType: 'uint256',
@@ -207,9 +212,9 @@ export const BUNGEE_COWSWAP_LIB_ABI = [
         type: 'uint256',
       },
       {
-        internalType: 'bytes',
+        internalType: 'uint256',
         name: '_compare',
-        type: 'bytes',
+        type: 'uint256',
       },
       {
         internalType: 'uint256',
@@ -236,9 +241,9 @@ export const BUNGEE_COWSWAP_LIB_ABI = [
         type: 'uint256',
       },
       {
-        internalType: 'bytes',
+        internalType: 'uint256',
         name: '_compare',
-        type: 'bytes',
+        type: 'uint256',
       },
       {
         internalType: 'uint256',
@@ -294,14 +299,43 @@ export const BUNGEE_COWSWAP_LIB_ABI = [
   {
     inputs: [
       {
+        internalType: 'bytes',
+        name: '_original',
+        type: 'bytes',
+      },
+      {
+        internalType: 'uint256',
+        name: '_start',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: '_amount',
+        type: 'uint256',
+      },
+    ],
+    name: 'replaceUint256',
+    outputs: [
+      {
+        internalType: 'bytes',
+        name: '',
+        type: 'bytes',
+      },
+    ],
+    stateMutability: 'pure',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
         internalType: 'uint256',
         name: '_base',
         type: 'uint256',
       },
       {
-        internalType: 'bytes',
+        internalType: 'uint256',
         name: '_compare',
-        type: 'bytes',
+        type: 'uint256',
       },
       {
         internalType: 'uint256',
