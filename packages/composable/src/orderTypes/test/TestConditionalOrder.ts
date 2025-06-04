@@ -1,6 +1,5 @@
-import { GPv2Order } from '../../../common/generated/ComposableCoW'
 import { ConditionalOrder } from '../../ConditionalOrder'
-import { IsValidResult, PollParams, PollResultErrors } from '../../types'
+import { GPv2Order, IsValidResult, PollParams, PollResultErrors } from '../../types'
 import { encodeParams } from '../../utils'
 
 export const DEFAULT_ORDER_PARAMS: TestConditionalOrderParams = {

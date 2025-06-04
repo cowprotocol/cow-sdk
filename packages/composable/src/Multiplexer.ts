@@ -1,12 +1,10 @@
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree'
-import { BigNumber, providers, utils } from 'ethers'
 
-import { SupportedChainId } from '../chains'
-
-import { ComposableCoW, GPv2Order } from '../common/generated/ComposableCoW'
-import { ProofLocation, ProofWithParams, ConditionalOrderParams } from './types'
+import { ProofLocation, ProofWithParams, ConditionalOrderParams, ComposableCoW, GPv2Order } from './types'
 import { ConditionalOrder } from './ConditionalOrder'
-import { getComposableCow } from './contracts'
+import { COMPOSABLE_COW_CONTRACT_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
+import { getGlobalAdapter, Provider } from '@cowprotocol/sdk-common'
+import { ComposableCowFactoryAbi } from './abis/ComposableCowFactoryAbi'
 
 const CONDITIONAL_ORDER_LEAF_ABI = ['address', 'bytes32', 'bytes']
 
@@ -120,9 +118,11 @@ export class Multiplexer {
 
       // Make sure we deserialize `BigNumber` correctly
       if (typeof v === 'object' && v !== null && v.hasOwnProperty('type') && v.hasOwnProperty('hex')) {
-        if (v.type === 'BigNumber') {
-          return BigNumber.from(v)
-        }
+        return BigInt(v)
+      }
+
+      if (typeof v === 'string' && v.endsWith('n') && /^\d+n$/.test(v)) {
+        return BigInt(v.slice(0, -1)) // Remove 'n' and convert to BigInt
       }
 
       return v
@@ -154,6 +154,9 @@ export class Multiplexer {
           ...conditionalOrder,
           orderType: conditionalOrder.orderType,
         }
+      }
+      if (typeof v === 'bigint') {
+        return v.toString() + 'n'
       }
       // We do not do any custom serialization of `BigNumber` in order to preserve it's type.
       return v
@@ -283,6 +286,7 @@ export class Multiplexer {
     filter?: (v: string[]) => boolean,
     uploader?: (offChainEncoded: string) => Promise<string>,
   ): Promise<ComposableCoW.ProofStruct> {
+    const adapter = getGlobalAdapter()
     const data = async (): Promise<string> => {
       switch (location) {
         case ProofLocation.PRIVATE:
@@ -307,7 +311,7 @@ export class Multiplexer {
       .then((d) => {
         try {
           // validate that `d` is a valid `bytes` ready to be abi-encoded
-          utils.hexlify(utils.arrayify(d))
+          adapter.utils.hexlify(adapter.utils.arrayify(d))
 
           // if we get here, we have a valid `data` field for the `ProofStruct`
           // This means that if there was an upload function, it was called and the upload was successful
@@ -315,7 +319,7 @@ export class Multiplexer {
           this.location = location
 
           return {
-            location,
+            location: BigInt(location),
             data: d,
           }
         } catch {
@@ -341,13 +345,19 @@ export class Multiplexer {
     owner: string,
     p: ProofWithParams,
     chain: SupportedChainId,
-    provider: providers.Provider,
+    provider: Provider,
     offChainInputFn?: (owner: string, params: ConditionalOrderParams) => Promise<string>,
   ): Promise<[GPv2Order.DataStruct, string]> {
-    const composableCow = getComposableCow(chain, provider)
-
     const offChainInput = offChainInputFn ? await offChainInputFn(owner, p.params) : '0x'
-    return await composableCow.getTradeableOrderWithSignature(owner, p.params, offChainInput, p.proof)
+    return (await getGlobalAdapter().readContract(
+      {
+        address: COMPOSABLE_COW_CONTRACT_ADDRESS[chain],
+        abi: ComposableCowFactoryAbi,
+        functionName: 'getTradeableOrderWithSignature',
+        args: [owner, p.params, offChainInput, p.proof],
+      },
+      provider,
+    )) as [GPv2Order.DataStruct, string]
   }
 
   /**
@@ -407,7 +417,7 @@ export class Multiplexer {
    * @returns ABI-encoded `data` for the `ProofStruct`.
    */
   private encodeToABI(filter?: (v: string[]) => boolean): string {
-    return utils.defaultAbiCoder.encode(PAYLOAD_EMITTED_ABI, [this.getProofs(filter)])
+    return getGlobalAdapter().utils.encodeAbi(PAYLOAD_EMITTED_ABI, [this.getProofs(filter)]) as string
   }
 
   /**

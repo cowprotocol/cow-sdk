@@ -1,5 +1,3 @@
-import { BigNumber, constants, utils } from 'ethers'
-
 import { ConditionalOrder } from '../ConditionalOrder'
 import {
   ConditionalOrderArguments,
@@ -10,9 +8,10 @@ import {
   PollParams,
   PollResultCode,
   PollResultErrors,
+  GPv2Order,
 } from '../types'
 import { encodeParams, formatEpoch, getBlockInfo, isValidAbi } from '../utils'
-import { GPv2Order } from '../../common/generated/ComposableCoW'
+import { AbstractProviderAdapter, getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 // The type of Conditional Order
 const TWAP_ORDER_TYPE = 'twap'
@@ -25,8 +24,12 @@ export const TWAP_ADDRESS = '0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5'
  */
 export const CURRENT_BLOCK_TIMESTAMP_FACTORY_ADDRESS = '0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc'
 
-export const MAX_UINT32 = BigNumber.from(2).pow(32).sub(1) // 2^32 - 1
-export const MAX_FREQUENCY = BigNumber.from(365 * 24 * 60 * 60) // 1 year
+export const MAX_UINT32 = BigInt(2) ** BigInt(32) - BigInt(1) // 2^32 - 1
+export const MAX_FREQUENCY = BigInt(365 * 24 * 60 * 60) // 1 year
+
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+const ZERO = BigInt(0)
+const ONE = BigInt(1)
 
 // Define the ABI tuple for the TWAPData struct
 const TWAP_STRUCT_ABI = [
@@ -70,32 +73,32 @@ export interface TwapStruct extends TwapDataBase {
   /**
    * amount of sellToken to sell in each part
    */
-  readonly partSellAmount: BigNumber
+  readonly partSellAmount: bigint
 
   /**
    * minimum amount of buyToken that must be bought in each part
    */
-  readonly minPartLimit: BigNumber
+  readonly minPartLimit: bigint
 
   /**
    * start time of the TWAP
    */
-  readonly t0: BigNumber
+  readonly t0: bigint
 
   /**
    * number of parts
    */
-  readonly n: BigNumber
+  readonly n: bigint
 
   /**
    * duration of the TWAP interval
    */
-  readonly t: BigNumber
+  readonly t: bigint
 
   /**
    * whether the TWAP is valid for the entire interval or not
    */
-  readonly span: BigNumber
+  readonly span: bigint
 }
 
 /**
@@ -107,12 +110,12 @@ export interface TwapData extends TwapDataBase {
   /**
    * total amount of sellToken to sell across the entire TWAP
    */
-  readonly sellAmount: BigNumber
+  readonly sellAmount: bigint
 
   /**
    * minimum amount of buyToken that must be bought across the entire TWAP
    */
-  readonly buyAmount: BigNumber
+  readonly buyAmount: bigint
 
   /**
    * start time of the TWAP
@@ -122,12 +125,12 @@ export interface TwapData extends TwapDataBase {
   /**
    * number of parts
    */
-  readonly numberOfParts: BigNumber
+  readonly numberOfParts: bigint
 
   /**
    * duration of the TWAP interval
    */
-  readonly timeBetweenParts: BigNumber
+  readonly timeBetweenParts: bigint
 
   /**
    * whether the TWAP is valid for the entire interval or not
@@ -137,7 +140,7 @@ export interface TwapData extends TwapDataBase {
 
 export type DurationOfPart =
   | { durationType: DurationType.AUTO }
-  | { durationType: DurationType.LIMIT_DURATION; duration: BigNumber }
+  | { durationType: DurationType.LIMIT_DURATION; duration: bigint }
 
 export enum DurationType {
   AUTO = 'AUTO',
@@ -146,7 +149,7 @@ export enum DurationType {
 
 export type StartTime =
   | { startType: StartTimeValue.AT_MINING_TIME }
-  | { startType: StartTimeValue.AT_EPOCH; epoch: BigNumber }
+  | { startType: StartTimeValue.AT_EPOCH; epoch: bigint }
 
 export enum StartTimeValue {
   AT_MINING_TIME = 'AT_MINING_TIME',
@@ -169,7 +172,9 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
    * @throws If the TWAP order is not ABI-encodable.
    * @throws If the handler is not the TWAP address.
    */
-  constructor(params: ConditionalOrderArguments<TwapData>) {
+  constructor(params: ConditionalOrderArguments<TwapData>, adapter?: AbstractProviderAdapter) {
+    if (adapter) setGlobalAdapter(adapter)
+
     const { handler, salt, data: staticInput, hasOffChainInput } = params
 
     // First, verify that the handler is the TWAP address
@@ -203,7 +208,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
    * as the start time of the TWAP.
    */
   get context(): ContextFactory | undefined {
-    if (this.staticInput.t0.gt(0)) {
+    if (this.staticInput.t0 > ZERO) {
       return super.context
     } else {
       return {
@@ -242,17 +247,17 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
 
       // Verify that the order params are logically valid
       if (!(sellToken != buyToken)) return 'InvalidSameToken'
-      if (!(sellToken != constants.AddressZero && buyToken != constants.AddressZero)) return 'InvalidToken'
-      if (!sellAmount.gt(constants.Zero)) return 'InvalidSellAmount'
-      if (!buyAmount.gt(constants.Zero)) return 'InvalidMinBuyAmount'
+      if (!(sellToken != ZERO_ADDRESS && buyToken != ZERO_ADDRESS)) return 'InvalidToken'
+      if (!(sellAmount > ZERO)) return 'InvalidSellAmount'
+      if (!(buyAmount > ZERO)) return 'InvalidMinBuyAmount'
       if (startTime.startType === StartTimeValue.AT_EPOCH) {
         const t0 = startTime.epoch
-        if (!(t0.gte(constants.Zero) && t0.lt(MAX_UINT32))) return 'InvalidStartTime'
+        if (!(t0 >= ZERO && t0 < MAX_UINT32)) return 'InvalidStartTime'
       }
-      if (!(numberOfParts.gt(constants.One) && numberOfParts.lte(MAX_UINT32))) return 'InvalidNumParts'
-      if (!(timeBetweenParts.gt(constants.Zero) && timeBetweenParts.lte(MAX_FREQUENCY))) return 'InvalidFrequency'
+      if (!(numberOfParts > ONE && numberOfParts <= MAX_UINT32)) return 'InvalidNumParts'
+      if (!(timeBetweenParts > ZERO && timeBetweenParts <= MAX_FREQUENCY)) return 'InvalidFrequency'
       if (durationOfPart.durationType === DurationType.LIMIT_DURATION) {
-        if (!durationOfPart.duration.lte(timeBetweenParts)) return 'InvalidSpan'
+        if (!(durationOfPart.duration <= timeBetweenParts)) return 'InvalidSpan'
       }
 
       // Verify that the staticInput derived from the data is ABI-encodable
@@ -266,22 +271,24 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
   }
 
   protected async startTimestamp(params: OwnerContext): Promise<number> {
+    const adapter = getGlobalAdapter()
+
     const { startTime } = this.data
 
     if (startTime?.startType === StartTimeValue.AT_EPOCH) {
-      return startTime.epoch.toNumber()
+      return Number(startTime.epoch)
     }
 
     const cabinet = await this.cabinet(params)
-    const rawCabinetEpoch = utils.defaultAbiCoder.decode(['uint256'], cabinet)[0] as BigNumber
+    const rawCabinetEpoch = adapter.utils.decodeAbi(['uint256'], cabinet)[0] as bigint
 
     // Guard against out-of-range cabinet epoch
-    if (rawCabinetEpoch.gt(MAX_UINT32)) {
+    if (rawCabinetEpoch > MAX_UINT32) {
       throw new Error(`Cabinet epoch out of range: ${rawCabinetEpoch.toString()}`)
     }
 
-    // Convert the cabinet epoch (bignumber) to a number.
-    const cabinetEpoch = rawCabinetEpoch.toNumber()
+    // Convert the cabinet epoch (bigint) to a number.
+    const cabinetEpoch = Number(rawCabinetEpoch)
 
     if (cabinetEpoch === 0) {
       throw new Error('Cabinet is not set. Required for TWAP orders that start at mining time.')
@@ -303,10 +310,10 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     const { numberOfParts, timeBetweenParts, durationOfPart } = this.data
 
     if (durationOfPart && durationOfPart.durationType === DurationType.LIMIT_DURATION) {
-      return startTimestamp + numberOfParts.sub(1).mul(timeBetweenParts).add(durationOfPart.duration).toNumber()
+      return Number(BigInt(startTimestamp) + (numberOfParts - ONE) * timeBetweenParts + durationOfPart.duration)
     }
 
-    return startTimestamp + numberOfParts.mul(timeBetweenParts).toNumber()
+    return startTimestamp + Number(numberOfParts * timeBetweenParts)
   }
 
   /**
@@ -384,7 +391,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     const { blockInfo = await getBlockInfo(params.provider) } = params
     const { blockTimestamp } = blockInfo
 
-    const timeBetweenParts = this.data.timeBetweenParts.toNumber()
+    const timeBetweenParts = Number(this.data.timeBetweenParts)
     const { numberOfParts } = this.data
     const startTimestamp = await this.startTimestamp(params)
 
@@ -395,7 +402,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
         error: undefined,
       }
     }
-    const expireTime = numberOfParts.mul(timeBetweenParts).add(startTimestamp).toNumber()
+    const expireTime = Number(numberOfParts * BigInt(timeBetweenParts) + BigInt(startTimestamp))
     if (blockTimestamp >= expireTime) {
       return {
         result: PollResultCode.UNEXPECTED_ERROR,
@@ -408,7 +415,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     const currentPartNumber = Math.floor((blockTimestamp - startTimestamp) / timeBetweenParts)
 
     // If current part is the last one
-    if (currentPartNumber === numberOfParts.toNumber() - 1) {
+    if (currentPartNumber === Number(numberOfParts) - 1) {
       return {
         result: PollResultCode.DONT_TRY_AGAIN,
         reason: `Current active TWAP part (${
@@ -461,12 +468,13 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
       twapSerialized,
       TWAP_ADDRESS,
       TWAP_STRUCT_ABI,
-      (struct: TwapStruct, salt: string) =>
-        new Twap({
+      (struct: TwapStruct, salt: string) => {
+        return new Twap({
           handler: TWAP_ADDRESS,
           salt,
           data: transformStructToData(struct),
-        }),
+        })
+      },
     )
   }
 
@@ -489,9 +497,9 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
     } = this.data
 
     const startTimeFormatted =
-      startTime.startType === StartTimeValue.AT_MINING_TIME ? 'AT_MINING_TIME' : startTime.epoch.toNumber()
+      startTime.startType === StartTimeValue.AT_MINING_TIME ? 'AT_MINING_TIME' : Number(startTime.epoch)
     const durationOfPartFormatted =
-      durationOfPart.durationType === DurationType.AUTO ? 'AUTO' : durationOfPart.duration.toNumber()
+      durationOfPart.durationType === DurationType.AUTO ? 'AUTO' : Number(durationOfPart.duration)
 
     const details = {
       sellAmount: sellAmount.toString(),
@@ -500,7 +508,7 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
       buyToken,
       numberOfParts: numberOfParts.toString(),
       startTime: startTimeFormatted,
-      timeBetweenParts: timeBetweenParts.toNumber(),
+      timeBetweenParts: Number(timeBetweenParts),
       durationOfPart: durationOfPartFormatted,
       receiver,
       appData,
@@ -548,18 +556,18 @@ export function transformDataToStruct(data: TwapData): TwapStruct {
   } = data
 
   const { partSellAmount, minPartLimit } =
-    numberOfParts && !numberOfParts.isZero()
+    numberOfParts && !(numberOfParts === ZERO)
       ? {
-          partSellAmount: sellAmount.div(numberOfParts),
-          minPartLimit: buyAmount.div(numberOfParts),
+          partSellAmount: sellAmount / numberOfParts,
+          minPartLimit: buyAmount / numberOfParts,
         }
       : {
-          partSellAmount: constants.Zero,
-          minPartLimit: constants.Zero,
+          partSellAmount: ZERO,
+          minPartLimit: ZERO,
         }
 
-  const span = durationOfPart.durationType === DurationType.AUTO ? constants.Zero : durationOfPart.duration
-  const t0 = startTime.startType === StartTimeValue.AT_MINING_TIME ? constants.Zero : startTime.epoch
+  const span = durationOfPart.durationType === DurationType.AUTO ? ZERO : durationOfPart.duration
+  const t0 = startTime.startType === StartTimeValue.AT_MINING_TIME ? ZERO : startTime.epoch
 
   return {
     partSellAmount,
@@ -592,17 +600,17 @@ export function transformStructToData(struct: TwapStruct): TwapData {
     appData,
   } = struct
 
-  const durationOfPart: DurationOfPart = span.isZero()
-    ? { durationType: DurationType.AUTO }
-    : { durationType: DurationType.LIMIT_DURATION, duration: span }
+  const durationOfPart: DurationOfPart =
+    span === ZERO ? { durationType: DurationType.AUTO } : { durationType: DurationType.LIMIT_DURATION, duration: span }
 
-  const startTime: StartTime = startEpoch.isZero()
-    ? { startType: StartTimeValue.AT_MINING_TIME }
-    : { startType: StartTimeValue.AT_EPOCH, epoch: startEpoch }
+  const startTime: StartTime =
+    startEpoch === ZERO
+      ? { startType: StartTimeValue.AT_MINING_TIME }
+      : { startType: StartTimeValue.AT_EPOCH, epoch: startEpoch }
 
   return {
-    sellAmount: partSellAmount.mul(numberOfParts),
-    buyAmount: minPartLimit.mul(numberOfParts),
+    sellAmount: partSellAmount * numberOfParts,
+    buyAmount: minPartLimit * numberOfParts,
     startTime,
     numberOfParts,
     timeBetweenParts,

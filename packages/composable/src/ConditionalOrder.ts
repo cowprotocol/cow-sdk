@@ -1,11 +1,10 @@
-import { BigNumber, constants, ethers, utils } from 'ethers'
-import { GPv2Order, IConditionalOrder } from '../common/generated/ComposableCoW'
-
 import { decodeParams, encodeParams, fromStructToOrder, getIsValidResult } from './utils'
 import {
   ConditionalOrderArguments,
   ConditionalOrderParams,
   ContextFactory,
+  GPv2Order,
+  IConditionalOrder,
   IsValidResult,
   OwnerContext,
   PollParams,
@@ -13,9 +12,14 @@ import {
   PollResultCode,
   PollResultErrors,
 } from './types'
-import { getComposableCow, getComposableCowInterface } from './contracts'
-import { UID } from '../order-book'
-import { computeOrderUid } from '../utils'
+import { UID } from '@cowprotocol/sdk-order-book'
+import { computeOrderUid } from '@cowprotocol/sdk-contracts-ts'
+import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
+import { AbstractProviderAdapter, getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { COMPOSABLE_COW_CONTRACT_ADDRESS } from '@cowprotocol/sdk-config'
+import { ComposableCowFactoryAbi } from './abis/ComposableCowFactoryAbi'
+
+const HASH_ZERO = '0x0000000000000000000000000000000000000000000000000000000000000000'
 
 /**
  * An abstract base class from which all conditional orders should inherit.
@@ -51,16 +55,24 @@ export abstract class ConditionalOrder<D, S> {
    * @throws If the handler is not a valid ethereum address.
    * @throws If the salt is not a valid 32-byte string.
    */
-  constructor(params: ConditionalOrderArguments<D>) {
-    const { handler, salt = utils.keccak256(utils.randomBytes(32)), data, hasOffChainInput = false } = params
+  constructor(params: ConditionalOrderArguments<D>, adapter?: AbstractProviderAdapter) {
+    if (adapter) setGlobalAdapter(adapter)
+
+    const _adapter = adapter || getGlobalAdapter()
+    const {
+      handler,
+      salt = _adapter.utils.keccak256(_adapter.utils.randomBytes(32)),
+      data,
+      hasOffChainInput = false,
+    } = params
     // Verify input to the constructor
     // 1. Verify that the handler is a valid ethereum address
-    if (!ethers.utils.isAddress(handler)) {
+    if (!_adapter.utils.isAddress(handler)) {
       throw new Error(`Invalid handler: ${handler}`)
     }
 
     // 2. Verify that the salt is a valid 32-byte string usable with ethers
-    if (!ethers.utils.isHexString(salt) || ethers.utils.hexDataLength(salt) !== 32) {
+    if (!_adapter.utils.isHexString(salt) || _adapter.utils.hexDataLength(salt) !== 32) {
       throw new Error(`Invalid salt: ${salt}`)
     }
 
@@ -114,27 +126,28 @@ export abstract class ConditionalOrder<D, S> {
     this.assertIsValid()
 
     const context = this.context
-    const composableCow = getComposableCowInterface()
     const paramsStruct: IConditionalOrder.ConditionalOrderParamsStruct = {
       handler: this.handler,
       salt: this.salt,
       staticInput: this.encodeStaticInput(),
     }
 
+    const adapter = getGlobalAdapter()
+
     if (context) {
       // Create (with context)
       const contextArgsAbi = context.factoryArgs
-        ? utils.defaultAbiCoder.encode(context.factoryArgs.argsType, context.factoryArgs.args)
+        ? adapter.utils.encodeAbi(context.factoryArgs.argsType, context.factoryArgs.args)
         : '0x'
-      return composableCow.encodeFunctionData('createWithContext', [
+      return adapter.utils.encodeFunction(ComposableCowFactoryAbi, 'createWithContext', [
         paramsStruct,
         context.address,
         contextArgsAbi,
         true,
-      ])
+      ]) as string
     } else {
       // Create
-      return composableCow.encodeFunctionData('create', [paramsStruct, true])
+      return adapter.utils.encodeFunction(ComposableCowFactoryAbi, 'create', [paramsStruct, true]) as string
     }
   }
 
@@ -145,7 +158,7 @@ export abstract class ConditionalOrder<D, S> {
   get removeCalldata(): string {
     this.assertIsValid()
 
-    return getComposableCowInterface().encodeFunctionData('remove', [this.id])
+    return getGlobalAdapter().utils.encodeFunction(ComposableCowFactoryAbi, 'remove', [this.id]) as string
   }
 
   /**
@@ -155,7 +168,7 @@ export abstract class ConditionalOrder<D, S> {
    * @returns The id of the conditional order.
    */
   get id(): string {
-    return utils.keccak256(this.serialize())
+    return getGlobalAdapter().utils.keccak256(this.serialize())
   }
 
   /**
@@ -164,7 +177,7 @@ export abstract class ConditionalOrder<D, S> {
    * The context, relates to the 'ctx' in the contract: https://github.com/cowprotocol/composable-cow/blob/c7fb85ab10c05e28a1632ba97a1749fb261fcdfb/src/interfaces/IConditionalOrder.sol#L38
    */
   protected get ctx(): string {
-    return this.isSingleOrder ? this.id : constants.HashZero
+    return this.isSingleOrder ? this.id : HASH_ZERO
   }
 
   /**
@@ -189,7 +202,7 @@ export abstract class ConditionalOrder<D, S> {
    * @see ConditionalOrderParams
    */
   static leafToId(leaf: ConditionalOrderParams): string {
-    return utils.keccak256(encodeParams(leaf))
+    return getGlobalAdapter().utils.keccak256(encodeParams(leaf))
   }
 
   /**
@@ -207,7 +220,7 @@ export abstract class ConditionalOrder<D, S> {
    *
    * @param tokenFormatter An optional function that takes an address and an amount and returns a human-readable string.
    */
-  abstract toString(tokenFormatter?: (address: string, amount: BigNumber) => string): string
+  abstract toString(tokenFormatter?: (address: string, amount: bigint) => string): string
 
   /**
    * Serializes the conditional order into it's ABI-encoded form.
@@ -232,7 +245,7 @@ export abstract class ConditionalOrder<D, S> {
    * @returns An ABI-encoded representation of the order's data struct.
    */
   protected encodeStaticInputHelper(orderDataTypes: string[], staticInput: S): string {
-    return utils.defaultAbiCoder.encode(orderDataTypes, [staticInput])
+    return getGlobalAdapter().utils.encodeAbi(orderDataTypes, [staticInput]) as string
   }
 
   /**
@@ -248,7 +261,6 @@ export abstract class ConditionalOrder<D, S> {
    */
   async poll(params: PollParams): Promise<PollResult> {
     const { chainId, owner, provider, orderBookApi } = params
-    const composableCow = getComposableCow(chainId, provider)
 
     try {
       const isValid = this.isValid()
@@ -275,15 +287,19 @@ export abstract class ConditionalOrder<D, S> {
         }
       }
 
-      // Lastly, try to get the tradeable order and signature
-      const [order, signature] = await composableCow.getTradeableOrderWithSignature(
-        owner,
-        this.leaf,
-        this.offChainInput,
-        [],
-      )
+      const [order, signature] = (await getGlobalAdapter().readContract(
+        {
+          address: COMPOSABLE_COW_CONTRACT_ADDRESS[chainId],
+          abi: ComposableCowFactoryAbi,
+          functionName: 'getTradeableOrderWithSignature',
+          args: [owner, this.leaf, this.offChainInput, []],
+        },
+        provider,
+      )) as [GPv2Order.DataStruct, string]
 
-      const orderUid = await computeOrderUid(chainId, owner, fromStructToOrder(order))
+      const domain = await OrderSigningUtils.getDomain(chainId)
+
+      const orderUid = computeOrderUid(domain, fromStructToOrder(order), owner)
 
       // Check if the order is already in the order book
       const isOrderInOrderbook = await orderBookApi
@@ -323,10 +339,17 @@ export abstract class ConditionalOrder<D, S> {
    * @param params owner context, to be able to check if the order is authorized
    * @returns true if the owner authorized the order, false otherwise.
    */
-  public isAuthorized(params: OwnerContext): Promise<boolean> {
+  public async isAuthorized(params: OwnerContext): Promise<boolean> {
     const { chainId, owner, provider } = params
-    const composableCow = getComposableCow(chainId, provider)
-    return composableCow.callStatic.singleOrders(owner, this.id)
+    return (await getGlobalAdapter().readContract(
+      {
+        address: COMPOSABLE_COW_CONTRACT_ADDRESS[chainId],
+        abi: ComposableCowFactoryAbi,
+        functionName: 'singleOrders',
+        args: [owner, this.id],
+      },
+      provider,
+    )) as boolean
   }
 
   /**
@@ -334,11 +357,18 @@ export abstract class ConditionalOrder<D, S> {
    *
    * @param params owner context, to be able to check the cabinet
    */
-  public cabinet(params: OwnerContext): Promise<string> {
+  public async cabinet(params: OwnerContext): Promise<string> {
     const { chainId, owner, provider } = params
 
-    const composableCow = getComposableCow(chainId, provider)
-    return composableCow.callStatic.cabinet(owner, this.ctx)
+    return (await getGlobalAdapter().readContract(
+      {
+        address: COMPOSABLE_COW_CONTRACT_ADDRESS[chainId],
+        abi: ComposableCowFactoryAbi,
+        functionName: 'cabinet',
+        args: [owner, this.ctx],
+      },
+      provider,
+    )) as string
   }
 
   /**
@@ -412,7 +442,7 @@ export abstract class ConditionalOrder<D, S> {
       if (!(recoveredHandler == handler)) throw new Error('HandlerMismatch')
 
       // Third, decode the data struct
-      const [d] = utils.defaultAbiCoder.decode(orderDataTypes, staticInput)
+      const [d] = getGlobalAdapter().utils.decodeAbi(orderDataTypes, staticInput)
 
       // Create a new instance of the class
       return callback(d, salt)

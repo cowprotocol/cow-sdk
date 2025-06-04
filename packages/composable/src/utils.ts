@@ -1,10 +1,12 @@
-import { utils, providers, BigNumber } from 'ethers'
-import { SupportedChainId } from '../chains'
-import { COMPOSABLE_COW_CONTRACT_ADDRESS, EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS } from '../common'
-import { ExtensibleFallbackHandler__factory } from '../common/generated'
-import { BlockInfo, ConditionalOrderParams, IsValid, IsValidResult } from './types'
-import { Order, OrderBalance, OrderKind } from '@cowprotocol/contracts'
-import { GPv2Order } from '../common/generated/ComposableCoW'
+import { BlockInfo, ConditionalOrderParams, GPv2Order, IsValid, IsValidResult } from './types'
+import { ContractsOrder as Order, OrderBalance, ContractsOrderKind as OrderKind } from '@cowprotocol/sdk-contracts-ts'
+import {
+  COMPOSABLE_COW_CONTRACT_ADDRESS,
+  EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS,
+  SupportedChainId,
+} from '@cowprotocol/sdk-config'
+import { getGlobalAdapter, Provider } from '@cowprotocol/sdk-common'
+import { ExtensibleFallbackHandlerFactoryAbi } from './abis/ExtensibleFallbackHandlerFactoryAbi'
 
 const ERC20_BALANCE_VALUES = ['erc20', '0x5a28e9363bb942b639270062aa6bb295f434bcdfc42c97267bf003f272060dc9']
 const EXTERNAL_BALANCE_VALUES = ['external', '0xabee3b73373acd583a130924aad6dc38cfdc44ba0555ba94ce2ff63980ea0632']
@@ -15,7 +17,7 @@ const BUY_KIND_VALUES = ['buy', '0x6ed88e868af0a1983e3886d5f3e95a2fafbd6c3450bc2
 // Define the ABI tuple for the ConditionalOrderParams struct
 export const CONDITIONAL_ORDER_PARAMS_ABI = ['tuple(address handler, bytes32 salt, bytes staticInput)']
 
-export const DEFAULT_TOKEN_FORMATTER = (address: string, amount: BigNumber) => `${amount}@${address}`
+export const DEFAULT_TOKEN_FORMATTER = (address: string, amount: bigint) => `${amount}@${address}`
 
 export function isExtensibleFallbackHandler(handler: string, chainId: SupportedChainId): boolean {
   return handler === EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS[chainId]
@@ -29,20 +31,22 @@ export async function getDomainVerifier(
   safe: string,
   domain: string,
   chainId: SupportedChainId,
-  provider: providers.Provider,
+  provider: Provider,
 ): Promise<string> {
-  const contract = ExtensibleFallbackHandler__factory.connect(
-    EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS[chainId],
-    provider,
-  )
-  return await contract.callStatic.domainVerifiers(safe, domain)
+  return (await getGlobalAdapter().readContract({
+    address: EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS[chainId],
+    abi: ExtensibleFallbackHandlerFactoryAbi,
+    functionName: 'domainVerifiers',
+    args: [safe, domain],
+  }),
+  provider) as string
 }
 
 export function createSetDomainVerifierTx(domain: string, verifier: string): string {
-  return ExtensibleFallbackHandler__factory.createInterface().encodeFunctionData('setDomainVerifier', [
+  return getGlobalAdapter().utils.encodeFunction(ExtensibleFallbackHandlerFactoryAbi, 'setDomainVerifier', [
     domain,
     verifier,
-  ])
+  ]) as string
 }
 
 /**
@@ -53,7 +57,8 @@ export function createSetDomainVerifierTx(domain: string, verifier: string): str
  * @see ConditionalOrderParams
  */
 export function encodeParams(params: ConditionalOrderParams): string {
-  return utils.defaultAbiCoder.encode(CONDITIONAL_ORDER_PARAMS_ABI, [params])
+  const x = getGlobalAdapter().utils.encodeAbi(CONDITIONAL_ORDER_PARAMS_ABI, [params]) as string
+  return x
 }
 
 /**
@@ -63,7 +68,10 @@ export function encodeParams(params: ConditionalOrderParams): string {
  * @returns The decoded conditional order.
  */
 export function decodeParams(encoded: string): ConditionalOrderParams {
-  const { handler, salt, staticInput } = utils.defaultAbiCoder.decode(CONDITIONAL_ORDER_PARAMS_ABI, encoded)[0]
+  const { handler, salt, staticInput } = getGlobalAdapter().utils.decodeAbi(
+    CONDITIONAL_ORDER_PARAMS_ABI,
+    encoded,
+  )[0] as ConditionalOrderParams
   return { handler, salt, staticInput }
 }
 
@@ -74,21 +82,21 @@ export function decodeParams(encoded: string): ConditionalOrderParams {
  * @returns {boolean} Whether the values are valid ABI for the given types.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function isValidAbi(types: readonly (string | utils.ParamType)[], values: any[]): boolean {
+export function isValidAbi(types: readonly (string | unknown)[], values: any[]): boolean {
   try {
-    utils.defaultAbiCoder.encode(types, values)
+    getGlobalAdapter().utils.encodeAbi(types as string[], values)
   } catch {
     return false
   }
   return true
 }
 
-export async function getBlockInfo(provider: providers.Provider): Promise<BlockInfo> {
-  const block = await provider.getBlock('latest')
+export async function getBlockInfo(provider: Provider): Promise<BlockInfo> {
+  const block = await getGlobalAdapter().getBlock('latest', provider)
 
   return {
-    blockNumber: block.number,
-    blockTimestamp: block.timestamp,
+    blockNumber: Number(block.number),
+    blockTimestamp: Number(block.timestamp),
   }
 }
 
@@ -156,9 +164,9 @@ export function fromStructToOrder(order: GPv2Order.DataStruct): Order {
     partiallyFillable,
     appData,
     validTo: Number(validTo),
-    kind: kindToString(kind.toString()),
-    sellTokenBalance: balanceToString(sellTokenBalance.toString()),
-    buyTokenBalance: balanceToString(buyTokenBalance.toString()),
+    kind: kindToString(String(kind)),
+    sellTokenBalance: balanceToString(String(sellTokenBalance)),
+    buyTokenBalance: balanceToString(String(buyTokenBalance)),
   }
 }
 

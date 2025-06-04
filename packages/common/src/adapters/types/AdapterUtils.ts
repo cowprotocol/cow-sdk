@@ -133,11 +133,7 @@ export abstract class AdapterUtils {
   /**
    * Encodes a function call
    */
-  abstract encodeFunction(
-    abi: Array<{ name: string; inputs: Array<{ type: string }> }>,
-    functionName: string,
-    args: unknown[],
-  ): Bytes
+  abstract encodeFunction(abi: Abi, functionName: string, args: unknown[]): Bytes
 
   /**
    * Converts a BigIntish to a number
@@ -193,4 +189,24 @@ export abstract class AdapterUtils {
     method: string,
     parameters: unknown[],
   ): Promise<any>
+
+  /**
+   * Generates random bytes as a hex string
+   */
+  abstract randomBytes(length: number): string
+
+  /**
+   * Checks if a string is a valid Ethereum address
+   */
+  abstract isAddress(address: string): boolean
+
+  /**
+   * Checks if a string is a valid hex string (starts with 0x)
+   */
+  abstract isHexString(value: string): boolean
+
+  /**
+   * Gets the length in bytes of a hex string
+   */
+  abstract hexDataLength(data: string): number
 }
