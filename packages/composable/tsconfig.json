@@ -4,6 +4,6 @@
     "outDir": "./dist",
     "noUncheckedIndexedAccess": false
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "tests/setup.ts", "tests/*.spec.ts"],
   "exclude": ["node_modules", "dist"]
 }

@@ -1,17 +1,21 @@
-import '../order-book/__mock__/api'
-import { decodeParams, encodeParams, fromStructToOrder, isValidAbi } from './utils'
-import { DurationType, StartTimeValue, TwapData, TwapStruct, transformDataToStruct } from './orderTypes/Twap'
-import { BigNumber, utils } from 'ethers'
-import { GPv2Order } from './generated/ComposableCoW'
+import { decodeParams, encodeParams, fromStructToOrder, isValidAbi } from '../src/utils'
+import { DurationType, StartTimeValue, TwapData, TwapStruct, transformDataToStruct } from '../src/orderTypes/Twap'
+import { GPv2Order } from '../src/types'
+import { createAdapters } from './setup'
+import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+
+const adapters = createAdapters()
+
+setGlobalAdapter(adapters.ethersV5Adapter)
 
 export const TWAP_PARAMS_TEST: TwapData = {
   sellToken: '0x6810e776880C02933D47DB1b9fc05908e5386b96',
   buyToken: '0xDAE5F1590db13E3B40423B5b5c5fbf175515910b',
   receiver: '0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF',
-  sellAmount: utils.parseEther('1'),
-  buyAmount: utils.parseEther('1'),
-  timeBetweenParts: BigNumber.from(60 * 60),
-  numberOfParts: BigNumber.from(10),
+  sellAmount: BigInt('1000000000000000000'), // 1ETH
+  buyAmount: BigInt('1000000000000000000'), // 1ETH
+  timeBetweenParts: BigInt(60 * 60),
+  numberOfParts: BigInt(10),
   durationOfPart: {
     durationType: DurationType.AUTO,
   },
@@ -72,11 +76,11 @@ describe('fromStructToOrder', () => {
       sellToken: '0x177127622c4A00F3d409B75571e12cB3c8973d3c',
       buyToken: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',
       receiver: '0x50736F4707eD0c7bae86bd801d65377BB3739550',
-      sellAmount: BigNumber.from('497154622979742700000'),
-      buyAmount: BigNumber.from('26618938443780026000'),
+      sellAmount: BigInt('497154622979742700000'),
+      buyAmount: BigInt('26618938443780026000'),
       validTo: 1698723209,
       appData: '0x7cc001e5e82772cf4262f2836ae90e1844d2c12ad2fbc346f27a76f5d1cc9d39',
-      feeAmount: BigNumber.from(0),
+      feeAmount: BigInt(0),
       kind: '0xf3b277728b3fee749481eb3e0b3b48980dbbab78658fc419025cb16eee346775',
       partiallyFillable: false,
       sellTokenBalance: '0x5a28e9363bb942b639270062aa6bb295f434bcdfc42c97267bf003f272060dc9',

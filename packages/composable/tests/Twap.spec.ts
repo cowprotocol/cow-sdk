@@ -1,18 +1,22 @@
-import '../../order-book/__mock__/api'
-import { GPv2Order } from '../generated/ComposableCoW'
-import { OwnerContext, PollParams, PollResultCode, PollResultErrors } from '../types'
-import { DurationType, StartTimeValue, Twap, TWAP_ADDRESS, TwapData } from './Twap'
-import { BigNumber, utils, constants, providers } from 'ethers'
+import { Block, getGlobalAdapter, Provider, setGlobalAdapter, ZERO_ADDRESS } from '@cowprotocol/sdk-common'
+import { GPv2Order, OwnerContext, PollParams, PollResultCode, PollResultErrors } from '../src/types'
+import { DurationType, StartTimeValue, Twap, TWAP_ADDRESS, TwapData } from '../src/orderTypes/Twap'
+
+import { createAdapters } from './setup'
+
+const adapters = createAdapters()
+
+setGlobalAdapter(adapters.ethersV5Adapter)
 
 const OWNER = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
 export const TWAP_PARAMS_TEST: TwapData = {
   sellToken: '0x6810e776880C02933D47DB1b9fc05908e5386b96',
   buyToken: '0xDAE5F1590db13E3B40423B5b5c5fbf175515910b',
   receiver: '0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF',
-  sellAmount: utils.parseEther('1'),
-  buyAmount: utils.parseEther('1'),
-  timeBetweenParts: BigNumber.from(60 * 60),
-  numberOfParts: BigNumber.from(10),
+  sellAmount: BigInt('1000000000000000000'), // 1 ETH
+  buyAmount: BigInt('1000000000000000000'), // 1 ETH
+  timeBetweenParts: BigInt(60 * 60),
+  numberOfParts: BigInt(10),
   durationOfPart: {
     durationType: DurationType.AUTO,
   },
@@ -49,21 +53,25 @@ export const TWAP_SERIALIZED = (salt?: string): string => {
 }
 
 export function generateRandomTWAPData(): TwapData {
+  const adapter = getGlobalAdapter()
+
+  const sellToken = adapter.utils.getChecksumAddress(adapter.utils.randomBytes(20))
+  const buyToken = adapter.utils.getChecksumAddress(adapter.utils.randomBytes(20))
   return {
-    sellToken: utils.getAddress(utils.hexlify(utils.randomBytes(20))),
-    buyToken: utils.getAddress(utils.hexlify(utils.randomBytes(20))),
-    receiver: constants.AddressZero,
-    sellAmount: utils.parseEther('1'),
-    buyAmount: utils.parseEther('1'),
-    timeBetweenParts: BigNumber.from(60 * 60),
-    numberOfParts: BigNumber.from(10),
+    sellToken,
+    buyToken,
+    receiver: ZERO_ADDRESS,
+    sellAmount: BigInt('1000000000000000000'), // 1 ETH
+    buyAmount: BigInt('1000000000000000000'), // 1 ETH
+    timeBetweenParts: BigInt(60 * 60),
+    numberOfParts: BigInt(10),
     durationOfPart: {
       durationType: DurationType.AUTO,
     },
     startTime: {
       startType: StartTimeValue.AT_MINING_TIME,
     },
-    appData: utils.hexlify(utils.randomBytes(32)),
+    appData: adapter.utils.randomBytes(32),
   }
 }
 
@@ -95,7 +103,7 @@ describe('Twap.fromData', () => {
   test('Creates valid TWAP: Start at epoch', () => {
     const twap = Twap.fromData({
       ...TWAP_PARAMS_TEST,
-      startTime: { startType: StartTimeValue.AT_EPOCH, epoch: BigNumber.from(1) },
+      startTime: { startType: StartTimeValue.AT_EPOCH, epoch: BigInt(1) },
     })
     expect(twap.context).toBeUndefined()
   })
@@ -124,7 +132,7 @@ describe('Id', () => {
 
   test('Id changes for different params and same salt', () => {
     const twap = Twap.fromData(
-      { ...TWAP_PARAMS_TEST, startTime: { startType: StartTimeValue.AT_EPOCH, epoch: BigNumber.from(123456789) } },
+      { ...TWAP_PARAMS_TEST, startTime: { startType: StartTimeValue.AT_EPOCH, epoch: BigInt(123456789) } },
       SALT,
     )
 
@@ -145,28 +153,28 @@ describe('Validate', () => {
   })
 
   test('Invalid twap: InvalidToken (sell)', () => {
-    expect(Twap.fromData({ ...TWAP_PARAMS_TEST, sellToken: constants.AddressZero }).isValid()).toEqual({
+    expect(Twap.fromData({ ...TWAP_PARAMS_TEST, sellToken: ZERO_ADDRESS }).isValid()).toEqual({
       isValid: false,
       reason: 'InvalidToken',
     })
   })
 
   test('Invalid twap: InvalidToken (buy)', () => {
-    expect(Twap.fromData({ ...TWAP_PARAMS_TEST, buyToken: constants.AddressZero }).isValid()).toEqual({
+    expect(Twap.fromData({ ...TWAP_PARAMS_TEST, buyToken: ZERO_ADDRESS }).isValid()).toEqual({
       isValid: false,
       reason: 'InvalidToken',
     })
   })
 
   test('Invalid twap: InvalidSellAmount', () => {
-    expect(Twap.fromData({ ...TWAP_PARAMS_TEST, sellAmount: BigNumber.from(0) }).isValid()).toEqual({
+    expect(Twap.fromData({ ...TWAP_PARAMS_TEST, sellAmount: BigInt(0) }).isValid()).toEqual({
       isValid: false,
       reason: 'InvalidSellAmount',
     })
   })
 
   test('Invalid twap: InvalidMinBuyAmount', () => {
-    expect(Twap.fromData({ ...TWAP_PARAMS_TEST, buyAmount: BigNumber.from(0) }).isValid()).toEqual({
+    expect(Twap.fromData({ ...TWAP_PARAMS_TEST, buyAmount: BigInt(0) }).isValid()).toEqual({
       isValid: false,
       reason: 'InvalidMinBuyAmount',
     })
@@ -176,7 +184,7 @@ describe('Validate', () => {
     expect(
       Twap.fromData({
         ...TWAP_PARAMS_TEST,
-        startTime: { startType: StartTimeValue.AT_EPOCH, epoch: BigNumber.from(-1) },
+        startTime: { startType: StartTimeValue.AT_EPOCH, epoch: BigInt(-1) },
       }).isValid(),
     ).toEqual({
       isValid: false,
@@ -185,14 +193,14 @@ describe('Validate', () => {
   })
 
   test('Invalid twap: InvalidNumParts', () => {
-    expect(Twap.fromData({ ...TWAP_PARAMS_TEST, numberOfParts: BigNumber.from(0) }).isValid()).toEqual({
+    expect(Twap.fromData({ ...TWAP_PARAMS_TEST, numberOfParts: BigInt(0) }).isValid()).toEqual({
       isValid: false,
       reason: 'InvalidNumParts',
     })
   })
 
   test('Invalid twap: InvalidFrequency', () => {
-    expect(Twap.fromData({ ...TWAP_PARAMS_TEST, timeBetweenParts: BigNumber.from(0) }).isValid()).toEqual({
+    expect(Twap.fromData({ ...TWAP_PARAMS_TEST, timeBetweenParts: BigInt(0) }).isValid()).toEqual({
       isValid: false,
       reason: 'InvalidFrequency',
     })
@@ -204,7 +212,7 @@ describe('Validate', () => {
         ...TWAP_PARAMS_TEST,
         durationOfPart: {
           durationType: DurationType.LIMIT_DURATION,
-          duration: TWAP_PARAMS_TEST.timeBetweenParts.add(1),
+          duration: TWAP_PARAMS_TEST.timeBetweenParts + BigInt(1),
         },
       }).isValid(),
     ).toEqual({
@@ -216,7 +224,7 @@ describe('Validate', () => {
   test('Invalid twap: InvalidData (ABI parse error in appData)', () => {
     // The isValid below test triggers a throw by trying to ABI parse `appData` as a `bytes32` when
     // it only has 20 bytes (ie. an address)
-    expect(Twap.fromData({ ...TWAP_PARAMS_TEST, appData: constants.AddressZero }).isValid()).toEqual({
+    expect(Twap.fromData({ ...TWAP_PARAMS_TEST, appData: ZERO_ADDRESS }).isValid()).toEqual({
       isValid: false,
       reason: 'InvalidData',
     })
@@ -246,24 +254,24 @@ describe('Deserialize', () => {
     expect(twap.staticInput).toEqual({
       sellToken: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
       buyToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-      partSellAmount: BigNumber.from(700000000000000000n),
-      minPartLimit: BigNumber.from(90000000),
+      partSellAmount: BigInt('700000000000000000'),
+      minPartLimit: BigInt(90000000),
       receiver: '0x3765A685a401622C060E5D700D9ad89413363a91',
-      t0: BigNumber.from(1744241375),
-      n: BigNumber.from(5),
-      t: BigNumber.from(86400),
-      span: BigNumber.from(0),
+      t0: BigInt(1744241375),
+      n: BigInt(5),
+      t: BigInt(86400),
+      span: BigInt(0),
       appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
     })
     expect(twap.data).toEqual({
       sellToken: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
       buyToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-      sellAmount: BigNumber.from(3500000000000000000n),
-      buyAmount: BigNumber.from(450000000),
+      sellAmount: BigInt('3500000000000000000'),
+      buyAmount: BigInt('450000000'),
       receiver: '0x3765A685a401622C060E5D700D9ad89413363a91',
-      startTime: { startType: StartTimeValue.AT_EPOCH, epoch: BigNumber.from(1744241375) },
-      numberOfParts: BigNumber.from(5),
-      timeBetweenParts: BigNumber.from(86400),
+      startTime: { startType: StartTimeValue.AT_EPOCH, epoch: BigInt(1744241375) },
+      numberOfParts: BigInt(5),
+      timeBetweenParts: BigInt(86400),
       durationOfPart: { durationType: DurationType.AUTO },
       appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
     })
@@ -289,7 +297,7 @@ describe('To String', () => {
         ...TWAP_PARAMS_TEST,
         startTime: {
           startType: StartTimeValue.AT_EPOCH,
-          epoch: BigNumber.from(1692876646),
+          epoch: BigInt(1692876646),
         },
       },
       SALT,
@@ -305,7 +313,7 @@ describe('To String', () => {
         ...TWAP_PARAMS_TEST,
         durationOfPart: {
           durationType: DurationType.LIMIT_DURATION,
-          duration: BigNumber.from(1000),
+          duration: BigInt(1000),
         },
       },
       SALT,
@@ -321,15 +329,11 @@ describe('Poll Validate', () => {
   const blockTimestamp = 1700000000
   const mockCabinet: jest.MockedFunction<(params: OwnerContext) => Promise<string>> = jest.fn()
   const mockEndTimestamp: jest.MockedFunction<(startTimestamp: number) => number> = jest.fn()
-  const mockGetBlock: jest.MockedFunction<
-    (
-      blockHashOrBlockTag: providers.BlockTag | string | Promise<providers.BlockTag | string>,
-    ) => Promise<providers.Block>
-  > = jest.fn()
+  const mockGetBlock: jest.MockedFunction<(blockHashOrBlockTag: string | Promise<string>) => Promise<Block>> = jest.fn()
 
   const provider = {
     getBlock: mockGetBlock,
-  } as unknown as providers.Provider
+  } as unknown as Provider
 
   const pollParams = {
     owner: OWNER,
@@ -339,7 +343,7 @@ describe('Poll Validate', () => {
 
   class MockTwap extends Twap {
     // Just make pollValidate public so we can call it in isolation
-    public pollValidate(params): Promise<PollResultErrors | undefined> {
+    public pollValidate(params: PollParams): Promise<PollResultErrors | undefined> {
       return super.pollValidate(params)
     }
 
@@ -373,7 +377,7 @@ describe('Poll Validate', () => {
       handler: TWAP_ADDRESS,
       data: {
         ...TWAP_PARAMS_TEST,
-        startTime: { startType: StartTimeValue.AT_EPOCH, epoch: BigNumber.from(blockTimestamp - 1) },
+        startTime: { startType: StartTimeValue.AT_EPOCH, epoch: BigInt(blockTimestamp - 1) },
       },
     })
 
@@ -444,7 +448,7 @@ describe('Poll Validate', () => {
       Promise.resolve({
         number: blockNumber,
         timestamp: blockTimestamp,
-      } as providers.Block),
+      } as Block),
     )
     const startTime = blockTimestamp + 1
     mockCabinet.mockReturnValue(uint256Helper(startTime))
@@ -484,7 +488,11 @@ describe('Current TWAP part is in the Order Book', () => {
 
   class MockTwap extends Twap {
     // Just make handlePollFailedAlreadyPresent public so we can call it in isolation
-    public handlePollFailedAlreadyPresent(orderId, order, params): Promise<PollResultErrors | undefined> {
+    public handlePollFailedAlreadyPresent(
+      orderId: string,
+      order: GPv2Order.DataStruct,
+      params: PollParams,
+    ): Promise<PollResultErrors | undefined> {
       return super.handlePollFailedAlreadyPresent(orderId, order, params)
     }
   }
@@ -493,11 +501,11 @@ describe('Current TWAP part is in the Order Book', () => {
     handler: TWAP_ADDRESS,
     data: {
       ...TWAP_PARAMS_TEST,
-      timeBetweenParts: BigNumber.from(100),
-      numberOfParts: BigNumber.from(10),
+      timeBetweenParts: BigInt(100),
+      numberOfParts: BigInt(10),
       startTime: {
         startType: StartTimeValue.AT_EPOCH,
-        epoch: BigNumber.from(startTimestamp),
+        epoch: BigInt(startTimestamp),
       },
     },
   })
@@ -648,4 +656,4 @@ describe('Current TWAP part is in the Order Book', () => {
   })
 })
 
-const uint256Helper = (n: number) => Promise.resolve(utils.defaultAbiCoder.encode(['uint256'], [n]))
+const uint256Helper = (n: number) => Promise.resolve(getGlobalAdapter().utils.encodeAbi(['uint256'], [n]) as string)

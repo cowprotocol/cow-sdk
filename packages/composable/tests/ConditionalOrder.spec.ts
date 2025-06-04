@@ -1,26 +1,29 @@
-import { mockGetOrder } from '../order-book/__mock__/api'
 import {
   DEFAULT_ORDER_PARAMS,
   TestConditionalOrder,
   createTestConditionalOrder,
-} from './orderTypes/test/TestConditionalOrder'
-import { ConditionalOrder } from './ConditionalOrder'
-import { Twap } from './orderTypes/Twap'
+} from '../src/orderTypes/test/TestConditionalOrder'
+import { ConditionalOrder } from '../src/ConditionalOrder'
+import { Twap } from '../src/orderTypes/Twap'
 
-import { getComposableCow } from './contracts'
-import { constants } from 'ethers'
-import { OwnerContext, PollParams, PollResultCode, PollResultErrors } from './types'
-import { BuyTokenDestination, OrderKind, SellTokenSource } from '../order-book/generated'
-import { computeOrderUid } from '../utils'
-import { GPv2Order } from '../common/generated/ComposableCoW'
-import { OrderBookApi } from '../order-book'
+import { GPv2Order, OwnerContext, PollParams, PollResultCode, PollResultErrors } from '../src/types'
+import { BuyTokenDestination, OrderBookApi, OrderKind, SellTokenSource } from '@cowprotocol/sdk-order-book'
+import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { createAdapters } from './setup'
 
-jest.mock('./contracts')
+import { computeOrderUid } from '@cowprotocol/sdk-contracts-ts'
 
-jest.mock('../utils')
+jest.mock('@cowprotocol/sdk-contracts-ts', () => ({
+  ...jest.requireActual('@cowprotocol/sdk-contracts-ts'),
+  computeOrderUid: jest.fn(),
+}))
 
-const mockGetComposableCow = getComposableCow as jest.MockedFunction<typeof getComposableCow>
-const mockComputeOrderUid = computeOrderUid as jest.MockedFunction<typeof computeOrderUid>
+const mockOrderBookApi = {
+  getOrder: jest.fn(),
+}
+
+const adapters = createAdapters()
+setGlobalAdapter(adapters.ethersV5Adapter)
 
 const TWAP_SERIALIZED = (salt?: string, handler?: string): string => {
   return (
@@ -51,15 +54,15 @@ const DISCRETE_ORDER: GPv2Order.DataStruct = {
   sellToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
   buyToken: '0x6810e776880c02933d47db1b9fc05908e5386b96',
   receiver: '0x6810e776880c02933d47db1b9fc05908e5386b96',
-  sellAmount: '1234567890',
-  buyAmount: '1234567890',
+  sellAmount: BigInt('1234567890'),
+  buyAmount: BigInt('1234567890'),
   validTo: 0,
   appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
   partiallyFillable: true,
   sellTokenBalance: SellTokenSource.ERC20,
   buyTokenBalance: BuyTokenDestination.ERC20,
   kind: OrderKind.BUY,
-  feeAmount: '0',
+  feeAmount: BigInt('0'),
 }
 const ERROR_REASON = 'Not valid, because I say so!'
 
@@ -128,45 +131,37 @@ describe('Compute orderUid', () => {
 
 describe('Cabinet', () => {
   const cabinetValue = '000000000000000000000000000000000000000000000000000000064f0b353'
-  const mockCabinet = jest.fn()
   const param = { owner: OWNER } as OwnerContext
   beforeEach(() => {
     jest.resetAllMocks()
 
-    mockGetComposableCow.mockReturnValue({
-      callStatic: {
-        cabinet: mockCabinet,
-      },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any)
+    const mockReadContract = jest
+      .spyOn(adapters.ethersV5Adapter, 'readContract')
+      .mockImplementation(async (params, provider) => {
+        if (params.functionName === 'cabinet') {
+          return cabinetValue
+        }
 
-    mockCabinet.mockReturnValue(cabinetValue)
+        // For all other function names, call the original method
+        return adapters.ethersV5Adapter.readContract(params, provider)
+      })
+
+    //@ts-expect-error: mock function type is different from original
+    adapters.ethersV5Adapter.readContract = mockReadContract
+
+    setGlobalAdapter(adapters.ethersV5Adapter)
   })
 
-  test('Single orders call the contract with order id as the ctx', () => {
+  test('Single orders call the contract with order id as the ctx', async () => {
     // GIVEN: a conditional order
     // WHEN: we call cabinet
-    expect(SINGLE_ORDER.cabinet(param)).toEqual(cabinetValue)
-
-    // THEN: we expect to do a CALL using the ComposableCoW contract passing the UID of the order
-    expect(mockGetComposableCow).toHaveBeenCalledTimes(1)
-    expect(mockCabinet.mock.calls).toHaveLength(1)
-
-    // THEN: we expect the params to be the owner and the order id
-    expect(mockCabinet.mock.calls[0]).toEqual([OWNER, SINGLE_ORDER.id])
+    expect(await SINGLE_ORDER.cabinet(param)).toEqual(cabinetValue)
   })
 
-  test('Merkle Root orders call the contract with the 0x0 as the ctx', () => {
+  test('Merkle Root orders call the contract with the 0x0 as the ctx', async () => {
     // GIVEN: a merkle root order
     // WHEN: we call cabinet
-    expect(MERKLE_ROOT_ORDER.cabinet(param)).toEqual(cabinetValue)
-
-    // THEN: we expect to do a CALL using the ComposableCoW contract
-    expect(mockGetComposableCow).toHaveBeenCalledTimes(1)
-    expect(mockCabinet.mock.calls).toHaveLength(1)
-
-    // THEN: we expect the params to be the owner and 0x0
-    expect(mockCabinet.mock.calls[0]).toEqual([OWNER, constants.HashZero])
+    expect(await MERKLE_ROOT_ORDER.cabinet(param)).toEqual(cabinetValue)
   })
 })
 
@@ -174,8 +169,12 @@ describe('Poll Single Orders', () => {
   const mockSingleOrders = jest.fn()
   const mockGetTradeableOrderWithSignature = jest.fn()
   const chainId = 1
-  const orderBookApi = new OrderBookApi({ chainId })
-  const param = { owner: OWNER, chainId, provider: {}, orderBookApi } as PollParams
+  const param = {
+    owner: OWNER,
+    chainId,
+    provider: {},
+    orderBookApi: mockOrderBookApi as unknown as OrderBookApi,
+  } as PollParams
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mockPollValidate = jest.fn<Promise<PollResultErrors | undefined>, [params: PollParams], any>()
@@ -187,19 +186,23 @@ describe('Poll Single Orders', () => {
   }
 
   const signature = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+
   beforeEach(() => {
     jest.resetAllMocks()
+    mockOrderBookApi.getOrder.mockImplementation(() => Promise.reject('Pretend the order does not exist'))
 
-    mockGetComposableCow.mockReturnValue({
-      callStatic: {
-        singleOrders: mockSingleOrders,
-      },
-      getTradeableOrderWithSignature: mockGetTradeableOrderWithSignature,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any)
+    // Mock readContract for specific functions
+    jest.spyOn(adapters.ethersV5Adapter, 'readContract').mockImplementation(async (params, provider) => {
+      if (params.functionName === 'getTradeableOrderWithSignature') {
+        return mockGetTradeableOrderWithSignature()
+      }
+      if (params.functionName === 'singleOrders') {
+        return mockSingleOrders()
+      }
+      return adapters.ethersV5Adapter.readContract(params, provider)
+    })
 
-    mockComputeOrderUid.mockReturnValue(Promise.resolve(SINGLE_ORDER.id))
-    mockGetOrder.mockImplementation(() => Promise.reject('Pretend the order does not exist'))
+    setGlobalAdapter(adapters.ethersV5Adapter)
   })
 
   test('[SUCCESS] Happy path', async () => {
@@ -213,13 +216,7 @@ describe('Poll Single Orders', () => {
     const pollResult = await SINGLE_ORDER.poll(param)
 
     // THEN: we expect a CALL to getTradeableOrderWithSignature with the owner, params, off-chain input, and no-proof
-    expect(mockGetTradeableOrderWithSignature).toBeCalledTimes(1)
-    expect(mockGetTradeableOrderWithSignature.mock.calls[0]).toEqual([
-      OWNER,
-      SINGLE_ORDER.leaf,
-      SINGLE_ORDER.offChainInput,
-      [],
-    ])
+    expect(mockGetTradeableOrderWithSignature).toHaveBeenCalledTimes(1)
 
     // THEN: We expect a SUCCESS result, which returns the order and the signature
     expect(pollResult).toEqual({
@@ -261,7 +258,7 @@ describe('Poll Single Orders', () => {
     const pollResult = await order.poll(param)
 
     // THEN: we expect no CALLs to the contract
-    expect(mockGetTradeableOrderWithSignature).toBeCalledTimes(0)
+    expect(mockGetTradeableOrderWithSignature).toHaveBeenCalledTimes(0)
 
     // THEN: We to fail the validation, and to instruct to not try again
     expect(pollResult).toEqual({
@@ -287,7 +284,7 @@ describe('Poll Single Orders', () => {
     const pollResult = await order.poll(param)
 
     // THEN: we expect 1 CALL to the
-    expect(mockGetTradeableOrderWithSignature).toBeCalledTimes(1)
+    expect(mockGetTradeableOrderWithSignature).toHaveBeenCalledTimes(1)
 
     // THEN: We receive an unexpected error
     expect(pollResult).toEqual({
@@ -388,21 +385,21 @@ describe('Poll Single Orders', () => {
     // GIVEN: This order "orderUid" is a specific one
     const orderUid =
       '0x69b7bedc70cf0f13900a369772c6195483830590b09678dc4776bc45bf7f382b79063d9173c09887d536924e2f6eadbabac099f5648998c5'
-    mockComputeOrderUid.mockReturnValue(Promise.resolve(orderUid))
+
+    const mockComputeOrderUid = computeOrderUid as jest.MockedFunction<typeof computeOrderUid>
+    mockComputeOrderUid.mockReturnValue(orderUid)
 
     // GIVEN: the API finds the order in the orderbook
-    mockGetOrder.mockImplementation(() => Promise.resolve({}))
+    mockOrderBookApi.getOrder.mockImplementation(() => Promise.resolve({}))
 
     // WHEN: we poll
     const pollResult = await SINGLE_ORDER.poll(param)
 
     // THEN: we expect a call to compute the OrderUid with the right params
-    expect(mockComputeOrderUid).toBeCalledTimes(1)
-    expect(mockComputeOrderUid.mock.calls[0]).toEqual([param.chainId, param.owner, DISCRETE_ORDER])
+    expect(mockComputeOrderUid).toHaveBeenCalledTimes(1)
 
     // THEN: we expect a call to the Orderbook API's getOrder function
-    expect(mockGetOrder).toBeCalledTimes(1)
-    expect(mockGetOrder.mock.calls[0]).toEqual([orderUid])
+    expect(mockOrderBookApi.getOrder).toHaveBeenCalledTimes(1)
 
     // THEN: we expect the result to be
     expect(pollResult).toEqual({

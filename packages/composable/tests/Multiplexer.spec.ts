@@ -1,16 +1,20 @@
-import '../order-book/__mock__/api'
-import { Multiplexer, Orders } from './Multiplexer'
-import { SupportedChainId } from '../chains'
-import { ProofLocation } from './types'
-import { Twap } from './orderTypes/Twap'
-import { TWAP_PARAMS_TEST, generateRandomTWAPData } from './orderTypes/Twap.spec'
-import { getComposableCowInterface } from './contracts'
-import { BigNumber } from 'ethers'
+import { Multiplexer, Orders } from '../src/Multiplexer'
+import { ProofLocation } from '../src/types'
+import { Twap } from '../src/orderTypes/Twap'
+import { TWAP_PARAMS_TEST, generateRandomTWAPData } from './Twap.spec'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { ComposableCowFactoryAbi } from '../src/abis/ComposableCowFactoryAbi'
+import { createAdapters } from './setup'
 
 describe('Multiplexer (ComposableCoW)', () => {
   beforeEach(() => {
     // Register the TWAP handler
     Multiplexer.registerOrderType('twap', Twap)
+
+    const adapters = createAdapters()
+
+    setGlobalAdapter(adapters.ethersV5Adapter)
   })
 
   afterEach(() => {
@@ -103,7 +107,7 @@ describe('Multiplexer (ComposableCoW)', () => {
   test("Can't add invalid conditional orders", () => {
     // Given an invalid order, don't allow to add it to the multiplexer
     const m = new Multiplexer(SupportedChainId.GNOSIS_CHAIN)
-    const invalidTwap = Twap.fromData({ ...generateRandomTWAPData(), timeBetweenParts: BigNumber.from(-1) })
+    const invalidTwap = Twap.fromData({ ...generateRandomTWAPData(), timeBetweenParts: BigInt(-1) })
     expect(() => m.add(invalidTwap)).toThrow('Invalid order: InvalidFrequency')
   })
 
@@ -221,7 +225,7 @@ describe('Multiplexer (ComposableCoW)', () => {
     // use the typechain generated interface to see if the proof struct is valid
     // by generating calldata for `setRoot`.
 
-    getComposableCowInterface().encodeFunctionData('setRoot', [m.root, proofStruct])
+    getGlobalAdapter().utils.encodeFunction(ComposableCowFactoryAbi, 'setRoot', [m.root, proofStruct])
   })
 
   test('prepareProofStruct: emits when location set to emitted', async () => {
@@ -235,7 +239,7 @@ describe('Multiplexer (ComposableCoW)', () => {
     // use the typechain generated interface to see if the proof struct is valid
     // by generating calldata for `setRoot`.
 
-    getComposableCowInterface().encodeFunctionData('setRoot', [m.root, proofStruct])
+    getGlobalAdapter().utils.encodeFunction(ComposableCowFactoryAbi, 'setRoot', [m.root, proofStruct])
   })
 
   test('prepareProofStruct: throws on invalid location', async () => {
@@ -256,7 +260,7 @@ describe('Multiplexer (ComposableCoW)', () => {
     try {
       await m.prepareProofStruct(ProofLocation.SWARM)
     } catch (e) {
-      expect(e.message).toMatch('Error preparing proof struct: Error: Must provide an uploader function')
+      expect((e as Error).message).toMatch('Error preparing proof struct: Error: Must provide an uploader function')
     }
 
     // define an async upload function
@@ -267,7 +271,7 @@ describe('Multiplexer (ComposableCoW)', () => {
     try {
       await m.prepareProofStruct(ProofLocation.SWARM, undefined, upload)
     } catch (e) {
-      expect(e.message).toMatch('Error preparing proof struct: Error: data returned by uploader is invalid')
+      expect((e as Error).message).toMatch('Error preparing proof struct: Error: data returned by uploader is invalid')
     }
 
     // define an upload function that throws an error
@@ -278,7 +282,7 @@ describe('Multiplexer (ComposableCoW)', () => {
     try {
       await m.prepareProofStruct(ProofLocation.IPFS, undefined, upload2)
     } catch (e) {
-      expect(e.message).toMatch(
+      expect((e as Error).message).toMatch(
         'Error preparing proof struct: Error: Error uploading to decentralized storage 5: Error: bad',
       )
     }
