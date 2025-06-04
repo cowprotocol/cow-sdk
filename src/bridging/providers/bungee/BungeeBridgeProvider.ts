@@ -207,12 +207,27 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   async getBridgingParams(
     _chainId: ChainId,
     _provider: JsonRpcProvider,
-    _orderUid: string,
+    orderId: string,
     _txHash: string,
   ): Promise<BridgingDepositParams | null> {
-    console.log('getBridgingParams() Method not implemented in BungeeBridgeProvider.')
+    const events = await this.api.getEvents({ orderId })
+    const event = events[0]
 
-    return null
+    if (!event) return null
+
+    return {
+      inputTokenAddress: event.srcTokenAddress,
+      outputTokenAddress: event.destTokenAddress,
+      inputAmount: BigInt(event.srcAmount),
+      outputAmount: event.destAmount ? BigInt(event.destAmount) : null,
+      owner: event.sender,
+      quoteTimestamp: null,
+      fillDeadline: null,
+      recipient: event.recipient,
+      sourceChainId: event.fromChainId,
+      destinationChainId: event.toChainId,
+      bridgingId: orderId,
+    }
   }
 
   async decodeBridgeHook(_hook: latestAppData.CoWHook): Promise<BridgeDeposit> {
@@ -253,17 +268,21 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     if (event.srcTxStatus === BungeeEventStatus.COMPLETED && event.destTxStatus === BungeeEventStatus.PENDING) {
       // if bridgeName = across,
       if (event.bridgeName === BungeeBridgeName.ACROSS) {
-        // check across api to check status is expired or refunded
-        const acrossStatus = await this.api.getAcrossStatus(event.orderId)
-        if (acrossStatus === 'expired') {
-          return { status: BridgeStatus.EXPIRED, depositTxHash: event.srcTransactionHash }
-        }
-        if (acrossStatus === 'refunded') {
-          // refunded means failed
-          return { status: BridgeStatus.REFUND, depositTxHash: event.srcTransactionHash }
+        try {
+          // check across api to check status is expired or refunded
+          const acrossStatus = await this.api.getAcrossStatus(event.orderId)
+          if (acrossStatus === 'expired') {
+            return { status: BridgeStatus.EXPIRED, depositTxHash: event.srcTransactionHash }
+          }
+          if (acrossStatus === 'refunded') {
+            // refunded means failed
+            return { status: BridgeStatus.REFUND, depositTxHash: event.srcTransactionHash }
+          }
+        } catch (e) {
+          console.error('BungeeBridgeProvider get across status error', e)
         }
       }
-      // if not across, waiting for dest tx, return in_progress
+      // if not across or across API fails, waiting for dest tx, return in_progress
       return { status: BridgeStatus.IN_PROGRESS, depositTxHash: event.srcTransactionHash }
     }
 
