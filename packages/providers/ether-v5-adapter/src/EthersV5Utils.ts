@@ -66,7 +66,48 @@ export class EthersV5Utils implements AdapterUtils {
   }
 
   decodeAbi(types: string[], data: BytesLike): unknown[] {
-    return ethers.utils.defaultAbiCoder.decode(types, data) as unknown[]
+    const decoded = ethers.utils.defaultAbiCoder.decode(types, data)
+    return decoded.map((x) => this.convertBigNumbersToBigInt(x))
+  }
+
+  private convertBigNumbersToBigInt(value: any): any {
+    if (ethers.BigNumber.isBigNumber(value)) {
+      return value.toBigInt()
+    }
+
+    // Check if it's the special ethers Result object (has numeric indices + named props)
+    if (value && typeof value === 'object' && typeof value.length === 'number') {
+      // Create array-like object preserving both access patterns
+      const result: any = []
+
+      // Copy numeric indices
+      for (let i = 0; i < value.length; i++) {
+        result[i] = this.convertBigNumbersToBigInt(value[i])
+      }
+
+      // Copy named properties
+      for (const [key, val] of Object.entries(value)) {
+        if (isNaN(Number(key)) && key !== 'length') {
+          result[key] = this.convertBigNumbersToBigInt(val)
+        }
+      }
+
+      return result
+    }
+
+    if (value && typeof value === 'object') {
+      const result: any = {}
+      for (const [key, val] of Object.entries(value)) {
+        result[key] = this.convertBigNumbersToBigInt(val)
+      }
+      return result
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((item) => this.convertBigNumbersToBigInt(item))
+    }
+
+    return value
   }
 
   id(text: string): BytesLike {
@@ -74,11 +115,11 @@ export class EthersV5Utils implements AdapterUtils {
   }
 
   toBigIntish(value: BytesLike | string | number): BigNumberish {
-    return ethers.BigNumber.from(value)
+    return ethers.BigNumber.from(value).toBigInt()
   }
 
   newBigintish(value: number | string): BigNumberish {
-    return ethers.BigNumber.from(value)
+    return ethers.BigNumber.from(value).toBigInt()
   }
 
   hexDataSlice(data: BytesLike, offset: number, endOffset?: number): BytesLike {
@@ -184,5 +225,21 @@ export class EthersV5Utils implements AdapterUtils {
     }
     const resultBytes = await base.callStatic.simulateDelegatecall(reader.address, encodedCall)
     return reader.interface.decodeFunctionResult(method, resultBytes)[0]
+  }
+
+  randomBytes(length: number): string {
+    return ethers.utils.hexlify(ethers.utils.randomBytes(length))
+  }
+
+  isAddress(address: string): boolean {
+    return ethers.utils.isAddress(address)
+  }
+
+  isHexString(value: string): boolean {
+    return ethers.utils.isHexString(value)
+  }
+
+  hexDataLength(data: string): number {
+    return ethers.utils.hexDataLength(data)
   }
 }

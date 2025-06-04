@@ -258,4 +258,28 @@ export class EthersV6Utils implements AdapterUtils {
 
     return readerInterface.decodeFunctionResult(method, resultBytes)[0]
   }
+
+  randomBytes(length: number): string {
+    return ethersHexlify(crypto.getRandomValues(new Uint8Array(length)))
+  }
+
+  isAddress(address: string): boolean {
+    try {
+      getAddress(address)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  isHexString(value: string): boolean {
+    return typeof value === 'string' && /^0x[0-9a-fA-F]*$/.test(value)
+  }
+
+  hexDataLength(data: string): number {
+    if (!this.isHexString(data)) {
+      throw new Error('Invalid hex string')
+    }
+    return (data.length - 2) / 2
+  }
 }

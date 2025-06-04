@@ -28,6 +28,8 @@ import {
   PublicClient,
   decodeFunctionResult,
   toHex,
+  isAddress,
+  isHex,
 } from 'viem'
 
 export class ViemUtils implements AdapterUtils {
@@ -355,5 +357,25 @@ export class ViemUtils implements AdapterUtils {
     })
 
     return decoded
+  }
+
+  randomBytes(length: number): string {
+    const randomBytes = crypto.getRandomValues(new Uint8Array(length))
+    return this.bytesToHex(randomBytes)
+  }
+
+  isAddress(address: string): boolean {
+    return isAddress(address)
+  }
+
+  isHexString(value: string): boolean {
+    return isHex(value)
+  }
+
+  hexDataLength(data: string): number {
+    if (!this.isHexString(data)) {
+      throw new Error('Invalid hex string')
+    }
+    return (data.length - 2) / 2
   }
 }
