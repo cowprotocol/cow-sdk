@@ -20,6 +20,7 @@ export interface BridgeProviderInfo {
   name: string
   logoUrl: string
   dappId: string
+  website: string
 }
 
 interface WithSellToken {
@@ -378,6 +379,7 @@ export interface BridgingDepositParams {
 }
 
 export interface CrossChainOrder {
+  provider: BridgeProvider<BridgeQuoteResult>
   chainId: SupportedChainId
   order: EnrichedOrder
   statusResult: BridgeStatusResult

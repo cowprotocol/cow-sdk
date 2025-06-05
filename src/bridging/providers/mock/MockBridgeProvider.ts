@@ -110,6 +110,7 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
     name: 'Mock',
     logoUrl: `${RAW_PROVIDERS_FILES_PATH}/mock/mock-logo.png`,
     dappId: 'mockProvider',
+    website: 'https://across.to',
   }
 
   async getNetworks(): Promise<ChainInfo[]> {

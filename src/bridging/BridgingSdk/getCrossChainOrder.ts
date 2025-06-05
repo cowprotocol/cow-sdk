@@ -58,6 +58,7 @@ export async function getCrossChainOrder(params: GetCrossChainOrderParams): Prom
     }
 
     const state: CrossChainOrder = {
+      provider,
       chainId,
       order,
       statusResult: {

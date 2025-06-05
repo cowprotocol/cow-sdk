@@ -69,6 +69,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     name: 'Bungee',
     logoUrl: `${RAW_PROVIDERS_FILES_PATH}/bungee/bungee-logo.png`,
     dappId: BUNGEE_HOOK_DAPP_ID,
+    website: 'https://www.bungee.exchange',
   }
 
   async getNetworks(): Promise<ChainInfo[]> {

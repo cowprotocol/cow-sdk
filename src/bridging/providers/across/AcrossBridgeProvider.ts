@@ -72,6 +72,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     name: 'Across',
     logoUrl: `${RAW_PROVIDERS_FILES_PATH}/across/across-logo.png`,
     dappId: ACROSS_HOOK_DAPP_ID,
+    website: 'https://across.to',
   }
 
   async getNetworks(): Promise<ChainInfo[]> {

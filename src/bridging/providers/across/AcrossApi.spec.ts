@@ -1,6 +1,7 @@
 import { AdditionalTargetChainId, SupportedChainId } from '../../../chains'
 import { AcrossApi } from './AcrossApi'
 import { DepositStatusResponse } from './types'
+
 describe('AcrossApi: Shape of API response', () => {
   let api: AcrossApi
 
