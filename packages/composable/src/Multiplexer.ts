@@ -439,9 +439,6 @@ export class Multiplexer {
    * @returns ABI-encoded `data` for the `ProofStruct`.
    */
   private encodeToABI(filter?: (v: string[]) => boolean): string {
-    console.log('here')
-    const x = getGlobalAdapter().utils.encodeAbi(PAYLOAD_EMITTED_ABI, [this.getProofs(filter)]) as string
-    console.log({ x })
     return getGlobalAdapter().utils.encodeAbi(PAYLOAD_EMITTED_ABI, [this.getProofs(filter)]) as string
   }
 

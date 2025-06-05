@@ -10,8 +10,6 @@ import {
   decodeEip1271SignatureData,
   EIP1271_MAGICVALUE,
 } from '../src'
-//@ts-ignore
-import { log } from 'console'
 
 describe('Interactions and EIP-1271 Signatures', () => {
   let adapters: ReturnType<typeof createAdapters>
