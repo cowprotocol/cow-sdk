@@ -15,7 +15,16 @@ const SELL_KIND_VALUES = ['sell', '0xf3b277728b3fee749481eb3e0b3b48980dbbab78658
 const BUY_KIND_VALUES = ['buy', '0x6ed88e868af0a1983e3886d5f3e95a2fafbd6c3450bc229e27342283dc429ccc']
 
 // Define the ABI tuple for the ConditionalOrderParams struct
-export const CONDITIONAL_ORDER_PARAMS_ABI = ['tuple(address handler, bytes32 salt, bytes staticInput)']
+export const CONDITIONAL_ORDER_PARAMS_ABI = [
+  {
+    type: 'tuple',
+    components: [
+      { name: 'handler', type: 'address' },
+      { name: 'salt', type: 'bytes32' },
+      { name: 'staticInput', type: 'bytes' },
+    ],
+  },
+]
 
 export const DEFAULT_TOKEN_FORMATTER = (address: string, amount: bigint) => `${amount}@${address}`
 

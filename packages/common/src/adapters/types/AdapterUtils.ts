@@ -83,7 +83,7 @@ export abstract class AdapterUtils {
   /**
    * Decodes ABI encoded data
    */
-  abstract decodeAbi(types: string[], data: Bytes): unknown[]
+  abstract decodeAbi(types: unknown[], data: Bytes): unknown[]
 
   /**
    * Computes the id (keccak256 hash) of a string

@@ -6,9 +6,28 @@ import { COMPOSABLE_COW_CONTRACT_ADDRESS, SupportedChainId } from '@cowprotocol/
 import { getGlobalAdapter, Provider } from '@cowprotocol/sdk-common'
 import { ComposableCowFactoryAbi } from './abis/ComposableCowFactoryAbi'
 
-const CONDITIONAL_ORDER_LEAF_ABI = ['address', 'bytes32', 'bytes']
+const CONDITIONAL_ORDER_LEAF_ABI = [{ type: 'address' }, { type: 'bytes32' }, { type: 'bytes' }]
 
-const PAYLOAD_EMITTED_ABI = ['tuple(bytes32[] proof, tuple(address handler, bytes32 salt, bytes staticInput) params)[]']
+const PAYLOAD_EMITTED_ABI = [
+  {
+    type: 'tuple[]', // explicitly showing it's an array of tuples
+    components: [
+      {
+        name: 'proof',
+        type: 'bytes32[]', // explicitly showing it's an array of bytes32
+      },
+      {
+        name: 'params',
+        type: 'tuple',
+        components: [
+          { name: 'handler', type: 'address' },
+          { name: 'salt', type: 'bytes32' },
+          { name: 'staticInput', type: 'bytes' },
+        ],
+      },
+    ],
+  },
+]
 
 export type Orders = Record<string, ConditionalOrder<unknown, unknown>>
 
@@ -246,9 +265,12 @@ export class Multiplexer {
    */
   private getOrGenerateTree(): StandardMerkleTree<string[]> {
     if (!this.tree) {
+      // Convert AbiParameter[] back to string[] for StandardMerkleTree
+      const stringTypes = CONDITIONAL_ORDER_LEAF_ABI.map((param) => param.type)
+
       this.tree = StandardMerkleTree.of(
         Object.values(this.orders).map((order) => [...Object.values(order.leaf)]),
-        CONDITIONAL_ORDER_LEAF_ABI,
+        stringTypes, // ['address', 'bytes32', 'bytes']
       )
     }
 
@@ -417,6 +439,9 @@ export class Multiplexer {
    * @returns ABI-encoded `data` for the `ProofStruct`.
    */
   private encodeToABI(filter?: (v: string[]) => boolean): string {
+    console.log('here')
+    const x = getGlobalAdapter().utils.encodeAbi(PAYLOAD_EMITTED_ABI, [this.getProofs(filter)]) as string
+    console.log({ x })
     return getGlobalAdapter().utils.encodeAbi(PAYLOAD_EMITTED_ABI, [this.getProofs(filter)]) as string
   }
 

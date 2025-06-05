@@ -244,7 +244,7 @@ export abstract class ConditionalOrder<D, S> {
    * @param data The order's data struct.
    * @returns An ABI-encoded representation of the order's data struct.
    */
-  protected encodeStaticInputHelper(orderDataTypes: string[], staticInput: S): string {
+  protected encodeStaticInputHelper(orderDataTypes: unknown[], staticInput: S): string {
     return getGlobalAdapter().utils.encodeAbi(orderDataTypes, [staticInput]) as string
   }
 
@@ -430,7 +430,7 @@ export abstract class ConditionalOrder<D, S> {
   protected static deserializeHelper<T>(
     s: string,
     handler: string,
-    orderDataTypes: string[],
+    orderDataTypes: unknown[],
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     callback: (d: any, salt: string) => T,
   ): T {

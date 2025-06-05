@@ -30,6 +30,7 @@ import {
   toHex,
   isAddress,
   isHex,
+  AbiParameter,
 } from 'viem'
 
 export class ViemUtils implements AdapterUtils {
@@ -113,15 +114,18 @@ export class ViemUtils implements AdapterUtils {
     return getAddress(address)
   }
 
-  encodeAbi(types: { type: string; name: string }[], values: unknown[]): `0x${string}` {
+  encodeAbi(types: string[], values: unknown[]): `0x${string}` {
+    if (typeof types[0] === 'string')
+      //@ts-expect-error:test
+      return decodeAbiParameters(types.map((type, i) => ({ type, name: `arg${i}` })) as AbiParameter[], values)
+    //@ts-expect-error:test
     return encodeAbiParameters(types, values)
   }
 
-  decodeAbi(types: string[], data: `0x${string}`): unknown[] {
-    return decodeAbiParameters(
-      types.map((type, i) => ({ type, name: `arg${i}` })),
-      data,
-    )
+  decodeAbi(types: unknown[], data: `0x${string}`): unknown[] {
+    if (typeof types[0] === 'string')
+      return decodeAbiParameters(types.map((type, i) => ({ type, name: `arg${i}` })) as AbiParameter[], data)
+    return decodeAbiParameters(types as AbiParameter[], data)
   }
 
   id(text: string): `0x${string}` {
@@ -208,15 +212,14 @@ export class ViemUtils implements AdapterUtils {
     functionName: string,
     args: unknown[],
   ): `0x${string}` {
-    // Convert simple ABI to viem parseAbi format
-    const abiString = abi.map((fn) => {
-      const inputsStr = fn.inputs.map((input) => input.type).join(',')
-      return `function ${fn.name}(${inputsStr})`
-    })
+    const functionAbi = abi.find((item) => item.name === functionName)
 
-    const parsedAbi = parseAbi(abiString)
+    if (!functionAbi) {
+      throw new Error(`Function ${functionName} not found in ABI`)
+    }
+
     return encodeFunctionData({
-      abi: parsedAbi,
+      abi: [functionAbi], // Pass just the function ABI entry
       functionName,
       args,
     })

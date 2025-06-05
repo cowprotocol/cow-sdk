@@ -33,7 +33,21 @@ const ONE = BigInt(1)
 
 // Define the ABI tuple for the TWAPData struct
 const TWAP_STRUCT_ABI = [
-  'tuple(address sellToken, address buyToken, address receiver, uint256 partSellAmount, uint256 minPartLimit, uint256 t0, uint256 n, uint256 t, uint256 span, bytes32 appData)',
+  {
+    type: 'tuple',
+    components: [
+      { name: 'sellToken', type: 'address' },
+      { name: 'buyToken', type: 'address' },
+      { name: 'receiver', type: 'address' },
+      { name: 'partSellAmount', type: 'uint256' },
+      { name: 'minPartLimit', type: 'uint256' },
+      { name: 't0', type: 'uint256' },
+      { name: 'n', type: 'uint256' },
+      { name: 't', type: 'uint256' },
+      { name: 'span', type: 'uint256' },
+      { name: 'appData', type: 'bytes32' },
+    ],
+  },
 ]
 
 /**
