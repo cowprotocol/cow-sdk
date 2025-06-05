@@ -249,6 +249,7 @@ describe('BungeeBridgeProvider', () => {
         dappId: BUNGEE_HOOK_DAPP_ID,
         name: 'Bungee',
         logoUrl: expect.stringContaining('bungee-logo.png'),
+        website: 'https://www.bungee.exchange',
       })
     })
   })

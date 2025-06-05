@@ -168,6 +168,7 @@ describe('AcrossBridgeProvider', () => {
         dappId: ACROSS_HOOK_DAPP_ID,
         name: 'Across',
         logoUrl: expect.stringContaining('across-logo.png'),
+        website: 'https://across.to',
       })
     })
   })

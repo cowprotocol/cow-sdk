@@ -4,6 +4,8 @@ export * from './utils'
 
 // SDK
 export * from './BridgingSdk/BridgingSdk'
+export * from './const'
+export { getCrossChainOrder } from './BridgingSdk/getCrossChainOrder'
 
 // Providers
 export {
