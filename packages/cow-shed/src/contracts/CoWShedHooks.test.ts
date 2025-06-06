@@ -211,14 +211,23 @@ describe('CowShedHooks', () => {
         expect(result).toHaveProperty('message')
 
         // Fix: Test the normalized message structure
-        expect(result.message.calls[0].target).toBe('0x1234abcd') // Should be lowercase
-        expect(result.message.calls[0].value).toBe(BigInt(100)) // Value should remain bigint
-        expect(result.message.deadline).toBe('1000000') // Should be converted to string
-        expect(result.message.nonce).toBe(nonce)
+        const message = result.message as {
+          calls: Array<{ target: string; value: bigint }>
+          deadline: string
+          nonce: string
+        }
+        const domain = result.domain as { chainId: number; verifyingContract: string }
+
+        expect(message.calls).toBeDefined()
+        expect(message.calls.length).toBeGreaterThan(0)
+        expect(message.calls[0]?.target).toBe('0x1234abcd') // Should be lowercase
+        expect(message.calls[0]?.value).toBe(BigInt(100)) // Value should remain bigint
+        expect(message.deadline).toBe('1000000') // Should be converted to string
+        expect(message.nonce).toBe(nonce)
 
         // Test domain normalization
-        expect(result.domain.chainId).toBe(1) // Should be number
-        expect(result.domain.verifyingContract).toBe(testProxy.toLowerCase()) // Should be lowercase
+        expect(domain.chainId).toBe(1) // Should be number
+        expect(domain.verifyingContract).toBe(testProxy.toLowerCase()) // Should be lowercase
       })
     })
   })
@@ -271,7 +280,8 @@ describe('CowShedHooks', () => {
         const calls = createCallsForAdapter(adapter)
 
         // Fix: Create signer properly with type safety
-        const signer = new adapter.Signer(wallets[adapterName])
+        const wallet = wallets[adapterName]
+        const signer = new adapter.Signer(wallet as any)
 
         const signature = await cowShed.signCalls(calls, mockNonce, mockDeadline, signer, SigningScheme.EIP712)
 

@@ -39,7 +39,6 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
   private publicClient: PublicClient
   private account?: Account
   private walletClient: WalletClient
-  private transport: Transport
   public utils: ViemUtils
   public Signer = ViemSignerAdapter
   public TypedDataVersionedSigner = TypedDataVersionedSigner
@@ -49,7 +48,6 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
   constructor(chain: Chain, transport: Transport = http(), account?: Account | `0x${string}`) {
     super()
     this.ZERO_ADDRESS = zeroAddress
-    this.transport = transport
     this.publicClient = createPublicClient({
       chain,
       transport,

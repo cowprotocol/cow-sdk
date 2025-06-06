@@ -6,8 +6,13 @@ import { _TypedDataEncoder } from 'ethers/lib/utils'
 export class EthersV5SignerAdapter extends AbstractSigner {
   private _signer: Signer & TypedDataSigner
 
-  constructor(signer: Signer & TypedDataSigner) {
+  constructor(signer: (ethers.Signer & TypedDataSigner) | EthersV5SignerAdapter) {
     super()
+    if (signer instanceof EthersV5SignerAdapter) {
+      this._signer = signer._signer
+      return
+    }
+
     this._signer = signer
   }
 
@@ -87,7 +92,10 @@ export class EthersV5SignerAdapter extends AbstractSigner {
       throw new Error('Signer must have a provider to estimate gas')
     }
 
-    const estimate = await this._signer.provider.estimateGas(this._formatTxParams(txParams))
+    const formattedParams = this._formatTxParams(txParams)
+
+    const estimate = await this._signer.provider.estimateGas(formattedParams)
+
     return BigInt(estimate.toString())
   }
 }

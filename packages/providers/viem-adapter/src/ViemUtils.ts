@@ -111,8 +111,13 @@ export class ViemUtils implements AdapterUtils {
     return getAddress(address)
   }
 
-  encodeAbi(types: { type: string; name: string }[], values: unknown[]): `0x${string}` {
-    return encodeAbiParameters(types, values)
+  encodeAbi(types: { type: string; name: string }[] | string[], values: unknown[]): `0x${string}` {
+    // Convert types to viem format
+    const viemTypes =
+      Array.isArray(types) && typeof types[0] === 'string'
+        ? (types as string[]).map((type, i) => ({ type, name: `arg${i}` }))
+        : (types as { type: string; name: string }[]).map((type) => ({ type: type.type, name: type.name }))
+    return encodeAbiParameters(viemTypes, values)
   }
 
   decodeAbi(types: string[], data: `0x${string}`): unknown[] {
@@ -202,19 +207,19 @@ export class ViemUtils implements AdapterUtils {
   }
 
   encodeFunction(
-    abi: Array<{ name: string; inputs: Array<{ type: string }> }>,
+    abi: Array<{ name: string; inputs: Array<{ type: string }>; type: string }>,
     functionName: string,
     args: unknown[],
   ): `0x${string}` {
-    // Convert simple ABI to viem parseAbi format
-    const abiString = abi.map((fn) => {
-      const inputsStr = fn.inputs.map((input) => input.type).join(',')
-      return `function ${fn.name}(${inputsStr})`
-    })
+    // Find the function in the ABI
+    const functionAbi = abi.find((item) => item.type === 'function' && item.name === functionName)
+    if (!functionAbi) {
+      throw new Error(`Function ${functionName} not found in ABI`)
+    }
 
-    const parsedAbi = parseAbi(abiString)
+    // Use encodeFunctionData directly with the function ABI
     return encodeFunctionData({
-      abi: parsedAbi,
+      abi: [functionAbi],
       functionName,
       args,
     })
