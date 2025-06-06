@@ -11,9 +11,3 @@ export interface ICoWShedCall {
   allowFailure: boolean
   isDelegateCall: boolean
 }
-
-export interface ICoWShedOptions {
-  factoryAddress: string
-  proxyCreationCode?: string
-  implementationAddress: string
-}

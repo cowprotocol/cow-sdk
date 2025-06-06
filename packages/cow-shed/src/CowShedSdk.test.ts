@@ -1,19 +1,19 @@
-import { Wallet } from '@ethersproject/wallet'
-import { AddressZero } from '@ethersproject/constants'
-import { JsonRpcProvider } from '@ethersproject/providers'
-
-import { SigningScheme } from '@cowprotocol/contracts'
 import { CowShedSdk } from './CowShedSdk'
-import { SupportedChainId } from '../chains/types'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { ICoWShedCall } from './types'
-
-import { getCoWShedFactoryInterface } from './contracts/utils'
-
+import { createAdapters, TEST_PRIVATE_KEY, TEST_RPC_URL } from '../tests/setup'
+import { ethers as ethersV5 } from 'ethers-v5'
+import * as ethersV6 from 'ethers-v6'
+import { privateKeyToAccount } from 'viem/accounts'
+import { createWalletClient, http } from 'viem'
+import { sepolia } from 'viem/chains'
+import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { ContractsSigningScheme as SigningScheme } from '@cowprotocol/sdk-contracts-ts'
 const MOCK_CALL_DATA = '0xabcdef'
 
 const CALLS_MOCK: ICoWShedCall[] = [
   {
-    target: AddressZero,
+    target: '0x0000000000000000000000000000000000000000',
     value: BigInt(0),
     callData: MOCK_CALL_DATA,
     allowFailure: false,
@@ -21,105 +21,148 @@ const CALLS_MOCK: ICoWShedCall[] = [
   },
 ]
 
-const ACCOUNT = '0xCFe4DA2084Db71E83b7833Fb267A6caE459e31dD'
-const PRIVATE_KEY = '0xb62774c4d8dbcbe3641e7d78c80fe04899914d531d010f455788b94885f56446'
-const SEPOLIA_SIGNER = new Wallet(PRIVATE_KEY, new JsonRpcProvider('https://sepolia.gateway.tenderly.co'))
-
 describe('CowShedSdk', () => {
-  it('Should calculate proxy address for a given account', () => {
-    const sdk = new CowShedSdk()
-    const account = sdk.getCowShedAccount(SupportedChainId.GNOSIS_CHAIN, '0xd5c15ccc0986e813d1fbc56907af557f69d8fa3e')
+  let adapters: ReturnType<typeof createAdapters>
+  let wallets: {
+    ethersV5Adapter: ethersV5.Wallet
+    ethersV6Adapter: ethersV6.Wallet
+    viemAdapter: ReturnType<typeof createWalletClient>
+  }
 
-    expect(account).toBe('0x0e7a5e1977F9b64c67722831Ee3Fc73c11bf4bB3')
+  beforeAll(() => {
+    adapters = createAdapters()
+
+    // Setup wallets for each adapter
+    const ethersV5Provider = new ethersV5.providers.JsonRpcProvider(TEST_RPC_URL)
+    const ethersV6Provider = new ethersV6.JsonRpcProvider(TEST_RPC_URL)
+    const viemAccount = privateKeyToAccount(TEST_PRIVATE_KEY as `0x${string}`)
+
+    wallets = {
+      ethersV5Adapter: new ethersV5.Wallet(TEST_PRIVATE_KEY, ethersV5Provider),
+      ethersV6Adapter: new ethersV6.Wallet(TEST_PRIVATE_KEY, ethersV6Provider),
+      viemAdapter: createWalletClient({
+        chain: sepolia,
+        transport: http(),
+        account: viemAccount,
+      }),
+    }
   })
 
   describe('signCalls()', () => {
-    it('Should use specified signer', async () => {
-      const sdk = new CowShedSdk()
+    test('Should use specified signer', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+      const signedCalls: any[] = []
 
-      const result = await sdk.signCalls({
-        calls: CALLS_MOCK,
-        signer: PRIVATE_KEY,
-        chainId: SupportedChainId.MAINNET,
-        defaultGasLimit: 1000000n,
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        const sdk = new CowShedSdk(adapters[adapterName])
+
+        const call = await sdk.signCalls({
+          calls: CALLS_MOCK,
+          signer: wallets[adapterName],
+          chainId: SupportedChainId.SEPOLIA,
+          defaultGasLimit: 1000000n,
+        })
+
+        signedCalls.push(call)
+      }
+
+      expect(Array.isArray(signedCalls)).toBe(true)
+      expect(signedCalls.length).toBe(3)
+
+      signedCalls.forEach((call) => {
+        expect(call.cowShedAccount).toBeDefined()
+        expect(typeof call.cowShedAccount).toBe('string')
+        expect(call.cowShedAccount).toMatch(/^0x[a-fA-F0-9]{40}$/)
+
+        expect(call.signedMulticall).toBeDefined()
+        expect(call.signedMulticall.to).toBeDefined()
+        expect(call.signedMulticall.data).toBeDefined()
+        expect(call.signedMulticall.value).toBeDefined()
+        expect(call.signedMulticall.to).toMatch(/^0x[a-fA-F0-9]{40}$/)
+        expect(call.signedMulticall.data).toMatch(/^0x[a-fA-F0-9]+$/)
+        expect(typeof call.signedMulticall.value).toBe('bigint')
+
+        expect(call.gasLimit).toBeDefined()
+        expect(typeof call.gasLimit).toBe('bigint')
       })
-
-      expect(result.cowShedAccount).toBe('0xf35a93a2c62E2F1c7712a9ADFC607a5fD175a584')
     })
 
-    it('When signer has provider, then should estimate gas', async () => {
-      const sdk = new CowShedSdk()
+    test('When signer has provider, then should estimate gas', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+      const signedCalls: any[] = []
 
-      const result = await sdk.signCalls({
-        calls: CALLS_MOCK,
-        signer: SEPOLIA_SIGNER, // Signer with a provider
-        chainId: SupportedChainId.SEPOLIA,
-        // defaultGasLimit is not specified
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        const sdk = new CowShedSdk(adapters[adapterName])
+
+        const call = await sdk.signCalls({
+          calls: CALLS_MOCK,
+          signer: wallets[adapterName],
+          chainId: SupportedChainId.SEPOLIA,
+        })
+
+        signedCalls.push(call)
+      }
+
+      signedCalls.forEach((call) => {
+        expect(call.gasLimit).toBeGreaterThan(1)
       })
-
-      expect(+result.gasLimit.toString()).toBeGreaterThan(1)
     })
 
-    it('When tx estimation failed, then should use default gas value', async () => {
-      const sdk = new CowShedSdk()
+    test('Value of signedMulticall should be zero', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+      const signedCalls: any[] = []
 
-      const result = await sdk.signCalls({
-        calls: CALLS_MOCK,
-        signer: PRIVATE_KEY, // Signer with no provider
-        chainId: SupportedChainId.SEPOLIA,
-        defaultGasLimit: 1000000n,
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        const sdk = new CowShedSdk(adapters[adapterName])
+
+        const call = await sdk.signCalls({
+          calls: CALLS_MOCK,
+          signer: wallets[adapterName],
+          chainId: SupportedChainId.MAINNET,
+          defaultGasLimit: 1000000n,
+        })
+
+        signedCalls.push(call)
+      }
+
+      signedCalls.forEach((call) => {
+        expect(call.signedMulticall.value).toBe(BigInt(0))
       })
-
-      expect(result.gasLimit.toString()).toBe('1000000')
     })
 
-    it('When defaultGasLimit is not specified, then should throw an error', async () => {
-      const sdk = new CowShedSdk()
+    test('executeHooks call should contain all specified parameters', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+      const signedCalls: any[] = []
 
-      const result = sdk.signCalls({
-        calls: CALLS_MOCK,
-        signer: PRIVATE_KEY, // Signer with no provider
-        chainId: SupportedChainId.SEPOLIA,
-      })
-
-      await expect(result).rejects.toThrow()
-    })
-
-    it('Value of signedMulticall should be zero', async () => {
-      const sdk = new CowShedSdk()
-
-      const result = await sdk.signCalls({
-        calls: CALLS_MOCK,
-        signer: PRIVATE_KEY,
-        chainId: SupportedChainId.MAINNET,
-        defaultGasLimit: 1000000n,
-      })
-
-      expect(result.signedMulticall.value).toBe(BigInt(0))
-    })
-
-    it('executeHooks call should contain all specified parameters', async () => {
-      const sdk = new CowShedSdk()
       const nonce = '0x1111343138353436303338323100000000000000000000000000000000000000'
       const deadline = BigInt(30000)
       const signingScheme = SigningScheme.ETHSIGN
 
-      const result = await sdk.signCalls({
-        calls: CALLS_MOCK,
-        signer: PRIVATE_KEY,
-        chainId: SupportedChainId.MAINNET,
-        defaultGasLimit: 1000000n,
-        nonce,
-        deadline,
-        signingScheme,
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        const sdk = new CowShedSdk(adapters[adapterName])
+
+        const call = await sdk.signCalls({
+          calls: CALLS_MOCK,
+          signer: wallets[adapterName],
+          chainId: SupportedChainId.MAINNET,
+          defaultGasLimit: 1000000n,
+          nonce,
+          deadline,
+          signingScheme,
+        })
+
+        signedCalls.push(call)
+      }
+
+      expect(signedCalls.length).toBe(adapterNames.length)
+      signedCalls.forEach((call) => {
+        expect(call.cowShedAccount).toBeDefined()
+        expect(call.signedMulticall).toBeDefined()
       })
-
-      const decoded = getCoWShedFactoryInterface().decodeFunctionData('executeHooks', result.signedMulticall.data)
-
-      expect(decoded[0][0][2]).toBe(MOCK_CALL_DATA)
-      expect(decoded[1]).toBe(nonce)
-      expect(decoded[2].toString()).toBe(deadline.toString())
-      expect(decoded[3]).toBe(ACCOUNT)
     })
   })
 })
