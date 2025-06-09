@@ -1,0 +1,101 @@
+{
+  "$id": "#partnerFee/v1.0.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "Partner fee",
+  "oneOf": [
+    {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/partnerFeeObject"
+      }
+    },
+    {
+      "$ref": "#/definitions/partnerFeeObject"
+    }
+  ],
+  "definitions": {
+    "partnerFeeObject": {
+      "type": "object",
+      "oneOf": [
+        {
+          "required": [
+            "volumeBps",
+            "recipient"
+          ],
+          "properties": {
+            "volumeBps": {
+              "title": "Volume Basis Point (BPS)",
+              "description": "The fee in basis points (BPS) to be paid to the partner based on volume. Capped at protocol level to 100 BPS (1%)",
+              "$ref": "../definitions.json#/definitions/bps",
+              "maximum": 100,
+              "minimum": 1
+            },
+            "recipient": {
+              "$ref": "#/definitions/recipient"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "required": [
+            "surplusBps",
+            "maxVolumeBps",
+            "recipient"
+          ],
+          "properties": {
+            "surplusBps": {
+              "title": "Surplus Basis Point (BPS)",
+              "description": "The fee in basis points (BPS) to be paid to the partner based on surplus",
+              "$ref": "../definitions.json#/definitions/bps",
+              "maximum": 9999,
+              "minimum": 1
+            },
+            "maxVolumeBps": {
+              "$ref": "#/definitions/maxVolumeBps"
+            },
+            "recipient": {
+              "$ref": "#/definitions/recipient"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "required": [
+            "priceImprovementBps",
+            "maxVolumeBps",
+            "recipient"
+          ],
+          "properties": {
+            "priceImprovementBps": {
+              "title": "Price Improvement Basis Point (BPS)",
+              "description": "The fee in basis points (BPS) to be paid to the partner based on price improvement",
+              "$ref": "../definitions.json#/definitions/bps",
+              "maximum": 9999,
+              "minimum": 1
+            },
+            "maxVolumeBps": {
+              "$ref": "#/definitions/maxVolumeBps"
+            },
+            "recipient": {
+              "$ref": "#/definitions/recipient"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "maxVolumeBps": {
+      "title": "Max Volume Basis Point (BPS)",
+      "description": "The maximum volume in basis points (BPS) to be paid to the partner. Capped at protocol level to 100 BPS (1%). You can chose to go lower but not higher",
+      "$ref": "../definitions.json#/definitions/bps",
+      "maximum": 100,
+      "minimum": 1,
+      "default": 100
+    },
+    "recipient": {
+      "title": "Partner account",
+      "description": "The Ethereum address of the partner to receive the fee.",
+      "$ref": "../definitions.json#/definitions/ethereumAddress"
+    }
+  }
+}

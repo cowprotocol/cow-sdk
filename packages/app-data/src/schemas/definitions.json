@@ -1,0 +1,52 @@
+{
+  "$id": "#definitions.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "description": "Definitions sub-schema",
+  "definitions": {
+    "version": {
+      "$id": "#/definitions/version",
+      "description": "Semantic versioning of document.",
+      "readOnly": true,
+      "examples": ["1.0.0", "1.2.3"],
+      "title": "Version",
+      "type": "string"
+    },
+    "ethereumAddress": {
+      "$id": "#/definitions/ethereumAddress",
+      "pattern": "^0x[a-fA-F0-9]{40}$",
+      "title": "Ethereum compatible address",
+      "examples": ["0xb6BAd41ae76A11D10f7b0E664C5007b908bC77C9"],
+      "type": "string"
+    },
+    "bigNumber": {
+      "$id": "#/definitions/bigNumber",
+      "pattern": "^\\d+$",
+      "title": "BigNumber",
+      "examples": ["90741097240912730913", "0", "75891372"],
+      "type": "string"
+    },
+    "bps": {
+      "$id": "#/definitions/bps",
+      "title": "Basis Point (BPS)",
+      "description": "One basis point is equivalent to 0.01% (1/100th of a percent)",
+      "examples": [0, 10, 50],
+      "type": "integer",
+      "maximum": 10000,
+      "minimum": 0
+    },
+    "orderUid": {
+      "$id": "#/definitions/orderUid",
+      "pattern": "^0x[a-fA-F0-9]{112}$",
+      "title": "Order UID",
+      "examples": ["0xff2e2e54d178997f173266817c1e9ed6fee1a1aae4b43971c53b543cffcc2969845c6f5599fbb25dbdd1b9b013daf85c03f3c63763e4bc4a"],
+      "type": "string"
+    },
+    "dappId": {
+      "$id": "#/definitions/dappId",
+      "pattern": "^[a-fA-F0-9]{64}$",
+      "title": "A hex string representing a dApp ID",
+      "examples": ["75716a3cb48fdbb43ebdff58ce6c541f6a2c269be690513131355800367f2da2"],
+      "type": "string"
+    }
+  }
+}

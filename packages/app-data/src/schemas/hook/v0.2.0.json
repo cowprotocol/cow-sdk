@@ -1,0 +1,40 @@
+{
+  "$id": "#hook/v0.2.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "required": [
+    "target",
+    "callData",
+    "gasLimit"
+  ],
+  "title": "CoW Hook",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "target": {
+      "$ref": "../definitions.json#/definitions/ethereumAddress",
+      "title": "Hook Target",
+      "description": "The contract to call for the hook"
+    },
+    "callData": {
+      "$id": "#/properties/callData",
+      "title": "Hook CallData",
+      "description": "The calldata to use when calling the hook",
+      "type": "string",
+      "pattern": "^0x[a-fA-F0-9]*$",
+      "examples": [
+        "0x",
+        "0x01020304"
+      ]
+    },
+    "gasLimit": {
+      "$ref": "../definitions.json#/definitions/bigNumber",
+      "title": "Hook Gas Limit",
+      "description": "The gas limit (in gas units) for the hook"
+    },
+    "dappId": {
+      "$ref": "../definitions.json#/definitions/dappId",
+      "title": "Id of the dApp which has built the hook",
+      "description": "CoW Swap has an interface that allows dApps to build hooks for orders. This field is used to identify the dApp that has built the hook."
+    }
+  }
+}
