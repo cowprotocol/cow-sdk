@@ -1,0 +1,15 @@
+{
+  "$id": "#replacedOrder/v0.1.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "required": ["uid"],
+  "title": "Replaced order",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "uid": {
+      "title": "Replaced order UID",
+      "description": "The replaced order UID.",
+      "$ref": "../definitions.json#/definitions/orderUid"
+    }
+  }
+}

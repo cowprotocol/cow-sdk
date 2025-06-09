@@ -1,0 +1,66 @@
+{
+  "$id": "https://cowswap.exchange/schemas/app-data/v0.7.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "description": "Metadata JSON document for adding information to orders.",
+  "required": [
+    "version",
+    "metadata"
+  ],
+  "title": "AppData Root Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "$ref": "definitions.json#/definitions/version",
+      "readOnly": true,
+      "default": "0.9.0"
+    },
+    "appCode": {
+      "$id": "#/properties/appCode",
+      "description": "The code identifying the CLI, UI, service generating the order.",
+      "examples": [
+        "CoW Swap"
+      ],
+      "title": "App Code",
+      "type": "string"
+    },
+    "environment": {
+      "$id": "#/properties/environment",
+      "description": "Environment from which the order came from.",
+      "title": "Environment",
+      "type": "string",
+      "examples": [
+        "production",
+        "development",
+        "staging",
+        "ens"
+      ]
+    },
+    "metadata": {
+      "$id": "#/properties/metadata",
+      "default": {},
+      "description": "Each metadata will specify one aspect of the order.",
+      "required": [],
+      "title": "Metadata",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "referrer": {
+          "$ref": "referrer/v0.2.0.json#"
+        },
+        "utm": {
+          "$ref": "utm/v0.2.0.json#"
+        },
+        "quote": {
+          "$ref": "quote/v0.3.0.json#"
+        },
+        "orderClass": {
+          "$ref": "orderClass/v0.3.0.json#"
+        },
+        "hooks": {
+          "$ref": "hooks/v0.1.0.json#"
+        }
+      }
+    }
+  }
+}
