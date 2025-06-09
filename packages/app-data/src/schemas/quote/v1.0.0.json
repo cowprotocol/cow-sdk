@@ -1,0 +1,15 @@
+{
+  "$id": "#quote/v0.2.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "required": ["slippageBips"],
+  "title": "Quote",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "slippageBips": {
+      "title": "Slippage Bips",
+      "description": "Slippage tolerance that was applied to the order to get the limit price. Expressed in Basis Points (BPS). One basis point is equivalent to 0.01% (1/100th of a percent)",
+      "$ref": "../definitions.json#/definitions/bps"
+    }
+  }
+}

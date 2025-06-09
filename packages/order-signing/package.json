@@ -1,0 +1,42 @@
+{
+  "name": "@cowprotocol/sdk-order-signing",
+  "version": "0.1.0",
+  "description": "TypeScript order signing for CoW Protocol SDK",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "license": "MIT",
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "dev": "tsup src/index.ts --format esm,cjs --watch --dts",
+    "lint": "eslint src/**/*.ts",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "@cowprotocol/sdk-common": "workspace:*",
+    "@cowprotocol/sdk-config": "workspace:*",
+    "@cowprotocol/sdk-contracts-ts": "workspace:*",
+    "@cowprotocol/sdk-order-book": "workspace:*"
+  },
+  "devDependencies": {
+    "@cowprotocol/sdk-ethers-v5-adapter": "workspace:*",
+    "@cowprotocol/sdk-ethers-v6-adapter": "workspace:*",
+    "@cowprotocol/sdk-viem-adapter": "workspace:*",
+    "@types/jest": "^29.5.5",
+    "@types/node": "^20.17.31",
+    "ethers-v5": "npm:ethers@^5.7.2",
+    "ethers-v6": "npm:ethers@^6.13.7",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "eslint": "^8.48.0",
+    "tsup": "^7.2.0",
+    "typescript": "^5.2.2",
+    "viem": "^2.28.4"
+  }
+}
