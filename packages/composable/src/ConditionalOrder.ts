@@ -15,11 +15,9 @@ import {
 import { UID } from '@cowprotocol/sdk-order-book'
 import { computeOrderUid } from '@cowprotocol/sdk-contracts-ts'
 import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
-import { AbstractProviderAdapter, getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { AbstractProviderAdapter, getGlobalAdapter, setGlobalAdapter, ZERO_HASH } from '@cowprotocol/sdk-common'
 import { COMPOSABLE_COW_CONTRACT_ADDRESS } from '@cowprotocol/sdk-config'
 import { ComposableCowFactoryAbi } from './abis/ComposableCowFactoryAbi'
-
-const HASH_ZERO = '0x0000000000000000000000000000000000000000000000000000000000000000'
 
 /**
  * An abstract base class from which all conditional orders should inherit.
@@ -177,7 +175,7 @@ export abstract class ConditionalOrder<D, S> {
    * The context, relates to the 'ctx' in the contract: https://github.com/cowprotocol/composable-cow/blob/c7fb85ab10c05e28a1632ba97a1749fb261fcdfb/src/interfaces/IConditionalOrder.sol#L38
    */
   protected get ctx(): string {
-    return this.isSingleOrder ? this.id : HASH_ZERO
+    return this.isSingleOrder ? this.id : ZERO_HASH
   }
 
   /**

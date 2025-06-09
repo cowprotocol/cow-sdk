@@ -11,7 +11,15 @@ import {
   GPv2Order,
 } from '../types'
 import { encodeParams, formatEpoch, getBlockInfo, isValidAbi } from '../utils'
-import { AbstractProviderAdapter, getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
+import {
+  AbstractProviderAdapter,
+  getGlobalAdapter,
+  MAX_UINT32,
+  ONE,
+  setGlobalAdapter,
+  ZERO,
+  ZERO_ADDRESS,
+} from '@cowprotocol/sdk-common'
 
 // The type of Conditional Order
 const TWAP_ORDER_TYPE = 'twap'
@@ -24,12 +32,7 @@ export const TWAP_ADDRESS = '0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5'
  */
 export const CURRENT_BLOCK_TIMESTAMP_FACTORY_ADDRESS = '0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc'
 
-export const MAX_UINT32 = BigInt(2) ** BigInt(32) - BigInt(1) // 2^32 - 1
 export const MAX_FREQUENCY = BigInt(365 * 24 * 60 * 60) // 1 year
-
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
-const ZERO = BigInt(0)
-const ONE = BigInt(1)
 
 // Define the ABI tuple for the TWAPData struct
 const TWAP_STRUCT_ABI = [
