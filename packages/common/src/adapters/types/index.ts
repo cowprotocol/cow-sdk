@@ -15,7 +15,6 @@ export type TypedDataDomain = unknown
 export type TypedDataTypes = unknown
 
 export interface Provider {
-  // eslint-disable-next-line
   getStorageAt?: (...args: any[]) => unknown
   getStorage?: (...args: any[]) => unknown
 }
@@ -70,4 +69,25 @@ export interface TransactionParams {
   maxFeePerGas?: string | bigint
   maxPriorityFeePerGas?: string | bigint
   nonce?: number
+}
+
+export type ReadContractParams = {
+  address: string
+  abi: Abi
+  functionName: string
+  args?: unknown[]
+}
+
+export interface Block {
+  hash: string | null
+  parentHash: string
+  number: number | bigint | null
+  timestamp: number | bigint
+  nonce: string | null
+  difficulty: number | bigint
+  gasLimit: any
+  gasUsed: any
+  miner: string
+  extraData: string
+  transactions: readonly string[] | string[] | any[] // Can be hashes or full transaction objects
 }

@@ -1,6 +1,6 @@
 import { BigNumberish, BytesLike, ethers } from 'ethers'
 import type { TypedDataDomain, TypedDataField, TypedDataSigner } from '@ethersproject/abstract-signer'
-import { AbstractProviderAdapter, AdapterTypes } from '@cowprotocol/sdk-common'
+import { AbstractProviderAdapter, AdapterTypes, TransactionParams } from '@cowprotocol/sdk-common'
 import { EthersV5Utils } from './EthersV5Utils'
 import {
   EthersV5SignerAdapter,
@@ -78,5 +78,37 @@ export class EthersV5Adapter extends AbstractProviderAdapter<EthersV5Types> {
 
   async getStorageAt(address: string, slot: BigNumberish): Promise<BytesLike> {
     return this.provider.getStorageAt(address, slot)
+  }
+
+  async call(txParams: TransactionParams, provider?: ethers.providers.Provider): Promise<string> {
+    const providerToUse = provider || this.provider
+    return providerToUse.call({
+      to: txParams.to,
+      from: txParams.from,
+      data: txParams.data,
+    })
+  }
+
+  async readContract(
+    params: {
+      address: string
+      abi: Abi
+      functionName: string
+      args?: unknown[]
+    },
+    provider?: ethers.providers.Provider,
+  ): Promise<unknown> {
+    const { address, abi, functionName, args } = params
+    const providerToUse = provider || this.provider
+    const contract = new ethers.Contract(address, abi, providerToUse)
+    if (args && args.length > 0) {
+      return contract[functionName](...args)
+    }
+    return contract[functionName]()
+  }
+
+  async getBlock(blockTag: string, provider?: ethers.providers.JsonRpcProvider) {
+    const providerToUse = provider || this.provider
+    return await providerToUse.getBlock(blockTag)
   }
 }

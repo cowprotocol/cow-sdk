@@ -1,7 +1,74 @@
-import { OrderBookApi } from '../order-book'
-import { SupportedChainId } from '../chains'
-import { GPv2Order } from '../common/generated/ComposableCoW'
-import { providers } from 'ethers'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { Bytes, Provider } from '@cowprotocol/sdk-common'
+import { OrderBookApi } from '@cowprotocol/sdk-order-book'
+
+export declare namespace GPv2Order {
+  export type DataStruct = {
+    sellToken: string
+    buyToken: string
+    receiver: string
+    sellAmount: bigint
+    buyAmount: bigint
+    validTo: bigint | number
+    appData: Bytes
+    feeAmount: bigint
+    kind: Bytes
+    partiallyFillable: boolean
+    sellTokenBalance: Bytes
+    buyTokenBalance: Bytes
+  }
+
+  export type DataStructOutput = [
+    string,
+    string,
+    string,
+    bigint,
+    bigint,
+    number,
+    string,
+    bigint,
+    string,
+    boolean,
+    string,
+    string,
+  ] & {
+    sellToken: string
+    buyToken: string
+    receiver: string
+    sellAmount: bigint
+    buyAmount: bigint
+    validTo: number
+    appData: string
+    feeAmount: bigint
+    kind: string
+    partiallyFillable: boolean
+    sellTokenBalance: string
+    buyTokenBalance: string
+  }
+}
+
+export declare namespace IConditionalOrder {
+  export type ConditionalOrderParamsStruct = {
+    handler: string
+    salt: Bytes
+    staticInput: Bytes
+  }
+
+  export type ConditionalOrderParamsStructOutput = [string, string, string] & {
+    handler: string
+    salt: string
+    staticInput: string
+  }
+}
+
+export declare namespace ComposableCoW {
+  export type ProofStruct = { location: bigint; data: Bytes }
+
+  export type ProofStructOutput = [bigint, string] & {
+    location: bigint
+    data: string
+  }
+}
 
 export interface ConditionalOrderArguments<T> {
   handler: string
@@ -85,7 +152,7 @@ export type ProofWithParams = {
 export type OwnerContext = {
   owner: string
   chainId: SupportedChainId
-  provider: providers.Provider
+  provider: Provider
 }
 
 export type PollParams = OwnerContext & {

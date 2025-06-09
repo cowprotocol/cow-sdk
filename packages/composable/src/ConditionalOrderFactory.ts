@@ -1,3 +1,4 @@
+import { AbstractProviderAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { type ConditionalOrder } from './ConditionalOrder'
 import { ConditionalOrderParams } from './types'
 
@@ -14,7 +15,8 @@ export type ConditionalOrderRegistry = Record<string, FromParams<unknown, unknow
 export class ConditionalOrderFactory {
   public knownOrderTypes
 
-  constructor(registry: ConditionalOrderRegistry) {
+  constructor(registry: ConditionalOrderRegistry, adapter?: AbstractProviderAdapter) {
+    if (adapter) setGlobalAdapter(adapter)
     // Normalize the keys to lowercase
     this.knownOrderTypes = Object.entries(registry).reduce<ConditionalOrderRegistry>((acc, [key, value]) => {
       acc[key.toLowerCase()] = value
