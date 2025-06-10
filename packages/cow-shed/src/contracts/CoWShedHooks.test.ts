@@ -262,6 +262,7 @@ describe('CowShedHooks', () => {
   })
 
   describe('signCalls', () => {
+    const signatures: string[] = []
     it('should sign calls correctly', async () => {
       const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
@@ -289,7 +290,11 @@ describe('CowShedHooks', () => {
         expect(typeof signature).toBe('string')
         expect(signature.startsWith('0x')).toBe(true)
         expect(signature.length).toBeGreaterThan(130) // Should be at least r + s + v length
+
+        signatures.push(signature)
       }
+      expect(signatures[0]).toBe(signatures[1])
+      expect(signatures[0]).toBe(signatures[2])
     })
   })
 })
