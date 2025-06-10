@@ -1,0 +1,20 @@
+{
+  "$id": "#partnerFee/v0.1.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "required": ["bps", "recipient"],
+  "title": "Partner fee",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "bps": {
+      "title": "Basis Point (BPS)",
+      "description": "The fee in basis points (BPS) to be paid to the partner. One basis point is equivalent to 0.01% (1/100th of a percent)",
+      "$ref": "../definitions.json#/definitions/bps"
+    },
+    "recipient": {
+      "title": "Partner account",
+      "description": "The Ethereum address of the partner to receive the fee.",
+      "$ref": "../definitions.json#/definitions/ethereumAddress"
+    }
+  }
+}

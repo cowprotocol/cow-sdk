@@ -1,0 +1,7 @@
+{
+  "$id": "#signer/v0.1.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$ref": "../definitions.json#/definitions/ethereumAddress",
+  "title": "Signer",
+  "description": "The address of the trader who signs the CoW Swap order. This field should normally be omitted; it is recommended to use it if the signer is a smart-contract wallet using EIP-1271 signatures."
+}

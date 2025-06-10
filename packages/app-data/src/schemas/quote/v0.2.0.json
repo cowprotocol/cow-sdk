@@ -1,0 +1,22 @@
+{
+  "$id": "#quote/v0.2.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "required": ["version", "slippageBips"],
+  "title": "Quote",
+  "type": "object",
+  "properties": {
+    "version": {
+      "$ref": "../definitions.json#/definitions/version",
+      "readOnly": true,
+      "default": "0.2.0"
+    },
+    "slippageBips": {
+      "$id": "#/properties/slippageBips",
+      "title": "Slippage Bips",
+      "description": "Slippage tolerance that was applied to the order to get the limit price. Expressed in Basis Points (BPS)",
+      "examples": ["5", "10", "20", "100"],
+      "pattern": "^\\d+(\\.\\d+)?$",
+      "type": "string"
+    }
+  }
+}

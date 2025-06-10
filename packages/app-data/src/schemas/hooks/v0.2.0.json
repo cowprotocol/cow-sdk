@@ -1,0 +1,35 @@
+{
+  "$id": "#hooks/v0.2.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "default": {},
+  "required": [],
+  "title": "Order interaction hooks",
+  "description": "Optional Pre and Post order interaction hooks attached to a single order",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "$ref": "../definitions.json#/definitions/version",
+      "readOnly": true,
+      "default": "0.1.0"
+    },
+    "pre": {
+      "$id": "#/properties/hooks/pre",
+      "title": "Pre-Hooks",
+      "description": "CoW Hooks to call before an order executes",
+      "type": "array",
+      "items": {
+        "$ref": "../hook/v0.2.0.json#"
+      }
+    },
+    "post": {
+      "$id": "#/properties/hooks/post",
+      "title": "Post-Hooks",
+      "description": "CoW Hooks to call after an order executes",
+      "type": "array",
+      "items": {
+        "$ref": "../hook/v0.2.0.json#"
+      }
+    }
+  }
+}
