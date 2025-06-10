@@ -96,7 +96,7 @@ export class CowShedHooks {
         isDelegateCall: call.isDelegateCall,
       })),
       nonce,
-      deadline: typeof deadline === 'bigint' ? deadline.toString() : deadline,
+      deadline: deadline.toString(),
     }
 
     return { domain: this.getDomain(proxy), types: COW_SHED_712_TYPES, message }

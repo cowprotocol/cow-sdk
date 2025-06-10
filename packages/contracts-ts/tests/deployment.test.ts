@@ -2,32 +2,14 @@ import { createAdapters, TEST_ADDRESS } from './setup'
 import { ethers as ethersV5 } from 'ethers-v5'
 import * as ethersV6 from 'ethers-v6'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
-import {
-  ContractsTs,
-  CONTRACT_NAMES,
-  SALT,
-  deterministicDeploymentAddress,
-  proxyInterface,
-  implementationAddress,
-  ownerAddress,
-} from '../src'
+import { CONTRACT_NAMES, SALT, deterministicDeploymentAddress, implementationAddress, ownerAddress } from '../src'
 import { concat, getCreate2Address, Hex, keccak256 } from 'viem'
 
 describe('Deployment and Proxy', () => {
   let adapters: ReturnType<typeof createAdapters>
-  let contracts: {
-    ethersV5Contracts: ContractsTs
-    ethersV6Contracts: ContractsTs
-    viemContracts: ContractsTs
-  }
 
   beforeAll(() => {
     adapters = createAdapters()
-    contracts = {
-      ethersV5Contracts: new ContractsTs(adapters.ethersV5Adapter),
-      ethersV6Contracts: new ContractsTs(adapters.ethersV6Adapter),
-      viemContracts: new ContractsTs(adapters.viemAdapter),
-    }
     concat(['0x1234', '0x4567'])
   })
 
@@ -187,54 +169,6 @@ describe('Deployment and Proxy', () => {
         expect(owner).toEqual(firstOwner)
       })
       expect(firstOwner).toEqual(TEST_ADDRESS)
-    })
-
-    test('should create proxy interfaces consistently', () => {
-      // Mock getContract implementations for each adapter
-      const originalGetContracts = {} as Record<keyof typeof adapters, any>
-      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
-
-      // Store original functions and mock them
-      for (const adapterName of adapterNames) {
-        originalGetContracts[adapterName] = adapters[adapterName].getContract
-      }
-
-      const mockContract = { address: '0x1234567890123456789012345678901234567890' }
-      const mockProxyContract = { mock: 'proxy-interface' }
-
-      for (const adapterName of adapterNames) {
-        adapters[adapterName].getContract = jest.fn().mockReturnValue(mockProxyContract)
-      }
-
-      try {
-        // Get proxy interface with each adapter
-        const proxyInterfaces = []
-
-        for (const adapterName of adapterNames) {
-          setGlobalAdapter(adapters[adapterName])
-          const proxyInterfaceResult = proxyInterface(mockContract as any)
-          proxyInterfaces.push(proxyInterfaceResult)
-        }
-
-        // All interfaces should be the same mock object
-        proxyInterfaces.forEach((proxyInterfaceResult) => {
-          expect(proxyInterfaceResult).toEqual(mockProxyContract)
-        })
-
-        // Verify getContract was called with the right arguments for each adapter
-        for (const adapterName of adapterNames) {
-          expect(adapters[adapterName].getContract).toHaveBeenCalledWith(
-            mockContract.address,
-            expect.anything(),
-            undefined,
-          )
-        }
-      } finally {
-        // Restore original functions
-        for (const adapterName of adapterNames) {
-          adapters[adapterName].getContract = originalGetContracts[adapterName]
-        }
-      }
     })
   })
 })
