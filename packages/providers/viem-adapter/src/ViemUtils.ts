@@ -115,12 +115,13 @@ export class ViemUtils implements AdapterUtils {
   }
 
   encodeAbi(types: { type: string; name: string }[] | string[], values: unknown[]): `0x${string}` {
-    const viemTypes: AbiParameter[] =
-      Array.isArray(types) && typeof types[0] === 'string'
-        ? (types as string[]).map((type, i) => ({ type, name: `arg${i}` }))
-        : (types as { type: string; name: string }[]).map(({ type, name }) => ({ type, name }))
-
-    return encodeAbiParameters(viemTypes, values)
+    if (typeof types[0] === 'string') {
+      return encodeAbiParameters(
+        (types as string[]).map((type, i) => ({ type, name: `arg${i}` })) as AbiParameter[],
+        values,
+      )
+    }
+    return encodeAbiParameters(types as AbiParameter[], values)
   }
 
   decodeAbi(types: unknown[], data: `0x${string}`): unknown[] {
