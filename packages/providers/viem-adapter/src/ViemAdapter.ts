@@ -11,7 +11,11 @@ import {
   Address,
   Abi,
   zeroAddress,
+  Block,
+  BlockTag,
 } from 'viem'
+
+import { AdapterTypes, AbstractProviderAdapter, TransactionParams } from '@cowprotocol/sdk-common'
 
 import { ViemUtils } from './ViemUtils'
 import {
@@ -20,7 +24,6 @@ import {
   TypedDataVersionedSigner,
   ViemSignerAdapter,
 } from './ViemSignerAdapter'
-import { AdapterTypes, AbstractProviderAdapter } from '@cowprotocol/sdk-common'
 
 export interface ViemTypes extends AdapterTypes {
   Abi: Abi
@@ -117,5 +120,40 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
       address,
       slot,
     })
+  }
+
+  async call(txParams: TransactionParams, provider?: PublicClient): Promise<string> {
+    const providerToUse = provider || this.publicClient
+    const result = await providerToUse.call({
+      account: this.account?.address,
+      to: txParams.to as `0x${string}`,
+      data: txParams.data as `0x${string}` | undefined,
+      value: txParams.value ? BigInt(txParams.value.toString()) : undefined,
+    })
+    return result.toString()
+  }
+
+  async readContract(
+    params: {
+      address: string
+      abi: Abi
+      functionName: string
+      args?: unknown[]
+    },
+    provider?: PublicClient,
+  ): Promise<unknown> {
+    const providerToUse = provider || this.publicClient
+    return providerToUse.readContract({
+      address: params.address as Address,
+      abi: params.abi,
+      functionName: params.functionName,
+      args: params?.args,
+    })
+  }
+
+  async getBlock(blockTag: BlockTag, provider?: PublicClient): Promise<Block> {
+    const providerToUse = provider || this.publicClient
+    const block = await providerToUse.getBlock({ blockTag })
+    return block
   }
 }

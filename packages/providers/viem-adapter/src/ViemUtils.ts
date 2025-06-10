@@ -28,6 +28,9 @@ import {
   PublicClient,
   decodeFunctionResult,
   toHex,
+  isAddress,
+  isHex,
+  AbiParameter,
 } from 'viem'
 
 export class ViemUtils implements AdapterUtils {
@@ -112,19 +115,18 @@ export class ViemUtils implements AdapterUtils {
   }
 
   encodeAbi(types: { type: string; name: string }[] | string[], values: unknown[]): `0x${string}` {
-    // Convert types to viem format
-    const viemTypes =
+    const viemTypes: AbiParameter[] =
       Array.isArray(types) && typeof types[0] === 'string'
         ? (types as string[]).map((type, i) => ({ type, name: `arg${i}` }))
-        : (types as { type: string; name: string }[]).map((type) => ({ type: type.type, name: type.name }))
+        : (types as { type: string; name: string }[]).map(({ type, name }) => ({ type, name }))
+
     return encodeAbiParameters(viemTypes, values)
   }
 
-  decodeAbi(types: string[], data: `0x${string}`): unknown[] {
-    return decodeAbiParameters(
-      types.map((type, i) => ({ type, name: `arg${i}` })),
-      data,
-    )
+  decodeAbi(types: unknown[], data: `0x${string}`): unknown[] {
+    if (typeof types[0] === 'string')
+      return decodeAbiParameters(types.map((type, i) => ({ type, name: `arg${i}` })) as AbiParameter[], data)
+    return decodeAbiParameters(types as AbiParameter[], data)
   }
 
   id(text: string): `0x${string}` {
@@ -360,5 +362,25 @@ export class ViemUtils implements AdapterUtils {
     })
 
     return decoded
+  }
+
+  randomBytes(length: number): string {
+    const randomBytes = crypto.getRandomValues(new Uint8Array(length))
+    return this.bytesToHex(randomBytes)
+  }
+
+  isAddress(address: string): boolean {
+    return isAddress(address)
+  }
+
+  isHexString(value: string): boolean {
+    return isHex(value)
+  }
+
+  hexDataLength(data: string): number {
+    if (!this.isHexString(data)) {
+      throw new Error('Invalid hex string')
+    }
+    return (data.length - 2) / 2
   }
 }

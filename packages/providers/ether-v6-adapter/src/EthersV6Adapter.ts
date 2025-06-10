@@ -10,8 +10,9 @@ import {
   TypedDataField,
   BigNumberish,
   Interface,
+  Contract,
 } from 'ethers'
-import { AbstractProviderAdapter, AdapterTypes } from '@cowprotocol/sdk-common'
+import { AbstractProviderAdapter, AdapterTypes, Block, TransactionParams } from '@cowprotocol/sdk-common'
 import { EthersV6Utils } from './EthersV6Utils'
 import {
   EthersV6SignerAdapter,
@@ -90,5 +91,43 @@ export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
 
   async getStorageAt(address: string, slot: BigNumberish): Promise<BytesLike> {
     return this.provider.getStorage(address, slot)
+  }
+
+  async call(txParams: TransactionParams, provider?: Provider): Promise<string> {
+    const providerToUse = provider || this.provider
+    return providerToUse.call({
+      to: txParams.to,
+      from: txParams.from,
+      data: txParams.data,
+    })
+  }
+
+  async readContract(
+    params: {
+      address: string
+      abi: Abi
+      functionName: string
+      args?: unknown[]
+    },
+    provider?: Provider,
+  ): Promise<unknown> {
+    const { address, abi, functionName, args } = params
+    const providerToUse = provider || this.provider
+    const contract = new Contract(address, abi, providerToUse)
+
+    if (!contract[functionName])
+      throw new Error(`Error reading contract ${address}: function ${functionName} was not found in Abi`)
+
+    if (args && args.length > 0) {
+      return contract[functionName](...args)
+    }
+    return contract[functionName]()
+  }
+
+  async getBlock(blockTag: string, provider?: Provider): Promise<Block> {
+    const providerToUse = provider || this.provider
+    const block = await providerToUse.getBlock(blockTag)
+    if (!block) return {} as Block
+    return block
   }
 }
