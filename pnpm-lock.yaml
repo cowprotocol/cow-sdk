@@ -404,6 +404,70 @@ importers:
         specifier: ^8.32.1
         version: 8.33.0(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3)
 
+  packages/cow-shed:
+    dependencies:
+      '@cowprotocol/sdk-common':
+        specifier: workspace:*
+        version: link:../common
+      '@cowprotocol/sdk-config':
+        specifier: workspace:*
+        version: link:../config
+      '@cowprotocol/sdk-contracts-ts':
+        specifier: workspace:*
+        version: link:../contracts-ts
+    devDependencies:
+      '@cowprotocol/sdk-ethers-v5-adapter':
+        specifier: workspace:*
+        version: link:../providers/ether-v5-adapter
+      '@cowprotocol/sdk-ethers-v6-adapter':
+        specifier: workspace:*
+        version: link:../providers/ether-v6-adapter
+      '@cowprotocol/sdk-viem-adapter':
+        specifier: workspace:*
+        version: link:../providers/viem-adapter
+      '@ethersproject/constants':
+        specifier: ^5.7.0
+        version: 5.8.0
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/jest':
+        specifier: ^29.4.0
+        version: 29.5.14
+      '@types/node':
+        specifier: ^20.17.31
+        version: 20.17.52
+      '@types/semver-sort':
+        specifier: ^0.0.1
+        version: 0.0.1
+      ethers-v5:
+        specifier: npm:ethers@^5.7.2
+        version: ethers@5.8.0
+      ethers-v6:
+        specifier: npm:ethers@^6.13.7
+        version: ethers@6.14.3
+      jest:
+        specifier: ^29.4.2
+        version: 29.7.0(@types/node@20.17.52)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.17.52)(typescript@5.8.3))
+      jest-fetch-mock:
+        specifier: ^3.0.3
+        version: 3.0.3
+      ts-jest:
+        specifier: ^29.0.0
+        version: 29.3.4(@babel/core@7.27.1)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.1))(esbuild@0.19.12)(jest@29.7.0(@types/node@20.17.52)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.17.52)(typescript@5.8.3)))(typescript@5.8.3)
+      tsup:
+        specifier: ^7.2.0
+        version: 7.3.0(postcss@8.5.4)(ts-node@10.9.2(@types/node@20.17.52)(typescript@5.8.3))(typescript@5.8.3)
+      tsx:
+        specifier: ^4.19.4
+        version: 4.19.4
+      typescript:
+        specifier: ^5.2.2
+        version: 5.8.3
+      viem:
+        specifier: ^2.28.4
+        version: 2.30.5(typescript@5.8.3)
+
   packages/order-book:
     dependencies:
       '@cowprotocol/sdk-common':
