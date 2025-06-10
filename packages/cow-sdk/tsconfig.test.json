@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src/**/*"],
+  "exclude": [],
+  "compilerOptions": {
+    "types": ["jest", "node"],
+    "noImplicitAny": false,
+    "strictNullChecks": false
+  }
+}
