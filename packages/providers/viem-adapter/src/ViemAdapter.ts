@@ -17,9 +17,6 @@ import {
 
 import { AdapterTypes, AbstractProviderAdapter, TransactionParams } from '@cowprotocol/sdk-common'
 
-export interface ViemTypes extends AdapterTypes {
-  Bytes: `0x${string}`
-}
 import { ViemUtils } from './ViemUtils'
 import {
   IntChainIdTypedDataV4Signer,

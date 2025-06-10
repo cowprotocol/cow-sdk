@@ -1,24 +1,14 @@
-import {
-  EcdsaSigningScheme,
-  hashTypedData,
-  isTypedDataSigner,
-  SigningScheme,
-  TypedDataTypes,
-} from '@cowprotocol/contracts'
-import { SupportedChainId } from '../../chains'
-import type { Signer, TypedDataDomain } from '@ethersproject/abstract-signer'
+import { ContractsEcdsaSigningScheme as EcdsaSigningScheme, ecdsaSignTypedData } from '@cowprotocol/sdk-contracts-ts'
+import { SupportedChainId, COW_SHED_FACTORY, COW_SHED_IMPLEMENTATION } from '@cowprotocol/sdk-config'
 
 import {
-  arrayify,
-  defaultAbiCoder,
-  getCreate2Address,
-  joinSignature,
-  solidityKeccak256,
-  splitSignature,
-} from 'ethers/lib/utils'
-import { COW_SHED_FACTORY, COW_SHED_IMPLEMENTATION } from '../../common'
-import { getCoWShedFactoryInterface } from './utils'
-
+  getGlobalAdapter,
+  setGlobalAdapter,
+  AbstractProviderAdapter,
+  Signer,
+  TypedDataDomain,
+} from '@cowprotocol/sdk-common'
+import { CowShedFactoryAbi } from '../abi/CowShedFactoryAbi'
 import { ICoWShedCall, ICoWShedOptions } from '../types'
 
 export const COW_SHED_PROXY_INIT_CODE =
@@ -41,39 +31,53 @@ export const COW_SHED_712_TYPES = {
 
 export class CowShedHooks {
   constructor(
+    adapter: AbstractProviderAdapter,
     private chainId: SupportedChainId,
     private customOptions?: ICoWShedOptions,
-  ) {}
+  ) {
+    setGlobalAdapter(adapter)
+  }
 
   proxyOf(user: string) {
-    const salt = defaultAbiCoder.encode(['address'], [user])
-    const initCodeHash = solidityKeccak256(
+    const adapter = getGlobalAdapter()
+    const salt = adapter.utils.encodeAbi(['address'], [user])
+    const initCodeHash = adapter.utils.solidityKeccak256(
       ['bytes', 'bytes'],
       [
         this.proxyCreationCode(),
-        defaultAbiCoder.encode(['address', 'address'], [this.getImplementationAddress(), user]),
+        adapter.utils.encodeAbi(['address', 'address'], [this.getImplementationAddress(), user]),
       ],
     )
-    return getCreate2Address(this.getFactoryAddress(), salt, initCodeHash)
+    return adapter.utils.getCreate2Address(this.getFactoryAddress(), salt, initCodeHash)
   }
 
   encodeExecuteHooksForFactory(
     calls: ICoWShedCall[],
     nonce: string,
     deadline: bigint,
-    user: string,
+    ownerAddress: string,
     signature: string,
   ): string {
-    return getCoWShedFactoryInterface().encodeFunctionData('executeHooks', [calls, nonce, deadline, user, signature])
+    const adapter = getGlobalAdapter()
+    return adapter.utils.encodeFunction(CowShedFactoryAbi, 'executeHooks', [
+      calls,
+      nonce,
+      deadline,
+      ownerAddress,
+      signature,
+    ]) as string
   }
 
   async signCalls(
     calls: ICoWShedCall[],
     nonce: string,
     deadline: bigint,
-    signer: Signer,
+    owner: Signer,
     signingScheme: EcdsaSigningScheme,
   ): Promise<string> {
+    const adapter = getGlobalAdapter()
+    const signer = new adapter.Signer(owner)
+
     const user = await signer.getAddress()
     const proxy = this.proxyOf(user)
 
@@ -84,10 +88,17 @@ export class CowShedHooks {
 
   infoToSign(calls: ICoWShedCall[], nonce: string, deadline: bigint, proxy: string) {
     const message = {
-      calls,
+      calls: calls.map((call) => ({
+        target: call.target.toLowerCase(),
+        value: call.value,
+        callData: call.callData,
+        allowFailure: call.allowFailure,
+        isDelegateCall: call.isDelegateCall,
+      })),
       nonce,
-      deadline,
+      deadline: deadline.toString(),
     }
+
     return { domain: this.getDomain(proxy), types: COW_SHED_712_TYPES, message }
   }
 
@@ -95,8 +106,8 @@ export class CowShedHooks {
     return {
       name: 'COWShed',
       version: '1.0.0',
-      chainId: this.chainId,
-      verifyingContract: proxy,
+      chainId: typeof this.chainId === 'bigint' ? Number(this.chainId) : this.chainId,
+      verifyingContract: proxy.toLowerCase(),
     }
   }
 
@@ -111,34 +122,4 @@ export class CowShedHooks {
   getImplementationAddress() {
     return this.customOptions?.implementationAddress ?? COW_SHED_IMPLEMENTATION
   }
-}
-
-// code copied from @cow/contract (not exported there)
-async function ecdsaSignTypedData(
-  scheme: EcdsaSigningScheme,
-  owner: Signer,
-  domain: TypedDataDomain,
-  types: TypedDataTypes,
-  data: Record<string, unknown>,
-): Promise<string> {
-  let signature: string | null = null
-
-  switch (scheme) {
-    case SigningScheme.EIP712:
-      if (!isTypedDataSigner(owner)) {
-        throw new Error('signer does not support signing typed data')
-      }
-      signature = await owner._signTypedData(domain, types, data)
-      break
-    case SigningScheme.ETHSIGN:
-      signature = await owner.signMessage(arrayify(hashTypedData(domain, types, data)))
-      break
-    default:
-      throw new Error('invalid signing scheme')
-  }
-
-  // Passing the signature through split/join to normalize the `v` byte.
-  // Some wallets do not pad it with `27`, which causes a signature failure
-  // `splitSignature` pads it if needed, and `joinSignature` simply puts it back together
-  return joinSignature(splitSignature(signature))
 }

@@ -114,12 +114,13 @@ export class ViemUtils implements AdapterUtils {
     return getAddress(address)
   }
 
-  encodeAbi(types: string[], values: unknown[]): `0x${string}` {
-    if (typeof types[0] === 'string')
-      //@ts-expect-error:test
-      return decodeAbiParameters(types.map((type, i) => ({ type, name: `arg${i}` })) as AbiParameter[], values)
-    //@ts-expect-error:test
-    return encodeAbiParameters(types, values)
+  encodeAbi(types: { type: string; name: string }[] | string[], values: unknown[]): `0x${string}` {
+    const viemTypes: AbiParameter[] =
+      Array.isArray(types) && typeof types[0] === 'string'
+        ? (types as string[]).map((type, i) => ({ type, name: `arg${i}` }))
+        : (types as { type: string; name: string }[]).map(({ type, name }) => ({ type, name }))
+
+    return encodeAbiParameters(viemTypes, values)
   }
 
   decodeAbi(types: unknown[], data: `0x${string}`): unknown[] {
@@ -208,18 +209,19 @@ export class ViemUtils implements AdapterUtils {
   }
 
   encodeFunction(
-    abi: Array<{ name: string; inputs: Array<{ type: string }> }>,
+    abi: Array<{ name: string; inputs: Array<{ type: string }>; type: string }>,
     functionName: string,
     args: unknown[],
   ): `0x${string}` {
-    const functionAbi = abi.find((item) => item.name === functionName)
-
+    // Find the function in the ABI
+    const functionAbi = abi.find((item) => item.type === 'function' && item.name === functionName)
     if (!functionAbi) {
       throw new Error(`Function ${functionName} not found in ABI`)
     }
 
+    // Use encodeFunctionData directly with the function ABI
     return encodeFunctionData({
-      abi: [functionAbi], // Pass just the function ABI entry
+      abi: [functionAbi],
       functionName,
       args,
     })

@@ -1,12 +1,18 @@
 import { Signer, BigNumber, TypedDataDomain, TypedDataField, ethers } from 'ethers'
 import { AbstractSigner, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
 import { TypedDataSigner } from '@ethersproject/abstract-signer'
+import { _TypedDataEncoder } from 'ethers/lib/utils'
 
 export class EthersV5SignerAdapter extends AbstractSigner {
   private _signer: Signer & TypedDataSigner
 
-  constructor(signer: Signer & TypedDataSigner) {
+  constructor(signer: (ethers.Signer & TypedDataSigner) | EthersV5SignerAdapter) {
     super()
+    if (signer instanceof EthersV5SignerAdapter) {
+      this._signer = signer._signer
+      return
+    }
+
     this._signer = signer
   }
 
@@ -80,9 +86,19 @@ export class EthersV5SignerAdapter extends AbstractSigner {
 
     return formatted
   }
-}
 
-import { _TypedDataEncoder } from 'ethers/lib/utils'
+  async estimateGas(txParams: TransactionParams): Promise<bigint> {
+    if (!this._signer.provider) {
+      throw new Error('Signer must have a provider to estimate gas')
+    }
+
+    const formattedParams = this._formatTxParams(txParams)
+
+    const estimate = await this._signer.provider.estimateGas(formattedParams)
+
+    return BigInt(estimate.toString())
+  }
+}
 
 export class TypedDataVersionedSigner extends EthersV5SignerAdapter {
   private _signMethod: string

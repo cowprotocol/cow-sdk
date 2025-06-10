@@ -1,17 +1,21 @@
-import { EvmCall, SignerLike } from '../common'
-import { SupportedChainId } from '../chains'
+import { SupportedChainId, EvmCall } from '@cowprotocol/sdk-config'
 import { CowShedHooks } from './contracts/CoWShedHooks'
-import { EcdsaSigningScheme, SigningScheme } from '@cowprotocol/contracts'
+import {
+  ContractsEcdsaSigningScheme as EcdsaSigningScheme,
+  ContractsSigningScheme as SigningScheme,
+} from '@cowprotocol/sdk-contracts-ts'
 import { ICoWShedCall, ICoWShedOptions } from './types'
-import { getSigner } from '../common/utils/wallet'
-import { MaxUint256 } from '@ethersproject/constants'
 
-// FIXME: I will refactor into a new PR (log needs to be moved to the common package)
-import { jsonWithBigintReplacer } from '../common/utils/serialize'
-import { formatBytes32String } from 'ethers/lib/utils'
-import { log } from '../common/utils/log'
-
-const NON_EXPIRING_DEADLINE = MaxUint256.toBigInt()
+import {
+  log,
+  MAX_UINT256 as NON_EXPIRING_DEADLINE,
+  jsonWithBigintReplacer,
+  getGlobalAdapter,
+  AbstractProviderAdapter,
+  setGlobalAdapter,
+  SignerLike,
+  AbstractSigner,
+} from '@cowprotocol/sdk-common'
 
 export interface SignAndEncodeTxArgs {
   /**
@@ -61,9 +65,9 @@ export interface CowShedCall {
 
 export interface CowShedSdkOptions {
   /**
-   * Signer for the cow-shed's owner account.
+   * Adapter for the cow-shed.
    */
-  signer?: SignerLike
+  adapter: AbstractProviderAdapter
 
   /**
    * Custom options for the cow-shed hooks.
@@ -74,10 +78,15 @@ export interface CowShedSdkOptions {
 export class CowShedSdk {
   protected hooksCache = new Map<SupportedChainId, CowShedHooks>()
 
-  constructor(private options: CowShedSdkOptions = {}) {}
+  constructor(
+    adapter: AbstractProviderAdapter,
+    private factoryOptions?: ICoWShedOptions,
+  ) {
+    setGlobalAdapter(adapter)
+  }
 
   getCowShedAccount(chainId: SupportedChainId, ownerAddress: string): string {
-    const cowShedHooks = this.getCowShedHooks(chainId, this.options?.factoryOptions)
+    const cowShedHooks = this.getCowShedHooks(chainId, this.factoryOptions)
     return cowShedHooks.proxyOf(ownerAddress)
   }
 
@@ -97,23 +106,18 @@ export class CowShedSdk {
     defaultGasLimit,
     signingScheme = SigningScheme.EIP712,
   }: SignAndEncodeTxArgs): Promise<CowShedCall> {
-    // Get the cow-shed for the wallet
     const cowShedHooks = this.getCowShedHooks(chainId)
+    const adapter = getGlobalAdapter()
 
-    // Get the signer, or throw an error if not provided
-    const signerLike = signerParam || this.options?.signer
-    if (!signerLike) {
-      throw new Error('Signer is required')
-    }
-    const signer = getSigner(signerLike)
+    const signer: AbstractSigner = new adapter.Signer(signerParam)
+
     const ownerAddress = await signer.getAddress()
 
     const cowShedAccount = cowShedHooks.proxyOf(ownerAddress)
-
     // Sign the calls using cow-shed's owner
     const signature = await cowShedHooks.signCalls(calls, nonce, deadline, signer, signingScheme)
 
-    //  Get the signed transaction's calldata
+    // Get the signed transaction's calldata
     const callData = cowShedHooks.encodeExecuteHooksForFactory(calls, nonce, deadline, ownerAddress, signature)
 
     // Estimate the gas limit for the transaction
@@ -123,6 +127,7 @@ export class CowShedSdk {
       data: callData,
       value: BigInt(0),
     }
+
     const gasEstimate = await signer.estimateGas(factoryCall).catch((error) => {
       const factoryCallString = JSON.stringify(factoryCall, jsonWithBigintReplacer, 2)
       const errorMessage = `Error estimating gas for the cow-shed call: ${factoryCallString}. Review the factory call`
@@ -141,7 +146,7 @@ export class CowShedSdk {
     return {
       cowShedAccount,
       signedMulticall: factoryCall,
-      gasLimit: BigInt(gasEstimate.toString()),
+      gasLimit: gasEstimate,
     }
   }
 
@@ -154,12 +159,14 @@ export class CowShedSdk {
     }
 
     // Create new cow-shed hooks and cache it
-    cowShedHooks = new CowShedHooks(chainId, customOptions)
+    const adapter = getGlobalAdapter()
+    cowShedHooks = new CowShedHooks(adapter, chainId, customOptions)
     this.hooksCache.set(chainId, cowShedHooks)
     return cowShedHooks
   }
 
   protected static getNonce(): string {
-    return formatBytes32String(Date.now().toString())
+    const adapter = getGlobalAdapter()
+    return adapter.utils.formatBytes32String(Date.now().toString())
   }
 }

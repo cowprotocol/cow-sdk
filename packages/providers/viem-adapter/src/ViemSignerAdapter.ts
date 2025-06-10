@@ -1,16 +1,37 @@
-import { Account, WalletClient, PublicClient, Address, TypedDataDomain, TypedDataParameter } from 'viem'
-import { AbstractSigner, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
+import {
+  Account,
+  WalletClient,
+  PublicClient,
+  Address,
+  TypedDataDomain,
+  TypedDataParameter,
+  createPublicClient,
+  Transport,
+  http,
+} from 'viem'
+import { AbstractSigner, CowError, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
 
 export class ViemSignerAdapter extends AbstractSigner {
   protected _client: WalletClient
   protected _account: Account
   protected _publicClient?: PublicClient
+  protected _transport?: Transport
 
-  constructor(client: WalletClient) {
+  constructor(client: WalletClient | ViemSignerAdapter) {
     super()
-    this._client = client
-    if (!client?.account) throw new Error('Signer is missing account')
-    this._account = client.account
+
+    if (client instanceof ViemSignerAdapter) {
+      this._client = client._client
+      this._account = client._account
+      this._publicClient = client._publicClient
+      this._transport = client._transport
+      return
+    }
+
+    this._client = client as WalletClient
+    if (!this._client.account) throw new CowError('Signer is missing account')
+    this._account = this._client.account
+    this._transport = typeof this._client.transport === 'function' ? this._client.transport : http()
   }
 
   async getAddress(): Promise<string> {
@@ -47,13 +68,13 @@ export class ViemSignerAdapter extends AbstractSigner {
   ): Promise<string> {
     const primaryType = Object.keys(types)[0]
 
-    if (!primaryType) throw new Error('Missing primary type')
+    if (!primaryType) throw new CowError('Missing primary type')
 
     return await this._client.signTypedData({
       account: this._account,
       domain,
       types,
-      primaryType, // Primary type is usually the first key in types
+      primaryType,
       message: value,
     })
   }
@@ -70,7 +91,7 @@ export class ViemSignerAdapter extends AbstractSigner {
       hash,
       wait: async (confirmations?: number) => {
         if (!this._publicClient) {
-          throw new Error('Cannot wait for transaction without a public client')
+          throw new CowError('Cannot wait for transaction without a public client')
         }
 
         const receipt = await this._publicClient.waitForTransactionReceipt({
@@ -88,6 +109,42 @@ export class ViemSignerAdapter extends AbstractSigner {
         }
       },
     }
+  }
+
+  async estimateGas(txParams: TransactionParams): Promise<bigint> {
+    // For Viem, we need access to PublicClient to estimate gas
+    // The WalletClient doesn't have estimateGas method
+    if (!this._publicClient) {
+      // Try to get public client from the wallet client's chain
+      if (this._client.chain && this._transport) {
+        this._publicClient = createPublicClient({
+          chain: this._client.chain,
+          transport: this._transport,
+        })
+      } else {
+        throw new CowError('Cannot estimate gas: no public client available and cannot create one')
+      }
+    }
+
+    const formattedTx = this._formatTxParams(txParams)
+    const params = {
+      from: typeof this._account === 'string' ? this._account : this._account.address,
+      to: formattedTx.to,
+      data: formattedTx.data,
+      value: formattedTx.value ?? '0x0',
+    }
+
+    const hexGas = await this._publicClient.request({
+      method: 'eth_estimateGas',
+      params: [params],
+    })
+
+    return BigInt(hexGas)
+  }
+
+  // Method to set public client if available
+  setPublicClient(publicClient: PublicClient) {
+    this._publicClient = publicClient
   }
 
   private _formatTxParams(txParams: TransactionParams) {
@@ -201,7 +258,7 @@ export class IntChainIdTypedDataV4Signer extends TypedDataVersionedSigner {
 
     // Use viem's native signTypedData which supports V4
     const primaryType = Object.keys(types)[0]
-    if (!primaryType) throw new Error('Missing primary type')
+    if (!primaryType) throw new CowError('Missing primary type')
 
     return await this._client.signTypedData({
       account: this._account,

@@ -1,11 +1,16 @@
-import { Log, Signer, TypedDataDomain, TypedDataField, TypedDataEncoder, JsonRpcProvider } from 'ethers'
+import { Log, Signer, TypedDataDomain, TypedDataField, TypedDataEncoder, JsonRpcProvider, toBeHex } from 'ethers'
 import { AbstractSigner, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
 
 export class EthersV6SignerAdapter extends AbstractSigner {
   private _signer: Signer
 
-  constructor(signer: Signer) {
+  constructor(signer: Signer | EthersV6SignerAdapter) {
     super()
+    if (signer instanceof EthersV6SignerAdapter) {
+      this._signer = signer._signer
+      return
+    }
+
     this._signer = signer
   }
 
@@ -49,6 +54,22 @@ export class EthersV6SignerAdapter extends AbstractSigner {
         }
       },
     }
+  }
+
+  async estimateGas(txParams: TransactionParams): Promise<bigint> {
+    if (!this._signer.provider) {
+      throw new Error('Signer must have a provider to estimate gas')
+    }
+
+    const formattedTx = this._formatTxParams(txParams)
+    // Ensure value is properly formatted with 0x prefix using ethers' toHexString
+    if (formattedTx.value) {
+      formattedTx.value = toBeHex(formattedTx.value)
+    } else {
+      formattedTx.value = '0x0'
+    }
+    const estimate = await this._signer.provider.estimateGas(formattedTx)
+    return BigInt(estimate.toString())
   }
 
   private _formatTxParams(txParams: TransactionParams) {
