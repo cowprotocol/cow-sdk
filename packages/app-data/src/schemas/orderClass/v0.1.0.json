@@ -1,0 +1,33 @@
+{
+  "$id": "#orderClass/v0.1.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "required": [
+    "version",
+    "orderClass"
+  ],
+  "title": "Order class",
+  "type": "object",
+  "properties": {
+    "version": {
+      "$ref": "../definitions.json#/definitions/version",
+      "readOnly": true,
+      "default": "0.1.0"
+    },
+    "orderClass": {
+      "$id": "#/definitions/orderClass",
+      "description": "Indicator of the order class.",
+      "examples": [
+        "market",
+        "limit",
+        "liquidity"
+      ],
+      "title": "Order class",
+      "type": "string",
+      "enum": [
+        "market",
+        "limit",
+        "liquidity"
+      ]
+    }
+  }
+}

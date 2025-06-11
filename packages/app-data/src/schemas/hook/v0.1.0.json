@@ -1,0 +1,35 @@
+{
+  "$id": "#hook/v0.1.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "required": [
+    "target",
+    "callData",
+    "gasLimit"
+  ],
+  "title": "CoW Hook",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "target": {
+      "$ref": "../definitions.json#/definitions/ethereumAddress",
+      "title": "Hook Target",
+      "description": "The contract to call for the hook"
+    },
+    "callData": {
+      "$id": "#/properties/callData",
+      "title": "Hook CallData",
+      "description": "The calldata to use when calling the hook",
+      "type": "string",
+      "pattern": "^0x[a-fA-F0-9]*$",
+      "examples": [
+        "0x",
+        "0x01020304"
+      ]
+    },
+    "gasLimit": {
+      "$ref": "../definitions.json#/definitions/bigNumber",
+      "title": "Hook Gas Limit",
+      "description": "The gas limit (in gas units) for the hook"
+    }
+  }
+}
