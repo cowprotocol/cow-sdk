@@ -1,4 +1,3 @@
-import { getIsEthFlowOrder } from './misc'
 import { SupportedChainId } from '../../chains'
 
 const SCALE = 10n ** 6n // 6 decimal places of precision. Used to avoid depending on Big Decimal libraries
@@ -64,16 +63,7 @@ export function getSlippagePercent(params: {
   }
 }
 
-export function getDefaultSlippageBps(chainId: SupportedChainId, isEthFlowOrder: boolean): number
-
-export function getDefaultSlippageBps(chainId: SupportedChainId, sellToken: string): number
-
-export function getDefaultSlippageBps(chainId: SupportedChainId, isEthFlowOrSellToken: boolean | string): number {
-  const isEthFlow =
-    typeof isEthFlowOrSellToken === 'boolean'
-      ? isEthFlowOrSellToken
-      : getIsEthFlowOrder({ sellToken: isEthFlowOrSellToken })
-
+export function getDefaultSlippageBps(chainId: SupportedChainId, isEthFlow: boolean): number {
   if (isEthFlow) {
     return ETH_FLOW_DEFAULT_SLIPPAGE_BPS[chainId]
   } else {

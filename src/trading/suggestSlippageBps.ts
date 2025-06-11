@@ -12,7 +12,7 @@ const SLIPPAGE_VOLUME_MULTIPLIER_PERCENT = 0.5 // Account for 0.5% volume as sli
 
 export interface SuggestSlippageBps {
   isEthFlow: boolean
-  tradeParameters: TradeParameters
+  tradeParameters: Pick<TradeParameters, 'sellTokenDecimals' | 'buyTokenDecimals'>
   quote: OrderQuoteResponse
   trader: QuoterParameters
   advancedSettings?: SwapAdvancedSettings
