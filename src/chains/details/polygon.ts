@@ -39,7 +39,7 @@ export const polygon: ChainInfo = {
     url: 'https://docs.polygon.technology',
   },
   blockExplorer: {
-    name: 'PolygonScan',
+    name: 'Polygonscan',
     url: 'https://polygonscan.com',
   },
 }
