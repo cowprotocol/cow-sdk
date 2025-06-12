@@ -2,7 +2,8 @@ import { getOrderToSign } from './getOrderToSign'
 import { LimitOrderParameters } from './types'
 import { SupportedChainId } from '../chains'
 import { OrderKind } from '../order-book'
-import { DEFAULT_QUOTE_VALIDITY } from './consts'
+
+import { DEFAULT_QUOTE_VALIDITY } from '../common/consts/order'
 
 const currentTimestamp = 1487076708000
 
@@ -39,7 +40,7 @@ describe('getOrderToSign', () => {
     const result = getOrderToSign(
       params,
       { ...defaultOrderParams, validTo: undefined, validFor: 600 },
-      appDataKeccak256
+      appDataKeccak256,
     )
 
     expect(result.validTo).toBe(currentTimestamp / 1000 + 600)
@@ -49,7 +50,7 @@ describe('getOrderToSign', () => {
     const result = getOrderToSign(
       params,
       { ...defaultOrderParams, validTo: undefined, validFor: undefined },
-      appDataKeccak256
+      appDataKeccak256,
     )
 
     expect(result.validTo).toBe(currentTimestamp / 1000 + DEFAULT_QUOTE_VALIDITY)

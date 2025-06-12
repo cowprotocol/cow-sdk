@@ -1,17 +1,13 @@
-import { latest } from '@cowprotocol/app-data'
 import { areHooksEqual, getHookMockForCostEstimation } from '../../hooks/utils'
 import {
-  AppDataInfo,
   mergeAppDataDoc,
   postSwapOrderFromQuote,
   QuoteResults,
   SwapAdvancedSettings,
   TradeParameters,
-  TradingSdk,
   WithPartialTraderParams,
 } from '../../trading'
 import {
-  BridgeHook,
   BridgeProvider,
   BridgeQuoteAndPost,
   BridgeQuoteResult,
@@ -25,38 +21,11 @@ import { log } from '../../common/utils/log'
 import { OrderKind } from '../../order-book'
 import { jsonWithBigintReplacer } from '../../common/utils/serialize'
 import { parseUnits } from '@ethersproject/units'
-import { SignerLike } from '../../common'
 import { QuoteResultsWithSigner } from '../../trading/getQuote'
 import { BridgeProviderQuoteError } from '../errors'
 import { getTradeParametersAfterQuote } from '../../trading/utils/misc'
-
-type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
-  /**
-   * Overall request for the swap and the bridge.
-   */
-  swapAndBridgeRequest: QuoteBridgeRequest
-
-  /**
-   * Advanced settings for the swap.
-   */
-  advancedSettings?: SwapAdvancedSettings
-
-  /**
-   * Provider for the bridge.
-   */
-  provider: BridgeProvider<T>
-
-  /**
-   * Trading SDK.
-   */
-  tradingSdk: TradingSdk
-
-  /**
-   * For quote fetching we have to sign bridging hooks.
-   * But we won't do that using users wallet and will use some static PK.
-   */
-  bridgeHookSigner?: SignerLike
-}
+import { BridgeResultContext, GetBridgeResultResult, GetQuoteWithBridgeParams } from './types'
+import { getBridgeSignedHook } from './getBridgeSignedHook'
 
 export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   params: GetQuoteWithBridgeParams<T>,
@@ -260,54 +229,17 @@ async function getBaseBridgeQuoteRequest<T extends BridgeQuoteResult>(params: {
   }
 }
 
-interface GetBridgeResultResult {
-  bridgeResult: BridgeQuoteResults
-  bridgeHook: BridgeHook
-  appDataInfo: AppDataInfo
-}
-
-interface BridgeResultContext {
-  swapAndBridgeRequest: QuoteBridgeRequest
-  swapResult: QuoteResults
-  intermediateTokenAmount: bigint
-  bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount
-  provider: BridgeProvider<BridgeQuoteResult>
-  signer: Signer
-  mockedHook: latest.CoWHook
-  appDataOverride?: SwapAdvancedSettings['appData']
-  defaultGasLimit?: bigint
-}
-
 async function getBridgeResult(context: BridgeResultContext): Promise<GetBridgeResultResult> {
-  const {
-    swapResult,
-    bridgeRequestWithoutAmount,
-    provider,
-    intermediateTokenAmount,
-    signer,
-    mockedHook,
-    appDataOverride,
-    defaultGasLimit,
-  } = context
+  const { swapResult, bridgeRequestWithoutAmount, provider, intermediateTokenAmount, mockedHook, appDataOverride } =
+    context
 
   const bridgeRequest: QuoteBridgeRequest = {
     ...bridgeRequestWithoutAmount,
     amount: intermediateTokenAmount,
   }
 
-  // Get the quote for the bridging of the intermediate token to the final token
-  const bridgingQuote = await provider.getQuote(bridgeRequest)
-
-  // Get the bridging call
-  const unsignedBridgeCall = await provider.getUnsignedBridgeCall(bridgeRequest, bridgingQuote)
-
   // Get the pre-authorized hook
-  const bridgeHook = await provider.getSignedHook(
-    bridgeRequest.sellTokenChainId,
-    unsignedBridgeCall,
-    signer,
-    defaultGasLimit,
-  )
+  const { hook: bridgeHook, unsignedBridgeCall, bridgingQuote } = await getBridgeSignedHook(bridgeRequest, context)
 
   const swapAppData = await mergeAppDataDoc(swapResult.appDataInfo.doc, appDataOverride || {})
 

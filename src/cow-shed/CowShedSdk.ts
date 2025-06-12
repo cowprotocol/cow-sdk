@@ -40,7 +40,7 @@ export interface SignAndEncodeTxArgs {
   /**
    * Deadline to use for the transaction. If not provided, the maximum uint256 will be used.
    */
-  deadline?: bigint
+  deadline: bigint
 
   /**
    * Default gas limit to use for the transaction. If not provided, it will throw an error if the gas limit cannot be estimated.

@@ -210,6 +210,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
     chainId: SupportedChainId,
     unsignedCall: EvmCall,
     signer: Signer,
+    bridgeHookNonce: string,
     defaultGasLimit?: bigint,
   ): Promise<BridgeHook>
 

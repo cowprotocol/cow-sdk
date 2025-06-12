@@ -216,7 +216,7 @@ export const orderToSign: UnsignedOrder = {
   partiallyFillable: false,
   kind: OrderKind.SELL,
   validTo: 1737468944,
-  appData: fullAppData,
+  appData: '0xb27139d9c9fb9d28b05d943628abad2303e50bb43c191db8c99ebb903f00f4a8',
   feeAmount: '1112955650440102',
 }
 

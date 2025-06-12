@@ -1,7 +1,5 @@
 import { EcdsaSigningScheme, SigningScheme } from '../order-book'
 
-export const DEFAULT_QUOTE_VALIDITY = 60 * 30 // 30 min
-
 export const SIGN_SCHEME_MAP = {
   [EcdsaSigningScheme.EIP712]: SigningScheme.EIP712,
   [EcdsaSigningScheme.ETHSIGN]: SigningScheme.ETHSIGN,

@@ -1,10 +1,11 @@
 import { BuyTokenDestination, getQuoteAmountsAndCosts, type OrderParameters, SellTokenSource } from '../order-book'
 import { UnsignedOrder } from '../order-signing'
-import { DEFAULT_QUOTE_VALIDITY } from './consts'
 import { LimitTradeParameters } from './types'
 import { getPartnerFeeBps } from './utils/getPartnerFeeBps'
 import { getDefaultSlippageBps } from './utils/slippage'
 import { SupportedChainId } from '../chains'
+import { getOrderDeadlineFromNow } from '../common/utils/order'
+import { DEFAULT_QUOTE_VALIDITY } from '../common/consts/order'
 
 interface OrderToSignParams {
   chainId: SupportedChainId
@@ -29,11 +30,11 @@ export function getOrderToSign(
     partiallyFillable = false,
     slippageBps = getDefaultSlippageBps(chainId, isEthFlow),
     partnerFee,
-    validFor,
+    validFor = DEFAULT_QUOTE_VALIDITY,
   } = limitOrderParams
 
   const receiver = limitOrderParams.receiver || from
-  const validTo = limitOrderParams.validTo || Math.floor(Date.now() / 1000) + (validFor || DEFAULT_QUOTE_VALIDITY)
+  const validTo = limitOrderParams.validTo || Number(getOrderDeadlineFromNow(validFor))
 
   const orderParams: OrderParameters = {
     sellToken,
