@@ -79,6 +79,10 @@ export class BungeeApi {
       includeBridges: includeBridges.join(','),
     })
     const response = await this.makeApiCall<BungeeBuyTokensAPIResponse>('bungee-manual', '/dest-tokens', urlParams)
+    if (!response.success) {
+      throw new BridgeProviderQuoteError('Bungee Api Error: Buy tokens failed', response)
+    }
+
     return response.result.map((token) => ({
       // transform the logoURI to a logoUrl to match the TokenInfo interface
       // keep the rest as is
@@ -112,6 +116,10 @@ export class BungeeApi {
       '/intermediate-tokens',
       urlParams,
     )
+    if (!response.success) {
+      throw new BridgeProviderQuoteError('Bungee Api Error: Intermediate tokens failed', response)
+    }
+
     return response.result.map((token) => ({
       // transform the logoURI to a logoUrl to match the TokenInfo interface
       // keep the rest as is
