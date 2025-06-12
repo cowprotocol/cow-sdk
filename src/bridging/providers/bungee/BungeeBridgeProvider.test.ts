@@ -55,6 +55,29 @@ describe('BungeeBridgeProvider', () => {
   })
 
   describe('getBuyTokens', () => {
+    beforeEach(() => {
+      const mockBungeeApi = new BungeeApi()
+      // Mock the getBuyTokens method
+      jest.spyOn(mockBungeeApi, 'getBuyTokens').mockImplementation(async (params) => {
+        if (params.targetChainId === (12345 as TargetChainId)) {
+          return []
+        } else if (params.targetChainId === (137 as TargetChainId)) {
+          return [
+            {
+              chainId: SupportedChainId.POLYGON,
+              address: '0x123',
+              decimals: 18,
+              name: 'Test Token',
+              symbol: 'TEST',
+              logoUrl: 'https://example.com/logo.png',
+            },
+          ]
+        }
+        return []
+      })
+      provider.setApi(mockBungeeApi)
+    })
+
     it('should return empty array for unsupported chain', async () => {
       const tokens = await provider.getBuyTokens(12345 as TargetChainId)
 

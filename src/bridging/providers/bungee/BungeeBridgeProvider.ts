@@ -1,5 +1,7 @@
 import { Signer } from 'ethers'
 import { latest as latestAppData } from '@cowprotocol/app-data'
+import { JsonRpcProvider } from '@ethersproject/providers'
+import { OrderKind } from '@cowprotocol/contracts'
 
 import {
   BridgeDeposit,
@@ -12,14 +14,9 @@ import {
   BridgingDepositParams,
   QuoteBridgeRequest,
 } from '../../types'
-
 import { DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION, RAW_PROVIDERS_FILES_PATH } from '../../const'
-
 import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
-
-import { BUNGEE_CHAIN_TOKENS } from './const/tokens'
 import { EvmCall, TokenInfo } from '../../../common'
-
 import { mainnet } from '../../../chains/details/mainnet'
 import { polygon } from '../../../chains/details/polygon'
 import { arbitrumOne } from '../../../chains/details/arbitrum'
@@ -29,11 +26,8 @@ import { BungeeApi, BungeeApiOptions } from './BungeeApi'
 import { toBridgeQuoteResult } from './util'
 import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
 import { createBungeeDepositCall } from './createBungeeDepositCall'
-import { OrderKind } from '@cowprotocol/contracts'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
 import { BungeeBridgeName, BungeeBuildTx, BungeeEventStatus, BungeeQuote, BungeeQuoteAPIRequest } from './types'
-import { isTruthy } from '../../../common/utils/common'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import { getSigner } from '../../../common/utils/wallet'
 import { BridgeProviderQuoteError } from '../../errors'
 
@@ -77,12 +71,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   }
 
   async getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]> {
-    const chainConfig = BUNGEE_CHAIN_TOKENS[targetChainId as TargetChainId]
-    if (!chainConfig) {
-      return []
-    }
-
-    return Object.values(chainConfig).filter(isTruthy)
+    return this.api.getBuyTokens({ targetChainId })
   }
 
   async getIntermediateTokens(request: QuoteBridgeRequest): Promise<TokenInfo[]> {
@@ -90,31 +79,11 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
       throw new BridgeProviderQuoteError('Only SELL is supported for now', { kind: request.kind })
     }
 
-    const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
-
-    const buyTokenAddressLower = buyTokenAddress.toLowerCase()
-
-    const sourceTokens = BUNGEE_CHAIN_TOKENS[sellTokenChainId]
-    const targetTokens = BUNGEE_CHAIN_TOKENS[buyTokenChainId]
-
-    if (!sourceTokens || !targetTokens) return []
-
-    // Find the token symbol for the target token
-    const targetTokenSymbol = targetTokens?.[buyTokenAddressLower]?.symbol?.toLowerCase()
-
-    if (!targetTokenSymbol) return []
-
-    // if target token is native token, use weth as intermediate token
-    if (targetTokenSymbol === 'eth') {
-      const weth = Object.values(sourceTokens).find((token) => token?.symbol?.toLowerCase() === 'weth')
-      return weth ? [weth] : []
-    }
-
-    // Use the tokenSymbol to find the outputToken in the target chain
-    // Use the tokenSymbol to find the outputToken in the target chain
-    return Object.values(sourceTokens)
-      .filter((token) => token?.symbol?.toLowerCase() === targetTokenSymbol)
-      .filter(isTruthy)
+    return this.api.getIntermediateTokens({
+      fromChainId: request.sellTokenChainId,
+      toChainId: request.buyTokenChainId,
+      toTokenAddress: request.buyTokenAddress,
+    })
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<BungeeQuoteResult> {
