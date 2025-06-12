@@ -263,3 +263,17 @@ export interface AcrossStatusAPIResponse {
 }
 
 export type AcrossStatus = AcrossStatusAPIResponse['status']
+
+export type BungeeBuyTokensAPIResponse = {
+  success: boolean
+  statusCode: number
+  result: Array<{
+    chainId: number
+    address: string
+    decimals: number
+    name?: string
+    symbol?: string
+    logoURI?: string
+    icon?: string
+  }>
+}

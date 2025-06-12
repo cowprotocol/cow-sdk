@@ -5,6 +5,7 @@ import {
   AcrossStatusAPIResponse,
   BungeeBuildTx,
   BungeeBuildTxAPIResponse,
+  BungeeBuyTokensAPIResponse,
   BungeeEvent,
   BungeeEventsAPIResponse,
   BungeeQuote,
@@ -19,16 +20,18 @@ import { BridgeProviderQuoteError } from '../../errors'
 import { SocketVerifierAddresses } from './const/contracts'
 import { ethers } from 'ethers'
 import { SOCKET_VERIFIER_ABI } from './abi'
-import { SignerLike } from '../../../common'
-import { SupportedChainId } from '../../../chains'
+import { SignerLike, TokenInfo } from '../../../common'
+import { SupportedChainId, TargetChainId } from '../../../chains'
 import { getSigner } from '../../../common/utils/wallet'
 
 const BUNGEE_API_URL = 'https://public-backend.bungee.exchange/api/v1/bungee'
+const BUNGEE_MANUAL_API_URL = 'https://public-backend.bungee.exchange/api/v1/bungee-manual'
 const BUNGEE_EVENTS_API_URL = 'https://microservices.socket.tech/loki'
 const ACROSS_API_URL = 'https://app.across.to/api'
 
 export interface BungeeApiOptions {
   apiBaseUrl?: string
+  manualApiBaseUrl?: string
   eventsApiBaseUrl?: string
   acrossApiBaseUrl?: string
   includeBridges?: SupportedBridge[]
@@ -56,6 +59,31 @@ export class BungeeApi {
         { includeBridges },
       )
     }
+  }
+
+  async getBuyTokens(params: {
+    targetChainId: TargetChainId
+    includeBridges?: SupportedBridge[]
+  }): Promise<TokenInfo[]> {
+    const { targetChainId } = params
+
+    // get includeBridges from params or use the default
+    const includeBridges = params.includeBridges ?? this.options.includeBridges ?? this.SUPPORTED_BRIDGES
+
+    // validate bridges
+    this.validateBridges(includeBridges)
+
+    const urlParams = objectToSearchParams({
+      toChainId: targetChainId.toString(),
+      includeBridges: includeBridges.join(','),
+    })
+    const response = await this.makeApiCall<BungeeBuyTokensAPIResponse>('bungee-manual', '/dest-tokens', urlParams)
+    return response.result.map((token) => ({
+      // transform the logoURI to a logoUrl to match the TokenInfo interface
+      // keep the rest as is
+      ...token,
+      logoUrl: token.logoURI,
+    }))
   }
 
   /**
@@ -256,7 +284,7 @@ export class BungeeApi {
   }
 
   private async makeApiCall<T>(
-    apiType: 'bungee' | 'events' | 'across',
+    apiType: 'bungee' | 'events' | 'across' | 'bungee-manual',
     path: string,
     params: Record<string, string> | URLSearchParams,
     isValidResponse?: (response: unknown) => response is T,
@@ -265,12 +293,14 @@ export class BungeeApi {
       bungee: this.options.apiBaseUrl || BUNGEE_API_URL,
       events: this.options.eventsApiBaseUrl || BUNGEE_EVENTS_API_URL,
       across: this.options.acrossApiBaseUrl || ACROSS_API_URL,
+      'bungee-manual': this.options.manualApiBaseUrl || BUNGEE_MANUAL_API_URL,
     }
 
     const errorMessageMap = {
       bungee: 'Bungee Api Error',
       events: 'Bungee Events Api Error',
       across: 'Across Api Error',
+      'bungee-manual': 'Bungee Manual Api Error',
     }
 
     const baseUrl = baseUrlMap[apiType]

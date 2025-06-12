@@ -76,12 +76,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   }
 
   async getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]> {
-    const chainConfig = BUNGEE_CHAIN_TOKENS[targetChainId as TargetChainId]
-    if (!chainConfig) {
-      return []
-    }
-
-    return Object.values(chainConfig).filter(isTruthy)
+    return this.api.getBuyTokens({ targetChainId })
   }
 
   async getIntermediateTokens(request: QuoteBridgeRequest): Promise<TokenInfo[]> {

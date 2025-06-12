@@ -85,7 +85,8 @@ describe('BungeeApi: Shape of API response', () => {
     // Note: This test requires a valid orderId from a previous transaction
     // Using a known orderId from a previous transaction
     const result = await api.getEvents({
-      orderId: '0x0bfa5c44e95964a907d5f0d69ea65221e3a8fb1871e41aa3195e446c4ce855bbdaee4d2156de6fe6f7d50ca047136d758f96a6f067ee7474',
+      orderId:
+        '0x0bfa5c44e95964a907d5f0d69ea65221e3a8fb1871e41aa3195e446c4ce855bbdaee4d2156de6fe6f7d50ca047136d758f96a6f067ee7474',
     })
 
     expect(result).toBeDefined()
@@ -113,5 +114,29 @@ describe('BungeeApi: Shape of API response', () => {
 
     expect(result).toBeDefined()
     expect(['filled', 'pending', 'expired', 'refunded', 'slowFillRequested']).toContain(result)
+  })
+
+  it('getBuyTokens', async () => {
+    const result = await api.getBuyTokens({ targetChainId: SupportedChainId.ARBITRUM_ONE })
+
+    expect(result).toBeDefined()
+    expect(Array.isArray(result)).toBe(true)
+    if (result.length > 0) {
+      const token = result[0]
+      expect(token.address).toBeDefined()
+      expect(token.chainId).toBeDefined()
+      expect(token.decimals).toBeDefined()
+      expect(token.logoUrl).toBeDefined()
+
+      // should include USDC 0xaf88d065e77c8cc2239327c5edb3a432268e5831
+      const usdc = result.find((token) => token.address === '0xaf88d065e77c8cc2239327c5edb3a432268e5831')
+      expect(usdc).toBeDefined()
+      expect(usdc?.address.toLowerCase()).toBe('0xaf88d065e77c8cc2239327c5edb3a432268e5831'.toLowerCase())
+      expect(usdc?.name).toBe('USDC')
+      expect(usdc?.symbol).toBe('USDC')
+      expect(usdc?.logoUrl).toBeDefined()
+      expect(usdc?.decimals).toBe(6)
+      expect(usdc?.chainId).toBe(SupportedChainId.ARBITRUM_ONE)
+    }
   })
 })
