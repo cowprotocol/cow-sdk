@@ -2,11 +2,11 @@ import { LimitTradeParametersFromQuote, PostTradeAdditionalParams, TransactionPa
 import { calculateUniqueOrderId } from './calculateUniqueOrderId'
 import { getOrderToSign } from './getOrderToSign'
 import { type EthFlow, EthFlow__factory } from '../common/generated'
-import { BARN_ETH_FLOW_ADDRESS, CowEnv, ETH_FLOW_ADDRESS, WRAPPED_NATIVE_CURRENCIES } from '../common'
+import { BARN_ETH_FLOW_ADDRESS, CowEnv, ETH_FLOW_ADDRESS } from '../common'
 import { SupportedChainId } from '../chains'
 import { GAS_LIMIT_DEFAULT } from './consts'
 import type { EthFlowOrder } from '../common/generated/EthFlow'
-import { calculateGasMargin } from './utils/misc'
+import { adjustEthFlowOrderParams, calculateGasMargin } from './utils/misc'
 import { Signer } from '@ethersproject/abstract-signer'
 import type { UnsignedOrder } from '../order-signing'
 import { getDefaultSlippageBps } from './utils/slippage'
@@ -23,10 +23,10 @@ export async function getEthFlowTransaction(
   const slippageBps = _params.slippageBps ?? getDefaultSlippageBps(chainId, true)
 
   const params = {
-    ..._params,
-    sellToken: WRAPPED_NATIVE_CURRENCIES[chainId].address,
+    ...adjustEthFlowOrderParams(chainId, _params),
     slippageBps,
   }
+
   const { quoteId } = params
 
   const contract = getEthFlowContract(signer, params.env)
