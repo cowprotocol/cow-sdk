@@ -28,9 +28,8 @@ import { getOrderToSign } from './getOrderToSign'
 import { getOrderTypedData } from './getOrderTypedData'
 import { suggestSlippageBps } from './suggestSlippageBps'
 import { getPartnerFeeBps } from './utils/getPartnerFeeBps'
-import { getIsEthFlowOrder, swapParamsToLimitOrderParams } from './utils/misc'
+import { adjustEthFlowOrderParams, getIsEthFlowOrder, swapParamsToLimitOrderParams } from './utils/misc'
 import { getDefaultSlippageBps } from './utils/slippage'
-import { WRAPPED_NATIVE_CURRENCIES } from '../common'
 
 // ETH-FLOW orders require different quote params
 // check the isEthFlow flag and set in quote req obj
@@ -66,12 +65,7 @@ export async function getQuoteRaw(
   const { appCode, chainId, account: from } = trader
   const isEthFlow = getIsEthFlowOrder(_tradeParameters)
 
-  const tradeParameters = isEthFlow
-    ? {
-        ..._tradeParameters,
-        sellToken: WRAPPED_NATIVE_CURRENCIES[chainId].address,
-      }
-    : _tradeParameters
+  const tradeParameters = isEthFlow ? adjustEthFlowOrderParams(chainId, _tradeParameters) : _tradeParameters
 
   const {
     sellToken,
@@ -98,7 +92,7 @@ export async function getQuoteRaw(
   log('Building app data...')
 
   // If slippageBps is undefined, we use the default slippage
-  const defaultSlippageBps = getDefaultSlippageBps(chainId, _tradeParameters.sellToken)
+  const defaultSlippageBps = getDefaultSlippageBps(chainId, isEthFlow)
   const slippageBpsOrDefault = slippageBps ?? defaultSlippageBps
 
   const buildAppDataParams: BuildAppDataParams = {
@@ -142,6 +136,13 @@ export async function getQuoteRaw(
     advancedSettings,
   })
 
+  const commonResult = {
+    isEthFlow,
+    quote,
+    orderBookApi,
+    suggestedSlippageBps,
+  }
+
   // If no slippage is specified. AUTO slippage is used
   if (slippageBps === undefined) {
     // If suggested slippage is greater than default, we use the suggested slippage
@@ -163,15 +164,10 @@ export async function getQuoteRaw(
       )
 
       return {
-        isEthFlow,
-        slippageBps: suggestedSlippageBps,
-        suggestedSlippageBps,
-        tradeParameters: { ..._tradeParameters, slippageBps: suggestedSlippageBps },
+        ...commonResult,
         appDataInfo: newAppDataInfo,
-
-        // We reuse the quote, because the slippage has no fundamental impact on the quote
-        quote,
-        orderBookApi,
+        tradeParameters: { ..._tradeParameters, slippageBps: suggestedSlippageBps },
+        slippageBps: suggestedSlippageBps,
       }
     } else {
       log(
@@ -181,13 +177,11 @@ export async function getQuoteRaw(
   }
 
   return {
-    isEthFlow,
-    quote,
+    ...commonResult,
     appDataInfo,
-    orderBookApi,
-    tradeParameters,
+    // Return the original tradeParameters to not expose all intermediate changes
+    tradeParameters: _tradeParameters,
     slippageBps: slippageBpsOrDefault,
-    suggestedSlippageBps,
   }
 }
 

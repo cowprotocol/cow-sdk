@@ -179,6 +179,32 @@ describe('getQuoteToSign', () => {
         // 2% slippage
         expect(+result.amountsAndCosts.afterSlippage.buyAmount.toString()).toBe(buyAmount - (buyAmount * 2) / 100)
       })
+
+      describe.each<boolean>([true, false])('With/without dynamic slippage', (withDynamicSlippage) => {
+        const slippageBps = withDynamicSlippage ? undefined : 100
+
+        it('Quote request sell token must be a wrapped token', async () => {
+          await getQuoteWithSigner(
+            { ...defaultOrderParams, chainId: SupportedChainId.MAINNET, sellToken: ETH_ADDRESS, slippageBps },
+            {},
+            orderBookApiMock,
+          )
+
+          const call = getQuoteMock.mock.calls[0][0]
+
+          expect(call.sellToken).toBe(WRAPPED_NATIVE_CURRENCIES[SupportedChainId.MAINNET].address)
+        })
+
+        it('Sell token in tradeParameters must not be overridden with wrapped', async () => {
+          const { result } = await getQuoteWithSigner(
+            { ...defaultOrderParams, chainId: SupportedChainId.MAINNET, sellToken: ETH_ADDRESS, slippageBps },
+            {},
+            orderBookApiMock,
+          )
+
+          expect(result.tradeParameters.sellToken).toBe(ETH_ADDRESS)
+        })
+      })
     })
   })
 
