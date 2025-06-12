@@ -1,5 +1,4 @@
 import { log } from '../common/utils/log'
-import { DEFAULT_QUOTE_VALIDITY } from './consts'
 import {
   AppDataInfo,
   BuildAppDataParams,
@@ -31,6 +30,7 @@ import { getPartnerFeeBps } from './utils/getPartnerFeeBps'
 import { getIsEthFlowOrder, swapParamsToLimitOrderParams } from './utils/misc'
 import { getDefaultSlippageBps } from './utils/slippage'
 import { WRAPPED_NATIVE_CURRENCIES } from '../common'
+import { DEFAULT_QUOTE_VALIDITY } from '../common/consts/order'
 
 // ETH-FLOW orders require different quote params
 // check the isEthFlow flag and set in quote req obj
