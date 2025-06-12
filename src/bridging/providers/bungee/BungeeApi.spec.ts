@@ -139,4 +139,34 @@ describe('BungeeApi: Shape of API response', () => {
       expect(usdc?.chainId).toBe(SupportedChainId.ARBITRUM_ONE)
     }
   })
+
+  it('getIntermediateTokens', async () => {
+    const result = await api.getIntermediateTokens({
+      fromChainId: SupportedChainId.ARBITRUM_ONE,
+      toChainId: SupportedChainId.BASE,
+      toTokenAddress: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+    })
+
+    expect(result).toBeDefined()
+    expect(Array.isArray(result)).toBe(true)
+    if (result.length > 0) {
+      const token = result[0]
+      expect(token.address).toBeDefined()
+      expect(token.chainId).toBeDefined()
+      expect(token.decimals).toBeDefined()
+      expect(token.logoUrl).toBeDefined()
+      expect(token.name).toBeDefined()
+      expect(token.symbol).toBeDefined()
+
+      // should include USDC 0xaf88d065e77c8cc2239327c5edb3a432268e5831
+      const usdc = result.find((token) => token.address === '0xaf88d065e77c8cc2239327c5edb3a432268e5831')
+      expect(usdc).toBeDefined()
+      expect(usdc?.address.toLowerCase()).toBe('0xaf88d065e77c8cc2239327c5edb3a432268e5831'.toLowerCase())
+      expect(usdc?.name).toBe('USDC')
+      expect(usdc?.symbol).toBe('USDC')
+      expect(usdc?.logoUrl).toBeDefined()
+      expect(usdc?.decimals).toBe(6)
+      expect(usdc?.chainId).toBe(SupportedChainId.ARBITRUM_ONE)
+    }
+  })
 })

@@ -277,3 +277,17 @@ export type BungeeBuyTokensAPIResponse = {
     icon?: string
   }>
 }
+
+export type BungeeIntermediateTokensAPIResponse = {
+  success: boolean
+  statusCode: number
+  result: Array<{
+    chainId: number
+    address: string
+    name: string
+    symbol: string
+    decimals: number
+    logoURI: string
+    icon: string
+  }>
+}

@@ -8,6 +8,7 @@ import {
   BungeeBuyTokensAPIResponse,
   BungeeEvent,
   BungeeEventsAPIResponse,
+  BungeeIntermediateTokensAPIResponse,
   BungeeQuote,
   BungeeQuoteAPIRequest,
   BungeeQuoteAPIResponse,
@@ -78,6 +79,39 @@ export class BungeeApi {
       includeBridges: includeBridges.join(','),
     })
     const response = await this.makeApiCall<BungeeBuyTokensAPIResponse>('bungee-manual', '/dest-tokens', urlParams)
+    return response.result.map((token) => ({
+      // transform the logoURI to a logoUrl to match the TokenInfo interface
+      // keep the rest as is
+      ...token,
+      logoUrl: token.logoURI,
+    }))
+  }
+
+  async getIntermediateTokens(params: {
+    fromChainId: SupportedChainId
+    toChainId: TargetChainId
+    toTokenAddress: string
+    includeBridges?: SupportedBridge[]
+  }): Promise<TokenInfo[]> {
+    const { fromChainId, toChainId, toTokenAddress } = params
+
+    // get includeBridges from params or use the default
+    const includeBridges = params.includeBridges ?? this.options.includeBridges ?? this.SUPPORTED_BRIDGES
+
+    // validate bridges
+    this.validateBridges(includeBridges)
+
+    const urlParams = objectToSearchParams({
+      fromChainId: fromChainId.toString(),
+      toChainId: toChainId.toString(),
+      toTokenAddress,
+      includeBridges: includeBridges.join(','),
+    })
+    const response = await this.makeApiCall<BungeeIntermediateTokensAPIResponse>(
+      'bungee-manual',
+      '/intermediate-tokens',
+      urlParams,
+    )
     return response.result.map((token) => ({
       // transform the logoURI to a logoUrl to match the TokenInfo interface
       // keep the rest as is
