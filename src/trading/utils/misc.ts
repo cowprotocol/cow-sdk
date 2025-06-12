@@ -1,6 +1,7 @@
 import { LimitTradeParametersFromQuote, TradeParameters } from '../types'
 import { OrderQuoteResponse, QuoteAmountsAndCosts } from '../../order-book'
-import { ETH_ADDRESS } from '../../common'
+import { ETH_ADDRESS, WRAPPED_NATIVE_CURRENCIES } from '../../common'
+import { SupportedChainId } from '../../chains'
 
 export function swapParamsToLimitOrderParams(
   params: TradeParameters,
@@ -75,4 +76,25 @@ export function getTradeParametersAfterQuote({
   sellToken: string
 }): TradeParameters {
   return { ...quoteParameters, sellToken }
+}
+
+/**
+ * ETH-flow orders are special and need to be adjusted
+ * 1. Sell token should be the wrapped native currency
+ */
+export function adjustEthFlowOrderParams(chainId: SupportedChainId, params: TradeParameters): TradeParameters
+
+export function adjustEthFlowOrderParams(
+  chainId: SupportedChainId,
+  params: LimitTradeParametersFromQuote,
+): LimitTradeParametersFromQuote
+
+export function adjustEthFlowOrderParams(
+  chainId: SupportedChainId,
+  params: TradeParameters | LimitTradeParametersFromQuote,
+): typeof params {
+  return {
+    ...params,
+    sellToken: WRAPPED_NATIVE_CURRENCIES[chainId].address,
+  }
 }
