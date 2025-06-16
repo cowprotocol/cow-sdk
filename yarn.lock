@@ -5212,7 +5212,7 @@ ethereum-cryptography@^3.0.0:
     "@scure/bip32" "1.6.2"
     "@scure/bip39" "1.5.4"
 
-ethers@^5.3.1, ethers@^5.8.0:
+ethers@^5.3.1:
   version "5.8.0"
   resolved "https://registry.yarnpkg.com/ethers/-/ethers-5.8.0.tgz#97858dc4d4c74afce83ea7562fe9493cedb4d377"
   integrity sha512-DUq+7fHrCg1aPDFCHx6UIPb3nmt2XMpM7Y/g2gLhsl3lIBqeAfOJIl1qEvRf2uq3BiKxmh6Fh5pfp2ieyek7Kg==
