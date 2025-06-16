@@ -13,7 +13,7 @@ import {
   QuoteBridgeRequest,
 } from '../../types'
 
-import { BRIDGE_HOOK_VALIDITY, DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION, RAW_PROVIDERS_FILES_PATH } from '../../const'
+import { DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION, RAW_PROVIDERS_FILES_PATH } from '../../const'
 
 import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
 
@@ -36,8 +36,6 @@ import { isTruthy } from '../../../common/utils/common'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { getSigner } from '../../../common/utils/wallet'
 import { BridgeProviderQuoteError } from '../../errors'
-
-import { getOrderDeadlineFromNow } from '../../../common/utils/order'
 
 export const BUNGEE_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/bungee`
 export const BUNGEE_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
@@ -178,6 +176,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     unsignedCall: EvmCall,
     signer: Signer,
     bridgeHookNonce: string,
+    deadline: bigint,
     defaultGasLimit?: bigint,
   ): Promise<BridgeHook> {
     // Sign the multicall
@@ -194,7 +193,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
       chainId,
       signer,
       defaultGasLimit,
-      deadline: getOrderDeadlineFromNow(BRIDGE_HOOK_VALIDITY),
+      deadline,
       nonce: bridgeHookNonce,
     })
 

@@ -13,7 +13,6 @@ import {
 } from '../../types'
 
 import {
-  BRIDGE_HOOK_VALIDITY,
   DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION,
   HOOK_DAPP_BRIDGE_PROVIDER_PREFIX,
   RAW_PROVIDERS_FILES_PATH,
@@ -37,7 +36,6 @@ import { SuggestedFeesResponse } from './types'
 import { getDepositParams } from './getDepositParams'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { BridgeProviderQuoteError } from '../../errors'
-import { getOrderDeadlineFromNow } from '../../../common/utils/order'
 
 type SupportedTokensState = Record<ChainId, Record<string, TokenInfo>>
 
@@ -146,6 +144,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     unsignedCall: EvmCall,
     signer: Signer,
     bridgeHookNonce: string,
+    deadline: bigint,
     defaultGasLimit?: bigint,
   ): Promise<BridgeHook> {
     // Sign the multicall
@@ -162,7 +161,7 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
       chainId,
       signer,
       defaultGasLimit,
-      deadline: getOrderDeadlineFromNow(BRIDGE_HOOK_VALIDITY),
+      deadline,
       nonce: bridgeHookNonce,
     })
 

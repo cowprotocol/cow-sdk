@@ -211,6 +211,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
     unsignedCall: EvmCall,
     signer: Signer,
     bridgeHookNonce: string,
+    deadline: bigint,
     defaultGasLimit?: bigint,
   ): Promise<BridgeHook>
 
