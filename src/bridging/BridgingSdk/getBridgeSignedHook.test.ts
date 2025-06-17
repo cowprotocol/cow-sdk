@@ -26,7 +26,9 @@ const owner = '0x000a1'
 
 const contextMock = {
   swapResult: {
-    orderToSign: {},
+    orderToSign: {
+      validTo: 1750150784,
+    },
     tradeParameters: {
       owner,
     },
@@ -40,11 +42,9 @@ const contextMock = {
   defaultGasLimit: 100000n,
 } as unknown as BridgeResultContext
 
-const currentTimestamp = 1487076708000
-
 describe('getBridgeSignedHook', () => {
-  beforeEach(() => {
-    Date.now = jest.fn(() => currentTimestamp)
+  afterEach(() => {
+    jest.clearAllMocks()
   })
 
   it('Should create a bridge hook nonce based on orderId and specified owner', async () => {
@@ -56,10 +56,59 @@ describe('getBridgeSignedHook', () => {
       unsignedBridgeCallMock,
       contextMock.signer,
       // nonce
-      '0xbfa319539175ecc565ca900284709360a88a8c0a95d0ca43f38909d6a301551e',
+      '0x05b4c2ab50e99539a28c354ef8851f671ba21b07140629d24849491b15c88922',
       // deadline
-      1487080308n,
+      1750152584n,
       contextMock.defaultGasLimit,
+    )
+  })
+
+  it('Should calculate deadline based on orderToSign.validTo first of all', async () => {
+    const expectedValidTo = 1750000000
+
+    await getBridgeSignedHook(bridgeRequestMock, {
+      ...contextMock,
+      swapResult: {
+        orderToSign: {
+          validTo: expectedValidTo,
+        },
+      },
+    } as unknown as BridgeResultContext)
+
+    expect(contextMock.provider.getSignedHook).toHaveBeenCalledTimes(1)
+    expect(contextMock.provider.getSignedHook).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      // deadline
+      BigInt(expectedValidTo),
+      expect.anything(),
+    )
+  })
+
+  it('Should use validTo override for deadline if set', async () => {
+    const expectedValidTo = 2900000000
+
+    await getBridgeSignedHook(bridgeRequestMock, {
+      ...contextMock,
+      swapResult: {
+        orderToSign: {
+          validTo: 1750000000,
+        },
+      },
+      validToOverride: expectedValidTo,
+    } as unknown as BridgeResultContext)
+
+    expect(contextMock.provider.getSignedHook).toHaveBeenCalledTimes(1)
+    expect(contextMock.provider.getSignedHook).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      // deadline
+      BigInt(expectedValidTo),
+      expect.anything(),
     )
   })
 })

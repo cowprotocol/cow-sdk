@@ -117,6 +117,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   ): Promise<{ swapResult: QuoteResults; bridgeResult: BridgeQuoteResults }> {
     const appDataOverride = advancedSettings?.appData
     const receiverOverride = advancedSettings?.quoteRequest?.receiver
+    const validToOverride = advancedSettings?.quoteRequest?.validTo
 
     const {
       bridgeHook,
@@ -134,6 +135,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
       signer,
       mockedHook,
       appDataOverride,
+      validToOverride,
       defaultGasLimit,
     })
     log(`Bridge hook for swap: ${JSON.stringify(bridgeHook)}`)

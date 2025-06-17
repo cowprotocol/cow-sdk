@@ -45,14 +45,15 @@ export interface GetBridgeResultResult {
   appDataInfo: AppDataInfo
 }
 
-export interface BridgeResultContext {
+export interface BridgeResultContext<T extends BridgeQuoteResult = BridgeQuoteResult> {
   swapAndBridgeRequest: QuoteBridgeRequest
   swapResult: QuoteResults
   intermediateTokenAmount: bigint
   bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount
-  provider: BridgeProvider<BridgeQuoteResult>
+  provider: BridgeProvider<T>
   signer: Signer
   mockedHook: latest.CoWHook
+  validToOverride?: number
   appDataOverride?: SwapAdvancedSettings['appData']
   defaultGasLimit?: bigint
 }
