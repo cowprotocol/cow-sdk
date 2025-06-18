@@ -40,7 +40,7 @@ export const avalanche: ChainInfo = {
     url: 'https://build.avax.network/docs',
   },
   blockExplorer: {
-    name: 'Snowtrace',
-    url: 'https://snowtrace.io',
+    name: 'Snowscan',
+    url: 'https://snowscan.xyz',
   },
 }
