@@ -1,3 +1,4 @@
+/* eslint-disable */
 module.exports = {
   preset: 'ts-jest/presets/js-with-ts-esm',
   testEnvironment: 'node',
@@ -6,4 +7,5 @@ module.exports = {
   },
   testMatch: ['**/src/**/*.spec.ts', '**/test/**/*.spec.ts'],
   setupFilesAfterEnv: ['<rootDir>/setupTests.cjs'],
+  transformIgnorePatterns: ['node_modules/(?!(multiformats|ipfs-only-hash)/)'],
 }

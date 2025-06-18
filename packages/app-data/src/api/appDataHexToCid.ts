@@ -63,8 +63,9 @@ async function _appDataHexToCidLegacy(appDataHex: string): Promise<string> {
     multihashHex: appDataHex, // 32 bytes of the sha2-256 hash
   })
 
-  const { CID } = await import('multiformats/cid')
-  return CID.decode(cidBytes).toV0().toString()
+  // Use type assertion to avoid TS issues with CID import
+  const cidModule = (await import('multiformats/cid')) as any
+  return cidModule.CID.decode(cidBytes).toV0().toString()
 }
 
 interface ToCidParams {

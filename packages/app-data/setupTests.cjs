@@ -1,5 +1,7 @@
-global.fetchMock = require('jest-fetch-mock')
+/* eslint-disable */
+const fetchMock = require('jest-fetch-mock')
 
+global.fetchMock = fetchMock
 global.window = global
 
 fetchMock.enableMocks()
