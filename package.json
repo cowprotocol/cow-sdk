@@ -3,11 +3,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "turbo run build",
+    "build": "turbo run build --filter='!@cowprotocol/cow-sdk'",
     "dev": "turbo run dev",
     "lint": "turbo run lint --filter=!@cowprotocol/cow-sdk -- --fix",
-    "test": "turbo run test",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "test": "turbo run test --filter=!@cowprotocol/cow-sdk",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "clean": "turbo run clean --filter=!@cowprotocol/cow-sdk && rm -rf .turbo"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",

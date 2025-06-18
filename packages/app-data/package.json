@@ -13,9 +13,9 @@
     "schemas/**"
   ],
   "scripts": {
-    "clean": "rm -rf dist/* && rm -rf src/generatedTypes/* && rm -rf schemas/",
+    "clean": "rm -rf dist/* && rm -rf .turbo && rm -rf node_modules && rm -rf schemas/",
     "compile": "tsx src/scripts/compile.ts",
-    "prebuild": "pnpm run clean && pnpm run compile",
+    "prebuild": "pnpm run clean && pnpm install && pnpm run compile",
     "build": "tsup src/index.ts --format esm,cjs --dts --external multiformats",
     "dev": "pnpm run compile && tsup src/index.ts --format esm,cjs --watch --dts --external multiformats",
     "lint": "eslint src/**/*.ts",

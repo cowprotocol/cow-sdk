@@ -1,0 +1,38 @@
+{
+  "name": "@cowprotocol/sdk-order-book",
+  "version": "0.1.0",
+  "description": "CowProtocol Order Book package",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "license": "MIT",
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "lint": "eslint src/**/*.ts --quiet",
+    "test": "jest",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/jest": "^29.4.0",
+    "@types/node": "^20.17.31",
+    "@types/semver-sort": "^0.0.1",
+    "jest": "^29.4.2",
+    "jest-fetch-mock": "^3.0.3",
+    "ts-jest": "^29.0.0",
+    "tsup": "^7.2.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@cowprotocol/sdk-config": "workspace:*",
+    "@cowprotocol/sdk-common": "workspace:*",
+    "cross-fetch": "^3.2.0",
+    "exponential-backoff": "^3.1.2",
+    "limiter": "^3.0.0"
+  }
+}
