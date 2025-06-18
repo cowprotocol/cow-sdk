@@ -1,20 +1,22 @@
-import { OrderBookApi, OrderCreation, SigningScheme } from '../order-book'
-import type { Signer } from '@ethersproject/abstract-signer'
+import { OrderBookApi, OrderCreation, SigningScheme } from '@cowprotocol/sdk-order-book'
 import { AppDataInfo, LimitTradeParameters, OrderPostingResult, PostTradeAdditionalParams } from './types'
 import { SIGN_SCHEME_MAP } from './consts'
-import { OrderSigningUtils } from '../order-signing'
+import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
 import { getOrderToSign } from './getOrderToSign'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getIsEthFlowOrder } from './utils/misc'
-import { log } from '../common/utils/log'
+import { getGlobalAdapter, log, Signer } from '@cowprotocol/sdk-common'
 
 export async function postCoWProtocolTrade(
   orderBookApi: OrderBookApi,
-  signer: Signer,
+  paramSigner: Signer,
   appData: AppDataInfo,
   params: LimitTradeParameters,
   additionalParams: PostTradeAdditionalParams = {},
 ): Promise<OrderPostingResult> {
+  const adapter = getGlobalAdapter()
+  const signer = new adapter.Signer(paramSigner)
+  console.log('signer', await signer.getAddress())
   const { networkCostsAmount = '0', signingScheme: _signingScheme = SigningScheme.EIP712 } = additionalParams
 
   if (getIsEthFlowOrder(params)) {
@@ -40,6 +42,7 @@ export async function postCoWProtocolTrade(
     if (_signingScheme === SigningScheme.PRESIGN) {
       return { signature: from, signingScheme: SigningScheme.PRESIGN }
     } else {
+      console.log('signer2', signer)
       const signingResult = await OrderSigningUtils.signOrder(orderToSign, chainId, signer)
 
       return { signature: signingResult.signature, signingScheme: SIGN_SCHEME_MAP[signingResult.signingScheme] }

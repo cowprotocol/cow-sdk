@@ -1,31 +1,30 @@
-const GAS = '0x1e848' // 125000
-const mockConnect = {
-  address: '0xaa1',
-  estimateGas: {
-    createOrder: jest.fn().mockResolvedValue({ toHexString: () => GAS }),
-  },
-  interface: {
-    encodeFunctionData: jest.fn().mockReturnValue('0x0ac'),
-  },
-}
+const GAS_BIGINT = BigInt(125000)
 
-jest.mock('../common/generated', () => {
-  const original = jest.requireActual('../common/generated')
+jest.mock('@cowprotocol/sdk-common', () => {
+  const original = jest.requireActual('@cowprotocol/sdk-common')
 
   return {
     ...original,
-    EthFlow__factory: {
-      connect: jest.fn().mockImplementation(() => mockConnect),
+    ContractFactory: {
+      createEthFlowContract: jest.fn().mockReturnValue({
+        address: '0xaa1',
+        estimateGas: {
+          createOrder: jest.fn().mockResolvedValue(GAS_BIGINT),
+        },
+        interface: {
+          encodeFunctionData: jest.fn().mockReturnValue('0x0ac'),
+        },
+      }),
     },
   }
 })
 
 import { getEthFlowTransaction } from './getEthFlowTransaction'
-import { VoidSigner } from '@ethersproject/abstract-signer'
-import { WRAPPED_NATIVE_CURRENCIES } from '../common'
-import { SupportedChainId } from '../chains'
+import { SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
 import { LimitTradeParametersFromQuote } from './types'
-import { OrderKind } from '../order-book'
+import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { createAdapters } from '../tests/setup'
+import { setGlobalAdapter, ContractFactory } from '@cowprotocol/sdk-common'
 
 const appDataKeccak256 = '0x578c975b1cfd3e24c21fb599076c4f7879c4268efd33eed3eb9efa5e30efac21'
 
@@ -42,45 +41,109 @@ const params: LimitTradeParametersFromQuote = {
 
 describe('getEthFlowTransaction', () => {
   const chainId = SupportedChainId.GNOSIS_CHAIN
-  const account = '0x21c3de23d98caddc406e3d31b25e807addf33333'
-  const signer = new VoidSigner(account)
+  let adapters: ReturnType<typeof createAdapters>
+  let mockContract: any
 
-  signer.getChainId = jest.fn().mockResolvedValue(chainId)
-  signer.getAddress = jest.fn().mockResolvedValue(account)
+  beforeAll(() => {
+    adapters = createAdapters()
+  })
+
+  beforeEach(() => {
+    mockContract = {
+      address: '0xaa1',
+      estimateGas: {
+        createOrder: jest.fn().mockResolvedValue(GAS_BIGINT),
+      },
+      interface: {
+        encodeFunctionData: jest.fn().mockReturnValue('0x0ac'),
+      },
+    }
+    ;(ContractFactory.createEthFlowContract as jest.Mock).mockReturnValue(mockContract)
+  })
 
   afterEach(() => {
-    jest.restoreAllMocks()
-    mockConnect.interface.encodeFunctionData.mockReset()
+    jest.clearAllMocks()
   })
 
   it('Should always override sell token with wrapped native token', async () => {
-    const result = await getEthFlowTransaction(signer, appDataKeccak256, params, chainId)
-    const wrappedToken = WRAPPED_NATIVE_CURRENCIES[chainId].address
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+    const results: any[] = []
 
-    expect(result.transaction.data.includes(params.sellToken.slice(2))).toBe(false)
-    expect(result.transaction.data.includes(wrappedToken.slice(2))).toBe(false)
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      const result = await getEthFlowTransaction(adapters[adapterName], appDataKeccak256, params, chainId)
+      results.push(result)
+    }
+
+    const wrappedToken = WRAPPED_NATIVE_CURRENCIES[SupportedChainId.GNOSIS_CHAIN].address
+
+    results.forEach((result) => {
+      expect(result.transaction.data.includes(params.sellToken.slice(2))).toBe(false)
+      expect(result.transaction.data.includes(wrappedToken.slice(2))).toBe(false)
+    })
   })
 
   it('Should call gas estimation and return estimated value + 20%', async () => {
-    const result = await getEthFlowTransaction(signer, appDataKeccak256, params, chainId)
-    const gasNum = +GAS
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+    const results: any[] = []
 
-    expect(+result.transaction.gasLimit).toBe(gasNum + gasNum * 0.2)
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      const result = await getEthFlowTransaction(adapters[adapterName], appDataKeccak256, params, chainId)
+      results.push(result)
+    }
+
+    const gasNum = Number(GAS_BIGINT)
+
+    results.forEach((result) => {
+      expect(+result.transaction.gasLimit).toBe(gasNum + gasNum * 0.2)
+    })
   })
 
   it('Transaction value should be equal to sell amount', async () => {
-    const result = await getEthFlowTransaction(signer, appDataKeccak256, params, chainId)
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+    const results: any[] = []
 
-    expect(result.transaction.value).toBe('0x' + BigInt(params.sellAmount).toString(16))
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      const result = await getEthFlowTransaction(adapters[adapterName], appDataKeccak256, params, chainId)
+      results.push(result)
+    }
+
+    results.forEach((result) => {
+      expect(result.transaction.value).toBe('0x' + BigInt(params.sellAmount).toString(16))
+    })
   })
 
   it('Default slippage must be 2% in Mainnet', async () => {
-    await getEthFlowTransaction(signer, appDataKeccak256, params, SupportedChainId.MAINNET)
-    const orderData = mockConnect.interface.encodeFunctionData.mock.calls[0][1][0]
-    const buyAmountBeforeSlippage = BigInt(params.buyAmount)
-    // 2% slippage
-    const buyAmountAfterSlippage = buyAmountBeforeSlippage - (buyAmountBeforeSlippage * BigInt(2)) / BigInt(100)
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
-    expect(orderData.buyAmount).toBe(buyAmountAfterSlippage.toString())
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      await getEthFlowTransaction(adapters[adapterName], appDataKeccak256, params, SupportedChainId.MAINNET)
+
+      // Verificar se encodeFunctionData foi chamado
+      expect(mockContract.interface.encodeFunctionData).toHaveBeenCalledWith('createOrder', expect.any(Array))
+
+      const orderData = mockContract.interface.encodeFunctionData.mock.calls[0][1][0]
+      const buyAmountBeforeSlippage = BigInt(params.buyAmount)
+      // 2% slippage
+      const buyAmountAfterSlippage = buyAmountBeforeSlippage - (buyAmountBeforeSlippage * BigInt(2)) / BigInt(100)
+
+      expect(orderData.buyAmount).toBe(buyAmountAfterSlippage.toString())
+
+      mockContract.interface.encodeFunctionData.mockClear()
+    }
+  })
+
+  it('Should verify ContractFactory is called with correct parameters', async () => {
+    setGlobalAdapter(adapters.ethersV5Adapter)
+
+    await getEthFlowTransaction(adapters.ethersV5Adapter, appDataKeccak256, params, chainId)
+
+    expect(ContractFactory.createEthFlowContract).toHaveBeenCalledWith(
+      expect.stringContaining('0x'),
+      expect.any(Object),
+    )
   })
 })

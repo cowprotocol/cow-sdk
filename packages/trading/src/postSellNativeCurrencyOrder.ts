@@ -1,18 +1,20 @@
-import { Signer } from 'ethers'
+import { getGlobalAdapter, Signer } from '@cowprotocol/sdk-common'
 import { AppDataInfo, LimitTradeParametersFromQuote, OrderPostingResult, PostTradeAdditionalParams } from './types'
 
-import { OrderBookApi, SigningScheme } from '../order-book'
+import { OrderBookApi, SigningScheme } from '@cowprotocol/sdk-order-book'
 import { getEthFlowTransaction } from './getEthFlowTransaction'
 
-import { log } from '../common/utils/log'
+import { log } from '@cowprotocol/sdk-common'
 
 export async function postSellNativeCurrencyOrder(
   orderBookApi: OrderBookApi,
-  signer: Signer,
+  paramSigner: Signer,
   appData: Pick<AppDataInfo, 'fullAppData' | 'appDataKeccak256'>,
   _params: LimitTradeParametersFromQuote,
   additionalParams: PostTradeAdditionalParams = {},
 ): Promise<OrderPostingResult> {
+  const adapter = getGlobalAdapter()
+  const signer = new adapter.Signer(paramSigner)
   const { appDataKeccak256, fullAppData } = appData
 
   const { orderId, transaction, orderToSign } = await getEthFlowTransaction(

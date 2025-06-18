@@ -1,10 +1,8 @@
-import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS } from '../common'
-import { SupportedChainId } from '../chains'
-import type { Signer } from '@ethersproject/abstract-signer'
+import { SupportedChainId, COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS } from '@cowprotocol/sdk-config'
+import { Signer } from '@cowprotocol/sdk-common'
 import { GAS_LIMIT_DEFAULT } from './consts'
 import { calculateGasMargin } from './utils/misc'
-
-import { GPv2Settlement__factory } from '../common/generated'
+import { ContractFactory } from '@cowprotocol/sdk-common'
 import { TransactionParams } from './types'
 
 export async function getPreSignTransaction(
@@ -13,24 +11,18 @@ export async function getPreSignTransaction(
   account: string,
   orderId: string,
 ): Promise<TransactionParams> {
-  const contract = GPv2Settlement__factory.connect(account, signer)
+  const contract = ContractFactory.createSettlementContract(account, signer)
+  const settlementContractAddress = COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[chainId]
 
-  const settlementContractAddress = COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[chainId] as `0x${string}`
   const preSignatureCall = contract.interface.encodeFunctionData('setPreSignature', [orderId, true])
 
-  const gas = await contract.estimateGas
-    .setPreSignature(orderId, true)
-    .then((res) => BigInt(res.toHexString()))
-    .catch((error) => {
-      console.error(error)
-
-      return GAS_LIMIT_DEFAULT
-    })
+  const gas =
+    (await contract.estimateGas.setPreSignature?.(orderId, true).catch(() => GAS_LIMIT_DEFAULT)) || GAS_LIMIT_DEFAULT
 
   return {
     data: preSignatureCall,
     gasLimit: '0x' + calculateGasMargin(gas).toString(16),
-    to: settlementContractAddress,
+    to: settlementContractAddress, // Para onde enviar a transação
     value: '0',
   }
 }

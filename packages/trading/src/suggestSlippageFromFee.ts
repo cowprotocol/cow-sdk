@@ -1,4 +1,4 @@
-import { applyPercentage } from 'src/common/utils/math'
+import { applyPercentage } from '@cowprotocol/sdk-common'
 
 export interface SuggestSlippageFromFeeParams {
   /**

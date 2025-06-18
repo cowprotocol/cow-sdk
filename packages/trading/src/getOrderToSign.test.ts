@@ -1,7 +1,7 @@
 import { getOrderToSign } from './getOrderToSign'
 import { LimitOrderParameters } from './types'
-import { SupportedChainId } from '../chains'
-import { OrderKind } from '../order-book'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { DEFAULT_QUOTE_VALIDITY } from './consts'
 
 const currentTimestamp = 1487076708000

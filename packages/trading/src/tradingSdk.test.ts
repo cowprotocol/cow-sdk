@@ -1,7 +1,12 @@
 import { TradingSdk } from './tradingSdk'
-import { SupportedChainId } from '../chains'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { TradeBaseParameters } from './types'
-import { OrderBookApi, OrderKind } from '../order-book'
+import { OrderBookApi, OrderKind } from '@cowprotocol/sdk-order-book'
+import { createAdapters } from '../tests/setup'
+import { AbstractProviderAdapter } from '@cowprotocol/sdk-common'
+import { EthersV5Adapter } from '@cowprotocol/sdk-ethers-v5-adapter'
+import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
 
 const defaultOrderParams: TradeBaseParameters = {
   sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
@@ -36,8 +41,19 @@ const quoteResponseMock = {
   verified: true,
 }
 
+type Adapters = {
+  ethersV5Adapter: EthersV5Adapter
+  ethersV6Adapter: EthersV6Adapter
+  viemAdapter: ViemAdapter
+}
+
 describe('TradingSdk', () => {
   let orderBookApi: OrderBookApi
+  let adapters: Adapters
+
+  beforeAll(() => {
+    adapters = createAdapters()
+  })
 
   describe('Logs', () => {
     beforeEach(() => {
@@ -56,36 +72,48 @@ describe('TradingSdk', () => {
 
     it('When logs option is set to false, then should not display logs', async () => {
       const logSpy = jest.spyOn(console, 'log')
+      const adapterNames = Object.keys(adapters) as Array<keyof Adapters>
 
-      const sdk = new TradingSdk(
-        {
-          chainId: SupportedChainId.GNOSIS_CHAIN,
-          appCode: 'test',
-          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
-        },
-        { enableLogging: false, orderBookApi },
-      )
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName] as AbstractProviderAdapter
+        // setGlobalAdapter(adapter)
+        const sdk = new TradingSdk(
+          {
+            chainId: SupportedChainId.GNOSIS_CHAIN,
+            appCode: 'test',
+            signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+          },
+          { enableLogging: false, orderBookApi },
+          adapter,
+        )
 
-      await sdk.getQuote(defaultOrderParams)
+        await sdk.getQuote(defaultOrderParams)
 
-      expect(logSpy.mock.calls.length).toBe(0)
+        expect(logSpy.mock.calls.length).toBe(0)
+      }
     })
 
     it('When logs option is set to true, then should display logs', async () => {
       const logSpy = jest.spyOn(console, 'log')
+      const adapterNames = Object.keys(adapters) as Array<keyof Adapters>
 
-      const sdk = new TradingSdk(
-        {
-          chainId: SupportedChainId.GNOSIS_CHAIN,
-          appCode: 'test',
-          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
-        },
-        { enableLogging: true, orderBookApi },
-      )
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName] as AbstractProviderAdapter
+        // setGlobalAdapter(adapter)
+        const sdk = new TradingSdk(
+          {
+            chainId: SupportedChainId.GNOSIS_CHAIN,
+            appCode: 'test',
+            signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+          },
+          { enableLogging: true, orderBookApi },
+          adapter,
+        )
 
-      await sdk.getQuote(defaultOrderParams)
+        await sdk.getQuote(defaultOrderParams)
 
-      expect(logSpy.mock.calls[0][0]).toContain('[COW TRADING SDK]')
+        expect(logSpy.mock.calls[0]?.[0]).toContain('[COW TRADING SDK]')
+      }
     })
   })
 })

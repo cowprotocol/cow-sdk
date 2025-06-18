@@ -1,4 +1,4 @@
-import { log } from '../common/utils/log'
+import { getGlobalAdapter, log, Signer, AccountAddress } from '@cowprotocol/sdk-common'
 import { DEFAULT_QUOTE_VALIDITY, DEFAULT_SLIPPAGE_BPS } from './consts'
 import {
   AppDataInfo,
@@ -10,9 +10,6 @@ import {
   TradeParameters,
 } from './types'
 
-import { Signer } from '@ethersproject/abstract-signer'
-import { AccountAddress } from '../common/types/wallets'
-import { getSigner } from '../common/utils/wallet'
 import {
   getQuoteAmountsAndCosts,
   OrderBookApi,
@@ -22,7 +19,7 @@ import {
   OrderQuoteSideKindSell,
   PriceQuality,
   SigningScheme,
-} from '../order-book'
+} from '@cowprotocol/sdk-order-book'
 import { buildAppData } from './appDataUtils'
 import { getOrderToSign } from './getOrderToSign'
 import { getOrderTypedData } from './getOrderTypedData'
@@ -224,7 +221,9 @@ export async function getQuote(
   }
 }
 
-export async function getTrader(signer: Signer, swapParameters: SwapParameters): Promise<QuoterParameters> {
+export async function getTrader(paramSigner: Signer, swapParameters: SwapParameters): Promise<QuoterParameters> {
+  const adapter = getGlobalAdapter()
+  const signer = new adapter.Signer(paramSigner)
   const account = swapParameters.owner || ((await signer.getAddress()) as AccountAddress)
 
   return {
@@ -239,7 +238,10 @@ export async function getQuoteWithSigner(
   advancedSettings?: SwapAdvancedSettings,
   orderBookApi?: OrderBookApi,
 ): Promise<QuoteResultsWithSigner> {
-  const signer = getSigner(swapParameters.signer)
+  const adapter = getGlobalAdapter()
+  // console.log('adapter', adapter)
+  const signer = new adapter.Signer(adapter)
+
   const trader = await getTrader(signer, swapParameters)
   const result = await getQuote(swapParameters, trader, advancedSettings, orderBookApi)
 

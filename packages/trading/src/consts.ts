@@ -1,5 +1,5 @@
-import { EcdsaSigningScheme, SigningScheme } from '../order-book'
-import { SupportedChainId } from '../chains'
+import { EcdsaSigningScheme, SigningScheme } from '@cowprotocol/sdk-order-book'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 
 export const DEFAULT_QUOTE_VALIDITY = 60 * 30 // 30 min
 
@@ -15,7 +15,7 @@ export const ETH_FLOW_DEFAULT_SLIPPAGE_BPS: Record<SupportedChainId, number> = {
   [SupportedChainId.AVALANCHE]: 50, // 0.5%,
 }
 
-export const SIGN_SCHEME_MAP = {
+export const SIGN_SCHEME_MAP: Record<EcdsaSigningScheme, SigningScheme> = {
   [EcdsaSigningScheme.EIP712]: SigningScheme.EIP712,
   [EcdsaSigningScheme.ETHSIGN]: SigningScheme.ETHSIGN,
 }

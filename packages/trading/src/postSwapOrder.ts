@@ -3,7 +3,7 @@ import { OrderPostingResult, SwapAdvancedSettings, SwapParameters } from './type
 import { postCoWProtocolTrade } from './postCoWProtocolTrade'
 import { getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
 import { swapParamsToLimitOrderParams } from './utils/misc'
-import { OrderBookApi } from '../order-book'
+import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { mergeAppDataDoc } from './appDataUtils'
 
 export async function postSwapOrder(

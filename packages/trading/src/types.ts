@@ -1,4 +1,4 @@
-import type { AppDataParams, latest, LatestAppDataDocVersion } from '@cowprotocol/app-data'
+import type { AppDataParams, latest, LatestAppDataDocVersion } from '@cowprotocol/sdk-app-data'
 import {
   AppData,
   AppDataHash,
@@ -10,10 +10,10 @@ import {
   type Signature,
   SigningScheme,
   TokenAmount,
-} from '../order-book'
-import type { AccountAddress, CowEnv, SignerLike } from '../common'
-import type { UnsignedOrder } from '../order-signing'
-import type { SupportedChainId } from '../chains'
+} from '@cowprotocol/sdk-order-book'
+import type { AccountAddress, SignerLike } from '@cowprotocol/sdk-common'
+import type { UnsignedOrder } from '@cowprotocol/sdk-order-signing'
+import type { SupportedChainId, CowEnv } from '@cowprotocol/sdk-config'
 
 export const ORDER_PRIMARY_TYPE = 'Order' as const
 

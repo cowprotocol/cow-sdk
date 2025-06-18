@@ -1,5 +1,5 @@
-import { percentageToBps } from 'src/common/utils/math'
-import { getQuoteAmountsWithCosts, OrderQuoteResponse } from '../order-book'
+import { percentageToBps } from '@cowprotocol/sdk-common'
+import { getQuoteAmountsWithCosts, OrderQuoteResponse } from '@cowprotocol/sdk-order-book'
 import { getSlippagePercent } from './utils/slippage'
 import { suggestSlippageFromFee } from './suggestSlippageFromFee'
 import { suggestSlippageFromVolume } from './suggestSlippageFromVolume'

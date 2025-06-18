@@ -1,9 +1,12 @@
 import { AppDataInfo, AppDataRootSchema, BuildAppDataParams } from './types'
-import { AppDataParams, type LatestAppDataDocVersion, MetadataApi, stringifyDeterministic } from '@cowprotocol/app-data'
-import { keccak256, toUtf8Bytes } from 'ethers/lib/utils'
+import {
+  AppDataParams,
+  type LatestAppDataDocVersion,
+  MetadataApi,
+  stringifyDeterministic,
+} from '@cowprotocol/sdk-app-data'
+import { getGlobalAdapter } from '@cowprotocol/sdk-common'
 import deepmerge from 'deepmerge'
-
-const metadataApiSdk = new MetadataApi()
 
 export async function buildAppData(
   { slippageBps, appCode, orderClass: orderClassName, partnerFee }: BuildAppDataParams,
@@ -11,6 +14,7 @@ export async function buildAppData(
 ): Promise<AppDataInfo> {
   const quoteParams = { slippageBips: slippageBps }
   const orderClass = { orderClass: orderClassName }
+  const metadataApiSdk = new MetadataApi(getGlobalAdapter())
 
   const doc = await metadataApiSdk.generateAppDataDoc(
     deepmerge(
@@ -34,8 +38,9 @@ export async function buildAppData(
 export async function generateAppDataFromDoc(
   doc: AppDataRootSchema,
 ): Promise<Pick<AppDataInfo, 'fullAppData' | 'appDataKeccak256'>> {
+  const adapter = getGlobalAdapter()
   const fullAppData = await stringifyDeterministic(doc)
-  const appDataKeccak256 = keccak256(toUtf8Bytes(fullAppData))
+  const appDataKeccak256 = adapter.utils.keccak256(adapter.utils.toUtf8Bytes(fullAppData))
 
   return { fullAppData, appDataKeccak256 }
 }

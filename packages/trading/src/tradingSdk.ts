@@ -13,9 +13,9 @@ import { getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getTradeParametersAfterQuote, swapParamsToLimitOrderParams } from './utils/misc'
 import { getPreSignTransaction } from './getPreSignTransaction'
-import { enableLogging } from '../common/utils/log'
-import { OrderBookApi } from '../order-book'
-import { getSigner } from '../common/utils/wallet'
+import { enableLogging, getGlobalAdapter } from '@cowprotocol/sdk-common'
+import { OrderBookApi } from '@cowprotocol/sdk-order-book'
+import { AbstractProviderAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 export type WithPartialTraderParams<T> = T & Partial<TraderParameters>
 
@@ -28,10 +28,12 @@ export class TradingSdk {
   constructor(
     public traderParams: Partial<TraderParameters> = {},
     public readonly options: Partial<TradingSdkOptions> = {},
+    adapter: AbstractProviderAdapter,
   ) {
     if (options.enableLogging !== undefined) {
       enableLogging(options.enableLogging)
     }
+    setGlobalAdapter(adapter)
   }
 
   setTraderParams(params: Partial<TraderParameters>) {
@@ -109,8 +111,10 @@ export class TradingSdk {
   async getPreSignTransaction(
     params: WithPartialTraderParams<{ orderId: string; account: string }>,
   ): ReturnType<typeof getPreSignTransaction> {
+    const adapter = getGlobalAdapter()
+
     const traderParams = this.mergeParams(params)
-    const signer = getSigner(traderParams.signer)
+    const signer = new adapter.Signer(traderParams.signer)
 
     return getPreSignTransaction(signer, traderParams.chainId, params.account, params.orderId)
   }

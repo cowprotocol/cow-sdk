@@ -1,13 +1,13 @@
-import { OrderSigningUtils, UnsignedOrder } from '../order-signing'
+import { OrderSigningUtils, UnsignedOrder } from '@cowprotocol/sdk-order-signing'
 import {
   BARN_ETH_FLOW_ADDRESS,
   CowEnv,
   ETH_FLOW_ADDRESS,
   MAX_VALID_TO_EPOCH,
   WRAPPED_NATIVE_CURRENCIES,
-} from '../common'
-import { SupportedChainId } from '../chains'
-import type { Order, OrderBalance } from '@cowprotocol/contracts'
+} from '@cowprotocol/sdk-config'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
+import type { ContractsOrder as Order, OrderBalance } from '@cowprotocol/sdk-contracts-ts'
 import { EthFlowOrderExistsCallback } from './types'
 
 export async function calculateUniqueOrderId(

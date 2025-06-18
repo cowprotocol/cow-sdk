@@ -1,5 +1,5 @@
-import { BuyTokenDestination, getQuoteAmountsAndCosts, type OrderParameters, SellTokenSource } from '../order-book'
-import { UnsignedOrder } from '../order-signing'
+import { BuyTokenDestination, getQuoteAmountsAndCosts, type OrderParameters, SellTokenSource } from '@cowprotocol/sdk-order-book'
+import { UnsignedOrder } from '@cowprotocol/sdk-order-signing'
 import { DEFAULT_QUOTE_VALIDITY, DEFAULT_SLIPPAGE_BPS } from './consts'
 import { LimitTradeParameters } from './types'
 import { getPartnerFeeBps } from './utils/getPartnerFeeBps'

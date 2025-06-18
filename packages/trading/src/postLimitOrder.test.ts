@@ -12,15 +12,16 @@ jest.mock('./appDataUtils', () => {
 
 import { postCoWProtocolTrade } from './postCoWProtocolTrade'
 import { buildAppData } from './appDataUtils'
+import { createAdapters } from '../tests/setup'
+import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 import { AppDataInfo, LimitOrderParameters } from './types'
-import { SupportedChainId } from '../chains'
-import { OrderBookApi, OrderKind } from '../order-book'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { OrderBookApi, OrderKind } from '@cowprotocol/sdk-order-book'
 import { postLimitOrder } from './postLimitOrder'
 
-const defaultOrderParams: LimitOrderParameters = {
+const defaultOrderParams: Omit<LimitOrderParameters, 'signer'> = {
   chainId: SupportedChainId.GNOSIS_CHAIN,
-  signer: '1bb337bafb276f779c3035874b8914e4b851bb989dbb34e776397076576f3804',
   appCode: '0x007',
   sellToken: '0xaaa',
   sellTokenDecimals: 18,
@@ -41,15 +42,16 @@ const appDataMock = {} as unknown as AppDataInfo
 describe('postLimitOrder', () => {
   let buildAppDataMock: jest.SpyInstance
   let postCoWProtocolTradeMock: jest.SpyInstance
+  let adapters: Record<string, any>
 
-  beforeAll(() => {
+  beforeAll(async () => {
     buildAppDataMock = buildAppData as unknown as jest.SpyInstance
     postCoWProtocolTradeMock = postCoWProtocolTrade as unknown as jest.SpyInstance
+    adapters = await createAdapters()
   })
 
   beforeEach(() => {
     Date.now = jest.fn(() => currentTimestamp)
-
     buildAppDataMock.mockResolvedValue(appDataMock)
   })
 
@@ -61,23 +63,32 @@ describe('postLimitOrder', () => {
   it('Should add advanced appData parameters', async () => {
     const advancedData = { appData: { environment: 'sandbox' } }
 
-    await postLimitOrder(defaultOrderParams, advancedData, orderBookApiMock)
+    for (const adapterName of Object.keys(adapters)) {
+      setGlobalAdapter(adapters[adapterName])
+      await postLimitOrder({ ...defaultOrderParams, signer: adapters[adapterName] }, advancedData, orderBookApiMock)
 
-    const call = buildAppDataMock.mock.calls[0][1]
-
-    expect(call).toEqual(advancedData.appData)
+      const call = buildAppDataMock.mock.calls[0][1]
+      expect(call).toEqual(advancedData.appData)
+      buildAppDataMock.mockReset()
+    }
   })
 
   it('Should call order posting with all specified parameters', async () => {
-    await postLimitOrder(defaultOrderParams, {}, orderBookApiMock)
+    for (const adapterName of Object.keys(adapters)) {
+      setGlobalAdapter(adapters[adapterName])
+      await postLimitOrder({ ...defaultOrderParams, signer: adapters[adapterName] }, {}, orderBookApiMock)
 
-    expect(postCoWProtocolTradeMock).toHaveBeenCalledTimes(1)
-    expect(postCoWProtocolTradeMock).toHaveBeenCalledWith(
-      orderBookApiMock,
-      expect.anything(),
-      appDataMock,
-      defaultOrderParams,
-      undefined,
-    )
+      expect(postCoWProtocolTradeMock).toHaveBeenCalledTimes(1)
+
+      // Using expect.anything() for adapter since it's a complex object with internal properties that we don't need to verify
+      expect(postCoWProtocolTradeMock).toHaveBeenCalledWith(
+        orderBookApiMock,
+        expect.anything(),
+        appDataMock,
+        { ...defaultOrderParams, signer: adapters[adapterName], env: 'prod' },
+        undefined,
+      )
+      postCoWProtocolTradeMock.mockReset()
+    }
   })
 })
