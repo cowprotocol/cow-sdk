@@ -1,15 +1,19 @@
 import { Signer, BigNumber, TypedDataDomain, TypedDataField, ethers } from 'ethers'
-import { AbstractSigner, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
+import { AbstractSigner, PrivateKey, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
 import { TypedDataSigner } from '@ethersproject/abstract-signer'
 import { _TypedDataEncoder } from 'ethers/lib/utils'
 
 export class EthersV5SignerAdapter extends AbstractSigner {
   private _signer: Signer & TypedDataSigner
 
-  constructor(signer: (ethers.Signer & TypedDataSigner) | EthersV5SignerAdapter) {
+  constructor(signer: (ethers.Signer & TypedDataSigner) | EthersV5SignerAdapter | PrivateKey) {
     super()
     if (signer instanceof EthersV5SignerAdapter) {
       this._signer = signer._signer
+      return
+    }
+    if (typeof signer === 'string') {
+      this._signer = new ethers.Wallet(signer)
       return
     }
 

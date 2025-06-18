@@ -1,13 +1,26 @@
-import { Log, Signer, TypedDataDomain, TypedDataField, TypedDataEncoder, JsonRpcProvider, toBeHex } from 'ethers'
-import { AbstractSigner, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
+import {
+  Log,
+  Signer,
+  TypedDataDomain,
+  TypedDataField,
+  TypedDataEncoder,
+  JsonRpcProvider,
+  toBeHex,
+  Wallet,
+} from 'ethers'
+import { AbstractSigner, PrivateKey, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
 
 export class EthersV6SignerAdapter extends AbstractSigner {
   private _signer: Signer
 
-  constructor(signer: Signer | EthersV6SignerAdapter) {
+  constructor(signer: Signer | EthersV6SignerAdapter | PrivateKey) {
     super()
     if (signer instanceof EthersV6SignerAdapter) {
       this._signer = signer._signer
+      return
+    }
+    if (typeof signer === 'string') {
+      this._signer = new Wallet(signer)
       return
     }
 

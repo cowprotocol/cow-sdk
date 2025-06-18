@@ -6,18 +6,19 @@ import {
   TypedDataDomain,
   TypedDataParameter,
   createPublicClient,
+  createWalletClient,
   Transport,
   http,
 } from 'viem'
-import { AbstractSigner, CowError, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
+import { AbstractSigner, CowError, PrivateKey, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
 
 export class ViemSignerAdapter extends AbstractSigner {
   protected _client: WalletClient
   protected _account: Account
   protected _publicClient?: PublicClient
-  protected _transport?: Transport
+  protected _transport: Transport
 
-  constructor(client: WalletClient | ViemSignerAdapter) {
+  constructor(client: WalletClient | ViemSignerAdapter | PrivateKey) {
     super()
 
     if (client instanceof ViemSignerAdapter) {
@@ -27,7 +28,20 @@ export class ViemSignerAdapter extends AbstractSigner {
       this._transport = client._transport
       return
     }
-
+    if (typeof client === 'string') {
+      const account = { address: client as `0x${string}`, type: 'local' } as Account
+      this._transport = http()
+      this._client = createWalletClient({
+        account,
+        transport: this._transport,
+      })
+      this._account = account
+      this._publicClient = createPublicClient({
+        chain: this._client.chain,
+        transport: this._transport,
+      })
+      return
+    }
     this._client = client as WalletClient
     if (!this._client.account) throw new CowError('Signer is missing account')
     this._account = this._client.account
