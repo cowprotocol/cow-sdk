@@ -41,6 +41,6 @@ export const avalanche: ChainInfo = {
   },
   blockExplorer: {
     name: 'Snowscan',
-    url: 'https://snowscan.xyz/',
+    url: 'https://snowscan.xyz',
   },
 }
