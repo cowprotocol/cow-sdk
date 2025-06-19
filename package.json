@@ -8,7 +8,7 @@
     "lint": "turbo run lint --filter=!@cowprotocol/cow-sdk -- --fix",
     "test": "turbo run test --filter=!@cowprotocol/cow-sdk",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "clean": "turbo run clean --filter=!@cowprotocol/cow-sdk && rm -rf .turbo"
+    "clean": "turbo run clean --filter=!@cowprotocol/cow-sdk && rm -rf .turbo && rm -rf node_modules"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
