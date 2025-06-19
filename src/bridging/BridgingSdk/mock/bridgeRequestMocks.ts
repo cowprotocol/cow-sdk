@@ -162,7 +162,7 @@ export const bridgeQuoteResult: BridgeQuoteResult = {
 
 const unsignedBridgeCall: EvmCall = {
   to: '0x0000000000000000000000000000000000000000',
-  data: '0x2',
+  data: '0xa8481abe00000000000000000000000000000000000000000000000000000000000000a031373439363338333034',
   value: BigInt(2),
 }
 

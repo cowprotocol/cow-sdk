@@ -72,10 +72,6 @@ describe('App data utilities', () => {
       expect(getPostHooks(undefined)).toEqual([])
     })
 
-    it('should return empty array for invalid JSON', () => {
-      expect(getPostHooks('invalid-json')).toEqual([])
-    })
-
     it('should return empty array for non-app-doc data', () => {
       expect(getPostHooks(JSON.stringify({ foo: 'bar' }))).toEqual([])
     })

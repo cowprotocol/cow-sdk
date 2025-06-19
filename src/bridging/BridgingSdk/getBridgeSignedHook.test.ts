@@ -56,9 +56,9 @@ describe('getBridgeSignedHook', () => {
       unsignedBridgeCallMock,
       contextMock.signer,
       // nonce
-      '0x05b4c2ab50e99539a28c354ef8851f671ba21b07140629d24849491b15c88922',
+      '0xf01825773465a7291865614a7f831f001fe880f3aa482b34a4f8f8997bce9803',
       // deadline
-      1750152584n,
+      1750150784n,
       contextMock.defaultGasLimit,
     )
   })
