@@ -8,6 +8,8 @@ import { SupportedChainId } from '../chains/types'
 import { ICoWShedCall } from './types'
 
 import { getCoWShedFactoryInterface } from './contracts/utils'
+import { getOrderDeadlineFromNow } from '../common/utils/order'
+import { DEFAULT_QUOTE_VALIDITY } from '../common/consts/order'
 
 const MOCK_CALL_DATA = '0xabcdef'
 
@@ -42,6 +44,7 @@ describe('CowShedSdk', () => {
         signer: PRIVATE_KEY,
         chainId: SupportedChainId.MAINNET,
         defaultGasLimit: 1000000n,
+        deadline: getOrderDeadlineFromNow(DEFAULT_QUOTE_VALIDITY),
       })
 
       expect(result.cowShedAccount).toBe('0xf35a93a2c62E2F1c7712a9ADFC607a5fD175a584')
@@ -54,6 +57,7 @@ describe('CowShedSdk', () => {
         calls: CALLS_MOCK,
         signer: SEPOLIA_SIGNER, // Signer with a provider
         chainId: SupportedChainId.SEPOLIA,
+        deadline: getOrderDeadlineFromNow(DEFAULT_QUOTE_VALIDITY),
         // defaultGasLimit is not specified
       })
 
@@ -68,6 +72,7 @@ describe('CowShedSdk', () => {
         signer: PRIVATE_KEY, // Signer with no provider
         chainId: SupportedChainId.SEPOLIA,
         defaultGasLimit: 1000000n,
+        deadline: getOrderDeadlineFromNow(DEFAULT_QUOTE_VALIDITY),
       })
 
       expect(result.gasLimit.toString()).toBe('1000000')
@@ -80,6 +85,7 @@ describe('CowShedSdk', () => {
         calls: CALLS_MOCK,
         signer: PRIVATE_KEY, // Signer with no provider
         chainId: SupportedChainId.SEPOLIA,
+        deadline: getOrderDeadlineFromNow(DEFAULT_QUOTE_VALIDITY),
       })
 
       await expect(result).rejects.toThrow()
@@ -93,6 +99,7 @@ describe('CowShedSdk', () => {
         signer: PRIVATE_KEY,
         chainId: SupportedChainId.MAINNET,
         defaultGasLimit: 1000000n,
+        deadline: getOrderDeadlineFromNow(DEFAULT_QUOTE_VALIDITY),
       })
 
       expect(result.signedMulticall.value).toBe(BigInt(0))

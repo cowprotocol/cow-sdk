@@ -7,27 +7,26 @@ import {
   WRAPPED_NATIVE_CURRENCIES,
 } from '../common'
 import { SupportedChainId } from '../chains'
-import type { Order, OrderBalance } from '@cowprotocol/contracts'
+import type { Order } from '@cowprotocol/contracts'
 import { EthFlowOrderExistsCallback } from './types'
+import { unsignedOrderForSigning } from '../common/utils/order'
 
 export async function calculateUniqueOrderId(
   chainId: SupportedChainId,
   order: UnsignedOrder,
   checkEthFlowOrderExists?: EthFlowOrderExistsCallback,
-  env?: CowEnv
+  env?: CowEnv,
 ): Promise<string> {
   const { orderDigest, orderId } = await OrderSigningUtils.generateOrderId(
     chainId,
     {
-      ...order,
-      sellTokenBalance: order.sellTokenBalance as string as OrderBalance,
-      buyTokenBalance: order.buyTokenBalance as string as OrderBalance,
+      ...unsignedOrderForSigning(order),
       validTo: MAX_VALID_TO_EPOCH,
       sellToken: WRAPPED_NATIVE_CURRENCIES[chainId].address,
     } as Order,
     {
       owner: env === 'staging' ? BARN_ETH_FLOW_ADDRESS : ETH_FLOW_ADDRESS,
-    }
+    },
   )
 
   if (checkEthFlowOrderExists && (await checkEthFlowOrderExists(orderId, orderDigest))) {

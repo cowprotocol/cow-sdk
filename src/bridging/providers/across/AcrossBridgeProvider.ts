@@ -143,6 +143,8 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     chainId: SupportedChainId,
     unsignedCall: EvmCall,
     signer: Signer,
+    bridgeHookNonce: string,
+    deadline: bigint,
     defaultGasLimit?: bigint,
   ): Promise<BridgeHook> {
     // Sign the multicall
@@ -159,6 +161,8 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
       chainId,
       signer,
       defaultGasLimit,
+      deadline,
+      nonce: bridgeHookNonce,
     })
 
     const { to, data } = signedMulticall

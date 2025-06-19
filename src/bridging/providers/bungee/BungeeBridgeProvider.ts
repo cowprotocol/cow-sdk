@@ -144,6 +144,8 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     chainId: SupportedChainId,
     unsignedCall: EvmCall,
     signer: Signer,
+    bridgeHookNonce: string,
+    deadline: bigint,
     defaultGasLimit?: bigint,
   ): Promise<BridgeHook> {
     // Sign the multicall
@@ -160,6 +162,8 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
       chainId,
       signer,
       defaultGasLimit,
+      deadline,
+      nonce: bridgeHookNonce,
     })
 
     const { to, data } = signedMulticall
