@@ -1,4 +1,4 @@
-import { Bytes, getGlobalAdapter, Signer, TypedDataDomain, TypedDataTypes } from '@cowprotocol/sdk-common'
+import { Bytes, getGlobalAdapter, SignerLike, TypedDataDomain, TypedDataTypes } from '@cowprotocol/sdk-common'
 import { CANCELLATIONS_TYPE_FIELDS, ORDER_TYPE_FIELDS, normalizeOrder } from './order'
 import { EcdsaSigningScheme, SigningScheme, Order, EcdsaSignature } from './types'
 
@@ -59,14 +59,14 @@ export interface PreSignSignature {
 
 export async function ecdsaSignTypedData(
   scheme: EcdsaSigningScheme,
-  owner: Signer,
+  owner: SignerLike | undefined,
   domain: TypedDataDomain,
   types: TypedDataTypes,
   data: Record<string, unknown>,
 ): Promise<string> {
   let signature: string | null = null
   const adapter = getGlobalAdapter()
-  const signer = new adapter.Signer(owner)
+  const signer = owner ? adapter.createSigner(owner) : adapter.signer
 
   switch (scheme) {
     case SigningScheme.EIP712:
@@ -102,7 +102,7 @@ export async function ecdsaSignTypedData(
 export async function signOrder(
   domain: TypedDataDomain,
   order: Order,
-  owner: Signer,
+  owner: SignerLike | undefined,
   scheme: EcdsaSigningScheme,
 ): Promise<EcdsaSignature> {
   return {
@@ -155,7 +155,7 @@ export function decodeEip1271SignatureData(signature: Bytes): Eip1271SignatureDa
 export async function signOrderCancellation(
   domain: TypedDataDomain,
   orderUid: Bytes,
-  owner: Signer,
+  owner: SignerLike | undefined,
   scheme: EcdsaSigningScheme,
 ): Promise<EcdsaSignature> {
   return signOrderCancellations(domain, [orderUid], owner, scheme)
@@ -175,7 +175,7 @@ export async function signOrderCancellation(
 export async function signOrderCancellations(
   domain: TypedDataDomain,
   orderUids: Bytes[],
-  owner: Signer,
+  owner: SignerLike | undefined,
   scheme: EcdsaSigningScheme,
 ): Promise<EcdsaSignature> {
   return {

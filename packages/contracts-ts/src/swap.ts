@@ -4,6 +4,7 @@ import {
   Bytes,
   setGlobalAdapter,
   Signer,
+  SignerLike,
   TypedDataDomain,
 } from '@cowprotocol/sdk-common'
 import { TokenRegistry, encodeTrade } from './settlement'
@@ -200,7 +201,7 @@ export class SwapEncoder {
    */
   public async signEncodeTrade(
     order: Order,
-    owner: Signer,
+    owner: SignerLike | undefined,
     scheme: EcdsaSigningScheme,
     swapExecution?: Partial<SwapExecution>,
   ): Promise<void> {
@@ -272,7 +273,7 @@ export class SwapEncoder {
         TypedDataDomain,
         Swap[],
         Order,
-        Signer,
+        SignerLike | undefined,
         EcdsaSigningScheme,
         Partial<SwapExecution> | undefined,
       ]

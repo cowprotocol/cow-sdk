@@ -4,7 +4,7 @@ import {
   Bytes,
   getGlobalAdapter,
   setGlobalAdapter,
-  Signer,
+  SignerLike,
   TypedDataDomain,
 } from '@cowprotocol/sdk-common'
 
@@ -519,7 +519,7 @@ export class SettlementEncoder {
    */
   public async signEncodeTrade(
     order: Order,
-    owner: Signer,
+    owner: SignerLike | undefined,
     scheme: EcdsaSigningScheme,
     tradeExecution?: Partial<TradeExecution>,
   ): Promise<void> {
