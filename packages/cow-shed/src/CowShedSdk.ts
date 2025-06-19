@@ -109,7 +109,7 @@ export class CowShedSdk {
     const cowShedHooks = this.getCowShedHooks(chainId)
     const adapter = getGlobalAdapter()
 
-    const signer: AbstractSigner = new adapter.Signer(signerParam)
+    const signer: AbstractSigner = signerParam ? adapter.createSigner(signerParam) : adapter.signer
 
     const ownerAddress = await signer.getAddress()
 

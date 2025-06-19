@@ -5,7 +5,7 @@ import {
   getGlobalAdapter,
   setGlobalAdapter,
   AbstractProviderAdapter,
-  Signer,
+  SignerLike,
   TypedDataDomain,
 } from '@cowprotocol/sdk-common'
 import { CowShedFactoryAbi } from '../abi/CowShedFactoryAbi'
@@ -72,11 +72,11 @@ export class CowShedHooks {
     calls: ICoWShedCall[],
     nonce: string,
     deadline: bigint,
-    owner: Signer,
+    owner: SignerLike | undefined,
     signingScheme: EcdsaSigningScheme,
   ): Promise<string> {
     const adapter = getGlobalAdapter()
-    const signer = new adapter.Signer(owner)
+    const signer = owner ? adapter.createSigner(owner) : adapter.signer
 
     const user = await signer.getAddress()
     const proxy = this.proxyOf(user)
