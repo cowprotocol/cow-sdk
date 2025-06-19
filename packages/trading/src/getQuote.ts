@@ -1,4 +1,4 @@
-import { getGlobalAdapter, log, Signer, AccountAddress } from '@cowprotocol/sdk-common'
+import { getGlobalAdapter, log, AccountAddress, AbstractSigner } from '@cowprotocol/sdk-common'
 import { DEFAULT_QUOTE_VALIDITY, DEFAULT_SLIPPAGE_BPS } from './consts'
 import {
   AppDataInfo,
@@ -38,7 +38,7 @@ const ETH_FLOW_AUX_QUOTE_PARAMS = {
 }
 
 export type QuoteResultsWithSigner = {
-  result: QuoteResults & { signer: Signer }
+  result: QuoteResults & { signer: AbstractSigner }
   orderBookApi: OrderBookApi
 }
 
@@ -221,9 +221,8 @@ export async function getQuote(
   }
 }
 
-export async function getTrader(paramSigner: Signer, swapParameters: SwapParameters): Promise<QuoterParameters> {
-  const adapter = getGlobalAdapter()
-  const signer = new adapter.Signer(paramSigner)
+export async function getTrader(swapParameters: SwapParameters): Promise<QuoterParameters> {
+  const { signer } = getGlobalAdapter()
   const account = swapParameters.owner || ((await signer.getAddress()) as AccountAddress)
 
   return {
@@ -239,10 +238,9 @@ export async function getQuoteWithSigner(
   orderBookApi?: OrderBookApi,
 ): Promise<QuoteResultsWithSigner> {
   const adapter = getGlobalAdapter()
-  // console.log('adapter', adapter)
-  const signer = new adapter.Signer(adapter)
+  const signer = swapParameters.signer ? adapter.createSigner(swapParameters.signer) : adapter.signer
 
-  const trader = await getTrader(signer, swapParameters)
+  const trader = await getTrader(swapParameters)
   const result = await getQuote(swapParameters, trader, advancedSettings, orderBookApi)
 
   return {

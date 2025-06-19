@@ -14,7 +14,7 @@ jest.mock('./postSellNativeCurrencyOrder', () => {
 
 import { postCoWProtocolTrade } from './postCoWProtocolTrade'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
-import { createAdapters, TEST_ADDRESS } from '../tests/setup'
+import { AdaptersTestSetup, createAdapters, TEST_ADDRESS } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 import { AppDataInfo, LimitOrderParameters } from './types'
@@ -22,8 +22,9 @@ import { ETH_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderBookApi, OrderKind } from '@cowprotocol/sdk-order-book'
 import { OrderSigningUtils as OrderSigningUtilsMock } from '@cowprotocol/sdk-order-signing'
 
-const defaultOrderParams: Omit<LimitOrderParameters, 'signer'> = {
+const defaultOrderParams: LimitOrderParameters = {
   chainId: SupportedChainId.GNOSIS_CHAIN,
+  signer: '0x006',
   appCode: '0x007',
   sellToken: '0xaaa',
   sellTokenDecimals: 18,
@@ -56,7 +57,7 @@ const appDataMock = {
 describe('postCoWProtocolTrade', () => {
   let signOrderMock: jest.SpyInstance
   let postSellNativeCurrencyOrderMock: jest.SpyInstance
-  let adapters: ReturnType<typeof createAdapters>
+  let adapters: AdaptersTestSetup
 
   beforeAll(() => {
     signOrderMock = OrderSigningUtilsMock.signOrder as unknown as jest.SpyInstance
@@ -81,8 +82,8 @@ describe('postCoWProtocolTrade', () => {
     const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
     for (const adapterName of adapterNames) {
       setGlobalAdapter(adapters[adapterName])
-      const order = { ...defaultOrderParams, signer: adapters[adapterName], sellToken: ETH_ADDRESS }
-      await postCoWProtocolTrade(orderBookApiMock, adapters[adapterName], appDataMock, order)
+      const order = { ...defaultOrderParams, sellToken: ETH_ADDRESS }
+      await postCoWProtocolTrade(orderBookApiMock, adapters[adapterName].signer, appDataMock, order)
 
       expect(postSellNativeCurrencyOrderMock).toHaveBeenCalledTimes(1)
       // Using expect.anything() for adapter since it's a complex object with internal properties that we don't need to verify
@@ -104,8 +105,8 @@ describe('postCoWProtocolTrade', () => {
     const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
     for (const adapterName of adapterNames) {
       setGlobalAdapter(adapters[adapterName])
-      const order = { ...defaultOrderParams, signer: adapters[adapterName] }
-      await postCoWProtocolTrade(orderBookApiMock, adapters[adapterName], appDataMock, order)
+      const order = { ...defaultOrderParams }
+      await postCoWProtocolTrade(orderBookApiMock, adapters[adapterName].signer, appDataMock, order)
 
       const callBody = sendOrderMock.mock.calls[0][0]
 
@@ -141,11 +142,10 @@ describe('postCoWProtocolTrade', () => {
       setGlobalAdapter(adapters[adapterName])
       const order: LimitOrderParameters = {
         ...defaultOrderParams,
-        signer: adapters[adapterName],
         owner: ownerAddress,
       }
 
-      await postCoWProtocolTrade(orderBookApiMock, adapters[adapterName], appDataMock, order)
+      await postCoWProtocolTrade(orderBookApiMock, adapters[adapterName].signer, appDataMock, order)
 
       // Verify the from parameter matches the owner address (which is different from the signer address)
       expect(sendOrderMock).toHaveBeenCalledWith(
@@ -166,11 +166,11 @@ describe('postCoWProtocolTrade', () => {
       setGlobalAdapter(adapters[adapterName])
       const order: LimitOrderParameters = {
         ...defaultOrderParams,
-        signer: adapters[adapterName],
+        signer: adapters[adapterName].signer,
         owner: undefined,
       }
 
-      await postCoWProtocolTrade(orderBookApiMock, adapters[adapterName], appDataMock, order)
+      await postCoWProtocolTrade(orderBookApiMock, adapters[adapterName].signer, appDataMock, order)
 
       // Verify the from parameter matches the owner address
       expect(sendOrderMock).toHaveBeenCalledWith(

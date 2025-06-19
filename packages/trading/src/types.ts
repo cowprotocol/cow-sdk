@@ -81,7 +81,7 @@ export interface TradeOptionalParameters {
 export interface TraderParameters {
   chainId: SupportedChainId
   appCode: latest.AppCode
-  signer: SignerLike
+  signer?: SignerLike
   env?: CowEnv
 }
 

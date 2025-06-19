@@ -3,7 +3,7 @@ import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderBookApi, OrderKind } from '@cowprotocol/sdk-order-book'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getEthFlowTransaction } from './getEthFlowTransaction'
-import { createAdapters } from '../tests/setup'
+import { AdaptersTestSetup, createAdapters } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 jest.mock('./getEthFlowTransaction', () => ({
@@ -61,8 +61,28 @@ const mockOrderToSign = {
   buyTokenBalance: 'erc20',
 }
 
+// Helper mock signer.sendTransaction
+interface MockedSigner {
+  mockSendTransaction: jest.Mock
+  restore: () => void
+}
+
+function createMockedSigner(adapter: any): MockedSigner {
+  const originalSendTransaction = adapter.signer.sendTransaction.bind(adapter.signer)
+  const mockSendTransaction = jest.fn().mockResolvedValue(mockTransactionResponse)
+
+  adapter.signer.sendTransaction = mockSendTransaction
+
+  return {
+    mockSendTransaction,
+    restore: () => {
+      adapter.signer.sendTransaction = originalSendTransaction
+    },
+  }
+}
+
 describe('postSellNativeCurrencyTrade', () => {
-  let adapters: Record<string, any>
+  let adapters: AdaptersTestSetup
 
   beforeAll(async () => {
     adapters = await createAdapters()
@@ -112,63 +132,65 @@ describe('postSellNativeCurrencyTrade', () => {
       },
     )
 
-    for (const adapterName of Object.keys(adapters)) {
+    for (const adapterName of Object.keys(adapters) as Array<keyof AdaptersTestSetup>) {
       setGlobalAdapter(adapters[adapterName])
 
-      const mockSendTransaction = jest.fn().mockResolvedValue(mockTransactionResponse)
-      const originalSigner = adapters[adapterName].Signer
-      adapters[adapterName].Signer = class extends originalSigner {
-        constructor(signer: any) {
-          super(signer)
-        }
-        async sendTransaction() {
-          return mockSendTransaction()
-        }
+      const mockedSigner = createMockedSigner(adapters[adapterName])
+
+      try {
+        await postSellNativeCurrencyOrder(
+          orderBookApiMock,
+          adapters[adapterName].signer,
+          appDataMock,
+          defaultOrderParams,
+          {
+            networkCostsAmount: '0',
+            checkEthFlowOrderExists,
+          },
+        )
+
+        expect(mockedGetEthFlowTransaction).toHaveBeenCalledWith(
+          expect.any(Object), // signer
+          appDataMock.appDataKeccak256,
+          defaultOrderParams,
+          SupportedChainId.GNOSIS_CHAIN,
+          {
+            networkCostsAmount: '0',
+            checkEthFlowOrderExists,
+          },
+        )
+
+        expect(checkEthFlowOrderExists).toHaveBeenCalledTimes(1)
+        expect(checkEthFlowOrderExists).toHaveBeenCalledWith('0xmockOrderId', '0xmockDigest')
+        expect(mockedSigner.mockSendTransaction).toHaveBeenCalledTimes(1)
+      } finally {
+        mockedSigner.restore()
       }
 
-      await postSellNativeCurrencyOrder(orderBookApiMock, adapters[adapterName], appDataMock, defaultOrderParams, {
-        networkCostsAmount: '0',
-        checkEthFlowOrderExists,
-      })
-
-      expect(mockedGetEthFlowTransaction).toHaveBeenCalledWith(
-        expect.any(Object), // signer
-        appDataMock.appDataKeccak256,
-        defaultOrderParams,
-        SupportedChainId.GNOSIS_CHAIN,
-        {
-          networkCostsAmount: '0',
-          checkEthFlowOrderExists,
-        },
-      )
-
-      expect(checkEthFlowOrderExists).toHaveBeenCalledTimes(1)
-      expect(checkEthFlowOrderExists).toHaveBeenCalledWith('0xmockOrderId', '0xmockDigest')
-
       checkEthFlowOrderExists.mockReset()
-      mockedGetEthFlowTransaction.mockClear()
     }
   })
 
   it('Should upload appData', async () => {
-    for (const adapterName of Object.keys(adapters)) {
+    for (const adapterName of Object.keys(adapters) as Array<keyof AdaptersTestSetup>) {
       setGlobalAdapter(adapters[adapterName])
 
-      // Mock do sendTransaction
-      const mockSendTransaction = jest.fn().mockResolvedValue(mockTransactionResponse)
-      const originalSigner = adapters[adapterName].Signer
-      adapters[adapterName].Signer = class extends originalSigner {
-        constructor(signer: any) {
-          super(signer)
-        }
-        async sendTransaction() {
-          return mockSendTransaction()
-        }
+      const mockedSigner = createMockedSigner(adapters[adapterName])
+
+      try {
+        await postSellNativeCurrencyOrder(
+          orderBookApiMock,
+          adapters[adapterName].signer,
+          appDataMock,
+          defaultOrderParams,
+        )
+
+        expect(uploadAppDataMock).toHaveBeenCalledWith(appDataMock.appDataKeccak256, appDataMock.fullAppData)
+        expect(mockedSigner.mockSendTransaction).toHaveBeenCalledTimes(1)
+      } finally {
+        mockedSigner.restore()
       }
 
-      await postSellNativeCurrencyOrder(orderBookApiMock, adapters[adapterName], appDataMock, defaultOrderParams)
-
-      expect(uploadAppDataMock).toHaveBeenCalledWith(appDataMock.appDataKeccak256, appDataMock.fullAppData)
       uploadAppDataMock.mockReset()
     }
   })
@@ -185,61 +207,62 @@ describe('postSellNativeCurrencyTrade', () => {
       orderToSign: mockOrderToSign,
     })
 
-    for (const adapterName of Object.keys(adapters)) {
+    for (const adapterName of Object.keys(adapters) as Array<keyof AdaptersTestSetup>) {
       setGlobalAdapter(adapters[adapterName])
 
-      const mockSendTransaction = jest.fn().mockResolvedValue(mockTransactionResponse)
-      const originalSigner = adapters[adapterName].Signer
-      adapters[adapterName].Signer = class extends originalSigner {
-        constructor(signer: any) {
-          super(signer)
-        }
-        async sendTransaction(txParams: any) {
-          return mockSendTransaction(txParams)
-        }
+      const mockedSigner = createMockedSigner(adapters[adapterName])
+
+      try {
+        await postSellNativeCurrencyOrder(
+          orderBookApiMock,
+          adapters[adapterName].signer,
+          appDataMock,
+          defaultOrderParams,
+        )
+
+        expect(mockedSigner.mockSendTransaction).toHaveBeenCalledTimes(1)
+
+        const call = mockedSigner.mockSendTransaction.mock.calls[0][0]
+        expect(parseInt(call.gasLimit, 16)).toBe(180000) // 150000 + 20%
+      } finally {
+        mockedSigner.restore()
       }
-
-      await postSellNativeCurrencyOrder(orderBookApiMock, adapters[adapterName], appDataMock, defaultOrderParams)
-
-      const call = mockSendTransaction.mock.calls[0][0]
-      expect(parseInt(call.gasLimit, 16)).toBe(180000) // 150000 + 20%
-
-      mockSendTransaction.mockReset()
     }
   })
 
   it('Should create an on-chain transaction with all specified parameters', async () => {
-    for (const adapterName of Object.keys(adapters)) {
+    for (const adapterName of Object.keys(adapters) as Array<keyof AdaptersTestSetup>) {
       setGlobalAdapter(adapters[adapterName])
 
-      const mockSendTransaction = jest.fn().mockResolvedValue(mockTransactionResponse)
-      const originalSigner = adapters[adapterName].Signer
-      adapters[adapterName].Signer = class extends originalSigner {
-        constructor(signer: any) {
-          super(signer)
-        }
-        async sendTransaction() {
-          return mockSendTransaction()
-        }
+      const mockedSigner = createMockedSigner(adapters[adapterName])
+
+      try {
+        await postSellNativeCurrencyOrder(
+          orderBookApiMock,
+          adapters[adapterName].signer,
+          appDataMock,
+          defaultOrderParams,
+        )
+
+        expect(mockedGetEthFlowTransaction).toHaveBeenCalledWith(
+          expect.any(Object),
+          appDataMock.appDataKeccak256,
+          defaultOrderParams,
+          SupportedChainId.GNOSIS_CHAIN,
+          {},
+        )
+
+        expect(uploadAppDataMock).toHaveBeenCalledWith(appDataMock.appDataKeccak256, appDataMock.fullAppData)
+
+        expect(mockedSigner.mockSendTransaction).toHaveBeenCalledTimes(1)
+
+        const txParams = mockedSigner.mockSendTransaction.mock.calls[0][0]
+        expect(txParams.to).toBe('0xbA3cB449bD2B4ADddBc894D8697F5170800EAdeC')
+        expect(txParams.data).toBe('0x123456')
+        expect(txParams.value).toBe('0x0de0b6b3a7640000')
+      } finally {
+        mockedSigner.restore()
       }
-
-      await postSellNativeCurrencyOrder(orderBookApiMock, adapters[adapterName], appDataMock, defaultOrderParams)
-
-      expect(mockedGetEthFlowTransaction).toHaveBeenCalledWith(
-        expect.any(Object),
-        appDataMock.appDataKeccak256,
-        defaultOrderParams,
-        SupportedChainId.GNOSIS_CHAIN,
-        {},
-      )
-
-      expect(uploadAppDataMock).toHaveBeenCalledWith(appDataMock.appDataKeccak256, appDataMock.fullAppData)
-
-      expect(mockSendTransaction).toHaveBeenCalledTimes(1)
-
-      mockedGetEthFlowTransaction.mockClear()
-      uploadAppDataMock.mockReset()
-      mockSendTransaction.mockReset()
     }
   })
 })

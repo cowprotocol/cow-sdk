@@ -2,11 +2,8 @@ import { TradingSdk } from './tradingSdk'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { TradeBaseParameters } from './types'
 import { OrderBookApi, OrderKind } from '@cowprotocol/sdk-order-book'
-import { createAdapters } from '../tests/setup'
+import { AdaptersTestSetup, createAdapters } from '../tests/setup'
 import { AbstractProviderAdapter } from '@cowprotocol/sdk-common'
-import { EthersV5Adapter } from '@cowprotocol/sdk-ethers-v5-adapter'
-import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
-import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
 
 const defaultOrderParams: TradeBaseParameters = {
   sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
@@ -41,15 +38,9 @@ const quoteResponseMock = {
   verified: true,
 }
 
-type Adapters = {
-  ethersV5Adapter: EthersV5Adapter
-  ethersV6Adapter: EthersV6Adapter
-  viemAdapter: ViemAdapter
-}
-
 describe('TradingSdk', () => {
   let orderBookApi: OrderBookApi
-  let adapters: Adapters
+  let adapters: AdaptersTestSetup
 
   beforeAll(() => {
     adapters = createAdapters()
@@ -72,7 +63,7 @@ describe('TradingSdk', () => {
 
     it('When logs option is set to false, then should not display logs', async () => {
       const logSpy = jest.spyOn(console, 'log')
-      const adapterNames = Object.keys(adapters) as Array<keyof Adapters>
+      const adapterNames = Object.keys(adapters) as Array<keyof AdaptersTestSetup>
 
       for (const adapterName of adapterNames) {
         const adapter = adapters[adapterName] as AbstractProviderAdapter
@@ -95,7 +86,7 @@ describe('TradingSdk', () => {
 
     it('When logs option is set to true, then should display logs', async () => {
       const logSpy = jest.spyOn(console, 'log')
-      const adapterNames = Object.keys(adapters) as Array<keyof Adapters>
+      const adapterNames = Object.keys(adapters) as Array<keyof AdaptersTestSetup>
 
       for (const adapterName of adapterNames) {
         const adapter = adapters[adapterName] as AbstractProviderAdapter

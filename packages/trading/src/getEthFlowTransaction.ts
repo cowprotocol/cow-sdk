@@ -4,18 +4,25 @@ import { getOrderToSign } from './getOrderToSign'
 import { SupportedChainId, BARN_ETH_FLOW_ADDRESS, CowEnv, ETH_FLOW_ADDRESS } from '@cowprotocol/sdk-config'
 import { GAS_LIMIT_DEFAULT } from './consts'
 import { adjustEthFlowOrderParams, calculateGasMargin } from './utils/misc'
-import { getGlobalAdapter, Signer, ContractFactory, EthFlowContract, EthFlowOrderData } from '@cowprotocol/sdk-common'
+import {
+  getGlobalAdapter,
+  Signer,
+  ContractFactory,
+  EthFlowContract,
+  EthFlowOrderData,
+  SignerLike,
+} from '@cowprotocol/sdk-common'
 import type { UnsignedOrder } from '@cowprotocol/sdk-order-signing'
 
 export async function getEthFlowTransaction(
-  paramSigner: Signer,
+  paramSigner: SignerLike | undefined,
   appDataKeccak256: string,
   _params: LimitTradeParametersFromQuote,
   chainId: SupportedChainId,
   additionalParams: PostTradeAdditionalParams = {},
 ): Promise<{ orderId: string; transaction: TransactionParams; orderToSign: UnsignedOrder }> {
-  const adapter = getGlobalAdapter()
-  const signer = new adapter.Signer(paramSigner)
+  const signer = paramSigner ? getGlobalAdapter().createSigner(paramSigner) : getGlobalAdapter().signer
+
   const { networkCostsAmount = '0', checkEthFlowOrderExists } = additionalParams
   const from = await signer.getAddress()
 

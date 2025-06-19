@@ -1,4 +1,4 @@
-import { getGlobalAdapter, Signer } from '@cowprotocol/sdk-common'
+import { getGlobalAdapter, SignerLike } from '@cowprotocol/sdk-common'
 import { AppDataInfo, LimitTradeParametersFromQuote, OrderPostingResult, PostTradeAdditionalParams } from './types'
 
 import { OrderBookApi, SigningScheme } from '@cowprotocol/sdk-order-book'
@@ -8,13 +8,13 @@ import { log } from '@cowprotocol/sdk-common'
 
 export async function postSellNativeCurrencyOrder(
   orderBookApi: OrderBookApi,
-  paramSigner: Signer,
+  paramSigner: SignerLike | undefined,
   appData: Pick<AppDataInfo, 'fullAppData' | 'appDataKeccak256'>,
   _params: LimitTradeParametersFromQuote,
   additionalParams: PostTradeAdditionalParams = {},
 ): Promise<OrderPostingResult> {
-  const adapter = getGlobalAdapter()
-  const signer = new adapter.Signer(paramSigner)
+  const signer = paramSigner ? getGlobalAdapter().createSigner(paramSigner) : getGlobalAdapter().signer
+
   const { appDataKeccak256, fullAppData } = appData
 
   const { orderId, transaction, orderToSign } = await getEthFlowTransaction(

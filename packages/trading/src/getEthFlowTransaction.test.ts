@@ -23,7 +23,7 @@ import { getEthFlowTransaction } from './getEthFlowTransaction'
 import { SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
 import { LimitTradeParametersFromQuote } from './types'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
-import { createAdapters } from '../tests/setup'
+import { AdaptersTestSetup, createAdapters } from '../tests/setup'
 import { setGlobalAdapter, ContractFactory } from '@cowprotocol/sdk-common'
 
 const appDataKeccak256 = '0x578c975b1cfd3e24c21fb599076c4f7879c4268efd33eed3eb9efa5e30efac21'
@@ -41,7 +41,7 @@ const params: LimitTradeParametersFromQuote = {
 
 describe('getEthFlowTransaction', () => {
   const chainId = SupportedChainId.GNOSIS_CHAIN
-  let adapters: ReturnType<typeof createAdapters>
+  let adapters: AdaptersTestSetup
   let mockContract: any
 
   beforeAll(() => {
@@ -71,7 +71,25 @@ describe('getEthFlowTransaction', () => {
 
     for (const adapterName of adapterNames) {
       setGlobalAdapter(adapters[adapterName])
-      const result = await getEthFlowTransaction(adapters[adapterName], appDataKeccak256, params, chainId)
+      const result = await getEthFlowTransaction(adapters[adapterName].signer, appDataKeccak256, params, chainId)
+      results.push(result)
+    }
+
+    const wrappedToken = WRAPPED_NATIVE_CURRENCIES[SupportedChainId.GNOSIS_CHAIN].address
+
+    results.forEach((result) => {
+      expect(result.transaction.data.includes(params.sellToken.slice(2))).toBe(false)
+      expect(result.transaction.data.includes(wrappedToken.slice(2))).toBe(false)
+    })
+  })
+
+  it('Should always override sell token with wrapped native token whitout signer', async () => {
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+    const results: any[] = []
+
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      const result = await getEthFlowTransaction(undefined, appDataKeccak256, params, chainId)
       results.push(result)
     }
 
@@ -89,7 +107,7 @@ describe('getEthFlowTransaction', () => {
 
     for (const adapterName of adapterNames) {
       setGlobalAdapter(adapters[adapterName])
-      const result = await getEthFlowTransaction(adapters[adapterName], appDataKeccak256, params, chainId)
+      const result = await getEthFlowTransaction(adapters[adapterName].signer, appDataKeccak256, params, chainId)
       results.push(result)
     }
 
@@ -106,7 +124,7 @@ describe('getEthFlowTransaction', () => {
 
     for (const adapterName of adapterNames) {
       setGlobalAdapter(adapters[adapterName])
-      const result = await getEthFlowTransaction(adapters[adapterName], appDataKeccak256, params, chainId)
+      const result = await getEthFlowTransaction(adapters[adapterName].signer, appDataKeccak256, params, chainId)
       results.push(result)
     }
 
@@ -120,9 +138,8 @@ describe('getEthFlowTransaction', () => {
 
     for (const adapterName of adapterNames) {
       setGlobalAdapter(adapters[adapterName])
-      await getEthFlowTransaction(adapters[adapterName], appDataKeccak256, params, SupportedChainId.MAINNET)
+      await getEthFlowTransaction(adapters[adapterName].signer, appDataKeccak256, params, SupportedChainId.MAINNET)
 
-      // Verificar se encodeFunctionData foi chamado
       expect(mockContract.interface.encodeFunctionData).toHaveBeenCalledWith('createOrder', expect.any(Array))
 
       const orderData = mockContract.interface.encodeFunctionData.mock.calls[0][1][0]
@@ -139,7 +156,7 @@ describe('getEthFlowTransaction', () => {
   it('Should verify ContractFactory is called with correct parameters', async () => {
     setGlobalAdapter(adapters.ethersV5Adapter)
 
-    await getEthFlowTransaction(adapters.ethersV5Adapter, appDataKeccak256, params, chainId)
+    await getEthFlowTransaction(adapters.ethersV5Adapter.signer, appDataKeccak256, params, chainId)
 
     expect(ContractFactory.createEthFlowContract).toHaveBeenCalledWith(
       expect.stringContaining('0x'),

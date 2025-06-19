@@ -114,7 +114,7 @@ export class TradingSdk {
     const adapter = getGlobalAdapter()
 
     const traderParams = this.mergeParams(params)
-    const signer = new adapter.Signer(traderParams.signer)
+    const signer = traderParams.signer ? adapter.createSigner(traderParams.signer) : adapter.signer
 
     return getPreSignTransaction(signer, traderParams.chainId, params.account, params.orderId)
   }

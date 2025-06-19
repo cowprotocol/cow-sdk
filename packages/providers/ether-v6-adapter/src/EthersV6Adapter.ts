@@ -2,7 +2,6 @@ import {
   Provider,
   Signer,
   VoidSigner,
-  JsonRpcSigner,
   Wallet,
   BytesLike,
   ZeroAddress,
@@ -11,8 +10,16 @@ import {
   BigNumberish,
   Interface,
   Contract,
+  JsonRpcProvider,
 } from 'ethers'
-import { AbstractProviderAdapter, AdapterTypes, Block, TransactionParams } from '@cowprotocol/sdk-common'
+import {
+  AbstractProviderAdapter,
+  AdapterTypes,
+  Block,
+  TransactionParams,
+  PrivateKey,
+  CowError,
+} from '@cowprotocol/sdk-common'
 import { EthersV6Utils } from './EthersV6Utils'
 import {
   EthersV6SignerAdapter,
@@ -35,66 +42,82 @@ export interface EthersV6Types extends AdapterTypes {
   TypedDataTypes: Record<string, TypedDataField[]>
 }
 
+export interface EthersV6AdapterOptions {
+  provider: Provider | string // RPC URL or Provider instance
+  signer?: Signer | PrivateKey // Optional signer or private key
+}
+
 export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
   declare protected _type?: EthersV6Types
 
-  private provider: Provider
-  private signer: Signer
-  public Signer = EthersV6SignerAdapter
+  private _provider: Provider
+  private _signerAdapter: EthersV6SignerAdapter
+
   public TypedDataVersionedSigner = TypedDataVersionedSigner
   public TypedDataV3Signer = TypedDataV3Signer
   public IntChainIdTypedDataV4Signer = IntChainIdTypedDataV4Signer
   public utils: EthersV6Utils
 
-  constructor(providerOrSigner: Provider | Signer) {
+  constructor(options: EthersV6AdapterOptions) {
     super()
     this.ZERO_ADDRESS = ZeroAddress
 
-    if (
-      providerOrSigner instanceof JsonRpcSigner ||
-      providerOrSigner instanceof VoidSigner ||
-      providerOrSigner instanceof Wallet
-    ) {
-      this.signer = providerOrSigner
-      this.provider = this.signer.provider as Provider //Possible null - check later
-      if (!this.provider) {
-        throw new Error('Signer must be connected to a provider')
+    // Setup provider
+    if (typeof options.provider === 'string') {
+      this._provider = new JsonRpcProvider(options.provider)
+    } else {
+      if (!('getNetwork' in options.provider) || !('call' in options.provider)) {
+        throw new CowError('Invalid Provider: missing required methods')
+      }
+      this._provider = options.provider
+    }
+
+    // Setup signer
+    if (options.signer) {
+      if (typeof options.signer === 'string') {
+        const ethersV6Signer = new Wallet(options.signer, this._provider)
+        this._signerAdapter = new EthersV6SignerAdapter(ethersV6Signer)
+      } else {
+        const ethersV6Signer = options.signer as Signer
+        if (!ethersV6Signer.provider) {
+          const connectedSigner = ethersV6Signer.connect(this._provider)
+          this._signerAdapter = new EthersV6SignerAdapter(connectedSigner)
+        } else {
+          this._signerAdapter = new EthersV6SignerAdapter(ethersV6Signer)
+        }
       }
     } else {
-      this.provider = providerOrSigner as Provider
-      this.signer = new VoidSigner('0x0000000000000000000000000000000000000000', this.provider)
+      // No signer provided, create VoidSigner for read-only operations
+      const voidSigner = new VoidSigner(ZeroAddress, this._provider)
+      this._signerAdapter = new EthersV6SignerAdapter(voidSigner)
     }
 
     this.utils = new EthersV6Utils()
   }
 
+  get signer(): EthersV6SignerAdapter {
+    return this._signerAdapter
+  }
+
+  createSigner(signerOrPrivateKey: PrivateKey | EthersV6SignerAdapter): EthersV6SignerAdapter {
+    if (signerOrPrivateKey instanceof EthersV6SignerAdapter) {
+      return signerOrPrivateKey
+    }
+    const wallet = new Wallet(signerOrPrivateKey, this._provider)
+    return new EthersV6SignerAdapter(wallet)
+  }
+
   async getChainId(): Promise<number> {
-    const network = await this.provider.getNetwork()
+    const network = await this._provider.getNetwork()
     return Number(network.chainId)
   }
 
-  async getAddress(): Promise<string> {
-    return this.signer.getAddress()
-  }
-
-  async signMessage(message: string | Uint8Array): Promise<string> {
-    return this.signer.signMessage(message)
-  }
-
-  async signTypedData(
-    domain: TypedDataDomain,
-    types: Record<string, TypedDataField[]>,
-    value: Record<string, unknown>,
-  ): Promise<string> {
-    return this.signer.signTypedData(domain, types, value)
-  }
-
   async getStorageAt(address: string, slot: BigNumberish): Promise<BytesLike> {
-    return this.provider.getStorage(address, slot)
+    return this._provider.getStorage(address, slot)
   }
 
   async call(txParams: TransactionParams, provider?: Provider): Promise<string> {
-    const providerToUse = provider || this.provider
+    const providerToUse = provider || this._provider
     return providerToUse.call({
       to: txParams.to,
       from: txParams.from,
@@ -112,7 +135,7 @@ export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
     provider?: Provider,
   ): Promise<unknown> {
     const { address, abi, functionName, args } = params
-    const providerToUse = provider || this.provider
+    const providerToUse = provider || this._provider
     const contract = new Contract(address, abi, providerToUse)
 
     if (!contract[functionName])
@@ -125,7 +148,7 @@ export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
   }
 
   async getBlock(blockTag: string, provider?: Provider): Promise<Block> {
-    const providerToUse = provider || this.provider
+    const providerToUse = provider || this._provider
     const block = await providerToUse.getBlock(blockTag)
     if (!block) return {} as Block
     return block

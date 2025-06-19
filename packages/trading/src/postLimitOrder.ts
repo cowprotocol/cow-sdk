@@ -2,7 +2,7 @@ import { LimitOrderAdvancedSettings, LimitOrderParameters, OrderPostingResult } 
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { buildAppData } from './appDataUtils'
 import { postCoWProtocolTrade } from './postCoWProtocolTrade'
-import { getGlobalAdapter, log } from '@cowprotocol/sdk-common'
+import { log } from '@cowprotocol/sdk-common'
 
 export async function postLimitOrder(
   params: LimitOrderParameters,
@@ -39,8 +39,6 @@ export async function postLimitOrder(
 
   log(`Limit order ${sellAmount} ${sellToken} for ${buyAmount} ${buyToken} on chain ${chainId}`)
 
-  const adapter = getGlobalAdapter()
-  const signer = new adapter.Signer(params.signer)
   const orderBookApi = _orderBookApi || new OrderBookApi({ chainId, env: params.env })
 
   log('Building app data...')
@@ -55,5 +53,5 @@ export async function postLimitOrder(
     advancedSettings?.appData,
   )
 
-  return postCoWProtocolTrade(orderBookApi, signer, appDataInfo, params, advancedSettings?.additionalParams)
+  return postCoWProtocolTrade(orderBookApi, params.signer, appDataInfo, params, advancedSettings?.additionalParams)
 }

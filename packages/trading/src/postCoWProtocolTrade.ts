@@ -5,25 +5,23 @@ import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
 import { getOrderToSign } from './getOrderToSign'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getIsEthFlowOrder } from './utils/misc'
-import { getGlobalAdapter, log, Signer } from '@cowprotocol/sdk-common'
+import { getGlobalAdapter, log, SignerLike } from '@cowprotocol/sdk-common'
 
 export async function postCoWProtocolTrade(
   orderBookApi: OrderBookApi,
-  paramSigner: Signer,
+  paramSigner: SignerLike | undefined,
   appData: AppDataInfo,
   params: LimitTradeParameters,
   additionalParams: PostTradeAdditionalParams = {},
 ): Promise<OrderPostingResult> {
   const adapter = getGlobalAdapter()
-  const signer = new adapter.Signer(paramSigner)
-  console.log('signer', await signer.getAddress())
+  const signer = paramSigner ? adapter.createSigner(paramSigner) : adapter.signer
   const { networkCostsAmount = '0', signingScheme: _signingScheme = SigningScheme.EIP712 } = additionalParams
-
   if (getIsEthFlowOrder(params)) {
     const quoteId = params.quoteId
 
     if (typeof quoteId === 'number') {
-      return postSellNativeCurrencyOrder(orderBookApi, signer, appData, { ...params, quoteId }, additionalParams)
+      return postSellNativeCurrencyOrder(orderBookApi, paramSigner, appData, { ...params, quoteId }, additionalParams)
     } else {
       throw new Error('quoteId is required for EthFlow orders')
     }
@@ -42,7 +40,6 @@ export async function postCoWProtocolTrade(
     if (_signingScheme === SigningScheme.PRESIGN) {
       return { signature: from, signingScheme: SigningScheme.PRESIGN }
     } else {
-      console.log('signer2', signer)
       const signingResult = await OrderSigningUtils.signOrder(orderToSign, chainId, signer)
 
       return { signature: signingResult.signature, signingScheme: SIGN_SCHEME_MAP[signingResult.signingScheme] }

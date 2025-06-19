@@ -3,7 +3,7 @@ import { getQuoteWithSigner } from './getQuote'
 import { SwapParameters } from './types'
 import { ETH_ADDRESS, WRAPPED_NATIVE_CURRENCIES, SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderBookApi, OrderKind, OrderQuoteResponse } from '@cowprotocol/sdk-order-book'
-import { createAdapters } from '../tests/setup'
+import { AdaptersTestSetup, createAdapters } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 const quoteResponseMock = {
@@ -30,8 +30,9 @@ const quoteResponseMock = {
   verified: true,
 } as OrderQuoteResponse
 
-const defaultOrderParams: Omit<SwapParameters, 'signer'> = {
+const defaultOrderParams: SwapParameters = {
   chainId: SupportedChainId.GNOSIS_CHAIN,
+  signer: '1bb337bafb276f779c3035874b8914e4b851bb989dbb34e776397076576f3804',
   appCode: '0x007',
   sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
   sellTokenDecimals: 18,
@@ -48,7 +49,7 @@ const orderBookApiMock = {
 } as unknown as OrderBookApi
 
 describe('getQuoteToSign', () => {
-  let adapters: ReturnType<typeof createAdapters>
+  let adapters: AdaptersTestSetup
 
   beforeAll(() => {
     adapters = createAdapters()
@@ -67,7 +68,7 @@ describe('getQuoteToSign', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
         const result = await getQuoteWithSigner(
-          { ...defaultOrderParams, signer: adapters[adapterName], slippageBps: 76 },
+          { ...defaultOrderParams, signer: adapters[adapterName].signer, slippageBps: 76 },
           {},
           orderBookApiMock,
         )
@@ -89,7 +90,7 @@ describe('getQuoteToSign', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
         const result = await getQuoteWithSigner(
-          { ...defaultOrderParams, signer: adapters[adapterName] },
+          { ...defaultOrderParams, signer: adapters[adapterName].signer },
           {
             appData: {
               environment: 'barn',
@@ -115,7 +116,12 @@ describe('getQuoteToSign', () => {
         for (const adapterName of adapterNames) {
           setGlobalAdapter(adapters[adapterName])
           await getQuoteWithSigner(
-            { ...defaultOrderParams, signer: adapters[adapterName], sellToken: ETH_ADDRESS, slippageBps: undefined },
+            {
+              ...defaultOrderParams,
+              signer: adapters[adapterName].signer,
+              sellToken: ETH_ADDRESS,
+              slippageBps: undefined,
+            },
             {},
             orderBookApiMock,
           )
@@ -131,7 +137,12 @@ describe('getQuoteToSign', () => {
         for (const adapterName of adapterNames) {
           setGlobalAdapter(adapters[adapterName])
           await getQuoteWithSigner(
-            { ...defaultOrderParams, signer: adapters[adapterName], sellToken: ETH_ADDRESS, slippageBps: undefined },
+            {
+              ...defaultOrderParams,
+              signer: adapters[adapterName].signer,
+              sellToken: ETH_ADDRESS,
+              slippageBps: undefined,
+            },
             {},
             orderBookApiMock,
           )
@@ -148,7 +159,7 @@ describe('getQuoteToSign', () => {
 
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
-        await getQuoteWithSigner({ ...defaultOrderParams, signer: adapters[adapterName] }, {}, orderBookApiMock)
+        await getQuoteWithSigner({ ...defaultOrderParams, signer: adapters[adapterName].signer }, {}, orderBookApiMock)
 
         const call = getQuoteMock.mock.calls[0][0]
         const appData = JSON.parse(call.appData)
@@ -163,7 +174,7 @@ describe('getQuoteToSign', () => {
 
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
-        await getQuoteWithSigner({ ...defaultOrderParams, signer: adapters[adapterName] }, {}, orderBookApiMock)
+        await getQuoteWithSigner({ ...defaultOrderParams, signer: adapters[adapterName].signer }, {}, orderBookApiMock)
 
         const call = getQuoteMock.mock.calls[0][0]
         expect(call.priceQuality).toBe('optimal')
@@ -176,7 +187,7 @@ describe('getQuoteToSign', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
         await getQuoteWithSigner(
-          { ...defaultOrderParams, signer: adapters[adapterName], kind: OrderKind.SELL },
+          { ...defaultOrderParams, signer: adapters[adapterName].signer, kind: OrderKind.SELL },
           {},
           orderBookApiMock,
         )
@@ -192,7 +203,7 @@ describe('getQuoteToSign', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
         await getQuoteWithSigner(
-          { ...defaultOrderParams, signer: adapters[adapterName], kind: OrderKind.BUY },
+          { ...defaultOrderParams, signer: adapters[adapterName].signer, kind: OrderKind.BUY },
           {},
           orderBookApiMock,
         )
@@ -208,7 +219,7 @@ describe('getQuoteToSign', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
         await getQuoteWithSigner(
-          { ...defaultOrderParams, signer: adapters[adapterName] },
+          { ...defaultOrderParams, signer: adapters[adapterName].signer },
           { quoteRequest: { onchainOrder: { foo: 'bar' } } },
           orderBookApiMock,
         )
@@ -227,7 +238,7 @@ describe('getQuoteToSign', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
         const result = await getQuoteWithSigner(
-          { ...defaultOrderParams, signer: adapters[adapterName], slippageBps: 20 },
+          { ...defaultOrderParams, signer: adapters[adapterName].signer, slippageBps: 20 },
           {},
           orderBookApiMock,
         )
@@ -249,7 +260,7 @@ describe('getQuoteToSign', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
         const result = await getQuoteWithSigner(
-          { ...defaultOrderParams, signer: adapters[adapterName] },
+          { ...defaultOrderParams, signer: adapters[adapterName].signer },
           {},
           orderBookApiMock,
         )
@@ -273,7 +284,7 @@ describe('getQuoteToSign', () => {
           const result = await getQuoteWithSigner(
             {
               ...defaultOrderParams,
-              signer: adapters[adapterName],
+              signer: adapters[adapterName].signer,
               chainId: SupportedChainId.MAINNET,
               sellToken: ETH_ADDRESS,
               slippageBps: undefined,
@@ -301,7 +312,7 @@ describe('getQuoteToSign', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
         const result = await getQuoteWithSigner(
-          { ...defaultOrderParams, signer: adapters[adapterName] },
+          { ...defaultOrderParams, signer: adapters[adapterName].signer },
           {},
           orderBookApiMock,
         )
@@ -320,7 +331,7 @@ describe('getQuoteToSign', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
         const result = await getQuoteWithSigner(
-          { ...defaultOrderParams, signer: adapters[adapterName] },
+          { ...defaultOrderParams, signer: adapters[adapterName].signer },
           {},
           orderBookApiMock,
         )
