@@ -15,7 +15,6 @@ export async function getBridgeSignedHook(
   // Get the bridging call
   const unsignedBridgeCall = await provider.getUnsignedBridgeCall(bridgeRequest, bridgingQuote)
 
-  // Order validTo + 30 minutes
   const deadline = BigInt(validToOverride || swapResult.orderToSign.validTo)
   const bridgeHookNonce = solidityKeccak256(['bytes', 'uint256'], [unsignedBridgeCall.data, deadline])
 
