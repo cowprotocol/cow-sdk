@@ -41,7 +41,7 @@ export const base: ChainInfo = {
     url: 'https://docs.base.org',
   },
   blockExplorer: {
-    name: 'BaseScan',
+    name: 'Basescan',
     url: 'https://basescan.org',
   },
   bridges: [
