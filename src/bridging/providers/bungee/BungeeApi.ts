@@ -30,6 +30,8 @@ const BUNGEE_MANUAL_API_URL = 'https://public-backend.bungee.exchange/api/v1/bun
 const BUNGEE_EVENTS_API_URL = 'https://microservices.socket.tech/loki'
 const ACROSS_API_URL = 'https://app.across.to/api'
 
+const SUPPORTED_BRIDGES: SupportedBridge[] = ['across', 'cctp']
+
 export interface BungeeApiOptions {
   apiBaseUrl?: string
   manualApiBaseUrl?: string
@@ -39,24 +41,22 @@ export interface BungeeApiOptions {
 }
 
 export class BungeeApi {
-  readonly SUPPORTED_BRIDGES: SupportedBridge[] = ['across', 'cctp']
-
   constructor(
     private readonly options: BungeeApiOptions = {
       apiBaseUrl: BUNGEE_API_URL,
       eventsApiBaseUrl: BUNGEE_EVENTS_API_URL,
       acrossApiBaseUrl: ACROSS_API_URL,
-      includeBridges: this.SUPPORTED_BRIDGES,
+      includeBridges: SUPPORTED_BRIDGES,
     },
   ) {
     // throw if any bridge is not supported
-    this.validateBridges(this.options.includeBridges ?? this.SUPPORTED_BRIDGES)
+    this.validateBridges(this.getSupportedBridges())
   }
 
   validateBridges(includeBridges: SupportedBridge[]): void {
-    if (includeBridges?.some((bridge) => !this.SUPPORTED_BRIDGES.includes(bridge))) {
+    if (includeBridges?.some((bridge) => !SUPPORTED_BRIDGES.includes(bridge))) {
       throw new BridgeProviderQuoteError(
-        `Unsupported bridge: ${includeBridges.filter((bridge) => !this.SUPPORTED_BRIDGES.includes(bridge)).join(', ')}`,
+        `Unsupported bridge: ${includeBridges.filter((bridge) => !SUPPORTED_BRIDGES.includes(bridge)).join(', ')}`,
         { includeBridges },
       )
     }
@@ -69,7 +69,7 @@ export class BungeeApi {
     const { targetChainId } = params
 
     // get includeBridges from params or use the default
-    const includeBridges = params.includeBridges ?? this.options.includeBridges ?? this.SUPPORTED_BRIDGES
+    const includeBridges = this.getSupportedBridges(params.includeBridges)
 
     // validate bridges
     this.validateBridges(includeBridges)
@@ -100,7 +100,7 @@ export class BungeeApi {
     const { fromChainId, toChainId, toTokenAddress } = params
 
     // get includeBridges from params or use the default
-    const includeBridges = params.includeBridges ?? this.options.includeBridges ?? this.SUPPORTED_BRIDGES
+    const includeBridges = this.getSupportedBridges(params.includeBridges)
 
     // validate bridges
     this.validateBridges(includeBridges)
@@ -147,7 +147,7 @@ export class BungeeApi {
   async getBungeeQuote(params: BungeeQuoteAPIRequest): Promise<BungeeQuote> {
     try {
       // if no bridges are provided, use all supported bridges
-      params.includeBridges = params.includeBridges ?? this.options.includeBridges ?? this.SUPPORTED_BRIDGES
+      params.includeBridges = this.getSupportedBridges(params.includeBridges)
 
       // throw if any bridge is not supported
       this.validateBridges(params.includeBridges)
@@ -323,6 +323,10 @@ export class BungeeApi {
       isValidAcrossStatusResponse,
     )
     return response.status
+  }
+
+  private getSupportedBridges(bridges?: SupportedBridge[]): SupportedBridge[] {
+    return bridges ?? this.options.includeBridges ?? SUPPORTED_BRIDGES
   }
 
   private async makeApiCall<T>(
