@@ -4,6 +4,6 @@
     "outDir": "./dist",
     "types": ["jest"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "setupTests.ts"],
   "exclude": ["node_modules", "dist"]
 }

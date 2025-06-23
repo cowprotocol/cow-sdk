@@ -2,15 +2,9 @@
   "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "moduleResolution": "Node",
-    "module": "ESNext",
-    "target": "ES2022",
     "baseUrl": "src",
-    "skipLibCheck": true,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "types": ["jest", "node"]
+    "types": ["jest"]
   },
-  "include": ["src/**/*", "setupTests.cjs", "jest.config.cjs", "**/*spec.ts"],
+  "include": ["src/**/*", "setupTests.ts", "jest.config.ts", "**/*spec.ts"],
   "exclude": ["node_modules", "dist"]
 }

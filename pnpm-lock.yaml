@@ -57,15 +57,6 @@ importers:
         specifier: ^9.6.4
         version: 9.9.0
     devDependencies:
-      '@babel/core':
-        specifier: 7.27.1
-        version: 7.27.1
-      '@babel/preset-env':
-        specifier: 7.27.2
-        version: 7.27.2(@babel/core@7.27.1)
-      '@babel/preset-typescript':
-        specifier: 7.27.1
-        version: 7.27.1(@babel/core@7.27.1)
       '@cowprotocol/sdk-config':
         specifier: workspace:*
         version: link:../config
@@ -90,9 +81,6 @@ importers:
       '@types/semver-sort':
         specifier: ^0.0.1
         version: 0.0.1
-      babel-jest:
-        specifier: 29.7.0
-        version: 29.7.0(@babel/core@7.27.1)
       ethers-v5:
         specifier: npm:ethers@^5.7.2
         version: ethers@5.8.0
@@ -100,7 +88,7 @@ importers:
         specifier: npm:ethers@^6.13.7
         version: ethers@6.14.3
       jest:
-        specifier: ^29.4.2
+        specifier: ^29.7.0
         version: 29.7.0(@types/node@20.17.52)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.17.52)(typescript@5.8.3))
       jest-fetch-mock:
         specifier: ^3.0.3
@@ -468,7 +456,7 @@ importers:
         specifier: npm:ethers@^6.13.7
         version: ethers@6.14.3
       jest:
-        specifier: ^29.4.2
+        specifier: ^29.7.0
         version: 29.7.0(@types/node@20.17.52)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.17.52)(typescript@5.8.3))
       jest-fetch-mock:
         specifier: ^3.0.3
@@ -520,7 +508,7 @@ importers:
         specifier: ^0.0.1
         version: 0.0.1
       jest:
-        specifier: ^29.4.2
+        specifier: ^29.7.0
         version: 29.7.0(@types/node@20.17.52)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.17.52)(typescript@5.8.3))
       jest-fetch-mock:
         specifier: ^3.0.3
@@ -699,7 +687,7 @@ importers:
         specifier: ^20.17.31
         version: 20.17.52
       jest:
-        specifier: ^29.4.2
+        specifier: ^29.7.0
         version: 29.7.0(@types/node@20.17.52)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.17.52)(typescript@5.8.3))
       jest-fetch-mock:
         specifier: ^3.0.3
@@ -766,7 +754,7 @@ importers:
         specifier: npm:ethers@^6.13.7
         version: ethers@6.14.3
       jest:
-        specifier: ^29.4.2
+        specifier: ^29.7.0
         version: 29.7.0(@types/node@20.17.52)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.17.52)(typescript@5.8.3))
       jest-fetch-mock:
         specifier: ^3.0.3
