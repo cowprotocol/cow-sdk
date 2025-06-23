@@ -120,7 +120,7 @@ describe('Order Hashing and Signing', () => {
       const signatures: Signature[] = []
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
-        const sig = await signOrder(testDomain, testOrder, adapters[adapterName].signer, SigningScheme.EIP712)
+        const sig = await signOrder(testDomain, testOrder, SigningScheme.EIP712, adapters[adapterName].signer)
         signatures.push(sig)
       }
 

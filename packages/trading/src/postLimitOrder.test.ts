@@ -83,10 +83,10 @@ describe('postLimitOrder', () => {
       // Using expect.anything() for adapter since it's a complex object with internal properties that we don't need to verify
       expect(postCoWProtocolTradeMock).toHaveBeenCalledWith(
         orderBookApiMock,
-        expect.anything(),
         appDataMock,
         { ...defaultOrderParams, signer: adapters[adapterName], env: 'prod' },
         undefined,
+        expect.anything(),
       )
       postCoWProtocolTradeMock.mockReset()
     }

@@ -114,7 +114,7 @@ describe('postSellNativeCurrencyTrade', () => {
     const checkEthFlowOrderExists = jest.fn().mockResolvedValue(false)
 
     mockedGetEthFlowTransaction.mockImplementation(
-      async (_signer, _appDataKeccak256, _params, _chainId, additionalParams) => {
+      async (_appDataKeccak256, _params, _chainId, additionalParams, _signer) => {
         if (additionalParams?.checkEthFlowOrderExists) {
           await additionalParams.checkEthFlowOrderExists('0xmockOrderId', '0xmockDigest')
         }
@@ -140,17 +140,16 @@ describe('postSellNativeCurrencyTrade', () => {
       try {
         await postSellNativeCurrencyOrder(
           orderBookApiMock,
-          adapters[adapterName].signer,
           appDataMock,
           defaultOrderParams,
           {
             networkCostsAmount: '0',
             checkEthFlowOrderExists,
           },
+          adapters[adapterName].signer,
         )
 
         expect(mockedGetEthFlowTransaction).toHaveBeenCalledWith(
-          expect.any(Object), // signer
           appDataMock.appDataKeccak256,
           defaultOrderParams,
           SupportedChainId.GNOSIS_CHAIN,
@@ -158,6 +157,7 @@ describe('postSellNativeCurrencyTrade', () => {
             networkCostsAmount: '0',
             checkEthFlowOrderExists,
           },
+          expect.any(Object), // signer
         )
 
         expect(checkEthFlowOrderExists).toHaveBeenCalledTimes(1)
@@ -180,9 +180,10 @@ describe('postSellNativeCurrencyTrade', () => {
       try {
         await postSellNativeCurrencyOrder(
           orderBookApiMock,
-          adapters[adapterName].signer,
           appDataMock,
           defaultOrderParams,
+          {},
+          adapters[adapterName].signer,
         )
 
         expect(uploadAppDataMock).toHaveBeenCalledWith(appDataMock.appDataKeccak256, appDataMock.fullAppData)
@@ -215,9 +216,10 @@ describe('postSellNativeCurrencyTrade', () => {
       try {
         await postSellNativeCurrencyOrder(
           orderBookApiMock,
-          adapters[adapterName].signer,
           appDataMock,
           defaultOrderParams,
+          {},
+          adapters[adapterName].signer,
         )
 
         expect(mockedSigner.mockSendTransaction).toHaveBeenCalledTimes(1)
@@ -239,17 +241,18 @@ describe('postSellNativeCurrencyTrade', () => {
       try {
         await postSellNativeCurrencyOrder(
           orderBookApiMock,
-          adapters[adapterName].signer,
           appDataMock,
           defaultOrderParams,
+          {},
+          adapters[adapterName].signer,
         )
 
         expect(mockedGetEthFlowTransaction).toHaveBeenCalledWith(
-          expect.any(Object),
           appDataMock.appDataKeccak256,
           defaultOrderParams,
           SupportedChainId.GNOSIS_CHAIN,
           {},
+          expect.any(Object),
         )
 
         expect(uploadAppDataMock).toHaveBeenCalledWith(appDataMock.appDataKeccak256, appDataMock.fullAppData)

@@ -5,6 +5,6 @@
     "baseUrl": "src",
     "types": ["jest"]
   },
-  "include": ["src/**/*", "tests/**/*", "../common/src/abi/EthFlowAbi.ts"],
+  "include": ["src/**/*", "tests/**/*"],
   "exclude": ["node_modules", "dist"]
 }

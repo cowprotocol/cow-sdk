@@ -71,7 +71,7 @@ describe('getEthFlowTransaction', () => {
 
     for (const adapterName of adapterNames) {
       setGlobalAdapter(adapters[adapterName])
-      const result = await getEthFlowTransaction(adapters[adapterName].signer, appDataKeccak256, params, chainId)
+      const result = await getEthFlowTransaction(appDataKeccak256, params, chainId, {}, adapters[adapterName].signer)
       results.push(result)
     }
 
@@ -89,7 +89,7 @@ describe('getEthFlowTransaction', () => {
 
     for (const adapterName of adapterNames) {
       setGlobalAdapter(adapters[adapterName])
-      const result = await getEthFlowTransaction(undefined, appDataKeccak256, params, chainId)
+      const result = await getEthFlowTransaction(appDataKeccak256, params, chainId)
       results.push(result)
     }
 
@@ -107,7 +107,7 @@ describe('getEthFlowTransaction', () => {
 
     for (const adapterName of adapterNames) {
       setGlobalAdapter(adapters[adapterName])
-      const result = await getEthFlowTransaction(adapters[adapterName].signer, appDataKeccak256, params, chainId)
+      const result = await getEthFlowTransaction(appDataKeccak256, params, chainId, {}, adapters[adapterName].signer)
       results.push(result)
     }
 
@@ -124,7 +124,7 @@ describe('getEthFlowTransaction', () => {
 
     for (const adapterName of adapterNames) {
       setGlobalAdapter(adapters[adapterName])
-      const result = await getEthFlowTransaction(adapters[adapterName].signer, appDataKeccak256, params, chainId)
+      const result = await getEthFlowTransaction(appDataKeccak256, params, chainId, {}, adapters[adapterName].signer)
       results.push(result)
     }
 
@@ -138,7 +138,7 @@ describe('getEthFlowTransaction', () => {
 
     for (const adapterName of adapterNames) {
       setGlobalAdapter(adapters[adapterName])
-      await getEthFlowTransaction(adapters[adapterName].signer, appDataKeccak256, params, SupportedChainId.MAINNET)
+      await getEthFlowTransaction(appDataKeccak256, params, SupportedChainId.MAINNET, {}, adapters[adapterName].signer)
 
       expect(mockContract.interface.encodeFunctionData).toHaveBeenCalledWith('createOrder', expect.any(Array))
 
@@ -156,7 +156,7 @@ describe('getEthFlowTransaction', () => {
   it('Should verify ContractFactory is called with correct parameters', async () => {
     setGlobalAdapter(adapters.ethersV5Adapter)
 
-    await getEthFlowTransaction(adapters.ethersV5Adapter.signer, appDataKeccak256, params, chainId)
+    await getEthFlowTransaction(appDataKeccak256, params, chainId, {}, adapters.ethersV5Adapter.signer)
 
     expect(ContractFactory.createEthFlowContract).toHaveBeenCalledWith(
       expect.stringContaining('0x'),

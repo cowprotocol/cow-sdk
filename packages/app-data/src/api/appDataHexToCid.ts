@@ -1,5 +1,6 @@
 import { getGlobalAdapter } from '@cowprotocol/sdk-common'
 import { MetaDataError } from '../consts'
+import { CID } from 'multiformats/cid'
 
 /**
  *  Convert an app-data hex string to a CID
@@ -63,9 +64,7 @@ async function _appDataHexToCidLegacy(appDataHex: string): Promise<string> {
     multihashHex: appDataHex, // 32 bytes of the sha2-256 hash
   })
 
-  // Use type assertion to avoid TS issues with CID import
-  const cidModule = (await import('multiformats/cid')) as any
-  return cidModule.CID.decode(cidBytes).toV0().toString()
+  return CID.decode(cidBytes).toV0().toString()
 }
 
 interface ToCidParams {

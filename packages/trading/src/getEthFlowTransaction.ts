@@ -15,11 +15,11 @@ import {
 import type { UnsignedOrder } from '@cowprotocol/sdk-order-signing'
 
 export async function getEthFlowTransaction(
-  paramSigner: SignerLike | undefined,
   appDataKeccak256: string,
   _params: LimitTradeParametersFromQuote,
   chainId: SupportedChainId,
   additionalParams: PostTradeAdditionalParams = {},
+  paramSigner?: SignerLike,
 ): Promise<{ orderId: string; transaction: TransactionParams; orderToSign: UnsignedOrder }> {
   const signer = paramSigner ? getGlobalAdapter().createSigner(paramSigner) : getGlobalAdapter().signer
 

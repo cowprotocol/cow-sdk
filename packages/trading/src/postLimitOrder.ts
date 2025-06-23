@@ -53,5 +53,5 @@ export async function postLimitOrder(
     advancedSettings?.appData,
   )
 
-  return postCoWProtocolTrade(orderBookApi, params.signer, appDataInfo, params, advancedSettings?.additionalParams)
+  return postCoWProtocolTrade(orderBookApi, appDataInfo, params, advancedSettings?.additionalParams, params.signer)
 }

@@ -53,8 +53,8 @@ describe('SwapEncoder', () => {
         ContractsTs.domain(sepolia.id, '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'),
         [testSwap],
         testOrder,
-        adapters.ethersV5Adapter.signer,
         SigningScheme.EIP712,
+        adapters.ethersV5Adapter.signer,
       )
 
       // EthersV6 order
@@ -63,8 +63,8 @@ describe('SwapEncoder', () => {
         ContractsTs.domain(sepolia.id, '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'),
         [testSwap],
         testOrder,
-        adapters.ethersV6Adapter.signer,
         SigningScheme.EIP712,
+        adapters.ethersV6Adapter.signer,
       )
 
       // Viem order
@@ -73,8 +73,8 @@ describe('SwapEncoder', () => {
         ContractsTs.domain(sepolia.id, '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'),
         [testSwap],
         testOrder,
-        adapters.viemAdapter.signer,
         SigningScheme.EIP712,
+        adapters.viemAdapter.signer,
       )
 
       // Expect the swaps to be the equal across adapters

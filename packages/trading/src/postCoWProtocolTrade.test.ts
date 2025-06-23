@@ -83,17 +83,17 @@ describe('postCoWProtocolTrade', () => {
     for (const adapterName of adapterNames) {
       setGlobalAdapter(adapters[adapterName])
       const order = { ...defaultOrderParams, sellToken: ETH_ADDRESS }
-      await postCoWProtocolTrade(orderBookApiMock, adapters[adapterName].signer, appDataMock, order)
+      await postCoWProtocolTrade(orderBookApiMock, appDataMock, order, {}, adapters[adapterName].signer)
 
       expect(postSellNativeCurrencyOrderMock).toHaveBeenCalledTimes(1)
       // Using expect.anything() for adapter since it's a complex object with internal properties that we don't need to verify
 
       expect(postSellNativeCurrencyOrderMock).toHaveBeenCalledWith(
         orderBookApiMock,
-        expect.anything(),
         appDataMock,
         order,
         {},
+        expect.anything(),
       )
       postSellNativeCurrencyOrderMock.mockReset()
     }
@@ -106,7 +106,7 @@ describe('postCoWProtocolTrade', () => {
     for (const adapterName of adapterNames) {
       setGlobalAdapter(adapters[adapterName])
       const order = { ...defaultOrderParams }
-      await postCoWProtocolTrade(orderBookApiMock, adapters[adapterName].signer, appDataMock, order)
+      await postCoWProtocolTrade(orderBookApiMock, appDataMock, order, {}, adapters[adapterName].signer)
 
       const callBody = sendOrderMock.mock.calls[0][0]
 
@@ -145,7 +145,7 @@ describe('postCoWProtocolTrade', () => {
         owner: ownerAddress,
       }
 
-      await postCoWProtocolTrade(orderBookApiMock, adapters[adapterName].signer, appDataMock, order)
+      await postCoWProtocolTrade(orderBookApiMock, appDataMock, order, {}, adapters[adapterName].signer)
 
       // Verify the from parameter matches the owner address (which is different from the signer address)
       expect(sendOrderMock).toHaveBeenCalledWith(
@@ -170,7 +170,7 @@ describe('postCoWProtocolTrade', () => {
         owner: undefined,
       }
 
-      await postCoWProtocolTrade(orderBookApiMock, adapters[adapterName].signer, appDataMock, order)
+      await postCoWProtocolTrade(orderBookApiMock, appDataMock, order, {}, adapters[adapterName].signer)
 
       // Verify the from parameter matches the owner address
       expect(sendOrderMock).toHaveBeenCalledWith(

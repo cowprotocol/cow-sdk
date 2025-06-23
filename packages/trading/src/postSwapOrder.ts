@@ -54,9 +54,15 @@ export async function postSwapOrderFromQuote(
     if (buyToken) params.buyToken = buyToken
   }
 
-  return postCoWProtocolTrade(orderBookApi, signer, appDataInfo, params, {
-    signingScheme: advancedSettings?.quoteRequest?.signingScheme,
-    networkCostsAmount: quoteResponse.quote.feeAmount,
-    ...advancedSettings?.additionalParams,
-  })
+  return postCoWProtocolTrade(
+    orderBookApi,
+    appDataInfo,
+    params,
+    {
+      signingScheme: advancedSettings?.quoteRequest?.signingScheme,
+      networkCostsAmount: quoteResponse.quote.feeAmount,
+      ...advancedSettings?.additionalParams,
+    },
+    signer,
+  )
 }

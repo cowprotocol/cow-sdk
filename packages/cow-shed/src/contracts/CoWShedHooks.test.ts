@@ -252,13 +252,13 @@ describe('CowShedHooks', () => {
         const mockDeadline = BigInt(1000000)
         const calls = createCallsForAdapter(adapter)
 
-        const signature = await cowShed.signCalls(calls, mockNonce, mockDeadline, adapter.signer, SigningScheme.EIP712)
+        const signature = await cowShed.signCalls(calls, mockNonce, mockDeadline, SigningScheme.EIP712, adapter.signer)
         const signatureWithoutSigner = await cowShed.signCalls(
           calls,
           mockNonce,
           mockDeadline,
-          undefined,
           SigningScheme.EIP712,
+          undefined,
         )
 
         expect(signature).toBeDefined()

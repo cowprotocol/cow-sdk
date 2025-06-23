@@ -97,7 +97,6 @@ export class TradingSdk {
     const { tradeParameters, quoteResponse } = quoteResults.result
     return postSellNativeCurrencyOrder(
       quoteResults.orderBookApi,
-      quoteResults.result.signer,
       quoteResults.result.appDataInfo,
       // Quote response always has an id
       swapParamsToLimitOrderParams(
@@ -105,6 +104,7 @@ export class TradingSdk {
         quoteResponse,
       ),
       advancedSettings?.additionalParams,
+      quoteResults.result.signer,
     )
   }
 

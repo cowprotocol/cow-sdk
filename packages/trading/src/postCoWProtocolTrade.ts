@@ -9,10 +9,10 @@ import { getGlobalAdapter, log, SignerLike } from '@cowprotocol/sdk-common'
 
 export async function postCoWProtocolTrade(
   orderBookApi: OrderBookApi,
-  paramSigner: SignerLike | undefined,
   appData: AppDataInfo,
   params: LimitTradeParameters,
   additionalParams: PostTradeAdditionalParams = {},
+  paramSigner?: SignerLike,
 ): Promise<OrderPostingResult> {
   const adapter = getGlobalAdapter()
   const signer = paramSigner ? adapter.createSigner(paramSigner) : adapter.signer
@@ -21,7 +21,7 @@ export async function postCoWProtocolTrade(
     const quoteId = params.quoteId
 
     if (typeof quoteId === 'number') {
-      return postSellNativeCurrencyOrder(orderBookApi, paramSigner, appData, { ...params, quoteId }, additionalParams)
+      return postSellNativeCurrencyOrder(orderBookApi, appData, { ...params, quoteId }, additionalParams, paramSigner)
     } else {
       throw new Error('quoteId is required for EthFlow orders')
     }

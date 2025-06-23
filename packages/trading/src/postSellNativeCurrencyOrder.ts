@@ -8,21 +8,21 @@ import { log } from '@cowprotocol/sdk-common'
 
 export async function postSellNativeCurrencyOrder(
   orderBookApi: OrderBookApi,
-  paramSigner: SignerLike | undefined,
   appData: Pick<AppDataInfo, 'fullAppData' | 'appDataKeccak256'>,
   _params: LimitTradeParametersFromQuote,
   additionalParams: PostTradeAdditionalParams = {},
+  paramSigner?: SignerLike,
 ): Promise<OrderPostingResult> {
   const signer = paramSigner ? getGlobalAdapter().createSigner(paramSigner) : getGlobalAdapter().signer
 
   const { appDataKeccak256, fullAppData } = appData
 
   const { orderId, transaction, orderToSign } = await getEthFlowTransaction(
-    signer,
     appDataKeccak256,
     _params,
     orderBookApi.context.chainId,
     additionalParams,
+    signer,
   )
 
   log('Uploading app-data')

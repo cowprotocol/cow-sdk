@@ -115,7 +115,7 @@ export class CowShedSdk {
 
     const cowShedAccount = cowShedHooks.proxyOf(ownerAddress)
     // Sign the calls using cow-shed's owner
-    const signature = await cowShedHooks.signCalls(calls, nonce, deadline, signer, signingScheme)
+    const signature = await cowShedHooks.signCalls(calls, nonce, deadline, signingScheme, signer)
 
     // Get the signed transaction's calldata
     const callData = cowShedHooks.encodeExecuteHooksForFactory(calls, nonce, deadline, ownerAddress, signature)

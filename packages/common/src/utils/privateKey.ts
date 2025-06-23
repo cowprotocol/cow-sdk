@@ -1,4 +1,4 @@
-import { CowError } from './cow-error'
+import { CowError } from './cowError'
 
 /**
  * Normalizes a private key to the format expected by Viem (`0x${string}`)

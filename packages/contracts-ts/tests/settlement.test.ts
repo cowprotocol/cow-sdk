@@ -84,9 +84,9 @@ describe('SettlementEncoder', () => {
         setGlobalAdapter(adapters[adapterName])
         await encoders[adapterName]?.signEncodeTrade(
           testOrder,
-          adapters[adapterName].signer,
           SigningScheme.EIP712,
           tradeExecution,
+          adapters[adapterName].signer,
         )
       }
 

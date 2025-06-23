@@ -72,8 +72,8 @@ export class CowShedHooks {
     calls: ICoWShedCall[],
     nonce: string,
     deadline: bigint,
-    owner: SignerLike | undefined,
     signingScheme: EcdsaSigningScheme,
+    owner?: SignerLike,
   ): Promise<string> {
     const adapter = getGlobalAdapter()
     const signer = owner ? adapter.createSigner(owner) : adapter.signer
@@ -83,7 +83,7 @@ export class CowShedHooks {
 
     const { domain, types, message } = this.infoToSign(calls, nonce, deadline, proxy)
 
-    return await ecdsaSignTypedData(signingScheme, signer, domain, types, message)
+    return await ecdsaSignTypedData(signingScheme, domain, types, message, signer)
   }
 
   infoToSign(calls: ICoWShedCall[], nonce: string, deadline: bigint, proxy: string) {
