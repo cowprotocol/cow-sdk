@@ -22,7 +22,7 @@ import { OrderKind } from '../../order-book'
 import { jsonWithBigintReplacer } from '../../common/utils/serialize'
 import { parseUnits } from '@ethersproject/units'
 import { QuoteResultsWithSigner } from '../../trading/getQuote'
-import { BridgeProviderQuoteError } from '../errors'
+import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../errors'
 import { getTradeParametersAfterQuote } from '../../trading/utils/misc'
 import { BridgeResultContext, GetBridgeResultResult, GetQuoteWithBridgeParams } from './types'
 import { getBridgeSignedHook } from './getBridgeSignedHook'
@@ -216,7 +216,7 @@ async function getBaseBridgeQuoteRequest<T extends BridgeQuoteResult>(params: {
   const intermediateTokens = await provider.getIntermediateTokens(quoteBridgeRequest)
 
   if (intermediateTokens.length === 0) {
-    throw new BridgeProviderQuoteError('No path found (not intermediate token for bridging)', {})
+    throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_INTERMEDIATE_TOKENS)
   }
 
   // We just pick the first intermediate token for now

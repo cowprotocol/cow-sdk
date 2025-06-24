@@ -1,6 +1,7 @@
 import { AcrossApi } from './AcrossApi'
 import { SupportedChainId } from '../../../chains'
 import { DepositStatusRequest, DepositStatusResponse, SuggestedFeesRequest, SuggestedFeesResponse } from './types'
+import { BridgeQuoteErrors } from '../../errors'
 
 // Mock fetch globally
 const mockFetch = jest.fn()
@@ -64,7 +65,7 @@ describe('AcrossApi', () => {
           destinationChainId: '137',
           destinationToken: '0x0000000000000000000000000000000000000002',
         }),
-      ).rejects.toThrow('Across Api Error')
+      ).rejects.toThrow(BridgeQuoteErrors.API_ERROR)
     })
   })
 
@@ -146,7 +147,7 @@ describe('AcrossApi', () => {
           destinationChainId: SupportedChainId.POLYGON,
           amount: 1000000000000000000n,
         }),
-      ).rejects.toThrow('Across Api Error')
+      ).rejects.toThrow(BridgeQuoteErrors.API_ERROR)
     })
   })
 
@@ -239,7 +240,7 @@ describe('AcrossApi', () => {
           originChainId: '1',
           depositId: '1234567890',
         }),
-      ).rejects.toThrow('Across Api Error')
+      ).rejects.toThrow(BridgeQuoteErrors.API_ERROR)
     })
   })
 })
