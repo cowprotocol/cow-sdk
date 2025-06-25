@@ -11,6 +11,7 @@ import { latest as latestAppData } from '@cowprotocol/app-data'
 import { OrderKind } from '@cowprotocol/contracts'
 import { BridgeStatus, QuoteBridgeRequest } from '../../types'
 import { BungeeQuote, BungeeBuildTx, BungeeEvent, BungeeEventStatus, BungeeBridgeName, BungeeBridge } from './types'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 // Mock BungeeApi
 jest.mock('./BungeeApi')
@@ -37,6 +38,9 @@ describe('BungeeBridgeProvider', () => {
   beforeEach(() => {
     const options = {
       apiOptions: {},
+      getRpcProvider() {
+        return {} as JsonRpcProvider
+      },
     }
     provider = new BungeeBridgeProviderTest(options)
   })

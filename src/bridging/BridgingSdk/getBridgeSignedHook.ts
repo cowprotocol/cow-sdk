@@ -7,7 +7,7 @@ import { BridgeResultContext } from './types'
 
 export async function getBridgeSignedHook(
   bridgeRequest: QuoteBridgeRequest,
-  { provider, signer, defaultGasLimit, swapResult, validToOverride }: BridgeResultContext,
+  { provider, signer, hookGasLimit, swapResult, validToOverride }: BridgeResultContext,
 ): Promise<{ hook: BridgeHook; unsignedBridgeCall: EvmCall; bridgingQuote: BridgeQuoteResult }> {
   // Get the quote for the bridging of the intermediate token to the final token
   const bridgingQuote = await provider.getQuote(bridgeRequest)
@@ -24,7 +24,7 @@ export async function getBridgeSignedHook(
     signer,
     bridgeHookNonce,
     deadline,
-    defaultGasLimit,
+    hookGasLimit,
   )
 
   return {
