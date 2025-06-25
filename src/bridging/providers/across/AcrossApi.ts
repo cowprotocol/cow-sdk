@@ -9,7 +9,7 @@ import {
   SuggestedFeesRequest,
   SuggestedFeesResponse,
 } from './types'
-import { BridgeProviderQuoteError } from '../../errors'
+import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { TokenInfo } from '../../../common'
 
 const ACROSS_API_URL = 'https://app.across.to/api'
@@ -103,7 +103,7 @@ export class AcrossApi {
 
     if (!response.ok) {
       const errorBody = await response.json()
-      throw new BridgeProviderQuoteError('Across Api Error', errorBody)
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.API_ERROR, errorBody)
     }
 
     // Validate the response
@@ -112,10 +112,7 @@ export class AcrossApi {
       if (isValidResponse(json)) {
         return json
       } else {
-        throw new BridgeProviderQuoteError(
-          `Invalid response for Across API call ${path}. The response doesn't pass the validation. Did the API change?`,
-          json,
-        )
+        throw new BridgeProviderQuoteError(BridgeQuoteErrors.INVALID_API_JSON_RESPONSE, { path, json })
       }
     }
 

@@ -29,7 +29,7 @@ import { createBungeeDepositCall } from './createBungeeDepositCall'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
 import { BungeeBridgeName, BungeeBuildTx, BungeeEventStatus, BungeeQuote, BungeeQuoteAPIRequest } from './types'
 import { getSigner } from '../../../common/utils/wallet'
-import { BridgeProviderQuoteError } from '../../errors'
+import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 
 export const BUNGEE_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/bungee`
@@ -81,7 +81,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
 
   async getIntermediateTokens(request: QuoteBridgeRequest): Promise<TokenInfo[]> {
     if (request.kind !== OrderKind.SELL) {
-      throw new BridgeProviderQuoteError('Only SELL is supported for now', { kind: request.kind })
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.ONLY_SELL_ORDER_SUPPORTED, { kind: request.kind })
     }
 
     return this.api.getIntermediateTokens({
@@ -126,7 +126,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     )
 
     if (!isBuildTxValid) {
-      throw new BridgeProviderQuoteError('Build tx data is invalid', quoteWithBuildTx)
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.TX_BUILD_ERROR, quoteWithBuildTx)
     }
 
     // convert bungee quote response to BridgeQuoteResult
