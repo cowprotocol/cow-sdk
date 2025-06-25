@@ -1,0 +1,78 @@
+{
+  "name": "@cowprotocol/sdk",
+  "version": "7.0.0-RC.01",
+  "license": "(MIT OR Apache-2.0)",
+  "description": "CowProtocol SDK - Complete umbrella package for CoW Protocol interactions",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "lint": "eslint src/**/*.ts",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^20.17.31",
+    "jest": "^29.7.0",
+    "ts-node": "^10.8.2",
+    "tsup": "^7.2.0",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@cowprotocol/sdk-common": "workspace:*",
+    "@cowprotocol/sdk-config": "workspace:*",
+    "@cowprotocol/sdk-contracts-ts": "workspace:*",
+    "@cowprotocol/sdk-app-data": "workspace:*",
+    "@cowprotocol/sdk-order-book": "workspace:*",
+    "@cowprotocol/sdk-subgraph": "workspace:*",
+    "@cowprotocol/sdk-cow-shed": "workspace:*",
+    "@cowprotocol/sdk-trading": "workspace:*",
+    "@cowprotocol/sdk-composable": "workspace:*",
+    "@cowprotocol/sdk-order-signing": "workspace:*"
+  },
+  "peerDependencies": {
+    "cross-fetch": "^3.x",
+    "ipfs-only-hash": "^4.x",
+    "multiformats": "^9.x",
+    "@openzeppelin/merkle-tree": "^1.x"
+  },
+  "peerDependenciesMeta": {
+    "cross-fetch": {
+      "optional": false
+    },
+    "ipfs-only-hash": {
+      "optional": true
+    },
+    "multiformats": {
+      "optional": true
+    },
+    "@openzeppelin/merkle-tree": {
+      "optional": true
+    }
+  },
+  "keywords": [
+    "cow-protocol",
+    "ethereum",
+    "defi",
+    "trading",
+    "dex",
+    "mev-protection",
+    "batch-auctions",
+    "sdk",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cowprotocol/cow-sdk.git",
+    "directory": "packages/sdk"
+  },
+  "bugs": {
+    "url": "https://github.com/cowprotocol/cow-sdk/issues"
+  },
+  "homepage": "https://github.com/cowprotocol/cow-sdk#readme"
+}
