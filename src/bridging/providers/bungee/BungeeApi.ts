@@ -17,7 +17,7 @@ import {
   SupportedBridge,
   UserRequestValidation,
 } from './types'
-import { BridgeProviderQuoteError } from '../../errors'
+import { BridgeProviderError, BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { SocketVerifierAddresses } from './const/contracts'
 import { ethers } from 'ethers'
 import { SOCKET_VERIFIER_ABI } from './abi'
@@ -31,6 +31,13 @@ const BUNGEE_EVENTS_API_URL = 'https://microservices.socket.tech/loki'
 const ACROSS_API_URL = 'https://app.across.to/api'
 
 const SUPPORTED_BRIDGES: SupportedBridge[] = ['across', 'cctp']
+
+const errorMessageMap = {
+  bungee: 'Bungee Api Error',
+  events: 'Bungee Events Api Error',
+  across: 'Across Api Error',
+  'bungee-manual': 'Bungee Manual Api Error',
+}
 
 export interface BungeeApiOptions {
   apiBaseUrl?: string
@@ -53,9 +60,10 @@ export class BungeeApi {
     this.validateBridges(this.getSupportedBridges())
   }
 
+  // TODO: why do we need options.includeBridges then? Practically, you cannot add more bridges dynamically
   validateBridges(includeBridges: SupportedBridge[]): void {
     if (includeBridges?.some((bridge) => !SUPPORTED_BRIDGES.includes(bridge))) {
-      throw new BridgeProviderQuoteError(
+      throw new BridgeProviderError(
         `Unsupported bridge: ${includeBridges.filter((bridge) => !SUPPORTED_BRIDGES.includes(bridge)).join(', ')}`,
         { includeBridges },
       )
@@ -80,7 +88,7 @@ export class BungeeApi {
     })
     const response = await this.makeApiCall<BungeeBuyTokensAPIResponse>('bungee-manual', '/dest-tokens', urlParams)
     if (!response.success) {
-      throw new BridgeProviderQuoteError('Bungee Api Error: Buy tokens failed', response)
+      throw new BridgeProviderError('Bungee Api Error: Buy tokens failed', response)
     }
 
     return response.result.map((token) => ({
@@ -117,7 +125,7 @@ export class BungeeApi {
       urlParams,
     )
     if (!response.success) {
-      throw new BridgeProviderQuoteError('Bungee Api Error: Intermediate tokens failed', response)
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_INTERMEDIATE_TOKENS, response)
     }
 
     return response.result.map((token) => ({
@@ -160,7 +168,7 @@ export class BungeeApi {
         isValidQuoteResponse,
       )
       if (!response.success) {
-        throw new BridgeProviderQuoteError('Bungee Api Error: Quote failed', response)
+        throw new BridgeProviderQuoteError(BridgeQuoteErrors.QUOTE_ERROR, response)
       }
       // prepare quote timestamp from current timestamp
       const quoteTimestamp = Math.floor(Date.now() / 1000)
@@ -168,20 +176,20 @@ export class BungeeApi {
       // check if manualRoutes is empty
       const { manualRoutes } = response.result
       if (manualRoutes.length === 0) {
-        throw new BridgeProviderQuoteError('No routes found', response.result)
+        throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES, response.result)
       }
 
       // Ensure we have a valid route with details
       const firstRoute = manualRoutes[0]
       if (!firstRoute?.routeDetails?.name) {
-        throw new BridgeProviderQuoteError('Invalid route: missing route details or name', { manualRoutes })
+        throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES, { manualRoutes })
       }
 
       // validate bridge name
       const bridgeName = getBungeeBridgeFromDisplayName(firstRoute.routeDetails.name)
 
       if (!bridgeName) {
-        throw new BridgeProviderQuoteError('Invalid bridge name', { firstRoute })
+        throw new BridgeProviderQuoteError(BridgeQuoteErrors.INVALID_BRIDGE, { firstRoute })
       }
 
       // sort manual routes by output
@@ -218,7 +226,7 @@ export class BungeeApi {
       quoteId: quote.route.quoteId,
     })
     if (!response.success) {
-      throw new BridgeProviderQuoteError('Bungee Api Error: Build tx failed', response)
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.TX_BUILD_ERROR, response)
     }
     return response.result
   }
@@ -269,7 +277,10 @@ export class BungeeApi {
     const socketVerifierAddress = SocketVerifierAddresses[originChainId]
 
     if (!socketVerifierAddress) {
-      throw new BridgeProviderQuoteError(`Socket verifier not found`, { originChainId })
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.TX_BUILD_ERROR, {
+        originChainId,
+        error: 'Socket verifier not found',
+      })
     }
 
     const SocketVerifier = new ethers.Contract(socketVerifierAddress, SOCKET_VERIFIER_ABI, _signer)
@@ -308,7 +319,7 @@ export class BungeeApi {
       isValidBungeeEventsResponse,
     )
     if (!response.success) {
-      throw new BridgeProviderQuoteError('Bungee Events Api Error', response)
+      throw new BridgeProviderError('Bungee Events Api Error', response)
     }
     return response.result
   }
@@ -342,13 +353,6 @@ export class BungeeApi {
       'bungee-manual': this.options.manualApiBaseUrl || BUNGEE_MANUAL_API_URL,
     }
 
-    const errorMessageMap = {
-      bungee: 'Bungee Api Error',
-      events: 'Bungee Events Api Error',
-      across: 'Across Api Error',
-      'bungee-manual': 'Bungee Manual Api Error',
-    }
-
     const baseUrl = baseUrlMap[apiType]
     const url = `${baseUrl}${path}?${new URLSearchParams(params).toString()}`
 
@@ -358,15 +362,12 @@ export class BungeeApi {
 
     if (!response.ok) {
       const errorBody = await response.json()
-      throw new BridgeProviderQuoteError(errorMessageMap[apiType], errorBody)
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.API_ERROR, { errorBody, type: errorMessageMap[apiType] })
     }
 
     const json = await response.json()
     if (isValidResponse && !isValidResponse(json)) {
-      throw new BridgeProviderQuoteError(
-        `Invalid response for ${apiType} API call ${path}. The response doesn't pass the validation. Did the API change?`,
-        json,
-      )
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.INVALID_API_JSON_RESPONSE, { json, apiType, params })
     }
 
     return json
