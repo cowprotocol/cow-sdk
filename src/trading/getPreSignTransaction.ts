@@ -21,9 +21,7 @@ export async function getPreSignTransaction(
   const gas = await contract.estimateGas
     .setPreSignature(orderId, true)
     .then((res) => BigInt(res.toHexString()))
-    .catch((error) => {
-      console.error(error)
-
+    .catch(() => {
       return GAS_LIMIT_DEFAULT
     })
 
