@@ -1,7 +1,6 @@
 import {
   Provider,
   Signer,
-  VoidSigner,
   Wallet,
   BytesLike,
   ZeroAddress,
@@ -51,7 +50,7 @@ export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
   declare protected _type?: EthersV6Types
 
   private _provider: Provider
-  private _signerAdapter: EthersV6SignerAdapter
+  private _signerAdapter?: EthersV6SignerAdapter
 
   public TypedDataVersionedSigner = TypedDataVersionedSigner
   public TypedDataV3Signer = TypedDataV3Signer
@@ -86,25 +85,37 @@ export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
           this._signerAdapter = new EthersV6SignerAdapter(ethersV6Signer)
         }
       }
-    } else {
-      // No signer provided, create VoidSigner for read-only operations
-      const voidSigner = new VoidSigner(ZeroAddress, this._provider)
-      this._signerAdapter = new EthersV6SignerAdapter(voidSigner)
     }
 
     this.utils = new EthersV6Utils()
   }
 
   get signer(): EthersV6SignerAdapter {
+    if (!this._signerAdapter) {
+      throw new CowError('No signer provided, use setSigner to create a signer')
+    }
     return this._signerAdapter
   }
 
-  createSigner(signerOrPrivateKey: PrivateKey | EthersV6SignerAdapter): EthersV6SignerAdapter {
+  setSigner(signer: Signer | PrivateKey) {
+    this._signerAdapter = this.createSigner(signer)
+  }
+
+  createSigner(signerOrPrivateKey: Signer | PrivateKey | EthersV6SignerAdapter): EthersV6SignerAdapter {
     if (signerOrPrivateKey instanceof EthersV6SignerAdapter) {
       return signerOrPrivateKey
     }
-    const wallet = new Wallet(signerOrPrivateKey, this._provider)
-    return new EthersV6SignerAdapter(wallet)
+    if (typeof signerOrPrivateKey === 'string') {
+      const ethersV6Signer = new Wallet(signerOrPrivateKey, this._provider)
+      return new EthersV6SignerAdapter(ethersV6Signer)
+    }
+    const ethersV6Signer = signerOrPrivateKey as Signer
+    if (!ethersV6Signer.provider) {
+      const connectedSigner = ethersV6Signer.connect(this._provider)
+      return new EthersV6SignerAdapter(connectedSigner)
+    } else {
+      return new EthersV6SignerAdapter(ethersV6Signer)
+    }
   }
 
   async getChainId(): Promise<number> {

@@ -55,12 +55,13 @@ export interface ViemAdapterOptions {
 export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
   declare protected _type?: ViemTypes
 
+  private _chain: Chain
   private _transport: Transport
   private _publicClient: PublicClient
   private _account?: Account
-  private _walletClient: WalletClient
+  private _walletClient?: WalletClient
   public utils: ViemUtils
-  private _signerAdapter: ViemSignerAdapter
+  private _signerAdapter?: ViemSignerAdapter
 
   public TypedDataVersionedSigner = TypedDataVersionedSigner
   public TypedDataV3Signer = TypedDataV3Signer
@@ -72,6 +73,8 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
     if (!options.chain) {
       throw new CowError('Chain is required for Viem adapter')
     }
+
+    this._chain = options.chain
     // Setup transport
     if (options.transport) {
       this._transport = options.transport
@@ -104,45 +107,57 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
       })
       this._signerAdapter = new ViemSignerAdapter(this._walletClient)
       this._signerAdapter.setPublicClient(this._publicClient)
-    } else {
-      // Create a dummy wallet client for compatibility
-      this._walletClient = createWalletClient({
-        chain: options.chain,
-        transport: this._transport,
-      })
-
-      // Create a signer adapter with zero address account
-      const voidAccount: Account = privateKeyToAccount(zeroAddress)
-      const voidWallet = createWalletClient({
-        chain: options.chain,
-        transport: this._transport,
-        account: voidAccount,
-      })
-
-      this._signerAdapter = new ViemSignerAdapter(voidWallet)
-      this._signerAdapter.setPublicClient(this._publicClient)
     }
 
     this.utils = new ViemUtils()
   }
 
   get signer(): ViemSignerAdapter {
+    if (!this._signerAdapter) {
+      throw new CowError('No signer provided, use setSigner to create a signer')
+    }
     return this._signerAdapter
   }
 
-  createSigner(signerOrPrivateKey: PrivateKey | ViemSignerAdapter): ViemSignerAdapter {
+  setSigner(signer: Account | PrivateKey) {
+    if (typeof signer === 'string') {
+      const normalizedPrivateKey = normalizePrivateKey(signer)
+      this._account = privateKeyToAccount(normalizedPrivateKey)
+    }
+    if (this.isAccount(signer)) {
+      this._account = signer as Account
+    }
+
+    this._walletClient = createWalletClient({
+      chain: this._chain,
+      transport: this._transport,
+      account: this._account,
+    })
+
+    this._signerAdapter = this.createSigner(this._walletClient)
+  }
+
+  createSigner(signerOrPrivateKey: WalletClient | PrivateKey | ViemSignerAdapter): ViemSignerAdapter {
     if (signerOrPrivateKey instanceof ViemSignerAdapter) {
       return signerOrPrivateKey
     }
-    const normalizedPrivateKey = normalizePrivateKey(signerOrPrivateKey)
 
-    const account = privateKeyToAccount(normalizedPrivateKey)
-    const walletClient = createWalletClient({
-      chain: this._publicClient.chain,
-      transport: this._transport,
-      account,
-    })
-    return new ViemSignerAdapter(walletClient)
+    if (typeof signerOrPrivateKey === 'string') {
+      const normalizedPrivateKey = normalizePrivateKey(signerOrPrivateKey)
+      const account = privateKeyToAccount(normalizedPrivateKey)
+      const walletClient = createWalletClient({
+        chain: this._chain,
+        transport: this._transport,
+        account: account,
+      })
+      const signerAdapter = new ViemSignerAdapter(walletClient)
+      signerAdapter.setPublicClient(this._publicClient)
+      return signerAdapter
+    }
+
+    const signerAdapter = new ViemSignerAdapter(signerOrPrivateKey)
+    signerAdapter.setPublicClient(this._publicClient)
+    return signerAdapter
   }
 
   async getChainId(): Promise<number> {
@@ -189,5 +204,16 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
     const providerToUse = provider || this._publicClient
     const block = await providerToUse.getBlock({ blockTag })
     return block
+  }
+
+  private isAccount(signer: unknown): signer is Account {
+    return (
+      typeof signer === 'object' &&
+      signer !== null &&
+      'address' in signer &&
+      'type' in signer &&
+      typeof (signer as any).address === 'string' &&
+      typeof (signer as any).type === 'string'
+    )
   }
 }

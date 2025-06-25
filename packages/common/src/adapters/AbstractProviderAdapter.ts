@@ -1,5 +1,13 @@
 import { AbstractSigner } from './AbstractSigner'
-import type { AdapterTypes, AdapterUtils, Block, PrivateKey, ReadContractParams, TransactionParams } from './types'
+import type {
+  AdapterTypes,
+  AdapterUtils,
+  Block,
+  PrivateKey,
+  ReadContractParams,
+  Signer,
+  TransactionParams,
+} from './types'
 
 /**
  * AbstractProviderAdapter defines the common interface that all provider-specific
@@ -19,7 +27,7 @@ export abstract class AbstractProviderAdapter<T extends AdapterTypes = AdapterTy
 
   // Core functionality
   abstract getChainId(): Promise<number>
-  abstract createSigner(signerOrPrivateKey: PrivateKey | AbstractSigner): AbstractSigner
+  abstract createSigner(signerOrPrivateKey: Signer | PrivateKey | AbstractSigner): AbstractSigner
   // reading functionality
   abstract getStorageAt(address: T['Address'], slot: unknown): Promise<unknown>
 
