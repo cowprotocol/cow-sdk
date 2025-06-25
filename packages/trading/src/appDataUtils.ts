@@ -1,4 +1,4 @@
-import { AppDataInfo, AppDataRootSchema, BuildAppDataParams } from './types'
+import { TradingAppDataInfo, AppDataRootSchema, BuildAppDataParams } from './types'
 import {
   AppDataParams,
   type LatestAppDataDocVersion,
@@ -11,7 +11,7 @@ import deepmerge from 'deepmerge'
 export async function buildAppData(
   { slippageBps, appCode, orderClass: orderClassName, partnerFee }: BuildAppDataParams,
   advancedParams?: AppDataParams,
-): Promise<AppDataInfo> {
+): Promise<TradingAppDataInfo> {
   const quoteParams = { slippageBips: slippageBps }
   const orderClass = { orderClass: orderClassName }
   const metadataApiSdk = new MetadataApi(getGlobalAdapter())
@@ -37,7 +37,7 @@ export async function buildAppData(
 
 export async function generateAppDataFromDoc(
   doc: AppDataRootSchema,
-): Promise<Pick<AppDataInfo, 'fullAppData' | 'appDataKeccak256'>> {
+): Promise<Pick<TradingAppDataInfo, 'fullAppData' | 'appDataKeccak256'>> {
   const adapter = getGlobalAdapter()
   const fullAppData = await stringifyDeterministic(doc)
   const appDataKeccak256 = adapter.utils.keccak256(adapter.utils.toUtf8Bytes(fullAppData))
@@ -48,7 +48,7 @@ export async function generateAppDataFromDoc(
 export async function mergeAppDataDoc(
   _doc: LatestAppDataDocVersion,
   appDataOverride: AppDataParams,
-): Promise<AppDataInfo> {
+): Promise<TradingAppDataInfo> {
   // Do not merge hooks if there are overrides
   // Otherwise we will just append hooks instead of overriding
   const doc = appDataOverride.metadata?.hooks

@@ -1,4 +1,4 @@
-import { AppDataInfo, LimitOrderParameters } from './types'
+import { TradingAppDataInfo, LimitOrderParameters } from './types'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderBookApi, OrderKind } from '@cowprotocol/sdk-order-book'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
@@ -39,7 +39,7 @@ const appDataMock = {
   appDataKeccak256: '0xaf1908d8e30f63bf4a6dbd41d2191eb092ac0af626b37c720596426130717658',
   fullAppData:
     '{\\"appCode\\":\\"CoW Swap\\",\\"environment\\":\\"barn\\",\\"metadata\\":{\\"orderClass\\":{\\"orderClass\\":\\"market\\"},\\"quote\\":{\\"slippageBips\\":201,\\"smartSlippage\\":true}},\\"version\\":\\"1.3.0\\"}',
-} as unknown as AppDataInfo
+} as unknown as TradingAppDataInfo
 
 const mockTransactionResponse = {
   hash: '0xccdd11',

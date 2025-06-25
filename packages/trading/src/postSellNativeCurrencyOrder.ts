@@ -1,5 +1,10 @@
 import { getGlobalAdapter, SignerLike } from '@cowprotocol/sdk-common'
-import { AppDataInfo, LimitTradeParametersFromQuote, OrderPostingResult, PostTradeAdditionalParams } from './types'
+import {
+  TradingAppDataInfo,
+  LimitTradeParametersFromQuote,
+  OrderPostingResult,
+  PostTradeAdditionalParams,
+} from './types'
 
 import { OrderBookApi, SigningScheme } from '@cowprotocol/sdk-order-book'
 import { getEthFlowTransaction } from './getEthFlowTransaction'
@@ -8,7 +13,7 @@ import { log } from '@cowprotocol/sdk-common'
 
 export async function postSellNativeCurrencyOrder(
   orderBookApi: OrderBookApi,
-  appData: Pick<AppDataInfo, 'fullAppData' | 'appDataKeccak256'>,
+  appData: Pick<TradingAppDataInfo, 'fullAppData' | 'appDataKeccak256'>,
   _params: LimitTradeParametersFromQuote,
   additionalParams: PostTradeAdditionalParams = {},
   paramSigner?: SignerLike,

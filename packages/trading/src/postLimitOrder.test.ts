@@ -15,7 +15,7 @@ import { buildAppData } from './appDataUtils'
 import { createAdapters } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 
-import { AppDataInfo, LimitOrderParameters } from './types'
+import { TradingAppDataInfo, LimitOrderParameters } from './types'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderBookApi, OrderKind } from '@cowprotocol/sdk-order-book'
 import { postLimitOrder } from './postLimitOrder'
@@ -37,7 +37,7 @@ const defaultOrderParams: Omit<LimitOrderParameters, 'signer'> = {
 const currentTimestamp = 1487076708000
 
 const orderBookApiMock = {} as unknown as OrderBookApi
-const appDataMock = {} as unknown as AppDataInfo
+const appDataMock = {} as unknown as TradingAppDataInfo
 
 describe('postLimitOrder', () => {
   let buildAppDataMock: jest.SpyInstance

@@ -1,5 +1,5 @@
 import { OrderBookApi, OrderCreation, SigningScheme } from '@cowprotocol/sdk-order-book'
-import { AppDataInfo, LimitTradeParameters, OrderPostingResult, PostTradeAdditionalParams } from './types'
+import { TradingAppDataInfo, LimitTradeParameters, OrderPostingResult, PostTradeAdditionalParams } from './types'
 import { SIGN_SCHEME_MAP } from './consts'
 import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
 import { getOrderToSign } from './getOrderToSign'
@@ -9,7 +9,7 @@ import { getGlobalAdapter, log, SignerLike } from '@cowprotocol/sdk-common'
 
 export async function postCoWProtocolTrade(
   orderBookApi: OrderBookApi,
-  appData: AppDataInfo,
+  appData: TradingAppDataInfo,
   params: LimitTradeParameters,
   additionalParams: PostTradeAdditionalParams = {},
   paramSigner?: SignerLike,

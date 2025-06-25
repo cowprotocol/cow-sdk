@@ -1,7 +1,7 @@
 import { getGlobalAdapter, log, AccountAddress, AbstractSigner } from '@cowprotocol/sdk-common'
 import { DEFAULT_QUOTE_VALIDITY, DEFAULT_SLIPPAGE_BPS } from './consts'
 import {
-  AppDataInfo,
+  TradingAppDataInfo,
   BuildAppDataParams,
   QuoteResults,
   QuoterParameters,
@@ -44,7 +44,7 @@ export type QuoteResultsWithSigner = {
 
 interface GetQuoteRawResult {
   quote: OrderQuoteResponse
-  appDataInfo: AppDataInfo
+  appDataInfo: TradingAppDataInfo
   orderBookApi: OrderBookApi
   tradeParameters: TradeParameters
   slippageBps: number

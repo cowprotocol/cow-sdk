@@ -160,7 +160,7 @@ export interface QuoteResults {
   /**
    * Information about the app-data, including the JSON document and the keccak256 hash of the full document.
    */
-  appDataInfo: AppDataInfo
+  appDataInfo: TradingAppDataInfo
 
   /**
    * EIP-712 typed data for the order ready to be signed.
@@ -196,11 +196,11 @@ export interface BuildAppDataParams {
 }
 
 /**
- * Information about the app-data, including the JSON document and the keccak256 hash of the full document.
+ * Information about the app-data for trading operations, including the JSON document and the keccak256 hash of the full document.
  *
  * See https://github.com/cowprotocol/app-data
  */
-export interface AppDataInfo {
+export interface TradingAppDataInfo {
   doc: LatestAppDataDocVersion
   fullAppData: AppData
   appDataKeccak256: AppDataHash
