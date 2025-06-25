@@ -59,7 +59,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   })
 
   // Get the hook mock for cost estimation
-  const hookEstimatedGasLimit = provider.getGasLimitEstimationForHook(bridgeRequestWithoutAmount)
+  const hookEstimatedGasLimit = await provider.getGasLimitEstimationForHook(bridgeRequestWithoutAmount)
   const mockedHook = getHookMockForCostEstimation(hookEstimatedGasLimit)
   log(`Using mocked hook for swap gas estimation: ${JSON.stringify(mockedHook)}`)
 
@@ -112,7 +112,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   // Get the bridge result
   async function signHooksAndSetSwapResult(
     signer: Signer,
-    defaultGasLimit?: bigint,
+    hookGasLimit: number,
     advancedSettings?: SwapAdvancedSettings,
   ): Promise<{ swapResult: QuoteResults; bridgeResult: BridgeQuoteResults }> {
     const appDataOverride = advancedSettings?.appData
@@ -136,7 +136,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
       mockedHook,
       appDataOverride,
       validToOverride,
-      defaultGasLimit,
+      hookGasLimit,
     })
     log(`Bridge hook for swap: ${JSON.stringify(bridgeHook)}`)
 
@@ -162,14 +162,13 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
     }
   }
 
-  const defaultGasLimit = bridgeHookSigner ? BigInt(hookEstimatedGasLimit) : undefined
-  log(`Using gas limit: ${defaultGasLimit}`)
+  log(`Using gas limit: ${hookEstimatedGasLimit}`)
   const result = await signHooksAndSetSwapResult(
     // Sign the hooks with bridgeHookSigner if provided
     bridgeHookSigner ? getSigner(bridgeHookSigner) : signer,
     // Use estimated hook gas limit if bridgeHookSigner is provided, so we don't have to estimate the hook gas limit twice
     // Moreover, since bridgeHookSigner is not the real signer, the estimation will fail
-    defaultGasLimit,
+    hookEstimatedGasLimit,
   )
 
   return {
@@ -177,7 +176,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
     bridge: result.bridgeResult,
     async postSwapOrderFromQuote(advancedSettings?: SwapAdvancedSettings) {
       // Sign the hooks with the real signer
-      const { swapResult } = await signHooksAndSetSwapResult(signer, defaultGasLimit, advancedSettings)
+      const { swapResult } = await signHooksAndSetSwapResult(signer, hookEstimatedGasLimit, advancedSettings)
 
       const quoteResults: QuoteResultsWithSigner = {
         result: {

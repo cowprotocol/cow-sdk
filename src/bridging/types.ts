@@ -144,6 +144,8 @@ export interface BridgeDeposit extends Omit<QuoteBridgeRequest, 'amount'> {
 export interface BridgeProvider<Q extends BridgeQuoteResult> {
   info: BridgeProviderInfo
 
+  getRpcProvider(chainId: SupportedChainId): JsonRpcProvider
+
   /**
    * Get basic supported chains
    */
@@ -192,7 +194,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    *
    * By estimating gas costs independently, we can resolve this dependency cycle.
    */
-  getGasLimitEstimationForHook(request: Omit<QuoteBridgeRequest, 'amount'>): number
+  getGasLimitEstimationForHook(request: Omit<QuoteBridgeRequest, 'amount'>): Promise<number>
 
   /**
    * Get a pre-authorized hook for initiating a bridge.
@@ -212,7 +214,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
     signer: Signer,
     bridgeHookNonce: string,
     deadline: bigint,
-    defaultGasLimit?: bigint,
+    hookGasLimit: number,
   ): Promise<BridgeHook>
 
   /**
@@ -228,16 +230,10 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
   /**
    * Get the identifier of the bridging transaction from the settlement transaction.
    * @param chainId
-   * @param provider - Provider is needed in order to get transaction details from blockchain.
    * @param orderUid - The unique identifier of the order
    * @param txHash - The hash of the settlement transaction in which the bridging post-hook was executed
    */
-  getBridgingParams(
-    chainId: ChainId,
-    provider: JsonRpcProvider,
-    orderUid: string,
-    txHash: string,
-  ): Promise<BridgingDepositParams | null>
+  getBridgingParams(chainId: ChainId, orderUid: string, txHash: string): Promise<BridgingDepositParams | null>
 
   /**
    * Get the explorer url for a bridging id.

@@ -39,7 +39,7 @@ const contextMock = {
     getSignedHook: jest.fn().mockResolvedValue(signedHookMock),
   },
   signer: {},
-  defaultGasLimit: 100000n,
+  hookGasLimit: 100000n,
 } as unknown as BridgeResultContext
 
 describe('getBridgeSignedHook', () => {
@@ -59,7 +59,7 @@ describe('getBridgeSignedHook', () => {
       '0xf01825773465a7291865614a7f831f001fe880f3aa482b34a4f8f8997bce9803',
       // deadline
       1750150784n,
-      contextMock.defaultGasLimit,
+      contextMock.hookGasLimit,
     )
   })
 

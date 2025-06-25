@@ -113,6 +113,10 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
     website: 'https://across.to',
   }
 
+  public getRpcProvider() {
+    return {} as unknown as JsonRpcProvider
+  }
+
   async getNetworks(): Promise<ChainInfo[]> {
     return [mainnet, optimism, sepolia]
   }
@@ -163,7 +167,7 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
     }
   }
 
-  getGasLimitEstimationForHook(_request: QuoteBridgeRequest): number {
+  async getGasLimitEstimationForHook(_request: QuoteBridgeRequest): Promise<number> {
     return 110_000
   }
 
@@ -203,12 +207,7 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
     }
   }
 
-  async getBridgingParams(
-    _chainId: ChainId,
-    _provider: JsonRpcProvider,
-    _orderUid: string,
-    _txHash: string,
-  ): Promise<BridgingDepositParams> {
+  async getBridgingParams(_chainId: ChainId, _orderUid: string, _txHash: string): Promise<BridgingDepositParams> {
     return BRIDGING_PARAMS
   }
 

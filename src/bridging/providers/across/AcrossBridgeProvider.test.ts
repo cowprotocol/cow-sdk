@@ -42,6 +42,9 @@ describe('AcrossBridgeProvider', () => {
   beforeEach(() => {
     const options = {
       apiOptions: {},
+      getRpcProvider() {
+        return {} as JsonRpcProvider
+      },
     }
     provider = new AcrossBridgeProviderTest(options)
   })
@@ -196,7 +199,9 @@ describe('AcrossBridgeProvider', () => {
     } as unknown as JsonRpcProvider
 
     it('should return null if the transaction receipt has no deposit events', async () => {
-      expect(await provider.getBridgingParams(10, mockProvider, '123', '123')).toBe(null)
+      provider.getRpcProvider = () => mockProvider
+
+      expect(await provider.getBridgingParams(10, '123', '123')).toBe(null)
     })
   })
 

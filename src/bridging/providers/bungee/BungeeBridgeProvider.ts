@@ -14,7 +14,7 @@ import {
   BridgingDepositParams,
   QuoteBridgeRequest,
 } from '../../types'
-import { DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION, RAW_PROVIDERS_FILES_PATH } from '../../const'
+import { RAW_PROVIDERS_FILES_PATH } from '../../const'
 import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
 import { EvmCall, TokenInfo } from '../../../common'
 import { mainnet } from '../../../chains/details/mainnet'
@@ -30,6 +30,7 @@ import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
 import { BungeeBridgeName, BungeeBuildTx, BungeeEventStatus, BungeeQuote, BungeeQuoteAPIRequest } from './types'
 import { getSigner } from '../../../common/utils/wallet'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
+import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 
 export const BUNGEE_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/bungee`
 export const BUNGEE_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
@@ -38,6 +39,8 @@ export const BUNGEE_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, o
 const SLIPPAGE_TOLERANCE_BPS = 0
 
 export interface BungeeBridgeProviderOptions {
+  getRpcProvider(chainId: SupportedChainId): JsonRpcProvider
+
   // API options
   apiOptions?: BungeeApiOptions
 
@@ -53,10 +56,12 @@ export interface BungeeQuoteResult extends BridgeQuoteResult {
 export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   protected api: BungeeApi
   protected cowShedSdk: CowShedSdk
+  public getRpcProvider: (chainId: SupportedChainId) => JsonRpcProvider
 
-  constructor(private options: BungeeBridgeProviderOptions = {}) {
+  constructor(private options: BungeeBridgeProviderOptions) {
     this.api = new BungeeApi(options.apiOptions)
     this.cowShedSdk = new CowShedSdk(options.cowShedOptions)
+    this.getRpcProvider = options.getRpcProvider
   }
 
   info: BridgeProviderInfo = {
@@ -136,8 +141,8 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     })
   }
 
-  getGasLimitEstimationForHook(_request: QuoteBridgeRequest): number {
-    return DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION
+  async getGasLimitEstimationForHook(request: QuoteBridgeRequest): Promise<number> {
+    return getGasLimitEstimationForHook(this.cowShedSdk, request, this.getRpcProvider(request.sellTokenChainId))
   }
 
   async getSignedHook(
@@ -146,7 +151,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     signer: Signer,
     bridgeHookNonce: string,
     deadline: bigint,
-    defaultGasLimit?: bigint,
+    hookGasLimit: number,
   ): Promise<BridgeHook> {
     // Sign the multicall
     const { signedMulticall, cowShedAccount, gasLimit } = await this.cowShedSdk.signCalls({
@@ -161,7 +166,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
       ],
       chainId,
       signer,
-      defaultGasLimit,
+      gasLimit: BigInt(hookGasLimit),
       deadline,
       nonce: bridgeHookNonce,
     })
@@ -178,12 +183,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     }
   }
 
-  async getBridgingParams(
-    _chainId: ChainId,
-    _provider: JsonRpcProvider,
-    orderId: string,
-    _txHash: string,
-  ): Promise<BridgingDepositParams | null> {
+  async getBridgingParams(_chainId: ChainId, orderId: string, _txHash: string): Promise<BridgingDepositParams | null> {
     const events = await this.api.getEvents({ orderId })
     const event = events[0]
 

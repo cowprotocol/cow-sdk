@@ -53,7 +53,7 @@ export interface BridgeResultContext<T extends BridgeQuoteResult = BridgeQuoteRe
   provider: BridgeProvider<T>
   signer: Signer
   mockedHook: latest.CoWHook
+  hookGasLimit: number
   validToOverride?: number
   appDataOverride?: SwapAdvancedSettings['appData']
-  defaultGasLimit?: bigint
 }
