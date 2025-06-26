@@ -133,7 +133,7 @@ export abstract class AdapterUtils {
   /**
    * Encodes a function call
    */
-  abstract encodeFunction(abi: Abi, functionName: string, args: unknown[]): Bytes
+  abstract encodeFunction(abi: Abi, functionName: string, args: unknown[]): string
 
   /**
    * Converts a BigIntish to a number
@@ -209,4 +209,9 @@ export abstract class AdapterUtils {
    * Gets the length in bytes of a hex string
    */
   abstract hexDataLength(data: string): number
+
+  /**
+   * Parses a string value to a BigIntish value with the specified decimals
+   */
+  abstract parseUnits(value: string, decimals: number): bigint
 }

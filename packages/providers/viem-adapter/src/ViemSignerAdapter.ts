@@ -15,20 +15,12 @@ export class ViemSignerAdapter extends AbstractSigner {
   protected _client: WalletClient
   protected _account: Account
   protected _publicClient?: PublicClient
-  protected _transport?: Transport
+  protected _transport: Transport
 
-  constructor(client: WalletClient | ViemSignerAdapter) {
+  constructor(client: WalletClient) {
     super()
 
-    if (client instanceof ViemSignerAdapter) {
-      this._client = client._client
-      this._account = client._account
-      this._publicClient = client._publicClient
-      this._transport = client._transport
-      return
-    }
-
-    this._client = client as WalletClient
+    this._client = client
     if (!this._client.account) throw new CowError('Signer is missing account')
     this._account = this._client.account
     this._transport = typeof this._client.transport === 'function' ? this._client.transport : http()

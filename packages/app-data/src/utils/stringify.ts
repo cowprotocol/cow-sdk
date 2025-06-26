@@ -1,4 +1,5 @@
-export async function stringifyDeterministic(obj: Record<string, unknown>): Promise<string> {
-  const { default: stringify } = await import('json-stringify-deterministic')
+import stringify from 'json-stringify-deterministic'
+
+export async function stringifyDeterministic(obj: object): Promise<string> {
   return stringify(obj)
 }

@@ -1,4 +1,4 @@
-import { Bytes, getGlobalAdapter, Signer, TypedDataDomain, TypedDataTypes } from '@cowprotocol/sdk-common'
+import { Bytes, getGlobalAdapter, SignerLike, TypedDataDomain, TypedDataTypes } from '@cowprotocol/sdk-common'
 import { CANCELLATIONS_TYPE_FIELDS, ORDER_TYPE_FIELDS, normalizeOrder } from './order'
 import { EcdsaSigningScheme, SigningScheme, Order, EcdsaSignature } from './types'
 
@@ -59,14 +59,14 @@ export interface PreSignSignature {
 
 export async function ecdsaSignTypedData(
   scheme: EcdsaSigningScheme,
-  owner: Signer,
   domain: TypedDataDomain,
   types: TypedDataTypes,
   data: Record<string, unknown>,
+  owner?: SignerLike,
 ): Promise<string> {
   let signature: string | null = null
   const adapter = getGlobalAdapter()
-  const signer = new adapter.Signer(owner)
+  const signer = owner ? adapter.createSigner(owner) : adapter.signer
 
   switch (scheme) {
     case SigningScheme.EIP712:
@@ -93,21 +93,22 @@ export async function ecdsaSignTypedData(
  * contract to ensure orders can't be replayed across different applications,
  * but also different deployments (as the contract chain ID and address are
  * mixed into to the domain value).
- * @param order The order to sign.
  * @param owner The owner for the order used to sign.
  * @param scheme The signing scheme to use. See {@link SigningScheme} for more
  * details.
+ * @param order The order to sign.
+ *
  * @return Encoded signature including signing scheme for the order.
  */
 export async function signOrder(
   domain: TypedDataDomain,
   order: Order,
-  owner: Signer,
   scheme: EcdsaSigningScheme,
+  owner?: SignerLike,
 ): Promise<EcdsaSignature> {
   return {
     scheme,
-    data: await ecdsaSignTypedData(scheme, owner, domain, { Order: ORDER_TYPE_FIELDS }, normalizeOrder(order)),
+    data: await ecdsaSignTypedData(scheme, domain, { Order: ORDER_TYPE_FIELDS }, normalizeOrder(order), owner),
   }
 }
 
@@ -147,18 +148,19 @@ export function decodeEip1271SignatureData(signature: Bytes): Eip1271SignatureDa
  *
  * @param domain The domain to sign the cancellation.
  * @param orderUid The unique identifier of the order being cancelled.
- * @param owner The owner for the order used to sign.
  * @param scheme The signing scheme to use. See {@link SigningScheme} for more
  * details.
+ * @param owner The owner for the order used to sign.
+ *
  * @return Encoded signature including signing scheme for the cancellation.
  */
 export async function signOrderCancellation(
   domain: TypedDataDomain,
   orderUid: Bytes,
-  owner: Signer,
   scheme: EcdsaSigningScheme,
+  owner?: SignerLike,
 ): Promise<EcdsaSignature> {
-  return signOrderCancellations(domain, [orderUid], owner, scheme)
+  return signOrderCancellations(domain, [orderUid], scheme, owner)
 }
 
 /**
@@ -167,25 +169,26 @@ export async function signOrderCancellation(
  *
  * @param domain The domain to sign the cancellation.
  * @param orderUids The unique identifiers of the orders to cancel.
- * @param owner The owner for the order used to sign.
  * @param scheme The signing scheme to use. See {@link SigningScheme} for more
  * details.
+ * @param owner The owner for the order used to sign.
+ *
  * @return Encoded signature including signing scheme for the cancellation.
  */
 export async function signOrderCancellations(
   domain: TypedDataDomain,
   orderUids: Bytes[],
-  owner: Signer,
   scheme: EcdsaSigningScheme,
+  owner?: SignerLike,
 ): Promise<EcdsaSignature> {
   return {
     scheme,
     data: await ecdsaSignTypedData(
       scheme,
-      owner,
       domain,
       { OrderCancellations: CANCELLATIONS_TYPE_FIELDS },
       { orderUids },
+      owner,
     ),
   }
 }

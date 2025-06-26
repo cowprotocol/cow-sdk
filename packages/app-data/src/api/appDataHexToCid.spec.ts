@@ -1,6 +1,7 @@
 import { APP_DATA_HEX, APP_DATA_HEX_LEGACY, CID, CID_LEGACY } from '../mocks'
 import { appDataHexToCid, appDataHexToCidLegacy } from './appDataHexToCid'
-import { AbstractProviderAdapter, getGlobalAdapter } from '@cowprotocol/sdk-common'
+import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { createAdapters } from '../../test/setup'
 
 jest.mock('multiformats/bases/base16', () => ({
   base16: {
@@ -18,102 +19,74 @@ jest.mock('multiformats/cid', () => ({
   },
 }))
 
-const mockAdapter: Partial<AbstractProviderAdapter> = {
-  utils: {
-    arrayify: (value: string) => {
-      if (value === 'invalidHash') {
-        throw new Error('Invalid hash format')
-      }
-      return new Uint8Array([1, 2, 3, 4])
-    },
-    keccak256: (data: string | Uint8Array) => '0x' + data.toString(),
-    toUtf8Bytes: (text: string) => new Uint8Array(Array.from(text).map((c) => c.charCodeAt(0))),
-  },
-}
-
-// Mock the getGlobalAdapter function
-jest.mock('@cowprotocol/sdk-common', () => {
-  const original = jest.requireActual('@cowprotocol/sdk-common')
-  return {
-    ...original,
-    getGlobalAdapter: jest.fn(() => mockAdapter),
-  }
-})
-
-beforeEach(() => {
-  jest.clearAllMocks()
-})
-
-afterEach(() => {
-  jest.restoreAllMocks()
-})
-
 describe('appDataHexToCid', () => {
-  test('Happy path', async () => {
-    // when
-    const decodedAppDataHex = await appDataHexToCid(APP_DATA_HEX)
+  let adapters: ReturnType<typeof createAdapters>
 
-    // then
-    expect(decodedAppDataHex).toEqual(CID)
-    // Verify getGlobalAdapter was called
-    expect(getGlobalAdapter).toHaveBeenCalled()
+  beforeAll(() => {
+    adapters = createAdapters()
+  })
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  test('Happy path', async () => {
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      const decodedAppDataHex = await appDataHexToCid(APP_DATA_HEX)
+      expect(decodedAppDataHex).toEqual(CID)
+    }
   })
 
   test('Throws with wrong hash format', async () => {
-    // Configure mock adapter to throw for invalidHash
-    ;(getGlobalAdapter as jest.Mock).mockImplementation(() => ({
-      ...mockAdapter,
-      getAppDataUtils: () => ({
-        arrayify: (value: string) => {
-          if (value === 'invalidHash') {
-            throw new Error('Invalid hash format')
-          }
-          return new Uint8Array([1, 2, 3, 4])
-        },
-        keccak256: (data: string | Uint8Array) => '0x' + data.toString(),
-        toUtf8Bytes: (text: string) => new Uint8Array(Array.from(text).map((c) => c.charCodeAt(0))),
-      }),
-    }))
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
-    // when
-    const promise = appDataHexToCid('invalidHash')
-
-    // then
-    await expect(promise).rejects.toThrow()
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      const promise = appDataHexToCid('invalidHash')
+      await expect(promise).rejects.toThrow()
+    }
   })
 })
 
 describe('appDataHexToCidLegacy', () => {
-  test('Happy path', async () => {
-    // when
-    const decodedAppDataHex = await appDataHexToCidLegacy(APP_DATA_HEX_LEGACY)
+  let adapters: ReturnType<typeof createAdapters>
 
-    // then
-    expect(decodedAppDataHex).toEqual(CID_LEGACY)
-    // Verify getGlobalAdapter was called
-    expect(getGlobalAdapter).toHaveBeenCalled()
+  beforeAll(() => {
+    adapters = createAdapters()
+  })
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  test('Happy path', async () => {
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      const decodedAppDataHex = await appDataHexToCidLegacy(APP_DATA_HEX_LEGACY)
+      expect(decodedAppDataHex).toEqual(CID_LEGACY)
+    }
   })
 
   test('Throws with wrong hash format', async () => {
-    // Configure mock adapter to throw for invalidHash
-    ;(getGlobalAdapter as jest.Mock).mockImplementation(() => ({
-      ...mockAdapter,
-      getAppDataUtils: () => ({
-        arrayify: (value: string) => {
-          if (value === 'invalidHash') {
-            throw new Error('Invalid hash format')
-          }
-          return new Uint8Array([1, 2, 3, 4])
-        },
-        keccak256: (data: string | Uint8Array) => '0x' + data.toString(),
-        toUtf8Bytes: (text: string) => new Uint8Array(Array.from(text).map((c) => c.charCodeAt(0))),
-      }),
-    }))
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
-    // when
-    const promise = appDataHexToCidLegacy('invalidHash')
-
-    // then
-    await expect(promise).rejects.toThrow()
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      const promise = appDataHexToCidLegacy('invalidHash')
+      await expect(promise).rejects.toThrow()
+    }
   })
 })
