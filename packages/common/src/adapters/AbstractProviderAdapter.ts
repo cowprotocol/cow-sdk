@@ -35,4 +35,5 @@ export abstract class AbstractProviderAdapter<T extends AdapterTypes = AdapterTy
   abstract call(txParams: TransactionParams, provider?: T['Provider']): Promise<string>
   abstract readContract(params: ReadContractParams, provider?: T['Provider']): Promise<unknown>
   abstract getBlock(blockTag: string, provider?: T['Provider']): Promise<Block>
+  abstract setSigner(signer: Signer | PrivateKey): void
 }

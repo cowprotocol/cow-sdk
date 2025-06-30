@@ -1,5 +1,5 @@
 {
-  "name": "@cowprotocol/sdk",
+  "name": "@cowprotocol/cow-sdk",
   "version": "7.0.0-RC.01",
   "license": "(MIT OR Apache-2.0)",
   "description": "CowProtocol SDK - Complete umbrella package for CoW Protocol interactions",
