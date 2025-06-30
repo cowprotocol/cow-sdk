@@ -16,7 +16,7 @@
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
+    "@cow-sdk/typescript-config": "workspace:*",
     "@types/node": "^20.17.31",
     "jest": "^29.7.0",
     "ts-node": "^10.8.2",

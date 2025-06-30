@@ -30,7 +30,7 @@
     "@cowprotocol/sdk-ethers-v5-adapter": "workspace:*",
     "@cowprotocol/sdk-ethers-v6-adapter": "workspace:*",
     "@cowprotocol/sdk-viem-adapter": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@cow-sdk/typescript-config": "workspace:*",
     "@types/jest": "^29.5.5",
     "@types/node": "^20.17.31",
     "ethers-v5": "npm:ethers@^5.7.2",

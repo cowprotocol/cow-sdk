@@ -18,7 +18,7 @@
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
+    "@cow-sdk/typescript-config": "workspace:*",
     "@cowprotocol/sdk-ethers-v5-adapter": "workspace:*",
     "@cowprotocol/sdk-ethers-v6-adapter": "workspace:*",
     "@cowprotocol/sdk-viem-adapter": "workspace:*",

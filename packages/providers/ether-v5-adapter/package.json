@@ -20,11 +20,11 @@
   },
   "peerDependencies": {
     "@ethersproject/abstract-signer": "^5.8.0",
-    "@typechain/ethers-v5": "^11.0.0",
+    "@typechain/ethers-v5": "^11.1.2",
     "ethers": "^5.7.2"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
+    "@cow-sdk/typescript-config": "workspace:*",
     "@types/node": "^20.5.2",
     "tsup": "^7.2.0",
     "typescript": "^5.2.2"
