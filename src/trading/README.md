@@ -127,6 +127,47 @@ if (confirm(`You will get at least: ${buyAmount}, ok?`)) {
 }
 ```
 
+#### Slippage
+
+Considering the market volatility, order needs to have a proper slippage value.
+You can manually specify a slippage:
+```typescript
+const parameters: TradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000',
+  slippageBps: 100 // 1%
+}
+
+const { quoteResults, postSwapOrderFromQuote } = await sdk.getQuote(parameters)
+```
+
+**OR, `TradingSDK` can suggest you slippage specifically for you trade.**
+In that case you should not specify `slippageBps` in the quote request.
+The slippage will be calculated automatically taking into account current network fees, trade amounts, and other conditions.
+The suggested slippage value will be returned as `suggestedSlippageBps` parameter in the quote response.
+If you post an order using `postSwapOrderFromQuote()`, then you don't need to specify any parameters, everything will happen automatically.
+
+```typescript
+const parameters: TradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000'
+}
+
+const { quoteResults: { suggestedSlippageBps }, postSwapOrderFromQuote } = await sdk.getQuote(parameters)
+
+console.log(`Suggested slippage is ${suggestedSlippageBps} BPS`)
+
+postSwapOrderFromQuote() // Order will be posted to order-book with the suggested slippage
+```
+
 ### postSwapOrder
 
 This function fetches a quote for a swap order and just creates the order.
