@@ -12,6 +12,7 @@ const ethereumLogo = `${RAW_CHAINS_FILES_PATH}/images/mainnet-logo.svg`
 export const mainnet: ChainInfo = {
   id: SupportedChainId.MAINNET,
   label: 'Ethereum',
+  eip155Label: 'Ethereum Mainnet',
   nativeCurrency: {
     ...nativeCurrencyTemplate,
     chainId: SupportedChainId.MAINNET,

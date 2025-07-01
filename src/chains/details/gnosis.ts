@@ -12,6 +12,7 @@ const gnosisChainLogo = `${RAW_CHAINS_FILES_PATH}/images/gnosis-logo.svg`
 export const gnosisChain: ChainInfo = {
   id: SupportedChainId.GNOSIS_CHAIN,
   label: 'Gnosis',
+  eip155Label: 'Gnosis',
   nativeCurrency: {
     ...nativeCurrencyTemplate,
     chainId: SupportedChainId.GNOSIS_CHAIN,

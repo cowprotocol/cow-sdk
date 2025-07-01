@@ -8,7 +8,8 @@ const avaxLogo = `${RAW_CHAINS_FILES_PATH}/images/avax-logo.svg`
 // See https://github.com/wevm/viem/blob/main/src/chains/definitions/avalanche.ts
 export const avalanche: ChainInfo = {
   id: SupportedChainId.AVALANCHE,
-  label: 'Avalanche C-Chain',
+  label: 'Avalanche',
+  eip155Label: 'Avalanche C-Chain',
   logo: { light: avaxLogo, dark: avaxLogo },
   nativeCurrency: {
     ...nativeCurrencyTemplate,
