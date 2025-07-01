@@ -1,5 +1,5 @@
 {
-  "extends": "../../packages/typescript-config/base.json",
+  "extends": "@cow-sdk/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "./dist"
   },

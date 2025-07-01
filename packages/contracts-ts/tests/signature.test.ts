@@ -1,7 +1,6 @@
 import { createAdapters } from './setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import {
-  ContractsTs,
   InteractionLike,
   normalizeInteraction,
   normalizeInteractions,
@@ -13,19 +12,9 @@ import {
 
 describe('Interactions and EIP-1271 Signatures', () => {
   let adapters: ReturnType<typeof createAdapters>
-  let contracts: {
-    ethersV5Contracts: ContractsTs
-    ethersV6Contracts: ContractsTs
-    viemContracts: ContractsTs
-  }
 
   beforeAll(() => {
     adapters = createAdapters()
-    contracts = {
-      ethersV5Contracts: new ContractsTs(adapters.ethersV5Adapter),
-      ethersV6Contracts: new ContractsTs(adapters.ethersV6Adapter),
-      viemContracts: new ContractsTs(adapters.viemAdapter),
-    }
   })
 
   describe('normalizeInteraction', () => {
@@ -114,9 +103,9 @@ describe('Interactions and EIP-1271 Signatures', () => {
       expect(firstNormalized.length).toEqual(interactions.length)
 
       for (let i = 0; i < interactions.length; i++) {
-        expect(firstNormalized[i]!.target).toEqual(interactions[i]!.target)
-        expect(firstNormalized[i]!.callData).toEqual(interactions[i]!.callData || '0x')
-        expect(firstNormalized[i]!.value).toEqual(interactions[i]!.value || 0)
+        expect(firstNormalized[i]?.target).toEqual(interactions[i]?.target)
+        expect(firstNormalized[i]?.callData).toEqual(interactions[i]?.callData || '0x')
+        expect(firstNormalized[i]?.value).toEqual(interactions[i]?.value || 0)
       }
     })
   })

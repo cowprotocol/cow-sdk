@@ -1,3 +1,4 @@
+import { CowError } from '@cowprotocol/sdk-common'
 import { AnyAppDataDocVersion } from './generatedTypes'
 import * as fs from 'fs'
 import * as path from 'path'
@@ -23,7 +24,7 @@ export async function importSchema(version: string): Promise<AnyAppDataDocVersio
     schemaCache[version] = schema
 
     return schema
-  } catch (e) {
-    throw new Error(`AppData version ${version} doesn't exist`)
+  } catch {
+    throw new CowError(`AppData version ${version} doesn't exist`)
   }
 }

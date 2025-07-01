@@ -19,7 +19,7 @@
     "graphql:codegen": "graphql-codegen --config graphql-codegen.yml"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
+    "@cow-sdk/typescript-config": "workspace:*",
     "@graphql-codegen/cli": "5.0.6",
     "@graphql-codegen/typescript": "4.1.6",
     "@graphql-codegen/typescript-operations": "^4.6.1",
@@ -28,7 +28,7 @@
     "ts-node": "^10.8.2",
     "tsup": "^7.2.0",
     "typescript": "^5.2.2",
-    "jest": "^29.4.2",
+    "jest": "^29.7.0",
     "jest-fetch-mock": "^3.0.3"
   },
   "dependencies": {

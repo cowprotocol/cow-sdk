@@ -61,7 +61,7 @@ async function _signOrder(params: SignOrderParams): Promise<Signature> {
 
   const domain = getDomain(chainId)
 
-  return signOrderGp(domain, order as unknown as OrderFromContract, signer, mapSigningSchema[signingScheme])
+  return signOrderGp(domain, order as unknown as OrderFromContract, mapSigningSchema[signingScheme], signer)
 }
 
 async function _signOrderCancellation(params: SignOrderCancellationParams): Promise<Signature> {
@@ -69,7 +69,7 @@ async function _signOrderCancellation(params: SignOrderCancellationParams): Prom
 
   const domain = getDomain(chainId)
 
-  return signOrderCancellationGp(domain, orderUid, signer, mapSigningSchema[signingScheme])
+  return signOrderCancellationGp(domain, orderUid, mapSigningSchema[signingScheme], signer)
 }
 
 async function _signOrderCancellations(params: SignOrderCancellationsParams): Promise<Signature> {
@@ -77,7 +77,7 @@ async function _signOrderCancellations(params: SignOrderCancellationsParams): Pr
 
   const domain = getDomain(chainId)
 
-  return signOrderCancellationsGp(domain, orderUids, signer, mapSigningSchema[signingScheme])
+  return signOrderCancellationsGp(domain, orderUids, mapSigningSchema[signingScheme], signer)
 }
 
 async function _signPayload(

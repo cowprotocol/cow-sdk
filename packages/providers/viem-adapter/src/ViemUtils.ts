@@ -31,6 +31,7 @@ import {
   isAddress,
   isHex,
   AbiParameter,
+  parseUnits,
 } from 'viem'
 
 export class ViemUtils implements AdapterUtils {
@@ -213,8 +214,7 @@ export class ViemUtils implements AdapterUtils {
     abi: Array<{ name: string; inputs: Array<{ type: string }>; type: string }>,
     functionName: string,
     args: unknown[],
-  ): `0x${string}` {
-    // Find the function in the ABI
+  ): string {
     const functionAbi = abi.find((item) => item.type === 'function' && item.name === functionName)
     if (!functionAbi) {
       throw new Error(`Function ${functionName} not found in ABI`)
@@ -383,5 +383,9 @@ export class ViemUtils implements AdapterUtils {
       throw new Error('Invalid hex string')
     }
     return (data.length - 2) / 2
+  }
+
+  parseUnits(value: string, decimals: number): bigint {
+    return parseUnits(value, decimals)
   }
 }

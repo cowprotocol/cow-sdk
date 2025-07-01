@@ -132,7 +132,7 @@ describe('Adapter Setup', () => {
       // Get addresses from all adapters
       const results = await Promise.all(
         adapterEntries.map(async ([name, adapter]) => {
-          const address = await adapter.getAddress()
+          const address = await adapter.signer.getAddress()
           return { name, address }
         }),
       )
@@ -161,7 +161,7 @@ describe('Adapter Setup', () => {
       // Get signatures from all adapters
       const results = await Promise.all(
         adapterEntries.map(async ([name, adapter]) => {
-          const signature = await adapter.signMessage(testMessage)
+          const signature = await adapter.signer.signMessage(testMessage)
           return { name, signature }
         }),
       )

@@ -1,4 +1,4 @@
-import { createAdapters, createWallets, TEST_ADDRESS } from './setup'
+import { AdaptersTestSetup, createAdapters, TEST_ADDRESS } from './setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { OrderSigningUtils } from '../src/orderSigningUtils'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
@@ -6,7 +6,7 @@ import { UnsignedOrder } from '../src/types'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 
 describe('OrderSigningUtils', () => {
-  let adapters: ReturnType<typeof createAdapters>
+  let adapters: AdaptersTestSetup
 
   beforeAll(() => {
     adapters = createAdapters()
@@ -27,12 +27,11 @@ describe('OrderSigningUtils', () => {
     }
 
     test('should consistently sign orders across different adapters', async () => {
-      const wallets = createWallets()
       const signatures: Record<string, string> = {}
 
-      for (const [adapterName, { adapter, wallet }] of Object.entries(wallets)) {
+      for (const [adapterName, adapter] of Object.entries(adapters)) {
         setGlobalAdapter(adapter)
-        const result = await OrderSigningUtils.signOrder(testOrder, SupportedChainId.SEPOLIA, wallet)
+        const result = await OrderSigningUtils.signOrder(testOrder, SupportedChainId.SEPOLIA, adapter.signer)
         signatures[adapterName] = result.signature
       }
 
@@ -52,12 +51,11 @@ describe('OrderSigningUtils', () => {
       '0xdaaa7dddec9ad04cc101a121e3eed017eab4d3927c045d407d5ad6700eea2bf7fb3c7eb936caa12b5a884d612393969a557d430764060343'
 
     test('should consistently sign order cancellations across different adapters', async () => {
-      const wallets = createWallets()
       const signatures: Record<string, string> = {}
 
-      for (const [adapterName, { adapter, wallet }] of Object.entries(wallets)) {
+      for (const [adapterName, adapter] of Object.entries(adapters)) {
         setGlobalAdapter(adapter)
-        const result = await OrderSigningUtils.signOrderCancellation(orderId, SupportedChainId.SEPOLIA, wallet)
+        const result = await OrderSigningUtils.signOrderCancellation(orderId, SupportedChainId.SEPOLIA, adapter.signer)
         signatures[adapterName] = result.signature
       }
 
@@ -83,12 +81,15 @@ describe('OrderSigningUtils', () => {
     const ordersUids = [orderId1, orderId2, orderId3]
 
     test('should consistently sign multiple order cancellations across different adapters', async () => {
-      const wallets = createWallets()
       const signatures: Record<string, string> = {}
 
-      for (const [adapterName, { adapter, wallet }] of Object.entries(wallets)) {
+      for (const [adapterName, adapter] of Object.entries(adapters)) {
         setGlobalAdapter(adapter)
-        const result = await OrderSigningUtils.signOrderCancellations(ordersUids, SupportedChainId.SEPOLIA, wallet)
+        const result = await OrderSigningUtils.signOrderCancellations(
+          ordersUids,
+          SupportedChainId.SEPOLIA,
+          adapter.signer,
+        )
         signatures[adapterName] = result.signature
       }
 
@@ -105,10 +106,9 @@ describe('OrderSigningUtils', () => {
 
   describe('getDomain', () => {
     test('should return consistent domain info across different adapters', async () => {
-      const wallets = createWallets()
       const domains: Record<string, any> = {}
 
-      for (const [adapterName, { adapter }] of Object.entries(wallets)) {
+      for (const [adapterName, adapter] of Object.entries(adapters)) {
         setGlobalAdapter(adapter)
         domains[adapterName] = await OrderSigningUtils.getDomain(SupportedChainId.SEPOLIA)
       }
@@ -145,10 +145,9 @@ describe('OrderSigningUtils', () => {
     const params = { owner: TEST_ADDRESS }
 
     test('should generate consistent order IDs across different adapters', async () => {
-      const wallets = createWallets()
       const orderIds: Record<string, { orderId: string; orderDigest: string }> = {}
 
-      for (const [adapterName, { adapter }] of Object.entries(wallets)) {
+      for (const [adapterName, adapter] of Object.entries(adapters)) {
         setGlobalAdapter(adapter)
         orderIds[adapterName] = await OrderSigningUtils.generateOrderId(SupportedChainId.SEPOLIA, testOrder, params)
       }
@@ -162,17 +161,16 @@ describe('OrderSigningUtils', () => {
       }
 
       // Verify structure
-      expect(orderIdValues[0]!.orderId).toMatch(/^0x[a-fA-F0-9]+$/)
-      expect(orderIdValues[0]!.orderDigest).toMatch(/^0x[a-fA-F0-9]+$/)
+      expect(orderIdValues[0]?.orderId).toMatch(/^0x[a-fA-F0-9]+$/)
+      expect(orderIdValues[0]?.orderDigest).toMatch(/^0x[a-fA-F0-9]+$/)
     })
   })
 
   describe('getDomainSeparator', () => {
     test('should return consistent domain separator across different adapters', async () => {
-      const wallets = createWallets()
       const domainSeparators: Record<string, string> = {}
 
-      for (const [adapterName, { adapter }] of Object.entries(wallets)) {
+      for (const [adapterName, adapter] of Object.entries(adapters)) {
         setGlobalAdapter(adapter)
         domainSeparators[adapterName] = await OrderSigningUtils.getDomainSeparator(SupportedChainId.SEPOLIA)
       }

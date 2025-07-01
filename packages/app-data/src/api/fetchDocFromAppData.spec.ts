@@ -1,30 +1,14 @@
 import { APP_DATA_DOC_CUSTOM, APP_DATA_HEX_LEGACY, CID_LEGACY } from '../mocks'
 import { fetchDocFromAppDataHex, fetchDocFromAppDataHexLegacy } from './fetchDocFromAppData'
-import { AbstractProviderAdapter } from '@cowprotocol/sdk-common'
+import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import fetchMock from 'jest-fetch-mock'
 import { appDataHexToCidLegacy } from './appDataHexToCid'
 import { fetchDocFromCid } from './fetchDocFromCid'
+import { createAdapters } from '../../test/setup'
 
 fetchMock.enableMocks()
 
-// Create a mock adapter
-const mockAdapter: Partial<AbstractProviderAdapter> = {
-  utils: {
-    arrayify: () => new Uint8Array([1, 2, 3, 4]),
-    keccak256: () => '0x12345678',
-    toUtf8Bytes: () => new Uint8Array([1, 2, 3, 4]),
-  },
-}
-
 // Mock the modules
-jest.mock('@cowprotocol/sdk-common', () => {
-  const original = jest.requireActual('@cowprotocol/sdk-common')
-  return {
-    ...original,
-    getGlobalAdapter: jest.fn(() => mockAdapter),
-  }
-})
-
 jest.mock('./appDataHexToCid', () => ({
   appDataHexToCid: jest.fn(async (hash) => {
     if (hash === 'invalidHash') {
@@ -44,31 +28,46 @@ jest.mock('./fetchDocFromCid', () => ({
   }),
 }))
 
-beforeEach(() => {
-  fetchMock.resetMocks()
-  jest.clearAllMocks()
-})
-
-afterEach(() => {
-  jest.restoreAllMocks()
-})
-
 describe('fetchDocFromAppData', () => {
-  test('Decodes appData', async () => {
-    // when
-    const appDataDoc = await fetchDocFromAppDataHexLegacy(APP_DATA_HEX_LEGACY)
+  let adapters: ReturnType<typeof createAdapters>
 
-    // then
-    expect(appDataHexToCidLegacy).toHaveBeenCalledWith(APP_DATA_HEX_LEGACY)
-    expect(fetchDocFromCid).toHaveBeenCalledWith(CID_LEGACY, undefined)
-    expect(appDataDoc).toEqual(APP_DATA_DOC_CUSTOM)
+  beforeAll(() => {
+    adapters = createAdapters()
+  })
+
+  beforeEach(() => {
+    fetchMock.resetMocks()
+    jest.clearAllMocks()
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  test('Decodes appData', async () => {
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+    const results: any[] = []
+
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      const appDataDoc = await fetchDocFromAppDataHexLegacy(APP_DATA_HEX_LEGACY)
+      results.push(appDataDoc)
+    }
+
+    results.forEach((appDataDoc) => {
+      expect(appDataHexToCidLegacy).toHaveBeenCalledWith(APP_DATA_HEX_LEGACY)
+      expect(fetchDocFromCid).toHaveBeenCalledWith(CID_LEGACY, undefined)
+      expect(appDataDoc).toEqual(APP_DATA_DOC_CUSTOM)
+    })
   })
 
   test('Throws with wrong hash format', async () => {
-    // when
-    const promise = fetchDocFromAppDataHex('invalidHash')
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
-    // then
-    await expect(promise).rejects.toThrow(/Error decoding AppData:/)
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      const promise = fetchDocFromAppDataHex('invalidHash')
+      await expect(promise).rejects.toThrow(/Error decoding AppData:/)
+    }
   })
 })

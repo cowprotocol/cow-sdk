@@ -1,14 +1,10 @@
 {
-  "extends": "@repo/typescript-config/base.json",
+  "extends": "@cow-sdk/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "moduleResolution": "node",
-    "module": "ESNext",
-    "target": "ESNext",
     "baseUrl": "src",
-    "skipLibCheck": true,
     "types": ["jest"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "setupTests.ts", "jest.config.ts", "**/*spec.ts"],
   "exclude": ["node_modules", "dist"]
 }

@@ -112,7 +112,6 @@ describe('Reader Classes and Storage Functions', () => {
       const mockReadStorage = jest.fn().mockResolvedValue(true)
 
       // Mock the adapter's utils.readStorage method
-      const originalReadStorage = adapters.ethersV5Adapter.utils.readStorage
       adapters.ethersV5Adapter.utils.readStorage = mockReadStorage
       adapters.ethersV6Adapter.utils.readStorage = mockReadStorage
       adapters.viemAdapter.utils.readStorage = mockReadStorage
@@ -229,7 +228,6 @@ describe('Reader Classes and Storage Functions', () => {
       const mockReadStorage = jest.fn().mockResolvedValue(mockFilledAmounts)
 
       // Mock the adapter's utils.readStorage method
-      const originalReadStorage = adapters.ethersV5Adapter.utils.readStorage
       adapters.ethersV5Adapter.utils.readStorage = mockReadStorage
       adapters.ethersV6Adapter.utils.readStorage = mockReadStorage
       adapters.viemAdapter.utils.readStorage = mockReadStorage
@@ -359,7 +357,6 @@ describe('Reader Classes and Storage Functions', () => {
       const mockReadStorage = jest.fn().mockResolvedValue(mockSimulationResult)
 
       // Mock the adapter's utils.readStorage method
-      const originalReadStorage = adapters.ethersV5Adapter.utils.readStorage
       adapters.ethersV5Adapter.utils.readStorage = mockReadStorage
       adapters.ethersV6Adapter.utils.readStorage = mockReadStorage
       adapters.viemAdapter.utils.readStorage = mockReadStorage
