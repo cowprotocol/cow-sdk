@@ -1,6 +1,8 @@
 export * from './AdapterUtils'
 export * from './constants'
 export * from './wallets'
+export * from './ContractFactory'
+export * from './ContractTypes'
 
 export type Abi = unknown
 

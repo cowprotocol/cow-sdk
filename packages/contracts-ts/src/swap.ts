@@ -4,6 +4,7 @@ import {
   Bytes,
   setGlobalAdapter,
   Signer,
+  SignerLike,
   TypedDataDomain,
 } from '@cowprotocol/sdk-common'
 import { TokenRegistry, encodeTrade } from './settlement'
@@ -194,17 +195,17 @@ export class SwapEncoder {
    * Signs an order and encodes a trade with that order.
    *
    * @param order The order to sign for the trade.
-   * @param owner The externally owned account that should sign the order.
    * @param scheme The signing scheme to use. See {@link SigningScheme} for more
    * details.
+   * @param owner The externally owned account that should sign the order.
    */
   public async signEncodeTrade(
     order: Order,
-    owner: Signer,
     scheme: EcdsaSigningScheme,
     swapExecution?: Partial<SwapExecution>,
+    owner?: SignerLike,
   ): Promise<void> {
-    const signature = await signOrder(this.domain, order, owner, scheme)
+    const signature = await signOrder(this.domain, order, scheme, owner)
     this.encodeTrade(order, signature, swapExecution)
   }
 
@@ -268,18 +269,18 @@ export class SwapEncoder {
       encoder.encodeTrade(order, signature, swapExecution)
       return encoder.encodedSwap()
     } else {
-      const [domain, swaps, order, owner, scheme, swapExecution] = args as unknown as [
+      const [domain, swaps, order, scheme, swapExecution, owner] = args as unknown as [
         TypedDataDomain,
         Swap[],
         Order,
-        Signer,
         EcdsaSigningScheme,
         Partial<SwapExecution> | undefined,
+        SignerLike | undefined,
       ]
 
       const encoder = new SwapEncoder(domain)
       encoder.encodeSwapStep(...swaps)
-      return encoder.signEncodeTrade(order, owner, scheme, swapExecution).then(() => encoder.encodedSwap())
+      return encoder.signEncodeTrade(order, scheme, swapExecution, owner).then(() => encoder.encodedSwap())
     }
   }
 }

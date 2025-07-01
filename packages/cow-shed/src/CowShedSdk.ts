@@ -109,13 +109,13 @@ export class CowShedSdk {
     const cowShedHooks = this.getCowShedHooks(chainId)
     const adapter = getGlobalAdapter()
 
-    const signer: AbstractSigner = new adapter.Signer(signerParam)
+    const signer: AbstractSigner = signerParam ? adapter.createSigner(signerParam) : adapter.signer
 
     const ownerAddress = await signer.getAddress()
 
     const cowShedAccount = cowShedHooks.proxyOf(ownerAddress)
     // Sign the calls using cow-shed's owner
-    const signature = await cowShedHooks.signCalls(calls, nonce, deadline, signer, signingScheme)
+    const signature = await cowShedHooks.signCalls(calls, nonce, deadline, signingScheme, signer)
 
     // Get the signed transaction's calldata
     const callData = cowShedHooks.encodeExecuteHooksForFactory(calls, nonce, deadline, ownerAddress, signature)

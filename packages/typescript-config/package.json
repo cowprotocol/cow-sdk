@@ -1,5 +1,5 @@
 {
-  "name": "@repo/typescript-config",
+  "name": "@cow-sdk/typescript-config",
   "version": "0.0.0",
   "private": true,
   "files": [

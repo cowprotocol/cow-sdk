@@ -2,13 +2,8 @@ import { CowShedHooks } from './CoWShedHooks'
 import { ICoWShedCall } from '../types'
 import { COW_SHED_FACTORY, COW_SHED_IMPLEMENTATION } from '@cowprotocol/sdk-config'
 import { ContractsSigningScheme as SigningScheme } from '@cowprotocol/sdk-contracts-ts'
-import { createAdapters, TEST_PRIVATE_KEY, TEST_RPC_URL } from '../../tests/setup'
-import { ethers as ethersV5 } from 'ethers-v5'
-import * as ethersV6 from 'ethers-v6'
-import { privateKeyToAccount } from 'viem/accounts'
-import { createWalletClient, http } from 'viem'
-import { sepolia } from 'viem/chains'
-import { setGlobalAdapter, SignerLike } from '@cowprotocol/sdk-common'
+import { AdaptersTestSetup, createAdapters } from '../../tests/setup'
+import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 // information from mint and dai example of cow-shed repository
 // https://github.com/cowdao-grants/cow-shed/blob/main/examples/mintDaiAndSwap.ts
@@ -30,34 +25,11 @@ const createCallsForAdapter = (adapter: any): ICoWShedCall[] => [
   },
 ]
 
-// Type for unified wallet interface
-type UnifiedWallet = {
-  ethersV5Adapter: SignerLike
-  ethersV6Adapter: SignerLike
-  viemAdapter: SignerLike
-}
-
 describe('CowShedHooks', () => {
-  let adapters: ReturnType<typeof createAdapters>
-  let wallets: UnifiedWallet
+  let adapters: AdaptersTestSetup
 
   beforeAll(() => {
     adapters = createAdapters()
-
-    // Setup wallets for each adapter - cast to SignerLike for type compatibility
-    const ethersV5Provider = new ethersV5.providers.JsonRpcProvider(TEST_RPC_URL)
-    const ethersV6Provider = new ethersV6.JsonRpcProvider(TEST_RPC_URL)
-    const viemAccount = privateKeyToAccount(TEST_PRIVATE_KEY as `0x${string}`)
-
-    wallets = {
-      ethersV5Adapter: new ethersV5.Wallet(TEST_PRIVATE_KEY, ethersV5Provider) as SignerLike,
-      ethersV6Adapter: new ethersV6.Wallet(TEST_PRIVATE_KEY, ethersV6Provider) as SignerLike,
-      viemAdapter: createWalletClient({
-        chain: sepolia,
-        transport: http(),
-        account: viemAccount,
-      }) as SignerLike,
-    }
   })
 
   beforeEach(() => {
@@ -239,7 +211,7 @@ describe('CowShedHooks', () => {
       adapterNames.forEach(async (adapterName) => {
         const adapter = adapters[adapterName]
         setGlobalAdapter(adapter)
-        const ownerAddress = await adapter.getAddress()
+        const ownerAddress = await adapter.signer.getAddress()
 
         const cowShed = new CowShedHooks(adapter, 1, {
           factoryAddress: MOCK_COW_SHED_FACTORY,
@@ -280,16 +252,24 @@ describe('CowShedHooks', () => {
         const mockDeadline = BigInt(1000000)
         const calls = createCallsForAdapter(adapter)
 
-        // Fix: Create signer properly with type safety
-        const wallet = wallets[adapterName]
-        const signer = new adapter.Signer(wallet as any)
-
-        const signature = await cowShed.signCalls(calls, mockNonce, mockDeadline, signer, SigningScheme.EIP712)
+        const signature = await cowShed.signCalls(calls, mockNonce, mockDeadline, SigningScheme.EIP712, adapter.signer)
+        const signatureWithoutSigner = await cowShed.signCalls(
+          calls,
+          mockNonce,
+          mockDeadline,
+          SigningScheme.EIP712,
+          undefined,
+        )
 
         expect(signature).toBeDefined()
         expect(typeof signature).toBe('string')
         expect(signature.startsWith('0x')).toBe(true)
         expect(signature.length).toBeGreaterThan(130) // Should be at least r + s + v length
+
+        expect(signatureWithoutSigner).toBeDefined()
+        expect(typeof signatureWithoutSigner).toBe('string')
+        expect(signatureWithoutSigner.startsWith('0x')).toBe(true)
+        expect(signatureWithoutSigner.length).toBeGreaterThan(130) // Should be at least r + s + v length
 
         signatures.push(signature)
       }

@@ -1,5 +1,13 @@
 import { AbstractSigner } from './AbstractSigner'
-import type { AdapterTypes, AdapterUtils, Block, ReadContractParams, TransactionParams } from './types'
+import type {
+  AdapterTypes,
+  AdapterUtils,
+  Block,
+  PrivateKey,
+  ReadContractParams,
+  Signer,
+  TransactionParams,
+} from './types'
 
 /**
  * AbstractProviderAdapter defines the common interface that all provider-specific
@@ -11,23 +19,15 @@ export abstract class AbstractProviderAdapter<T extends AdapterTypes = AdapterTy
 
   public ZERO_ADDRESS!: T['Address']
 
-  public abstract Signer: new (signer: any) => AbstractSigner
   public abstract TypedDataVersionedSigner: new (signer: any, version: any) => AbstractSigner
   public abstract TypedDataV3Signer: new (signer: any) => AbstractSigner
   public abstract IntChainIdTypedDataV4Signer: new (signer: any) => AbstractSigner
 
+  public abstract signer: AbstractSigner
+
   // Core functionality
   abstract getChainId(): Promise<number>
-  abstract getAddress(): Promise<string>
-
-  // Signing operations
-  abstract signMessage(message: string | Uint8Array): Promise<string>
-  abstract signTypedData(
-    domain: T['TypedDataDomain'],
-    types: T['TypedDataTypes'],
-    value: Record<string, unknown>,
-  ): Promise<string>
-
+  abstract createSigner(signerOrPrivateKey: Signer | PrivateKey | AbstractSigner): AbstractSigner
   // reading functionality
   abstract getStorageAt(address: T['Address'], slot: unknown): Promise<unknown>
 
@@ -35,4 +35,5 @@ export abstract class AbstractProviderAdapter<T extends AdapterTypes = AdapterTy
   abstract call(txParams: TransactionParams, provider?: T['Provider']): Promise<string>
   abstract readContract(params: ReadContractParams, provider?: T['Provider']): Promise<unknown>
   abstract getBlock(blockTag: string, provider?: T['Provider']): Promise<Block>
+  abstract setSigner(signer: Signer | PrivateKey): void
 }

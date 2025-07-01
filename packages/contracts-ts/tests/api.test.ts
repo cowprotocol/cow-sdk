@@ -16,7 +16,6 @@ import {
   ContractsOrder as Order,
   OrderBalance,
   PreSignSignature,
-  ContractsSignature,
   ContractsEcdsaSignature,
   Eip1271Signature,
   Eip1271SignatureData,
@@ -173,7 +172,7 @@ describe('API Functions and Classes', () => {
 
       setGlobalAdapter(adapters.viemAdapter)
       const viemApi = new Api('mainnet', Environment.Prod)
-      const viemResult = await ethersV6Api.estimateTradeAmount(query)
+      const viemResult = await viemApi.estimateTradeAmount(query)
 
       // Results should be consistent
       expect(String(ethersV5Result)).toBe(mockQuoteResponse.quote.buyAmount)
@@ -285,10 +284,10 @@ describe('API Functions and Classes', () => {
 
       // Verify fetch was called with correct parameters
       expect(mockFetch).toHaveBeenCalledTimes(3)
-      const lastCall = mockFetch.mock.calls[mockFetch.mock.calls.length - 1]!
-      expect(lastCall[0]).toBe('https://api.cow.fi/mainnet/api/v1/orders')
-      expect(lastCall[1]?.method).toBe('post')
-      expect(lastCall[1]?.headers).toEqual({ 'Content-Type': 'application/json' })
+      const lastCall = mockFetch.mock.calls[mockFetch.mock.calls.length - 1]
+      expect(lastCall?.[0]).toBe('https://api.cow.fi/mainnet/api/v1/orders')
+      expect(lastCall?.[1]?.method).toBe('post')
+      expect(lastCall?.[1]?.headers).toEqual({ 'Content-Type': 'application/json' })
     })
 
     test('should handle different signing schemes correctly', async () => {

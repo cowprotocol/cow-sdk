@@ -4,13 +4,8 @@ import { AbstractSigner, TransactionParams, TransactionResponse } from '@cowprot
 export class EthersV6SignerAdapter extends AbstractSigner {
   private _signer: Signer
 
-  constructor(signer: Signer | EthersV6SignerAdapter) {
+  constructor(signer: Signer) {
     super()
-    if (signer instanceof EthersV6SignerAdapter) {
-      this._signer = signer._signer
-      return
-    }
-
     this._signer = signer
   }
 

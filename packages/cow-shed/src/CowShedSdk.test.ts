@@ -1,12 +1,7 @@
 import { CowShedSdk } from './CowShedSdk'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { ICoWShedCall } from './types'
-import { createAdapters, TEST_PRIVATE_KEY, TEST_RPC_URL } from '../tests/setup'
-import { ethers as ethersV5 } from 'ethers-v5'
-import * as ethersV6 from 'ethers-v6'
-import { privateKeyToAccount } from 'viem/accounts'
-import { createWalletClient, http } from 'viem'
-import { sepolia } from 'viem/chains'
+import { AdaptersTestSetup, createAdapters } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { ContractsSigningScheme as SigningScheme } from '@cowprotocol/sdk-contracts-ts'
 const MOCK_CALL_DATA = '0xabcdef'
@@ -22,30 +17,10 @@ const CALLS_MOCK: ICoWShedCall[] = [
 ]
 
 describe('CowShedSdk', () => {
-  let adapters: ReturnType<typeof createAdapters>
-  let wallets: {
-    ethersV5Adapter: ethersV5.Wallet
-    ethersV6Adapter: ethersV6.Wallet
-    viemAdapter: ReturnType<typeof createWalletClient>
-  }
+  let adapters: AdaptersTestSetup
 
   beforeAll(() => {
     adapters = createAdapters()
-
-    // Setup wallets for each adapter
-    const ethersV5Provider = new ethersV5.providers.JsonRpcProvider(TEST_RPC_URL)
-    const ethersV6Provider = new ethersV6.JsonRpcProvider(TEST_RPC_URL)
-    const viemAccount = privateKeyToAccount(TEST_PRIVATE_KEY as `0x${string}`)
-
-    wallets = {
-      ethersV5Adapter: new ethersV5.Wallet(TEST_PRIVATE_KEY, ethersV5Provider),
-      ethersV6Adapter: new ethersV6.Wallet(TEST_PRIVATE_KEY, ethersV6Provider),
-      viemAdapter: createWalletClient({
-        chain: sepolia,
-        transport: http(),
-        account: viemAccount,
-      }),
-    }
   })
 
   describe('signCalls()', () => {
@@ -59,7 +34,7 @@ describe('CowShedSdk', () => {
 
         const call = await sdk.signCalls({
           calls: CALLS_MOCK,
-          signer: wallets[adapterName],
+          signer: adapters[adapterName].signer,
           chainId: SupportedChainId.SEPOLIA,
           defaultGasLimit: 1000000n,
         })
@@ -98,7 +73,7 @@ describe('CowShedSdk', () => {
 
         const call = await sdk.signCalls({
           calls: CALLS_MOCK,
-          signer: wallets[adapterName],
+          signer: adapters[adapterName].signer,
           chainId: SupportedChainId.SEPOLIA,
         })
 
@@ -120,7 +95,7 @@ describe('CowShedSdk', () => {
 
         const call = await sdk.signCalls({
           calls: CALLS_MOCK,
-          signer: wallets[adapterName],
+          signer: adapters[adapterName].signer,
           chainId: SupportedChainId.MAINNET,
           defaultGasLimit: 1000000n,
         })
@@ -147,7 +122,7 @@ describe('CowShedSdk', () => {
 
         const call = await sdk.signCalls({
           calls: CALLS_MOCK,
-          signer: wallets[adapterName],
+          signer: adapters[adapterName].signer,
           chainId: SupportedChainId.MAINNET,
           defaultGasLimit: 1000000n,
           nonce,

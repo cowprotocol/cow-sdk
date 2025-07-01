@@ -132,12 +132,6 @@ describe('Deployment and Proxy', () => {
       // proxy contract address
       const proxyAddress = '0x1234567890123456789012345678901234567890'
 
-      // Mock contract objects
-      const mockContract = {
-        address: proxyAddress,
-        provider: mockProvider,
-      }
-
       // Test implementation address with different adapters
       const implementationPromises: Promise<string>[] = []
       const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
