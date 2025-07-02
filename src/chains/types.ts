@@ -84,6 +84,11 @@ export interface ChainInfo {
   readonly label: string
 
   /**
+   * EIP155 label of the chain. Field used for connecting to MetaMask.
+   */
+  readonly eip155Label: string
+
+  /**
    * Native currency of the chain.
    */
   readonly nativeCurrency: TokenInfo

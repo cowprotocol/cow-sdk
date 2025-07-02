@@ -8,6 +8,7 @@ const optimismLogo = `${RAW_CHAINS_FILES_PATH}/images/optimism-logo.svg`
 export const optimism: ChainInfo = {
   id: 10,
   label: 'Optimism',
+  eip155Label: 'OP Mainnet',
   logo: { light: optimismLogo, dark: optimismLogo },
   nativeCurrency: {
     ...nativeCurrencyTemplate,

@@ -12,6 +12,7 @@ const baseLogo = `${RAW_CHAINS_FILES_PATH}/images/base-logo.svg`
 export const base: ChainInfo = {
   id: SupportedChainId.BASE,
   label: 'Base',
+  eip155Label: 'Base',
   nativeCurrency: {
     ...nativeCurrencyTemplate,
     chainId: SupportedChainId.BASE,
