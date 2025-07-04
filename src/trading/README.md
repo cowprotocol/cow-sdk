@@ -151,6 +151,10 @@ The slippage will be calculated automatically taking into account current networ
 The suggested slippage value will be returned as `suggestedSlippageBps` parameter in the quote response.
 If you post an order using `postSwapOrderFromQuote()`, then you don't need to specify any parameters, everything will happen automatically.
 
+> Note: Suggested slippage might be 100% in some cases.
+> This can happen, for example, if the order size is very small.
+> Please verify thise value on your side before posting an order!
+
 ```typescript
 const parameters: TradeParameters = {
   kind: OrderKind.BUY,
