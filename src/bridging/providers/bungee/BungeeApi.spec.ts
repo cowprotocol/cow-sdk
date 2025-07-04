@@ -52,7 +52,7 @@ describe('BungeeApi: Shape of API response', () => {
     expect(result.destinationChainId).toBe(SupportedChainId.POLYGON)
     expect(result.route).toBeDefined()
     expect(result.routeBridge).toBeDefined()
-  })
+  }, 10_000)
 
   it('getBungeeBuildTx', async () => {
     // First get a quote
