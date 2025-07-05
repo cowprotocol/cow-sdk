@@ -1,10 +1,35 @@
-import { ContractInterface } from '@ethersproject/contracts'
-import type { Contract as EthersContract } from '@ethersproject/contracts'
-import { Interface, ParamType, defaultAbiCoder } from '@ethersproject/abi'
-import type { FunctionFragment } from '@ethersproject/abi'
-import { defineReadOnly, getStatic } from '@ethersproject/properties'
-import { hexConcat, hexDataSlice } from '@ethersproject/bytes'
+/**
+ * @fileoverview Weiroll Multi-Adapter Implementation
+ *
+ * This file is based on the weiroll.js library (https://github.com/weiroll/weiroll.js),
+ * refactored to work with the CoW Protocol SDK's adapter system and to remove the
+ * dependency on Ethers v5.
+ *
+ * Original weiroll.js library:
+ * - Repository: https://github.com/weiroll/weiroll.js
+ * - License: MIT
+ * - Version: 0.3.0
+ *
+ * Refactoring changes:
+ * - Replaced Ethers v5 direct dependencies with adapter abstractions
+ * - Added support for multiple Ethereum libraries (Ethers v5, v6, Viem)
+ * - Maintained 100% API compatibility with original weiroll.js
+ *
+ * @see https://github.com/weiroll/weiroll.js - Original library
+ */
 
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-duplicate-enum-values */
+import { getGlobalAdapter } from '@cowprotocol/sdk-common'
+import {
+  defineReadOnly,
+  getStatic,
+  ContractInterface,
+  Contract as EthersContract,
+  FunctionFragment,
+  Interface,
+  ParamType,
+} from './utils'
 /**
  * Represents a value that can be passed to a function call.
  *
@@ -44,7 +69,8 @@ class StateValue implements Value {
   readonly param: ParamType
 
   constructor() {
-    this.param = ParamType.from('bytes[]')
+    const adapter = getGlobalAdapter()
+    this.param = adapter.utils.getParamType('bytes[]')
   }
 }
 
@@ -53,7 +79,8 @@ class SubplanValue implements Value {
   readonly planner: Planner
 
   constructor(planner: Planner) {
-    this.param = ParamType.from('bytes[]')
+    const adapter = getGlobalAdapter()
+    this.param = adapter.utils.getParamType('bytes[]')
     this.planner = planner
   }
 }
@@ -112,6 +139,8 @@ export class FunctionCall {
    * @param value The value (in wei) to send with the call
    */
   withValue(value: Value): FunctionCall {
+    const adapter = getGlobalAdapter()
+
     if (
       (this.flags & CommandFlags.CALLTYPE_MASK) !== CommandFlags.CALL &&
       (this.flags & CommandFlags.CALLTYPE_MASK) !== CommandFlags.CALL_WITH_VALUE
@@ -123,7 +152,7 @@ export class FunctionCall {
       (this.flags & ~CommandFlags.CALLTYPE_MASK) | CommandFlags.CALL_WITH_VALUE,
       this.fragment,
       this.args,
-      encodeArg(value, ParamType.from('uint')),
+      encodeArg(value, adapter.utils.getParamType('uint')),
     )
   }
 
@@ -171,10 +200,12 @@ function isDynamicType(param?: ParamType): boolean {
 }
 
 function abiEncodeSingle(param: ParamType, value: any): LiteralValue {
+  const adapter = getGlobalAdapter()
+
   if (isDynamicType(param)) {
-    return new LiteralValue(param, hexDataSlice(defaultAbiCoder.encode([param], [value]), 32))
+    return new LiteralValue(param, adapter.utils.hexDataSlice(adapter.utils.encodeAbi([param], [value]), 32) as string)
   }
-  return new LiteralValue(param, defaultAbiCoder.encode([param], [value]))
+  return new LiteralValue(param, adapter.utils.encodeAbi([param], [value]) as string)
 }
 
 function encodeArg(arg: any, param: ParamType): Value {
@@ -219,10 +250,11 @@ class BaseContract {
    * @param commandflags Optional flags specifying the default execution options for all functions
    */
   constructor(address: string, contractInterface: ContractInterface, commandflags: CommandFlags = 0) {
-    this.interface = getStatic<(contractInterface: ContractInterface) => Interface>(
-      new.target,
-      'getInterface',
-    )(contractInterface)
+    const getInterfaceFn = getStatic<(contractInterface: ContractInterface) => Interface>(new.target, 'getInterface')
+    if (!getInterfaceFn) {
+      throw new Error('getInterface method not found')
+    }
+    this.interface = getInterfaceFn(contractInterface)
     if ((commandflags & ~CommandFlags.CALLTYPE_MASK) !== 0) {
       throw new Error('Only calltype flags may be supplied to BaseContract constructor')
     }
@@ -233,7 +265,12 @@ class BaseContract {
 
     const uniqueNames: { [name: string]: Array<string> } = {}
     const uniqueSignatures: { [signature: string]: boolean } = {}
-    Object.keys(this.interface.functions).forEach((signature) => {
+
+    if (!this.interface.functions) {
+      throw new Error('Interface does not have functions property')
+    }
+
+    Object.keys(this.interface.functions).forEach((signature: any) => {
       const fragment = this.interface.functions[signature]
 
       // Check that the signature is unique; if not the ABI generation has
@@ -268,21 +305,23 @@ class BaseContract {
     Object.keys(uniqueNames).forEach((name) => {
       // Ambiguous names to not get attached as bare names
       const signatures = uniqueNames[name]
-      if (signatures.length > 1) {
+      if (signatures && signatures.length > 1) {
         return
       }
 
-      const signature = signatures[0]
+      const signature = signatures?.[0]
 
       // If overwriting a member property that is null, swallow the error
       try {
         if ((this as Contract)[name] == null) {
-          defineReadOnly(this as Contract, name, (this as Contract)[signature])
+          defineReadOnly(this as Contract, name, (this as Contract)[signature!])
         }
-      } catch (e) {}
+      } catch {
+        /* empty */
+      }
 
       if (this.functions[name] == null) {
-        defineReadOnly(this.functions, name, this.functions[signature])
+        defineReadOnly(this.functions, name, this.functions[signature!]!)
       }
     })
   }
@@ -312,10 +351,11 @@ class BaseContract {
 
   /** @hidden */
   static getInterface(contractInterface: ContractInterface): Interface {
-    if (Interface.isInterface(contractInterface)) {
+    const adapter = getGlobalAdapter()
+    if (adapter.utils.isInterface(contractInterface)) {
       return contractInterface
     }
-    return new Interface(contractInterface)
+    return adapter.utils.createInterface(contractInterface)
   }
 }
 
@@ -419,6 +459,7 @@ export class Planner {
    * @returns An object representing the return value of the call, or null if it does not return a value.
    */
   add(call: FunctionCall): ReturnValue | null {
+    const adapter = getGlobalAdapter()
     const command = new Command(call, CommandType.CALL)
     this.commands.push(command)
 
@@ -429,7 +470,7 @@ export class Planner {
     }
 
     if (call.flags & CommandFlags.TUPLE_RETURN) {
-      return new ReturnValue(ParamType.fromString('bytes'), command)
+      return new ReturnValue(adapter.utils.getParamTypeFromString('bytes'), command)
     }
     if (call.fragment.outputs?.length !== 1) {
       return null
@@ -606,6 +647,7 @@ export class Planner {
   }
 
   private buildCommands(ps: PlannerState): Array<string> {
+    const adapter = getGlobalAdapter()
     const encodedCommands = new Array<string>()
     // Build commands, and add state entries as needed
     for (const command of this.commands) {
@@ -615,7 +657,7 @@ export class Planner {
         // Build a list of commands
         const subcommands = subplanner.buildCommands(ps)
         // Encode them and push them to a new state slot
-        ps.state.push(hexDataSlice(defaultAbiCoder.encode(['bytes32[]'], [subcommands]), 32))
+        ps.state.push(adapter.utils.hexDataSlice(adapter.utils.encodeAbi(['bytes32[]'], [subcommands]), 32) as string)
         // The slot is no longer needed after this command
         ps.freeSlots.push(ps.state.length - 1)
       }
@@ -668,18 +710,18 @@ export class Planner {
       if ((flags & CommandFlags.EXTENDED_COMMAND) === CommandFlags.EXTENDED_COMMAND) {
         // Extended command
         encodedCommands.push(
-          hexConcat([
-            command.call.contract.interface.getSighash(command.call.fragment),
+          adapter.utils.hexConcat([
+            command.call.contract.interface.getSighash(command.call.fragment.name),
             [flags, 0, 0, 0, 0, 0, 0, ret],
             command.call.contract.address,
           ]),
         )
-        encodedCommands.push(hexConcat([padArray(args, 32, 0xff)]))
+        encodedCommands.push(adapter.utils.hexConcat([padArray(args, 32, 0xff)]))
       } else {
         // Standard command
         encodedCommands.push(
-          hexConcat([
-            command.call.contract.interface.getSighash(command.call.fragment),
+          adapter.utils.hexConcat([
+            command.call.contract.interface.getSighash(command.call.fragment.name),
             [flags],
             padArray(args, 6, 0xff),
             [ret],

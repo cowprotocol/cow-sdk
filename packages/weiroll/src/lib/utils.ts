@@ -18,3 +18,9 @@ export function getStatic<T>(ctor: any, key: string): T | null {
   }
   return null
 }
+
+export type ContractInterface = any
+export type Contract = any
+export type FunctionFragment = any
+export type Interface = any
+export type ParamType = any

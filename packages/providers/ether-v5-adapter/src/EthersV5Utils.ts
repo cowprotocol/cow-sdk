@@ -1,5 +1,6 @@
 import { AdapterUtils, Address } from '@cowprotocol/sdk-common'
 import { BigNumberish, BytesLike, ethers, TypedDataDomain, TypedDataField } from 'ethers'
+import { ParamType } from 'ethers/lib/utils'
 
 type Abi = ConstructorParameters<typeof ethers.utils.Interface>[0]
 
@@ -245,5 +246,17 @@ export class EthersV5Utils implements AdapterUtils {
 
   parseUnits(value: string, decimals: number): bigint {
     return ethers.utils.parseUnits(value, decimals).toBigInt()
+  }
+
+  getParamType(type: string): ParamType {
+    return ethers.utils.ParamType.from(type)
+  }
+
+  getParamTypeFromString(type: string): ParamType {
+    return ethers.utils.ParamType.fromString(type)
+  }
+
+  isInterface(value: any): boolean {
+    return ethers.utils.Interface.isInterface(value)
   }
 }

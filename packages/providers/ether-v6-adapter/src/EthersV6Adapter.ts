@@ -164,4 +164,18 @@ export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
     if (!block) return {} as Block
     return block
   }
+
+  getContract(address: string, abi: Abi): unknown {
+    const nativeContract = new Contract(address, abi, this._provider)
+    const correctedInterface = this.utils.createInterface(abi)
+    return {
+      ...nativeContract,
+      interface: correctedInterface,
+      address: nativeContract.target || address,
+      provider: this._provider,
+      runner: nativeContract.runner,
+      filters: nativeContract.filters,
+      fallback: nativeContract.fallback,
+    }
+  }
 }

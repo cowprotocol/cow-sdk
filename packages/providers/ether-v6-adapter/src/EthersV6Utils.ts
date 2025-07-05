@@ -1,4 +1,4 @@
-import { AdapterUtils } from '@cowprotocol/sdk-common'
+import { AdapterUtils, CowError } from '@cowprotocol/sdk-common'
 import {
   Interface,
   TypedDataField,
@@ -28,8 +28,10 @@ import {
   Contract,
   JsonRpcProvider,
   parseUnits,
+  ParamType,
 } from 'ethers'
 import { TypedDataDomain } from 'ethers'
+import { EthersV6InterfaceWrapper } from './EthersV6InterfaceWrapper'
 
 type Abi = ConstructorParameters<typeof Interface>[0]
 
@@ -89,8 +91,10 @@ export class EthersV6Utils implements AdapterUtils {
       return toUtf8Bytes(data)
     } else if (data instanceof Uint8Array) {
       return data
+    } else if (Array.isArray(data)) {
+      return new Uint8Array(data)
     } else {
-      throw new Error('Unsupported data type for conversion to BytesLike')
+      throw new CowError('Unsupported data type for conversion to BytesLike')
     }
   }
 
@@ -193,8 +197,8 @@ export class EthersV6Utils implements AdapterUtils {
     return solidityPackedKeccak256(types, values)
   }
 
-  createInterface(abi: InterfaceAbi): Interface {
-    return new Interface(abi)
+  createInterface(abi: InterfaceAbi): EthersV6InterfaceWrapper {
+    return new EthersV6InterfaceWrapper(abi)
   }
 
   hashDomain(domain: TypedDataDomain): string {
@@ -253,7 +257,7 @@ export class EthersV6Utils implements AdapterUtils {
     const encodedCall = readerInterface.encodeFunctionData(method, parameters)
 
     if (!base.simulateDelegatecall?.staticCall) {
-      throw new Error('simulateDelegatecall method not found on base contract')
+      throw new CowError('simulateDelegatecall method not found on base contract')
     }
 
     const resultBytes = await base.simulateDelegatecall.staticCall(readerAddress, encodedCall)
@@ -280,12 +284,36 @@ export class EthersV6Utils implements AdapterUtils {
 
   hexDataLength(data: string): number {
     if (!this.isHexString(data)) {
-      throw new Error('Invalid hex string')
+      throw new CowError('Invalid hex string')
     }
     return (data.length - 2) / 2
   }
 
   parseUnits(value: string, decimals: number): bigint {
     return parseUnits(value, decimals)
+  }
+
+  getParamType(type: string): ParamType {
+    return ParamType.from(type)
+  }
+
+  getParamTypeFromString(type: string): ParamType {
+    return ParamType.from(type)
+  }
+
+  isInterface(value: any): boolean {
+    if (value instanceof Interface) {
+      return true
+    }
+    if (
+      value &&
+      typeof value === 'object' &&
+      typeof value.functions === 'object' &&
+      typeof value.getSighash === 'function' &&
+      Array.isArray(value.fragments)
+    ) {
+      return true
+    }
+    return false
   }
 }
