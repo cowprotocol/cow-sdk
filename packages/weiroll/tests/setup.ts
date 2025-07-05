@@ -26,26 +26,28 @@ export type AdaptersTestSetup = {
   ethersV6Adapter: EthersV6Adapter
   viemAdapter: ViemAdapter
 }
-// Helper function to create all adapters with the same configuration
-export function createAdapters(): AdaptersTestSetup {
-  // EthersV5 setup
-  const ethersV5Provider = new ethersV5.providers.JsonRpcProvider(TEST_RPC_URL)
-  const ethersV5Wallet = new ethersV5.Wallet(TEST_PRIVATE_KEY, ethersV5Provider)
-  const ethersV5Adapter = new EthersV5Adapter({ provider: ethersV5Provider, signer: ethersV5Wallet })
 
-  // EthersV6 setup
-  const ethersV6Provider = new ethersV6.JsonRpcProvider(TEST_RPC_URL)
-  const ethersV6Wallet = new ethersV6.Wallet(TEST_PRIVATE_KEY, ethersV6Provider)
-  const ethersV6Adapter = new EthersV6Adapter({ provider: ethersV6Provider, signer: ethersV6Wallet })
+// Function to create specific adapters for testing
+export function createSpecificAdapters(adapterNames: string[]): Partial<AdaptersTestSetup> {
+  const adapters: Partial<AdaptersTestSetup> = {}
 
-  // Viem setup with public client
-  const viemAccount = privateKeyToAccount(TEST_PRIVATE_KEY as `0x${string}`)
-  const transport = http(TEST_RPC_URL)
-  const viemAdapter = new ViemAdapter({ chain: sepolia, transport, account: viemAccount })
-
-  return {
-    ethersV5Adapter,
-    ethersV6Adapter,
-    viemAdapter,
+  if (adapterNames.includes('ethersV5Adapter')) {
+    const ethersV5Provider = new ethersV5.providers.JsonRpcProvider(TEST_RPC_URL)
+    const ethersV5Wallet = new ethersV5.Wallet(TEST_PRIVATE_KEY, ethersV5Provider)
+    adapters.ethersV5Adapter = new EthersV5Adapter({ provider: ethersV5Provider, signer: ethersV5Wallet })
   }
+
+  if (adapterNames.includes('ethersV6Adapter')) {
+    const ethersV6Provider = new ethersV6.JsonRpcProvider(TEST_RPC_URL)
+    const ethersV6Wallet = new ethersV6.Wallet(TEST_PRIVATE_KEY, ethersV6Provider)
+    adapters.ethersV6Adapter = new EthersV6Adapter({ provider: ethersV6Provider, signer: ethersV6Wallet })
+  }
+
+  if (adapterNames.includes('viemAdapter')) {
+    const viemAccount = privateKeyToAccount(TEST_PRIVATE_KEY as `0x${string}`)
+    const transport = http(TEST_RPC_URL)
+    adapters.viemAdapter = new ViemAdapter({ chain: sepolia, transport, account: viemAccount })
+  }
+
+  return adapters
 }

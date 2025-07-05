@@ -13,6 +13,7 @@ import {
   zeroAddress,
   Block,
   BlockTag,
+  getContract,
 } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 
@@ -202,8 +203,7 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
 
   async getBlock(blockTag: BlockTag, provider?: PublicClient): Promise<Block> {
     const providerToUse = provider || this._publicClient
-    const block = await providerToUse.getBlock({ blockTag })
-    return block
+    return providerToUse.getBlock({ blockTag })
   }
 
   private isAccount(signer: unknown): signer is Account {
@@ -215,5 +215,20 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
       typeof (signer as any).address === 'string' &&
       typeof (signer as any).type === 'string'
     )
+  }
+
+  getContract(address: string, abi: Abi): unknown {
+    const viemContract = getContract({
+      address: address as `0x${string}`,
+      abi,
+      client: this._publicClient,
+    })
+    const compatibleInterface = this.utils.createInterface([...abi])
+    return {
+      ...viemContract,
+      interface: compatibleInterface,
+      address: address,
+      provider: this._publicClient,
+    }
   }
 }

@@ -144,4 +144,8 @@ export class EthersV5Adapter extends AbstractProviderAdapter<EthersV5Types> {
     const providerToUse = provider || this._provider
     return await providerToUse.getBlock(blockTag)
   }
+
+  getContract(address: string, abi: Abi) {
+    return new ethers.Contract(address, abi, this._provider)
+  }
 }

@@ -1,446 +1,672 @@
-import { expect } from 'chai'
-import { ethers } from 'ethers'
-import { hexConcat, hexDataSlice } from '@ethersproject/bytes'
-import { defaultAbiCoder } from '@ethersproject/abi'
-import { CommandFlags, Contract, Planner } from '../src/planner'
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { Contract, Planner } from '../planner'
 import * as mathABI from '../abis/Math.json'
 import * as stringsABI from '../abis/Strings.json'
+import { createSpecificAdapters, TEST_ADDRESS } from '../../../tests/setup'
+import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { ethers } from 'ethers-v5'
+import { hexDataSlice, hexConcat } from 'ethers-v5/lib/utils'
+import { CommandFlags } from '../planner'
 
-const SAMPLE_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+const { defaultAbiCoder } = ethers.utils
+
+const adapterNames = ['ethersV5Adapter', 'ethersV6Adapter', 'viemAdapter'] as const
+const adapters = createSpecificAdapters(adapterNames as unknown as string[])
+
+const mathContracts: { [key: string]: Contract } = {}
+const stringsContracts: { [key: string]: Contract } = {}
+
+for (const adapterName of adapterNames) {
+  const adapter = adapters[adapterName]!
+  setGlobalAdapter(adapter)
+  const contract = adapter.getContract(TEST_ADDRESS, mathABI.abi as any)
+  mathContracts[adapterName] = Contract.createLibrary(contract)
+  stringsContracts[adapterName] = Contract.createLibrary(new ethers.Contract(TEST_ADDRESS, stringsABI.abi))
+}
 
 describe('Contract', () => {
-  let Math: Contract
-
-  before(() => {
-    Math = Contract.createLibrary(new ethers.Contract(SAMPLE_ADDRESS, mathABI.abi))
-  })
-
   it('wraps contract objects and exposes their functions', () => {
-    expect(Math.add).to.not.be.undefined
+    for (const adapterName of adapterNames) {
+      const adapter = adapters[adapterName]
+      if (!adapter) continue
+      setGlobalAdapter(adapter)
+      const Math = mathContracts[adapterName]
+      if (!Math) continue
+      expect(Math?.add).not.toBeUndefined()
+    }
   })
 
   it('returns a FunctionCall when contract functions are called', () => {
-    const result = Math.add(1, 2)
+    for (const adapterName of adapterNames) {
+      const adapter = adapters[adapterName]!
+      setGlobalAdapter(adapter)
+      const Math = mathContracts[adapterName]!
+      const result = Math.add(1, 2)
 
-    expect(result.contract).to.equal(Math)
-    expect(result.fragment).to.equal(Math.interface.getFunction('add'))
+      expect(result.contract).toEqual(Math)
+      expect(result.fragment).toEqual(Math.interface.getFunction('add'))
 
-    const args = result.args
-    expect(args.length).to.equal(2)
-    expect(args[0].param).to.equal(Math.interface.getFunction('add').inputs[0])
-    expect(args[0].value).to.equal(defaultAbiCoder.encode(['uint'], [1]))
-    expect(args[1].param).to.equal(Math.interface.getFunction('add').inputs[1])
-    expect(args[1].value).to.equal(defaultAbiCoder.encode(['uint'], [2]))
+      const args = result.args
+      expect(args.length).toEqual(2)
+      expect(args[0].param).toEqual(Math.interface.getFunction('add').inputs[0])
+      expect(args[0].value).toEqual(defaultAbiCoder.encode(['uint'], [1]))
+      expect(args[1].param).toEqual(Math.interface.getFunction('add').inputs[1])
+      expect(args[1].value).toEqual(defaultAbiCoder.encode(['uint'], [2]))
+    }
   })
 })
 
 describe('Planner', () => {
-  let Math: Contract
-  let Strings: Contract
-
-  before(() => {
-    Math = Contract.createLibrary(new ethers.Contract(SAMPLE_ADDRESS, mathABI.abi))
-    Strings = Contract.createLibrary(new ethers.Contract(SAMPLE_ADDRESS, stringsABI.abi))
-  })
-
   it('adds function calls to a list of commands', () => {
-    const planner = new Planner()
-    const sum1 = planner.add(Math.add(1, 2))
-    const sum2 = planner.add(Math.add(3, 4))
-    planner.add(Math.add(sum1, sum2))
+    for (const adapterName of adapterNames) {
+      const adapter = adapters[adapterName]!
+      setGlobalAdapter(adapter)
+      const Math = mathContracts[adapterName]!
 
-    expect(planner.commands.length).to.equal(3)
+      const planner = new Planner()
+      const sum1 = planner.add(Math.add(1, 2))
+      const sum2 = planner.add(Math.add(3, 4))
+      planner.add(Math.add(sum1, sum2))
+      expect(planner.commands.length).toEqual(3)
+    }
   })
 
   it('plans a simple program', () => {
-    const planner = new Planner()
-    planner.add(Math.add(1, 2))
-    const { commands, state } = planner.plan()
+    for (const adapterName of adapterNames) {
+      const adapter = adapters[adapterName]!
+      setGlobalAdapter(adapter)
+      const Math = mathContracts[adapterName]!
 
-    expect(commands.length).to.equal(1)
-    expect(commands[0]).to.equal('0x771602f7000001ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
+      const planner = new Planner()
+      planner.add(Math.add(1, 2))
+      const { commands, state } = planner.plan()
 
-    expect(state.length).to.equal(2)
-    expect(state[0]).to.equal(defaultAbiCoder.encode(['uint'], [1]))
-    expect(state[1]).to.equal(defaultAbiCoder.encode(['uint'], [2]))
+      expect(commands.length).toBe(1)
+      expect(commands[0]).toBe('0x771602f7000001ffffffffffddb53511e1e322133d03d5c0b8a9555c4c9904d0')
+
+      expect(state.length).toBe(2)
+      expect(state[0]).toBe(defaultAbiCoder.encode(['uint'], [1]))
+      expect(state[1]).toBe(defaultAbiCoder.encode(['uint'], [2]))
+    }
   })
 
   it('deduplicates identical literals', () => {
-    const planner = new Planner()
-    planner.add(Math.add(1, 1))
-    const { state } = planner.plan()
+    for (const adapterName of adapterNames) {
+      const adapter = adapters[adapterName]!
+      setGlobalAdapter(adapter)
+      const Math = mathContracts[adapterName]!
 
-    expect(state.length).to.equal(1)
+      const planner = new Planner()
+      planner.add(Math.add(1, 1))
+      const { state } = planner.plan()
+
+      expect(state.length).toBe(1)
+    }
   })
 
   it('plans a program that uses return values', () => {
-    const planner = new Planner()
-    const sum1 = planner.add(Math.add(1, 2))
-    planner.add(Math.add(sum1, 3))
-    const { commands, state } = planner.plan()
+    for (const adapterName of adapterNames) {
+      const adapter = adapters[adapterName]!
+      setGlobalAdapter(adapter)
+      const Math = mathContracts[adapterName]!
 
-    expect(commands.length).to.equal(2)
-    expect(commands[0]).to.equal('0x771602f7000001ffffffff01eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
-    expect(commands[1]).to.equal('0x771602f7000102ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
+      const planner = new Planner()
+      const sum1 = planner.add(Math.add(1, 2))
+      planner.add(Math.add(sum1, 3))
+      const { commands, state } = planner.plan()
 
-    expect(state.length).to.equal(3)
-    expect(state[0]).to.equal(defaultAbiCoder.encode(['uint'], [1]))
-    expect(state[1]).to.equal(defaultAbiCoder.encode(['uint'], [2]))
-    expect(state[2]).to.equal(defaultAbiCoder.encode(['uint'], [3]))
+      expect(commands.length).toBe(2)
+      expect(commands[0]).toBe('0x771602f7000001ffffffff01ddb53511e1e322133d03d5c0b8a9555c4c9904d0')
+      expect(commands[1]).toBe('0x771602f7000102ffffffffffddb53511e1e322133d03d5c0b8a9555c4c9904d0')
+
+      expect(state.length).toBe(3)
+      expect(state[0]).toBe(defaultAbiCoder.encode(['uint'], [1]))
+      expect(state[1]).toBe(defaultAbiCoder.encode(['uint'], [2]))
+      expect(state[2]).toBe(defaultAbiCoder.encode(['uint'], [3]))
+    }
   })
 
   it('plans a program that needs extra state slots for intermediate values', () => {
-    const planner = new Planner()
-    const sum1 = planner.add(Math.add(1, 1))
-    planner.add(Math.add(1, sum1))
-    const { commands, state } = planner.plan()
+    for (const adapterName of adapterNames) {
+      const adapter = adapters[adapterName]!
+      setGlobalAdapter(adapter)
+      const Math = mathContracts[adapterName]!
 
-    expect(commands.length).to.equal(2)
-    expect(commands[0]).to.equal('0x771602f7000000ffffffff01eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
-    expect(commands[1]).to.equal('0x771602f7000001ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
+      const planner = new Planner()
+      const sum1 = planner.add(Math.add(1, 1))
+      planner.add(Math.add(1, sum1))
+      const { commands, state } = planner.plan()
 
-    expect(state.length).to.equal(2)
-    expect(state[0]).to.equal(defaultAbiCoder.encode(['uint'], [1]))
-    expect(state[1]).to.equal('0x')
+      expect(commands.length).toBe(2)
+      expect(commands[0]).toBe('0x771602f7000000ffffffff01ddb53511e1e322133d03d5c0b8a9555c4c9904d0')
+      expect(commands[1]).toBe('0x771602f7000001ffffffffffddb53511e1e322133d03d5c0b8a9555c4c9904d0')
+
+      expect(state.length).toBe(2)
+      expect(state[0]).toBe(defaultAbiCoder.encode(['uint'], [1]))
+      expect(state[1]).toBe('0x')
+    }
   })
 
   it('plans a program that takes dynamic arguments', () => {
-    const planner = new Planner()
-    planner.add(Strings.strlen('Hello, world!'))
-    const { commands, state } = planner.plan()
+    for (const adapterName of adapterNames) {
+      const adapter = adapters[adapterName]!
+      setGlobalAdapter(adapter)
+      const Strings = stringsContracts[adapterName]!
 
-    expect(commands.length).to.equal(1)
-    expect(commands[0]).to.equal('0x367bbd780080ffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
+      const planner = new Planner()
+      planner.add(Strings.strlen('Hello, world!'))
+      const { commands, state } = planner.plan()
 
-    expect(state.length).to.equal(1)
-    expect(state[0]).to.equal(hexDataSlice(defaultAbiCoder.encode(['string'], ['Hello, world!']), 32))
+      expect(commands.length).toBe(1)
+      expect(commands[0]).toBe('0x367bbd780080ffffffffffffddb53511e1e322133d03d5c0b8a9555c4c9904d0')
+
+      expect(state.length).toBe(1)
+      expect(state[0]).toBe(hexDataSlice(defaultAbiCoder.encode(['string'], ['Hello, world!']), 32))
+    }
   })
 
   it('plans a program that returns dynamic arguments', () => {
-    const planner = new Planner()
-    planner.add(Strings.strcat('Hello, ', 'world!'))
-    const { commands, state } = planner.plan()
+    for (const adapterName of adapterNames) {
+      const adapter = adapters[adapterName]!
+      setGlobalAdapter(adapter)
+      const Strings = stringsContracts[adapterName]!
 
-    expect(commands.length).to.equal(1)
-    expect(commands[0]).to.equal('0xd824ccf3008081ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
+      const planner = new Planner()
+      planner.add(Strings.strcat('Hello, ', 'world!'))
+      const { commands, state } = planner.plan()
 
-    expect(state.length).to.equal(2)
-    expect(state[0]).to.equal(hexDataSlice(defaultAbiCoder.encode(['string'], ['Hello, ']), 32))
-    expect(state[1]).to.equal(hexDataSlice(defaultAbiCoder.encode(['string'], ['world!']), 32))
+      expect(commands.length).toBe(1)
+      expect(commands[0]).toBe('0xd824ccf3008081ffffffffffddb53511e1e322133d03d5c0b8a9555c4c9904d0')
+
+      expect(state.length).toBe(2)
+      expect(state[0]).toBe(hexDataSlice(defaultAbiCoder.encode(['string'], ['Hello, ']), 32))
+      expect(state[1]).toBe(hexDataSlice(defaultAbiCoder.encode(['string'], ['world!']), 32))
+    }
   })
 
   it('plans a program that takes a dynamic argument from a return value', () => {
-    const planner = new Planner()
-    const str = planner.add(Strings.strcat('Hello, ', 'world!'))
-    planner.add(Strings.strlen(str))
-    const { commands, state } = planner.plan()
+    for (const adapterName of adapterNames) {
+      const adapter = adapters[adapterName]!
+      setGlobalAdapter(adapter)
+      const Strings = stringsContracts[adapterName]!
 
-    expect(commands.length).to.equal(2)
-    expect(commands[0]).to.equal('0xd824ccf3008081ffffffff81eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
-    expect(commands[1]).to.equal('0x367bbd780081ffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
+      const planner = new Planner()
+      const str = planner.add(Strings.strcat('Hello, ', 'world!'))
+      planner.add(Strings.strlen(str))
+      const { commands, state } = planner.plan()
 
-    expect(state.length).to.equal(2)
-    expect(state[0]).to.equal(hexDataSlice(defaultAbiCoder.encode(['string'], ['Hello, ']), 32))
-    expect(state[1]).to.equal(hexDataSlice(defaultAbiCoder.encode(['string'], ['world!']), 32))
+      expect(commands.length).toBe(2)
+      expect(commands[0]).toBe('0xd824ccf3008081ffffffff81ddb53511e1e322133d03d5c0b8a9555c4c9904d0')
+      expect(commands[1]).toBe('0x367bbd780081ffffffffffffddb53511e1e322133d03d5c0b8a9555c4c9904d0')
+
+      expect(state.length).toBe(2)
+      expect(state[0]).toBe(hexDataSlice(defaultAbiCoder.encode(['string'], ['Hello, ']), 32))
+      expect(state[1]).toBe(hexDataSlice(defaultAbiCoder.encode(['string'], ['world!']), 32))
+    }
   })
 
   it('requires argument counts to match the function definition', () => {
-    const planner = new Planner()
-    expect(() => planner.add(Math.add(1))).to.throw()
+    for (const adapterName of adapterNames) {
+      const adapter = adapters[adapterName]!
+      setGlobalAdapter(adapter)
+      const Math = mathContracts[adapterName]!
+
+      const planner = new Planner()
+      expect(() => planner.add(Math.add(1))).toThrow()
+    }
   })
 
   it('plans a call to a function that takes and replaces the current state', () => {
-    const TestContract = Contract.createLibrary(
-      new ethers.Contract(SAMPLE_ADDRESS, ['function useState(bytes[] state) returns(bytes[])']),
-    )
+    for (const adapterName of adapterNames) {
+      const adapter = adapters[adapterName]!
+      setGlobalAdapter(adapter)
 
-    const planner = new Planner()
-    planner.replaceState(TestContract.useState(planner.state))
-    const { commands, state } = planner.plan()
+      const TestContract = Contract.createLibrary(
+        adapter.getContract(TEST_ADDRESS, ['function useState(bytes[] state) returns(bytes[])'] as any),
+      )
 
-    expect(commands.length).to.equal(1)
-    expect(commands[0]).to.equal('0x08f389c800fefffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
+      const planner = new Planner()
+      planner.replaceState(TestContract.useState(planner.state))
+      const { commands, state } = planner.plan()
 
-    expect(state.length).to.equal(0)
+      expect(commands.length).toBe(1)
+      expect(commands[0]).toBe('0x08f389c800fefffffffffffeddb53511e1e322133d03d5c0b8a9555c4c9904d0')
+
+      expect(state.length).toBe(0)
+    }
   })
 
   describe('addSubplan()', () => {
-    const SubplanContract = Contract.createLibrary(
-      new ethers.Contract(SAMPLE_ADDRESS, ['function execute(bytes32[] commands, bytes[] state) returns(bytes[])']),
-    )
-
-    const ReadonlySubplanContract = Contract.createLibrary(
-      new ethers.Contract(SAMPLE_ADDRESS, ['function execute(bytes32[] commands, bytes[] state)']),
-    )
-
     it('supports subplans', () => {
-      const subplanner = new Planner()
-      subplanner.add(Math.add(1, 2))
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]!
+        setGlobalAdapter(adapter)
+        const Math = mathContracts[adapterName]!
 
-      const planner = new Planner()
-      planner.addSubplan(SubplanContract.execute(subplanner, subplanner.state))
+        const SubplanContract = Contract.createLibrary(
+          adapter.getContract(TEST_ADDRESS, [
+            'function execute(bytes32[] commands, bytes[] state) returns(bytes[])' as any,
+          ]),
+        )
 
-      const { commands, state } = planner.plan()
-      expect(commands).to.deep.equal(['0xde792d5f0082fefffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'])
+        const subplanner = new Planner()
+        subplanner.add(Math.add(1, 2))
 
-      expect(state.length).to.equal(3)
-      expect(state[0]).to.equal(defaultAbiCoder.encode(['uint'], [1]))
-      expect(state[1]).to.equal(defaultAbiCoder.encode(['uint'], [2]))
-      const subcommands = defaultAbiCoder.decode(
-        ['bytes32[]'],
-        hexConcat(['0x0000000000000000000000000000000000000000000000000000000000000020', state[2]]),
-      )[0]
-      expect(subcommands).to.deep.equal(['0x771602f7000001ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'])
+        const planner = new Planner()
+        planner.addSubplan(SubplanContract.execute(subplanner, subplanner.state))
+
+        const { commands, state } = planner.plan()
+        expect(commands).toEqual(['0xde792d5f0082fefffffffffeddb53511e1e322133d03d5c0b8a9555c4c9904d0'])
+
+        expect(state.length).toBe(3)
+        expect(state[0]).toBe(defaultAbiCoder.encode(['uint'], [1]))
+        expect(state[1]).toBe(defaultAbiCoder.encode(['uint'], [2]))
+        const subcommands = defaultAbiCoder.decode(
+          ['bytes32[]'],
+          hexConcat(['0x0000000000000000000000000000000000000000000000000000000000000020', state[2] as any]),
+        )[0]
+        expect(subcommands).toEqual(['0x771602f7000001ffffffffffddb53511e1e322133d03d5c0b8a9555c4c9904d0'])
+      }
     })
 
     it('allows return value access in the parent scope', () => {
-      const subplanner = new Planner()
-      const sum = subplanner.add(Math.add(1, 2))
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]!
+        setGlobalAdapter(adapter)
+        const Math = mathContracts[adapterName]!
 
-      const planner = new Planner()
-      planner.addSubplan(SubplanContract.execute(subplanner, subplanner.state))
-      planner.add(Math.add(sum, 3))
+        const SubplanContract = Contract.createLibrary(
+          adapter.getContract(TEST_ADDRESS, [
+            'function execute(bytes32[] commands, bytes[] state) returns(bytes[])' as any,
+          ]),
+        )
 
-      const { commands } = planner.plan()
-      expect(commands).to.deep.equal([
-        // Invoke subplanner
-        '0xde792d5f0083fefffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-        // sum + 3
-        '0x771602f7000102ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-      ])
+        const subplanner = new Planner()
+        const sum = subplanner.add(Math.add(1, 2))
+
+        const planner = new Planner()
+        planner.addSubplan(SubplanContract.execute(subplanner, subplanner.state))
+        planner.add(Math.add(sum, 3))
+
+        const { commands } = planner.plan()
+        expect(commands).toEqual([
+          // Invoke subplanner
+          '0xde792d5f0083fefffffffffeddb53511e1e322133d03d5c0b8a9555c4c9904d0',
+          // sum + 3
+          '0x771602f7000102ffffffffffddb53511e1e322133d03d5c0b8a9555c4c9904d0',
+        ])
+      }
     })
 
     it('allows return value access across scopes', () => {
-      const subplanner1 = new Planner()
-      const sum = subplanner1.add(Math.add(1, 2))
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]!
+        setGlobalAdapter(adapter)
+        const Math = mathContracts[adapterName]!
 
-      const subplanner2 = new Planner()
-      subplanner2.add(Math.add(sum, 3))
+        const SubplanContract = Contract.createLibrary(
+          adapter.getContract(TEST_ADDRESS, [
+            'function execute(bytes32[] commands, bytes[] state) returns(bytes[])' as any,
+          ]),
+        )
 
-      const planner = new Planner()
-      planner.addSubplan(SubplanContract.execute(subplanner1, subplanner1.state))
-      planner.addSubplan(SubplanContract.execute(subplanner2, subplanner2.state))
+        const subplanner1 = new Planner()
+        const sum = subplanner1.add(Math.add(1, 2))
 
-      const { commands, state } = planner.plan()
-      expect(commands).to.deep.equal([
-        // Invoke subplanner1
-        '0xde792d5f0083fefffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-        // Invoke subplanner2
-        '0xde792d5f0084fefffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-      ])
+        const subplanner2 = new Planner()
+        subplanner2.add(Math.add(sum, 3))
 
-      expect(state.length).to.equal(5)
-      const subcommands2 = defaultAbiCoder.decode(
-        ['bytes32[]'],
-        hexConcat(['0x0000000000000000000000000000000000000000000000000000000000000020', state[4]]),
-      )[0]
-      expect(subcommands2).to.deep.equal([
-        // sum + 3
-        '0x771602f7000102ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-      ])
+        const planner = new Planner()
+        planner.addSubplan(SubplanContract.execute(subplanner1, subplanner1.state))
+        planner.addSubplan(SubplanContract.execute(subplanner2, subplanner2.state))
+
+        const { commands, state } = planner.plan()
+        expect(commands).toEqual([
+          // Invoke subplanner1
+          '0xde792d5f0083fefffffffffeddb53511e1e322133d03d5c0b8a9555c4c9904d0',
+          // Invoke subplanner2
+          '0xde792d5f0084fefffffffffeddb53511e1e322133d03d5c0b8a9555c4c9904d0',
+        ])
+
+        expect(state.length).toBe(5)
+        const subcommands2 = defaultAbiCoder.decode(
+          ['bytes32[]'],
+          hexConcat(['0x0000000000000000000000000000000000000000000000000000000000000020', state[4] as any]),
+        )[0]
+        expect(subcommands2).toEqual([
+          // sum + 3
+          '0x771602f7000102ffffffffffddb53511e1e322133d03d5c0b8a9555c4c9904d0',
+        ])
+      }
     })
 
     it("doesn't allow return values to be referenced before they are defined", () => {
-      const subplanner = new Planner()
-      const sum = subplanner.add(Math.add(1, 2))
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]!
+        setGlobalAdapter(adapter)
+        const Math = mathContracts[adapterName]!
 
-      const planner = new Planner()
-      planner.add(Math.add(sum, 3))
+        const subplanner = new Planner()
+        const sum = subplanner.add(Math.add(1, 2))
 
-      expect(() => planner.plan()).to.throw('Return value from "add" is not visible here')
+        const planner = new Planner()
+        planner.add(Math.add(sum, 3))
+
+        expect(() => planner.plan()).toThrow('Return value from "add" is not visible here')
+      }
     })
 
     it('requires calls to addSubplan to have subplan and state args', () => {
-      const subplanner = new Planner()
-      subplanner.add(Math.add(1, 2))
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]!
+        setGlobalAdapter(adapter)
+        const Math = mathContracts[adapterName]!
 
-      const planner = new Planner()
-      expect(() => planner.addSubplan(SubplanContract.execute(subplanner, []))).to.throw(
-        'Subplans must take planner and state arguments',
-      )
-      expect(() => planner.addSubplan(SubplanContract.execute([], subplanner.state))).to.throw(
-        'Subplans must take planner and state arguments',
-      )
+        const SubplanContract = Contract.createLibrary(
+          adapter.getContract(TEST_ADDRESS, [
+            'function execute(bytes32[] commands, bytes[] state) returns(bytes[])' as any,
+          ]),
+        )
+
+        const subplanner = new Planner()
+        subplanner.add(Math.add(1, 2))
+
+        const planner = new Planner()
+        expect(() => planner.addSubplan(SubplanContract.execute(subplanner, []))).toThrow(
+          'Subplans must take planner and state arguments',
+        )
+        expect(() => planner.addSubplan(SubplanContract.execute([], subplanner.state))).toThrow(
+          'Subplans must take planner and state arguments',
+        )
+      }
     })
 
     it("doesn't allow more than one subplan per call", () => {
-      const MultiSubplanContract = Contract.createLibrary(
-        new ethers.Contract(SAMPLE_ADDRESS, [
-          'function execute(bytes32[] commands, bytes32[] commands2, bytes[] state) returns(bytes[])',
-        ]),
-      )
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]!
+        setGlobalAdapter(adapter)
+        const Math = mathContracts[adapterName]!
 
-      const subplanner = new Planner()
-      subplanner.add(Math.add(1, 2))
+        const MultiSubplanContract = Contract.createLibrary(
+          adapter.getContract(TEST_ADDRESS, [
+            'function execute(bytes32[] commands, bytes32[] commands2, bytes[] state) returns(bytes[])' as any,
+          ]),
+        )
 
-      const planner = new Planner()
-      expect(() => planner.addSubplan(MultiSubplanContract.execute(subplanner, subplanner, subplanner.state))).to.throw(
-        'Subplans can only take one planner argument',
-      )
+        const subplanner = new Planner()
+        subplanner.add(Math.add(1, 2))
+
+        const planner = new Planner()
+        expect(() =>
+          planner.addSubplan(MultiSubplanContract.execute(subplanner, subplanner, subplanner.state)),
+        ).toThrow('Subplans can only take one planner argument')
+      }
     })
 
     it("doesn't allow more than one state array per call", () => {
-      const MultiStateContract = Contract.createLibrary(
-        new ethers.Contract(SAMPLE_ADDRESS, [
-          'function execute(bytes32[] commands, bytes[] state, bytes[] state2) returns(bytes[])',
-        ]),
-      )
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]!
+        setGlobalAdapter(adapter)
+        const Math = mathContracts[adapterName]!
 
-      const subplanner = new Planner()
-      subplanner.add(Math.add(1, 2))
+        const MultiStateContract = Contract.createLibrary(
+          adapter.getContract(TEST_ADDRESS, [
+            'function execute(bytes32[] commands, bytes[] state, bytes[] state2) returns(bytes[])' as any,
+          ]),
+        )
 
-      const planner = new Planner()
-      expect(() =>
-        planner.addSubplan(MultiStateContract.execute(subplanner, subplanner.state, subplanner.state)),
-      ).to.throw('Subplans can only take one state argument')
+        const subplanner = new Planner()
+        subplanner.add(Math.add(1, 2))
+
+        const planner = new Planner()
+        expect(() =>
+          planner.addSubplan(MultiStateContract.execute(subplanner, subplanner.state, subplanner.state)),
+        ).toThrow('Subplans can only take one state argument')
+      }
     })
 
     it('requires subplan functions return bytes32[] or nothing', () => {
-      const BadSubplanContract = Contract.createLibrary(
-        new ethers.Contract(SAMPLE_ADDRESS, ['function execute(bytes32[] commands, bytes[] state) returns(uint)']),
-      )
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]!
+        setGlobalAdapter(adapter)
+        const Math = mathContracts[adapterName]!
 
-      const subplanner = new Planner()
-      subplanner.add(Math.add(1, 2))
+        const BadSubplanContract = Contract.createLibrary(
+          adapter.getContract(TEST_ADDRESS, [
+            'function execute(bytes32[] commands, bytes[] state) returns(uint)' as any,
+          ]),
+        )
 
-      const planner = new Planner()
-      expect(() => planner.addSubplan(BadSubplanContract.execute(subplanner, subplanner.state))).to.throw(
-        'Subplans must return a bytes[] replacement state or nothing',
-      )
+        const subplanner = new Planner()
+        subplanner.add(Math.add(1, 2))
+
+        const planner = new Planner()
+        expect(() => planner.addSubplan(BadSubplanContract.execute(subplanner, subplanner.state))).toThrow(
+          'Subplans must return a bytes[] replacement state or nothing',
+        )
+      }
     })
 
     it('forbids infinite loops', () => {
-      const planner = new Planner()
-      planner.addSubplan(SubplanContract.execute(planner, planner.state))
-      expect(() => planner.plan()).to.throw('A planner cannot contain itself')
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]!
+        setGlobalAdapter(adapter)
+
+        const SubplanContract = Contract.createLibrary(
+          adapter.getContract(TEST_ADDRESS, [
+            'function execute(bytes32[] commands, bytes[] state) returns(bytes[])' as any,
+          ]),
+        )
+
+        const planner = new Planner()
+        planner.addSubplan(SubplanContract.execute(planner, planner.state))
+        expect(() => planner.plan()).toThrow('A planner cannot contain itself')
+      }
     })
 
     it('allows for subplans without return values', () => {
-      const subplanner = new Planner()
-      subplanner.add(Math.add(1, 2))
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]!
+        setGlobalAdapter(adapter)
+        const Math = mathContracts[adapterName]!
 
-      const planner = new Planner()
-      planner.addSubplan(ReadonlySubplanContract.execute(subplanner, subplanner.state))
+        const ReadonlySubplanContract = Contract.createLibrary(
+          adapter.getContract(TEST_ADDRESS, [
+            'function execute(bytes32[] commands, bytes[] state) returns(bytes[])' as any,
+          ]),
+        )
 
-      const { commands } = planner.plan()
-      expect(commands).to.deep.equal(['0xde792d5f0082feffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'])
+        const subplanner = new Planner()
+        subplanner.add(Math.add(1, 2))
+
+        const planner = new Planner()
+        planner.addSubplan(ReadonlySubplanContract.execute(subplanner, subplanner.state))
+
+        const { commands } = planner.plan()
+        expect(commands).toEqual(['0xde792d5f0082fefffffffffeddb53511e1e322133d03d5c0b8a9555c4c9904d0'])
+      }
     })
 
     it('does not allow return values from inside read-only subplans to be used outside them', () => {
-      const subplanner = new Planner()
-      const sum = subplanner.add(Math.add(1, 2))
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]!
+        setGlobalAdapter(adapter)
+        const Math = mathContracts[adapterName]!
 
-      const planner = new Planner()
-      planner.addSubplan(ReadonlySubplanContract.execute(subplanner, subplanner.state))
-      planner.add(Math.add(sum, 3))
+        const ReadonlySubplanContract = Contract.createLibrary(
+          new ethers.Contract(TEST_ADDRESS, ['function execute(bytes32[] commands, bytes[] state)']),
+        )
 
-      expect(() => planner.plan()).to.throw('Return value from "add" is not visible here')
+        const subplanner = new Planner()
+        const sum = subplanner.add(Math.add(1, 2))
+
+        const planner = new Planner()
+        planner.addSubplan(ReadonlySubplanContract.execute(subplanner, subplanner.state))
+        planner.add(Math.add(sum, 3))
+
+        expect(() => planner.plan()).toThrow('Return value from "add" is not visible here')
+      }
     })
-  })
 
-  it('plans CALLs', () => {
-    const Math = Contract.createContract(new ethers.Contract(SAMPLE_ADDRESS, mathABI.abi))
+    it('plans CALLs', () => {
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]!
+        setGlobalAdapter(adapter)
+        const Math = mathContracts[adapterName]!
 
-    const planner = new Planner()
-    planner.add(Math.add(1, 2))
-    const { commands } = planner.plan()
+        const planner = new Planner()
+        planner.add(Math.add(1, 2))
+        const { commands } = planner.plan()
 
-    expect(commands.length).to.equal(1)
-    expect(commands[0]).to.equal('0x771602f7010001ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
-  })
+        expect(commands.length).toBe(1)
+        expect(commands[0]).toBe('0x771602f7000001ffffffffffddb53511e1e322133d03d5c0b8a9555c4c9904d0')
+      }
+    })
 
-  it('plans STATICCALLs', () => {
-    const Math = Contract.createContract(new ethers.Contract(SAMPLE_ADDRESS, mathABI.abi), CommandFlags.STATICCALL)
+    it('plans STATICCALLs', () => {
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]!
+        setGlobalAdapter(adapter)
 
-    const planner = new Planner()
-    planner.add(Math.add(1, 2))
-    const { commands } = planner.plan()
+        const Math = Contract.createContract(
+          adapter.getContract(TEST_ADDRESS, mathABI.abi as any),
+          CommandFlags.STATICCALL,
+        )
 
-    expect(commands.length).to.equal(1)
-    expect(commands[0]).to.equal('0x771602f7020001ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
-  })
+        const planner = new Planner()
+        planner.add(Math.add(1, 2))
+        const { commands } = planner.plan()
 
-  it('plans STATICCALLs via .staticcall()', () => {
-    const Math = Contract.createContract(new ethers.Contract(SAMPLE_ADDRESS, mathABI.abi))
+        expect(commands.length).toBe(1)
+        expect(commands[0]).toBe('0x771602f7020001ffffffffffddb53511e1e322133d03d5c0b8a9555c4c9904d0')
+      }
+    })
 
-    const planner = new Planner()
-    planner.add(Math.add(1, 2).staticcall())
-    const { commands } = planner.plan()
+    it('plans STATICCALLs via .staticcall()', () => {
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]!
+        setGlobalAdapter(adapter)
 
-    expect(commands.length).to.equal(1)
-    expect(commands[0]).to.equal('0x771602f7020001ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
-  })
+        const Math = Contract.createContract(adapter.getContract(TEST_ADDRESS, mathABI.abi as any), CommandFlags.CALL)
 
-  it('plans CALLs with value', () => {
-    const Test = Contract.createContract(new ethers.Contract(SAMPLE_ADDRESS, ['function deposit(uint x) payable']))
+        const planner = new Planner()
+        planner.add(Math.add(1, 2).staticcall())
+        const { commands } = planner.plan()
 
-    const planner = new Planner()
-    planner.add(Test.deposit(123).withValue(456))
+        expect(commands.length).toBe(1)
+        expect(commands[0]).toBe('0x771602f7020001ffffffffffddb53511e1e322133d03d5c0b8a9555c4c9904d0')
+      }
+    })
 
-    const { commands } = planner.plan()
-    expect(commands.length).to.equal(1)
-    expect(commands[0]).to.equal('0xb6b55f25030001ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
-  })
+    it('plans CALLs with value', () => {
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]!
+        setGlobalAdapter(adapter)
 
-  it('allows returns from other calls to be used for the value parameter', () => {
-    const Test = Contract.createContract(new ethers.Contract(SAMPLE_ADDRESS, ['function deposit(uint x) payable']))
+        const Test = Contract.createContract(
+          adapter.getContract(TEST_ADDRESS, ['function deposit(uint x) payable' as any]),
+        )
 
-    const planner = new Planner()
-    const sum = planner.add(Math.add(1, 2))
-    planner.add(Test.deposit(123).withValue(sum))
+        const planner = new Planner()
+        planner.add(Test.deposit(123).withValue(456))
 
-    const { commands } = planner.plan()
-    expect(commands.length).to.equal(2)
-    expect(commands).to.deep.equal([
-      '0x771602f7000001ffffffff01eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-      '0xb6b55f25030102ffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-    ])
-  })
+        const { commands } = planner.plan()
+        expect(commands.length).toBe(1)
+        expect(commands[0]).toBe('0xb6b55f25030001ffffffffffddb53511e1e322133d03d5c0b8a9555c4c9904d0')
+      }
+    })
 
-  it('does not allow value-calls for DELEGATECALL or STATICCALL', () => {
-    expect(() => Math.add(1, 2).withValue(3)).to.throw('Only CALL operations can send value')
+    it('allows returns from other calls to be used for the value parameter', () => {
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]!
+        setGlobalAdapter(adapter)
 
-    const StaticMath = Contract.createContract(
-      new ethers.Contract(SAMPLE_ADDRESS, mathABI.abi),
-      CommandFlags.STATICCALL,
-    )
-    expect(() => StaticMath.add(1, 2).withValue(3)).to.throw('Only CALL operations can send value')
-  })
+        const Math = Contract.createContract(adapter.getContract(TEST_ADDRESS, mathABI.abi as any), CommandFlags.CALL)
 
-  it('does not allow making DELEGATECALL static', () => {
-    expect(() => Math.add(1, 2).staticcall()).to.throw('Only CALL operations can be made static')
-  })
+        const Test = Contract.createContract(
+          adapter.getContract(TEST_ADDRESS, ['function deposit(uint x) payable' as any]),
+        )
 
-  it('uses extended commands where necessary', () => {
-    const Test = Contract.createLibrary(
-      new ethers.Contract(SAMPLE_ADDRESS, [
-        'function test(uint a, uint b, uint c, uint d, uint e, uint f, uint g) returns(uint)',
-      ]),
-    )
+        const planner = new Planner()
+        const sum = planner.add(Math.add(1, 2))
+        planner.add(Test.deposit(123).withValue(sum))
 
-    const planner = new Planner()
-    planner.add(Test.test(1, 2, 3, 4, 5, 6, 7))
-    const { commands } = planner.plan()
-    expect(commands.length).to.equal(2)
-    expect(commands[0]).to.equal('0xe473580d40000000000000ffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
-    expect(commands[1]).to.equal('0x00010203040506ffffffffffffffffffffffffffffffffffffffffffffffffff')
-  })
+        const { commands } = planner.plan()
+        expect(commands.length).toBe(2)
+        expect(commands).toEqual([
+          '0x771602f7010001ffffffff01ddb53511e1e322133d03d5c0b8a9555c4c9904d0',
+          '0xb6b55f25030102ffffffffffddb53511e1e322133d03d5c0b8a9555c4c9904d0',
+        ])
+      }
+    })
 
-  it('supports capturing the whole return value as a bytes', () => {
-    const Test = Contract.createLibrary(
-      new ethers.Contract(SAMPLE_ADDRESS, [
-        'function returnsTuple() returns(uint a, bytes32[] b)',
-        'function acceptsBytes(bytes raw)',
-      ]),
-    )
+    it('does not allow value-calls for DELEGATECALL or STATICCALL', () => {
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]!
+        setGlobalAdapter(adapter)
+        const Math = mathContracts[adapterName]!
 
-    const planner = new Planner()
-    const ret = planner.add(Test.returnsTuple().rawValue())
-    planner.add(Test.acceptsBytes(ret))
-    const { commands } = planner.plan()
-    expect(commands).to.deep.equal([
-      '0x61a7e05e80ffffffffffff00eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-      '0x3e9ef66a0080ffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-    ])
+        expect(() => Math.add(1, 2).withValue(3)).toThrow('Only CALL operations can send value')
+
+        const StaticMath = Contract.createContract(
+          adapter.getContract(TEST_ADDRESS, mathABI.abi as any),
+          CommandFlags.STATICCALL,
+        )
+        expect(() => StaticMath.add(1, 2).withValue(3)).toThrow('Only CALL operations can send value')
+      }
+    })
+
+    it('does not allow making DELEGATECALL static', () => {
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]!
+        setGlobalAdapter(adapter)
+        const Math = mathContracts[adapterName]!
+
+        expect(() => Math.add(1, 2).staticcall()).toThrow('Only CALL operations can be made static')
+      }
+    })
+
+    it('uses extended commands where necessary', () => {
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]!
+        setGlobalAdapter(adapter)
+
+        const Test = Contract.createLibrary(
+          adapter.getContract(TEST_ADDRESS, [
+            'function test(uint a, uint b, uint c, uint d, uint e, uint f, uint g) returns(uint)' as any,
+          ]),
+        )
+
+        const planner = new Planner()
+        planner.add(Test.test(1, 2, 3, 4, 5, 6, 7))
+        const { commands } = planner.plan()
+        expect(commands.length).toBe(2)
+        expect(commands[0]).toBe('0xe473580d40000000000000ffddb53511e1e322133d03d5c0b8a9555c4c9904d0')
+        expect(commands[1]).toBe('0x00010203040506ffffffffffffffffffffffffffffffffffffffffffffffffff')
+      }
+    })
+
+    it('supports capturing the whole return value as a bytes', () => {
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]!
+        setGlobalAdapter(adapter)
+
+        const Test = Contract.createLibrary(
+          adapter.getContract(TEST_ADDRESS, [
+            'function returnsTuple() returns(uint a, bytes32[] b)' as any,
+            'function acceptsBytes(bytes raw)' as any,
+          ]),
+        )
+
+        const planner = new Planner()
+        const ret = planner.add(Test.returnsTuple().rawValue())
+        planner.add(Test.acceptsBytes(ret))
+        const { commands } = planner.plan()
+        expect(commands).toEqual([
+          '0x61a7e05e80ffffffffffff00ddb53511e1e322133d03d5c0b8a9555c4c9904d0',
+          '0x3e9ef66a0080ffffffffffffddb53511e1e322133d03d5c0b8a9555c4c9904d0',
+        ])
+      }
+    })
   })
 })
