@@ -1,5 +1,5 @@
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
-import { AdaptersTestSetup, createAdapters } from '../tests/setup'
+import { AdaptersTestSetup, createSpecificAdapters } from '../tests/setup'
 import {
   createWeirollContract,
   createWeirollDelegateCall,
@@ -28,10 +28,11 @@ describe('createWeirollTx', () => {
   }
 
   beforeAll(() => {
-    adapters = createAdapters()
+    adapters = createSpecificAdapters(['ethersV5Adapter', 'ethersV6Adapter', 'viemAdapter']) as AdaptersTestSetup
     for (const adapterName of Object.keys(adapters) as Array<keyof typeof adapters>) {
-      const contract = adapters[adapterName].getContract('0x6b175474e89094c44da98b954eedeac495271d0f', ERC20_ABI)
-      const daiContract = createWeirollContract(contract, WeirollCommandFlags.CALL)
+      setGlobalAdapter(adapters[adapterName])
+      const contract = adapters[adapterName].getContract('0x6b175474e89094c44da98b954eedeac495271d0f', ERC20_ABI as any)
+      const daiContract = createWeirollContract(contract as any, WeirollCommandFlags.CALL)
       daiContracts[adapterName] = daiContract
     }
   })

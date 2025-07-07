@@ -18,8 +18,7 @@
   },
   "dependencies": {
     "@cowprotocol/sdk-common": "workspace:*",
-    "@cowprotocol/sdk-config": "workspace:*",
-    "@weiroll/weiroll.js": "^0.3.0"
+    "@cowprotocol/sdk-config": "workspace:*"
   },
   "devDependencies": {
     "@cow-sdk/typescript-config": "workspace:*",
