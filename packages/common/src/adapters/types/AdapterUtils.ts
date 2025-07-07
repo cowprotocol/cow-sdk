@@ -147,6 +147,7 @@ export abstract class AdapterUtils {
 
   /**
    * Creates an Interface instance from an ABI
+   * interface was changed to iface: Identifier expected. 'interface' is a reserved word in strict mode.
    */
   abstract createInterface(abi: unknown): ContractInterface
 
@@ -214,4 +215,19 @@ export abstract class AdapterUtils {
    * Parses a string value to a BigIntish value with the specified decimals
    */
   abstract parseUnits(value: string, decimals: number): bigint
+
+  /**
+   * Creates a ParamType from a string type
+   */
+  abstract getParamTypeFromString(type: string): ContractInterface
+
+  /**
+   * Creates a ParamType from a string type
+   */
+  abstract getParamType(type: string): ContractInterface
+
+  /**
+   * Verifies if a value is an Interface instance
+   */
+  abstract isInterface(value: any): boolean
 }
