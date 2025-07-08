@@ -17,7 +17,7 @@ import { optimism } from '../../../chains/details/optimism'
 import { sepolia } from '../../../chains/details/sepolia'
 import { EvmCall, TokenInfo } from '../../../common'
 import { AdditionalTargetChainId, ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
-import { RAW_PROVIDERS_FILES_PATH } from '../../const'
+import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
 import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
 
@@ -181,7 +181,7 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
         target: '0x0000000000000000000000000000000000000002',
         callData: '0x1',
         gasLimit: '0x2',
-        dappId: 'MockBridgeProvider',
+        dappId: HOOK_DAPP_BRIDGE_PROVIDER_PREFIX,
       },
     }
   }
