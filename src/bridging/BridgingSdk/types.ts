@@ -9,7 +9,6 @@ import {
 import { AppDataInfo, QuoteResults, SwapAdvancedSettings, TradingSdk } from '../../trading'
 import { SignerLike } from '../../common'
 import { Signer } from '@ethersproject/abstract-signer'
-import { latest } from '@cowprotocol/app-data'
 
 export type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
   /**
@@ -52,7 +51,6 @@ export interface BridgeResultContext<T extends BridgeQuoteResult = BridgeQuoteRe
   bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount
   provider: BridgeProvider<T>
   signer: Signer
-  mockedHook: latest.CoWHook
   hookGasLimit: number
   validToOverride?: number
   appDataOverride?: SwapAdvancedSettings['appData']

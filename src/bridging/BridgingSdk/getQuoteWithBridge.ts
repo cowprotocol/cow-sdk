@@ -1,4 +1,4 @@
-import { areHooksEqual, getHookMockForCostEstimation } from '../../hooks/utils'
+import { getHookMockForCostEstimation } from '../../hooks/utils'
 import {
   mergeAppDataDoc,
   postSwapOrderFromQuote,
@@ -26,6 +26,7 @@ import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../errors'
 import { getTradeParametersAfterQuote } from '../../trading/utils/misc'
 import { BridgeResultContext, GetBridgeResultResult, GetQuoteWithBridgeParams } from './types'
 import { getBridgeSignedHook } from './getBridgeSignedHook'
+import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from '../const'
 
 export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   params: GetQuoteWithBridgeParams<T>,
@@ -133,7 +134,6 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
       provider,
       intermediateTokenAmount,
       signer,
-      mockedHook,
       appDataOverride,
       validToOverride,
       hookGasLimit,
@@ -231,8 +231,7 @@ async function getBaseBridgeQuoteRequest<T extends BridgeQuoteResult>(params: {
 }
 
 async function getBridgeResult(context: BridgeResultContext): Promise<GetBridgeResultResult> {
-  const { swapResult, bridgeRequestWithoutAmount, provider, intermediateTokenAmount, mockedHook, appDataOverride } =
-    context
+  const { swapResult, bridgeRequestWithoutAmount, provider, intermediateTokenAmount, appDataOverride } = context
 
   const bridgeRequest: QuoteBridgeRequest = {
     ...bridgeRequestWithoutAmount,
@@ -245,18 +244,17 @@ async function getBridgeResult(context: BridgeResultContext): Promise<GetBridgeR
   const swapAppData = await mergeAppDataDoc(swapResult.appDataInfo.doc, appDataOverride || {})
 
   const swapResultHooks = swapAppData.doc.metadata.hooks
-  const postHooks = swapResultHooks?.post || []
 
-  const isBridgeHookAlreadyPresent = postHooks.some((hook) => areHooksEqual(hook, bridgeHook.postHook))
+  // Remove mocked hook and all previous bridge hooks from the post hooks after receiving quote
+  const postHooks = (swapResultHooks?.post || []).filter((hook) => {
+    return !hook.dappId?.startsWith(HOOK_DAPP_BRIDGE_PROVIDER_PREFIX)
+  })
 
   const appDataInfo = await mergeAppDataDoc(swapAppData.doc, {
     metadata: {
       hooks: {
         pre: swapResultHooks?.pre,
-        // Remove the mocked hook from the post hooks after receiving quote
-        post: [...(swapResultHooks?.post || []), ...(isBridgeHookAlreadyPresent ? [] : [bridgeHook.postHook])].filter(
-          (hook) => !areHooksEqual(hook, mockedHook),
-        ),
+        post: [...postHooks, ...[bridgeHook.postHook]],
       },
     },
   })

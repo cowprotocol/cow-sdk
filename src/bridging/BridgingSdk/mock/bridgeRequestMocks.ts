@@ -16,6 +16,7 @@ import { AppDataInfo, OrderTypedData, TradeParameters } from '../../../trading'
 import { UnsignedOrder } from '../../../order-signing'
 import { Wallet } from '@ethersproject/wallet'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from '../../const'
 
 // Sell token: USDC (mainnet)
 const sellTokenChainId = SupportedChainId.MAINNET
@@ -170,7 +171,7 @@ const postHook: latestAppData.CoWHook = {
   target: '0x0000000000000000000000000000000000000000',
   callData: '0x2',
   gasLimit: '0x2',
-  dappId: 'MockBridgeProvider',
+  dappId: HOOK_DAPP_BRIDGE_PROVIDER_PREFIX,
 }
 
 export const bridgeCallDetails: BridgeCallDetails = {
@@ -182,11 +183,13 @@ export const bridgeCallDetails: BridgeCallDetails = {
 }
 
 const fullAppData =
-  '{"appCode":"test","metadata":{"hooks":{"post":[{"callData":"0x2","dappId":"MockBridgeProvider","gasLimit":"0x2","target":"0x0000000000000000000000000000000000000000"}]}},"version":"1.3.0"}'
+  '{"appCode":"test","metadata":{"hooks":{"post":[{"callData":"0x2","dappId":"' +
+  HOOK_DAPP_BRIDGE_PROVIDER_PREFIX +
+  '","gasLimit":"0x2","target":"0x0000000000000000000000000000000000000000"}]}},"version":"1.3.0"}'
 
 export const appDataInfo: AppDataInfo = {
   fullAppData,
-  appDataKeccak256: '0xb27139d9c9fb9d28b05d943628abad2303e50bb43c191db8c99ebb903f00f4a8',
+  appDataKeccak256: '0x73e0a8a63c57d14526a53b5dfd3789f723f42344067f8fd53c4a9c6a5eb1034c',
   doc: {
     appCode: 'test',
     metadata: {
@@ -216,7 +219,7 @@ export const orderToSign: UnsignedOrder = {
   partiallyFillable: false,
   kind: OrderKind.SELL,
   validTo: 1737468944,
-  appData: '0xb27139d9c9fb9d28b05d943628abad2303e50bb43c191db8c99ebb903f00f4a8',
+  appData: '0x73e0a8a63c57d14526a53b5dfd3789f723f42344067f8fd53c4a9c6a5eb1034c',
   feeAmount: '1112955650440102',
 }
 
