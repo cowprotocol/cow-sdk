@@ -1,5 +1,5 @@
-import { QuoteAndPost } from '../trading'
-import { latest as latestAppData } from '@cowprotocol/app-data'
+import { QuoteAndPost } from '@cowprotocol/sdk-trading'
+import { latest as latestAppData } from '@cowprotocol/sdk-app-data'
 import { BridgeQuoteAndPost, CrossChainQuoteAndPost } from './types'
 
 export function isBridgeQuoteAndPost(quote: CrossChainQuoteAndPost): quote is BridgeQuoteAndPost {

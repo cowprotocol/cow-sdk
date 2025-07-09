@@ -1,9 +1,9 @@
-import { BridgeQuoteAmountsAndCosts, QuoteBridgeRequest } from '../../../bridging/types'
-import { TargetChainId } from '../../../chains'
+import { BridgeQuoteAmountsAndCosts, QuoteBridgeRequest } from '../../types'
+import { TargetChainId } from '@cowprotocol/sdk-config'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { AcrossChainConfig, ACROSS_TOKEN_MAPPING } from './const/tokens'
-import { getBigNumber } from '../../../order-book'
-import { OrderKind } from '@cowprotocol/contracts'
+import { getBigNumber } from '@cowprotocol/sdk-order-book'
+import { ContractsOrderKind as OrderKind } from '@cowprotocol/sdk-contracts-ts'
 import { SuggestedFeesResponse } from './types'
 
 const PCT_100_PERCENT = 10n ** 18n

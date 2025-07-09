@@ -16,7 +16,7 @@ export class ContractFactory {
           const txParams = {
             to: address,
             data: adapter.utils.encodeFunction(EthFlowAbi, 'createOrder', [order]),
-            value: options?.value?.toString() || '0',
+            value: options?.value || '0',
           }
           return await signer.estimateGas(txParams)
         },
@@ -37,14 +37,45 @@ export class ContractFactory {
       },
       interface: {
         encodeFunctionData: (functionName: string, args: unknown[]) => {
+          if (functionName === 'createOrder' || functionName === 'invalidateOrder') {
+            return adapter.utils.encodeFunction(EthFlowAbi, functionName, args)
+          }
           return adapter.utils.encodeFunction(EthFlowAbi, functionName, args)
+        },
+        decodeFunctionData: (functionName: string, data: string) => {
+          return adapter.utils.decodeFunctionData(EthFlowAbi, functionName, data)
+        },
+      },
+      functions: {
+        createOrder: async (order: EthFlowOrderData, options?: { value: string | bigint }) => {
+          const txParams = {
+            to: address,
+            data: adapter.utils.encodeFunction(EthFlowAbi, 'createOrder', [order]),
+            value: options?.value || '0',
+          }
+          return await signer.sendTransaction(txParams)
+        },
+        invalidateOrder: async (order: EthFlowOrderData) => {
+          const txParams = {
+            to: address,
+            data: adapter.utils.encodeFunction(EthFlowAbi, 'invalidateOrder', [order]),
+          }
+          return await signer.sendTransaction(txParams)
+        },
+        orders: async (orderHash: string) => {
+          return (await adapter.readContract({
+            address,
+            abi: EthFlowAbi,
+            functionName: 'orders',
+            args: [orderHash],
+          })) as { owner: string; validTo: number }
         },
       },
       createOrder: async (order: EthFlowOrderData, options?: { value: string | bigint }) => {
         const txParams = {
           to: address,
           data: adapter.utils.encodeFunction(EthFlowAbi, 'createOrder', [order]),
-          value: options?.value?.toString() || '0',
+          value: options?.value || '0',
         }
         return await signer.sendTransaction(txParams)
       },
@@ -97,6 +128,33 @@ export class ContractFactory {
       interface: {
         encodeFunctionData: (functionName: string, args: unknown[]) => {
           return adapter.utils.encodeFunction(GPV2SettlementAbi, functionName, args)
+        },
+        decodeFunctionData: (functionName: string, data: string) => {
+          return adapter.utils.decodeFunctionData(GPV2SettlementAbi, functionName, data)
+        },
+      },
+      functions: {
+        setPreSignature: async (orderUid: string, signed: boolean) => {
+          const txParams = {
+            to: address,
+            data: adapter.utils.encodeFunction(GPV2SettlementAbi, 'setPreSignature', [orderUid, signed]),
+          }
+          return await signer.sendTransaction(txParams)
+        },
+        invalidateOrder: async (orderUid: string) => {
+          const txParams = {
+            to: address,
+            data: adapter.utils.encodeFunction(GPV2SettlementAbi, 'invalidateOrder', [orderUid]),
+          }
+          return await signer.sendTransaction(txParams)
+        },
+        domainSeparator: async () => {
+          return (await adapter.readContract({
+            address,
+            abi: GPV2SettlementAbi,
+            functionName: 'domainSeparator',
+            args: [],
+          })) as string
         },
       },
       setPreSignature: async (orderUid: string, signed: boolean) => {

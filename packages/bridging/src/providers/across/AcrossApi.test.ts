@@ -1,5 +1,5 @@
 import { AcrossApi } from './AcrossApi'
-import { SupportedChainId } from '../../../chains'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { SuggestedFeesRequest, SuggestedFeesResponse } from './types'
 
 // Mock fetch globally

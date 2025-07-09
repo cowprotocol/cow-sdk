@@ -1,5 +1,5 @@
-import { CowError } from '@cowprotocol/sdk-common'
-import { Abi, parseAbi, toFunctionSelector, encodeFunctionData, AbiFunction } from 'viem'
+import { CowError, GenericContractInterface } from '@cowprotocol/sdk-common'
+import { Abi, parseAbi, toFunctionSelector, encodeFunctionData, AbiFunction, decodeAbiParameters } from 'viem'
 
 function normalizeParam(param: any): any {
   return {
@@ -36,7 +36,7 @@ function normalizeFragment(fragment: any): any {
  * Interface wrapper that makes viem interfaces behave exactly like ethers v5 interfaces
  * for weiroll compatibility. This ensures that all adapters produce identical fragment formats.
  */
-export class ViemInterfaceWrapper {
+export class ViemInterfaceWrapper implements GenericContractInterface {
   private parsedAbi: Abi
   private _functions: Record<string, any>
   private _fragments: any[]
@@ -131,5 +131,12 @@ export class ViemInterfaceWrapper {
    */
   get abi() {
     return this._fragments
+  }
+
+  decodeFunctionData(functionName: string, data: string): unknown[] {
+    const functionAbi = this.abi.find((item: any) => item.type === 'function' && item.name === functionName)
+    if (!functionAbi) throw new Error(`Function ${functionName} not found in ABI`)
+    const inputTypes = functionAbi.inputs.map((input: any) => ({ type: input.type, name: input.name }))
+    return decodeAbiParameters(inputTypes, data as `0x${string}`)
   }
 }

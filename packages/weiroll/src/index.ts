@@ -1,7 +1,8 @@
 import { Planner as WeirollPlanner, Contract as WeirollContract } from './lib/planner'
 import { EvmCall } from '@cowprotocol/sdk-config'
-export { Contract as WeirollContract, Planner as WeirollPlanner } from './lib/planner'
 import { GenericContract, getGlobalAdapter } from '@cowprotocol/sdk-common'
+
+export { Contract as WeirollContract, Planner as WeirollPlanner } from './lib/planner'
 
 export enum WeirollCommandFlags {
   DELEGATECALL = 0,

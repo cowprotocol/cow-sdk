@@ -1,5 +1,5 @@
-import { Signer } from 'ethers'
-import { latest as latestAppData } from '@cowprotocol/app-data'
+import { AbstractProviderAdapter, setGlobalAdapter, SignerLike } from '@cowprotocol/sdk-common'
+import { latest as latestAppData } from '@cowprotocol/sdk-app-data'
 
 import {
   BridgeDeposit,
@@ -13,21 +13,26 @@ import {
 
 import { DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION, RAW_PROVIDERS_FILES_PATH } from '../../const'
 
-import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
+import {
+  ChainId,
+  ChainInfo,
+  SupportedChainId,
+  TargetChainId,
+  EvmCall,
+  TokenInfo,
+  mainnet,
+  polygon,
+  arbitrumOne,
+  base,
+  optimism,
+} from '@cowprotocol/sdk-config'
 
 import { ACROSS_TOKEN_MAPPING } from './const/tokens'
-import { EvmCall, TokenInfo } from '../../../common'
-
-import { mainnet } from '../../../chains/details/mainnet'
-import { polygon } from '../../../chains/details/polygon'
-import { arbitrumOne } from '../../../chains/details/arbitrum'
-import { base } from '../../../chains/details/base'
-import { optimism } from '../../../chains/details/optimism'
 import { AcrossApi, AcrossApiOptions } from './AcrossApi'
 import { getChainConfigs, getTokenAddress, getTokenSymbol, toBridgeQuoteResult } from './util'
-import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
+import { CowShedSdk, CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
 import { createAcrossDepositCall } from './createAcrossDepositCall'
-import { OrderKind } from '@cowprotocol/contracts'
+import { ContractsOrderKind as OrderKind } from '@cowprotocol/sdk-contracts-ts'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
 import { SuggestedFeesResponse } from './types'
 
@@ -60,9 +65,15 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
   protected api: AcrossApi
   protected cowShedSdk: CowShedSdk
 
-  constructor(private options: AcrossBridgeProviderOptions = {}) {
+  constructor(
+    private options: AcrossBridgeProviderOptions = {},
+    adapter?: AbstractProviderAdapter,
+  ) {
+    if (adapter) {
+      setGlobalAdapter(adapter)
+    }
     this.api = new AcrossApi(options.apiOptions)
-    this.cowShedSdk = new CowShedSdk(options.cowShedOptions)
+    this.cowShedSdk = new CowShedSdk(adapter, options.cowShedOptions?.factoryOptions)
   }
 
   info: BridgeProviderInfo = {
@@ -146,8 +157,8 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
   async getSignedHook(
     chainId: SupportedChainId,
     unsignedCall: EvmCall,
-    signer: Signer,
     defaultGasLimit?: bigint,
+    signer?: SignerLike,
   ): Promise<BridgeHook> {
     // Sign the multicall
     const { signedMulticall, cowShedAccount, gasLimit } = await this.cowShedSdk.signCalls({

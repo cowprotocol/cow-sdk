@@ -5,6 +5,7 @@ import type {
   AdapterUtils,
   Address,
   Block,
+  GenericContract,
   PrivateKey,
   ReadContractParams,
   Signer,
@@ -38,5 +39,5 @@ export abstract class AbstractProviderAdapter<T extends AdapterTypes = AdapterTy
   abstract readContract(params: ReadContractParams, provider?: T['Provider']): Promise<unknown>
   abstract getBlock(blockTag: string, provider?: T['Provider']): Promise<Block>
   abstract setSigner(signer: Signer | PrivateKey): void
-  abstract getContract(address: Address, abi: Abi): unknown
+  abstract getContract(address: Address, abi: Abi): GenericContract
 }

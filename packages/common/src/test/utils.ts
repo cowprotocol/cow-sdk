@@ -1,4 +1,4 @@
-import { jsonWithBigintReplacer } from '../common/utils/serialize'
+import { jsonWithBigintReplacer } from '../utils'
 
 function serialize(obj: unknown): string {
   return JSON.stringify(obj, jsonWithBigintReplacer, 2)

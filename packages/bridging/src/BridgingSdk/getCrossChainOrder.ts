@@ -1,9 +1,8 @@
 import { BridgeProvider, BridgeQuoteResult, BridgeStatus, CrossChainOrder } from '../types'
-import { SupportedChainId } from '../../chains'
-import { OrderBookApi } from 'src/order-book'
+import { SupportedChainId, CowEnv } from '@cowprotocol/sdk-config'
+import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { getPostHooks } from '../utils'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from '../providers/across/const/misc'
-import { CowEnv } from '../../common'
 
 /**
  * Fetch a cross-chain order and its status.
@@ -49,9 +48,9 @@ export async function getCrossChainOrder(params: {
   if (trades.length > 0) {
     // Bridging already initiated
     const firstTrade = trades[0]
-    if (!firstTrade.txHash) {
+    if (!firstTrade?.txHash) {
       // Shouldn't happen, but lets make typescript happy
-      throw new Error(`No tx hash found for order ${orderId} . First trade, with log index ${firstTrade.logIndex}`)
+      throw new Error(`No tx hash found for order ${orderId} . First trade, with log index ${firstTrade?.logIndex}`)
     }
 
     // Get bridging id for this order

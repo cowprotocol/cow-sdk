@@ -1,4 +1,4 @@
-import { SwapAdvancedSettings, TradingSdk } from '../../trading'
+import { SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import {
   BridgeProvider,
   BridgeQuoteResult,
@@ -7,14 +7,19 @@ import {
   GetErc20Decimals,
   QuoteBridgeRequest,
 } from '../types'
-import { ALL_SUPPORTED_CHAINS, CowEnv, TokenInfo } from '../../common'
-import { ChainInfo, SupportedChainId, TargetChainId } from '../../chains'
+import {
+  ALL_SUPPORTED_CHAINS,
+  CowEnv,
+  TokenInfo,
+  ChainInfo,
+  SupportedChainId,
+  TargetChainId,
+} from '@cowprotocol/sdk-config'
 import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
 import { getQuoteWithBridge } from './getQuoteWithBridge'
-import { getSigner } from '../../common/utils/wallet'
 import { factoryGetErc20Decimals } from './getErc20Decimals'
-import { enableLogging } from '../../common/utils/log'
-import { OrderBookApi } from 'src/order-book'
+import { AbstractProviderAdapter, CowError, enableLogging, setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { getCrossChainOrder } from './getCrossChainOrder'
 
 export interface BridgingSdkOptions {
@@ -73,7 +78,13 @@ export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'enableLogging
 export class BridgingSdk {
   protected config: BridgingSdkConfig
 
-  constructor(readonly options: BridgingSdkOptions) {
+  constructor(
+    readonly options: BridgingSdkOptions,
+    adapter?: AbstractProviderAdapter,
+  ) {
+    if (adapter) {
+      setGlobalAdapter(adapter)
+    }
     const { providers, ...restOptions } = options
 
     // For simplicity, we support only a single provider in the initial implementation
@@ -98,7 +109,9 @@ export class BridgingSdk {
 
   private get provider(): BridgeProvider<BridgeQuoteResult> {
     const { providers } = this.config
-
+    if (!providers[0]) {
+      throw new CowError('No provider found')
+    }
     return providers[0]
   }
 
@@ -156,8 +169,7 @@ export class BridgingSdk {
     const tradingSdk = this.config.tradingSdk
 
     if (sellTokenChainId !== buyTokenChainId) {
-      const signer = getSigner(quoteBridgeRequest.signer)
-      const getErc20Decimals = this.config.getErc20Decimals ?? factoryGetErc20Decimals(signer)
+      const getErc20Decimals = this.config.getErc20Decimals ?? factoryGetErc20Decimals()
 
       // Cross-chain swap
       return getQuoteWithBridge({

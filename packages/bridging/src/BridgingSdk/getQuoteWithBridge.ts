@@ -1,7 +1,7 @@
-import { latest } from '@cowprotocol/app-data'
-import { areHooksEqual, getHookMockForCostEstimation } from '../../hooks/utils'
+import { latest } from '@cowprotocol/sdk-app-data'
+import { areHooksEqual, getHookMockForCostEstimation } from '../..//hooks/utils'
 import {
-  AppDataInfo,
+  TradingAppDataInfo as AppDataInfo,
   mergeAppDataDoc,
   postSwapOrderFromQuote,
   QuoteResults,
@@ -9,7 +9,7 @@ import {
   TradeParameters,
   TradingSdk,
   WithPartialTraderParams,
-} from '../../trading'
+} from '@cowprotocol/sdk-trading'
 import {
   BridgeHook,
   BridgeProvider,
@@ -20,16 +20,12 @@ import {
   QuoteBridgeRequest,
   QuoteBridgeRequestWithoutAmount,
 } from '../types'
-import { Signer } from '@ethersproject/abstract-signer'
-import { getSigner } from '../../common/utils/wallet'
-import { log } from '../../common/utils/log'
-import { OrderKind } from '../../order-book'
-import { jsonWithBigintReplacer } from '../../common/utils/serialize'
-import { parseUnits } from '@ethersproject/units'
-import { SignerLike } from '../../common'
-import { QuoteResultsWithSigner } from '../../trading/getQuote'
+import { log, jsonWithBigintReplacer, getGlobalAdapter } from '@cowprotocol/sdk-common'
+import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { SignerLike } from '@cowprotocol/sdk-common'
+import { QuoteResultsWithSigner } from '@cowprotocol/sdk-trading/src/getQuote'
 import { BridgeProviderQuoteError } from '../errors'
-import { getTradeParametersAfterQuote } from '../../trading/utils/misc'
+import { getTradeParametersAfterQuote } from '@cowprotocol/sdk-trading/src/utils/misc'
 
 type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
   /**
@@ -78,7 +74,8 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
     ...rest
   } = swapAndBridgeRequest
 
-  const signer = getSigner(signerLike)
+  const adapter = getGlobalAdapter()
+  const signer = signerLike ? adapter.createSigner(signerLike) : adapter.signer
 
   if (kind !== OrderKind.SELL) {
     throw new Error('Bridging only support SELL orders')
@@ -140,15 +137,14 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
 
   const intermediateTokenAmount = swapResult.amountsAndCosts.afterSlippage.buyAmount // Estimated, as it will likely have surplus
   log(
-    `Expected to receive ${intermediateTokenAmount} of the intermediate token (${parseUnits(
-      intermediateTokenAmount.toString(),
-      intermediaryTokenDecimals,
-    ).toString()})`,
+    `Expected to receive ${intermediateTokenAmount} of the intermediate token (${adapter.utils
+      .parseUnits(intermediateTokenAmount.toString(), intermediaryTokenDecimals)
+      .toString()})`,
   )
 
   // Get the bridge result
   async function signHooksAndSetSwapResult(
-    signer: Signer,
+    signer: SignerLike,
     defaultGasLimit?: bigint,
     advancedSettings?: SwapAdvancedSettings,
   ): Promise<{ swapResult: QuoteResults; bridgeResult: BridgeQuoteResults }> {
@@ -199,7 +195,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
 
   const result = await signHooksAndSetSwapResult(
     // Sign the hooks with bridgeHookSigner if provided
-    bridgeHookSigner ? getSigner(bridgeHookSigner) : signer,
+    bridgeHookSigner ? adapter.createSigner(bridgeHookSigner) : signer,
     // Use estimated hook gas limit if bridgeHookSigner is provided, so we don't have to estimate the hook gas limit twice
     // Moreover, since bridgeHookSigner is not the real signer, the estimation will fail
     bridgeHookSigner ? BigInt(hookEstimatedGasLimit) : undefined,
@@ -250,13 +246,13 @@ async function getBaseBridgeQuoteRequest<T extends BridgeQuoteResult>(params: {
 
   const intermediateTokens = await provider.getIntermediateTokens(quoteBridgeRequest)
 
-  if (intermediateTokens.length === 0) {
-    throw new BridgeProviderQuoteError('No path found (not intermediate token for bridging)', {})
-  }
-
   // We just pick the first intermediate token for now
   const intermediateTokenAddress = intermediateTokens[0]
   log(`Using ${intermediateTokenAddress} as intermediate tokens`)
+
+  if (!intermediateTokenAddress) {
+    throw new BridgeProviderQuoteError('No path found (not intermediate token for bridging)', {})
+  }
 
   // Get intermediate token decimals
   const intermediaryTokenDecimals = await getErc20Decimals(sellTokenChainId, intermediateTokenAddress)
@@ -281,7 +277,7 @@ interface BridgeResultContext {
   intermediateTokenAmount: bigint
   bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount
   provider: BridgeProvider<BridgeQuoteResult>
-  signer: Signer
+  signer: SignerLike
   mockedHook: latest.CoWHook
   appDataOverride?: SwapAdvancedSettings['appData']
   defaultGasLimit?: bigint
@@ -314,8 +310,8 @@ async function getBridgeResult(context: BridgeResultContext): Promise<GetBridgeR
   const bridgeHook = await provider.getSignedHook(
     bridgeRequest.sellTokenChainId,
     unsignedBridgeCall,
-    signer,
     defaultGasLimit,
+    signer,
   )
 
   const swapAppData = await mergeAppDataDoc(swapResult.appDataInfo.doc, appDataOverride || {})

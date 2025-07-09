@@ -1,9 +1,6 @@
-import { latest as latestAppData } from '@cowprotocol/app-data'
-import { ChainInfo, SupportedChainId, TargetChainId } from '../chains'
-import { TokenInfo } from '../common/types/tokens'
-import { Address, Amounts, EnrichedOrder, OrderKind } from '../order-book'
-import { EvmCall } from '../common/types/ethereum'
-import type { AccountAddress } from '../common/types/wallets'
+import { latest as latestAppData } from '@cowprotocol/sdk-app-data'
+import { Address, Amounts, EnrichedOrder, OrderKind } from '@cowprotocol/sdk-order-book'
+import { EvmCall, TokenInfo, ChainInfo, SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 import {
   OrderPostingResult,
   QuoteAndPost,
@@ -12,8 +9,8 @@ import {
   SwapAdvancedSettings,
   TradeOptionalParameters,
   TraderParameters,
-} from '../trading'
-import { Signer } from '@ethersproject/abstract-signer'
+} from '@cowprotocol/sdk-trading'
+import { AccountAddress, SignerLike } from '@cowprotocol/sdk-common'
 
 export interface BridgeProviderInfo {
   name: string
@@ -193,12 +190,13 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    *  - Deposit into  the bridge contract
    *
    * This hook will include the pre-authorization (signature) of the owner of the cow-shed account (the trader).
+   * The signer is optional, if not provided, the signer will be the trader's account from adapter.
    */
   getSignedHook(
     chainId: SupportedChainId,
     unsignedCall: EvmCall,
-    signer: Signer,
     defaultGasLimit?: bigint,
+    signer?: SignerLike,
   ): Promise<BridgeHook>
 
   /**

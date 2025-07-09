@@ -1,5 +1,5 @@
-import { OrderKind } from '@cowprotocol/contracts'
-import { AdditionalTargetChainId, SupportedChainId } from '../../../chains'
+import { ContractsOrderKind as OrderKind } from '@cowprotocol/sdk-contracts-ts'
+import { AdditionalTargetChainId, SupportedChainId } from '@cowprotocol/sdk-config'
 import { QuoteBridgeRequest } from '../../types'
 import { getChainConfigs, getTokenSymbol, getTokenAddress, toBridgeQuoteResult, pctToBps, applyPctFee } from './util'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'

@@ -1,4 +1,4 @@
-import { latest } from '@cowprotocol/app-data'
+import { latest } from '@cowprotocol/sdk-app-data'
 
 export function getHookMockForCostEstimation(gasLimit: number): latest.CoWHook {
   return {

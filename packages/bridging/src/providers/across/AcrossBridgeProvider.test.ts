@@ -1,11 +1,10 @@
-import { SupportedChainId, TargetChainId } from '../../../chains'
-import { TokenInfo } from '../../../common'
-import { OrderKind } from '../../../order-book'
+import { SupportedChainId, TargetChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { BridgeQuoteResult, QuoteBridgeRequest } from '../../types'
 import { AcrossApi } from './AcrossApi'
 import { ACROSS_SUPPORTED_NETWORKS, AcrossBridgeProvider, AcrossBridgeProviderOptions } from './AcrossBridgeProvider'
 import { SuggestedFeesResponse } from './types'
-import { latest as latestAppData } from '@cowprotocol/app-data/dist/generatedTypes'
+import { latest as latestAppData } from '@cowprotocol/sdk-app-data'
 
 // Mock AcrossApi
 jest.mock('./AcrossApi')

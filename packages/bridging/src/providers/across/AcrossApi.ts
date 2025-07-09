@@ -1,4 +1,4 @@
-import { log } from '../../../common/utils/log'
+import { log } from '@cowprotocol/sdk-common'
 import {
   AvailableRoutesRequest,
   PctFee,

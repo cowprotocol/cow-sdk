@@ -1,4 +1,4 @@
-import { CowError } from '@cowprotocol/sdk-common'
+import { CowError, GenericContractInterface } from '@cowprotocol/sdk-common'
 import { Interface, InterfaceAbi } from 'ethers'
 
 /**
@@ -39,7 +39,7 @@ function normalizeFragment(fragment: any): any {
   }
 }
 
-export class EthersV6InterfaceWrapper {
+export class EthersV6InterfaceWrapper implements GenericContractInterface {
   private ethersInterface: Interface
   private _functions: Record<string, any>
   private _fragments: any[]
@@ -137,6 +137,50 @@ export class EthersV6InterfaceWrapper {
    */
   encodeFunctionData(name: string, args: unknown[]): string {
     return this.ethersInterface.encodeFunctionData(name, args)
+  }
+
+  /**
+   * Decode function data
+   * Fixed to return data in the same format as ethers v5 for compatibility
+   */
+  decodeFunctionData(functionName: string, data: string): unknown[] {
+    try {
+      const functionAbi = this.ethersInterface.getFunction(functionName)
+      if (!functionAbi) {
+        throw new CowError(`Function ${functionName} not found`)
+      }
+
+      // Use the ethers v6 decodeFunctionData method
+      const decoded = this.ethersInterface.decodeFunctionData(functionName, data)
+
+      // Ethers v6 returns a Result object, but we need a plain array for compatibility
+      // Convert the Result object to a plain array
+      if (decoded && typeof decoded === 'object') {
+        // Result objects in ethers v6 are array-like but have additional properties
+        // Convert to plain array while preserving the structure
+        const result: unknown[] = []
+
+        // Copy indexed values
+        for (let i = 0; i < decoded.length; i++) {
+          result[i] = decoded[i]
+        }
+
+        // Also copy named properties to maintain compatibility
+        Object.keys(decoded).forEach((key) => {
+          if (isNaN(Number(key))) {
+            // Skip numeric indices
+            ;(result as any)[key] = decoded[key]
+          }
+        })
+
+        return result
+      }
+
+      // Fallback to array conversion
+      return Array.from(decoded || [])
+    } catch (error: any) {
+      throw new CowError(`EthersV6Wrapper error: Failed to decode ${functionName}: ${error.message}`)
+    }
   }
 
   /**

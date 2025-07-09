@@ -9,6 +9,6 @@ export * from './BridgingSdk/BridgingSdk'
 export { MockBridgeProvider } from './providers/mock/MockBridgeProvider'
 export {
   AcrossBridgeProvider,
-  AcrossQuoteResult,
-  AcrossBridgeProviderOptions,
+  type AcrossQuoteResult,
+  type AcrossBridgeProviderOptions,
 } from './providers/across/AcrossBridgeProvider'

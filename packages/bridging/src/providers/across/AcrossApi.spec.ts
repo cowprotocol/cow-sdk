@@ -1,4 +1,4 @@
-import { SupportedChainId } from '../../../chains'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { AcrossApi } from './AcrossApi'
 
 describe('AcrossApi: Shape of API response', () => {

@@ -1,4 +1,4 @@
-import type { TargetChainId } from '../../../chains'
+import type { TargetChainId } from '@cowprotocol/sdk-config'
 
 export interface AvailableRoutesRequest {
   originChainId: string

@@ -1,45 +1,52 @@
-import { Contract as WeirollContract } from '@weiroll/weiroll.js'
-import { Contract as EthersContract } from '@ethersproject/contracts'
-
-import { EvmCall } from '../../../common'
-
+import { WeirollContract } from '@cowprotocol/sdk-weiroll'
 import { ACROSS_MATH_CONTRACT_ADDRESSES, ACROSS_SPOOK_CONTRACT_ADDRESSES } from './const/contracts'
-import { WeirollCommandFlags, createWeirollContract, createWeirollDelegateCall } from '../../../weiroll'
+import { WeirollCommandFlags, createWeirollContract, createWeirollDelegateCall } from '@cowprotocol/sdk-weiroll'
 import { ACROSS_MATH_ABI, ACROSS_SPOKE_POOL_ABI } from './abi'
-import { TargetChainId } from '../../../chains/types'
-import { CowShedSdk } from '../../../cow-shed'
+import { EvmCall, TargetChainId } from '@cowprotocol/sdk-config'
+import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { QuoteBridgeRequest } from '../../types'
+import { getGlobalAdapter } from '@cowprotocol/sdk-common'
 
 const ERC20_BALANCE_OF_ABI = ['function balanceOf(address account) external view returns (uint256)'] as const
 const ERC20_APPROVE_OF_ABI = ['function approve(address spender, uint256 amount) external returns (bool)'] as const
 
 function getSpookPoolContract(sellTokenChainId: TargetChainId): WeirollContract {
+  const adapter = getGlobalAdapter()
   const spokePoolAddress = ACROSS_SPOOK_CONTRACT_ADDRESSES[sellTokenChainId]
   if (!spokePoolAddress) {
     throw new Error('Spoke pool address not found for chain: ' + sellTokenChainId)
   }
-  return createWeirollContract(new EthersContract(spokePoolAddress, ACROSS_SPOKE_POOL_ABI), WeirollCommandFlags.CALL)
+  return createWeirollContract(
+    adapter.getContract(spokePoolAddress, ACROSS_SPOKE_POOL_ABI) as any,
+    WeirollCommandFlags.CALL,
+  )
 }
 
 function getMathContract(sellTokenChainId: TargetChainId): WeirollContract {
+  const adapter = getGlobalAdapter()
   const mathContractAddress = ACROSS_MATH_CONTRACT_ADDRESSES[sellTokenChainId]
   if (!mathContractAddress) {
     throw new Error('Math contract address not found for chain: ' + sellTokenChainId)
   }
 
-  return createWeirollContract(new EthersContract(mathContractAddress, ACROSS_MATH_ABI), WeirollCommandFlags.CALL)
+  return createWeirollContract(
+    adapter.getContract(mathContractAddress, ACROSS_MATH_ABI) as any,
+    WeirollCommandFlags.CALL,
+  )
 }
 
 function getBalanceOfSellTokenContract(sellTokenAddress: string): WeirollContract {
+  const adapter = getGlobalAdapter()
   return createWeirollContract(
-    new EthersContract(sellTokenAddress, ERC20_BALANCE_OF_ABI),
+    adapter.getContract(sellTokenAddress, ERC20_BALANCE_OF_ABI),
     WeirollCommandFlags.STATICCALL,
   )
 }
 
 function getApproveSellTokenContract(sellTokenAddress: string): WeirollContract {
-  return createWeirollContract(new EthersContract(sellTokenAddress, ERC20_APPROVE_OF_ABI), WeirollCommandFlags.CALL)
+  const adapter = getGlobalAdapter()
+  return createWeirollContract(adapter.getContract(sellTokenAddress, ERC20_APPROVE_OF_ABI), WeirollCommandFlags.CALL)
 }
 
 export function createAcrossDepositCall(params: {

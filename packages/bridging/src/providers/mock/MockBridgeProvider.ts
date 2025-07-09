@@ -1,4 +1,4 @@
-import { latest as latestAppData } from '@cowprotocol/app-data'
+import { latest as latestAppData } from '@cowprotocol/sdk-app-data'
 import {
   BridgeDeposit,
   BridgeHook,
@@ -10,14 +10,20 @@ import {
   QuoteBridgeRequest,
 } from '../../types'
 
-import { OrderKind } from '../../../order-book'
-import { mainnet } from '../../../chains/details/mainnet'
-import { optimism } from '../../../chains/details/optimism'
-import { sepolia } from '../../../chains/details/sepolia'
-import { EvmCall, TokenInfo } from '../../../common'
-import { AdditionalTargetChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
+import { OrderKind } from '@cowprotocol/sdk-order-book'
+import {
+  sepolia,
+  optimism,
+  mainnet,
+  AdditionalTargetChainId,
+  ChainInfo,
+  SupportedChainId,
+  TargetChainId,
+  EvmCall,
+  TokenInfo,
+} from '@cowprotocol/sdk-config'
 import { RAW_PROVIDERS_FILES_PATH } from '../../const'
-import { Signer } from '@ethersproject/abstract-signer'
+import { Signer } from '@cowprotocol/sdk-common'
 
 const BRIDGING_ID = '123456789asdfg'
 const MOCK_CALL: EvmCall = {

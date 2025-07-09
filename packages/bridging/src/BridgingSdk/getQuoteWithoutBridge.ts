@@ -1,6 +1,12 @@
-import { jsonWithBigintReplacer } from '../../common/utils/serialize'
-import { log } from '../../common/utils/log'
-import { QuoteAndPost, SwapAdvancedSettings, TradeParameters, TradingSdk, WithPartialTraderParams } from '../../trading'
+import { jsonWithBigintReplacer } from '@cowprotocol/sdk-common'
+import { log } from '@cowprotocol/sdk-common'
+import {
+  QuoteAndPost,
+  SwapAdvancedSettings,
+  TradeParameters,
+  TradingSdk,
+  WithPartialTraderParams,
+} from '@cowprotocol/sdk-trading'
 import { QuoteBridgeRequest } from '../types'
 
 export function getQuoteWithoutBridge(params: {

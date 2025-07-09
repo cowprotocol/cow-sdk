@@ -1,14 +1,13 @@
-import { Provider } from '@ethersproject/providers'
-import { Contract } from '@ethersproject/contracts'
-import { Signer } from '@ethersproject/abstract-signer'
+import { getGlobalAdapter } from '@cowprotocol/sdk-common'
 import { GetErc20Decimals } from '../types'
-import { TargetChainId } from '../../chains'
+import { TargetChainId } from '@cowprotocol/sdk-config'
 
 const ERC20_DECIMALS_ABI = ['function decimals() external view returns (uint8)'] as const
 
-export function factoryGetErc20Decimals(provider: Signer | Provider): GetErc20Decimals {
+export function factoryGetErc20Decimals(): GetErc20Decimals {
   return (_chainId: TargetChainId, tokenAddress: string) => {
-    const contract = new Contract(tokenAddress, ERC20_DECIMALS_ABI, provider)
+    const adapter = getGlobalAdapter()
+    const contract = adapter.getContract(tokenAddress, ERC20_DECIMALS_ABI)
     return contract.decimals()
   }
 }
