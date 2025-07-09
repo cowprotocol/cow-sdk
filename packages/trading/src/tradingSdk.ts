@@ -28,12 +28,14 @@ export class TradingSdk {
   constructor(
     public traderParams: Partial<TraderParameters> = {},
     public readonly options: Partial<TradingSdkOptions> = {},
-    adapter: AbstractProviderAdapter,
+    adapter?: AbstractProviderAdapter,
   ) {
     if (options.enableLogging !== undefined) {
       enableLogging(options.enableLogging)
     }
-    setGlobalAdapter(adapter)
+    if (adapter) {
+      setGlobalAdapter(adapter)
+    }
   }
 
   setTraderParams(params: Partial<TraderParameters>) {

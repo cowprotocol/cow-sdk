@@ -5,3 +5,5 @@
 
 export * from './adapters'
 export * from './utils'
+export * from './test'
+export * from './abi'

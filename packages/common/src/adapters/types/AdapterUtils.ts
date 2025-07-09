@@ -136,6 +136,11 @@ export abstract class AdapterUtils {
   abstract encodeFunction(abi: Abi, functionName: string, args: unknown[]): string
 
   /**
+   * Decodes function data
+   */
+  abstract decodeFunctionData(abi: Abi, functionName: string, data: string): any
+
+  /**
    * Converts a BigIntish to a number
    */
   abstract toNumber(value: BigIntish): number

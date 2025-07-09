@@ -21,6 +21,7 @@ import {
   slice,
   parseAbi,
   encodeFunctionData,
+  decodeFunctionData,
   recoverMessageAddress,
   recoverTypedDataAddress,
   toFunctionSelector,
@@ -253,6 +254,38 @@ export class ViemUtils implements AdapterUtils {
       functionName,
       args,
     })
+  }
+
+  decodeFunctionData(
+    abi: Array<{ name: string; inputs: Array<{ type: string }>; type: string }>,
+    functionName: string,
+    data: string,
+  ): any {
+    const functionAbi = abi.find((item) => item.type === 'function' && item.name === functionName)
+    if (!functionAbi) {
+      throw new Error(`Function ${functionName} not found in ABI`)
+    }
+
+    // Use decodeFunctionData directly with the function ABI
+    const result = decodeFunctionData({
+      abi: [functionAbi],
+      data: data as `0x${string}`,
+    })
+
+    // Convert Viem result to match Ethers V5/V6 format
+    // Viem returns { args: [...] }, we need to make it array-like with named properties
+    const args = Array.from(result.args || [])
+
+    // Add named properties based on the function ABI inputs
+    if (functionAbi.inputs && functionAbi.inputs.length > 0) {
+      functionAbi.inputs.forEach((input: any, index) => {
+        if (input.name) {
+          ;(args as any)[input.name] = args[index]
+        }
+      })
+    }
+
+    return args
   }
 
   toNumber(value: bigint): number {

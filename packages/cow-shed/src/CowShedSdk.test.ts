@@ -30,7 +30,7 @@ describe('CowShedSdk', () => {
 
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
-        const sdk = new CowShedSdk(adapters[adapterName])
+        const sdk = new CowShedSdk()
 
         const call = await sdk.signCalls({
           calls: CALLS_MOCK,
@@ -69,7 +69,7 @@ describe('CowShedSdk', () => {
 
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
-        const sdk = new CowShedSdk(adapters[adapterName])
+        const sdk = new CowShedSdk()
 
         const call = await sdk.signCalls({
           calls: CALLS_MOCK,
@@ -91,7 +91,7 @@ describe('CowShedSdk', () => {
 
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
-        const sdk = new CowShedSdk(adapters[adapterName])
+        const sdk = new CowShedSdk()
 
         const call = await sdk.signCalls({
           calls: CALLS_MOCK,
@@ -118,7 +118,7 @@ describe('CowShedSdk', () => {
 
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
-        const sdk = new CowShedSdk(adapters[adapterName])
+        const sdk = new CowShedSdk()
 
         const call = await sdk.signCalls({
           calls: CALLS_MOCK,
