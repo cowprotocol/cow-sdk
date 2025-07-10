@@ -102,7 +102,13 @@ export async function createBungeeDepositCall(params: {
     }
 
     // weiroll: execute route on socket gateway
-    planner.add(socketGatewayContract.executeRoute(routeId, finalEncodedFunctionData))
+    if (request.sellTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase()) {
+      planner.add(
+        socketGatewayContract.executeRoute(routeId, finalEncodedFunctionData).withValue(sourceAmountIncludingSurplus),
+      )
+    } else {
+      planner.add(socketGatewayContract.executeRoute(routeId, finalEncodedFunctionData))
+    }
   })
 
   return bridgeDepositCall
