@@ -63,9 +63,9 @@ describe('BungeeBridgeProvider', () => {
       const mockBungeeApi = new BungeeApi()
       // Mock the getBuyTokens method
       jest.spyOn(mockBungeeApi, 'getBuyTokens').mockImplementation(async (params) => {
-        if (params.targetChainId === (12345 as TargetChainId)) {
+        if (params.buyChainId === (12345 as TargetChainId)) {
           return []
-        } else if (params.targetChainId === (137 as TargetChainId)) {
+        } else if (params.buyChainId === (137 as TargetChainId)) {
           return [
             {
               chainId: SupportedChainId.POLYGON,
@@ -83,13 +83,13 @@ describe('BungeeBridgeProvider', () => {
     })
 
     it('should return empty array for unsupported chain', async () => {
-      const tokens = await provider.getBuyTokens(12345 as TargetChainId)
+      const tokens = await provider.getBuyTokens({ buyChainId: 12345 as TargetChainId })
 
       expect(tokens).toEqual([])
     })
 
     it('should return tokens for supported chain', async () => {
-      const tokens = await provider.getBuyTokens(SupportedChainId.POLYGON)
+      const tokens = await provider.getBuyTokens({ buyChainId: SupportedChainId.POLYGON })
 
       expect(tokens.length).toBeGreaterThan(0)
       expect(tokens).toEqual(

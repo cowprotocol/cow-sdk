@@ -24,6 +24,7 @@ import { SOCKET_VERIFIER_ABI } from './abi'
 import { SignerLike, TokenInfo } from '../../../common'
 import { SupportedChainId, TargetChainId } from '../../../chains'
 import { getSigner } from '../../../common/utils/wallet'
+import { BuyTokensParams } from '../../types'
 
 const BUNGEE_API_URL = 'https://public-backend.bungee.exchange/api/v1/bungee'
 const BUNGEE_MANUAL_API_URL = 'https://public-backend.bungee.exchange/api/v1/bungee-manual'
@@ -45,6 +46,20 @@ export interface BungeeApiOptions {
   eventsApiBaseUrl?: string
   acrossApiBaseUrl?: string
   includeBridges?: SupportedBridge[]
+}
+
+interface IntermediateTokensParams {
+  fromChainId: SupportedChainId
+  toChainId: TargetChainId
+  toTokenAddress: string
+  includeBridges?: SupportedBridge[]
+}
+
+interface GetBuyTokensParams {
+  toChainId: string
+  includeBridges: string
+  fromChainId?: string
+  fromTokenAddress?: string
 }
 
 export class BungeeApi {
@@ -70,22 +85,34 @@ export class BungeeApi {
     }
   }
 
-  async getBuyTokens(params: {
-    targetChainId: TargetChainId
-    includeBridges?: SupportedBridge[]
-  }): Promise<TokenInfo[]> {
-    const { targetChainId } = params
+  async getBuyTokens(
+    params: BuyTokensParams,
+    bridgeParams?: {
+      includeBridges?: SupportedBridge[]
+    },
+  ): Promise<TokenInfo[]> {
+    const { sellChainId, sellTokenAddress, buyChainId } = params
 
     // get includeBridges from params or use the default
-    const includeBridges = this.getSupportedBridges(params.includeBridges)
+    const includeBridges = this.getSupportedBridges(bridgeParams?.includeBridges)
 
     // validate bridges
     this.validateBridges(includeBridges)
 
-    const urlParams = objectToSearchParams({
-      toChainId: targetChainId.toString(),
+    const request: GetBuyTokensParams = {
+      toChainId: buyChainId.toString(),
       includeBridges: includeBridges.join(','),
-    })
+    }
+
+    if (sellChainId) {
+      request.fromChainId = sellChainId.toString()
+    }
+
+    if (sellTokenAddress) {
+      request.fromTokenAddress = sellTokenAddress
+    }
+
+    const urlParams = objectToSearchParams(request)
     const response = await this.makeApiCall<BungeeBuyTokensAPIResponse>('bungee-manual', '/dest-tokens', urlParams)
     if (!response.success) {
       throw new BridgeProviderError('Bungee Api Error: Buy tokens failed', response)
@@ -99,12 +126,7 @@ export class BungeeApi {
     }))
   }
 
-  async getIntermediateTokens(params: {
-    fromChainId: SupportedChainId
-    toChainId: TargetChainId
-    toTokenAddress: string
-    includeBridges?: SupportedBridge[]
-  }): Promise<TokenInfo[]> {
+  async getIntermediateTokens(params: IntermediateTokensParams): Promise<TokenInfo[]> {
     const { fromChainId, toChainId, toTokenAddress } = params
 
     // get includeBridges from params or use the default

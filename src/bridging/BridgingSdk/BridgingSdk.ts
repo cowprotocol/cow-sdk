@@ -3,12 +3,13 @@ import {
   BridgeProvider,
   BridgeQuoteResult,
   BridgeStatusResult,
+  BuyTokensParams,
   CrossChainOrder,
   CrossChainQuoteAndPost,
   QuoteBridgeRequest,
 } from '../types'
 import { ALL_SUPPORTED_CHAINS, CowEnv, TokenInfo, enableLogging } from '../../common'
-import { ChainInfo, SupportedChainId, TargetChainId } from '../../chains'
+import { ChainInfo, SupportedChainId } from '../../chains'
 import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
 import { getQuoteWithBridge } from './getQuoteWithBridge'
 import { getCrossChainOrder } from './getCrossChainOrder'
@@ -117,10 +118,10 @@ export class BridgingSdk {
   /**
    * Get the available buy tokens for buying in a specific target chain
 
-   * @param targetChainId
+   * @param params
    */
-  async getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]> {
-    return this.provider.getBuyTokens(targetChainId)
+  async getBuyTokens(params: BuyTokensParams): Promise<TokenInfo[]> {
+    return this.provider.getBuyTokens(params)
   }
 
   /**

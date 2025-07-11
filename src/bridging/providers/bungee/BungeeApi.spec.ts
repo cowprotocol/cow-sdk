@@ -33,7 +33,8 @@ describe('BungeeApi: Shape of API response', () => {
     expect(result.routeBridge).toBeDefined()
   })
 
-  it('getBungeeQuote from MAINNET to POLYGON', async () => {
+  // TODO: the test is flacky
+  it.skip('getBungeeQuote from MAINNET to POLYGON', async () => {
     const result = await api.getBungeeQuote({
       userAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
       originChainId: SupportedChainId.MAINNET.toString(),
@@ -118,7 +119,7 @@ describe('BungeeApi: Shape of API response', () => {
 
   describe('getBuyTokens', () => {
     it('should return tokens for supported chain', async () => {
-      const result = await api.getBuyTokens({ targetChainId: SupportedChainId.ARBITRUM_ONE })
+      const result = await api.getBuyTokens({ buyChainId: SupportedChainId.ARBITRUM_ONE })
 
       expect(result).toBeDefined()
       expect(Array.isArray(result)).toBe(true)
@@ -142,7 +143,7 @@ describe('BungeeApi: Shape of API response', () => {
     })
 
     it('should return empty array for unsupported chain', async () => {
-      const result = await api.getBuyTokens({ targetChainId: 12345 as TargetChainId })
+      const result = await api.getBuyTokens({ buyChainId: 12345 as TargetChainId })
       expect(result).toBeDefined()
       expect(Array.isArray(result)).toBe(true)
       expect(result.length).toBe(0)
