@@ -9,12 +9,13 @@ import {
   BridgeQuoteResult,
   BridgeStatusResult,
   BridgingDepositParams,
+  BuyTokensParams,
   QuoteBridgeRequest,
 } from '../../types'
 
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
 
-import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
+import { ChainId, ChainInfo, SupportedChainId } from '../../../chains'
 
 import { EvmCall, TokenInfo } from '../../../common'
 
@@ -80,8 +81,8 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     return ACROSS_SUPPORTED_NETWORKS
   }
 
-  async getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]> {
-    return Object.values((await this.getSupportedTokensState())[targetChainId] || {})
+  async getBuyTokens(params: BuyTokensParams): Promise<TokenInfo[]> {
+    return Object.values((await this.getSupportedTokensState())[params.buyChainId] || {})
   }
 
   async getIntermediateTokens(request: QuoteBridgeRequest): Promise<TokenInfo[]> {

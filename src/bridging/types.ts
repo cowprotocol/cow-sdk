@@ -129,6 +129,16 @@ export interface BridgeStatusResult {
 }
 
 /**
+ * When sellChainId and/or sellTokenAddress are specified
+ * then the buy tokens list will be additionally filtered
+ */
+export interface BuyTokensParams {
+  buyChainId: TargetChainId
+  sellChainId?: SupportedChainId
+  sellTokenAddress?: string
+}
+
+/**
  * A bridge deposit. It includes the provideer information, sell amount and the minimum buy amount.
  *
  * It models the minimal information for a bridging order.
@@ -154,7 +164,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
   /**
    * Get supported tokens for a chain
    */
-  getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]>
+  getBuyTokens(params: BuyTokensParams): Promise<TokenInfo[]>
 
   /**
    * Get intermediate tokens given a quote request.

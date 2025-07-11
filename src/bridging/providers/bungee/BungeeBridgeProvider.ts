@@ -12,10 +12,11 @@ import {
   BridgeStatus,
   BridgeStatusResult,
   BridgingDepositParams,
+  BuyTokensParams,
   QuoteBridgeRequest,
 } from '../../types'
 import { RAW_PROVIDERS_FILES_PATH } from '../../const'
-import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
+import { ChainId, ChainInfo, SupportedChainId } from '../../../chains'
 import { EvmCall, TokenInfo } from '../../../common'
 import { mainnet } from '../../../chains/details/mainnet'
 import { polygon } from '../../../chains/details/polygon'
@@ -75,8 +76,8 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     return BUNGEE_SUPPORTED_NETWORKS
   }
 
-  async getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]> {
-    return this.api.getBuyTokens({ targetChainId })
+  async getBuyTokens(params: BuyTokensParams): Promise<TokenInfo[]> {
+    return this.api.getBuyTokens(params)
   }
 
   async getIntermediateTokens(request: QuoteBridgeRequest): Promise<TokenInfo[]> {
