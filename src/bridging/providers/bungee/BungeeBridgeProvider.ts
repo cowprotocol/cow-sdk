@@ -137,7 +137,6 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     return createBungeeDepositCall({
       request,
       quote,
-      cowShedSdk: this.cowShedSdk,
     })
   }
 
