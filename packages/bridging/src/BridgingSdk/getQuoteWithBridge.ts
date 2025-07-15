@@ -1,5 +1,5 @@
 import { latest } from '@cowprotocol/sdk-app-data'
-import { areHooksEqual, getHookMockForCostEstimation } from '../..//hooks/utils'
+import { areHooksEqual, getHookMockForCostEstimation } from '../hooks/utils'
 import {
   TradingAppDataInfo as AppDataInfo,
   mergeAppDataDoc,
@@ -25,7 +25,7 @@ import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { SignerLike } from '@cowprotocol/sdk-common'
 import { QuoteResultsWithSigner } from '@cowprotocol/sdk-trading/src/getQuote'
 import { BridgeProviderQuoteError } from '../errors'
-import { getTradeParametersAfterQuote } from '@cowprotocol/sdk-trading/src/utils/misc'
+import { getTradeParametersAfterQuote } from '@cowprotocol/sdk-trading'
 
 type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
   /**

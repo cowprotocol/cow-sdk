@@ -3,12 +3,16 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "copy-md-files": "npx cpx \"**/*.md\" dist",
+    "postbuild": "cp package.json dist && pnpm copy-md-files",
     "build": "turbo run build --filter='!@cowprotocol/cow-sdk-old'",
     "dev": "turbo run dev",
     "lint": "turbo run lint --filter=!@cowprotocol/cow-sdk-old -- --fix",
     "test": "turbo run test --filter=!@cowprotocol/cow-sdk-old",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "clean": "turbo run clean --filter=!@cowprotocol/cow-sdk-old && rm -rf .turbo && rm -rf node_modules"
+    "clean": "turbo run clean --filter=!@cowprotocol/cow-sdk-old && rm -rf .turbo && rm -rf node_modules",
+    "codegen": "turbo run swagger:codegen --filter=@cowprotocol/sdk-order-book",
+    "swagger:codegen": "turbo run swagger:codegen --filter=@cowprotocol/sdk-order-book"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",

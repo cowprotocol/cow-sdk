@@ -11,6 +11,11 @@ import { TradingSdk } from '@cowprotocol/sdk-trading'
 import { ConditionalOrderFactory, Multiplexer, ProofLocation } from '@cowprotocol/sdk-composable'
 import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
 
+export * from '@cowprotocol/sdk-common'
+// Re-export Address from order-book instead (which has the same definition)
+export type { Address } from '@cowprotocol/sdk-common'
+
+
 // Re-export all components for easier access
 export * from '@cowprotocol/sdk-app-data'
 export * from '@cowprotocol/sdk-order-book'
@@ -78,7 +83,7 @@ export class CowSdk {
 
     this.orderBook = new OrderBookApi(orderBookContext)
 
-    this.appData = new MetadataApi(adapter)
+    this.appData = new MetadataApi()
 
     const subgraphContext = {
       chainId,

@@ -3,7 +3,7 @@ import { Signer } from '@cowprotocol/sdk-common'
 import { GAS_LIMIT_DEFAULT } from './consts'
 import { calculateGasMargin } from './utils/misc'
 import { ContractFactory } from '@cowprotocol/sdk-common'
-import { TransactionParams } from './types'
+import { TradingTransactionParams as TransactionParams } from './types'
 
 export async function getPreSignTransaction(
   signer: Signer,
