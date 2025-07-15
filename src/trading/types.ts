@@ -110,6 +110,18 @@ export interface LimitTradeParametersFromQuote extends LimitTradeParameters {
 
 export interface LimitOrderParameters extends TraderParameters, LimitTradeParameters {}
 
+/**
+ * When postSwapOrderFromQuote() is called, it will execute provided callback corresponding to signing order
+ */
+export interface SigningStepManager {
+  beforeBridgingSign?(): void
+  afterBridgingSign?(): void
+  beforeOrderSign?(): void
+  afterOrderSign?(): void
+  onBridgingSignError?(): void
+  onOrderSignError?(): void
+}
+
 export interface SwapAdvancedSettings {
   quoteRequest?: Partial<Omit<OrderQuoteRequest, 'kind'> & { validTo: number }>
   appData?: AppDataParams
@@ -183,7 +195,10 @@ export interface OrderPostingResult {
 export interface QuoteAndPost {
   quoteResults: QuoteResults
 
-  postSwapOrderFromQuote(advancedSettings?: SwapAdvancedSettings): Promise<OrderPostingResult>
+  postSwapOrderFromQuote(
+    advancedSettings?: SwapAdvancedSettings,
+    signingStepManager?: SigningStepManager,
+  ): Promise<OrderPostingResult>
 }
 
 export type AppDataRootSchema = latest.AppDataRootSchema

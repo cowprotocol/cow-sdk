@@ -9,6 +9,7 @@ import {
   QuoteAndPost,
   QuoteResults,
   QuoterParameters,
+  SigningStepManager,
   SwapAdvancedSettings,
   TradeOptionalParameters,
   TraderParameters,
@@ -294,7 +295,10 @@ export interface BridgeQuoteAndPost {
   /**
    * Callback to post the swap order.
    */
-  postSwapOrderFromQuote(advancedSettings?: SwapAdvancedSettings): Promise<OrderPostingResult>
+  postSwapOrderFromQuote(
+    advancedSettings?: SwapAdvancedSettings,
+    signingStepManager?: SigningStepManager,
+  ): Promise<OrderPostingResult>
 }
 
 export interface BridgeCosts<T = bigint> {

@@ -3,6 +3,7 @@ import {
   mergeAppDataDoc,
   postSwapOrderFromQuote,
   QuoteResults,
+  SigningStepManager,
   SwapAdvancedSettings,
   TradeParameters,
   WithPartialTraderParams,
@@ -174,9 +175,19 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   return {
     swap: result.swapResult,
     bridge: result.bridgeResult,
-    async postSwapOrderFromQuote(advancedSettings?: SwapAdvancedSettings) {
+    async postSwapOrderFromQuote(advancedSettings?: SwapAdvancedSettings, signingStepManager?: SigningStepManager) {
+      signingStepManager?.beforeBridgingSign?.()
+
       // Sign the hooks with the real signer
-      const { swapResult } = await signHooksAndSetSwapResult(signer, hookEstimatedGasLimit, advancedSettings)
+      const { swapResult } = await signHooksAndSetSwapResult(signer, hookEstimatedGasLimit, advancedSettings).catch(
+        (error) => {
+          signingStepManager?.onBridgingSignError?.()
+
+          throw error
+        },
+      )
+
+      signingStepManager?.afterBridgingSign?.()
 
       const quoteResults: QuoteResultsWithSigner = {
         result: {
@@ -190,6 +201,8 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
         orderBookApi,
       }
 
+      signingStepManager?.beforeOrderSign?.()
+
       return postSwapOrderFromQuote(quoteResults, {
         ...advancedSettings,
         appData: swapResult.appDataInfo.doc,
@@ -199,6 +212,15 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
           receiver: swapResult.tradeParameters.receiver,
         },
       })
+        .catch((error) => {
+          signingStepManager?.onOrderSignError?.()
+          throw error
+        })
+        .then((result) => {
+          signingStepManager?.afterOrderSign?.()
+
+          return result
+        })
     },
   }
 }
