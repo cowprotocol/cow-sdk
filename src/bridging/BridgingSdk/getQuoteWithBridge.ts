@@ -99,6 +99,10 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
           pre: advancedSettingsHooks?.pre,
           post: [...(advancedSettingsHooks?.post || []), mockedHook],
         },
+        bridging: {
+          destinationChainId: buyTokenChainId.toString(),
+          destinationTokenAddress: buyTokenAddress,
+        },
       },
     },
   })

@@ -9,3 +9,7 @@ export function getHookMockForCostEstimation(gasLimit: number): latest.CoWHook {
     dappId: HOOK_DAPP_BRIDGE_PROVIDER_PREFIX,
   }
 }
+
+export function areHooksEqual(hookA: latest.CoWHook, hookB: latest.CoWHook): boolean {
+  return hookA.callData === hookB.callData && hookA.gasLimit === hookB.gasLimit && hookA.target === hookB.target
+}

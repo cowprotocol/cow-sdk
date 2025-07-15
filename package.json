@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/cow-sdk",
-  "version": "6.0.0-RC.73",
+  "version": "6.0.0-RC.74",
   "license": "(MIT OR Apache-2.0)",
   "files": [
     "/dist"
@@ -33,7 +33,7 @@
     "trading:generateSchemas": "ts-node scripts/generateTradingSchemas.ts"
   },
   "dependencies": {
-    "@cowprotocol/app-data": "^3.1.0",
+    "@cowprotocol/app-data": "^3.2.0",
     "@cowprotocol/contracts": "^1.8.0",
     "@ethersproject/abstract-signer": "^5.8.0",
     "@openzeppelin/merkle-tree": "^1.0.8",
