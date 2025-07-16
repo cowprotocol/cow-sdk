@@ -1,11 +1,11 @@
 import { Variables, request } from 'graphql-request'
 import { DocumentNode } from 'graphql/index'
 import { SupportedChainId } from '../chains/types'
+import { DEFAULT_COW_API_CONTEXT } from '../common/consts/config'
 import { ApiContext, CowEnv } from '../common/types/config'
 import { CowError } from '../common/types/cow-error'
 import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphql'
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
-import { DEFAULT_COW_API_CONTEXT } from '../common/consts/config'
 
 const SUBGRAPH_BASE_URL = 'https://api.thegraph.com/subgraphs/name/cowprotocol'
 
@@ -30,6 +30,8 @@ export const SUBGRAPH_PROD_CONFIG: SubgraphApiBaseUrls = {
   [SupportedChainId.SEPOLIA]: null,
   [SupportedChainId.POLYGON]: null,
   [SupportedChainId.AVALANCHE]: null,
+  [SupportedChainId.LENS]: null,
+  [SupportedChainId.BSC]: null,
 }
 
 /**
@@ -46,6 +48,8 @@ export const SUBGRAPH_STAGING_CONFIG: SubgraphApiBaseUrls = {
   [SupportedChainId.SEPOLIA]: null,
   [SupportedChainId.POLYGON]: null,
   [SupportedChainId.AVALANCHE]: null,
+  [SupportedChainId.LENS]: null,
+  [SupportedChainId.BSC]: null,
 }
 
 /**
@@ -95,7 +99,7 @@ export class SubgraphApi {
    */
   async getLastHoursVolume(
     hours: number,
-    contextOverride: PartialSubgraphApiContext = {}
+    contextOverride: PartialSubgraphApiContext = {},
   ): Promise<LastHoursVolumeQuery> {
     return this.runQuery<LastHoursVolumeQuery>(LAST_HOURS_VOLUME_QUERY, { hours }, contextOverride)
   }
@@ -111,7 +115,7 @@ export class SubgraphApi {
   async runQuery<T>(
     query: string | DocumentNode,
     variables: Variables | undefined = undefined,
-    contextOverride: PartialSubgraphApiContext = {}
+    contextOverride: PartialSubgraphApiContext = {},
   ): Promise<T> {
     const { chainId, env } = this.getContextWithOverride(contextOverride)
     const baseUrl = this.getEnvConfigs(env)[chainId]
@@ -125,7 +129,7 @@ export class SubgraphApi {
     } catch (error) {
       console.error(`[subgraph:${this.API_NAME}]`, error)
       throw new CowError(
-        `Error running query: ${query}. Variables: ${JSON.stringify(variables)}. API: ${baseUrl}. Inner Error: ${error}`
+        `Error running query: ${query}. Variables: ${JSON.stringify(variables)}. API: ${baseUrl}. Inner Error: ${error}`,
       )
     }
   }
