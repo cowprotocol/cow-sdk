@@ -62,6 +62,24 @@ export const WRAPPED_NATIVE_CURRENCIES: Record<SupportedChainId, TokenInfo> = {
     symbol: 'WAVAX',
     logoUrl: `${TOKEN_LIST_IMAGES_PATH}/43114/0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7/logo.png`,
   },
+
+  [SupportedChainId.LENS]: {
+    chainId: SupportedChainId.LENS,
+    address: '0x6bdc36e20d267ff0dd6097799f82e78907105e2f',
+    decimals: 18,
+    name: 'Wrapped GHO',
+    symbol: 'WGHO',
+    logoUrl: `${TOKEN_LIST_IMAGES_PATH}/232/0x6bdc36e20d267ff0dd6097799f82e78907105e2f/logo.png`,
+  },
+
+  [SupportedChainId.BSC]: {
+    chainId: SupportedChainId.BSC,
+    address: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+    decimals: 18,
+    name: 'Wrapped BNB',
+    symbol: 'WBNB',
+    logoUrl: `${TOKEN_LIST_IMAGES_PATH}/56/0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c/logo.png`,
+  },
 }
 
 /**
