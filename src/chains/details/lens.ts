@@ -1,22 +1,25 @@
-import { nativeCurrencyTemplate } from '../../common/consts/tokens'
+import { nativeCurrencyTemplate, TOKEN_LIST_IMAGES_PATH } from '../../common/consts/tokens'
 import { RAW_CHAINS_FILES_PATH } from '../const/path'
 import { ChainInfo, SupportedChainId } from '../types'
 
-const lensLogo = `${RAW_CHAINS_FILES_PATH}/images/lens-logo.svg` // TODO: Add Lens logo
+const lensLogo = `${RAW_CHAINS_FILES_PATH}/images/lens-logo.png` // TODO: Add Lens logo
+
+const GHO_MAINNET_ADDRESS = '0x40d16fc0246ad3160ccc09b8d0d3a2cd28ae6c2f'
+const GHO_MAINNET_LOGO_URL = `${TOKEN_LIST_IMAGES_PATH}/1/${GHO_MAINNET_ADDRESS}/logo.png`
 
 // See https://github.com/wevm/viem/blob/main/src/chains/definitions/lens.ts
 // and https://github.com/ethereum-lists/chains/blob/master/_data/chains/eip155-232.json
 export const lens: ChainInfo = {
   id: SupportedChainId.LENS,
   label: 'Lens',
-  eip155Label: 'Lens Mainnet',
+  eip155Label: 'Lens Chain Mainnet',
   logo: { light: lensLogo, dark: lensLogo },
   nativeCurrency: {
     ...nativeCurrencyTemplate,
     chainId: SupportedChainId.LENS,
     name: 'GHO',
     symbol: 'GHO',
-    logoUrl: lensLogo, // TODO: use GHO logo
+    logoUrl: GHO_MAINNET_LOGO_URL,
   },
   addressPrefix: 'lens',
   isTestnet: false,
@@ -31,7 +34,7 @@ export const lens: ChainInfo = {
       http: ['https://rpc.lens.xyz'],
     },
   },
-  color: '#F0B90B', // TODO: add color
+  color: '#000000', // TODO: add color
   website: {
     name: 'Lens',
     url: 'https://www.lens.xyz',
