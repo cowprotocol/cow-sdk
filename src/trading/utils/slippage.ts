@@ -11,6 +11,8 @@ const ETH_FLOW_DEFAULT_SLIPPAGE_BPS: Record<SupportedChainId, number> = {
   [SupportedChainId.SEPOLIA]: 50, // 0.5%,
   [SupportedChainId.POLYGON]: 50, // 0.5%,
   [SupportedChainId.AVALANCHE]: 50, // 0.5%,
+  [SupportedChainId.LENS]: 50, // 0.5%,
+  [SupportedChainId.BSC]: 50, // 0.5%,
 }
 
 /**
