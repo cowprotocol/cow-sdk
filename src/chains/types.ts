@@ -11,10 +11,10 @@ export enum SupportedChainId {
   MAINNET = 1,
   BSC = 56,
   GNOSIS_CHAIN = 100,
-  LENS = 232,
-  ARBITRUM_ONE = 42161,
-  BASE = 8453,
   POLYGON = 137,
+  LENS = 232,
+  BASE = 8453,
+  ARBITRUM_ONE = 42161,
   AVALANCHE = 43114,
   SEPOLIA = 11155111,
 }
