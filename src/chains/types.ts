@@ -9,7 +9,9 @@ import { TokenInfo } from '../common/types/tokens'
  */
 export enum SupportedChainId {
   MAINNET = 1,
+  BSC = 56,
   GNOSIS_CHAIN = 100,
+  LENS = 232,
   ARBITRUM_ONE = 42161,
   BASE = 8453,
   POLYGON = 137,
