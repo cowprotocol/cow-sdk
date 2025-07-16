@@ -98,6 +98,10 @@ export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
     return this._signerAdapter
   }
 
+  signerOrNull(): EthersV6SignerAdapter | null {
+    return this._signerAdapter || null
+  }
+
   setSigner(signer: Signer | PrivateKey) {
     this._signerAdapter = this.createSigner(signer)
   }
