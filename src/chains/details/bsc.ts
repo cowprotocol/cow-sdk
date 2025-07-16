@@ -2,7 +2,7 @@ import { nativeCurrencyTemplate } from '../../common/consts/tokens'
 import { RAW_CHAINS_FILES_PATH } from '../const/path'
 import { ChainInfo, SupportedChainId } from '../types'
 
-const bscLogo = `${RAW_CHAINS_FILES_PATH}/images/bsc-logo.svg` // TODO: Add BSC logo
+const bscLogo = `${RAW_CHAINS_FILES_PATH}/images/bsc-logo.svg`
 
 // See https://github.com/wevm/viem/blob/main/src/chains/definitions/bsc.ts
 // and https://github.com/ethereum-lists/chains/blob/master/_data/chains/eip155-56.json
