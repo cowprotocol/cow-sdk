@@ -1,8 +1,11 @@
 import 'cross-fetch/polyfill'
 import { RateLimiter } from 'limiter'
 import { SupportedChainId } from '../chains/types'
+import { DEFAULT_COW_API_CONTEXT, ENVS_LIST } from '../common'
 import { ApiBaseUrls, ApiContext, CowEnv, PartialApiContext } from '../common/types/config'
 import { CowError } from '../common/types/cow-error'
+import { log } from '../common/utils/log'
+import { jsonWithBigintReplacer } from '../common/utils/serialize'
 import {
   Address,
   AppDataHash,
@@ -23,9 +26,6 @@ import {
 import { DEFAULT_BACKOFF_OPTIONS, DEFAULT_LIMITER_OPTIONS, FetchParams, OrderBookApiError, request } from './request'
 import { transformOrder } from './transformOrder'
 import { EnrichedOrder } from './types'
-import { DEFAULT_COW_API_CONTEXT, ENVS_LIST } from '../common'
-import { log } from '../common/utils/log'
-import { jsonWithBigintReplacer } from '../common/utils/serialize'
 
 /**
  * An object containing *production* environment base URLs for each supported `chainId`.
@@ -39,6 +39,8 @@ export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.SEPOLIA]: 'https://api.cow.fi/sepolia',
   [SupportedChainId.POLYGON]: 'https://api.cow.fi/polygon',
   [SupportedChainId.AVALANCHE]: 'https://api.cow.fi/avalanche',
+  [SupportedChainId.LENS]: 'https://api.cow.fi/lens', // TODO: confirm
+  [SupportedChainId.BSC]: 'https://api.cow.fi/bsc', // TODO: confirm
 }
 
 /**
@@ -52,6 +54,8 @@ export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.SEPOLIA]: 'https://barn.api.cow.fi/sepolia',
   [SupportedChainId.POLYGON]: 'https://barn.api.cow.fi/polygon',
   [SupportedChainId.AVALANCHE]: 'https://barn.api.cow.fi/avalanche',
+  [SupportedChainId.LENS]: 'https://barn.api.cow.fi/lens', // TODO: confirm
+  [SupportedChainId.BSC]: 'https://barn.api.cow.fi/bsc', // TODO: confirm
 }
 
 function cleanObjectFromUndefinedValues(obj: Record<string, string>): typeof obj {
