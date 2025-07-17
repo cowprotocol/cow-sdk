@@ -20,6 +20,7 @@ export async function createBungeeDepositCall(params: {
   const inputAmountStartIndex = BungeeTxDataBytesIndices[bridge].inputAmount.bytes_startIndex
   let modifyOutputAmount = false
   let outputAmountStartIndex = 0
+  const additionalValue = 0n // neither across nor cctp requires additional native token transfer for now
   // modify output amount for across bridge
   if (bridge === BungeeBridge.Across) {
     modifyOutputAmount = true
@@ -27,8 +28,8 @@ export async function createBungeeDepositCall(params: {
   }
   // Encode extra data as bytes
   const extraData = ethers.utils.defaultAbiCoder.encode(
-    ['uint256', 'bool', 'uint256'],
-    [inputAmountStartIndex, modifyOutputAmount, outputAmountStartIndex],
+    ['uint256', 'bool', 'uint256', 'uint256'],
+    [inputAmountStartIndex, modifyOutputAmount, outputAmountStartIndex, additionalValue],
   )
   // Concatenate calldata + extraData
   let data = buildTx.txData.data
@@ -48,7 +49,6 @@ export async function createBungeeDepositCall(params: {
     //       see getQuoteWithBridge.ts::getBaseBridgeQuoteRequest()
     request.sellTokenAddress,
     bridgeInputAmount,
-    request.receiver,
     fullData,
   ])
 
@@ -56,6 +56,7 @@ export async function createBungeeDepositCall(params: {
   // use the output amount from the quote
   // but will later be modified by BungeeApproveAndBridge
   const value = request.sellTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase() ? BigInt(bridgeInputAmount) : 0n
+  const finalValue = value + additionalValue
   // @note sellTokenChainId here will be the intermediate token chainId. the naming might be a bit misleading
   //       see getQuoteWithBridge.ts::getBaseBridgeQuoteRequest()
   const to = BungeeApproveAndBridgeV1Addresses[request.sellTokenChainId]
@@ -66,6 +67,6 @@ export async function createBungeeDepositCall(params: {
   return {
     to: to,
     data: callData,
-    value,
+    value: finalValue,
   }
 }

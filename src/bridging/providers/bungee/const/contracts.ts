@@ -25,7 +25,7 @@ export const SocketVerifierAddresses: Record<TargetChainId, string | undefined> 
 }
 
 // TODO: replace with the actual address after deployment
-const BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS = '0x70494dDA424CaFC0989A854AE50B6712f3B477b3'
+const BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS = '0x5aFA960e6eD48d909CAEB37D086d383BEF622af0'
 export const BungeeApproveAndBridgeV1Addresses: Record<TargetChainId, string | undefined> = {
   [SupportedChainId.MAINNET]: BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS,
   [SupportedChainId.GNOSIS_CHAIN]: BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS,
