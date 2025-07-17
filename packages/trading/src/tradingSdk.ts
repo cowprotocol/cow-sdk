@@ -18,10 +18,12 @@ import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { AbstractProviderAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 export type WithPartialTraderParams<T> = T & Partial<TraderParameters>
+export let utmContent: string | undefined = undefined
 
 export interface TradingSdkOptions {
   enableLogging: boolean
   orderBookApi: OrderBookApi
+  utmContent?: string
 }
 
 export class TradingSdk {
@@ -36,6 +38,7 @@ export class TradingSdk {
     if (adapter) {
       setGlobalAdapter(adapter)
     }
+    utmContent = options.utmContent
   }
 
   setTraderParams(params: Partial<TraderParameters>) {
