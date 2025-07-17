@@ -8,7 +8,7 @@ import { getIsEthFlowOrder } from './utils/misc'
 import { CowError, getGlobalAdapter, log, SignerLike } from '@cowprotocol/sdk-common'
 import { generateAppDataFromDoc } from './appDataUtils'
 import sdkPackageJson from '../../sdk/package.json'
-import { utmContent as globalUtmContent } from './tradingSdk'
+import { utmContent as globalUtmContent, disableUtm } from './tradingSdk'
 
 export async function postCoWProtocolTrade(
   orderBookApi: OrderBookApi,
@@ -71,6 +71,10 @@ export async function postCoWProtocolTrade(
 }
 
 async function createAppDataWithUTM(originalAppData: TradingAppDataInfo): Promise<TradingAppDataInfo> {
+  if (disableUtm) {
+    return originalAppData
+  }
+
   let parsedData: any
 
   try {

@@ -337,4 +337,52 @@ describe('postCoWProtocolTrade', () => {
     // Reset global utmContent after test
     tradingModule.utmContent = undefined
   })
+
+  it('should disable UTM when disableUtm is true', async () => {
+    // Set global disableUtm to true
+    const tradingModule = await import('./tradingSdk')
+    tradingModule.disableUtm = true
+
+    const appDataWithoutUtm = {
+      appDataKeccak256: '0xaf1908d8e30f63bf4a6dbd41d2191eb092ac0af626b37c720596426130717658',
+      fullAppData:
+        '{"appCode":"CoW Swap","environment":"barn","metadata":{"orderClass":{"orderClass":"market"},"quote":{"slippageBips":201,"smartSlippage":true}},"version":"1.3.0"}',
+    } as unknown as TradingAppDataInfo
+
+    sendOrderMock.mockResolvedValue('0x06')
+
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      const order = { ...defaultOrderParams }
+      await postCoWProtocolTrade(orderBookApiMock, appDataWithoutUtm, order, {}, adapters[adapterName].signer)
+
+      const callBody = sendOrderMock.mock.calls[0][0]
+
+      expect(sendOrderMock).toHaveBeenCalledTimes(1)
+      expect(callBody).toEqual({
+        appData: appDataWithoutUtm.fullAppData,
+        appDataHash: appDataWithoutUtm.appDataKeccak256,
+        sellToken: '0xaaa',
+        sellAmount: '1000000000000000000',
+        sellTokenBalance: 'erc20',
+        buyToken: '0xbbb',
+        buyAmount: '1990000000000000000',
+        buyTokenBalance: 'erc20',
+        feeAmount: '0',
+        from: TEST_ADDRESS,
+        kind: 'sell',
+        partiallyFillable: false,
+        quoteId: 31,
+        receiver: TEST_ADDRESS,
+        signature: '0x000a1',
+        signingScheme: 'eip712',
+        validTo: 1487078508,
+      })
+      sendOrderMock.mockReset()
+    }
+
+    // Reset global disableUtm after test
+    tradingModule.disableUtm = false
+  })
 })
