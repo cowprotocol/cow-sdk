@@ -61,6 +61,27 @@ const expectedAppDataWithUTM = {
   fullAppData: `{"appCode":"CoW Swap","environment":"barn","metadata":{"orderClass":{"orderClass":"market"},"quote":{"slippageBips":201,"smartSlippage":true}},"utm":{"utmCampaign":"developer-cohort","utmContent":"🐮 moo-ving to defi 🐮","utmMedium":"cow-sdk@${sdkPackageJson.version}","utmSource":"cowmunity","utmTerm":"js"},"version":"1.3.0"}`,
 }
 
+// Common expected order body parameters
+const getExpectedOrderBody = (appData: any) => ({
+  appData: appData.fullAppData,
+  appDataHash: appData.appDataKeccak256,
+  sellToken: '0xaaa',
+  sellAmount: '1000000000000000000',
+  sellTokenBalance: 'erc20',
+  buyToken: '0xbbb',
+  buyAmount: '1990000000000000000',
+  buyTokenBalance: 'erc20',
+  feeAmount: '0',
+  from: TEST_ADDRESS,
+  kind: 'sell',
+  partiallyFillable: false,
+  quoteId: 31,
+  receiver: TEST_ADDRESS,
+  signature: '0x000a1',
+  signingScheme: 'eip712',
+  validTo: 1487078508,
+})
+
 describe('postCoWProtocolTrade', () => {
   let signOrderMock: jest.SpyInstance
   let postSellNativeCurrencyOrderMock: jest.SpyInstance
@@ -121,25 +142,7 @@ describe('postCoWProtocolTrade', () => {
       const callBody = sendOrderMock.mock.calls[0][0]
 
       expect(sendOrderMock).toHaveBeenCalledTimes(1)
-      expect(callBody).toEqual({
-        appData: expectedAppDataWithUTM.fullAppData,
-        appDataHash: expectedAppDataWithUTM.appDataKeccak256,
-        sellToken: '0xaaa',
-        sellAmount: '1000000000000000000',
-        sellTokenBalance: 'erc20',
-        buyToken: '0xbbb',
-        buyAmount: '1990000000000000000', // Slippage is taken into account
-        buyTokenBalance: 'erc20',
-        feeAmount: '0',
-        from: TEST_ADDRESS,
-        kind: 'sell',
-        partiallyFillable: false,
-        quoteId: 31,
-        receiver: TEST_ADDRESS,
-        signature: '0x000a1',
-        signingScheme: 'eip712',
-        validTo: 1487078508,
-      })
+      expect(callBody).toEqual(getExpectedOrderBody(expectedAppDataWithUTM))
       sendOrderMock.mockReset()
     }
   })
@@ -216,25 +219,7 @@ describe('postCoWProtocolTrade', () => {
       const callBody = sendOrderMock.mock.calls[0][0]
 
       expect(sendOrderMock).toHaveBeenCalledTimes(1)
-      expect(callBody).toEqual({
-        appData: expectedAppDataWithMergedUTM.fullAppData,
-        appDataHash: expectedAppDataWithMergedUTM.appDataKeccak256,
-        sellToken: '0xaaa',
-        sellAmount: '1000000000000000000',
-        sellTokenBalance: 'erc20',
-        buyToken: '0xbbb',
-        buyAmount: '1990000000000000000',
-        buyTokenBalance: 'erc20',
-        feeAmount: '0',
-        from: TEST_ADDRESS,
-        kind: 'sell',
-        partiallyFillable: false,
-        quoteId: 31,
-        receiver: TEST_ADDRESS,
-        signature: '0x000a1',
-        signingScheme: 'eip712',
-        validTo: 1487078508,
-      })
+      expect(callBody).toEqual(getExpectedOrderBody(expectedAppDataWithMergedUTM))
       sendOrderMock.mockReset()
     }
   })
@@ -262,25 +247,7 @@ describe('postCoWProtocolTrade', () => {
       const callBody = sendOrderMock.mock.calls[0][0]
 
       expect(sendOrderMock).toHaveBeenCalledTimes(1)
-      expect(callBody).toEqual({
-        appData: expectedAppDataWithFixedUtm.fullAppData,
-        appDataHash: expectedAppDataWithFixedUtm.appDataKeccak256,
-        sellToken: '0xaaa',
-        sellAmount: '1000000000000000000',
-        sellTokenBalance: 'erc20',
-        buyToken: '0xbbb',
-        buyAmount: '1990000000000000000',
-        buyTokenBalance: 'erc20',
-        feeAmount: '0',
-        from: TEST_ADDRESS,
-        kind: 'sell',
-        partiallyFillable: false,
-        quoteId: 31,
-        receiver: TEST_ADDRESS,
-        signature: '0x000a1',
-        signingScheme: 'eip712',
-        validTo: 1487078508,
-      })
+      expect(callBody).toEqual(getExpectedOrderBody(expectedAppDataWithFixedUtm))
       sendOrderMock.mockReset()
     }
   })
@@ -312,25 +279,7 @@ describe('postCoWProtocolTrade', () => {
       const callBody = sendOrderMock.mock.calls[0][0]
 
       expect(sendOrderMock).toHaveBeenCalledTimes(1)
-      expect(callBody).toEqual({
-        appData: expectedAppDataWithGlobalUtm.fullAppData,
-        appDataHash: expectedAppDataWithGlobalUtm.appDataKeccak256,
-        sellToken: '0xaaa',
-        sellAmount: '1000000000000000000',
-        sellTokenBalance: 'erc20',
-        buyToken: '0xbbb',
-        buyAmount: '1990000000000000000',
-        buyTokenBalance: 'erc20',
-        feeAmount: '0',
-        from: TEST_ADDRESS,
-        kind: 'sell',
-        partiallyFillable: false,
-        quoteId: 31,
-        receiver: TEST_ADDRESS,
-        signature: '0x000a1',
-        signingScheme: 'eip712',
-        validTo: 1487078508,
-      })
+      expect(callBody).toEqual(getExpectedOrderBody(expectedAppDataWithGlobalUtm))
       sendOrderMock.mockReset()
     }
 
@@ -360,25 +309,7 @@ describe('postCoWProtocolTrade', () => {
       const callBody = sendOrderMock.mock.calls[0][0]
 
       expect(sendOrderMock).toHaveBeenCalledTimes(1)
-      expect(callBody).toEqual({
-        appData: appDataWithoutUtm.fullAppData,
-        appDataHash: appDataWithoutUtm.appDataKeccak256,
-        sellToken: '0xaaa',
-        sellAmount: '1000000000000000000',
-        sellTokenBalance: 'erc20',
-        buyToken: '0xbbb',
-        buyAmount: '1990000000000000000',
-        buyTokenBalance: 'erc20',
-        feeAmount: '0',
-        from: TEST_ADDRESS,
-        kind: 'sell',
-        partiallyFillable: false,
-        quoteId: 31,
-        receiver: TEST_ADDRESS,
-        signature: '0x000a1',
-        signingScheme: 'eip712',
-        validTo: 1487078508,
-      })
+      expect(callBody).toEqual(getExpectedOrderBody(appDataWithoutUtm))
       sendOrderMock.mockReset()
     }
 
