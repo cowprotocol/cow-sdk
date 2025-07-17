@@ -9,7 +9,7 @@ export const BungeeCowswapLibAddresses: Record<TargetChainId, string | undefined
   [SupportedChainId.AVALANCHE]: BUNGEE_COWSWAP_LIB_ADDRESS,
   [SupportedChainId.POLYGON]: BUNGEE_COWSWAP_LIB_ADDRESS,
   [SupportedChainId.LENS]: undefined, // TODO: confirm
-  [SupportedChainId.BSC]: undefined, // TODO: confirm
+  [SupportedChainId.BNB]: undefined, // TODO: confirm
   [SupportedChainId.SEPOLIA]: undefined,
   [AdditionalTargetChainId.OPTIMISM]: BUNGEE_COWSWAP_LIB_ADDRESS,
 }
@@ -23,7 +23,7 @@ export const SocketVerifierAddresses: Record<TargetChainId, string | undefined> 
   [SupportedChainId.AVALANCHE]: SOCKET_VERIFIER_ADDRESS,
   [SupportedChainId.POLYGON]: SOCKET_VERIFIER_ADDRESS,
   [SupportedChainId.LENS]: undefined, // TODO: confirm
-  [SupportedChainId.BSC]: undefined, // TODO: confirm
+  [SupportedChainId.BNB]: undefined, // TODO: confirm
   [SupportedChainId.SEPOLIA]: undefined,
   [AdditionalTargetChainId.OPTIMISM]: SOCKET_VERIFIER_ADDRESS,
 }

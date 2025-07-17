@@ -7,7 +7,7 @@ import { mainnet } from '../details/mainnet'
 import { sepolia } from '../details/sepolia'
 
 import { avalanche } from '../details/avalanche'
-import { bsc } from '../details/bsc'
+import { bnb } from '../details/bnb'
 import { lens } from '../details/lens'
 import { optimism } from '../details/optimism'
 import { polygon } from '../details/polygon'
@@ -22,7 +22,7 @@ export const ALL_SUPPORTED_CHAINS_MAP: Record<SupportedChainId, ChainInfo> = {
   [SupportedChainId.BASE]: base,
   [SupportedChainId.AVALANCHE]: avalanche,
   [SupportedChainId.POLYGON]: polygon,
-  [SupportedChainId.BSC]: bsc,
+  [SupportedChainId.BNB]: bnb,
   [SupportedChainId.LENS]: lens,
   [SupportedChainId.SEPOLIA]: sepolia,
 }

@@ -39,8 +39,8 @@ export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.SEPOLIA]: 'https://api.cow.fi/sepolia',
   [SupportedChainId.POLYGON]: 'https://api.cow.fi/polygon',
   [SupportedChainId.AVALANCHE]: 'https://api.cow.fi/avalanche',
-  [SupportedChainId.LENS]: 'https://api.cow.fi/lens', // TODO: confirm
-  [SupportedChainId.BSC]: 'https://api.cow.fi/bsc', // TODO: confirm
+  [SupportedChainId.LENS]: 'https://api.cow.fi/lens',
+  [SupportedChainId.BNB]: 'https://api.cow.fi/bnb',
 }
 
 /**
@@ -54,8 +54,8 @@ export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.SEPOLIA]: 'https://barn.api.cow.fi/sepolia',
   [SupportedChainId.POLYGON]: 'https://barn.api.cow.fi/polygon',
   [SupportedChainId.AVALANCHE]: 'https://barn.api.cow.fi/avalanche',
-  [SupportedChainId.LENS]: 'https://barn.api.cow.fi/lens', // TODO: confirm
-  [SupportedChainId.BSC]: 'https://barn.api.cow.fi/bsc', // TODO: confirm
+  [SupportedChainId.LENS]: 'https://barn.api.cow.fi/lens',
+  [SupportedChainId.BNB]: 'https://barn.api.cow.fi/bnb',
 }
 
 function cleanObjectFromUndefinedValues(obj: Record<string, string>): typeof obj {

@@ -31,7 +31,7 @@ export const SUBGRAPH_PROD_CONFIG: SubgraphApiBaseUrls = {
   [SupportedChainId.POLYGON]: null,
   [SupportedChainId.AVALANCHE]: null,
   [SupportedChainId.LENS]: null,
-  [SupportedChainId.BSC]: null,
+  [SupportedChainId.BNB]: null,
 }
 
 /**
@@ -49,7 +49,7 @@ export const SUBGRAPH_STAGING_CONFIG: SubgraphApiBaseUrls = {
   [SupportedChainId.POLYGON]: null,
   [SupportedChainId.AVALANCHE]: null,
   [SupportedChainId.LENS]: null,
-  [SupportedChainId.BSC]: null,
+  [SupportedChainId.BNB]: null,
 }
 
 /**
