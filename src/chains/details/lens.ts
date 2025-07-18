@@ -2,7 +2,7 @@ import { nativeCurrencyTemplate, TOKEN_LIST_IMAGES_PATH } from '../../common/con
 import { RAW_CHAINS_FILES_PATH } from '../const/path'
 import { ChainInfo, SupportedChainId } from '../types'
 
-const lensLogo = `${RAW_CHAINS_FILES_PATH}/images/lens-logo.jpg` // TODO: Add Lens logo
+const lensLogo = `${RAW_CHAINS_FILES_PATH}/images/lens-logo.svg`
 
 const GHO_MAINNET_ADDRESS = '0x40d16fc0246ad3160ccc09b8d0d3a2cd28ae6c2f'
 const GHO_MAINNET_LOGO_URL = `${TOKEN_LIST_IMAGES_PATH}/1/${GHO_MAINNET_ADDRESS}/logo.png`
@@ -34,7 +34,7 @@ export const lens: ChainInfo = {
       http: ['https://rpc.lens.xyz'],
     },
   },
-  color: '#000000', // TODO: add color
+  color: '#FFFFFF',
   website: {
     name: 'Lens',
     url: 'https://www.lens.xyz',
