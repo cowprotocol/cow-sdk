@@ -5,16 +5,21 @@ import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
 import { getOrderToSign } from './getOrderToSign'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getIsEthFlowOrder } from './utils/misc'
-import { getGlobalAdapter, log, SignerLike } from '@cowprotocol/sdk-common'
+import { CowError, getGlobalAdapter, log, SignerLike } from '@cowprotocol/sdk-common'
+import { generateAppDataFromDoc } from './appDataUtils'
+import sdkPackageJson from '../../sdk/package.json'
+import { utmContent as globalUtmContent, disableUtm } from './tradingSdk'
 
 export async function postCoWProtocolTrade(
   orderBookApi: OrderBookApi,
-  appData: TradingAppDataInfo,
+  paramAppData: TradingAppDataInfo,
   params: LimitTradeParameters,
   additionalParams: PostTradeAdditionalParams = {},
   paramSigner?: SignerLike,
 ): Promise<OrderPostingResult> {
   const adapter = getGlobalAdapter()
+  const appData = await createAppDataWithUTM(paramAppData)
+
   const signer = paramSigner ? adapter.createSigner(paramSigner) : adapter.signer
   const { networkCostsAmount = '0', signingScheme: _signingScheme = SigningScheme.EIP712 } = additionalParams
   if (getIsEthFlowOrder(params)) {
@@ -63,4 +68,46 @@ export async function postCoWProtocolTrade(
   log(`Order created, id: ${orderId}`)
 
   return { orderId, signature, signingScheme, orderToSign }
+}
+
+async function createAppDataWithUTM(originalAppData: TradingAppDataInfo): Promise<TradingAppDataInfo> {
+  if (disableUtm) {
+    return originalAppData
+  }
+
+  let parsedData: any
+
+  try {
+    parsedData = JSON.parse(originalAppData.fullAppData)
+  } catch {
+    try {
+      const unescapedData = originalAppData.fullAppData.replace(/\\"/g, '"')
+      parsedData = JSON.parse(unescapedData)
+    } catch (error) {
+      throw new CowError(`Failed to parse app data: ${originalAppData.fullAppData}: ${error}`)
+    }
+  }
+
+  const orderSpecificUtmContent = parsedData.utm?.utmContent
+  const defaultUtmContent = '🐮 moo-ving to defi 🐮'
+
+  const utmContent = orderSpecificUtmContent || globalUtmContent || defaultUtmContent
+
+  const defaultUtm = {
+    utmCampaign: 'developer-cohort',
+    utmContent,
+    utmMedium: `cow-sdk@${sdkPackageJson.version}`,
+    utmSource: 'cowmunity',
+    utmTerm: 'js',
+  }
+
+  parsedData.utm = defaultUtm
+
+  const { fullAppData, appDataKeccak256 } = await generateAppDataFromDoc(parsedData)
+
+  return {
+    ...originalAppData,
+    fullAppData,
+    appDataKeccak256,
+  }
 }
