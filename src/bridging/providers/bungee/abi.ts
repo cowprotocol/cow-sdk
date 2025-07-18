@@ -734,6 +734,11 @@ export const BUNGEE_APPROVE_AND_BRIDGE_V1_ABI = [
         internalType: 'contract IERC20',
       },
       { name: 'minAmount', type: 'uint256', internalType: 'uint256' },
+      {
+        name: 'nativeTokenExtraFee',
+        type: 'uint256',
+        internalType: 'uint256',
+      },
       { name: 'data', type: 'bytes', internalType: 'bytes' },
     ],
     outputs: [],
