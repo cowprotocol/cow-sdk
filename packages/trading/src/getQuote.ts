@@ -222,8 +222,8 @@ export async function getQuote(
 }
 
 export async function getTrader(swapParameters: SwapParameters): Promise<QuoterParameters> {
-  const { signer } = getGlobalAdapter()
-  const account = swapParameters.owner || ((await signer.getAddress()) as AccountAddress)
+  const signer = getGlobalAdapter().signerOrNull()
+  const account = swapParameters.owner || ((await signer?.getAddress()) as AccountAddress)
 
   return {
     chainId: swapParameters.chainId,

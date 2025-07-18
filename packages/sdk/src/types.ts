@@ -54,6 +54,10 @@ export interface ComposableModuleOptions {
 // Re-export types needed for Composable
 import type { ConditionalOrderRegistry, Orders, ProofLocation } from '@cowprotocol/sdk-composable'
 
+export interface CowShedHooksOptions {
+  factoryOptions?: ICoWShedOptions
+}
+
 /**
  * Main CowSdk options interface
  */
@@ -108,4 +112,9 @@ export interface CowSdkOptions {
    * Composable CoW configuration options
    */
   composableOptions?: ComposableModuleOptions
+
+  /**
+   * CowShedHooks configuration options
+   */
+  cowShedHooksOptions?: CowShedHooksOptions
 }

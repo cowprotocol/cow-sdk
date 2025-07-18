@@ -19,6 +19,9 @@
     },
     "clean": {
       "cache": false
+    },
+    "swagger:codegen": {
+      "cache": false
     }
   }
 }

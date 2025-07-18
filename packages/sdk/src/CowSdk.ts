@@ -11,6 +11,11 @@ import { TradingSdk } from '@cowprotocol/sdk-trading'
 import { ConditionalOrderFactory, Multiplexer, ProofLocation } from '@cowprotocol/sdk-composable'
 import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
 
+export * from '@cowprotocol/sdk-common'
+// Re-export Address from order-book instead (which has the same definition)
+export type { Address } from '@cowprotocol/sdk-common'
+
+
 // Re-export all components for easier access
 export * from '@cowprotocol/sdk-app-data'
 export * from '@cowprotocol/sdk-order-book'
@@ -27,7 +32,7 @@ export * from '@cowprotocol/sdk-order-signing'
  */
 export class CowSdk {
   public readonly orderBook: OrderBookApi
-  public readonly appData: MetadataApi
+  public readonly metadataApi: MetadataApi
   public readonly subgraph: SubgraphApi
   public readonly contracts: ContractsTs
   public readonly cowShed?: CowShedSdk
@@ -37,7 +42,7 @@ export class CowSdk {
     multiplexer?: Multiplexer
   }
   public readonly orderSigning: OrderSigningUtils
-
+  public readonly cowShedHooks: CowShedHooks
   private readonly chainId: SupportedChainId
 
   /**
@@ -57,6 +62,7 @@ export class CowSdk {
       tradingOptions = {},
       composableOptions = {},
       cowShedOptions = {},
+      cowShedHooksOptions = {},
     } = options
 
     this.chainId = chainId
@@ -78,7 +84,7 @@ export class CowSdk {
 
     this.orderBook = new OrderBookApi(orderBookContext)
 
-    this.appData = new MetadataApi(adapter)
+    this.metadataApi = new MetadataApi()
 
     const subgraphContext = {
       chainId,
@@ -101,15 +107,11 @@ export class CowSdk {
 
     this.cowShed = new CowShedSdk(adapter, cowShedOptions.factoryOptions)
 
-    this.trading = new TradingSdk(
-      tradingOptions.traderParams,
-      {
+    this.trading = new TradingSdk(tradingOptions.traderParams, {
         enableLogging: tradingOptions.options?.enableLogging,
         orderBookApi: this.orderBook,
         ...tradingOptions.options,
-      },
-      adapter,
-    )
+    })
 
     this.composable = {
       factory: new ConditionalOrderFactory(composableOptions.registry || {}, adapter),
@@ -122,5 +124,7 @@ export class CowSdk {
     }
 
     this.orderSigning = new OrderSigningUtils(adapter)
+
+    this.cowShedHooks = new CowShedHooks(chainId, cowShedHooksOptions.factoryOptions)
   }
 }

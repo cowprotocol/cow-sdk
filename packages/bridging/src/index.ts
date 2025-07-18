@@ -2,6 +2,9 @@ export * from './types'
 export * from './errors'
 export * from './utils'
 
+// Hooks utilities
+export * from './hooks/utils'
+
 // SDK
 export * from './BridgingSdk/BridgingSdk'
 

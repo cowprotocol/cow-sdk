@@ -44,7 +44,7 @@ describe('CowShedHooks', () => {
         const adapter = adapters[adapterName]
         setGlobalAdapter(adapter)
 
-        const cowShed = new CowShedHooks(adapter, 1, {
+        const cowShed = new CowShedHooks(1, {
           factoryAddress: MOCK_COW_SHED_FACTORY,
           implementationAddress: MOCK_COW_SHED_IMPLEMENTATION,
           proxyCreationCode: MOCK_INIT_CODE,
@@ -64,7 +64,7 @@ describe('CowShedHooks', () => {
         const adapter = adapters[adapterName]
         setGlobalAdapter(adapter)
 
-        const defaultCowShed = new CowShedHooks(adapter, 1)
+        const defaultCowShed = new CowShedHooks(1)
         expect(defaultCowShed).toBeInstanceOf(CowShedHooks)
         expect(defaultCowShed.getFactoryAddress()).toBe(COW_SHED_FACTORY)
         expect(defaultCowShed.getImplementationAddress()).toBe(COW_SHED_IMPLEMENTATION)
@@ -87,7 +87,7 @@ describe('CowShedHooks', () => {
         const adapter = adapters[adapterName]
         setGlobalAdapter(adapter)
 
-        const cowShed = new CowShedHooks(adapter, 1, {
+        const cowShed = new CowShedHooks(1, {
           factoryAddress: MOCK_COW_SHED_FACTORY,
           implementationAddress: MOCK_COW_SHED_IMPLEMENTATION,
           proxyCreationCode: MOCK_INIT_CODE,
@@ -105,7 +105,7 @@ describe('CowShedHooks', () => {
         const adapter = adapters[adapterName]
         setGlobalAdapter(adapter)
 
-        const defaultCowShed = new CowShedHooks(adapter, 1)
+        const defaultCowShed = new CowShedHooks(1)
         const calculatedProxy = defaultCowShed.proxyOf('0x76b0340e50BD9883D8B2CA5fd9f52439a9e7Cf58')
         expect(calculatedProxy).toBe('0xe22E86b318DAc817b4444E2fE34cC2235cDF1B00')
       })
@@ -120,7 +120,7 @@ describe('CowShedHooks', () => {
         const adapter = adapters[adapterName]
         setGlobalAdapter(adapter)
 
-        const cowShed = new CowShedHooks(adapter, 1, {
+        const cowShed = new CowShedHooks(1, {
           factoryAddress: MOCK_COW_SHED_FACTORY,
           implementationAddress: MOCK_COW_SHED_IMPLEMENTATION,
           proxyCreationCode: MOCK_INIT_CODE,
@@ -157,7 +157,7 @@ describe('CowShedHooks', () => {
         const adapter = adapters[adapterName]
         setGlobalAdapter(adapter)
 
-        const cowShed = new CowShedHooks(adapter, 1, {
+        const cowShed = new CowShedHooks(1, {
           factoryAddress: MOCK_COW_SHED_FACTORY,
           implementationAddress: MOCK_COW_SHED_IMPLEMENTATION,
           proxyCreationCode: MOCK_INIT_CODE,
@@ -213,7 +213,7 @@ describe('CowShedHooks', () => {
         setGlobalAdapter(adapter)
         const ownerAddress = await adapter.signer.getAddress()
 
-        const cowShed = new CowShedHooks(adapter, 1, {
+        const cowShed = new CowShedHooks(1, {
           factoryAddress: MOCK_COW_SHED_FACTORY,
           implementationAddress: MOCK_COW_SHED_IMPLEMENTATION,
           proxyCreationCode: MOCK_INIT_CODE,
@@ -242,7 +242,7 @@ describe('CowShedHooks', () => {
         const adapter = adapters[adapterName]
         setGlobalAdapter(adapter)
 
-        const cowShed = new CowShedHooks(adapter, 1, {
+        const cowShed = new CowShedHooks(1, {
           factoryAddress: MOCK_COW_SHED_FACTORY,
           implementationAddress: MOCK_COW_SHED_IMPLEMENTATION,
           proxyCreationCode: MOCK_INIT_CODE,

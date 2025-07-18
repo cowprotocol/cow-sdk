@@ -31,11 +31,13 @@ export const COW_SHED_712_TYPES = {
 
 export class CowShedHooks {
   constructor(
-    adapter: AbstractProviderAdapter,
     private chainId: SupportedChainId,
     private customOptions?: ICoWShedOptions,
+    adapter?: AbstractProviderAdapter,
   ) {
-    setGlobalAdapter(adapter)
+    if (adapter) {
+      setGlobalAdapter(adapter)
+    }
   }
 
   proxyOf(user: string) {

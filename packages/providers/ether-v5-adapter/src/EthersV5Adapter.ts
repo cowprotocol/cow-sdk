@@ -87,6 +87,10 @@ export class EthersV5Adapter extends AbstractProviderAdapter<EthersV5Types> {
     return this._signerAdapter
   }
 
+  signerOrNull(): EthersV5SignerAdapter | null {
+    return this._signerAdapter || null
+  }
+
   setSigner(signer: ethers.Signer | PrivateKey) {
     this._signerAdapter = this.createSigner(signer)
   }
