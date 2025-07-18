@@ -722,3 +722,26 @@ export const SOCKET_GATEWAY_ABI = [
   },
   { stateMutability: 'payable', type: 'receive' },
 ]
+
+export const BUNGEE_APPROVE_AND_BRIDGE_V1_ABI = [
+  {
+    type: 'function',
+    name: 'approveAndBridge',
+    inputs: [
+      {
+        name: 'token',
+        type: 'address',
+        internalType: 'contract IERC20',
+      },
+      { name: 'minAmount', type: 'uint256', internalType: 'uint256' },
+      {
+        name: 'nativeTokenExtraFee',
+        type: 'uint256',
+        internalType: 'uint256',
+      },
+      { name: 'data', type: 'bytes', internalType: 'bytes' },
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+]
