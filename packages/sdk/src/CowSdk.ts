@@ -33,7 +33,7 @@ export * from '@cowprotocol/sdk-order-signing'
 export class CowSdk {
   public readonly orderBook: OrderBookApi
   public readonly metadataApi: MetadataApi
-  public readonly subgraph: SubgraphApi
+  public readonly subgraph?: SubgraphApi
   public readonly contracts: ContractsTs
   public readonly cowShed?: CowShedSdk
   public readonly trading?: TradingSdk
@@ -43,7 +43,6 @@ export class CowSdk {
   }
   public readonly orderSigning: OrderSigningUtils
   public readonly cowShedHooks: CowShedHooks
-  private readonly chainId: SupportedChainId
 
   /**
    * Creates a new instance of CowSdk
@@ -58,14 +57,11 @@ export class CowSdk {
       orderBookOptions = {},
       orderBookBaseUrl,
       subgraphOptions = {},
-      subgraphBaseUrl,
       tradingOptions = {},
       composableOptions = {},
       cowShedOptions = {},
       cowShedHooksOptions = {},
     } = options
-
-    this.chainId = chainId
 
     setGlobalAdapter(adapter)
 
@@ -86,31 +82,23 @@ export class CowSdk {
 
     this.metadataApi = new MetadataApi()
 
-    const subgraphContext = {
-      chainId,
-      env,
-      ...(subgraphOptions.context || {}),
-      ...(subgraphBaseUrl && {
-        baseUrls: Object.values(SupportedChainId).reduce(
-          (acc, chainId) => ({
-            ...acc,
-            [chainId]: chainId === this.chainId ? subgraphBaseUrl : null,
-          }),
-          {},
-        ) as Record<SupportedChainId, string | null>,
-      }),
+    if (subgraphOptions.apiKey) {
+      const subgraphContext = {
+        chainId,
+        env,
+        ...(subgraphOptions.context || {}),
+      }
+      this.subgraph = new SubgraphApi(subgraphOptions.apiKey, subgraphContext)
     }
-
-    this.subgraph = new SubgraphApi(subgraphContext, subgraphOptions.apiKey)
 
     this.contracts = new ContractsTs(adapter)
 
     this.cowShed = new CowShedSdk(adapter, cowShedOptions.factoryOptions)
 
     this.trading = new TradingSdk(tradingOptions.traderParams, {
-        enableLogging: tradingOptions.options?.enableLogging,
-        orderBookApi: this.orderBook,
-        ...tradingOptions.options,
+      enableLogging: tradingOptions.options?.enableLogging,
+      orderBookApi: this.orderBook,
+      ...tradingOptions.options,
     })
 
     this.composable = {

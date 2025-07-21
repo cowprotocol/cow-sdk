@@ -94,11 +94,6 @@ export interface CowSdkOptions {
   subgraphOptions?: SubgraphModuleOptions
 
   /**
-   * Custom base URL for the Subgraph API
-   */
-  subgraphBaseUrl?: string
-
-  /**
    * Trading SDK configuration options
    */
   tradingOptions?: TradingModuleOptions
