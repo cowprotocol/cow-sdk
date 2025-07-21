@@ -155,7 +155,7 @@ export interface BungeeBuildTxAPIResponse {
 
 export type BungeeBuildTx = BungeeBuildTxAPIResponse['result']
 
-interface InputAmountTxDataBytesIndices {
+export interface InputAmountTxDataBytesIndices {
   inputAmount: {
     bytes_startIndex: number
     bytes_length: number
@@ -164,7 +164,7 @@ interface InputAmountTxDataBytesIndices {
   }
 }
 
-interface OutputAmountTxDataBytesIndices {
+export interface OutputAmountTxDataBytesIndices {
   outputAmount: {
     bytes_startIndex: number
     bytes_length: number
@@ -173,12 +173,16 @@ interface OutputAmountTxDataBytesIndices {
   }
 }
 
-interface InputOutputAmountTxDataBytesIndices extends InputAmountTxDataBytesIndices, OutputAmountTxDataBytesIndices {}
+export interface InputOutputAmountTxDataBytesIndices
+  extends InputAmountTxDataBytesIndices,
+    OutputAmountTxDataBytesIndices {}
 
 export type BungeeTxDataBytesIndicesType = {
-  [K in BungeeBridge]: K extends BungeeBridge.Across
-    ? InputOutputAmountTxDataBytesIndices // across has both input and output amounts
-    : InputAmountTxDataBytesIndices // cctp has only input amount
+  [K in BungeeBridge]: {
+    [functionSelector: string]: K extends BungeeBridge.Across
+      ? InputOutputAmountTxDataBytesIndices
+      : InputAmountTxDataBytesIndices
+  }
 }
 
 export type SocketRequest = {

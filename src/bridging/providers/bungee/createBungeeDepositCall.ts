@@ -6,6 +6,7 @@ import { BungeeTxDataBytesIndices } from './const/misc'
 import { BungeeBridge } from './types'
 import { BUNGEE_APPROVE_AND_BRIDGE_V1_ABI } from './abi'
 import { BungeeApproveAndBridgeV1Addresses } from './const/contracts'
+import { decodeBungeeBridgeTxData } from './util'
 
 export async function createBungeeDepositCall(params: {
   request: QuoteBridgeRequest
@@ -14,17 +15,20 @@ export async function createBungeeDepositCall(params: {
   const { request, quote } = params
   const { bungeeQuote, buildTx } = quote
 
+  const bridge = bungeeQuote.routeBridge
+  const { functionSelector: _functionSelector } = decodeBungeeBridgeTxData(buildTx.txData.data)
+  const functionSelector = _functionSelector.toLowerCase()
+
   // Prepare modifyCalldataParams for the bridge contract
   // information required for modifying input amount and output amount
-  const bridge = bungeeQuote.routeBridge
-  const inputAmountStartIndex = BungeeTxDataBytesIndices[bridge].inputAmount.bytes_startIndex
+  const inputAmountStartIndex = BungeeTxDataBytesIndices[bridge][functionSelector].inputAmount.bytes_startIndex
   let modifyOutputAmount = false
   let outputAmountStartIndex = 0
   const nativeTokenExtraFee = 0n // neither across nor cctp requires additional native token transfer for now
   // modify output amount for across bridge
   if (bridge === BungeeBridge.Across) {
     modifyOutputAmount = true
-    outputAmountStartIndex = BungeeTxDataBytesIndices[bridge].outputAmount.bytes_startIndex
+    outputAmountStartIndex = BungeeTxDataBytesIndices[bridge][functionSelector].outputAmount.bytes_startIndex
   }
   // Encode extra data as bytes
   const modifyCalldataParams = ethers.utils.defaultAbiCoder.encode(
