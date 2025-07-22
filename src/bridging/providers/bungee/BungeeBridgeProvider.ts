@@ -186,9 +186,9 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   async getBridgingParams(
     _chainId: ChainId,
     orderId: string,
-    txHash: string,
+    _txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
-    const events = await this.api.getEvents({ txHash })
+    const events = await this.api.getEvents({ orderId })
     const event = events[0]
 
     if (!event) return null
