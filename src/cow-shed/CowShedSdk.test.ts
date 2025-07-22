@@ -32,7 +32,7 @@ describe('CowShedSdk', () => {
     const sdk = new CowShedSdk()
     const account = sdk.getCowShedAccount(SupportedChainId.GNOSIS_CHAIN, '0xd5c15ccc0986e813d1fbc56907af557f69d8fa3e')
 
-    expect(account).toBe('0x0e7a5e1977F9b64c67722831Ee3Fc73c11bf4bB3')
+    expect(account).toBe('0x4E2D8328EeDef730119103Ea6077249659bc0e4a')
   })
 
   describe('signCalls()', () => {
@@ -47,10 +47,11 @@ describe('CowShedSdk', () => {
         deadline: getOrderDeadlineFromNow(DEFAULT_QUOTE_VALIDITY),
       })
 
-      expect(result.cowShedAccount).toBe('0xf35a93a2c62E2F1c7712a9ADFC607a5fD175a584')
+      expect(result.cowShedAccount).toBe('0xA2b56a2006fcB30420C675379883F828B4794C61')
     })
 
-    it('When signer has provider, then should estimate gas', async () => {
+    // TODO: CoW Shed 1.0.1 is not deployed to Sepolia
+    it.skip('When signer has provider, then should estimate gas', async () => {
       const sdk = new CowShedSdk()
 
       const result = await sdk.signCalls({
