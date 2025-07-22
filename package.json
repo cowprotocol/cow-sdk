@@ -3,8 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "copy-md-files": "npx cpx \"**/*.md\" dist",
-    "postbuild": "cp package.json dist && pnpm copy-md-files",
     "build": "turbo run build --filter='!@cowprotocol/cow-sdk-old'",
     "dev": "turbo run dev",
     "lint": "turbo run lint --filter=!@cowprotocol/cow-sdk-old -- --fix",

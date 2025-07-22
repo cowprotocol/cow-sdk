@@ -19,6 +19,8 @@
   ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --treeshake",
+    "postbuild": "cp package.json dist && pnpm copy-md-files",
+    "copy-md-files": "npx cpx \"**/*.md\" dist",
     "lint": "eslint src/**/*.ts",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
