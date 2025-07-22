@@ -244,7 +244,11 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    * @param orderUid - The unique identifier of the order
    * @param txHash - The hash of the settlement transaction in which the bridging post-hook was executed
    */
-  getBridgingParams(chainId: ChainId, orderUid: string, txHash: string): Promise<BridgingDepositParams | null>
+  getBridgingParams(
+    chainId: ChainId,
+    orderUid: string,
+    txHash: string,
+  ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null>
 
   /**
    * Get the explorer url for a bridging id.

@@ -76,7 +76,7 @@ describe('CowShedHooks', () => {
       const domain = cowShed.getDomain(AddressZero)
       expect(domain).toEqual({
         name: 'COWShed',
-        version: '1.0.0',
+        version: '1.0.1',
         chainId: 1,
         verifyingContract: AddressZero,
       })

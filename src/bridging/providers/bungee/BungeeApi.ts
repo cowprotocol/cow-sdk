@@ -331,13 +331,11 @@ export class BungeeApi {
     return true
   }
 
-  async getEvents(params: { orderId: string }): Promise<BungeeEvent[]> {
+  async getEvents(params: { orderId: string } | { txHash: string }): Promise<BungeeEvent[]> {
     const response = await this.makeApiCall<BungeeEventsAPIResponse>(
       'events',
-      '/order',
-      {
-        orderId: params.orderId,
-      },
+      (params as { orderId: string }).orderId ? '/order' : '/tx',
+      params,
       isValidBungeeEventsResponse,
     )
     if (!response.success) {
