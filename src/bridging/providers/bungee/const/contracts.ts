@@ -23,3 +23,16 @@ export const SocketVerifierAddresses: Record<TargetChainId, string | undefined> 
   [SupportedChainId.SEPOLIA]: undefined,
   [AdditionalTargetChainId.OPTIMISM]: SOCKET_VERIFIER_ADDRESS,
 }
+
+// TODO: replace with the actual address after deployment
+const BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS = '0x936fa1cfd96849329B18b915773E176718A64b95'
+export const BungeeApproveAndBridgeV1Addresses: Record<TargetChainId, string | undefined> = {
+  [SupportedChainId.MAINNET]: BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS,
+  [SupportedChainId.GNOSIS_CHAIN]: BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS,
+  [SupportedChainId.ARBITRUM_ONE]: BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS,
+  [SupportedChainId.BASE]: BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS,
+  [SupportedChainId.AVALANCHE]: BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS,
+  [SupportedChainId.POLYGON]: BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS,
+  [SupportedChainId.SEPOLIA]: undefined,
+  [AdditionalTargetChainId.OPTIMISM]: BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS,
+}
