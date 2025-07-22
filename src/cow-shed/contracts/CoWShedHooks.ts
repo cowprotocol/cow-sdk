@@ -96,7 +96,7 @@ export class CowShedHooks {
   getDomain(proxy: string): TypedDataDomain {
     return {
       name: 'COWShed',
-      version: '1.0.0',
+      version: this.version,
       chainId: this.chainId,
       verifyingContract: proxy,
     }
