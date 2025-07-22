@@ -1,30 +1,15 @@
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { MetadataApi } from '@cowprotocol/sdk-app-data'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
-import { ApiBaseUrls, SupportedChainId } from '@cowprotocol/sdk-config'
+import { ApiBaseUrls } from '@cowprotocol/sdk-config'
 import { ApiContext } from '@cowprotocol/sdk-config'
 import { CowSdkOptions } from './types'
 import { SubgraphApi } from '@cowprotocol/sdk-subgraph'
 import { ContractsTs } from '@cowprotocol/sdk-contracts-ts'
-import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
+import { CowShedHooks, CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { TradingSdk } from '@cowprotocol/sdk-trading'
 import { ConditionalOrderFactory, Multiplexer, ProofLocation } from '@cowprotocol/sdk-composable'
 import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
-
-export * from '@cowprotocol/sdk-common'
-// Re-export Address from order-book instead (which has the same definition)
-export type { Address } from '@cowprotocol/sdk-common'
-
-
-// Re-export all components for easier access
-export * from '@cowprotocol/sdk-app-data'
-export * from '@cowprotocol/sdk-order-book'
-export * from '@cowprotocol/sdk-subgraph'
-export * from '@cowprotocol/sdk-contracts-ts'
-export * from '@cowprotocol/sdk-cow-shed'
-export * from '@cowprotocol/sdk-trading'
-export * from '@cowprotocol/sdk-composable'
-export * from '@cowprotocol/sdk-order-signing'
 
 /**
  * CowSdk is the main entry point for interacting with the CoW Protocol.

@@ -1,17 +1,24 @@
 {
   "name": "@cowprotocol/cow-sdk",
-  "version": "7.0.0-RC.01",
+  "version": "7.0.0-monorepo.0",
   "license": "(MIT OR Apache-2.0)",
   "description": "CowProtocol SDK - Complete umbrella package for CoW Protocol interactions",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "sideEffects": false,
   "files": [
     "dist/**"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "build": "tsup src/index.ts --format esm,cjs --dts --treeshake",
     "lint": "eslint src/**/*.ts",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
@@ -24,22 +31,24 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "@cowprotocol/sdk-app-data": "workspace:*",
+    "@cowprotocol/sdk-bridging": "workspace:*",
     "@cowprotocol/sdk-common": "workspace:*",
+    "@cowprotocol/sdk-composable": "workspace:*",
     "@cowprotocol/sdk-config": "workspace:*",
     "@cowprotocol/sdk-contracts-ts": "workspace:*",
-    "@cowprotocol/sdk-app-data": "workspace:*",
-    "@cowprotocol/sdk-order-book": "workspace:*",
-    "@cowprotocol/sdk-subgraph": "workspace:*",
     "@cowprotocol/sdk-cow-shed": "workspace:*",
+    "@cowprotocol/sdk-order-book": "workspace:*",
+    "@cowprotocol/sdk-order-signing": "workspace:*",
+    "@cowprotocol/sdk-subgraph": "workspace:*",
     "@cowprotocol/sdk-trading": "workspace:*",
-    "@cowprotocol/sdk-composable": "workspace:*",
-    "@cowprotocol/sdk-order-signing": "workspace:*"
+    "@cowprotocol/sdk-weiroll": "workspace:*"
   },
   "peerDependencies": {
+    "@openzeppelin/merkle-tree": "^1.x",
     "cross-fetch": "^3.x",
     "ipfs-only-hash": "^4.x",
-    "multiformats": "^9.x",
-    "@openzeppelin/merkle-tree": "^1.x"
+    "multiformats": "^9.x"
   },
   "peerDependenciesMeta": {
     "cross-fetch": {
