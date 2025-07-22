@@ -183,10 +183,21 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     throw new Error('Not implemented')
   }
 
-  async getBridgingParams(chainId: ChainId, orderUid: string, txHash: string): Promise<BridgingDepositParams | null> {
+  async getBridgingParams(
+    chainId: ChainId,
+    orderUid: string,
+    txHash: string,
+  ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
     const txReceipt = await this.getRpcProvider(chainId).getTransactionReceipt(txHash)
 
-    return getDepositParams(chainId, orderUid, txReceipt)
+    const params = await getDepositParams(chainId, orderUid, txReceipt)
+
+    if (!params) return null
+
+    return {
+      params,
+      status: await this.getStatus(params.bridgingId, chainId),
+    }
   }
 
   getExplorerUrl(bridgingId: string): string {

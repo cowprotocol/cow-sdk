@@ -49,9 +49,10 @@ export async function getCrossChainOrder(params: GetCrossChainOrderParams): Prom
     }
 
     // Get bridging id for this order
-    const bridgingParams = await provider.getBridgingParams(chainId, orderId, tradeTxHash)
+    const { params: bridgingParams, status: statusResult } =
+      (await provider.getBridgingParams(chainId, orderId, tradeTxHash)) || {}
 
-    if (!bridgingParams) {
+    if (!bridgingParams || !statusResult) {
       throw new BridgeOrderParsingError(`Bridging params cannot be derived from transaction: ${tradeTxHash}`)
     }
 
@@ -67,7 +68,6 @@ export async function getCrossChainOrder(params: GetCrossChainOrderParams): Prom
     }
 
     try {
-      const statusResult = await provider.getStatus(bridgingParams.bridgingId, chainId)
       const explorerUrl = provider.getExplorerUrl(bridgingParams.bridgingId)
 
       return {
