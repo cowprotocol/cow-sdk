@@ -67,15 +67,12 @@
     }
   },
   "keywords": [
+    "cow",
     "cow-protocol",
-    "ethereum",
-    "defi",
-    "trading",
-    "dex",
-    "mev-protection",
-    "batch-auctions",
     "sdk",
-    "typescript"
+    "crypto",
+    "typescript",
+    "subgraph"
   ],
   "repository": {
     "type": "git",
