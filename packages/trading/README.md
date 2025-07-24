@@ -4,6 +4,7 @@ CoW Protocol is intent based, decentralized trading protocol that allows users t
 This SDK makes it easier to interact with CoW Protocol by handling order parameters, calculating amounts, and signing orders.
 
 ### Basic Trading Flow
+
 1. 🔎 Get a quote (price) for a trade
 2. ✍️ Sign the order
 3. ✅ Post the order to the order-book
@@ -15,23 +16,25 @@ It will put all necessary parameters to your order, calculates proper amounts, a
 
 ### Why Use This SDK?
 
- - [App-data](https://docs.cow.fi/cow-protocol/reference/sdks/app-data) (order metadata)
- - [Order signing](https://docs.cow.fi/cow-protocol/reference/sdks/cow-sdk/classes/OrderSigningUtils)
- - Network costs, fees, and slippage
- - Order parameters (validity, partial fills, etc.)
- - Quote API settings (price quality, signing scheme, etc.)
- - Order types (market, limit, on-chain trades, etc.)
+- [App-data](https://docs.cow.fi/cow-protocol/reference/sdks/app-data) (order metadata)
+- [Order signing](https://docs.cow.fi/cow-protocol/reference/sdks/cow-sdk/classes/OrderSigningUtils)
+- Network costs, fees, and slippage
+- Order parameters (validity, partial fills, etc.)
+- Quote API settings (price quality, signing scheme, etc.)
+- Order types (market, limit, on-chain trades, etc.)
 
 > See the [examples](../../examples/vanilla/src/index.ts) for usage.
 
 ## TradingSdk Functions
 
 Main functions:
+
 - `postSwapOrder` - Get a quote and create a swap order.
 - `postLimitOrder` - Create a limit order.
 - `getQuote` - Fetch a quote for a swap order.
 
 Special cases:
+
 - 'setTraderParams' - In case if you work with different chains and need to switch between them in runtime.
 - `postSellNativeCurrencyOrder` - Sell blockchain native tokens (e.g., ETH on Ethereum).
 - `getPreSignTransaction` - Sign an order using a smart contract wallet.
@@ -39,18 +42,27 @@ Special cases:
 ### Setup
 
 You need:
+
 - `chainId` - Supported chain ID ([see list](../common/chains.ts)).
-- `signer` - Private key, ethers signer, or `Eip1193` provider.
 - `appCode` - Unique app identifier for tracking orders.
+- `signer` - Private key, ethers signer, or `Eip1193` provider (optional - will use global adapter's signer if not provided).
 
 #### Example
+
 ```typescript
 import { SupportedChainId, TradingSdk } from '@cowprotocol/cow-sdk'
+import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
+import { JsonRpcProvider, Wallet } from 'ethers'
+
+// Proper adapter initialization
+const provider = new JsonRpcProvider('YOUR_RPC_URL')
+const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
+const adapter = new EthersV6Adapter({ provider, signer: wallet })
 
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
-  signer: '<privateKeyOrEthersSigner>',
   appCode: '<YOUR_APP_CODE>',
+  signer: '<privateKeyOrEthersSigner>', // signer is optional - will use global adapter's signer if not provided
 })
 ```
 
@@ -63,12 +75,12 @@ import { SupportedChainId, TradingSdk, TradingSdkOptions } from '@cowprotocol/co
 
 const traderParams = {
   chainId: SupportedChainId.SEPOLIA,
-  signer: '<privateKeyOrEthersSigner>',
   appCode: '<YOUR_APP_CODE>',
+  signer: '<privateKeyOrEthersSigner>', // signer is optional - will use global adapter's signer if not provided
 }
 
 const sdkOptions: TradingSdkOptions = {
-  enableLogging: true // <--
+  enableLogging: true, // <--
 }
 
 const sdk = new TradingSdk(traderParams, sdkOptions)
@@ -81,12 +93,13 @@ In case if you want to get a quote and only then create an order, you can use th
 The parameters required are the same as for the `postSwapOrder` function.
 
 The function returns `quoteResults` object with the following properties:
- - `tradeParameters` - trade type, assets, amounts and other optional parameters
- - `amountsAndCosts` - the order sell/buy amounts including network costs, fees and slippage
- - `orderToSign` - order parameters to sign (see [order signing](https://docs.cow.fi/cow-protocol/reference/sdks/cow-sdk/classes/OrderSigningUtils))
- - `quoteResponse` - DTO from [quote API](https://api.cow.fi/docs/#/default/post_api_v1_quote)
- - `appDataInfo` - [order's metadata](https://docs.cow.fi/cow-protocol/reference/sdks/app-data)
- - `orderTypedData` - EIP-712 typed data for signing
+
+- `tradeParameters` - trade type, assets, amounts and other optional parameters
+- `amountsAndCosts` - the order sell/buy amounts including network costs, fees and slippage
+- `orderToSign` - order parameters to sign (see [order signing](https://docs.cow.fi/cow-protocol/reference/sdks/cow-sdk/classes/OrderSigningUtils))
+- `quoteResponse` - DTO from [quote API](https://api.cow.fi/docs/#/default/post_api_v1_quote)
+- `appDataInfo` - [order's metadata](https://docs.cow.fi/cow-protocol/reference/sdks/app-data)
+- `orderTypedData` - EIP-712 typed data for signing
 
 Another parameter is returned by this function is `postSwapOrderFromQuote`.
 It can be used to create an order from the received quote.
@@ -94,16 +107,11 @@ It can be used to create an order from the received quote.
 #### Example
 
 ```typescript
-import {
-  SupportedChainId,
-  OrderKind,
-  TradeParameters,
-  TradingSdk
-} from '@cowprotocol/cow-sdk'
+import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
 
+// Proper adapter initialization (see setup example above)
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
-  signer: '<privateKeyOrEthersSigner>',
   appCode: '<YOUR_APP_CODE>',
 })
 
@@ -113,7 +121,7 @@ const parameters: TradeParameters = {
   sellTokenDecimals: 18,
   buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
   buyTokenDecimals: 18,
-  amount: '120000000000000000'
+  amount: '120000000000000000',
 }
 
 const { quoteResults, postSwapOrderFromQuote } = await sdk.getQuote(parameters)
@@ -132,6 +140,7 @@ if (confirm(`You will get at least: ${buyAmount}, ok?`)) {
 This function fetches a quote for a swap order and just creates the order.
 
 The parameters required are:
+
 - `kind` - the order kind (sell/buy)
 - `sellToken` - the sell token address
 - `sellTokenDecimals` - the sell token decimals
@@ -144,16 +153,11 @@ The parameters required are:
 #### Example
 
 ```typescript
-import {
-  SupportedChainId,
-  OrderKind,
-  TradeParameters,
-  TradingSdk
-} from '@cowprotocol/cow-sdk'
+import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
 
+// Proper adapter initialization (see setup example above)
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
-  signer: '<privateKeyOrEthersSigner>',
   appCode: '<YOUR_APP_CODE>',
 })
 
@@ -163,7 +167,7 @@ const parameters: TradeParameters = {
   sellTokenDecimals: 18,
   buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
   buyTokenDecimals: 18,
-  amount: '120000000000000000'
+  amount: '120000000000000000',
 }
 
 const { orderId } = await sdk.postSwapOrder(parameters)
@@ -176,29 +180,26 @@ console.log('Order created, id: ', orderId)
 This main difference between this function and `postSwapOrder` is that here you need to specify both sell and buy amounts.
 
 You need to provide the following parameters:
- - `kind` - the order kind (sell/buy)
- - `sellToken` - the sell token address
- - `sellTokenDecimals` - the sell token decimals
- - `buyToken` - the buy token address
- - `buyTokenDecimals` - the buy token decimals
- - `sellAmount` - the amount to sell in atoms
- - `buyAmount` - the amount to buy in atoms
+
+- `kind` - the order kind (sell/buy)
+- `sellToken` - the sell token address
+- `sellTokenDecimals` - the sell token decimals
+- `buyToken` - the buy token address
+- `buyTokenDecimals` - the buy token decimals
+- `sellAmount` - the amount to sell in atoms
+- `buyAmount` - the amount to buy in atoms
 
 And optional parameters:
- - `quoteId` - id of the quote from the quote API (see getQuote function)
- - `validTo` - the order expiration time in seconds
+
+- `quoteId` - id of the quote from the quote API (see getQuote function)
+- `validTo` - the order expiration time in seconds
 
 ```typescript
-import {
-  SupportedChainId,
-  OrderKind,
-  LimitTradeParameters,
-  TradingSdk
-} from '@cowprotocol/cow-sdk'
+import { SupportedChainId, OrderKind, LimitTradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
 
+// Proper adapter initialization (see setup example above)
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
-  signer: '<privateKeyOrEthersSigner>',
   appCode: '<YOUR_APP_CODE>',
 })
 
@@ -227,16 +228,11 @@ But if you need more flexible way to create an order to sell native token, you c
 > We consider the order as native token selling order if the sell token has '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' address.
 
 ```typescript
-import {
-  SupportedChainId,
-  OrderKind,
-  TradeParameters,
-  TradingSdk
-} from '@cowprotocol/cow-sdk'
+import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
 
+// Proper adapter initialization (see setup example above)
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
-  signer: '<privateKeyOrEthersSigner>',
   appCode: '<YOUR_APP_CODE>',
 })
 
@@ -246,14 +242,13 @@ const parameters: TradeParameters = {
   sellTokenDecimals: 18,
   buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
   buyTokenDecimals: 18,
-  amount: '120000000000000000'
+  amount: '120000000000000000',
 }
 
 const { orderId } = await sdk.postSellNativeCurrencyOrder(parameters)
 
 console.log('Order created, id: ', orderId)
 ```
-
 
 ### Get quote for a smart-contract wallet
 
@@ -269,12 +264,12 @@ import {
   TradeParameters,
   SwapAdvancedSettings,
   SigningScheme,
-  TradingSdk
+  TradingSdk,
 } from '@cowprotocol/cow-sdk'
 
+// Proper adapter initialization (see setup example above)
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
-  signer: '<privateKeyOrEthersSigner>',
   appCode: '<YOUR_APP_CODE>',
 })
 
@@ -284,20 +279,20 @@ const parameters: TradeParameters = {
   sellTokenDecimals: 18,
   buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
   buyTokenDecimals: 18,
-  amount: '120000000000000000'
+  amount: '120000000000000000',
 }
 
 const advancedParameters: SwapAdvancedSettings = {
   quoteRequest: {
     // Specify the signing scheme
-    signingScheme: SigningScheme.PRESIGN
-  }
+    signingScheme: SigningScheme.PRESIGN,
+  },
 }
 
 const { quoteResults } = await sdk.getQuote(parameters)
 
 console.log('Quote:', quoteResults)
-````
+```
 
 ### Create an order with smart-contract wallet
 
@@ -307,16 +302,11 @@ And then you need to send a transaction from `getPreSignTransaction` result in o
 #### Example of Swap order
 
 ```typescript
-import {
-  SupportedChainId,
-  OrderKind,
-  TradeParameters,
-  TradingSdk
-} from '@cowprotocol/cow-sdk'
+import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
 
+// Proper adapter initialization (see setup example above)
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
-  signer: '<privateKeyOrEthersSigner>',
   appCode: '<YOUR_APP_CODE>',
 })
 
@@ -326,14 +316,14 @@ const parameters: TradeParameters = {
   sellTokenDecimals: 18,
   buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
   buyTokenDecimals: 18,
-  amount: '120000000000000000'
+  amount: '120000000000000000',
 }
 
 const advancedParameters: SwapAdvancedSettings = {
   quoteRequest: {
     // Specify the signing scheme
-    signingScheme: SigningScheme.PRESIGN
-  }
+    signingScheme: SigningScheme.PRESIGN,
+  },
 }
 
 const smartContractWalletAddress = '0x<smartContractWalletAddress>'
@@ -353,12 +343,12 @@ import {
   LimitTradeParameters,
   LimitOrderAdvancedSettings,
   SigningScheme,
-  TradingSdk
+  TradingSdk,
 } from '@cowprotocol/cow-sdk'
 
+// Proper adapter initialization (see setup example above)
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
-  signer: '<privateKeyOrEthersSigner>',
   appCode: '<YOUR_APP_CODE>',
 })
 
@@ -372,13 +362,13 @@ const limitOrderParameters: LimitTradeParameters = {
   buyTokenDecimals: 18,
   sellAmount: '120000000000000000',
   buyAmount: '66600000000000000000',
-  owner: smartContractWalletAddress // See note bellow why you need to specify the parameter
+  owner: smartContractWalletAddress, // See note bellow why you need to specify the parameter
 }
 
 const advancedParameters: LimitOrderAdvancedSettings = {
   additionalParams: {
-    signingScheme: SigningScheme.PRESIGN
-  }
+    signingScheme: SigningScheme.PRESIGN,
+  },
 }
 
 const { orderId } = await sdk.postLimitOrder(limitOrderParameters, advancedParameters)
@@ -396,23 +386,23 @@ console.log('Execute the transaction to sign the order', preSignTransaction)
 Both `postSwapOrder` and `postLimitOrder` functions have optional parameters.
 See `TradeOptionalParameters` type for more details.
 
-| **Parameter**        | **Type**        | **Default Value** | **Description**                                                                                                                                                 |
-|-----------------------|-----------------|-------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `env`                | `Env`          | `prod`            | The environment to use (`prod` or `staging`).                                                                                                                   |
-| `partiallyFillable`  | `boolean`      | `false`           | Indicates whether the order is fill-or-kill or partially fillable.                                                                                              |
-| `slippageBps`        | `number`       | 50                | Slippage tolerance applied to the order to get the limit price. Expressed in Basis Points (BPS). One basis point is equivalent to 0.01% (1/100th of a percent). |
-| `receiver`           | `string`       | order creator     | The address that will receive the order's tokens.                                                                                                               |
-| `validFor`           | `number`       | 30 mins           | The order expiration time in seconds.                                                                                                                           |
-| `partnerFee`         | `PartnerFee`   | -                 | Partners of the protocol can specify their fee for the order, including the fee in basis points (BPS) and the fee recipient address. [Read more](https://docs.cow.fi/governance/fees/partner-fee)                  |
+| **Parameter**       | **Type**     | **Default Value** | **Description**                                                                                                                                                                                   |
+| ------------------- | ------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `env`               | `Env`        | `prod`            | The environment to use (`prod` or `staging`).                                                                                                                                                     |
+| `partiallyFillable` | `boolean`    | `false`           | Indicates whether the order is fill-or-kill or partially fillable.                                                                                                                                |
+| `slippageBps`       | `number`     | 50                | Slippage tolerance applied to the order to get the limit price. Expressed in Basis Points (BPS). One basis point is equivalent to 0.01% (1/100th of a percent).                                   |
+| `receiver`          | `string`     | order creator     | The address that will receive the order's tokens.                                                                                                                                                 |
+| `validFor`          | `number`     | 30 mins           | The order expiration time in seconds.                                                                                                                                                             |
+| `partnerFee`        | `PartnerFee` | -                 | Partners of the protocol can specify their fee for the order, including the fee in basis points (BPS) and the fee recipient address. [Read more](https://docs.cow.fi/governance/fees/partner-fee) |
 
 ##### Example
 
 ```typescript
 import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
 
+// Proper adapter initialization (see setup example above)
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
-  signer: '<privateKeyOrEthersSigner>',
   appCode: '<YOUR_APP_CODE>',
 })
 
@@ -426,7 +416,7 @@ const parameters: TradeParameters = {
   // Optional parameters
   slippageBps: 200, // 2%
   validFor: 1200, // 20 mins
-  receiver: '0xdef1ca1fb7f1232777520aa7f396b4e015f497ab' // Just a random address, don't use it!
+  receiver: '0xdef1ca1fb7f1232777520aa7f396b4e015f497ab', // Just a random address, don't use it!
 }
 
 const { orderId } = await sdk.postSwapOrder(parameters)
@@ -453,12 +443,12 @@ import {
   TradeParameters,
   TradingSdk,
   SwapAdvancedSettings,
-  PriceQuality
+  PriceQuality,
 } from '@cowprotocol/cow-sdk'
 
+// Proper adapter initialization (see setup example above)
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
-  signer: '<privateKeyOrEthersSigner>',
   appCode: '<YOUR_APP_CODE>',
 })
 
@@ -468,7 +458,7 @@ const parameters: TradeParameters = {
   sellTokenDecimals: 18,
   buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
   buyTokenDecimals: 18,
-  amount: '120000000000000000'
+  amount: '120000000000000000',
 }
 
 const advancedSettings: SwapAdvancedSettings = {
@@ -483,10 +473,10 @@ const advancedSettings: SwapAdvancedSettings = {
         {
           target: '0xdef1ca1fb7fbcdc777520aa7f396b4e015f497ab',
           callData: '0x70a08231000000000000000000000000d8da6bf26964af9d7eed9e03e53415d37aa96045',
-          gasLimit: 21000
-        }
-      ]
-    }
+          gasLimit: 21000,
+        },
+      ],
+    },
   },
 }
 const { orderId } = await sdk.postSwapOrder(parameters, advancedSettings)
