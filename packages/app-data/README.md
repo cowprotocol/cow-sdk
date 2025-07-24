@@ -9,15 +9,24 @@ For more details, check [the docs](https://docs.cow.fi/cow-sdk/order-meta-data-a
 ## Installation
 
 ```bash
-yarn add @cowprotocol/app-data
+pnpm add @cowprotocol/app-data
 ```
 
 ## Usage
 
+### Individual Package Usage
+
 ```typescript
 import { MetadataApi } from '@cowprotocol/app-data'
+import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
+import { JsonRpcProvider, Wallet } from 'ethers'
 
-export const metadataApi = new MetadataApi()
+// Proper adapter initialization
+const provider = new JsonRpcProvider('YOUR_RPC_URL')
+const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
+const adapter = new EthersV6Adapter({ provider, signer: wallet })
+
+export const metadataApi = new MetadataApi(adapter)
 
 const appCode = 'YOUR_APP_CODE'
 const environment = 'prod'
@@ -49,6 +58,47 @@ console.log(appDataContent)
 // The app-data content can be uploaded to IPFS. If its uploaded, this CID will be the content identifier.
 // This is a way to be able to connect the appDataHex (app-data hex part of the order struct) to its content using a decentralized system.
 console.log(cid)
+```
+
+### Using via Cow SDK
+
+You can also import `MetadataApi` directly from the main SDK:
+
+```typescript
+import { MetadataApi } from '@cowprotocol/cow-sdk'
+import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
+import { JsonRpcProvider, Wallet } from 'ethers'
+
+// Proper adapter initialization
+const provider = new JsonRpcProvider('YOUR_RPC_URL')
+const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
+const adapter = new EthersV6Adapter({ provider, signer: wallet })
+
+export const metadataApi = new MetadataApi(adapter)
+// ... rest of the usage remains the same
+```
+
+### Using with CowSdk Umbrella
+
+For a unified experience with all CoW Protocol modules:
+
+```typescript
+import { CowSdk, SupportedChainId } from '@cowprotocol/cow-sdk'
+import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
+import { JsonRpcProvider, Wallet } from 'ethers'
+
+// Proper adapter initialization
+const provider = new JsonRpcProvider('YOUR_RPC_URL')
+const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
+const adapter = new EthersV6Adapter({ provider, signer: wallet })
+
+const cowSdk = new CowSdk({
+  adapter,
+  chainId: SupportedChainId.SEPOLIA,
+})
+
+// Access metadataApi through the umbrella SDK
+export const metadataApi = cowSdk.metadataApi
 ```
 
 ### Schemas
@@ -153,7 +203,7 @@ Fork the repo so you can create a new PR. Then:
 
 4. Generate the typescript types
 
-- Run `yarn build`
+- Run `pnpm build`
 
 5. Make a test focusing on the new or modified meta-data:
 
@@ -161,3 +211,5 @@ Fork the repo so you can create a new PR. Then:
 - Don't forget to use the right version of the schema in your test: <https://github.com/cowprotocol/app-data/pull/44/files#diff-e755a2ecce42f09829d5c7dc1de8853d1d00ef56eaadc2709601c87b9be8ddfbR11>
 
 6. Create the PR and document it together with the motivation for the changes
+
+> **Note:** The examples above point to the legacy app-data repository before the adapter system was introduced. For new implementations, please use the current repository with proper adapter initialization as shown in the usage examples above.
