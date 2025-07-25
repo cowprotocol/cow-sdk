@@ -8,6 +8,7 @@ import {
   BridgeStatus,
   BridgeStatusResult,
   BridgingDepositParams,
+  BuyTokensParams,
   QuoteBridgeRequest,
 } from '../../types'
 
@@ -121,8 +122,8 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
     return [mainnet, optimism, sepolia]
   }
 
-  async getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]> {
-    return BUY_TOKENS.filter((token) => token.chainId === targetChainId)
+  async getBuyTokens(params: BuyTokensParams): Promise<TokenInfo[]> {
+    return BUY_TOKENS.filter((token) => token.chainId === params.buyChainId)
   }
 
   async getIntermediateTokens({ sellTokenChainId }: QuoteBridgeRequest): Promise<TokenInfo[]> {

@@ -124,7 +124,7 @@ async function _signPayload(
 
     const regexErrorCheck = [METHOD_NOT_FOUND_ERROR_MSG_REGEX, RPC_REQUEST_FAILED_REGEX].some((regex) =>
       // for example 1Inch error doesn't have e.message so we will check the output of toString()
-      [e.message, e.toString()].some((msg) => regex.test(msg)),
+      [(e as Error).message, (e as Error).toString()].some((msg) => regex.test(msg)),
     )
 
     if (e.code === METHOD_NOT_FOUND_ERROR_CODE || regexErrorCheck) {
