@@ -1,8 +1,19 @@
-import { Signer } from 'ethers'
 import { latest as latestAppData } from '@cowprotocol/app-data'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import { OrderKind } from '@cowprotocol/contracts'
+import { JsonRpcProvider } from '@ethersproject/providers'
+import { Signer } from 'ethers'
 
+import { ChainId, ChainInfo, SupportedChainId } from '../../../chains'
+import { arbitrumOne } from '../../../chains/details/arbitrum'
+import { base } from '../../../chains/details/base'
+import { mainnet } from '../../../chains/details/mainnet'
+import { optimism } from '../../../chains/details/optimism'
+import { polygon } from '../../../chains/details/polygon'
+import { EvmCall, TokenInfo } from '../../../common'
+import { getSigner } from '../../../common/utils/wallet'
+import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
+import { RAW_PROVIDERS_FILES_PATH } from '../../const'
+import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import {
   BridgeDeposit,
   BridgeHook,
@@ -15,23 +26,12 @@ import {
   BuyTokensParams,
   QuoteBridgeRequest,
 } from '../../types'
-import { RAW_PROVIDERS_FILES_PATH } from '../../const'
-import { ChainId, ChainInfo, SupportedChainId } from '../../../chains'
-import { EvmCall, TokenInfo } from '../../../common'
-import { mainnet } from '../../../chains/details/mainnet'
-import { polygon } from '../../../chains/details/polygon'
-import { arbitrumOne } from '../../../chains/details/arbitrum'
-import { base } from '../../../chains/details/base'
-import { optimism } from '../../../chains/details/optimism'
-import { BungeeApi, BungeeApiOptions } from './BungeeApi'
-import { toBridgeQuoteResult } from './util'
-import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
-import { createBungeeDepositCall } from './createBungeeDepositCall'
-import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
-import { BungeeBridgeName, BungeeBuildTx, BungeeEventStatus, BungeeQuote, BungeeQuoteAPIRequest } from './types'
-import { getSigner } from '../../../common/utils/wallet'
-import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
+import { BungeeApi, BungeeApiOptions } from './BungeeApi'
+import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
+import { createBungeeDepositCall } from './createBungeeDepositCall'
+import { BungeeBridgeName, BungeeBuildTx, BungeeEventStatus, BungeeQuote, BungeeQuoteAPIRequest } from './types'
+import { toBridgeQuoteResult } from './util'
 
 export const BUNGEE_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/bungee`
 export const BUNGEE_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
@@ -210,11 +210,6 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     // This will need more context and thus changes to either the hook calldata or the function interface
     // Can revisit once the approach is decided
     throw new Error('Not implemented')
-  }
-
-  async getBridgingId(_orderUid: string, _settlementTx: string, _logIndex: number): Promise<string> {
-    // order uid itself can be used as bridging id on Bungee
-    return _orderUid
   }
 
   getExplorerUrl(bridgingId: string): string {
