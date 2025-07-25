@@ -1,7 +1,13 @@
 import type { SupportedChainId } from '@cowprotocol/sdk-config'
 import type { ContractsOrder as Order, OrderUidParams } from '@cowprotocol/sdk-contracts-ts'
 import type { SigningResult, UnsignedOrder } from './types'
-import { getGlobalAdapter, Signer, TypedDataDomain } from '@cowprotocol/sdk-common'
+import {
+  AbstractProviderAdapter,
+  getGlobalAdapter,
+  setGlobalAdapter,
+  Signer,
+  TypedDataDomain,
+} from '@cowprotocol/sdk-common'
 import { generateOrderId, getDomain, signOrder, signOrderCancellation, signOrderCancellations } from './utils'
 
 /**
@@ -39,6 +45,12 @@ import { generateOrderId, getDomain, signOrder, signOrderCancellation, signOrder
  * ```
  */
 export class OrderSigningUtils {
+  constructor(adapter?: AbstractProviderAdapter) {
+    if (adapter) {
+      setGlobalAdapter(adapter)
+    }
+  }
+
   /**
    * Sign the order intent with the specified signer.
    *

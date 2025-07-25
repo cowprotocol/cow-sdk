@@ -1,6 +1,6 @@
 import { BigNumberish, BytesLike, ethers } from 'ethers'
 import type { TypedDataDomain, TypedDataField, TypedDataSigner } from '@ethersproject/abstract-signer'
-import { AbstractProviderAdapter, AdapterTypes, TransactionParams } from '@cowprotocol/sdk-common'
+import { AbstractProviderAdapter, AdapterTypes, TransactionParams, PrivateKey, CowError } from '@cowprotocol/sdk-common'
 import { EthersV5Utils } from './EthersV5Utils'
 import {
   EthersV5SignerAdapter,
@@ -24,64 +24,93 @@ export interface EthersV5Types extends AdapterTypes {
   TypedDataTypes: Record<string, TypedDataField[]>
 }
 
+export interface EthersV5AdapterOptions {
+  provider: ethers.providers.Provider | string // RPC URL or Provider instance
+  signer?: ethers.Signer | PrivateKey // Optional signer or private key
+}
+
 export class EthersV5Adapter extends AbstractProviderAdapter<EthersV5Types> {
   declare protected _type?: EthersV5Types
 
-  private provider: ethers.providers.Provider
-  private signer: ethers.Signer & TypedDataSigner
+  private _provider: ethers.providers.Provider
+  private _signerAdapter?: EthersV5SignerAdapter
+
   public utils: EthersV5Utils
-  public Signer = EthersV5SignerAdapter
   public TypedDataVersionedSigner = TypedDataVersionedSigner
   public TypedDataV3Signer = TypedDataV3Signer
   public IntChainIdTypedDataV4Signer = IntChainIdTypedDataV4Signer
 
-  constructor(providerOrSigner: ethers.providers.Provider | ethers.Signer) {
+  constructor(options: EthersV5AdapterOptions) {
     super()
     this.ZERO_ADDRESS = ethers.constants.AddressZero
 
-    if (ethers.Signer.isSigner(providerOrSigner)) {
-      this.signer = providerOrSigner as ethers.Signer & TypedDataSigner
-      this.provider = providerOrSigner.provider as ethers.providers.Provider
-      if (!this.provider) {
-        throw new Error('Signer must be connected to a provider')
-      }
+    // Setup provider
+    if (typeof options.provider === 'string') {
+      this._provider = new ethers.providers.JsonRpcProvider(options.provider)
     } else {
-      this.provider = providerOrSigner
-      this.signer = new ethers.VoidSigner(
-        '0x0000000000000000000000000000000000000000',
-        this.provider,
-      ) as ethers.Signer & TypedDataSigner
+      if (!('getNetwork' in options.provider) || !('call' in options.provider)) {
+        throw new CowError('Invalid Provider: missing required methods')
+      }
+      this._provider = options.provider
+    }
+
+    // Setup signer
+    if (options.signer) {
+      if (typeof options.signer === 'string') {
+        const ethersV5Signer = new ethers.Wallet(options.signer, this._provider)
+        this._signerAdapter = new EthersV5SignerAdapter(ethersV5Signer)
+      } else {
+        const ethersV5Signer = options.signer as ethers.Signer & TypedDataSigner
+        if (!ethersV5Signer.provider) {
+          const connectedSigner = ethersV5Signer.connect(this._provider) as ethers.Signer & TypedDataSigner
+          this._signerAdapter = new EthersV5SignerAdapter(connectedSigner)
+        } else {
+          this._signerAdapter = new EthersV5SignerAdapter(ethersV5Signer)
+        }
+      }
     }
 
     this.utils = new EthersV5Utils()
   }
 
+  get signer(): EthersV5SignerAdapter {
+    if (!this._signerAdapter) {
+      throw new CowError('No signer provided, use setSigner to create a signer')
+    }
+    return this._signerAdapter
+  }
+
+  setSigner(signer: ethers.Signer | PrivateKey) {
+    this._signerAdapter = this.createSigner(signer)
+  }
+
+  createSigner(signerOrPrivateKey: ethers.Signer | PrivateKey | EthersV5SignerAdapter): EthersV5SignerAdapter {
+    if (signerOrPrivateKey instanceof EthersV5SignerAdapter) {
+      return signerOrPrivateKey
+    }
+    if (typeof signerOrPrivateKey === 'string') {
+      const wallet = new ethers.Wallet(signerOrPrivateKey, this._provider)
+      return new EthersV5SignerAdapter(wallet)
+    }
+    const ethersV5Signer = signerOrPrivateKey as ethers.Signer & TypedDataSigner
+    if (!ethersV5Signer.provider) {
+      const connectedSigner = ethersV5Signer.connect(this._provider) as ethers.Signer & TypedDataSigner
+      return new EthersV5SignerAdapter(connectedSigner)
+    } else {
+      return new EthersV5SignerAdapter(ethersV5Signer)
+    }
+  }
+
   async getChainId(): Promise<number> {
-    return (await this.provider.getNetwork()).chainId
-  }
-
-  async getAddress(): Promise<string> {
-    return this.signer.getAddress()
-  }
-
-  async signMessage(message: string | Uint8Array): Promise<string> {
-    return this.signer.signMessage(message)
-  }
-
-  async signTypedData(
-    domain: TypedDataDomain,
-    types: Record<string, TypedDataField[]>,
-    value: Record<string, unknown>,
-  ): Promise<string> {
-    return this.signer._signTypedData(domain, types, value)
+    return (await this._provider.getNetwork()).chainId
   }
 
   async getStorageAt(address: string, slot: BigNumberish): Promise<BytesLike> {
-    return this.provider.getStorageAt(address, slot)
+    return this._provider.getStorageAt(address, slot)
   }
 
   async call(txParams: TransactionParams, provider?: ethers.providers.Provider): Promise<string> {
-    const providerToUse = provider || this.provider
+    const providerToUse = provider || this._provider
     return providerToUse.call({
       to: txParams.to,
       from: txParams.from,
@@ -99,8 +128,12 @@ export class EthersV5Adapter extends AbstractProviderAdapter<EthersV5Types> {
     provider?: ethers.providers.Provider,
   ): Promise<unknown> {
     const { address, abi, functionName, args } = params
-    const providerToUse = provider || this.provider
+    const providerToUse = provider || this._provider
     const contract = new ethers.Contract(address, abi, providerToUse)
+
+    if (!contract[functionName])
+      throw new CowError(`Error reading contract ${address}: function ${functionName} was not found in Abi`)
+
     if (args && args.length > 0) {
       return contract[functionName](...args)
     }
@@ -108,7 +141,7 @@ export class EthersV5Adapter extends AbstractProviderAdapter<EthersV5Types> {
   }
 
   async getBlock(blockTag: string, provider?: ethers.providers.JsonRpcProvider) {
-    const providerToUse = provider || this.provider
+    const providerToUse = provider || this._provider
     return await providerToUse.getBlock(blockTag)
   }
 }

@@ -514,7 +514,7 @@ describe('TWAP Order - Multi-Adapter Tests', () => {
       const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
       // First get a serialized TWAP from one adapter
-      setGlobalAdapter(adapters[adapterNames[0]!])
+      setGlobalAdapter(adapters.ethersV5Adapter)
       const originalTwap = Twap.fromData(TWAP_PARAMS_TEST)
       const serialized = TWAP_SERIALIZED(originalTwap.salt)
 

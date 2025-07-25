@@ -1,10 +1,6 @@
-import { sepolia } from 'viem/chains'
-import { createAdapters, TEST_ADDRESS, TEST_PRIVATE_KEY, TEST_RPC_URL } from './setup'
-import { ethers as ethersV5 } from 'ethers-v5'
-import * as ethersV6 from 'ethers-v6'
-import { setGlobalAdapter, TypedDataDomain } from '@cowprotocol/sdk-common'
+import { createAdapters, TEST_ADDRESS } from './setup'
+import { CowError, setGlobalAdapter, TypedDataDomain } from '@cowprotocol/sdk-common'
 import {
-  ContractsTs,
   ContractsOrder as Order,
   ContractsOrderKind as OrderKind,
   ContractsSigningScheme as SigningScheme,
@@ -18,16 +14,9 @@ import {
   decodeTradeFlags,
   encodeTradeFlags,
 } from '../src'
-import { privateKeyToAccount } from 'viem/accounts'
-import { createWalletClient, http } from 'viem'
 
 describe('Order Hashing and Signing', () => {
   let adapters: ReturnType<typeof createAdapters>
-  let contracts: {
-    ethersV5Contracts: ContractsTs
-    ethersV6Contracts: ContractsTs
-    viemContracts: ContractsTs
-  }
 
   // Test data
   const testDomain: TypedDataDomain = {
@@ -51,11 +40,6 @@ describe('Order Hashing and Signing', () => {
 
   beforeAll(() => {
     adapters = createAdapters()
-    contracts = {
-      ethersV5Contracts: new ContractsTs(adapters.ethersV5Adapter),
-      ethersV6Contracts: new ContractsTs(adapters.ethersV6Adapter),
-      viemContracts: new ContractsTs(adapters.viemAdapter),
-    }
   })
 
   describe('hashOrder', () => {
@@ -106,7 +90,8 @@ describe('Order Hashing and Signing', () => {
       const extractedParams: any[] = []
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
-        const params = extractOrderUidParams(firstUid!)
+        if (!firstUid) throw new CowError('No UID available')
+        const params = extractOrderUidParams(firstUid)
         extractedParams.push(params)
       }
 
@@ -121,7 +106,7 @@ describe('Order Hashing and Signing', () => {
       expect(firstParams.validTo).toEqual(testOrder.validTo)
 
       // The order digest should match the hash
-      setGlobalAdapter(adapters[adapterNames[0]!])
+      setGlobalAdapter(adapters.ethersV5Adapter)
       const orderHash = hashOrder(testDomain, testOrder)
       expect(firstParams.orderDigest).toEqual(orderHash)
     })
@@ -131,26 +116,11 @@ describe('Order Hashing and Signing', () => {
     test('should sign orders consistently across different adapters', async () => {
       const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
-      // Setup wallets for each adapter (following the same pattern as contracts)
-      const ethersV5Provider = new ethersV5.providers.JsonRpcProvider(TEST_RPC_URL)
-      const ethersV6Provider = new ethersV6.JsonRpcProvider(TEST_RPC_URL)
-      const viemAccount = privateKeyToAccount(TEST_PRIVATE_KEY as `0x${string}`)
-
-      const wallets = {
-        ethersV5Adapter: new ethersV5.Wallet(TEST_PRIVATE_KEY, ethersV5Provider),
-        ethersV6Adapter: new ethersV6.Wallet(TEST_PRIVATE_KEY, ethersV6Provider),
-        viemAdapter: createWalletClient({
-          chain: sepolia,
-          transport: http(),
-          account: viemAccount,
-        }),
-      }
-
       // Sign the order with each adapter
       const signatures: Signature[] = []
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
-        const sig = await signOrder(testDomain, testOrder, wallets[adapterName], SigningScheme.EIP712)
+        const sig = await signOrder(testDomain, testOrder, SigningScheme.EIP712, adapters[adapterName].signer)
         signatures.push(sig)
       }
 

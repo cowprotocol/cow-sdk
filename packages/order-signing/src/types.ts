@@ -1,4 +1,4 @@
-import type { Signer } from '@cowprotocol/sdk-common'
+import type { SignerLike } from '@cowprotocol/sdk-common'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 import type { OrderParameters, EcdsaSigningScheme } from '@cowprotocol/sdk-order-book'
 
@@ -21,7 +21,7 @@ export type SigningResult = { signature: string; signingScheme: EcdsaSigningSche
  */
 export interface SignOrderParams {
   chainId: SupportedChainId
-  signer: Signer
+  signer: SignerLike
   order: UnsignedOrder
   signingScheme: EcdsaSigningScheme
 }
@@ -35,7 +35,7 @@ export interface SignOrderParams {
  */
 export interface SignOrderCancellationParams {
   chainId: SupportedChainId
-  signer: Signer
+  signer: SignerLike
   orderUid: string
   signingScheme: EcdsaSigningScheme
 }
@@ -49,7 +49,7 @@ export interface SignOrderCancellationParams {
  */
 export interface SignOrderCancellationsParams {
   chainId: SupportedChainId
-  signer: Signer
+  signer: SignerLike
   orderUids: string[]
   signingScheme: EcdsaSigningScheme
 }

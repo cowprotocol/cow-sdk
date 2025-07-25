@@ -4,7 +4,7 @@ import {
   Bytes,
   getGlobalAdapter,
   setGlobalAdapter,
-  Signer,
+  SignerLike,
   TypedDataDomain,
 } from '@cowprotocol/sdk-common'
 
@@ -512,18 +512,18 @@ export class SettlementEncoder {
    * Signs an order and encodes a trade with that order.
    *
    * @param order The order to sign for the trade.
-   * @param owner The externally owned account that should sign the order.
    * @param scheme The signing scheme to use. See {@link SigningScheme} for more
    * details.
    * @param tradeExecution The execution details for the trade.
+   * @param owner The externally owned account that should sign the order.
    */
   public async signEncodeTrade(
     order: Order,
-    owner: Signer,
     scheme: EcdsaSigningScheme,
     tradeExecution?: Partial<TradeExecution>,
+    owner?: SignerLike,
   ): Promise<void> {
-    const signature = await signOrder(this.domain, order, owner, scheme)
+    const signature = await signOrder(this.domain, order, scheme, owner)
     this.encodeTrade(order, signature, tradeExecution)
   }
 

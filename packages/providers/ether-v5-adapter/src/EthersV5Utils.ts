@@ -156,7 +156,7 @@ export class EthersV5Utils implements AdapterUtils {
     abi: Array<{ name: string; inputs: Array<{ type: string }> }>,
     functionName: string,
     args: unknown[],
-  ): BytesLike {
+  ): string {
     const iface = new ethers.utils.Interface(abi)
     return iface.encodeFunctionData(functionName, args)
   }
@@ -241,5 +241,9 @@ export class EthersV5Utils implements AdapterUtils {
 
   hexDataLength(data: string): number {
     return ethers.utils.hexDataLength(data)
+  }
+
+  parseUnits(value: string, decimals: number): bigint {
+    return ethers.utils.parseUnits(value, decimals).toBigInt()
   }
 }

@@ -1,7 +1,6 @@
-import { createAdapters, TEST_ADDRESS } from './setup'
-import { setGlobalAdapter, TypedDataDomain } from '@cowprotocol/sdk-common'
+import { AdaptersTestSetup, createAdapters, TEST_ADDRESS } from './setup'
+import { CowError, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import {
-  ContractsTs,
   ContractsOrder as Order,
   ContractsOrderKind as OrderKind,
   OrderBalance,
@@ -18,20 +17,7 @@ import {
 import { getAddress } from 'viem'
 
 describe('Order Processing Functions', () => {
-  let adapters: ReturnType<typeof createAdapters>
-  let contracts: {
-    ethersV5Contracts: ContractsTs
-    ethersV6Contracts: ContractsTs
-    viemContracts: ContractsTs
-  }
-
-  // Test data
-  const testDomain: TypedDataDomain = {
-    name: 'Cow Protocol',
-    version: '1',
-    chainId: 1,
-    verifyingContract: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
-  }
+  let adapters: AdaptersTestSetup
 
   const testOrder: Order = {
     sellToken: getAddress('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'), // WETH
@@ -47,11 +33,6 @@ describe('Order Processing Functions', () => {
 
   beforeAll(() => {
     adapters = createAdapters()
-    contracts = {
-      ethersV5Contracts: new ContractsTs(adapters.ethersV5Adapter),
-      ethersV6Contracts: new ContractsTs(adapters.ethersV6Adapter),
-      viemContracts: new ContractsTs(adapters.viemAdapter),
-    }
   })
 
   describe('normalizeOrder', () => {
@@ -81,12 +62,12 @@ describe('Order Processing Functions', () => {
       // When we provide a receiver, it should be preserved
       const orderWithReceiver = { ...testOrder, receiver: TEST_ADDRESS }
 
-      setGlobalAdapter(adapters[adapterNames[0]!!])
+      setGlobalAdapter(adapters.ethersV5Adapter)
       const normalizedWithReceiver = normalizeOrder(orderWithReceiver)
       expect(normalizedWithReceiver.receiver).toEqual(TEST_ADDRESS)
 
       // Test error case - receiver cannot be zero address
-      setGlobalAdapter(adapters[adapterNames[0]!!])
+      setGlobalAdapter(adapters.ethersV5Adapter)
       const orderWithZeroReceiver = { ...testOrder, receiver: '0x0000000000000000000000000000000000000000' }
       expect(() => normalizeOrder(orderWithZeroReceiver)).toThrow(/receiver cannot be address\(0\)/)
     })
@@ -103,8 +84,7 @@ describe('Order Processing Functions', () => {
       ]
 
       for (const order of orderVariations) {
-        const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
-        setGlobalAdapter(adapters[adapterNames[0]!!])
+        setGlobalAdapter(adapters.ethersV5Adapter)
         const normalized = normalizeOrder(order)
 
         // Sell token balance should match what was provided or default to ERC20
@@ -201,8 +181,7 @@ describe('Order Processing Functions', () => {
     })
 
     test('should throw on invalid balance type', () => {
-      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
-      setGlobalAdapter(adapters[adapterNames[0]!])
+      setGlobalAdapter(adapters.ethersV5Adapter)
       expect(() => normalizeBuyTokenBalance('invalid' as any)).toThrow(/invalid order balance/)
     })
   })
@@ -235,7 +214,8 @@ describe('Order Processing Functions', () => {
       const extractedParams: any[] = []
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
-        const extracted = extractOrderUidParams(firstPacked!)
+        if (!firstPacked) throw new CowError('No packed UID available')
+        const extracted = extractOrderUidParams(firstPacked)
         extractedParams.push(extracted)
       }
 
@@ -245,7 +225,7 @@ describe('Order Processing Functions', () => {
       })
 
       // Test error case - invalid UID length
-      setGlobalAdapter(adapters[adapterNames[0]!])
+      setGlobalAdapter(adapters.ethersV5Adapter)
       expect(() => extractOrderUidParams('0x1234')).toThrow(/invalid order UID length/)
     })
   })
@@ -255,7 +235,7 @@ describe('Order Processing Functions', () => {
       const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
       // First create a token registry and encode a trade
-      setGlobalAdapter(adapters[adapterNames[0]!])
+      setGlobalAdapter(adapters.ethersV5Adapter)
       const tokenRegistry = new TokenRegistry()
 
       // Add tokens to the registry
@@ -309,7 +289,7 @@ describe('Order Processing Functions', () => {
         sellTokenIndex: 99, // Index that doesn't exist
       }
 
-      setGlobalAdapter(adapters[adapterNames[0]!])
+      setGlobalAdapter(adapters.ethersV5Adapter)
       expect(() => decodeOrder(invalidTrade, tokenRegistry.addresses)).toThrow(/Invalid trade/)
     })
   })
@@ -347,7 +327,8 @@ describe('Order Processing Functions', () => {
 
       // Adding same token again should return the same index
       registries.forEach((registry) => {
-        expect(registry.index(tokens[0]!)).toEqual(0)
+        if (!tokens[0]) throw new CowError('No token available')
+        expect(registry.index(tokens[0])).toEqual(0)
       })
 
       // Token addresses should be stored in all registries

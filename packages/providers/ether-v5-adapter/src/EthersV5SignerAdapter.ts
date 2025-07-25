@@ -1,17 +1,13 @@
 import { Signer, BigNumber, TypedDataDomain, TypedDataField, ethers } from 'ethers'
-import { AbstractSigner, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
+import { AbstractSigner, CowError, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
 import { TypedDataSigner } from '@ethersproject/abstract-signer'
 import { _TypedDataEncoder } from 'ethers/lib/utils'
 
 export class EthersV5SignerAdapter extends AbstractSigner {
-  private _signer: Signer & TypedDataSigner
+  protected _signer: Signer & TypedDataSigner
 
-  constructor(signer: (ethers.Signer & TypedDataSigner) | EthersV5SignerAdapter) {
+  constructor(signer: Signer & TypedDataSigner) {
     super()
-    if (signer instanceof EthersV5SignerAdapter) {
-      this._signer = signer._signer
-      return
-    }
 
     this._signer = signer
   }
@@ -30,7 +26,7 @@ export class EthersV5SignerAdapter extends AbstractSigner {
     if ('_signTransaction' in this._signer) {
       return await this._signer.signTransaction(this._formatTxParams(txParams))
     }
-    throw new Error('signTransaction not supported by this ethers v5 signer')
+    throw new CowError('signTransaction not supported by this ethers v5 signer')
   }
 
   async signTypedData(
@@ -89,7 +85,7 @@ export class EthersV5SignerAdapter extends AbstractSigner {
 
   async estimateGas(txParams: TransactionParams): Promise<bigint> {
     if (!this._signer.provider) {
-      throw new Error('Signer must have a provider to estimate gas')
+      throw new CowError('Signer must have a provider to estimate gas')
     }
 
     const formattedParams = this._formatTxParams(txParams)
@@ -102,23 +98,21 @@ export class EthersV5SignerAdapter extends AbstractSigner {
 
 export class TypedDataVersionedSigner extends EthersV5SignerAdapter {
   private _signMethod: string
-  private signer: ethers.Signer
-  private provider: ethers.providers.JsonRpcProvider
+  private _provider: ethers.providers.JsonRpcProvider
 
   constructor(signer: Signer & TypedDataSigner, version: 'v3' | 'v4' = 'v3') {
     super(signer)
     const versionSuffix = version ? '_' + version : ''
     this._signMethod = 'eth_signTypedData' + versionSuffix
-    this.signer = signer
 
     if (!signer.provider) {
-      throw new Error('Signer does not have a provider set')
+      throw new CowError('Signer does not have a provider set')
     }
     if (!('send' in signer.provider)) {
-      throw new Error('Provider must be of type JsonRpcProvider')
+      throw new CowError('Provider must be of type JsonRpcProvider')
     }
 
-    this.provider = signer.provider as ethers.providers.JsonRpcProvider
+    this._provider = signer.provider as ethers.providers.JsonRpcProvider
   }
 
   async signTypedData(
@@ -135,17 +129,17 @@ export class TypedDataVersionedSigner extends EthersV5SignerAdapter {
     const address = await this.getAddress()
 
     // Use the provider from the underlying signer
-    if (!this.provider) {
-      throw new Error('Signer does not have a provider set')
+    if (!this._provider) {
+      throw new CowError('Signer does not have a provider set')
     }
 
-    return await this.provider.send(this._signMethod, [address.toLowerCase(), msg])
+    return await this._provider.send(this._signMethod, [address.toLowerCase(), msg])
   }
 
   private async resolveName(name: string): Promise<string> {
     // Delegate to the underlying signer's resolveName if available
-    if (this.signer.resolveName) {
-      return await this.signer.resolveName(name)
+    if (this._signer.resolveName) {
+      return await this._signer.resolveName(name)
     }
     return name
   }
@@ -165,22 +159,20 @@ export class TypedDataV3Signer extends TypedDataVersionedSigner {
 }
 
 export class IntChainIdTypedDataV4Signer extends EthersV5SignerAdapter {
-  private signer: ethers.Signer & TypedDataSigner
-  private provider: ethers.providers.JsonRpcProvider
+  private _provider: ethers.providers.JsonRpcProvider
   _isSigner = true
 
   constructor(signer: Signer & TypedDataSigner) {
     super(signer)
-    this.signer = signer
 
     if (!signer.provider) {
-      throw new Error('Signer does not have a provider set')
+      throw new CowError('Signer does not have a provider set')
     }
     if (!('send' in signer.provider)) {
-      throw new Error('Provider must be of type JsonRpcProvider')
+      throw new CowError('Provider must be of type JsonRpcProvider')
     }
 
-    this.provider = signer.provider as ethers.providers.JsonRpcProvider
+    this._provider = signer.provider as ethers.providers.JsonRpcProvider
   }
 
   async signTypedData(
@@ -202,16 +194,16 @@ export class IntChainIdTypedDataV4Signer extends EthersV5SignerAdapter {
     const msg = JSON.stringify(payload)
     const address = await this.getAddress()
 
-    if (!this.signer.provider) {
-      throw new Error('Signer does not have a provider set')
+    if (!this._signer.provider) {
+      throw new CowError('Signer does not have a provider set')
     }
 
-    return await this.provider.send('eth_signTypedData_v4', [address.toLowerCase(), msg])
+    return await this._provider.send('eth_signTypedData_v4', [address.toLowerCase(), msg])
   }
 
   private async resolveName(name: string): Promise<string> {
-    if (this.signer.resolveName) {
-      return await this.signer.resolveName(name)
+    if (this._signer.resolveName) {
+      return await this._signer.resolveName(name)
     }
     return name
   }
