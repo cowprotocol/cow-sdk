@@ -57,7 +57,7 @@ const appDataMock = {
 
 // Expected app data after UTM modification
 const expectedAppDataWithUTM = {
-  appDataKeccak256: '0x27f66e72ac9570195fbc7780facf06079a103eae3962aa01554402e24cc1f9f0',
+  appDataKeccak256: '0xf40aa9915012f1ca0441e6833b11746207448c83ef629107220bf81fb3af8a91',
   fullAppData: `{"appCode":"CoW Swap","environment":"barn","metadata":{"orderClass":{"orderClass":"market"},"quote":{"slippageBips":201,"smartSlippage":true}},"utm":{"utmCampaign":"developer-cohort","utmContent":"🐮 moo-ving to defi 🐮","utmMedium":"cow-sdk@${sdkPackageJson.version}","utmSource":"cowmunity","utmTerm":"js"},"version":"1.3.0"}`,
 }
 
@@ -204,7 +204,7 @@ describe('postCoWProtocolTrade', () => {
     } as unknown as TradingAppDataInfo
 
     const expectedAppDataWithMergedUTM = {
-      appDataKeccak256: '0x87c8cc7b90a78695e966c11e15f6dd48a4834af93a1dae27eb7dc55869184ab4',
+      appDataKeccak256: '0x3c634c4cea361eb156cebfa369b5fb0fc407a99c521fea744301453eb1e3e065',
       fullAppData: `{"appCode":"CoW Swap","environment":"barn","metadata":{"orderClass":{"orderClass":"market"},"quote":{"slippageBips":201,"smartSlippage":true}},"utm":{"utmCampaign":"developer-cohort","utmContent":"custom-content","utmMedium":"cow-sdk@${sdkPackageJson.version}","utmSource":"cowmunity","utmTerm":"js"},"version":"1.3.0"}`,
     }
 
@@ -232,7 +232,7 @@ describe('postCoWProtocolTrade', () => {
     } as unknown as TradingAppDataInfo
 
     const expectedAppDataWithFixedUtm = {
-      appDataKeccak256: '0x87c8cc7b90a78695e966c11e15f6dd48a4834af93a1dae27eb7dc55869184ab4',
+      appDataKeccak256: '0x3c634c4cea361eb156cebfa369b5fb0fc407a99c521fea744301453eb1e3e065',
       fullAppData: `{"appCode":"CoW Swap","environment":"barn","metadata":{"orderClass":{"orderClass":"market"},"quote":{"slippageBips":201,"smartSlippage":true}},"utm":{"utmCampaign":"developer-cohort","utmContent":"custom-content","utmMedium":"cow-sdk@${sdkPackageJson.version}","utmSource":"cowmunity","utmTerm":"js"},"version":"1.3.0"}`,
     }
 
@@ -264,7 +264,7 @@ describe('postCoWProtocolTrade', () => {
     } as unknown as TradingAppDataInfo
 
     const expectedAppDataWithGlobalUtm = {
-      appDataKeccak256: '0xdaba49160dbc44a00e5a18173ae225495ad03ac0d71185ffd669d91d954e32c4',
+      appDataKeccak256: '0x9b124afc742d31eb4ffccfd3ddda42e859e3131faa300f40607e181b38b7aa71',
       fullAppData: `{"appCode":"CoW Swap","environment":"barn","metadata":{"orderClass":{"orderClass":"market"},"quote":{"slippageBips":201,"smartSlippage":true}},"utm":{"utmCampaign":"developer-cohort","utmContent":"global-sdk-content","utmMedium":"cow-sdk@${sdkPackageJson.version}","utmSource":"cowmunity","utmTerm":"js"},"version":"1.3.0"}`,
     }
 
