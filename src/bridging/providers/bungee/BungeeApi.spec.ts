@@ -82,7 +82,7 @@ describe('BungeeApi: Shape of API response', () => {
     expect(result.approvalData).toBeDefined()
   })
 
-  it('getEvents', async () => {
+  it.skip('getEvents', async () => {
     // Note: This test requires a valid orderId from a previous transaction
     // Using a known orderId from a previous transaction
     const result = await api.getEvents({
