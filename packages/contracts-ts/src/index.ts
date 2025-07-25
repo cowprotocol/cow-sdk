@@ -26,3 +26,5 @@ export type {
   Order as ContractsOrder,
   OrderCancellations as ContractsOrderCancellations,
 } from './types'
+
+export { CONTRACTS_PKG_VERSION } from './generated/packageVersion'

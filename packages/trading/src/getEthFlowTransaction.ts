@@ -1,4 +1,8 @@
-import { LimitTradeParametersFromQuote, PostTradeAdditionalParams, TransactionParams } from './types'
+import {
+  LimitTradeParametersFromQuote,
+  PostTradeAdditionalParams,
+  TradingTransactionParams as TransactionParams,
+} from './types'
 import { calculateUniqueOrderId } from './calculateUniqueOrderId'
 import { getOrderToSign } from './getOrderToSign'
 import { SupportedChainId, BARN_ETH_FLOW_ADDRESS, CowEnv, ETH_FLOW_ADDRESS } from '@cowprotocol/sdk-config'

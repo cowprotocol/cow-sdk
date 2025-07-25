@@ -11,7 +11,7 @@ import { MockBridgeProvider } from '../providers/mock/MockBridgeProvider'
 import { QuoteAndPost, TradeParameters, TradingSdk, WithPartialTraderParams } from '@cowprotocol/sdk-trading'
 import { QuoteBridgeRequest } from '../types'
 import { OrderBookApi, SigningScheme } from '@cowprotocol/sdk-order-book'
-import { QuoteResultsWithSigner } from '@cowprotocol/sdk-trading/src/getQuote'
+import { QuoteResultsWithSigner } from '@cowprotocol/sdk-trading'
 import { assertIsBridgeQuoteAndPost, assertIsQuoteAndPost } from '../utils'
 import { expectToEqual, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import {

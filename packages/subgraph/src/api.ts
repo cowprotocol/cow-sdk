@@ -34,7 +34,7 @@ export class SubgraphApi {
    * @param context Any properties of the {@link SubgraphApiContext} may be overridden by passing a {@link PartialSubgraphApiContext}.
    * @param apiKey The API key to use for the CoW Protocol Subgraph. {@link https://thegraph.com/studio/apikeys/}
    */
-  constructor(context: PartialSubgraphApiContext = {}, apiKey?: string) {
+  constructor(apiKey: string, context: PartialSubgraphApiContext = {}) {
     const baseUrl = SUBGRAPH_BASE_URL + `${apiKey}/subgraphs/id`
     this.SUBGRAPH_PROD_CONFIG = {
       [SupportedChainId.MAINNET]: baseUrl + '/8mdwJG7YCSwqfxUbhCypZvoubeZcFVpCHb4zmHhvuKTD',

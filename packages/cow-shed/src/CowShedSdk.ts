@@ -65,9 +65,9 @@ export interface CowShedCall {
 
 export interface CowShedSdkOptions {
   /**
-   * Adapter for the cow-shed.
+   * Optional adapter for the cow-shed, if not provided, the global adapter will be used.
    */
-  adapter: AbstractProviderAdapter
+  adapter?: AbstractProviderAdapter
 
   /**
    * Custom options for the cow-shed hooks.
@@ -161,8 +161,7 @@ export class CowShedSdk {
     }
 
     // Create new cow-shed hooks and cache it
-    const adapter = getGlobalAdapter()
-    cowShedHooks = new CowShedHooks(adapter, chainId, customOptions)
+    cowShedHooks = new CowShedHooks(chainId, customOptions)
     this.hooksCache.set(chainId, cowShedHooks)
     return cowShedHooks
   }

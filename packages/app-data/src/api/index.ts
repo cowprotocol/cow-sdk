@@ -20,8 +20,10 @@ export class MetadataApi {
    *
    * @param adapter Provider adapter implementation
    */
-  constructor(adapter: AbstractProviderAdapter) {
-    setGlobalAdapter(adapter)
+  constructor(adapter?: AbstractProviderAdapter) {
+    if (adapter) {
+      setGlobalAdapter(adapter)
+    }
   }
 
   // Schema & Doc generation/validation

@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-contracts-ts",
-  "version": "0.1.0",
+  "version": "2.0.0-alpha",
   "description": "TypeScript contract bindings for CoW Protocol SDK",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -12,6 +12,8 @@
   ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
+    "prebuild": "node scripts/version.js",
+    "predev": "node scripts/version.js",
     "dev": "tsup src/index.ts --format esm,cjs --watch --dts",
     "lint": "eslint src/**/*.ts",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",

@@ -209,7 +209,7 @@ export interface TradingAppDataInfo {
 /**
  * A standard Ethereum transaction object
  */
-export interface TransactionParams {
+export interface TradingTransactionParams {
   data: string
   gasLimit: string
   to: string
