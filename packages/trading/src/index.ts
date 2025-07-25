@@ -13,6 +13,7 @@ export { postLimitOrder } from './postLimitOrder'
 export { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 export { postSwapOrder, postSwapOrderFromQuote } from './postSwapOrder'
 export { suggestSlippageBps } from './suggestSlippageBps'
+export { getEthFlowContract } from './getEthFlowTransaction'
 
 /**
  * Helpers

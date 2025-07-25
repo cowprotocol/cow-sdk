@@ -1,6 +1,13 @@
 import { BigNumberish, BytesLike, ethers } from 'ethers'
 import type { TypedDataDomain, TypedDataField, TypedDataSigner } from '@ethersproject/abstract-signer'
-import { AbstractProviderAdapter, AdapterTypes, TransactionParams, PrivateKey, CowError } from '@cowprotocol/sdk-common'
+import {
+  AbstractProviderAdapter,
+  AdapterTypes,
+  TransactionParams,
+  PrivateKey,
+  CowError,
+  GenericContract,
+} from '@cowprotocol/sdk-common'
 import { EthersV5Utils } from './EthersV5Utils'
 import {
   EthersV5SignerAdapter,
@@ -143,5 +150,9 @@ export class EthersV5Adapter extends AbstractProviderAdapter<EthersV5Types> {
   async getBlock(blockTag: string, provider?: ethers.providers.JsonRpcProvider) {
     const providerToUse = provider || this._provider
     return await providerToUse.getBlock(blockTag)
+  }
+
+  getContract(address: string, abi: Abi): GenericContract {
+    return new ethers.Contract(address, abi, this._provider) as unknown as GenericContract
   }
 }
