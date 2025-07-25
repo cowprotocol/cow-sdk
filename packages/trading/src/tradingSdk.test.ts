@@ -3,7 +3,7 @@ import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { TradeBaseParameters } from './types'
 import { OrderBookApi, OrderKind } from '@cowprotocol/sdk-order-book'
 import { AdaptersTestSetup, createAdapters } from '../tests/setup'
-import { AbstractProviderAdapter } from '@cowprotocol/sdk-common'
+import { AbstractProviderAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 const defaultOrderParams: TradeBaseParameters = {
   sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
@@ -67,7 +67,7 @@ describe('TradingSdk', () => {
 
       for (const adapterName of adapterNames) {
         const adapter = adapters[adapterName] as AbstractProviderAdapter
-        // setGlobalAdapter(adapter)
+        setGlobalAdapter(adapter)
         const sdk = new TradingSdk(
           {
             chainId: SupportedChainId.GNOSIS_CHAIN,
@@ -75,7 +75,6 @@ describe('TradingSdk', () => {
             signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
           },
           { enableLogging: false, orderBookApi },
-          adapter,
         )
 
         await sdk.getQuote(defaultOrderParams)
@@ -90,7 +89,7 @@ describe('TradingSdk', () => {
 
       for (const adapterName of adapterNames) {
         const adapter = adapters[adapterName] as AbstractProviderAdapter
-        // setGlobalAdapter(adapter)
+        setGlobalAdapter(adapter)
         const sdk = new TradingSdk(
           {
             chainId: SupportedChainId.GNOSIS_CHAIN,
@@ -98,7 +97,6 @@ describe('TradingSdk', () => {
             signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
           },
           { enableLogging: true, orderBookApi },
-          adapter,
         )
 
         await sdk.getQuote(defaultOrderParams)

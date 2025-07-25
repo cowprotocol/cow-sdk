@@ -162,6 +162,30 @@ export class EthersV5Utils implements AdapterUtils {
     return iface.encodeFunctionData(functionName, args)
   }
 
+  decodeFunctionData(
+    abi: Array<{ name: string; inputs: Array<{ type: string }> }>,
+    functionName: string,
+    data: string,
+  ): any {
+    const iface = new ethers.utils.Interface(abi)
+    const result = iface.decodeFunctionData(functionName, data)
+
+    // Convert to array with named properties for consistency across adapters
+    const args = Array.from(result)
+
+    // Add named properties based on the function ABI inputs
+    const functionAbi = iface.getFunction(functionName)
+    if (functionAbi && functionAbi.inputs) {
+      functionAbi.inputs.forEach((input: any, index) => {
+        if (input.name && args[index] !== undefined) {
+          ;(args as any)[input.name] = args[index]
+        }
+      })
+    }
+
+    return args
+  }
+
   toNumber(value: BigNumberish): number {
     return ethers.BigNumber.from(value).toNumber()
   }

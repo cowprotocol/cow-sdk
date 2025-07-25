@@ -79,10 +79,12 @@ export class CowShedSdk {
   protected hooksCache = new Map<SupportedChainId, CowShedHooks>()
 
   constructor(
-    adapter: AbstractProviderAdapter,
+    adapter?: AbstractProviderAdapter,
     private factoryOptions?: ICoWShedOptions,
   ) {
-    setGlobalAdapter(adapter)
+    if (adapter) {
+      setGlobalAdapter(adapter)
+    }
   }
 
   getCowShedAccount(chainId: SupportedChainId, ownerAddress: string): string {
@@ -128,7 +130,7 @@ export class CowShedSdk {
       value: BigInt(0),
     }
 
-    const gasEstimate = await signer.estimateGas(factoryCall).catch((error) => {
+    const gasEstimate = await signer.estimateGas(factoryCall).catch((error: any) => {
       const factoryCallString = JSON.stringify(factoryCall, jsonWithBigintReplacer, 2)
       const errorMessage = `Error estimating gas for the cow-shed call: ${factoryCallString}. Review the factory call`
 
