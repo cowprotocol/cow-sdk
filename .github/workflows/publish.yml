@@ -37,7 +37,7 @@ jobs:
       - name: Build packages
         run: pnpm build
 
-      - name: Publish packages
-        run: bash workflows/publish.sh
+      - name: Publish all packages
+        run: bash workflows/publish-monorepo.sh
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
