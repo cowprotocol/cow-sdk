@@ -16,7 +16,7 @@ import {
   solidityKeccak256,
   splitSignature,
 } from 'ethers/lib/utils'
-import { COW_SHED_FACTORY, COW_SHED_IMPLEMENTATION, COW_SHED_VERSION } from '../../common'
+import { COW_SHED_FACTORY, COW_SHED_IMPLEMENTATION, COW_SHED_LATEST_VERSION, CoWShedVersion } from '../../common'
 import { getCoWShedFactoryInterface } from './utils'
 
 import { ICoWShedCall, ICoWShedOptions } from '../types'
@@ -40,11 +40,10 @@ export const COW_SHED_712_TYPES = {
 }
 
 export class CowShedHooks {
-  public readonly version = COW_SHED_VERSION
-
   constructor(
     private chainId: SupportedChainId,
     private customOptions?: ICoWShedOptions,
+    public readonly version: CoWShedVersion = COW_SHED_LATEST_VERSION,
   ) {}
 
   proxyOf(user: string) {
@@ -107,11 +106,11 @@ export class CowShedHooks {
   }
 
   getFactoryAddress() {
-    return this.customOptions?.factoryAddress ?? COW_SHED_FACTORY
+    return this.customOptions?.factoryAddress ?? COW_SHED_FACTORY[this.version]
   }
 
   getImplementationAddress() {
-    return this.customOptions?.implementationAddress ?? COW_SHED_IMPLEMENTATION
+    return this.customOptions?.implementationAddress ?? COW_SHED_IMPLEMENTATION[this.version]
   }
 }
 
