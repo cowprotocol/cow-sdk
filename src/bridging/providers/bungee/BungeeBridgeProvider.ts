@@ -1,6 +1,4 @@
-import { Signer } from 'ethers'
 import { latest as latestAppData } from '@cowprotocol/app-data'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import { OrderKind } from '@cowprotocol/contracts'
 
 import {
@@ -217,11 +215,6 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     // This will need more context and thus changes to either the hook calldata or the function interface
     // Can revisit once the approach is decided
     throw new Error('Not implemented')
-  }
-
-  async getBridgingId(_orderUid: string, _settlementTx: string, _logIndex: number): Promise<string> {
-    // order uid itself can be used as bridging id on Bungee
-    return _orderUid
   }
 
   getExplorerUrl(bridgingId: string): string {
