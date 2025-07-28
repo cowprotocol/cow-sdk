@@ -30,6 +30,8 @@ import { getSigner } from '../../../common/utils/wallet'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 import { getBridgingStatusFromEvents } from './getBridgingStatusFromEvents'
+import type { JsonRpcProvider } from '@ethersproject/providers'
+import type { Signer } from 'ethers'
 
 export const BUNGEE_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/bungee`
 export const BUNGEE_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
