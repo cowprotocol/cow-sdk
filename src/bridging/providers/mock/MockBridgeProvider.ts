@@ -208,8 +208,15 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
     }
   }
 
-  async getBridgingParams(_chainId: ChainId, _orderUid: string, _txHash: string): Promise<BridgingDepositParams> {
-    return BRIDGING_PARAMS
+  async getBridgingParams(
+    _chainId: ChainId,
+    _orderUid: string,
+    _txHash: string,
+  ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult }> {
+    return {
+      params: BRIDGING_PARAMS,
+      status: await this.getStatus(''),
+    }
   }
 
   getExplorerUrl(bridgingId: string): string {

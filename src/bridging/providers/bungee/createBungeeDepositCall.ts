@@ -1,115 +1,77 @@
-import { WeirollCommandFlags, createWeirollContract, createWeirollDelegateCall } from '../../../weiroll'
-import { Contract as WeirollContract } from '@weiroll/weiroll.js'
-import { Contract as EthersContract } from '@ethersproject/contracts'
+import { ethers } from 'ethers'
 import { ETH_ADDRESS, EvmCall } from '../../../common'
-import { CowShedSdk } from '../../../cow-shed'
 import { BungeeQuoteResult } from './BungeeBridgeProvider'
 import { QuoteBridgeRequest } from '../../types'
-import { BUNGEE_COWSWAP_LIB_ABI, ERC20_ABI, SOCKET_GATEWAY_ABI } from './abi'
-import { decodeAmountsBungeeTxData, decodeBungeeBridgeTxData } from './util'
-import { TargetChainId } from '../../../chains'
-import { BungeeCowswapLibAddresses } from './const/contracts'
 import { BungeeTxDataBytesIndices } from './const/misc'
 import { BungeeBridge } from './types'
-
-function getSellTokenContract(sellTokenAddress: string): WeirollContract {
-  return createWeirollContract(new EthersContract(sellTokenAddress, ERC20_ABI), WeirollCommandFlags.CALL)
-}
-
-function getBungeeCowswapLibContract(sourceChainId: TargetChainId): WeirollContract {
-  const bungeeCowswapLibContractAddress = BungeeCowswapLibAddresses[sourceChainId]
-  if (!bungeeCowswapLibContractAddress) {
-    throw new Error('BungeeCowswapLib contract not found')
-  }
-  return createWeirollContract(
-    new EthersContract(bungeeCowswapLibContractAddress, BUNGEE_COWSWAP_LIB_ABI),
-    WeirollCommandFlags.CALL,
-  )
-}
-
-function getSocketGatewayContract(socketGatewayAddress: string): WeirollContract {
-  return createWeirollContract(new EthersContract(socketGatewayAddress, SOCKET_GATEWAY_ABI), WeirollCommandFlags.CALL)
-}
+import { BUNGEE_APPROVE_AND_BRIDGE_V1_ABI } from './abi'
+import { BungeeApproveAndBridgeV1Addresses } from './const/contracts'
+import { decodeBungeeBridgeTxData } from './util'
 
 export async function createBungeeDepositCall(params: {
   request: QuoteBridgeRequest
   quote: BungeeQuoteResult
-  cowShedSdk: CowShedSdk
 }): Promise<EvmCall> {
-  const { request, quote, cowShedSdk } = params
+  const { request, quote } = params
   const { bungeeQuote, buildTx } = quote
-  const { routeId, encodedFunctionData } = decodeBungeeBridgeTxData(buildTx.txData.data)
 
-  // get cowShed account address
-  const ownerAddress = request.owner ?? request.account
-  const cowShedAccount = cowShedSdk.getCowShedAccount(request.sellTokenChainId, ownerAddress)
+  const bridge = bungeeQuote.routeBridge
+  const { functionSelector: _functionSelector } = decodeBungeeBridgeTxData(buildTx.txData.data)
+  const functionSelector = _functionSelector.toLowerCase()
 
-  // prep all weiroll contracts
-  const SellTokenContract = getSellTokenContract(request.sellTokenAddress)
-  const BungeeCowswapLibContract = getBungeeCowswapLibContract(request.sellTokenChainId)
-  const socketGatewayContract = getSocketGatewayContract(buildTx.txData.to)
+  // Prepare modifyCalldataParams for the bridge contract
+  // information required for modifying input amount and output amount
+  const inputAmountStartIndex = BungeeTxDataBytesIndices[bridge][functionSelector].inputAmount.bytes_startIndex
+  let modifyOutputAmount = false
+  let outputAmountStartIndex = 0
+  const nativeTokenExtraFee = 0n // neither across nor cctp requires additional native token transfer for now
+  // modify output amount for across bridge
+  if (bridge === BungeeBridge.Across) {
+    modifyOutputAmount = true
+    outputAmountStartIndex = BungeeTxDataBytesIndices[bridge][functionSelector].outputAmount.bytes_startIndex
+  }
+  // Encode extra data as bytes
+  const modifyCalldataParams = ethers.utils.defaultAbiCoder.encode(
+    ['uint256', 'bool', 'uint256'],
+    [inputAmountStartIndex, modifyOutputAmount, outputAmountStartIndex],
+  )
+  // Concatenate calldata + modifyCalldataParams
+  let data = buildTx.txData.data
 
-  // Check & set allowance for SocketGateway to transfer bridged tokens
-  // set allowance if not native token
-  let setAllowance = false
-  if (!(request.sellTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase())) {
-    setAllowance = true
+  if (data.startsWith('0x')) data = data.slice(2)
+  let extra = modifyCalldataParams
+  if (extra.startsWith('0x')) extra = extra.slice(2)
+  const fullData = '0x' + data + extra
+
+  // use the input amount from
+  // but will later be modified by BungeeApproveAndBridge
+  const bridgeInputAmount = bungeeQuote.input.amount
+  // function approveAndBridge(IERC20 token, uint256 minAmount, address receiver, bytes calldata data) external {
+  const iface = new ethers.utils.Interface(BUNGEE_APPROVE_AND_BRIDGE_V1_ABI)
+  const callData = iface.encodeFunctionData('approveAndBridge', [
+    // @note sellTokenAddress here will be the intermediate token in usage. the naming might be a bit misleading
+    //       see getQuoteWithBridge.ts::getBaseBridgeQuoteRequest()
+    request.sellTokenAddress, // token
+    bridgeInputAmount, // minAmount
+    nativeTokenExtraFee, // nativeTokenExtraFee
+    fullData, // data
+  ])
+
+  // If native token, set value; otherwise, value is 0
+  // use the output amount from the quote
+  // but will later be modified by BungeeApproveAndBridge
+  const value = request.sellTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase() ? BigInt(bridgeInputAmount) : 0n
+  const finalValue = value + nativeTokenExtraFee
+  // @note sellTokenChainId here will be the intermediate token chainId. the naming might be a bit misleading
+  //       see getQuoteWithBridge.ts::getBaseBridgeQuoteRequest()
+  const to = BungeeApproveAndBridgeV1Addresses[request.sellTokenChainId]
+  if (!to) {
+    throw new Error('BungeeApproveAndBridgeV1 not found')
   }
 
-  const bridgeDepositCall = createWeirollDelegateCall((planner) => {
-    // add weiroll action to replace input amount with new input amount
-    const sourceAmountIncludingSurplus = planner.add(SellTokenContract.balanceOf(cowShedAccount))
-
-    // add weiroll action to approve token to socket gateway
-    if (setAllowance) {
-      planner.add(SellTokenContract.approve(buildTx.approvalData.spenderAddress, sourceAmountIncludingSurplus))
-    }
-
-    const encodedFunctionDataWithNewInputAmount = planner.add(
-      BungeeCowswapLibContract.replaceUint256(
-        encodedFunctionData, // original encoded function data
-        BungeeTxDataBytesIndices[bungeeQuote.routeBridge].inputAmount.bytes_startIndex, // start index of input amount
-        sourceAmountIncludingSurplus, // new input amount
-      ),
-    )
-    let finalEncodedFunctionData = encodedFunctionDataWithNewInputAmount
-
-    // if bridge is across, update the output amount based on pctDiff of the new balance
-    if (bungeeQuote.routeBridge === BungeeBridge.Across) {
-      // decode current input & output amounts
-      const { inputAmountBigNumber, outputAmountBigNumber } = decodeAmountsBungeeTxData(
-        encodedFunctionData,
-        bungeeQuote.routeBridge,
-      )
-
-      // weiroll: increase output amount by pctDiff
-      const newOutputAmount = planner.add(
-        BungeeCowswapLibContract.applyPctDiff(
-          inputAmountBigNumber, // base
-          sourceAmountIncludingSurplus, // compare - new input amount
-          outputAmountBigNumber, // target
-        ),
-      )
-      // weiroll: replace output amount bytes with newOutputAmount
-      const encodedFunctionDataWithNewInputAndOutputAmount = planner.add(
-        BungeeCowswapLibContract.replaceUint256(
-          finalEncodedFunctionData, // original encoded function data
-          BungeeTxDataBytesIndices[bungeeQuote.routeBridge].outputAmount.bytes_startIndex, // start index of output amount
-          newOutputAmount, // new output amount
-        ),
-      )
-      finalEncodedFunctionData = encodedFunctionDataWithNewInputAndOutputAmount
-    }
-
-    // weiroll: execute route on socket gateway
-    if (request.sellTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase()) {
-      planner.add(
-        socketGatewayContract.executeRoute(routeId, finalEncodedFunctionData).withValue(sourceAmountIncludingSurplus),
-      )
-    } else {
-      planner.add(socketGatewayContract.executeRoute(routeId, finalEncodedFunctionData))
-    }
-  })
-
-  return bridgeDepositCall
+  return {
+    to: to,
+    data: callData,
+    value: finalValue,
+  }
 }

@@ -1,4 +1,4 @@
-import { EvmCall, SignerLike } from '../common'
+import { COW_SHED_LATEST_VERSION, CoWShedVersion, EvmCall, SignerLike } from '../common'
 import { SupportedChainId } from '../chains'
 import { CowShedHooks } from './contracts/CoWShedHooks'
 import { EcdsaSigningScheme, SigningScheme } from '@cowprotocol/contracts'
@@ -79,7 +79,10 @@ export interface CowShedSdkOptions {
 export class CowShedSdk {
   protected hooksCache = new Map<SupportedChainId, CowShedHooks>()
 
-  constructor(private options: CowShedSdkOptions = {}) {}
+  constructor(
+    private options: CowShedSdkOptions = {},
+    public readonly version: CoWShedVersion = COW_SHED_LATEST_VERSION,
+  ) {}
 
   getCowShedAccount(chainId: SupportedChainId, ownerAddress: string): string {
     const cowShedHooks = this.getCowShedHooks(chainId, this.options?.factoryOptions)
