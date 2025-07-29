@@ -12,6 +12,7 @@
   ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
+    "prebuild": "pnpm swagger:codegen",
     "lint": "eslint src/**/*.ts --quiet",
     "test": "jest",
     "test:coverage": "jest --coverage --json --outputFile=jest.results.json && cat ./coverage/lcov.info | coveralls",
