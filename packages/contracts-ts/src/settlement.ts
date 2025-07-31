@@ -368,11 +368,18 @@ export class TokenRegistry {
 }
 
 /**
- * A class for building calldata for a settlement.
+ * Encoder for CoW Protocol settlement transactions.
  *
- * The encoder ensures that token addresses are kept track of and performs
- * necessary computation in order to map each token addresses to IDs to
- * properly encode order parameters for trades.
+ * This class provides methods to encode trades, interactions, and order refunds
+ * for CoW Protocol settlements. It maintains state for tokens, trades, and
+ * interactions across different execution stages.
+ *
+ * @example
+ * ```typescript
+ * const encoder = new SettlementEncoder(domain, adapter)
+ * encoder.encodeTrade(order, signature)
+ * const settlement = encoder.encodedSettlement(prices)
+ * ```
  */
 export class SettlementEncoder {
   private readonly _tokens = new TokenRegistry()
