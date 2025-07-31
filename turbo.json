@@ -32,6 +32,10 @@
     },
     "swagger:codegen": {
       "cache": false
+    },
+    "typecheck": {
+      "outputs": [],
+      "cache": true
     }
   }
 }

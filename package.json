@@ -14,6 +14,7 @@
     "clean": "turbo run clean && rm -rf .turbo && rm -rf node_modules",
     "codegen": "turbo run swagger:codegen --filter=@cowprotocol/sdk-order-book",
     "swagger:codegen": "turbo run swagger:codegen --filter=@cowprotocol/sdk-order-book",
+    "typecheck": "turbo run typecheck",
     "prepublishOnly": "pnpm test && pnpm run lint"
   },
   "devDependencies": {
@@ -25,6 +26,7 @@
     "prettier": "^3.5.3",
     "tsup": "^7.2.0",
     "turbo": "latest",
+    "typescript": "^5.2.2",
     "typescript-eslint": "^8.32.1"
   },
   "packageManager": "pnpm@10.8.0",
