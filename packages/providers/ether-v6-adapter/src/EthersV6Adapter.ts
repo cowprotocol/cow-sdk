@@ -154,13 +154,13 @@ export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
     const providerToUse = provider || this._provider
     const contract = new Contract(address, abi, providerToUse)
 
-    if (!contract[functionName])
-      throw new CowError(`Error reading contract ${address}: function ${functionName} was not found in Abi`)
+    const fn = contract[functionName]
+    if (!fn) throw new CowError(`Error reading contract ${address}: function ${functionName} was not found in Abi`)
 
     if (args && args.length > 0) {
-      return contract[functionName](...args)
+      return fn(...args)
     }
-    return contract[functionName]()
+    return fn()
   }
 
   async getBlock(blockTag: string, provider?: Provider): Promise<Block> {

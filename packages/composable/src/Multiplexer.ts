@@ -81,7 +81,7 @@ export class Multiplexer {
     for (const orderKey in orders) {
       if (orders.hasOwnProperty(orderKey)) {
         const order = orders[orderKey]
-        if (!Multiplexer.orderTypeRegistry.hasOwnProperty(order.orderType)) {
+        if (order && !Multiplexer.orderTypeRegistry.hasOwnProperty(order.orderType)) {
           throw new Error(`Unknown order type: ${order.orderType}`)
         }
       }
@@ -125,7 +125,9 @@ export class Multiplexer {
 
             if (Multiplexer.orderTypeRegistry.hasOwnProperty(orderType)) {
               const OrderConstructor = Multiplexer.orderTypeRegistry[orderType]
-              orders[orderKey] = new OrderConstructor(orderData)
+              if (OrderConstructor) {
+                orders[orderKey] = new OrderConstructor(orderData)
+              }
             } else {
               throw new Error(`Unknown order type: ${orderType}`)
             }
@@ -214,7 +216,11 @@ export class Multiplexer {
     updater: (order: ConditionalOrder<unknown, unknown>, ctx?: string) => ConditionalOrder<unknown, unknown>,
   ): void {
     // copy the existing order and update it, given the existing context (if any)
-    const order = updater(this.orders[id], this.ctx)
+    const existingOrder = this.orders[id]
+    if (!existingOrder) {
+      throw new Error(`Order with id ${id} not found`)
+    }
+    const order = updater(existingOrder, this.ctx)
     // delete the existing order
     delete this.orders[id]
 
@@ -231,7 +237,11 @@ export class Multiplexer {
    * @returns A `ConditionalOrder` with the given `id`.
    */
   getById(id: string): ConditionalOrder<unknown, unknown> {
-    return this.orders[id]
+    const order = this.orders[id]
+    if (!order) {
+      throw new Error(`Order with id ${id} not found`)
+    }
+    return order
   }
 
   /**
@@ -240,7 +250,15 @@ export class Multiplexer {
    * @returns A `ConditionalOrder` at the given index.
    */
   getByIndex(i: number): ConditionalOrder<unknown, unknown> {
-    return this.orders[this.orderIds[i]]
+    const orderId = this.orderIds[i]
+    if (!orderId) {
+      throw new Error(`Order with index ${i} not found`)
+    }
+    const order = this.orders[orderId]
+    if (!order) {
+      throw new Error(`Order with id ${orderId} not found`)
+    }
+    return order
   }
 
   /**
@@ -418,7 +436,7 @@ export class Multiplexer {
         }
       })
       .reduce((acc: ProofWithParams[], x) => {
-        if (x) {
+        if (x && x.value[0] && x.value[1] && x.value[2]) {
           const p: ConditionalOrderParams = {
             handler: x.value[0],
             salt: x.value[1],

@@ -287,7 +287,7 @@ class BaseContract {
         if (!uniqueNames[name]) {
           uniqueNames[name] = []
         }
-        uniqueNames[name].push(signature)
+        uniqueNames[name]!.push(signature)
       }
 
       if ((this as Contract)[signature] == null) {
