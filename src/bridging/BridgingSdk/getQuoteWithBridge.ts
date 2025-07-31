@@ -180,7 +180,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
     swap: result.swapResult,
     bridge: result.bridgeResult,
     async postSwapOrderFromQuote(advancedSettings?: SwapAdvancedSettings, signingStepManager?: SigningStepManager) {
-      signingStepManager?.beforeBridgingSign?.()
+      await signingStepManager?.beforeBridgingSign?.()
 
       // Sign the hooks with the real signer
       const { swapResult } = await signHooksAndSetSwapResult(signer, hookEstimatedGasLimit, advancedSettings).catch(
@@ -191,7 +191,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
         },
       )
 
-      signingStepManager?.afterBridgingSign?.()
+      await signingStepManager?.afterBridgingSign?.()
 
       const quoteResults: QuoteResultsWithSigner = {
         result: {
@@ -205,7 +205,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
         orderBookApi,
       }
 
-      signingStepManager?.beforeOrderSign?.()
+      await signingStepManager?.beforeOrderSign?.()
 
       return postSwapOrderFromQuote(quoteResults, {
         ...advancedSettings,
@@ -220,8 +220,8 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
           signingStepManager?.onOrderSignError?.()
           throw error
         })
-        .then((result) => {
-          signingStepManager?.afterOrderSign?.()
+        .then(async (result) => {
+          await signingStepManager?.afterOrderSign?.()
 
           return result
         })

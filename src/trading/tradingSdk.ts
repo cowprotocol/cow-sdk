@@ -49,8 +49,11 @@ export class TradingSdk {
 
     return {
       quoteResults: quoteResults.result,
-      postSwapOrderFromQuote: (advancedSettings?: SwapAdvancedSettings, signingStepManager?: SigningStepManager) => {
-        signingStepManager?.beforeOrderSign?.()
+      postSwapOrderFromQuote: async (
+        advancedSettings?: SwapAdvancedSettings,
+        signingStepManager?: SigningStepManager,
+      ) => {
+        await signingStepManager?.beforeOrderSign?.()
 
         return postSwapOrderFromQuote(
           {
