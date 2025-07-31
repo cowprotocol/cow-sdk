@@ -1,3 +1,7 @@
+<p align="center">
+  <img width="400" src="https://github.com/cowprotocol/cow-sdk/raw/main/docs/images/CoW.png" />
+</p>
+
 # Cow Shed SDK
 
 The Cow Shed SDK is a TypeScript library that provides a set of functions to interact with the [Cow Shed contract](https://github.com/cowdao-grants/cow-shed).
@@ -53,7 +57,8 @@ const preAuthorizedCall = await cowShedSdk.signCalls({
 const { signedMulticall, gasLimit, cowShedAccount } = preAuthorizedCall
 const { to, data, value } = signedMulticall
 
-// Execute the transaction using any wallet. The calldata has been pre-authed, so you don't need any special permissions to send this transaction
+// Execute the transaction using any wallet. The calldata has been pre-authed, so you don't need any
+// special permissions to send this transaction
 let anotherWallet = new ethers.Wallet('<another-private-key>')
 const tx = await anotherWallet.sendTransaction({
   to,

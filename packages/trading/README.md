@@ -1,29 +1,40 @@
+<p align="center">
+  <img width="400" src="https://github.com/cowprotocol/cow-sdk/raw/main/docs/images/CoW.png" />
+</p>
+
 # Trading SDK
 
 CoW Protocol is intent based, decentralized trading protocol that allows users to trade ERC-20 tokens.
 This SDK makes it easier to interact with CoW Protocol by handling order parameters, calculating amounts, and signing orders.
 
-### Basic Trading Flow
+## Basic Trading Flow
 
 1. 🔎 Get a quote (price) for a trade
 2. ✍️ Sign the order
 3. ✅ Post the order to the order-book
 
-The CoW Protocol provides very flexible and powerful trading capabilities.
-However, this flexibility comes with a cost: the complexity of the protocol.
-This SDK serves to simplify the interaction with the CoW Protocol.
-It will put all necessary parameters to your order, calculates proper amounts, and signs the order.
+The CoW Protocol provides very flexible and powerful trading capabilities. However, this flexibility comes with a cost: the complexity of the protocol. This SDK serves to simplify the interaction with the CoW Protocol. It will put all necessary parameters to your order, calculates proper amounts, and signs the order.
 
-### Why Use This SDK?
+## Why Use This SDK?
 
-- [App-data](https://docs.cow.fi/cow-protocol/reference/sdks/app-data) (order metadata)
-- [Order signing](https://docs.cow.fi/cow-protocol/reference/sdks/cow-sdk/classes/OrderSigningUtils)
-- Network costs, fees, and slippage
-- Order parameters (validity, partial fills, etc.)
-- Quote API settings (price quality, signing scheme, etc.)
-- Order types (market, limit, on-chain trades, etc.)
+- **App-data** - Order metadata handling
+- **Order signing** - EIP-712 signature management
+- **Network costs** - Automatic fee and slippage calculations
+- **Order parameters** - Validity, partial fills, etc.
+- **Quote API settings** - Price quality, signing scheme, etc.
+- **Order types** - Market, limit, on-chain trades, etc.
 
-> See the [examples](../../examples/vanilla/src/index.ts) for usage.
+> See the [examples](https://github.com/cowprotocol/cow-sdk/tree/main/examples) for usage.
+
+## Installation
+
+```bash
+npm install @cowprotocol/sdk-trading
+or
+pnpm add @cowprotocol/sdk-trading
+or
+yarn add @cowprotocol/sdk-trading
+```
 
 ## TradingSdk Functions
 
@@ -43,32 +54,106 @@ Special cases:
 
 You need:
 
-- `chainId` - Supported chain ID ([see list](../common/chains.ts)).
+- `chainId` - Supported chain ID ([see list](https://docs.cow.fi/cow-protocol/reference/sdks/core-utilities/sdk-config)).
 - `appCode` - Unique app identifier for tracking orders.
 - `signer` - Private key, ethers signer, or `Eip1193` provider (optional - will use global adapter's signer if not provided).
 
-#### Example
+## Usage
+
+### Individual package usage
 
 ```typescript
-import { SupportedChainId, TradingSdk } from '@cowprotocol/cow-sdk'
+import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/sdk-trading'
 import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
 import { JsonRpcProvider, Wallet } from 'ethers'
 
-// Proper adapter initialization
+// Configure the adapter
 const provider = new JsonRpcProvider('YOUR_RPC_URL')
 const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
 const adapter = new EthersV6Adapter({ provider, signer: wallet })
 
-const sdk = new TradingSdk({
+// Initialize the SDK
+const sdk = new TradingSdk(
+  {
+    appCode: 'YOUR_APP_CODE',
+  },
+  {
+    chainId: SupportedChainId.SEPOLIA,
+  },
+  adapter, // Pass the adapter
+)
+
+// Define trade parameters
+const parameters: TradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000',
+}
+
+// Post the order
+const orderId = await sdk.postSwapOrder(parameters)
+console.log('Order created, id: ', orderId)
+```
+
+### Usage with Umbrella SDK
+
+```typescript
+import { CowSdk, SupportedChainId, OrderKind, TradeParameters } from '@cowprotocol/cow-sdk'
+import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
+import { JsonRpcProvider, Wallet } from 'ethers'
+
+// Configure the adapter
+const provider = new JsonRpcProvider('YOUR_RPC_URL')
+const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
+const adapter = new EthersV6Adapter({ provider, signer: wallet })
+
+// Initialize the unified SDK
+const sdk = new CowSdk({
   chainId: SupportedChainId.SEPOLIA,
-  appCode: '<YOUR_APP_CODE>',
-  signer: '<privateKeyOrEthersSigner>', // signer is optional - will use global adapter's signer if not provided
+  adapter,
+  tradingOptions: {
+    traderParams: {
+      appCode: 'YOUR_APP_CODE',
+    },
+    options: {
+      chainId: SupportedChainId.SEPOLIA,
+    },
+  },
 })
+
+// Define trade parameters
+const parameters: TradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000',
+}
+
+// Post the order
+const orderId = await sdk.trading.postSwapOrder(parameters)
+console.log('Order created, id: ', orderId)
+
+// Or you can just initialize the SDK and import the trading class in another file:
+// you don't necessarily need to use the trading from inside of CowSdk:
+//...
+const sdk = new CowSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  adapter,
+})
+// Other file:
+import { TradingSdk } from '@cowprotocol/cow-sdk'
+// parameters without passing the adapter. the adapter will be controlled by the umbrella
+const trading = TradingSdk(...)
 ```
 
 ### Options
 
-For detailed information about trading steps you can enable the SDK logging:
+For detailed information about trading steps you can enable the SDK logging and configure UTM tracking:
 
 ```typescript
 import { SupportedChainId, TradingSdk, TradingSdkOptions } from '@cowprotocol/cow-sdk'
@@ -80,7 +165,9 @@ const traderParams = {
 }
 
 const sdkOptions: TradingSdkOptions = {
-  enableLogging: true, // <--
+  enableLogging: true, // enables detailed logging of trading steps
+  utmContent: '🐮 moo-ving to defi 🐮', // custom UTM content for tracking
+  disableUtm: false, // set to true to disable UTM tracking completely
 }
 
 const sdk = new TradingSdk(traderParams, sdkOptions)
@@ -148,7 +235,7 @@ The parameters required are:
 - `buyTokenDecimals` - the buy token decimals
 - `amount` - the amount to sell/buy in atoms
 
-> When sell token is a blockchain native token (ETH for Ethereum), then order will be created as an on-chain transaction. See [postSellNativeCurrencyOrder](#postSellNativeCurrencyOrder)
+> When sell token is a blockchain native token (ETH for Ethereum), then order will be created as an on-chain transaction. See the `postSellNativeCurrencyOrder` method below for more details.
 
 #### Example
 
