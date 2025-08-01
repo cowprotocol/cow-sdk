@@ -15,7 +15,7 @@
     "codegen": "turbo run swagger:codegen --filter=@cowprotocol/sdk-order-book",
     "swagger:codegen": "turbo run swagger:codegen --filter=@cowprotocol/sdk-order-book",
     "typecheck": "turbo run typecheck",
-    "prepublishOnly": "pnpm test && pnpm run lint"
+    "prepublishOnly": "pnpm run typecheck && pnpm test && pnpm run lint"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
