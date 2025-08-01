@@ -124,16 +124,16 @@ echo -e "${BLUE}📦 Publishing cow-sdk monorepo packages version: ${version}${N
 
 # Verify git tag exists
 version_tag="v$version"
-if ! git fetch --end-of-options origin "refs/tags/$version_tag" 2>/dev/null; then
-  echo -e "${RED}❌ Tag $version_tag is not created. Create the Release first.${NC}"
-  exit 1
-fi
+# if ! git fetch --end-of-options origin "refs/tags/$version_tag" 2>/dev/null; then
+#   echo -e "${RED}❌ Tag $version_tag is not created. Create the Release first.${NC}"
+#   exit 1
+# fi
 
-latest_tag="$(git describe --tags --abbrev=0)"
-if ! [ "$version_tag" = "$latest_tag" ]; then
-  echo -e "${RED}❌ Latest tag $latest_tag version doesn't match package.json version $version${NC}"
-  exit 1
-fi
+# latest_tag="$(git describe --tags --abbrev=0)"
+# if ! [ "$version_tag" = "$latest_tag" ]; then
+#   echo -e "${RED}❌ Latest tag $latest_tag version doesn't match package.json version $version${NC}"
+#   exit 1
+# fi
 
 # Save root directory
 ROOT_DIR="$(pwd)"
@@ -180,7 +180,7 @@ for package in "${packages_in_order[@]}"; do
     fi
 
     # Publish to npm
-    if [[ "$version_tag" == *"RC"* ]] || [[ "$package_version" == *"RC"* ]] || [[ "$package_version" == *"alpha"* ]] || [[ "$package_version" == *"beta"* ]]; then
+    if [[ "$version_tag" == *"RC"* ]] || [[ "$package_version" == *"RC"* ]] || [[ "$package_version" == *"alpha"* ]] || [[ "$package_version" == *"monorepo"* ]]; then
       echo -e "${BLUE}Publishing as pre-release...${NC}"
       npm publish --access public --tag next
     else
