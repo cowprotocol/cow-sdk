@@ -18,10 +18,14 @@ import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { AbstractProviderAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 export type WithPartialTraderParams<T> = T & Partial<TraderParameters>
+export let utmContent: string | undefined = undefined
+export let disableUtm: boolean = false
 
 export interface TradingSdkOptions {
   enableLogging: boolean
   orderBookApi: OrderBookApi
+  utmContent?: string
+  disableUtm?: boolean
 }
 
 export class TradingSdk {
@@ -36,6 +40,8 @@ export class TradingSdk {
     if (adapter) {
       setGlobalAdapter(adapter)
     }
+    utmContent = options.utmContent
+    disableUtm = options.disableUtm || false
   }
 
   setTraderParams(params: Partial<TraderParameters>) {
@@ -90,6 +96,28 @@ export class TradingSdk {
     return postLimitOrder(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
   }
 
+  /**
+   * Posts a sell order for native currency (e.g., ETH) using the EthFlow contract.
+   * This method creates an on-chain transaction for selling native tokens.
+   *
+   * @param params - The trade parameters including token addresses and amounts
+   * @param advancedSettings - Optional advanced settings for the swap
+   * @returns Promise resolving to the order posting result with transaction hash and order ID
+   *
+   * @example
+   * ```typescript
+   * const parameters: TradeParameters = {
+   *   kind: OrderKind.SELL,
+   *   sellToken: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', // Native ETH
+   *   sellTokenDecimals: 18,
+   *   buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+   *   buyTokenDecimals: 18,
+   *   amount: '100000000000000000', // 0.1 ETH
+   * }
+   *
+   * const { orderId, txHash } = await sdk.postSellNativeCurrencyOrder(parameters)
+   * ```
+   */
   async postSellNativeCurrencyOrder(
     params: WithPartialTraderParams<TradeParameters>,
     advancedSettings?: SwapAdvancedSettings,

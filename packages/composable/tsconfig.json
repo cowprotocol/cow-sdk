@@ -1,9 +1,8 @@
 {
   "extends": "@cow-sdk/typescript-config/base.json",
   "compilerOptions": {
-    "outDir": "./dist",
-    "noUncheckedIndexedAccess": false
+    "outDir": "./dist"
   },
-  "include": ["src/**/*", "tests/setup.ts", "tests/*.spec.ts"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }

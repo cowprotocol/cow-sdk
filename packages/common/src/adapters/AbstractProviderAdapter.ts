@@ -27,6 +27,7 @@ export abstract class AbstractProviderAdapter<T extends AdapterTypes = AdapterTy
   public abstract IntChainIdTypedDataV4Signer: new (signer: any) => AbstractSigner
 
   public abstract signer: AbstractSigner
+  abstract signerOrNull(): AbstractSigner | null
 
   // Core functionality
   abstract getChainId(): Promise<number>

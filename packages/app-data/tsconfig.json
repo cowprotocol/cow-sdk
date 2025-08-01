@@ -3,8 +3,9 @@
   "compilerOptions": {
     "outDir": "./dist",
     "baseUrl": "src",
-    "types": ["jest"]
+    "types": ["jest"],
+    "skipLibCheck": true // Problem with node_modules/multiformats library
   },
-  "include": ["src/**/*", "setupTests.ts", "jest.config.ts", "**/*spec.ts"],
+  "include": ["src/**/*", "setupTests.ts", "**/*spec.ts"],
   "exclude": ["node_modules", "dist"]
 }

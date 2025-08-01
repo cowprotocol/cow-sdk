@@ -14,7 +14,10 @@
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "lint": "eslint src/**/*.ts",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
-    "test": "jest"
+    "test": "jest",
+    "test:coverage": "jest --coverage --json --outputFile=jest.results.json && cat ./coverage/lcov.info | coveralls",
+    "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@cowprotocol/sdk-app-data": "workspace:*",

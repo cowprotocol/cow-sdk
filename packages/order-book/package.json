@@ -12,10 +12,14 @@
   ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
+    "prebuild": "pnpm swagger:codegen",
     "lint": "eslint src/**/*.ts --quiet",
     "test": "jest",
+    "test:coverage": "jest --coverage --json --outputFile=jest.results.json && cat ./coverage/lcov.info | coveralls",
+    "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
     "swagger:codegen": "openapi --input https://raw.githubusercontent.com/cowprotocol/services/v2.291.0/crates/orderbook/openapi.yml --output src/generated --exportServices false --exportCore false",
-    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@cow-sdk/typescript-config": "workspace:*",

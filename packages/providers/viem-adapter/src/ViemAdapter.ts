@@ -122,6 +122,10 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
     return this._signerAdapter
   }
 
+  signerOrNull(): ViemSignerAdapter | null {
+    return this._signerAdapter || null
+  }
+
   setSigner(signer: Account | PrivateKey) {
     if (typeof signer === 'string') {
       const normalizedPrivateKey = normalizePrivateKey(signer)
