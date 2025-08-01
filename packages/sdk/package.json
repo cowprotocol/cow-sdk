@@ -22,6 +22,7 @@
     "postbuild": "cp package.json dist && pnpm copy-md-files",
     "copy-md-files": "npx cpx \"**/*.md\" dist",
     "lint": "eslint src/**/*.ts",
+    "typecheck": "tsc --noEmit",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
   "devDependencies": {

@@ -120,7 +120,7 @@ async function _signPayload(
 
     const regexErrorCheck = [METHOD_NOT_FOUND_ERROR_MSG_REGEX, RPC_REQUEST_FAILED_REGEX].some((regex) =>
       // for example 1Inch error doesn't have e.message so we will check the output of toString()
-      [e.message, e.toString()].some((msg) => regex.test(msg)),
+      [(e as Error).message, (e as Error).toString()].some((msg) => regex.test(msg)),
     )
 
     if (e.code === METHOD_NOT_FOUND_ERROR_CODE || regexErrorCheck) {
@@ -137,7 +137,7 @@ async function _signPayload(
         default:
           throw e
       }
-    } else if (METAMASK_STRING_CHAINID_REGEX.test(e.message)) {
+    } else if (METAMASK_STRING_CHAINID_REGEX.test((e as Error).message)) {
       // Metamask now enforces chainId to be an integer
       return _signPayload(payload, signFn, signer, 'int_v4')
     } else if (e.code === METAMASK_SIGNATURE_ERROR_CODE) {
@@ -147,10 +147,10 @@ async function _signPayload(
       // So, when that specific error occurs, we know this is a problem with MM + HW.
       // Then, we fallback to ETHSIGN.
       return _signPayload(payload, signFn, signer, 'eth_sign')
-    } else if (V4_ERROR_MSG_REGEX.test(e.message)) {
+    } else if (V4_ERROR_MSG_REGEX.test((e as Error).message)) {
       // Failed with `v4`, and the wallet does not set the proper error code
       return _signPayload(payload, signFn, signer, 'v3')
-    } else if (V3_ERROR_MSG_REGEX.test(e.message)) {
+    } else if (V3_ERROR_MSG_REGEX.test((e as Error).message)) {
       // Failed with `v3`, and the wallet does not set the proper error code
       return _signPayload(payload, signFn, signer, 'eth_sign')
     } else {

@@ -18,11 +18,11 @@ export const DEPLOYER_CONTRACT = '0x4e59b44847b379578588920ca78fbf26c0b4956c'
 /**
  * Dictionary containing all deployed contract names.
  */
-export const CONTRACT_NAMES = {
-  authenticator: 'GPv2AllowListAuthentication',
-  settlement: 'GPv2Settlement',
-  tradeSimulator: 'GPv2TradeSimulator',
-} as const
+export enum CONTRACT_NAMES {
+  authenticator = 'GPv2AllowListAuthentication',
+  settlement = 'GPv2Settlement',
+  tradeSimulator = 'GPv2TradeSimulator',
+}
 
 /**
  * The name of a deployed contract.

@@ -23,7 +23,7 @@ It will put all necessary parameters to your order, calculates proper amounts, a
 - Quote API settings (price quality, signing scheme, etc.)
 - Order types (market, limit, on-chain trades, etc.)
 
-> See the [examples](../../examples/vanilla/src/index.ts) for usage.
+> See the [examples](https://github.com/cowprotocol/cow-sdk/tree/main/examples) for usage.
 
 ## TradingSdk Functions
 
@@ -43,7 +43,7 @@ Special cases:
 
 You need:
 
-- `chainId` - Supported chain ID ([see list](../common/chains.ts)).
+- `chainId` - Supported chain ID ([see list](https://docs.cow.fi/cow-protocol/reference/sdks/core-utilities/sdk-config)).
 - `signer` - Private key, ethers signer, or `Eip1193` provider.
 - `appCode` - Unique app identifier for tracking orders.
 
@@ -141,7 +141,7 @@ The parameters required are:
 - `buyTokenDecimals` - the buy token decimals
 - `amount` - the amount to sell/buy in atoms
 
-> When sell token is a blockchain native token (ETH for Ethereum), then order will be created as an on-chain transaction. See [postSellNativeCurrencyOrder](#postSellNativeCurrencyOrder)
+> When sell token is a blockchain native token (ETH for Ethereum), then order will be created as an on-chain transaction. See the `postSellNativeCurrencyOrder` method below for more details.
 
 #### Example
 
