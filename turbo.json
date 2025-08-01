@@ -13,12 +13,29 @@
       "dependsOn": ["build"],
       "outputs": []
     },
+    "test:coverage": {
+      "outputs": ["coverage/**", "jest.results.json"],
+      "dependsOn": ["build"],
+      "cache": true
+    },
+    "test:coverage:html": {
+      "outputs": ["coverage/**"],
+      "dependsOn": ["build"],
+      "cache": true
+    },
     "dev": {
       "cache": false,
       "persistent": true
     },
     "clean": {
       "cache": false
+    },
+    "swagger:codegen": {
+      "cache": false
+    },
+    "typecheck": {
+      "outputs": [],
+      "cache": true
     }
   }
 }

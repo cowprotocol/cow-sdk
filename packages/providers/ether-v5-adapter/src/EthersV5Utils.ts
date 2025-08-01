@@ -1,5 +1,6 @@
 import { AdapterUtils, Address } from '@cowprotocol/sdk-common'
 import { BigNumberish, BytesLike, ethers, TypedDataDomain, TypedDataField } from 'ethers'
+import { ParamType } from 'ethers/lib/utils'
 
 type Abi = ConstructorParameters<typeof ethers.utils.Interface>[0]
 
@@ -161,6 +162,30 @@ export class EthersV5Utils implements AdapterUtils {
     return iface.encodeFunctionData(functionName, args)
   }
 
+  decodeFunctionData(
+    abi: Array<{ name: string; inputs: Array<{ type: string }> }>,
+    functionName: string,
+    data: string,
+  ): any {
+    const iface = new ethers.utils.Interface(abi)
+    const result = iface.decodeFunctionData(functionName, data)
+
+    // Convert to array with named properties for consistency across adapters
+    const args = Array.from(result)
+
+    // Add named properties based on the function ABI inputs
+    const functionAbi = iface.getFunction(functionName)
+    if (functionAbi && functionAbi.inputs) {
+      functionAbi.inputs.forEach((input: any, index) => {
+        if (input.name && args[index] !== undefined) {
+          ;(args as any)[input.name] = args[index]
+        }
+      })
+    }
+
+    return args
+  }
+
   toNumber(value: BigNumberish): number {
     return ethers.BigNumber.from(value).toNumber()
   }
@@ -245,5 +270,17 @@ export class EthersV5Utils implements AdapterUtils {
 
   parseUnits(value: string, decimals: number): bigint {
     return ethers.utils.parseUnits(value, decimals).toBigInt()
+  }
+
+  getParamType(type: string): ParamType {
+    return ethers.utils.ParamType.from(type)
+  }
+
+  getParamTypeFromString(type: string): ParamType {
+    return ethers.utils.ParamType.fromString(type)
+  }
+
+  isInterface(value: any): boolean {
+    return ethers.utils.Interface.isInterface(value)
   }
 }

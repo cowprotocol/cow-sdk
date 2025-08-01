@@ -1,8 +1,11 @@
 import { AbstractSigner } from './AbstractSigner'
 import type {
+  Abi,
   AdapterTypes,
   AdapterUtils,
+  Address,
   Block,
+  GenericContract,
   PrivateKey,
   ReadContractParams,
   Signer,
@@ -24,6 +27,7 @@ export abstract class AbstractProviderAdapter<T extends AdapterTypes = AdapterTy
   public abstract IntChainIdTypedDataV4Signer: new (signer: any) => AbstractSigner
 
   public abstract signer: AbstractSigner
+  abstract signerOrNull(): AbstractSigner | null
 
   // Core functionality
   abstract getChainId(): Promise<number>
@@ -36,4 +40,5 @@ export abstract class AbstractProviderAdapter<T extends AdapterTypes = AdapterTy
   abstract readContract(params: ReadContractParams, provider?: T['Provider']): Promise<unknown>
   abstract getBlock(blockTag: string, provider?: T['Provider']): Promise<Block>
   abstract setSigner(signer: Signer | PrivateKey): void
+  abstract getContract(address: Address, abi: Abi): GenericContract
 }

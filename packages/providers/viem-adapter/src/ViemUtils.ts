@@ -1,4 +1,4 @@
-import { AdapterUtils } from '@cowprotocol/sdk-common'
+import { AdapterUtils, CowError } from '@cowprotocol/sdk-common'
 import {
   encodeDeployData,
   Abi,
@@ -21,6 +21,7 @@ import {
   slice,
   parseAbi,
   encodeFunctionData,
+  decodeFunctionData,
   recoverMessageAddress,
   recoverTypedDataAddress,
   toFunctionSelector,
@@ -32,7 +33,10 @@ import {
   isHex,
   AbiParameter,
   parseUnits,
+  sliceHex,
 } from 'viem'
+import { ViemInterfaceWrapper } from './ViemInterfaceWrapper'
+import { ViemParamType } from './ViemParamtype'
 
 export class ViemUtils implements AdapterUtils {
   toUtf8Bytes(text: string): Uint8Array {
@@ -54,8 +58,32 @@ export class ViemUtils implements AdapterUtils {
     })
   }
 
-  hexConcat(items: ReadonlyArray<Hex>): string {
-    return concat(items)
+  hexConcat(items: ReadonlyArray<Hex | number[]>): string {
+    // Convert  every item to Uint8Array
+    const normalized = items.map((item) => {
+      if (item instanceof Uint8Array) return item
+      if (Array.isArray(item)) return new Uint8Array(item)
+      if (typeof item === 'string') {
+        // Convert string to Uint8Array
+        const hex = item.startsWith('0x') ? item.slice(2) : item
+        const matches = hex.length ? hex.match(/.{1,2}/g) : null
+        const bytes = matches ? matches.map((b) => parseInt(b, 16)) : []
+        return new Uint8Array(bytes)
+      }
+      // For other types, convert to string first
+      const str = String(item)
+      const hex = str.startsWith('0x') ? str.slice(2) : str
+      const matches = hex.length ? hex.match(/.{1,2}/g) : null
+      const bytes = matches ? matches.map((b) => parseInt(b, 16)) : []
+      return new Uint8Array(bytes)
+    })
+    normalized.forEach((x, i) => {
+      if (!(x instanceof Uint8Array)) {
+        throw new CowError(`hexConcat: position ${i} is not a Uint8Array: ${typeof x}`)
+      }
+    })
+    const result = concat(normalized as Uint8Array[])
+    return this.bytesToHex(result)
   }
 
   formatBytes32String(text: string): string {
@@ -149,7 +177,7 @@ export class ViemUtils implements AdapterUtils {
   }
 
   hexDataSlice(data: `0x${string}`, offset: number, endOffset?: number): `0x${string}` {
-    return slice(data, offset, endOffset) as `0x${string}`
+    return sliceHex(data, offset, endOffset)
   }
 
   joinSignature(signature: { r: string; s: string; v: number }): string {
@@ -228,6 +256,38 @@ export class ViemUtils implements AdapterUtils {
     })
   }
 
+  decodeFunctionData(
+    abi: Array<{ name: string; inputs: Array<{ type: string }>; type: string }>,
+    functionName: string,
+    data: string,
+  ): any {
+    const functionAbi = abi.find((item) => item.type === 'function' && item.name === functionName)
+    if (!functionAbi) {
+      throw new Error(`Function ${functionName} not found in ABI`)
+    }
+
+    // Use decodeFunctionData directly with the function ABI
+    const result = decodeFunctionData({
+      abi: [functionAbi],
+      data: data as `0x${string}`,
+    })
+
+    // Convert Viem result to match Ethers V5/V6 format
+    // Viem returns { args: [...] }, we need to make it array-like with named properties
+    const args = Array.from(result.args || [])
+
+    // Add named properties based on the function ABI inputs
+    if (functionAbi.inputs && functionAbi.inputs.length > 0) {
+      functionAbi.inputs.forEach((input: any, index) => {
+        if (input.name) {
+          ;(args as any)[input.name] = args[index]
+        }
+      })
+    }
+
+    return args
+  }
+
   toNumber(value: bigint): number {
     return Number(value)
   }
@@ -239,8 +299,8 @@ export class ViemUtils implements AdapterUtils {
     return keccak256(encoded)
   }
 
-  createInterface(abi: string[]) {
-    return parseAbi(abi)
+  createInterface(abi: string[] | any): ViemInterfaceWrapper {
+    return new ViemInterfaceWrapper(abi)
   }
 
   hashDomain(domain: TypedDataDomain): string {
@@ -387,5 +447,25 @@ export class ViemUtils implements AdapterUtils {
 
   parseUnits(value: string, decimals: number): bigint {
     return parseUnits(value, decimals)
+  }
+
+  getParamType(type: string): ViemParamType {
+    return new ViemParamType(type)
+  }
+  getParamTypeFromString(type: string): ViemParamType {
+    return new ViemParamType(type)
+  }
+
+  isInterface(value: any): boolean {
+    if (
+      value &&
+      typeof value === 'object' &&
+      typeof value.functions === 'object' &&
+      typeof value.getSighash === 'function' &&
+      Array.isArray(value.fragments)
+    ) {
+      return true
+    }
+    return false
   }
 }

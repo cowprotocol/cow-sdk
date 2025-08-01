@@ -18,6 +18,7 @@ import {
   TransactionParams,
   PrivateKey,
   CowError,
+  GenericContract,
 } from '@cowprotocol/sdk-common'
 import { EthersV6Utils } from './EthersV6Utils'
 import {
@@ -97,6 +98,10 @@ export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
     return this._signerAdapter
   }
 
+  signerOrNull(): EthersV6SignerAdapter | null {
+    return this._signerAdapter || null
+  }
+
   setSigner(signer: Signer | PrivateKey) {
     this._signerAdapter = this.createSigner(signer)
   }
@@ -149,13 +154,13 @@ export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
     const providerToUse = provider || this._provider
     const contract = new Contract(address, abi, providerToUse)
 
-    if (!contract[functionName])
-      throw new Error(`Error reading contract ${address}: function ${functionName} was not found in Abi`)
+    const fn = contract[functionName]
+    if (!fn) throw new CowError(`Error reading contract ${address}: function ${functionName} was not found in Abi`)
 
     if (args && args.length > 0) {
-      return contract[functionName](...args)
+      return fn(...args)
     }
-    return contract[functionName]()
+    return fn()
   }
 
   async getBlock(blockTag: string, provider?: Provider): Promise<Block> {
@@ -163,5 +168,37 @@ export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
     const block = await providerToUse.getBlock(blockTag)
     if (!block) return {} as Block
     return block
+  }
+
+  getContract(address: string, abi: Abi): GenericContract {
+    const nativeContract = new Contract(address, abi, this._provider)
+    const correctedInterface = this.utils.createInterface(abi)
+
+    // Create a compatible estimateGas object for ethers v6
+    const estimateGas: Record<string, (...args: any[]) => Promise<any>> = {}
+    if (nativeContract.estimateGas) {
+      // For ethers v6, estimateGas is a single method, not a record
+      // We'll create a wrapper that works with the weiroll interface
+      Object.keys(correctedInterface.functions || {}).forEach((functionName) => {
+        estimateGas[functionName] = async (...args: any[]) => {
+          // Use the native contract's estimateGas method if available
+          if (nativeContract.estimateGas && typeof nativeContract.estimateGas === 'function') {
+            return nativeContract.estimateGas(...args)
+          }
+          return Promise.resolve(0n)
+        }
+      })
+    }
+    return {
+      ...nativeContract,
+      interface: correctedInterface,
+      address: nativeContract.target || address,
+      estimateGas,
+      functions: nativeContract.functions || {},
+      provider: this._provider,
+      runner: nativeContract.runner,
+      filters: nativeContract.filters,
+      fallback: nativeContract.fallback,
+    } as GenericContract
   }
 }

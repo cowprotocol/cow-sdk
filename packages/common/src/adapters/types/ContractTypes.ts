@@ -3,8 +3,9 @@
  */
 export interface GenericContract {
   address: string
-  estimateGas: Record<string, (...args: any[]) => Promise<bigint>>
+  estimateGas: Record<string, (...args: any[]) => Promise<any>>
   interface: GenericContractInterface
+  functions: Record<string, (...args: any[]) => any>
   [functionName: string]: any
 }
 
@@ -13,7 +14,10 @@ export interface GenericContract {
  */
 export interface GenericContractInterface {
   encodeFunctionData(functionName: string, args: unknown[]): string
+  decodeFunctionData(functionName: string, data: string): unknown[]
   decodeFunctionResult?(functionName: string, data: string): unknown[]
+  fragments?: any[]
+  getFunction?(functionName: string): any
 }
 
 /**

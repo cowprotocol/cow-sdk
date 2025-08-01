@@ -7,7 +7,7 @@ import { SubgraphApi } from './api'
 
 enableFetchMocks()
 
-const cowSubgraphApi = new SubgraphApi({}, 'FakeApiKey')
+const cowSubgraphApi = new SubgraphApi('FakeApiKey')
 const prodUrls = cowSubgraphApi.SUBGRAPH_PROD_CONFIG
 
 const headers = {
@@ -337,7 +337,7 @@ describe('CoW subgraph URL', () => {
       [SupportedChainId.AVALANCHE]: null,
     }
 
-    const customSubgraphApi = new SubgraphApi({
+    const customSubgraphApi = new SubgraphApi('FakeApiKey', {
       baseUrls: customEnvConfig,
     })
 

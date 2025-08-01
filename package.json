@@ -2,13 +2,20 @@
   "name": "cow-monorepo",
   "private": true,
   "type": "module",
+  "license": "(MIT OR Apache-2.0)",
   "scripts": {
-    "build": "turbo run build --filter='!@cowprotocol/cow-sdk-old'",
+    "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint --filter=!@cowprotocol/cow-sdk-old -- --fix",
-    "test": "turbo run test --filter=!@cowprotocol/cow-sdk-old",
+    "lint": "turbo run lint -- --fix",
+    "test": "turbo run test",
+    "test:coverage": "turbo run test:coverage",
+    "test:coverage:html": "turbo run test:coverage:html",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "clean": "turbo run clean --filter=!@cowprotocol/cow-sdk-old && rm -rf .turbo && rm -rf node_modules"
+    "clean": "turbo run clean && rm -rf .turbo && rm -rf node_modules",
+    "codegen": "turbo run swagger:codegen --filter=@cowprotocol/sdk-order-book",
+    "swagger:codegen": "turbo run swagger:codegen --filter=@cowprotocol/sdk-order-book",
+    "typecheck": "turbo run typecheck",
+    "prepublishOnly": "pnpm test && pnpm run lint"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
@@ -19,6 +26,7 @@
     "prettier": "^3.5.3",
     "tsup": "^7.2.0",
     "turbo": "latest",
+    "typescript": "^5.2.2",
     "typescript-eslint": "^8.32.1"
   },
   "packageManager": "pnpm@10.8.0",

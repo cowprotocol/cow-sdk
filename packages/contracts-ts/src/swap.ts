@@ -111,11 +111,19 @@ export function encodeSwapStep(tokens: TokenRegistry, swap: Swap): BatchSwapStep
 }
 
 /**
- * A class for building calldata for a swap.
+ * Encoder for CoW Protocol swap transactions.
  *
- * The encoder ensures that token addresses are kept track of and performs
- * necessary computation in order to map each token addresses to IDs to
- * properly encode swap requests and the trade.
+ * This class provides methods to encode swaps and trades for CoW Protocol
+ * settlements that involve Balancer Vault swaps. It maintains state for tokens,
+ * swaps, and the associated trade.
+ *
+ * @example
+ * ```typescript
+ * const encoder = new SwapEncoder(domain, adapter)
+ * encoder.encodeSwapStep(swap)
+ * encoder.encodeTrade(order, signature)
+ * const swapData = encoder.encodedSwap()
+ * ```
  */
 export class SwapEncoder {
   private readonly _tokens = new TokenRegistry()
@@ -269,13 +277,13 @@ export class SwapEncoder {
       encoder.encodeTrade(order, signature, swapExecution)
       return encoder.encodedSwap()
     } else {
-      const [domain, swaps, order, scheme, swapExecution, owner] = args as unknown as [
+      const [domain, swaps, order, owner, scheme, swapExecution] = args as unknown as [
         TypedDataDomain,
         Swap[],
         Order,
+        SignerLike,
         EcdsaSigningScheme,
         Partial<SwapExecution> | undefined,
-        SignerLike | undefined,
       ]
 
       const encoder = new SwapEncoder(domain)

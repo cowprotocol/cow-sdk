@@ -13,6 +13,8 @@ import {
   zeroAddress,
   Block,
   BlockTag,
+  getContract,
+  encodeFunctionData,
 } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 
@@ -23,6 +25,7 @@ import {
   PrivateKey,
   CowError,
   normalizePrivateKey,
+  GenericContract,
 } from '@cowprotocol/sdk-common'
 
 import { ViemUtils } from './ViemUtils'
@@ -119,6 +122,10 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
     return this._signerAdapter
   }
 
+  signerOrNull(): ViemSignerAdapter | null {
+    return this._signerAdapter || null
+  }
+
   setSigner(signer: Account | PrivateKey) {
     if (typeof signer === 'string') {
       const normalizedPrivateKey = normalizePrivateKey(signer)
@@ -202,8 +209,7 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
 
   async getBlock(blockTag: BlockTag, provider?: PublicClient): Promise<Block> {
     const providerToUse = provider || this._publicClient
-    const block = await providerToUse.getBlock({ blockTag })
-    return block
+    return providerToUse.getBlock({ blockTag })
   }
 
   private isAccount(signer: unknown): signer is Account {
@@ -215,5 +221,52 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
       typeof (signer as any).address === 'string' &&
       typeof (signer as any).type === 'string'
     )
+  }
+
+  getContract(address: string, abi: Abi): GenericContract {
+    const viemContract = getContract({
+      address: address as `0x${string}`,
+      abi,
+      client: this._publicClient,
+    })
+    const compatibleInterface = this.utils.createInterface([...abi])
+
+    // Create a compatible estimateGas object for viem
+    const estimateGas: Record<string, (...args: any[]) => Promise<any>> = {}
+    Object.keys(compatibleInterface.functions || {}).forEach((functionName) => {
+      estimateGas[functionName] = async (args: any[] = []) => {
+        try {
+          const encodedData = encodeFunctionData({
+            abi,
+            functionName,
+            args,
+          })
+
+          const gasEstimate = await this._publicClient.request({
+            method: 'eth_estimateGas',
+            params: [
+              {
+                to: address as `0x${string}`,
+                data: encodedData,
+                from: this._account?.address,
+              },
+            ],
+          })
+
+          return BigInt(gasEstimate as string)
+        } catch (error) {
+          throw new CowError(`Gas estimation failed for ${functionName}: ${error}`)
+        }
+      }
+    })
+
+    return {
+      ...viemContract,
+      interface: compatibleInterface,
+      address: address,
+      estimateGas,
+      functions: (viemContract as any).functions || {},
+      provider: this._publicClient,
+    } as GenericContract
   }
 }
