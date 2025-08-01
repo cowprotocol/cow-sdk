@@ -180,7 +180,7 @@ for package in "${packages_in_order[@]}"; do
     fi
 
     # Publish to npm
-    if [[ "$version_tag" == *"RC"* ]] || [[ "$package_version" == *"RC"* ]] || [[ "$package_version" == *"alpha"* ]] || [[ "$package_version" == *"beta"* ]]; then
+    if [[ "$version_tag" == *"RC"* ]] || [[ "$package_version" == *"RC"* ]] || [[ "$package_version" == *"alpha"* ]] || [[ "$package_version" == *"monorepo"* ]]; then
       echo -e "${BLUE}Publishing as pre-release...${NC}"
       npm publish --access public --tag next
     else
