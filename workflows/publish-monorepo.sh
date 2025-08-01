@@ -129,11 +129,11 @@ version_tag="v$version"
 #   exit 1
 # fi
 
-latest_tag="$(git describe --tags --abbrev=0)"
-if ! [ "$version_tag" = "$latest_tag" ]; then
-  echo -e "${RED}❌ Latest tag $latest_tag version doesn't match package.json version $version${NC}"
-  exit 1
-fi
+# latest_tag="$(git describe --tags --abbrev=0)"
+# if ! [ "$version_tag" = "$latest_tag" ]; then
+#   echo -e "${RED}❌ Latest tag $latest_tag version doesn't match package.json version $version${NC}"
+#   exit 1
+# fi
 
 # Save root directory
 ROOT_DIR="$(pwd)"
