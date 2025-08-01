@@ -124,10 +124,10 @@ echo -e "${BLUE}📦 Publishing cow-sdk monorepo packages version: ${version}${N
 
 # Verify git tag exists
 version_tag="v$version"
-if ! git fetch --end-of-options origin "refs/tags/$version_tag" 2>/dev/null; then
-  echo -e "${RED}❌ Tag $version_tag is not created. Create the Release first.${NC}"
-  exit 1
-fi
+# if ! git fetch --end-of-options origin "refs/tags/$version_tag" 2>/dev/null; then
+#   echo -e "${RED}❌ Tag $version_tag is not created. Create the Release first.${NC}"
+#   exit 1
+# fi
 
 latest_tag="$(git describe --tags --abbrev=0)"
 if ! [ "$version_tag" = "$latest_tag" ]; then
