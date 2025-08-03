@@ -77,6 +77,7 @@ Access all modules through a single SDK instance:
 
 ```typescript
 import {
+  CowSdk,
   TradingSdk,
   OrderBookApi,
   OrderSigningUtils,
