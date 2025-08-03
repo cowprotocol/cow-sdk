@@ -29,6 +29,7 @@ import {
   JsonRpcProvider,
   parseUnits,
   ParamType,
+  isAddress,
 } from 'ethers'
 import { TypedDataDomain } from 'ethers'
 import { EthersV6InterfaceWrapper } from './EthersV6InterfaceWrapper'
@@ -294,12 +295,7 @@ export class EthersV6Utils implements AdapterUtils {
   }
 
   isAddress(address: string): boolean {
-    try {
-      getAddress(address)
-      return true
-    } catch {
-      return false
-    }
+    return isAddress(address)
   }
 
   isHexString(value: string): boolean {
