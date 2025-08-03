@@ -77,7 +77,7 @@ export class EthersV6InterfaceWrapper implements GenericContractInterface {
         return normalizeFragment(fragment)
       }
       throw new CowError(`Function ${name} not found`)
-    } catch (_error) {
+    } catch {
       const functionSignatures = Object.keys(this._functions)
       for (const signature of functionSignatures) {
         const fragment = this._functions[signature]
@@ -105,7 +105,7 @@ export class EthersV6InterfaceWrapper implements GenericContractInterface {
       if (fragment) {
         return fragment.selector
       }
-    } catch (_error) {
+    } catch {
       // Try to find by name in our normalized functions
       const functionSignatures = Object.keys(this._functions)
       for (const signature of functionSignatures) {
@@ -117,7 +117,7 @@ export class EthersV6InterfaceWrapper implements GenericContractInterface {
             if (originalFragment) {
               return originalFragment.selector
             }
-          } catch (__error) {
+          } catch {
             // If we can't get it from the interface, try to construct it
             const inputs = fragment.inputs?.map((input: any) => input.type).join(',') || ''
             const signature = `${fragment.name}(${inputs})`

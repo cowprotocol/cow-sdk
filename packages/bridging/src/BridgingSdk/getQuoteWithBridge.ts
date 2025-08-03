@@ -23,7 +23,7 @@ import {
 import { log, jsonWithBigintReplacer, getGlobalAdapter } from '@cowprotocol/sdk-common'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { SignerLike } from '@cowprotocol/sdk-common'
-import { QuoteResultsWithSigner } from '@cowprotocol/sdk-trading/src/getQuote'
+import { QuoteResultsWithSigner } from '@cowprotocol/sdk-trading'
 import { BridgeProviderQuoteError } from '../errors'
 import { getTradeParametersAfterQuote } from '@cowprotocol/sdk-trading'
 
@@ -137,9 +137,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
 
   const intermediateTokenAmount = swapResult.amountsAndCosts.afterSlippage.buyAmount // Estimated, as it will likely have surplus
   log(
-    `Expected to receive ${intermediateTokenAmount} of the intermediate token (${adapter.utils
-      .parseUnits(intermediateTokenAmount.toString(), intermediaryTokenDecimals)
-      .toString()})`,
+    `Expected to receive ${intermediateTokenAmount} of the intermediate token (${(intermediateTokenAmount / BigInt(10 ** intermediaryTokenDecimals)).toString()} formatted)`,
   )
 
   // Get the bridge result

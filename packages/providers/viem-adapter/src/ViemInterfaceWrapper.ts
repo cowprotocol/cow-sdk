@@ -135,7 +135,7 @@ export class ViemInterfaceWrapper implements GenericContractInterface {
 
   decodeFunctionData(functionName: string, data: string): unknown[] {
     const functionAbi = this.abi.find((item: any) => item.type === 'function' && item.name === functionName)
-    if (!functionAbi) throw new Error(`Function ${functionName} not found in ABI`)
+    if (!functionAbi) throw new CowError(`Function ${functionName} not found in ABI`)
     const inputTypes = functionAbi.inputs.map((input: any) => ({ type: input.type, name: input.name }))
     return decodeAbiParameters(inputTypes, data as `0x${string}`)
   }
