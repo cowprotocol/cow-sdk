@@ -67,7 +67,6 @@ export class EthersV6InterfaceWrapper implements GenericContractInterface {
       this._functions[signature] = normalized
       this._fragments.push(normalized)
     })
-    this.getFunction = this._getFunctionNormalized.bind(this)
   }
 
   private _getFunctionNormalized(name: string): any {

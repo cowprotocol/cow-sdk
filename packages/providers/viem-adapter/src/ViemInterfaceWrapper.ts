@@ -57,7 +57,6 @@ export class ViemInterfaceWrapper implements GenericContractInterface {
         this._fragments.push(normalized)
       }
     })
-    this.getFunction = this._getFunctionNormalized.bind(this)
   }
 
   private _getFunctionNormalized(name: string): any {
