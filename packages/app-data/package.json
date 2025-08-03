@@ -27,7 +27,7 @@
     "dev": "pnpm run compile && tsup src/index.ts --format cjs,esm --watch --dts --external multiformats",
     "lint": "eslint src/**/*.ts",
     "test": "jest",
-    "test:coverage": "jest --coverage --json --outputFile=jest.results.json && cat ./coverage/lcov.info | coveralls",
+    "test:coverage": "jest --coverage --json --outputFile=jest.results.json && npx coveralls < ./coverage/lcov.info",
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
     "typecheck": "tsc --noEmit"
   },
