@@ -1,5 +1,4 @@
-import stringify from 'json-stringify-deterministic'
-
 export async function stringifyDeterministic(obj: object): Promise<string> {
+  const stringify = (await import('json-stringify-deterministic')).default
   return stringify(obj)
 }
