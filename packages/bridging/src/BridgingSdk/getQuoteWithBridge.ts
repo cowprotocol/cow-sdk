@@ -249,7 +249,7 @@ async function getBaseBridgeQuoteRequest<T extends BridgeQuoteResult>(params: {
   log(`Using ${intermediateTokenAddress} as intermediate tokens`)
 
   if (!intermediateTokenAddress) {
-    throw new BridgeProviderQuoteError('No path found (not intermediate token for bridging)', {})
+    throw new BridgeProviderQuoteError('No path found (no intermediate token for bridging)', {})
   }
 
   // Get intermediate token decimals
