@@ -19,7 +19,7 @@ jest.results.json
 .DS_Store
 
 # Generated files
-packages/cow-sdk/src/common/generated
+packages/cow-sdk/src/common/generated/
 packages/order-book/src/generated/
 packages/cow-sdk/docs/typedoc/
 
