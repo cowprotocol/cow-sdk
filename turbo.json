@@ -14,7 +14,7 @@
       "outputs": []
     },
     "test:coverage": {
-      "outputs": ["coverage/**", "jest.results.json"],
+      "outputs": ["coverage/lcov.info", "coverage/index.html", "jest.results.json"],
       "dependsOn": ["build"],
       "cache": true
     },

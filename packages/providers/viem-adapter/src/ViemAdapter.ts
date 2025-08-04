@@ -218,8 +218,8 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
       signer !== null &&
       'address' in signer &&
       'type' in signer &&
-      typeof (signer as any).address === 'string' &&
-      typeof (signer as any).type === 'string'
+      typeof signer.address === 'string' &&
+      typeof signer.type === 'string'
     )
   }
 

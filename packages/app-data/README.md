@@ -109,6 +109,7 @@ Schemas are exposed as json files, where the version is the file name:
 
 ```js
 // Getting the version v0.4.0
+// If you use TypeScript, enable `resolveJsonModule` in tsconfig.
 const schema = require('@cowprotocol/app-data/schemas/v0.4.0.json')
 
 // Now you can for example run validation against a schema

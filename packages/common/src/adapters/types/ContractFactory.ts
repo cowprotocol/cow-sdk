@@ -37,9 +37,6 @@ export class ContractFactory {
       },
       interface: {
         encodeFunctionData: (functionName: string, args: unknown[]) => {
-          if (functionName === 'createOrder' || functionName === 'invalidateOrder') {
-            return adapter.utils.encodeFunction(EthFlowAbi, functionName, args)
-          }
           return adapter.utils.encodeFunction(EthFlowAbi, functionName, args)
         },
         decodeFunctionData: (functionName: string, data: string) => {

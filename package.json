@@ -6,14 +6,14 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint -- --fix",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint -- --fix",
     "test": "turbo run test",
     "test:coverage": "turbo run test:coverage",
     "test:coverage:html": "turbo run test:coverage:html",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "clean": "turbo run clean && rm -rf .turbo && rm -rf node_modules",
     "codegen": "turbo run swagger:codegen --filter=@cowprotocol/sdk-order-book",
-    "swagger:codegen": "turbo run swagger:codegen --filter=@cowprotocol/sdk-order-book",
     "typecheck": "turbo run typecheck",
     "prepublishOnly": "pnpm run typecheck && pnpm test && pnpm run lint"
   },
