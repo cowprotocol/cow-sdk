@@ -37,6 +37,8 @@ export const BungeeApproveAndBridgeV1Addresses: Record<TargetChainId, string | u
   [SupportedChainId.BASE]: BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS,
   [SupportedChainId.AVALANCHE]: BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS,
   [SupportedChainId.POLYGON]: BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS,
+  [SupportedChainId.LENS]: undefined, // TODO: confirm
+  [SupportedChainId.BNB]: undefined, // TODO: confirm
   [SupportedChainId.SEPOLIA]: undefined,
   [AdditionalTargetChainId.OPTIMISM]: BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS,
 }
