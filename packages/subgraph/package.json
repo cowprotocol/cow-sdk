@@ -10,6 +10,9 @@
   "files": [
     "dist/**"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "lint": "eslint src/**/*.ts",
@@ -19,7 +22,9 @@
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
     "graphql:codegen": "graphql-codegen --config graphql-codegen.yml",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "publish": "npm publish --access public",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@cow-sdk/typescript-config": "workspace:*",

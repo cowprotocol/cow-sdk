@@ -17,13 +17,18 @@
   "files": [
     "dist/**"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --treeshake",
     "postbuild": "cp package.json dist && pnpm copy-md-files",
     "copy-md-files": "npx cpx \"**/*.md\" dist",
     "lint": "eslint src/**/*.ts",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+    "publish": "npm publish --access public",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@cow-sdk/typescript-config": "workspace:*",
