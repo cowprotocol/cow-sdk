@@ -32,6 +32,9 @@
     "typechain:codegen": "typechain --target ethers-v5 --out-dir ./src/common/generated './abi/*.json'",
     "trading:generateSchemas": "ts-node scripts/generateTradingSchemas.ts"
   },
+  "engines": {
+    "node": ">=16.14"
+  },
   "dependencies": {
     "@cowprotocol/app-data": "^3.2.0",
     "@cowprotocol/contracts": "^1.8.0",
