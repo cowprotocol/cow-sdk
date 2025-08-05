@@ -250,12 +250,12 @@ cd "$ROOT_DIR/packages/sdk"
   # Publish umbrella package
   echo -e "${BLUE}📤 Publishing umbrella package ${umbrella_name}...${NC}"
 
-    if [[ "$umbrella_version" == *"RC"* ]] || [[ "$umbrella_version" == *"alpha"* ]] || [[ "$umbrella_version" == *"beta"* ]] || [[ "$umbrella_version" == *"monorepo"* ]]; then
-      echo -e "${BLUE}Publishing as pre-release...${NC}"
-      npm publish --access public --tag next
-    else
-      npm publish --access public
-    fi
+  if [[ "$umbrella_version" == *"RC"* ]] || [[ "$umbrella_version" == *"alpha"* ]] || [[ "$umbrella_version" == *"beta"* ]] || [[ "$umbrella_version" == *"monorepo"* ]]; then
+    echo -e "${BLUE}Publishing as pre-release...${NC}"
+    npm publish --access public --tag next
+  else
+    npm publish --access public
+  fi
 
   if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ ${umbrella_name} published successfully${NC}"
