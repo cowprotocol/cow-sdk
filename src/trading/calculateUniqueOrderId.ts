@@ -1,15 +1,15 @@
-import { OrderSigningUtils, UnsignedOrder } from '../order-signing'
+import type { Order } from '@cowprotocol/contracts'
+import { SupportedChainId } from '../chains'
 import {
-  BARN_ETH_FLOW_ADDRESS,
+  BARN_ETH_FLOW_ADDRESSES,
   CowEnv,
-  ETH_FLOW_ADDRESS,
+  ETH_FLOW_ADDRESSES,
   MAX_VALID_TO_EPOCH,
   WRAPPED_NATIVE_CURRENCIES,
 } from '../common'
-import { SupportedChainId } from '../chains'
-import type { Order } from '@cowprotocol/contracts'
-import { EthFlowOrderExistsCallback } from './types'
 import { unsignedOrderForSigning } from '../common/utils/order'
+import { OrderSigningUtils, UnsignedOrder } from '../order-signing'
+import { EthFlowOrderExistsCallback } from './types'
 
 export async function calculateUniqueOrderId(
   chainId: SupportedChainId,
@@ -25,7 +25,7 @@ export async function calculateUniqueOrderId(
       sellToken: WRAPPED_NATIVE_CURRENCIES[chainId].address,
     } as Order,
     {
-      owner: env === 'staging' ? BARN_ETH_FLOW_ADDRESS : ETH_FLOW_ADDRESS,
+      owner: env === 'staging' ? BARN_ETH_FLOW_ADDRESSES[chainId] : ETH_FLOW_ADDRESSES[chainId],
     },
   )
 
