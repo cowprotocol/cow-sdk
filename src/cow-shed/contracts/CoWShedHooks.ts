@@ -16,13 +16,13 @@ import {
   solidityKeccak256,
   splitSignature,
 } from 'ethers/lib/utils'
-import { COW_SHED_FACTORY, COW_SHED_IMPLEMENTATION } from '../../common'
+import { COW_SHED_FACTORY, COW_SHED_IMPLEMENTATION, COW_SHED_LATEST_VERSION, CoWShedVersion } from '../../common'
 import { getCoWShedFactoryInterface } from './utils'
 
 import { ICoWShedCall, ICoWShedOptions } from '../types'
 
 export const COW_SHED_PROXY_INIT_CODE =
-  '0x60a034608e57601f61037138819003918201601f19168301916001600160401b038311848410176093578084926040948552833981010312608e57604b602060458360a9565b920160a9565b6080527f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc556040516102b490816100bd8239608051818181608f01526101720152f35b600080fd5b634e487b7160e01b600052604160045260246000fd5b51906001600160a01b0382168203608e5756fe60806040526004361015610018575b3661019457610194565b6000803560e01c908163025b22bc1461003b575063f851a4400361000e5761010d565b3461010a5760207ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc36011261010a5773ffffffffffffffffffffffffffffffffffffffff60043581811691828203610106577f0000000000000000000000000000000000000000000000000000000000000000163314600014610101577f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc557fbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b8280a280f35b61023d565b8380fd5b80fd5b346101645760007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc360112610164576020610146610169565b73ffffffffffffffffffffffffffffffffffffffff60405191168152f35b600080fd5b333003610101577f000000000000000000000000000000000000000000000000000000000000000090565b60ff7f68df44b1011761f481358c0f49a711192727fb02c377d697bcb0ea8ff8393ac0541615806101ef575b1561023d5760046040517ff92ee8a9000000000000000000000000000000000000000000000000000000008152fd5b507f400ada75000000000000000000000000000000000000000000000000000000007fffffffff000000000000000000000000000000000000000000000000000000006000351614156101c0565b7f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc546000808092368280378136915af43d82803e1561027a573d90f35b3d90fdfea2646970667358221220c7c26ff3040b96a28e96d6d27b743972943aeaef81cc821544c5fe1e24f9b17264736f6c63430008190033'
+  '0x60a03461009557601f61033d38819003918201601f19168301916001600160401b0383118484101761009957808492604094855283398101031261009557610052602061004b836100ad565b92016100ad565b6080527f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc5560405161027b90816100c28239608051818181608b01526101750152f35b5f80fd5b634e487b7160e01b5f52604160045260245ffd5b51906001600160a01b03821682036100955756fe60806040526004361015610018575b3661019757610197565b5f3560e01c8063025b22bc146100375763f851a4400361000e57610116565b346101125760207ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc3601126101125760043573ffffffffffffffffffffffffffffffffffffffff81169081810361011257337f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff160361010d577f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc557fbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b5f80a2005b61023d565b5f80fd5b34610112575f7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc36011261011257602061014e61016c565b73ffffffffffffffffffffffffffffffffffffffff60405191168152f35b33300361010d577f000000000000000000000000000000000000000000000000000000000000000090565b60ff7f68df44b1011761f481358c0f49a711192727fb02c377d697bcb0ea8ff8393ac0541615806101f0575b1561023d577ff92ee8a9000000000000000000000000000000000000000000000000000000005f5260045ffd5b507f400ada75000000000000000000000000000000000000000000000000000000007fffffffff000000000000000000000000000000000000000000000000000000005f351614156101c3565b5f807f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc54368280378136915af43d5f803e15610277573d5ff35b3d5ffd'
 
 export const COW_SHED_712_TYPES = {
   ExecuteHooks: [
@@ -40,7 +40,11 @@ export const COW_SHED_712_TYPES = {
 }
 
 export class CowShedHooks {
-  constructor(private chainId: SupportedChainId, private customOptions?: ICoWShedOptions) {}
+  constructor(
+    private chainId: SupportedChainId,
+    private customOptions?: ICoWShedOptions,
+    public readonly version: CoWShedVersion = COW_SHED_LATEST_VERSION,
+  ) {}
 
   proxyOf(user: string) {
     const salt = defaultAbiCoder.encode(['address'], [user])
@@ -49,7 +53,7 @@ export class CowShedHooks {
       [
         this.proxyCreationCode(),
         defaultAbiCoder.encode(['address', 'address'], [this.getImplementationAddress(), user]),
-      ]
+      ],
     )
     return getCreate2Address(this.getFactoryAddress(), salt, initCodeHash)
   }
@@ -59,7 +63,7 @@ export class CowShedHooks {
     nonce: string,
     deadline: bigint,
     user: string,
-    signature: string
+    signature: string,
   ): string {
     return getCoWShedFactoryInterface().encodeFunctionData('executeHooks', [calls, nonce, deadline, user, signature])
   }
@@ -69,7 +73,7 @@ export class CowShedHooks {
     nonce: string,
     deadline: bigint,
     signer: Signer,
-    signingScheme: EcdsaSigningScheme
+    signingScheme: EcdsaSigningScheme,
   ): Promise<string> {
     const user = await signer.getAddress()
     const proxy = this.proxyOf(user)
@@ -91,7 +95,7 @@ export class CowShedHooks {
   getDomain(proxy: string): TypedDataDomain {
     return {
       name: 'COWShed',
-      version: '1.0.0',
+      version: this.version,
       chainId: this.chainId,
       verifyingContract: proxy,
     }
@@ -102,11 +106,11 @@ export class CowShedHooks {
   }
 
   getFactoryAddress() {
-    return this.customOptions?.factoryAddress ?? COW_SHED_FACTORY
+    return this.customOptions?.factoryAddress ?? COW_SHED_FACTORY[this.version]
   }
 
   getImplementationAddress() {
-    return this.customOptions?.implementationAddress ?? COW_SHED_IMPLEMENTATION
+    return this.customOptions?.implementationAddress ?? COW_SHED_IMPLEMENTATION[this.version]
   }
 }
 
@@ -116,7 +120,7 @@ async function ecdsaSignTypedData(
   owner: Signer,
   domain: TypedDataDomain,
   types: TypedDataTypes,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
 ): Promise<string> {
   let signature: string | null = null
 

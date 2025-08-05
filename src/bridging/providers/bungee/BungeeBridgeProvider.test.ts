@@ -1,4 +1,8 @@
+import { latest as latestAppData } from '@cowprotocol/app-data'
+import { OrderKind } from '@cowprotocol/contracts'
+import { JsonRpcProvider } from '@ethersproject/providers'
 import { SupportedChainId, TargetChainId } from '../../../chains'
+import { BridgeStatus, QuoteBridgeRequest } from '../../types'
 import { BungeeApi } from './BungeeApi'
 import {
   BUNGEE_HOOK_DAPP_ID,
@@ -7,11 +11,7 @@ import {
   BungeeBridgeProviderOptions,
   BungeeQuoteResult,
 } from './BungeeBridgeProvider'
-import { latest as latestAppData } from '@cowprotocol/app-data'
-import { OrderKind } from '@cowprotocol/contracts'
-import { BridgeStatus, QuoteBridgeRequest } from '../../types'
-import { BungeeQuote, BungeeBuildTx, BungeeEvent, BungeeEventStatus, BungeeBridgeName, BungeeBridge } from './types'
-import { JsonRpcProvider } from '@ethersproject/providers'
+import { BungeeBridge, BungeeBridgeName, BungeeBuildTx, BungeeEvent, BungeeEventStatus, BungeeQuote } from './types'
 
 // Mock BungeeApi
 jest.mock('./BungeeApi')
@@ -286,13 +286,6 @@ describe('BungeeBridgeProvider', () => {
       await expect(provider.decodeBridgeHook({} as unknown as latestAppData.CoWHook)).rejects.toThrowError(
         'Not implemented',
       )
-    })
-  })
-
-  describe('getBridgingId', () => {
-    it('should return the order uid as bridging id', async () => {
-      const bridgingId = await provider.getBridgingId('123', '123', 1)
-      expect(bridgingId).toEqual('123')
     })
   })
 

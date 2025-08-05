@@ -12,15 +12,15 @@ import {
   QuoteBridgeRequest,
 } from '../../types'
 
-import { OrderKind } from '../../../order-book'
+import { Signer } from '@ethersproject/abstract-signer'
+import { JsonRpcProvider } from '@ethersproject/providers'
+import { AdditionalTargetChainId, ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
 import { mainnet } from '../../../chains/details/mainnet'
 import { optimism } from '../../../chains/details/optimism'
 import { sepolia } from '../../../chains/details/sepolia'
 import { EvmCall, TokenInfo } from '../../../common'
-import { AdditionalTargetChainId, ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
+import { OrderKind } from '../../../order-book'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
-import { Signer } from '@ethersproject/abstract-signer'
-import { JsonRpcProvider } from '@ethersproject/providers'
 
 const BRIDGING_PARAMS: BridgingDepositParams = {
   inputTokenAddress: '0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
@@ -208,8 +208,15 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
     }
   }
 
-  async getBridgingParams(_chainId: ChainId, _orderUid: string, _txHash: string): Promise<BridgingDepositParams> {
-    return BRIDGING_PARAMS
+  async getBridgingParams(
+    _chainId: ChainId,
+    _orderUid: string,
+    _txHash: string,
+  ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult }> {
+    return {
+      params: BRIDGING_PARAMS,
+      status: await this.getStatus(''),
+    }
   }
 
   getExplorerUrl(bridgingId: string): string {

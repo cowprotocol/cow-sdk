@@ -114,10 +114,10 @@ export interface LimitOrderParameters extends TraderParameters, LimitTradeParame
  * When postSwapOrderFromQuote() is called, it will execute provided callback corresponding to signing order
  */
 export interface SigningStepManager {
-  beforeBridgingSign?(): void
-  afterBridgingSign?(): void
-  beforeOrderSign?(): void
-  afterOrderSign?(): void
+  beforeBridgingSign?(): Promise<void> | void
+  afterBridgingSign?(): Promise<void> | void
+  beforeOrderSign?(): Promise<void> | void
+  afterOrderSign?(): Promise<void> | void
   onBridgingSignError?(): void
   onOrderSignError?(): void
 }
