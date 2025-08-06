@@ -18,6 +18,7 @@ import { EvmCall, TokenInfo } from '../../../common'
 import { mainnet } from '../../../chains/details/mainnet'
 import { polygon } from '../../../chains/details/polygon'
 import { arbitrumOne } from '../../../chains/details/arbitrum'
+import { avalanche } from '../../../chains/details/avalanche'
 import { base } from '../../../chains/details/base'
 import { optimism } from '../../../chains/details/optimism'
 import { BungeeApi, BungeeApiOptions } from './BungeeApi'
@@ -34,7 +35,7 @@ import type { JsonRpcProvider } from '@ethersproject/providers'
 import type { Signer } from 'ethers'
 
 export const BUNGEE_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/bungee`
-export const BUNGEE_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
+export const BUNGEE_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism, avalanche]
 
 /** There will be no dex swaps happening while bridging. Hence slippage will be zero */
 const SLIPPAGE_TOLERANCE_BPS = 0
