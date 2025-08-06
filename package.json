@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/cow-sdk",
-  "version": "6.0.1-RC.01",
+  "version": "6.1.0-RC.01",
   "license": "(MIT OR Apache-2.0)",
   "files": [
     "/dist"
@@ -36,7 +36,7 @@
     "node": ">=16.14"
   },
   "dependencies": {
-    "@cowprotocol/app-data": "^3.2.0",
+    "@cowprotocol/app-data": "^3.3.0",
     "@cowprotocol/contracts": "^1.8.0",
     "@ethersproject/abstract-signer": "^5.8.0",
     "@openzeppelin/merkle-tree": "^1.0.8",
