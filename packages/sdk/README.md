@@ -109,7 +109,7 @@ const sdk = new CowSdk({
 const orderId = await sdk.trading.postSwapOrder(parameters)
 const orders = await sdk.orderBook.getOrders({ owner: address })
 const totals = await sdk.subgraph?.getTotals()
-const signature = await sdk.orderSigning.signOrder(order, chainId)
+const signature = await sdk.orderSigning.signOrder(order, chainId, signer)
 ```
 
 ### 2. **Direct Module Import** (Simplified)
@@ -155,7 +155,9 @@ setGlobalAdapter(adapter)
 const trading = new TradingSdk({ appCode: 'YOUR_APP_CODE' }, { chainId: SupportedChainId.SEPOLIA })
 
 const orderBook = new OrderBookApi({ chainId: SupportedChainId.SEPOLIA })
-const orderSigning = new OrderSigningUtils()
+
+// Use OrderSigningUtils directly - no need to instantiate
+// const orderSigning = OrderSigningUtils  // or simply use OrderSigningUtils.signOrder(...)
 ```
 
 ## 🧩 **Available Modules**

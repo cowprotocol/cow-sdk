@@ -30,10 +30,10 @@ const provider = new JsonRpcProvider('YOUR_RPC_URL')
 const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
 const adapter = new EthersV6Adapter({ provider, signer: wallet })
 
-// Create order signing utils
-const orderSigning = new OrderSigningUtils(adapter)
+// Configure the global adapter
+setGlobalAdapter(adapter)
 
-// Sign an order
+// Sign an order using static methods
 const orderToSign: UnsignedOrder = {
   sellToken: '0xA0b86a33E6417b528874E10EB3a95beb4F25A0E3',
   buyToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
@@ -89,7 +89,7 @@ const sdk = new CowSdk({
   adapter,
 })
 
-// Sign order using the umbrella SDK
+// Use static methods through sdk.orderSigning
 const signingResult = await sdk.orderSigning.signOrder(orderToSign, SupportedChainId.MAINNET, adapter.signer)
 
 // Sign cancellation

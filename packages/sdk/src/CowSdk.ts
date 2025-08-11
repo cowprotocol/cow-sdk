@@ -26,7 +26,7 @@ export class CowSdk {
     factory: ConditionalOrderFactory
     multiplexer?: Multiplexer
   }
-  public readonly orderSigning: OrderSigningUtils
+  public readonly orderSigning = OrderSigningUtils
   public readonly cowShedHooks: CowShedHooks
 
   /**
@@ -95,8 +95,6 @@ export class CowSdk {
         composableOptions.location || ProofLocation.PRIVATE,
       ),
     }
-
-    this.orderSigning = new OrderSigningUtils(adapter)
 
     this.cowShedHooks = new CowShedHooks(chainId, cowShedHooksOptions.factoryOptions)
   }
