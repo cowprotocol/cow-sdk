@@ -1,13 +1,7 @@
 import type { SupportedChainId } from '@cowprotocol/sdk-config'
 import type { ContractsOrder as Order, OrderUidParams } from '@cowprotocol/sdk-contracts-ts'
 import type { SigningResult, UnsignedOrder } from './types'
-import {
-  AbstractProviderAdapter,
-  getGlobalAdapter,
-  setGlobalAdapter,
-  Signer,
-  TypedDataDomain,
-} from '@cowprotocol/sdk-common'
+import { getGlobalAdapter, Signer, TypedDataDomain } from '@cowprotocol/sdk-common'
 import { generateOrderId, getDomain, signOrder, signOrderCancellation, signOrderCancellations } from './utils'
 
 /**
@@ -19,12 +13,16 @@ import { generateOrderId, getDomain, signOrder, signOrderCancellation, signOrder
  *
  * ```typescript
  * import { OrderSigningUtils, SupportedChainId, UnsignedOrder } from '@cowprotocol/cow-sdk'
- * import { Web3Provider } from '@ethersproject/providers'
+ * import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
+ * import { JsonRpcProvider, Wallet } from 'ethers'
  *
- * const account = 'YOUR_WALLET_ADDRESS'
- * const chainId = 100 // Gnosis chain
- * const provider = new Web3Provider(window.ethereum)
- * const signer = provider.getSigner()
+ * const provider = new JsonRpcProvider('YOUR_RPC_URL')
+ * const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
+ * const adapter = new EthersV6Adapter({ provider, signer: wallet })
+ * const signer = adapter.signer
+ *
+ * // The adapter should be configured via CowSdk or setGlobalAdapter
+ * setGlobalAdapter(adapter)
  *
  * async function main() {
  *     const orderToSign: UnsignedOrder = { ... }
@@ -45,12 +43,6 @@ import { generateOrderId, getDomain, signOrder, signOrderCancellation, signOrder
  * ```
  */
 export class OrderSigningUtils {
-  constructor(adapter?: AbstractProviderAdapter) {
-    if (adapter) {
-      setGlobalAdapter(adapter)
-    }
-  }
-
   /**
    * Sign the order intent with the specified signer.
    *
