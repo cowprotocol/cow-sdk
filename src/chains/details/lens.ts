@@ -49,4 +49,10 @@ export const lens: ChainInfo = {
     // Note: doesn't seem to be Etherscan derived. Will need to consider it in the code.
     // TODO: add a flag to indicate that the explorer is not Etherscan derived and handle it in the code.
   },
+  bridges: [
+    {
+      name: 'Lens Bridge',
+      url: 'https://lens.xyz/bridge',
+    },
+  ],
 }
