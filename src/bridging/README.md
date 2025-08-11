@@ -11,17 +11,16 @@ The **`BridgingSDK`** lets you 🌉 *swap tokens across chains* and bridge asset
 2. [Installation](#installation)
 3. [Quick Start](#quick-start)
 4. [Configuration](#configuration)
-5. [Bridge Providers](#bridge-providers)
-6. [Core Methods](#core-methods)
-7. [Examples](#examples)
+5[Core Methods](#core-methods)
+6. [Examples](#examples)
    - [React App](#react-app)
    - [Node.js App](#nodejs-app)
-8. [Types and Interfaces](#types-and-interfaces)
-9. [Error Handling](#error-handling)
-10. [Order Monitoring](#order-monitoring)
-11. [Token Validation](#token-validation)
-12. [Network Validation](#network-validation)
-13. [Complete Type Reference](#complete-type-reference)
+7. [Types and Interfaces](#types-and-interfaces)
+8. [Error Handling](#error-handling)
+9. [Order Monitoring](#order-monitoring)
+10. [Token Validation](#token-validation)
+11. [Network Validation](#network-validation)
+12. [Complete Type Reference](#complete-type-reference)
 
 ## Overview
 
@@ -32,9 +31,8 @@ The BridgingSdk supports two types of operations:
 Supported bridge providers:
 - **Bungee/Socket**: Multi-bridge aggregation platform with support for multiple underlying bridges including Across, CCTP, and others
 
-> Since `BridgingSDK` is compatible with [TradingSDK](../trading/README.md), almost everything is described for `TradingSDK` is applicable for `BridgingSDK` as well!
-> The main difference is smart-contracts wallets support. Currently, `BridgingSDK` only supports `EOA` wallets, this more likely will be changes soon, stay tuned!
-
+> Since `BridgingSdk` is compatible with [TradingSDK](../trading/README.md), almost everything described for `TradingSDK` applies to `BridgingSdk` as well.
+> The main difference is smart contract wallet support. Currently, `BridgingSdk` only supports EOA wallets; this will likely change soon — stay tuned!
 ## Installation
 
 ```bash
@@ -97,13 +95,13 @@ async function performCrossChainSwap(wallet: Wallet, bridgingSdk: BridgingSdk): 
   const quoteBridgeRequest: QuoteBridgeRequest = {
     // Sell token (source chain)
     sellTokenChainId: SupportedChainId.MAINNET,
-    sellTokenAddress: '0xA0b86a33E6441fa0c8f11b92c2136d6bb6d5B65', // WETH
+    sellTokenAddress: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', // WETH
     sellTokenDecimals: 18,
 
     // Buy token (destination chain)
     buyTokenChainId: SupportedChainId.POLYGON,
-    buyTokenAddress: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359', // USDC on Polygon
-    buyTokenDecimals: 18,
+    buyTokenAddress: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174', // USDC on Polygon
+    buyTokenDecimals: 6,
 
     // Trader parameters
     appCode: '<BRIDGING_APP_CODE>', // This value will be used to calculate volume of trade for your app
@@ -332,14 +330,14 @@ const getRpcUrl = (chainId: SupportedChainId): string => {
   return rpcUrls[chainId]
 }
 
-const provider = new BungeeBridgeProvider({
+const bungeeProvider = new BungeeBridgeProvider({
   getRpcProvider: (chainId: SupportedChainId) => new JsonRpcProvider(getRpcUrl(chainId)),
   apiOptions: {
     includeBridges: ['across', 'cctp'], // Optional: specify which bridges to include
   },
 })
 
-const bridgingSdk = new BridgingSdk({ providers: [provider] })
+const bridgingSdk = new BridgingSdk({ providers: [bungeeProvider] })
 
 const appCode = 'COW_BRIDGING_REACT_EXAMPLE'
 
@@ -358,7 +356,7 @@ function CrossChainSwapComponent(): ReactNode {
       const quoteBridgeRequest: QuoteBridgeRequest = {
         appCode,
         sellTokenChainId: SupportedChainId.MAINNET,
-        sellTokenAddress: '0xA0b86a33E6441fa0c8f11b92c2136d6bb6d5B65', // WETH
+        sellTokenAddress: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', // WETH
         sellTokenDecimals: 18,
         buyTokenChainId: SupportedChainId.POLYGON,
         buyTokenAddress: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619', // WETH on Polygon
@@ -466,7 +464,7 @@ async function main() {
   // Prepare quote request
   const quoteBridgeRequest = {
     sellTokenChainId: SupportedChainId.MAINNET,
-    sellTokenAddress: '0xA0b86a33E6441fa0c8f11b92c2136d6bb6d5B65', // WETH
+    sellTokenAddress: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', // WETH
     sellTokenDecimals: 18,
     buyTokenChainId: SupportedChainId.POLYGON,
     buyTokenAddress: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619', // WETH on Polygon
