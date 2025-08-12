@@ -575,7 +575,6 @@ import {
   BridgeProviderQuoteError,
   BridgeQuoteErrors
 } from '@cowprotocol/cow-sdk'
-import { bridgingSdk } from 'tradingSdk/bridgingSdk'
 
 try {
   const quote = await bridgingSdk.getQuote(...)
