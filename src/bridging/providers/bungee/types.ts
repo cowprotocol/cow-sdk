@@ -1,4 +1,4 @@
-export type SupportedBridge = 'across' | 'cctp'
+export type SupportedBridge = 'across' | 'cctp' | 'gnosis-native-bridge'
 
 export interface BungeeQuoteAPIRequest {
   userAddress: string
@@ -109,12 +109,14 @@ export interface BungeeQuoteAPIResponse {
 export enum BungeeBridge {
   'Across' = 'across',
   'CircleCCTP' = 'cctp',
+  'GnosisNativeBridge' = 'gnosis-native-bridge',
 }
 
 // Map display names to enum values
 export const BungeeBridgeNames: Record<string, BungeeBridge> = {
   Across: BungeeBridge.Across,
   'Circle CCTP': BungeeBridge.CircleCCTP,
+  'Gnosis Native Bridge:': BungeeBridge.GnosisNativeBridge,
 }
 
 export interface BungeeQuote {
