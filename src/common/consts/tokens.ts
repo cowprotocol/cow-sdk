@@ -12,74 +12,82 @@ const wrappedNativeCurrencyEth = {
 }
 
 export const WRAPPED_NATIVE_CURRENCIES: Record<SupportedChainId, TokenInfo> = {
-  [SupportedChainId.MAINNET]: {
-    ...wrappedNativeCurrencyEth,
-    chainId: SupportedChainId.MAINNET,
-    address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-  },
-
-  [SupportedChainId.GNOSIS_CHAIN]: {
-    chainId: SupportedChainId.GNOSIS_CHAIN,
-    address: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',
-    decimals: 18,
-    name: 'Wrapped XDAI',
-    symbol: 'WXDAI',
-    logoUrl: `${TOKEN_LIST_IMAGES_PATH}/100/0xe91d153e0b41518a2ce8dd3d7944fa863463a97d/logo.png`,
-  },
-
-  [SupportedChainId.ARBITRUM_ONE]: {
-    ...wrappedNativeCurrencyEth,
-    chainId: SupportedChainId.ARBITRUM_ONE,
-    address: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
-  },
-
-  [SupportedChainId.BASE]: {
-    ...wrappedNativeCurrencyEth,
-    chainId: SupportedChainId.BASE,
-    address: '0x4200000000000000000000000000000000000006',
-  },
-
-  [SupportedChainId.SEPOLIA]: {
-    ...wrappedNativeCurrencyEth,
-    chainId: SupportedChainId.SEPOLIA,
-    address: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14',
-  },
-
-  [SupportedChainId.POLYGON]: {
-    chainId: SupportedChainId.POLYGON,
-    address: '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270',
-    decimals: 18,
-    name: 'Wrapped POL',
-    symbol: 'WPOL',
-    logoUrl: `${TOKEN_LIST_IMAGES_PATH}/137/0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270/logo.png`,
-  },
-
-  [SupportedChainId.AVALANCHE]: {
-    chainId: SupportedChainId.AVALANCHE,
-    address: '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',
-    decimals: 18,
-    name: 'Wrapped AVAX',
-    symbol: 'WAVAX',
-    logoUrl: `${TOKEN_LIST_IMAGES_PATH}/43114/0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7/logo.png`,
-  },
-
-  [SupportedChainId.LENS]: {
-    chainId: SupportedChainId.LENS,
-    address: '0x6bdc36e20d267ff0dd6097799f82e78907105e2f',
-    decimals: 18,
-    name: 'Wrapped GHO',
-    symbol: 'WGHO',
-    logoUrl: `${TOKEN_LIST_IMAGES_PATH}/232/0x6bdc36e20d267ff0dd6097799f82e78907105e2f/logo.png`,
-  },
-
-  [SupportedChainId.BNB]: {
-    chainId: SupportedChainId.BNB,
-    address: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+  [SupportedChainId.MAINNET]: getWrappedTokenForChain(
+    SupportedChainId.MAINNET,
+    '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+    wrappedNativeCurrencyEth,
+  ),
+  [SupportedChainId.GNOSIS_CHAIN]: getWrappedTokenForChain(
+    SupportedChainId.GNOSIS_CHAIN,
+    '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',
+    {
+      decimals: 18,
+      name: 'Wrapped XDAI',
+      symbol: 'WXDAI',
+    },
+  ),
+  [SupportedChainId.ARBITRUM_ONE]: getWrappedTokenForChain(
+    SupportedChainId.ARBITRUM_ONE,
+    '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+    wrappedNativeCurrencyEth,
+  ),
+  [SupportedChainId.BASE]: getWrappedTokenForChain(
+    SupportedChainId.BASE,
+    '0x4200000000000000000000000000000000000006',
+    wrappedNativeCurrencyEth,
+  ),
+  [SupportedChainId.SEPOLIA]: getWrappedTokenForChain(
+    SupportedChainId.SEPOLIA,
+    '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14',
+    wrappedNativeCurrencyEth,
+  ),
+  [SupportedChainId.POLYGON]: getWrappedTokenForChain(
+    SupportedChainId.POLYGON,
+    '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270',
+    {
+      decimals: 18,
+      name: 'Wrapped POL',
+      symbol: 'WPOL',
+    },
+  ),
+  [SupportedChainId.AVALANCHE]: getWrappedTokenForChain(
+    SupportedChainId.AVALANCHE,
+    '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',
+    {
+      decimals: 18,
+      name: 'Wrapped AVAX',
+      symbol: 'WAVAX',
+    },
+  ),
+  [SupportedChainId.LENS]: getWrappedTokenForChain(
+    SupportedChainId.LENS,
+    '0x6bdc36e20d267ff0dd6097799f82e78907105e2f',
+    {
+      decimals: 18,
+      name: 'Wrapped GHO',
+      symbol: 'WGHO',
+    },
+  ),
+  [SupportedChainId.BNB]: getWrappedTokenForChain(SupportedChainId.BNB, '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c', {
     decimals: 18,
     name: 'Wrapped BNB',
     symbol: 'WBNB',
-    logoUrl: `${TOKEN_LIST_IMAGES_PATH}/56/0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c/logo.png`,
-  },
+  }),
+}
+
+function getWrappedTokenForChain(
+  chainId: SupportedChainId,
+  address: string,
+  info: Pick<TokenInfo, 'decimals' | 'name' | 'symbol' | 'logoUrl'>,
+): TokenInfo {
+  const { logoUrl, ...rest } = info
+
+  return {
+    chainId,
+    address,
+    ...rest,
+    logoUrl: logoUrl || `${TOKEN_LIST_IMAGES_PATH}/${chainId}/${address.toLowerCase()}/logo.png`,
+  }
 }
 
 /**
