@@ -32,6 +32,9 @@
     "typechain:codegen": "typechain --target ethers-v5 --out-dir ./src/common/generated './abi/*.json'",
     "trading:generateSchemas": "ts-node scripts/generateTradingSchemas.ts"
   },
+  "engines": {
+    "node": ">=16.14"
+  },
   "dependencies": {
     "@cowprotocol/app-data": "^3.3.0",
     "@cowprotocol/contracts": "^1.8.0",
@@ -42,7 +45,7 @@
     "deepmerge": "^4.3.1",
     "exponential-backoff": "^3.1.2",
     "graphql": "^16.11.0",
-    "graphql-request": "^4.3.0",
+    "graphql-request": "^6.1.0",
     "limiter": "^3.0.0"
   },
   "peerDependencies": {
