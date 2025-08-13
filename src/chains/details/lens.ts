@@ -2,7 +2,8 @@ import { nativeCurrencyTemplate, TOKEN_LIST_IMAGES_PATH } from '../../common/con
 import { RAW_CHAINS_FILES_PATH } from '../const/path'
 import { ChainInfo, SupportedChainId } from '../types'
 
-const lensLogo = `${RAW_CHAINS_FILES_PATH}/images/lens-logo.svg`
+const lensLogoLight = `${RAW_CHAINS_FILES_PATH}/images/lens-logo-light.svg`
+const lensLogoDark = `${RAW_CHAINS_FILES_PATH}/images/lens-logo-dark.svg`
 
 const GHO_MAINNET_ADDRESS = '0x40d16fc0246ad3160ccc09b8d0d3a2cd28ae6c2f'
 const GHO_MAINNET_LOGO_URL = `${TOKEN_LIST_IMAGES_PATH}/1/${GHO_MAINNET_ADDRESS}/logo.png`
@@ -13,7 +14,7 @@ export const lens: ChainInfo = {
   id: SupportedChainId.LENS,
   label: 'Lens',
   eip155Label: 'Lens Chain Mainnet',
-  logo: { light: lensLogo, dark: lensLogo },
+  logo: { light: lensLogoLight, dark: lensLogoDark },
   nativeCurrency: {
     ...nativeCurrencyTemplate,
     chainId: SupportedChainId.LENS,
