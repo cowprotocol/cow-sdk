@@ -1,6 +1,6 @@
-import { ChainInfo, SupportedChainId } from '../types'
 import { nativeCurrencyTemplate } from '../../common/consts/tokens'
 import { RAW_CHAINS_FILES_PATH } from '../const/path'
+import { ChainInfo, SupportedChainId } from '../types'
 
 const baseLogo = `${RAW_CHAINS_FILES_PATH}/images/base-logo.svg`
 
@@ -42,7 +42,7 @@ export const base: ChainInfo = {
     url: 'https://docs.base.org',
   },
   blockExplorer: {
-    name: 'Basescan',
+    name: 'BaseScan',
     url: 'https://basescan.org',
   },
   bridges: [
