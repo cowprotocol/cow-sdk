@@ -44,4 +44,10 @@ export const bnb: ChainInfo = {
     name: 'BNB Smart Chain Explorer',
     url: 'https://bscscan.com',
   },
+  bridges: [
+    {
+      name: 'BNB Chain Cross-Chain Bridge',
+      url: 'https://www.bnbchain.org/en/bnb-chain-bridge',
+    },
+  ],
 }
