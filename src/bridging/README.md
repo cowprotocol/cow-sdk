@@ -13,7 +13,7 @@ The **`BridgingSDK`** lets you 🌉 *swap tokens across chains* and bridge asset
 2. [Installation](#installation)
 3. [Quick Start](#quick-start)
 4. [Configuration](#configuration)
-5[Core Methods](#core-methods)
+5. [Core Methods](#core-methods)
 6. [Examples](#examples)
    - [React App](#react-app)
    - [Node.js App](#nodejs-app)
@@ -56,7 +56,7 @@ const rpcUrls: Record<SupportedChainId, string> = {
   [SupportedChainId.OPTIMISM]: 'https://opt-mainnet.alchemyapi.io/v2/YOUR_KEY',
   [SupportedChainId.BASE]: 'https://base-mainnet.alchemyapi.io/v2/YOUR_KEY',
   [SupportedChainId.AVALANCHE]: 'https://avalanche-mainnet.alchemyapi.io/v2/YOUR_KEY',
-  ...
+  // ... add other chain RPC URLs as needed
 }
 
 // Configure RPC providers for supported chains
@@ -577,7 +577,6 @@ import {
   BridgeProviderQuoteError,
   BridgeQuoteErrors
 } from '@cowprotocol/cow-sdk'
-import { bridgingSdk } from 'tradingSdk/bridgingSdk'
 
 try {
   const quote = await bridgingSdk.getQuote(...)

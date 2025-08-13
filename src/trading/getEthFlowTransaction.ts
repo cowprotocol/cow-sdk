@@ -1,14 +1,14 @@
-import { LimitTradeParametersFromQuote, PostTradeAdditionalParams, TransactionParams } from './types'
-import { calculateUniqueOrderId } from './calculateUniqueOrderId'
-import { getOrderToSign } from './getOrderToSign'
-import { type EthFlow, EthFlow__factory } from '../common/generated'
-import { BARN_ETH_FLOW_ADDRESS, CowEnv, ETH_FLOW_ADDRESS } from '../common'
-import { SupportedChainId } from '../chains'
-import { GAS_LIMIT_DEFAULT } from './consts'
-import type { EthFlowOrder } from '../common/generated/EthFlow'
-import { adjustEthFlowOrderParams, calculateGasMargin } from './utils/misc'
 import { Signer } from '@ethersproject/abstract-signer'
+import { SupportedChainId } from '../chains'
+import { BARN_ETH_FLOW_ADDRESSES, CowEnv, ETH_FLOW_ADDRESSES } from '../common'
+import { type EthFlow, EthFlow__factory } from '../common/generated'
+import type { EthFlowOrder } from '../common/generated/EthFlow'
 import type { UnsignedOrder } from '../order-signing'
+import { calculateUniqueOrderId } from './calculateUniqueOrderId'
+import { GAS_LIMIT_DEFAULT } from './consts'
+import { getOrderToSign } from './getOrderToSign'
+import { LimitTradeParametersFromQuote, PostTradeAdditionalParams, TransactionParams } from './types'
+import { adjustEthFlowOrderParams, calculateGasMargin } from './utils/misc'
 import { getDefaultSlippageBps } from './utils/slippage'
 
 export async function getEthFlowTransaction(
@@ -29,7 +29,7 @@ export async function getEthFlowTransaction(
 
   const { quoteId } = params
 
-  const contract = getEthFlowContract(signer, params.env)
+  const contract = getEthFlowContract(signer, chainId, params.env)
   const orderToSign = getOrderToSign(
     {
       chainId,
@@ -77,6 +77,9 @@ export async function getEthFlowTransaction(
   }
 }
 
-export function getEthFlowContract(signer: Signer, env?: CowEnv): EthFlow {
-  return EthFlow__factory.connect(env === 'staging' ? BARN_ETH_FLOW_ADDRESS : ETH_FLOW_ADDRESS, signer)
+export function getEthFlowContract(signer: Signer, chainId: SupportedChainId, env?: CowEnv): EthFlow {
+  return EthFlow__factory.connect(
+    env === 'staging' ? BARN_ETH_FLOW_ADDRESSES[chainId] : ETH_FLOW_ADDRESSES[chainId],
+    signer,
+  )
 }
