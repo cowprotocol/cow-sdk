@@ -1,12 +1,14 @@
 import { AdditionalTargetChainId, ChainInfo, SupportedChainId } from '../types'
 
-import { mainnet } from '../details/mainnet'
-import { gnosisChain } from '../details/gnosis'
 import { arbitrumOne } from '../details/arbitrum'
 import { base } from '../details/base'
+import { gnosisChain } from '../details/gnosis'
+import { mainnet } from '../details/mainnet'
 import { sepolia } from '../details/sepolia'
 
 import { avalanche } from '../details/avalanche'
+import { bnb } from '../details/bnb'
+import { lens } from '../details/lens'
 import { optimism } from '../details/optimism'
 import { polygon } from '../details/polygon'
 
@@ -20,6 +22,8 @@ export const ALL_SUPPORTED_CHAINS_MAP: Record<SupportedChainId, ChainInfo> = {
   [SupportedChainId.BASE]: base,
   [SupportedChainId.AVALANCHE]: avalanche,
   [SupportedChainId.POLYGON]: polygon,
+  [SupportedChainId.BNB]: bnb,
+  [SupportedChainId.LENS]: lens,
   [SupportedChainId.SEPOLIA]: sepolia,
 }
 
@@ -32,7 +36,7 @@ export const ALL_SUPPORTED_CHAINS = Object.values(ALL_SUPPORTED_CHAINS_MAP)
  * The list of supported chains.
  */
 export const ALL_SUPPORTED_CHAIN_IDS: SupportedChainId[] = ALL_SUPPORTED_CHAINS.map(
-  (chain) => chain.id
+  (chain) => chain.id,
 ) as SupportedChainId[]
 
 /**
