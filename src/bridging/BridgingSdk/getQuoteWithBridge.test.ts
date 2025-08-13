@@ -1,5 +1,12 @@
-import { getQuoteWithBridge } from './getQuoteWithBridge'
+import { SupportedChainId } from '../../chains'
+import { NATIVE_CURRENCY_ADDRESS } from '../../common'
+import { getHookMockForCostEstimation } from '../../hooks/utils'
 import { OrderBookApi } from '../../order-book'
+import { TradingSdk } from '../../trading'
+import { getEthFlowContract } from '../../trading/getEthFlowTransaction'
+import { MockBridgeProvider } from '../providers/mock/MockBridgeProvider'
+import { QuoteBridgeRequest } from '../types'
+import { getQuoteWithBridge } from './getQuoteWithBridge'
 import {
   bridgeCallDetails,
   bridgeQuoteResult,
@@ -9,13 +16,6 @@ import {
   orderQuoteResponse,
   quoteBridgeRequest,
 } from './mock/bridgeRequestMocks'
-import { MockBridgeProvider } from '../providers/mock/MockBridgeProvider'
-import { TradingSdk } from '../../trading'
-import { SupportedChainId } from '../../chains'
-import { QuoteBridgeRequest } from '../types'
-import { NATIVE_CURRENCY_ADDRESS } from '../../common'
-import { getEthFlowContract } from '../../trading/getEthFlowTransaction'
-import { getHookMockForCostEstimation } from '../../hooks/utils'
 
 describe('getQuoteWithBridge', () => {
   let tradingSdk: TradingSdk
@@ -99,7 +99,7 @@ describe('getQuoteWithBridge', () => {
 
     await postSwapOrderFromQuote()
 
-    const ethFlowContract = getEthFlowContract(mockSigner)
+    const ethFlowContract = getEthFlowContract(mockSigner, SupportedChainId.GNOSIS_CHAIN)
     const sendTxCall = (mockSigner.sendTransaction as unknown as jest.Mock).mock.calls[0][0]
     const data = ethFlowContract.interface.decodeFunctionData('createOrder', sendTxCall.data)
 
