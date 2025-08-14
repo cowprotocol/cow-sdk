@@ -12,152 +12,165 @@ describe('BungeeApi: Shape of API response', () => {
     api = new BungeeApi()
   })
 
-  it('getBungeeQuote from ARBITRUM_ONE to BASE', async () => {
-    const result = await api.getBungeeQuote({
-      userAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
-      originChainId: SupportedChainId.ARBITRUM_ONE.toString(),
-      destinationChainId: SupportedChainId.BASE.toString(),
-      inputToken: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1', // weth
-      inputAmount: '3000000000000000', // 0.0003 eth
-      receiverAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
-      outputToken: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', // weth
-      enableManual: true,
-      disableSwapping: true,
-      disableAuto: true,
+  describe('getBungeeQuote', () => {
+    it('should return a quote from Arbitrum to Base', async () => {
+      const result = await api.getBungeeQuote({
+        userAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
+        originChainId: SupportedChainId.ARBITRUM_ONE.toString(),
+        destinationChainId: SupportedChainId.BASE.toString(),
+        inputToken: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1', // weth
+        inputAmount: '3000000000000000', // 0.0003 eth
+        receiverAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
+        outputToken: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', // weth
+        enableManual: true,
+        disableSwapping: true,
+        disableAuto: true,
+      })
+
+      expect(result).toBeDefined()
+      expect(result.originChainId).toBe(SupportedChainId.ARBITRUM_ONE)
+      expect(result.destinationChainId).toBe(SupportedChainId.BASE)
+      expect(result.route).toBeDefined()
+      expect(result.routeBridge).toBeDefined()
     })
 
-    expect(result).toBeDefined()
-    expect(result.originChainId).toBe(SupportedChainId.ARBITRUM_ONE)
-    expect(result.destinationChainId).toBe(SupportedChainId.BASE)
-    expect(result.route).toBeDefined()
-    expect(result.routeBridge).toBeDefined()
+    it('should return a quote from Mainnet to Gnosis', async () => {
+      const result = await api.getBungeeQuote({
+        userAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
+        originChainId: SupportedChainId.MAINNET.toString(),
+        destinationChainId: SupportedChainId.GNOSIS_CHAIN.toString(),
+        inputToken: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // dai
+        inputAmount: '10000000000000000000', // 10 dai
+        receiverAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
+        outputToken: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', // xDAI
+        enableManual: true,
+        disableSwapping: true,
+        disableAuto: true,
+      })
+
+      expect(result).toBeDefined()
+      expect(result.originChainId).toBe(SupportedChainId.MAINNET)
+      expect(result.destinationChainId).toBe(SupportedChainId.GNOSIS_CHAIN)
+      expect(result.route).toBeDefined()
+      expect(result.routeBridge).toBe('gnosis-native-bridge')
+    })
+
+    // TODO: the test is flacky
+    it.skip('should return a quote from Mainnet to Polygon', async () => {
+      const result = await api.getBungeeQuote({
+        userAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
+        originChainId: SupportedChainId.MAINNET.toString(),
+        destinationChainId: SupportedChainId.POLYGON.toString(),
+        inputToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', // weth
+        inputAmount: '1000000000000000000',
+        receiverAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
+        outputToken: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619', // weth
+        enableManual: true,
+        disableSwapping: true,
+        disableAuto: true,
+      })
+
+      expect(result).toBeDefined()
+      expect(result.originChainId).toBe(SupportedChainId.MAINNET)
+      expect(result.destinationChainId).toBe(SupportedChainId.POLYGON)
+      expect(result.route).toBeDefined()
+      expect(result.routeBridge).toBeDefined()
+    }, 10_000)
   })
 
-  it('getBungeeQuote from MAINNET to GNOSIS', async () => {
-    const result = await api.getBungeeQuote({
-      userAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
-      originChainId: SupportedChainId.MAINNET.toString(),
-      destinationChainId: SupportedChainId.GNOSIS_CHAIN.toString(),
-      inputToken: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // dai
-      inputAmount: '10000000000000000000', // 10 dai
-      receiverAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
-      outputToken: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', // xDAI
-      enableManual: true,
-      disableSwapping: true,
-      disableAuto: true,
+  describe('getBungeeBuildTx', () => {
+    it('should build the tx data for a given quote from Arbitrum to Base', async () => {
+      // First get a quote
+      const quote = await api.getBungeeQuote({
+        userAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
+        originChainId: SupportedChainId.ARBITRUM_ONE.toString(),
+        destinationChainId: SupportedChainId.BASE.toString(),
+        inputToken: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', // weth
+        inputAmount: '2389939424141418',
+        receiverAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
+        outputToken: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', // weth
+        enableManual: true,
+        disableSwapping: true,
+        disableAuto: true,
+      })
+
+      // Then get the build tx
+      const result = await api.getBungeeBuildTx(quote)
+
+      expect(result).toBeDefined()
+      expect(result.txData).toBeDefined()
+      expect(result.txData.data).toBeDefined()
+      expect(result.txData.to).toBeDefined()
+      expect(result.txData.chainId).toBeDefined()
+      expect(result.txData.value).toBeDefined()
+      expect(result.approvalData).toBeDefined()
     })
 
-    expect(result).toBeDefined()
-    expect(result.originChainId).toBe(SupportedChainId.MAINNET)
-    expect(result.destinationChainId).toBe(SupportedChainId.GNOSIS_CHAIN)
-    expect(result.route).toBeDefined()
-    expect(result.routeBridge).toBe('gnosis-native-bridge')
+    it('should build the tx data for a given quote from Mainnet to Gnosis', async () => {
+      // First get a quote
+      const quote = await api.getBungeeQuote({
+        userAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
+        originChainId: SupportedChainId.MAINNET.toString(),
+        destinationChainId: SupportedChainId.GNOSIS_CHAIN.toString(),
+        inputToken: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // dai
+        inputAmount: '10000000000000000000', // 10 dai
+        receiverAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
+        outputToken: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', // weth
+        enableManual: true,
+        disableSwapping: true,
+        disableAuto: true,
+      })
+
+      // Then get the build tx
+      const result = await api.getBungeeBuildTx(quote)
+
+      expect(result).toBeDefined()
+      expect(result.txData).toBeDefined()
+      expect(result.txData.data).toBeDefined()
+      expect(result.txData.to).toBeDefined()
+      expect(result.txData.chainId).toBe(SupportedChainId.MAINNET)
+      expect(result.txData.value).toBeDefined()
+      expect(result.approvalData).toBeDefined()
+    })
   })
 
-  // temporary disabled, no routes returned
-  it.skip('getBungeeQuote from GNOSIS to MAINNET', async () => {
-    const result = await api.getBungeeQuote({
-      userAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
-      originChainId: SupportedChainId.GNOSIS_CHAIN.toString(),
-      destinationChainId: SupportedChainId.MAINNET.toString(),
-      inputToken: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', // xDAI
-      inputAmount: '20000000000000000000', // 20 xDAI
-      receiverAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
-      outputToken: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // DAI
-      enableManual: true,
-      disableSwapping: true,
-      disableAuto: true,
-    })
+  describe('getEvents', () => {
+    it('should return the events for a given orderId', async () => {
+      // Note: This test requires a valid orderId from a previous transaction
+      // Using a known orderId from a previous transaction
+      const result = await api.getEvents({
+        orderId:
+          '0x0bfa5c44e95964a907d5f0d69ea65221e3a8fb1871e41aa3195e446c4ce855bbdaee4d2156de6fe6f7d50ca047136d758f96a6f067ee7474',
+      })
 
-    expect(result).toBeDefined()
-    expect(result.originChainId).toBe(SupportedChainId.GNOSIS_CHAIN)
-    expect(result.destinationChainId).toBe(SupportedChainId.MAINNET)
-    expect(result.route).toBeDefined()
-    expect(result.routeBridge).toBe('gnosis-native-bridge')
+      expect(result).toBeDefined()
+      expect(Array.isArray(result)).toBe(true)
+      if (result.length > 0) {
+        const event = result[0]
+        expect(event.identifier).toBeDefined()
+        expect(event.srcTransactionHash).toBeDefined()
+        expect(event.bridgeName).toBeDefined()
+        expect(event.fromChainId).toBeDefined()
+        expect(event.isCowswapTrade).toBeDefined()
+        expect(event.orderId).toBeDefined()
+        expect(event.recipient).toBeDefined()
+        expect(event.sender).toBeDefined()
+        expect(event.destTransactionHash).toBeDefined()
+        expect(event.srcTxStatus).toBeDefined()
+        expect(event.destTxStatus).toBeDefined()
+      }
+    })
   })
 
-  // TODO: the test is flacky
-  it.skip('getBungeeQuote from MAINNET to POLYGON', async () => {
-    const result = await api.getBungeeQuote({
-      userAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
-      originChainId: SupportedChainId.MAINNET.toString(),
-      destinationChainId: SupportedChainId.POLYGON.toString(),
-      inputToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', // weth
-      inputAmount: '1000000000000000000',
-      receiverAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
-      outputToken: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619', // weth
-      enableManual: true,
-      disableSwapping: true,
-      disableAuto: true,
+  describe('getAcrossStatus', () => {
+    it('should return the status of the deposit transaction', async () => {
+      // Note: This test requires a valid depositTxHash from a previous transaction
+      // Using a known depositTxHash from a previous transaction
+      const result = await api.getAcrossStatus('0x2bb3be895fd9be20522562cd62b52ae8d58eb00b31548c2caa7fcb557708f4cf')
+
+      expect(result).toBeDefined()
+      expect(['filled', 'pending', 'expired', 'refunded', 'slowFillRequested']).toContain(result)
     })
-
-    expect(result).toBeDefined()
-    expect(result.originChainId).toBe(SupportedChainId.MAINNET)
-    expect(result.destinationChainId).toBe(SupportedChainId.POLYGON)
-    expect(result.route).toBeDefined()
-    expect(result.routeBridge).toBeDefined()
-  }, 10_000)
-
-  it('getBungeeBuildTx', async () => {
-    // First get a quote
-    const quote = await api.getBungeeQuote({
-      userAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
-      originChainId: SupportedChainId.ARBITRUM_ONE.toString(),
-      destinationChainId: SupportedChainId.BASE.toString(),
-      inputToken: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', // weth
-      inputAmount: '2389939424141418',
-      receiverAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
-      outputToken: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', // weth
-      enableManual: true,
-      disableSwapping: true,
-      disableAuto: true,
-    })
-
-    // Then get the build tx
-    const result = await api.getBungeeBuildTx(quote)
-
-    expect(result).toBeDefined()
-    expect(result.txData).toBeDefined()
-    expect(result.txData.data).toBeDefined()
-    expect(result.txData.to).toBeDefined()
-    expect(result.txData.chainId).toBeDefined()
-    expect(result.txData.value).toBeDefined()
-    expect(result.approvalData).toBeDefined()
-  })
-
-  it.skip('getEvents', async () => {
-    // Note: This test requires a valid orderId from a previous transaction
-    // Using a known orderId from a previous transaction
-    const result = await api.getEvents({
-      orderId:
-        '0x0bfa5c44e95964a907d5f0d69ea65221e3a8fb1871e41aa3195e446c4ce855bbdaee4d2156de6fe6f7d50ca047136d758f96a6f067ee7474',
-    })
-
-    expect(result).toBeDefined()
-    expect(Array.isArray(result)).toBe(true)
-    if (result.length > 0) {
-      const event = result[0]
-      expect(event.identifier).toBeDefined()
-      expect(event.srcTransactionHash).toBeDefined()
-      expect(event.bridgeName).toBeDefined()
-      expect(event.fromChainId).toBeDefined()
-      expect(event.isCowswapTrade).toBeDefined()
-      expect(event.orderId).toBeDefined()
-      expect(event.recipient).toBeDefined()
-      expect(event.sender).toBeDefined()
-      expect(event.destTransactionHash).toBeDefined()
-      expect(event.srcTxStatus).toBeDefined()
-      expect(event.destTxStatus).toBeDefined()
-    }
-  })
-
-  it('getAcrossStatus', async () => {
-    // Note: This test requires a valid depositTxHash from a previous transaction
-    // Using a known depositTxHash from a previous transaction
-    const result = await api.getAcrossStatus('0x2bb3be895fd9be20522562cd62b52ae8d58eb00b31548c2caa7fcb557708f4cf')
-
-    expect(result).toBeDefined()
-    expect(['filled', 'pending', 'expired', 'refunded', 'slowFillRequested']).toContain(result)
   })
 
   describe('getBuyTokens', () => {
@@ -193,8 +206,8 @@ describe('BungeeApi: Shape of API response', () => {
     })
   })
 
-  describe('Intermediate Tokens', () => {
-    it('getIntermediateTokens from Arbitrum to Base', async () => {
+  describe('getIntermediateTokens', () => {
+    it('should return the intermediate tokens from Arbitrum to Base', async () => {
       const result = await api.getIntermediateTokens({
         fromChainId: SupportedChainId.ARBITRUM_ONE,
         toChainId: SupportedChainId.BASE,
@@ -224,7 +237,7 @@ describe('BungeeApi: Shape of API response', () => {
       }
     })
 
-    it('getIntermediateTokens from Mainnet to Gnosis', async () => {
+    it('should return the intermediate tokens from Mainnet to Gnosis', async () => {
       const result = await api.getIntermediateTokens({
         fromChainId: SupportedChainId.MAINNET,
         toChainId: SupportedChainId.GNOSIS_CHAIN,
@@ -251,38 +264,6 @@ describe('BungeeApi: Shape of API response', () => {
         expect(usdc?.logoUrl).toBeDefined()
         expect(usdc?.decimals).toBe(6)
         expect(usdc?.chainId).toBe(SupportedChainId.MAINNET)
-      }
-    })
-
-    // this test is not conclusive, as `result` is defined but empty
-    it('getIntermediateTokens from Gnosis to Mainnet', async () => {
-      const result = await api.getIntermediateTokens({
-        fromChainId: SupportedChainId.GNOSIS_CHAIN,
-        toChainId: SupportedChainId.MAINNET,
-        toTokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC
-      })
-
-      expect(result).toBeDefined()
-
-      expect(Array.isArray(result)).toBe(true)
-      if (result.length > 0) {
-        const token = result[0]
-        expect(token.address).toBeDefined()
-        expect(token.chainId).toBeDefined()
-        expect(token.decimals).toBeDefined()
-        expect(token.logoUrl).toBeDefined()
-        expect(token.name).toBeDefined()
-        expect(token.symbol).toBeDefined()
-
-        // // should include USDC 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48
-        // const usdc = result.find((token) => token.address === '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48')
-        // expect(usdc).toBeDefined()
-        // expect(usdc?.address.toLowerCase()).toBe('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'.toLowerCase())
-        // expect(usdc?.name).toBe('USDC')
-        // expect(usdc?.symbol).toBe('USDC')
-        // expect(usdc?.logoUrl).toBeDefined()
-        // expect(usdc?.decimals).toBe(6)
-        // expect(usdc?.chainId).toBe(SupportedChainId.GNOSIS_CHAIN)
       }
     })
   })
