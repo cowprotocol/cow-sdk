@@ -33,6 +33,49 @@ describe('BungeeApi: Shape of API response', () => {
     expect(result.routeBridge).toBeDefined()
   })
 
+  it('getBungeeQuote from MAINNET to GNOSIS', async () => {
+    const result = await api.getBungeeQuote({
+      userAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
+      originChainId: SupportedChainId.MAINNET.toString(),
+      destinationChainId: SupportedChainId.GNOSIS_CHAIN.toString(),
+      inputToken: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // dai
+      inputAmount: '10000000000000000000', // 10 dai
+      receiverAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
+      outputToken: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', // xDAI
+      enableManual: true,
+      disableSwapping: true,
+      disableAuto: true,
+    })
+
+    expect(result).toBeDefined()
+    expect(result.originChainId).toBe(SupportedChainId.MAINNET)
+    expect(result.destinationChainId).toBe(SupportedChainId.GNOSIS_CHAIN)
+    expect(result.route).toBeDefined()
+    expect(result.routeBridge).toBe('gnosis-native-bridge')
+  })
+
+  // temporary disabled, no routes returned
+  it.skip('getBungeeQuote from GNOSIS to MAINNET', async () => {
+    const result = await api.getBungeeQuote({
+      userAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
+      originChainId: SupportedChainId.GNOSIS_CHAIN.toString(),
+      destinationChainId: SupportedChainId.MAINNET.toString(),
+      inputToken: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', // xDAI
+      inputAmount: '20000000000000000000', // 20 xDAI
+      receiverAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
+      outputToken: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // DAI
+      enableManual: true,
+      disableSwapping: true,
+      disableAuto: true,
+    })
+
+    expect(result).toBeDefined()
+    expect(result.originChainId).toBe(SupportedChainId.GNOSIS_CHAIN)
+    expect(result.destinationChainId).toBe(SupportedChainId.MAINNET)
+    expect(result.route).toBeDefined()
+    expect(result.routeBridge).toBe('gnosis-native-bridge')
+  })
+
   // TODO: the test is flacky
   it.skip('getBungeeQuote from MAINNET to POLYGON', async () => {
     const result = await api.getBungeeQuote({
@@ -150,33 +193,97 @@ describe('BungeeApi: Shape of API response', () => {
     })
   })
 
-  it('getIntermediateTokens', async () => {
-    const result = await api.getIntermediateTokens({
-      fromChainId: SupportedChainId.ARBITRUM_ONE,
-      toChainId: SupportedChainId.BASE,
-      toTokenAddress: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+  describe('Intermediate Tokens', () => {
+    it('getIntermediateTokens from Arbitrum to Base', async () => {
+      const result = await api.getIntermediateTokens({
+        fromChainId: SupportedChainId.ARBITRUM_ONE,
+        toChainId: SupportedChainId.BASE,
+        toTokenAddress: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', // USDC
+      })
+
+      expect(result).toBeDefined()
+      expect(Array.isArray(result)).toBe(true)
+      if (result.length > 0) {
+        const token = result[0]
+        expect(token.address).toBeDefined()
+        expect(token.chainId).toBeDefined()
+        expect(token.decimals).toBeDefined()
+        expect(token.logoUrl).toBeDefined()
+        expect(token.name).toBeDefined()
+        expect(token.symbol).toBeDefined()
+
+        // should include USDC 0xaf88d065e77c8cc2239327c5edb3a432268e5831
+        const usdc = result.find((token) => token.address === '0xaf88d065e77c8cc2239327c5edb3a432268e5831')
+        expect(usdc).toBeDefined()
+        expect(usdc?.address.toLowerCase()).toBe('0xaf88d065e77c8cc2239327c5edb3a432268e5831'.toLowerCase())
+        expect(usdc?.name).toBe('USDC')
+        expect(usdc?.symbol).toBe('USDC')
+        expect(usdc?.logoUrl).toBeDefined()
+        expect(usdc?.decimals).toBe(6)
+        expect(usdc?.chainId).toBe(SupportedChainId.ARBITRUM_ONE)
+      }
     })
 
-    expect(result).toBeDefined()
-    expect(Array.isArray(result)).toBe(true)
-    if (result.length > 0) {
-      const token = result[0]
-      expect(token.address).toBeDefined()
-      expect(token.chainId).toBeDefined()
-      expect(token.decimals).toBeDefined()
-      expect(token.logoUrl).toBeDefined()
-      expect(token.name).toBeDefined()
-      expect(token.symbol).toBeDefined()
+    it('getIntermediateTokens from Mainnet to Gnosis', async () => {
+      const result = await api.getIntermediateTokens({
+        fromChainId: SupportedChainId.MAINNET,
+        toChainId: SupportedChainId.GNOSIS_CHAIN,
+        toTokenAddress: '0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83', // USDC
+      })
 
-      // should include USDC 0xaf88d065e77c8cc2239327c5edb3a432268e5831
-      const usdc = result.find((token) => token.address === '0xaf88d065e77c8cc2239327c5edb3a432268e5831')
-      expect(usdc).toBeDefined()
-      expect(usdc?.address.toLowerCase()).toBe('0xaf88d065e77c8cc2239327c5edb3a432268e5831'.toLowerCase())
-      expect(usdc?.name).toBe('USDC')
-      expect(usdc?.symbol).toBe('USDC')
-      expect(usdc?.logoUrl).toBeDefined()
-      expect(usdc?.decimals).toBe(6)
-      expect(usdc?.chainId).toBe(SupportedChainId.ARBITRUM_ONE)
-    }
+      expect(result).toBeDefined()
+      expect(Array.isArray(result)).toBe(true)
+      if (result.length > 0) {
+        const token = result[0]
+        expect(token.address).toBeDefined()
+        expect(token.chainId).toBeDefined()
+        expect(token.decimals).toBeDefined()
+        expect(token.logoUrl).toBeDefined()
+        expect(token.name).toBeDefined()
+        expect(token.symbol).toBeDefined()
+
+        // // should include USDC 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48
+        const usdc = result.find((token) => token.address === '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48')
+        expect(usdc).toBeDefined()
+        expect(usdc?.address.toLowerCase()).toBe('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'.toLowerCase())
+        expect(usdc?.name).toBe('USDC')
+        expect(usdc?.symbol).toBe('USDC')
+        expect(usdc?.logoUrl).toBeDefined()
+        expect(usdc?.decimals).toBe(6)
+        expect(usdc?.chainId).toBe(SupportedChainId.MAINNET)
+      }
+    })
+
+    // this test is not conclusive, as `result` is defined but empty
+    it('getIntermediateTokens from Gnosis to Mainnet', async () => {
+      const result = await api.getIntermediateTokens({
+        fromChainId: SupportedChainId.GNOSIS_CHAIN,
+        toChainId: SupportedChainId.MAINNET,
+        toTokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC
+      })
+
+      expect(result).toBeDefined()
+
+      expect(Array.isArray(result)).toBe(true)
+      if (result.length > 0) {
+        const token = result[0]
+        expect(token.address).toBeDefined()
+        expect(token.chainId).toBeDefined()
+        expect(token.decimals).toBeDefined()
+        expect(token.logoUrl).toBeDefined()
+        expect(token.name).toBeDefined()
+        expect(token.symbol).toBeDefined()
+
+        // // should include USDC 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48
+        // const usdc = result.find((token) => token.address === '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48')
+        // expect(usdc).toBeDefined()
+        // expect(usdc?.address.toLowerCase()).toBe('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'.toLowerCase())
+        // expect(usdc?.name).toBe('USDC')
+        // expect(usdc?.symbol).toBe('USDC')
+        // expect(usdc?.logoUrl).toBeDefined()
+        // expect(usdc?.decimals).toBe(6)
+        // expect(usdc?.chainId).toBe(SupportedChainId.GNOSIS_CHAIN)
+      }
+    })
   })
 })

@@ -109,14 +109,14 @@ export interface BungeeQuoteAPIResponse {
 export enum BungeeBridge {
   'Across' = 'across',
   'CircleCCTP' = 'cctp',
-  'GnosisNativeBridge' = 'gnosis-native-bridge',
+  'GnosisNative' = 'gnosis-native-bridge',
 }
 
 // Map display names to enum values
 export const BungeeBridgeNames: Record<string, BungeeBridge> = {
   Across: BungeeBridge.Across,
   'Circle CCTP': BungeeBridge.CircleCCTP,
-  'Gnosis Native Bridge:': BungeeBridge.GnosisNativeBridge,
+  'Gnosis Native': BungeeBridge.GnosisNative,
 }
 
 export interface BungeeQuote {
