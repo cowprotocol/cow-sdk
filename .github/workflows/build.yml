@@ -12,8 +12,8 @@ on:
   release:
     types: [published]
 
-env:
-  NODE_VERSION: lts/jod
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   build:
@@ -21,33 +21,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.8.0
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          access_token: ${{ github.token }}
-      - name: Remove broken apt repos [Ubuntu]
-        if: ${{ matrix.os }} == 'ubuntu-latest'
-        run: |
-          for apt_file in `grep -lr microsoft /etc/apt/sources.list.d/`; do sudo rm $apt_file; done
-      - uses: actions/checkout@v2
+          persist-credentials: false
+
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: lts/jod
+          cache: yarn
 
-      - uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-
-      - run: |
-          # Due to some dependencies yarn may randomly throw an error about invalid cache
-          # This approach is taken from https://github.com/yarnpkg/yarn/issues/7212#issuecomment-506155894 to fix the issue
-          # Another approach is to install with flag --network-concurrency 1, but this will make the installation pretty slow (default value is 8)
-          mkdir .yarncache
-          yarn install --cache-folder ./.yarncache --frozen-lockfile
-          rm -rf .yarncache
-          yarn cache clean
+      - run: yarn install --frozen-lockfile
 
       - name: Build app
         run: yarn build
