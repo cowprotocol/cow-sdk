@@ -326,6 +326,13 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
 
 ### Step 4: Transaction Building
 
+> It very depends on your smart-contract implementation.
+> Basically, the smart-contract should:
+> 1. Approve sell token spending from `CoW Shed proxy`
+> 2. Transfer funds from `CoW Shed proxy` to your deposit smart-contract
+>
+> See `createBungeeDepositCall` as an example
+
 ```typescript
 export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult> {
   async getUnsignedBridgeCall(
