@@ -5,6 +5,8 @@ The **`BridgingSDK`** lets you 🌉 *swap tokens across chains* and bridge asset
 
 📚 This **all-in-one guide** walks you through **everything** you need to integrate `BridgingSDK` into your app and supercharge your cross-chain experience! ✨
 
+> See [PROVIDER_README](./PROVIDER_README.md) for a guide how to create a bridge provider for `BridgingSDK`
+
 ## Table of Contents
 
 1. [Overview](#overview)
