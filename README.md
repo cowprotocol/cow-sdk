@@ -260,10 +260,13 @@ setGlobalAdapter(adapter)
 
 const orderBookApi = new OrderBookApi({ chainId })
 const subgraphApi = new SubgraphApi('API_KEY', { chainId })
-const orderSigningUtils = new OrderSigningUtils()
 
-// Option 2: Pass the adapter explicitly (when supported)
-const orderSigningUtils = new OrderSigningUtils(adapter)
+// Use OrderSigningUtils static methods directly
+const signingResult = await OrderSigningUtils.signOrder(order, chainId, adapter.signer)
+
+// Or via CowSdk
+const sdk = new CowSdk({ adapter, chainId })
+const signingResult2 = await sdk.orderSigning.signOrder(order, chainId, adapter.signer)
 ```
 
 ### Sign, fetch, post and cancel order
