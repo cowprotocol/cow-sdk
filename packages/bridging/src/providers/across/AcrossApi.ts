@@ -1,13 +1,16 @@
-import { log } from '@cowprotocol/sdk-common'
 import {
   AvailableRoutesRequest,
+  DepositStatusRequest,
+  DepositStatusResponse,
   PctFee,
   Route,
   SuggestedFeesLimits,
   SuggestedFeesRequest,
   SuggestedFeesResponse,
 } from './types'
-import { BridgeProviderQuoteError } from '../../errors'
+import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
+import { TokenInfo } from '@cowprotocol/sdk-config'
+import { log } from '@cowprotocol/sdk-common'
 
 const ACROSS_API_URL = 'https://app.across.to/api'
 
@@ -69,6 +72,21 @@ export class AcrossApi {
     return this.fetchApi('/suggested-fees', params, isValidSuggestedFeesResponse)
   }
 
+  async getSupportedTokens(): Promise<TokenInfo[]> {
+    return this.fetchApi<(TokenInfo & { logoURI?: string })[]>('/token-list', {}).then((tokens) =>
+      tokens.map((token) => ({ ...token, logoUrl: token.logoURI })),
+    )
+  }
+
+  async getDepositStatus(request: DepositStatusRequest): Promise<DepositStatusResponse> {
+    const params: Record<string, string> = {
+      originChainId: request.originChainId,
+      depositId: request.depositId,
+    }
+
+    return this.fetchApi('/deposit/status', params)
+  }
+
   protected async fetchApi<T>(
     path: string,
     params: Record<string, string>,
@@ -85,7 +103,7 @@ export class AcrossApi {
 
     if (!response.ok) {
       const errorBody = await response.json()
-      throw new BridgeProviderQuoteError('Across Api Error', errorBody)
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.API_ERROR, errorBody)
     }
 
     // Validate the response
@@ -94,10 +112,7 @@ export class AcrossApi {
       if (isValidResponse(json)) {
         return json
       } else {
-        throw new BridgeProviderQuoteError(
-          `Invalid response for Across API call ${path}. The response doesn't pass the validation. Did the API change?`,
-          json,
-        )
+        throw new BridgeProviderQuoteError(BridgeQuoteErrors.INVALID_API_JSON_RESPONSE, { path, json })
       }
     }
 
