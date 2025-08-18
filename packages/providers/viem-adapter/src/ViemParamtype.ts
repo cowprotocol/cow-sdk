@@ -31,11 +31,14 @@ export class ViemParamType {
 
   private parseBaseType(type: string): string {
     if (type.includes('[]')) return 'array'
+    if (type.startsWith('tuple') || type.includes('(')) return 'tuple'
     if (type.startsWith('uint') || type.startsWith('int')) return 'number'
     if (type === 'bool') return 'boolean'
     if (type === 'string') return 'string'
     if (type === 'bytes' || type.startsWith('bytes')) return 'bytes'
     if (type === 'address') return 'address'
+    if (type.startsWith('fixed') || type.startsWith('ufixed')) return 'fixed'
+    if (type.startsWith('function')) return 'function'
     return 'unknown'
   }
 

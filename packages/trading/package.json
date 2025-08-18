@@ -15,7 +15,7 @@
     "lint": "eslint src/**/*.ts",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage --json --outputFile=jest.results.json && cat ./coverage/lcov.info | coveralls",
+    "test:coverage": "jest --coverage --json --outputFile=jest.results.json && npx coveralls < ./coverage/lcov.info",
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
@@ -28,6 +28,7 @@
     "@ethersproject/constants": "^5.7.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.17.31",
+    "coveralls": "^3.1.1",
     "ts-node": "^10.8.2",
     "tsup": "^7.2.0",
     "typescript": "^5.2.2",

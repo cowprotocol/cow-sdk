@@ -26,13 +26,14 @@ jobs:
       - name: Cache dependencies
         uses: actions/cache@v4
         with:
-          path: |
-            **/node_modules
-            ~/.pnpm-store
+          path: ~/.pnpm-store
           key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Generate code
+        run: pnpm codegen
 
       - name: Build packages
         run: pnpm build

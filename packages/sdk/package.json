@@ -19,8 +19,9 @@
   ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --treeshake",
-    "postbuild": "cp package.json dist && pnpm copy-md-files",
-    "copy-md-files": "npx cpx \"**/*.md\" dist",
+    "postbuild": "pnpm copy-package-json && pnpm copy-md-files",
+    "copy-package-json": "npx shx cp package.json dist",
+    "copy-md-files": "npx cpx \"*.md\" dist",
     "lint": "eslint src/**/*.ts",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
@@ -29,6 +30,7 @@
     "@cow-sdk/typescript-config": "workspace:*",
     "@types/node": "^20.17.31",
     "jest": "^29.7.0",
+    "shx": "^0.3.4",
     "ts-node": "^10.8.2",
     "tsup": "^7.2.0",
     "typescript": "^5.2.2"

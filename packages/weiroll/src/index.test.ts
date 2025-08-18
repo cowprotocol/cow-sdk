@@ -13,7 +13,7 @@ const ERC20_ABI = [
   'function balanceOf(address account) external view returns (uint256)',
   'function transfer(address to, uint256 amount) external returns (bool)',
 ] as const
-export type DaiContractsType = {
+type DaiContractsType = {
   ethersV5Adapter: WeirollContract | null
   ethersV6Adapter: WeirollContract | null
   viemAdapter: WeirollContract | null
