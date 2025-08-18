@@ -1,5 +1,3 @@
-import { OrderKind } from '@cowprotocol/contracts'
-import { AdditionalTargetChainId, SupportedChainId } from '../../../chains'
 import { QuoteBridgeRequest, BridgeStatus } from '../../types'
 import {
   getChainConfigs,
@@ -13,6 +11,10 @@ import {
 } from './util'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { SuggestedFeesResponse } from './types'
+import { AdditionalTargetChainId, SupportedChainId } from '@cowprotocol/sdk-config'
+import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { createAdapters } from '../../../tests/setup'
+import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 describe('Across Utils', () => {
   describe('getChainConfigs', () => {
@@ -183,10 +185,21 @@ describe('Across Utils', () => {
     })
   })
 
-  describe('getAcrossDepositEvents', () => {
-    it('should return empty array if passing nothing', () => {
-      const result = getAcrossDepositEvents(SupportedChainId.MAINNET, [])
-      expect(result).toEqual([])
+  const adapters = createAdapters()
+  const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+  adapterNames.forEach((adapterName) => {
+    describe(`getAcrossDepositEvents (with ${adapterName})`, () => {
+      beforeEach(() => {
+        const adapter = adapters[adapterName]
+
+        setGlobalAdapter(adapter)
+      })
+
+      it('should return empty array if passing nothing', () => {
+        const result = getAcrossDepositEvents(SupportedChainId.MAINNET, [])
+        expect(result).toEqual([])
+      })
     })
   })
 })

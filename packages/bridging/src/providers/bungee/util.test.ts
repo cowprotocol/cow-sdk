@@ -1,5 +1,3 @@
-import { OrderKind } from '@cowprotocol/contracts'
-import { SupportedChainId } from '../../../chains'
 import { QuoteBridgeRequest } from '../../types'
 import {
   toBridgeQuoteResult,
@@ -11,6 +9,8 @@ import {
   getDisplayNameFromBungeeBridge,
 } from './util'
 import { BungeeBridge, BungeeQuoteWithBuildTx } from './types'
+import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 
 describe('Bungee Utils', () => {
   describe('toBridgeQuoteResult', () => {

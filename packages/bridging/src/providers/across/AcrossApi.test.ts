@@ -1,7 +1,7 @@
 import { AcrossApi } from './AcrossApi'
-import { SupportedChainId } from '../../../chains'
 import { DepositStatusRequest, DepositStatusResponse, SuggestedFeesRequest, SuggestedFeesResponse } from './types'
 import { BridgeQuoteErrors } from '../../errors'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 
 // Mock fetch globally
 const mockFetch = jest.fn()
