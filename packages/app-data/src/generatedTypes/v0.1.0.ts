@@ -8,35 +8,35 @@
 /**
  * Semantic versioning of document.
  */
-export type Version = string;
+export type Version = string
 /**
  * The code identifying the CLI, UI, service generating the order.
  */
-export type AppCode = string;
+export type AppCode = string
 /**
  * Semantic versioning of document.
  */
-export type Version1 = string;
-export type ReferrerAddress = string;
+export type Version1 = string
+export type ReferrerAddress = string
 
 /**
  * Metadata JSON document for adding information to orders.
  */
 export interface AppDataRootSchema {
-  version: Version;
-  appCode?: AppCode;
-  metadata: Metadata;
-  [k: string]: unknown;
+  version: Version
+  appCode?: AppCode
+  metadata: Metadata
+  [k: string]: unknown
 }
 /**
  * Each metadata will specify one aspect of the order.
  */
 export interface Metadata {
-  referrer?: Referrer;
-  [k: string]: unknown;
+  referrer?: Referrer
+  [k: string]: unknown
 }
 export interface Referrer {
-  version: Version1;
-  address: ReferrerAddress;
-  [k: string]: unknown;
+  version: Version1
+  address: ReferrerAddress
+  [k: string]: unknown
 }

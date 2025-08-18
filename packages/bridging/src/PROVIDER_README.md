@@ -3,7 +3,7 @@
 This guide explains how to develop a new bridge provider for the `CoW Protocol` `BridgingSDK`.
 Bridge providers integrate third-party bridging protocols into the `CoW ecosystem`, enabling cross-chain token swaps.
 
->You can see existing providers code in [`src/bridging/providers`](./providers) directory.
+> You can see existing providers code in [`src/bridging/providers`](./providers) directory.
 
 ## Table of Contents
 
@@ -86,37 +86,31 @@ interface BridgeProvider<Q extends BridgeQuoteResult> {
 
 ### Required Methods
 
-| Method | Purpose | Required |
-|--------|---------|----------|
-| `getNetworks()` | Get supported destination chains | ✅ |
-| `getBuyTokens()` | Get supported tokens for a chain | ✅ |
-| `getIntermediateTokens()` | Get bridgeable tokens on source chain | ✅ |
-| `getQuote()` | Generate bridge quote | ✅ |
-| `getUnsignedBridgeCall()` | Create unsigned bridge transaction | ✅ |
-| `getGasLimitEstimationForHook()` | Estimate gas for hook execution | ✅ |
-| `getSignedHook()` | Generate pre-authorized hook | ✅ |
-| `getStatus()` | Check bridge transaction status | ✅ |
-| `getBridgingParams()` | Extract bridge params from settlement | ✅ |
-| `getExplorerUrl()` | Get bridge explorer URL | ✅ |
-| `decodeBridgeHook()` | Decode hook data | Optional* |
-| `getCancelBridgingTx()` | Create cancel transaction | Optional* |
-| `getRefundBridgingTx()` | Create refund transaction | Optional* |
+| Method                           | Purpose                               | Required   |
+| -------------------------------- | ------------------------------------- | ---------- |
+| `getNetworks()`                  | Get supported destination chains      | ✅         |
+| `getBuyTokens()`                 | Get supported tokens for a chain      | ✅         |
+| `getIntermediateTokens()`        | Get bridgeable tokens on source chain | ✅         |
+| `getQuote()`                     | Generate bridge quote                 | ✅         |
+| `getUnsignedBridgeCall()`        | Create unsigned bridge transaction    | ✅         |
+| `getGasLimitEstimationForHook()` | Estimate gas for hook execution       | ✅         |
+| `getSignedHook()`                | Generate pre-authorized hook          | ✅         |
+| `getStatus()`                    | Check bridge transaction status       | ✅         |
+| `getBridgingParams()`            | Extract bridge params from settlement | ✅         |
+| `getExplorerUrl()`               | Get bridge explorer URL               | ✅         |
+| `decodeBridgeHook()`             | Decode hook data                      | Optional\* |
+| `getCancelBridgingTx()`          | Create cancel transaction             | Optional\* |
+| `getRefundBridgingTx()`          | Create refund transaction             | Optional\* |
 
-*Can throw "Not implemented" error if unsupported
+\*Can throw "Not implemented" error if unsupported
 
 ## Implementation Guide
 
 ### Step 1: Basic Provider Class
 
 ```typescript
-import {
-  BridgeProvider,
-  BridgeProviderInfo,
-  BridgeQuoteResult
-} from '../../types'
-import {
-  SupportedChainId, mainnet, polygon, arbitrumOne, optimism, ChainInfo
-} from '../../../chains'
+import { BridgeProvider, BridgeProviderInfo, BridgeQuoteResult } from '../../types'
+import { SupportedChainId, mainnet, polygon, arbitrumOne, optimism, ChainInfo } from '../../../chains'
 import { CowShedSdk } from '../../../cow-shed'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from '../../const'
 
@@ -127,7 +121,7 @@ export const YOUR_BRIDGE_SUPPORTED_NETWORKS = [
   mainnet,
   polygon,
   arbitrumOne,
-  optimism
+  optimism,
   // Add your supported chains
   // If there are no needed chains, add them to `src/chains`
 ]
@@ -178,7 +172,7 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
         sellTokenAddress: params.sellTokenAddress,
       })
 
-      return tokens.map(token => ({
+      return tokens.map((token) => ({
         chainId: token.chainId,
         address: token.address,
         name: token.name,
@@ -195,14 +189,11 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
   async getIntermediateTokens(request: QuoteBridgeRequest): Promise<TokenInfo[]> {
     // Validate order kind
     if (request.kind !== OrderKind.SELL) {
-      throw new BridgeProviderQuoteError(
-        BridgeQuoteErrors.ONLY_SELL_ORDER_SUPPORTED,
-        {kind: request.kind}
-      )
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.ONLY_SELL_ORDER_SUPPORTED, { kind: request.kind })
     }
 
     // Get tokens on source chain that can bridge to target token
-    const {sellTokenChainId, buyTokenChainId, buyTokenAddress} = request
+    const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
 
     const intermediateTokens = await this.api.getIntermediateTokens({
       fromChainId: sellTokenChainId,
@@ -229,15 +220,12 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
       amount,
       receiver,
       account,
-      owner
+      owner,
     } = request
 
     // Get CoW Shed account for the owner
     const ownerAddress = owner ?? account
-    const cowShedAccount = this.cowShedSdk.getCowShedAccount(
-      sellTokenChainId,
-      ownerAddress
-    )
+    const cowShedAccount = this.cowShedSdk.getCowShedAccount(sellTokenChainId, ownerAddress)
 
     // Request quote from external bridge
     const externalQuote = await this.api.getQuote({
@@ -257,23 +245,14 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
     return this.convertToBridgeQuote(externalQuote, request)
   }
 
-  private async validateQuote(
-    externalQuote: YourBridgeQuote,
-    request: QuoteBridgeRequest
-  ): Promise<void> {
+  private async validateQuote(externalQuote: YourBridgeQuote, request: QuoteBridgeRequest): Promise<void> {
     // Add validation logic
     if (!externalQuote.isValid) {
-      throw new BridgeProviderQuoteError(
-        BridgeQuoteErrors.NO_ROUTES_FOUND,
-        {quote: externalQuote}
-      )
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES_FOUND, { quote: externalQuote })
     }
   }
 
-  private convertToBridgeQuote(
-    externalQuote: YourBridgeQuote,
-    request: QuoteBridgeRequest
-  ): YourBridgeQuoteResult {
+  private convertToBridgeQuote(externalQuote: YourBridgeQuote, request: QuoteBridgeRequest): YourBridgeQuoteResult {
     return {
       isSell: true,
       amountsAndCosts: {
@@ -319,6 +298,7 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
 
 > It very depends on your smart-contract implementation.
 > Basically, the smart-contract should:
+>
 > 1. Approve sell token spending from `CoW Shed proxy`
 > 2. Transfer funds from `CoW Shed proxy` to your deposit smart-contract
 >
@@ -326,10 +306,7 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
 
 ```typescript
 export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult> {
-  async getUnsignedBridgeCall(
-    request: QuoteBridgeRequest,
-    quote: YourBridgeQuoteResult
-  ): Promise<EvmCall> {
+  async getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: YourBridgeQuoteResult): Promise<EvmCall> {
     // Create the bridge transaction that will be executed by CoW Shed
     return createYourBridgeCall({
       request,
@@ -347,7 +324,10 @@ import { EvmCall } from '../../../common'
 import { YourBridgeQuoteResult } from '../types'
 import { YOUR_BRIDGE_CONTRACTS, YOUR_BRIDGE_ABI } from '../const'
 
-export async function createYourBridgeCall({ request, quote }: {
+export async function createYourBridgeCall({
+  request,
+  quote,
+}: {
   request: QuoteBridgeRequest
   quote: YourBridgeQuoteResult
 }): Promise<EvmCall> {
@@ -391,9 +371,7 @@ import { Signer } from 'ethers'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 
 export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult> {
-  async getGasLimitEstimationForHook(
-    request: Omit<QuoteBridgeRequest, 'amount'>
-  ): Promise<number> {
+  async getGasLimitEstimationForHook(request: Omit<QuoteBridgeRequest, 'amount'>): Promise<number> {
     // Use utility function or implement custom gas estimation
     return getGasLimitEstimationForHook(
       this.cowShedSdk,
@@ -411,13 +389,15 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
   ): Promise<BridgeHook> {
     // Sign the multicall using CoW Shed SDK
     const { signedMulticall, cowShedAccount, gasLimit } = await this.cowShedSdk.signCalls({
-      calls: [{
-        target: unsignedCall.to,
-        value: unsignedCall.value,
-        callData: unsignedCall.data,
-        allowFailure: false,
-        isDelegateCall: true,
-      }],
+      calls: [
+        {
+          target: unsignedCall.to,
+          value: unsignedCall.value,
+          callData: unsignedCall.data,
+          allowFailure: false,
+          isDelegateCall: true,
+        },
+      ],
       chainId,
       signer,
       gasLimit: BigInt(hookGasLimit),
@@ -425,7 +405,7 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
       nonce: bridgeHookNonce,
     })
 
-    const {to, data} = signedMulticall
+    const { to, data } = signedMulticall
     return {
       postHook: {
         target: to,
@@ -638,9 +618,7 @@ describe('YourBridgeProvider', () => {
         // ... rest of request
       }
 
-      await expect(provider.getQuote(request))
-        .rejects
-        .toThrow('Only sell orders are supported')
+      await expect(provider.getQuote(request)).rejects.toThrow('Only sell orders are supported')
     })
   })
 
@@ -654,23 +632,17 @@ describe('YourBridgeProvider', () => {
 
 ```typescript
 // Use specific error types
-throw new BridgeProviderQuoteError(
-  BridgeQuoteErrors.INSUFFICIENT_LIQUIDITY,
-  {
-    availableLiquidity: '1000',
-    requestedAmount: '2000'
-  }
-)
+throw new BridgeProviderQuoteError(BridgeQuoteErrors.INSUFFICIENT_LIQUIDITY, {
+  availableLiquidity: '1000',
+  requestedAmount: '2000',
+})
 
 // Handle API failures gracefully
 try {
   return await this.api.getQuote(params)
 } catch (error) {
   if (error.status === 404) {
-    throw new BridgeProviderQuoteError(
-      BridgeQuoteErrors.NO_ROUTES_FOUND,
-      { params }
-    )
+    throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES_FOUND, { params })
   }
   throw error
 }
@@ -758,6 +730,7 @@ const bridgingSdk = new BridgingSdk({
 ### Common Issues
 
 1. **Gas Estimation Failures**
+
    ```typescript
    import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 
@@ -773,6 +746,7 @@ const bridgingSdk = new BridgingSdk({
    ```
 
 2. **API Rate Limiting**
+
    ```typescript
    // Implement retry logic with exponential backoff
    private async withRetry<T>(operation: () => Promise<T>, maxRetries = 3): Promise<T> {
@@ -806,4 +780,3 @@ const bridgingSdk = new BridgingSdk({
 - Test with small amounts first
 - Validate against existing providers like `MockBridgeProvider`
 - Monitor transaction status on both chains
-

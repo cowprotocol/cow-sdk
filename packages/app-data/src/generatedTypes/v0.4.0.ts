@@ -8,54 +8,54 @@
 /**
  * Semantic versioning of document.
  */
-export type Version = string;
+export type Version = string
 /**
  * The code identifying the CLI, UI, service generating the order.
  */
-export type AppCode = string;
+export type AppCode = string
 /**
  * Environment from which the order came from.
  */
-export type Environment = string;
+export type Environment = string
 /**
  * Semantic versioning of document.
  */
-export type Version1 = string;
-export type ReferrerAddress = string;
+export type Version1 = string
+export type ReferrerAddress = string
 /**
  * Semantic versioning of document.
  */
-export type Version2 = string;
+export type Version2 = string
 /**
  * Slippage tolerance that was applied to the order to get the limit price. Expressed in Basis Points (BPS)
  */
-export type SlippageBips = string;
+export type SlippageBips = string
 
 /**
  * Metadata JSON document for adding information to orders.
  */
 export interface AppDataRootSchema {
-  version: Version;
-  appCode?: AppCode;
-  environment?: Environment;
-  metadata: Metadata;
-  [k: string]: unknown;
+  version: Version
+  appCode?: AppCode
+  environment?: Environment
+  metadata: Metadata
+  [k: string]: unknown
 }
 /**
  * Each metadata will specify one aspect of the order.
  */
 export interface Metadata {
-  referrer?: Referrer;
-  quote?: Quote;
-  [k: string]: unknown;
+  referrer?: Referrer
+  quote?: Quote
+  [k: string]: unknown
 }
 export interface Referrer {
-  version: Version1;
-  address: ReferrerAddress;
-  [k: string]: unknown;
+  version: Version1
+  address: ReferrerAddress
+  [k: string]: unknown
 }
 export interface Quote {
-  version: Version2;
-  slippageBips: SlippageBips;
-  [k: string]: unknown;
+  version: Version2
+  slippageBips: SlippageBips
+  [k: string]: unknown
 }

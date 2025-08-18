@@ -1,7 +1,7 @@
 # BridgingSdk Integration Guide
 
 🚀 **Unlock Seamless Cross-Chain Power!**
-The **`BridgingSDK`** lets you 🌉 *swap tokens across chains* and bridge assets effortlessly — combining **CoW Protocol’s** 🐮 top-tier trading with multiple bridge providers for maximum flexibility.
+The **`BridgingSDK`** lets you 🌉 _swap tokens across chains_ and bridge assets effortlessly — combining **CoW Protocol’s** 🐮 top-tier trading with multiple bridge providers for maximum flexibility.
 
 📚 This **all-in-one guide** walks you through **everything** you need to integrate `BridgingSDK` into your app and supercharge your cross-chain experience! ✨
 
@@ -27,14 +27,17 @@ The **`BridgingSDK`** lets you 🌉 *swap tokens across chains* and bridge asset
 ## Overview
 
 The BridgingSdk supports two types of operations:
+
 - **Single-chain swaps**: Traditional token swaps within the same blockchain. Basically, it's wrapper on top of [TradingSDK](../trading/README.md)
 - **Cross-chain swaps**: Token swaps that span multiple blockchains using bridge providers. The main functionality of `BridgingSDK`
 
 Supported bridge providers:
+
 - **Bungee/Socket**: Multi-bridge aggregation platform with support for multiple underlying bridges including Across, CCTP, and others
 
 > Since `BridgingSdk` is compatible with [TradingSDK](../trading/README.md), almost everything described for `TradingSDK` applies to `BridgingSdk` as well.
 > The main difference is smart contract wallet support. Currently, `BridgingSdk` only supports EOA wallets; this will likely change soon — stay tuned!
+
 ## Installation
 
 ```bash
@@ -169,6 +172,7 @@ interface BridgingSdkOptions {
 ```
 
 **Type References:**
+
 - [`BridgeProvider`](./types.ts#L155): Interface for bridge service providers
 - [`BridgeQuoteResult`](./types.ts#L57): Result type for bridge quotes
 - [`TradingSdk`](../trading/tradingSdk.ts#L89): SDK for trading operations
@@ -177,25 +181,22 @@ interface BridgingSdkOptions {
 ### Advanced Configuration with Custom `TradingSDK`
 
 ```typescript
-import {
-  BridgingSdk,
-  BungeeBridgeProvider,
-  TradingSdk,
-  OrderBookApi,
-  SupportedChainId
-} from '@cowprotocol/cow-sdk'
+import { BridgingSdk, BungeeBridgeProvider, TradingSdk, OrderBookApi, SupportedChainId } from '@cowprotocol/cow-sdk'
 
 const orderBookApi: OrderBookApi = new OrderBookApi({
   env: 'prod', // or 'staging'
   chainId: SupportedChainId.MAINNET,
 })
 
-const tradingSdk: TradingSdk = new TradingSdk({
-  chainId: SupportedChainId.MAINNET,
-  env: 'prod',
-}, {
-  orderBookApi,
-})
+const tradingSdk: TradingSdk = new TradingSdk(
+  {
+    chainId: SupportedChainId.MAINNET,
+    env: 'prod',
+  },
+  {
+    orderBookApi,
+  },
+)
 
 const bungeeProvider: BungeeBridgeProvider = new BungeeBridgeProvider({
   apiOptions: {
@@ -220,15 +221,17 @@ Get a quote for either single-chain or cross-chain swaps.
 ```typescript
 async function getQuote(
   quoteBridgeRequest: QuoteBridgeRequest,
-  advancedSettings?: SwapAdvancedSettings
+  advancedSettings?: SwapAdvancedSettings,
 ): Promise<CrossChainQuoteAndPost>
 ```
 
 **Parameters:**
+
 - `quoteBridgeRequest`: Swap parameters including tokens, amounts, and chains
 - `advancedSettings`: Optional advanced settings for the swap
 
 **Returns:**
+
 - [`QuoteAndPost`](../trading/types.ts#L130): For single-chain swaps
 - [`BridgeQuoteAndPost`](./types.ts#L286): For cross-chain swaps
 
@@ -238,7 +241,10 @@ Get available source networks for bridging.
 
 ```typescript
 const sourceNetworks = await bridgingSdk.getSourceNetworks()
-console.log('Available source networks:', sourceNetworks.map(n => n.name))
+console.log(
+  'Available source networks:',
+  sourceNetworks.map((n) => n.name),
+)
 ```
 
 ### getTargetNetworks()
@@ -247,7 +253,10 @@ Get available target networks for bridging.
 
 ```typescript
 const targetNetworks = await bridgingSdk.getTargetNetworks()
-console.log('Available target networks:', targetNetworks.map(n => n.name))
+console.log(
+  'Available target networks:',
+  targetNetworks.map((n) => n.name),
+)
 ```
 
 ### getBuyTokens()
@@ -284,10 +293,7 @@ if (order) {
 Check the bridging status of a cross-chain order.
 
 ```typescript
-const status = await bridgingSdk.getOrderBridgingStatus(
-  'bridging-id',
-  SupportedChainId.MAINNET
-)
+const status = await bridgingSdk.getOrderBridgingStatus('bridging-id', SupportedChainId.MAINNET)
 
 console.log('Bridging status:', status.status)
 console.log('Fill time:', status.fillTimeInSeconds)
@@ -403,12 +409,7 @@ function CrossChainSwapComponent(): ReactNode {
 ### Node.js App
 
 ```javascript
-const {
-  BridgingSdk,
-  BungeeBridgeProvider,
-  SupportedChainId,
-  isBridgeQuoteAndPost
-} = require('@cowprotocol/cow-sdk')
+const { BridgingSdk, BungeeBridgeProvider, SupportedChainId, isBridgeQuoteAndPost } = require('@cowprotocol/cow-sdk')
 const { OrderKind } = require('@cowprotocol/contracts')
 const { Wallet } = require('@ethersproject/wallet')
 const { parseEther } = require('@ethersproject/units')
@@ -535,10 +536,10 @@ interface BridgeQuoteResult {
 ```typescript
 enum BridgeStatus {
   IN_PROGRESS = 'in_progress', // Bridge transaction is pending
-  EXECUTED = 'executed',       // Successfully completed
-  EXPIRED = 'expired',         // Transaction expired
-  REFUND = 'refund',          // Funds were refunded
-  UNKNOWN = 'unknown'         // Status could not be determined
+  EXECUTED = 'executed', // Successfully completed
+  EXPIRED = 'expired', // Transaction expired
+  REFUND = 'refund', // Funds were refunded
+  UNKNOWN = 'unknown', // Status could not be determined
 }
 ```
 
@@ -576,6 +577,7 @@ try {
 ```
 
 **Type References:**
+
 - [`BridgeProviderQuoteError`](./errors.ts#L18): Error class for bridge provider failures
 - [`BridgeQuoteErrors`](./errors.ts#L5): Enum of possible bridge quote error types
 
@@ -584,11 +586,7 @@ try {
 ```typescript
 import { BridgingSdk, SupportedChainId, BridgeStatus } from '@cowprotocol/cow-sdk'
 
-async function monitorOrder(
-  bridgingSdk: BridgingSdk,
-  chainId: SupportedChainId,
-  orderId: string
-): Promise<void> {
+async function monitorOrder(bridgingSdk: BridgingSdk, chainId: SupportedChainId, orderId: string): Promise<void> {
   const checkInterval = 30000 // 30 seconds
 
   const monitor = setInterval(async () => {
@@ -622,16 +620,14 @@ async function validateTokenSupport(
   bridgingSdk: BridgingSdk,
   sellChainId: SupportedChainId,
   buyChainId: TargetChainId,
-  buyTokenAddress: string
+  buyTokenAddress: string,
 ): Promise<void> {
   const buyTokens = await bridgingSdk.getBuyTokens({
     buyChainId,
     sellChainId,
   })
 
-  const isSupported = buyTokens.some(
-    token => token.address.toLowerCase() === buyTokenAddress.toLowerCase()
-  )
+  const isSupported = buyTokens.some((token) => token.address.toLowerCase() === buyTokenAddress.toLowerCase())
 
   if (!isSupported) {
     throw new Error('Token not supported for bridging')
@@ -648,8 +644,14 @@ async function validateNetworkSupport(bridgingSdk: BridgingSdk): Promise<void> {
   const sourceNetworks = await bridgingSdk.getSourceNetworks()
   const targetNetworks = await bridgingSdk.getTargetNetworks()
 
-  console.log('Supported source networks:', sourceNetworks.map(n => n.name))
-  console.log('Supported target networks:', targetNetworks.map(n => n.name))
+  console.log(
+    'Supported source networks:',
+    sourceNetworks.map((n) => n.name),
+  )
+  console.log(
+    'Supported target networks:',
+    targetNetworks.map((n) => n.name),
+  )
 }
 ```
 
@@ -658,34 +660,40 @@ async function validateNetworkSupport(bridgingSdk: BridgingSdk): Promise<void> {
 This section provides links to all important TypeScript types and interfaces used throughout this documentation:
 
 ### Core SDK Types
+
 - [`BridgingSdk`](./BridgingSdk/BridgingSdk.ts#L65): Main SDK class
 - [`BridgingSdkOptions`](./BridgingSdk/BridgingSdk.ts#L19): SDK configuration options
 - [`BungeeBridgeProvider`](./providers/bungee/BungeeBridgeProvider.ts#L58): Bungee bridge provider implementation
 
 ### Request and Response Types
+
 - [`QuoteBridgeRequest`](./types.ts#L45): Parameters for requesting a bridge quote
 - [`BridgeQuoteResult`](./types.ts#L57): Result of a bridge quote request
 - [`BridgeQuoteAndPost`](./types.ts#L286): Cross-chain quote with posting functionality
 - [`CrossChainQuoteAndPost`](./types.ts#L284): Union type for single or cross-chain quotes
 
 ### Trading Integration Types
+
 - [`QuoteAndPost`](../trading/types.ts#L130): Single-chain trading quote and post functionality
 - [`TradingSdk`](../trading/tradingSdk.ts#L89): Trading SDK for single-chain operations
 - [`OrderBookApi`](../order-book/api.ts#L159): Order book API client
 
 ### Chain and Token Types
+
 - [`SupportedChainId`](../chains/types.ts#L4): Supported blockchain network identifiers
 - [`TargetChainId`](../chains/types.ts#L16): Target blockchain network identifiers
 - [`TokenInfo`](../common/types/tokens.ts#L15): Token information structure
 - [`OrderKind`](../order-book/generated/models/OrderKind.ts): Order type enumeration
 
 ### Status and Error Types
+
 - [`BridgeStatus`](./types.ts#L110): Bridge operation status enumeration
 - [`BridgeStatusResult`](./types.ts#L118): Bridge status query result
 - [`BridgeProviderQuoteError`](./errors.ts#L18): Bridge provider error class
 - [`BridgeQuoteErrors`](./errors.ts#L5): Bridge quote error types
 
 ### Utility Types
+
 - [`BridgeProvider`](./types.ts#L155): Generic bridge provider interface
 - [`BridgeQuoteAmountsAndCosts`](./types.ts#L321): Cost breakdown for bridge operations
 - [`BridgeHook`](./types.ts#L105): Post-hook configuration for bridging
