@@ -1,16 +1,26 @@
-import { BuyTokenDestination, getQuoteAmountsAndCosts, type OrderParameters, SellTokenSource } from '@cowprotocol/sdk-order-book'
+import {
+  BuyTokenDestination,
+  getQuoteAmountsAndCosts,
+  type OrderParameters,
+  SellTokenSource,
+} from '@cowprotocol/sdk-order-book'
 import { UnsignedOrder } from '@cowprotocol/sdk-order-signing'
-import { DEFAULT_QUOTE_VALIDITY, DEFAULT_SLIPPAGE_BPS } from './consts'
+import { DEFAULT_QUOTE_VALIDITY } from './consts'
 import { LimitTradeParameters } from './types'
 import { getPartnerFeeBps } from './utils/getPartnerFeeBps'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { getDefaultSlippageBps } from './utils/slippage'
+import { getOrderDeadlineFromNow } from './utils/order'
 
 interface OrderToSignParams {
+  chainId: SupportedChainId
+  isEthFlow: boolean
   from: string
   networkCostsAmount?: string
 }
 
 export function getOrderToSign(
-  { from, networkCostsAmount = '0' }: OrderToSignParams,
+  { chainId, from, networkCostsAmount = '0', isEthFlow }: OrderToSignParams,
   limitOrderParams: LimitTradeParameters,
   appDataKeccak256: string,
 ): UnsignedOrder {
@@ -23,13 +33,13 @@ export function getOrderToSign(
     buyTokenDecimals,
     kind,
     partiallyFillable = false,
-    slippageBps = DEFAULT_SLIPPAGE_BPS,
+    slippageBps = getDefaultSlippageBps(chainId, isEthFlow),
     partnerFee,
-    validFor,
+    validFor = DEFAULT_QUOTE_VALIDITY,
   } = limitOrderParams
 
   const receiver = limitOrderParams.receiver || from
-  const validTo = limitOrderParams.validTo || Math.floor(Date.now() / 1000) + (validFor || DEFAULT_QUOTE_VALIDITY)
+  const validTo = limitOrderParams.validTo || Number(getOrderDeadlineFromNow(validFor))
 
   const orderParams: OrderParameters = {
     sellToken,

@@ -3,6 +3,7 @@ import {
   LimitTradeParameters,
   OrderPostingResult,
   QuoteAndPost,
+  SigningStepManager,
   SwapAdvancedSettings,
   TradeParameters,
   TraderParameters,
@@ -18,8 +19,6 @@ import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { AbstractProviderAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 export type WithPartialTraderParams<T> = T & Partial<TraderParameters>
-export let utmContent: string | undefined = undefined
-export let disableUtm: boolean = false
 
 export interface TradingSdkOptions {
   enableLogging: boolean
@@ -40,8 +39,6 @@ export class TradingSdk {
     if (adapter) {
       setGlobalAdapter(adapter)
     }
-    utmContent = options.utmContent
-    disableUtm = options.disableUtm || false
   }
 
   setTraderParams(params: Partial<TraderParameters>) {
@@ -58,8 +55,13 @@ export class TradingSdk {
 
     return {
       quoteResults: quoteResults.result,
-      postSwapOrderFromQuote: (advancedSettings?: SwapAdvancedSettings) =>
-        postSwapOrderFromQuote(
+      postSwapOrderFromQuote: async (
+        advancedSettings?: SwapAdvancedSettings,
+        signingStepManager?: SigningStepManager,
+      ) => {
+        await signingStepManager?.beforeOrderSign?.()
+
+        return postSwapOrderFromQuote(
           {
             ...quoteResults,
             result: {
@@ -71,7 +73,17 @@ export class TradingSdk {
             },
           },
           advancedSettings,
-        ),
+        )
+          .catch((error) => {
+            signingStepManager?.onOrderSignError?.()
+            throw error
+          })
+          .then((result) => {
+            signingStepManager?.afterOrderSign?.()
+
+            return result
+          })
+      },
     }
   }
 
