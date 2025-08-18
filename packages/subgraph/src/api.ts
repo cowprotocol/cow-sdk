@@ -44,6 +44,8 @@ export class SubgraphApi {
       [SupportedChainId.SEPOLIA]: baseUrl + '/31isonmztVX9ejBneP6SaVDQwEtyKCGBb3RTafB9Uf2y',
       [SupportedChainId.POLYGON]: null,
       [SupportedChainId.AVALANCHE]: null,
+      [SupportedChainId.LENS]: null,
+      [SupportedChainId.BNB]: null,
     }
     this.context = {
       ...DEFAULT_COW_API_CONTEXT,
@@ -125,6 +127,7 @@ export class SubgraphApi {
     return { ...this.context, ...contextOverride }
   }
 
+  // TODO: it was resolving URL depending on env, now it only returns PROD
   /**
    * Get the base URLs.
    * @returns {ApiBaseUrls} The base URLs for the production environment.
