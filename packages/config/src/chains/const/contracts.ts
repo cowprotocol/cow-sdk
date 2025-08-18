@@ -1,13 +1,5 @@
 import { mapAddressToSupportedNetworks } from './utils'
-import { AdditionalTargetChainId, ChainInfo, SupportedChainId } from '../types'
-import { mainnet } from '../details/mainnet'
-import { gnosisChain } from '../details/gnosis'
-import { arbitrumOne } from '../details/arbitrum'
-import { base } from '../details/base'
-import { sepolia } from '../details/sepolia'
-import { avalanche } from '../details/avalanche'
-import { optimism } from '../details/optimism'
-import { polygon } from '../details/polygon'
+import { SupportedChainId } from '../types'
 
 export const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 export const EXTENSIBLE_FALLBACK_HANDLER = '0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5'
@@ -54,38 +46,3 @@ export const BARN_ETH_FLOW_ADDRESSES: Record<SupportedChainId, string> =
   mapAddressToSupportedNetworks(BARN_ETH_FLOW_ADDRESS)
 
 export const MAX_VALID_TO_EPOCH = 4294967295 // Max uint32 (Feb 07 2106 07:28:15 GMT+0100)
-
-/**
- * Details of all supported chains.
- */
-export const ALL_SUPPORTED_CHAINS_MAP: Record<SupportedChainId, ChainInfo> = {
-  [SupportedChainId.MAINNET]: mainnet,
-  [SupportedChainId.GNOSIS_CHAIN]: gnosisChain,
-  [SupportedChainId.ARBITRUM_ONE]: arbitrumOne,
-  [SupportedChainId.BASE]: base,
-  [SupportedChainId.AVALANCHE]: avalanche,
-  [SupportedChainId.POLYGON]: polygon,
-  [SupportedChainId.SEPOLIA]: sepolia,
-}
-
-/**
- * All supported chains.
- */
-export const ALL_SUPPORTED_CHAINS = Object.values(ALL_SUPPORTED_CHAINS_MAP)
-
-/**
- * Maps a chain where you can bridge to, but not sell tokens from (not supported by CoW Protocol)
- */
-export const ADDITIONAL_TARGET_CHAINS_MAP: Record<AdditionalTargetChainId, ChainInfo> = {
-  [AdditionalTargetChainId.OPTIMISM]: optimism,
-}
-
-/**
- * All chains (both supported by CoW Protocol, or chains where you can bridge to)
- */
-export const ALL_CHAINS = ALL_SUPPORTED_CHAINS.concat(Object.values(ADDITIONAL_TARGET_CHAINS_MAP))
-
-/**
- * All chain ids (both supported by CoW Protocol, or chains where you can bridge to)
- */
-export const ALL_CHAINS_IDS = ALL_CHAINS.map((chain) => chain.id)
