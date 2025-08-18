@@ -1,4 +1,13 @@
+import { SupportedChainId } from '../../chains'
+import { mapSupportedNetworks } from '../../common'
+
 const SCALE = 10n ** 6n // 6 decimal places of precision. Used to avoid depending on Big Decimal libraries
+const DEFAULT_SLIPPAGE_BPS = 50 // 0.5%
+
+const ETH_FLOW_DEFAULT_SLIPPAGE_BPS: Record<SupportedChainId, number> = {
+  ...mapSupportedNetworks(DEFAULT_SLIPPAGE_BPS), // 0.5% by default for most chains
+  [SupportedChainId.MAINNET]: 200, // 2% for mainnet
+}
 
 /**
  * Get the slippage percentage for a given absolute slippage.
@@ -47,5 +56,13 @@ export function getSlippagePercent(params: {
     const percentageInScale = (SCALE * (sellAmount + slippage)) / sellAmount - SCALE
 
     return Number(percentageInScale) / Number(SCALE)
+  }
+}
+
+export function getDefaultSlippageBps(chainId: SupportedChainId, isEthFlow: boolean): number {
+  if (isEthFlow) {
+    return ETH_FLOW_DEFAULT_SLIPPAGE_BPS[chainId]
+  } else {
+    return DEFAULT_SLIPPAGE_BPS
   }
 }

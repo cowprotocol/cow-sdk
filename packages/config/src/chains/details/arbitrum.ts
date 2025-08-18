@@ -12,7 +12,8 @@ const arbitrumOneLogoDark = `${RAW_CHAINS_FILES_PATH}/images/arbitrum-logo-dark.
  */
 export const arbitrumOne: ChainInfo = {
   id: SupportedChainId.ARBITRUM_ONE,
-  label: 'Arbitrum One',
+  label: 'Arbitrum',
+  eip155Label: 'Arbitrum One',
   nativeCurrency: {
     ...nativeCurrencyTemplate,
     chainId: SupportedChainId.ARBITRUM_ONE,
