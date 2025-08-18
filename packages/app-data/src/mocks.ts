@@ -26,6 +26,19 @@ export const APP_DATA_DOC_CUSTOM = {
   },
 }
 
+export const APP_DATA_DOC_WITH_FLASHLOAN = {
+  version: '1.6.0',
+  appCode: 'aave-v3-flashloan',
+  metadata: {
+    flashloan: {
+      lender: '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2',
+      borrower: '0x2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b',
+      token: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+      amount: '1000000000',
+    },
+  },
+}
+
 // Another example of AppData (same as the backend uses in the tests
 // See https://github.com/cowprotocol/services/blob/main/crates/app-data-hash/src/lib.rs#L64
 export const APP_DATA_STRING_2 =
