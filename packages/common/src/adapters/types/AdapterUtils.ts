@@ -8,6 +8,7 @@ import {
   TypedDataTypes,
   Address,
   Provider,
+  GenericContractInterface,
 } from '.'
 
 /**
@@ -154,7 +155,7 @@ export abstract class AdapterUtils {
    * Creates an Interface instance from an ABI
    * interface was changed to iface: Identifier expected. 'interface' is a reserved word in strict mode.
    */
-  abstract createInterface(abi: unknown): ContractInterface
+  abstract createInterface(abi: unknown): GenericContractInterface
 
   /**
    * Get the hash of a typed data domain

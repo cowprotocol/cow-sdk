@@ -93,11 +93,11 @@ export class ViemSignerAdapter extends AbstractSigner {
 
         return {
           transactionHash: receipt.transactionHash,
-          blockNumber: Number(receipt.blockNumber),
+          blockNumber: BigInt(receipt.blockNumber),
           blockHash: receipt.blockHash,
           status: Number(receipt.status === 'success'),
           gasUsed: receipt.gasUsed,
-          logs: receipt.logs,
+          logs: receipt.logs.map((log) => ({ ...log, blockNumber: BigInt(log.blockNumber) })),
         }
       },
     }

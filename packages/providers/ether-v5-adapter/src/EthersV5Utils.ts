@@ -1,4 +1,4 @@
-import { AdapterUtils, Address } from '@cowprotocol/sdk-common'
+import { AdapterUtils, Address, GenericContractInterface } from '@cowprotocol/sdk-common'
 import { BigNumberish, BytesLike, ethers, TypedDataDomain, TypedDataField } from 'ethers'
 import { ParamType } from 'ethers/lib/utils'
 
@@ -9,8 +9,9 @@ export class EthersV5Utils implements AdapterUtils {
     return ethers.utils.toUtf8Bytes(text)
   }
 
-  createInterface(abi: Abi): ethers.utils.Interface {
-    return new ethers.utils.Interface(abi)
+  createInterface(abi: Abi): GenericContractInterface {
+    // TODO: fix type casting
+    return new ethers.utils.Interface(abi) as unknown as GenericContractInterface
   }
 
   getCreate2Address(from: string, salt: BytesLike, initCodeHash: BytesLike): string {

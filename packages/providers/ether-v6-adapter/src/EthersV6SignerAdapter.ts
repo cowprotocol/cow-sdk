@@ -1,4 +1,4 @@
-import { Log, Signer, TypedDataDomain, TypedDataField, TypedDataEncoder, JsonRpcProvider, toBeHex } from 'ethers'
+import { Signer, TypedDataDomain, TypedDataField, TypedDataEncoder, JsonRpcProvider, toBeHex } from 'ethers'
 import { AbstractSigner, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
 
 export class EthersV6SignerAdapter extends AbstractSigner {
@@ -41,11 +41,16 @@ export class EthersV6SignerAdapter extends AbstractSigner {
         }
         return {
           transactionHash: receipt.hash,
-          blockNumber: receipt.blockNumber,
+          blockNumber: BigInt(receipt.blockNumber),
           blockHash: receipt.blockHash || '',
           status: receipt.status || 0,
           gasUsed: receipt.gasUsed,
-          logs: receipt.logs as Log[],
+          logs: receipt.logs.map((log) => ({
+            ...log,
+            topics: log.topics as string[],
+            logIndex: log.index,
+            blockNumber: BigInt(log.blockNumber),
+          })),
         }
       },
     }
