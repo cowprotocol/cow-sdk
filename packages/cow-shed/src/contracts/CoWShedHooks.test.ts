@@ -1,9 +1,9 @@
 import { CowShedHooks } from './CoWShedHooks'
 import { ICoWShedCall } from '../types'
-import { COW_SHED_FACTORY, COW_SHED_IMPLEMENTATION } from '@cowprotocol/sdk-config'
 import { ContractsSigningScheme as SigningScheme } from '@cowprotocol/sdk-contracts-ts'
 import { AdaptersTestSetup, createAdapters } from '../../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { COW_SHED_FACTORY, COW_SHED_IMPLEMENTATION } from '../const'
 
 // information from mint and dai example of cow-shed repository
 // https://github.com/cowdao-grants/cow-shed/blob/main/examples/mintDaiAndSwap.ts
@@ -66,8 +66,8 @@ describe('CowShedHooks', () => {
 
         const defaultCowShed = new CowShedHooks(1)
         expect(defaultCowShed).toBeInstanceOf(CowShedHooks)
-        expect(defaultCowShed.getFactoryAddress()).toBe(COW_SHED_FACTORY)
-        expect(defaultCowShed.getImplementationAddress()).toBe(COW_SHED_IMPLEMENTATION)
+        expect(defaultCowShed.getFactoryAddress()).toBe(COW_SHED_FACTORY[defaultCowShed.version])
+        expect(defaultCowShed.getImplementationAddress()).toBe(COW_SHED_IMPLEMENTATION[defaultCowShed.version])
 
         const proxyCode = defaultCowShed.proxyCreationCode()
         expect(proxyCode).toMatch(/^0x[a-fA-F0-9]+$/) // Valid hex string
@@ -130,7 +130,7 @@ describe('CowShedHooks', () => {
 
         expect(domain).toEqual({
           name: 'COWShed',
-          version: '1.0.0',
+          version: '1.0.1',
           chainId: 1,
           verifyingContract: adapter.ZERO_ADDRESS.toLowerCase(),
         })
@@ -141,7 +141,7 @@ describe('CowShedHooks', () => {
 
         expect(testProxyDomain).toEqual({
           name: 'COWShed',
-          version: '1.0.0',
+          version: '1.0.1',
           chainId: 1,
           verifyingContract: testProxy.toLowerCase(),
         })
@@ -185,7 +185,7 @@ describe('CowShedHooks', () => {
         // Fix: Test the normalized message structure
         const message = result.message as {
           calls: Array<{ target: string; value: bigint }>
-          deadline: string
+          deadline: bigint
           nonce: string
         }
         const domain = result.domain as { chainId: number; verifyingContract: string }
@@ -194,7 +194,7 @@ describe('CowShedHooks', () => {
         expect(message.calls.length).toBeGreaterThan(0)
         expect(message.calls[0]?.target).toBe('0x1234abcd') // Should be lowercase
         expect(message.calls[0]?.value).toBe(BigInt(100)) // Value should remain bigint
-        expect(message.deadline).toBe('1000000') // Should be converted to string
+        expect(message.deadline?.toString()).toBe('1000000') // Should be converted to string
         expect(message.nonce).toBe(nonce)
 
         // Test domain normalization
