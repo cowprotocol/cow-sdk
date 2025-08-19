@@ -1,0 +1,10 @@
+{
+  "extends": "@cow-sdk/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "baseUrl": "src",
+    "types": ["jest"]
+  },
+  "include": ["src/**/*", "setupTests.ts", "__mocks__/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

@@ -39,7 +39,7 @@ export function GetOrdersPage() {
           setOutput(error.toString())
         })
     },
-    [input]
+    [input],
   )
 
   const defaultValue = {

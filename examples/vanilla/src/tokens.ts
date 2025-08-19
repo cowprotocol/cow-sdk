@@ -6,7 +6,7 @@ class Token {
     public readonly address: string,
     public readonly decimals: number,
     public readonly symbol: string,
-    public readonly name: string
+    public readonly name: string,
   ) {}
 }
 
@@ -28,7 +28,7 @@ export const TOKENS: Record<SupportedChainId, Token[]> = {
       '0x177127622c4A00F3d409B75571e12cB3c8973d3c',
       18,
       'COW',
-      'CoW Protocol Token'
+      'CoW Protocol Token',
     ),
   ],
   [SupportedChainId.ARBITRUM_ONE]: [
@@ -41,7 +41,7 @@ export const TOKENS: Record<SupportedChainId, Token[]> = {
       '0xcb8b5cd20bdcaea9a010ac1f8d835824f5c87a04',
       18,
       'COW',
-      'CoW Protocol Token'
+      'CoW Protocol Token',
     ),
   ],
   [SupportedChainId.SEPOLIA]: [
@@ -56,18 +56,5 @@ export const TOKENS: Record<SupportedChainId, Token[]> = {
     new Token(SupportedChainId.BASE, '0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2', 6, 'USDT', 'Tether USD'),
     new Token(SupportedChainId.BASE, '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', 6, 'USDC', 'USD Coin'),
     new Token(SupportedChainId.BASE, '0x60a3e35cc302bfa44cb288bc5a4f316fdb1adb42', 6, 'EURC', 'EURC'),
-  ],
-  [SupportedChainId.AVALANCHE]: [
-    new Token(SupportedChainId.AVALANCHE, ETH_ADDRESS, 18, 'AVAX', 'Avalanche'),
-    new Token(SupportedChainId.AVALANCHE, '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7', 6, 'USDT', 'Tether USD'),
-    new Token(SupportedChainId.AVALANCHE, '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7', 18, 'WAVAX', 'Wrapped AVAX'),
-    new Token(SupportedChainId.AVALANCHE, '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e', 6, 'USDC', 'USD Coin'),
-  ],
-  [SupportedChainId.POLYGON]: [
-    new Token(SupportedChainId.POLYGON, ETH_ADDRESS, 18, 'POL', 'POL ex MATIC'),
-    new Token(SupportedChainId.POLYGON, '0xc2132d05d31c914a87c6611c10748aeb04b58e8f', 6, 'USDT', 'Tether USD'),
-    new Token(SupportedChainId.POLYGON, '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270', 18, 'WPOL', 'Wrapped POL'),
-    new Token(SupportedChainId.POLYGON, '0x3c499c542cef5e3811e1192ce70d8cc03d5c3359', 6, 'USDC', 'USD Coin'),
-    new Token(SupportedChainId.POLYGON, '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063', 18, 'DAI', 'DAI Coin'),
   ],
 }

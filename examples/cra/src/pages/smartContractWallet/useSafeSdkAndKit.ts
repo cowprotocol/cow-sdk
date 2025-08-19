@@ -1,10 +1,10 @@
-import {useEffect, useState} from 'react'
-import Safe, {EthersAdapter} from '@safe-global/protocol-kit'
-import {ethers} from 'ethers'
+import { useEffect, useState } from 'react'
+import Safe, { EthersAdapter } from '@safe-global/protocol-kit'
+import { ethers } from 'ethers'
 import SafeApiKit from '@safe-global/api-kit'
-import {SAFE_TRANSACTION_SERVICE_URL} from './const'
-import {SupportedChainId} from '@cowprotocol/cow-sdk'
-import {Web3Provider} from '@ethersproject/providers'
+import { SAFE_TRANSACTION_SERVICE_URL } from './const'
+import { SupportedChainId } from '@cowprotocol/cow-sdk'
+import { Web3Provider } from '@ethersproject/providers'
 
 export function useSafeSdkAndKit(safeAddress: string | null, chainId: SupportedChainId, provider: Web3Provider) {
   const [safeSdk, setSafeSdk] = useState<Safe | null>(null)
@@ -27,12 +27,12 @@ export function useSafeSdkAndKit(safeAddress: string | null, chainId: SupportedC
 
     const safeApiKit = new SafeApiKit({
       txServiceUrl,
-      ethAdapter
+      ethAdapter,
     })
 
     setSafeApiKit(safeApiKit)
 
-    Safe.create({ethAdapter, safeAddress}).then(setSafeSdk).catch(console.error)
+    Safe.create({ ethAdapter, safeAddress }).then(setSafeSdk).catch(console.error)
   }, [chainId, provider, safeAddress])
 
   return { safeSdk, safeApiKit }

@@ -4,7 +4,7 @@ import { Web3Provider } from '@ethersproject/providers'
 const provider = new Web3Provider(window.ethereum)
 
 // Connect to injected wallet
-;(window.ethereum as {enable(): void})?.enable()
+;(window.ethereum as { enable(): void })?.enable()
 
 export interface Web3Info {
   provider: Web3Provider

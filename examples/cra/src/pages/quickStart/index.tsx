@@ -68,7 +68,7 @@ export function QuickStartPage() {
 
       setOutput({ orderUid, order, trades, orderCancellationSigningResult, cancellationResult })
     },
-    [chainId, provider, account]
+    [chainId, provider, account],
   )
 
   return (

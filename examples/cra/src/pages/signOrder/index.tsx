@@ -29,7 +29,7 @@ export function SignOrderPage() {
           setOutput(error.toString())
         })
     },
-    [chainId, input, provider]
+    [chainId, input, provider],
   )
 
   const defaultValue: UnsignedOrder = {
