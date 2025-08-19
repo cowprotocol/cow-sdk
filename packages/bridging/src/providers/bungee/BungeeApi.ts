@@ -299,12 +299,15 @@ export class BungeeApi {
       })
     }
 
-    // TODO: it might not work, need to test
-    const SocketVerifier = adapter.getContract(socketVerifierAddress, SOCKET_VERIFIER_ABI)
-
     // should not revert
     try {
-      await SocketVerifier.validateRotueId(txData, routeId)
+      // TODO: it might not work with Viem/Ethers 6, need to test
+      await adapter.readContract({
+        address: socketVerifierAddress,
+        abi: SOCKET_VERIFIER_ABI,
+        functionName: 'validateRotueId',
+        args: [txData, routeId],
+      })
     } catch (error) {
       console.error('🔴 Error validating routeId:', error)
       return false
@@ -317,7 +320,12 @@ export class BungeeApi {
 
     // should not revert
     try {
-      await SocketVerifier.validateSocketRequest(txData, expectedUserRequestValidation)
+      await adapter.readContract({
+        address: socketVerifierAddress,
+        abi: SOCKET_VERIFIER_ABI,
+        functionName: 'validateSocketRequest',
+        args: [txData, expectedUserRequestValidation],
+      })
     } catch (error) {
       console.error('🔴 Error validating socket request:', error)
       return false
