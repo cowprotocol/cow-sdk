@@ -99,8 +99,6 @@ describe('BungeeGnosisBridge full transaction', () => {
       quote,
     })
 
-    console.error('call ==>', call)
-
     expect(call).toBeDefined()
     expect(call.data).toBeDefined()
     expect(call.to).toBe('0x936fa1cfd96849329B18b915773E176718A64b95')
