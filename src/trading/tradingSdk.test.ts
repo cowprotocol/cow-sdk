@@ -2,6 +2,7 @@ import { TradingSdk } from './tradingSdk'
 import { SupportedChainId } from '../chains'
 import { TradeBaseParameters } from './types'
 import { OrderBookApi, OrderKind } from '../order-book'
+import { AppDataParams } from '@cowprotocol/app-data'
 
 const defaultOrderParams: TradeBaseParameters = {
   sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
@@ -36,35 +37,34 @@ const quoteResponseMock = {
   verified: true,
 }
 
+const defaultTrader = {
+  chainId: SupportedChainId.GNOSIS_CHAIN,
+  appCode: 'test',
+  signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+}
+
 describe('TradingSdk', () => {
   let orderBookApi: OrderBookApi
 
+  beforeEach(() => {
+    orderBookApi = {
+      context: {
+        chainId: SupportedChainId.GNOSIS_CHAIN,
+      },
+      getQuote: jest.fn().mockResolvedValue(quoteResponseMock),
+      sendOrder: jest.fn().mockResolvedValue('0x01'),
+    } as unknown as OrderBookApi
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
   describe('Logs', () => {
-    beforeEach(() => {
-      orderBookApi = {
-        context: {
-          chainId: SupportedChainId.GNOSIS_CHAIN,
-        },
-        getQuote: jest.fn().mockResolvedValue(quoteResponseMock),
-        sendOrder: jest.fn().mockResolvedValue('0x01'),
-      } as unknown as OrderBookApi
-    })
-
-    afterEach(() => {
-      jest.resetAllMocks()
-    })
-
     it('When logs option is set to false, then should not display logs', async () => {
       const logSpy = jest.spyOn(console, 'log')
 
-      const sdk = new TradingSdk(
-        {
-          chainId: SupportedChainId.GNOSIS_CHAIN,
-          appCode: 'test',
-          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
-        },
-        { enableLogging: false, orderBookApi }
-      )
+      const sdk = new TradingSdk(defaultTrader, { enableLogging: false, orderBookApi })
 
       await sdk.getQuote(defaultOrderParams)
 
@@ -74,18 +74,100 @@ describe('TradingSdk', () => {
     it('When logs option is set to true, then should display logs', async () => {
       const logSpy = jest.spyOn(console, 'log')
 
-      const sdk = new TradingSdk(
-        {
-          chainId: SupportedChainId.GNOSIS_CHAIN,
-          appCode: 'test',
-          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
-        },
-        { enableLogging: true, orderBookApi }
-      )
+      const sdk = new TradingSdk(defaultTrader, { enableLogging: true, orderBookApi })
 
       await sdk.getQuote(defaultOrderParams)
 
       expect(logSpy.mock.calls[0][0]).toContain('[COW TRADING SDK]')
     })
   })
+
+  describe('Quote and post limit order', () => {
+    it('Quote result order amounts should match the quote result', async () => {
+      // This value is calculated in suggestSlippageBps.ts
+      const smartSlippage = 56
+
+      const sdk = new TradingSdk(defaultTrader, { orderBookApi })
+
+      // We requested a quote for defaultOrderParams
+      const quote = await sdk.getQuote(defaultOrderParams)
+
+      // orderToSign sell amount is quote.sellAmount - quote.feeAmount
+      expect(+quote.quoteResults.orderToSign.sellAmount).toEqual(
+        Number(quoteResponseMock.quote.sellAmount) + Number(quoteResponseMock.quote.feeAmount),
+      )
+
+      expect(quote.quoteResults.suggestedSlippageBps).toBe(smartSlippage)
+
+      // 397760000000000000000
+      const expectedBuyAmountFromQuote = amountMinusPercent(
+        Number(quoteResponseMock.quote.buyAmount),
+        smartSlippage / 100,
+      )
+
+      // orderToSign buy amount is quote.buyAmount - slippage
+      expect(+quote.quoteResults.orderToSign.buyAmount).toEqual(expectedBuyAmountFromQuote)
+    })
+
+    it('The final order should take partnerFee and slippage into account', async () => {
+      const slippageBips = 70
+      const partnerFeeBps = 30
+      const smartSlippage = 56
+
+      const sdk = new TradingSdk(defaultTrader, { orderBookApi })
+
+      const quote = await sdk.getQuote(defaultOrderParams)
+
+      // orderToSign buy amount is quote.buyAmount - slippage
+      // 397760000000000000000
+      const expectedBuyAmountFromQuote = amountMinusPercent(
+        Number(quoteResponseMock.quote.buyAmount),
+        smartSlippage / 100,
+      )
+
+      // Add partnerFee and slippage to the final order appData just before signing and sending it
+      const appDataParams: AppDataParams = {
+        metadata: {
+          quote: {
+            slippageBips,
+          },
+          partnerFee: {
+            volumeBps: partnerFeeBps,
+            recipient: '0xrecipient',
+          },
+        },
+      }
+
+      await sdk.postLimitOrder(
+        {
+          ...quote.quoteResults.tradeParameters,
+          ...quote.quoteResults.orderToSign,
+        },
+        { appData: appDataParams },
+      )
+
+      const sendOrderCall = (orderBookApi.sendOrder as jest.Mock).mock.calls[0][0]
+      const sendOrderAppData = JSON.parse(sendOrderCall.appData)
+
+      // Order sellAmount should not be changed, because we add partnerFee and slippage only to buyAmount
+      expect(+sendOrderCall.sellAmount).toBe(
+        Number(quoteResponseMock.quote.sellAmount) + Number(quoteResponseMock.quote.feeAmount),
+      )
+
+      // Order buy amount is expectedBuyAmountFromQuote after partnerFee and Slippage
+      expect(+sendOrderCall.buyAmount).toBe(
+        amountMinusPercent(
+          amountMinusPercent(Number(expectedBuyAmountFromQuote), partnerFeeBps / 100),
+          slippageBips / 100,
+        ),
+      )
+
+      expect(sendOrderAppData.metadata.quote.slippageBips).toBe(slippageBips)
+      expect(sendOrderAppData.metadata.partnerFee.volumeBps).toBe(partnerFeeBps)
+    })
+  })
 })
+
+function amountMinusPercent(amount: number, percent: number): number {
+  return amount - (amount * percent) / 100
+}
