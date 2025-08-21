@@ -16,7 +16,7 @@ export async function getBridgeSignedHook(
   // Get the bridging call
   const unsignedBridgeCall = await provider.getUnsignedBridgeCall(bridgeRequest, bridgingQuote)
 
-  const deadline = BigInt(validToOverride || swapResult.orderToSign.validTo)
+  const deadline = BigInt(validToOverride ?? swapResult.orderToSign.validTo)
   const bridgeHookNonce = adapter.utils.solidityKeccak256(
     ['bytes', 'uint256'],
     [unsignedBridgeCall.data, deadline],

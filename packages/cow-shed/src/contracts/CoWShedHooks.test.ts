@@ -185,7 +185,7 @@ describe('CowShedHooks', () => {
         // Fix: Test the normalized message structure
         const message = result.message as {
           calls: Array<{ target: string; value: bigint }>
-          deadline: bigint
+          deadline: string
           nonce: string
         }
         const domain = result.domain as { chainId: number; verifyingContract: string }
@@ -194,7 +194,7 @@ describe('CowShedHooks', () => {
         expect(message.calls.length).toBeGreaterThan(0)
         expect(message.calls[0]?.target).toBe('0x1234ABCD')
         expect(message.calls[0]?.value).toBe(BigInt(100)) // Value should remain bigint
-        expect(message.deadline?.toString()).toBe('1000000') // Should be converted to string
+        expect(message.deadline).toBe('1000000') // Should be converted to string
         expect(message.nonce).toBe(nonce)
 
         // Test domain normalization
