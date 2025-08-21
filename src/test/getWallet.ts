@@ -1,6 +1,16 @@
 import { ethers } from 'ethers'
-import { SupportedChainId } from 'src'
-import { arbitrumOne, mainnet, base, sepolia, polygon, avalanche, gnosisChain, lens, bnb } from 'src/chains'
+import {
+  SupportedChainId,
+  arbitrumOne,
+  mainnet,
+  base,
+  sepolia,
+  polygon,
+  avalanche,
+  gnosisChain,
+  lens,
+  bnb,
+} from 'src/chains'
 
 const DEFAULT_RPC_URL: Record<SupportedChainId, string> = {
   [SupportedChainId.MAINNET]: mainnet.rpcUrls.default.http[0],
