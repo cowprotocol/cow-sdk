@@ -103,8 +103,7 @@ describe('postCoWProtocolTrade', () => {
     sendOrderMock.mockReset()
   })
 
-  // TODO: will be fixed later
-  it.skip('When sell token is native, then should post on-chain order', async () => {
+  it('When sell token is native, then should post on-chain order', async () => {
     postSellNativeCurrencyOrderMock.mockResolvedValue({ orderId: '0x01' })
 
     const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
@@ -130,8 +129,7 @@ describe('postCoWProtocolTrade', () => {
     }
   })
 
-  // TODO: will be fixed later
-  it.skip('API request should contain all specified parameters', async () => {
+  it('API request should contain all specified parameters', async () => {
     sendOrderMock.mockResolvedValue('0x02')
 
     const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
