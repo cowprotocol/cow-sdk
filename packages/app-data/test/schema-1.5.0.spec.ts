@@ -1,6 +1,6 @@
 import Ajv from 'ajv'
 
-import schemaV1_5_0 from '../src/schemas/v1.5.0.json'
+import schemaV1_5_0 from '../schemas/v1.5.0.json'
 import { buildAssertInvalidFn, buildAssertValidFn } from './test-utils'
 
 describe('Schema v1.5.0: Add bridging metadata 1.0.0', () => {
