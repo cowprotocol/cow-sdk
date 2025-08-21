@@ -97,7 +97,7 @@ export class CowShedHooks {
     const message = {
       calls,
       nonce,
-      deadline,
+      deadline: deadline.toString(),
     }
     return { domain: this.getDomain(proxy), types: COW_SHED_712_TYPES, message }
   }
