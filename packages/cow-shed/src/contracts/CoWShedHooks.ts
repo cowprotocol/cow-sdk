@@ -90,14 +90,14 @@ export class CowShedHooks {
 
     const { domain, types, message } = this.infoToSign(calls, nonce, deadline, proxy)
 
-    return await ecdsaSignTypedData(signingScheme, signer, domain, types, message)
+    return await ecdsaSignTypedData(signingScheme, domain, types, message, signer)
   }
 
   infoToSign(calls: ICoWShedCall[], nonce: string, deadline: bigint, proxy: string) {
     const message = {
       calls,
       nonce,
-      deadline,
+      deadline: deadline.toString(),
     }
     return { domain: this.getDomain(proxy), types: COW_SHED_712_TYPES, message }
   }

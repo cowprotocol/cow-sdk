@@ -137,10 +137,10 @@ export class ContractFactory {
           return adapter.utils.decodeFunctionData(GPV2SettlementAbi, functionName, data)
         },
         parseLog(event: Log): { args: unknown } | null {
-          return adapter.utils.createInterface(EthFlowAbi).parseLog(event)
+          return adapter.utils.createInterface(GPV2SettlementAbi).parseLog(event)
         },
         getEventTopic(eventFragment: string): string | null {
-          return adapter.utils.createInterface(EthFlowAbi).getEventTopic(eventFragment)
+          return adapter.utils.createInterface(GPV2SettlementAbi).getEventTopic(eventFragment)
         },
       },
       functions: {
