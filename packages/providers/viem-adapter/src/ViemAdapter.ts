@@ -1,10 +1,6 @@
 import {
-  createPublicClient,
-  http,
   PublicClient,
   Account,
-  Transport,
-  Chain,
   TypedDataDomain,
   WalletClient,
   createWalletClient,
@@ -15,6 +11,7 @@ import {
   BlockTag,
   getContract,
   encodeFunctionData,
+  custom,
 } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 
@@ -51,17 +48,11 @@ export interface ViemTypes extends AdapterTypes {
 }
 
 export interface ViemAdapterOptions {
-  chain: Chain
-  transport?: Transport // Optional, defaults to http()
-  rpcUrl?: string // Alternative to transport
-  account?: Account | PrivateKey // Optional account or private key
+  provider: PublicClient
+  signer?: Account | PrivateKey // Optional account or private key
 }
 
 export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
-  declare protected _type?: ViemTypes
-
-  private _chain: Chain
-  private _transport: Transport
   private _publicClient: PublicClient
   private _account?: Account
   private _walletClient?: WalletClient
@@ -75,43 +66,11 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
   constructor(options: ViemAdapterOptions) {
     super()
     this.ZERO_ADDRESS = zeroAddress
-    if (!options.chain) {
-      throw new CowError('Chain is required for Viem adapter')
-    }
 
-    this._chain = options.chain
-    // Setup transport
-    if (options.transport) {
-      this._transport = options.transport
-    } else if (options.rpcUrl) {
-      this._transport = http(options.rpcUrl)
-    } else if (options.chain.rpcUrls?.default?.http?.[0]) {
-      this._transport = http(options.chain.rpcUrls.default.http[0])
-    } else {
-      this._transport = http()
-    }
-    // Setup public client
-    this._publicClient = createPublicClient({
-      chain: options.chain,
-      transport: this._transport,
-    })
+    this._publicClient = this.setProvider(options.provider)
 
-    // Setup account and signer
-    if (options.account) {
-      if (typeof options.account === 'string') {
-        const normalizedPrivateKey = normalizePrivateKey(options.account)
-        this._account = privateKeyToAccount(normalizedPrivateKey)
-      } else {
-        this._account = options.account
-      }
-
-      this._walletClient = createWalletClient({
-        chain: options.chain,
-        transport: this._transport,
-        account: this._account,
-      })
-      this._signerAdapter = new ViemSignerAdapter(this._walletClient)
-      this._signerAdapter.setPublicClient(this._publicClient)
+    if (options.signer) {
+      this.setSigner(options.signer)
     }
 
     this.utils = new ViemUtils()
@@ -129,43 +88,40 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
   }
 
   setSigner(signer: Account | PrivateKey) {
+    this._signerAdapter = this.createSigner(signer)
+  }
+
+  setProvider(provider: PublicClient): PublicClient {
+    this._publicClient = provider
+
+    this.signerOrNull()?.connect(this._publicClient)
+
+    return this._publicClient
+  }
+
+  createSigner(signer: Account | PrivateKey | ViemSignerAdapter): ViemSignerAdapter {
+    if (signer instanceof ViemSignerAdapter) {
+      signer.connect(this._publicClient)
+
+      return signer
+    }
+
     if (typeof signer === 'string') {
       const normalizedPrivateKey = normalizePrivateKey(signer)
       this._account = privateKeyToAccount(normalizedPrivateKey)
-    }
-    if (this.isAccount(signer)) {
-      this._account = signer as Account
+    } else {
+      this._account = signer
     }
 
     this._walletClient = createWalletClient({
-      chain: this._chain,
-      transport: this._transport,
+      chain: this._publicClient.chain,
+      transport: custom(this._publicClient.transport, this._publicClient.transport),
       account: this._account,
     })
 
-    this._signerAdapter = this.createSigner(this._walletClient)
-  }
+    const signerAdapter = new ViemSignerAdapter(this._walletClient)
+    signerAdapter.connect(this._publicClient)
 
-  createSigner(signerOrPrivateKey: WalletClient | PrivateKey | ViemSignerAdapter): ViemSignerAdapter {
-    if (signerOrPrivateKey instanceof ViemSignerAdapter) {
-      return signerOrPrivateKey
-    }
-
-    if (typeof signerOrPrivateKey === 'string') {
-      const normalizedPrivateKey = normalizePrivateKey(signerOrPrivateKey)
-      const account = privateKeyToAccount(normalizedPrivateKey)
-      const walletClient = createWalletClient({
-        chain: this._chain,
-        transport: this._transport,
-        account: account,
-      })
-      const signerAdapter = new ViemSignerAdapter(walletClient)
-      signerAdapter.setPublicClient(this._publicClient)
-      return signerAdapter
-    }
-
-    const signerAdapter = new ViemSignerAdapter(signerOrPrivateKey)
-    signerAdapter.setPublicClient(this._publicClient)
     return signerAdapter
   }
 
@@ -227,17 +183,6 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
   async getBlock(blockTag: BlockTag, provider?: PublicClient): Promise<Block> {
     const providerToUse = provider || this._publicClient
     return providerToUse.getBlock({ blockTag })
-  }
-
-  private isAccount(signer: unknown): signer is Account {
-    return (
-      typeof signer === 'object' &&
-      signer !== null &&
-      'address' in signer &&
-      'type' in signer &&
-      typeof signer.address === 'string' &&
-      typeof signer.type === 'string'
-    )
   }
 
   getContract(address: string, abi: Abi): GenericContract {

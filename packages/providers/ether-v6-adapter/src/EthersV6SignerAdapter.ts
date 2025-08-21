@@ -1,12 +1,16 @@
-import { Signer, TypedDataDomain, TypedDataField, TypedDataEncoder, JsonRpcProvider, toBeHex } from 'ethers'
+import { Signer, TypedDataDomain, TypedDataField, TypedDataEncoder, JsonRpcProvider, toBeHex, Provider } from 'ethers'
 import { AbstractSigner, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
 
-export class EthersV6SignerAdapter extends AbstractSigner {
+export class EthersV6SignerAdapter extends AbstractSigner<Provider> {
   private _signer: Signer
 
   constructor(signer: Signer) {
     super()
     this._signer = signer
+  }
+
+  connect(provider: Provider) {
+    this._signer.connect(provider)
   }
 
   async getAddress(): Promise<string> {

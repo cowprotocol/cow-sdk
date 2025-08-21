@@ -8,7 +8,6 @@ import { ICoWShedCall, ICoWShedOptions } from './types'
 
 import {
   AbstractProviderAdapter,
-  AbstractSigner,
   getGlobalAdapter,
   jsonWithBigintReplacer,
   log,
@@ -118,7 +117,7 @@ export class CowShedSdk {
   }: SignAndEncodeTxArgs): Promise<CowShedCall> {
     const cowShedHooks = this.getCowShedHooks(chainId)
     const adapter = getGlobalAdapter()
-    const signer: AbstractSigner = signerParam ? adapter.createSigner(signerParam) : adapter.signer
+    const signer = signerParam ? adapter.createSigner(signerParam) : adapter.signer
 
     const ownerAddress = await signer.getAddress()
 

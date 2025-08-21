@@ -4,7 +4,7 @@ import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
 
 import { ethers as ethersV5 } from 'ethers-v5'
 import * as ethersV6 from 'ethers-v6'
-import { http } from 'viem'
+import { createPublicClient, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { sepolia } from 'viem/chains'
 
@@ -29,9 +29,13 @@ export function createAdapters(): AdaptersTestSetup {
 
   // Viem setup with public client
   const viemAccount = privateKeyToAccount(TEST_PRIVATE_KEY as `0x${string}`)
-  const transport = http(TEST_RPC_URL)
-  const viemAdapter = new ViemAdapter({ chain: sepolia, transport, account: viemAccount })
-
+  const viemAdapter = new ViemAdapter({
+    provider: createPublicClient({
+      chain: sepolia,
+      transport: http(TEST_RPC_URL),
+    }),
+    signer: viemAccount,
+  })
   return {
     ethersV5Adapter,
     ethersV6Adapter,

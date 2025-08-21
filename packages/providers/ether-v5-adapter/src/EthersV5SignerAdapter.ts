@@ -3,13 +3,19 @@ import { AbstractSigner, CowError, TransactionParams, TransactionResponse } from
 import { TypedDataSigner } from '@ethersproject/abstract-signer'
 import { _TypedDataEncoder } from 'ethers/lib/utils'
 
-export class EthersV5SignerAdapter extends AbstractSigner {
+type RpcProvider = ethers.providers.Provider
+
+export class EthersV5SignerAdapter extends AbstractSigner<RpcProvider> {
   protected _signer: Signer & TypedDataSigner
 
   constructor(signer: Signer & TypedDataSigner) {
     super()
 
     this._signer = signer
+  }
+
+  connect(provider: RpcProvider) {
+    this._signer.connect(provider)
   }
 
   async getAddress(): Promise<string> {
