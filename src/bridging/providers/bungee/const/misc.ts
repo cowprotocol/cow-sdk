@@ -52,9 +52,8 @@ export const BungeeTxDataBytesIndices: BungeeTxDataBytesIndicesType = {
     },
   },
   'gnosis-native-bridge': {
-    // bridgeERC20To
+    // bridgeERC20To (amount is 5th param -> 8 + 4*32 = 136)
     ['0x3bf5c228'.toLowerCase()]: {
-      // TODO fix this
       inputAmount: {
         bytes_startIndex: 136, // first 136 bytes are the routeId, followed by the function selector
         bytes_length: 32, // first 32 bytes of the params are the amount
@@ -62,7 +61,7 @@ export const BungeeTxDataBytesIndices: BungeeTxDataBytesIndicesType = {
         bytesString_length: 32 * 2, // 32 bytes = 64 chars for the amount
       },
     },
-    // bridgeNativeTo
+    // bridgeNativeTo (amount is 4th param -> 8 + 3*32 = 104)
     ['0xfcb23eb0'.toLowerCase()]: {
       inputAmount: {
         bytes_startIndex: 104, // first 104 bytes are the routeId, followed by the function selector

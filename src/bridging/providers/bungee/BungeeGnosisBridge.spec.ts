@@ -7,6 +7,7 @@ import { SupportedChainId } from '../../../chains'
 import { getWallet } from '../../../test/getWallet'
 import { OrderKind } from '../../../order-book/generated/models/OrderKind'
 import { EvmCall } from '../../../common/types/ethereum'
+import { AccountAddress } from '../../../common'
 import { QuoteBridgeRequest } from '../../types'
 import { toBridgeQuoteResult } from './util'
 import { BungeeQuoteAPIRequest, BungeeQuoteWithBuildTx } from './types'
@@ -80,7 +81,7 @@ describe('BungeeGnosisBridge full transaction', () => {
     const request: QuoteBridgeRequest = {
       kind: OrderKind.SELL,
       amount: BigInt(10000000000000000000),
-      owner: `0x${wallet.address}`,
+      owner: wallet.address as AccountAddress,
       sellTokenChainId: SupportedChainId.MAINNET,
       sellTokenAddress: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
       sellTokenDecimals: 18,
@@ -88,7 +89,7 @@ describe('BungeeGnosisBridge full transaction', () => {
       buyTokenAddress: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
       buyTokenDecimals: 18,
       appCode: 'bungee',
-      account: `0x${wallet.address}`,
+      account: wallet.address as AccountAddress,
       signer: wallet,
     }
 
