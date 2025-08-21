@@ -167,8 +167,6 @@ describe('BungeeApi: Shape of API response', () => {
           '0x0dc2da6dfaf0d82435d7afa1cab8cfe628c75a03e3981978c762d51bc7eef19d279a80cb2b913ade60b1c5d4333966f45c3dd8b168a6ef92',
       })
 
-      console.error('result ==>', result)
-
       expect(result).toBeDefined()
       expect(Array.isArray(result)).toBe(true)
       if (result.length > 0) {
