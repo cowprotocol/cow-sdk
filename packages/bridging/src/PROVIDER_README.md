@@ -8,15 +8,13 @@ Bridge providers integrate third-party bridging protocols into the `CoW ecosyste
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Architecture](#architecture)
-3. [Getting Started](#getting-started)
-4. [BridgeProvider Interface](#bridgeprovider-interface)
-5. [Implementation Guide](#implementation-guide)
-6. [Required Components](#required-components)
-7. [Testing Your Provider](#testing-your-provider)
-8. [Best Practices](#best-practices)
-9. [Integration Examples](#integration-examples)
-10. [Troubleshooting](#troubleshooting)
+2. [Getting Started](#getting-started)
+3. [BridgeProvider Interface](#bridgeprovider-interface)
+4. [Implementation Guide](#implementation-guide)
+5. [Testing Your Provider](#testing-your-provider)
+6. [Best Practices](#best-practices)
+7. [Integration Examples](#integration-examples)
+8. [Troubleshooting](#troubleshooting)
 
 ## Overview
 
@@ -248,7 +246,7 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
   private async validateQuote(externalQuote: YourBridgeQuote, request: QuoteBridgeRequest): Promise<void> {
     // Add validation logic
     if (!externalQuote.isValid) {
-      throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES_FOUND, { quote: externalQuote })
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES, { quote: externalQuote })
     }
   }
 
