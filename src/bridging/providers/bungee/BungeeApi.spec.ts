@@ -160,6 +160,37 @@ describe('BungeeApi: Shape of API response', () => {
         expect(event.destTxStatus).toBeDefined()
       }
     })
+
+    it('should return the events for a given orderId (Mainnet USDC to Gnosis xDAI)', async () => {
+      const result = await api.getEvents({
+        orderId:
+          '0x0dc2da6dfaf0d82435d7afa1cab8cfe628c75a03e3981978c762d51bc7eef19d279a80cb2b913ade60b1c5d4333966f45c3dd8b168a6ef92',
+      })
+
+      console.error('result ==>', result)
+
+      expect(result).toBeDefined()
+      expect(Array.isArray(result)).toBe(true)
+      if (result.length > 0) {
+        const event = result[0]
+        expect(event.identifier).toBe(
+          '0x000000000000000000000000000000000000000000000000000000000000071b-gnosis-native-bridge',
+        )
+        expect(event.srcTransactionHash).toBe('0x120040a5440d8a07dc06de21322899f1a8c1611adbb3e7ee024622de9f9f6bca')
+        expect(event.bridgeName).toBe('gnosis-native-bridge')
+        expect(event.fromChainId).toBe(SupportedChainId.MAINNET)
+        expect(event.isCowswapTrade).toBe(true)
+        expect(event.orderId).toBe(
+          '0x0dc2da6dfaf0d82435d7afa1cab8cfe628c75a03e3981978c762d51bc7eef19d279a80cb2b913ade60b1c5d4333966f45c3dd8b168a6ef92',
+        )
+        expect(event.recipient).toBe('0x279a80cB2B913Ade60b1C5d4333966f45c3dd8B1')
+        expect(event.sender).toBe('0xc8dD9d8684a2457d4d61e4A65146190798513042')
+        expect(event.destTransactionHash).toBeDefined()
+        expect(event.srcTxStatus).toBe('COMPLETED')
+        expect(event.destTxStatus).toBe('COMPLETED')
+        expect(event.bridgeName).toBe('gnosis-native-bridge')
+      }
+    })
   })
 
   describe('getAcrossStatus', () => {
