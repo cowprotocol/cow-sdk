@@ -153,7 +153,7 @@ async function compile(): Promise<void> {
         await typesIndexFile.write(additionalTypesExport)
 
         // Write exports to types/latest.ts
-        await latestIndexFile.write(`export * as latest from './${latest}'\n`)
+        await latestIndexFile.write(`export * as cowAppDataLatestScheme from './${latest}'\n`)
       } catch (e) {
         console.error('Error generating metadata version exports:', e)
 
@@ -173,7 +173,7 @@ async function compile(): Promise<void> {
         await typesIndexFile.write(additionalTypesExport)
 
         // Writes exports to types/latest.ts
-        await latestIndexFile.write(`export * as latest from './${latest}'\n`)
+        await latestIndexFile.write(`export * as cowAppDataLatestScheme from './${latest}'\n`)
       }
     } else {
       console.error('No version schemas found!')

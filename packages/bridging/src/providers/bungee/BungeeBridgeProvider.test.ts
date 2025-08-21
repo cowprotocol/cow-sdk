@@ -1,4 +1,4 @@
-import { latest as latestAppData } from '@cowprotocol/sdk-app-data'
+import { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
 import { BridgeStatus, QuoteBridgeRequest } from '../../types'
 import { BungeeApi } from './BungeeApi'
 import {
