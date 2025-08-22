@@ -55,17 +55,17 @@ function _getQuoteAmountsWithCosts(params: {
   const buyAmountAfterNetworkCosts = getBigNumber(orderParams.buyAmount, buyDecimals)
 
   /**
-   * This is an actual price of the quote since it's derrived only from the quote sell and buy amounts
-   */
-  const quotePrice = buyAmountAfterNetworkCosts.num / sellAmountBeforeNetworkCosts.num
-
-  /**
    * Before networkCosts + networkCosts = After networkCosts :)
    */
   const sellAmountAfterNetworkCosts = getBigNumber(
     sellAmountBeforeNetworkCosts.big + networkCostAmount.big,
     sellDecimals
   )
+
+  /**
+   * This is an actual price of the quote since it's derrived only from the quote sell and buy amounts
+   */
+  const quotePrice = buyAmountAfterNetworkCosts.num / sellAmountAfterNetworkCosts.num
 
   /**
    * Since the quote contains only buy amount after network costs
@@ -95,8 +95,6 @@ function getQuoteAmountsWithPartnerFee(params: {
   const {
     sellAmountAfterNetworkCosts,
     buyAmountAfterNetworkCosts,
-    buyAmountBeforeNetworkCosts,
-    sellAmountBeforeNetworkCosts,
     isSell,
     partnerFeeBps,
   } = params
@@ -104,7 +102,7 @@ function getQuoteAmountsWithPartnerFee(params: {
   /**
    * Partner fee is always added on the surplus amount, for sell-orders it's buy amount, for buy-orders it's sell amount
    */
-  const surplusAmount = isSell ? buyAmountBeforeNetworkCosts.big : sellAmountBeforeNetworkCosts.big
+  const surplusAmount = isSell ? buyAmountAfterNetworkCosts.big : sellAmountAfterNetworkCosts.big
   const partnerFeeAmount = partnerFeeBps > 0 ? (surplusAmount * BigInt(partnerFeeBps)) / ONE_HUNDRED_BPS : BigInt(0)
 
   /**
