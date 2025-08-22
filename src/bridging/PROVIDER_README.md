@@ -388,7 +388,7 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
       this.cowShedSdk,
       request as QuoteBridgeRequest, // cast needed due to omit
       this.getRpcProvider(request.sellTokenChainId),
-      extraGas, // this flag adds an extra 100k gas to the hook.
+      request.extraGas, // this flag adds an extra 100k gas to the hook.
     )
   }
 
