@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "@cowprotocol/cow-sdk": "workspace:*",
+    "@cowprotocol/sdk-ethers-v5-adapter": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
