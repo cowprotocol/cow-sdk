@@ -209,6 +209,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    * 2. The final amount could affect hook gas costs
    *
    * By estimating gas costs independently, we can resolve this dependency cycle.
+   * For some providers, the `extraGas` flag gives an extra 100k gas to the hook.
    */
   getGasLimitEstimationForHook(request: Omit<QuoteBridgeRequest, 'amount'> & { extraGas?: boolean }): Promise<number>
 
