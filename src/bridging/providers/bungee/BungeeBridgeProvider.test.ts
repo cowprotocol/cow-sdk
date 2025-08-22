@@ -59,8 +59,10 @@ describe('BungeeBridgeProvider', () => {
   })
 
   describe('getBuyTokens', () => {
+    let mockBungeeApi: BungeeApi
+
     beforeEach(() => {
-      const mockBungeeApi = new BungeeApi()
+      mockBungeeApi = new BungeeApi()
       // Mock the getBuyTokens method
       jest.spyOn(mockBungeeApi, 'getBuyTokens').mockImplementation(async (params) => {
         if (params.buyChainId === (12345 as TargetChainId)) {
@@ -83,16 +85,23 @@ describe('BungeeBridgeProvider', () => {
     })
 
     it('should return empty array for unsupported chain', async () => {
-      const tokens = await provider.getBuyTokens({ buyChainId: 12345 as TargetChainId })
+      const result = await provider.getBuyTokens({ buyChainId: 12345 as TargetChainId })
 
-      expect(tokens).toEqual([])
+      expect(result.tokens).toEqual([])
+      expect(result.isRouteAvailable).toEqual(false)
+
+      expect(mockBungeeApi.getBuyTokens).toHaveBeenCalledWith({ buyChainId: 12345 as TargetChainId })
+      expect(mockBungeeApi.getBuyTokens).toHaveBeenCalledTimes(1)
     })
 
     it('should return tokens for supported chain', async () => {
-      const tokens = await provider.getBuyTokens({ buyChainId: SupportedChainId.POLYGON })
+      const result = await provider.getBuyTokens({
+        sellChainId: SupportedChainId.MAINNET,
+        buyChainId: SupportedChainId.POLYGON,
+      })
 
-      expect(tokens.length).toBeGreaterThan(0)
-      expect(tokens).toEqual(
+      expect(result.tokens.length).toBeGreaterThan(0)
+      expect(result.tokens).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             chainId: SupportedChainId.POLYGON,
@@ -101,6 +110,12 @@ describe('BungeeBridgeProvider', () => {
           }),
         ]),
       )
+      expect(result.isRouteAvailable).toEqual(true)
+      expect(mockBungeeApi.getBuyTokens).toHaveBeenCalledWith({
+        buyChainId: SupportedChainId.POLYGON,
+        sellChainId: SupportedChainId.MAINNET,
+      })
+      expect(mockBungeeApi.getBuyTokens).toHaveBeenCalledTimes(1)
     })
   })
 

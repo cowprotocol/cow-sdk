@@ -139,6 +139,11 @@ export interface BuyTokensParams {
   sellTokenAddress?: string
 }
 
+export interface GetProviderBuyTokens {
+  tokens: TokenInfo[]
+  isRouteAvailable: boolean
+}
+
 /**
  * A bridge deposit. It includes the provideer information, sell amount and the minimum buy amount.
  *
@@ -165,7 +170,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
   /**
    * Get supported tokens for a chain
    */
-  getBuyTokens(params: BuyTokensParams): Promise<TokenInfo[]>
+  getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens>
 
   /**
    * Get intermediate tokens given a quote request.

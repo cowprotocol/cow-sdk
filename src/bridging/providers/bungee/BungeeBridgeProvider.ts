@@ -10,6 +10,7 @@ import {
   BridgeStatusResult,
   BridgingDepositParams,
   BuyTokensParams,
+  GetProviderBuyTokens,
   QuoteBridgeRequest,
 } from '../../types'
 import { RAW_PROVIDERS_FILES_PATH } from '../../const'
@@ -55,7 +56,6 @@ export interface BungeeQuoteResult extends BridgeQuoteResult {
   bungeeQuote: BungeeQuote
   buildTx: BungeeBuildTx
 }
-
 export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   protected api: BungeeApi
   protected cowShedSdk: CowShedSdk
@@ -78,8 +78,14 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     return BUNGEE_SUPPORTED_NETWORKS
   }
 
-  async getBuyTokens(params: BuyTokensParams): Promise<TokenInfo[]> {
-    return this.api.getBuyTokens(params)
+  async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
+    const tokens = await this.api.getBuyTokens(params)
+    const isRouteAvailable = tokens.length > 0
+
+    return {
+      tokens,
+      isRouteAvailable,
+    }
   }
 
   async getIntermediateTokens(request: QuoteBridgeRequest): Promise<TokenInfo[]> {
