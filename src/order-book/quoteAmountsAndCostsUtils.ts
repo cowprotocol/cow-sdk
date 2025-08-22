@@ -84,6 +84,9 @@ function _getQuoteAmountsWithCosts(params: {
   }
 }
 
+/**
+ * Docs: https://docs.google.com/document/d/1w1jxRUfSbQU-15FgC-sw85pY2Ep8-VDACEwzvndylvk/edit?tab=t.0#heading=h.2k0r90fakdmy
+ */
 function getQuoteAmountsWithPartnerFee(params: {
   sellAmountAfterNetworkCosts: BigNumber
   buyAmountAfterNetworkCosts: BigNumber
