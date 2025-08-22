@@ -1,4 +1,5 @@
 packages:
   - 'packages/*'
   - 'packages/*/*'
+  - 'examples/*/*'
   - '!**/dist' # exclude dist directories to avoid build artifacts being treated as packages
