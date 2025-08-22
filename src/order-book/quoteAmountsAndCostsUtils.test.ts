@@ -79,7 +79,7 @@ describe('Calculation of before/after fees amounts', () => {
         expect(result.beforeNetworkCosts.buyAmount.toString()).toBe(
           (
             (+orderParams.sellAmount + +orderParams.feeAmount) * // SellAmountAfterNetworkCosts
-            (+orderParams.buyAmount / (+orderParams.sellAmount + +orderParams.feeAmount))
+            (+orderParams.buyAmount / +orderParams.sellAmount)
           ) // Price
             .toFixed()
         )
