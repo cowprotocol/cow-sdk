@@ -210,7 +210,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    *
    * By estimating gas costs independently, we can resolve this dependency cycle.
    */
-  getGasLimitEstimationForHook(request: Omit<QuoteBridgeRequest, 'amount'>): Promise<number>
+  getGasLimitEstimationForHook(request: Omit<QuoteBridgeRequest, 'amount'> & { extraGas?: boolean }): Promise<number>
 
   /**
    * Get a pre-authorized hook for initiating a bridge.

@@ -150,7 +150,14 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   }
 
   async getGasLimitEstimationForHook(request: QuoteBridgeRequest): Promise<number> {
-    return getGasLimitEstimationForHook(this.cowShedSdk, request, this.getRpcProvider(request.sellTokenChainId))
+    const extraGas = this.isExtraGasRequired(request)
+
+    return getGasLimitEstimationForHook(
+      this.cowShedSdk,
+      request,
+      this.getRpcProvider(request.sellTokenChainId),
+      extraGas,
+    )
   }
 
   async getSignedHook(
@@ -251,5 +258,12 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     // Across auto-relays refund txns some time after the order expires. No user action needed.
     // Therefore, not implementing refund
     throw new Error('Not implemented')
+  }
+
+  private isExtraGasRequired(request: QuoteBridgeRequest): boolean {
+    const { sellTokenChainId, buyTokenChainId } = request
+
+    // Bungee requires extra gas for bridging from Mainnet to Gnosis
+    return sellTokenChainId === SupportedChainId.MAINNET && buyTokenChainId === SupportedChainId.GNOSIS_CHAIN
   }
 }

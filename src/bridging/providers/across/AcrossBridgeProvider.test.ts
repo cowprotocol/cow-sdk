@@ -11,6 +11,7 @@ import {
   AcrossBridgeProviderOptions,
 } from './AcrossBridgeProvider'
 import { SuggestedFeesResponse } from './types'
+import { DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION } from '../../const'
 
 // Mock AcrossApi
 jest.mock('./AcrossApi')
@@ -43,7 +44,9 @@ describe('AcrossBridgeProvider', () => {
     const options = {
       apiOptions: {},
       getRpcProvider() {
-        return {} as JsonRpcProvider
+        return {
+          getCode: jest.fn().mockResolvedValue('0x1234567890'),
+        } as unknown as JsonRpcProvider
       },
     }
     provider = new AcrossBridgeProviderTest(options)
@@ -228,6 +231,29 @@ describe('AcrossBridgeProvider', () => {
   describe('getRefundBridgingTx', () => {
     it('should return refund bridging tx', async () => {
       await expect(provider.getRefundBridgingTx('123')).rejects.toThrowError('Not implemented')
+    })
+  })
+
+  describe('getGasLimitEstimationForHook', () => {
+    it('should return default gas limit estimation for non-Mainnet to Gnosis', async () => {
+      const request: QuoteBridgeRequest = {
+        kind: OrderKind.SELL,
+        sellTokenAddress: '0x123',
+        sellTokenChainId: SupportedChainId.MAINNET,
+        buyTokenChainId: SupportedChainId.ARBITRUM_ONE,
+        amount: 1000000000000000000n,
+        receiver: '0x789',
+        account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
+        sellTokenDecimals: 18,
+        buyTokenAddress: '0x456',
+        buyTokenDecimals: 6,
+        appCode: '0x123',
+        signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+      }
+
+      const gasLimit = await provider.getGasLimitEstimationForHook(request)
+
+      expect(gasLimit).toEqual(DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION)
     })
   })
 })
