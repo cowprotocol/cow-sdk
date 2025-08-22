@@ -1,7 +1,7 @@
 import { SupportedChainId } from '../../../chains'
 import { parseUnits } from '@ethersproject/units'
 
-import { BridgeCallDetails, BridgeQuoteResult, QuoteBridgeRequest } from '../../types'
+import { BridgeCallDetails, BridgeQuoteResult, BuyTokensParams, QuoteBridgeRequest } from '../../types'
 import { OrderKind } from '@cowprotocol/contracts'
 import {
   BuyTokenDestination,
@@ -233,4 +233,9 @@ export const orderTypedData: OrderTypedData = {
   primaryType: 'Order',
   types: {},
   message: orderToSign,
+}
+
+export const buyTokensParams: BuyTokensParams = {
+  sellChainId: SupportedChainId.MAINNET,
+  buyChainId: SupportedChainId.GNOSIS_CHAIN,
 }

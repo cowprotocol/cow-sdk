@@ -31,7 +31,7 @@ const BUNGEE_MANUAL_API_URL = 'https://public-backend.bungee.exchange/api/v1/bun
 const BUNGEE_EVENTS_API_URL = 'https://microservices.socket.tech/loki'
 const ACROSS_API_URL = 'https://app.across.to/api'
 
-const SUPPORTED_BRIDGES: SupportedBridge[] = ['across', 'cctp']
+const SUPPORTED_BRIDGES: SupportedBridge[] = ['across', 'cctp', 'gnosis-native-bridge']
 
 const errorMessageMap = {
   bungee: 'Bungee Api Error',
