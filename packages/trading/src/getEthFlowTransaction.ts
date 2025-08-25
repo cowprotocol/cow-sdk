@@ -5,7 +5,7 @@ import {
 } from './types'
 import { calculateUniqueOrderId } from './calculateUniqueOrderId'
 import { getOrderToSign } from './getOrderToSign'
-import { SupportedChainId, BARN_ETH_FLOW_ADDRESS, CowEnv, ETH_FLOW_ADDRESS } from '@cowprotocol/sdk-config'
+import { SupportedChainId, CowEnv, BARN_ETH_FLOW_ADDRESSES, ETH_FLOW_ADDRESSES } from '@cowprotocol/sdk-config'
 import { GAS_LIMIT_DEFAULT } from './consts'
 import { adjustEthFlowOrderParams, calculateGasMargin } from './utils/misc'
 import {
@@ -17,6 +17,7 @@ import {
   SignerLike,
 } from '@cowprotocol/sdk-common'
 import type { UnsignedOrder } from '@cowprotocol/sdk-order-signing'
+import { getDefaultSlippageBps } from './utils/slippage'
 
 export async function getEthFlowTransaction(
   appDataKeccak256: string,
@@ -29,15 +30,26 @@ export async function getEthFlowTransaction(
 
   const { networkCostsAmount = '0', checkEthFlowOrderExists } = additionalParams
   const from = await signer.getAddress()
+  const slippageBps = _params.slippageBps ?? getDefaultSlippageBps(chainId, true)
 
   const params = {
-    ..._params,
     ...adjustEthFlowOrderParams(chainId, _params),
+    slippageBps,
   }
+
   const { quoteId } = params
 
-  const contract = getEthFlowContract(signer, params.env)
-  const orderToSign = getOrderToSign({ from, networkCostsAmount }, params, appDataKeccak256)
+  const contract = getEthFlowContract(signer, chainId, params.env)
+  const orderToSign = getOrderToSign(
+    {
+      chainId,
+      isEthFlow: true,
+      from,
+      networkCostsAmount,
+    },
+    params,
+    appDataKeccak256,
+  )
   const orderId = await calculateUniqueOrderId(chainId, orderToSign, checkEthFlowOrderExists, params.env)
 
   const ethOrderParams: EthFlowOrderData = {
@@ -52,12 +64,17 @@ export async function getEthFlowTransaction(
     validTo: orderToSign.validTo.toString(),
   }
 
-  const estimatedGas =
-    (await contract.estimateGas.createOrder?.(ethOrderParams, { value: orderToSign.sellAmount }).catch((error: any) => {
-      console.error(error)
+  const estimatedGas = contract.estimateGas.createOrder
+    ? await contract.estimateGas
+        .createOrder(ethOrderParams, { value: orderToSign.sellAmount })
+        // TODO: the res type is any, before it was BigNumber from ethers
+        .then((res) => BigInt(res.toHexString ? res.toHexString() : res.toString()))
+        .catch((error: unknown) => {
+          console.error(error)
 
-      return GAS_LIMIT_DEFAULT
-    })) || GAS_LIMIT_DEFAULT
+          return GAS_LIMIT_DEFAULT
+        })
+    : GAS_LIMIT_DEFAULT
 
   const data = contract.interface.encodeFunctionData('createOrder', [ethOrderParams])
 
@@ -73,7 +90,8 @@ export async function getEthFlowTransaction(
   }
 }
 
-export function getEthFlowContract(signer: Signer, env?: CowEnv): EthFlowContract {
-  const address = env === 'staging' ? BARN_ETH_FLOW_ADDRESS : ETH_FLOW_ADDRESS
+export function getEthFlowContract(signer: Signer, chainId: SupportedChainId, env?: CowEnv): EthFlowContract {
+  const address = env === 'staging' ? BARN_ETH_FLOW_ADDRESSES[chainId] : ETH_FLOW_ADDRESSES[chainId]
+
   return ContractFactory.createEthFlowContract(address, signer)
 }

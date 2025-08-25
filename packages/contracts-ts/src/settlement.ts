@@ -466,7 +466,6 @@ export class SettlementEncoder {
       interactions.push(
         normalizeInteraction({
           target: settlement,
-          //@ts-expect-error: Interface is unknown
           callData: iface.encodeFunctionData(functionName, [orderUids]),
         }),
       )

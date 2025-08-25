@@ -1,5 +1,5 @@
 import { AbstractSigner } from './AbstractSigner'
-import type {
+import {
   Abi,
   AdapterTypes,
   AdapterUtils,
@@ -10,6 +10,7 @@ import type {
   ReadContractParams,
   Signer,
   TransactionParams,
+  TransactionReceipt,
 } from './types'
 
 /**
@@ -31,6 +32,8 @@ export abstract class AbstractProviderAdapter<T extends AdapterTypes = AdapterTy
 
   // Core functionality
   abstract getChainId(): Promise<number>
+  abstract getCode(address: string): Promise<string | undefined>
+  abstract getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt | null>
   abstract createSigner(signerOrPrivateKey: Signer | PrivateKey | AbstractSigner): AbstractSigner
   // reading functionality
   abstract getStorageAt(address: T['Address'], slot: unknown): Promise<unknown>

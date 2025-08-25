@@ -1,5 +1,16 @@
-import { CowError, GenericContractInterface } from '@cowprotocol/sdk-common'
-import { Abi, parseAbi, toFunctionSelector, encodeFunctionData, AbiFunction, decodeAbiParameters } from 'viem'
+import { CowError, GenericContractInterface, Log } from '@cowprotocol/sdk-common'
+import {
+  Abi,
+  parseAbi,
+  toFunctionSelector,
+  encodeFunctionData,
+  AbiFunction,
+  decodeAbiParameters,
+  parseEventLogs,
+  Log as ViemLog,
+  toEventSelector,
+  AbiEvent,
+} from 'viem'
 
 function normalizeParam(param: any): any {
   return {
@@ -109,6 +120,22 @@ export class ViemInterfaceWrapper implements GenericContractInterface {
       functionName: name,
       args,
     })
+  }
+
+  // TODO: need to be tested
+  parseLog(event: Log): { args: unknown } | null {
+    const parsedLogs = parseEventLogs({ abi: this.parsedAbi, logs: [event] as ViemLog[] })
+
+    return parsedLogs[0] ?? null
+  }
+
+  // TODO: need to be tested
+  getEventTopic(name: string): string | null {
+    const event = this.parsedAbi.find((i) => i.type === 'event' && i.name === name)
+
+    if (!event) return null
+
+    return toEventSelector(event as AbiEvent)
   }
 
   /**

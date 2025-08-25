@@ -26,6 +26,7 @@ import {
   CowError,
   normalizePrivateKey,
   GenericContract,
+  TransactionReceipt,
 } from '@cowprotocol/sdk-common'
 
 import { ViemUtils } from './ViemUtils'
@@ -35,6 +36,7 @@ import {
   TypedDataVersionedSigner,
   ViemSignerAdapter,
 } from './ViemSignerAdapter'
+import { Hash } from 'viem/types/misc'
 
 export interface ViemTypes extends AdapterTypes {
   Abi: Abi
@@ -169,6 +171,21 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
 
   async getChainId(): Promise<number> {
     return this._publicClient.chain?.id ?? 0
+  }
+
+  async getCode(address: string): Promise<string | undefined> {
+    return this._publicClient.getCode({ address: address as Address })
+  }
+
+  async getTransactionReceipt(hash: string): Promise<TransactionReceipt | null> {
+    const receipt = await this._publicClient.getTransactionReceipt({ hash: hash as Hash })
+
+    if (!receipt) return receipt
+
+    return {
+      ...receipt,
+      status: receipt.status === 'success' ? 1 : 0,
+    } as TransactionReceipt
   }
 
   async getStorageAt(address: Address, slot: `0x${string}`) {

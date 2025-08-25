@@ -1,3 +1,5 @@
+import { Log } from './index'
+
 /**
  * Generic contract interface that works across all adapters
  */
@@ -15,6 +17,8 @@ export interface GenericContract {
 export interface GenericContractInterface {
   encodeFunctionData(functionName: string, args: unknown[]): string
   decodeFunctionData(functionName: string, data: string): unknown[]
+  parseLog(event: Log): { args: unknown } | null
+  getEventTopic(eventFragment: string): string | null
   decodeFunctionResult?(functionName: string, data: string): unknown[]
   fragments?: any[]
   getFunction?(functionName: string): any

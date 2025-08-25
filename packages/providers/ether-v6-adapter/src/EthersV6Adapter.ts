@@ -19,6 +19,7 @@ import {
   PrivateKey,
   CowError,
   GenericContract,
+  TransactionReceipt,
 } from '@cowprotocol/sdk-common'
 import { EthersV6Utils } from './EthersV6Utils'
 import {
@@ -126,6 +127,28 @@ export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
   async getChainId(): Promise<number> {
     const network = await this._provider.getNetwork()
     return Number(network.chainId)
+  }
+
+  async getCode(address: string): Promise<string> {
+    return this._provider.getCode(address)
+  }
+
+  async getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt | null> {
+    const receipt = await this._provider.getTransactionReceipt(transactionHash)
+
+    if (!receipt) return receipt
+
+    return {
+      ...receipt,
+      blockNumber: BigInt(receipt.blockNumber),
+      transactionHash: receipt.hash,
+      logs: receipt.logs.map((log) => ({
+        ...log,
+        blockNumber: BigInt(log.blockNumber),
+        logIndex: log.index,
+        topics: [...log.topics],
+      })),
+    } as TransactionReceipt
   }
 
   async getStorageAt(address: string, slot: BigNumberish): Promise<BytesLike> {

@@ -6,6 +6,12 @@ import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { ContractsSigningScheme as SigningScheme } from '@cowprotocol/sdk-contracts-ts'
 const MOCK_CALL_DATA = '0xabcdef'
 
+const DEFAULT_QUOTE_VALIDITY = 60 * 30 // 30 min
+
+function getOrderDeadlineFromNow(validFor: number): bigint {
+  return BigInt(Math.floor(Date.now() / 1000) + validFor)
+}
+
 const CALLS_MOCK: ICoWShedCall[] = [
   {
     target: '0x0000000000000000000000000000000000000000',
@@ -37,6 +43,7 @@ describe('CowShedSdk', () => {
           signer: adapters[adapterName].signer,
           chainId: SupportedChainId.SEPOLIA,
           defaultGasLimit: 1000000n,
+          deadline: getOrderDeadlineFromNow(DEFAULT_QUOTE_VALIDITY),
         })
 
         signedCalls.push(call)
@@ -63,7 +70,8 @@ describe('CowShedSdk', () => {
       })
     })
 
-    test('When signer has provider, then should estimate gas', async () => {
+    // TODO: CoW Shed 1.0.1 is not deployed to Sepolia
+    test.skip('When signer has provider, then should estimate gas', async () => {
       const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
       const signedCalls: any[] = []
 
@@ -75,6 +83,7 @@ describe('CowShedSdk', () => {
           calls: CALLS_MOCK,
           signer: adapters[adapterName].signer,
           chainId: SupportedChainId.SEPOLIA,
+          deadline: getOrderDeadlineFromNow(DEFAULT_QUOTE_VALIDITY),
         })
 
         signedCalls.push(call)
@@ -98,6 +107,7 @@ describe('CowShedSdk', () => {
           signer: adapters[adapterName].signer,
           chainId: SupportedChainId.MAINNET,
           defaultGasLimit: 1000000n,
+          deadline: getOrderDeadlineFromNow(DEFAULT_QUOTE_VALIDITY),
         })
 
         signedCalls.push(call)

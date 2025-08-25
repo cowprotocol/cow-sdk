@@ -1,4 +1,4 @@
-import { CowError, GenericContractInterface } from '@cowprotocol/sdk-common'
+import { CowError, GenericContractInterface, Log } from '@cowprotocol/sdk-common'
 import { Interface, InterfaceAbi } from 'ethers'
 
 /**
@@ -180,6 +180,16 @@ export class EthersV6InterfaceWrapper implements GenericContractInterface {
     } catch (error: any) {
       throw new CowError(`EthersV6Wrapper error: Failed to decode ${functionName}: ${error.message}`)
     }
+  }
+
+  parseLog(event: Log): { args: unknown } | null {
+    return this.ethersInterface.parseLog(event)
+  }
+
+  getEventTopic(name: string): string | null {
+    const event = this.ethersInterface.getEvent(name)
+
+    return event?.topicHash ?? null
   }
 
   /**

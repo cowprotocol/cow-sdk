@@ -45,11 +45,11 @@ export class EthersV5SignerAdapter extends AbstractSigner {
         const receipt = await tx.wait(confirmations)
         return {
           transactionHash: receipt.transactionHash,
-          blockNumber: receipt.blockNumber,
+          blockNumber: BigInt(receipt.blockNumber),
           blockHash: receipt.blockHash,
           status: receipt.status,
           gasUsed: BigInt(receipt.gasUsed.toString()),
-          logs: receipt.logs,
+          logs: receipt.logs.map((log) => ({ ...log, blockNumber: BigInt(log.blockNumber) })),
         }
       },
     }

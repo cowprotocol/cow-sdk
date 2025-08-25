@@ -1,18 +1,13 @@
 import { EcdsaSigningScheme, SigningScheme } from '@cowprotocol/sdk-order-book'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { mapSupportedNetworks, SupportedChainId } from '@cowprotocol/sdk-config'
 
 export const DEFAULT_QUOTE_VALIDITY = 60 * 30 // 30 min
 
 export const DEFAULT_SLIPPAGE_BPS = 50 // 0.5%
 
 export const ETH_FLOW_DEFAULT_SLIPPAGE_BPS: Record<SupportedChainId, number> = {
-  [SupportedChainId.MAINNET]: 200, // 2%,
-  [SupportedChainId.ARBITRUM_ONE]: 50, // 0.5%,
-  [SupportedChainId.BASE]: 50, // 0.5%,
-  [SupportedChainId.GNOSIS_CHAIN]: 50, // 0.5%,
-  [SupportedChainId.SEPOLIA]: 50, // 0.5%,
-  [SupportedChainId.POLYGON]: 50, // 0.5%,
-  [SupportedChainId.AVALANCHE]: 50, // 0.5%,
+  ...mapSupportedNetworks(DEFAULT_SLIPPAGE_BPS), // 0.5% by default for most chains
+  [SupportedChainId.MAINNET]: 200, // 2% for mainnet
 }
 
 export const SIGN_SCHEME_MAP: Record<EcdsaSigningScheme, SigningScheme> = {

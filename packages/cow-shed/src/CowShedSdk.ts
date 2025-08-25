@@ -16,6 +16,7 @@ import {
   SignerLike,
   AbstractSigner,
 } from '@cowprotocol/sdk-common'
+import { COW_SHED_LATEST_VERSION, CoWShedVersion } from './const'
 
 export interface SignAndEncodeTxArgs {
   /**
@@ -45,6 +46,11 @@ export interface SignAndEncodeTxArgs {
    * Deadline to use for the transaction. If not provided, the maximum uint256 will be used.
    */
   deadline?: bigint
+
+  /**
+   * If value is provided, gas won't be estimated and will use the value
+   */
+  gasLimit?: bigint
 
   /**
    * Default gas limit to use for the transaction. If not provided, it will throw an error if the gas limit cannot be estimated.
@@ -81,6 +87,7 @@ export class CowShedSdk {
   constructor(
     adapter?: AbstractProviderAdapter,
     private factoryOptions?: ICoWShedOptions,
+    public readonly version: CoWShedVersion = COW_SHED_LATEST_VERSION,
   ) {
     if (adapter) {
       setGlobalAdapter(adapter)
@@ -161,6 +168,7 @@ export class CowShedSdk {
     }
 
     // Create new cow-shed hooks and cache it
+    //TODO: need to forward the version from CowShedSdk
     cowShedHooks = new CowShedHooks(chainId, customOptions)
     this.hooksCache.set(chainId, cowShedHooks)
     return cowShedHooks
