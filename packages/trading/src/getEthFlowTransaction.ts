@@ -68,7 +68,9 @@ export async function getEthFlowTransaction(
     ? await contract.estimateGas
         .createOrder(ethOrderParams, { value: orderToSign.sellAmount })
         // TODO: the res type is any, before it was BigNumber from ethers
-        .then((res) => BigInt(res.toHexString ? res.toHexString() : res.toString()))
+        .then((res) => {
+          return BigInt(res.toHexString ? res.toHexString() : `0x${res.toString(16)}`)
+        })
         .catch((error: unknown) => {
           console.error(error)
 

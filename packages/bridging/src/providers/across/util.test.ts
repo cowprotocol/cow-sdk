@@ -1,9 +1,20 @@
-import { ContractsOrderKind as OrderKind } from '@cowprotocol/sdk-contracts-ts'
-import { AdditionalTargetChainId, SupportedChainId } from '@cowprotocol/sdk-config'
-import { QuoteBridgeRequest } from '../../types'
-import { getChainConfigs, getTokenSymbol, getTokenAddress, toBridgeQuoteResult, pctToBps, applyPctFee } from './util'
+import { QuoteBridgeRequest, BridgeStatus } from '../../types'
+import {
+  getChainConfigs,
+  getTokenSymbol,
+  getTokenAddress,
+  toBridgeQuoteResult,
+  pctToBps,
+  applyPctFee,
+  mapAcrossStatusToBridgeStatus,
+  getAcrossDepositEvents,
+} from './util'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { SuggestedFeesResponse } from './types'
+import { AdditionalTargetChainId, SupportedChainId } from '@cowprotocol/sdk-config'
+import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { createAdapters } from '../../../tests/setup'
+import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 describe('Across Utils', () => {
   describe('getChainConfigs', () => {
@@ -161,6 +172,34 @@ describe('Across Utils', () => {
 
     it('should throw an error if fee percentage exceeds 100%', () => {
       expect(() => applyPctFee(1000000000000000000n, 1000000000000000001n)).toThrow('Fee cannot exceed 100%')
+    })
+  })
+
+  describe('mapAcrossStatusToBridgeStatus', () => {
+    it('should map Across deposit status to Bridge status', () => {
+      expect(mapAcrossStatusToBridgeStatus('filled')).toBe(BridgeStatus.EXECUTED)
+      expect(mapAcrossStatusToBridgeStatus('pending')).toBe(BridgeStatus.IN_PROGRESS)
+      expect(mapAcrossStatusToBridgeStatus('expired')).toBe(BridgeStatus.EXPIRED)
+      expect(mapAcrossStatusToBridgeStatus('refunded')).toBe(BridgeStatus.REFUND)
+      expect(mapAcrossStatusToBridgeStatus('slowFillRequested')).toBe(BridgeStatus.EXECUTED)
+    })
+  })
+
+  const adapters = createAdapters()
+  const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+  adapterNames.forEach((adapterName) => {
+    describe(`getAcrossDepositEvents (with ${adapterName})`, () => {
+      beforeEach(() => {
+        const adapter = adapters[adapterName]
+
+        setGlobalAdapter(adapter)
+      })
+
+      it('should return empty array if passing nothing', () => {
+        const result = getAcrossDepositEvents(SupportedChainId.MAINNET, [])
+        expect(result).toEqual([])
+      })
     })
   })
 })

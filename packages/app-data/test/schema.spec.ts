@@ -61,7 +61,7 @@ describe('Schema v0.1.0', () => {
       metadata: {
         referrer: REFERRER_V0_1_0,
       },
-    })
+    }),
   )
 
   test(
@@ -83,8 +83,8 @@ describe('Schema v0.1.0', () => {
           params: { pattern: '^0x[a-fA-F0-9]{40}$' },
           schemaPath: '#/properties/metadata/properties/referrer/properties/address/pattern',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
 
@@ -110,7 +110,7 @@ describe('Schema v0.2.0', () => {
         referrer: REFERRER_V0_1_0,
         quote: QUOTE_V0_1_0,
       },
-    })
+    }),
   )
 
   test(
@@ -133,8 +133,8 @@ describe('Schema v0.2.0', () => {
           params: { pattern: '^\\d+$' },
           schemaPath: '#/properties/metadata/properties/quote/properties/buyAmount/pattern',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
 
@@ -161,7 +161,7 @@ describe('Schema v0.3.0', () => {
         referrer: REFERRER_V0_1_0,
         quote: QUOTE_V0_1_0,
       },
-    })
+    }),
   )
 })
 
@@ -188,7 +188,7 @@ describe('Schema v0.4.0', () => {
         referrer: REFERRER_V0_1_0,
         quote: QUOTE_V0_2_0,
       },
-    })
+    }),
   )
 
   test(
@@ -212,8 +212,8 @@ describe('Schema v0.4.0', () => {
           params: { missingProperty: 'slippageBips' },
           schemaPath: '#/properties/metadata/properties/quote/required',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
 
@@ -241,7 +241,7 @@ describe('Schema v0.5.0', () => {
         quote: QUOTE_V0_2_0,
         orderClass: ORDER_CLASS_V0_1_0,
       },
-    })
+    }),
   )
 
   test(
@@ -266,8 +266,8 @@ describe('Schema v0.5.0', () => {
           params: { allowedValues: ['market', 'limit', 'liquidity'] },
           schemaPath: '#/properties/metadata/properties/orderClass/properties/orderClass/enum',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
 
@@ -287,7 +287,7 @@ describe('Schema v0.6.0', () => {
       metadata: {
         utmSource: 'twitter',
       },
-    })
+    }),
   )
 
   test(
@@ -297,7 +297,7 @@ describe('Schema v0.6.0', () => {
       metadata: {
         utmMedium: 'email',
       },
-    })
+    }),
   )
 
   test(
@@ -307,7 +307,7 @@ describe('Schema v0.6.0', () => {
       metadata: {
         utmCampaign: 'everyone-loves-cows-2023',
       },
-    })
+    }),
   )
 
   test(
@@ -317,7 +317,7 @@ describe('Schema v0.6.0', () => {
       metadata: {
         utmContent: 'big-fat-button',
       },
-    })
+    }),
   )
 
   test(
@@ -327,7 +327,7 @@ describe('Schema v0.6.0', () => {
       metadata: {
         utmTerm: 'coincidence+of+wants',
       },
-    })
+    }),
   )
 
   test(
@@ -341,7 +341,7 @@ describe('Schema v0.6.0', () => {
         utmContent: 'big-fat-button',
         utmTerm: 'coincidence+of+wants',
       },
-    })
+    }),
   )
 })
 
@@ -361,7 +361,7 @@ describe('Schema v0.9.0', () => {
     buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { hooks: {} },
-    })
+    }),
   )
 
   test(
@@ -384,7 +384,7 @@ describe('Schema v0.9.0', () => {
           ],
         },
       },
-    })
+    }),
   )
 
   test(
@@ -407,7 +407,7 @@ describe('Schema v0.9.0', () => {
           ],
         },
       },
-    })
+    }),
   )
 
   test(
@@ -432,7 +432,7 @@ describe('Schema v0.9.0', () => {
           ],
         },
       },
-    })
+    }),
   )
 
   test(
@@ -461,7 +461,7 @@ describe('Schema v0.9.0', () => {
           ],
         },
       },
-    })
+    }),
   )
 
   test(
@@ -489,8 +489,8 @@ describe('Schema v0.9.0', () => {
           params: { missingProperty: 'callData' },
           schemaPath: '#/properties/metadata/properties/hooks/properties/pre/items/required',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
 
@@ -510,7 +510,7 @@ describe('Schema v0.10.0', () => {
     buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { signer: ADDRESS },
-    })
+    }),
   )
 
   test(
@@ -531,8 +531,8 @@ describe('Schema v0.10.0', () => {
           params: { pattern: '^0x[a-fA-F0-9]{40}$' },
           schemaPath: '#/properties/metadata/properties/signer/pattern',
         },
-      ]
-    )
+      ],
+    ),
   )
 
   test(
@@ -553,8 +553,8 @@ describe('Schema v0.10.0', () => {
           params: { type: 'string' },
           schemaPath: '#/properties/metadata/properties/signer/type',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
 
@@ -574,7 +574,7 @@ describe('Schema v0.11.0', () => {
     buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { widget: { appCode: 'Pig Swap', environment: 'production' } },
-    })
+    }),
   )
 
   test(
@@ -582,7 +582,7 @@ describe('Schema v0.11.0', () => {
     buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { widget: { appCode: 'Pig Swap' } },
-    })
+    }),
   )
 
   test(
@@ -605,8 +605,8 @@ describe('Schema v0.11.0', () => {
           params: { missingProperty: 'appCode' },
           schemaPath: '#/properties/metadata/properties/widget/required',
         },
-      ]
-    )
+      ],
+    ),
   )
 
   test(
@@ -627,8 +627,8 @@ describe('Schema v0.11.0', () => {
           params: { pattern: '^0x[a-fA-F0-9]{40}$' },
           schemaPath: '#/properties/metadata/properties/signer/pattern',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
 
@@ -648,7 +648,7 @@ describe('Schema v1.0.0: Add partner fee', () => {
     buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { partnerFee: { bps: 50, recipient: ADDRESS } },
-    })
+    }),
   )
 
   test(
@@ -656,7 +656,7 @@ describe('Schema v1.0.0: Add partner fee', () => {
     buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { partnerFee: { bps: 0, recipient: ADDRESS } },
-    })
+    }),
   )
 
   test(
@@ -675,8 +675,8 @@ describe('Schema v1.0.0: Add partner fee', () => {
           params: { missingProperty: 'bps' },
           schemaPath: '#/properties/metadata/properties/partnerFee/required',
         },
-      ]
-    )
+      ],
+    ),
   )
 
   test(
@@ -695,8 +695,8 @@ describe('Schema v1.0.0: Add partner fee', () => {
           params: { missingProperty: 'recipient' },
           schemaPath: '#/properties/metadata/properties/partnerFee/required',
         },
-      ]
-    )
+      ],
+    ),
   )
 
   test(
@@ -718,8 +718,8 @@ describe('Schema v1.0.0: Add partner fee', () => {
           },
           schemaPath: '#/properties/metadata/properties/partnerFee/properties/bps/minimum',
         },
-      ]
-    )
+      ],
+    ),
   )
 
   test(
@@ -741,8 +741,8 @@ describe('Schema v1.0.0: Add partner fee', () => {
           },
           schemaPath: '#/properties/metadata/properties/partnerFee/properties/bps/maximum',
         },
-      ]
-    )
+      ],
+    ),
   )
 
   test(
@@ -763,8 +763,8 @@ describe('Schema v1.0.0: Add partner fee', () => {
           },
           schemaPath: '#/properties/metadata/properties/partnerFee/properties/bps/type',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
 
@@ -784,7 +784,7 @@ describe('Schema v1.0.0: Update quote definition', () => {
     buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { quote: { slippageBips: 50 } },
-    })
+    }),
   )
 
   test(
@@ -792,7 +792,7 @@ describe('Schema v1.0.0: Update quote definition', () => {
     buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { quote: { slippageBips: 0 } },
-    })
+    }),
   )
 
   test(
@@ -800,7 +800,7 @@ describe('Schema v1.0.0: Update quote definition', () => {
     buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { quote: { slippageBips: 10000 } },
-    })
+    }),
   )
 
   test(
@@ -819,8 +819,8 @@ describe('Schema v1.0.0: Update quote definition', () => {
           params: { missingProperty: 'slippageBips' },
           schemaPath: '#/properties/metadata/properties/quote/required',
         },
-      ]
-    )
+      ],
+    ),
   )
 
   test(
@@ -839,8 +839,8 @@ describe('Schema v1.0.0: Update quote definition', () => {
           params: { missingProperty: 'slippageBips' },
           schemaPath: '#/properties/metadata/properties/quote/required',
         },
-      ]
-    )
+      ],
+    ),
   )
 
   test(
@@ -862,8 +862,8 @@ describe('Schema v1.0.0: Update quote definition', () => {
           },
           schemaPath: '#/properties/metadata/properties/partnerFee/properties/bps/minimum',
         },
-      ]
-    )
+      ],
+    ),
   )
 
   test(
@@ -885,8 +885,8 @@ describe('Schema v1.0.0: Update quote definition', () => {
           },
           schemaPath: '#/properties/metadata/properties/partnerFee/properties/bps/maximum',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
 
@@ -908,7 +908,7 @@ describe('Schema v1.1.0: Add replaced order', () => {
           uid: '0xff2e2e54d178997f173266817c1e9ed6fee1a1aae4b43971c53b543cffcc2969845c6f5599fbb25dbdd1b9b013daf85c03f3c63763e4bc4a',
         },
       },
-    })
+    }),
   )
 
   test(
@@ -927,8 +927,8 @@ describe('Schema v1.1.0: Add replaced order', () => {
           params: { pattern: '^0x[a-fA-F0-9]{112}$' },
           schemaPath: '#/properties/metadata/properties/replacedOrder/properties/uid/pattern',
         },
-      ]
-    )
+      ],
+    ),
   )
 
   test(
@@ -947,8 +947,8 @@ describe('Schema v1.1.0: Add replaced order', () => {
           params: { missingProperty: 'uid' },
           schemaPath: '#/properties/metadata/properties/replacedOrder/required',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
 
@@ -1037,14 +1037,14 @@ describe('Schema v1.4.0: Upgrade partnerFee metadata to 1.0.0', () => {
     buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { partnerFee: { volumeBps: 100, recipient: ADDRESS } },
-    })
+    }),
   )
   test(
     'Valid volume partner fee array',
     buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { partnerFee: [{ volumeBps: 100, recipient: ADDRESS }] },
-    })
+    }),
   )
 
   test(
@@ -1052,7 +1052,7 @@ describe('Schema v1.4.0: Upgrade partnerFee metadata to 1.0.0', () => {
     buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { partnerFee: { maxVolumeBps: 100, surplusBps: 100, recipient: ADDRESS } },
-    })
+    }),
   )
 
   test(
@@ -1060,7 +1060,7 @@ describe('Schema v1.4.0: Upgrade partnerFee metadata to 1.0.0', () => {
     buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { partnerFee: [{ maxVolumeBps: 100, surplusBps: 100, recipient: ADDRESS }] },
-    })
+    }),
   )
 
   test(
@@ -1068,7 +1068,7 @@ describe('Schema v1.4.0: Upgrade partnerFee metadata to 1.0.0', () => {
     buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { partnerFee: { maxVolumeBps: 100, priceImprovementBps: 100, recipient: ADDRESS } },
-    })
+    }),
   )
 
   test(
@@ -1076,7 +1076,7 @@ describe('Schema v1.4.0: Upgrade partnerFee metadata to 1.0.0', () => {
     buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { partnerFee: [{ maxVolumeBps: 100, priceImprovementBps: 100, recipient: ADDRESS }] },
-    })
+    }),
   )
 
   test(
@@ -1090,7 +1090,7 @@ describe('Schema v1.4.0: Upgrade partnerFee metadata to 1.0.0', () => {
           { maxVolumeBps: 100, priceImprovementBps: 100, recipient: ADDRESS },
         ],
       },
-    })
+    }),
   )
 
   test(
@@ -1156,7 +1156,7 @@ describe('Schema v1.4.0: Upgrade partnerFee metadata to 1.0.0', () => {
           },
           message: 'must match exactly one schema in oneOf',
         },
-      ]
-    )
+      ],
+    ),
   )
 })

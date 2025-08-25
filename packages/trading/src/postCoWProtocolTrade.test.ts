@@ -16,7 +16,6 @@ import { postCoWProtocolTrade } from './postCoWProtocolTrade'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { AdaptersTestSetup, createAdapters, TEST_ADDRESS } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
-import sdkPackageJson from '../../sdk/package.json'
 
 import { TradingAppDataInfo, LimitOrderParameters } from './types'
 import { ETH_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
@@ -52,13 +51,13 @@ const orderBookApiMock = {
 const appDataMock = {
   appDataKeccak256: '0xaf1908d8e30f63bf4a6dbd41d2191eb092ac0af626b37c720596426130717658',
   fullAppData:
-    '{\\"appCode\\":\\"CoW Swap\\",\\"environment\\":\\"barn\\",\\"metadata\\":{\\"orderClass\\":{\\"orderClass\\":\\"market\\"},\\"quote\\":{\\"slippageBips\\":201,\\"smartSlippage\\":true}},\\"version\\":\\"1.3.0\\"}',
+    '{"appCode":"CoW Swap","environment":"barn","metadata":{"orderClass":{"orderClass":"market"},"quote":{"slippageBips":201,"smartSlippage":true}},"version":"1.3.0"}',
 } as unknown as TradingAppDataInfo
 
 // Expected app data after UTM modification
-const expectedAppDataWithUTM = {
-  appDataKeccak256: '0xf40aa9915012f1ca0441e6833b11746207448c83ef629107220bf81fb3af8a91',
-  fullAppData: `{"appCode":"CoW Swap","environment":"barn","metadata":{"orderClass":{"orderClass":"market"},"quote":{"slippageBips":201,"smartSlippage":true}},"utm":{"utmCampaign":"developer-cohort","utmContent":"🐮 moo-ving to defi 🐮","utmMedium":"cow-sdk@${sdkPackageJson.version}","utmSource":"cowmunity","utmTerm":"js"},"version":"1.3.0"}`,
+const expectedAppData = {
+  appDataKeccak256: '0xaf1908d8e30f63bf4a6dbd41d2191eb092ac0af626b37c720596426130717658',
+  fullAppData: `{"appCode":"CoW Swap","environment":"barn","metadata":{"orderClass":{"orderClass":"market"},"quote":{"slippageBips":201,"smartSlippage":true}},"version":"1.3.0"}`,
 }
 
 // Common expected order body parameters
@@ -119,10 +118,10 @@ describe('postCoWProtocolTrade', () => {
 
       expect(postSellNativeCurrencyOrderMock).toHaveBeenCalledWith(
         orderBookApiMock,
-        expect.objectContaining({
-          appDataKeccak256: expectedAppDataWithUTM.appDataKeccak256,
-          fullAppData: expectedAppDataWithUTM.fullAppData,
-        }),
+        {
+          appDataKeccak256: expectedAppData.appDataKeccak256,
+          fullAppData: expectedAppData.fullAppData,
+        },
         order,
         {},
         expect.anything(),
@@ -144,7 +143,7 @@ describe('postCoWProtocolTrade', () => {
       const callBody = sendOrderMock.mock.calls[0][0]
 
       expect(sendOrderMock).toHaveBeenCalledTimes(1)
-      expect(callBody).toEqual(getExpectedOrderBody(expectedAppDataWithUTM))
+      expect(callBody).toEqual(getExpectedOrderBody(expectedAppData))
       sendOrderMock.mockReset()
     }
   })

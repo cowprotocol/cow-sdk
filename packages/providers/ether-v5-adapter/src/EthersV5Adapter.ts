@@ -154,17 +154,14 @@ export class EthersV5Adapter extends AbstractProviderAdapter<EthersV5Types> {
     },
     provider?: ethers.providers.Provider,
   ): Promise<unknown> {
-    const { address, abi, functionName, args } = params
+    const { address, abi, functionName, args = [] } = params
     const providerToUse = provider || this._provider
     const contract = new ethers.Contract(address, abi, providerToUse)
 
-    if (!contract[functionName])
+    if (!contract.callStatic?.[functionName])
       throw new CowError(`Error reading contract ${address}: function ${functionName} was not found in Abi`)
 
-    if (args && args.length > 0) {
-      return contract[functionName](...args)
-    }
-    return contract[functionName]()
+    return contract.callStatic[functionName](...args)
   }
 
   async getBlock(blockTag: string, provider?: ethers.providers.JsonRpcProvider) {
