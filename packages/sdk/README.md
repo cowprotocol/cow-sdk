@@ -335,12 +335,6 @@ async function main() {
 main().catch(console.error)
 ```
 
-## 🏗️ **Architecture**
-
-To understand how all the pieces fit together, see our architecture documentation:
-
-> 📖 **[SDK Architecture Guide](https://github.com/cowprotocol/cow-sdk/blob/main/docs/architecture.md)**
-
 ## 🔗 **Related Resources**
 
 - **[CoW Protocol Documentation](https://docs.cow.fi/)**
