@@ -39,6 +39,84 @@ importers:
         specifier: ^8.32.1
         version: 8.33.0(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3)
 
+  examples/nodejs/ethers5:
+    dependencies:
+      '@cowprotocol/cow-sdk':
+        specifier: workspace:*
+        version: link:../../../packages/sdk
+      '@cowprotocol/sdk-ethers-v5-adapter':
+        specifier: workspace:*
+        version: link:../../../packages/providers/ether-v5-adapter
+      '@ethersproject/providers':
+        specifier: ^5.5.3
+        version: 5.8.0
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.5.0
+      ethers:
+        specifier: 5.7.2
+        version: 5.7.2
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.30
+        version: 20.17.52
+      ts-node:
+        specifier: ^10.9.2
+        version: 10.9.2(@swc/core@1.13.4)(@types/node@20.17.52)(typescript@5.8.3)
+      typescript:
+        specifier: ^5.6.3
+        version: 5.8.3
+
+  examples/nodejs/ethers6:
+    dependencies:
+      '@cowprotocol/cow-sdk':
+        specifier: workspace:*
+        version: link:../../../packages/sdk
+      '@cowprotocol/sdk-ethers-v6-adapter':
+        specifier: workspace:*
+        version: link:../../../packages/providers/ether-v6-adapter
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.5.0
+      ethers:
+        specifier: ^6.13.7
+        version: 6.14.3
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.30
+        version: 20.17.52
+      ts-node:
+        specifier: ^10.9.2
+        version: 10.9.2(@swc/core@1.13.4)(@types/node@20.17.52)(typescript@5.8.3)
+      typescript:
+        specifier: ^5.6.3
+        version: 5.8.3
+
+  examples/nodejs/viem:
+    dependencies:
+      '@cowprotocol/cow-sdk':
+        specifier: workspace:*
+        version: link:../../../packages/sdk
+      '@cowprotocol/sdk-viem-adapter':
+        specifier: workspace:*
+        version: link:../../../packages/providers/viem-adapter
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.5.0
+      viem:
+        specifier: ^2.28.4
+        version: 2.30.5(typescript@5.8.3)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.30
+        version: 20.17.52
+      ts-node:
+        specifier: ^10.9.2
+        version: 10.9.2(@swc/core@1.13.4)(@types/node@20.17.52)(typescript@5.8.3)
+      typescript:
+        specifier: ^5.6.3
+        version: 5.8.3
+
   examples/react/ethers5:
     dependencies:
       '@cowprotocol/cow-sdk':
