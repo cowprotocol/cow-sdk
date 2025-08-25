@@ -8,7 +8,7 @@ import {
 } from '@cowprotocol/cow-sdk'
 import { useEffect, useState } from 'react'
 import { chainId, cowSdkAdapter, tradingSdk } from '../../cowSdk.ts'
-import { Web3Provider } from '@ethersproject/providers'
+import { BrowserProvider } from 'ethers'
 
 const injectedWalletProvider = window.ethereum
 
@@ -93,19 +93,21 @@ export function SwapForm() {
   useEffect(() => {
     if (!injectedWalletProvider) return
 
-    const provider = new Web3Provider(injectedWalletProvider, chainId)
+    const provider = new BrowserProvider(injectedWalletProvider, chainId)
 
-    provider.send('eth_requestAccounts', []).then((accounts) => {
+    provider.send('eth_requestAccounts', []).then(async (accounts) => {
       if (!accounts.length) {
         setSwapError(new Error('Wallet is not connected'))
       }
 
       const firstAccount = accounts[0]
 
-      setAccount(firstAccount)
-
       cowSdkAdapter.setProvider(provider)
-      cowSdkAdapter.setSigner(provider.getSigner())
+      const signer = await provider.getSigner()
+      cowSdkAdapter.setSigner(signer)
+      tradingSdk.setTraderParams({ signer })
+
+      setAccount(firstAccount)
 
       console.log('Connected account: ', firstAccount)
     })
