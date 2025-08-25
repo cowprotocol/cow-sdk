@@ -38,3 +38,7 @@ export function isAdditionalTargetChain(chainId: ChainId): chainId is Additional
 export function isTargetChainId(chainId: ChainId): chainId is TargetChainId {
   return isSupportedChain(chainId) || isAdditionalTargetChain(chainId)
 }
+
+export function isZkSyncChain(chainId: ChainId): boolean {
+  return !!getChainInfo(chainId)?.isZkSync
+}

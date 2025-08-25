@@ -56,4 +56,5 @@ export const lens: ChainInfo = {
       url: 'https://lens.xyz/bridge',
     },
   ],
+  isZkSync: true,
 }

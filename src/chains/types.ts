@@ -149,4 +149,9 @@ export interface ChainInfo {
     [key: string]: ChainRpcUrls
     default: ChainRpcUrls
   }
+
+  /**
+   * Whether the chain is zkSync based.
+   */
+  readonly isZkSync?: boolean
 }
