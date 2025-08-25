@@ -7,7 +7,7 @@ import { AbstractSigner, getGlobalAdapter, Signer } from '@cowprotocol/sdk-commo
  * Takes a Signer instance on creation.
  * All other Signer methods are proxied to initial instance.
  */
-export function getTypedDataVersionedSigner(signer: Signer, version: 'v3' | 'v4'): AbstractSigner {
+export function getTypedDataVersionedSigner(signer: Signer, version: 'v3' | 'v4'): AbstractSigner<unknown> {
   const adapter = getGlobalAdapter()
   return new adapter.TypedDataVersionedSigner(signer, version)
 }
@@ -19,7 +19,7 @@ export function getTypedDataVersionedSigner(signer: Signer, version: 'v3' | 'v4'
  * Takes a Signer instance on creation.
  * All other Signer methods are proxied to initial instance.
  */
-export function getTypedDataV3Signer(signer: Signer): AbstractSigner {
+export function getTypedDataV3Signer(signer: Signer): AbstractSigner<unknown> {
   const adapter = getGlobalAdapter()
   return new adapter.TypedDataV3Signer(signer)
 }
@@ -35,7 +35,7 @@ export function getTypedDataV3Signer(signer: Signer): AbstractSigner {
  * Takes a Signer instance on creation.
  * All other Signer methods are proxied to initial instance.
  */
-export function getIntChainIdTypedDataV4Signer(signer: Signer): AbstractSigner {
+export function getIntChainIdTypedDataV4Signer(signer: Signer): AbstractSigner<unknown> {
   const adapter = getGlobalAdapter()
   return new adapter.IntChainIdTypedDataV4Signer(signer)
 }

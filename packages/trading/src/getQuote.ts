@@ -39,7 +39,7 @@ const ETH_FLOW_AUX_QUOTE_PARAMS = {
 }
 
 export type QuoteResultsWithSigner = {
-  result: QuoteResults & { signer: AbstractSigner }
+  result: QuoteResults & { signer: AbstractSigner<unknown> }
   orderBookApi: OrderBookApi
 }
 
