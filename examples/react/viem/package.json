@@ -1,5 +1,5 @@
 {
-  "name": "example-react-ethers5",
+  "name": "example-react-viem",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,12 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "ethers": "5.7.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "viem": "^2.28.4",
     "@cowprotocol/cow-sdk": "workspace:*",
-    "@cowprotocol/sdk-ethers-v5-adapter": "workspace:*",
-    "@ethersproject/providers": "^5.5.3"
+    "@cowprotocol/sdk-viem-adapter": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",

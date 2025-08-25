@@ -8,7 +8,8 @@ import {
 } from '@cowprotocol/cow-sdk'
 import { useEffect, useState } from 'react'
 import { chainId, cowSdkAdapter, tradingSdk } from '../../cowSdk.ts'
-import { Web3Provider } from '@ethersproject/providers'
+import { createWalletClient, createPublicClient, custom, type Address } from 'viem'
+import { sepolia } from 'viem/chains'
 
 const injectedWalletProvider = window.ethereum
 
@@ -93,9 +94,9 @@ export function SwapForm() {
   useEffect(() => {
     if (!injectedWalletProvider) return
 
-    const provider = new Web3Provider(injectedWalletProvider, chainId)
+    const walletClient = createWalletClient({ chain: sepolia, transport: custom(injectedWalletProvider) })
 
-    provider.send('eth_requestAccounts', []).then((accounts) => {
+    walletClient.requestAddresses().then((accounts: Address[]) => {
       if (!accounts.length) {
         setSwapError(new Error('Wallet is not connected'))
       }
@@ -104,8 +105,17 @@ export function SwapForm() {
 
       setAccount(firstAccount)
 
-      cowSdkAdapter.setProvider(provider)
-      cowSdkAdapter.setSigner(provider.getSigner())
+      const injectedPublicClient = createPublicClient({ chain: sepolia, transport: custom(injectedWalletProvider) })
+      cowSdkAdapter.setProvider(injectedPublicClient)
+
+      const walletWithAccount = createWalletClient({
+        chain: sepolia,
+        transport: custom(injectedWalletProvider),
+        account: firstAccount,
+      })
+
+      cowSdkAdapter.setSigner(walletWithAccount.account!)
+      tradingSdk.setTraderParams({ signer: walletWithAccount.account! })
 
       console.log('Connected account: ', firstAccount)
     })
