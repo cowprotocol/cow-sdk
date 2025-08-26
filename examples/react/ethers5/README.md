@@ -67,3 +67,17 @@ export default tseslint.config([
   },
 ])
 ```
+
+## How to run
+
+- Install dependencies at the repository root:
+
+```
+pnpm install
+```
+
+- Start this example in dev mode:
+
+```
+pnpm --filter example-react-ethers5 dev
+```

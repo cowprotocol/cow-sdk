@@ -1,0 +1,22 @@
+{
+  "name": "example-nodejs-ethers6",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "start": "node dist/index.js",
+    "dev": "node --loader ts-node/esm src/index.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.7",
+    "@cowprotocol/cow-sdk": "workspace:*",
+    "@cowprotocol/sdk-ethers-v6-adapter": "workspace:*"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3",
+    "@types/node": "^20.11.30"
+  }
+}
