@@ -15,6 +15,7 @@ import {
   AbstractProviderAdapter,
   AdapterTypes,
   Block,
+  ContractValue,
   TransactionParams,
   PrivateKey,
   CowError,
@@ -160,7 +161,7 @@ export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
       address: string
       abi: Abi
       functionName: string
-      args?: (string | number | boolean | bigint)[]
+      args?: ContractValue[]
     },
     provider?: Provider,
   ): Promise<unknown> {

@@ -1,4 +1,4 @@
-import { AdapterUtils, CowError } from '@cowprotocol/sdk-common'
+import { AdapterUtils, ContractValue, CowError } from '@cowprotocol/sdk-common'
 import {
   Interface,
   TypedDataField,
@@ -41,7 +41,7 @@ export class EthersV6Utils implements AdapterUtils {
     return toUtf8Bytes(text)
   }
 
-  encodeDeploy(encodeDeployArgs: (string | number | boolean | bigint)[], abi: Abi): string {
+  encodeDeploy(encodeDeployArgs: ContractValue[], abi: Abi): string {
     const abiCoder = new AbiCoder()
     const contractInterface = new Interface(abi)
 
@@ -111,7 +111,7 @@ export class EthersV6Utils implements AdapterUtils {
     return ethersHexlify(value)
   }
 
-  solidityPack(types: string[], values: (string | number | boolean | bigint)[]): string {
+  solidityPack(types: string[], values: ContractValue[]): string {
     return solidityPacked(types, values)
   }
 
@@ -127,11 +127,11 @@ export class EthersV6Utils implements AdapterUtils {
     return getAddress(address)
   }
 
-  encodeAbi(types: string[], values: (string | number | boolean | bigint)[]): BytesLike {
+  encodeAbi(types: string[], values: ContractValue[]): BytesLike {
     return AbiCoder.defaultAbiCoder().encode(types, values)
   }
 
-  decodeAbi(types: string[], data: BytesLike): (string | number | boolean | bigint)[] {
+  decodeAbi(types: string[], data: BytesLike): ContractValue[] {
     return AbiCoder.defaultAbiCoder().decode(types, data)
   }
 
@@ -184,7 +184,7 @@ export class EthersV6Utils implements AdapterUtils {
   encodeFunction(
     abi: Array<{ name: string; inputs: Array<{ type: string }> }>,
     functionName: string,
-    args: (string | number | boolean | bigint)[],
+    args: ContractValue[],
   ): string {
     const iface = new Interface(abi)
     return iface.encodeFunctionData(functionName, args)
@@ -194,7 +194,7 @@ export class EthersV6Utils implements AdapterUtils {
     abi: Array<{ name: string; inputs: Array<{ type: string }> }>,
     functionName: string,
     data: string,
-  ): (string | number | boolean | bigint)[] {
+  ): ContractValue[] {
     const iface = new Interface(abi)
     const result = iface.decodeFunctionData(functionName, data)
 
@@ -218,7 +218,7 @@ export class EthersV6Utils implements AdapterUtils {
     return Number(value.toString())
   }
 
-  solidityKeccak256(types: string[], values: (string | number | boolean | bigint)[]): string {
+  solidityKeccak256(types: string[], values: ContractValue[]): string {
     return solidityPackedKeccak256(types, values)
   }
 
@@ -235,12 +235,7 @@ export class EthersV6Utils implements AdapterUtils {
     authorizerAbi: Abi,
     vaultAddress: string,
     vaultRelayerAddress: string,
-    contractCall: (
-      address: string,
-      abi: Abi,
-      functionName: string,
-      args: (string | number | boolean | bigint)[],
-    ) => Promise<void>,
+    contractCall: (address: string, abi: Abi, functionName: string, args: ContractValue[]) => Promise<void>,
   ): Promise<void> {
     /**
      * Balancer Vault partial ABI interface.
@@ -279,7 +274,7 @@ export class EthersV6Utils implements AdapterUtils {
     readerAbi: any[],
     provider: JsonRpcProvider,
     method: string,
-    parameters: (string | number | boolean | bigint)[],
+    parameters: ContractValue[],
   ) {
     const base = new Contract(baseAddress, baseAbi, provider)
 

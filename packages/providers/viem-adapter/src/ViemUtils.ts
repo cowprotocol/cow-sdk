@@ -1,4 +1,4 @@
-import { AdapterUtils, CowError } from '@cowprotocol/sdk-common'
+import { AdapterUtils, ContractValue, CowError } from '@cowprotocol/sdk-common'
 import {
   encodeDeployData,
   Abi,
@@ -121,7 +121,7 @@ export class ViemUtils implements AdapterUtils {
     return this.bytesToHex(value)
   }
 
-  solidityPack(types: string[], values: (string | number | boolean | bigint)[]): string {
+  solidityPack(types: string[], values: ContractValue[]): string {
     return encodePacked(types, values)
   }
 
@@ -143,10 +143,7 @@ export class ViemUtils implements AdapterUtils {
     return getAddress(address)
   }
 
-  encodeAbi(
-    types: { type: string; name: string }[] | string[],
-    values: (string | number | boolean | bigint)[],
-  ): `0x${string}` {
+  encodeAbi(types: { type: string; name: string }[] | string[], values: ContractValue[]): `0x${string}` {
     if (typeof types[0] === 'string') {
       return encodeAbiParameters(
         (types as string[]).map((type, i) => ({ type, name: `arg${i}` })) as AbiParameter[],
@@ -244,7 +241,7 @@ export class ViemUtils implements AdapterUtils {
   encodeFunction(
     abi: Array<{ name: string; inputs: Array<{ type: string }>; type: string }>,
     functionName: string,
-    args: (string | number | boolean | bigint)[],
+    args: ContractValue[],
   ): string {
     const functionAbi = abi.find((item) => item.type === 'function' && item.name === functionName)
     if (!functionAbi) {
@@ -295,10 +292,7 @@ export class ViemUtils implements AdapterUtils {
     return Number(value)
   }
 
-  solidityKeccak256(
-    types: (string | { type: string; name: string })[],
-    values: (string | number | boolean | bigint)[],
-  ): string {
+  solidityKeccak256(types: (string | { type: string; name: string })[], values: ContractValue[]): string {
     const encoded = encodePacked(types, values)
 
     // Hash the encoded data
@@ -350,12 +344,7 @@ export class ViemUtils implements AdapterUtils {
     authorizerAbi: Abi,
     vaultAddress: string,
     vaultRelayerAddress: string,
-    contractCall: (
-      address: string,
-      abi: Abi,
-      functionName: string,
-      args: (string | number | boolean | bigint)[],
-    ) => Promise<void>,
+    contractCall: (address: string, abi: Abi, functionName: string, args: ContractValue[]) => Promise<void>,
   ): Promise<void> {
     /**
      * Balancer Vault partial ABI interface.
@@ -400,7 +389,7 @@ export class ViemUtils implements AdapterUtils {
     readerAbi: Abi,
     client: PublicClient,
     method: string,
-    parameters: (string | number | boolean | bigint)[],
+    parameters: ContractValue[],
   ) {
     // Encode the function call
     const encodedCall = encodeFunctionData({

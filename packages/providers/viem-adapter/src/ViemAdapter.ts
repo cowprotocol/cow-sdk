@@ -18,6 +18,7 @@ import { privateKeyToAccount } from 'viem/accounts'
 import {
   AdapterTypes,
   AbstractProviderAdapter,
+  ContractValue,
   TransactionParams,
   PrivateKey,
   CowError,
@@ -167,7 +168,7 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
       address: string
       abi: Abi
       functionName: string
-      args?: (string | number | boolean | bigint)[]
+      args?: ContractValue[]
     },
     provider?: PublicClient,
   ): Promise<unknown> {

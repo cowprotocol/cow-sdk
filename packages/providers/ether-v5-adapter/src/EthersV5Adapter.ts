@@ -3,6 +3,7 @@ import type { TypedDataDomain, TypedDataField, TypedDataSigner } from '@etherspr
 import {
   AbstractProviderAdapter,
   AdapterTypes,
+  ContractValue,
   CowError,
   GenericContract,
   PrivateKey,
@@ -145,7 +146,7 @@ export class EthersV5Adapter extends AbstractProviderAdapter<EthersV5Types> {
       address: string
       abi: Abi
       functionName: string
-      args?: (string | number | boolean | bigint)[]
+      args?: ContractValue[]
     },
     provider?: RpcProvider,
   ): Promise<unknown> {

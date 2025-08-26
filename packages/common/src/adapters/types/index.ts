@@ -107,3 +107,5 @@ export interface Block {
   extraData: string
   transactions: readonly string[] | string[] | any[] // Can be hashes or full transaction objects
 }
+
+export type ContractValue = string | number | boolean | bigint
