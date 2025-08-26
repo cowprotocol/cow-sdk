@@ -9,7 +9,7 @@ export async function getBridgingStatusFromEvents(
   // order id exists so order is valid, but
   // - bungee may not have indexed the event yet, which it will do eventually
   // - or the order is not filled yet on cowswap
-  if (!events?.length) {
+  if (!events?.length || !events?.[0]) {
     return { status: BridgeStatus.UNKNOWN }
   }
   const event = events[0]
