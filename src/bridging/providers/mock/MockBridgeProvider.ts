@@ -8,18 +8,20 @@ import {
   BridgeStatus,
   BridgeStatusResult,
   BridgingDepositParams,
+  BuyTokensParams,
+  GetProviderBuyTokens,
   QuoteBridgeRequest,
 } from '../../types'
 
-import { OrderKind } from '../../../order-book'
+import { Signer } from '@ethersproject/abstract-signer'
+import { JsonRpcProvider } from '@ethersproject/providers'
+import { AdditionalTargetChainId, ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
 import { mainnet } from '../../../chains/details/mainnet'
 import { optimism } from '../../../chains/details/optimism'
 import { sepolia } from '../../../chains/details/sepolia'
 import { EvmCall, TokenInfo } from '../../../common'
-import { AdditionalTargetChainId, ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
-import { RAW_PROVIDERS_FILES_PATH } from '../../const'
-import { Signer } from '@ethersproject/abstract-signer'
-import { JsonRpcProvider } from '@ethersproject/providers'
+import { OrderKind } from '../../../order-book'
+import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
 
 const BRIDGING_PARAMS: BridgingDepositParams = {
   inputTokenAddress: '0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
@@ -113,12 +115,19 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
     website: 'https://across.to',
   }
 
+  public getRpcProvider() {
+    return {} as unknown as JsonRpcProvider
+  }
+
   async getNetworks(): Promise<ChainInfo[]> {
     return [mainnet, optimism, sepolia]
   }
 
-  async getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]> {
-    return BUY_TOKENS.filter((token) => token.chainId === targetChainId)
+  async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
+    return {
+      tokens: BUY_TOKENS.filter((token) => token.chainId === params.buyChainId),
+      isRouteAvailable: true,
+    }
   }
 
   async getIntermediateTokens({ sellTokenChainId }: QuoteBridgeRequest): Promise<TokenInfo[]> {
@@ -163,7 +172,7 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
     }
   }
 
-  getGasLimitEstimationForHook(_request: QuoteBridgeRequest): number {
+  async getGasLimitEstimationForHook(_request: QuoteBridgeRequest): Promise<number> {
     return 110_000
   }
 
@@ -177,7 +186,7 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
         target: '0x0000000000000000000000000000000000000002',
         callData: '0x1',
         gasLimit: '0x2',
-        dappId: 'MockBridgeProvider',
+        dappId: HOOK_DAPP_BRIDGE_PROVIDER_PREFIX,
       },
     }
   }
@@ -205,11 +214,13 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
 
   async getBridgingParams(
     _chainId: ChainId,
-    _provider: JsonRpcProvider,
     _orderUid: string,
     _txHash: string,
-  ): Promise<BridgingDepositParams> {
-    return BRIDGING_PARAMS
+  ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult }> {
+    return {
+      params: BRIDGING_PARAMS,
+      status: await this.getStatus(''),
+    }
   }
 
   getExplorerUrl(bridgingId: string): string {

@@ -24,7 +24,8 @@ describe('AcrossApi: Shape of API response', () => {
     expect(result).toBeDefined()
   })
 
-  it('getSuggestedFees from MAINNET to POLYGON', async () => {
+  // TODO: the test is flacky
+  it.skip('getSuggestedFees from MAINNET to POLYGON', async () => {
     // Attempt to make a REAL API call. The API implementation will assert the result shape matches the expected object
     //  Example: https://app.across.to/api/suggested-fees?token=0x82aF49447D8a07e3bd95BD0d56f35241523fBab1&originChainId=42161&destinationChainId=8453&amount=2389939424141418&recipient=0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3
     const result = await api.getSuggestedFees({

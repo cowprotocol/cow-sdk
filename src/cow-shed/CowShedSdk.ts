@@ -1,4 +1,4 @@
-import { EvmCall, SignerLike } from '../common'
+import { COW_SHED_LATEST_VERSION, CoWShedVersion, EvmCall, SignerLike } from '../common'
 import { SupportedChainId } from '../chains'
 import { CowShedHooks } from './contracts/CoWShedHooks'
 import { EcdsaSigningScheme, SigningScheme } from '@cowprotocol/contracts'
@@ -40,7 +40,12 @@ export interface SignAndEncodeTxArgs {
   /**
    * Deadline to use for the transaction. If not provided, the maximum uint256 will be used.
    */
-  deadline?: bigint
+  deadline: bigint
+
+  /**
+   * If value is provided, gas won't be estimated and will use the value
+   */
+  gasLimit?: bigint
 
   /**
    * Default gas limit to use for the transaction. If not provided, it will throw an error if the gas limit cannot be estimated.
@@ -74,7 +79,10 @@ export interface CowShedSdkOptions {
 export class CowShedSdk {
   protected hooksCache = new Map<SupportedChainId, CowShedHooks>()
 
-  constructor(private options: CowShedSdkOptions = {}) {}
+  constructor(
+    private options: CowShedSdkOptions = {},
+    public readonly version: CoWShedVersion = COW_SHED_LATEST_VERSION,
+  ) {}
 
   getCowShedAccount(chainId: SupportedChainId, ownerAddress: string): string {
     const cowShedHooks = this.getCowShedHooks(chainId, this.options?.factoryOptions)
@@ -94,6 +102,7 @@ export class CowShedSdk {
     chainId,
     nonce = CowShedSdk.getNonce(),
     deadline = NON_EXPIRING_DEADLINE,
+    gasLimit,
     defaultGasLimit,
     signingScheme = SigningScheme.EIP712,
   }: SignAndEncodeTxArgs): Promise<CowShedCall> {
@@ -123,19 +132,21 @@ export class CowShedSdk {
       data: callData,
       value: BigInt(0),
     }
-    const gasEstimate = await signer.estimateGas(factoryCall).catch((error) => {
-      const factoryCallString = JSON.stringify(factoryCall, jsonWithBigintReplacer, 2)
-      const errorMessage = `Error estimating gas for the cow-shed call: ${factoryCallString}. Review the factory call`
+    const gasEstimate =
+      gasLimit ||
+      (await signer.estimateGas(factoryCall).catch((error) => {
+        const factoryCallString = JSON.stringify(factoryCall, jsonWithBigintReplacer, 2)
+        const errorMessage = `Error estimating gas for the cow-shed call: ${factoryCallString}. Review the factory call`
 
-      // Return the default gas limit if provided
-      if (defaultGasLimit) {
-        log(`${errorMessage}, using the default gas limit.`)
-        return defaultGasLimit
-      }
+        // Return the default gas limit if provided
+        if (defaultGasLimit) {
+          log(`${errorMessage}, using the default gas limit.`)
+          return defaultGasLimit
+        }
 
-      // Re-throw the error if no default gas limit is provided
-      throw new Error(`${errorMessage}, or provide the defaultGasLimit parameter.`, { cause: error })
-    })
+        // Re-throw the error if no default gas limit is provided
+        throw new Error(`${errorMessage}, or provide the defaultGasLimit parameter.`, { cause: error })
+      }))
 
     // Return the details, including the signed transaction data
     return {

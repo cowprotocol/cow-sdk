@@ -8,6 +8,7 @@ const polygonLogo = `${RAW_CHAINS_FILES_PATH}/images/polygon-logo.svg`
 export const polygon: ChainInfo = {
   id: SupportedChainId.POLYGON,
   label: 'Polygon',
+  eip155Label: 'Polygon Mainnet',
   logo: { light: polygonLogo, dark: polygonLogo },
   nativeCurrency: {
     ...nativeCurrencyTemplate,
@@ -39,7 +40,7 @@ export const polygon: ChainInfo = {
     url: 'https://docs.polygon.technology',
   },
   blockExplorer: {
-    name: 'PolygonScan',
+    name: 'Polygonscan',
     url: 'https://polygonscan.com',
   },
 }

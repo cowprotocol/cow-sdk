@@ -9,16 +9,14 @@ import {
   BridgeQuoteResult,
   BridgeStatusResult,
   BridgingDepositParams,
+  BuyTokensParams,
+  GetProviderBuyTokens,
   QuoteBridgeRequest,
 } from '../../types'
 
-import {
-  DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION,
-  HOOK_DAPP_BRIDGE_PROVIDER_PREFIX,
-  RAW_PROVIDERS_FILES_PATH,
-} from '../../const'
+import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
 
-import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
+import { ChainId, ChainInfo, SupportedChainId } from '../../../chains'
 
 import { EvmCall, TokenInfo } from '../../../common'
 
@@ -35,7 +33,8 @@ import { OrderKind } from '@cowprotocol/contracts'
 import { SuggestedFeesResponse } from './types'
 import { getDepositParams } from './getDepositParams'
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { BridgeProviderQuoteError } from '../../errors'
+import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
+import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 
 type SupportedTokensState = Record<ChainId, Record<string, TokenInfo>>
 
@@ -46,6 +45,8 @@ export const ACROSS_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, o
 const SLIPPAGE_TOLERANCE_BPS = 0
 
 export interface AcrossBridgeProviderOptions {
+  getRpcProvider(chainId: SupportedChainId): JsonRpcProvider
+
   // API options
   apiOptions?: AcrossApiOptions
 
@@ -60,12 +61,14 @@ export interface AcrossQuoteResult extends BridgeQuoteResult {
 export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
   protected api: AcrossApi
   protected cowShedSdk: CowShedSdk
+  public getRpcProvider: (chainId: SupportedChainId) => JsonRpcProvider
 
   private supportedTokens: SupportedTokensState | null = null
 
-  constructor(options: AcrossBridgeProviderOptions = {}) {
+  constructor(options: AcrossBridgeProviderOptions) {
     this.api = new AcrossApi(options.apiOptions)
     this.cowShedSdk = new CowShedSdk(options.cowShedOptions)
+    this.getRpcProvider = options.getRpcProvider
   }
 
   info: BridgeProviderInfo = {
@@ -79,13 +82,19 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     return ACROSS_SUPPORTED_NETWORKS
   }
 
-  async getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]> {
-    return Object.values((await this.getSupportedTokensState())[targetChainId] || {})
+  async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
+    const tokens = Object.values((await this.getSupportedTokensState())[params.buyChainId] || {})
+    const isRouteAvailable = tokens.length > 0
+
+    return {
+      tokens,
+      isRouteAvailable,
+    }
   }
 
   async getIntermediateTokens(request: QuoteBridgeRequest): Promise<TokenInfo[]> {
     if (request.kind !== OrderKind.SELL) {
-      throw new BridgeProviderQuoteError('Only SELL is supported for now', { kind: request.kind })
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.ONLY_SELL_ORDER_SUPPORTED, { kind: request.kind })
     }
 
     const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
@@ -135,15 +144,17 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     })
   }
 
-  getGasLimitEstimationForHook(_request: QuoteBridgeRequest): number {
-    return DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION
+  async getGasLimitEstimationForHook(request: QuoteBridgeRequest): Promise<number> {
+    return getGasLimitEstimationForHook(this.cowShedSdk, request, this.getRpcProvider(request.sellTokenChainId))
   }
 
   async getSignedHook(
     chainId: SupportedChainId,
     unsignedCall: EvmCall,
     signer: Signer,
-    defaultGasLimit?: bigint,
+    bridgeHookNonce: string,
+    deadline: bigint,
+    hookGasLimit: number,
   ): Promise<BridgeHook> {
     // Sign the multicall
     const { signedMulticall, cowShedAccount, gasLimit } = await this.cowShedSdk.signCalls({
@@ -158,7 +169,9 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
       ],
       chainId,
       signer,
-      defaultGasLimit,
+      gasLimit: BigInt(hookGasLimit),
+      deadline,
+      nonce: bridgeHookNonce,
     })
 
     const { to, data } = signedMulticall
@@ -179,13 +192,19 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
 
   async getBridgingParams(
     chainId: ChainId,
-    provider: JsonRpcProvider,
     orderUid: string,
     txHash: string,
-  ): Promise<BridgingDepositParams | null> {
-    const txReceipt = await provider.getTransactionReceipt(txHash)
+  ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
+    const txReceipt = await this.getRpcProvider(chainId).getTransactionReceipt(txHash)
 
-    return getDepositParams(chainId, orderUid, txReceipt)
+    const params = await getDepositParams(chainId, orderUid, txReceipt)
+
+    if (!params) return null
+
+    return {
+      params,
+      status: await this.getStatus(params.bridgingId, chainId),
+    }
   }
 
   getExplorerUrl(bridgingId: string): string {

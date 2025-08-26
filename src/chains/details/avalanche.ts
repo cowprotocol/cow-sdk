@@ -1,6 +1,6 @@
 import { nativeCurrencyTemplate } from '../../common/consts/tokens'
-import { ChainInfo, SupportedChainId } from '../types'
 import { RAW_CHAINS_FILES_PATH } from '../const/path'
+import { ChainInfo, SupportedChainId } from '../types'
 
 // TODO: this is the AVAX token logo, we should add Avalanche symbol logo as well
 const avaxLogo = `${RAW_CHAINS_FILES_PATH}/images/avax-logo.svg`
@@ -9,6 +9,7 @@ const avaxLogo = `${RAW_CHAINS_FILES_PATH}/images/avax-logo.svg`
 export const avalanche: ChainInfo = {
   id: SupportedChainId.AVALANCHE,
   label: 'Avalanche',
+  eip155Label: 'Avalanche C-Chain',
   logo: { light: avaxLogo, dark: avaxLogo },
   nativeCurrency: {
     ...nativeCurrencyTemplate,
@@ -40,7 +41,7 @@ export const avalanche: ChainInfo = {
     url: 'https://build.avax.network/docs',
   },
   blockExplorer: {
-    name: 'SnowTrace',
-    url: 'https://snowtrace.io',
+    name: 'SnowScan',
+    url: 'https://snowscan.xyz',
   },
 }

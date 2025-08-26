@@ -1,5 +1,5 @@
-import { Signer } from 'ethers'
 import { latest as latestAppData } from '@cowprotocol/app-data'
+import { OrderKind } from '@cowprotocol/contracts'
 
 import {
   BridgeDeposit,
@@ -7,43 +7,44 @@ import {
   BridgeProvider,
   BridgeProviderInfo,
   BridgeQuoteResult,
-  BridgeStatus,
   BridgeStatusResult,
   BridgingDepositParams,
+  BuyTokensParams,
+  GetProviderBuyTokens,
   QuoteBridgeRequest,
 } from '../../types'
-
-import { DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION, RAW_PROVIDERS_FILES_PATH } from '../../const'
-
-import { ChainId, ChainInfo, SupportedChainId, TargetChainId } from '../../../chains'
-
-import { BUNGEE_CHAIN_TOKENS } from './const/tokens'
+import { DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION, RAW_PROVIDERS_FILES_PATH } from '../../const'
+import { ChainId, ChainInfo, SupportedChainId } from '../../../chains'
 import { EvmCall, TokenInfo } from '../../../common'
-
 import { mainnet } from '../../../chains/details/mainnet'
 import { polygon } from '../../../chains/details/polygon'
 import { arbitrumOne } from '../../../chains/details/arbitrum'
+import { avalanche } from '../../../chains/details/avalanche'
 import { base } from '../../../chains/details/base'
 import { optimism } from '../../../chains/details/optimism'
+import { gnosisChain } from '../../../chains/details/gnosis'
 import { BungeeApi, BungeeApiOptions } from './BungeeApi'
 import { toBridgeQuoteResult } from './util'
 import { CowShedSdk, CowShedSdkOptions } from '../../../cow-shed'
 import { createBungeeDepositCall } from './createBungeeDepositCall'
-import { OrderKind } from '@cowprotocol/contracts'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
-import { BungeeBridgeName, BungeeBuildTx, BungeeEventStatus, BungeeQuote, BungeeQuoteAPIRequest } from './types'
-import { isTruthy } from '../../../common/utils/common'
-import { JsonRpcProvider } from '@ethersproject/providers'
+import { BungeeBuildTx, BungeeQuote, BungeeQuoteAPIRequest } from './types'
 import { getSigner } from '../../../common/utils/wallet'
-import { BridgeProviderQuoteError } from '../../errors'
+import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
+import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
+import { getBridgingStatusFromEvents } from './getBridgingStatusFromEvents'
+import type { JsonRpcProvider } from '@ethersproject/providers'
+import type { Signer } from 'ethers'
 
 export const BUNGEE_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/bungee`
-export const BUNGEE_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
+export const BUNGEE_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism, avalanche, gnosisChain]
 
 /** There will be no dex swaps happening while bridging. Hence slippage will be zero */
 const SLIPPAGE_TOLERANCE_BPS = 0
 
 export interface BungeeBridgeProviderOptions {
+  getRpcProvider(chainId: SupportedChainId): JsonRpcProvider
+
   // API options
   apiOptions?: BungeeApiOptions
 
@@ -55,14 +56,15 @@ export interface BungeeQuoteResult extends BridgeQuoteResult {
   bungeeQuote: BungeeQuote
   buildTx: BungeeBuildTx
 }
-
 export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   protected api: BungeeApi
   protected cowShedSdk: CowShedSdk
+  public getRpcProvider: (chainId: SupportedChainId) => JsonRpcProvider
 
-  constructor(private options: BungeeBridgeProviderOptions = {}) {
+  constructor(private options: BungeeBridgeProviderOptions) {
     this.api = new BungeeApi(options.apiOptions)
     this.cowShedSdk = new CowShedSdk(options.cowShedOptions)
+    this.getRpcProvider = options.getRpcProvider
   }
 
   info: BridgeProviderInfo = {
@@ -76,45 +78,26 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     return BUNGEE_SUPPORTED_NETWORKS
   }
 
-  async getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]> {
-    const chainConfig = BUNGEE_CHAIN_TOKENS[targetChainId as TargetChainId]
-    if (!chainConfig) {
-      return []
-    }
+  async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
+    const tokens = await this.api.getBuyTokens(params)
+    const isRouteAvailable = tokens.length > 0
 
-    return Object.values(chainConfig).filter(isTruthy)
+    return {
+      tokens,
+      isRouteAvailable,
+    }
   }
 
   async getIntermediateTokens(request: QuoteBridgeRequest): Promise<TokenInfo[]> {
     if (request.kind !== OrderKind.SELL) {
-      throw new BridgeProviderQuoteError('Only SELL is supported for now', { kind: request.kind })
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.ONLY_SELL_ORDER_SUPPORTED, { kind: request.kind })
     }
 
-    const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
-
-    const buyTokenAddressLower = buyTokenAddress.toLowerCase()
-
-    const sourceTokens = BUNGEE_CHAIN_TOKENS[sellTokenChainId]
-    const targetTokens = BUNGEE_CHAIN_TOKENS[buyTokenChainId]
-
-    if (!sourceTokens || !targetTokens) return []
-
-    // Find the token symbol for the target token
-    const targetTokenSymbol = targetTokens?.[buyTokenAddressLower]?.symbol?.toLowerCase()
-
-    if (!targetTokenSymbol) return []
-
-    // if target token is native token, use weth as intermediate token
-    if (targetTokenSymbol === 'eth') {
-      const weth = Object.values(sourceTokens).find((token) => token?.symbol?.toLowerCase() === 'weth')
-      return weth ? [weth] : []
-    }
-
-    // Use the tokenSymbol to find the outputToken in the target chain
-    // Use the tokenSymbol to find the outputToken in the target chain
-    return Object.values(sourceTokens)
-      .filter((token) => token?.symbol?.toLowerCase() === targetTokenSymbol)
-      .filter(isTruthy)
+    return this.api.getIntermediateTokens({
+      fromChainId: request.sellTokenChainId,
+      toChainId: request.buyTokenChainId,
+      toTokenAddress: request.buyTokenAddress,
+    })
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<BungeeQuoteResult> {
@@ -152,7 +135,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     )
 
     if (!isBuildTxValid) {
-      throw new BridgeProviderQuoteError('Build tx data is invalid', quoteWithBuildTx)
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.TX_BUILD_ERROR, quoteWithBuildTx)
     }
 
     // convert bungee quote response to BridgeQuoteResult
@@ -163,19 +146,27 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     return createBungeeDepositCall({
       request,
       quote,
-      cowShedSdk: this.cowShedSdk,
     })
   }
 
-  getGasLimitEstimationForHook(_request: QuoteBridgeRequest): number {
-    return DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION
+  async getGasLimitEstimationForHook(request: QuoteBridgeRequest): Promise<number> {
+    const extraGas = this.isExtraGasRequired(request) ? DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION : undefined
+
+    return getGasLimitEstimationForHook(
+      this.cowShedSdk,
+      request,
+      this.getRpcProvider(request.sellTokenChainId),
+      extraGas,
+    )
   }
 
   async getSignedHook(
     chainId: SupportedChainId,
     unsignedCall: EvmCall,
     signer: Signer,
-    defaultGasLimit?: bigint,
+    bridgeHookNonce: string,
+    deadline: bigint,
+    hookGasLimit: number,
   ): Promise<BridgeHook> {
     // Sign the multicall
     const { signedMulticall, cowShedAccount, gasLimit } = await this.cowShedSdk.signCalls({
@@ -190,7 +181,9 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
       ],
       chainId,
       signer,
-      defaultGasLimit,
+      gasLimit: BigInt(hookGasLimit),
+      deadline,
+      nonce: bridgeHookNonce,
     })
 
     const { to, data } = signedMulticall
@@ -207,16 +200,17 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
 
   async getBridgingParams(
     _chainId: ChainId,
-    _provider: JsonRpcProvider,
     orderId: string,
     _txHash: string,
-  ): Promise<BridgingDepositParams | null> {
+  ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
     const events = await this.api.getEvents({ orderId })
     const event = events[0]
 
     if (!event) return null
 
-    return {
+    const status = await getBridgingStatusFromEvents(events, (orderId) => this.api.getAcrossStatus(orderId))
+
+    const params: BridgingDepositParams = {
       inputTokenAddress: event.srcTokenAddress,
       outputTokenAddress: event.destTokenAddress,
       inputAmount: BigInt(event.srcAmount),
@@ -229,6 +223,8 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
       destinationChainId: event.toChainId,
       bridgingId: orderId,
     }
+
+    return { params, status }
   }
 
   async decodeBridgeHook(_hook: latestAppData.CoWHook): Promise<BridgeDeposit> {
@@ -236,11 +232,6 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     // This will need more context and thus changes to either the hook calldata or the function interface
     // Can revisit once the approach is decided
     throw new Error('Not implemented')
-  }
-
-  async getBridgingId(_orderUid: string, _settlementTx: string, _logIndex: number): Promise<string> {
-    // order uid itself can be used as bridging id on Bungee
-    return _orderUid
   }
 
   getExplorerUrl(bridgingId: string): string {
@@ -251,53 +242,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     // fetch indexed event from api
     const events = await this.api.getEvents({ orderId: _bridgingId })
 
-    // if empty, return not_initiated
-    // order id exists so order is valid, but
-    // - bungee may not have indexed the event yet, which it will do eventually
-    // - or the order is not filled yet on cowswap
-    if (!events?.length) {
-      return { status: BridgeStatus.UNKNOWN }
-    }
-    const event = events[0]
-
-    // if srcTxStatus = pending, return in_progress
-    if (event.srcTxStatus === BungeeEventStatus.PENDING) {
-      return { status: BridgeStatus.IN_PROGRESS }
-    }
-
-    // if srcTxStatus = completed & destTxStatus = pending,
-    if (event.srcTxStatus === BungeeEventStatus.COMPLETED && event.destTxStatus === BungeeEventStatus.PENDING) {
-      // if bridgeName = across,
-      if (event.bridgeName === BungeeBridgeName.ACROSS) {
-        try {
-          // check across api to check status is expired or refunded
-          const acrossStatus = await this.api.getAcrossStatus(event.orderId)
-          if (acrossStatus === 'expired') {
-            return { status: BridgeStatus.EXPIRED, depositTxHash: event.srcTransactionHash }
-          }
-          if (acrossStatus === 'refunded') {
-            // refunded means failed
-            return { status: BridgeStatus.REFUND, depositTxHash: event.srcTransactionHash }
-          }
-        } catch (e) {
-          console.error('BungeeBridgeProvider get across status error', e)
-        }
-      }
-      // if not across or across API fails, waiting for dest tx, return in_progress
-      return { status: BridgeStatus.IN_PROGRESS, depositTxHash: event.srcTransactionHash }
-    }
-
-    // if srcTxStatus = completed & destTxStatus = completed, return executed
-    if (event.srcTxStatus === BungeeEventStatus.COMPLETED && event.destTxStatus === BungeeEventStatus.COMPLETED) {
-      return {
-        status: BridgeStatus.EXECUTED,
-        depositTxHash: event.srcTransactionHash,
-        fillTxHash: event.destTransactionHash,
-      }
-    }
-
-    // there is no failed case for across - gets auto-refunded - or cctp - attestation can be relayed by anyone on destination chain
-    throw new Error('Unknown status')
+    return getBridgingStatusFromEvents(events, (orderId) => this.api.getAcrossStatus(orderId))
   }
 
   async getCancelBridgingTx(_bridgingId: string): Promise<EvmCall> {
@@ -313,5 +258,12 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     // Across auto-relays refund txns some time after the order expires. No user action needed.
     // Therefore, not implementing refund
     throw new Error('Not implemented')
+  }
+
+  private isExtraGasRequired(request: QuoteBridgeRequest): boolean {
+    const { sellTokenChainId, buyTokenChainId } = request
+
+    // Bungee requires extra gas for bridging from Mainnet to Gnosis
+    return sellTokenChainId === SupportedChainId.MAINNET && buyTokenChainId === SupportedChainId.GNOSIS_CHAIN
   }
 }

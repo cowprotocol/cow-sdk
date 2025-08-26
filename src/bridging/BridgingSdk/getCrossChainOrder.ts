@@ -1,7 +1,6 @@
 import { BridgeProvider, BridgeQuoteResult, BridgeStatus, CrossChainOrder } from '../types'
 
 import { CowEnv } from '../../common'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import { BridgeOrderParsingError } from '../errors'
 import { SupportedChainId } from '../../chains'
 import { OrderBookApi } from '../../order-book'
@@ -10,7 +9,6 @@ import { findBridgeProviderFromHook } from './findBridgeProviderFromHook'
 interface GetCrossChainOrderParams {
   chainId: SupportedChainId
   orderId: string
-  rpcProvider: JsonRpcProvider
   orderBookApi: OrderBookApi
   providers: BridgeProvider<BridgeQuoteResult>[]
   env: CowEnv
@@ -20,7 +18,7 @@ interface GetCrossChainOrderParams {
  * Fetch a cross-chain order and its status.
  */
 export async function getCrossChainOrder(params: GetCrossChainOrderParams): Promise<CrossChainOrder | null> {
-  const { chainId, orderId, orderBookApi, providers, rpcProvider, env } = params
+  const { chainId, orderId, orderBookApi, providers, env } = params
 
   const chainContext = { chainId, env }
   const order = await orderBookApi.getOrder(orderId, chainContext)
@@ -51,9 +49,10 @@ export async function getCrossChainOrder(params: GetCrossChainOrderParams): Prom
     }
 
     // Get bridging id for this order
-    const bridgingParams = await provider.getBridgingParams(chainId, rpcProvider, orderId, tradeTxHash)
+    const { params: bridgingParams, status: statusResult } =
+      (await provider.getBridgingParams(chainId, orderId, tradeTxHash)) || {}
 
-    if (!bridgingParams) {
+    if (!bridgingParams || !statusResult) {
       throw new BridgeOrderParsingError(`Bridging params cannot be derived from transaction: ${tradeTxHash}`)
     }
 
@@ -69,7 +68,6 @@ export async function getCrossChainOrder(params: GetCrossChainOrderParams): Prom
     }
 
     try {
-      const statusResult = await provider.getStatus(bridgingParams.bridgingId, chainId)
       const explorerUrl = provider.getExplorerUrl(bridgingParams.bridgingId)
 
       return {

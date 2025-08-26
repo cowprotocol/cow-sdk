@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/cow-sdk",
-  "version": "6.0.0-RC.59",
+  "version": "6.3.1",
   "license": "(MIT OR Apache-2.0)",
   "files": [
     "/dist"
@@ -24,6 +24,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage --json --outputFile=jest.results.json && cat ./coverage/lcov.info | coveralls",
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
+    "test:bungeeGnosisBridge": "yarn test --testPathPattern=BungeeGnosisBridge",
     "codegen": "npm run swagger:codegen && npm run typechain:codegen",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
@@ -32,18 +33,20 @@
     "typechain:codegen": "typechain --target ethers-v5 --out-dir ./src/common/generated './abi/*.json'",
     "trading:generateSchemas": "ts-node scripts/generateTradingSchemas.ts"
   },
+  "engines": {
+    "node": ">=16.14"
+  },
   "dependencies": {
-    "@cowprotocol/app-data": "^3.1.0",
+    "@cowprotocol/app-data": "^3.3.0",
     "@cowprotocol/contracts": "^1.8.0",
     "@ethersproject/abstract-signer": "^5.8.0",
     "@openzeppelin/merkle-tree": "^1.0.8",
     "@weiroll/weiroll.js": "^0.3.0",
     "cross-fetch": "^3.2.0",
     "deepmerge": "^4.3.1",
-    "ethers": "^5.8.0",
     "exponential-backoff": "^3.1.2",
     "graphql": "^16.11.0",
-    "graphql-request": "^4.3.0",
+    "graphql-request": "^6.1.0",
     "limiter": "^3.0.0"
   },
   "peerDependencies": {
@@ -89,6 +92,7 @@
       "src/**/*.{ts,tsx}"
     ],
     "coveragePathIgnorePatterns": [
+      "src/common/generated",
       "src/composable/generated"
     ],
     "moduleDirectories": [

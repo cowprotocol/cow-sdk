@@ -1,4 +1,9 @@
+import { latest as latestAppData } from '@cowprotocol/app-data'
+import { OrderKind } from '@cowprotocol/contracts'
+import { JsonRpcProvider } from '@ethersproject/providers'
 import { SupportedChainId, TargetChainId } from '../../../chains'
+import { DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION, DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION } from '../../const'
+import { BridgeStatus, QuoteBridgeRequest } from '../../types'
 import { BungeeApi } from './BungeeApi'
 import {
   BUNGEE_HOOK_DAPP_ID,
@@ -7,10 +12,7 @@ import {
   BungeeBridgeProviderOptions,
   BungeeQuoteResult,
 } from './BungeeBridgeProvider'
-import { latest as latestAppData } from '@cowprotocol/app-data'
-import { OrderKind } from '@cowprotocol/contracts'
-import { BridgeStatus, QuoteBridgeRequest } from '../../types'
-import { BungeeQuote, BungeeBuildTx, BungeeEvent, BungeeEventStatus, BungeeBridgeName, BungeeBridge } from './types'
+import { BungeeBridge, BungeeBridgeName, BungeeBuildTx, BungeeEvent, BungeeEventStatus, BungeeQuote } from './types'
 
 // Mock BungeeApi
 jest.mock('./BungeeApi')
@@ -37,6 +39,11 @@ describe('BungeeBridgeProvider', () => {
   beforeEach(() => {
     const options = {
       apiOptions: {},
+      getRpcProvider() {
+        return {
+          getCode: jest.fn().mockResolvedValue('0x1234567890'),
+        } as unknown as JsonRpcProvider
+      },
     }
     provider = new BungeeBridgeProviderTest(options)
   })
@@ -55,17 +62,49 @@ describe('BungeeBridgeProvider', () => {
   })
 
   describe('getBuyTokens', () => {
-    it('should return empty array for unsupported chain', async () => {
-      const tokens = await provider.getBuyTokens(12345 as TargetChainId)
+    let mockBungeeApi: BungeeApi
 
-      expect(tokens).toEqual([])
+    beforeEach(() => {
+      mockBungeeApi = new BungeeApi()
+      // Mock the getBuyTokens method
+      jest.spyOn(mockBungeeApi, 'getBuyTokens').mockImplementation(async (params) => {
+        if (params.buyChainId === (12345 as TargetChainId)) {
+          return []
+        } else if (params.buyChainId === (137 as TargetChainId)) {
+          return [
+            {
+              chainId: SupportedChainId.POLYGON,
+              address: '0x123',
+              decimals: 18,
+              name: 'Test Token',
+              symbol: 'TEST',
+              logoUrl: 'https://example.com/logo.png',
+            },
+          ]
+        }
+        return []
+      })
+      provider.setApi(mockBungeeApi)
+    })
+
+    it('should return empty array for unsupported chain', async () => {
+      const result = await provider.getBuyTokens({ buyChainId: 12345 as TargetChainId })
+
+      expect(result.tokens).toEqual([])
+      expect(result.isRouteAvailable).toEqual(false)
+
+      expect(mockBungeeApi.getBuyTokens).toHaveBeenCalledWith({ buyChainId: 12345 as TargetChainId })
+      expect(mockBungeeApi.getBuyTokens).toHaveBeenCalledTimes(1)
     })
 
     it('should return tokens for supported chain', async () => {
-      const tokens = await provider.getBuyTokens(SupportedChainId.POLYGON)
+      const result = await provider.getBuyTokens({
+        sellChainId: SupportedChainId.MAINNET,
+        buyChainId: SupportedChainId.POLYGON,
+      })
 
-      expect(tokens.length).toBeGreaterThan(0)
-      expect(tokens).toEqual(
+      expect(result.tokens.length).toBeGreaterThan(0)
+      expect(result.tokens).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             chainId: SupportedChainId.POLYGON,
@@ -74,6 +113,12 @@ describe('BungeeBridgeProvider', () => {
           }),
         ]),
       )
+      expect(result.isRouteAvailable).toEqual(true)
+      expect(mockBungeeApi.getBuyTokens).toHaveBeenCalledWith({
+        buyChainId: SupportedChainId.POLYGON,
+        sellChainId: SupportedChainId.MAINNET,
+      })
+      expect(mockBungeeApi.getBuyTokens).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -262,13 +307,6 @@ describe('BungeeBridgeProvider', () => {
     })
   })
 
-  describe('getBridgingId', () => {
-    it('should return the order uid as bridging id', async () => {
-      const bridgingId = await provider.getBridgingId('123', '123', 1)
-      expect(bridgingId).toEqual('123')
-    })
-  })
-
   describe('getExplorerUrl', () => {
     it('should return explorer url', () => {
       expect(provider.getExplorerUrl('123')).toEqual('https://socketscan.io/tx/123')
@@ -354,6 +392,50 @@ describe('BungeeBridgeProvider', () => {
   describe('getRefundBridgingTx', () => {
     it('should throw error as not implemented', async () => {
       await expect(provider.getRefundBridgingTx('123')).rejects.toThrowError('Not implemented')
+    })
+  })
+
+  describe('getGasLimitEstimationForHook', () => {
+    it('should return default gas limit estimation for non-Mainnet to Gnosis', async () => {
+      const request: QuoteBridgeRequest = {
+        kind: OrderKind.SELL,
+        sellTokenAddress: '0x123',
+        sellTokenChainId: SupportedChainId.MAINNET,
+        buyTokenChainId: SupportedChainId.POLYGON,
+        amount: 1000000000000000000n,
+        receiver: '0x789',
+        account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
+        sellTokenDecimals: 18,
+        buyTokenAddress: '0x456',
+        buyTokenDecimals: 6,
+        appCode: '0x123',
+        signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+      }
+
+      const gasLimit = await provider.getGasLimitEstimationForHook(request)
+
+      expect(gasLimit).toEqual(DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION)
+    })
+
+    it('should return default gas limit estimation for Mainnet to Gnosis', async () => {
+      const request: QuoteBridgeRequest = {
+        kind: OrderKind.SELL,
+        sellTokenAddress: '0x123',
+        sellTokenChainId: SupportedChainId.MAINNET,
+        buyTokenChainId: SupportedChainId.GNOSIS_CHAIN,
+        amount: 1000000000000000000n,
+        receiver: '0x789',
+        account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
+        sellTokenDecimals: 18,
+        buyTokenAddress: '0x456',
+        buyTokenDecimals: 6,
+        appCode: '0x123',
+        signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+      }
+
+      const gasLimit = await provider.getGasLimitEstimationForHook(request)
+
+      expect(gasLimit).toEqual(DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION + DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION)
     })
   })
 })

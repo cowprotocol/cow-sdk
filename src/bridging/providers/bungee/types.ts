@@ -1,4 +1,4 @@
-export type SupportedBridge = 'across' | 'cctp'
+export type SupportedBridge = 'across' | 'cctp' | 'gnosis-native-bridge'
 
 export interface BungeeQuoteAPIRequest {
   userAddress: string
@@ -109,12 +109,14 @@ export interface BungeeQuoteAPIResponse {
 export enum BungeeBridge {
   'Across' = 'across',
   'CircleCCTP' = 'cctp',
+  'GnosisNative' = 'gnosis-native-bridge',
 }
 
 // Map display names to enum values
 export const BungeeBridgeNames: Record<string, BungeeBridge> = {
   Across: BungeeBridge.Across,
   'Circle CCTP': BungeeBridge.CircleCCTP,
+  'Gnosis Native': BungeeBridge.GnosisNative,
 }
 
 export interface BungeeQuote {
@@ -155,7 +157,7 @@ export interface BungeeBuildTxAPIResponse {
 
 export type BungeeBuildTx = BungeeBuildTxAPIResponse['result']
 
-interface InputAmountTxDataBytesIndices {
+export interface InputAmountTxDataBytesIndices {
   inputAmount: {
     bytes_startIndex: number
     bytes_length: number
@@ -164,7 +166,7 @@ interface InputAmountTxDataBytesIndices {
   }
 }
 
-interface OutputAmountTxDataBytesIndices {
+export interface OutputAmountTxDataBytesIndices {
   outputAmount: {
     bytes_startIndex: number
     bytes_length: number
@@ -173,12 +175,16 @@ interface OutputAmountTxDataBytesIndices {
   }
 }
 
-interface InputOutputAmountTxDataBytesIndices extends InputAmountTxDataBytesIndices, OutputAmountTxDataBytesIndices {}
+export interface InputOutputAmountTxDataBytesIndices
+  extends InputAmountTxDataBytesIndices,
+    OutputAmountTxDataBytesIndices {}
 
 export type BungeeTxDataBytesIndicesType = {
-  [K in BungeeBridge]: K extends BungeeBridge.Across
-    ? InputOutputAmountTxDataBytesIndices // across has both input and output amounts
-    : InputAmountTxDataBytesIndices // cctp has only input amount
+  [K in BungeeBridge]: {
+    [functionSelector: string]: K extends BungeeBridge.Across
+      ? InputOutputAmountTxDataBytesIndices
+      : InputAmountTxDataBytesIndices
+  }
 }
 
 export type SocketRequest = {
@@ -263,3 +269,31 @@ export interface AcrossStatusAPIResponse {
 }
 
 export type AcrossStatus = AcrossStatusAPIResponse['status']
+
+export type BungeeBuyTokensAPIResponse = {
+  success: boolean
+  statusCode: number
+  result: Array<{
+    chainId: number
+    address: string
+    decimals: number
+    name?: string
+    symbol?: string
+    logoURI?: string
+    icon?: string
+  }>
+}
+
+export type BungeeIntermediateTokensAPIResponse = {
+  success: boolean
+  statusCode: number
+  result: Array<{
+    chainId: number
+    address: string
+    name: string
+    symbol: string
+    decimals: number
+    logoURI: string
+    icon: string
+  }>
+}

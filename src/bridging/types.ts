@@ -9,6 +9,7 @@ import {
   QuoteAndPost,
   QuoteResults,
   QuoterParameters,
+  SigningStepManager,
   SwapAdvancedSettings,
   TradeOptionalParameters,
   TraderParameters,
@@ -129,6 +130,21 @@ export interface BridgeStatusResult {
 }
 
 /**
+ * When sellChainId and/or sellTokenAddress are specified
+ * then the buy tokens list will be additionally filtered
+ */
+export interface BuyTokensParams {
+  buyChainId: TargetChainId
+  sellChainId?: SupportedChainId
+  sellTokenAddress?: string
+}
+
+export interface GetProviderBuyTokens {
+  tokens: TokenInfo[]
+  isRouteAvailable: boolean
+}
+
+/**
  * A bridge deposit. It includes the provideer information, sell amount and the minimum buy amount.
  *
  * It models the minimal information for a bridging order.
@@ -144,6 +160,8 @@ export interface BridgeDeposit extends Omit<QuoteBridgeRequest, 'amount'> {
 export interface BridgeProvider<Q extends BridgeQuoteResult> {
   info: BridgeProviderInfo
 
+  getRpcProvider(chainId: SupportedChainId): JsonRpcProvider
+
   /**
    * Get basic supported chains
    */
@@ -152,7 +170,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
   /**
    * Get supported tokens for a chain
    */
-  getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]>
+  getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens>
 
   /**
    * Get intermediate tokens given a quote request.
@@ -191,8 +209,10 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    * 2. The final amount could affect hook gas costs
    *
    * By estimating gas costs independently, we can resolve this dependency cycle.
+   * For some providers, the `extraGas` flag adds a 100,000 gas‐unit buffer to the hook
+   * (see DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION).
    */
-  getGasLimitEstimationForHook(request: Omit<QuoteBridgeRequest, 'amount'>): number
+  getGasLimitEstimationForHook(request: Omit<QuoteBridgeRequest, 'amount'> & { extraGas?: number }): Promise<number>
 
   /**
    * Get a pre-authorized hook for initiating a bridge.
@@ -210,7 +230,9 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
     chainId: SupportedChainId,
     unsignedCall: EvmCall,
     signer: Signer,
-    defaultGasLimit?: bigint,
+    bridgeHookNonce: string,
+    deadline: bigint,
+    hookGasLimit: number,
   ): Promise<BridgeHook>
 
   /**
@@ -226,16 +248,14 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
   /**
    * Get the identifier of the bridging transaction from the settlement transaction.
    * @param chainId
-   * @param provider - Provider is needed in order to get transaction details from blockchain.
    * @param orderUid - The unique identifier of the order
    * @param txHash - The hash of the settlement transaction in which the bridging post-hook was executed
    */
   getBridgingParams(
     chainId: ChainId,
-    provider: JsonRpcProvider,
     orderUid: string,
     txHash: string,
-  ): Promise<BridgingDepositParams | null>
+  ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null>
 
   /**
    * Get the explorer url for a bridging id.
@@ -286,7 +306,10 @@ export interface BridgeQuoteAndPost {
   /**
    * Callback to post the swap order.
    */
-  postSwapOrderFromQuote(advancedSettings?: SwapAdvancedSettings): Promise<OrderPostingResult>
+  postSwapOrderFromQuote(
+    advancedSettings?: SwapAdvancedSettings,
+    signingStepManager?: SigningStepManager,
+  ): Promise<OrderPostingResult>
 }
 
 export interface BridgeCosts<T = bigint> {

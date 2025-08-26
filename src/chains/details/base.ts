@@ -1,6 +1,6 @@
-import { ChainInfo, SupportedChainId } from '../types'
 import { nativeCurrencyTemplate } from '../../common/consts/tokens'
 import { RAW_CHAINS_FILES_PATH } from '../const/path'
+import { ChainInfo, SupportedChainId } from '../types'
 
 const baseLogo = `${RAW_CHAINS_FILES_PATH}/images/base-logo.svg`
 
@@ -12,6 +12,7 @@ const baseLogo = `${RAW_CHAINS_FILES_PATH}/images/base-logo.svg`
 export const base: ChainInfo = {
   id: SupportedChainId.BASE,
   label: 'Base',
+  eip155Label: 'Base',
   nativeCurrency: {
     ...nativeCurrencyTemplate,
     chainId: SupportedChainId.BASE,

@@ -3,16 +3,17 @@ import {
   BridgeProvider,
   BridgeQuoteResult,
   BridgeStatusResult,
+  BuyTokensParams,
   CrossChainOrder,
   CrossChainQuoteAndPost,
+  GetProviderBuyTokens,
   QuoteBridgeRequest,
 } from '../types'
-import { ALL_SUPPORTED_CHAINS, CowEnv, TokenInfo, enableLogging } from '../../common'
-import { ChainInfo, SupportedChainId, TargetChainId } from '../../chains'
+import { ALL_SUPPORTED_CHAINS, CowEnv, enableLogging } from '../../common'
+import { ChainInfo, SupportedChainId } from '../../chains'
 import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
 import { getQuoteWithBridge } from './getQuoteWithBridge'
 import { getCrossChainOrder } from './getCrossChainOrder'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import { OrderBookApi } from '../../order-book'
 import { findBridgeProviderFromHook } from './findBridgeProviderFromHook'
 
@@ -50,11 +51,6 @@ export interface GetOrderParams {
    * The unique identifier of the order.
    */
   orderId: string
-
-  /**
-   * RPC provider to get order transactions details
-   */
-  rpcProvider: JsonRpcProvider
 
   /**
    * The environment of the order
@@ -123,10 +119,10 @@ export class BridgingSdk {
   /**
    * Get the available buy tokens for buying in a specific target chain
 
-   * @param targetChainId
+   * @param params
    */
-  async getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]> {
-    return this.provider.getBuyTokens(targetChainId)
+  async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
+    return this.provider.getBuyTokens(params)
   }
 
   /**
@@ -173,12 +169,11 @@ export class BridgingSdk {
   async getOrder(params: GetOrderParams): Promise<CrossChainOrder | null> {
     const { orderBookApi } = this.config
 
-    const { chainId, orderId, rpcProvider, env = orderBookApi.context.env } = params
+    const { chainId, orderId, env = orderBookApi.context.env } = params
 
     return getCrossChainOrder({
       chainId,
       orderId,
-      rpcProvider,
       orderBookApi,
       env,
       providers: this.config.providers,
