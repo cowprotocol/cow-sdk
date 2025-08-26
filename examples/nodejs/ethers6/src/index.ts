@@ -26,9 +26,8 @@ async function main() {
   const provider = new JsonRpcProvider(RPC_URL, chainId)
   const wallet = new Wallet(PRIVATE_KEY, provider)
 
-  const adapter = new EthersV6Adapter({ provider })
+  const adapter = new EthersV6Adapter({ provider, signer: wallet })
   setGlobalAdapter(adapter)
-  adapter.setSigner(wallet)
 
   const sdk = new TradingSdk({
     chainId,
