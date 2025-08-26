@@ -212,7 +212,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    * For some providers, the `extraGas` flag adds a 100,000 gas‐unit buffer to the hook
    * (see DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION).
    */
-  getGasLimitEstimationForHook(request: Omit<QuoteBridgeRequest, 'amount'> & { extraGas?: boolean }): Promise<number>
+  getGasLimitEstimationForHook(request: Omit<QuoteBridgeRequest, 'amount'> & { extraGas?: number }): Promise<number>
 
   /**
    * Get a pre-authorized hook for initiating a bridge.

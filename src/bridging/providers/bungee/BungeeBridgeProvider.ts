@@ -13,7 +13,7 @@ import {
   GetProviderBuyTokens,
   QuoteBridgeRequest,
 } from '../../types'
-import { RAW_PROVIDERS_FILES_PATH } from '../../const'
+import { DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION, RAW_PROVIDERS_FILES_PATH } from '../../const'
 import { ChainId, ChainInfo, SupportedChainId } from '../../../chains'
 import { EvmCall, TokenInfo } from '../../../common'
 import { mainnet } from '../../../chains/details/mainnet'
@@ -150,7 +150,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   }
 
   async getGasLimitEstimationForHook(request: QuoteBridgeRequest): Promise<number> {
-    const extraGas = this.isExtraGasRequired(request)
+    const extraGas = this.isExtraGasRequired(request) ? DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION : undefined
 
     return getGasLimitEstimationForHook(
       this.cowShedSdk,
