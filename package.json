@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/cow-sdk",
-  "version": "6.2.0",
+  "version": "6.3.0-RC.0",
   "license": "(MIT OR Apache-2.0)",
   "files": [
     "/dist"
@@ -24,6 +24,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage --json --outputFile=jest.results.json && cat ./coverage/lcov.info | coveralls",
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
+    "test:bungeeGnosisBridge": "yarn test --testPathPattern=BungeeGnosisBridge",
     "codegen": "npm run swagger:codegen && npm run typechain:codegen",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
