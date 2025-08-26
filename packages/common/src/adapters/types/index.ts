@@ -55,7 +55,7 @@ export interface Log {
   removed: boolean
   address: string
   data: string
-  topics: Array<string>
+  topics: readonly string[]
   transactionHash: string
   logIndex: number
 }

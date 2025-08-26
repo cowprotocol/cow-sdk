@@ -235,5 +235,5 @@ export abstract class AdapterUtils {
   /**
    * Verifies if a value is an Interface instance
    */
-  abstract isInterface(value: any): boolean
+  abstract isInterface(value: unknown): boolean
 }
