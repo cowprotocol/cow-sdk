@@ -381,14 +381,14 @@ import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForH
 
 export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult> {
   async getGasLimitEstimationForHook(
-    request: Omit<QuoteBridgeRequest, 'amount'> & { extraGas?: boolean },
+    request: Omit<QuoteBridgeRequest, 'amount'> & { extraGas?: number },
   ): Promise<number> {
     // Use utility function or implement custom gas estimation
     return getGasLimitEstimationForHook(
       this.cowShedSdk,
       request as QuoteBridgeRequest, // cast needed due to omit
       this.getRpcProvider(request.sellTokenChainId),
-      request.extraGas, // this flag adds an extra 100k gas to the hook.
+      request.extraGas, // to add extra gas to the hook.
     )
   }
 
