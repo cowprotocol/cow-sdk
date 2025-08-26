@@ -38,7 +38,7 @@ export abstract class AbstractProviderAdapter<T extends AdapterTypes = AdapterTy
     signerOrPrivateKey: Signer | PrivateKey | AbstractSigner<T['Provider']>,
   ): AbstractSigner<T['Provider']>
   // reading functionality
-  abstract getStorageAt(address: T['Address'], slot: unknown): Promise<unknown>
+  abstract getStorageAt(address: T['Address'], slot: string | number | bigint): Promise<unknown>
 
   // blockcahin interaction
   abstract call(txParams: TransactionParams, provider?: T['Provider']): Promise<string>

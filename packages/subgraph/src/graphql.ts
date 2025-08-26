@@ -14,11 +14,11 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean }
   Int: { input: number; output: number }
   Float: { input: number; output: number }
-  BigDecimal: { input: any; output: any }
-  BigInt: { input: any; output: any }
-  Bytes: { input: any; output: any }
-  Int8: { input: any; output: any }
-  Timestamp: { input: any; output: any }
+  BigDecimal: { input: string | number; output: string | number }
+  BigInt: { input: string | number; output: string | number }
+  Bytes: { input: string; output: string }
+  Int8: { input: number; output: number }
+  Timestamp: { input: number; output: number }
 }
 
 export enum Aggregation_Interval {
