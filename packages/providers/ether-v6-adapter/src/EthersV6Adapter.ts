@@ -160,7 +160,7 @@ export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
       address: string
       abi: Abi
       functionName: string
-      args?: unknown[]
+      args?: (string | number | boolean | bigint)[]
     },
     provider?: Provider,
   ): Promise<unknown> {
