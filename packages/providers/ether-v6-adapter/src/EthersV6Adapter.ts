@@ -108,7 +108,11 @@ export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
       return new EthersV6SignerAdapter(ethersV6Signer.connect(this._provider))
     }
 
-    return new EthersV6SignerAdapter(signerOrPrivateKey.connect(this._provider))
+    // Important: do not call .connect() when signer already has a provider
+    // otherwise it will throw "cannot alter JSON-RPC Signer connection"
+    return new EthersV6SignerAdapter(
+      signerOrPrivateKey.provider ? signerOrPrivateKey : signerOrPrivateKey.connect(this._provider),
+    )
   }
 
   async getChainId(): Promise<number> {

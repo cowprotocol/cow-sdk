@@ -1,0 +1,18 @@
+:root {
+  color: rgba(62, 62, 62, 0.87);
+  background-color: #f3f3f3;
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+.box {
+  margin: 10px;
+}
+
+.box input {
+  margin: 0 5px;
+}
+
+.error {
+  background-color: rgba(244, 67, 54, 0.15);
+  padding: 10px;
+}
