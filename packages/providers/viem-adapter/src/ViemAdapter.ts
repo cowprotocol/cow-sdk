@@ -40,7 +40,7 @@ export interface ViemTypes extends AdapterTypes {
   Address: Address
   Bytes: `0x${string}`
   BigIntish: bigint
-  ContractInterface: unknown
+  ContractInterface: Abi
   Provider: PublicClient
   Signer: WalletClient
   TypedDataDomain: TypedDataDomain
@@ -167,7 +167,7 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
       address: string
       abi: Abi
       functionName: string
-      args?: unknown[]
+      args?: (string | number | boolean | bigint)[]
     },
     provider?: PublicClient,
   ): Promise<unknown> {

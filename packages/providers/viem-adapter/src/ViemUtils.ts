@@ -121,7 +121,7 @@ export class ViemUtils implements AdapterUtils {
     return this.bytesToHex(value)
   }
 
-  solidityPack(types: string[], values: unknown[]): string {
+  solidityPack(types: string[], values: (string | number | boolean | bigint)[]): string {
     return encodePacked(types, values)
   }
 
@@ -143,7 +143,10 @@ export class ViemUtils implements AdapterUtils {
     return getAddress(address)
   }
 
-  encodeAbi(types: { type: string; name: string }[] | string[], values: unknown[]): `0x${string}` {
+  encodeAbi(
+    types: { type: string; name: string }[] | string[],
+    values: (string | number | boolean | bigint)[],
+  ): `0x${string}` {
     if (typeof types[0] === 'string') {
       return encodeAbiParameters(
         (types as string[]).map((type, i) => ({ type, name: `arg${i}` })) as AbiParameter[],
@@ -153,7 +156,7 @@ export class ViemUtils implements AdapterUtils {
     return encodeAbiParameters(types as AbiParameter[], values)
   }
 
-  decodeAbi(types: unknown[], data: `0x${string}`): unknown[] {
+  decodeAbi(types: (string | { type: string; name: string })[], data: `0x${string}`): unknown[] {
     if (typeof types[0] === 'string')
       return decodeAbiParameters(types.map((type, i) => ({ type, name: `arg${i}` })) as AbiParameter[], data)
     return decodeAbiParameters(types as AbiParameter[], data)
@@ -241,7 +244,7 @@ export class ViemUtils implements AdapterUtils {
   encodeFunction(
     abi: Array<{ name: string; inputs: Array<{ type: string }>; type: string }>,
     functionName: string,
-    args: unknown[],
+    args: (string | number | boolean | bigint)[],
   ): string {
     const functionAbi = abi.find((item) => item.type === 'function' && item.name === functionName)
     if (!functionAbi) {
@@ -292,7 +295,10 @@ export class ViemUtils implements AdapterUtils {
     return Number(value)
   }
 
-  solidityKeccak256(types: unknown[], values: unknown[]) {
+  solidityKeccak256(
+    types: (string | { type: string; name: string })[],
+    values: (string | number | boolean | bigint)[],
+  ): string {
     const encoded = encodePacked(types, values)
 
     // Hash the encoded data
@@ -344,7 +350,12 @@ export class ViemUtils implements AdapterUtils {
     authorizerAbi: Abi,
     vaultAddress: string,
     vaultRelayerAddress: string,
-    contractCall: (address: string, abi: Abi, functionName: string, args: unknown[]) => Promise<void>,
+    contractCall: (
+      address: string,
+      abi: Abi,
+      functionName: string,
+      args: (string | number | boolean | bigint)[],
+    ) => Promise<void>,
   ): Promise<void> {
     /**
      * Balancer Vault partial ABI interface.
@@ -389,7 +400,7 @@ export class ViemUtils implements AdapterUtils {
     readerAbi: Abi,
     client: PublicClient,
     method: string,
-    parameters: unknown[],
+    parameters: (string | number | boolean | bigint)[],
   ) {
     // Encode the function call
     const encodedCall = encodeFunctionData({

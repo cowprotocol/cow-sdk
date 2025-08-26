@@ -108,7 +108,7 @@ export class ViemInterfaceWrapper implements GenericContractInterface {
   /**
    * Encode function data using viem
    */
-  encodeFunctionData(name: string, args: unknown[]): string {
+  encodeFunctionData(name: string, args: (string | number | boolean | bigint)[]): string {
     const fragment = this.parsedAbi.find(
       (item) => item.type === 'function' && (item as any).name === name,
     ) as AbiFunction
@@ -159,7 +159,7 @@ export class ViemInterfaceWrapper implements GenericContractInterface {
     return this._fragments
   }
 
-  decodeFunctionData(functionName: string, data: string): unknown[] {
+  decodeFunctionData(functionName: string, data: string): (string | number | boolean | bigint)[] {
     const functionAbi = this.abi.find((item: any) => item.type === 'function' && item.name === functionName)
     if (!functionAbi) throw new CowError(`Function ${functionName} not found in ABI`)
     const inputTypes = functionAbi.inputs.map((input: any) => ({ type: input.type, name: input.name }))
