@@ -70,6 +70,9 @@ export class TradingSdk {
                 quoteParameters: quoteResults.result.tradeParameters,
                 sellToken: params.sellToken,
               }),
+              // It's important to get a fresh instance of the signer
+              // Because quote might be called with another signer
+              signer: getGlobalAdapter().signer,
             },
           },
           advancedSettings,
