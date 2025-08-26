@@ -145,7 +145,7 @@ export class EthersV5Adapter extends AbstractProviderAdapter<EthersV5Types> {
       address: string
       abi: Abi
       functionName: string
-      args?: unknown[]
+      args?: (string | number | boolean | bigint)[]
     },
     provider?: RpcProvider,
   ): Promise<unknown> {
