@@ -1,6 +1,6 @@
-import { latest } from './generatedTypes'
+import { cowAppDataLatestScheme } from './generatedTypes'
 
-export type AppDataParams = Partial<Omit<latest.AppDataRootSchema, 'version'>>
+export type AppDataParams = Partial<Omit<cowAppDataLatestScheme.AppDataRootSchema, 'version'>>
 
 export type AppDataInfo = {
   /**

@@ -1,4 +1,8 @@
-import type { AppDataParams, latest, LatestAppDataDocVersion } from '@cowprotocol/sdk-app-data'
+import type {
+  AppDataParams,
+  cowAppDataLatestScheme as latest,
+  LatestAppDataDocVersion,
+} from '@cowprotocol/sdk-app-data'
 import {
   AppData,
   AppDataHash,

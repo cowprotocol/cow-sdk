@@ -10,7 +10,7 @@ import {
   SigningScheme,
 } from '@cowprotocol/sdk-order-book'
 import { EvmCall } from '@cowprotocol/sdk-config'
-import { latest as latestAppData } from '@cowprotocol/sdk-app-data'
+import { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
 import { TradingAppDataInfo as AppDataInfo, OrderTypedData, TradeParameters } from '@cowprotocol/sdk-trading'
 import { UnsignedOrder } from '@cowprotocol/sdk-order-signing'
 import { AbstractProviderAdapter } from '@cowprotocol/sdk-common'

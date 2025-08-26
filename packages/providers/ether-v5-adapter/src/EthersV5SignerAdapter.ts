@@ -15,6 +15,10 @@ export class EthersV5SignerAdapter extends AbstractSigner<RpcProvider> {
   }
 
   connect(provider: RpcProvider) {
+    // Important: do not call .connect() when signer already has a provider
+    // otherwise it will throw "cannot alter JSON-RPC Signer connection"
+    if (this._signer.provider) return
+
     this._signer.connect(provider)
   }
 

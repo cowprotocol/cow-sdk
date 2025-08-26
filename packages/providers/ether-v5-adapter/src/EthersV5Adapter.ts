@@ -3,10 +3,10 @@ import type { TypedDataDomain, TypedDataField, TypedDataSigner } from '@etherspr
 import {
   AbstractProviderAdapter,
   AdapterTypes,
-  TransactionParams,
-  PrivateKey,
   CowError,
   GenericContract,
+  PrivateKey,
+  TransactionParams,
   TransactionReceipt,
 } from '@cowprotocol/sdk-common'
 import { EthersV5Utils } from './EthersV5Utils'
@@ -100,7 +100,12 @@ export class EthersV5Adapter extends AbstractProviderAdapter<EthersV5Types> {
       return new EthersV5SignerAdapter(wallet.connect(this._provider))
     }
 
-    return new EthersV5SignerAdapter(signerOrPrivateKey.connect(this._provider) as ethers.Signer & TypedDataSigner)
+    return new EthersV5SignerAdapter(
+      // Important: do not call .connect() when signer already has a provider
+      // otherwise it will throw "cannot alter JSON-RPC Signer connection"
+      (signerOrPrivateKey.provider ? signerOrPrivateKey : signerOrPrivateKey.connect(this._provider)) as ethers.Signer &
+        TypedDataSigner,
+    )
   }
 
   async getChainId(): Promise<number> {
