@@ -94,7 +94,7 @@ export abstract class AdapterUtils {
   /**
    * Converts a value to a BigIntish
    */
-  abstract toBigIntish(value: string | number | BigIntish): BigIntish
+  abstract toBigIntish(value: BigIntish): BigIntish
 
   /**
    * Creates a new BigIntish from a number or string

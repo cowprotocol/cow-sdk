@@ -1,4 +1,9 @@
-import { AdapterUtils, ContractValue, CowError } from '@cowprotocol/sdk-common'
+import {
+  AdapterUtils,
+  ContractValue,
+  CowError,
+  TypedDataDomain as TypedDataDomainCommon,
+} from '@cowprotocol/sdk-common'
 import {
   encodeDeployData,
   Abi,
@@ -125,14 +130,14 @@ export class ViemUtils implements AdapterUtils {
     return encodePacked(types, values)
   }
 
-  hashTypedData(domain: TypedDataDomain, types: Record<string, unknown>, data: Record<string, unknown>): string {
+  hashTypedData(domain: TypedDataDomainCommon, types: Record<string, unknown>, data: Record<string, unknown>): string {
     const primaryType = Object.keys(types)[0]
     if (!primaryType) {
       throw new Error('No primary type found in types')
     }
-
+    const domainTypedDataDomain = domain as TypedDataDomain
     return hashTypedData({
-      domain,
+      domain: domainTypedDataDomain,
       types: types as Record<string, unknown>,
       primaryType,
       message: data,
@@ -170,10 +175,6 @@ export class ViemUtils implements AdapterUtils {
       return BigInt(value)
     }
     return hexToBigInt(value)
-  }
-
-  newBigintish(value: number | string): bigint {
-    return BigInt(value)
   }
 
   hexDataSlice(data: `0x${string}`, offset: number, endOffset?: number): `0x${string}` {
@@ -219,7 +220,7 @@ export class ViemUtils implements AdapterUtils {
   }
 
   async verifyTypedData(
-    domain: TypedDataDomain,
+    domain: TypedDataDomainCommon,
     types: Record<string, Array<{ name: string; type: string }>>,
     value: Record<string, unknown>,
     signature: `0x${string}`,
@@ -228,9 +229,9 @@ export class ViemUtils implements AdapterUtils {
     if (!primaryType) {
       throw new Error('No primary type found in types')
     }
-
+    const domainTypedDataDomain = domain as TypedDataDomain
     return recoverTypedDataAddress({
-      domain,
+      domain: domainTypedDataDomain,
       types,
       primaryType,
       message: value,
@@ -303,18 +304,19 @@ export class ViemUtils implements AdapterUtils {
     return new ViemInterfaceWrapper(abi)
   }
 
-  hashDomain(domain: TypedDataDomain): string {
+  hashDomain(domain: TypedDataDomainCommon): string {
+    const domainTypedDataDomain = domain as TypedDataDomain
     // 1. Define the EIP712Domain type hash
     const EIP712_DOMAIN_TYPEHASH = keccak256(
       toHex('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'),
     )
 
     // 2. Hash individual domain fields
-    const nameHash = domain.name
-      ? keccak256(toHex(domain.name))
+    const nameHash = domainTypedDataDomain.name
+      ? keccak256(toHex(domainTypedDataDomain.name))
       : '0x0000000000000000000000000000000000000000000000000000000000000000'
-    const versionHash = domain.version
-      ? keccak256(toHex(domain.version))
+    const versionHash = domainTypedDataDomain.version
+      ? keccak256(toHex(domainTypedDataDomain.version))
       : '0x0000000000000000000000000000000000000000000000000000000000000000'
 
     // 3. Encode the domain struct according to EIP-712
@@ -330,8 +332,8 @@ export class ViemUtils implements AdapterUtils {
         EIP712_DOMAIN_TYPEHASH,
         nameHash,
         versionHash,
-        BigInt(domain.chainId || 0),
-        (domain.verifyingContract as `0x${string}`) || '0x0000000000000000000000000000000000000000',
+        BigInt(domainTypedDataDomain.chainId || 0),
+        (domainTypedDataDomain.verifyingContract as `0x${string}`) || '0x0000000000000000000000000000000000000000',
       ],
     )
 

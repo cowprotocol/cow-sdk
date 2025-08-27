@@ -18,6 +18,7 @@ import {
   CowError,
   GenericContract,
   TransactionReceipt,
+  AdapterTypes,
 } from '@cowprotocol/sdk-common'
 import { EthersV6Utils } from './EthersV6Utils'
 import {
@@ -28,13 +29,20 @@ import {
 } from './EthersV6SignerAdapter'
 
 type Abi = ConstructorParameters<typeof Interface>[0]
+export interface EthersV6Types extends AdapterTypes {
+  Abi: Abi
+  Bytes: BytesLike
+  ContractInterface: Interface
+  Provider: Provider
+  Signer: Signer
+}
 
 export interface EthersV6AdapterOptions {
   provider: Provider | string // RPC URL or Provider instance
   signer?: Signer | PrivateKey // Optional signer or private key
 }
 
-export class EthersV6Adapter extends AbstractProviderAdapter {
+export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
   private _provider: Provider
   private _signerAdapter?: EthersV6SignerAdapter
 

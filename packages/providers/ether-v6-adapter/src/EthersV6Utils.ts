@@ -143,10 +143,6 @@ export class EthersV6Utils implements AdapterUtils {
     return toBigInt(value)
   }
 
-  newBigintish(value: number | string): BigNumberish {
-    return toBigInt(value)
-  }
-
   hexDataSlice(data: BytesLike, offset: number, endOffset?: number): BytesLike {
     return dataSlice(data, offset, endOffset)
   }

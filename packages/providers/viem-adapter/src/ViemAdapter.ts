@@ -1,7 +1,6 @@
 import {
   PublicClient,
   Account,
-  TypedDataDomain,
   WalletClient,
   createWalletClient,
   Address,
@@ -38,14 +37,10 @@ import { Hash } from 'viem/types/misc'
 
 export interface ViemTypes extends AdapterTypes {
   Abi: Abi
-  Address: Address
   Bytes: `0x${string}`
-  BigIntish: bigint
   ContractInterface: Abi
   Provider: PublicClient
   Signer: WalletClient
-  TypedDataDomain: TypedDataDomain
-  TypedDataTypes: Record<string, unknown>
 }
 
 export interface ViemAdapterOptions {

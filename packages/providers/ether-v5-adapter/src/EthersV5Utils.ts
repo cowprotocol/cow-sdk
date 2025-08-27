@@ -120,10 +120,6 @@ export class EthersV5Utils implements AdapterUtils {
     return ethers.BigNumber.from(value).toBigInt()
   }
 
-  newBigintish(value: number | string): BigIntish {
-    return ethers.BigNumber.from(value).toBigInt()
-  }
-
   hexDataSlice(data: BytesLike, offset: number, endOffset?: number): BytesLike {
     return ethers.utils.hexDataSlice(data, offset, endOffset)
   }
