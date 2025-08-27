@@ -209,8 +209,8 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    * 2. The final amount could affect hook gas costs
    *
    * By estimating gas costs independently, we can resolve this dependency cycle.
-   * For some providers, the `extraGas` flag adds a 150,000 gas‐unit buffer to the hook
-   * and `extraGasProxyCreation` adds 360,000 gas‐unit buffer for the proxy creation
+   * For some providers, the `extraGas` parameter adds additional gas‐unit buffer to the hook
+   * and `extraGasProxyCreation` parameter adds additional gas‐unit buffer for the proxy creation
    * (see DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION and DEFAULT_EXTRA_GAS_PROXY_CREATION).
    */
   getGasLimitEstimationForHook(

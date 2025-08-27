@@ -385,10 +385,11 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
   ): Promise<number> {
     // Use utility function or implement custom gas estimation
     return getGasLimitEstimationForHook(
-      this.cowShedSdk,
-      request as QuoteBridgeRequest, // cast needed due to omit
-      this.getRpcProvider(request.sellTokenChainId),
-      request.extraGas, // to add extra gas to the hook.
+      cowshed: this.cowShedSdk,
+      request: request as QuoteBridgeRequest, // cast needed due to omit
+      provider: this.getRpcProvider(request.sellTokenChainId),
+      extraGas: request.extraGas, // to add extra gas to the hook
+      extraGasProxyCreation: request.extraGasProxyCreation // to add extra gas to the hook and deploy proxy account
     )
   }
 

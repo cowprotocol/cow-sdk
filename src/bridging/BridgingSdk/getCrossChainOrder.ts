@@ -20,12 +20,8 @@ interface GetCrossChainOrderParams {
 export async function getCrossChainOrder(params: GetCrossChainOrderParams): Promise<CrossChainOrder | null> {
   const { chainId, orderId, orderBookApi, providers, env } = params
 
-  console.log('SDK getCrossChainOrder params ==>', params)
-
   const chainContext = { chainId, env }
   const order = await orderBookApi.getOrder(orderId, chainContext)
-
-  console.log('SDKgetCrossChainOrder order ==>', order)
 
   // Find the provider by name (note that I could just have use this.provider, but just wanted to leave it ready in case we implement multiple providers)
   const provider = order.fullAppData && findBridgeProviderFromHook(order.fullAppData, providers)
@@ -40,8 +36,6 @@ export async function getCrossChainOrder(params: GetCrossChainOrderParams): Prom
 
   // Check if there are any trades for this order
   const trades = await orderBookApi.getTrades({ orderUid: order.uid }, chainContext)
-
-  console.log('SDK getCrossChainOrder trades ==>', trades)
 
   if (trades.length > 0) {
     // Bridging already initiated
@@ -58,11 +52,7 @@ export async function getCrossChainOrder(params: GetCrossChainOrderParams): Prom
     const { params: bridgingParams, status: statusResult } =
       (await provider.getBridgingParams(chainId, orderId, tradeTxHash)) || {}
 
-    console.log('SDK getCrossChainOrder bridgingParams ==>', bridgingParams)
-    console.log('SDK getCrossChainOrder statusResult ==>', statusResult)
-
     if (!bridgingParams || !statusResult) {
-      console.log('SDK getCrossChainOrder bridgingParams || !statusResult ==>', bridgingParams || !statusResult)
       throw new BridgeOrderParsingError(`Bridging params cannot be derived from transaction: ${tradeTxHash}`)
     }
 
@@ -80,15 +70,13 @@ export async function getCrossChainOrder(params: GetCrossChainOrderParams): Prom
     try {
       const explorerUrl = provider.getExplorerUrl(bridgingParams.bridgingId)
 
-      console.log('SDK getCrossChainOrder explorerUrl ==>', explorerUrl)
-
       return {
         ...state,
         statusResult,
         explorerUrl,
       }
     } catch (e) {
-      console.error('SDK getCrossChainOrder Cannot get bridging status', e)
+      console.error('Cannot get bridging status', e)
       return state
     }
   }
