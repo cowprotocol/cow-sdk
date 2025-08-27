@@ -4,8 +4,6 @@ import {
   Wallet,
   BytesLike,
   ZeroAddress,
-  TypedDataDomain,
-  TypedDataField,
   BigNumberish,
   Interface,
   Contract,
@@ -13,7 +11,6 @@ import {
 } from 'ethers'
 import {
   AbstractProviderAdapter,
-  AdapterTypes,
   Block,
   ContractValue,
   TransactionParams,
@@ -32,24 +29,12 @@ import {
 
 type Abi = ConstructorParameters<typeof Interface>[0]
 
-export interface EthersV6Types extends AdapterTypes {
-  Abi: Abi
-  Address: string
-  Bytes: BytesLike
-  BigIntish: BigNumberish
-  ContractInterface: Interface
-  Provider: Provider
-  Signer: Signer
-  TypedDataDomain: TypedDataDomain
-  TypedDataTypes: Record<string, TypedDataField[]>
-}
-
 export interface EthersV6AdapterOptions {
   provider: Provider | string // RPC URL or Provider instance
   signer?: Signer | PrivateKey // Optional signer or private key
 }
 
-export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
+export class EthersV6Adapter extends AbstractProviderAdapter {
   private _provider: Provider
   private _signerAdapter?: EthersV6SignerAdapter
 

@@ -1,5 +1,5 @@
-import { AdapterUtils, Address, ContractValue, GenericContractInterface } from '@cowprotocol/sdk-common'
-import { BigNumberish, BytesLike, ethers, TypedDataDomain, TypedDataField } from 'ethers'
+import { AdapterUtils, Address, BigIntish, ContractValue, GenericContractInterface } from '@cowprotocol/sdk-common'
+import { BytesLike, ethers, TypedDataDomain, TypedDataField } from 'ethers'
 import { ParamType } from 'ethers/lib/utils'
 
 type Abi = ConstructorParameters<typeof ethers.utils.Interface>[0]
@@ -116,11 +116,11 @@ export class EthersV5Utils implements AdapterUtils {
     return ethers.utils.id(text)
   }
 
-  toBigIntish(value: BytesLike | string | number): BigNumberish {
+  toBigIntish(value: unknown): BigIntish {
     return ethers.BigNumber.from(value).toBigInt()
   }
 
-  newBigintish(value: number | string): BigNumberish {
+  newBigintish(value: number | string): BigIntish {
     return ethers.BigNumber.from(value).toBigInt()
   }
 
@@ -187,7 +187,7 @@ export class EthersV5Utils implements AdapterUtils {
     return args
   }
 
-  toNumber(value: BigNumberish): number {
+  toNumber(value: BigIntish): number {
     return ethers.BigNumber.from(value).toNumber()
   }
 

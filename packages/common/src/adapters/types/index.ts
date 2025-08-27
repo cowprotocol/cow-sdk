@@ -8,7 +8,7 @@ export type Abi = unknown
 
 export type Address = string
 
-export type BigIntish = unknown
+export type BigIntish = string | number | bigint
 
 export type Bytes = unknown
 
