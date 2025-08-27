@@ -1,6 +1,6 @@
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 
-import { BridgeCallDetails, BridgeQuoteResult, QuoteBridgeRequest } from '../../types'
+import { BridgeCallDetails, BridgeQuoteResult, BuyTokensParams, QuoteBridgeRequest } from '../../types'
 import { ContractsOrderKind as OrderKind } from '@cowprotocol/sdk-contracts-ts'
 import {
   BuyTokenDestination,
@@ -232,4 +232,9 @@ export const orderTypedData: OrderTypedData = {
   primaryType: 'Order',
   types: {},
   message: orderToSign,
+}
+
+export const buyTokensParams: BuyTokensParams = {
+  sellChainId: SupportedChainId.MAINNET,
+  buyChainId: SupportedChainId.GNOSIS_CHAIN,
 }

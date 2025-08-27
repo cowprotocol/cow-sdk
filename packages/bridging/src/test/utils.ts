@@ -1,4 +1,4 @@
-import { jsonWithBigintReplacer } from '../utils'
+import { jsonWithBigintReplacer } from '@cowprotocol/sdk-common'
 
 function serialize(obj: unknown): string {
   return JSON.stringify(obj, jsonWithBigintReplacer, 2)

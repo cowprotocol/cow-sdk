@@ -13,6 +13,7 @@ import { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { createAdapters } from '../../../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION, DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION } from '../../const'
 
 // Mock BungeeApi
 jest.mock('./BungeeApi')
@@ -43,6 +44,8 @@ adapterNames.forEach((adapterName) => {
     beforeEach(() => {
       const adapter = adapters[adapterName]
 
+      adapter.getCode = jest.fn().mockResolvedValue('0x1234567890')
+
       setGlobalAdapter(adapter)
 
       const options = {
@@ -65,8 +68,10 @@ adapterNames.forEach((adapterName) => {
     })
 
     describe('getBuyTokens', () => {
+      let mockBungeeApi: BungeeApi
+
       beforeEach(() => {
-        const mockBungeeApi = new BungeeApi()
+        mockBungeeApi = new BungeeApi()
         // Mock the getBuyTokens method
         jest.spyOn(mockBungeeApi, 'getBuyTokens').mockImplementation(async (params) => {
           if (params.buyChainId === (12345 as TargetChainId)) {
@@ -89,16 +94,23 @@ adapterNames.forEach((adapterName) => {
       })
 
       it('should return empty array for unsupported chain', async () => {
-        const tokens = await provider.getBuyTokens({ buyChainId: 12345 as TargetChainId })
+        const result = await provider.getBuyTokens({ buyChainId: 12345 as TargetChainId })
 
-        expect(tokens).toEqual([])
+        expect(result.tokens).toEqual([])
+        expect(result.isRouteAvailable).toEqual(false)
+
+        expect(mockBungeeApi.getBuyTokens).toHaveBeenCalledWith({ buyChainId: 12345 as TargetChainId })
+        expect(mockBungeeApi.getBuyTokens).toHaveBeenCalledTimes(1)
       })
 
       it('should return tokens for supported chain', async () => {
-        const tokens = await provider.getBuyTokens({ buyChainId: SupportedChainId.POLYGON })
+        const result = await provider.getBuyTokens({
+          sellChainId: SupportedChainId.MAINNET,
+          buyChainId: SupportedChainId.POLYGON,
+        })
 
-        expect(tokens.length).toBeGreaterThan(0)
-        expect(tokens).toEqual(
+        expect(result.tokens.length).toBeGreaterThan(0)
+        expect(result.tokens).toEqual(
           expect.arrayContaining([
             expect.objectContaining({
               chainId: SupportedChainId.POLYGON,
@@ -107,6 +119,12 @@ adapterNames.forEach((adapterName) => {
             }),
           ]),
         )
+        expect(result.isRouteAvailable).toEqual(true)
+        expect(mockBungeeApi.getBuyTokens).toHaveBeenCalledWith({
+          buyChainId: SupportedChainId.POLYGON,
+          sellChainId: SupportedChainId.MAINNET,
+        })
+        expect(mockBungeeApi.getBuyTokens).toHaveBeenCalledTimes(1)
       })
     })
 
@@ -380,6 +398,50 @@ adapterNames.forEach((adapterName) => {
     describe('getRefundBridgingTx', () => {
       it('should throw error as not implemented', async () => {
         await expect(provider.getRefundBridgingTx('123')).rejects.toThrowError('Not implemented')
+      })
+    })
+
+    describe('getGasLimitEstimationForHook', () => {
+      it('should return default gas limit estimation for non-Mainnet to Gnosis', async () => {
+        const request: QuoteBridgeRequest = {
+          kind: OrderKind.SELL,
+          sellTokenAddress: '0x123',
+          sellTokenChainId: SupportedChainId.MAINNET,
+          buyTokenChainId: SupportedChainId.POLYGON,
+          amount: 1000000000000000000n,
+          receiver: '0x789',
+          account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
+          sellTokenDecimals: 18,
+          buyTokenAddress: '0x456',
+          buyTokenDecimals: 6,
+          appCode: '0x123',
+          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+        }
+
+        const gasLimit = await provider.getGasLimitEstimationForHook(request)
+
+        expect(gasLimit).toEqual(DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION)
+      })
+
+      it('should return default gas limit estimation for Mainnet to Gnosis', async () => {
+        const request: QuoteBridgeRequest = {
+          kind: OrderKind.SELL,
+          sellTokenAddress: '0x123',
+          sellTokenChainId: SupportedChainId.MAINNET,
+          buyTokenChainId: SupportedChainId.GNOSIS_CHAIN,
+          amount: 1000000000000000000n,
+          receiver: '0x789',
+          account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
+          sellTokenDecimals: 18,
+          buyTokenAddress: '0x456',
+          buyTokenDecimals: 6,
+          appCode: '0x123',
+          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+        }
+
+        const gasLimit = await provider.getGasLimitEstimationForHook(request)
+
+        expect(gasLimit).toEqual(DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION + DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION)
       })
     })
   })

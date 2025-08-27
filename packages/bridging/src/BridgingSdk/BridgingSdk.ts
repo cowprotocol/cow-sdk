@@ -5,6 +5,7 @@ import {
   BuyTokensParams,
   CrossChainOrder,
   CrossChainQuoteAndPost,
+  GetProviderBuyTokens,
   QuoteBridgeRequest,
 } from '../types'
 import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
@@ -14,7 +15,7 @@ import { findBridgeProviderFromHook } from './findBridgeProviderFromHook'
 import { BridgeProviderError } from '../errors'
 import { SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
-import { ALL_SUPPORTED_CHAINS, ChainInfo, CowEnv, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { ALL_SUPPORTED_CHAINS, ChainInfo, CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
 import { enableLogging } from '@cowprotocol/sdk-common'
 
 export interface BridgingSdkOptions {
@@ -125,7 +126,7 @@ export class BridgingSdk {
 
    * @param params
    */
-  async getBuyTokens(params: BuyTokensParams): Promise<TokenInfo[]> {
+  async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
     return this.provider.getBuyTokens(params)
   }
 

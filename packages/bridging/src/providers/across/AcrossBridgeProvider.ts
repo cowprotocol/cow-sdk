@@ -9,6 +9,7 @@ import {
   BridgeStatusResult,
   BridgingDepositParams,
   BuyTokensParams,
+  GetProviderBuyTokens,
   QuoteBridgeRequest,
 } from '../../types'
 
@@ -83,8 +84,14 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     return ACROSS_SUPPORTED_NETWORKS
   }
 
-  async getBuyTokens(params: BuyTokensParams): Promise<TokenInfo[]> {
-    return Object.values((await this.getSupportedTokensState())[params.buyChainId] || {})
+  async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
+    const tokens = Object.values((await this.getSupportedTokensState())[params.buyChainId] || {})
+    const isRouteAvailable = tokens.length > 0
+
+    return {
+      tokens,
+      isRouteAvailable,
+    }
   }
 
   async getIntermediateTokens(request: QuoteBridgeRequest): Promise<TokenInfo[]> {
