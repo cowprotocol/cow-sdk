@@ -23,16 +23,6 @@ package_exists () {
   npm view --json "$1" &>/dev/null;
 }
 
-version_exists () {
-  local package_name="$1"
-  local version="$2"
-  if package_exists "$package_name"; then
-    npm view --json "$package_name" | jq -e ".versions | has(\"$version\")" >/dev/null 2>&1
-  else
-    return 1
-  fi
-}
-
 fail_if_unset NODE_AUTH_TOKEN
 
 git_username="GitHub Actions"
@@ -100,6 +90,46 @@ packages_in_order=(
   "sdk"                    # Umbrella - last
 )
 
+# Function to detect which packages have new versions by comparing package.json versions
+# with the expected versions in .release-please-manifest.json
+# This allows us to publish only packages that have been updated by Release-Please
+detect_changed_packages() {
+  local changed_packages=()
+
+  # Read the current manifest to get expected versions from Release-Please
+  if [ ! -f ".release-please-manifest.json" ]; then
+    echo -e "${RED}❌ .release-please-manifest.json not found${NC}"
+    exit 1
+  fi
+
+  echo -e "${BLUE}🔍 Detecting packages with new versions...${NC}"
+
+  # Iterate through all packages in dependency order
+  for package in "${packages_in_order[@]}"; do
+    package_path=$(get_package_path "$package")
+
+    if [ -d "$package_path" ] && [ -f "$package_path/package.json" ]; then
+      # Get current version from package.json (what's actually in the file)
+      current_version=$(jq --raw-output .version "$package_path/package.json")
+
+      # Get expected version from manifest (what Release-Please updated it to)
+      manifest_key="packages/$package"
+      expected_version=$(jq --raw-output ".[\"$manifest_key\"]" .release-please-manifest.json)
+
+      # Compare versions to detect changes
+      if [ "$current_version" != "$expected_version" ]; then
+        echo -e "${GREEN}✅ Package $package has new version: $expected_version (current: $current_version)${NC}"
+        changed_packages+=("$package")
+      else
+        echo -e "${BLUE}📦 Package $package unchanged: $current_version${NC}"
+      fi
+    fi
+  done
+
+  # Return space-separated list of changed packages
+  echo "${changed_packages[*]}"
+}
+
 # Check if we are in the correct directory
 if [ ! -d "packages/sdk" ]; then
   echo -e "${RED}❌ This script must be run from the cow-sdk project root${NC}"
@@ -122,27 +152,28 @@ fi
 
 echo -e "${BLUE}📦 Publishing cow-sdk monorepo packages version: ${version}${NC}"
 
-# Verify git tag exists
-version_tag="v$version"
-if ! git fetch --end-of-options origin "refs/tags/$version_tag" 2>/dev/null; then
-  echo -e "${RED}❌ Tag $version_tag is not created. Create the Release first.${NC}"
-  exit 1
-fi
-
-latest_tag="$(git describe --tags --abbrev=0)"
-if ! [ "$version_tag" = "$latest_tag" ]; then
-  echo -e "${RED}❌ Latest tag $latest_tag version doesn't match package.json version $version${NC}"
-  exit 1
-fi
-
 # Save root directory
 ROOT_DIR="$(pwd)"
+
+# Detect which packages have new versions by comparing with Release-Please manifest
+# This ensures we only publish packages that have been updated by Release-Please
+changed_packages=$(detect_changed_packages)
+
+# Determine which packages to publish based on detected changes
+if [ -z "$changed_packages" ]; then
+  echo -e "${YELLOW}⚠️  No packages with new versions detected. Publishing all packages...${NC}"
+  packages_to_publish=("${packages_in_order[@]}")
+else
+  echo -e "${GREEN}📦 Packages with new versions: $changed_packages${NC}"
+  # Convert space-separated string to array for processing
+  IFS=' ' read -ra packages_to_publish <<< "$changed_packages"
+fi
 
 # Track published packages for umbrella package
 published_packages=()
 
-# Publish each package in order
-for package in "${packages_in_order[@]}"; do
+# Publish each package in order (only changed ones)
+for package in "${packages_to_publish[@]}"; do
   package_path=$(get_package_path "$package")
   display_name=$(get_package_display_name "$package")
 
@@ -171,16 +202,8 @@ for package in "${packages_in_order[@]}"; do
       continue
     fi
 
-    # Check if version already exists
-    if version_exists "$package_name" "$package_version"; then
-      echo -e "${YELLOW}⚠️  Version $package_version of $package_name already published, skipping...${NC}"
-      published_packages+=("$package_name@$package_version")
-      cd "$ROOT_DIR"
-      continue
-    fi
-
     # Publish to npm
-    if [[ "$version_tag" == *"RC"* ]] || [[ "$package_version" == *"RC"* ]] || [[ "$package_version" == *"alpha"* ]] || [[ "$package_version" == *"beta"* ]]; then
+    if [[ "$package_version" == *"RC"* ]] || [[ "$package_version" == *"alpha"* ]] || [[ "$package_version" == *"monorepo"* ]]; then
       echo -e "${BLUE}Publishing as pre-release...${NC}"
       npm publish --access public --tag next
     else
@@ -208,32 +231,26 @@ echo -e "${BLUE}🔄 Updating umbrella package dependencies...${NC}"
 
 cd "$ROOT_DIR/packages/sdk"
 
-# Update workspace dependencies to published versions
-for published_pkg in "${published_packages[@]}"; do
-  package_name=$(echo "$published_pkg" | cut -d'@' -f1)
-  package_version=$(echo "$published_pkg" | cut -d'@' -f2)
+  # Update workspace dependencies to published versions
+  for published_pkg in "${published_packages[@]}"; do
+    package_name=$(echo "$published_pkg" | cut -d'@' -f1)
+    package_version=$(echo "$published_pkg" | cut -d'@' -f2)
 
-  # Update dependency in package.json
-  if jq -e ".dependencies[\"$package_name\"]" package.json >/dev/null 2>&1; then
-    echo -e "${BLUE}Updating $package_name to version $package_version${NC}"
-    jq ".dependencies[\"$package_name\"] = \"^$package_version\"" package.json > package.json.tmp && mv package.json.tmp package.json
-  fi
-done
+    # Update dependency in package.json
+    if jq -e ".dependencies[\"$package_name\"]" package.json >/dev/null 2>&1; then
+      echo -e "${BLUE}Updating $package_name to version $package_version${NC}"
+      jq ".dependencies[\"$package_name\"] = \"^$package_version\"" package.json > package.json.tmp && mv package.json.tmp package.json
+    fi
+  done
 
-# Rebuild the umbrella package with updated dependencies
-echo -e "${BLUE}🔨 Rebuilding umbrella package...${NC}"
-pnpm build
+  # Rebuild the umbrella package with updated dependencies
+  echo -e "${BLUE}🔨 Rebuilding umbrella package...${NC}"
+  pnpm build
 
-# Publish umbrella package
-umbrella_name="$(jq --raw-output .name ./package.json)"
-umbrella_version="$(jq --raw-output .version ./package.json)"
-
-if version_exists "$umbrella_name" "$umbrella_version"; then
-  echo -e "${YELLOW}⚠️  Version $umbrella_version of $umbrella_name already published, skipping...${NC}"
-else
+  # Publish umbrella package
   echo -e "${BLUE}📤 Publishing umbrella package ${umbrella_name}...${NC}"
 
-  if [[ "$version_tag" == *"RC"* ]] || [[ "$umbrella_version" == *"RC"* ]] || [[ "$umbrella_version" == *"alpha"* ]] || [[ "$umbrella_version" == *"beta"* ]]; then
+  if [[ "$umbrella_version" == *"RC"* ]] || [[ "$umbrella_version" == *"alpha"* ]] || [[ "$umbrella_version" == *"beta"* ]] || [[ "$umbrella_version" == *"monorepo"* ]]; then
     echo -e "${BLUE}Publishing as pre-release...${NC}"
     npm publish --access public --tag next
   else
@@ -246,7 +263,6 @@ else
     echo -e "${RED}❌ Failed to publish ${umbrella_name}${NC}"
     exit 1
   fi
-fi
 
 cd "$ROOT_DIR"
 

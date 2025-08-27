@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-app-data",
-  "version": "4.0.0",
+  "version": "4.0.0-beta.0",
   "description": "CoW Protocol AppData schema definitions",
   "exports": {
     ".": {
@@ -19,6 +19,9 @@
     "dist/**",
     "schemas/**"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "clean": "rm -rf dist/* && rm -rf .turbo && rm -rf node_modules && rm -rf schemas/",
     "compile": "tsx src/scripts/compile.ts",
@@ -29,7 +32,9 @@
     "test": "jest",
     "test:coverage": "jest --coverage --json --outputFile=jest.results.json && npx coveralls < ./coverage/lcov.info",
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "publish": "npm publish --access public",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@cow-sdk/typescript-config": "workspace:*",

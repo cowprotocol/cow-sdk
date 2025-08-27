@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-order-book",
-  "version": "0.1.0",
+  "version": "0.1.0-beta.0",
   "description": "CowProtocol Order Book package",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -10,6 +10,9 @@
   "files": [
     "dist/**"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "prebuild": "pnpm swagger:codegen",
@@ -19,7 +22,9 @@
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
     "swagger:codegen": "openapi --input https://raw.githubusercontent.com/cowprotocol/services/v2.291.0/crates/orderbook/openapi.yml --output src/generated --exportServices false --exportCore false",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "publish": "npm publish --access public",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@cow-sdk/typescript-config": "workspace:*",
