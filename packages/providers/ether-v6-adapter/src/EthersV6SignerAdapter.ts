@@ -1,12 +1,20 @@
-import { Log, Signer, TypedDataDomain, TypedDataField, TypedDataEncoder, JsonRpcProvider, toBeHex } from 'ethers'
+import { Signer, TypedDataDomain, TypedDataField, TypedDataEncoder, JsonRpcProvider, toBeHex, Provider } from 'ethers'
 import { AbstractSigner, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
 
-export class EthersV6SignerAdapter extends AbstractSigner {
+export class EthersV6SignerAdapter extends AbstractSigner<Provider> {
   private _signer: Signer
 
   constructor(signer: Signer) {
     super()
     this._signer = signer
+  }
+
+  connect(provider: Provider) {
+    // Important: do not call .connect() when signer already has a provider
+    // otherwise it will throw "cannot alter JSON-RPC Signer connection"
+    if (this._signer.provider) return
+
+    this._signer.connect(provider)
   }
 
   async getAddress(): Promise<string> {
@@ -41,11 +49,16 @@ export class EthersV6SignerAdapter extends AbstractSigner {
         }
         return {
           transactionHash: receipt.hash,
-          blockNumber: receipt.blockNumber,
+          blockNumber: BigInt(receipt.blockNumber),
           blockHash: receipt.blockHash || '',
           status: receipt.status || 0,
           gasUsed: receipt.gasUsed,
-          logs: receipt.logs as Log[],
+          logs: receipt.logs.map((log) => ({
+            ...log,
+            topics: log.topics as string[],
+            logIndex: log.index,
+            blockNumber: BigInt(log.blockNumber),
+          })),
         }
       },
     }

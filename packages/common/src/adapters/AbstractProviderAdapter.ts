@@ -1,5 +1,5 @@
 import { AbstractSigner } from './AbstractSigner'
-import type {
+import {
   Abi,
   AdapterTypes,
   AdapterUtils,
@@ -10,6 +10,7 @@ import type {
   ReadContractParams,
   Signer,
   TransactionParams,
+  TransactionReceipt,
 } from './types'
 
 /**
@@ -22,16 +23,20 @@ export abstract class AbstractProviderAdapter<T extends AdapterTypes = AdapterTy
 
   public ZERO_ADDRESS!: T['Address']
 
-  public abstract TypedDataVersionedSigner: new (signer: any, version: any) => AbstractSigner
-  public abstract TypedDataV3Signer: new (signer: any) => AbstractSigner
-  public abstract IntChainIdTypedDataV4Signer: new (signer: any) => AbstractSigner
+  public abstract TypedDataVersionedSigner: new (signer: any, version: any) => AbstractSigner<T['Provider']>
+  public abstract TypedDataV3Signer: new (signer: any) => AbstractSigner<T['Provider']>
+  public abstract IntChainIdTypedDataV4Signer: new (signer: any) => AbstractSigner<T['Provider']>
 
-  public abstract signer: AbstractSigner
-  abstract signerOrNull(): AbstractSigner | null
+  public abstract signer: AbstractSigner<T['Provider']>
+  abstract signerOrNull(): AbstractSigner<T['Provider']> | null
 
   // Core functionality
   abstract getChainId(): Promise<number>
-  abstract createSigner(signerOrPrivateKey: Signer | PrivateKey | AbstractSigner): AbstractSigner
+  abstract getCode(address: string): Promise<string | undefined>
+  abstract getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt | null>
+  abstract createSigner(
+    signerOrPrivateKey: Signer | PrivateKey | AbstractSigner<T['Provider']>,
+  ): AbstractSigner<T['Provider']>
   // reading functionality
   abstract getStorageAt(address: T['Address'], slot: unknown): Promise<unknown>
 
@@ -40,5 +45,6 @@ export abstract class AbstractProviderAdapter<T extends AdapterTypes = AdapterTy
   abstract readContract(params: ReadContractParams, provider?: T['Provider']): Promise<unknown>
   abstract getBlock(blockTag: string, provider?: T['Provider']): Promise<Block>
   abstract setSigner(signer: Signer | PrivateKey): void
+  abstract setProvider(provider: T['Provider']): T['Provider']
   abstract getContract(address: Address, abi: Abi): GenericContract
 }

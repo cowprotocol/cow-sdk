@@ -15,7 +15,7 @@ import { fetchDocFromCid } from './fetchDocFromCid'
  */
 export async function fetchDocFromAppDataHex(
   appDataHex: string,
-  ipfsUri?: string
+  ipfsUri?: string,
 ): Promise<void | AnyAppDataDocVersion> {
   return _fetchDocFromCidAux(appDataHexToCid, appDataHex, ipfsUri)
 }
@@ -31,7 +31,7 @@ export async function fetchDocFromAppDataHex(
  */
 export async function fetchDocFromAppDataHexLegacy(
   appDataHex: string,
-  ipfsUri?: string
+  ipfsUri?: string,
 ): Promise<void | AnyAppDataDocVersion> {
   return _fetchDocFromCidAux(appDataHexToCidLegacy, appDataHex, ipfsUri)
 }
@@ -39,7 +39,7 @@ export async function fetchDocFromAppDataHexLegacy(
 export async function _fetchDocFromCidAux(
   hexToCid: (appDataHex: string) => Promise<string>,
   appDataHex: string,
-  ipfsUri?: string
+  ipfsUri?: string,
 ): Promise<void | AnyAppDataDocVersion> {
   try {
     const cid = await hexToCid(appDataHex)

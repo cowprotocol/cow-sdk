@@ -1,5 +1,16 @@
-import { CowError, GenericContractInterface } from '@cowprotocol/sdk-common'
-import { Abi, parseAbi, toFunctionSelector, encodeFunctionData, AbiFunction, decodeAbiParameters } from 'viem'
+import { CowError, GenericContractInterface, Log } from '@cowprotocol/sdk-common'
+import {
+  Abi,
+  parseAbi,
+  toFunctionSelector,
+  encodeFunctionData,
+  AbiFunction,
+  decodeAbiParameters,
+  parseEventLogs,
+  Log as ViemLog,
+  toEventSelector,
+  AbiEvent,
+} from 'viem'
 
 function normalizeParam(param: any): any {
   return {
@@ -57,7 +68,6 @@ export class ViemInterfaceWrapper implements GenericContractInterface {
         this._fragments.push(normalized)
       }
     })
-    this.getFunction = this._getFunctionNormalized.bind(this)
   }
 
   private _getFunctionNormalized(name: string): any {
@@ -112,6 +122,22 @@ export class ViemInterfaceWrapper implements GenericContractInterface {
     })
   }
 
+  // TODO: need to be tested
+  parseLog(event: Log): { args: unknown } | null {
+    const parsedLogs = parseEventLogs({ abi: this.parsedAbi, logs: [event] as ViemLog[] })
+
+    return parsedLogs[0] ?? null
+  }
+
+  // TODO: need to be tested
+  getEventTopic(name: string): string | null {
+    const event = this.parsedAbi.find((i) => i.type === 'event' && i.name === name)
+
+    if (!event) return null
+
+    return toEventSelector(event as AbiEvent)
+  }
+
   /**
    * Get all fragments
    */
@@ -135,8 +161,18 @@ export class ViemInterfaceWrapper implements GenericContractInterface {
 
   decodeFunctionData(functionName: string, data: string): unknown[] {
     const functionAbi = this.abi.find((item: any) => item.type === 'function' && item.name === functionName)
-    if (!functionAbi) throw new Error(`Function ${functionName} not found in ABI`)
+    if (!functionAbi) throw new CowError(`Function ${functionName} not found in ABI`)
     const inputTypes = functionAbi.inputs.map((input: any) => ({ type: input.type, name: input.name }))
-    return decodeAbiParameters(inputTypes, data as `0x${string}`)
+    const decoded = decodeAbiParameters(inputTypes, data as `0x${string}`)
+
+    // Convert to array with named properties for consistency
+    const result = Array.from(decoded)
+    functionAbi.inputs.forEach((input: any, index: number) => {
+      if (input.name && result[index] !== undefined) {
+        ;(result as any)[input.name] = result[index]
+      }
+    })
+
+    return result
   }
 }

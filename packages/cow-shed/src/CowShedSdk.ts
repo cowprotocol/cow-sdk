@@ -1,4 +1,4 @@
-import { SupportedChainId, EvmCall } from '@cowprotocol/sdk-config'
+import { EvmCall, SupportedChainId } from '@cowprotocol/sdk-config'
 import { CowShedHooks } from './contracts/CoWShedHooks'
 import {
   ContractsEcdsaSigningScheme as EcdsaSigningScheme,
@@ -7,15 +7,15 @@ import {
 import { ICoWShedCall, ICoWShedOptions } from './types'
 
 import {
+  AbstractProviderAdapter,
+  getGlobalAdapter,
+  jsonWithBigintReplacer,
   log,
   MAX_UINT256 as NON_EXPIRING_DEADLINE,
-  jsonWithBigintReplacer,
-  getGlobalAdapter,
-  AbstractProviderAdapter,
   setGlobalAdapter,
   SignerLike,
-  AbstractSigner,
 } from '@cowprotocol/sdk-common'
+import { COW_SHED_LATEST_VERSION, CoWShedVersion } from './const'
 
 export interface SignAndEncodeTxArgs {
   /**
@@ -45,6 +45,11 @@ export interface SignAndEncodeTxArgs {
    * Deadline to use for the transaction. If not provided, the maximum uint256 will be used.
    */
   deadline?: bigint
+
+  /**
+   * If value is provided, gas won't be estimated and will use the value
+   */
+  gasLimit?: bigint
 
   /**
    * Default gas limit to use for the transaction. If not provided, it will throw an error if the gas limit cannot be estimated.
@@ -81,6 +86,7 @@ export class CowShedSdk {
   constructor(
     adapter?: AbstractProviderAdapter,
     private factoryOptions?: ICoWShedOptions,
+    public readonly version: CoWShedVersion = COW_SHED_LATEST_VERSION,
   ) {
     if (adapter) {
       setGlobalAdapter(adapter)
@@ -105,21 +111,22 @@ export class CowShedSdk {
     chainId,
     nonce = CowShedSdk.getNonce(),
     deadline = NON_EXPIRING_DEADLINE,
+    gasLimit,
     defaultGasLimit,
     signingScheme = SigningScheme.EIP712,
   }: SignAndEncodeTxArgs): Promise<CowShedCall> {
     const cowShedHooks = this.getCowShedHooks(chainId)
     const adapter = getGlobalAdapter()
-
-    const signer: AbstractSigner = signerParam ? adapter.createSigner(signerParam) : adapter.signer
+    const signer = signerParam ? adapter.createSigner(signerParam) : adapter.signer
 
     const ownerAddress = await signer.getAddress()
 
     const cowShedAccount = cowShedHooks.proxyOf(ownerAddress)
+
     // Sign the calls using cow-shed's owner
     const signature = await cowShedHooks.signCalls(calls, nonce, deadline, signingScheme, signer)
 
-    // Get the signed transaction's calldata
+    //  Get the signed transaction's calldata
     const callData = cowShedHooks.encodeExecuteHooksForFactory(calls, nonce, deadline, ownerAddress, signature)
 
     // Estimate the gas limit for the transaction
@@ -129,26 +136,27 @@ export class CowShedSdk {
       data: callData,
       value: BigInt(0),
     }
+    const gasEstimate =
+      gasLimit ||
+      (await signer.estimateGas(factoryCall).catch((error) => {
+        const factoryCallString = JSON.stringify(factoryCall, jsonWithBigintReplacer, 2)
+        const errorMessage = `Error estimating gas for the cow-shed call: ${factoryCallString}. Review the factory call`
 
-    const gasEstimate = await signer.estimateGas(factoryCall).catch((error: any) => {
-      const factoryCallString = JSON.stringify(factoryCall, jsonWithBigintReplacer, 2)
-      const errorMessage = `Error estimating gas for the cow-shed call: ${factoryCallString}. Review the factory call`
+        // Return the default gas limit if provided
+        if (defaultGasLimit) {
+          log(`${errorMessage}, using the default gas limit.`)
+          return defaultGasLimit
+        }
 
-      // Return the default gas limit if provided
-      if (defaultGasLimit) {
-        log(`${errorMessage}, using the default gas limit.`)
-        return defaultGasLimit
-      }
-
-      // Re-throw the error if no default gas limit is provided
-      throw new Error(`${errorMessage}, or provide the defaultGasLimit parameter.`, { cause: error })
-    })
+        // Re-throw the error if no default gas limit is provided
+        throw new Error(`${errorMessage}, or provide the defaultGasLimit parameter.`, { cause: error })
+      }))
 
     // Return the details, including the signed transaction data
     return {
       cowShedAccount,
       signedMulticall: factoryCall,
-      gasLimit: gasEstimate,
+      gasLimit: BigInt(gasEstimate.toString()),
     }
   }
 
@@ -161,6 +169,7 @@ export class CowShedSdk {
     }
 
     // Create new cow-shed hooks and cache it
+    //TODO: need to forward the version from CowShedSdk
     cowShedHooks = new CowShedHooks(chainId, customOptions)
     this.hooksCache.set(chainId, cowShedHooks)
     return cowShedHooks

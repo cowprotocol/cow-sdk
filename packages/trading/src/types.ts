@@ -1,4 +1,8 @@
-import type { AppDataParams, latest, LatestAppDataDocVersion } from '@cowprotocol/sdk-app-data'
+import type {
+  AppDataParams,
+  cowAppDataLatestScheme as latest,
+  LatestAppDataDocVersion,
+} from '@cowprotocol/sdk-app-data'
 import {
   AppData,
   AppDataHash,
@@ -110,6 +114,18 @@ export interface LimitTradeParametersFromQuote extends LimitTradeParameters {
 
 export interface LimitOrderParameters extends TraderParameters, LimitTradeParameters {}
 
+/**
+ * When postSwapOrderFromQuote() is called, it will execute provided callback corresponding to signing order
+ */
+export interface SigningStepManager {
+  beforeBridgingSign?(): Promise<void> | void
+  afterBridgingSign?(): Promise<void> | void
+  beforeOrderSign?(): Promise<void> | void
+  afterOrderSign?(): Promise<void> | void
+  onBridgingSignError?(): void
+  onOrderSignError?(): void
+}
+
 export interface SwapAdvancedSettings {
   quoteRequest?: Partial<Omit<OrderQuoteRequest, 'kind'> & { validTo: number }>
   appData?: AppDataParams
@@ -183,7 +199,10 @@ export interface OrderPostingResult {
 export interface QuoteAndPost {
   quoteResults: QuoteResults
 
-  postSwapOrderFromQuote(advancedSettings?: SwapAdvancedSettings): Promise<OrderPostingResult>
+  postSwapOrderFromQuote(
+    advancedSettings?: SwapAdvancedSettings,
+    signingStepManager?: SigningStepManager,
+  ): Promise<OrderPostingResult>
 }
 
 export type AppDataRootSchema = latest.AppDataRootSchema

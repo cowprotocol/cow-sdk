@@ -1,4 +1,4 @@
-import type { TargetChainId } from '@cowprotocol/sdk-config'
+import { TargetChainId } from '@cowprotocol/sdk-config'
 
 export interface AvailableRoutesRequest {
   originChainId: string
@@ -195,4 +195,88 @@ export interface PctFee {
   pct: string
 
   total: string
+}
+
+export interface DepositStatusRequest {
+  originChainId: string
+  depositId: string
+}
+
+export interface DepositStatusResponse {
+  /**
+   * Status of the deposit:
+   * - filled: Deposit has been filled on destination chain (FilledV3Relay event emitted)
+   * - pending: Deposit not yet filled
+   * - expired: Deposit expired and will be refunded
+   * - refunded: Deposit expired and depositor refunded on originChain
+   * - slowFillRequested: Across' relayer fills without requiring another relayer to front capital
+   *   (requires input token and output token to be the same asset)
+   */
+  status: 'filled' | 'pending' | 'expired' | 'refunded' | 'slowFillRequested'
+
+  /**
+   * Origin chain ID where the deposit was made.
+   */
+  originChainId: string
+
+  /**
+   * Unique identifier of the deposit.
+   */
+  depositId: string
+
+  /**
+   * Transaction hash of the deposit on the origin chain.
+   */
+  depositTxHash?: string
+
+  /**
+   * Transaction hash of the fill on the destination chain.
+   * Only present when fillStatus is 'filled'.
+   */
+  fillTx?: string
+
+  /**
+   * Destination chain ID where the fill transaction will occur.
+   */
+  destinationChainId?: string
+
+  /**
+   * Transaction hash of the refund on the origin chain.
+   * Only present when fillStatus is 'refunded'.
+   */
+  depositRefundTxHash?: string
+
+  /**
+   * Pagination information for the response.
+   */
+  pagination?: {
+    currentIndex: number
+    maxIndex: number
+  }
+}
+
+export interface AcrossDepositEvent {
+  inputToken: string
+  outputToken: string
+  inputAmount: string
+  outputAmount: string
+  destinationChainId: string
+  depositId: string
+  quoteTimestamp: string
+  fillDeadline: string
+  exclusivityDeadline: string
+  depositor: string
+  recipient: string
+  exclusiveRelayer: string
+  message: string
+}
+
+export interface CowTradeEvent {
+  owner: string
+  sellToken: string
+  buyToken: string
+  sellAmount: string
+  buyAmount: string
+  feeAmount: string
+  orderUid: string
 }

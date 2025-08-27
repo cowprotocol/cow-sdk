@@ -9,10 +9,12 @@ import { TokenInfo } from '../types/tokens'
  */
 export enum SupportedChainId {
   MAINNET = 1,
+  BNB = 56,
   GNOSIS_CHAIN = 100,
-  ARBITRUM_ONE = 42161,
-  BASE = 8453,
   POLYGON = 137,
+  LENS = 232,
+  BASE = 8453,
+  ARBITRUM_ONE = 42161,
   AVALANCHE = 43114,
   SEPOLIA = 11155111,
 }
@@ -84,6 +86,11 @@ export interface ChainInfo {
   readonly label: string
 
   /**
+   * EIP155 label of the chain. Field used for connecting to MetaMask.
+   */
+  readonly eip155Label: string
+
+  /**
    * Native currency of the chain.
    */
   readonly nativeCurrency: TokenInfo
@@ -142,4 +149,9 @@ export interface ChainInfo {
     [key: string]: ChainRpcUrls
     default: ChainRpcUrls
   }
+
+  /**
+   * Whether the chain is zkSync based.
+   */
+  readonly isZkSync?: boolean
 }

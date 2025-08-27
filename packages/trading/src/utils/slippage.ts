@@ -1,3 +1,7 @@
+import { SupportedChainId } from '@cowprotocol/sdk-config'
+
+import { DEFAULT_SLIPPAGE_BPS, ETH_FLOW_DEFAULT_SLIPPAGE_BPS } from '../consts'
+
 const SCALE = 10n ** 6n // 6 decimal places of precision. Used to avoid depending on Big Decimal libraries
 
 /**
@@ -47,5 +51,13 @@ export function getSlippagePercent(params: {
     const percentageInScale = (SCALE * (sellAmount + slippage)) / sellAmount - SCALE
 
     return Number(percentageInScale) / Number(SCALE)
+  }
+}
+
+export function getDefaultSlippageBps(chainId: SupportedChainId, isEthFlow: boolean): number {
+  if (isEthFlow) {
+    return ETH_FLOW_DEFAULT_SLIPPAGE_BPS[chainId]
+  } else {
+    return DEFAULT_SLIPPAGE_BPS
   }
 }

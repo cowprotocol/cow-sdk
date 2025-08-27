@@ -1,4 +1,4 @@
-import { latest as latestAppData } from '@cowprotocol/sdk-app-data'
+import { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
 import {
   BridgeDeposit,
   BridgeHook,
@@ -7,25 +7,40 @@ import {
   BridgeQuoteResult,
   BridgeStatus,
   BridgeStatusResult,
+  BridgingDepositParams,
+  BuyTokensParams,
+  GetProviderBuyTokens,
   QuoteBridgeRequest,
 } from '../../types'
 
-import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
 import {
-  sepolia,
-  optimism,
-  mainnet,
   AdditionalTargetChainId,
+  ChainId,
   ChainInfo,
+  EvmCall,
+  mainnet,
+  optimism,
+  sepolia,
   SupportedChainId,
   TargetChainId,
-  EvmCall,
   TokenInfo,
 } from '@cowprotocol/sdk-config'
-import { RAW_PROVIDERS_FILES_PATH } from '../../const'
-import { Signer } from '@cowprotocol/sdk-common'
+import { OrderKind } from '@cowprotocol/sdk-order-book'
 
-const BRIDGING_ID = '123456789asdfg'
+const BRIDGING_PARAMS: BridgingDepositParams = {
+  inputTokenAddress: '0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+  outputTokenAddress: '0x000000000000000000000000833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+  inputAmount: 24023409n,
+  outputAmount: 24020093n,
+  owner: '0x0000000000000000000000002bfcacf7ff137289a2c4841ea90413ab51103032',
+  quoteTimestamp: 1747223915,
+  fillDeadline: 1747235809,
+  recipient: '0x000000000000000000000000bbcf91605c18a9859c1d47abfeed5d2cca7097cf',
+  sourceChainId: 1,
+  destinationChainId: 8453,
+  bridgingId: '2595561',
+}
 const MOCK_CALL: EvmCall = {
   to: '0x0000000000000000000000000000000000000001',
   data: '0x0',
@@ -67,27 +82,56 @@ const BUY_TOKENS = [
   },
 ]
 
-const INTERMEDIATE_TOKENS: Partial<Record<TargetChainId, string[]>> = {
-  [SupportedChainId.MAINNET]: ['0xDEf1CA1fb7FBcDC777520aa7f396b4E015F497aB'],
-  [AdditionalTargetChainId.OPTIMISM]: ['0x68f180fcCe6836688e9084f035309E29Bf0A2095'],
-  [SupportedChainId.SEPOLIA]: ['0xB4F1737Af37711e9A5890D9510c9bB60e170CB0D'],
+const INTERMEDIATE_TOKENS: Partial<Record<TargetChainId, TokenInfo[]>> = {
+  [SupportedChainId.MAINNET]: [
+    {
+      address: '0xDEf1CA1fb7FBcDC777520aa7f396b4E015F497aB',
+      chainId: SupportedChainId.MAINNET,
+      name: 'COW',
+      symbol: 'COW',
+      decimals: 18,
+    },
+  ],
+  [AdditionalTargetChainId.OPTIMISM]: [
+    {
+      address: '0x68f180fcCe6836688e9084f035309E29Bf0A2095',
+      chainId: AdditionalTargetChainId.OPTIMISM,
+      name: 'Wrapped BTC ',
+      symbol: 'WBTC',
+      decimals: 8,
+    },
+  ],
+  [SupportedChainId.SEPOLIA]: [
+    {
+      address: '0xB4F1737Af37711e9A5890D9510c9bB60e170CB0D',
+      chainId: SupportedChainId.SEPOLIA,
+      name: 'DAI (test)',
+      symbol: 'DAI',
+      decimals: 18,
+    },
+  ],
 }
 
 export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
   info: BridgeProviderInfo = {
     name: 'Mock',
     logoUrl: `${RAW_PROVIDERS_FILES_PATH}/mock/mock-logo.png`,
+    dappId: 'mockProvider',
+    website: 'https://across.to',
   }
 
   async getNetworks(): Promise<ChainInfo[]> {
     return [mainnet, optimism, sepolia]
   }
 
-  async getBuyTokens(targetChainId: TargetChainId): Promise<TokenInfo[]> {
-    return BUY_TOKENS.filter((token) => token.chainId === targetChainId)
+  async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
+    return {
+      tokens: BUY_TOKENS.filter((token) => token.chainId === params.buyChainId),
+      isRouteAvailable: true,
+    }
   }
 
-  async getIntermediateTokens({ sellTokenChainId }: QuoteBridgeRequest): Promise<string[]> {
+  async getIntermediateTokens({ sellTokenChainId }: QuoteBridgeRequest): Promise<TokenInfo[]> {
     return INTERMEDIATE_TOKENS[sellTokenChainId] ?? []
   }
 
@@ -129,21 +173,21 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
     }
   }
 
-  getGasLimitEstimationForHook(_request: QuoteBridgeRequest): number {
+  async getGasLimitEstimationForHook(_request: QuoteBridgeRequest): Promise<number> {
     return 110_000
   }
 
   async getUnsignedBridgeCall(_request: QuoteBridgeRequest, _quote: BridgeQuoteResult): Promise<EvmCall> {
     return MOCK_CALL
   }
-  async getSignedHook(_chainId: SupportedChainId, _unsignedCall: EvmCall, _signer: Signer): Promise<BridgeHook> {
+  async getSignedHook(_chainId: SupportedChainId, _unsignedCall: EvmCall): Promise<BridgeHook> {
     return {
       recipient: '0x0000000000000000000000000000000000000001',
       postHook: {
         target: '0x0000000000000000000000000000000000000002',
         callData: '0x1',
         gasLimit: '0x2',
-        dappId: 'MockBridgeProvider',
+        dappId: HOOK_DAPP_BRIDGE_PROVIDER_PREFIX,
       },
     }
   }
@@ -169,8 +213,15 @@ export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
     }
   }
 
-  async getBridgingId(_orderUid: string, _settlementTx: string, _logIndex: number): Promise<string> {
-    return BRIDGING_ID
+  async getBridgingParams(
+    _chainId: ChainId,
+    _orderUid: string,
+    _txHash: string,
+  ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult }> {
+    return {
+      params: BRIDGING_PARAMS,
+      status: await this.getStatus(''),
+    }
   }
 
   getExplorerUrl(bridgingId: string): string {

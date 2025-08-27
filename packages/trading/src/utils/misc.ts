@@ -2,7 +2,6 @@ import { LimitTradeParametersFromQuote, TradeParameters } from '../types'
 import { OrderQuoteResponse, QuoteAmountsAndCosts } from '@cowprotocol/sdk-order-book'
 import { ETH_ADDRESS, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
-import { ETH_FLOW_DEFAULT_SLIPPAGE_BPS } from '../consts'
 
 export function swapParamsToLimitOrderParams(
   params: TradeParameters,
@@ -82,8 +81,14 @@ export function getTradeParametersAfterQuote({
 /**
  * ETH-flow orders are special and need to be adjusted
  * 1. Sell token should be the wrapped native currency
- * 2. Default slippage is 2%
  */
+export function adjustEthFlowOrderParams(chainId: SupportedChainId, params: TradeParameters): TradeParameters
+
+export function adjustEthFlowOrderParams(
+  chainId: SupportedChainId,
+  params: LimitTradeParametersFromQuote,
+): LimitTradeParametersFromQuote
+
 export function adjustEthFlowOrderParams(
   chainId: SupportedChainId,
   params: TradeParameters | LimitTradeParametersFromQuote,
@@ -91,6 +96,5 @@ export function adjustEthFlowOrderParams(
   return {
     ...params,
     sellToken: WRAPPED_NATIVE_CURRENCIES[chainId].address,
-    slippageBps: typeof params.slippageBps === 'number' ? params.slippageBps : ETH_FLOW_DEFAULT_SLIPPAGE_BPS[chainId],
   }
 }

@@ -1,6 +1,7 @@
 import { AcrossApi } from './AcrossApi'
+import { DepositStatusRequest, DepositStatusResponse, SuggestedFeesRequest, SuggestedFeesResponse } from './types'
+import { BridgeQuoteErrors } from '../../errors'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
-import { SuggestedFeesRequest, SuggestedFeesResponse } from './types'
 
 // Mock fetch globally
 const mockFetch = jest.fn()
@@ -64,7 +65,7 @@ describe('AcrossApi', () => {
           destinationChainId: '137',
           destinationToken: '0x0000000000000000000000000000000000000002',
         }),
-      ).rejects.toThrow('Across Api Error')
+      ).rejects.toThrow(BridgeQuoteErrors.API_ERROR)
     })
   })
 
@@ -146,7 +147,7 @@ describe('AcrossApi', () => {
           destinationChainId: SupportedChainId.POLYGON,
           amount: 1000000000000000000n,
         }),
-      ).rejects.toThrow('Across Api Error')
+      ).rejects.toThrow(BridgeQuoteErrors.API_ERROR)
     })
   })
 
@@ -168,6 +169,78 @@ describe('AcrossApi', () => {
       })
 
       expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining(customUrl), expect.any(Object))
+    })
+  })
+
+  describe('getDepositStatus', () => {
+    const mockResponse: DepositStatusResponse = {
+      status: 'filled',
+      fillTx: '0x1234567890',
+      destinationChainId: '137',
+      originChainId: '1',
+      depositId: '',
+    }
+
+    beforeEach(() => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      })
+    })
+
+    it('should fetch deposit status with required parameters', async () => {
+      const request: DepositStatusRequest = {
+        originChainId: '1',
+        depositId: '1234567890',
+      }
+
+      const status = await api.getDepositStatus(request)
+
+      expect(status).toEqual(mockResponse)
+      expect(mockFetch).toHaveBeenCalledWith(
+        `https://app.across.to/api/deposit/status?originChainId=${request.originChainId}&depositId=${request.depositId}`,
+        expect.any(Object),
+      )
+    })
+
+    it('should return an error if the deposit status is not found', async () => {
+      const mockNotFoundResponse = {
+        error: 'DepositNotFoundException',
+        message: 'Deposit not found given the provided constraints',
+      }
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockNotFoundResponse),
+      })
+
+      const request: DepositStatusRequest = {
+        originChainId: '8453',
+        depositId: '66666666',
+      }
+
+      const status = await api.getDepositStatus(request)
+
+      expect(status).toEqual(mockNotFoundResponse)
+      expect(mockFetch).toHaveBeenCalledWith(
+        `https://app.across.to/api/deposit/status?originChainId=${request.originChainId}&depositId=${request.depositId}`,
+        expect.any(Object),
+      )
+    })
+
+    it('should handle API errors', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve({ text: 'Internal Server Error' }),
+      })
+
+      await expect(
+        api.getDepositStatus({
+          originChainId: '1',
+          depositId: '1234567890',
+        }),
+      ).rejects.toThrow(BridgeQuoteErrors.API_ERROR)
     })
   })
 })

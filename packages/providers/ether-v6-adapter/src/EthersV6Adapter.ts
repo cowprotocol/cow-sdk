@@ -19,6 +19,7 @@ import {
   PrivateKey,
   CowError,
   GenericContract,
+  TransactionReceipt,
 } from '@cowprotocol/sdk-common'
 import { EthersV6Utils } from './EthersV6Utils'
 import {
@@ -48,8 +49,6 @@ export interface EthersV6AdapterOptions {
 }
 
 export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
-  declare protected _type?: EthersV6Types
-
   private _provider: Provider
   private _signerAdapter?: EthersV6SignerAdapter
 
@@ -62,30 +61,12 @@ export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
     super()
     this.ZERO_ADDRESS = ZeroAddress
 
-    // Setup provider
-    if (typeof options.provider === 'string') {
-      this._provider = new JsonRpcProvider(options.provider)
-    } else {
-      if (!('getNetwork' in options.provider) || !('call' in options.provider)) {
-        throw new CowError('Invalid Provider: missing required methods')
-      }
-      this._provider = options.provider
-    }
+    this._provider = this.setProvider(
+      typeof options.provider === 'string' ? new JsonRpcProvider(options.provider) : options.provider,
+    )
 
-    // Setup signer
     if (options.signer) {
-      if (typeof options.signer === 'string') {
-        const ethersV6Signer = new Wallet(options.signer, this._provider)
-        this._signerAdapter = new EthersV6SignerAdapter(ethersV6Signer)
-      } else {
-        const ethersV6Signer = options.signer as Signer
-        if (!ethersV6Signer.provider) {
-          const connectedSigner = ethersV6Signer.connect(this._provider)
-          this._signerAdapter = new EthersV6SignerAdapter(connectedSigner)
-        } else {
-          this._signerAdapter = new EthersV6SignerAdapter(ethersV6Signer)
-        }
-      }
+      this._signerAdapter = this.createSigner(options.signer)
     }
 
     this.utils = new EthersV6Utils()
@@ -106,26 +87,59 @@ export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
     this._signerAdapter = this.createSigner(signer)
   }
 
+  setProvider(provider: Provider): Provider {
+    this._provider = provider
+
+    this.signerOrNull()?.connect(this._provider)
+
+    return this._provider
+  }
+
   createSigner(signerOrPrivateKey: Signer | PrivateKey | EthersV6SignerAdapter): EthersV6SignerAdapter {
     if (signerOrPrivateKey instanceof EthersV6SignerAdapter) {
+      signerOrPrivateKey.connect(this._provider)
+
       return signerOrPrivateKey
     }
+
     if (typeof signerOrPrivateKey === 'string') {
       const ethersV6Signer = new Wallet(signerOrPrivateKey, this._provider)
-      return new EthersV6SignerAdapter(ethersV6Signer)
+
+      return new EthersV6SignerAdapter(ethersV6Signer.connect(this._provider))
     }
-    const ethersV6Signer = signerOrPrivateKey as Signer
-    if (!ethersV6Signer.provider) {
-      const connectedSigner = ethersV6Signer.connect(this._provider)
-      return new EthersV6SignerAdapter(connectedSigner)
-    } else {
-      return new EthersV6SignerAdapter(ethersV6Signer)
-    }
+
+    // Important: do not call .connect() when signer already has a provider
+    // otherwise it will throw "cannot alter JSON-RPC Signer connection"
+    return new EthersV6SignerAdapter(
+      signerOrPrivateKey.provider ? signerOrPrivateKey : signerOrPrivateKey.connect(this._provider),
+    )
   }
 
   async getChainId(): Promise<number> {
     const network = await this._provider.getNetwork()
     return Number(network.chainId)
+  }
+
+  async getCode(address: string): Promise<string> {
+    return this._provider.getCode(address)
+  }
+
+  async getTransactionReceipt(transactionHash: string): Promise<TransactionReceipt | null> {
+    const receipt = await this._provider.getTransactionReceipt(transactionHash)
+
+    if (!receipt) return receipt
+
+    return {
+      ...receipt,
+      blockNumber: BigInt(receipt.blockNumber),
+      transactionHash: receipt.hash,
+      logs: receipt.logs.map((log) => ({
+        ...log,
+        blockNumber: BigInt(log.blockNumber),
+        logIndex: log.index,
+        topics: [...log.topics],
+      })),
+    } as TransactionReceipt
   }
 
   async getStorageAt(address: string, slot: BigNumberish): Promise<BytesLike> {
@@ -150,17 +164,14 @@ export class EthersV6Adapter extends AbstractProviderAdapter<EthersV6Types> {
     },
     provider?: Provider,
   ): Promise<unknown> {
-    const { address, abi, functionName, args } = params
+    const { address, abi, functionName, args = [] } = params
     const providerToUse = provider || this._provider
     const contract = new Contract(address, abi, providerToUse)
 
-    const fn = contract[functionName]
+    const fn = contract.getFunction(functionName)
     if (!fn) throw new CowError(`Error reading contract ${address}: function ${functionName} was not found in Abi`)
 
-    if (args && args.length > 0) {
-      return fn(...args)
-    }
-    return fn()
+    return fn.staticCall(...args)
   }
 
   async getBlock(blockTag: string, provider?: Provider): Promise<Block> {

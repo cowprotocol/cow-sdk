@@ -11,7 +11,7 @@ import {
 } from 'viem'
 import { AbstractSigner, CowError, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
 
-export class ViemSignerAdapter extends AbstractSigner {
+export class ViemSignerAdapter extends AbstractSigner<PublicClient> {
   protected _client: WalletClient
   protected _account: Account
   protected _publicClient?: PublicClient
@@ -24,6 +24,10 @@ export class ViemSignerAdapter extends AbstractSigner {
     if (!this._client.account) throw new CowError('Signer is missing account')
     this._account = this._client.account
     this._transport = typeof this._client.transport === 'function' ? this._client.transport : http()
+  }
+
+  connect(provider: PublicClient) {
+    this._publicClient = provider
   }
 
   async getAddress(): Promise<string> {
@@ -93,11 +97,11 @@ export class ViemSignerAdapter extends AbstractSigner {
 
         return {
           transactionHash: receipt.transactionHash,
-          blockNumber: Number(receipt.blockNumber),
+          blockNumber: BigInt(receipt.blockNumber),
           blockHash: receipt.blockHash,
           status: Number(receipt.status === 'success'),
           gasUsed: receipt.gasUsed,
-          logs: receipt.logs,
+          logs: receipt.logs.map((log) => ({ ...log, blockNumber: BigInt(log.blockNumber) })),
         }
       },
     }
@@ -132,11 +136,6 @@ export class ViemSignerAdapter extends AbstractSigner {
     })
 
     return BigInt(hexGas)
-  }
-
-  // Method to set public client if available
-  setPublicClient(publicClient: PublicClient) {
-    this._publicClient = publicClient
   }
 
   private _formatTxParams(txParams: TransactionParams) {
@@ -260,41 +259,4 @@ export class IntChainIdTypedDataV4Signer extends TypedDataVersionedSigner {
       message: value,
     })
   }
-}
-
-/**
- * Factory function to create appropriate signer based on requirements
- */
-export function createViemSigner(
-  client: WalletClient,
-  options?: {
-    typedDataVersion?: 'v3' | 'v4' | 'v4-int-chainid'
-    publicClient?: PublicClient
-  },
-): ViemSignerAdapter {
-  const baseAdapter = new ViemSignerAdapter(client)
-
-  // Set public client if provided
-  if (options?.publicClient) {
-    ;(baseAdapter as any)._publicClient = options.publicClient
-  }
-
-  // Return appropriate signer based on version
-  if (options?.typedDataVersion === 'v3') {
-    const signer = new TypedDataV3Signer(client)
-    if (options.publicClient) {
-      ;(signer as any)._publicClient = options.publicClient
-    }
-    return signer
-  }
-
-  if (options?.typedDataVersion === 'v4-int-chainid') {
-    const signer = new IntChainIdTypedDataV4Signer(client)
-    if (options.publicClient) {
-      ;(signer as any)._publicClient = options.publicClient
-    }
-    return signer
-  }
-
-  return baseAdapter
 }

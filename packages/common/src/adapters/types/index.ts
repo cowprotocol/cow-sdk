@@ -48,16 +48,28 @@ export interface TransactionResponse {
   wait(confirmations?: number): Promise<TransactionReceipt>
 }
 
+export interface Log {
+  blockNumber: bigint
+  blockHash: string
+  transactionIndex: number
+  removed: boolean
+  address: string
+  data: string
+  topics: Array<string>
+  transactionHash: string
+  logIndex: number
+}
+
 /**
  * Standardized transaction receipt
  */
 export interface TransactionReceipt {
   transactionHash: string
-  blockNumber: number
+  blockNumber: bigint
   blockHash: string
   status?: number
   gasUsed: bigint
-  logs: Array<unknown>
+  logs: Log[]
 }
 
 /**

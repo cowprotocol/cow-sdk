@@ -130,30 +130,30 @@ async function compile(): Promise<void> {
         ] = metadataResults.map((result) => (result.status === 'fulfilled' ? result.value : ''))
 
         const additionalTypesExport = `
-          export * from './latest'
+export * from './latest'
 
-          export const LATEST_APP_DATA_VERSION = '${extractSemver(latest)}'
-          export const LATEST_QUOTE_METADATA_VERSION = '${extractSemver(latestQuoteVersion || '')}'
-          export const LATEST_REFERRER_METADATA_VERSION = '${extractSemver(latestReferrerVersion || '')}'
-          export const LATEST_ORDER_CLASS_METADATA_VERSION = '${extractSemver(latestOrderClassVersion || '')}'
-          export const LATEST_UTM_METADATA_VERSION = '${extractSemver(latestUtmVersion || '')}'
-          export const LATEST_HOOKS_METADATA_VERSION = '${extractSemver(latestHooksVersion || '')}'
-          export const LATEST_SIGNER_METADATA_VERSION = '${extractSemver(latestSignerVersion || '')}'
-          export const LATEST_WIDGET_METADATA_VERSION = '${extractSemver(latestWidgetVersion || '')}'
-          export const LATEST_PARTNER_FEE_METADATA_VERSION = '${extractSemver(latestPartnerFeeVersion || '')}'
-          export const LATEST_REPLACED_ORDER_METADATA_VERSION = '${extractSemver(latestReplacedOrderVersion || '')}'
+export const LATEST_APP_DATA_VERSION = '${extractSemver(latest)}'
+export const LATEST_QUOTE_METADATA_VERSION = '${extractSemver(latestQuoteVersion || '')}'
+export const LATEST_REFERRER_METADATA_VERSION = '${extractSemver(latestReferrerVersion || '')}'
+export const LATEST_ORDER_CLASS_METADATA_VERSION = '${extractSemver(latestOrderClassVersion || '')}'
+export const LATEST_UTM_METADATA_VERSION = '${extractSemver(latestUtmVersion || '')}'
+export const LATEST_HOOKS_METADATA_VERSION = '${extractSemver(latestHooksVersion || '')}'
+export const LATEST_SIGNER_METADATA_VERSION = '${extractSemver(latestSignerVersion || '')}'
+export const LATEST_WIDGET_METADATA_VERSION = '${extractSemver(latestWidgetVersion || '')}'
+export const LATEST_PARTNER_FEE_METADATA_VERSION = '${extractSemver(latestPartnerFeeVersion || '')}'
+export const LATEST_REPLACED_ORDER_METADATA_VERSION = '${extractSemver(latestReplacedOrderVersion || '')}'
 
-          export type LatestAppDataDocVersion = ${latestExport}.AppDataRootSchema
-          export type AnyAppDataDocVersion = ${allVersions}
+export type LatestAppDataDocVersion = ${latestExport}.AppDataRootSchema
+export type AnyAppDataDocVersion = ${allVersions}
 
-          export {${versions.map((version) => `\n  ${versionNameToExport(version)}`)}
-          }
-        `
+export {${versions.map((version) => `\n  ${versionNameToExport(version)}`)}
+}
+`
         // Write exports to types/index.ts
         await typesIndexFile.write(additionalTypesExport)
 
         // Write exports to types/latest.ts
-        await latestIndexFile.write(`export * as latest from './${latest}'\n`)
+        await latestIndexFile.write(`export * as cowAppDataLatestScheme from './${latest}'\n`)
       } catch (e) {
         console.error('Error generating metadata version exports:', e)
 
@@ -173,7 +173,7 @@ async function compile(): Promise<void> {
         await typesIndexFile.write(additionalTypesExport)
 
         // Writes exports to types/latest.ts
-        await latestIndexFile.write(`export * as latest from './${latest}'\n`)
+        await latestIndexFile.write(`export * as cowAppDataLatestScheme from './${latest}'\n`)
       }
     } else {
       console.error('No version schemas found!')

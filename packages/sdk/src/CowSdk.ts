@@ -4,11 +4,7 @@ import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { ApiBaseUrls } from '@cowprotocol/sdk-config'
 import { ApiContext } from '@cowprotocol/sdk-config'
 import { CowSdkOptions } from './types'
-import { SubgraphApi } from '@cowprotocol/sdk-subgraph'
-import { ContractsTs } from '@cowprotocol/sdk-contracts-ts'
-import { CowShedHooks, CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { TradingSdk } from '@cowprotocol/sdk-trading'
-import { ConditionalOrderFactory, Multiplexer, ProofLocation } from '@cowprotocol/sdk-composable'
 import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
 
 /**
@@ -18,16 +14,8 @@ import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
 export class CowSdk {
   public readonly orderBook: OrderBookApi
   public readonly metadataApi: MetadataApi
-  public readonly subgraph?: SubgraphApi
-  public readonly contracts: ContractsTs
-  public readonly cowShed?: CowShedSdk
-  public readonly trading?: TradingSdk
-  public readonly composable?: {
-    factory: ConditionalOrderFactory
-    multiplexer?: Multiplexer
-  }
-  public readonly orderSigning: OrderSigningUtils
-  public readonly cowShedHooks: CowShedHooks
+  public readonly trading: TradingSdk
+  public readonly orderSigning = OrderSigningUtils
 
   /**
    * Creates a new instance of CowSdk
@@ -35,18 +23,7 @@ export class CowSdk {
    * @param options Configuration options for the SDK
    */
   constructor(options: CowSdkOptions) {
-    const {
-      adapter,
-      chainId,
-      env = 'prod',
-      orderBookOptions = {},
-      orderBookBaseUrl,
-      subgraphOptions = {},
-      tradingOptions = {},
-      composableOptions = {},
-      cowShedOptions = {},
-      cowShedHooksOptions = {},
-    } = options
+    const { adapter, chainId, env = 'prod', orderBookOptions = {}, orderBookBaseUrl, tradingOptions = {} } = options
 
     setGlobalAdapter(adapter)
 
@@ -67,37 +44,10 @@ export class CowSdk {
 
     this.metadataApi = new MetadataApi()
 
-    if (subgraphOptions.apiKey) {
-      const subgraphContext = {
-        chainId,
-        env,
-        ...(subgraphOptions.context || {}),
-      }
-      this.subgraph = new SubgraphApi(subgraphOptions.apiKey, subgraphContext)
-    }
-
-    this.contracts = new ContractsTs(adapter)
-
-    this.cowShed = new CowShedSdk(adapter, cowShedOptions.factoryOptions)
-
     this.trading = new TradingSdk(tradingOptions.traderParams, {
       enableLogging: tradingOptions.options?.enableLogging,
       orderBookApi: this.orderBook,
       ...tradingOptions.options,
     })
-
-    this.composable = {
-      factory: new ConditionalOrderFactory(composableOptions.registry || {}, adapter),
-      multiplexer: new Multiplexer(
-        chainId,
-        composableOptions.orders,
-        composableOptions.root,
-        composableOptions.location || ProofLocation.PRIVATE,
-      ),
-    }
-
-    this.orderSigning = new OrderSigningUtils(adapter)
-
-    this.cowShedHooks = new CowShedHooks(chainId, cowShedHooksOptions.factoryOptions)
   }
 }

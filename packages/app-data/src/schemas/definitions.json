@@ -25,6 +25,13 @@
       "examples": ["90741097240912730913", "0", "75891372"],
       "type": "string"
     },
+    "bigPositiveNumber": {
+      "$id": "#/definitions/bigPositiveNumber",
+      "pattern": "^[1-9]\\d*$",
+      "title": "BigPositiveNumber",
+      "examples": ["90741097240912730913", "75891372", "1"],
+      "type": "string"
+    },
     "bps": {
       "$id": "#/definitions/bps",
       "title": "Basis Point (BPS)",
@@ -46,6 +53,17 @@
       "pattern": "^[a-fA-F0-9]{64}$",
       "title": "A hex string representing a dApp ID",
       "examples": ["75716a3cb48fdbb43ebdff58ce6c541f6a2c269be690513131355800367f2da2"],
+      "type": "string"
+    },
+    "chainId": {
+      "$id": "#/definitions/chainId",
+      "pattern": "^[a-zA-Z0-9\\-_]{1,32}$",
+      "title": "Blockchain id",
+      "examples": [
+        "1",
+        "100",
+        "hedera-hashgraph"
+      ],
       "type": "string"
     }
   }

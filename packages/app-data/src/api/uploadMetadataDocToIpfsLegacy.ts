@@ -22,7 +22,7 @@ export interface IpfsUploadResult {
  */
 export async function uploadMetadataDocToIpfsLegacy(
   appDataDoc: AnyAppDataDocVersion,
-  ipfsConfig: Ipfs
+  ipfsConfig: Ipfs,
 ): Promise<IpfsUploadResult | void> {
   const { IpfsHash: cid } = await _pinJsonInPinataIpfs(appDataDoc, ipfsConfig)
 
@@ -40,7 +40,7 @@ type PinataPinResponse = {
 
 export async function _pinJsonInPinataIpfs(
   file: unknown,
-  { writeUri = DEFAULT_IPFS_WRITE_URI, pinataApiKey = '', pinataApiSecret = '' }: Ipfs
+  { writeUri = DEFAULT_IPFS_WRITE_URI, pinataApiKey = '', pinataApiSecret = '' }: Ipfs,
 ): Promise<PinataPinResponse> {
   const { default: fetch } = await import('cross-fetch')
 

@@ -1,6 +1,7 @@
 import { EthFlowContract, SettlementContract, EthFlowOrderData } from './ContractTypes'
 import { EthFlowAbi, GPV2SettlementAbi } from '../../abi/index'
 import { getGlobalAdapter } from '../context'
+import { Log } from './index'
 
 /**
  * Generic contract factory that works with all adapters
@@ -37,13 +38,16 @@ export class ContractFactory {
       },
       interface: {
         encodeFunctionData: (functionName: string, args: unknown[]) => {
-          if (functionName === 'createOrder' || functionName === 'invalidateOrder') {
-            return adapter.utils.encodeFunction(EthFlowAbi, functionName, args)
-          }
           return adapter.utils.encodeFunction(EthFlowAbi, functionName, args)
         },
         decodeFunctionData: (functionName: string, data: string) => {
           return adapter.utils.decodeFunctionData(EthFlowAbi, functionName, data)
+        },
+        parseLog(event: Log): { args: unknown } | null {
+          return adapter.utils.createInterface(EthFlowAbi).parseLog(event)
+        },
+        getEventTopic(eventFragment: string): string | null {
+          return adapter.utils.createInterface(EthFlowAbi).getEventTopic(eventFragment)
         },
       },
       functions: {
@@ -131,6 +135,12 @@ export class ContractFactory {
         },
         decodeFunctionData: (functionName: string, data: string) => {
           return adapter.utils.decodeFunctionData(GPV2SettlementAbi, functionName, data)
+        },
+        parseLog(event: Log): { args: unknown } | null {
+          return adapter.utils.createInterface(GPV2SettlementAbi).parseLog(event)
+        },
+        getEventTopic(eventFragment: string): string | null {
+          return adapter.utils.createInterface(GPV2SettlementAbi).getEventTopic(eventFragment)
         },
       },
       functions: {

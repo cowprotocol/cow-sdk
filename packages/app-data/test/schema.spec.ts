@@ -1,4 +1,4 @@
-import Ajv, { ValidateFunction } from 'ajv'
+import Ajv from 'ajv'
 
 import schemaV0_1_0 from '../schemas/v0.1.0.json'
 import schemaV0_10_0 from '../schemas/v0.10.0.json'
@@ -13,6 +13,7 @@ import schemaV1_0_0 from '../schemas/v1.0.0.json'
 import schemaV1_1_0 from '../schemas/v1.1.0.json'
 import schemaV1_2_0 from '../schemas/v1.2.0.json'
 import schemaV1_4_0 from '../schemas/v1.4.0.json'
+import { buildAssertInvalidFn, buildAssertValidFn } from './test-utils'
 
 const ADDRESS = '0xb6BAd41ae76A11D10f7b0E664C5007b908bC77C9'
 const REFERRER_V0_1_0 = { address: ADDRESS, version: '0.1.0' }
@@ -48,24 +49,24 @@ describe('Schema v0.1.0', () => {
     metadata: {},
   }
 
-  test('Minimal valid schema', _buildAssertValidFn(validator, BASE_DOCUMENT))
+  test('Minimal valid schema', buildAssertValidFn(validator, BASE_DOCUMENT))
 
-  test('Missing required fields', _buildAssertInvalidFn(validator, {}, MISSING_VERSION_ERROR))
+  test('Missing required fields', buildAssertInvalidFn(validator, {}, MISSING_VERSION_ERROR))
 
   test(
     'With referrer metadata',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       appCode: 'MyApp',
       metadata: {
         referrer: REFERRER_V0_1_0,
       },
-    })
+    }),
   )
 
   test(
     'With invalid referrer metadata',
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -82,8 +83,8 @@ describe('Schema v0.1.0', () => {
           params: { pattern: '^0x[a-fA-F0-9]{40}$' },
           schemaPath: '#/properties/metadata/properties/referrer/properties/address/pattern',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
 
@@ -96,25 +97,25 @@ describe('Schema v0.2.0', () => {
     metadata: {},
   }
 
-  test('Minimal valid schema', _buildAssertValidFn(validator, BASE_DOCUMENT))
+  test('Minimal valid schema', buildAssertValidFn(validator, BASE_DOCUMENT))
 
-  test('Missing required fields', _buildAssertInvalidFn(validator, {}, MISSING_VERSION_ERROR))
+  test('Missing required fields', buildAssertInvalidFn(validator, {}, MISSING_VERSION_ERROR))
 
   test(
     'With referrer v0.1.0 and quote v0.1.0 metadata',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       appCode: 'MyApp',
       metadata: {
         referrer: REFERRER_V0_1_0,
         quote: QUOTE_V0_1_0,
       },
-    })
+    }),
   )
 
   test(
     'With invalid quote metadata v0.1.0',
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -132,8 +133,8 @@ describe('Schema v0.2.0', () => {
           params: { pattern: '^\\d+$' },
           schemaPath: '#/properties/metadata/properties/quote/properties/buyAmount/pattern',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
 
@@ -146,13 +147,13 @@ describe('Schema v0.3.0', () => {
     metadata: {},
   }
 
-  test('Minimal valid schema', _buildAssertValidFn(validator, BASE_DOCUMENT))
+  test('Minimal valid schema', buildAssertValidFn(validator, BASE_DOCUMENT))
 
-  test('Missing required fields', _buildAssertInvalidFn(validator, {}, MISSING_VERSION_ERROR))
+  test('Missing required fields', buildAssertInvalidFn(validator, {}, MISSING_VERSION_ERROR))
 
   test(
     'With environment and full metadata (both v0.1.0)',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       appCode: 'MyApp',
       environment: 'prod',
@@ -160,7 +161,7 @@ describe('Schema v0.3.0', () => {
         referrer: REFERRER_V0_1_0,
         quote: QUOTE_V0_1_0,
       },
-    })
+    }),
   )
 })
 
@@ -173,13 +174,13 @@ describe('Schema v0.4.0', () => {
     metadata: {},
   }
 
-  test('Minimal valid schema', _buildAssertValidFn(validator, BASE_DOCUMENT))
+  test('Minimal valid schema', buildAssertValidFn(validator, BASE_DOCUMENT))
 
-  test('Missing required fields', _buildAssertInvalidFn(validator, {}, MISSING_VERSION_ERROR))
+  test('Missing required fields', buildAssertInvalidFn(validator, {}, MISSING_VERSION_ERROR))
 
   test(
     'With quote metadata v0.2.0',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       appCode: 'MyApp',
       environment: 'prod',
@@ -187,12 +188,12 @@ describe('Schema v0.4.0', () => {
         referrer: REFERRER_V0_1_0,
         quote: QUOTE_V0_2_0,
       },
-    })
+    }),
   )
 
   test(
     'With invalid quote metadata v0.2.0',
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -211,8 +212,8 @@ describe('Schema v0.4.0', () => {
           params: { missingProperty: 'slippageBips' },
           schemaPath: '#/properties/metadata/properties/quote/required',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
 
@@ -225,13 +226,13 @@ describe('Schema v0.5.0', () => {
     metadata: {},
   }
 
-  test('Minimal valid schema', _buildAssertValidFn(validator, BASE_DOCUMENT))
+  test('Minimal valid schema', buildAssertValidFn(validator, BASE_DOCUMENT))
 
-  test('Missing required fields', _buildAssertInvalidFn(validator, {}, MISSING_VERSION_ERROR))
+  test('Missing required fields', buildAssertInvalidFn(validator, {}, MISSING_VERSION_ERROR))
 
   test(
     'With order class v0.1.0',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       appCode: 'MyApp',
       environment: 'prod',
@@ -240,12 +241,12 @@ describe('Schema v0.5.0', () => {
         quote: QUOTE_V0_2_0,
         orderClass: ORDER_CLASS_V0_1_0,
       },
-    })
+    }),
   )
 
   test(
     'With invalid order class v0.1.0',
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -265,8 +266,8 @@ describe('Schema v0.5.0', () => {
           params: { allowedValues: ['market', 'limit', 'liquidity'] },
           schemaPath: '#/properties/metadata/properties/orderClass/properties/orderClass/enum',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
 
@@ -281,57 +282,57 @@ describe('Schema v0.6.0', () => {
 
   test(
     'UTM Source',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: {
         utmSource: 'twitter',
       },
-    })
+    }),
   )
 
   test(
     'UTM Medium',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: {
         utmMedium: 'email',
       },
-    })
+    }),
   )
 
   test(
     'UTM Campaign',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: {
         utmCampaign: 'everyone-loves-cows-2023',
       },
-    })
+    }),
   )
 
   test(
     'UTM Content',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: {
         utmContent: 'big-fat-button',
       },
-    })
+    }),
   )
 
   test(
     'UTM Term',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: {
         utmTerm: 'coincidence+of+wants',
       },
-    })
+    }),
   )
 
   test(
     'UTM all at once',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: {
         utmSource: 'twitter',
@@ -340,7 +341,7 @@ describe('Schema v0.6.0', () => {
         utmContent: 'big-fat-button',
         utmTerm: 'coincidence+of+wants',
       },
-    })
+    }),
   )
 })
 
@@ -353,19 +354,19 @@ describe('Schema v0.9.0', () => {
     metadata: {},
   }
 
-  test('Minimal valid schema', _buildAssertValidFn(validator, BASE_DOCUMENT))
+  test('Minimal valid schema', buildAssertValidFn(validator, BASE_DOCUMENT))
 
   test(
     'With minimal hooks v0.1.0',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { hooks: {} },
-    })
+    }),
   )
 
   test(
     'With pre-hooks',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: {
         hooks: {
@@ -383,12 +384,12 @@ describe('Schema v0.9.0', () => {
           ],
         },
       },
-    })
+    }),
   )
 
   test(
     'With post-hooks',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: {
         hooks: {
@@ -406,12 +407,12 @@ describe('Schema v0.9.0', () => {
           ],
         },
       },
-    })
+    }),
   )
 
   test(
     'With pre- and post-hooks',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: {
         hooks: {
@@ -431,12 +432,12 @@ describe('Schema v0.9.0', () => {
           ],
         },
       },
-    })
+    }),
   )
 
   test(
     'With hooks and full metadata',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: {
         quote: QUOTE_V0_3_0,
@@ -460,12 +461,12 @@ describe('Schema v0.9.0', () => {
           ],
         },
       },
-    })
+    }),
   )
 
   test(
     'With missing required hook fields',
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -488,8 +489,8 @@ describe('Schema v0.9.0', () => {
           params: { missingProperty: 'callData' },
           schemaPath: '#/properties/metadata/properties/hooks/properties/pre/items/required',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
 
@@ -502,19 +503,19 @@ describe('Schema v0.10.0', () => {
     metadata: {},
   }
 
-  test('Minimal valid schema', _buildAssertValidFn(validator, BASE_DOCUMENT))
+  test('Minimal valid schema', buildAssertValidFn(validator, BASE_DOCUMENT))
 
   test(
     'With signer v0.1.0',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { signer: ADDRESS },
-    })
+    }),
   )
 
   test(
     'Signer with invalid address',
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -530,13 +531,13 @@ describe('Schema v0.10.0', () => {
           params: { pattern: '^0x[a-fA-F0-9]{40}$' },
           schemaPath: '#/properties/metadata/properties/signer/pattern',
         },
-      ]
-    )
+      ],
+    ),
   )
 
   test(
     'Signer with invalid address',
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -552,8 +553,8 @@ describe('Schema v0.10.0', () => {
           params: { type: 'string' },
           schemaPath: '#/properties/metadata/properties/signer/type',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
 
@@ -566,27 +567,27 @@ describe('Schema v0.11.0', () => {
     metadata: {},
   }
 
-  test('Minimal valid schema', _buildAssertValidFn(validator, BASE_DOCUMENT))
+  test('Minimal valid schema', buildAssertValidFn(validator, BASE_DOCUMENT))
 
   test(
     'With widget v0.11.0',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { widget: { appCode: 'Pig Swap', environment: 'production' } },
-    })
+    }),
   )
 
   test(
     'With widget and no environment v0.11.0',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { widget: { appCode: 'Pig Swap' } },
-    })
+    }),
   )
 
   test(
     'Widget with no appCode v0.11.0',
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -604,13 +605,13 @@ describe('Schema v0.11.0', () => {
           params: { missingProperty: 'appCode' },
           schemaPath: '#/properties/metadata/properties/widget/required',
         },
-      ]
-    )
+      ],
+    ),
   )
 
   test(
     'Signer with invalid address',
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -626,8 +627,8 @@ describe('Schema v0.11.0', () => {
           params: { pattern: '^0x[a-fA-F0-9]{40}$' },
           schemaPath: '#/properties/metadata/properties/signer/pattern',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
 
@@ -640,27 +641,27 @@ describe('Schema v1.0.0: Add partner fee', () => {
     metadata: {},
   }
 
-  test('Minimal valid schema', _buildAssertValidFn(validator, BASE_DOCUMENT))
+  test('Minimal valid schema', buildAssertValidFn(validator, BASE_DOCUMENT))
 
   test(
     'Valid partner fee',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { partnerFee: { bps: 50, recipient: ADDRESS } },
-    })
+    }),
   )
 
   test(
     'Valid zero partner fee',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { partnerFee: { bps: 0, recipient: ADDRESS } },
-    })
+    }),
   )
 
   test(
     'Invalid partner fee: missing bps',
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -674,13 +675,13 @@ describe('Schema v1.0.0: Add partner fee', () => {
           params: { missingProperty: 'bps' },
           schemaPath: '#/properties/metadata/properties/partnerFee/required',
         },
-      ]
-    )
+      ],
+    ),
   )
 
   test(
     'Invalid partner fee: missing recipient',
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -694,13 +695,13 @@ describe('Schema v1.0.0: Add partner fee', () => {
           params: { missingProperty: 'recipient' },
           schemaPath: '#/properties/metadata/properties/partnerFee/required',
         },
-      ]
-    )
+      ],
+    ),
   )
 
   test(
     'Invalid partner fee: BIPs is too low (negative)',
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -717,13 +718,13 @@ describe('Schema v1.0.0: Add partner fee', () => {
           },
           schemaPath: '#/properties/metadata/properties/partnerFee/properties/bps/minimum',
         },
-      ]
-    )
+      ],
+    ),
   )
 
   test(
     'Invalid partner fee: BIPs is too high (over 100%)',
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -740,13 +741,13 @@ describe('Schema v1.0.0: Add partner fee', () => {
           },
           schemaPath: '#/properties/metadata/properties/partnerFee/properties/bps/maximum',
         },
-      ]
-    )
+      ],
+    ),
   )
 
   test(
     "Invalid partner fee: BIPs don't allow decimals",
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -762,8 +763,8 @@ describe('Schema v1.0.0: Add partner fee', () => {
           },
           schemaPath: '#/properties/metadata/properties/partnerFee/properties/bps/type',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
 
@@ -776,35 +777,35 @@ describe('Schema v1.0.0: Update quote definition', () => {
     metadata: {},
   }
 
-  test('Minimal valid schema', _buildAssertValidFn(validator, BASE_DOCUMENT))
+  test('Minimal valid schema', buildAssertValidFn(validator, BASE_DOCUMENT))
 
   test(
     'Valid quote',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { quote: { slippageBips: 50 } },
-    })
+    }),
   )
 
   test(
     'Valid quote, with zero slippage',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { quote: { slippageBips: 0 } },
-    })
+    }),
   )
 
   test(
     'Valid quote, with maximum slippage (10,000)',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { quote: { slippageBips: 10000 } },
-    })
+    }),
   )
 
   test(
     'Invalid partner fee: unknown field',
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -818,13 +819,13 @@ describe('Schema v1.0.0: Update quote definition', () => {
           params: { missingProperty: 'slippageBips' },
           schemaPath: '#/properties/metadata/properties/quote/required',
         },
-      ]
-    )
+      ],
+    ),
   )
 
   test(
     'Invalid partner fee: missing slippageBips',
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -838,13 +839,13 @@ describe('Schema v1.0.0: Update quote definition', () => {
           params: { missingProperty: 'slippageBips' },
           schemaPath: '#/properties/metadata/properties/quote/required',
         },
-      ]
-    )
+      ],
+    ),
   )
 
   test(
     'Invalid partner fee: missing slippageBips',
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -861,13 +862,13 @@ describe('Schema v1.0.0: Update quote definition', () => {
           },
           schemaPath: '#/properties/metadata/properties/partnerFee/properties/bps/minimum',
         },
-      ]
-    )
+      ],
+    ),
   )
 
   test(
     'Invalid partner fee: missing slippageBips',
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -884,8 +885,8 @@ describe('Schema v1.0.0: Update quote definition', () => {
           },
           schemaPath: '#/properties/metadata/properties/partnerFee/properties/bps/maximum',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
 
@@ -900,19 +901,19 @@ describe('Schema v1.1.0: Add replaced order', () => {
 
   test(
     'Valid order id',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: {
         replacedOrder: {
           uid: '0xff2e2e54d178997f173266817c1e9ed6fee1a1aae4b43971c53b543cffcc2969845c6f5599fbb25dbdd1b9b013daf85c03f3c63763e4bc4a',
         },
       },
-    })
+    }),
   )
 
   test(
     'Invalid order id length',
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -926,13 +927,13 @@ describe('Schema v1.1.0: Add replaced order', () => {
           params: { pattern: '^0x[a-fA-F0-9]{112}$' },
           schemaPath: '#/properties/metadata/properties/replacedOrder/properties/uid/pattern',
         },
-      ]
-    )
+      ],
+    ),
   )
 
   test(
     'Invalid order id length',
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -946,8 +947,8 @@ describe('Schema v1.1.0: Add replaced order', () => {
           params: { missingProperty: 'uid' },
           schemaPath: '#/properties/metadata/properties/replacedOrder/required',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
 
@@ -960,7 +961,7 @@ describe('Schema v1.2.0', () => {
     metadata: {},
   }
 
-  test('Minimal valid schema', _buildAssertValidFn(validator, BASE_DOCUMENT))
+  test('Minimal valid schema', buildAssertValidFn(validator, BASE_DOCUMENT))
 
   test('With quote metadata v1.1.0', () => {
     const validQuote = {
@@ -1016,7 +1017,7 @@ describe('Schema v1.2.0', () => {
       },
     ]
 
-    expect(_buildAssertInvalidFn(validator, invalidDocument, errors)).toBeTruthy()
+    expect(buildAssertInvalidFn(validator, invalidDocument, errors)).toBeTruthy()
   })
 })
 
@@ -1029,58 +1030,58 @@ describe('Schema v1.4.0: Upgrade partnerFee metadata to 1.0.0', () => {
     metadata: {},
   }
 
-  test('Minimal valid schema', _buildAssertValidFn(validator, BASE_DOCUMENT))
+  test('Minimal valid schema', buildAssertValidFn(validator, BASE_DOCUMENT))
 
   test(
     'Valid volume partner fee obj',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { partnerFee: { volumeBps: 100, recipient: ADDRESS } },
-    })
+    }),
   )
   test(
     'Valid volume partner fee array',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { partnerFee: [{ volumeBps: 100, recipient: ADDRESS }] },
-    })
+    }),
   )
 
   test(
     'Valid surplus fee obj',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { partnerFee: { maxVolumeBps: 100, surplusBps: 100, recipient: ADDRESS } },
-    })
+    }),
   )
 
   test(
     'Valid surplus fee array',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { partnerFee: [{ maxVolumeBps: 100, surplusBps: 100, recipient: ADDRESS }] },
-    })
+    }),
   )
 
   test(
     'Valid price improvement fee obj',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { partnerFee: { maxVolumeBps: 100, priceImprovementBps: 100, recipient: ADDRESS } },
-    })
+    }),
   )
 
   test(
     'Valid price improvement fee array',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: { partnerFee: [{ maxVolumeBps: 100, priceImprovementBps: 100, recipient: ADDRESS }] },
-    })
+    }),
   )
 
   test(
     'Valid multiple partner fees',
-    _buildAssertValidFn(validator, {
+    buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,
       metadata: {
         partnerFee: [
@@ -1089,12 +1090,12 @@ describe('Schema v1.4.0: Upgrade partnerFee metadata to 1.0.0', () => {
           { maxVolumeBps: 100, priceImprovementBps: 100, recipient: ADDRESS },
         ],
       },
-    })
+    }),
   )
 
   test(
     'Invalid partner fee. Pure BPS no longer allowed',
-    _buildAssertInvalidFn(
+    buildAssertInvalidFn(
       validator,
       {
         ...BASE_DOCUMENT,
@@ -1155,27 +1156,7 @@ describe('Schema v1.4.0: Upgrade partnerFee metadata to 1.0.0', () => {
           },
           message: 'must match exactly one schema in oneOf',
         },
-      ]
-    )
+      ],
+    ),
   )
 })
-
-function _buildAssertValidFn(validator: ValidateFunction, doc: any) {
-  return () => {
-    // when
-    const actual = validator(doc)
-    // then
-    expect(validator.errors).toBeFalsy()
-    expect(actual).toBeTruthy()
-  }
-}
-
-function _buildAssertInvalidFn(validator: ValidateFunction, doc: any, errors: any) {
-  return () => {
-    // when
-    const actual = validator(doc)
-    // then
-    expect(actual).toBeFalsy()
-    expect(validator.errors).toEqual(errors)
-  }
-}

@@ -31,31 +31,38 @@ import { DEFAULT_BACKOFF_OPTIONS, DEFAULT_LIMITER_OPTIONS, FetchParams, OrderBoo
 import { transformOrder } from './transformOrder'
 import { EnrichedOrder } from './types'
 
+const PROD_BASE_URL = 'https://api.cow.fi'
+const STAGING_BASE_URL = 'https://barn.api.cow.fi'
+
 /**
  * An object containing *production* environment base URLs for each supported `chainId`.
  * @see {@link https://api.cow.fi/docs/#/}
  */
 export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
-  [SupportedChainId.MAINNET]: 'https://api.cow.fi/mainnet',
-  [SupportedChainId.GNOSIS_CHAIN]: 'https://api.cow.fi/xdai',
-  [SupportedChainId.ARBITRUM_ONE]: 'https://api.cow.fi/arbitrum_one',
-  [SupportedChainId.BASE]: 'https://api.cow.fi/base',
-  [SupportedChainId.SEPOLIA]: 'https://api.cow.fi/sepolia',
-  [SupportedChainId.POLYGON]: 'https://api.cow.fi/polygon',
-  [SupportedChainId.AVALANCHE]: 'https://api.cow.fi/avalanche',
+  [SupportedChainId.MAINNET]: `${PROD_BASE_URL}/mainnet`,
+  [SupportedChainId.GNOSIS_CHAIN]: `${PROD_BASE_URL}/xdai`,
+  [SupportedChainId.ARBITRUM_ONE]: `${PROD_BASE_URL}/arbitrum_one`,
+  [SupportedChainId.BASE]: `${PROD_BASE_URL}/base`,
+  [SupportedChainId.SEPOLIA]: `${PROD_BASE_URL}/sepolia`,
+  [SupportedChainId.POLYGON]: `${PROD_BASE_URL}/polygon`,
+  [SupportedChainId.AVALANCHE]: `${PROD_BASE_URL}/avalanche`,
+  [SupportedChainId.LENS]: `${PROD_BASE_URL}/lens`,
+  [SupportedChainId.BNB]: `${PROD_BASE_URL}/bnb`,
 }
 
 /**
  * An object containing *staging* environment base URLs for each supported `chainId`.
  */
 export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
-  [SupportedChainId.MAINNET]: 'https://barn.api.cow.fi/mainnet',
-  [SupportedChainId.GNOSIS_CHAIN]: 'https://barn.api.cow.fi/xdai',
-  [SupportedChainId.ARBITRUM_ONE]: 'https://barn.api.cow.fi/arbitrum_one',
-  [SupportedChainId.BASE]: 'https://barn.api.cow.fi/base',
-  [SupportedChainId.SEPOLIA]: 'https://barn.api.cow.fi/sepolia',
-  [SupportedChainId.POLYGON]: 'https://barn.api.cow.fi/polygon',
-  [SupportedChainId.AVALANCHE]: 'https://barn.api.cow.fi/avalanche',
+  [SupportedChainId.MAINNET]: `${STAGING_BASE_URL}/mainnet`,
+  [SupportedChainId.GNOSIS_CHAIN]: `${STAGING_BASE_URL}/xdai`,
+  [SupportedChainId.ARBITRUM_ONE]: `${STAGING_BASE_URL}/arbitrum_one`,
+  [SupportedChainId.BASE]: `${STAGING_BASE_URL}/base`,
+  [SupportedChainId.SEPOLIA]: `${STAGING_BASE_URL}/sepolia`,
+  [SupportedChainId.POLYGON]: `${STAGING_BASE_URL}/polygon`,
+  [SupportedChainId.AVALANCHE]: `${STAGING_BASE_URL}/avalanche`,
+  [SupportedChainId.LENS]: `${STAGING_BASE_URL}/lens`,
+  [SupportedChainId.BNB]: `${STAGING_BASE_URL}/bnb`,
 }
 
 function cleanObjectFromUndefinedValues(obj: Record<string, string>): typeof obj {

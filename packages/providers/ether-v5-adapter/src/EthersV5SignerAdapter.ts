@@ -3,13 +3,23 @@ import { AbstractSigner, CowError, TransactionParams, TransactionResponse } from
 import { TypedDataSigner } from '@ethersproject/abstract-signer'
 import { _TypedDataEncoder } from 'ethers/lib/utils'
 
-export class EthersV5SignerAdapter extends AbstractSigner {
+type RpcProvider = ethers.providers.Provider
+
+export class EthersV5SignerAdapter extends AbstractSigner<RpcProvider> {
   protected _signer: Signer & TypedDataSigner
 
   constructor(signer: Signer & TypedDataSigner) {
     super()
 
     this._signer = signer
+  }
+
+  connect(provider: RpcProvider) {
+    // Important: do not call .connect() when signer already has a provider
+    // otherwise it will throw "cannot alter JSON-RPC Signer connection"
+    if (this._signer.provider) return
+
+    this._signer.connect(provider)
   }
 
   async getAddress(): Promise<string> {
@@ -45,11 +55,11 @@ export class EthersV5SignerAdapter extends AbstractSigner {
         const receipt = await tx.wait(confirmations)
         return {
           transactionHash: receipt.transactionHash,
-          blockNumber: receipt.blockNumber,
+          blockNumber: BigInt(receipt.blockNumber),
           blockHash: receipt.blockHash,
           status: receipt.status,
           gasUsed: BigInt(receipt.gasUsed.toString()),
-          logs: receipt.logs,
+          logs: receipt.logs.map((log) => ({ ...log, blockNumber: BigInt(log.blockNumber) })),
         }
       },
     }
