@@ -1,6 +1,12 @@
-import { AdapterUtils, Address, BigIntish, ContractValue, GenericContractInterface } from '@cowprotocol/sdk-common'
+import {
+  AdapterUtils,
+  Address,
+  BigIntish,
+  ContractValue,
+  GenericContractInterface,
+  ParamType as CommonParamType,
+} from '@cowprotocol/sdk-common'
 import { BytesLike, ethers, TypedDataDomain, TypedDataField } from 'ethers'
-import { ParamType } from 'ethers/lib/utils'
 
 type Abi = ConstructorParameters<typeof ethers.utils.Interface>[0]
 
@@ -269,12 +275,12 @@ export class EthersV5Utils implements AdapterUtils {
     return ethers.utils.parseUnits(value, decimals).toBigInt()
   }
 
-  getParamType(type: string): ParamType {
-    return ethers.utils.ParamType.from(type)
+  getParamType(type: string): CommonParamType {
+    return ethers.utils.ParamType.from(type) as unknown as CommonParamType
   }
 
-  getParamTypeFromString(type: string): ParamType {
-    return ethers.utils.ParamType.fromString(type)
+  getParamTypeFromString(type: string): CommonParamType {
+    return ethers.utils.ParamType.fromString(type) as unknown as CommonParamType
   }
 
   isInterface(value: any): boolean {

@@ -1,4 +1,4 @@
-import { AdapterUtils, ContractValue, CowError } from '@cowprotocol/sdk-common'
+import { AdapterUtils, ContractValue, CowError, ParamType as CommonParamType } from '@cowprotocol/sdk-common'
 import {
   Interface,
   TypedDataField,
@@ -309,12 +309,12 @@ export class EthersV6Utils implements AdapterUtils {
     return parseUnits(value, decimals)
   }
 
-  getParamType(type: string): ParamType {
-    return ParamType.from(type)
+  getParamType(type: string): CommonParamType {
+    return ParamType.from(type) as unknown as CommonParamType
   }
 
-  getParamTypeFromString(type: string): ParamType {
-    return ParamType.from(type)
+  getParamTypeFromString(type: string): CommonParamType {
+    return ParamType.from(type) as unknown as CommonParamType
   }
 
   isInterface(value: any): boolean {

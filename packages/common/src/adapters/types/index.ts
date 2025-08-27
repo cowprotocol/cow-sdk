@@ -111,3 +111,12 @@ export interface Block {
 }
 
 export type ContractValue = string | number | boolean | bigint
+
+export type ParamType = {
+  type?: string
+  name?: string
+  baseType?: string
+  arrayLength?: number | null
+  components?: ReadonlyArray<ParamType> | null
+  [key: string]: unknown
+}

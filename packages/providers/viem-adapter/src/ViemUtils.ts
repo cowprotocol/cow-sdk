@@ -3,6 +3,7 @@ import {
   ContractValue,
   CowError,
   TypedDataDomain as TypedDataDomainCommon,
+  ParamType as CommonParamType,
 } from '@cowprotocol/sdk-common'
 import {
   encodeDeployData,
@@ -451,11 +452,11 @@ export class ViemUtils implements AdapterUtils {
     return parseUnits(value, decimals)
   }
 
-  getParamType(type: string): ViemParamType {
-    return new ViemParamType(type)
+  getParamType(type: string): CommonParamType {
+    return new ViemParamType(type) as unknown as CommonParamType
   }
-  getParamTypeFromString(type: string): ViemParamType {
-    return new ViemParamType(type)
+  getParamTypeFromString(type: string): CommonParamType {
+    return new ViemParamType(type) as unknown as CommonParamType
   }
 
   isInterface(value: any): boolean {
