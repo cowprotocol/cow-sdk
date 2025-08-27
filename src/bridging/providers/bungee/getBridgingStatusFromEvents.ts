@@ -19,8 +19,11 @@ export async function getBridgingStatusFromEvents(
     return { status: BridgeStatus.IN_PROGRESS }
   }
 
+  console.log('SDK getBridgingStatusFromEvents event ==>', event)
   // if srcTxStatus = completed & destTxStatus = pending,
   if (event.srcTxStatus === BungeeEventStatus.COMPLETED && event.destTxStatus === BungeeEventStatus.PENDING) {
+    console.log('SDK getBridgingStatusFromEvents event.COMPLETED ==>', event.bridgeName)
+
     // if bridgeName = across,
     if (event.bridgeName === BungeeBridgeName.ACROSS) {
       try {
@@ -37,12 +40,16 @@ export async function getBridgingStatusFromEvents(
         console.error('BungeeBridgeProvider get across status error', e)
       }
     }
+
+    console.log('SDK getBridgingStatusFromEvents is not across ==>', event.bridgeName)
     // if not across or across API fails, waiting for dest tx, return in_progress
     return { status: BridgeStatus.IN_PROGRESS, depositTxHash: event.srcTransactionHash }
   }
 
   // if srcTxStatus = completed & destTxStatus = completed, return executed
   if (event.srcTxStatus === BungeeEventStatus.COMPLETED && event.destTxStatus === BungeeEventStatus.COMPLETED) {
+    console.log('SDK getBridgingStatusFromEvents is completed ==>', event.bridgeName)
+
     return {
       status: BridgeStatus.EXECUTED,
       depositTxHash: event.srcTransactionHash,

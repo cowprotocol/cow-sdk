@@ -338,6 +338,7 @@ export class BungeeApi {
       params,
       isValidBungeeEventsResponse,
     )
+    console.log('SDK getEvents response ==>', response)
     if (!response.success) {
       throw new BridgeProviderError('Bungee Events Api Error', response)
     }

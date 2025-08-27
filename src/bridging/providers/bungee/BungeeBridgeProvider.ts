@@ -203,8 +203,11 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     orderId: string,
     _txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
+    console.log('SDK getBridgingParams orderId ==>', orderId)
+    console.log('SDK getBridgingParams txHash ==>', _txHash)
     const events = await this.api.getEvents({ orderId })
-    const event = events[0]
+    console.log('SDK getBridgingParams events ==>', events)
+    const event = events?.[0]
 
     if (!event) return null
 
