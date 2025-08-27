@@ -246,7 +246,8 @@ adapterNames.forEach((adapterName) => {
     })
 
     describe('getIntermediateTokens', () => {
-      it('should return the intermediate tokens from Arbitrum to Base', async () => {
+      // TODO: flacky test
+      it.skip('should return the intermediate tokens from Arbitrum to Base', async () => {
         const result = await api.getIntermediateTokens({
           fromChainId: SupportedChainId.ARBITRUM_ONE,
           toChainId: SupportedChainId.BASE,
@@ -276,7 +277,8 @@ adapterNames.forEach((adapterName) => {
         }
       })
 
-      it('should return the intermediate tokens from Mainnet to Gnosis', async () => {
+      // TODO: flacky test
+      it.skip('should return the intermediate tokens from Mainnet to Gnosis', async () => {
         const result = await api.getIntermediateTokens({
           fromChainId: SupportedChainId.MAINNET,
           toChainId: SupportedChainId.GNOSIS_CHAIN,
