@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-ethers-v5-adapter",
-  "version": "0.1.0-monorepo.0",
+  "version": "0.1.0-beta.0",
   "description": "Ethers v5 adapter for CoW Protocol SDK",
   "main": "dist/index.js",
   "module": "./dist/index.mjs",
