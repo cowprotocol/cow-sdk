@@ -381,7 +381,7 @@ import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForH
 
 export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult> {
   async getGasLimitEstimationForHook(
-    request: Omit<QuoteBridgeRequest, 'amount'> & { extraGas?: number },
+    request: Omit<QuoteBridgeRequest, 'amount'> & { extraGas?: number; extraGasProxyCreation?: number },
   ): Promise<number> {
     // Use utility function or implement custom gas estimation
     return getGasLimitEstimationForHook(
