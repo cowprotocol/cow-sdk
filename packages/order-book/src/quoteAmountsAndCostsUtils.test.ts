@@ -101,9 +101,11 @@ describe('Calculation of before/after fees amounts', () => {
           slippagePercentBps: 0,
         })
 
-        const buyAmountAfterNetworkCosts = +orderParams.buyAmount
+        const buyAmountBeforeNetworkCosts =
+          (+orderParams.sellAmount + +orderParams.feeAmount) * // SellAmountAfterNetworkCosts
+          (+orderParams.buyAmount / +orderParams.sellAmount) // Price
 
-        const partnerFeeAmount = Math.floor((buyAmountAfterNetworkCosts * partnerFeeBps) / 100 / 100)
+        const partnerFeeAmount = Math.floor((buyAmountBeforeNetworkCosts * partnerFeeBps) / 100 / 100)
 
         expect(Number(result.costs.partnerFee.amount)).toBe(partnerFeeAmount)
       })
@@ -120,7 +122,7 @@ describe('Calculation of before/after fees amounts', () => {
           slippagePercentBps: 0,
         })
 
-        const partnerFeeAmount = Math.floor(((+orderParams.sellAmount + +orderParams.feeAmount) * partnerFeeBps) / 100 / 100)
+        const partnerFeeAmount = Math.floor((+orderParams.sellAmount * partnerFeeBps) / 100 / 100)
 
         expect(Number(result.costs.partnerFee.amount)).toBe(partnerFeeAmount)
       })
