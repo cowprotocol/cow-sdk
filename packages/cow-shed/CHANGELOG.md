@@ -1,0 +1,31 @@
+# Changelog
+
+## [0.2.0-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-cow-shed-v0.1.0-beta.0...sdk-cow-shed-v0.2.0-beta.0) (2025-08-28)
+
+
+### ✨ Features
+
+* allow changing backoff and limiter per request ([#208](https://github.com/cowprotocol/cow-sdk/issues/208)) ([ebea5ca](https://github.com/cowprotocol/cow-sdk/commit/ebea5ca0858aeb89ae3e5d5407c8903c3ca5178d))
+* **cow-shed:** create package.json and tsconfig.json ([2548f17](https://github.com/cowprotocol/cow-sdk/commit/2548f17f75319d9615a814fdae5d13c25b9220ee))
+* **cow-shed:** refact cow-she to use adapters and fix tests ([25b0986](https://github.com/cowprotocol/cow-sdk/commit/25b098630ae7850e6d09dcdfc9dcd67266cd7df1))
+* **lib-agnostic:** migrate latest Bridging changes ([#426](https://github.com/cowprotocol/cow-sdk/issues/426)) ([2359d9b](https://github.com/cowprotocol/cow-sdk/commit/2359d9b903e80ae5bab0cdb92d8cf52ae250da36))
+* **lib-agnostic:** migrate latest SDK changes ([#427](https://github.com/cowprotocol/cow-sdk/issues/427)) ([323bab6](https://github.com/cowprotocol/cow-sdk/commit/323bab61eb5adeb4a58bc15e25ffb29d2e1afcbf))
+* **sdk-agnostic-lib:** create cow trading package ([#368](https://github.com/cowprotocol/cow-sdk/issues/368)) ([0a4534a](https://github.com/cowprotocol/cow-sdk/commit/0a4534aababce4f5d8bab991cd6ae9f51842d719))
+* **sdk-agnostic-lib:** Create weiroll package ([#371](https://github.com/cowprotocol/cow-sdk/issues/371)) ([8f6a2e1](https://github.com/cowprotocol/cow-sdk/commit/8f6a2e16e5e7a43a5afc43cf5faab174be916b2e))
+
+
+### 🐛 Bug Fixes
+
+* **cow-shed:** fix adapters - estimateGas  and encodeAbi ([76ab995](https://github.com/cowprotocol/cow-sdk/commit/76ab995635247e63213dafb50ff462334977cc6d))
+* **lib-agnostic:** add setProvider() method to adapters ([#432](https://github.com/cowprotocol/cow-sdk/issues/432)) ([64c0ea9](https://github.com/cowprotocol/cow-sdk/commit/64c0ea94d802aa167b978ae0859353d801de0911))
+
+
+### 🔧 Miscellaneous
+
+* add check to verify if the signature is the same across all three adapters in cowshedHooks test ([5558b86](https://github.com/cowprotocol/cow-sdk/commit/5558b867075ab9f0eb75eedf349d9ef96d65055f))
+* adjust cow-shed hooks test ([812d18c](https://github.com/cowprotocol/cow-sdk/commit/812d18c7b1cac64668d3643212f34b99efb08ebd))
+* apply PR suggestions ([2ff0f7c](https://github.com/cowprotocol/cow-sdk/commit/2ff0f7c74c377b67824da3ba6390edccdaad94f5))
+* **cow-shed:** rename CowShedHooks test file ([4bf22a6](https://github.com/cowprotocol/cow-sdk/commit/4bf22a622413446874592c23178648c71fe66368))
+* **sdk-agnostic-lib:** improve scripts and types ([#407](https://github.com/cowprotocol/cow-sdk/issues/407)) ([c4b5e08](https://github.com/cowprotocol/cow-sdk/commit/c4b5e086ce46086e9430d5f03ed330502349fbf3))
+* **sdk-agnostic-lib:** merge multiple PRs to avoid conflicts and speed up base branch sync ([#354](https://github.com/cowprotocol/cow-sdk/issues/354)) ([55d3068](https://github.com/cowprotocol/cow-sdk/commit/55d3068c52217dd2618d8c180ab4fed8c9334c72))
+* **subgraph:** move cow-shed to monorepo package ([2e7b27a](https://github.com/cowprotocol/cow-sdk/commit/2e7b27ae5ec04d03dc919cf508b1c4eb723818aa))
