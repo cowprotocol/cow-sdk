@@ -2,7 +2,12 @@ import { latest as latestAppData } from '@cowprotocol/app-data'
 import { OrderKind } from '@cowprotocol/contracts'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { SupportedChainId, TargetChainId } from '../../../chains'
-import { DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION, DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION } from '../../const'
+import {
+  COW_SHED_PROXY_CREATION_GAS,
+  DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION,
+  DEFAULT_EXTRA_GAS_PROXY_CREATION,
+  DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION,
+} from '../../const'
 import { BridgeStatus, QuoteBridgeRequest } from '../../types'
 import { BungeeApi } from './BungeeApi'
 import {
@@ -33,6 +38,8 @@ class BungeeBridgeProviderTest extends BungeeBridgeProvider {
   }
 }
 
+const mockGetCode = jest.fn()
+
 describe('BungeeBridgeProvider', () => {
   let provider: BungeeBridgeProviderTest
 
@@ -41,7 +48,7 @@ describe('BungeeBridgeProvider', () => {
       apiOptions: {},
       getRpcProvider() {
         return {
-          getCode: jest.fn().mockResolvedValue('0x1234567890'),
+          getCode: mockGetCode,
         } as unknown as JsonRpcProvider
       },
     }
@@ -396,7 +403,9 @@ describe('BungeeBridgeProvider', () => {
   })
 
   describe('getGasLimitEstimationForHook', () => {
-    it('should return default gas limit estimation for non-Mainnet to Gnosis', async () => {
+    it('should return default gas limit estimation for Mainnet to Polygon', async () => {
+      mockGetCode.mockResolvedValue('0x1234567890')
+
       const request: QuoteBridgeRequest = {
         kind: OrderKind.SELL,
         sellTokenAddress: '0x123',
@@ -417,7 +426,32 @@ describe('BungeeBridgeProvider', () => {
       expect(gasLimit).toEqual(DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION)
     })
 
+    it('should return default gas limit estimation for Mainnet to Polygon and deploy proxy account', async () => {
+      mockGetCode.mockResolvedValue(undefined)
+
+      const request: QuoteBridgeRequest = {
+        kind: OrderKind.SELL,
+        sellTokenAddress: '0x123',
+        sellTokenChainId: SupportedChainId.MAINNET,
+        buyTokenChainId: SupportedChainId.POLYGON,
+        amount: 1000000000000000000n,
+        receiver: '0x789',
+        account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
+        sellTokenDecimals: 18,
+        buyTokenAddress: '0x456',
+        buyTokenDecimals: 6,
+        appCode: '0x123',
+        signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+      }
+
+      const gasLimit = await provider.getGasLimitEstimationForHook(request)
+
+      expect(gasLimit).toEqual(DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION + COW_SHED_PROXY_CREATION_GAS)
+    })
+
     it('should return default gas limit estimation for Mainnet to Gnosis', async () => {
+      mockGetCode.mockResolvedValue('0x1234567890')
+
       const request: QuoteBridgeRequest = {
         kind: OrderKind.SELL,
         sellTokenAddress: '0x123',
@@ -436,6 +470,31 @@ describe('BungeeBridgeProvider', () => {
       const gasLimit = await provider.getGasLimitEstimationForHook(request)
 
       expect(gasLimit).toEqual(DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION + DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION)
+    })
+
+    it('should return default gas limit estimation for Mainnet to Gnosis and deploy proxy account', async () => {
+      mockGetCode.mockResolvedValue('0x')
+
+      const request: QuoteBridgeRequest = {
+        kind: OrderKind.SELL,
+        sellTokenAddress: '0x123',
+        sellTokenChainId: SupportedChainId.MAINNET,
+        buyTokenChainId: SupportedChainId.GNOSIS_CHAIN,
+        amount: 1000000000000000000n,
+        receiver: '0x789',
+        account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
+        sellTokenDecimals: 18,
+        buyTokenAddress: '0x456',
+        buyTokenDecimals: 6,
+        appCode: '0x123',
+        signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+      }
+
+      const gasLimit = await provider.getGasLimitEstimationForHook(request)
+
+      expect(gasLimit).toEqual(
+        DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION + COW_SHED_PROXY_CREATION_GAS + DEFAULT_EXTRA_GAS_PROXY_CREATION,
+      )
     })
   })
 })

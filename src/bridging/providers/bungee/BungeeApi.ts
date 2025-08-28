@@ -26,8 +26,9 @@ import { SupportedChainId, TargetChainId } from '../../../chains'
 import { getSigner } from '../../../common/utils/wallet'
 import { BuyTokensParams } from '../../types'
 
-const BUNGEE_API_URL = 'https://public-backend.bungee.exchange/api/v1/bungee'
-const BUNGEE_MANUAL_API_URL = 'https://public-backend.bungee.exchange/api/v1/bungee-manual'
+const BUNGEE_BASE_URL = 'https://public-backend.bungee.exchange'
+const BUNGEE_API_URL = `${BUNGEE_BASE_URL}/api/v1/bungee`
+const BUNGEE_MANUAL_API_URL = `${BUNGEE_BASE_URL}/api/v1/bungee-manual`
 const BUNGEE_EVENTS_API_URL = 'https://microservices.socket.tech/loki'
 const ACROSS_API_URL = 'https://app.across.to/api'
 
@@ -46,6 +47,7 @@ export interface BungeeApiOptions {
   eventsApiBaseUrl?: string
   acrossApiBaseUrl?: string
   includeBridges?: SupportedBridge[]
+  affiliate?: string
 }
 
 interface IntermediateTokensParams {
@@ -375,10 +377,15 @@ export class BungeeApi {
 
     const baseUrl = baseUrlMap[apiType]
     const url = `${baseUrl}${path}?${new URLSearchParams(params).toString()}`
+    const headers: Record<string, string> = {}
+
+    if (this.options.affiliate && !baseUrl.includes(BUNGEE_BASE_URL)) {
+      headers['affiliate'] = this.options.affiliate
+    }
 
     log(`Fetching ${apiType} API: GET ${url}. Params: ${JSON.stringify(params)}`)
 
-    const response = await fetch(url, { method: 'GET' })
+    const response = await fetch(url, { method: 'GET', headers })
 
     if (!response.ok) {
       const errorBody = await response.json()
@@ -501,7 +508,7 @@ function isValidBungeeEventsResponse(response: unknown): response is BungeeEvent
       'fromChainId' in e &&
       'isCowswapTrade' in e &&
       'orderId' in e &&
-      'recipient' in e &&
+      // 'recipient' in e &&
       'sender' in e &&
       'srcTxStatus' in e &&
       'destTxStatus' in e

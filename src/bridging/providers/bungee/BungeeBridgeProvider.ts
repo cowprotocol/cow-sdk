@@ -13,7 +13,11 @@ import {
   GetProviderBuyTokens,
   QuoteBridgeRequest,
 } from '../../types'
-import { DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION, RAW_PROVIDERS_FILES_PATH } from '../../const'
+import {
+  DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION,
+  DEFAULT_EXTRA_GAS_PROXY_CREATION,
+  RAW_PROVIDERS_FILES_PATH,
+} from '../../const'
 import { ChainId, ChainInfo, SupportedChainId } from '../../../chains'
 import { EvmCall, TokenInfo } from '../../../common'
 import { mainnet } from '../../../chains/details/mainnet'
@@ -150,14 +154,17 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   }
 
   async getGasLimitEstimationForHook(request: QuoteBridgeRequest): Promise<number> {
-    const extraGas = this.isExtraGasRequired(request) ? DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION : undefined
+    const isExtraGasRequired = this.isExtraGasRequired(request)
+    const extraGas = isExtraGasRequired ? DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION : undefined
+    const extraGasProxyCreation = isExtraGasRequired ? DEFAULT_EXTRA_GAS_PROXY_CREATION : undefined
 
-    return getGasLimitEstimationForHook(
-      this.cowShedSdk,
+    return getGasLimitEstimationForHook({
+      cowShedSdk: this.cowShedSdk,
       request,
-      this.getRpcProvider(request.sellTokenChainId),
+      provider: this.getRpcProvider(request.sellTokenChainId),
       extraGas,
-    )
+      extraGasProxyCreation,
+    })
   }
 
   async getSignedHook(
@@ -204,7 +211,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     _txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
     const events = await this.api.getEvents({ orderId })
-    const event = events[0]
+    const event = events?.[0]
 
     if (!event) return null
 
