@@ -1,0 +1,8 @@
+overwrite: true
+schema: 'https://gateway.thegraph.com/api/[ADD-YOUR-API-KEY]/subgraphs/id/8mdwJG7YCSwqfxUbhCypZvoubeZcFVpCHb4zmHhvuKTD'
+documents: './src/queries.ts'
+generates:
+  src/graphql.ts:
+    plugins:
+      - 'typescript'
+      - 'typescript-operations'

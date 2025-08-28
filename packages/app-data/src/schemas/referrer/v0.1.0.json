@@ -1,0 +1,21 @@
+{
+  "$id": "#referrer/v0.1.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "required": [
+    "version",
+    "address"
+  ],
+  "title": "Referrer",
+  "type": "object",
+  "properties": {
+    "version": {
+      "$ref": "../definitions.json#/definitions/version",
+      "readOnly": true,
+      "default": "0.1.0"
+    },
+    "address": {
+      "$ref": "../definitions.json#/definitions/ethereumAddress",
+      "title": "Referrer address"
+    }
+  }
+}

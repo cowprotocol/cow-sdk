@@ -1,0 +1,262 @@
+import {
+  Account,
+  WalletClient,
+  PublicClient,
+  Address,
+  TypedDataDomain,
+  TypedDataParameter,
+  createPublicClient,
+  Transport,
+  http,
+} from 'viem'
+import { AbstractSigner, CowError, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
+
+export class ViemSignerAdapter extends AbstractSigner<PublicClient> {
+  protected _client: WalletClient
+  protected _account: Account
+  protected _publicClient?: PublicClient
+  protected _transport: Transport
+
+  constructor(client: WalletClient) {
+    super()
+
+    this._client = client
+    if (!this._client.account) throw new CowError('Signer is missing account')
+    this._account = this._client.account
+    this._transport = typeof this._client.transport === 'function' ? this._client.transport : http()
+  }
+
+  connect(provider: PublicClient) {
+    this._publicClient = provider
+  }
+
+  async getAddress(): Promise<string> {
+    return this._account.address
+  }
+
+  async signMessage(message: string | Uint8Array): Promise<string> {
+    if (typeof message === 'string') {
+      return await this._client.signMessage({
+        account: this._account,
+        message,
+      })
+    } else {
+      return await this._client.signMessage({
+        account: this._account,
+        message: { raw: message },
+      })
+    }
+  }
+
+  async signTransaction(txParams: TransactionParams): Promise<string> {
+    const formattedTx = this._formatTxParams(txParams)
+
+    return await this._client.signTransaction({
+      account: this._account,
+      ...formattedTx,
+    })
+  }
+
+  async signTypedData(
+    domain: TypedDataDomain,
+    types: Record<string, TypedDataParameter>,
+    value: Record<string, unknown>,
+  ): Promise<string> {
+    const primaryType = Object.keys(types)[0]
+
+    if (!primaryType) throw new CowError('Missing primary type')
+
+    return await this._client.signTypedData({
+      account: this._account,
+      domain,
+      types,
+      primaryType,
+      message: value,
+    })
+  }
+
+  async sendTransaction(txParams: TransactionParams): Promise<TransactionResponse> {
+    const formattedTx = this._formatTxParams(txParams)
+
+    const hash = await this._client.sendTransaction({
+      account: this._account,
+      ...formattedTx,
+    })
+
+    return {
+      hash,
+      wait: async (confirmations?: number) => {
+        if (!this._publicClient) {
+          throw new CowError('Cannot wait for transaction without a public client')
+        }
+
+        const receipt = await this._publicClient.waitForTransactionReceipt({
+          hash,
+          confirmations,
+        })
+
+        return {
+          transactionHash: receipt.transactionHash,
+          blockNumber: BigInt(receipt.blockNumber),
+          blockHash: receipt.blockHash,
+          status: Number(receipt.status === 'success'),
+          gasUsed: receipt.gasUsed,
+          logs: receipt.logs.map((log) => ({ ...log, blockNumber: BigInt(log.blockNumber) })),
+        }
+      },
+    }
+  }
+
+  async estimateGas(txParams: TransactionParams): Promise<bigint> {
+    // For Viem, we need access to PublicClient to estimate gas
+    // The WalletClient doesn't have estimateGas method
+    if (!this._publicClient) {
+      // Try to get public client from the wallet client's chain
+      if (this._client.chain && this._transport) {
+        this._publicClient = createPublicClient({
+          chain: this._client.chain,
+          transport: this._transport,
+        })
+      } else {
+        throw new CowError('Cannot estimate gas: no public client available and cannot create one')
+      }
+    }
+
+    const formattedTx = this._formatTxParams(txParams)
+    const params = {
+      from: typeof this._account === 'string' ? this._account : this._account.address,
+      to: formattedTx.to,
+      data: formattedTx.data,
+      value: formattedTx.value ?? '0x0',
+    }
+
+    const hexGas = await this._publicClient.request({
+      method: 'eth_estimateGas',
+      params: [params],
+    })
+
+    return BigInt(hexGas)
+  }
+
+  private _formatTxParams(txParams: TransactionParams) {
+    // Convert to viem-specific format
+    const formatted: any = { ...txParams }
+
+    // Convert string addresses to Address type
+    if (formatted.to) {
+      formatted.to = formatted.to as Address
+    }
+
+    if (formatted.from) {
+      formatted.from = formatted.from as Address
+    }
+
+    // Ensure gas fields use the correct naming
+    if (formatted.gasLimit !== undefined) {
+      formatted.gas = formatted.gasLimit
+      delete formatted.gasLimit
+    }
+
+    return formatted
+  }
+}
+
+/**
+ * Base class for versioned typed data signers
+ * Provides common functionality for different EIP-712 typed data versions
+ */
+export class TypedDataVersionedSigner extends ViemSignerAdapter {
+  protected getTypedDataVersion(): string {
+    return 'v4' // Default to v4
+  }
+
+  async signTypedData(
+    domain: TypedDataDomain,
+    types: Record<string, TypedDataParameter>,
+    value: Record<string, unknown>,
+  ): Promise<string> {
+    // Override domain version if needed
+    const modifiedDomain = this.modifyDomain(domain)
+    return super.signTypedData(modifiedDomain, types, value)
+  }
+
+  protected modifyDomain(domain: TypedDataDomain): TypedDataDomain {
+    // Default implementation - subclasses can override
+    return domain
+  }
+}
+
+/**
+ * Signer for EIP-712 typed data version 3
+ * Handles legacy typed data signing for older protocols
+ */
+export class TypedDataV3Signer extends TypedDataVersionedSigner {
+  protected getTypedDataVersion(): string {
+    return 'v3'
+  }
+
+  async signTypedData(
+    domain: TypedDataDomain,
+    types: Record<string, TypedDataParameter>,
+    value: Record<string, unknown>,
+  ): Promise<string> {
+    // For V3, we might need to handle domain differently
+    // Remove any fields that aren't supported in V3
+    const v3Domain: TypedDataDomain = {
+      name: domain.name,
+      version: domain.version,
+      chainId: domain.chainId,
+      verifyingContract: domain.verifyingContract,
+      // V3 typically doesn't support salt
+    }
+
+    return super.signTypedData(v3Domain, types, value)
+  }
+}
+
+/**
+ * Signer for EIP-712 typed data version 4 with integer chain ID handling
+ * Ensures chain ID is properly formatted as an integer for compatibility
+ */
+export class IntChainIdTypedDataV4Signer extends TypedDataVersionedSigner {
+  protected getTypedDataVersion(): string {
+    return 'v4'
+  }
+
+  protected modifyDomain(domain: TypedDataDomain): TypedDataDomain {
+    // Ensure chainId is an integer for V4 compatibility
+    let chainId = domain.chainId
+
+    if (typeof chainId === 'string') {
+      chainId = parseInt(chainId, 10)
+    } else if (typeof chainId === 'bigint') {
+      chainId = Number(chainId)
+    }
+
+    return {
+      ...domain,
+      chainId,
+    }
+  }
+
+  async signTypedData(
+    domain: TypedDataDomain,
+    types: Record<string, TypedDataParameter>,
+    value: Record<string, unknown>,
+  ): Promise<string> {
+    // Apply integer chain ID modification
+    const modifiedDomain = this.modifyDomain(domain)
+
+    // Use viem's native signTypedData which supports V4
+    const primaryType = Object.keys(types)[0]
+    if (!primaryType) throw new CowError('Missing primary type')
+
+    return await this._client.signTypedData({
+      account: this._account,
+      domain: modifiedDomain,
+      types,
+      primaryType,
+      message: value,
+    })
+  }
+}
