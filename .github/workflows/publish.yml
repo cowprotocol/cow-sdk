@@ -3,6 +3,7 @@ name: Publish packages to NPM
 on:
   repository_dispatch:
     types: [publish]
+  workflow_dispatch: # Manual trigger
 
 env:
   NODE_VERSION: lts/jod
