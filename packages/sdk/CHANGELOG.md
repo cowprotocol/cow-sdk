@@ -1,6 +1,6 @@
 # Changelog
 
-## [7.1.0-beta.0](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.0.0-beta.0...cow-sdk-v7.1.0-beta.0) (2025-08-28)
+## [7.0.0-beta.0](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v6.3.2...cow-sdk-v7.0.0-beta.0) (2025-08-28)
 
 
 ### ✨ Features
