@@ -18,11 +18,13 @@ jobs:
       paths_released: ${{ steps.release.outputs.paths_released }}
     steps:
       - name: Run Release Please
-        uses: google-github-actions/release-please-action@v4
+        uses: google-github-actions/release-please-action@v4.0.2
         id: release
         with:
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
+          default-branch: main
+          target-branch: main
 
   publish:
     needs: release-please
