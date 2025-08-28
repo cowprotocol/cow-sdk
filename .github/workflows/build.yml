@@ -13,7 +13,7 @@ on:
     types: [published]
 
 env:
-  NODE_VERSION: lts/*
+  NODE_VERSION: lts/jod
 
 jobs:
   build:
@@ -28,9 +28,9 @@ jobs:
       - name: Remove broken apt repos [Ubuntu]
         run: |
           for apt_file in `grep -lr microsoft /etc/apt/sources.list.d/`; do sudo rm $apt_file; done
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 

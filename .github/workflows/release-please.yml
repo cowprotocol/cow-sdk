@@ -6,6 +6,9 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  NODE_VERSION: lts/jod
+
 permissions:
   contents: write
   pull-requests: write
@@ -23,33 +26,11 @@ jobs:
         with:
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
-          default-branch: main
           target-branch: main
-
-  publish:
-    needs: release-please
-    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Dispatch publish workflow
+        if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+        uses: peter-evans/repository-dispatch@v3
         with:
-          node-version: '18'
-          registry-url: 'https://registry.npmjs.org'
-      - name: Install dependencies
-        run: npm install
-      - name: Build all packages
-        run: npm run build
-      - name: Publish packages
-        run: npm run publish:all
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Log published packages
-        run: |
-          if [ -n "${{ needs.release-please.outputs.paths_released }}" ]; then
-            echo "Published packages: ${{ needs.release-please.outputs.paths_released }}"
-          else
-            echo "No packages published"
-          fi
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          event-type: publish
