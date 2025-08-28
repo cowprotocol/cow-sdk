@@ -64,13 +64,19 @@ You need:
 
 ```typescript
 import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/sdk-trading'
-import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
-import { JsonRpcProvider, Wallet } from 'ethers'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
 
-// Configure the adapter
-const provider = new JsonRpcProvider('YOUR_RPC_URL')
-const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
-const adapter = new EthersV6Adapter({ provider, signer: wallet })
+// There are EthersV5Adapter and EthersV6Adapter as well
+// @cowprotocol/sdk-ethers-v5-adapter, @cowprotocol/sdk-ethers-v6-adapter
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
 
 // Initialize the SDK
 const sdk = new TradingSdk(
@@ -102,13 +108,17 @@ console.log('Order created, id: ', orderId)
 
 ```typescript
 import { CowSdk, SupportedChainId, OrderKind, TradeParameters } from '@cowprotocol/cow-sdk'
-import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
-import { JsonRpcProvider, Wallet } from 'ethers'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
 
-// Configure the adapter
-const provider = new JsonRpcProvider('YOUR_RPC_URL')
-const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
-const adapter = new EthersV6Adapter({ provider, signer: wallet })
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
 
 // Initialize the unified SDK
 const sdk = new CowSdk({
@@ -148,15 +158,26 @@ const sdk = new CowSdk({
 // Other file:
 import { TradingSdk } from '@cowprotocol/cow-sdk'
 // parameters without passing the adapter. the adapter will be controlled by the umbrella
-const trading = TradingSdk(...)
+const trading = new TradingSdk(...)
 ```
 
 ### Options
 
-For detailed information about trading steps you can enable the SDK logging and configure UTM tracking:
+For detailed information about trading steps you can enable the SDK logging:
 
 ```typescript
 import { SupportedChainId, TradingSdk, TradingSdkOptions } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
 
 const traderParams = {
   chainId: SupportedChainId.SEPOLIA,
@@ -166,11 +187,10 @@ const traderParams = {
 
 const sdkOptions: TradingSdkOptions = {
   enableLogging: true, // enables detailed logging of trading steps
-  utmContent: '🐮 moo-ving to defi 🐮', // custom UTM content for tracking
   disableUtm: false, // set to true to disable UTM tracking completely
 }
 
-const sdk = new TradingSdk(traderParams, sdkOptions)
+const sdk = new TradingSdk(traderParams, sdkOptions, adapter)
 ```
 
 ### getQuote
@@ -195,12 +215,23 @@ It can be used to create an order from the received quote.
 
 ```typescript
 import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
 
 // Proper adapter initialization (see setup example above)
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
   appCode: '<YOUR_APP_CODE>',
-})
+}, {}, adapter)
 
 const parameters: TradeParameters = {
   kind: OrderKind.BUY,
@@ -241,12 +272,23 @@ The parameters required are:
 
 ```typescript
 import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
 
 // Proper adapter initialization (see setup example above)
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
   appCode: '<YOUR_APP_CODE>',
-})
+}, {}, adapter)
 
 const parameters: TradeParameters = {
   kind: OrderKind.BUY,
@@ -283,12 +325,23 @@ And optional parameters:
 
 ```typescript
 import { SupportedChainId, OrderKind, LimitTradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
 
 // Proper adapter initialization (see setup example above)
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
   appCode: '<YOUR_APP_CODE>',
-})
+}, {}, adapter)
 
 const limitOrderParameters: LimitTradeParameters = {
   kind: OrderKind.BUY,
@@ -316,12 +369,23 @@ But if you need more flexible way to create an order to sell native token, you c
 
 ```typescript
 import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
 
 // Proper adapter initialization (see setup example above)
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
   appCode: '<YOUR_APP_CODE>',
-})
+}, {}, adapter)
 
 const parameters: TradeParameters = {
   kind: OrderKind.BUY,
@@ -353,12 +417,23 @@ import {
   SigningScheme,
   TradingSdk,
 } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
 
 // Proper adapter initialization (see setup example above)
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
   appCode: '<YOUR_APP_CODE>',
-})
+}, {}, adapter)
 
 const parameters: TradeParameters = {
   kind: OrderKind.BUY,
@@ -390,12 +465,23 @@ And then you need to send a transaction from `getPreSignTransaction` result in o
 
 ```typescript
 import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
 
 // Proper adapter initialization (see setup example above)
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
   appCode: '<YOUR_APP_CODE>',
-})
+}, {}, adapter)
 
 const parameters: TradeParameters = {
   kind: OrderKind.BUY,
@@ -432,12 +518,23 @@ import {
   SigningScheme,
   TradingSdk,
 } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
 
 // Proper adapter initialization (see setup example above)
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
   appCode: '<YOUR_APP_CODE>',
-})
+}, {}, adapter)
 
 const smartContractWalletAddress = '0x<smartContractWalletAddress>'
 
@@ -486,12 +583,23 @@ See `TradeOptionalParameters` type for more details.
 
 ```typescript
 import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
 
 // Proper adapter initialization (see setup example above)
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
   appCode: '<YOUR_APP_CODE>',
-})
+}, {}, adapter)
 
 const parameters: TradeParameters = {
   kind: OrderKind.BUY,
@@ -532,12 +640,23 @@ import {
   SwapAdvancedSettings,
   PriceQuality,
 } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
 
 // Proper adapter initialization (see setup example above)
 const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
   appCode: '<YOUR_APP_CODE>',
-})
+}, {}, adapter)
 
 const parameters: TradeParameters = {
   kind: OrderKind.BUY,

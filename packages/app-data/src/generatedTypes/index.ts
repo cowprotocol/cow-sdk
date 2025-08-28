@@ -33,7 +33,7 @@ export const LATEST_PARTNER_FEE_METADATA_VERSION = '1.0.0'
 export const LATEST_REPLACED_ORDER_METADATA_VERSION = '0.1.0'
 
 export type LatestAppDataDocVersion = v1_6_0.AppDataRootSchema
-export type AnyAppDataDocVersion =
+export type AnyAppDataDocVersion = 
   | v1_6_0.AppDataRootSchema
   | v1_5_0.AppDataRootSchema
   | v1_4_0.AppDataRootSchema

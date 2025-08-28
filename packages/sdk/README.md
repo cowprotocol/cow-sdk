@@ -84,13 +84,20 @@ import {
   setGlobalAdapter,
   SupportedChainId
 } from '@cowprotocol/cow-sdk'
-import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
-import { JsonRpcProvider, Wallet } from 'ethers'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
 
-// Configure the adapter once
-const provider = new JsonRpcProvider('YOUR_RPC_URL')
-const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
-const adapter = new EthersV6Adapter({ provider, signer: wallet })
+// Create and configure adapter
+// There are EthersV5Adapter and EthersV6Adapter as well
+// @cowprotocol/sdk-ethers-v5-adapter, @cowprotocol/sdk-ethers-v6-adapter
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
 
 // Initialize the unified SDK
 const sdk = new CowSdk({
@@ -118,13 +125,20 @@ Import modules directly from the umbrella package without the unified instance:
 
 ```typescript
 import { TradingSdk, OrderBookApi, SupportedChainId, OrderKind, TradeParameters } from '@cowprotocol/cow-sdk'
-import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
-import { JsonRpcProvider, Wallet } from 'ethers'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
 
-// Configure adapter
-const provider = new JsonRpcProvider('YOUR_RPC_URL')
-const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
-const adapter = new EthersV6Adapter({ provider, signer: wallet })
+// Create and configure adapter
+// There are EthersV5Adapter and EthersV6Adapter as well
+// @cowprotocol/sdk-ethers-v5-adapter, @cowprotocol/sdk-ethers-v6-adapter
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
 
 // Use modules individually - adapter configuration is handled automatically
 const trading = new TradingSdk({ appCode: 'YOUR_APP_CODE' }, { chainId: SupportedChainId.SEPOLIA }, adapter)
@@ -142,13 +156,21 @@ Set up the adapter once and use modules without explicit adapter passing:
 
 ```typescript
 import { TradingSdk, OrderBookApi, OrderSigningUtils, setGlobalAdapter, SupportedChainId } from '@cowprotocol/cow-sdk'
-import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
-import { JsonRpcProvider, Wallet } from 'ethers'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
 
-// Configure adapter globally
-const provider = new JsonRpcProvider('YOUR_RPC_URL')
-const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
-const adapter = new EthersV6Adapter({ provider, signer: wallet })
+// Create and configure adapter
+// There are EthersV5Adapter and EthersV6Adapter as well
+// @cowprotocol/sdk-ethers-v5-adapter, @cowprotocol/sdk-ethers-v6-adapter
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
+
 setGlobalAdapter(adapter)
 
 // Now use modules without passing adapter each time
@@ -334,12 +356,6 @@ async function main() {
 
 main().catch(console.error)
 ```
-
-## 🏗️ **Architecture**
-
-To understand how all the pieces fit together, see our architecture documentation:
-
-> 📖 **[SDK Architecture Guide](https://github.com/cowprotocol/cow-sdk/blob/main/docs/architecture.md)**
 
 ## 🔗 **Related Resources**
 

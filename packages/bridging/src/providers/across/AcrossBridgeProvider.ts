@@ -147,7 +147,10 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
   }
 
   async getGasLimitEstimationForHook(request: QuoteBridgeRequest): Promise<number> {
-    return getGasLimitEstimationForHook(this.cowShedSdk, request)
+    return getGasLimitEstimationForHook({
+      cowShedSdk: this.cowShedSdk,
+      request,
+    })
   }
 
   async getSignedHook(

@@ -16,7 +16,7 @@ import { BridgeProviderError } from '../errors'
 import { SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { ALL_SUPPORTED_CHAINS, ChainInfo, CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
-import { enableLogging } from '@cowprotocol/sdk-common'
+import { AbstractProviderAdapter, enableLogging, setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 export interface BridgingSdkOptions {
   /**
@@ -67,7 +67,14 @@ export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'enableLogging
 export class BridgingSdk {
   protected config: BridgingSdkConfig
 
-  constructor(readonly options: BridgingSdkOptions) {
+  constructor(
+    readonly options: BridgingSdkOptions,
+    adapter?: AbstractProviderAdapter,
+  ) {
+    if (adapter) {
+      setGlobalAdapter(adapter)
+    }
+
     const { providers, ...restOptions } = options
 
     // For simplicity, we support only a single provider in the initial implementation

@@ -14,9 +14,14 @@
 
 ## Getting started
 
-**Usage examples:** [VanillaJS](https://github.com/cowprotocol/cow-sdk/blob/main/examples/vanilla/src/index.ts),
-[Create React App](https://github.com/cowprotocol/cow-sdk/blob/main/examples/cra/src/pages/getOrders/index.tsx),
-[NodeJS](https://github.com/cowprotocol/cow-sdk/blob/main/examples/nodejs/src/index.ts)
+**Usage examples:**
+
+- React (ethers v5): https://github.com/cowprotocol/cow-sdk/tree/main/examples/react/ethers5
+- React (ethers v6): https://github.com/cowprotocol/cow-sdk/tree/main/examples/react/ethers6
+- React (viem): https://github.com/cowprotocol/cow-sdk/tree/main/examples/react/viem
+- Node.js (ethers v5): https://github.com/cowprotocol/cow-sdk/blob/main/examples/nodejs/ethers5/src/index.ts
+- Node.js (ethers v6): https://github.com/cowprotocol/cow-sdk/blob/main/examples/nodejs/ethers6/src/index.ts
+- Node.js (viem): https://github.com/cowprotocol/cow-sdk/blob/main/examples/nodejs/viem/src/index.ts
 
 ### Installation
 
@@ -283,8 +288,6 @@ We will do the following operations:
 5. Get trades of the order
 6. Cancel the order (signing + sending)
 
-[You also can check this code in the CRA example](https://github.com/cowprotocol/cow-sdk/blob/main/examples/cra/src/pages/quickStart/index.tsx)
-
 ```typescript
 import { OrderBookApi, OrderSigningUtils, SupportedChainId } from '@cowprotocol/cow-sdk'
 import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
@@ -413,12 +416,6 @@ const backOffOpts: BackoffOptions = {
 
 const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.GNOSIS_CHAIN, limiterOpts, backOffOpts })
 ```
-
-## Architecture
-
-One way to make the most out of the SDK is to get familiar with its architecture.
-
-> See [SDK Architecture](https://github.com/cowprotocol/cow-sdk/blob/main/docs/architecture.md)
 
 ## Development
 
