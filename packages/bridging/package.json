@@ -22,7 +22,6 @@
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
     "test:bungeeGnosisBridge": "yarn test --testPathPattern=BungeeGnosisBridge",
     "typecheck": "tsc --noEmit",
-    "publish": "npm publish --access public",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {

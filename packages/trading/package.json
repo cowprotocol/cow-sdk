@@ -22,7 +22,6 @@
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
-    "publish": "npm publish --access public",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {

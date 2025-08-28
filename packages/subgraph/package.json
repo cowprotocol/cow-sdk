@@ -23,7 +23,6 @@
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
     "graphql:codegen": "graphql-codegen --config graphql-codegen.yml",
     "typecheck": "tsc --noEmit",
-    "publish": "npm publish --access public",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {

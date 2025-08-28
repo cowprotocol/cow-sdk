@@ -23,7 +23,6 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "typecheck": "tsc --noEmit",
-    "publish": "npm publish --access public",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
