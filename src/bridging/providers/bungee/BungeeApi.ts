@@ -508,7 +508,7 @@ function isValidBungeeEventsResponse(response: unknown): response is BungeeEvent
       'fromChainId' in e &&
       'isCowswapTrade' in e &&
       'orderId' in e &&
-      'recipient' in e &&
+      // 'recipient' in e &&
       'sender' in e &&
       'srcTxStatus' in e &&
       'destTxStatus' in e
