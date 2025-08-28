@@ -18,7 +18,6 @@
     "lint": "eslint src/**/*.ts",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
-    "publish": "npm publish --access public",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {

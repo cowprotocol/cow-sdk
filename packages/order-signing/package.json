@@ -23,7 +23,6 @@
     "test:coverage": "jest --coverage --json --outputFile=jest.results.json && npx coveralls < ./coverage/lcov.info",
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
     "typecheck": "tsc --noEmit",
-    "publish": "npm publish --access public",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
