@@ -372,13 +372,14 @@ import { Signer } from 'ethers'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 
 export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult> {
-  async getGasLimitEstimationForHook(request: Omit<QuoteBridgeRequest, 'amount'> & { extraGas?: number }): Promise<number> {
+  async getGasLimitEstimationForHook(request: Omit<QuoteBridgeRequest, 'amount'> & { extraGas?: number; extraGasProxyCreation?: number  }): Promise<number> {
     // Use utility function or implement custom gas estimation
-    return getGasLimitEstimationForHook(
-      this.cowShedSdk,
-      request as QuoteBridgeRequest, // cast needed due to omit
-      request.extraGas, // to add extra gas to the hook.
-    )
+    return getGasLimitEstimationForHook({
+      cowshed: this.cowShedSdk,
+      request: request as QuoteBridgeRequest, // cast needed due to omit
+      extraGas: request.extraGas, // to add extra gas to the hook
+      extraGasProxyCreation: request.extraGasProxyCreation // to add extra gas to the hook and deploy proxy account
+    })
   }
 
   async getSignedHook(
