@@ -35,13 +35,19 @@ The CoW SDK offers a unified interface through `CowSdk` that provides access to 
 
 ```typescript
 import { CowSdk, SupportedChainId, OrderKind } from '@cowprotocol/cow-sdk'
-import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
-import { JsonRpcProvider, Wallet } from 'ethers'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
 
-// Configure the adapter
-const provider = new JsonRpcProvider('YOUR_RPC_URL')
-const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
-const adapter = new EthersV6Adapter({ provider, signer: wallet })
+// There are EthersV5Adapter and EthersV6Adapter as well
+// @cowprotocol/sdk-ethers-v5-adapter, @cowprotocol/sdk-ethers-v6-adapter
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
 
 // Initialize the unified SDK
 const sdk = new CowSdk({
@@ -67,13 +73,20 @@ const totals = await sdk.subgraph?.getTotals()
 You can also import specific modules directly from the umbrella SDK:
 
 ```typescript
-import { TradingSdk } from '@cowprotocol/cow-sdk'
-import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
-import { JsonRpcProvider, Wallet } from 'ethers'
+import { TradingSdk, SupportedChainId } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
 
-const provider = new JsonRpcProvider('YOUR_RPC_URL')
-const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
-const adapter = new EthersV6Adapter({ provider, signer: wallet })
+// There are EthersV5Adapter and EthersV6Adapter as well
+// @cowprotocol/sdk-ethers-v5-adapter, @cowprotocol/sdk-ethers-v6-adapter
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
 
 const trading = new TradingSdk(
   { appCode: 'YOUR_APP_CODE' }, // trader params
@@ -355,7 +368,7 @@ Since the API supports different networks and environments, there are some optio
 
 #### Environment configuration
 
-`chainId` - can be one of `SupportedChainId.MAINNET`, `SupportedChainId.GNOSIS_CHAIN`, `SupportedChainId.ARBITRUM_ONE`, `SupportedChainId.BASE` or `SupportedChainId.SEPOLIA`
+`chainId` - can be one of `SupportedChainId.MAINNET`, `SupportedChainId.GNOSIS_CHAIN`, `SupportedChainId.ARBITRUM_ONE`, `SupportedChainId.BASE`, `SupportedChainId.AVALANCHE`, `SupportedChainId.POLYGON`, or `SupportedChainId.SEPOLIA`
 
 `env` - this parameter affects which environment will be used:
 

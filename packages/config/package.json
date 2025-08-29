@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-config",
-  "version": "0.1.0",
+  "version": "0.2.0-beta.0",
   "description": "Configuration constants and settings for CoW Protocol SDK",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -10,11 +10,15 @@
   "files": [
     "dist/**"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "lint": "eslint src/**/*.ts",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@cow-sdk/typescript-config": "workspace:*",

@@ -5,6 +5,7 @@ import {
   BuyTokensParams,
   CrossChainOrder,
   CrossChainQuoteAndPost,
+  GetProviderBuyTokens,
   QuoteBridgeRequest,
 } from '../types'
 import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
@@ -14,8 +15,8 @@ import { findBridgeProviderFromHook } from './findBridgeProviderFromHook'
 import { BridgeProviderError } from '../errors'
 import { SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
-import { ALL_SUPPORTED_CHAINS, ChainInfo, CowEnv, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
-import { enableLogging } from '@cowprotocol/sdk-common'
+import { ALL_SUPPORTED_CHAINS, ChainInfo, CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
+import { AbstractProviderAdapter, enableLogging, setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 export interface BridgingSdkOptions {
   /**
@@ -66,7 +67,14 @@ export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'enableLogging
 export class BridgingSdk {
   protected config: BridgingSdkConfig
 
-  constructor(readonly options: BridgingSdkOptions) {
+  constructor(
+    readonly options: BridgingSdkOptions,
+    adapter?: AbstractProviderAdapter,
+  ) {
+    if (adapter) {
+      setGlobalAdapter(adapter)
+    }
+
     const { providers, ...restOptions } = options
 
     // For simplicity, we support only a single provider in the initial implementation
@@ -125,7 +133,7 @@ export class BridgingSdk {
 
    * @param params
    */
-  async getBuyTokens(params: BuyTokensParams): Promise<TokenInfo[]> {
+  async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
     return this.provider.getBuyTokens(params)
   }
 

@@ -27,8 +27,9 @@ import {
 } from '@cowprotocol/sdk-trading'
 import { OrderBookApi, SigningScheme } from '@cowprotocol/sdk-order-book'
 import { ALL_SUPPORTED_CHAINS, mainnet, optimism, sepolia, SupportedChainId } from '@cowprotocol/sdk-config'
-import { expectToEqual, setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { createAdapters } from '../../tests/setup'
+import { expectToEqual } from '../test'
 
 const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>

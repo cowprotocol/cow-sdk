@@ -161,16 +161,16 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
     return YOUR_BRIDGE_SUPPORTED_NETWORKS
   }
 
-  async getBuyTokens(params: BuyTokensParams): Promise<TokenInfo[]> {
+  async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
     // Get tokens available for purchase on target chain
     try {
-      const tokens = await this.api.getSupportedTokens({
+      const tokensFromApi = await this.api.getSupportedTokens({
         chainId: params.buyChainId,
         sellChainId: params.sellChainId,
         sellTokenAddress: params.sellTokenAddress,
       })
 
-      return tokens.map((token) => ({
+      const tokens = tokensFromApi.map((token) => ({
         chainId: token.chainId,
         address: token.address,
         name: token.name,
@@ -178,6 +178,9 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
         decimals: token.decimals,
         logoUrl: token.logoUrl,
       }))
+      const isRouteAvailable = tokens.length > 0
+
+      return { tokens, isRouteAvailable }
     } catch (error) {
       console.error('Failed to fetch buy tokens:', error)
       return []
@@ -369,12 +372,14 @@ import { Signer } from 'ethers'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 
 export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult> {
-  async getGasLimitEstimationForHook(request: Omit<QuoteBridgeRequest, 'amount'>): Promise<number> {
+  async getGasLimitEstimationForHook(request: Omit<QuoteBridgeRequest, 'amount'> & { extraGas?: number; extraGasProxyCreation?: number  }): Promise<number> {
     // Use utility function or implement custom gas estimation
-    return getGasLimitEstimationForHook(
-      this.cowShedSdk,
-      request as QuoteBridgeRequest, // cast needed due to omit
-    )
+    return getGasLimitEstimationForHook({
+      cowshed: this.cowShedSdk,
+      request: request as QuoteBridgeRequest, // cast needed due to omit
+      extraGas: request.extraGas, // to add extra gas to the hook
+      extraGasProxyCreation: request.extraGasProxyCreation // to add extra gas to the hook and deploy proxy account
+    })
   }
 
   async getSignedHook(
@@ -688,7 +693,7 @@ private validateRequest(request: QuoteBridgeRequest): void {
 // Cache frequently accessed data
 private tokenCache = new Map<string, TokenInfo[]>()
 
-async getBuyTokens(params: BuyTokensParams): Promise<TokenInfo[]> {
+async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
   const cacheKey = `${params.buyChainId}-${params.sellChainId}`
 
   if (this.tokenCache.has(cacheKey)) {
@@ -697,8 +702,9 @@ async getBuyTokens(params: BuyTokensParams): Promise<TokenInfo[]> {
 
   const tokens = await this.api.getSupportedTokens(params)
   this.tokenCache.set(cacheKey, tokens)
+  const isRouteAvailable = tokens.length > 0
 
-  return tokens
+  return { tokens, isRouteAvailable }
 }
 ```
 

@@ -10,9 +10,14 @@ import {
   BridgeStatusResult,
   BridgingDepositParams,
   BuyTokensParams,
+  GetProviderBuyTokens,
   QuoteBridgeRequest,
 } from '../../types'
-import { RAW_PROVIDERS_FILES_PATH } from '../../const'
+import {
+  DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION,
+  DEFAULT_EXTRA_GAS_PROXY_CREATION,
+  RAW_PROVIDERS_FILES_PATH,
+} from '../../const'
 import { BungeeApi, BungeeApiOptions } from './BungeeApi'
 import { toBridgeQuoteResult } from './util'
 import { createBungeeDepositCall } from './createBungeeDepositCall'
@@ -28,6 +33,7 @@ import {
   ChainId,
   ChainInfo,
   EvmCall,
+  gnosisChain,
   mainnet,
   optimism,
   polygon,
@@ -38,7 +44,7 @@ import { CowShedSdk, CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
 import { AbstractProviderAdapter, setGlobalAdapter, SignerLike } from '@cowprotocol/sdk-common'
 
 export const BUNGEE_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/bungee`
-export const BUNGEE_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism, avalanche]
+export const BUNGEE_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism, avalanche, gnosisChain]
 
 /** There will be no dex swaps happening while bridging. Hence slippage will be zero */
 const SLIPPAGE_TOLERANCE_BPS = 0
@@ -84,8 +90,14 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     return BUNGEE_SUPPORTED_NETWORKS
   }
 
-  async getBuyTokens(params: BuyTokensParams): Promise<TokenInfo[]> {
-    return this.api.getBuyTokens(params)
+  async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
+    const tokens = await this.api.getBuyTokens(params)
+    const isRouteAvailable = tokens.length > 0
+
+    return {
+      tokens,
+      isRouteAvailable,
+    }
   }
 
   async getIntermediateTokens(request: QuoteBridgeRequest): Promise<TokenInfo[]> {
@@ -146,7 +158,16 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
   }
 
   async getGasLimitEstimationForHook(request: QuoteBridgeRequest): Promise<number> {
-    return getGasLimitEstimationForHook(this.cowShedSdk, request)
+    const isExtraGasRequired = this.isExtraGasRequired(request)
+    const extraGas = isExtraGasRequired ? DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION : undefined
+    const extraGasProxyCreation = isExtraGasRequired ? DEFAULT_EXTRA_GAS_PROXY_CREATION : undefined
+
+    return getGasLimitEstimationForHook({
+      cowShedSdk: this.cowShedSdk,
+      request,
+      extraGas,
+      extraGasProxyCreation
+    })
   }
 
   async getSignedHook(
@@ -193,7 +214,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     _txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
     const events = await this.api.getEvents({ orderId })
-    const event = events[0]
+    const event = events?.[0]
 
     if (!event) return null
 
@@ -247,5 +268,12 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
     // Across auto-relays refund txns some time after the order expires. No user action needed.
     // Therefore, not implementing refund
     throw new Error('Not implemented')
+  }
+
+  private isExtraGasRequired(request: QuoteBridgeRequest): boolean {
+    const { sellTokenChainId, buyTokenChainId } = request
+
+    // Bungee requires extra gas for bridging from Mainnet to Gnosis
+    return sellTokenChainId === SupportedChainId.MAINNET && buyTokenChainId === SupportedChainId.GNOSIS_CHAIN
   }
 }

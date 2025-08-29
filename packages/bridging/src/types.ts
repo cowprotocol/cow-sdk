@@ -135,6 +135,11 @@ export interface BuyTokensParams {
   sellTokenAddress?: string
 }
 
+export interface GetProviderBuyTokens {
+  tokens: TokenInfo[]
+  isRouteAvailable: boolean
+}
+
 /**
  * A bridge deposit. It includes the provideer information, sell amount and the minimum buy amount.
  *
@@ -159,7 +164,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
   /**
    * Get supported tokens for a chain
    */
-  getBuyTokens(params: BuyTokensParams): Promise<TokenInfo[]>
+  getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens>
 
   /**
    * Get intermediate tokens given a quote request.
@@ -198,8 +203,13 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    * 2. The final amount could affect hook gas costs
    *
    * By estimating gas costs independently, we can resolve this dependency cycle.
+   * For some providers, the `extraGas` parameter adds additional gas‐unit buffer to the hook
+   * and `extraGasProxyCreation` parameter adds additional gas‐unit buffer for the proxy creation
+   * (see DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION and DEFAULT_EXTRA_GAS_PROXY_CREATION).
    */
-  getGasLimitEstimationForHook(request: Omit<QuoteBridgeRequest, 'amount'>): Promise<number>
+  getGasLimitEstimationForHook(
+    request: Omit<QuoteBridgeRequest, 'amount'> & { extraGas?: number; extraGasProxyCreation?: number },
+  ): Promise<number>
 
   /**
    * Get a pre-authorized hook for initiating a bridge.

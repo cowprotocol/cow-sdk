@@ -37,6 +37,7 @@ export async function getBridgingStatusFromEvents(
         console.error('BungeeBridgeProvider get across status error', e)
       }
     }
+
     // if not across or across API fails, waiting for dest tx, return in_progress
     return { status: BridgeStatus.IN_PROGRESS, depositTxHash: event.srcTransactionHash }
   }

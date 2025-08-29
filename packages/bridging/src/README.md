@@ -49,17 +49,18 @@ yarn add @cowprotocol/cow-sdk
 ### Basic Setup
 
 ```typescript
-import { BridgingSdk, BungeeBridgeProvider, SupportedChainId } from '@cowprotocol/cow-sdk'
+import { BridgingSdk, BungeeBridgeProvider } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
 
-const rpcUrls: Record<SupportedChainId, string> = {
-  [SupportedChainId.MAINNET]: 'https://eth-mainnet.alchemyapi.io/v2/YOUR_KEY',
-  [SupportedChainId.POLYGON]: 'https://polygon-mainnet.alchemyapi.io/v2/YOUR_KEY',
-  [SupportedChainId.ARBITRUM_ONE]: 'https://arb-mainnet.alchemyapi.io/v2/YOUR_KEY',
-  [SupportedChainId.OPTIMISM]: 'https://opt-mainnet.alchemyapi.io/v2/YOUR_KEY',
-  [SupportedChainId.BASE]: 'https://base-mainnet.alchemyapi.io/v2/YOUR_KEY',
-  [SupportedChainId.AVALANCHE]: 'https://avalanche-mainnet.alchemyapi.io/v2/YOUR_KEY',
-  // ... add other chain RPC URLs as needed
-}
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
 
 // Initialize the bridge provider
 const bungeeProvider = new BungeeBridgeProvider({
@@ -69,10 +70,13 @@ const bungeeProvider = new BungeeBridgeProvider({
 })
 
 // Create the BridgingSdk instance
-const bridgingSdk = new BridgingSdk({
-  providers: [bungeeProvider],
-  enableLogging: true, // Optional: enable debug logging
-})
+const bridgingSdk = new BridgingSdk(
+  {
+    providers: [bungeeProvider],
+    enableLogging: true, // Optional: enable debug logging
+  },
+  adapter
+)
 ```
 
 ### Basic Cross-Chain Swap
@@ -181,7 +185,18 @@ interface BridgingSdkOptions {
 ### Advanced Configuration with Custom `TradingSDK`
 
 ```typescript
-import { BridgingSdk, BungeeBridgeProvider, TradingSdk, OrderBookApi, SupportedChainId } from '@cowprotocol/cow-sdk'
+import { BridgingSdk, BungeeBridgeProvider, OrderBookApi, SupportedChainId, TradingSdk } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
 
 const orderBookApi: OrderBookApi = new OrderBookApi({
   env: 'prod', // or 'staging'
@@ -196,6 +211,7 @@ const tradingSdk: TradingSdk = new TradingSdk(
   {
     orderBookApi,
   },
+  adapter
 )
 
 const bungeeProvider: BungeeBridgeProvider = new BungeeBridgeProvider({
@@ -204,12 +220,15 @@ const bungeeProvider: BungeeBridgeProvider = new BungeeBridgeProvider({
   },
 })
 
-const bridgingSdk: BridgingSdk = new BridgingSdk({
-  providers: [bungeeProvider],
-  tradingSdk,
-  orderBookApi,
-  enableLogging: false,
-})
+const bridgingSdk: BridgingSdk = new BridgingSdk(
+  {
+    providers: [bungeeProvider],
+    tradingSdk,
+    orderBookApi,
+    enableLogging: false,
+  },
+  adapter
+)
 ```
 
 ## Core Methods
@@ -317,16 +336,17 @@ import {
 } from '@cowprotocol/cow-sdk'
 import { formatEther, parseEther } from '@ethersproject/units'
 import { useWeb3React } from '@web3-react/core'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
 
-const getRpcUrl = (chainId: SupportedChainId): string => {
-  // Add your RPC URLs here
-  const rpcUrls: Record<SupportedChainId, string> = {
-    [SupportedChainId.MAINNET]: 'https://eth-mainnet.alchemyapi.io/v2/YOUR_KEY',
-    [SupportedChainId.POLYGON]: 'https://polygon-mainnet.alchemyapi.io/v2/YOUR_KEY',
-    // ... other chains
-  } as Record<SupportedChainId, string>
-  return rpcUrls[chainId]
-}
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
 
 const bungeeProvider = new BungeeBridgeProvider({
   apiOptions: {
@@ -334,7 +354,12 @@ const bungeeProvider = new BungeeBridgeProvider({
   },
 })
 
-const bridgingSdk = new BridgingSdk({ providers: [bungeeProvider] })
+const bridgingSdk = new BridgingSdk(
+  {
+    providers: [bungeeProvider]
+  },
+  adapter
+)
 
 const appCode = 'COW_BRIDGING_REACT_EXAMPLE'
 
@@ -414,6 +439,18 @@ const { OrderKind } = require('@cowprotocol/contracts')
 const { Wallet } = require('@ethersproject/wallet')
 const { parseEther } = require('@ethersproject/units')
 
+const { ViemAdapter } = require('@cowprotocol/sdk-viem-adapter')
+const { createPublicClient, http, privateKeyToAccount } = require('viem')
+const { sepolia } = require('viem/chains')
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
+
 // Configure environment
 require('dotenv').config()
 
@@ -433,10 +470,13 @@ async function main() {
   })
 
   // Initialize BridgingSdk
-  const bridgingSdk = new BridgingSdk({
-    providers: [bungeeProvider],
-    enableLogging: true,
-  })
+  const bridgingSdk = new BridgingSdk(
+    {
+      providers: [bungeeProvider],
+      enableLogging: true,
+    },
+    adapter
+  )
 
   // Prepare quote request
   const quoteBridgeRequest = {

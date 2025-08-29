@@ -15,7 +15,12 @@
     "clean": "turbo run clean && rm -rf .turbo && rm -rf node_modules",
     "codegen": "turbo run swagger:codegen --filter=@cowprotocol/sdk-order-book",
     "typecheck": "turbo run typecheck",
-    "prepublishOnly": "pnpm run typecheck && pnpm test && pnpm run lint"
+    "prepublishOnly": "pnpm run typecheck && pnpm test && pnpm run lint",
+    "publish:all": "bash workflows/publish-monorepo.sh",
+    "publish:changed": "changeset publish",
+    "release:dry-run": "release-please release-pr --dry-run",
+    "release:pr": "release-please release-pr",
+    "release:github": "release-please github-release"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
@@ -24,6 +29,7 @@
     "eslint": "^9.18.0",
     "eslint-plugin-unused-imports": "^4.1.4",
     "prettier": "^3.5.3",
+    "release-please": "^16.0.0",
     "tsup": "^7.2.0",
     "turbo": "latest",
     "typescript": "^5.2.2",
