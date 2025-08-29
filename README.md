@@ -157,12 +157,13 @@ const adapter = new EthersV5Adapter({ provider, signer: wallet })
 
 ```typescript
 import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
-import { http, createWalletClient, privateKeyToAccount } from 'viem'
+import { http, createPublicClient, privateKeyToAccount } from 'viem'
 import { sepolia } from 'viem/chains'
 
 const account = privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
 const transport = http('YOUR_RPC_URL')
-const adapter = new ViemAdapter({ chain: sepolia, transport, account })
+const provider = createPublicClient({ chain: sepolia, transport })
+const adapter = new ViemAdapter({ provider, signer: account })
 ```
 
 ## [Trading SDK](https://github.com/cowprotocol/cow-sdk/blob/main/packages/trading/README.md)

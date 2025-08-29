@@ -24,15 +24,16 @@ pnpm add @cowprotocol/sdk-viem-adapter
 
 ```typescript
 import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
-import { http, createWalletClient, privateKeyToAccount } from 'viem'
+import { http, createPublicClient, privateKeyToAccount } from 'viem'
 import { sepolia } from 'viem/chains'
 
 // Create account and transport
 const account = privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
 const transport = http('YOUR_RPC_URL')
+const provider = createPublicClient({ chain: sepolia, transport })
 
 // Initialize the adapter
-const adapter = new ViemAdapter({ chain: sepolia, transport, account })
+const adapter = new ViemAdapter({ provider, signer: account })
 ```
 
 ### Using with CoW SDK
@@ -40,13 +41,14 @@ const adapter = new ViemAdapter({ chain: sepolia, transport, account })
 ```typescript
 import { CowSdk, SupportedChainId } from '@cowprotocol/cow-sdk'
 import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
-import { http, privateKeyToAccount } from 'viem'
+import { http, createPublicClient, privateKeyToAccount } from 'viem'
 import { sepolia } from 'viem/chains'
 
 // Configure the adapter
 const account = privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
 const transport = http('YOUR_RPC_URL')
-const adapter = new ViemAdapter({ chain: sepolia, transport, account })
+const provider = createPublicClient({ chain: sepolia, transport })
+const adapter = new ViemAdapter({ provider, signer: account })
 
 // Initialize the unified SDK
 const sdk = new CowSdk({
@@ -72,12 +74,13 @@ const orders = await sdk.orderBook.getOrders({ owner: address })
 ```typescript
 import { TradingSdk } from '@cowprotocol/sdk-trading'
 import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
-import { http, privateKeyToAccount } from 'viem'
+import { http, createPublicClient, privateKeyToAccount } from 'viem'
 import { sepolia } from 'viem/chains'
 
 const account = privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
 const transport = http('YOUR_RPC_URL')
-const adapter = new ViemAdapter({ chain: sepolia, transport, account })
+const provider = createPublicClient({ chain: sepolia, transport })
+const adapter = new ViemAdapter({ provider, signer: account })
 
 const trading = new TradingSdk({ appCode: 'YOUR_APP_CODE' }, { chainId: SupportedChainId.SEPOLIA }, adapter)
 
@@ -89,14 +92,13 @@ const orderId = await trading.postSwapOrder(parameters)
 ### Constructor
 
 ```typescript
-new ViemAdapter({ chain, transport, account })
+new ViemAdapter({ provider, signer })
 ```
 
 #### Parameters
 
-- `chain` - A viem chain configuration
-- `transport` - A viem transport instance
-- `account` - A viem account instance
+- `provider` - A viem PublicClient instance
+- `signer` - A viem account instance or private key
 
 ### Methods
 
