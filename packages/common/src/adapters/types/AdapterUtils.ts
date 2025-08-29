@@ -4,11 +4,11 @@ import {
   TypedDataDomain,
   BigIntish,
   SignatureLike,
-  ContractInterface,
   TypedDataTypes,
   Address,
   Provider,
   GenericContractInterface,
+  ParamType,
 } from '.'
 
 /**
@@ -94,12 +94,7 @@ export abstract class AdapterUtils {
   /**
    * Converts a value to a BigIntish
    */
-  abstract toBigIntish(value: string | number | BigIntish): BigIntish
-
-  /**
-   * Creates a new BigIntish from a number or string
-   */
-  abstract newBigintish(value: number | string): BigIntish
+  abstract toBigIntish(value: BigIntish): BigIntish
 
   /**
    * Slices a portion of hex data
@@ -225,12 +220,12 @@ export abstract class AdapterUtils {
   /**
    * Creates a ParamType from a string type
    */
-  abstract getParamTypeFromString(type: string): ContractInterface
+  abstract getParamTypeFromString(type: string): ParamType
 
   /**
    * Creates a ParamType from a string type
    */
-  abstract getParamType(type: string): ContractInterface
+  abstract getParamType(type: string): ParamType
 
   /**
    * Verifies if a value is an Interface instance
