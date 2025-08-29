@@ -1,4 +1,4 @@
-import { AdapterUtils, CowError } from '@cowprotocol/sdk-common'
+import { AdapterUtils, ContractValue, CowError, ParamType as CommonParamType } from '@cowprotocol/sdk-common'
 import {
   Interface,
   TypedDataField,
@@ -41,7 +41,7 @@ export class EthersV6Utils implements AdapterUtils {
     return toUtf8Bytes(text)
   }
 
-  encodeDeploy(encodeDeployArgs: unknown[], abi: Abi): string {
+  encodeDeploy(encodeDeployArgs: ContractValue[], abi: Abi): string {
     const abiCoder = new AbiCoder()
     const contractInterface = new Interface(abi)
 
@@ -111,7 +111,7 @@ export class EthersV6Utils implements AdapterUtils {
     return ethersHexlify(value)
   }
 
-  solidityPack(types: string[], values: any[]): string {
+  solidityPack(types: string[], values: ContractValue[]): string {
     return solidityPacked(types, values)
   }
 
@@ -127,11 +127,11 @@ export class EthersV6Utils implements AdapterUtils {
     return getAddress(address)
   }
 
-  encodeAbi(types: string[], values: unknown[]): BytesLike {
+  encodeAbi(types: string[], values: ContractValue[]): BytesLike {
     return AbiCoder.defaultAbiCoder().encode(types, values)
   }
 
-  decodeAbi(types: string[], data: BytesLike): unknown[] {
+  decodeAbi(types: string[], data: BytesLike): ContractValue[] {
     return AbiCoder.defaultAbiCoder().decode(types, data)
   }
 
@@ -140,10 +140,6 @@ export class EthersV6Utils implements AdapterUtils {
   }
 
   toBigIntish(value: string | number | BigNumberish): BigNumberish {
-    return toBigInt(value)
-  }
-
-  newBigintish(value: number | string): BigNumberish {
     return toBigInt(value)
   }
 
@@ -184,7 +180,7 @@ export class EthersV6Utils implements AdapterUtils {
   encodeFunction(
     abi: Array<{ name: string; inputs: Array<{ type: string }> }>,
     functionName: string,
-    args: unknown[],
+    args: ContractValue[],
   ): string {
     const iface = new Interface(abi)
     return iface.encodeFunctionData(functionName, args)
@@ -194,7 +190,7 @@ export class EthersV6Utils implements AdapterUtils {
     abi: Array<{ name: string; inputs: Array<{ type: string }> }>,
     functionName: string,
     data: string,
-  ): any {
+  ): ContractValue[] {
     const iface = new Interface(abi)
     const result = iface.decodeFunctionData(functionName, data)
 
@@ -218,7 +214,7 @@ export class EthersV6Utils implements AdapterUtils {
     return Number(value.toString())
   }
 
-  solidityKeccak256(types: string[], values: unknown[]): unknown {
+  solidityKeccak256(types: string[], values: ContractValue[]): string {
     return solidityPackedKeccak256(types, values)
   }
 
@@ -235,7 +231,7 @@ export class EthersV6Utils implements AdapterUtils {
     authorizerAbi: Abi,
     vaultAddress: string,
     vaultRelayerAddress: string,
-    contractCall: (address: string, abi: Abi, functionName: string, args: unknown[]) => Promise<void>,
+    contractCall: (address: string, abi: Abi, functionName: string, args: ContractValue[]) => Promise<void>,
   ): Promise<void> {
     /**
      * Balancer Vault partial ABI interface.
@@ -274,7 +270,7 @@ export class EthersV6Utils implements AdapterUtils {
     readerAbi: any[],
     provider: JsonRpcProvider,
     method: string,
-    parameters: unknown[],
+    parameters: ContractValue[],
   ) {
     const base = new Contract(baseAddress, baseAbi, provider)
 
@@ -313,12 +309,12 @@ export class EthersV6Utils implements AdapterUtils {
     return parseUnits(value, decimals)
   }
 
-  getParamType(type: string): ParamType {
-    return ParamType.from(type)
+  getParamType(type: string): CommonParamType {
+    return ParamType.from(type) as unknown as CommonParamType
   }
 
-  getParamTypeFromString(type: string): ParamType {
-    return ParamType.from(type)
+  getParamTypeFromString(type: string): CommonParamType {
+    return ParamType.from(type) as unknown as CommonParamType
   }
 
   isInterface(value: any): boolean {

@@ -1,7 +1,6 @@
 import {
   PublicClient,
   Account,
-  TypedDataDomain,
   WalletClient,
   createWalletClient,
   Address,
@@ -18,6 +17,7 @@ import { privateKeyToAccount } from 'viem/accounts'
 import {
   AdapterTypes,
   AbstractProviderAdapter,
+  ContractValue,
   TransactionParams,
   PrivateKey,
   CowError,
@@ -37,14 +37,10 @@ import { Hash } from 'viem/types/misc'
 
 export interface ViemTypes extends AdapterTypes {
   Abi: Abi
-  Address: Address
   Bytes: `0x${string}`
-  BigIntish: bigint
-  ContractInterface: unknown
+  ContractInterface: Abi
   Provider: PublicClient
   Signer: WalletClient
-  TypedDataDomain: TypedDataDomain
-  TypedDataTypes: Record<string, unknown>
 }
 
 export interface ViemAdapterOptions {
@@ -167,7 +163,7 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
       address: string
       abi: Abi
       functionName: string
-      args?: unknown[]
+      args?: ContractValue[]
     },
     provider?: PublicClient,
   ): Promise<unknown> {

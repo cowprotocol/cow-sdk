@@ -1,6 +1,12 @@
-import { AdapterUtils, Address, GenericContractInterface } from '@cowprotocol/sdk-common'
-import { BigNumberish, BytesLike, ethers, TypedDataDomain, TypedDataField } from 'ethers'
-import { ParamType } from 'ethers/lib/utils'
+import {
+  AdapterUtils,
+  Address,
+  BigIntish,
+  ContractValue,
+  GenericContractInterface,
+  ParamType as CommonParamType,
+} from '@cowprotocol/sdk-common'
+import { BytesLike, ethers, TypedDataDomain, TypedDataField } from 'ethers'
 
 type Abi = ConstructorParameters<typeof ethers.utils.Interface>[0]
 
@@ -26,7 +32,7 @@ export class EthersV5Utils implements AdapterUtils {
     return ethers.utils.formatBytes32String(text)
   }
 
-  encodeDeploy(encodeDeployArgs: unknown[], abi: Abi) {
+  encodeDeploy(encodeDeployArgs: ContractValue[], abi: Abi) {
     const contractInterface = new ethers.utils.Interface(abi)
     return contractInterface.encodeDeploy(encodeDeployArgs)
   }
@@ -47,7 +53,7 @@ export class EthersV5Utils implements AdapterUtils {
     return ethers.utils.hexlify(value)
   }
 
-  solidityPack(types: string[], values: unknown[]): string {
+  solidityPack(types: string[], values: ContractValue[]): string {
     return ethers.utils.solidityPack(types, values)
   }
 
@@ -63,11 +69,11 @@ export class EthersV5Utils implements AdapterUtils {
     return ethers.utils.getAddress(address)
   }
 
-  encodeAbi(types: string[], values: unknown[]): BytesLike {
+  encodeAbi(types: string[], values: ContractValue[]): BytesLike {
     return ethers.utils.defaultAbiCoder.encode(types, values)
   }
 
-  decodeAbi(types: string[], data: BytesLike): unknown[] {
+  decodeAbi(types: string[], data: BytesLike): ContractValue[] {
     const decoded = ethers.utils.defaultAbiCoder.decode(types, data)
     return decoded.map((x) => this.convertBigNumbersToBigInt(x))
   }
@@ -116,11 +122,7 @@ export class EthersV5Utils implements AdapterUtils {
     return ethers.utils.id(text)
   }
 
-  toBigIntish(value: BytesLike | string | number): BigNumberish {
-    return ethers.BigNumber.from(value).toBigInt()
-  }
-
-  newBigintish(value: number | string): BigNumberish {
+  toBigIntish(value: unknown): BigIntish {
     return ethers.BigNumber.from(value).toBigInt()
   }
 
@@ -157,7 +159,7 @@ export class EthersV5Utils implements AdapterUtils {
   encodeFunction(
     abi: Array<{ name: string; inputs: Array<{ type: string }> }>,
     functionName: string,
-    args: unknown[],
+    args: ContractValue[],
   ): string {
     const iface = new ethers.utils.Interface(abi)
     return iface.encodeFunctionData(functionName, args)
@@ -167,7 +169,7 @@ export class EthersV5Utils implements AdapterUtils {
     abi: Array<{ name: string; inputs: Array<{ type: string }> }>,
     functionName: string,
     data: string,
-  ): any {
+  ): ContractValue[] {
     const iface = new ethers.utils.Interface(abi)
     const result = iface.decodeFunctionData(functionName, data)
 
@@ -187,11 +189,11 @@ export class EthersV5Utils implements AdapterUtils {
     return args
   }
 
-  toNumber(value: BigNumberish): number {
+  toNumber(value: BigIntish): number {
     return ethers.BigNumber.from(value).toNumber()
   }
 
-  solidityKeccak256(types: string[], values: unknown[]): unknown {
+  solidityKeccak256(types: string[], values: ContractValue[]): string {
     return ethers.utils.solidityKeccak256(types, values)
   }
 
@@ -204,7 +206,7 @@ export class EthersV5Utils implements AdapterUtils {
     authorizerAbi: Abi,
     vaultAddress: string,
     vaultRelayerAddress: string,
-    contractCall: (address: string, abi: Abi, functionName: string, args: unknown[]) => Promise<void>,
+    contractCall: (address: string, abi: Abi, functionName: string, args: ContractValue[]) => Promise<void>,
   ): Promise<void> {
     /**
      * Balancer Vault partial ABI interface.
@@ -240,7 +242,7 @@ export class EthersV5Utils implements AdapterUtils {
     readerAbi: Abi,
     provider: ethers.providers.JsonRpcProvider,
     method: string,
-    parameters: unknown[],
+    parameters: ContractValue[],
   ) {
     const base = new ethers.Contract(baseAddress, baseAbi, provider)
     const reader = new ethers.Contract(readerAddress, readerAbi, provider)
@@ -273,12 +275,12 @@ export class EthersV5Utils implements AdapterUtils {
     return ethers.utils.parseUnits(value, decimals).toBigInt()
   }
 
-  getParamType(type: string): ParamType {
-    return ethers.utils.ParamType.from(type)
+  getParamType(type: string): CommonParamType {
+    return ethers.utils.ParamType.from(type) as unknown as CommonParamType
   }
 
-  getParamTypeFromString(type: string): ParamType {
-    return ethers.utils.ParamType.fromString(type)
+  getParamTypeFromString(type: string): CommonParamType {
+    return ethers.utils.ParamType.fromString(type) as unknown as CommonParamType
   }
 
   isInterface(value: any): boolean {

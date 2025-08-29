@@ -444,7 +444,6 @@ export class SettlementEncoder {
       return []
     }
 
-    //@ts-expect-error: TypedDataDomain is unknown
     const settlement = this.domain.verifyingContract
     if (settlement === undefined) {
       throw new Error('domain missing settlement contract address')
@@ -551,7 +550,6 @@ export class SettlementEncoder {
    * @param orderRefunds The order refunds to encode.
    */
   public encodeOrderRefunds(orderRefunds: Partial<OrderRefunds>): void {
-    //@ts-expect-error:TypedDataDomain is unknown
     if (this.domain.verifyingContract === undefined) {
       throw new Error('domain missing settlement contract address')
     }

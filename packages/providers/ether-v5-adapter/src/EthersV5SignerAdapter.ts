@@ -68,7 +68,7 @@ export class EthersV5SignerAdapter extends AbstractSigner<RpcProvider> {
   private _formatTxParams(txParams: TransactionParams) {
     // Convert bigint values to BigNumber for ethers v5
 
-    const formatted: any = { ...txParams }
+    const formatted: Record<string, unknown> = { ...txParams }
 
     if (typeof formatted.value === 'bigint') {
       formatted.value = BigNumber.from(formatted.value.toString())

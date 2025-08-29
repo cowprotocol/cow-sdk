@@ -1,4 +1,4 @@
-import { CowError, GenericContractInterface, Log } from '@cowprotocol/sdk-common'
+import { ContractValue, CowError, GenericContractInterface, Log } from '@cowprotocol/sdk-common'
 import { Interface, InterfaceAbi } from 'ethers'
 
 /**
@@ -42,7 +42,7 @@ function normalizeFragment(fragment: any): any {
 export class EthersV6InterfaceWrapper implements GenericContractInterface {
   private ethersInterface: Interface
   private _functions: Record<string, any>
-  private _fragments: any[]
+  private _fragments: Record<string, unknown>[]
 
   constructor(abi: InterfaceAbi) {
     this.ethersInterface = new Interface(abi)
@@ -134,7 +134,7 @@ export class EthersV6InterfaceWrapper implements GenericContractInterface {
   /**
    * Encode function data
    */
-  encodeFunctionData(name: string, args: unknown[]): string {
+  encodeFunctionData(name: string, args: ContractValue[]): string {
     return this.ethersInterface.encodeFunctionData(name, args)
   }
 
@@ -142,7 +142,7 @@ export class EthersV6InterfaceWrapper implements GenericContractInterface {
    * Decode function data
    * Fixed to return data in the same format as ethers v5 for compatibility
    */
-  decodeFunctionData(functionName: string, data: string): unknown[] {
+  decodeFunctionData(functionName: string, data: string): ContractValue[] {
     try {
       const functionAbi = this.ethersInterface.getFunction(functionName)
       if (!functionAbi) {
@@ -157,7 +157,7 @@ export class EthersV6InterfaceWrapper implements GenericContractInterface {
       if (decoded && typeof decoded === 'object') {
         // Result objects in ethers v6 are array-like but have additional properties
         // Convert to plain array while preserving the structure
-        const result: unknown[] = []
+        const result: ContractValue[] = []
 
         // Copy indexed values
         for (let i = 0; i < decoded.length; i++) {
@@ -182,7 +182,7 @@ export class EthersV6InterfaceWrapper implements GenericContractInterface {
     }
   }
 
-  parseLog(event: Log): { args: unknown } | null {
+  parseLog(event: Log): { args: Record<string, unknown> } | null {
     return this.ethersInterface.parseLog(event)
   }
 

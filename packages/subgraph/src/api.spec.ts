@@ -3,7 +3,7 @@ import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { CowError } from '@cowprotocol/sdk-common'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
-import { SubgraphApi } from './api'
+import { SubgraphApi, SubgraphApiBaseUrls } from './api'
 
 enableFetchMocks()
 
@@ -327,14 +327,16 @@ describe('CoW subgraph URL', () => {
   })
 
   test('Uses urls from custom env config', async () => {
-    const customEnvConfig = {
+    const customEnvConfig: SubgraphApiBaseUrls = {
       [SupportedChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-staging',
       [SupportedChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc-staging',
-      [SupportedChainId.SEPOLIA]: null,
-      [SupportedChainId.ARBITRUM_ONE]: null,
       [SupportedChainId.BASE]: null,
+      [SupportedChainId.ARBITRUM_ONE]: null,
+      [SupportedChainId.SEPOLIA]: null,
       [SupportedChainId.POLYGON]: null,
       [SupportedChainId.AVALANCHE]: null,
+      [SupportedChainId.LENS]: null,
+      [SupportedChainId.BNB]: null,
     }
 
     const customSubgraphApi = new SubgraphApi('FakeApiKey', {

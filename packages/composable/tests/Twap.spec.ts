@@ -72,6 +72,9 @@ describe('TWAP Order - Multi-Adapter Tests', () => {
 
       // All instances should have consistent properties
       const [firstTwap, ...remainingTwaps] = twapInstances
+      if (!firstTwap) {
+        throw new Error('No first twap')
+      }
       remainingTwaps.forEach((twap) => {
         expect(twap.orderType).toEqual(firstTwap.orderType)
         expect(twap.hasOffChainInput).toEqual(firstTwap.hasOffChainInput)
@@ -111,6 +114,9 @@ describe('TWAP Order - Multi-Adapter Tests', () => {
 
       // All instances should have consistent properties
       const [firstTwap, ...remainingTwaps] = twapInstances
+      if (!firstTwap) {
+        throw new Error('No first twap')
+      }
       remainingTwaps.forEach((twap) => {
         expect(twap.orderType).toEqual(firstTwap.orderType)
         expect(twap.hasOffChainInput).toEqual(firstTwap.hasOffChainInput)
@@ -143,6 +149,9 @@ describe('TWAP Order - Multi-Adapter Tests', () => {
 
       // All instances should have consistent properties
       const [firstTwap, ...remainingTwaps] = twapInstances
+      if (!firstTwap) {
+        throw new Error('No first twap')
+      }
       remainingTwaps.forEach((twap) => {
         expect(twap.context).toEqual(firstTwap.context)
       })
@@ -549,6 +558,9 @@ describe('TWAP Order - Multi-Adapter Tests', () => {
 
       // All deserialized TWAPs should have identical properties
       const [firstTwap, ...remainingTwaps] = deserializedTwaps
+      if (!firstTwap) {
+        throw new Error('No first twap')
+      }
       remainingTwaps.forEach((twap) => {
         expect(twap.handler).toEqual(firstTwap.handler)
         expect(twap.salt).toEqual(firstTwap.salt)

@@ -7,7 +7,7 @@ import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from '.
 
 const SUBGRAPH_BASE_URL = 'https://gateway.thegraph.com/api/'
 
-type SubgraphApiBaseUrls = Record<SupportedChainId, string | null>
+export type SubgraphApiBaseUrls = Record<SupportedChainId, string | null>
 
 interface SubgraphApiContext extends Omit<ApiContext, 'baseUrls'> {
   baseUrls?: SubgraphApiBaseUrls

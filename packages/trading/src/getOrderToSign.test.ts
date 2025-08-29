@@ -6,7 +6,7 @@ import { DEFAULT_QUOTE_VALIDITY } from './consts'
 
 const currentTimestamp = 1487076708000
 
-const params = { from: '0xaaa444' }
+const params: any = { from: '0xaaa444' }
 
 const defaultOrderParams: LimitOrderParameters = {
   chainId: SupportedChainId.GNOSIS_CHAIN,

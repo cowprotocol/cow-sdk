@@ -15,7 +15,7 @@ import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { NATIVE_CURRENCY_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
 import { getHookMockForCostEstimation } from '../hooks/utils'
 import { createAdapters } from '../../tests/setup'
-import { AbstractSigner, setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { AbstractSigner, setGlobalAdapter, Provider } from '@cowprotocol/sdk-common'
 
 const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
@@ -29,7 +29,7 @@ adapterNames.forEach((adapterName) => {
     let getQuoteMock: jest.Mock
     let getUnsignedBridgeCallMock: jest.Mock
     let sendOrderMock: jest.Mock
-    let signerMock: AbstractSigner
+    let signerMock: AbstractSigner<Provider>
 
     beforeEach(() => {
       const adapter = adapters[adapterName]

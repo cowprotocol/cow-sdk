@@ -21,7 +21,7 @@ import {
 export abstract class AbstractProviderAdapter<T extends AdapterTypes = AdapterTypes> {
   public abstract utils: AdapterUtils
 
-  public ZERO_ADDRESS!: T['Address']
+  public ZERO_ADDRESS!: Address
 
   public abstract TypedDataVersionedSigner: new (signer: any, version: any) => AbstractSigner<T['Provider']>
   public abstract TypedDataV3Signer: new (signer: any) => AbstractSigner<T['Provider']>
@@ -38,7 +38,7 @@ export abstract class AbstractProviderAdapter<T extends AdapterTypes = AdapterTy
     signerOrPrivateKey: Signer | PrivateKey | AbstractSigner<T['Provider']>,
   ): AbstractSigner<T['Provider']>
   // reading functionality
-  abstract getStorageAt(address: T['Address'], slot: unknown): Promise<unknown>
+  abstract getStorageAt(address: Address, slot: string | number | bigint): Promise<unknown>
 
   // blockcahin interaction
   abstract call(txParams: TransactionParams, provider?: T['Provider']): Promise<string>

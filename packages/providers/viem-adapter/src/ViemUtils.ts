@@ -1,4 +1,10 @@
-import { AdapterUtils, CowError } from '@cowprotocol/sdk-common'
+import {
+  AdapterUtils,
+  ContractValue,
+  CowError,
+  TypedDataDomain as TypedDataDomainCommon,
+  ParamType as CommonParamType,
+} from '@cowprotocol/sdk-common'
 import {
   encodeDeployData,
   Abi,
@@ -121,18 +127,18 @@ export class ViemUtils implements AdapterUtils {
     return this.bytesToHex(value)
   }
 
-  solidityPack(types: string[], values: unknown[]): string {
+  solidityPack(types: string[], values: ContractValue[]): string {
     return encodePacked(types, values)
   }
 
-  hashTypedData(domain: TypedDataDomain, types: Record<string, unknown>, data: Record<string, unknown>): string {
+  hashTypedData(domain: TypedDataDomainCommon, types: Record<string, unknown>, data: Record<string, unknown>): string {
     const primaryType = Object.keys(types)[0]
     if (!primaryType) {
       throw new Error('No primary type found in types')
     }
-
+    const domainTypedDataDomain = domain as TypedDataDomain
     return hashTypedData({
-      domain,
+      domain: domainTypedDataDomain,
       types: types as Record<string, unknown>,
       primaryType,
       message: data,
@@ -143,7 +149,7 @@ export class ViemUtils implements AdapterUtils {
     return getAddress(address)
   }
 
-  encodeAbi(types: { type: string; name: string }[] | string[], values: unknown[]): `0x${string}` {
+  encodeAbi(types: { type: string; name: string }[] | string[], values: ContractValue[]): `0x${string}` {
     if (typeof types[0] === 'string') {
       return encodeAbiParameters(
         (types as string[]).map((type, i) => ({ type, name: `arg${i}` })) as AbiParameter[],
@@ -153,7 +159,7 @@ export class ViemUtils implements AdapterUtils {
     return encodeAbiParameters(types as AbiParameter[], values)
   }
 
-  decodeAbi(types: unknown[], data: `0x${string}`): unknown[] {
+  decodeAbi(types: (string | { type: string; name: string })[], data: `0x${string}`): unknown[] {
     if (typeof types[0] === 'string')
       return decodeAbiParameters(types.map((type, i) => ({ type, name: `arg${i}` })) as AbiParameter[], data)
     return decodeAbiParameters(types as AbiParameter[], data)
@@ -170,10 +176,6 @@ export class ViemUtils implements AdapterUtils {
       return BigInt(value)
     }
     return hexToBigInt(value)
-  }
-
-  newBigintish(value: number | string): bigint {
-    return BigInt(value)
   }
 
   hexDataSlice(data: `0x${string}`, offset: number, endOffset?: number): `0x${string}` {
@@ -219,7 +221,7 @@ export class ViemUtils implements AdapterUtils {
   }
 
   async verifyTypedData(
-    domain: TypedDataDomain,
+    domain: TypedDataDomainCommon,
     types: Record<string, Array<{ name: string; type: string }>>,
     value: Record<string, unknown>,
     signature: `0x${string}`,
@@ -228,9 +230,9 @@ export class ViemUtils implements AdapterUtils {
     if (!primaryType) {
       throw new Error('No primary type found in types')
     }
-
+    const domainTypedDataDomain = domain as TypedDataDomain
     return recoverTypedDataAddress({
-      domain,
+      domain: domainTypedDataDomain,
       types,
       primaryType,
       message: value,
@@ -241,7 +243,7 @@ export class ViemUtils implements AdapterUtils {
   encodeFunction(
     abi: Array<{ name: string; inputs: Array<{ type: string }>; type: string }>,
     functionName: string,
-    args: unknown[],
+    args: ContractValue[],
   ): string {
     const functionAbi = abi.find((item) => item.type === 'function' && item.name === functionName)
     if (!functionAbi) {
@@ -292,7 +294,7 @@ export class ViemUtils implements AdapterUtils {
     return Number(value)
   }
 
-  solidityKeccak256(types: unknown[], values: unknown[]) {
+  solidityKeccak256(types: (string | { type: string; name: string })[], values: ContractValue[]): string {
     const encoded = encodePacked(types, values)
 
     // Hash the encoded data
@@ -303,18 +305,19 @@ export class ViemUtils implements AdapterUtils {
     return new ViemInterfaceWrapper(abi)
   }
 
-  hashDomain(domain: TypedDataDomain): string {
+  hashDomain(domain: TypedDataDomainCommon): string {
+    const domainTypedDataDomain = domain as TypedDataDomain
     // 1. Define the EIP712Domain type hash
     const EIP712_DOMAIN_TYPEHASH = keccak256(
       toHex('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'),
     )
 
     // 2. Hash individual domain fields
-    const nameHash = domain.name
-      ? keccak256(toHex(domain.name))
+    const nameHash = domainTypedDataDomain.name
+      ? keccak256(toHex(domainTypedDataDomain.name))
       : '0x0000000000000000000000000000000000000000000000000000000000000000'
-    const versionHash = domain.version
-      ? keccak256(toHex(domain.version))
+    const versionHash = domainTypedDataDomain.version
+      ? keccak256(toHex(domainTypedDataDomain.version))
       : '0x0000000000000000000000000000000000000000000000000000000000000000'
 
     // 3. Encode the domain struct according to EIP-712
@@ -330,8 +333,8 @@ export class ViemUtils implements AdapterUtils {
         EIP712_DOMAIN_TYPEHASH,
         nameHash,
         versionHash,
-        BigInt(domain.chainId || 0),
-        (domain.verifyingContract as `0x${string}`) || '0x0000000000000000000000000000000000000000',
+        BigInt(domainTypedDataDomain.chainId || 0),
+        (domainTypedDataDomain.verifyingContract as `0x${string}`) || '0x0000000000000000000000000000000000000000',
       ],
     )
 
@@ -344,7 +347,7 @@ export class ViemUtils implements AdapterUtils {
     authorizerAbi: Abi,
     vaultAddress: string,
     vaultRelayerAddress: string,
-    contractCall: (address: string, abi: Abi, functionName: string, args: unknown[]) => Promise<void>,
+    contractCall: (address: string, abi: Abi, functionName: string, args: ContractValue[]) => Promise<void>,
   ): Promise<void> {
     /**
      * Balancer Vault partial ABI interface.
@@ -389,7 +392,7 @@ export class ViemUtils implements AdapterUtils {
     readerAbi: Abi,
     client: PublicClient,
     method: string,
-    parameters: unknown[],
+    parameters: ContractValue[],
   ) {
     // Encode the function call
     const encodedCall = encodeFunctionData({
@@ -449,11 +452,11 @@ export class ViemUtils implements AdapterUtils {
     return parseUnits(value, decimals)
   }
 
-  getParamType(type: string): ViemParamType {
-    return new ViemParamType(type)
+  getParamType(type: string): CommonParamType {
+    return new ViemParamType(type) as unknown as CommonParamType
   }
-  getParamTypeFromString(type: string): ViemParamType {
-    return new ViemParamType(type)
+  getParamTypeFromString(type: string): CommonParamType {
+    return new ViemParamType(type) as unknown as CommonParamType
   }
 
   isInterface(value: any): boolean {

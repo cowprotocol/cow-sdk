@@ -20,8 +20,8 @@ export interface GenericContractInterface {
   parseLog(event: Log): { args: unknown } | null
   getEventTopic(eventFragment: string): string | null
   decodeFunctionResult?(functionName: string, data: string): unknown[]
-  fragments?: any[]
-  getFunction?(functionName: string): any
+  fragments?: Record<string, unknown>[]
+  getFunction?(functionName: string): Record<string, unknown>
 }
 
 /**
