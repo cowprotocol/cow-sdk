@@ -1,5 +1,5 @@
 import { BigNumberish, BytesLike, ethers } from 'ethers'
-import type { TypedDataDomain, TypedDataField, TypedDataSigner } from '@ethersproject/abstract-signer'
+import type { TypedDataSigner } from '@ethersproject/abstract-signer'
 import {
   AbstractProviderAdapter,
   AdapterTypes,
@@ -24,24 +24,17 @@ type RpcProvider = ethers.providers.Provider
 
 export interface EthersV5Types extends AdapterTypes {
   Abi: Abi
-  Address: string
   Bytes: BytesLike
-  BigIntish: BigNumberish
   ContractInterface: Interface
   Provider: RpcProvider
   Signer: ethers.Signer
-  TypedDataDomain: TypedDataDomain
-  TypedDataTypes: Record<string, TypedDataField[]>
 }
-
 export interface EthersV5AdapterOptions {
   provider: RpcProvider | string // RPC URL or Provider instance
   signer?: ethers.Signer | PrivateKey // Optional signer or private key
 }
 
 export class EthersV5Adapter extends AbstractProviderAdapter<EthersV5Types> {
-  declare protected _type?: EthersV5Types
-
   private _provider: RpcProvider
   private _signerAdapter?: EthersV5SignerAdapter
 

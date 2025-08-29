@@ -4,8 +4,6 @@ import {
   Wallet,
   BytesLike,
   ZeroAddress,
-  TypedDataDomain,
-  TypedDataField,
   BigNumberish,
   Interface,
   Contract,
@@ -13,7 +11,6 @@ import {
 } from 'ethers'
 import {
   AbstractProviderAdapter,
-  AdapterTypes,
   Block,
   ContractValue,
   TransactionParams,
@@ -21,6 +18,7 @@ import {
   CowError,
   GenericContract,
   TransactionReceipt,
+  AdapterTypes,
 } from '@cowprotocol/sdk-common'
 import { EthersV6Utils } from './EthersV6Utils'
 import {
@@ -31,17 +29,12 @@ import {
 } from './EthersV6SignerAdapter'
 
 type Abi = ConstructorParameters<typeof Interface>[0]
-
 export interface EthersV6Types extends AdapterTypes {
   Abi: Abi
-  Address: string
   Bytes: BytesLike
-  BigIntish: BigNumberish
   ContractInterface: Interface
   Provider: Provider
   Signer: Signer
-  TypedDataDomain: TypedDataDomain
-  TypedDataTypes: Record<string, TypedDataField[]>
 }
 
 export interface EthersV6AdapterOptions {

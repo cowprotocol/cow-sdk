@@ -1,6 +1,12 @@
-import { AdapterUtils, Address, ContractValue, GenericContractInterface } from '@cowprotocol/sdk-common'
-import { BigNumberish, BytesLike, ethers, TypedDataDomain, TypedDataField } from 'ethers'
-import { ParamType } from 'ethers/lib/utils'
+import {
+  AdapterUtils,
+  Address,
+  BigIntish,
+  ContractValue,
+  GenericContractInterface,
+  ParamType as CommonParamType,
+} from '@cowprotocol/sdk-common'
+import { BytesLike, ethers, TypedDataDomain, TypedDataField } from 'ethers'
 
 type Abi = ConstructorParameters<typeof ethers.utils.Interface>[0]
 
@@ -116,11 +122,7 @@ export class EthersV5Utils implements AdapterUtils {
     return ethers.utils.id(text)
   }
 
-  toBigIntish(value: BytesLike | string | number): BigNumberish {
-    return ethers.BigNumber.from(value).toBigInt()
-  }
-
-  newBigintish(value: number | string): BigNumberish {
+  toBigIntish(value: unknown): BigIntish {
     return ethers.BigNumber.from(value).toBigInt()
   }
 
@@ -187,7 +189,7 @@ export class EthersV5Utils implements AdapterUtils {
     return args
   }
 
-  toNumber(value: BigNumberish): number {
+  toNumber(value: BigIntish): number {
     return ethers.BigNumber.from(value).toNumber()
   }
 
@@ -273,12 +275,12 @@ export class EthersV5Utils implements AdapterUtils {
     return ethers.utils.parseUnits(value, decimals).toBigInt()
   }
 
-  getParamType(type: string): ParamType {
-    return ethers.utils.ParamType.from(type)
+  getParamType(type: string): CommonParamType {
+    return ethers.utils.ParamType.from(type) as unknown as CommonParamType
   }
 
-  getParamTypeFromString(type: string): ParamType {
-    return ethers.utils.ParamType.fromString(type)
+  getParamTypeFromString(type: string): CommonParamType {
+    return ethers.utils.ParamType.fromString(type) as unknown as CommonParamType
   }
 
   isInterface(value: any): boolean {

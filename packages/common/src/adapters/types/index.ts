@@ -8,15 +8,21 @@ export type Abi = unknown
 
 export type Address = string
 
-export type BigIntish = unknown
+export type BigIntish = string | number | bigint
 
 export type Bytes = unknown
 
 export type ContractInterface = unknown
 
-export type TypedDataDomain = unknown
+export interface TypedDataDomain {
+  name?: string
+  version?: string
+  chainId?: number
+  verifyingContract?: string
+  salt?: string | Uint8Array // Flexible for different formats
+}
 
-export type TypedDataTypes = unknown
+export type TypedDataTypes = Record<string, Array<{ name: string; type: string }>>
 
 export interface Provider {
   getStorageAt?: (...args: any[]) => unknown
@@ -29,15 +35,11 @@ export type SignatureLike = unknown
 
 export type AdapterTypes = {
   Abi: Abi
-  Address: Address
-  BigIntish: BigIntish
   Bytes: Bytes
   ContractInterface: ContractInterface
   Provider: Provider
   Signer: Signer
   SignatureLike: SignatureLike
-  TypedDataDomain: TypedDataDomain
-  TypedDataTypes: TypedDataTypes
 }
 
 /**
@@ -109,3 +111,12 @@ export interface Block {
 }
 
 export type ContractValue = string | number | boolean | bigint
+
+export type ParamType = {
+  type?: string
+  name?: string
+  baseType?: string
+  arrayLength?: number | null
+  components?: ReadonlyArray<ParamType> | null
+  [key: string]: unknown
+}
