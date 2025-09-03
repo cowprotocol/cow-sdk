@@ -2,8 +2,8 @@ import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { arbitrumOne, avalanche, base, bnb, gnosisChain, mainnet, optimism, polygon } from '@cowprotocol/sdk-config'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
 import { zeroAddress } from 'viem'
-import { getBigNumber } from '@cowprotocol/sdk-order-book'
 
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
@@ -13,7 +13,7 @@ import type { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-a
 import type { AbstractProviderAdapter, SignerLike } from '@cowprotocol/sdk-common'
 import type { ChainId, ChainInfo, EvmCall, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import type { CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
-import { QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
+import type { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 import type { Hex } from 'viem'
 import type {
   BridgeDeposit,
