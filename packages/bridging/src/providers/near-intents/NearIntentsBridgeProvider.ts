@@ -3,7 +3,7 @@ import { arbitrumOne, avalanche, base, bnb, gnosisChain, mainnet, optimism, poly
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
-import { zeroAddress } from 'viem'
+import { encodeFunctionData, erc20Abi, zeroAddress } from 'viem'
 
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
@@ -225,7 +225,32 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
   }
 
   async getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: NearIntentsQuoteResult): Promise<EvmCall> {
-    throw new Error('not implemented')
+    const { sellTokenAddress } = request
+    const {
+      depositAddress,
+      amountsAndCosts: {
+        beforeFee: { sellAmount },
+      },
+    } = quote
+    if (sellTokenAddress === zeroAddress) {
+      // Send native tokens
+      return {
+        to: depositAddress,
+        value: sellAmount,
+        data: '0x',
+      }
+    } else {
+      // Send ERC20 tokens
+      return {
+        to: sellTokenAddress,
+        value: 0n,
+        data: encodeFunctionData({
+          abi: erc20Abi,
+          functionName: 'transfer',
+          args: [depositAddress, sellAmount],
+        }),
+      }
+    }
   }
 
   async getGasLimitEstimationForHook(
