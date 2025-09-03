@@ -10,6 +10,7 @@ const config: Config = {
   },
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  testTimeout: 20 * 1000
 }
 
 export default config

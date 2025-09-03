@@ -2,15 +2,19 @@ import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { arbitrumOne, avalanche, base, bnb, gnosisChain, mainnet, optimism, polygon } from '@cowprotocol/sdk-config'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
-import { NearIntentsApi } from './NearIntentsApi'
+import { zeroAddress } from 'viem'
+import { getBigNumber } from '@cowprotocol/sdk-order-book'
 
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
+import { NearIntentsApi } from './NearIntentsApi'
 
 import type { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
 import type { AbstractProviderAdapter, SignerLike } from '@cowprotocol/sdk-common'
 import type { ChainId, ChainInfo, EvmCall, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import type { CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
+import { QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
+import type { Hex } from 'viem'
 import type {
   BridgeDeposit,
   BridgeHook,
@@ -23,10 +27,10 @@ import type {
   GetProviderBuyTokens,
   QuoteBridgeRequest,
 } from '../../types'
-import { QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
-import { zeroAddress } from 'viem'
 
-export interface NearIntentsQuoteResult extends BridgeQuoteResult {}
+export interface NearIntentsQuoteResult extends BridgeQuoteResult {
+  depositAddress: Hex
+}
 
 export const NEAR_INTENTS_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/near-intents`
 
@@ -56,6 +60,15 @@ export interface NearIntentsBridgeProviderOptions {
   cowShedOptions?: CowShedSdkOptions
 }
 
+const calculateDeadline = (seconds: number) => {
+  const secs = Number(seconds)
+  if (!Number.isFinite(secs)) {
+    throw new Error(`Invalid seconds value: ${seconds}`)
+  }
+  const d = new Date(Date.now() + secs * 1000)
+  return d.toISOString().replace(/\.\d{3}Z$/, 'Z')
+}
+
 const adaptTokens = (tokens: TokenResponse[]): TokenInfo[] =>
   tokens.reduce<TokenInfo[]>((acc, token) => {
     const network = NEAR_BLOCKCHAIN_TO_COW_NETWORK[token.blockchain]
@@ -69,6 +82,20 @@ const adaptTokens = (tokens: TokenResponse[]): TokenInfo[] =>
     })
     return acc
   }, [])
+
+const getTokenByAddressAndChainId = (
+  tokens: TokenResponse[],
+  targetTokenAddress: string,
+  targetTokenChainId: number,
+) => {
+  return tokens.find((token) => {
+    const network = NEAR_BLOCKCHAIN_TO_COW_NETWORK[token.blockchain]
+    const tokenAddress = token.contractAddress || zeroAddress
+    return (
+      tokenAddress.toLowerCase() === targetTokenAddress.toLowerCase() && network && network.id === targetTokenChainId
+    )
+  })
+}
 
 export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuoteResult> {
   protected api: NearIntentsApi
@@ -125,7 +152,6 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
 
   async getQuote(request: QuoteBridgeRequest): Promise<NearIntentsQuoteResult> {
     const {
-      slippageBps,
       sellTokenAddress,
       sellTokenChainId,
       buyTokenAddress,
@@ -137,27 +163,16 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     } = request
     const tokens = await this.api.getTokens()
 
-    const getToken = (targetTokenAddress: string, targetTokenChainId: number) => {
-      return tokens.find((token) => {
-        const network = NEAR_BLOCKCHAIN_TO_COW_NETWORK[token.blockchain]
-        return (
-          token.contractAddress?.toLowerCase() === targetTokenAddress.toLowerCase() &&
-          network &&
-          network.id === targetTokenChainId
-        )
-      })
-    }
+    const sellToken = getTokenByAddressAndChainId(tokens, sellTokenAddress, sellTokenChainId)
+    const buyToken = getTokenByAddressAndChainId(tokens, buyTokenAddress, buyTokenChainId)
+    if (!sellToken || !buyToken) throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES)
 
-    const sellToken = getToken(sellTokenAddress, sellTokenChainId)
-    if (!sellToken) throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES)
+    const slippageBps = request.slippageBps || 100 // fallback to 1%
 
-    const buyToken = getToken(buyTokenAddress, buyTokenChainId)
-    if (!buyToken) throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES)
-
-    const result = await this.api.getQuote({
-      dry: false, // set to true for testing / false to get `depositAddress` and execute swap
+    const { quote, timestamp: isoDate } = await this.api.getQuote({
+      dry: false,
       swapType: QuoteRequest.swapType.EXACT_INPUT,
-      slippageTolerance: slippageBps || 100, // fallback to 1%
+      slippageTolerance: slippageBps,
       originAsset: sellToken.assetId,
       depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
       destinationAsset: buyToken.assetId,
@@ -166,10 +181,47 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
       refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
       recipient: receiver || account,
       recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
-      deadline: new Date(Date.now() + Number(validFor) * 1000).toISOString().replace(/\.\d{3}Z$/, 'Z'),
+      deadline: calculateDeadline(validFor || 3600),
     })
 
-    // TODO:
+    const slippage = (1 - Number(quote.amountOutUsd) / Number(quote.amountInUsd)) * 100
+
+    return {
+      isSell: request.kind === OrderKind.SELL,
+      depositAddress: quote.depositAddress as Hex,
+      quoteTimestamp: new Date(isoDate).getTime(),
+      expectedFillTimeSeconds: quote.timeEstimate,
+      limits: {
+        minDeposit: BigInt(quote.minAmountIn),
+        maxDeposit: BigInt(quote.amountIn),
+      },
+      fees: {
+        bridgeFee: BigInt(0),
+        destinationGasFee: BigInt(0),
+      },
+      amountsAndCosts: {
+        beforeFee: {
+          sellAmount: BigInt(quote.amountOut),
+          buyAmount: BigInt(quote.amountIn),
+        },
+        afterFee: {
+          sellAmount: BigInt(quote.amountOut),
+          buyAmount: BigInt(quote.amountIn),
+        },
+        afterSlippage: {
+          sellAmount: BigInt(quote.minAmountOut),
+          buyAmount: BigInt(quote.minAmountIn),
+        },
+        slippageBps: Math.trunc(slippage * 100),
+        costs: {
+          bridgingFee: {
+            feeBps: 0,
+            amountInSellCurrency: BigInt(0),
+            amountInBuyCurrency: BigInt(0),
+          },
+        },
+      },
+    }
   }
 
   async getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: NearIntentsQuoteResult): Promise<EvmCall> {
