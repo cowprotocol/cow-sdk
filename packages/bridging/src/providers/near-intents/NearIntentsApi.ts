@@ -14,8 +14,7 @@ export class NearIntentsApi {
   }
 
   async getQuote(request: QuoteRequest): Promise<QuoteResponse> {
-    // Get quote
-    const quote = await OneClickService.getQuote(quoteRequest)
+    return await OneClickService.getQuote(request)
   }
 }
 
