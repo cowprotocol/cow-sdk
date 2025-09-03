@@ -1,19 +1,16 @@
-//import { NearIntentsApi } from './NearIntentsApi'
-import {
-  NEAR_INTENTS_SUPPORTED_NETWORKS,
-  NearIntentsBridgeProvider,
-  NearIntentsQuoteResult,
-} from './NearIntentsBridgeProvider'
-import NearIntentsApi from './NearIntentsApi'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
+import { padHex, zeroAddress } from 'viem'
 
 import { createAdapters } from '../../../tests/setup'
+import NearIntentsApi from './NearIntentsApi'
+import { NEAR_INTENTS_SUPPORTED_NETWORKS, NearIntentsBridgeProvider } from './NearIntentsBridgeProvider'
 
-import { SupportedChainId, TokenInfo, type TargetChainId } from '@cowprotocol/sdk-config'
-import { QuoteBridgeRequest } from 'types'
-import { OrderKind } from '@cowprotocol/sdk-order-book'
-import { QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
-import { padHex, zeroAddress } from 'viem'
+import type { TargetChainId } from '@cowprotocol/sdk-config'
+import type { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
+import type { QuoteBridgeRequest } from 'types'
 
 // Mock NearIntentsApi
 jest.mock('./NearIntentsApi')
