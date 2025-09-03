@@ -1,19 +1,26 @@
 //import { NearIntentsApi } from './NearIntentsApi'
-import { NEAR_INTENTS_SUPPORTED_NETWORKS, NearIntentsBridgeProvider } from './NearIntentsBridgeProvider'
+import {
+  NEAR_INTENTS_SUPPORTED_NETWORKS,
+  NearIntentsBridgeProvider,
+  NearIntentsQuoteResult,
+} from './NearIntentsBridgeProvider'
 import NearIntentsApi from './NearIntentsApi'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 import { createAdapters } from '../../../tests/setup'
 
-import type { NearIntentsBridgeProviderOptions } from './NearIntentsBridgeProvider'
 import { SupportedChainId, TokenInfo, type TargetChainId } from '@cowprotocol/sdk-config'
+import { QuoteBridgeRequest } from 'types'
+import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
+import { padHex, zeroAddress } from 'viem'
 
 // Mock NearIntentsApi
 jest.mock('./NearIntentsApi')
 
 class NearIntentsBridgeProviderTest extends NearIntentsBridgeProvider {
-  constructor(options: NearIntentsBridgeProviderOptions) {
-    super(options)
+  constructor() {
+    super({})
   }
 
   // Re-expose the API for testing
@@ -58,7 +65,7 @@ adapterNames.forEach((adapterName) => {
     describe('getBuyTokens', () => {
       let api: NearIntentsApi
 
-      const mockApi = (tokens: TokenInfo[]) => {
+      const mockApi = (tokens: TokenResponse[]) => {
         api = new NearIntentsApi()
         jest.spyOn(api, 'getTokens').mockResolvedValue(tokens)
         provider.setApi(api)
@@ -74,7 +81,14 @@ adapterNames.forEach((adapterName) => {
 
       it('should return tokens for supported chain', async () => {
         mockApi([
-          { chainId: SupportedChainId.MAINNET, address: '0x123', decimals: 18, symbol: 'TOKEN1', name: 'Token 1' },
+          {
+            assetId: 'nep141:eth.omft.near',
+            decimals: 18,
+            blockchain: TokenResponse.blockchain.ETH,
+            symbol: 'ETH',
+            price: 4463.25,
+            priceUpdatedAt: '2025-09-03T14:42:00.329Z',
+          },
         ])
         const result = await provider.getBuyTokens({
           buyChainId: SupportedChainId.MAINNET,
@@ -94,173 +108,101 @@ adapterNames.forEach((adapterName) => {
       })
     })
 
-    /*describe('getQuote', () => {
-      const mockBungeeQuote: BungeeQuote = {
-        originChainId: 1,
-        destinationChainId: 137,
-        userAddress: '0x123',
-        receiverAddress: '0x789',
-        input: {
-          token: {
-            chainId: 1,
-            address: '0x123',
-            name: 'Token 1',
-            symbol: 'TOKEN1',
-            decimals: 18,
-            logoURI: '',
-            icon: '',
-          },
-          amount: '1000000000000000000',
-          priceInUsd: 1,
-          valueInUsd: 1,
-        },
-        route: {
-          affiliateFee: null,
-          quoteId: '123',
-          quoteExpiry: 1234567890,
-          output: {
-            token: {
-              chainId: 137,
-              address: '0x456',
-              name: 'Token 2',
-              symbol: 'TOKEN2',
-              decimals: 6,
-              logoURI: '',
-              icon: '',
-            },
-            amount: '1000000',
-            priceInUsd: 1,
-            valueInUsd: 1,
-            minAmountOut: '999900',
-            effectiveReceivedInUsd: 1,
-          },
-          approvalData: {
-            spenderAddress: '0x123',
-            amount: '1000000000000000000',
-            tokenAddress: '0x123',
-            userAddress: '0x123',
-          },
-          gasFee: {
-            gasToken: {
-              chainId: 1,
-              address: '0x123',
-              symbol: 'ETH',
-              name: 'Ethereum',
-              decimals: 18,
-              icon: '',
-              logoURI: '',
-              chainAgnosticId: null,
-            },
-            gasLimit: '100000',
-            gasPrice: '1000000000',
-            estimatedFee: '50000',
-            feeInUsd: 1,
-          },
-          slippage: 0,
-          estimatedTime: 300,
-          routeDetails: {
-            name: 'across',
-            logoURI: '',
-            routeFee: {
-              token: {
-                chainId: 1,
-                address: '0x123',
-                name: 'Token 1',
-                symbol: 'TOKEN1',
-                decimals: 18,
-                logoURI: '',
-                icon: '',
-              },
-              amount: '5000000000000000',
-              feeInUsd: 1,
-              priceInUsd: 1,
-            },
-            dexDetails: null,
-          },
-          refuel: null,
-        },
-        routeBridge: BungeeBridge.Across,
-        quoteTimestamp: 1234567890,
-      }
-
-      const mockBuildTx: BungeeBuildTx = {
-        approvalData: {
-          spenderAddress: '0x123',
-          amount: '1000000000000000000',
-          tokenAddress: '0x123',
-          userAddress: '0x123',
-        },
-        txData: {
-          data: '0x',
-          to: '0x123',
-          chainId: 1,
-          value: '0',
-        },
-        userOp: '',
-      }
-
+    describe('getQuote', () => {
       beforeEach(() => {
         const api = new NearIntentsApi()
-        jest.spyOn(api, 'getBungeeQuoteWithBuildTx').mockResolvedValue({
-          bungeeQuote: mockBungeeQuote,
-          buildTx: mockBuildTx,
+        jest.spyOn(api, 'getTokens').mockResolvedValue([
+          {
+            assetId: 'nep141:eth.omft.near',
+            decimals: 18,
+            blockchain: TokenResponse.blockchain.ETH,
+            symbol: 'ETH',
+            price: 4463.25,
+            priceUpdatedAt: '2025-09-03T14:42:00.329Z',
+          },
+          {
+            assetId: 'nep245:v2_1.omni.hot.tg:137_11111111111111111111',
+            decimals: 18,
+            blockchain: TokenResponse.blockchain.POL,
+            symbol: 'POL',
+            price: 0.287879,
+            priceUpdatedAt: '2025-09-03T14:42:00.329Z',
+          },
+        ])
+        jest.spyOn(api, 'getQuote').mockResolvedValue({
+          quote: {
+            amountIn: '35000000000000',
+            amountInFormatted: '0.000035',
+            amountInUsd: '0.1566',
+            minAmountIn: '35000000000000',
+            amountOut: '468413404557660287',
+            amountOutFormatted: '0.468413404557660287',
+            amountOutUsd: '0.1349',
+            minAmountOut: '463000005761085287',
+            timeEstimate: 49,
+            deadline: '2025-09-04T14:46:59.148Z',
+            timeWhenInactive: '2025-09-04T14:46:59.148Z',
+            depositAddress: '0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e',
+          },
+          quoteRequest: {
+            depositMode: QuoteRequest.depositMode.SIMPLE,
+            quoteWaitingTimeMs: 3000,
+            dry: false,
+            swapType: QuoteRequest.swapType.EXACT_INPUT,
+            slippageTolerance: 100,
+            originAsset: 'nep141:eth.omft.near',
+            depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
+            destinationAsset: 'nep245:v2_1.omni.hot.tg:137_11111111111111111111',
+            amount: '35000000000000',
+            refundTo: '0x0000000000000000000000000000000000000000',
+            refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
+            recipient: '0x0000000000000000000000000000000000000000',
+            recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
+            deadline: '2025-09-03T15:46:55.000Z',
+          },
+          signature: 'ed25519:Y54QM45ockDtJf3uAVhV8xndF79GPeQW5fJaZZLKfnaj8mW9NaBDsGg3uVXY1Fge73fYDAsdn9qokhjm2rsJATz',
+          timestamp: '2025-09-03T14:46:55.987Z',
         })
-        jest.spyOn(api, 'verifyBungeeBuildTx').mockResolvedValue(true)
         provider.setApi(api)
       })
 
-      it('should return quote with bungee quote data', async () => {
+      it('should return quote with deposit address', async () => {
         const request: QuoteBridgeRequest = {
           kind: OrderKind.SELL,
-          sellTokenAddress: '0x123',
+          sellTokenAddress: zeroAddress,
           sellTokenChainId: SupportedChainId.MAINNET,
           buyTokenChainId: SupportedChainId.POLYGON,
-          amount: 1000000000000000000n,
-          receiver: '0x789',
-          account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
+          amount: 35000000000000n,
+          receiver: zeroAddress,
+          account: zeroAddress,
           sellTokenDecimals: 18,
-          buyTokenAddress: '0x456',
+          buyTokenAddress: zeroAddress,
           buyTokenDecimals: 6,
-          appCode: '0x123',
-          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+          appCode: zeroAddress,
+          signer: padHex('0x1'),
         }
 
         const quote = await provider.getQuote(request)
 
-        const expectedQuote: BungeeQuoteResult = {
+        expect(quote).toEqual({
           isSell: true,
+          depositAddress: '0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e',
+          quoteTimestamp: 1756910815987,
+          expectedFillTimeSeconds: 49,
+          limits: { minDeposit: 35000000000000n, maxDeposit: 35000000000000n },
+          fees: { bridgeFee: 0n, destinationGasFee: 0n },
           amountsAndCosts: {
-            beforeFee: { sellAmount: 1000000000000000000n, buyAmount: 1000000n },
-            afterFee: { sellAmount: 1000000000000000000n, buyAmount: 1000000n },
-            afterSlippage: { sellAmount: 1000000000000000000n, buyAmount: 1000000n },
-            costs: {
-              bridgingFee: {
-                feeBps: 50,
-                amountInSellCurrency: 5000000000000000n,
-                amountInBuyCurrency: 0n,
-              },
-            },
-            slippageBps: 0,
+            beforeFee: { sellAmount: 468413404557660287n, buyAmount: 35000000000000n },
+            afterFee: { sellAmount: 468413404557660287n, buyAmount: 35000000000000n },
+            afterSlippage: { sellAmount: 463000005761085287n, buyAmount: 35000000000000n },
+            slippageBps: 1385,
+            costs: { bridgingFee: { feeBps: 0, amountInSellCurrency: 0n, amountInBuyCurrency: 0n } },
           },
-          quoteTimestamp: 1234567890,
-          expectedFillTimeSeconds: 300,
-          fees: {
-            bridgeFee: 5000000000000000n,
-            destinationGasFee: 0n,
-          },
-          limits: {
-            minDeposit: 0n,
-            maxDeposit: 0n,
-          },
-          bungeeQuote: mockBungeeQuote,
-          buildTx: mockBuildTx,
-        }
-
-        expect(quote).toEqual(expectedQuote)
+        })
       })
     })
 
-    describe('info', () => {
+    /*describe('info', () => {
       it('should return provider info', () => {
         expect(provider.info).toEqual({
           dappId: BUNGEE_HOOK_DAPP_ID,
