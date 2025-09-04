@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v6-adapter-v0.2.0-beta.0...sdk-ethers-v6-adapter-v0.2.1-beta.0) (2025-09-01)
+
+
+### 🐛 Bug Fixes
+
+* improve unknown/any types ([#443](https://github.com/cowprotocol/cow-sdk/issues/443)) ([e6b8a40](https://github.com/cowprotocol/cow-sdk/commit/e6b8a40578583cf6d1ecd208434782422f308ef0))
+
 ## [0.2.0-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v6-adapter-v0.1.0-beta.0...sdk-ethers-v6-adapter-v0.2.0-beta.0) (2025-08-28)
 
 

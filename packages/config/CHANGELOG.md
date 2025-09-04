@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.2.0-beta.0...sdk-config-v0.2.1-beta.0) (2025-09-01)
+
+
+### 🐛 Bug Fixes
+
+* migrate lens eth-flow contract address ([#468](https://github.com/cowprotocol/cow-sdk/issues/468)) ([91c87b2](https://github.com/cowprotocol/cow-sdk/commit/91c87b2e31c1b80ef1703d986f4c49811897f3a0))
+
 ## [0.2.0-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.1.0-beta.0...sdk-config-v0.2.0-beta.0) (2025-08-28)
 
 
