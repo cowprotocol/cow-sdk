@@ -1,5 +1,4 @@
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
-import { ETH_ADDRESS } from '@cowprotocol/sdk-config'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
@@ -9,18 +8,13 @@ import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../.
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 import { NearIntentsApi } from './NearIntentsApi'
-import {
-  NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK,
-  NEAR_INTENTS_BLOCKCHAIN_TO_NATIVE_WRAPPED_TOKEN_ADDRESS,
-  NEAR_INTENTS_STATUS_TO_COW_STATUS,
-  NEAR_INTENTS_SUPPORTED_NETWORKS,
-} from './const'
+import { NEAR_INTENTS_STATUS_TO_COW_STATUS, NEAR_INTENTS_SUPPORTED_NETWORKS } from './const'
+import { adaptTokens, calculateDeadline, getTokenByAddressAndChainId } from './util'
 
 import type { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
 import type { AbstractProviderAdapter, SignerLike } from '@cowprotocol/sdk-common'
 import type { ChainId, ChainInfo, EvmCall, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import type { CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
-import type { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 import type { Hex } from 'viem'
 import {
   BridgeStatus,
@@ -44,47 +38,6 @@ export const NEAR_INTENTS_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/ne
 
 export interface NearIntentsBridgeProviderOptions {
   cowShedOptions?: CowShedSdkOptions
-}
-
-const calculateDeadline = (seconds: number) => {
-  const secs = Number(seconds)
-  if (!Number.isFinite(secs)) {
-    throw new Error(`Invalid seconds value: ${seconds}`)
-  }
-  const d = new Date(Date.now() + secs * 1000)
-  return d.toISOString().replace(/\.\d{3}Z$/, 'Z')
-}
-
-const adaptTokens = (tokens: TokenResponse[]): TokenInfo[] =>
-  tokens.reduce<TokenInfo[]>((acc, token) => {
-    const network = NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK[token.blockchain]
-    if (!network) return acc
-    const tokenAddress =
-      token.contractAddress || NEAR_INTENTS_BLOCKCHAIN_TO_NATIVE_WRAPPED_TOKEN_ADDRESS[token.blockchain]
-    if (!tokenAddress) return acc
-    acc.push({
-      chainId: network.id,
-      decimals: token.decimals,
-      address: tokenAddress,
-      name: token.symbol, // TODO: how to handle? v0/tokens doesn't return the token name
-      symbol: token.symbol,
-    })
-    return acc
-  }, [])
-
-const getTokenByAddressAndChainId = (
-  tokens: TokenResponse[],
-  targetTokenAddress: string,
-  targetTokenChainId: number,
-) => {
-  return tokens.find((token) => {
-    const network = NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK[token.blockchain]
-    if (!network) return false
-    const tokenAddress = token.contractAddress?.toLowerCase() || ETH_ADDRESS.toLowerCase()
-    return (
-      tokenAddress.toLowerCase() === targetTokenAddress.toLowerCase() && network && network.id === targetTokenChainId
-    )
-  })
 }
 
 export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuoteResult> {
