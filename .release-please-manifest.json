@@ -4,7 +4,7 @@
   "packages/common": "0.2.1-beta.0",
   "packages/composable": "0.2.1-beta.0",
   "packages/config": "0.2.1-beta.0",
-  "packages/contracts-ts": "2.1.1-beta.0",
+  "packages/contracts-ts": "2.1.2-beta.0",
   "packages/cow-shed": "0.2.0-beta.0",
   "packages/order-book": "0.2.0-beta.0",
   "packages/order-signing": "0.2.0-beta.0",
@@ -14,5 +14,5 @@
   "packages/providers/ether-v5-adapter": "0.2.1-beta.0",
   "packages/providers/ether-v6-adapter": "0.2.1-beta.0",
   "packages/providers/viem-adapter": "0.2.1-beta.0",
-  "packages/sdk": "7.0.0-beta.0"
+  "packages/sdk": "7.0.1-beta.0"
 }
