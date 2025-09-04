@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.0.1-beta.0](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.0.0-beta.0...cow-sdk-v7.0.1-beta.0) (2025-09-04)
+
+
+### 🔧 Miscellaneous
+
+* bump sdk beta version ([#473](https://github.com/cowprotocol/cow-sdk/issues/473)) ([00142d3](https://github.com/cowprotocol/cow-sdk/commit/00142d3e524ebf7a023814ba91ee3a66ed796444))
+
 ## [7.0.0-beta.0](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v6.3.2...cow-sdk-v7.0.0-beta.0) (2025-08-28)
 
 

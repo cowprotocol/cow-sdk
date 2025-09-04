@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.2-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v2.1.1-beta.0...sdk-contracts-ts-v2.1.2-beta.0) (2025-09-04)
+
+
+### 🔧 Miscellaneous
+
+* bump sdk beta version ([#473](https://github.com/cowprotocol/cow-sdk/issues/473)) ([00142d3](https://github.com/cowprotocol/cow-sdk/commit/00142d3e524ebf7a023814ba91ee3a66ed796444))
+
 ## [2.1.1-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v2.1.0-beta.0...sdk-contracts-ts-v2.1.1-beta.0) (2025-09-01)
 
 
