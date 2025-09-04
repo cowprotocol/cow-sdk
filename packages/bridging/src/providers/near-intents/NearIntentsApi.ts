@@ -1,6 +1,11 @@
-import { OneClickService, QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
+import { OneClickService } from '@defuse-protocol/one-click-sdk-typescript'
 
-import type { QuoteResponse, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
+import type {
+  GetExecutionStatusResponse,
+  QuoteRequest,
+  QuoteResponse,
+  TokenResponse,
+} from '@defuse-protocol/one-click-sdk-typescript'
 
 export class NearIntentsApi {
   private cachedTokens: TokenResponse[] = []
@@ -15,6 +20,10 @@ export class NearIntentsApi {
 
   async getQuote(request: QuoteRequest): Promise<QuoteResponse> {
     return await OneClickService.getQuote(request)
+  }
+
+  async getStatus(depositAddress: string): Promise<GetExecutionStatusResponse> {
+    return await OneClickService.getExecutionStatus(depositAddress)
   }
 }
 

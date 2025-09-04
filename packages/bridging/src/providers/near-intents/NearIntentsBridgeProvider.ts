@@ -1,15 +1,5 @@
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
-import {
-  arbitrumOne,
-  avalanche,
-  base,
-  bnb,
-  ETH_ADDRESS,
-  gnosisChain,
-  mainnet,
-  optimism,
-  polygon,
-} from '@cowprotocol/sdk-config'
+import { ETH_ADDRESS } from '@cowprotocol/sdk-config'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
@@ -19,6 +9,12 @@ import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../.
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 import { NearIntentsApi } from './NearIntentsApi'
+import {
+  NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK,
+  NEAR_INTENTS_BLOCKCHAIN_TO_NATIVE_WRAPPED_TOKEN_ADDRESS,
+  NEAR_INTENTS_STATUS_TO_COW_STATUS,
+  NEAR_INTENTS_SUPPORTED_NETWORKS,
+} from './const'
 
 import type { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
 import type { AbstractProviderAdapter, SignerLike } from '@cowprotocol/sdk-common'
@@ -26,17 +22,18 @@ import type { ChainId, ChainInfo, EvmCall, SupportedChainId, TokenInfo } from '@
 import type { CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
 import type { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 import type { Hex } from 'viem'
-import type {
-  BridgeDeposit,
-  BridgeHook,
-  BridgeProvider,
-  BridgeProviderInfo,
-  BridgeQuoteResult,
-  BridgeStatusResult,
-  BridgingDepositParams,
-  BuyTokensParams,
-  GetProviderBuyTokens,
-  QuoteBridgeRequest,
+import {
+  BridgeStatus,
+  type BridgeDeposit,
+  type BridgeHook,
+  type BridgeProvider,
+  type BridgeProviderInfo,
+  type BridgeQuoteResult,
+  type BridgeStatusResult,
+  type BridgingDepositParams,
+  type BuyTokensParams,
+  type GetProviderBuyTokens,
+  type QuoteBridgeRequest,
 } from '../../types'
 
 export interface NearIntentsQuoteResult extends BridgeQuoteResult {
@@ -44,39 +41,6 @@ export interface NearIntentsQuoteResult extends BridgeQuoteResult {
 }
 
 export const NEAR_INTENTS_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/near-intents`
-
-export const NEAR_INTENTS_SUPPORTED_NETWORKS = [
-  arbitrumOne,
-  avalanche,
-  base,
-  bnb,
-  gnosisChain,
-  mainnet,
-  optimism,
-  polygon,
-]
-
-export const NEAR_BLOCKCHAIN_TO_COW_NETWORK: Record<string, ChainInfo> = {
-  arb: arbitrumOne,
-  avax: avalanche,
-  base,
-  bsc: bnb,
-  eth: mainnet,
-  gnosis: gnosisChain,
-  op: optimism,
-  pol: polygon,
-}
-
-export const NEAR_BLOCKCHAIN_TO_NATIVE_WRAPPED_TOKEN_ADDRESS: Record<string, Hex> = {
-  arb: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', // weth on arb
-  avax: '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7', // wavax on avax
-  base: '0x4200000000000000000000000000000000000006', // weth on base
-  bsc: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c', // wbnb on bsc
-  eth: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', // weth on et
-  gnosis: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d', // wxdai on gnosis
-  op: '0x4200000000000000000000000000000000000006', // weth on op
-  pol: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270', // wpol on pol
-}
 
 export interface NearIntentsBridgeProviderOptions {
   cowShedOptions?: CowShedSdkOptions
@@ -93,9 +57,10 @@ const calculateDeadline = (seconds: number) => {
 
 const adaptTokens = (tokens: TokenResponse[]): TokenInfo[] =>
   tokens.reduce<TokenInfo[]>((acc, token) => {
-    const network = NEAR_BLOCKCHAIN_TO_COW_NETWORK[token.blockchain]
+    const network = NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK[token.blockchain]
     if (!network) return acc
-    const tokenAddress = token.contractAddress || NEAR_BLOCKCHAIN_TO_NATIVE_WRAPPED_TOKEN_ADDRESS[token.blockchain]
+    const tokenAddress =
+      token.contractAddress || NEAR_INTENTS_BLOCKCHAIN_TO_NATIVE_WRAPPED_TOKEN_ADDRESS[token.blockchain]
     if (!tokenAddress) return acc
     acc.push({
       chainId: network.id,
@@ -113,7 +78,7 @@ const getTokenByAddressAndChainId = (
   targetTokenChainId: number,
 ) => {
   return tokens.find((token) => {
-    const network = NEAR_BLOCKCHAIN_TO_COW_NETWORK[token.blockchain]
+    const network = NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK[token.blockchain]
     if (!network) return false
     const tokenAddress = token.contractAddress?.toLowerCase() || ETH_ADDRESS.toLowerCase()
     return (
@@ -128,7 +93,7 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
 
   info: BridgeProviderInfo = {
     name: 'Near Intents',
-    logoUrl: `${RAW_PROVIDERS_FILES_PATH}/near-intents/across-logo.png`, // todo
+    logoUrl: `${RAW_PROVIDERS_FILES_PATH}/near-intents/near-intents-logo.png`, // todo
     dappId: NEAR_INTENTS_HOOK_DAPP_ID,
     website: 'https://www.near.org/intents',
   }
@@ -329,8 +294,14 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     return `https://explorer.near-intents.org/transactions/${bridgingId}`
   }
 
-  getStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult> {
-    throw new Error('Not implemented')
+  async getStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult> {
+    // bridingId must be the deposit address
+    const statusResponse = await this.api.getStatus(bridgingId)
+    return {
+      status: NEAR_INTENTS_STATUS_TO_COW_STATUS[statusResponse.status] || BridgeStatus.UNKNOWN,
+      depositTxHash: statusResponse.swapDetails.originChainTxHashes[0]?.hash,
+      fillTxHash: statusResponse.swapDetails.destinationChainTxHashes[0]?.hash,
+    }
   }
 
   getCancelBridgingTx(bridgingId: string): Promise<EvmCall> {

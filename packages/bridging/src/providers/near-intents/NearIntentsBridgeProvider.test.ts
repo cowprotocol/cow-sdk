@@ -4,12 +4,15 @@ import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 import { padHex, zeroAddress } from 'viem'
 
+import { COW_SHED_PROXY_CREATION_GAS, DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION } from '../../const'
 import { createAdapters } from '../../../tests/setup'
 import NearIntentsApi from './NearIntentsApi'
-import { NEAR_INTENTS_SUPPORTED_NETWORKS, NearIntentsBridgeProvider } from './NearIntentsBridgeProvider'
+import { NEAR_INTENTS_HOOK_DAPP_ID, NearIntentsBridgeProvider } from './NearIntentsBridgeProvider'
+import { NEAR_INTENTS_SUPPORTED_NETWORKS } from './const'
 
+import type { LatestAppDataDocVersion } from '@cowprotocol/sdk-app-data'
 import type { TargetChainId } from '@cowprotocol/sdk-config'
-import type { QuoteBridgeRequest } from 'types'
+import type { QuoteBridgeRequest } from '../../types'
 
 // Mock NearIntentsApi
 jest.mock('./NearIntentsApi')
@@ -198,20 +201,20 @@ adapterNames.forEach((adapterName) => {
       })
     })
 
-    /*describe('info', () => {
+    describe('info', () => {
       it('should return provider info', () => {
         expect(provider.info).toEqual({
-          dappId: BUNGEE_HOOK_DAPP_ID,
-          name: 'Bungee',
-          logoUrl: expect.stringContaining('bungee-logo.png'),
-          website: 'https://www.bungee.exchange',
+          dappId: NEAR_INTENTS_HOOK_DAPP_ID,
+          name: 'Near Intents',
+          logoUrl: expect.stringContaining('near-intents-logo.png'),
+          website: 'https://www.near.org/intents',
         })
       })
     })
 
     describe('decodeBridgeHook', () => {
       it('should throw error as not implemented', async () => {
-        await expect(provider.decodeBridgeHook({} as unknown as latestAppData.CoWHook)).rejects.toThrowError(
+        await expect(provider.decodeBridgeHook({} as unknown as LatestAppDataDocVersion.CoWHook)).rejects.toThrow(
           'Not implemented',
         )
       })
@@ -219,11 +222,11 @@ adapterNames.forEach((adapterName) => {
 
     describe('getExplorerUrl', () => {
       it('should return explorer url', () => {
-        expect(provider.getExplorerUrl('123')).toEqual('https://socketscan.io/tx/123')
+        expect(provider.getExplorerUrl('123')).toEqual('https://explorer.near-intents.org/transactions/123')
       })
     })
 
-    describe('getStatus', () => {
+    /*describe('getStatus', () => {
       const mockEvents: BungeeEvent[] = [
         {
           identifier: '123',
@@ -291,114 +294,58 @@ adapterNames.forEach((adapterName) => {
           status: BridgeStatus.UNKNOWN,
         })
       })
-    })
+    })*/
 
     describe('getCancelBridgingTx', () => {
       it('should throw error as not implemented', async () => {
-        await expect(provider.getCancelBridgingTx('123')).rejects.toThrowError('Not implemented')
+        await expect(provider.getCancelBridgingTx('123')).rejects.toThrowError(new Error('Not implemented'))
       })
     })
 
     describe('getRefundBridgingTx', () => {
       it('should throw error as not implemented', async () => {
-        await expect(provider.getRefundBridgingTx('123')).rejects.toThrowError('Not implemented')
+        await expect(provider.getRefundBridgingTx('123')).rejects.toThrowError(new Error('Not implemented'))
       })
     })
 
     describe('getGasLimitEstimationForHook', () => {
-      it('should return default gas limit estimation for non-Mainnet to Gnosis', async () => {
+      it('should return default gas limit estimation', async () => {
         mockGetCode.mockResolvedValue('0x1234567890')
-
-        const request: QuoteBridgeRequest = {
+        const gasLimit = await provider.getGasLimitEstimationForHook({
           kind: OrderKind.SELL,
-          sellTokenAddress: '0x123',
+          sellTokenAddress: ETH_ADDRESS,
           sellTokenChainId: SupportedChainId.MAINNET,
           buyTokenChainId: SupportedChainId.POLYGON,
           amount: 1000000000000000000n,
-          receiver: '0x789',
-          account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
+          receiver: zeroAddress,
+          account: zeroAddress,
           sellTokenDecimals: 18,
-          buyTokenAddress: '0x456',
+          buyTokenAddress: zeroAddress,
           buyTokenDecimals: 6,
-          appCode: '0x123',
-          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
-        }
-
-        const gasLimit = await provider.getGasLimitEstimationForHook(request)
-
+          appCode: zeroAddress,
+          signer: padHex('0x'),
+        })
         expect(gasLimit).toEqual(DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION)
       })
 
-      it('should return default gas limit estimation for Mainnet to Polygon and deploy proxy account', async () => {
+      it('should return default gas limit estimation and deploy proxy account', async () => {
         mockGetCode.mockResolvedValue(undefined)
-
-        const request: QuoteBridgeRequest = {
+        const gasLimit = await provider.getGasLimitEstimationForHook({
           kind: OrderKind.SELL,
-          sellTokenAddress: '0x123',
+          sellTokenAddress: ETH_ADDRESS,
           sellTokenChainId: SupportedChainId.MAINNET,
           buyTokenChainId: SupportedChainId.POLYGON,
           amount: 1000000000000000000n,
-          receiver: '0x789',
-          account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
+          receiver: zeroAddress,
+          account: zeroAddress,
           sellTokenDecimals: 18,
-          buyTokenAddress: '0x456',
+          buyTokenAddress: zeroAddress,
           buyTokenDecimals: 6,
-          appCode: '0x123',
-          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
-        }
-
-        const gasLimit = await provider.getGasLimitEstimationForHook(request)
-
+          appCode: zeroAddress,
+          signer: padHex('0x'),
+        })
         expect(gasLimit).toEqual(DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION + COW_SHED_PROXY_CREATION_GAS)
       })
-
-      it('should return default gas limit estimation for Mainnet to Gnosis', async () => {
-        mockGetCode.mockResolvedValue('0x1234567890')
-
-        const request: QuoteBridgeRequest = {
-          kind: OrderKind.SELL,
-          sellTokenAddress: '0x123',
-          sellTokenChainId: SupportedChainId.MAINNET,
-          buyTokenChainId: SupportedChainId.GNOSIS_CHAIN,
-          amount: 1000000000000000000n,
-          receiver: '0x789',
-          account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
-          sellTokenDecimals: 18,
-          buyTokenAddress: '0x456',
-          buyTokenDecimals: 6,
-          appCode: '0x123',
-          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
-        }
-
-        const gasLimit = await provider.getGasLimitEstimationForHook(request)
-
-        expect(gasLimit).toEqual(DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION + DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION)
-      })
-
-      it('should return default gas limit estimation for Mainnet to Gnosis and deploy proxy account', async () => {
-        mockGetCode.mockResolvedValue('0x')
-
-        const request: QuoteBridgeRequest = {
-          kind: OrderKind.SELL,
-          sellTokenAddress: '0x123',
-          sellTokenChainId: SupportedChainId.MAINNET,
-          buyTokenChainId: SupportedChainId.GNOSIS_CHAIN,
-          amount: 1000000000000000000n,
-          receiver: '0x789',
-          account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
-          sellTokenDecimals: 18,
-          buyTokenAddress: '0x456',
-          buyTokenDecimals: 6,
-          appCode: '0x123',
-          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
-        }
-
-        const gasLimit = await provider.getGasLimitEstimationForHook(request)
-
-        expect(gasLimit).toEqual(
-          DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION + COW_SHED_PROXY_CREATION_GAS + DEFAULT_EXTRA_GAS_PROXY_CREATION,
-        )
-      })
-    })*/
+    })
   })
 })
