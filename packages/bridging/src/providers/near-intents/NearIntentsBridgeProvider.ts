@@ -1,14 +1,24 @@
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
-import { arbitrumOne, avalanche, base, bnb, gnosisChain, mainnet, optimism, polygon } from '@cowprotocol/sdk-config'
+import {
+  arbitrumOne,
+  avalanche,
+  base,
+  bnb,
+  ETH_ADDRESS,
+  gnosisChain,
+  mainnet,
+  optimism,
+  polygon,
+} from '@cowprotocol/sdk-config'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
-import { encodeFunctionData, erc20Abi, zeroAddress } from 'viem'
+import { encodeFunctionData, erc20Abi } from 'viem'
 
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
+import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 import { NearIntentsApi } from './NearIntentsApi'
-import { getGasLimitEstimationForHook } from 'providers/utils/getGasLimitEstimationForHook'
 
 import type { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
 import type { AbstractProviderAdapter, SignerLike } from '@cowprotocol/sdk-common'
@@ -47,14 +57,25 @@ export const NEAR_INTENTS_SUPPORTED_NETWORKS = [
 ]
 
 export const NEAR_BLOCKCHAIN_TO_COW_NETWORK: Record<string, ChainInfo> = {
-  eth: mainnet,
   arb: arbitrumOne,
-  gnosis: gnosisChain,
-  pol: polygon,
-  bsc: bnb,
-  base,
-  op: optimism,
   avax: avalanche,
+  base,
+  bsc: bnb,
+  eth: mainnet,
+  gnosis: gnosisChain,
+  op: optimism,
+  pol: polygon,
+}
+
+export const NEAR_BLOCKCHAIN_TO_NATIVE_WRAPPED_TOKEN_ADDRESS: Record<string, Hex> = {
+  arb: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', // weth on arb
+  avax: '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7', // wavax on avax
+  base: '0x4200000000000000000000000000000000000006', // weth on base
+  bsc: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c', // wbnb on bsc
+  eth: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', // weth on et
+  gnosis: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d', // wxdai on gnosis
+  op: '0x4200000000000000000000000000000000000006', // weth on op
+  pol: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270', // wpol on pol
 }
 
 export interface NearIntentsBridgeProviderOptions {
@@ -74,10 +95,12 @@ const adaptTokens = (tokens: TokenResponse[]): TokenInfo[] =>
   tokens.reduce<TokenInfo[]>((acc, token) => {
     const network = NEAR_BLOCKCHAIN_TO_COW_NETWORK[token.blockchain]
     if (!network) return acc
+    const tokenAddress = token.contractAddress || NEAR_BLOCKCHAIN_TO_NATIVE_WRAPPED_TOKEN_ADDRESS[token.blockchain]
+    if (!tokenAddress) return acc
     acc.push({
       chainId: network.id,
       decimals: token.decimals,
-      address: token.contractAddress || zeroAddress,
+      address: tokenAddress,
       name: token.symbol, // TODO: how to handle? v0/tokens doesn't return the token name
       symbol: token.symbol,
     })
@@ -91,7 +114,8 @@ const getTokenByAddressAndChainId = (
 ) => {
   return tokens.find((token) => {
     const network = NEAR_BLOCKCHAIN_TO_COW_NETWORK[token.blockchain]
-    const tokenAddress = token.contractAddress || zeroAddress
+    if (!network) return false
+    const tokenAddress = token.contractAddress?.toLowerCase() || ETH_ADDRESS.toLowerCase()
     return (
       tokenAddress.toLowerCase() === targetTokenAddress.toLowerCase() && network && network.id === targetTokenChainId
     )
@@ -233,24 +257,14 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
         beforeFee: { sellAmount },
       },
     } = quote
-    if (sellTokenAddress === zeroAddress) {
-      // Send native tokens
-      return {
-        to: depositAddress,
-        value: sellAmount,
-        data: '0x',
-      }
-    } else {
-      // Send ERC20 tokens
-      return {
-        to: sellTokenAddress,
-        value: 0n,
-        data: encodeFunctionData({
-          abi: erc20Abi,
-          functionName: 'transfer',
-          args: [depositAddress, sellAmount],
-        }),
-      }
+    return {
+      to: sellTokenAddress,
+      value: 0n,
+      data: encodeFunctionData({
+        abi: erc20Abi,
+        functionName: 'transfer',
+        args: [depositAddress, sellAmount],
+      }),
     }
   }
 

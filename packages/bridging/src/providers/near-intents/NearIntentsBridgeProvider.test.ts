@@ -1,5 +1,5 @@
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { ETH_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 import { padHex, zeroAddress } from 'viem'
@@ -165,14 +165,14 @@ adapterNames.forEach((adapterName) => {
       it('should return quote with deposit address', async () => {
         const request: QuoteBridgeRequest = {
           kind: OrderKind.SELL,
-          sellTokenAddress: zeroAddress,
+          sellTokenAddress: ETH_ADDRESS,
           sellTokenChainId: SupportedChainId.MAINNET,
           buyTokenChainId: SupportedChainId.POLYGON,
           amount: 35000000000000n,
           receiver: zeroAddress,
           account: zeroAddress,
           sellTokenDecimals: 18,
-          buyTokenAddress: zeroAddress,
+          buyTokenAddress: ETH_ADDRESS,
           buyTokenDecimals: 6,
           appCode: zeroAddress,
           signer: padHex('0x1'),
