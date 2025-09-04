@@ -8,6 +8,7 @@ import { encodeFunctionData, erc20Abi, zeroAddress } from 'viem'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { NearIntentsApi } from './NearIntentsApi'
+import { getGasLimitEstimationForHook } from 'providers/utils/getGasLimitEstimationForHook'
 
 import type { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
 import type { AbstractProviderAdapter, SignerLike } from '@cowprotocol/sdk-common'
@@ -253,10 +254,11 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     }
   }
 
-  async getGasLimitEstimationForHook(
-    request: Omit<QuoteBridgeRequest, 'amount'> & { extraGas?: number; extraGasProxyCreation?: number },
-  ): Promise<number> {
-    throw new Error('not implemented')
+  async getGasLimitEstimationForHook(request: QuoteBridgeRequest): Promise<number> {
+    return getGasLimitEstimationForHook({
+      cowShedSdk: this.cowShedSdk,
+      request,
+    })
   }
 
   async getSignedHook(
@@ -267,35 +269,62 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     hookGasLimit: number,
     signer?: SignerLike,
   ): Promise<BridgeHook> {
-    throw new Error('not implemented')
+    // Sign the multicall
+    const { signedMulticall, cowShedAccount, gasLimit } = await this.cowShedSdk.signCalls({
+      calls: [
+        {
+          target: unsignedCall.to,
+          value: unsignedCall.value,
+          callData: unsignedCall.data,
+          allowFailure: false,
+          isDelegateCall: true,
+        },
+      ],
+      chainId,
+      signer,
+      gasLimit: BigInt(hookGasLimit),
+      deadline,
+      nonce: bridgeHookNonce,
+    })
+
+    const { to, data } = signedMulticall
+    return {
+      postHook: {
+        target: to,
+        callData: data,
+        gasLimit: gasLimit.toString(),
+        dappId: NEAR_INTENTS_HOOK_DAPP_ID,
+      },
+      recipient: cowShedAccount,
+    }
   }
 
   decodeBridgeHook(hook: latestAppData.CoWHook): Promise<BridgeDeposit> {
-    throw new Error('not implemented')
+    throw new Error('Not implemented')
   }
 
-  getBridgingParams(
+  async getBridgingParams(
     chainId: ChainId,
     orderUid: string,
     txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
-    throw new Error('not implemented')
+    throw new Error('Not implemented')
   }
 
   getExplorerUrl(bridgingId: string): string {
-    throw new Error('not implemented')
+    return `https://explorer.near-intents.org/transactions/${bridgingId}`
   }
 
   getStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult> {
-    throw new Error('not implemented')
+    throw new Error('Not implemented')
   }
 
   getCancelBridgingTx(bridgingId: string): Promise<EvmCall> {
-    throw new Error('not implemented')
+    throw new Error('Not implemented')
   }
 
   getRefundBridgingTx(bridgingId: string): Promise<EvmCall> {
-    throw new Error('not implemented')
+    throw new Error('Not implemented')
   }
 }
 
