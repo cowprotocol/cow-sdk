@@ -299,7 +299,7 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     const tradeEvent = (await getCowTradeEvents(chainId, receipt.logs)).find((event) => event.orderUid === orderUid)
     if (!tradeEvent) {
       // TODO: Handle the case where the buyToken is sent directly to the NEAR Intents deposit address.
-      // In that scenario, the TransactionReceipt should expose `.to` (the recipient address).
+      // In that scenario, the TransactionReceipt should expose `.to` (the recipient address or the token contract address).
       // Currently, `.to` is not included in the receipt, so direct deposits cannot be resolved yet.
       throw new Error(`Trade event not found for orderUid=${orderUid}`)
     }
@@ -317,7 +317,6 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
         (log) =>
           log.address.toLowerCase() === tradeEvent.buyToken.toLowerCase() &&
           log.topics[0] === '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' &&
-          log.topics[1] &&
           log.topics[1] !== '0x0000000000000000000000000000000000000000000000000000000000000000' &&
           log.topics[2] !== '0x0000000000000000000000000000000000000000000000000000000000000000' &&
           BigInt(log.data) === BigInt(tradeEvent.buyAmount),
