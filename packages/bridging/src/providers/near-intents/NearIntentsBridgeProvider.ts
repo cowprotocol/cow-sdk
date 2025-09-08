@@ -1,33 +1,35 @@
-import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
-import { encodeFunctionData, erc20Abi } from 'viem'
+import { decodeFunctionData, encodeFunctionData, erc20Abi } from 'viem'
+import { ETH_ADDRESS } from '@cowprotocol/sdk-config'
+import { BridgeStatus } from '../../types'
 
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 import { NearIntentsApi } from './NearIntentsApi'
 import { NEAR_INTENTS_STATUS_TO_COW_STATUS, NEAR_INTENTS_SUPPORTED_NETWORKS } from './const'
-import { adaptTokens, calculateDeadline, getTokenByAddressAndChainId } from './util'
+import { adaptToken, adaptTokens, calculateDeadline, getTokenByAddressAndChainId } from './util'
+import { getCowTradeEvents } from '../../providers/across/util'
 
 import type { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
 import type { AbstractProviderAdapter, SignerLike } from '@cowprotocol/sdk-common'
 import type { ChainId, ChainInfo, EvmCall, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import type { CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
 import type { Hex } from 'viem'
-import {
-  BridgeStatus,
-  type BridgeDeposit,
-  type BridgeHook,
-  type BridgeProvider,
-  type BridgeProviderInfo,
-  type BridgeQuoteResult,
-  type BridgeStatusResult,
-  type BridgingDepositParams,
-  type BuyTokensParams,
-  type GetProviderBuyTokens,
-  type QuoteBridgeRequest,
+import type {
+  BridgeDeposit,
+  BridgeHook,
+  BridgeProvider,
+  BridgeProviderInfo,
+  BridgeQuoteResult,
+  BridgeStatusResult,
+  BridgingDepositParams,
+  BuyTokensParams,
+  GetProviderBuyTokens,
+  QuoteBridgeRequest,
 } from '../../types'
 
 export interface NearIntentsQuoteResult extends BridgeQuoteResult {
@@ -175,14 +177,35 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
         beforeFee: { sellAmount },
       },
     } = quote
-    return {
-      to: sellTokenAddress,
-      value: 0n,
-      data: encodeFunctionData({
-        abi: erc20Abi,
-        functionName: 'transfer',
-        args: [depositAddress, sellAmount],
-      }),
+
+    // Two execution paths for delivering the buyToken to NEAR Intents:
+    //
+    // 1) Direct transfer
+    //    - Funds are sent straight to the NEAR Intents deposit address (no approvals required).
+    //
+    // 2) Via CowShed accounts
+    //    - Tokens first land on the Hook contract.
+    //    - We must approve + transfer so CoWShed can move funds.
+    // Note: the calldata for the ERC20 `transfer` is identical in both flows —
+    // only the sender differs (user → deposit address vs CowShed account → deposit address).
+    if (sellTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase()) {
+      // Send native tokens
+      return {
+        to: depositAddress,
+        value: sellAmount,
+        data: '0x',
+      }
+    } else {
+      // Send ERC20 tokens
+      return {
+        to: sellTokenAddress,
+        value: 0n,
+        data: encodeFunctionData({
+          abi: erc20Abi,
+          functionName: 'transfer',
+          args: [depositAddress, sellAmount],
+        }),
+      }
     }
   }
 
@@ -201,6 +224,28 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     hookGasLimit: number,
     signer?: SignerLike,
   ): Promise<BridgeHook> {
+    // Detect whether the unsigned call is just a plain transfer to the NEAR Intents deposit address.
+    // - If `data === '0x'`, it’s a native token transfer (no calldata).
+    // - If `data` decodes to an ERC20 `transfer`, it’s also a direct deposit.
+    // In both cases, a Hook is not needed (and should not be used).
+    const isTransferToDepositAddress = (data: Hex) => {
+      if (data === '0x') return true
+      try {
+        const { functionName } = decodeFunctionData({
+          abi: erc20Abi,
+          data,
+        })
+        return functionName === 'transfer'
+      } catch {
+        return false
+      }
+    }
+    // Disallow using the Hook when the transfer is direct, since hooks
+    // are only meaningful when tokens first go through the Hook contract.
+    if (isTransferToDepositAddress(unsignedCall.data as Hex)) {
+      throw new Error('Hook is not supported for direct transfers to a deposit address.')
+    }
+
     // Sign the multicall
     const { signedMulticall, cowShedAccount, gasLimit } = await this.cowShedSdk.signCalls({
       calls: [
@@ -240,7 +285,103 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     orderUid: string,
     txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
-    throw new Error('Not implemented')
+    // Two possible flows:
+    // 1. Direct transfer → funds are sent straight to the NEAR Intents deposit address.
+    // 2. Indirect transfer → funds first move through the hook contract before reaching the deposit address.
+    //    Example: to swap CRV → AVAX via CoW + NEAR Intents, the flow is:
+    //      - Sell CRV for USDC on CoW.
+    //      - The hook contract receives USDC, then forwards it to the NEAR Intents deposit address.
+    //      - NEAR Intents uses that USDC to complete the swap into AVAX.
+    const adapter = getGlobalAdapter()
+    const receipt = await adapter.getTransactionReceipt(txHash)
+    if (!receipt) return null
+
+    const tradeEvent = (await getCowTradeEvents(chainId, receipt.logs)).find((event) => event.orderUid === orderUid)
+    if (!tradeEvent) {
+      // TODO: Handle the case where the buyToken is sent directly to the NEAR Intents deposit address.
+      // In that scenario, the TransactionReceipt should expose `.to` (the recipient address).
+      // Currently, `.to` is not included in the receipt, so direct deposits cannot be resolved yet.
+      throw new Error(`Trade event not found for orderUid=${orderUid}`)
+    }
+
+    // If settle tx -> look for transfer to deposit address
+
+    // Identify the recipient addresses of the buyToken transfer.
+    // Example: to swap CRV → AVAX via CoW + NEAR Intents, the flow is:
+    //   1. Sell CRV for USDC on CoW.
+    //   2. Sell USDC for AVAX on NEAR Intents.
+    // This filter extracts the ERC20 Transfer logs of the buyToken (e.g. USDC)
+    // that exactly match the buyAmount from the CoW trade.
+    const buyTokenTransfersReceivers = receipt.logs
+      .filter(
+        (log) =>
+          log.address.toLowerCase() === tradeEvent.buyToken.toLowerCase() &&
+          log.topics[0] === '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' &&
+          log.topics[1] &&
+          log.topics[1] !== '0x0000000000000000000000000000000000000000000000000000000000000000' &&
+          log.topics[2] !== '0x0000000000000000000000000000000000000000000000000000000000000000' &&
+          BigInt(log.data) === BigInt(tradeEvent.buyAmount),
+      )
+      .map((log) => `0x${log.topics[2]?.slice(26)}`)
+
+    // Resolve the unique EOA (Externally Owned Account) among the buyToken transfer recipients.
+    // A deposit address on NEAR Intents must be an EOA (no contract code).
+    // We fetch the code for each address and filter out any contracts.
+    // Expect exactly one valid EOA → the NEAR Intents deposit address.
+    const eoaAddresses = (
+      await Promise.all(buyTokenTransfersReceivers.map((address) => adapter.getCode(address)))
+    ).filter((code) => code === '0x')
+    if (eoaAddresses.length !== 1) {
+      throw new Error('Failed to retrieve the deposit address')
+    }
+
+    // Resolve tokens + status in parallel
+    const depositAddress = eoaAddresses[0]!
+    const [tokens, status] = await Promise.all([this.api.getTokens(), this.api.getStatus(depositAddress)])
+
+    // Unpack quote data
+    const qr = status.quoteResponse?.quoteRequest
+    const quote = status.quoteResponse?.quote
+    const timestampMs = Date.parse(status.quoteResponse?.timestamp ?? '')
+    if (!qr || !quote || Number.isNaN(timestampMs)) {
+      throw new Error('Malformed quote response from NEAR Intents')
+    }
+
+    const quoteTimestamp = Math.floor(timestampMs / 1000)
+
+    // Locate origin/destination tokens
+    const inputToken = tokens.find((t) => t.assetId === qr.originAsset)
+    const outputToken = tokens.find((t) => t.assetId === qr.destinationAsset)
+    if (!inputToken || !outputToken) throw new Error('Token not supported')
+
+    // Normalize to local token shape
+    const adaptedInput = adaptToken(inputToken)
+    const adaptedOutput = adaptToken(outputToken)
+    if (!adaptedInput?.chainId || !adaptedOutput?.chainId) {
+      throw new Error('Token not supported')
+    }
+
+    // Build response
+    return {
+      status: {
+        fillTimeInSeconds: quote.timeEstimate,
+        status: NEAR_INTENTS_STATUS_TO_COW_STATUS[status.status] ?? BridgeStatus.UNKNOWN,
+        fillTxHash: status.swapDetails?.destinationChainTxHashes?.[0]?.hash,
+      },
+      params: {
+        inputTokenAddress: inputToken.contractAddress ?? ETH_ADDRESS,
+        outputTokenAddress: outputToken.contractAddress ?? ETH_ADDRESS,
+        inputAmount: BigInt(quote.amountIn),
+        outputAmount: BigInt(quote.amountOut),
+        owner: tradeEvent.owner,
+        quoteTimestamp,
+        fillDeadline: quoteTimestamp + quote.timeEstimate,
+        recipient: qr.recipient,
+        sourceChainId: adaptedInput.chainId,
+        destinationChainId: adaptedOutput.chainId,
+        bridgingId: depositAddress, // NEAR Intents deposit address
+      },
+    }
   }
 
   getExplorerUrl(bridgingId: string): string {
