@@ -304,8 +304,6 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
       throw new Error(`Trade event not found for orderUid=${orderUid}`)
     }
 
-    // If settle tx -> look for transfer to deposit address
-
     // Identify the recipient addresses of the buyToken transfer.
     // Example: to swap CRV → AVAX via CoW + NEAR Intents, the flow is:
     //   1. Sell CRV for USDC on CoW.
