@@ -1,7 +1,7 @@
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { ETH_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
-import { QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
+import { GetExecutionStatusResponse, QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 import { padHex, zeroAddress } from 'viem'
 
 import { COW_SHED_PROXY_CREATION_GAS, DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION } from '../../const'
@@ -9,8 +9,8 @@ import { createAdapters } from '../../../tests/setup'
 import NearIntentsApi from './NearIntentsApi'
 import { NEAR_INTENTS_HOOK_DAPP_ID, NearIntentsBridgeProvider } from './NearIntentsBridgeProvider'
 import { NEAR_INTENTS_SUPPORTED_NETWORKS } from './const'
+import { BridgeStatus } from '../../types'
 
-import type { LatestAppDataDocVersion } from '@cowprotocol/sdk-app-data'
 import type { TargetChainId } from '@cowprotocol/sdk-config'
 import type { QuoteBridgeRequest } from '../../types'
 
@@ -226,75 +226,90 @@ adapterNames.forEach((adapterName) => {
       })
     })
 
-    /*describe('getStatus', () => {
-      const mockEvents: BungeeEvent[] = [
-        {
-          identifier: '123',
-          srcTransactionHash: '0x123',
-          bridgeName: BungeeBridgeName.ACROSS,
-          fromChainId: 1,
-          gasUsed: '100000',
-          isCowswapTrade: true,
-          isSocketTx: true,
-          metadata: '',
-          orderId: '123',
-          recipient: '0x789',
-          sender: '0x123',
-          socketContractVersion: '1.0.0',
-          srcAmount: '1000000000000000000',
-          srcBlockHash: '0x123',
-          srcBlockNumber: 12345678,
-          srcBlockTimeStamp: 1234567890,
-          srcTokenAddress: '0x123',
-          srcTokenDecimals: 18,
-          srcTokenLogoURI: '',
-          srcTokenName: 'Token 1',
-          srcTokenSymbol: 'TOKEN1',
-          to: '0x123',
-          toChainId: 137,
-          destTransactionHash: '0x456',
-          destAmount: '1000000',
-          destBlockHash: '0x456',
-          destBlockNumber: 12345678,
-          destBlockTimeStamp: 1234567890,
-          destTokenAddress: '0x456',
-          destTokenDecimals: 6,
-          destTokenLogoURI: '',
-          destTokenName: 'Token 2',
-          destTokenSymbol: 'TOKEN2',
-          srcTxStatus: BungeeEventStatus.COMPLETED,
-          destTxStatus: BungeeEventStatus.COMPLETED,
+    describe('getStatus', () => {
+      const mockStatus: GetExecutionStatusResponse = {
+        status: GetExecutionStatusResponse.status.SUCCESS,
+        updatedAt: '2025-09-05T12:01:33.000Z',
+        swapDetails: {
+          intentHashes: ['intentHash1'],
+          nearTxHashes: ['nearTxHash1', 'nearTxHash2', 'nearTxHash3'],
+          amountIn: '52000000',
+          amountInFormatted: '52.0',
+          amountInUsd: '51.9929',
+          amountOut: '11765806672337253',
+          amountOutFormatted: '0.011765806672337253',
+          amountOutUsd: '51.9757',
+          slippage: -5,
+          refundedAmount: '0',
+          refundedAmountFormatted: '0',
+          refundedAmountUsd: '0',
+          originChainTxHashes: [{ hash: 'originChainTxHash1', explorerUrl: '' }],
+          destinationChainTxHashes: [{ hash: 'destinationChainTxHash2', explorerUrl: '' }],
         },
-      ]
+        quoteResponse: {
+          timestamp: '2025-09-05T12:00:38.695Z',
+          signature: 'ed25519:signature',
+          quoteRequest: {
+            dry: false,
+            swapType: QuoteRequest.swapType.EXACT_INPUT,
+            depositMode: QuoteRequest.depositMode.SIMPLE,
+            slippageTolerance: 50,
+            originAsset: 'nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near',
+            depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
+            destinationAsset: 'nep141:base.omft.near',
+            amount: '52000000',
+            refundTo: 'refundTo',
+            refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
+            recipient: 'recipient',
+            recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
+            deadline: '2025-09-05T12:10:38.605Z',
+            appFees: [{ recipient: 'recipient', fee: 10 }],
+            virtualChainRecipient: undefined,
+            virtualChainRefundRecipient: undefined,
+          },
+          quote: {
+            amountIn: '52000000',
+            amountInFormatted: '52.0',
+            amountInUsd: '51.9897',
+            minAmountIn: '52000000',
+            amountOut: '11760237526222378',
+            amountOutFormatted: '0.011760237526222378',
+            amountOutUsd: '51.9508',
+            minAmountOut: '11701433538591266',
+            timeWhenInactive: '2025-09-06T12:00:41.894Z',
+            depositAddress: 'depositAddress',
+            deadline: '2025-09-06T12:00:41.894Z',
+            timeEstimate: 37,
+          },
+        },
+      }
 
-      beforeEach(() => {
+      const mockApi = (mockStatus: GetExecutionStatusResponse) => {
         const api = new NearIntentsApi()
-        jest.spyOn(api, 'getEvents').mockResolvedValue(mockEvents)
+        jest.spyOn(api, 'getStatus').mockResolvedValue(mockStatus)
         provider.setApi(api)
-      })
+      }
 
-      it('should return executed status when both transactions are completed', async () => {
-        const status = await provider.getStatus('123')
-
+      it('should return executed status when the order is filled on near', async () => {
+        mockApi(mockStatus)
+        const status = await provider.getStatus('depositAddress', SupportedChainId.BASE)
         expect(status).toEqual({
           status: BridgeStatus.EXECUTED,
-          depositTxHash: '0x123',
-          fillTxHash: '0x456',
+          depositTxHash: 'originChainTxHash1',
+          fillTxHash: 'destinationChainTxHash2',
         })
       })
 
-      it('should return unknown status when no events are found', async () => {
+      it('should return unknown status when no status is returned', async () => {
         const api = new NearIntentsApi()
-        jest.spyOn(api, 'getEvents').mockResolvedValue([])
+        jest.spyOn(api, 'getStatus').mockResolvedValue({} as any)
         provider.setApi(api)
-
-        const status = await provider.getStatus('123')
-
+        const status = await provider.getStatus('depositAddress2', SupportedChainId.BASE)
         expect(status).toEqual({
           status: BridgeStatus.UNKNOWN,
         })
       })
-    })*/
+    })
 
     describe('getCancelBridgingTx', () => {
       it('should throw error as not implemented', async () => {

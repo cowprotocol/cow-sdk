@@ -69,7 +69,6 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
 
   async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
     const tokens = adaptTokens(await this.api.getTokens())
-
     return {
       tokens: tokens.filter((token) => token.chainId === params.buyChainId),
       isRouteAvailable: tokens.length > 0,
@@ -387,11 +386,17 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
 
   async getStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult> {
     // bridingId must be the deposit address
-    const statusResponse = await this.api.getStatus(bridgingId)
-    return {
-      status: NEAR_INTENTS_STATUS_TO_COW_STATUS[statusResponse.status] || BridgeStatus.UNKNOWN,
-      depositTxHash: statusResponse.swapDetails.originChainTxHashes[0]?.hash,
-      fillTxHash: statusResponse.swapDetails.destinationChainTxHashes[0]?.hash,
+    try {
+      const statusResponse = await this.api.getStatus(bridgingId)
+      return {
+        status: NEAR_INTENTS_STATUS_TO_COW_STATUS[statusResponse.status] || BridgeStatus.UNKNOWN,
+        depositTxHash: statusResponse.swapDetails.originChainTxHashes[0]?.hash,
+        fillTxHash: statusResponse.swapDetails.destinationChainTxHashes[0]?.hash,
+      }
+    } catch {
+      return {
+        status: BridgeStatus.UNKNOWN,
+      }
     }
   }
 
