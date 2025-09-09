@@ -15,20 +15,27 @@ export const calculateDeadline = (seconds: number) => {
   return d.toISOString().replace(/\.\d{3}Z$/, 'Z')
 }
 
+export const adaptToken = (token: TokenResponse): TokenInfo | null => {
+  const network = NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK[token.blockchain]
+  if (!network) return null
+  const tokenAddress =
+    token.contractAddress || NEAR_INTENTS_BLOCKCHAIN_TO_NATIVE_WRAPPED_TOKEN_ADDRESS[token.blockchain]
+  if (!tokenAddress) return null
+
+  return {
+    chainId: network.id,
+    decimals: token.decimals,
+    address: tokenAddress,
+    name: token.symbol, // TODO: how to handle? v0/tokens doesn't return the token name
+    symbol: token.symbol,
+  }
+}
+
 export const adaptTokens = (tokens: TokenResponse[]): TokenInfo[] =>
   tokens.reduce<TokenInfo[]>((acc, token) => {
-    const network = NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK[token.blockchain]
-    if (!network) return acc
-    const tokenAddress =
-      token.contractAddress || NEAR_INTENTS_BLOCKCHAIN_TO_NATIVE_WRAPPED_TOKEN_ADDRESS[token.blockchain]
-    if (!tokenAddress) return acc
-    acc.push({
-      chainId: network.id,
-      decimals: token.decimals,
-      address: tokenAddress,
-      name: token.symbol, // TODO: how to handle? v0/tokens doesn't return the token name
-      symbol: token.symbol,
-    })
+    const adaptedToken = adaptToken(token)
+    if (!adaptedToken) return acc
+    acc.push(adaptedToken)
     return acc
   }, [])
 
