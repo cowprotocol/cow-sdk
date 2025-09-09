@@ -47,9 +47,11 @@ export const getTokenByAddressAndChainId = (
   return tokens.find((token) => {
     const network = NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK[token.blockchain]
     if (!network) return false
-    const tokenAddress = token.contractAddress?.toLowerCase() || ETH_ADDRESS.toLowerCase()
+    if (targetTokenAddress === ETH_ADDRESS) return network && network.id === targetTokenChainId
+    const tokenAddress =
+      token.contractAddress?.toLowerCase() || NEAR_INTENTS_BLOCKCHAIN_TO_NATIVE_WRAPPED_TOKEN_ADDRESS[token.blockchain]
     return (
-      tokenAddress.toLowerCase() === targetTokenAddress.toLowerCase() && network && network.id === targetTokenChainId
+      tokenAddress?.toLowerCase() === targetTokenAddress.toLowerCase() && network && network.id === targetTokenChainId
     )
   })
 }
