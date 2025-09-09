@@ -2,7 +2,7 @@ import { getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
-import { decodeFunctionData, encodeFunctionData, erc20Abi } from 'viem'
+import { encodeFunctionData, erc20Abi } from 'viem'
 import { ETH_ADDRESS } from '@cowprotocol/sdk-config'
 import { BridgeStatus } from '../../types'
 
@@ -10,7 +10,11 @@ import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../.
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 import { NearIntentsApi } from './NearIntentsApi'
-import { NEAR_INTENTS_STATUS_TO_COW_STATUS, NEAR_INTENTS_SUPPORTED_NETWORKS } from './const'
+import {
+  NEAR_INTENTS_BLOCKCHAIN_TO_NATIVE_WRAPPED_TOKEN_ADDRESS,
+  NEAR_INTENTS_STATUS_TO_COW_STATUS,
+  NEAR_INTENTS_SUPPORTED_NETWORKS,
+} from './const'
 import { adaptToken, adaptTokens, calculateDeadline, getTokenByAddressAndChainId } from './util'
 import { getCowTradeEvents } from '../../providers/across/util'
 
@@ -53,13 +57,13 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     website: 'https://www.near.org/intents',
   }
 
-  constructor(options: NearIntentsBridgeProviderOptions, _adapter?: AbstractProviderAdapter) {
-    const adapter = _adapter || options.cowShedOptions?.adapter
+  constructor(options?: NearIntentsBridgeProviderOptions, _adapter?: AbstractProviderAdapter) {
+    const adapter = _adapter || options?.cowShedOptions?.adapter
     if (adapter) {
       setGlobalAdapter(adapter)
     }
     this.api = new NearIntentsApi()
-    this.cowShedSdk = new CowShedSdk(adapter, options.cowShedOptions?.factoryOptions)
+    this.cowShedSdk = new CowShedSdk(adapter, options?.cowShedOptions?.factoryOptions)
   }
 
   async getNetworks(): Promise<ChainInfo[]> {
@@ -86,9 +90,16 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     const sourceTokens = tokens.filter((token) => token.chainId === sellTokenChainId)
     const targetTokens = tokens.filter((token) => token.chainId === buyTokenChainId)
 
-    // Check if buyToken is supported
-    const buyToken = targetTokens.find((token) => token.address.toLowerCase() === buyTokenAddress.toLowerCase())
-    if (!buyToken) return []
+    const wrappedTokenAddresses = Object.values(NEAR_INTENTS_BLOCKCHAIN_TO_NATIVE_WRAPPED_TOKEN_ADDRESS).map((a) =>
+      a.toLowerCase(),
+    )
+    const buyTokens = targetTokens.find((token) => {
+      // Supports both the native token and its wrapped version (e.g. POL and WPOL, where POL is represented by ETH_ADDRESS).
+      if (token.address === ETH_ADDRESS || wrappedTokenAddresses.includes(token.address.toLowerCase()))
+        return token.chainId === buyTokenChainId
+      return token.address.toLowerCase() === buyTokenAddress.toLowerCase()
+    })
+    if (!buyTokens) return []
 
     // If buyToken is supported, all source tokens can be used to buy buyToken
     return sourceTokens
@@ -104,6 +115,7 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
       amount,
       receiver,
       validFor,
+      owner,
     } = request
     const tokens = await this.api.getTokens()
 
@@ -111,17 +123,15 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     const buyToken = getTokenByAddressAndChainId(tokens, buyTokenAddress, buyTokenChainId)
     if (!sellToken || !buyToken) throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES)
 
-    const slippageBps = request.slippageBps || 100 // fallback to 1%
-
     const { quote, timestamp: isoDate } = await this.api.getQuote({
       dry: false,
       swapType: QuoteRequest.swapType.EXACT_INPUT,
-      slippageTolerance: slippageBps,
+      slippageTolerance: request.slippageBps || 100, // fallback to 1%,
       originAsset: sellToken.assetId,
       depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
       destinationAsset: buyToken.assetId,
       amount: amount.toString(),
-      refundTo: account,
+      refundTo: owner || account,
       refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
       recipient: receiver || account,
       recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
@@ -223,29 +233,8 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     hookGasLimit: number,
     signer?: SignerLike,
   ): Promise<BridgeHook> {
-    // Detect whether the unsigned call is just a plain transfer to the NEAR Intents deposit address.
-    // - If `data === '0x'`, it’s a native token transfer (no calldata).
-    // - If `data` decodes to an ERC20 `transfer`, it’s also a direct deposit.
-    // In both cases, a Hook is not needed (and should not be used).
-    const isTransferToDepositAddress = (data: Hex) => {
-      if (data === '0x') return true
-      try {
-        const { functionName } = decodeFunctionData({
-          abi: erc20Abi,
-          data,
-        })
-        return functionName === 'transfer'
-      } catch {
-        return false
-      }
-    }
-    // Disallow using the Hook when the transfer is direct, since hooks
-    // are only meaningful when tokens first go through the Hook contract.
-    if (isTransferToDepositAddress(unsignedCall.data as Hex)) {
-      throw new Error('Hook is not supported for direct transfers to a deposit address.')
-    }
-
-    // Sign the multicall
+    // Call this function only when using CowShed accounts — i.e.
+    // when a CoW swap must be executed before depositing into NEAR Intents.
     const { signedMulticall, cowShedAccount, gasLimit } = await this.cowShedSdk.signCalls({
       calls: [
         {
