@@ -1,14 +1,15 @@
 import { getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { ETH_ADDRESS } from '@cowprotocol/sdk-config'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { createWeirollContract, createWeirollDelegateCall, WeirollCommandFlags } from '@cowprotocol/sdk-weiroll'
 import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
 import { encodeFunctionData, erc20Abi } from 'viem'
-import { ETH_ADDRESS } from '@cowprotocol/sdk-config'
 import { BridgeStatus } from '../../types'
-import { createWeirollContract, createWeirollDelegateCall, WeirollCommandFlags } from '@cowprotocol/sdk-weiroll'
 
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
+import { getCowTradeEvents } from '../../providers/across/util'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 import { NearIntentsApi } from './NearIntentsApi'
 import {
@@ -17,7 +18,6 @@ import {
   NEAR_INTENTS_SUPPORTED_NETWORKS,
 } from './const'
 import { adaptToken, adaptTokens, calculateDeadline, getTokenByAddressAndChainId } from './util'
-import { getCowTradeEvents } from '../../providers/across/util'
 
 import type { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
 import type { AbstractProviderAdapter, SignerLike } from '@cowprotocol/sdk-common'
@@ -197,18 +197,25 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     // - Funds are routed through the hook.
     // - The hook performs the ERC20 `transfer` to the NEAR Intents deposit address on behalf of the user.
 
-    const { sellTokenAddress } = request
-    const {
-      depositAddress,
-      amountsAndCosts: {
-        beforeFee: { sellAmount },
-      },
-    } = quote
+    const { account, sellTokenAddress, sellTokenChainId } = request
+    const { depositAddress } = quote
+
+    const cowShedAccount = this.cowShedSdk.getCowShedAccount(sellTokenChainId, account)
 
     const adapter = getGlobalAdapter()
     return createWeirollDelegateCall((planner) => {
-      const token = createWeirollContract(adapter.getContract(sellTokenAddress, erc20Abi), WeirollCommandFlags.CALL)
-      planner.add(token.transfer(depositAddress, sellAmount))
+      const amount = planner.add(
+        createWeirollContract(
+          adapter.getContract(sellTokenAddress, erc20Abi),
+          WeirollCommandFlags.STATICCALL,
+        ).balanceOf(cowShedAccount),
+      )
+      planner.add(
+        createWeirollContract(adapter.getContract(sellTokenAddress, erc20Abi), WeirollCommandFlags.CALL).transfer(
+          depositAddress,
+          amount,
+        ),
+      )
     })
   }
 
