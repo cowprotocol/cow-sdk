@@ -5,6 +5,7 @@ import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
 import { encodeFunctionData, erc20Abi } from 'viem'
 import { ETH_ADDRESS } from '@cowprotocol/sdk-config'
 import { BridgeStatus } from '../../types'
+import { createWeirollContract, createWeirollDelegateCall, WeirollCommandFlags } from '@cowprotocol/sdk-weiroll'
 
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
@@ -178,7 +179,24 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     }
   }
 
+  // Two possible execution paths for delivering `buyToken` to NEAR Intents:
+  //
+  // 1) Direct transfer (call getUnsignedBridgeCallWithoutHooks)
+  //    - Sends funds straight to the NEAR Intents deposit address.
+  //    - No approvals or hooks are involved.
+  //
+  // 2) Through CoWShed (call getUnsignedBridgeCall)
+  //    - Funds first pass through the CoWShed hook contract.
+  //    - The hook then forwards them to the NEAR Intents deposit address.
+  //
+  // Note: the calldata for the ERC20 `transfer` is identical in both flows —
+  // only the sender differs (user → deposit address vs CowShed account → deposit address).
+
   async getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: NearIntentsQuoteResult): Promise<EvmCall> {
+    // Case 1: Called via a CoWShed account
+    // - Funds are routed through the hook.
+    // - The hook performs the ERC20 `transfer` to the NEAR Intents deposit address on behalf of the user.
+
     const { sellTokenAddress } = request
     const {
       depositAddress,
@@ -187,25 +205,44 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
       },
     } = quote
 
-    // Two execution paths for delivering the buyToken to NEAR Intents:
-    //
-    // 1) Direct transfer
-    //    - Funds are sent straight to the NEAR Intents deposit address (no approvals required).
-    //
-    // 2) Via CowShed accounts
-    //    - Tokens first land on the Hook contract.
-    //    - We must approve + transfer so CoWShed can move funds.
-    // Note: the calldata for the ERC20 `transfer` is identical in both flows —
-    // only the sender differs (user → deposit address vs CowShed account → deposit address).
+    const adapter = getGlobalAdapter()
+    return createWeirollDelegateCall((planner) => {
+      const token = createWeirollContract(adapter.getContract(sellTokenAddress, erc20Abi), WeirollCommandFlags.CALL)
+      planner.add(token.transfer(depositAddress, sellAmount))
+    })
+  }
+
+  // Because direct transfers to a NEAR Intents deposit address require changes to the CoW SDK,
+  // and there’s no reliable way to check whether `getUnsignedBridgeCall` is invoked for a CoWShed account,
+  // we introduced a separate function (`getUnsignedBridgeCallWithoutHooks`) for that scenario.
+  // The original `getUnsignedBridgeCall` remains dedicated to hook-based flows, generating
+  // calldata for execution via the CoWShed account.
+  async getUnsignedBridgeCallWithoutHooks(
+    request: QuoteBridgeRequest,
+    quote: NearIntentsQuoteResult,
+  ): Promise<EvmCall> {
+    // Case 2: Called directly (not via CoWShed)
+    // - The `owner` must match the provided `account`.
+    // - Funds are sent straight to the NEAR Intents deposit address.
+    // - Execution differs depending on whether the asset is native or an ERC20.
+
+    const { sellTokenAddress } = request
+    const {
+      depositAddress,
+      amountsAndCosts: {
+        beforeFee: { sellAmount },
+      },
+    } = quote
+
     if (sellTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase()) {
-      // Send native tokens
+      // Direct native token transfer
       return {
         to: depositAddress,
         value: sellAmount,
         data: '0x',
       }
     } else {
-      // Send ERC20 tokens
+      // Direct ERC20 transfer
       return {
         to: sellTokenAddress,
         value: 0n,
