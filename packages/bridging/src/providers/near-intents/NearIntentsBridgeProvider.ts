@@ -181,13 +181,13 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
 
   // Two possible execution paths for delivering `buyToken` to NEAR Intents:
   //
-  // 1) Direct transfer (call getUnsignedBridgeCallWithoutHooks)
-  //    - Sends funds straight to the NEAR Intents deposit address.
-  //    - No approvals or hooks are involved.
-  //
-  // 2) Through CoWShed (call getUnsignedBridgeCall)
+  // 1) Through CoWShed (call getUnsignedBridgeCall)
   //    - Funds first pass through the CoWShed hook contract.
   //    - The hook then forwards them to the NEAR Intents deposit address.
+  //
+  // 2) Direct transfer (call getUnsignedBridgeCallWithoutHooks)
+  //    - Sends funds straight to the NEAR Intents deposit address.
+  //    - No approvals or hooks are involved.
   //
   // Note: the calldata for the ERC20 `transfer` is identical in both flows —
   // only the sender differs (user → deposit address vs CowShed account → deposit address).
