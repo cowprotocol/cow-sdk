@@ -318,12 +318,12 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
     // Two possible flows:
-    // 1. Direct transfer → funds are sent straight to the NEAR Intents deposit address.
-    // 2. Indirect transfer → funds first move through the hook contract before reaching the deposit address.
+    // 1. Indirect transfer → funds first move through the hook contract before reaching the deposit address.
     //    Example: to swap CRV → AVAX via CoW + NEAR Intents, the flow is:
     //      - Sell CRV for USDC on CoW.
     //      - The hook contract receives USDC, then forwards it to the NEAR Intents deposit address.
     //      - NEAR Intents uses that USDC to complete the swap into AVAX.
+    // 2. Direct transfer → funds are sent straight to the NEAR Intents deposit address.
     const adapter = getGlobalAdapter()
     const receipt = await adapter.getTransactionReceipt(txHash)
     if (!receipt) return null
