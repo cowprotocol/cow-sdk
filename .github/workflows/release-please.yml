@@ -16,21 +16,43 @@ permissions:
 jobs:
   release-please:
     runs-on: ubuntu-latest
-    outputs:
-      releases_created: ${{ steps.release.outputs.releases_created }}
-      paths_released: ${{ steps.release.outputs.paths_released }}
     steps:
-      - name: Run Release Please
-        uses: google-github-actions/release-please-action@v4.0.2
+      # 1️⃣ Checkout the repo
+      - uses: actions/checkout@v3
+
+      # 2️⃣ Setup pnpm
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      # 3️⃣ Setup Node
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      # 4️⃣ Install dependencies
+      - run: pnpm install --frozen-lockfile
+
+      # 5️⃣ Build all packages (using turbo)
+      - run: pnpm turbo run build --filter=./packages/**
+
+      # 6️⃣ Run release-please
+      - uses: googleapis/release-please-action@v4
         id: release
         with:
-          config-file: .release-please-config.json
-          manifest-file: .release-please-manifest.json
-          target-branch: main
-      - name: Dispatch publish workflow
-        if: ${{ needs.release-please.outputs.releases_created == 'true' }}
-        uses: peter-evans/repository-dispatch@v3
-        with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
-          event-type: publish
+          target-branch: main
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      # 7️⃣ Setup npm auth
+      - name: Setup npm auth
+        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # 8️⃣ Publish changed packages
+      - name: Publish changed packages
+        if: steps.release.outputs.releases_created == 'true'
+        run: pnpm publish -r --filter="./packages/**" --tag latest --no-git-checks
