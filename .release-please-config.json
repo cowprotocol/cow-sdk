@@ -71,6 +71,7 @@
       "release-type": "node"
     }
   },
+  "plugins": ["node-workspace"],
   "changelog-sections": [
     { "type": "feat", "section": "✨ Features" },
     { "type": "fix", "section": "🐛 Bug Fixes" },
