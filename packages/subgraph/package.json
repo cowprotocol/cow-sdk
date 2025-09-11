@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-subgraph",
-  "version": "0.2.2-beta.0",
+  "version": "0.2.3-beta.0",
   "description": "CowProtocol subgraph",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
