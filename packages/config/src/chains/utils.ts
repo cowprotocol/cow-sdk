@@ -40,5 +40,5 @@ export function isTargetChainId(chainId: ChainId): chainId is TargetChainId {
 }
 
 export function isZkSyncChain(chainId: ChainId): boolean {
-  return !!getChainInfo(chainId)?.isZkSync
+  return Boolean(getChainInfo(chainId)?.isZkSync)
 }
