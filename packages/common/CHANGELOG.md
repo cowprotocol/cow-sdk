@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.2.1-beta.0...sdk-common-v0.3.0-beta.0) (2025-09-11)
+
+
+### ✨ Features
+
+* test release of packages ([#487](https://github.com/cowprotocol/cow-sdk/issues/487)) ([a6abbfe](https://github.com/cowprotocol/cow-sdk/commit/a6abbfe44ce68f8d32e5350dca2fa12f76826456))
+
+
+### 🔧 Miscellaneous
+
+* release main ([#488](https://github.com/cowprotocol/cow-sdk/issues/488)) ([6344fa6](https://github.com/cowprotocol/cow-sdk/commit/6344fa619465e6f94637677823a18646f06fa7c9))
+
 ## [0.2.1-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.2.0-beta.0...sdk-common-v0.2.1-beta.0) (2025-09-01)
 
 
