@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/cow-sdk",
-  "version": "7.0.1-beta.0",
+  "version": "7.0.2-beta.0",
   "license": "(MIT OR Apache-2.0)",
   "description": "CowProtocol SDK - Complete umbrella package for CoW Protocol interactions",
   "main": "./dist/index.js",
