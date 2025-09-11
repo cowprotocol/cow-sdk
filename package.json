@@ -16,8 +16,6 @@
     "codegen": "turbo run swagger:codegen --filter=@cowprotocol/sdk-order-book",
     "typecheck": "turbo run typecheck",
     "prepublishOnly": "pnpm run typecheck && pnpm test && pnpm run lint",
-    "publish:all": "bash workflows/publish-monorepo.sh",
-    "publish:changed": "changeset publish",
     "release:dry-run": "release-please release-pr --dry-run",
     "release:pr": "release-please release-pr",
     "release:github": "release-please github-release"
