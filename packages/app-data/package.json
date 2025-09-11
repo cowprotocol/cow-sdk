@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-app-data",
-  "version": "4.1.2-beta.0",
+  "version": "4.1.1-beta.0",
   "description": "CoW Protocol AppData schema definitions",
   "exports": {
     ".": {
