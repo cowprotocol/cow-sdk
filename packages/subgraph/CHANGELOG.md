@@ -1,5 +1,43 @@
 # Changelog
 
+## [0.3.0-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v0.2.3-beta.0...sdk-subgraph-v0.3.0-beta.0) (2025-09-11)
+
+
+### ✨ Features
+
+* allow changing backoff and limiter per request ([#208](https://github.com/cowprotocol/cow-sdk/issues/208)) ([ebea5ca](https://github.com/cowprotocol/cow-sdk/commit/ebea5ca0858aeb89ae3e5d5407c8903c3ca5178d))
+* **lib-agnostic:** migrate latest Bridging changes ([#426](https://github.com/cowprotocol/cow-sdk/issues/426)) ([2359d9b](https://github.com/cowprotocol/cow-sdk/commit/2359d9b903e80ae5bab0cdb92d8cf52ae250da36))
+* **lib-agnostic:** migrate latest SDK changes ([#427](https://github.com/cowprotocol/cow-sdk/issues/427)) ([323bab6](https://github.com/cowprotocol/cow-sdk/commit/323bab61eb5adeb4a58bc15e25ffb29d2e1afcbf))
+* **sdk-agnostic-lib:** create cow trading package ([#368](https://github.com/cowprotocol/cow-sdk/issues/368)) ([0a4534a](https://github.com/cowprotocol/cow-sdk/commit/0a4534aababce4f5d8bab991cd6ae9f51842d719))
+* **sdk-agnostic-lib:** Create weiroll package ([#371](https://github.com/cowprotocol/cow-sdk/issues/371)) ([8f6a2e1](https://github.com/cowprotocol/cow-sdk/commit/8f6a2e16e5e7a43a5afc43cf5faab174be916b2e))
+* **subgraph:** refactor subgraph package ([84d6f26](https://github.com/cowprotocol/cow-sdk/commit/84d6f268f7e96b946797d4650bc0cee742afcb23))
+
+
+### 🐛 Bug Fixes
+
+* improve unknown/any types ([#443](https://github.com/cowprotocol/cow-sdk/issues/443)) ([e6b8a40](https://github.com/cowprotocol/cow-sdk/commit/e6b8a40578583cf6d1ecd208434782422f308ef0))
+
+
+### 🔧 Miscellaneous
+
+* **docs:** apply PR suggestions and create subgraph README ([#406](https://github.com/cowprotocol/cow-sdk/issues/406)) ([d09a219](https://github.com/cowprotocol/cow-sdk/commit/d09a219c934289a30677be685915d57e9a4451be))
+* release main ([#453](https://github.com/cowprotocol/cow-sdk/issues/453)) ([36080c1](https://github.com/cowprotocol/cow-sdk/commit/36080c1955f5f161bebce7867af110f6938e5c95))
+* release main ([#467](https://github.com/cowprotocol/cow-sdk/issues/467)) ([ed2977a](https://github.com/cowprotocol/cow-sdk/commit/ed2977a82bb2f4b43de900840848e33532d001f0))
+* release main ([#486](https://github.com/cowprotocol/cow-sdk/issues/486)) ([cf53df2](https://github.com/cowprotocol/cow-sdk/commit/cf53df2d0f5e96a544165547958ecc959c1948d7))
+* release main ([#488](https://github.com/cowprotocol/cow-sdk/issues/488)) ([6344fa6](https://github.com/cowprotocol/cow-sdk/commit/6344fa619465e6f94637677823a18646f06fa7c9))
+* **sdk-agnostic-lib:** improve scripts and types ([#407](https://github.com/cowprotocol/cow-sdk/issues/407)) ([c4b5e08](https://github.com/cowprotocol/cow-sdk/commit/c4b5e086ce46086e9430d5f03ed330502349fbf3))
+* **sdk-agnostic-lib:** merge multiple PRs to avoid conflicts and speed up base branch sync ([#354](https://github.com/cowprotocol/cow-sdk/issues/354)) ([55d3068](https://github.com/cowprotocol/cow-sdk/commit/55d3068c52217dd2618d8c180ab4fed8c9334c72))
+* **subgraph:** create package, tsconfig and jest config ([0255736](https://github.com/cowprotocol/cow-sdk/commit/02557362739c27a9777540d73b15092f745814f7))
+* **subgraph:** move subgraph to monorepo package ([017d146](https://github.com/cowprotocol/cow-sdk/commit/017d14673eeaacc255b438e69138c83c2d310b28))
+* **subgraph:** update pnpm-lock and run lint ([3f8144b](https://github.com/cowprotocol/cow-sdk/commit/3f8144be4839f5596763a25d505524a7318ebcbc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.4.0-beta.0
+
 ## [0.2.3-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v0.2.2-beta.0...sdk-subgraph-v0.2.3-beta.0) (2025-09-11)
 
 

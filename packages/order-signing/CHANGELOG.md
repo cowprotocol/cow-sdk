@@ -1,5 +1,45 @@
 # Changelog
 
+## [0.3.0-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-signing-v0.2.2-beta.0...sdk-order-signing-v0.3.0-beta.0) (2025-09-11)
+
+
+### ✨ Features
+
+* allow changing backoff and limiter per request ([#208](https://github.com/cowprotocol/cow-sdk/issues/208)) ([ebea5ca](https://github.com/cowprotocol/cow-sdk/commit/ebea5ca0858aeb89ae3e5d5407c8903c3ca5178d))
+* move order-signing to new package ([c60daab](https://github.com/cowprotocol/cow-sdk/commit/c60daabcd3e9311913f27b519561b7b992958cf4))
+* refactor order-signing ([8e28d1b](https://github.com/cowprotocol/cow-sdk/commit/8e28d1bdbda9632347cacaae906298e736f4a7b3))
+* refactor order-signing tests ([2d99282](https://github.com/cowprotocol/cow-sdk/commit/2d99282382da1545cd205cf246db0f055e7e0415))
+* **sdk-agnostic-lib:** create cow trading package ([#368](https://github.com/cowprotocol/cow-sdk/issues/368)) ([0a4534a](https://github.com/cowprotocol/cow-sdk/commit/0a4534aababce4f5d8bab991cd6ae9f51842d719))
+* **sdk-agnostic-lib:** Create weiroll package ([#371](https://github.com/cowprotocol/cow-sdk/issues/371)) ([8f6a2e1](https://github.com/cowprotocol/cow-sdk/commit/8f6a2e16e5e7a43a5afc43cf5faab174be916b2e))
+* simplify OrderSigningUtils to use static methods only ([#417](https://github.com/cowprotocol/cow-sdk/issues/417)) ([899ca43](https://github.com/cowprotocol/cow-sdk/commit/899ca4325be831b6711468d1df3733d98fe913b0))
+
+
+### 🐛 Bug Fixes
+
+* **lib-agnostic:** add setProvider() method to adapters ([#432](https://github.com/cowprotocol/cow-sdk/issues/432)) ([64c0ea9](https://github.com/cowprotocol/cow-sdk/commit/64c0ea94d802aa167b978ae0859353d801de0911))
+
+
+### 🔧 Miscellaneous
+
+* release main ([#453](https://github.com/cowprotocol/cow-sdk/issues/453)) ([36080c1](https://github.com/cowprotocol/cow-sdk/commit/36080c1955f5f161bebce7867af110f6938e5c95))
+* release main ([#486](https://github.com/cowprotocol/cow-sdk/issues/486)) ([cf53df2](https://github.com/cowprotocol/cow-sdk/commit/cf53df2d0f5e96a544165547958ecc959c1948d7))
+* release main ([#488](https://github.com/cowprotocol/cow-sdk/issues/488)) ([6344fa6](https://github.com/cowprotocol/cow-sdk/commit/6344fa619465e6f94637677823a18646f06fa7c9))
+* **sdk-agnostic-lib:** improve scripts and types ([#407](https://github.com/cowprotocol/cow-sdk/issues/407)) ([c4b5e08](https://github.com/cowprotocol/cow-sdk/commit/c4b5e086ce46086e9430d5f03ed330502349fbf3))
+* **sdk-agnostic-lib:** merge multiple PRs to avoid conflicts and speed up base branch sync ([#354](https://github.com/cowprotocol/cow-sdk/issues/354)) ([55d3068](https://github.com/cowprotocol/cow-sdk/commit/55d3068c52217dd2618d8c180ab4fed8c9334c72))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.4.0-beta.0
+    * @cowprotocol/sdk-contracts-ts bumped to 2.2.0-beta.0
+    * @cowprotocol/sdk-order-book bumped to 0.3.0-beta.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.0-beta.0
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.0-beta.0
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.0-beta.0
+
 ## [0.2.2-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-signing-v0.2.1-beta.0...sdk-order-signing-v0.2.2-beta.0) (2025-09-11)
 
 
