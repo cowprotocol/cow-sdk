@@ -60,7 +60,7 @@ const txParams: TransactionParams = {
 }
 ```
 
-### Usage with Umbrella SDK
+### Usage with CoW SDK
 
 When using the umbrella SDK, these common utilities are automatically available:
 

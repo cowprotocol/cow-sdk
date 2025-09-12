@@ -16,12 +16,14 @@
 
 **Usage examples:**
 
-- React (ethers v5): https://github.com/cowprotocol/cow-sdk/tree/main/examples/react/ethers5
-- React (ethers v6): https://github.com/cowprotocol/cow-sdk/tree/main/examples/react/ethers6
 - React (viem): https://github.com/cowprotocol/cow-sdk/tree/main/examples/react/viem
-- Node.js (ethers v5): https://github.com/cowprotocol/cow-sdk/blob/main/examples/nodejs/ethers5/src/index.ts
-- Node.js (ethers v6): https://github.com/cowprotocol/cow-sdk/blob/main/examples/nodejs/ethers6/src/index.ts
+- React (ethers v6): https://github.com/cowprotocol/cow-sdk/tree/main/examples/react/ethers6
+- React (ethers v5): https://github.com/cowprotocol/cow-sdk/tree/main/examples/react/ethers5
+
+
 - Node.js (viem): https://github.com/cowprotocol/cow-sdk/blob/main/examples/nodejs/viem/src/index.ts
+- Node.js (ethers v6): https://github.com/cowprotocol/cow-sdk/blob/main/examples/nodejs/ethers6/src/index.ts
+- Node.js (ethers v5): https://github.com/cowprotocol/cow-sdk/blob/main/examples/nodejs/ethers5/src/index.ts
 
 ### Installation
 
@@ -29,12 +31,37 @@
 pnpm add @cowprotocol/cow-sdk
 ```
 
-## Umbrella SDK
+```bash
+yarn add @cowprotocol/cow-sdk
+```
 
-The CoW SDK offers a unified interface through `CowSdk` that provides access to all modules in a single instance:
+## CoW SDK
+
+Using CoW Protocol, you can perform swaps, limit orders, TWAP orders, and many other operations.
+`@cowprotocol/cow-sdk` provides tools at different abstraction levels, allowing you to conveniently implement basic scenarios while maintaining the flexibility to control all possible cases.
+
+## SDK Components
+
+### Core
+- **[`TradingSdk`](packages/trading/README.md)** - Main tool for swap and limit orders with built-in quote fetching, order signing, and posting
+- **[`OrderSigningUtils`](packages/order-signing/README.md)** - Utilities for signing orders and cancellations using cryptographic algorithms
+- **[`OrderBookApi`](packages/order-book/README.md)** - Provides the ability to retrieve orders and trades from the CoW Protocol order-book, as well as add and cancel them
+- **[`MetadataApi`](packages/app-data/README.md)** - API for accessing order metadata and additional information
+
+### Advanced
+- **[`BridgingSdk`](packages/bridging/README.md)** - Cross-chain token transfers and bridging functionality
+- **[`ConditionalOrder`](packages/composable/README.md)** - SDK for Programmatic Orders such as TWAP. [Read more in docs.cow.fi](https://docs.cow.fi/cow-protocol/concepts/order-types/programmatic-orders)
+- **[`CowShedSdk`](packages/cow-shed/README.md)** - Account abstraction that leverages EOA with smart contract capabilities
+
+## Basic Use Case
+This example demonstrates the main use case of creating a swap and shows how to:
+ - get a quote
+ - verify amounts
+ - adjust swap parameters
+ - sign and post order
 
 ```typescript
-import { CowSdk, SupportedChainId, OrderKind } from '@cowprotocol/cow-sdk'
+import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
 import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
 import { createPublicClient, http, privateKeyToAccount } from 'viem'
 import { sepolia } from 'viem/chains'
@@ -49,75 +76,39 @@ const adapter = new ViemAdapter({
   signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
 })
 
-// Initialize the unified SDK
-const sdk = new CowSdk({
+const sdk = new TradingSdk({
   chainId: SupportedChainId.SEPOLIA,
-  adapter,
-  tradingOptions: {
-    traderParams: {
-      appCode: 'YOUR_APP_CODE',
-    },
-    options: {
-      chainId: SupportedChainId.SEPOLIA,
-    },
-  },
-})
+  appCode: 'YOUR_APP_CODE',
+}, {}, adapter)
 
-const orderId = await sdk.trading.postSwapOrder(parameters)
-const orders = await sdk.orderBook.getOrders({ owner: address })
-const totals = await sdk.subgraph?.getTotals()
+const parameters: TradeParameters = {
+  kind: OrderKind.SELL,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000',
+}
+
+// Get quote
+const { quoteResults, postSwapOrderFromQuote } = await sdk.getQuote(parameters)
+
+const buyAmount = quoteResults.amountsAndCosts.afterSlippage.buyAmount
+
+// Verify amount
+if (confirm(`You will receive at least: ${buyAmount}. Proceed?`)) {
+  // Sign and post order
+  const orderId = await postSwapOrderFromQuote()
+
+  console.log('Order created, id: ', orderId)
+}
 ```
 
-### Using individual modules from umbrella
+This example demonstrates the simplest way to trade on CoW Protocol.
 
-You can also import specific modules directly from the umbrella SDK:
+For more advanced use cases, you can use additional parameters such as `receiver`, `partiallyFillable`, `validTo`, and others.
+Refer to the [Trading SDK documentation](packages/trading/README.md) for comprehensive details.
 
-```typescript
-import { TradingSdk, SupportedChainId } from '@cowprotocol/cow-sdk'
-import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
-import { createPublicClient, http, privateKeyToAccount } from 'viem'
-import { sepolia } from 'viem/chains'
-
-// There are EthersV5Adapter and EthersV6Adapter as well
-// @cowprotocol/sdk-ethers-v5-adapter, @cowprotocol/sdk-ethers-v6-adapter
-const adapter = new ViemAdapter({
-  provider: createPublicClient({
-    chain: sepolia,
-    transport: http('YOUR_RPC_URL')
-  }),
-  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
-})
-
-const trading = new TradingSdk(
-  { appCode: 'YOUR_APP_CODE' }, // trader params
-  { chainId: SupportedChainId.SEPOLIA }, // options
-  adapter, // adapter required
-)
-
-const orderId = await trading.postSwapOrder(parameters)
-```
-
-### Using independent packages
-
-For direct use of individual packages:
-
-```typescript
-import { TradingSdk } from '@cowprotocol/sdk-trading'
-import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
-import { JsonRpcProvider, Wallet } from 'ethers'
-
-const provider = new JsonRpcProvider('YOUR_RPC_URL')
-const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
-const adapter = new EthersV6Adapter({ provider, signer: wallet })
-
-const trading = new TradingSdk(
-  { appCode: 'YOUR_APP_CODE' }, // trader params
-  { chainId: SupportedChainId.SEPOLIA }, // options
-  adapter, // adapter required
-)
-
-const orderId = await trading.postSwapOrder(parameters)
-```
 
 ## Adapters
 
@@ -179,119 +170,10 @@ const provider = createPublicClient({ chain: sepolia, transport })
 const adapter = new ViemAdapter({ provider, signer: account })
 ```
 
-## [Trading SDK](https://github.com/cowprotocol/cow-sdk/blob/main/packages/trading/README.md)
+## Low-Level SDK Usage Example
 
-CoW Protocol is intent based, decentralized trading protocol that allows users to trade ERC-20 tokens.
-
-The basic swap flow:
-
-1. 🔎 Get a quote (price) for a trade (_or define your own price with a limit order_)
-2. ✍️ Sign the order
-3. ✅ Post the order to the order-book
-
-The easiest way to start trading is to use the `TradingSdk`:
-
-```typescript
-import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
-import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
-import { JsonRpcProvider, Wallet } from 'ethers'
-
-// Configure the adapter
-const provider = new JsonRpcProvider('YOUR_RPC_URL')
-const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
-const adapter = new EthersV6Adapter({ provider, signer: wallet })
-
-// Initialize the SDK
-const sdk = new TradingSdk(
-  {
-    appCode: '<YOUR_APP_CODE>',
-  },
-  {
-    chainId: SupportedChainId.SEPOLIA,
-  },
-  adapter,
-)
-
-// Define trade parameters
-const parameters: TradeParameters = {
-  kind: OrderKind.BUY,
-  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
-  sellTokenDecimals: 18,
-  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
-  buyTokenDecimals: 18,
-  amount: '120000000000000000',
-}
-
-// Post the order
-const orderId = await sdk.postSwapOrder(parameters)
-
-console.log('Order created, id: ', orderId)
-```
-
-This example is the simplest way to trade on CoW Protocol.
-
-You might want to use more advanced parameters like `receiver`, `partiallyFillable`, `validTo` and others.
-Check the [Trading SDK documentation](https://github.com/cowprotocol/cow-sdk/blob/main/packages/trading/README.md) for more details.
-
-## Other utilities
-
-- `OrderBookApi` - provides the ability to retrieve orders and trades from the CoW Protocol order-book, as well as add and cancel them
-- `OrderSigningUtils` - serves to sign orders and cancel them using [EIP-712](https://eips.ethereum.org/EIPS/eip-712)
-- `SubgraphApi` - provides statistics data about CoW protocol from [Subgraph](https://github.com/cowprotocol/subgraph), such as trading volume, trade count and others
-
-### Usage with Umbrella SDK
-
-```typescript
-import { CowSdk, SupportedChainId } from '@cowprotocol/cow-sdk'
-import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
-import { JsonRpcProvider, Wallet } from 'ethers'
-
-const provider = new JsonRpcProvider('YOUR_RPC_URL')
-const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
-const adapter = new EthersV6Adapter({ provider, signer: wallet })
-const sdk = new CowSdk({
-  chainId: SupportedChainId.SEPOLIA,
-  adapter,
-})
-
-// All modules are available automatically
-const orderBookApi = sdk.orderBook
-const subgraphApi = sdk.subgraph
-const orderSigningUtils = sdk.orderSigning
-```
-
-### Independent Package Usage
-
-To use packages individually without the umbrella SDK, you must configure the adapter globally or pass it explicitly:
-
-```typescript
-import { OrderBookApi, SubgraphApi, OrderSigningUtils, setGlobalAdapter } from '@cowprotocol/cow-sdk'
-import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
-import { JsonRpcProvider, Wallet } from 'ethers'
-
-const chainId = SupportedChainId.SEPOLIA
-const provider = new JsonRpcProvider('YOUR_RPC_URL')
-const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
-const adapter = new EthersV6Adapter({ provider, signer: wallet })
-
-// Option 1: Configure the adapter globally
-setGlobalAdapter(adapter)
-
-const orderBookApi = new OrderBookApi({ chainId })
-const subgraphApi = new SubgraphApi('API_KEY', { chainId })
-
-// Use OrderSigningUtils static methods directly
-const signingResult = await OrderSigningUtils.signOrder(order, chainId, adapter.signer)
-
-// Or via CowSdk
-const sdk = new CowSdk({ adapter, chainId })
-const signingResult2 = await sdk.orderSigning.signOrder(order, chainId, adapter.signer)
-```
-
-### Sign, fetch, post and cancel order
-
-For clarity, let's look at the use of the API with a practical example:
-Exchanging `0.4 GNO` to `WETH` on `Gnosis chain` network.
+This example demonstrates low-level API usage with a practical scenario:
+exchanging `0.4 GNO` for `WETH` on the Gnosis Chain network.
 
 We will do the following operations:
 
@@ -303,7 +185,7 @@ We will do the following operations:
 6. Cancel the order (signing + sending)
 
 ```typescript
-import { OrderBookApi, OrderSigningUtils, SupportedChainId } from '@cowprotocol/cow-sdk'
+import { OrderBookApi, OrderSigningUtils, SupportedChainId, OrderKind } from '@cowprotocol/cow-sdk'
 import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
 import { JsonRpcProvider, Wallet } from 'ethers'
 
@@ -314,12 +196,12 @@ const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
 const adapter = new EthersV6Adapter({ provider, signer: wallet })
 
 const quoteRequest = {
-  sellToken: '0x6a023ccd1ff6f2045c3309768ead9e68f978f6e1', // WETH gnosis chain
-  buyToken: '0x9c58bacc331c9aa871afd802db6379a98e80cedb', // GNO gnosis chain
+  sellToken: '0x6a023ccd1ff6f2045c3309768ead9e68f978f6e1', // WETH on Gnosis Chain
+  buyToken: '0x9c58bacc331c9aa871afd802db6379a98e80cedb', // GNO on Gnosis Chain
   from: account,
   receiver: account,
   sellAmountBeforeFee: (0.4 * 10 ** 18).toString(), // 0.4 WETH
-  kind: OrderQuoteSide.kind.SELL,
+  kind: OrderKind.SELL,
 }
 
 const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.GNOSIS_CHAIN })
@@ -344,121 +226,4 @@ async function main() {
 
   console.log('Results: ', { orderId, order, trades, orderCancellationSigningResult, cancellationResult })
 }
-```
-
-### OrderBookApi
-
-`OrderBookApi` is the main tool for working with [CoW Protocol API](https://api.cow.fi/docs/#/).
-You can use it with the global adapter (recommended):
-
-```typescript
-import { OrderBookApi, SupportedChainId, setGlobalAdapter } from '@cowprotocol/cow-sdk'
-import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
-import { JsonRpcProvider, Wallet } from 'ethers'
-
-const provider = new JsonRpcProvider('YOUR_RPC_URL')
-const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
-const adapter = new EthersV6Adapter({ provider, signer: wallet })
-setGlobalAdapter(adapter)
-
-const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.GNOSIS_CHAIN })
-```
-
-Since the API supports different networks and environments, there are some options to configure it.
-
-#### Environment configuration
-
-`chainId` - can be one of `SupportedChainId.MAINNET`, `SupportedChainId.GNOSIS_CHAIN`, `SupportedChainId.ARBITRUM_ONE`, `SupportedChainId.BASE`, `SupportedChainId.AVALANCHE`, `SupportedChainId.POLYGON`, or `SupportedChainId.SEPOLIA`
-
-`env` - this parameter affects which environment will be used:
-
-- `https://api.cow.fi` for `prod` (default)
-- `https://barn.api.cow.fi` for `staging`
-
-```typescript
-import { OrderBookApi } from '@cowprotocol/cow-sdk'
-
-const orderBookApi = new OrderBookApi({
-  chainId: SupportedChainId.GNOSIS_CHAIN,
-  env: 'staging', // <-----
-})
-```
-
-#### API urls configuration
-
-In case you need to use custom endpoints (e.g. you use a proxy), you can do it this way:
-
-```typescript
-import { OrderBookApi } from '@cowprotocol/cow-sdk'
-
-const orderBookApi = new OrderBookApi({
-  chainId: SupportedChainId.GNOSIS_CHAIN,
-  baseUrls: {
-    // <-----
-    [SupportedChainId.MAINNET]: 'https://YOUR_ENDPOINT/mainnet',
-    [SupportedChainId.GNOSIS_CHAIN]: 'https://YOUR_ENDPOINT/gnosis_chain',
-    [SupportedChainId.ARBITRUM]: 'https://YOUR_ENDPOINT/arbitrum_one',
-    [SupportedChainId.BASE]: 'https://YOUR_ENDPOINT/base',
-    [SupportedChainId.SEPOLIA]: 'https://YOUR_ENDPOINT/sepolia',
-    [SupportedChainId.POLYGON]: 'https://YOUR_ENDPOINT/polygon',
-    [SupportedChainId.AVALANCHE]: 'https://YOUR_ENDPOINT/avalanche',
-  },
-})
-```
-
-The [CoW Protocol API](https://api.cow.fi/docs/#/) has restrictions on the backend side to protect against DDOS and other issues.
-
-> The main restriction is request rate limit of: **5 requests per second for each IP address**
-
-The _client's_ limiter settings can be configured as well:
-
-```typescript
-import { OrderBookApi } from '@cowprotocol/cow-sdk'
-import { BackoffOptions } from 'exponential-backoff'
-import { RateLimiterOpts } from 'limiter'
-
-const limiterOpts: RateLimiterOpts = {
-  tokensPerInterval: 5,
-  interval: 'second',
-}
-
-const backOffOpts: BackoffOptions = {
-  numOfAttempts: 5,
-  maxDelay: Infinity,
-  jitter: 'none',
-}
-
-const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.GNOSIS_CHAIN, limiterOpts, backOffOpts })
-```
-
-## Development
-
-### Install Dependencies
-
-```bash
-pnpm install
-```
-
-### Build
-
-```bash
-pnpm build
-
-# Build in watch mode
-pnpm start
-```
-
-### Unit testing
-
-```bash
-pnpm test
-```
-
-### Code generation
-
-Some parts of the SDK are automatically generated. This is the case for the Order Book API and the Subgraph API
-
-```bash
-# Re-create automatically generated code
-pnpm codegen
 ```
