@@ -101,7 +101,7 @@ describe('TradingSdk', () => {
 
         await sdk.getQuote(defaultOrderParams)
 
-        expect(logSpy.mock.calls[0]?.[0]).toContain('[COW TRADING SDK]')
+        expect(logSpy.mock.calls[0]?.[0]).toContain('[COW SDK]')
       }
     })
   })
