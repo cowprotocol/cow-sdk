@@ -31,6 +31,8 @@ const ACROSS_API_URL = 'https://app.across.to/api'
 
 const SUPPORTED_BRIDGES: SupportedBridge[] = ['across', 'cctp', 'gnosis-native-bridge']
 
+type BungeeApiType = 'bungee' | 'events' | 'across' | 'bungee-manual'
+
 const errorMessageMap = {
   bungee: 'Bungee Api Error',
   events: 'Bungee Events Api Error',
@@ -365,8 +367,14 @@ export class BungeeApi {
     return bridges ?? this.options.includeBridges ?? SUPPORTED_BRIDGES
   }
 
+  private shouldAddAffiliate(apiType: BungeeApiType, baseUrl: string): boolean {
+    const isBungeeApi = apiType === 'bungee' || apiType === 'bungee-manual'
+
+    return !baseUrl.includes(BUNGEE_BASE_URL) && isBungeeApi
+  }
+
   private async makeApiCall<T>(
-    apiType: 'bungee' | 'events' | 'across' | 'bungee-manual',
+    apiType: BungeeApiType,
     path: string,
     params: Record<string, string> | URLSearchParams,
     isValidResponse?: (response: unknown) => response is T,
@@ -382,7 +390,7 @@ export class BungeeApi {
     const url = `${baseUrl}${path}?${new URLSearchParams(params).toString()}`
     const headers: Record<string, string> = {}
 
-    if (this.options.affiliate && !baseUrl.includes(BUNGEE_BASE_URL)) {
+    if (this.shouldAddAffiliate(apiType, baseUrl) && this.options.affiliate) {
       headers['affiliate'] = this.options.affiliate
     }
 
