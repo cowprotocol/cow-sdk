@@ -43,7 +43,7 @@ export const getTokenByAddressAndChainId = (
   tokens: TokenResponse[],
   targetTokenAddress: string,
   targetTokenChainId: number,
-) => {
+): TokenResponse | undefined => {
   return tokens.find((token) => {
     const network = NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK[token.blockchain]
     if (!network) return false
