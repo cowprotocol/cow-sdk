@@ -13,6 +13,7 @@ import { BridgeStatus } from '../../types'
 
 import type { TargetChainId } from '@cowprotocol/sdk-config'
 import type { QuoteBridgeRequest } from '../../types'
+import type { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
 
 // Mock NearIntentsApi
 jest.mock('./NearIntentsApi')
@@ -214,9 +215,7 @@ adapterNames.forEach((adapterName) => {
 
     describe('decodeBridgeHook', () => {
       it('should throw error as not implemented', async () => {
-        await expect(provider.decodeBridgeHook({} as unknown as LatestAppDataDocVersion.CoWHook)).rejects.toThrow(
-          'Not implemented',
-        )
+        await expect(() => provider.decodeBridgeHook({} as unknown as latestAppData.CoWHook)).toThrow('Not implemented')
       })
     })
 
@@ -313,13 +312,13 @@ adapterNames.forEach((adapterName) => {
 
     describe('getCancelBridgingTx', () => {
       it('should throw error as not implemented', async () => {
-        await expect(provider.getCancelBridgingTx('123')).rejects.toThrowError(new Error('Not implemented'))
+        await expect(() => provider.getCancelBridgingTx('123')).toThrow('Not implemented')
       })
     })
 
     describe('getRefundBridgingTx', () => {
       it('should throw error as not implemented', async () => {
-        await expect(provider.getRefundBridgingTx('123')).rejects.toThrowError(new Error('Not implemented'))
+        await expect(() => provider.getRefundBridgingTx('123')).toThrow('Not implemented')
       })
     })
 
