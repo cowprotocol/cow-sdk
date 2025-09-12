@@ -4,7 +4,7 @@ import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { createWeirollContract, createWeirollDelegateCall, WeirollCommandFlags } from '@cowprotocol/sdk-weiroll'
 import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
-import { encodeFunctionData, erc20Abi } from 'viem'
+import { erc20Abi } from 'viem'
 import { BridgeStatus } from '../../types'
 
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
@@ -179,24 +179,7 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     }
   }
 
-  // Two possible execution paths for delivering `buyToken` to NEAR Intents:
-  //
-  // 1) Through CoWShed (call getUnsignedBridgeCall)
-  //    - Funds first pass through the CoWShed hook contract.
-  //    - The hook then forwards them to the NEAR Intents deposit address.
-  //
-  // 2) Direct transfer (call getUnsignedBridgeCallWithoutHooks)
-  //    - Sends funds straight to the NEAR Intents deposit address.
-  //    - No approvals or hooks are involved.
-  //
-  // Note: the calldata for the ERC20 `transfer` is identical in both flows —
-  // only the sender differs (user → deposit address vs CowShed account → deposit address).
-
   async getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: NearIntentsQuoteResult): Promise<EvmCall> {
-    // Case 1: Called via a CoWShed account
-    // - Funds are routed through the hook.
-    // - The hook performs the ERC20 `transfer` to the NEAR Intents deposit address on behalf of the user.
-
     const { account, sellTokenAddress, sellTokenChainId } = request
     const { depositAddress } = quote
 
@@ -219,49 +202,6 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     })
   }
 
-  // Because direct transfers to a NEAR Intents deposit address require changes to the CoW SDK,
-  // and there’s no reliable way to check whether `getUnsignedBridgeCall` is invoked for a CoWShed account,
-  // we introduced a separate function (`getUnsignedBridgeCallWithoutHooks`) for that scenario.
-  // The original `getUnsignedBridgeCall` remains dedicated to hook-based flows, generating
-  // calldata for execution via the CoWShed account.
-  async getUnsignedBridgeCallWithoutHooks(
-    request: QuoteBridgeRequest,
-    quote: NearIntentsQuoteResult,
-  ): Promise<EvmCall> {
-    // Case 2: Called directly (not via CoWShed)
-    // - The `owner` must match the provided `account`.
-    // - Funds are sent straight to the NEAR Intents deposit address.
-    // - Execution differs depending on whether the asset is native or an ERC20.
-
-    const { sellTokenAddress } = request
-    const {
-      depositAddress,
-      amountsAndCosts: {
-        beforeFee: { sellAmount },
-      },
-    } = quote
-
-    if (sellTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase()) {
-      // Direct native token transfer
-      return {
-        to: depositAddress,
-        value: sellAmount,
-        data: '0x',
-      }
-    } else {
-      // Direct ERC20 transfer
-      return {
-        to: sellTokenAddress,
-        value: 0n,
-        data: encodeFunctionData({
-          abi: erc20Abi,
-          functionName: 'transfer',
-          args: [depositAddress, sellAmount],
-        }),
-      }
-    }
-  }
-
   async getGasLimitEstimationForHook(request: QuoteBridgeRequest): Promise<number> {
     return getGasLimitEstimationForHook({
       cowShedSdk: this.cowShedSdk,
@@ -277,8 +217,6 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     hookGasLimit: number,
     signer?: SignerLike,
   ): Promise<BridgeHook> {
-    // Call this function only when using CowShed accounts — i.e.
-    // when a CoW swap must be executed before depositing into NEAR Intents.
     const { signedMulticall, cowShedAccount, gasLimit } = await this.cowShedSdk.signCalls({
       calls: [
         {
@@ -317,24 +255,12 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     orderUid: string,
     txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
-    // Two possible flows:
-    // 1. Indirect transfer → funds first move through the hook contract before reaching the deposit address.
-    //    Example: to swap CRV → AVAX via CoW + NEAR Intents, the flow is:
-    //      - Sell CRV for USDC on CoW.
-    //      - The hook contract receives USDC, then forwards it to the NEAR Intents deposit address.
-    //      - NEAR Intents uses that USDC to complete the swap into AVAX.
-    // 2. Direct transfer → funds are sent straight to the NEAR Intents deposit address.
     const adapter = getGlobalAdapter()
     const receipt = await adapter.getTransactionReceipt(txHash)
     if (!receipt) return null
 
     const tradeEvent = (await getCowTradeEvents(chainId, receipt.logs)).find((event) => event.orderUid === orderUid)
-    if (!tradeEvent) {
-      // TODO: Handle the case where the buyToken is sent directly to the NEAR Intents deposit address.
-      // In that scenario, the TransactionReceipt should expose `.to` (the recipient address or the token contract address).
-      // Currently, `.to` is not included in the receipt, so direct deposits cannot be resolved yet.
-      throw new Error(`Trade event not found for orderUid=${orderUid}`)
-    }
+    if (!tradeEvent) return null
 
     // Identify the recipient addresses of the buyToken transfer.
     // Example: to swap CRV → AVAX via CoW + NEAR Intents, the flow is:
