@@ -53,7 +53,7 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
 
   info: BridgeProviderInfo = {
     name: 'Near Intents',
-    logoUrl: `${RAW_PROVIDERS_FILES_PATH}/near-intents/near-intents-logo.png`, // todo
+    logoUrl: `${RAW_PROVIDERS_FILES_PATH}/near-intents/near-intents-logo.png`,
     dappId: NEAR_INTENTS_HOOK_DAPP_ID,
     website: 'https://www.near.org/intents',
   }
@@ -68,7 +68,6 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
   }
 
   async getNetworks(): Promise<ChainInfo[]> {
-    // TODO: non evm networks?
     return NEAR_INTENTS_SUPPORTED_NETWORKS
   }
 
