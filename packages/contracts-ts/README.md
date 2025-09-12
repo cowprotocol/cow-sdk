@@ -30,8 +30,6 @@ npm install @cowprotocol/sdk-contracts-ts
 
 ## Usage
 
-### Individual package usage
-
 ```typescript
 import { ContractsTs } from '@cowprotocol/sdk-contracts-ts'
 import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
@@ -50,9 +48,9 @@ const settlementContract = contracts.settlement()
 const vaultRelayerContract = contracts.vaultRelayer()
 ```
 
-### Usage with Umbrella SDK
+### Usage with CoW SDK
 
-When using the umbrella SDK, contract utilities are automatically available:
+When using the CoW SDK, contract utilities are automatically available:
 
 ```typescript
 import {
@@ -86,4 +84,4 @@ const vaultRelayerContract = sdk.contracts.vaultRelayer()
 - **Composable CoW** - Contract for conditional orders
 - **Extensible Fallback Handler** - Safe fallback handler for smart contract wallets
 
-> **Note:** This package is primarily designed to provide contract interfaces and is rarely used standalone. Most developers should use the umbrella `@cowprotocol/cow-sdk` package which includes all contract utilities with proper adapter configuration.
+> **Note:** This package is primarily designed to provide contract interfaces and is rarely used standalone. Most developers should use `@cowprotocol/cow-sdk` package which includes all contract utilities with proper adapter configuration.

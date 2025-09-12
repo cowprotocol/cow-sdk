@@ -21,8 +21,6 @@ npm install @cowprotocol/sdk-common
 
 ## Usage
 
-### Individual package usage
-
 ```typescript
 import {
   AbstractProviderAdapter,
@@ -62,7 +60,7 @@ const txParams: TransactionParams = {
 
 ### Usage with CoW SDK
 
-When using the umbrella SDK, these common utilities are automatically available:
+When using the CoW SDK, these common utilities are automatically available:
 
 ```typescript
 import {
@@ -77,4 +75,4 @@ import {
 } from '@cowprotocol/cow-sdk'
 ```
 
-> **Note:** This package is primarily designed to be used as a dependency by other SDK packages rather than directly by end users. Most developers should use the umbrella `@cowprotocol/cow-sdk` package or specific feature packages like `@cowprotocol/sdk-trading`.
+> **Note:** This package is primarily designed to be used as a dependency by other SDK packages rather than directly by end users. Most developers should use `@cowprotocol/cow-sdk` package or specific feature packages like `@cowprotocol/sdk-trading`.

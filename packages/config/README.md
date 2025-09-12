@@ -22,8 +22,6 @@ pnpm add @cowprotocol/sdk-config
 
 ## Usage
 
-### Individual package usage
-
 ```typescript
 import {
   SupportedChainId,
@@ -53,7 +51,7 @@ const apiContext: ApiContext = {
 }
 ```
 
-### Usage with Umbrella SDK
+### Usage with CoW SDK
 
 ```typescript
 import { CowSdk, SupportedChainId, ALL_SUPPORTED_CHAINS_MAP, CowEnv, ApiContext, ChainInfo } from '@cowprotocol/cow-sdk'
@@ -65,4 +63,4 @@ const sdk = new CowSdk({
 })
 ```
 
-> **Note:** This package is primarily designed to provide configuration constants and is rarely used standalone. Most developers should use the umbrella `@cowprotocol/cow-sdk` package or specific feature packages.
+> **Note:** This package is primarily designed to provide configuration constants and is rarely used standalone. Most developers should use `@cowprotocol/cow-sdk` package or specific feature packages.
