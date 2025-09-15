@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.4-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.2.3-beta.0...sdk-bridging-v0.2.4-beta.0) (2025-09-15)
+
+
+### 🐛 Bug Fixes
+
+* **bridge:** fix applying affiliate header ([#492](https://github.com/cowprotocol/cow-sdk/issues/492)) ([e4f49c6](https://github.com/cowprotocol/cow-sdk/commit/e4f49c64e60f4aeac97b6b246c36090946df6fcf))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-contracts-ts bumped to 2.1.5-beta.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.2.3-beta.0
+    * @cowprotocol/sdk-trading bumped to 0.2.4-beta.0
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 0.2.3-beta.0
+
 ## [0.2.3-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.2.2-beta.0...sdk-bridging-v0.2.3-beta.0) (2025-09-11)
 
 
