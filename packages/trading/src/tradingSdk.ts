@@ -42,6 +42,16 @@ export class TradingSdk {
   setTraderParams(params: Partial<TraderParameters>) {
     this.traderParams = { ...this.traderParams, ...params }
 
+    if (this.options.orderBookApi) {
+      if (params.chainId) {
+        this.options.orderBookApi.context.chainId = params.chainId
+      }
+
+      if (params.env) {
+        this.options.orderBookApi.context.env = params.env
+      }
+    }
+
     return this
   }
 
@@ -166,7 +176,7 @@ export class TradingSdk {
     const { chainId, signer, appCode, env } = params
     const traderParams: Partial<TraderParameters> = {
       chainId: chainId || this.traderParams.chainId,
-      signer: signer || this.traderParams.signer,
+      signer: signer || this.traderParams.signer || getGlobalAdapter().signer,
       appCode: appCode || this.traderParams.appCode,
       env: env || this.traderParams.env,
     }

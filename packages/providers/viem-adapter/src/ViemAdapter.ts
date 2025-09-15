@@ -46,6 +46,7 @@ export interface ViemTypes extends AdapterTypes {
 export interface ViemAdapterOptions {
   provider: PublicClient
   signer?: Account | PrivateKey // Optional account or private key
+  walletClient?: WalletClient
 }
 
 export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
@@ -67,6 +68,15 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
 
     if (options.signer) {
       this.setSigner(options.signer)
+    }
+
+    if (options.walletClient) {
+      this._walletClient = options.walletClient
+      const signerAdapter = new ViemSignerAdapter(this._walletClient)
+
+      signerAdapter.connect(this._publicClient)
+
+      this._signerAdapter = signerAdapter
     }
 
     this.utils = new ViemUtils()

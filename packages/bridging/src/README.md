@@ -59,6 +59,7 @@ const adapter = new ViemAdapter({
     chain: sepolia,
     transport: http('YOUR_RPC_URL')
   }),
+  // You also can set `walletClient` instead of `signer` using `useWalletClient` from wagmi
   signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
 })
 
