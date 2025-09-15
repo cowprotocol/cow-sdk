@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.1.3-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.1.2-beta.0...sdk-app-data-v4.1.3-beta.0) (2025-09-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 0.3.1-beta.0
+
 ## [4.1.2-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.1.1-beta.0...sdk-app-data-v4.1.2-beta.0) (2025-09-11)
 
 
