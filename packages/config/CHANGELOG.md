@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.3.1-beta.0...sdk-config-v0.3.2-beta.0) (2025-09-15)
+
+
+### 🐛 Bug Fixes
+
+* fix gnosis native token url ([#501](https://github.com/cowprotocol/cow-sdk/issues/501)) ([4d5176e](https://github.com/cowprotocol/cow-sdk/commit/4d5176e85594f45d96a5d9d7aa7285cbf3cfebf2))
+
 ## [0.3.1-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.3.0-beta.0...sdk-config-v0.3.1-beta.0) (2025-09-15)
 
 
