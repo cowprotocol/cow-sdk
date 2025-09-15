@@ -18,7 +18,7 @@ export const gnosisChain: ChainInfo = {
     chainId: SupportedChainId.GNOSIS_CHAIN,
     name: 'xDAI',
     symbol: 'xDAI',
-    logoUrl: `${TOKEN_LIST_IMAGES_PATH}/100/${NATIVE_CURRENCY_ADDRESS}/logo.png`,
+    logoUrl: `${TOKEN_LIST_IMAGES_PATH}/100/${NATIVE_CURRENCY_ADDRESS.toLowerCase()}/logo.png`,
   },
   addressPrefix: 'gno',
   isTestnet: false,
