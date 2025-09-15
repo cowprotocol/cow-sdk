@@ -43,6 +43,7 @@ The SDK supports all CoW Protocol enabled networks:
 
 **React Examples:**
 - [React (viem)](https://github.com/cowprotocol/cow-sdk/tree/main/examples/react/viem)
+- [React (wagmi)](https://github.com/cowprotocol/cow-sdk/tree/main/examples/react/wagmi)
 - [React (ethers v6)](https://github.com/cowprotocol/cow-sdk/tree/main/examples/react/ethers6)
 - [React (ethers v5)](https://github.com/cowprotocol/cow-sdk/tree/main/examples/react/ethers5)
 
