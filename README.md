@@ -27,7 +27,7 @@ The project uses modern tooling for efficient development and publishing:
 ### Package Structure
 
 #### 🎯 Main SDK Package
-- **[`@cowprotocol/cow-sdk`](packages/sdk/README.md)** - Complete umbrella package that re-exports all other packages for easy consumption
+- **[`@cowprotocol/cow-sdk`](packages/sdk/README.md)** - Complete package that re-exports all other packages for easy consumption
 
 #### 🔧 Core Trading Packages
 - **[`@cowprotocol/sdk-trading`](packages/trading/README.md)** - High-level trading SDK with built-in quote fetching, order signing, and posting

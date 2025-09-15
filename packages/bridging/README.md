@@ -132,7 +132,6 @@ const parameters: QuoteBridgeRequest = {
   appCode: 'YOUR_APP_CODE',
 }
 
-// Access bridging through the umbrella SDK
 const quoteResult = await sdk.bridging.getQuote(parameters)
 assertIsBridgeQuoteAndPost(quoteResult)
 const { swap, bridge, postSwapOrderFromQuote } = quoteResult

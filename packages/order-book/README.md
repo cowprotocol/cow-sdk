@@ -92,7 +92,6 @@ const sdk = new CowSdk({
   adapter,
 })
 
-// Use Order Book through the umbrella SDK
 const { quote } = await sdk.orderBook.getQuote(quoteRequest)
 const orderId = await sdk.orderBook.sendOrder(signedOrder)
 const order = await sdk.orderBook.getOrder(orderId)

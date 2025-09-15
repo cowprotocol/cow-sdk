@@ -55,8 +55,6 @@ When using the CoW SDK, contract utilities are automatically available:
 ```typescript
 import {
   CowSdk,
-  // Contract functions can be imported directly
-  // when using umbrella SDK - adapter is already configured
 } from '@cowprotocol/cow-sdk'
 import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
 import { JsonRpcProvider, Wallet } from 'ethers'
