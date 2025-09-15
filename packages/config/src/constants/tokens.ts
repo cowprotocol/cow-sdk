@@ -98,5 +98,5 @@ export const nativeCurrencyTemplate: Omit<TokenInfo, 'chainId'> = {
   decimals: 18,
   name: 'Ether',
   symbol: 'ETH',
-  logoUrl: `${TOKEN_LIST_IMAGES_PATH}/1/${NATIVE_CURRENCY_ADDRESS}/logo.png`,
+  logoUrl: `${TOKEN_LIST_IMAGES_PATH}/1/${NATIVE_CURRENCY_ADDRESS.toLowerCase()}/logo.png`,
 }
