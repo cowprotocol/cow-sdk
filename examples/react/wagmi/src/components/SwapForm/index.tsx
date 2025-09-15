@@ -19,8 +19,8 @@ export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
   const slippageBps = slippagePercent * 100
   const isLoading = isOrderPostingInProgress || Boolean(account && sellAmount && !quoteAndPost)
 
-  const WETH_SEPOLIA = chainId && isSupportedChain(chainId) ? WRAPPED_NATIVE_CURRENCIES[chainId] : null
-  const USDC_SEPOLIA = chainId && isSupportedChain(chainId) ? USDC_TOKENS[chainId] : null
+  const WETH = chainId && isSupportedChain(chainId) ? WRAPPED_NATIVE_CURRENCIES[chainId] : null
+  const USDC = chainId && isSupportedChain(chainId) ? USDC_TOKENS[chainId] : null
 
   const postOrder = () => {
     if (!quoteAndPost) return
@@ -58,7 +58,7 @@ export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
 
     if (!chainId || !account || Number.isNaN(sellAmountNum) || sellAmountNum <= 0) return
 
-    if (!WETH_SEPOLIA || !USDC_SEPOLIA) return
+    if (!WETH || !USDC) return
 
     setQuoteAndPost(null)
 
@@ -67,11 +67,11 @@ export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
         chainId,
         kind: OrderKind.SELL,
         owner: account,
-        amount: Math.round(sellAmountNum * 10 ** WETH_SEPOLIA.decimals).toString(),
-        sellToken: WETH_SEPOLIA.address,
-        sellTokenDecimals: WETH_SEPOLIA.decimals,
-        buyToken: USDC_SEPOLIA.address,
-        buyTokenDecimals: USDC_SEPOLIA.decimals,
+        amount: Math.round(sellAmountNum * 10 ** WETH.decimals).toString(),
+        sellToken: WETH.address,
+        sellTokenDecimals: WETH.decimals,
+        buyToken: USDC.address,
+        buyTokenDecimals: USDC.decimals,
         slippageBps,
       })
       .then((quote) => {
@@ -82,8 +82,7 @@ export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
   }, [slippageBps, sellAmount, chainId, account, isSdkReady])
 
   const buyAmountRaw = quoteAndPost?.quoteResults.amountsAndCosts.afterNetworkCosts.buyAmount
-  const buyAmountView =
-    buyAmountRaw && USDC_SEPOLIA ? (Number(buyAmountRaw) / 10 ** USDC_SEPOLIA.decimals).toFixed(6) : undefined
+  const buyAmountView = buyAmountRaw && USDC ? (Number(buyAmountRaw) / 10 ** USDC.decimals).toFixed(6) : undefined
 
   return status === 'connected' ? (
     <div>
@@ -91,7 +90,7 @@ export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
         <div className="box">
           <h4>Order has been posted</h4>
           <p>
-            <a href={`https://explorer.cow.fi/sepolia/orders/${postedOrderHash}`}>See details in Explorer</a>
+            <a href={`https://explorer.cow.fi/orders/${postedOrderHash}`}>See details in Explorer</a>
           </p>
         </div>
       )}
@@ -99,12 +98,12 @@ export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
       <div className="box">
         <strong>Sell</strong>
         <input type="number" value={sellAmount} onChange={(e) => setSellAmount(e.target.value)} />
-        <span>{WETH_SEPOLIA?.symbol}</span>
+        <span>{WETH?.symbol}</span>
       </div>
       <div className="box">
         <strong>Buy</strong>
         <input type="number" value={buyAmountView ?? 'Loading...'} disabled />
-        <span>{USDC_SEPOLIA?.symbol}</span>
+        <span>{USDC?.symbol}</span>
       </div>
 
       <div className="box">
