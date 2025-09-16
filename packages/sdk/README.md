@@ -32,7 +32,7 @@ The SDK supports all CoW Protocol enabled networks:
 - **[CoW Protocol Documentation](https://docs.cow.fi/)**
 - **[API Reference](https://api.cow.fi/docs/)**
 - **[CoW Protocol Website](https://cow.fi/)**
-- **[Examples Repository](../../examples)**
+- **[Examples Repository](https://github.com/cowprotocol/cow-sdk/tree/main/examples)**
 - **Issues**: [GitHub Issues](https://github.com/cowprotocol/cow-sdk/issues)
 - **Discord**: [CoW Protocol Discord](https://discord.com/invite/cowprotocol)
 - **Documentation**: [docs.cow.fi](https://docs.cow.fi/)
@@ -67,20 +67,20 @@ yarn add @cowprotocol/cow-sdk
 Using CoW Protocol, you can perform swaps, limit orders, TWAP orders, and many other operations.
 The `@cowprotocol/cow-sdk` provides tools at different abstraction levels, allowing you to conveniently implement basic scenarios while maintaining the flexibility to control all possible cases.
 
-> In most cases, you will only need to use the **[Trading SDK](../trading/README.md)**
+> In most cases, you will only need to use the **[Trading SDK](https://github.com/cowprotocol/cow-sdk/tree/main/packages/trading/README.md)**
 
 ## SDK Components
 
 ### Core
-- **[`TradingSdk`](../trading/README.md)** - Main tool for swap and limit orders with built-in quote fetching, order signing, and posting
-- **[`OrderSigningUtils`](../order-signing/README.md)** - Utilities for signing orders and cancellations using cryptographic algorithms
-- **[`OrderBookApi`](../order-book/README.md)** - Provides the ability to retrieve orders and trades from the CoW Protocol order book, as well as add and cancel them
-- **[`MetadataApi`](../app-data/README.md)** - API for accessing order metadata and additional information
+- **[`TradingSdk`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/trading/README.md)** - Main tool for swap and limit orders with built-in quote fetching, order signing, and posting
+- **[`OrderSigningUtils`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/order-signing/README.md)** - Utilities for signing orders and cancellations using cryptographic algorithms
+- **[`OrderBookApi`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/order-book/README.md)** - Provides the ability to retrieve orders and trades from the CoW Protocol order book, as well as add and cancel them
+- **[`MetadataApi`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/app-data/README.md)** - API for accessing order metadata and additional information
 
 ### Advanced
-- **[`BridgingSdk`](../bridging/README.md)** - Cross-chain token transfers and bridging functionality
-- **[`ConditionalOrder`](../composable/README.md)** - SDK for Programmatic Orders such as TWAP ([Read more](https://docs.cow.fi/cow-protocol/concepts/order-types/programmatic-orders))
-- **[`CowShedSdk`](../cow-shed/README.md)** - Account abstraction that leverages EOA with smart contract capabilities
+- **[`BridgingSdk`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/bridging/README.md)** - Cross-chain token transfers and bridging functionality
+- **[`ConditionalOrder`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/composable/README.md)** - SDK for Programmatic Orders such as TWAP ([Read more](https://docs.cow.fi/cow-protocol/concepts/order-types/programmatic-orders))
+- **[`CowShedSdk`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/cow-shed/README.md)** - Account abstraction that leverages EOA with smart contract capabilities
 
 ## v6 → v7 Migration Guide
 The versions are 99% backward compatible. The only difference is that in v7 you need to set an adapter corresponding to the library you use: `Viem`, `Ethers6`, or `Ethers5`.
@@ -232,7 +232,7 @@ if (confirm(`You will receive at least: ${buyAmount}. Proceed?`)) {
 This example demonstrates the simplest way to trade on CoW Protocol.
 
 For more advanced use cases, you can use additional parameters such as `receiver`, `partiallyFillable`, `validTo`, and others.
-Refer to the [Trading SDK documentation](packages/trading/README.md) for comprehensive details.
+Refer to the [Trading SDK documentation](https://github.com/cowprotocol/cow-sdk/tree/main/packages/trading/README.md) for comprehensive details.
 
 
 ## Adapters

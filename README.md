@@ -9,7 +9,7 @@
 | ![Statements](https://img.shields.io/badge/statements-94.77%25-brightgreen.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-76.78%25-red.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-97.43%25-brightgreen.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-97.67%25-brightgreen.svg?style=flat) |
 
 ## Use CoW Protocol
-> Check [**@cowprotocol/cow-sdk**](packages/sdk/README.md) to learn how to trade on the CoW Protocol (get quote, verify amounts, sign and send order)
+> Check [**@cowprotocol/cow-sdk**](https://github.com/cowprotocol/cow-sdk/tree/main/packages/sdk/README.md) to learn how to trade on the CoW Protocol (get quote, verify amounts, sign and send order)
 
 ## Technical Overview
 
@@ -30,33 +30,33 @@ The project uses modern tooling for efficient development and publishing:
 ### Package Structure
 
 #### 🎯 Main SDK Package
-- **[`@cowprotocol/cow-sdk`](packages/sdk/README.md)** - Complete package that re-exports all other packages for easy consumption
+- **[`@cowprotocol/cow-sdk`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/sdk/README.md)** - Complete package that re-exports all other packages for easy consumption
 
 #### 🔧 Core Trading Packages
-- **[`@cowprotocol/sdk-trading`](packages/trading/README.md)** - High-level trading SDK with built-in quote fetching, order signing, and posting
-- **[`@cowprotocol/sdk-order-book`](packages/order-book/README.md)** - Order book API client for retrieving orders, trades, and posting orders
-- **[`@cowprotocol/sdk-order-signing`](packages/order-signing/README.md)** - Cryptographic utilities for signing orders and cancellations
+- **[`@cowprotocol/sdk-trading`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/trading/README.md)** - High-level trading SDK with built-in quote fetching, order signing, and posting
+- **[`@cowprotocol/sdk-order-book`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/order-book/README.md)** - Order book API client for retrieving orders, trades, and posting orders
+- **[`@cowprotocol/sdk-order-signing`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/order-signing/README.md)** - Cryptographic utilities for signing orders and cancellations
 
 #### 🌉 Advanced Features
-- **[`@cowprotocol/sdk-bridging`](packages/bridging/README.md)** - Cross-chain token transfers and bridging functionality
-- **[`@cowprotocol/sdk-composable`](packages/composable/README.md)** - Programmatic orders (TWAP, conditional orders, etc.)
-- **[`@cowprotocol/sdk-cow-shed`](packages/cow-shed/README.md)** - Account abstraction with smart contract capabilities
+- **[`@cowprotocol/sdk-bridging`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/bridging/README.md)** - Cross-chain token transfers and bridging functionality
+- **[`@cowprotocol/sdk-composable`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/composable/README.md)** - Programmatic orders (TWAP, conditional orders, etc.)
+- **[`@cowprotocol/sdk-cow-shed`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/cow-shed/README.md)** - Account abstraction with smart contract capabilities
 
 #### 🔌 Provider Adapters
-- **[`@cowprotocol/sdk-viem-adapter`](packages/providers/viem-adapter/README.md)** - Viem blockchain library adapter
-- **[`@cowprotocol/sdk-ethers-v6-adapter`](packages/providers/ethers-v6-adapter/README.md)** - Ethers.js v6 adapter
-- **[`@cowprotocol/sdk-ethers-v5-adapter`](packages/providers/ethers-v5-adapter/README.md)** - Ethers.js v5 adapter
+- **[`@cowprotocol/sdk-viem-adapter`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/providers/viem-adapter/README.md)** - Viem blockchain library adapter
+- **[`@cowprotocol/sdk-ethers-v6-adapter`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/providers/ethers-v6-adapter/README.md)** - Ethers.js v6 adapter
+- **[`@cowprotocol/sdk-ethers-v5-adapter`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/providers/ethers-v5-adapter/README.md)** - Ethers.js v5 adapter
 
 #### 📚 Supporting Packages
-- **[`@cowprotocol/sdk-app-data`](packages/app-data/README.md)** - AppData schema definitions and metadata handling
-- **[`@cowprotocol/sdk-config`](packages/config/README.md)** - Configuration constants and chain settings
-- **[`@cowprotocol/sdk-common`](packages/common/README.md)** - Common utilities, types, and shared functionality
-- **[`@cowprotocol/sdk-contracts-ts`](packages/contracts-ts/README.md)** - TypeScript contract bindings and ABI definitions
-- **[`@cowprotocol/sdk-subgraph`](packages/subgraph/README.md)** - GraphQL client for CoW Protocol subgraph data
-- **[`@cowprotocol/sdk-weiroll`](packages/weiroll/README.md)** - Weiroll integration utilities
+- **[`@cowprotocol/sdk-app-data`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/app-data/README.md)** - AppData schema definitions and metadata handling
+- **[`@cowprotocol/sdk-config`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/config/README.md)** - Configuration constants and chain settings
+- **[`@cowprotocol/sdk-common`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/common/README.md)** - Common utilities, types, and shared functionality
+- **[`@cowprotocol/sdk-contracts-ts`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/contracts-ts/README.md)** - TypeScript contract bindings and ABI definitions
+- **[`@cowprotocol/sdk-subgraph`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/subgraph/README.md)** - GraphQL client for CoW Protocol subgraph data
+- **[`@cowprotocol/sdk-weiroll`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/weiroll/README.md)** - Weiroll integration utilities
 
 #### 🛠️ Development Packages
-- **[`@cow-sdk/typescript-config`](packages/typescript-config)** - Shared TypeScript configuration
+- **[`@cow-sdk/typescript-config`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/typescript-config)** - Shared TypeScript configuration
 
 ### Development Workflow
 

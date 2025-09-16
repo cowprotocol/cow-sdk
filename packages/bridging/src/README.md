@@ -5,7 +5,7 @@ The **`BridgingSDK`** lets you 🌉 _swap tokens across chains_ and bridge asset
 
 📚 This **all-in-one guide** walks you through **everything** you need to integrate `BridgingSDK` into your app and supercharge your cross-chain experience! ✨
 
-> See [PROVIDER_README](./PROVIDER_README.md) for a guide how to create a bridge provider for `BridgingSDK`
+> See [PROVIDER_README](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/PROVIDER_README.md) for a guide how to create a bridge provider for `BridgingSDK`
 
 ## Table of Contents
 
@@ -28,14 +28,14 @@ The **`BridgingSDK`** lets you 🌉 _swap tokens across chains_ and bridge asset
 
 The BridgingSdk supports two types of operations:
 
-- **Single-chain swaps**: Traditional token swaps within the same blockchain. Basically, it's wrapper on top of [TradingSDK](../trading/README.md)
+- **Single-chain swaps**: Traditional token swaps within the same blockchain. Basically, it's wrapper on top of [TradingSDK](https://github.com/cowprotocol/cow-sdk/tree/main/packages/trading/README.md)
 - **Cross-chain swaps**: Token swaps that span multiple blockchains using bridge providers. The main functionality of `BridgingSDK`
 
 Supported bridge providers:
 
 - **Bungee/Socket**: Multi-bridge aggregation platform with support for multiple underlying bridges including Across, CCTP, and others
 
-> Since `BridgingSdk` is compatible with [TradingSDK](../trading/README.md), almost everything described for `TradingSDK` applies to `BridgingSdk` as well.
+> Since `BridgingSdk` is compatible with [TradingSDK](https://github.com/cowprotocol/cow-sdk/tree/main/packages/trading/README.md), almost everything described for `TradingSDK` applies to `BridgingSdk` as well.
 > The main difference is smart contract wallet support. Currently, `BridgingSdk` only supports EOA wallets; this will likely change soon — stay tuned!
 
 ## Installation
@@ -144,11 +144,11 @@ async function performCrossChainSwap(wallet: Wallet, bridgingSdk: BridgingSdk): 
 }
 ```
 
-> `quote.postSwapOrderFromQuote()` function is compatible with the same function in [TradingSDK](../trading/README.md). Thanks to this you can easily migrate to `BridgingSDK`.
+> `quote.postSwapOrderFromQuote()` function is compatible with the same function in [TradingSDK](https://github.com/cowprotocol/cow-sdk/tree/main/packages/trading/README.md). Thanks to this you can easily migrate to `BridgingSDK`.
 
 ## Configuration
 
-### [`BridgingSdkOptions`](./BridgingSdk/BridgingSdk.ts#L19)
+### [`BridgingSdkOptions`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/BridgingSdk/BridgingSdk.ts#L19)
 
 ```typescript
 interface BridgingSdkOptions {
@@ -178,10 +178,10 @@ interface BridgingSdkOptions {
 
 **Type References:**
 
-- [`BridgeProvider`](./types.ts#L155): Interface for bridge service providers
-- [`BridgeQuoteResult`](./types.ts#L57): Result type for bridge quotes
-- [`TradingSdk`](../trading/tradingSdk.ts#L89): SDK for trading operations
-- [`OrderBookApi`](../order-book/api.ts#L159): API client for order book operations
+- [`BridgeProvider`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L155): Interface for bridge service providers
+- [`BridgeQuoteResult`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L57): Result type for bridge quotes
+- [`TradingSdk`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/trading/src/TradingSdk.ts#L89): SDK for trading operations
+- [`OrderBookApi`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/order-book/src/api.ts#L159): API client for order book operations
 
 ### Advanced Configuration with Custom `TradingSDK`
 
@@ -252,8 +252,8 @@ async function getQuote(
 
 **Returns:**
 
-- [`QuoteAndPost`](../trading/types.ts#L130): For single-chain swaps
-- [`BridgeQuoteAndPost`](./types.ts#L286): For cross-chain swaps
+- [`QuoteAndPost`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/trading/src/types.ts#L130): For single-chain swaps
+- [`BridgeQuoteAndPost`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L286): For cross-chain swaps
 
 ### getSourceNetworks()
 
@@ -523,7 +523,7 @@ main().catch(console.error)
 
 ## Types and Interfaces
 
-### [`QuoteBridgeRequest`](./types.ts#L45)
+### [`QuoteBridgeRequest`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L45)
 
 ```typescript
 interface QuoteBridgeRequest {
@@ -549,9 +549,9 @@ interface QuoteBridgeRequest {
 }
 ```
 
-> Since `BridgingSDK.getQuote()` is compatible with `TradingSDK`, it has the same [optional parameters](../trading/README.md#optional-parameters).
+> Since `BridgingSDK.getQuote()` is compatible with `TradingSDK`, it has the same [optional parameters](https://github.com/cowprotocol/cow-sdk/tree/main/packages/trading/README.md#optional-parameters).
 
-### [`BridgeQuoteResult`](./types.ts#L57)
+### [`BridgeQuoteResult`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L57)
 
 ```typescript
 interface BridgeQuoteResult {
@@ -572,7 +572,7 @@ interface BridgeQuoteResult {
 }
 ```
 
-### [`BridgeStatus`](./types.ts#L110)
+### [`BridgeStatus`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L110)
 
 ```typescript
 enum BridgeStatus {
@@ -619,8 +619,8 @@ try {
 
 **Type References:**
 
-- [`BridgeProviderQuoteError`](./errors.ts#L18): Error class for bridge provider failures
-- [`BridgeQuoteErrors`](./errors.ts#L5): Enum of possible bridge quote error types
+- [`BridgeProviderQuoteError`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/errors.ts#L18): Error class for bridge provider failures
+- [`BridgeQuoteErrors`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/errors.ts#L5): Enum of possible bridge quote error types
 
 ## Order Monitoring
 
@@ -702,40 +702,40 @@ This section provides links to all important TypeScript types and interfaces use
 
 ### Core SDK Types
 
-- [`BridgingSdk`](./BridgingSdk/BridgingSdk.ts#L65): Main SDK class
-- [`BridgingSdkOptions`](./BridgingSdk/BridgingSdk.ts#L19): SDK configuration options
-- [`BungeeBridgeProvider`](./providers/bungee/BungeeBridgeProvider.ts#L58): Bungee bridge provider implementation
+- [`BridgingSdk`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/BridgingSdk/BridgingSdk.ts#L65): Main SDK class
+- [`BridgingSdkOptions`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/BridgingSdk/BridgingSdk.ts#L19): SDK configuration options
+- [`BungeeBridgeProvider`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/providers/bungee/BungeeBridgeProvider.ts#L58): Bungee bridge provider implementation
 
 ### Request and Response Types
 
-- [`QuoteBridgeRequest`](./types.ts#L45): Parameters for requesting a bridge quote
-- [`BridgeQuoteResult`](./types.ts#L57): Result of a bridge quote request
-- [`BridgeQuoteAndPost`](./types.ts#L286): Cross-chain quote with posting functionality
-- [`CrossChainQuoteAndPost`](./types.ts#L284): Union type for single or cross-chain quotes
+- [`QuoteBridgeRequest`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L45): Parameters for requesting a bridge quote
+- [`BridgeQuoteResult`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L57): Result of a bridge quote request
+- [`BridgeQuoteAndPost`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L286): Cross-chain quote with posting functionality
+- [`CrossChainQuoteAndPost`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L284): Union type for single or cross-chain quotes
 
 ### Trading Integration Types
 
-- [`QuoteAndPost`](../trading/types.ts#L130): Single-chain trading quote and post functionality
-- [`TradingSdk`](../trading/tradingSdk.ts#L89): Trading SDK for single-chain operations
-- [`OrderBookApi`](../order-book/api.ts#L159): Order book API client
+- [`QuoteAndPost`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/trading/src/types.ts#L130): Single-chain trading quote and post functionality
+- [`TradingSdk`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/trading/src/TradingSdk.ts#L89): Trading SDK for single-chain operations
+- [`OrderBookApi`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/order-book/src/api.ts#L159): Order book API client
 
 ### Chain and Token Types
 
-- [`SupportedChainId`](../chains/types.ts#L4): Supported blockchain network identifiers
-- [`TargetChainId`](../chains/types.ts#L16): Target blockchain network identifiers
-- [`TokenInfo`](../common/types/tokens.ts#L15): Token information structure
-- [`OrderKind`](../order-book/generated/models/OrderKind.ts): Order type enumeration
+- [`SupportedChainId`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/config/src/chains/types.ts#L4): Supported blockchain network identifiers
+- [`TargetChainId`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/config/src/chains/types.ts#L16): Target blockchain network identifiers
+- [`TokenInfo`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/common/src/types/tokens.ts#L15): Token information structure
+- [`OrderKind`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/order-book/src/generated/models/OrderKind.ts): Order type enumeration
 
 ### Status and Error Types
 
-- [`BridgeStatus`](./types.ts#L110): Bridge operation status enumeration
-- [`BridgeStatusResult`](./types.ts#L118): Bridge status query result
-- [`BridgeProviderQuoteError`](./errors.ts#L18): Bridge provider error class
-- [`BridgeQuoteErrors`](./errors.ts#L5): Bridge quote error types
+- [`BridgeStatus`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L110): Bridge operation status enumeration
+- [`BridgeStatusResult`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L118): Bridge status query result
+- [`BridgeProviderQuoteError`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/errors.ts#L18): Bridge provider error class
+- [`BridgeQuoteErrors`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/errors.ts#L5): Bridge quote error types
 
 ### Utility Types
 
-- [`BridgeProvider`](./types.ts#L155): Generic bridge provider interface
-- [`BridgeQuoteAmountsAndCosts`](./types.ts#L321): Cost breakdown for bridge operations
-- [`BridgeHook`](./types.ts#L105): Post-hook configuration for bridging
-- [`isBridgeQuoteAndPost`](./utils.ts#L5): Type guard for cross-chain quotes
+- [`BridgeProvider`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L155): Generic bridge provider interface
+- [`BridgeQuoteAmountsAndCosts`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L321): Cost breakdown for bridge operations
+- [`BridgeHook`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L105): Post-hook configuration for bridging
+- [`isBridgeQuoteAndPost`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/utils.ts#L5): Type guard for cross-chain quotes

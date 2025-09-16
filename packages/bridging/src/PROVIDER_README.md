@@ -3,7 +3,7 @@
 This guide explains how to develop a new bridge provider for the `CoW Protocol` `BridgingSDK`.
 Bridge providers integrate third-party bridging protocols into the `CoW ecosystem`, enabling cross-chain token swaps.
 
-> You can see existing providers code in [`src/bridging/providers`](./providers) directory.
+> You can see existing providers code in [`src/bridging/providers`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/bridging/src/providers) directory.
 
 ## Table of Contents
 
