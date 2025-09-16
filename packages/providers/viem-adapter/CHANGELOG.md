@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3.0-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.2.2-beta.0...sdk-viem-adapter-v0.3.0-beta.0) (2025-09-16)
+
+
+### ✨ Features
+
+* add migration guide and wagmi example ([#498](https://github.com/cowprotocol/cow-sdk/issues/498)) ([21be05d](https://github.com/cowprotocol/cow-sdk/commit/21be05d5b6472de26120ebefe4626341af9a062d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.4.0-beta.0
+
 ## [0.2.2-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.2.1-beta.0...sdk-viem-adapter-v0.2.2-beta.0) (2025-09-11)
 
 

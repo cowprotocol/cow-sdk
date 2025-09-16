@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.3.0-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.2.6-beta.0...sdk-trading-v0.3.0-beta.0) (2025-09-16)
+
+
+### ✨ Features
+
+* add migration guide and wagmi example ([#498](https://github.com/cowprotocol/cow-sdk/issues/498)) ([21be05d](https://github.com/cowprotocol/cow-sdk/commit/21be05d5b6472de26120ebefe4626341af9a062d))
+
+
+### 📚 Documentation
+
+* update README to focus on main use cases ([#493](https://github.com/cowprotocol/cow-sdk/issues/493)) ([a05cb1b](https://github.com/cowprotocol/cow-sdk/commit/a05cb1ba11b5f9895d7cfe6262cf74c4089fd73c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.4.0-beta.0
+    * @cowprotocol/sdk-config bumped to 0.3.3-beta.0
+    * @cowprotocol/sdk-app-data bumped to 4.1.5-beta.0
+    * @cowprotocol/sdk-order-book bumped to 0.3.0-beta.0
+    * @cowprotocol/sdk-order-signing bumped to 0.2.6-beta.0
+    * @cowprotocol/sdk-contracts-ts bumped to 2.2.0-beta.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.2.3-beta.0
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.2.3-beta.0
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.0-beta.0
+
 ## [0.2.6-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.2.5-beta.0...sdk-trading-v0.2.6-beta.0) (2025-09-15)
 
 

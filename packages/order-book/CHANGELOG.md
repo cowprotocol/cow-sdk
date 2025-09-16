@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.3.0-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.2.4-beta.0...sdk-order-book-v0.3.0-beta.0) (2025-09-16)
+
+
+### ✨ Features
+
+* add migration guide and wagmi example ([#498](https://github.com/cowprotocol/cow-sdk/issues/498)) ([21be05d](https://github.com/cowprotocol/cow-sdk/commit/21be05d5b6472de26120ebefe4626341af9a062d))
+
+
+### 📚 Documentation
+
+* update README to focus on main use cases ([#493](https://github.com/cowprotocol/cow-sdk/issues/493)) ([a05cb1b](https://github.com/cowprotocol/cow-sdk/commit/a05cb1ba11b5f9895d7cfe6262cf74c4089fd73c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.3.3-beta.0
+    * @cowprotocol/sdk-common bumped to 0.4.0-beta.0
+
 ## [0.2.4-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.2.3-beta.0...sdk-order-book-v0.2.4-beta.0) (2025-09-15)
 
 
