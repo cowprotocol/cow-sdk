@@ -135,14 +135,20 @@ export class CowShedHooks {
 
     const hash = adapter.utils.hashTypedData(domain, types, message)
 
-    const result = await adapter.readContract({
-      address: account,
-      abi: EIP1271_VALID_SIGNATURE_ABI,
-      functionName: 'isValidSignature',
-      args: [hash, signature],
-    })
+    try {
+      const result = await adapter.readContract({
+        address: account,
+        abi: EIP1271_VALID_SIGNATURE_ABI,
+        functionName: 'isValidSignature',
+        args: [hash, signature],
+      })
 
-    return result === EIP1271_MAGICVALUE
+      return result === EIP1271_MAGICVALUE
+    } catch (error) {
+      console.error('CoWShedHooks.verifyEip1271Signature', error)
+
+      return false
+    }
   }
 
   infoToSign(calls: ICoWShedCall[], nonce: string, deadline: bigint, proxy: string): TypedDataContext {
@@ -180,6 +186,6 @@ export class CowShedHooks {
 
     const userAccountCode = await adapter.getCode(account)
 
-    return userAccountCode !== '0x'
+    return !!userAccountCode && userAccountCode !== '0x'
   }
 }
