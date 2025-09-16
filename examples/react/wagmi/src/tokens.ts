@@ -31,7 +31,7 @@ export const USDC_TOKENS: Record<SupportedChainId, TokenInfo> = {
   },
   [SupportedChainId.LENS]: {
     chainId: SupportedChainId.LENS,
-    address: '0x0000000000000000000000000000000000000000', // Placeholder, not deployed
+    address: '0x88F08E304EC4f90D644Cec3Fb69b8aD414acf884', // USDC (Native on Lens)
     decimals: 6,
     name: 'USD Coin',
     symbol: 'USDC',

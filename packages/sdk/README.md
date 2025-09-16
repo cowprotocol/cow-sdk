@@ -67,20 +67,20 @@ yarn add @cowprotocol/cow-sdk
 Using CoW Protocol, you can perform swaps, limit orders, TWAP orders, and many other operations.
 The `@cowprotocol/cow-sdk` provides tools at different abstraction levels, allowing you to conveniently implement basic scenarios while maintaining the flexibility to control all possible cases.
 
-> In most cases, you will only need to use the **[Trading SDK](packages/trading/README.md)**
+> In most cases, you will only need to use the **[Trading SDK](../trading/README.md)**
 
 ## SDK Components
 
 ### Core
-- **[`TradingSdk`](packages/trading/README.md)** - Main tool for swap and limit orders with built-in quote fetching, order signing, and posting
-- **[`OrderSigningUtils`](packages/order-signing/README.md)** - Utilities for signing orders and cancellations using cryptographic algorithms
-- **[`OrderBookApi`](packages/order-book/README.md)** - Provides the ability to retrieve orders and trades from the CoW Protocol order book, as well as add and cancel them
-- **[`MetadataApi`](packages/app-data/README.md)** - API for accessing order metadata and additional information
+- **[`TradingSdk`](../trading/README.md)** - Main tool for swap and limit orders with built-in quote fetching, order signing, and posting
+- **[`OrderSigningUtils`](../order-signing/README.md)** - Utilities for signing orders and cancellations using cryptographic algorithms
+- **[`OrderBookApi`](../order-book/README.md)** - Provides the ability to retrieve orders and trades from the CoW Protocol order book, as well as add and cancel them
+- **[`MetadataApi`](../app-data/README.md)** - API for accessing order metadata and additional information
 
 ### Advanced
-- **[`BridgingSdk`](packages/bridging/README.md)** - Cross-chain token transfers and bridging functionality
-- **[`ConditionalOrder`](packages/composable/README.md)** - SDK for Programmatic Orders such as TWAP ([Read more](https://docs.cow.fi/cow-protocol/concepts/order-types/programmatic-orders))
-- **[`CowShedSdk`](packages/cow-shed/README.md)** - Account abstraction that leverages EOA with smart contract capabilities
+- **[`BridgingSdk`](../bridging/README.md)** - Cross-chain token transfers and bridging functionality
+- **[`ConditionalOrder`](../composable/README.md)** - SDK for Programmatic Orders such as TWAP ([Read more](https://docs.cow.fi/cow-protocol/concepts/order-types/programmatic-orders))
+- **[`CowShedSdk`](../cow-shed/README.md)** - Account abstraction that leverages EOA with smart contract capabilities
 
 ## v6 → v7 Migration Guide
 The versions are 99% backward compatible. The only difference is that in v7 you need to set an adapter corresponding to the library you use: `Viem`, `Ethers6`, or `Ethers5`.

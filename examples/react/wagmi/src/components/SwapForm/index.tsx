@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { tradingSdk } from '../../cowSdk'
 import { useAccount } from 'wagmi'
 import { USDC_TOKENS } from '../../tokens.ts'
-import { parseUnits } from 'viem'
+import { formatUnits, parseUnits } from 'viem'
 
 export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
   const { address: account, chainId, status } = useAccount()
@@ -83,7 +83,7 @@ export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
   }, [slippageBps, sellAmount, chainId, account, isSdkReady])
 
   const buyAmountRaw = quoteAndPost?.quoteResults.amountsAndCosts.afterNetworkCosts.buyAmount
-  const buyAmountView = buyAmountRaw && USDC ? (Number(buyAmountRaw) / 10 ** USDC.decimals).toFixed(6) : undefined
+  const buyAmountView = buyAmountRaw && USDC ? Number(formatUnits(buyAmountRaw, USDC.decimals)).toFixed(6) : undefined
 
   return status === 'connected' ? (
     <div>

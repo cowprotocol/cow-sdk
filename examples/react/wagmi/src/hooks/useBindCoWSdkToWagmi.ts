@@ -16,7 +16,10 @@ export function useBindCoWSdkToWagmi(): boolean {
    * Sync Trading SDK with wagmi account state (chainId and signer)
    */
   useEffect(() => {
-    if (!walletClient || !chainId) return
+    if (!walletClient || !chainId) {
+      setIsSdkReady(false)
+      return
+    }
 
     setGlobalAdapter(
       new ViemAdapter({
@@ -28,6 +31,10 @@ export function useBindCoWSdkToWagmi(): boolean {
     tradingSdk.setTraderParams({ chainId })
 
     setIsSdkReady(true)
+
+    return () => {
+      setIsSdkReady(false)
+    }
   }, [publicClient, walletClient, chainId])
 
   return isSdkReady
