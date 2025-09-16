@@ -128,6 +128,7 @@ export class CowShedHooks {
     const { domain, types, message } = typedDataContext
     const userAccountCode = await adapter.getCode(account)
 
+    // Only verify signature if account is a smart-contract account
     if (userAccountCode && userAccountCode !== '0x') {
       const hash = adapter.utils.hashTypedData(domain, types, message)
 

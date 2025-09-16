@@ -233,6 +233,259 @@ describe('CowShedHooks', () => {
     })
   })
 
+  describe('verifyEip1271Signature', () => {
+    it('should return true for EOA accounts (non-contract accounts)', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]
+        setGlobalAdapter(adapter)
+
+        // Mock getCode to return '0x' for EOA
+        const originalGetCode = adapter.getCode
+        adapter.getCode = jest.fn().mockResolvedValue('0x')
+
+        const cowShed = new CowShedHooks(1, {
+          factoryAddress: MOCK_COW_SHED_FACTORY,
+          implementationAddress: MOCK_COW_SHED_IMPLEMENTATION,
+          proxyCreationCode: MOCK_INIT_CODE,
+        })
+
+        const calls = createCallsForAdapter(adapter)
+        const nonce = adapter.utils.formatBytes32String('1')
+        const deadline = BigInt(1000000)
+        const proxy = cowShed.proxyOf(USER_MOCK)
+        const typedDataContext = cowShed.infoToSign(calls, nonce, deadline, proxy)
+
+        const result = await cowShed.verifyEip1271Signature(USER_MOCK, '0xdeadbeef', typedDataContext)
+
+        expect(result).toBe(true)
+        expect(adapter.getCode).toHaveBeenCalledWith(USER_MOCK)
+
+        // Restore original method
+        adapter.getCode = originalGetCode
+      }
+    })
+
+    it('should return true for accounts with empty bytecode', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]
+        setGlobalAdapter(adapter)
+
+        // Mock getCode to return null for empty bytecode
+        const originalGetCode = adapter.getCode
+        adapter.getCode = jest.fn().mockResolvedValue(null)
+
+        const cowShed = new CowShedHooks(1, {
+          factoryAddress: MOCK_COW_SHED_FACTORY,
+          implementationAddress: MOCK_COW_SHED_IMPLEMENTATION,
+          proxyCreationCode: MOCK_INIT_CODE,
+        })
+
+        const calls = createCallsForAdapter(adapter)
+        const nonce = adapter.utils.formatBytes32String('1')
+        const deadline = BigInt(1000000)
+        const proxy = cowShed.proxyOf(USER_MOCK)
+        const typedDataContext = cowShed.infoToSign(calls, nonce, deadline, proxy)
+
+        const result = await cowShed.verifyEip1271Signature(USER_MOCK, '0xdeadbeef', typedDataContext)
+
+        expect(result).toBe(true)
+        expect(adapter.getCode).toHaveBeenCalledWith(USER_MOCK)
+
+        // Restore original method
+        adapter.getCode = originalGetCode
+      }
+    })
+
+    it('should return true for smart contract with valid EIP1271 signature', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]
+        setGlobalAdapter(adapter)
+
+        // Mock getCode to return bytecode (indicating smart contract)
+        const originalGetCode = adapter.getCode
+        const originalReadContract = adapter.readContract
+        adapter.getCode = jest.fn().mockResolvedValue('0x608060405234801561001057600080fd5b50')
+        // Mock readContract to return EIP1271_MAGICVALUE
+        adapter.readContract = jest.fn().mockResolvedValue('0x1626ba7e')
+
+        const cowShed = new CowShedHooks(1, {
+          factoryAddress: MOCK_COW_SHED_FACTORY,
+          implementationAddress: MOCK_COW_SHED_IMPLEMENTATION,
+          proxyCreationCode: MOCK_INIT_CODE,
+        })
+
+        const calls = createCallsForAdapter(adapter)
+        const nonce = adapter.utils.formatBytes32String('1')
+        const deadline = BigInt(1000000)
+        const proxy = cowShed.proxyOf(USER_MOCK)
+        const typedDataContext = cowShed.infoToSign(calls, nonce, deadline, proxy)
+        const signature = '0x1234abcd'
+
+        const result = await cowShed.verifyEip1271Signature(USER_MOCK, signature, typedDataContext)
+
+        expect(result).toBe(true)
+        expect(adapter.getCode).toHaveBeenCalledWith(USER_MOCK)
+        expect(adapter.readContract).toHaveBeenCalledWith({
+          address: USER_MOCK,
+          abi: expect.any(Array),
+          functionName: 'isValidSignature',
+          args: [expect.any(String), signature],
+        })
+
+        // Restore original methods
+        adapter.getCode = originalGetCode
+        adapter.readContract = originalReadContract
+      }
+    })
+
+    it('should return false for smart contract with invalid EIP1271 signature', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]
+        setGlobalAdapter(adapter)
+
+        // Mock getCode to return bytecode (indicating smart contract)
+        const originalGetCode = adapter.getCode
+        const originalReadContract = adapter.readContract
+        adapter.getCode = jest.fn().mockResolvedValue('0x608060405234801561001057600080fd5b50')
+        // Mock readContract to return invalid magic value
+        adapter.readContract = jest.fn().mockResolvedValue('0xffffffff')
+
+        const cowShed = new CowShedHooks(1, {
+          factoryAddress: MOCK_COW_SHED_FACTORY,
+          implementationAddress: MOCK_COW_SHED_IMPLEMENTATION,
+          proxyCreationCode: MOCK_INIT_CODE,
+        })
+
+        const calls = createCallsForAdapter(adapter)
+        const nonce = adapter.utils.formatBytes32String('1')
+        const deadline = BigInt(1000000)
+        const proxy = cowShed.proxyOf(USER_MOCK)
+        const typedDataContext = cowShed.infoToSign(calls, nonce, deadline, proxy)
+        const signature = '0x1234abcd'
+
+        const result = await cowShed.verifyEip1271Signature(USER_MOCK, signature, typedDataContext)
+
+        expect(result).toBe(false)
+        expect(adapter.getCode).toHaveBeenCalledWith(USER_MOCK)
+        expect(adapter.readContract).toHaveBeenCalledWith({
+          address: USER_MOCK,
+          abi: expect.any(Array),
+          functionName: 'isValidSignature',
+          args: [expect.any(String), signature],
+        })
+
+        // Restore original methods
+        adapter.getCode = originalGetCode
+        adapter.readContract = originalReadContract
+      }
+    })
+
+    it('should use correct EIP1271 ABI and hash typed data correctly', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]
+        setGlobalAdapter(adapter)
+
+        // Mock getCode to return bytecode (indicating smart contract)
+        const originalGetCode = adapter.getCode
+        const originalReadContract = adapter.readContract
+        const originalHashTypedData = adapter.utils.hashTypedData
+        adapter.getCode = jest.fn().mockResolvedValue('0x608060405234801561001057600080fd5b50')
+        adapter.readContract = jest.fn().mockResolvedValue('0x1626ba7e')
+        adapter.utils.hashTypedData = jest.fn().mockReturnValue('0x1234567890abcdef')
+
+        const cowShed = new CowShedHooks(1, {
+          factoryAddress: MOCK_COW_SHED_FACTORY,
+          implementationAddress: MOCK_COW_SHED_IMPLEMENTATION,
+          proxyCreationCode: MOCK_INIT_CODE,
+        })
+
+        const calls = createCallsForAdapter(adapter)
+        const nonce = adapter.utils.formatBytes32String('1')
+        const deadline = BigInt(1000000)
+        const proxy = cowShed.proxyOf(USER_MOCK)
+        const typedDataContext = cowShed.infoToSign(calls, nonce, deadline, proxy)
+        const signature = '0x1234abcd'
+
+        await cowShed.verifyEip1271Signature(USER_MOCK, signature, typedDataContext)
+
+        // Verify hashTypedData was called with correct parameters
+        expect(adapter.utils.hashTypedData).toHaveBeenCalledWith(
+          typedDataContext.domain,
+          typedDataContext.types,
+          typedDataContext.message,
+        )
+
+        // Verify readContract was called with the correct ABI
+        const readContractCall = (adapter.readContract as jest.Mock).mock.calls[0][0]
+        expect(readContractCall.abi).toEqual([
+          {
+            inputs: [
+              { internalType: 'bytes32', name: '_hash', type: 'bytes32' },
+              { internalType: 'bytes', name: 'signature', type: 'bytes' },
+            ],
+            name: 'isValidSignature',
+            outputs: [{ internalType: 'bytes4', name: 'magic', type: 'bytes4' }],
+            stateMutability: 'view',
+            type: 'function',
+          },
+        ])
+
+        // Restore original methods
+        adapter.getCode = originalGetCode
+        adapter.readContract = originalReadContract
+        adapter.utils.hashTypedData = originalHashTypedData
+      }
+    })
+
+    it('should handle contract call failures gracefully', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+      for (const adapterName of adapterNames) {
+        const adapter = adapters[adapterName]
+        setGlobalAdapter(adapter)
+
+        // Mock getCode to return bytecode (indicating smart contract)
+        const originalGetCode = adapter.getCode
+        const originalReadContract = adapter.readContract
+        adapter.getCode = jest.fn().mockResolvedValue('0x608060405234801561001057600080fd5b50')
+        // Mock readContract to throw an error
+        adapter.readContract = jest.fn().mockRejectedValue(new Error('Contract call failed'))
+
+        const cowShed = new CowShedHooks(1, {
+          factoryAddress: MOCK_COW_SHED_FACTORY,
+          implementationAddress: MOCK_COW_SHED_IMPLEMENTATION,
+          proxyCreationCode: MOCK_INIT_CODE,
+        })
+
+        const calls = createCallsForAdapter(adapter)
+        const nonce = adapter.utils.formatBytes32String('1')
+        const deadline = BigInt(1000000)
+        const proxy = cowShed.proxyOf(USER_MOCK)
+        const typedDataContext = cowShed.infoToSign(calls, nonce, deadline, proxy)
+        const signature = '0x1234abcd'
+
+        // Should throw the contract call error
+        await expect(cowShed.verifyEip1271Signature(USER_MOCK, signature, typedDataContext)).rejects.toThrow(
+          'Contract call failed',
+        )
+
+        // Restore original methods
+        adapter.getCode = originalGetCode
+        adapter.readContract = originalReadContract
+      }
+    })
+  })
+
   describe('signCalls', () => {
     const signatures: string[] = []
     it('should sign calls correctly', async () => {
