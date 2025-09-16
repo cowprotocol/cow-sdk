@@ -11,8 +11,8 @@
   "packages/subgraph": "0.2.6-beta.0",
   "packages/trading": "0.3.0-beta.0",
   "packages/weiroll": "0.2.5-beta.0",
-  "packages/providers/ether-v5-adapter": "0.2.3-beta.0",
-  "packages/providers/ether-v6-adapter": "0.2.3-beta.0",
+  "packages/providers/ethers-v5-adapter": "0.2.3-beta.0",
+  "packages/providers/ethers-v6-adapter": "0.2.3-beta.0",
   "packages/providers/viem-adapter": "0.3.0-beta.0",
   "packages/sdk": "7.1.0-beta.0"
 }

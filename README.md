@@ -44,8 +44,8 @@ The project uses modern tooling for efficient development and publishing:
 
 #### 🔌 Provider Adapters
 - **[`@cowprotocol/sdk-viem-adapter`](packages/providers/viem-adapter/README.md)** - Viem blockchain library adapter
-- **[`@cowprotocol/sdk-ethers-v6-adapter`](packages/providers/ether-v6-adapter/README.md)** - Ethers.js v6 adapter
-- **[`@cowprotocol/sdk-ethers-v5-adapter`](packages/providers/ether-v5-adapter/README.md)** - Ethers.js v5 adapter
+- **[`@cowprotocol/sdk-ethers-v6-adapter`](packages/providers/ethers-v6-adapter/README.md)** - Ethers.js v6 adapter
+- **[`@cowprotocol/sdk-ethers-v5-adapter`](packages/providers/ethers-v5-adapter/README.md)** - Ethers.js v5 adapter
 
 #### 📚 Supporting Packages
 - **[`@cowprotocol/sdk-app-data`](packages/app-data/README.md)** - AppData schema definitions and metadata handling
