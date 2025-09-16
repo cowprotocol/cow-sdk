@@ -1,5 +1,6 @@
 import {
   ContractsEcdsaSigningScheme as EcdsaSigningScheme,
+  ContractsSigningScheme,
   ecdsaSignTypedData,
   EIP1271_MAGICVALUE,
 } from '@cowprotocol/sdk-contracts-ts'
@@ -103,7 +104,10 @@ export class CowShedHooks {
 
     const signature = await ecdsaSignTypedData(signingScheme, domain, types, message, signer)
 
-    const isEip1271SignatureValid = await this.verifyEip1271Signature(user, signature, typedDataContext)
+    const isEip1271SignatureValid =
+      signingScheme === ContractsSigningScheme.EIP712
+        ? await this.verifyEip1271Signature(user, signature, typedDataContext)
+        : true
 
     if (!isEip1271SignatureValid) {
       throw new CoWShedEip1271SignatureInvalid('EIP1271 signature is invalid for CoW Shed')
