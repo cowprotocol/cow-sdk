@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.4-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v6-adapter-v0.2.3-beta.0...sdk-ethers-v6-adapter-v0.2.4-beta.0) (2025-09-16)
+
+
+### 🐛 Bug Fixes
+
+* rename ether to ethers ([#504](https://github.com/cowprotocol/cow-sdk/issues/504)) ([eaf2705](https://github.com/cowprotocol/cow-sdk/commit/eaf2705f269352d3bc2908eb3335ff56ef426823))
+
 ## [0.2.3-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v6-adapter-v0.2.2-beta.0...sdk-ethers-v6-adapter-v0.2.3-beta.0) (2025-09-16)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-composable",
-  "version": "0.2.7-beta.0",
+  "version": "0.2.8-beta.0",
   "description": "TypeScript composable features for CoW Protocol SDK",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
