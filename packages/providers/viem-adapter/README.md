@@ -33,6 +33,7 @@ const transport = http('YOUR_RPC_URL')
 const provider = createPublicClient({ chain: sepolia, transport })
 
 // Initialize the adapter
+// You also can set `walletClient` instead of `signer` using `useWalletClient` from wagmi
 const adapter = new ViemAdapter({ provider, signer: account })
 ```
 
@@ -48,6 +49,7 @@ import { sepolia } from 'viem/chains'
 const account = privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
 const transport = http('YOUR_RPC_URL')
 const provider = createPublicClient({ chain: sepolia, transport })
+// You also can set `walletClient` instead of `signer` using `useWalletClient` from wagmi
 const adapter = new ViemAdapter({ provider, signer: account })
 
 // Initialize the unified SDK

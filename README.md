@@ -8,6 +8,9 @@
 | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | ![Statements](https://img.shields.io/badge/statements-94.77%25-brightgreen.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-76.78%25-red.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-97.43%25-brightgreen.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-97.67%25-brightgreen.svg?style=flat) |
 
+## Use CoW Protocol
+> Check [**@cowprotocol/cow-sdk**](packages/sdk/README.md) to learn how to trade on the CoW Protocol (get quote, verify amounts, sign and send order)
+
 ## Technical Overview
 
 This is a **TypeScript monorepo** containing the complete CoW Protocol SDK ecosystem. The repository is organized into multiple packages that provide different levels of abstraction and functionality for interacting with CoW Protocol.
@@ -27,7 +30,7 @@ The project uses modern tooling for efficient development and publishing:
 ### Package Structure
 
 #### 🎯 Main SDK Package
-- **[`@cowprotocol/cow-sdk`](packages/sdk/README.md)** - Complete umbrella package that re-exports all other packages for easy consumption
+- **[`@cowprotocol/cow-sdk`](packages/sdk/README.md)** - Complete package that re-exports all other packages for easy consumption
 
 #### 🔧 Core Trading Packages
 - **[`@cowprotocol/sdk-trading`](packages/trading/README.md)** - High-level trading SDK with built-in quote fetching, order signing, and posting

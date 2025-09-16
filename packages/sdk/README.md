@@ -32,23 +32,25 @@ The SDK supports all CoW Protocol enabled networks:
 - **[CoW Protocol Documentation](https://docs.cow.fi/)**
 - **[API Reference](https://api.cow.fi/docs/)**
 - **[CoW Protocol Website](https://cow.fi/)**
-- **[Examples Repository](https://github.com/cowprotocol/cow-sdk/tree/main/examples)**
+- **[Examples Repository](../../examples)**
 - **Issues**: [GitHub Issues](https://github.com/cowprotocol/cow-sdk/issues)
 - **Discord**: [CoW Protocol Discord](https://discord.com/invite/cowprotocol)
 - **Documentation**: [docs.cow.fi](https://docs.cow.fi/)
 
-## Getting started
+## Getting Started
 
-**Usage examples:**
+### Usage Examples
 
-- React (viem): https://github.com/cowprotocol/cow-sdk/tree/main/examples/react/viem
-- React (ethers v6): https://github.com/cowprotocol/cow-sdk/tree/main/examples/react/ethers6
-- React (ethers v5): https://github.com/cowprotocol/cow-sdk/tree/main/examples/react/ethers5
+**React Examples:**
+- [React (viem)](https://github.com/cowprotocol/cow-sdk/tree/main/examples/react/viem)
+- [React (wagmi)](https://github.com/cowprotocol/cow-sdk/tree/main/examples/react/wagmi)
+- [React (ethers v6)](https://github.com/cowprotocol/cow-sdk/tree/main/examples/react/ethers6)
+- [React (ethers v5)](https://github.com/cowprotocol/cow-sdk/tree/main/examples/react/ethers5)
 
-
-- Node.js (viem): https://github.com/cowprotocol/cow-sdk/blob/main/examples/nodejs/viem/src/index.ts
-- Node.js (ethers v6): https://github.com/cowprotocol/cow-sdk/blob/main/examples/nodejs/ethers6/src/index.ts
-- Node.js (ethers v5): https://github.com/cowprotocol/cow-sdk/blob/main/examples/nodejs/ethers5/src/index.ts
+**Node.js Examples:**
+- [Node.js (viem)](https://github.com/cowprotocol/cow-sdk/blob/main/examples/nodejs/viem/src/index.ts)
+- [Node.js (ethers v6)](https://github.com/cowprotocol/cow-sdk/blob/main/examples/nodejs/ethers6/src/index.ts)
+- [Node.js (ethers v5)](https://github.com/cowprotocol/cow-sdk/blob/main/examples/nodejs/ethers5/src/index.ts)
 
 ### Installation
 
@@ -63,29 +65,124 @@ yarn add @cowprotocol/cow-sdk
 ## CoW SDK
 
 Using CoW Protocol, you can perform swaps, limit orders, TWAP orders, and many other operations.
-`@cowprotocol/cow-sdk` provides tools at different abstraction levels, allowing you to conveniently implement basic scenarios while maintaining the flexibility to control all possible cases.
+The `@cowprotocol/cow-sdk` provides tools at different abstraction levels, allowing you to conveniently implement basic scenarios while maintaining the flexibility to control all possible cases.
 
-> In most of the cases you will only need to use **[TradingSdk](packages/trading/README.md)**
+> In most cases, you will only need to use the **[Trading SDK](../trading/README.md)**
 
 ## SDK Components
 
 ### Core
-- **[`TradingSdk`](packages/trading/README.md)** - Main tool for swap and limit orders with built-in quote fetching, order signing, and posting
-- **[`OrderSigningUtils`](packages/order-signing/README.md)** - Utilities for signing orders and cancellations using cryptographic algorithms
-- **[`OrderBookApi`](packages/order-book/README.md)** - Provides the ability to retrieve orders and trades from the CoW Protocol order-book, as well as add and cancel them
-- **[`MetadataApi`](packages/app-data/README.md)** - API for accessing order metadata and additional information
+- **[`TradingSdk`](../trading/README.md)** - Main tool for swap and limit orders with built-in quote fetching, order signing, and posting
+- **[`OrderSigningUtils`](../order-signing/README.md)** - Utilities for signing orders and cancellations using cryptographic algorithms
+- **[`OrderBookApi`](../order-book/README.md)** - Provides the ability to retrieve orders and trades from the CoW Protocol order book, as well as add and cancel them
+- **[`MetadataApi`](../app-data/README.md)** - API for accessing order metadata and additional information
 
 ### Advanced
-- **[`BridgingSdk`](packages/bridging/README.md)** - Cross-chain token transfers and bridging functionality
-- **[`ConditionalOrder`](packages/composable/README.md)** - SDK for Programmatic Orders such as TWAP. [Read more in docs.cow.fi](https://docs.cow.fi/cow-protocol/concepts/order-types/programmatic-orders)
-- **[`CowShedSdk`](packages/cow-shed/README.md)** - Account abstraction that leverages EOA with smart contract capabilities
+- **[`BridgingSdk`](../bridging/README.md)** - Cross-chain token transfers and bridging functionality
+- **[`ConditionalOrder`](../composable/README.md)** - SDK for Programmatic Orders such as TWAP ([Read more](https://docs.cow.fi/cow-protocol/concepts/order-types/programmatic-orders))
+- **[`CowShedSdk`](../cow-shed/README.md)** - Account abstraction that leverages EOA with smart contract capabilities
+
+## v6 → v7 Migration Guide
+The versions are 99% backward compatible. The only difference is that in v7 you need to set an adapter corresponding to the library you use: `Viem`, `Ethers6`, or `Ethers5`.
+
+**Before (v6):**
+```typescript
+import { SupportedChainId, TradingSdk, MetadataApi, OrderBookApi } from '@cowprotocol/cow-sdk'
+
+const options = {}
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  appCode: 'YOUR_APP_CODE',
+}, options)
+```
+
+**After (v7):**
+```typescript
+import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+// NEW: Instantiate and set adapter
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  // You can also set `walletClient` instead of `signer` using `useWalletClient` from wagmi
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
+
+const options = {}
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  appCode: 'YOUR_APP_CODE',
+}, options, adapter)
+```
+
+Most other packages (e.g., `MetadataApi` or `BridgingSdk`) have a parameter to set an adapter.
+You can also set an adapter using `setGlobalAdapter`:
+
+```typescript
+import { setGlobalAdapter, CowShedSdk } from '@cowprotocol/cow-sdk'
+
+const adapter = {...}
+
+// Set global adapter
+setGlobalAdapter(adapter)
+
+const cowShedSdk = new CowShedSdk()
+```
+
+You will likely also need to bind the SDK to your app's account state.
+When the account or network changes in the app/wallet, it should be updated in the SDK as well.
+Here's an example for `WAGMI` (see `examples/react/wagmi`):
+
+```typescript
+import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
+import { useEffect, useState } from 'react'
+import { ViemAdapter, ViemAdapterOptions } from '@cowprotocol/sdk-viem-adapter'
+import { tradingSdk } from '../cowSdk.ts'
+import { setGlobalAdapter } from '@cowprotocol/cow-sdk'
+
+export function useBindCoWSdkToWagmi(): boolean {
+  const { chainId } = useAccount()
+  const { data: walletClient } = useWalletClient()
+  const publicClient = usePublicClient()
+
+  const [isSdkReady, setIsSdkReady] = useState(false)
+
+  /**
+   * Sync Trading SDK with wagmi account state (chainId and signer)
+   */
+  useEffect(() => {
+    if (!walletClient || !chainId) return
+
+    setGlobalAdapter(
+      new ViemAdapter({
+        provider: publicClient,
+        walletClient,
+      } as unknown as ViemAdapterOptions),
+    )
+
+    tradingSdk.setTraderParams({ chainId })
+
+    setIsSdkReady(true)
+  }, [publicClient, walletClient, chainId])
+
+  return isSdkReady
+}
+
+```
 
 ## Basic Use Case
 This example demonstrates the main use case of creating a swap and shows how to:
-- get a quote
-- verify amounts
-- adjust swap parameters
-- sign and post order
+- Get a quote
+- Verify amounts
+- Adjust swap parameters
+- Sign and post an order
 
 ```typescript
 import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
@@ -93,13 +190,14 @@ import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
 import { createPublicClient, http, privateKeyToAccount } from 'viem'
 import { sepolia } from 'viem/chains'
 
-// There are EthersV5Adapter and EthersV6Adapter as well
+// EthersV5Adapter and EthersV6Adapter are also available
 // @cowprotocol/sdk-ethers-v5-adapter, @cowprotocol/sdk-ethers-v6-adapter
 const adapter = new ViemAdapter({
   provider: createPublicClient({
     chain: sepolia,
     transport: http('YOUR_RPC_URL')
   }),
+  // You can also set `walletClient` instead of `signer` using `useWalletClient` from wagmi
   signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
 })
 
@@ -127,7 +225,7 @@ if (confirm(`You will receive at least: ${buyAmount}. Proceed?`)) {
   // Sign and post order
   const orderId = await postSwapOrderFromQuote()
 
-  console.log('Order created, id: ', orderId)
+  console.log('Order created, ID:', orderId)
 }
 ```
 
@@ -194,6 +292,8 @@ import { sepolia } from 'viem/chains'
 const account = privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
 const transport = http('YOUR_RPC_URL')
 const provider = createPublicClient({ chain: sepolia, transport })
+
+// You can also set `walletClient` instead of `signer` using `useWalletClient` from wagmi
 const adapter = new ViemAdapter({ provider, signer: account })
 ```
 
@@ -202,13 +302,13 @@ const adapter = new ViemAdapter({ provider, signer: account })
 This example demonstrates low-level API usage with a practical scenario:
 exchanging `0.4 GNO` for `WETH` on the Gnosis Chain network.
 
-We will do the following operations:
+We will perform the following operations:
 
 1. Get a quote
 2. Sign the order
-3. Send the order to the order-book
+3. Send the order to the order book
 4. Get the data of the created order
-5. Get trades of the order
+5. Get trades for the order
 6. Cancel the order (signing + sending)
 
 ```typescript
@@ -217,7 +317,7 @@ import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
 import { JsonRpcProvider, Wallet } from 'ethers'
 
 const account = 'YOUR_WALLET_ADDRESS'
-const chainId = 100 // Gnosis chain
+const chainId = 100 // Gnosis Chain
 const provider = new JsonRpcProvider('YOUR_RPC_URL')
 const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
 const adapter = new EthersV6Adapter({ provider, signer: wallet })
@@ -251,6 +351,6 @@ async function main() {
     orderUids: [orderId],
   })
 
-  console.log('Results: ', { orderId, order, trades, orderCancellationSigningResult, cancellationResult })
+  console.log('Results:', { orderId, order, trades, orderCancellationSigningResult, cancellationResult })
 }
 ```
