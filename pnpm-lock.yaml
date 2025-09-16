@@ -868,39 +868,24 @@ importers:
       '@cowprotocol/sdk-app-data':
         specifier: workspace:*
         version: link:../app-data
-      '@cowprotocol/sdk-bridging':
-        specifier: workspace:*
-        version: link:../bridging
       '@cowprotocol/sdk-common':
         specifier: workspace:*
         version: link:../common
-      '@cowprotocol/sdk-composable':
-        specifier: workspace:*
-        version: link:../composable
       '@cowprotocol/sdk-config':
         specifier: workspace:*
         version: link:../config
       '@cowprotocol/sdk-contracts-ts':
         specifier: workspace:*
         version: link:../contracts-ts
-      '@cowprotocol/sdk-cow-shed':
-        specifier: workspace:*
-        version: link:../cow-shed
       '@cowprotocol/sdk-order-book':
         specifier: workspace:*
         version: link:../order-book
       '@cowprotocol/sdk-order-signing':
         specifier: workspace:*
         version: link:../order-signing
-      '@cowprotocol/sdk-subgraph':
-        specifier: workspace:*
-        version: link:../subgraph
       '@cowprotocol/sdk-trading':
         specifier: workspace:*
         version: link:../trading
-      '@cowprotocol/sdk-weiroll':
-        specifier: workspace:*
-        version: link:../weiroll
       '@openzeppelin/merkle-tree':
         specifier: ^1.x
         version: 1.0.8

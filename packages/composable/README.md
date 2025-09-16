@@ -94,7 +94,7 @@ const multiplexer = new Multiplexer(SupportedChainId.MAINNET, orders, merkleRoot
 const proofs = multiplexer.dumpProofsAndParams()
 ```
 
-### Usage with Umbrella SDK
+### Usage with CoW SDK
 
 ```typescript
 import { CowSdk, ConditionalOrderFactory, Multiplexer, ProofLocation } from '@cowprotocol/cow-sdk'

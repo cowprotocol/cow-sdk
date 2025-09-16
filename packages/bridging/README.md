@@ -85,7 +85,7 @@ if (confirm(`You will get at least: ${buyAmount}, ok?`)) {
 }
 ```
 
-### Usage with Umbrella SDK
+### Usage with CoW SDK
 
 ```typescript
 import {

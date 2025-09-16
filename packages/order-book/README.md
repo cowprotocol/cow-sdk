@@ -18,8 +18,6 @@ yarn add @cowprotocol/sdk-order-book
 
 ## Usage
 
-### Individual package usage
-
 ```typescript
 import { OrderBookApi, SupportedChainId, OrderQuoteRequest, OrderCreation } from '@cowprotocol/sdk-order-book'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
@@ -76,7 +74,7 @@ const trades = await orderBookApi.getTrades({
 })
 ```
 
-### Usage with Umbrella SDK
+### Usage with CoW SDK
 
 ```typescript
 import { CowSdk, SupportedChainId, OrderQuoteRequest } from '@cowprotocol/cow-sdk'

@@ -14,8 +14,6 @@ pnpm add @cowprotocol/app-data
 
 ## Usage
 
-### Individual Package Usage
-
 ```typescript
 import { MetadataApi } from '@cowprotocol/app-data'
 import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
@@ -78,29 +76,6 @@ const adapter = new EthersV6Adapter({ provider, signer: wallet })
 
 export const metadataApi = new MetadataApi(adapter)
 // ... rest of the usage remains the same
-```
-
-### Using with CowSdk Umbrella
-
-For a unified experience with all CoW Protocol modules:
-
-```typescript
-import { CowSdk, SupportedChainId } from '@cowprotocol/cow-sdk'
-import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
-import { JsonRpcProvider, Wallet } from 'ethers'
-
-// Proper adapter initialization
-const provider = new JsonRpcProvider('YOUR_RPC_URL')
-const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
-const adapter = new EthersV6Adapter({ provider, signer: wallet })
-
-const cowSdk = new CowSdk({
-  adapter,
-  chainId: SupportedChainId.SEPOLIA,
-})
-
-// Access metadataApi through the umbrella SDK
-export const metadataApi = cowSdk.metadataApi
 ```
 
 ### Schemas

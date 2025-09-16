@@ -23,8 +23,6 @@ export type WithPartialTraderParams<T> = T & Partial<TraderParameters>
 export interface TradingSdkOptions {
   enableLogging: boolean
   orderBookApi: OrderBookApi
-  utmContent?: string
-  disableUtm?: boolean
 }
 
 export class TradingSdk {

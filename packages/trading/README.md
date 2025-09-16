@@ -104,63 +104,6 @@ const orderId = await sdk.postSwapOrder(parameters)
 console.log('Order created, id: ', orderId)
 ```
 
-### Usage with Umbrella SDK
-
-```typescript
-import { CowSdk, SupportedChainId, OrderKind, TradeParameters } from '@cowprotocol/cow-sdk'
-import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
-import { createPublicClient, http, privateKeyToAccount } from 'viem'
-import { sepolia } from 'viem/chains'
-
-const adapter = new ViemAdapter({
-  provider: createPublicClient({
-    chain: sepolia,
-    transport: http('YOUR_RPC_URL')
-  }),
-  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
-})
-
-// Initialize the unified SDK
-const sdk = new CowSdk({
-  chainId: SupportedChainId.SEPOLIA,
-  adapter,
-  tradingOptions: {
-    traderParams: {
-      appCode: 'YOUR_APP_CODE',
-    },
-    options: {
-      chainId: SupportedChainId.SEPOLIA,
-    },
-  },
-})
-
-// Define trade parameters
-const parameters: TradeParameters = {
-  kind: OrderKind.BUY,
-  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
-  sellTokenDecimals: 18,
-  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
-  buyTokenDecimals: 18,
-  amount: '120000000000000000',
-}
-
-// Post the order
-const orderId = await sdk.trading.postSwapOrder(parameters)
-console.log('Order created, id: ', orderId)
-
-// Or you can just initialize the SDK and import the trading class in another file:
-// you don't necessarily need to use the trading from inside of CowSdk:
-//...
-const sdk = new CowSdk({
-  chainId: SupportedChainId.SEPOLIA,
-  adapter,
-})
-// Other file:
-import { TradingSdk } from '@cowprotocol/cow-sdk'
-// parameters without passing the adapter. the adapter will be controlled by the umbrella
-const trading = new TradingSdk(...)
-```
-
 ### Options
 
 For detailed information about trading steps you can enable the SDK logging:

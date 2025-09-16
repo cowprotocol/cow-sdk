@@ -41,17 +41,12 @@
   },
   "dependencies": {
     "@cowprotocol/sdk-app-data": "workspace:*",
-    "@cowprotocol/sdk-bridging": "workspace:*",
     "@cowprotocol/sdk-common": "workspace:*",
-    "@cowprotocol/sdk-composable": "workspace:*",
     "@cowprotocol/sdk-config": "workspace:*",
     "@cowprotocol/sdk-contracts-ts": "workspace:*",
-    "@cowprotocol/sdk-cow-shed": "workspace:*",
     "@cowprotocol/sdk-order-book": "workspace:*",
     "@cowprotocol/sdk-order-signing": "workspace:*",
-    "@cowprotocol/sdk-subgraph": "workspace:*",
-    "@cowprotocol/sdk-trading": "workspace:*",
-    "@cowprotocol/sdk-weiroll": "workspace:*"
+    "@cowprotocol/sdk-trading": "workspace:*"
   },
   "peerDependencies": {
     "@openzeppelin/merkle-tree": "^1.x",

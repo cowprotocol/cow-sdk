@@ -18,8 +18,6 @@ yarn add @cowprotocol/sdk-order-signing
 
 ## Usage
 
-### Individual package usage
-
 ```typescript
 import { OrderSigningUtils, SupportedChainId, UnsignedOrder, SigningResult } from '@cowprotocol/sdk-order-signing'
 import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
@@ -71,7 +69,7 @@ const { orderId: generatedId, orderDigest } = await OrderSigningUtils.generateOr
 )
 ```
 
-### Usage with Umbrella SDK
+### Usage with CoW SDK
 
 ```typescript
 import { CowSdk, OrderSigningUtils, SupportedChainId, UnsignedOrder } from '@cowprotocol/cow-sdk'
