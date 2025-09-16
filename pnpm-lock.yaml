@@ -49,7 +49,7 @@ importers:
         version: link:../../../packages/sdk
       '@cowprotocol/sdk-ethers-v5-adapter':
         specifier: workspace:*
-        version: link:../../../packages/providers/ether-v5-adapter
+        version: link:../../../packages/providers/ethers-v5-adapter
       '@ethersproject/providers':
         specifier: ^5.5.3
         version: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -77,7 +77,7 @@ importers:
         version: link:../../../packages/sdk
       '@cowprotocol/sdk-ethers-v6-adapter':
         specifier: workspace:*
-        version: link:../../../packages/providers/ether-v6-adapter
+        version: link:../../../packages/providers/ethers-v6-adapter
       dotenv:
         specifier: ^16.4.5
         version: 16.5.0
@@ -127,7 +127,7 @@ importers:
         version: link:../../../packages/sdk
       '@cowprotocol/sdk-ethers-v5-adapter':
         specifier: workspace:*
-        version: link:../../../packages/providers/ether-v5-adapter
+        version: link:../../../packages/providers/ethers-v5-adapter
       '@ethersproject/providers':
         specifier: ^5.5.3
         version: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -182,7 +182,7 @@ importers:
         version: link:../../../packages/sdk
       '@cowprotocol/sdk-ethers-v6-adapter':
         specifier: workspace:*
-        version: link:../../../packages/providers/ether-v6-adapter
+        version: link:../../../packages/providers/ethers-v6-adapter
       ethers:
         specifier: ^6.13.7
         version: 6.14.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -354,10 +354,10 @@ importers:
         version: link:../config
       '@cowprotocol/sdk-ethers-v5-adapter':
         specifier: workspace:*
-        version: link:../providers/ether-v5-adapter
+        version: link:../providers/ethers-v5-adapter
       '@cowprotocol/sdk-ethers-v6-adapter':
         specifier: workspace:*
-        version: link:../providers/ether-v6-adapter
+        version: link:../providers/ethers-v6-adapter
       '@cowprotocol/sdk-viem-adapter':
         specifier: workspace:*
         version: link:../providers/viem-adapter
@@ -442,10 +442,10 @@ importers:
         version: link:../typescript-config
       '@cowprotocol/sdk-ethers-v5-adapter':
         specifier: workspace:*
-        version: link:../providers/ether-v5-adapter
+        version: link:../providers/ethers-v5-adapter
       '@cowprotocol/sdk-ethers-v6-adapter':
         specifier: workspace:*
-        version: link:../providers/ether-v6-adapter
+        version: link:../providers/ethers-v6-adapter
       '@cowprotocol/sdk-order-signing':
         specifier: workspace:*
         version: link:../order-signing
@@ -539,10 +539,10 @@ importers:
         version: link:../typescript-config
       '@cowprotocol/sdk-ethers-v5-adapter':
         specifier: workspace:*
-        version: link:../providers/ether-v5-adapter
+        version: link:../providers/ethers-v5-adapter
       '@cowprotocol/sdk-ethers-v6-adapter':
         specifier: workspace:*
-        version: link:../providers/ether-v6-adapter
+        version: link:../providers/ethers-v6-adapter
       '@cowprotocol/sdk-viem-adapter':
         specifier: workspace:*
         version: link:../providers/viem-adapter
@@ -616,10 +616,10 @@ importers:
         version: link:../typescript-config
       '@cowprotocol/sdk-ethers-v5-adapter':
         specifier: workspace:*
-        version: link:../providers/ether-v5-adapter
+        version: link:../providers/ethers-v5-adapter
       '@cowprotocol/sdk-ethers-v6-adapter':
         specifier: workspace:*
-        version: link:../providers/ether-v6-adapter
+        version: link:../providers/ethers-v6-adapter
       '@cowprotocol/sdk-viem-adapter':
         specifier: workspace:*
         version: link:../providers/viem-adapter
@@ -671,10 +671,10 @@ importers:
         version: link:../typescript-config
       '@cowprotocol/sdk-ethers-v5-adapter':
         specifier: workspace:*
-        version: link:../providers/ether-v5-adapter
+        version: link:../providers/ethers-v5-adapter
       '@cowprotocol/sdk-ethers-v6-adapter':
         specifier: workspace:*
-        version: link:../providers/ether-v6-adapter
+        version: link:../providers/ethers-v6-adapter
       '@cowprotocol/sdk-viem-adapter':
         specifier: workspace:*
         version: link:../providers/viem-adapter
@@ -796,10 +796,10 @@ importers:
         version: link:../typescript-config
       '@cowprotocol/sdk-ethers-v5-adapter':
         specifier: workspace:*
-        version: link:../providers/ether-v5-adapter
+        version: link:../providers/ethers-v5-adapter
       '@cowprotocol/sdk-ethers-v6-adapter':
         specifier: workspace:*
-        version: link:../providers/ether-v6-adapter
+        version: link:../providers/ethers-v6-adapter
       '@cowprotocol/sdk-viem-adapter':
         specifier: workspace:*
         version: link:../providers/viem-adapter
@@ -837,7 +837,7 @@ importers:
         specifier: ^2.28.4
         version: 2.30.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
 
-  packages/providers/ether-v5-adapter:
+  packages/providers/ethers-v5-adapter:
     dependencies:
       '@cowprotocol/sdk-common':
         specifier: workspace:*
@@ -847,10 +847,10 @@ importers:
         version: 5.8.0
       '@typechain/ethers-v5':
         specifier: ^11.1.2
-        version: 11.1.2(@ethersproject/abi@5.8.0)(@ethersproject/providers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(ethers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(typechain@8.3.2(typescript@5.8.3))(typescript@5.8.3)
+        version: 11.1.2(@ethersproject/abi@5.8.0)(@ethersproject/providers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(typechain@8.3.2(typescript@5.8.3))(typescript@5.8.3)
       ethers:
         specifier: ^5.7.2
-        version: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+        version: 5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
     devDependencies:
       '@cow-sdk/typescript-config':
         specifier: workspace:*
@@ -865,7 +865,7 @@ importers:
         specifier: ^5.2.2
         version: 5.8.3
 
-  packages/providers/ether-v6-adapter:
+  packages/providers/ethers-v6-adapter:
     dependencies:
       '@cowprotocol/sdk-common':
         specifier: workspace:*
@@ -1048,10 +1048,10 @@ importers:
         version: link:../typescript-config
       '@cowprotocol/sdk-ethers-v5-adapter':
         specifier: workspace:*
-        version: link:../providers/ether-v5-adapter
+        version: link:../providers/ethers-v5-adapter
       '@cowprotocol/sdk-ethers-v6-adapter':
         specifier: workspace:*
-        version: link:../providers/ether-v6-adapter
+        version: link:../providers/ethers-v6-adapter
       '@cowprotocol/sdk-viem-adapter':
         specifier: workspace:*
         version: link:../providers/viem-adapter
@@ -1114,10 +1114,10 @@ importers:
         version: link:../typescript-config
       '@cowprotocol/sdk-ethers-v5-adapter':
         specifier: workspace:*
-        version: link:../providers/ether-v5-adapter
+        version: link:../providers/ethers-v5-adapter
       '@cowprotocol/sdk-ethers-v6-adapter':
         specifier: workspace:*
-        version: link:../providers/ether-v6-adapter
+        version: link:../providers/ethers-v6-adapter
       '@cowprotocol/sdk-viem-adapter':
         specifier: workspace:*
         version: link:../providers/viem-adapter
@@ -10238,11 +10238,11 @@ snapshots:
 
   '@tsconfig/node16@1.0.4': {}
 
-  '@typechain/ethers-v5@11.1.2(@ethersproject/abi@5.8.0)(@ethersproject/providers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(ethers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(typechain@8.3.2(typescript@5.8.3))(typescript@5.8.3)':
+  '@typechain/ethers-v5@11.1.2(@ethersproject/abi@5.8.0)(@ethersproject/providers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(typechain@8.3.2(typescript@5.8.3))(typescript@5.8.3)':
     dependencies:
       '@ethersproject/abi': 5.8.0
       '@ethersproject/providers': 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      ethers: 5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       lodash: 4.17.21
       ts-essentials: 7.0.3(typescript@5.8.3)
       typechain: 8.3.2(typescript@5.8.3)

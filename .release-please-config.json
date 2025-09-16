@@ -54,11 +54,11 @@
       "package-name": "@cowprotocol/sdk-weiroll",
       "release-type": "node"
     },
-    "packages/providers/ether-v5-adapter": {
+    "packages/providers/ethers-v5-adapter": {
       "package-name": "@cowprotocol/sdk-ethers-v5-adapter",
       "release-type": "node"
     },
-    "packages/providers/ether-v6-adapter": {
+    "packages/providers/ethers-v6-adapter": {
       "package-name": "@cowprotocol/sdk-ethers-v6-adapter",
       "release-type": "node"
     },
