@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.1.2-beta.0](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.1.1-beta.0...cow-sdk-v7.1.2-beta.0) (2025-09-16)
+
+
+### 🔧 Miscellaneous
+
+* fix TypeDoc Entry Point ([#509](https://github.com/cowprotocol/cow-sdk/issues/509)) ([82c2a11](https://github.com/cowprotocol/cow-sdk/commit/82c2a11599e517fee43c9e9506ee64a602160d09))
+
 ## [7.1.1-beta.0](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.1.0-beta.0...cow-sdk-v7.1.1-beta.0) (2025-09-16)
 
 

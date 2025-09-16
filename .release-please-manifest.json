@@ -14,5 +14,5 @@
   "packages/providers/ethers-v5-adapter": "0.2.4-beta.0",
   "packages/providers/ethers-v6-adapter": "0.2.4-beta.0",
   "packages/providers/viem-adapter": "0.3.0-beta.0",
-  "packages/sdk": "7.1.1-beta.0"
+  "packages/sdk": "7.1.2-beta.0"
 }
