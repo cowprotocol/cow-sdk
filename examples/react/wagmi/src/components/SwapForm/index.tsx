@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { tradingSdk } from '../../cowSdk'
 import { useAccount } from 'wagmi'
 import { USDC_TOKENS } from '../../tokens.ts'
+import { parseUnits } from 'viem'
 
 export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
   const { address: account, chainId, status } = useAccount()
@@ -67,7 +68,7 @@ export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
         chainId,
         kind: OrderKind.SELL,
         owner: account,
-        amount: Math.round(sellAmountNum * 10 ** WETH.decimals).toString(),
+        amount: parseUnits(sellAmount, WETH.decimals).toString(),
         sellToken: WETH.address,
         sellTokenDecimals: WETH.decimals,
         buyToken: USDC.address,
