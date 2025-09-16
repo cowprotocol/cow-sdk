@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.3.1-beta.0...sdk-bridging-v0.3.2-beta.0) (2025-09-16)
+
+
+### 🐛 Bug Fixes
+
+* **bridge:** update bungee smart-contract address ([#506](https://github.com/cowprotocol/cow-sdk/issues/506)) ([f8e736a](https://github.com/cowprotocol/cow-sdk/commit/f8e736aafb6c3ca2c2020282e0f1af7ce6c0b5ac))
+
 ## [0.3.1-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.3.0-beta.0...sdk-bridging-v0.3.1-beta.0) (2025-09-16)
 
 
