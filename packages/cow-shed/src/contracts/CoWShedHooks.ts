@@ -1,4 +1,8 @@
-import { ContractsEcdsaSigningScheme as EcdsaSigningScheme, ecdsaSignTypedData } from '@cowprotocol/sdk-contracts-ts'
+import {
+  ContractsEcdsaSigningScheme as EcdsaSigningScheme,
+  ecdsaSignTypedData,
+  EIP1271_MAGICVALUE,
+} from '@cowprotocol/sdk-contracts-ts'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 
 import {
@@ -7,6 +11,7 @@ import {
   AbstractProviderAdapter,
   SignerLike,
   TypedDataDomain,
+  TypedDataContext,
 } from '@cowprotocol/sdk-common'
 import { CowShedFactoryAbi } from '../abi/CowShedFactoryAbi'
 import { ICoWShedCall, ICoWShedOptions } from '../types'
@@ -15,7 +20,9 @@ import {
   COW_SHED_IMPLEMENTATION,
   COW_SHED_LATEST_VERSION,
   COW_SHED_PROXY_INIT_CODE,
+  CoWShedEip1271SignatureInvalid,
   CoWShedVersion,
+  EIP1271_VALID_SIGNATURE_ABI,
 } from '../const'
 
 export const COW_SHED_712_TYPES = {
@@ -75,6 +82,9 @@ export class CowShedHooks {
     ]) as string
   }
 
+  /**
+   * @throws CoWShedEip1271SignatureInvalid
+   */
   async signCalls(
     calls: ICoWShedCall[],
     nonce: string,
@@ -88,12 +98,53 @@ export class CowShedHooks {
     const user = await signer.getAddress()
     const proxy = this.proxyOf(user)
 
-    const { domain, types, message } = this.infoToSign(calls, nonce, deadline, proxy)
+    const typedDataContext = this.infoToSign(calls, nonce, deadline, proxy)
+    const { domain, types, message } = typedDataContext
 
-    return await ecdsaSignTypedData(signingScheme, domain, types, message, signer)
+    const signature = await ecdsaSignTypedData(signingScheme, domain, types, message, signer)
+
+    const isEip1271SignatureValid = await this.verifyEip1271Signature(user, signature, typedDataContext)
+
+    if (!isEip1271SignatureValid) {
+      throw new CoWShedEip1271SignatureInvalid('EIP1271 signature is invalid for CoW Shed')
+    }
+
+    return signature
   }
 
-  infoToSign(calls: ICoWShedCall[], nonce: string, deadline: bigint, proxy: string) {
+  /**
+   * Verifies Eip1271 signature taking EIP7702 accounts into account
+   * If an account is not a smart-contract account it will return true
+   * If an account is a smart-contract account,
+   *  then it will return true only when isValidSignature() returns EIP1271_MAGICVALUE
+   */
+  async verifyEip1271Signature(
+    account: string,
+    signature: string,
+    typedDataContext: TypedDataContext,
+  ): Promise<boolean> {
+    const adapter = getGlobalAdapter()
+
+    const { domain, types, message } = typedDataContext
+    const userAccountCode = await adapter.getCode(account)
+
+    if (userAccountCode && userAccountCode !== '0x') {
+      const hash = adapter.utils.hashTypedData(domain, types, message)
+
+      const result = await adapter.readContract({
+        address: account,
+        abi: EIP1271_VALID_SIGNATURE_ABI,
+        functionName: 'isValidSignature',
+        args: [hash, signature],
+      })
+
+      return result === EIP1271_MAGICVALUE
+    }
+
+    return true
+  }
+
+  infoToSign(calls: ICoWShedCall[], nonce: string, deadline: bigint, proxy: string): TypedDataContext {
     const message = {
       calls,
       nonce,
