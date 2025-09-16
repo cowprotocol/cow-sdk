@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.3-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.3.2-beta.0...sdk-config-v0.3.3-beta.0) (2025-09-16)
+
+
+### 📚 Documentation
+
+* update README to focus on main use cases ([#493](https://github.com/cowprotocol/cow-sdk/issues/493)) ([a05cb1b](https://github.com/cowprotocol/cow-sdk/commit/a05cb1ba11b5f9895d7cfe6262cf74c4089fd73c))
+
 ## [0.3.2-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.3.1-beta.0...sdk-config-v0.3.2-beta.0) (2025-09-15)
 
 
