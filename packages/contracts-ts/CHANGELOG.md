@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.2.1-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v2.2.0-beta.0...sdk-contracts-ts-v2.2.1-beta.0) (2025-09-16)
+
+
+### 🐛 Bug Fixes
+
+* rename ether to ethers ([#504](https://github.com/cowprotocol/cow-sdk/issues/504)) ([eaf2705](https://github.com/cowprotocol/cow-sdk/commit/eaf2705f269352d3bc2908eb3335ff56ef426823))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.2.4-beta.0
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.2.4-beta.0
+
 ## [2.2.0-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v2.1.7-beta.0...sdk-contracts-ts-v2.2.0-beta.0) (2025-09-16)
 
 
