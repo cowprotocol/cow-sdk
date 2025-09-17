@@ -3,7 +3,7 @@ import { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 
 import { adaptToken, getTokenByAddressAndChainId } from './util'
 
-import { NEAR_INTENTS_BLOCKCHAIN_TO_NATIVE_WRAPPED_TOKEN_ADDRESS } from './const'
+import { WRAPPED_NATIVE_CURRENCIES } from './const'
 
 describe('Near Intents Utils', () => {
   describe('adaptToken', () => {
@@ -20,7 +20,7 @@ describe('Near Intents Utils', () => {
       expect(adaptToken(tokenResponse)).toStrictEqual({
         chainId: SupportedChainId.MAINNET,
         decimals: 18,
-        address: NEAR_INTENTS_BLOCKCHAIN_TO_NATIVE_WRAPPED_TOKEN_ADDRESS['eth'],
+        address: WRAPPED_NATIVE_CURRENCIES['eth'],
         name: 'ETH',
         symbol: 'ETH',
       })
