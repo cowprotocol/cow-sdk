@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.3.1-beta.0...sdk-viem-adapter-v0.1.0) (2025-09-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* release cow-sdk v7
+
+### ✨ Features
+
+* release cow-sdk v7 ([6cd3e57](https://github.com/cowprotocol/cow-sdk/commit/6cd3e573687b1ffdbc0fdcb8cdbb414d88546e38))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.1.0
+
 ## [0.3.1-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.3.0-beta.0...sdk-viem-adapter-v0.3.1-beta.0) (2025-09-17)
 
 
