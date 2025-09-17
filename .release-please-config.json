@@ -85,7 +85,6 @@
       "release-as": "7.0.0"
     }
   },
-  "plugins": ["node-workspace"],
   "changelog-sections": [
     { "type": "feat", "section": "✨ Features" },
     { "type": "fix", "section": "🐛 Bug Fixes" },
