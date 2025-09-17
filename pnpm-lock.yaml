@@ -436,6 +436,9 @@ importers:
       '@cowprotocol/sdk-weiroll':
         specifier: workspace:*
         version: link:../weiroll
+      '@defuse-protocol/one-click-sdk-typescript':
+        specifier: 0.1.1-0.2
+        version: 0.1.1-0.2
     devDependencies:
       '@cow-sdk/typescript-config':
         specifier: workspace:*
@@ -452,9 +455,6 @@ importers:
       '@cowprotocol/sdk-viem-adapter':
         specifier: workspace:*
         version: link:../providers/viem-adapter
-      '@defuse-protocol/one-click-sdk-typescript':
-        specifier: 0.1.1-0.2
-        version: 0.1.1-0.2
       '@types/jest':
         specifier: ^29.4.0
         version: 29.5.14
