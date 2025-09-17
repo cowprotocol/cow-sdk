@@ -120,7 +120,6 @@ export class CowShedSdk {
     const signer = signerParam ? adapter.createSigner(signerParam) : adapter.signer
 
     const ownerAddress = await signer.getAddress()
-
     const cowShedAccount = cowShedHooks.proxyOf(ownerAddress)
 
     // Sign the calls using cow-shed's owner

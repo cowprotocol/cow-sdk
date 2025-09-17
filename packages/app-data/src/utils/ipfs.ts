@@ -7,7 +7,6 @@ const MULTIBASE_BASE16 = 'f'
 
 export async function parseCid(ipfsHash: string): Promise<CID> {
   const { CID } = await import('multiformats/cid')
-
   const decoder = await getDecoder(ipfsHash)
   return CID.parse(ipfsHash, decoder)
 }

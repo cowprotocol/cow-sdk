@@ -7,9 +7,7 @@ export type ConditionalOrderRegistry = Record<string, FromParams<unknown, unknow
 
 /**
  * Factory for conditional orders.
- *
  * It uses a registry to instantiate the correct conditional order based on the handler.
- *
  * Knowing the handler, the factory will instantiate the correct conditional order using the staticInput data.
  */
 export class ConditionalOrderFactory {

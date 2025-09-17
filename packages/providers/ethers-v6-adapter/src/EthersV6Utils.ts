@@ -45,7 +45,6 @@ export class EthersV6Utils implements AdapterUtils {
     const abiCoder = new AbiCoder()
     const contractInterface = new Interface(abi)
 
-    // Get the constructor fragment
     const constructorFragment = contractInterface.getFunction('constructor')
 
     if (!constructorFragment) {

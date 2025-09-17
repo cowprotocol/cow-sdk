@@ -43,9 +43,7 @@ function getWeirollCalldata(planner: WeirollPlanner) {
   const planResult = planner.plan()
   const { commands, state } = planResult
 
-  const adapter = getGlobalAdapter()
-
-  return adapter.utils.encodeFunction(WEIROLL_ABI, 'execute', [commands, state])
+  return getGlobalAdapter().utils.encodeFunction(WEIROLL_ABI, 'execute', [commands, state])
 }
 
 /**

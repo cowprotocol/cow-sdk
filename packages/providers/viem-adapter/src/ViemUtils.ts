@@ -175,6 +175,7 @@ export class ViemUtils implements AdapterUtils {
       if (value.startsWith('0x')) return hexToBigInt(value as `0x${string}`)
       return BigInt(value)
     }
+
     return hexToBigInt(value)
   }
 

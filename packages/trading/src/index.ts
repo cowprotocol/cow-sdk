@@ -19,7 +19,6 @@ export { getEthFlowContract } from './getEthFlowTransaction'
 /**
  * Helpers
  */
-
 export * from './appDataUtils'
 export * from './calculateUniqueOrderId'
 export { getPartnerFeeBps } from './utils/getPartnerFeeBps'

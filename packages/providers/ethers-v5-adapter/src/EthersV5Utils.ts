@@ -16,7 +16,6 @@ export class EthersV5Utils implements AdapterUtils {
   }
 
   createInterface(abi: Abi): GenericContractInterface {
-    // TODO: fix type casting
     return new ethers.utils.Interface(abi) as unknown as GenericContractInterface
   }
 

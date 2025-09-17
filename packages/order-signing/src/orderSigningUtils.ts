@@ -125,6 +125,7 @@ export class OrderSigningUtils {
       { name: 'chainId', type: 'uint256' },
       { name: 'verifyingContract', type: 'address' },
     ]
+
     return adapter.utils.hashDomain(getDomain(chainId), types)
   }
 

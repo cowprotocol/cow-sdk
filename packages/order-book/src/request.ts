@@ -115,7 +115,6 @@ export async function request<T>(
     Accept: 'application/json',
     'Content-Type': 'application/json',
   }
-
   const url = `${baseUrl}${path}${queryString}`
   const bodyContent = (() => {
     if (!body) return undefined
