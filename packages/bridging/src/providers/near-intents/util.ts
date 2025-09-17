@@ -1,10 +1,7 @@
 import { ETH_ADDRESS, TokenInfo } from '@cowprotocol/sdk-config'
 import { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 
-import {
-  NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK,
-  NEAR_INTENTS_BLOCKCHAIN_TO_NATIVE_WRAPPED_TOKEN_ADDRESS,
-} from './const'
+import { NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK, WRAPPED_NATIVE_CURRENCIES } from './const'
 
 export const calculateDeadline = (seconds: number) => {
   const secs = Number(seconds)
@@ -18,8 +15,7 @@ export const calculateDeadline = (seconds: number) => {
 export const adaptToken = (token: TokenResponse): TokenInfo | null => {
   const network = NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK[token.blockchain]
   if (!network) return null
-  const tokenAddress =
-    token.contractAddress || NEAR_INTENTS_BLOCKCHAIN_TO_NATIVE_WRAPPED_TOKEN_ADDRESS[token.blockchain]
+  const tokenAddress = token.contractAddress || WRAPPED_NATIVE_CURRENCIES[token.blockchain]
   if (!tokenAddress) return null
 
   return {
@@ -48,8 +44,7 @@ export const getTokenByAddressAndChainId = (
     const network = NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK[token.blockchain]
     if (!network) return false
     if (targetTokenAddress === ETH_ADDRESS) return network && network.id === targetTokenChainId
-    const tokenAddress =
-      token.contractAddress?.toLowerCase() || NEAR_INTENTS_BLOCKCHAIN_TO_NATIVE_WRAPPED_TOKEN_ADDRESS[token.blockchain]
+    const tokenAddress = token.contractAddress?.toLowerCase() || WRAPPED_NATIVE_CURRENCIES[token.blockchain]
     return (
       tokenAddress?.toLowerCase() === targetTokenAddress.toLowerCase() && network && network.id === targetTokenChainId
     )

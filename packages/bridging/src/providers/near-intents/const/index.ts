@@ -37,7 +37,7 @@ export const NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK: Record<string, ChainInfo> =
   pol: polygon,
 }
 
-export const NEAR_INTENTS_BLOCKCHAIN_TO_NATIVE_WRAPPED_TOKEN_ADDRESS: Record<string, Hex> = {
+export const WRAPPED_NATIVE_CURRENCIES: Record<string, Hex> = {
   arb: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', // weth on arb
   avax: '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7', // wavax on avax
   base: '0x4200000000000000000000000000000000000006', // weth on base
