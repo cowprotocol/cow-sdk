@@ -32,7 +32,8 @@
     "@cowprotocol/sdk-cow-shed": "workspace:*",
     "@cowprotocol/sdk-order-book": "workspace:*",
     "@cowprotocol/sdk-trading": "workspace:*",
-    "@cowprotocol/sdk-weiroll": "workspace:*"
+    "@cowprotocol/sdk-weiroll": "workspace:*",
+    "@defuse-protocol/one-click-sdk-typescript": "0.1.1-0.2"
   },
   "devDependencies": {
     "@cow-sdk/typescript-config": "workspace:*",
@@ -40,7 +41,6 @@
     "@cowprotocol/sdk-ethers-v6-adapter": "workspace:*",
     "@cowprotocol/sdk-order-signing": "workspace:*",
     "@cowprotocol/sdk-viem-adapter": "workspace:*",
-    "@defuse-protocol/one-click-sdk-typescript": "0.1.1-0.2",
     "@types/jest": "^29.4.0",
     "@types/node": "^20.17.31",
     "coveralls": "^3.1.1",
