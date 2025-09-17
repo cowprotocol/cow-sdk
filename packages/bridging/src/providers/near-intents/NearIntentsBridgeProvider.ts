@@ -89,8 +89,7 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     const wrappedTokenAddresses = Object.values(WRAPPED_NATIVE_CURRENCIES).map((a) => a.toLowerCase())
     const buyTokens = targetTokens.find((token) => {
       // Supports both the native token and its wrapped version (e.g. POL and WPOL, where POL is represented by ETH_ADDRESS).
-      if (token.address === ETH_ADDRESS || wrappedTokenAddresses.includes(token.address.toLowerCase()))
-        return token.chainId === buyTokenChainId
+      if (token.address === ETH_ADDRESS || wrappedTokenAddresses.includes(token.address.toLowerCase())) return true
       return token.address.toLowerCase() === buyTokenAddress.toLowerCase()
     })
     if (!buyTokens) return []
