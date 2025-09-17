@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.3.3-beta.0...sdk-config-v0.1.0) (2025-09-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* release cow-sdk v7
+
+### ✨ Features
+
+* release cow-sdk v7 ([6cd3e57](https://github.com/cowprotocol/cow-sdk/commit/6cd3e573687b1ffdbc0fdcb8cdbb414d88546e38))
+
 ## [0.3.3-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.3.2-beta.0...sdk-config-v0.3.3-beta.0) (2025-09-16)
 
 
