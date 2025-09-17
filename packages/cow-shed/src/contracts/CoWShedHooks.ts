@@ -119,10 +119,8 @@ export class CowShedHooks {
   }
 
   /**
-   * Verifies Eip1271 signature taking EIP7702 accounts into account
-   * If an account is not a smart-contract account it will return true
-   * If an account is a smart-contract account,
-   *  then it will return true only when isValidSignature() returns EIP1271_MAGICVALUE
+   * Verifies EIP1271 signature
+   * It will return true only when isValidSignature() returns EIP1271_MAGICVALUE
    */
   async verifyEip1271Signature(
     account: string,
