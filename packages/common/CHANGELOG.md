@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.4.0-beta.0...sdk-common-v0.5.0-beta.0) (2025-09-17)
+
+
+### ✨ Features
+
+* **cow-shed:** validate EIP1271 signature ([#508](https://github.com/cowprotocol/cow-sdk/issues/508)) ([5c72123](https://github.com/cowprotocol/cow-sdk/commit/5c7212323edcea3eadf70973f765619afb1bcaf4))
+
 ## [0.4.0-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.3.0-beta.0...sdk-common-v0.4.0-beta.0) (2025-09-16)
 
 

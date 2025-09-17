@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.3.0-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-cow-shed-v0.2.7-beta.0...sdk-cow-shed-v0.3.0-beta.0) (2025-09-17)
+
+
+### ✨ Features
+
+* **cow-shed:** validate EIP1271 signature ([#508](https://github.com/cowprotocol/cow-sdk/issues/508)) ([5c72123](https://github.com/cowprotocol/cow-sdk/commit/5c7212323edcea3eadf70973f765619afb1bcaf4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.0-beta.0
+    * @cowprotocol/sdk-contracts-ts bumped to 2.3.0-beta.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.2.5-beta.0
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.2.5-beta.0
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.1-beta.0
+
 ## [0.2.7-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-cow-shed-v0.2.6-beta.0...sdk-cow-shed-v0.2.7-beta.0) (2025-09-16)
 
 
