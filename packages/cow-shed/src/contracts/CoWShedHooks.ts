@@ -1,11 +1,17 @@
-import { ContractsEcdsaSigningScheme as EcdsaSigningScheme, ecdsaSignTypedData } from '@cowprotocol/sdk-contracts-ts'
+import {
+  ContractsEcdsaSigningScheme as EcdsaSigningScheme,
+  ContractsSigningScheme,
+  ecdsaSignTypedData,
+  EIP1271_MAGICVALUE,
+} from '@cowprotocol/sdk-contracts-ts'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 
 import {
+  AbstractProviderAdapter,
   getGlobalAdapter,
   setGlobalAdapter,
-  AbstractProviderAdapter,
   SignerLike,
+  TypedDataContext,
   TypedDataDomain,
 } from '@cowprotocol/sdk-common'
 import { CowShedFactoryAbi } from '../abi/CowShedFactoryAbi'
@@ -15,7 +21,9 @@ import {
   COW_SHED_IMPLEMENTATION,
   COW_SHED_LATEST_VERSION,
   COW_SHED_PROXY_INIT_CODE,
+  CoWShedEip1271SignatureInvalid,
   CoWShedVersion,
+  EIP1271_VALID_SIGNATURE_ABI,
 } from '../const'
 
 export const COW_SHED_712_TYPES = {
@@ -75,6 +83,9 @@ export class CowShedHooks {
     ]) as string
   }
 
+  /**
+   * @throws CoWShedEip1271SignatureInvalid
+   */
   async signCalls(
     calls: ICoWShedCall[],
     nonce: string,
@@ -88,12 +99,57 @@ export class CowShedHooks {
     const user = await signer.getAddress()
     const proxy = this.proxyOf(user)
 
-    const { domain, types, message } = this.infoToSign(calls, nonce, deadline, proxy)
+    const typedDataContext = this.infoToSign(calls, nonce, deadline, proxy)
+    const { domain, types, message } = typedDataContext
 
-    return await ecdsaSignTypedData(signingScheme, domain, types, message, signer)
+    const signature = await ecdsaSignTypedData(signingScheme, domain, types, message, signer)
+
+    const isAccountSmartContract = await this.doesAccountHaveCode(user)
+    const shouldValidateEip1271Signature = isAccountSmartContract && signingScheme === ContractsSigningScheme.EIP712
+
+    if (shouldValidateEip1271Signature) {
+      const isEip1271SignatureValid = await this.verifyEip1271Signature(user, signature, typedDataContext)
+
+      if (!isEip1271SignatureValid) {
+        throw new CoWShedEip1271SignatureInvalid('EIP1271 signature is invalid for CoW Shed')
+      }
+    }
+
+    return signature
   }
 
-  infoToSign(calls: ICoWShedCall[], nonce: string, deadline: bigint, proxy: string) {
+  /**
+   * Verifies EIP1271 signature
+   * It will return true only when isValidSignature() returns EIP1271_MAGICVALUE
+   */
+  async verifyEip1271Signature(
+    account: string,
+    signature: string,
+    typedDataContext: TypedDataContext,
+  ): Promise<boolean> {
+    const adapter = getGlobalAdapter()
+
+    const { domain, types, message } = typedDataContext
+
+    const hash = adapter.utils.hashTypedData(domain, types, message)
+
+    try {
+      const result = await adapter.readContract({
+        address: account,
+        abi: EIP1271_VALID_SIGNATURE_ABI,
+        functionName: 'isValidSignature',
+        args: [hash, signature],
+      })
+
+      return result === EIP1271_MAGICVALUE
+    } catch (error) {
+      console.error('CoWShedHooks.verifyEip1271Signature', error)
+
+      return false
+    }
+  }
+
+  infoToSign(calls: ICoWShedCall[], nonce: string, deadline: bigint, proxy: string): TypedDataContext {
     const message = {
       calls,
       nonce,
@@ -121,5 +177,13 @@ export class CowShedHooks {
 
   getImplementationAddress() {
     return this.customOptions?.implementationAddress ?? COW_SHED_IMPLEMENTATION[this.version]
+  }
+
+  private async doesAccountHaveCode(account: string): Promise<boolean> {
+    const adapter = getGlobalAdapter()
+
+    const userAccountCode = await adapter.getCode(account)
+
+    return !!userAccountCode && userAccountCode !== '0x'
   }
 }

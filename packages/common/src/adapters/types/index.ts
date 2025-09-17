@@ -24,6 +24,12 @@ export interface TypedDataDomain {
 
 export type TypedDataTypes = Record<string, Array<{ name: string; type: string }>>
 
+export interface TypedDataContext {
+  domain: TypedDataDomain
+  types: TypedDataTypes
+  message: Record<string, unknown>
+}
+
 export interface Provider {
   getStorageAt?: (...args: any[]) => unknown
   getStorage?: (...args: any[]) => unknown
