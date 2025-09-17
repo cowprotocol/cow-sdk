@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.3.3-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.3.2-beta.0...sdk-bridging-v0.3.3-beta.0) (2025-09-17)
+
+
+### 🔧 Miscellaneous
+
+* make doc links absolute ([f03aabb](https://github.com/cowprotocol/cow-sdk/commit/f03aabb745e0cf51e3c9d5d8464f733e2668d544))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.1.7-beta.0
+    * @cowprotocol/sdk-common bumped to 0.5.0-beta.0
+    * @cowprotocol/sdk-contracts-ts bumped to 2.3.0-beta.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.3.0-beta.0
+    * @cowprotocol/sdk-order-book bumped to 0.3.1-beta.0
+    * @cowprotocol/sdk-trading bumped to 0.3.2-beta.0
+    * @cowprotocol/sdk-weiroll bumped to 0.2.7-beta.0
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 0.2.8-beta.0
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.2.5-beta.0
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.2.5-beta.0
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.1-beta.0
+
 ## [0.3.2-beta.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.3.1-beta.0...sdk-bridging-v0.3.2-beta.0) (2025-09-16)
 
 
