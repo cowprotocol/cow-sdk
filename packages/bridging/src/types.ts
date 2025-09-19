@@ -12,6 +12,7 @@ import type {
   TraderParameters,
 } from '@cowprotocol/sdk-trading'
 import type { AccountAddress, SignerLike } from '@cowprotocol/sdk-common'
+import { BridgeProviderError } from './errors'
 
 export interface BridgeProviderInfo {
   name: string
@@ -406,4 +407,16 @@ export interface CrossChainOrder {
   bridgingParams: BridgingDepositParams
   tradeTxHash: string
   explorerUrl?: string
+}
+
+export interface MultiQuoteResult {
+  providerDappId: string
+  quote: CrossChainQuoteAndPost | null
+  error?: BridgeProviderError
+}
+
+export interface MultiQuoteRequest {
+  quoteBridgeRequest: QuoteBridgeRequest
+  providerDappIds?: string[]
+  advancedSettings?: SwapAdvancedSettings
 }
