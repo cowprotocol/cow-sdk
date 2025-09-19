@@ -1,6 +1,6 @@
 import { getEthFlowContract, TradingSdk } from '@cowprotocol/sdk-trading'
 import { MockBridgeProvider } from '../providers/mock/MockBridgeProvider'
-import { QuoteBridgeRequest } from '../types'
+import { BridgeQuoteResult, QuoteBridgeRequest } from '../types'
 import { getQuoteWithBridge } from './getQuoteWithBridge'
 import {
   bridgeCallDetails,
@@ -12,10 +12,12 @@ import {
   quoteBridgeRequest,
 } from './mock/bridgeRequestMocks'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
-import { NATIVE_CURRENCY_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
+import { NATIVE_CURRENCY_ADDRESS, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import { getHookMockForCostEstimation } from '../hooks/utils'
 import { createAdapters } from '../../tests/setup'
-import { AbstractSigner, setGlobalAdapter, Provider } from '@cowprotocol/sdk-common'
+import { AbstractSigner, setGlobalAdapter, Provider, TTLCache } from '@cowprotocol/sdk-common'
+import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../errors'
+import { GetQuoteWithBridgeParams } from './types'
 
 const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
@@ -31,6 +33,11 @@ adapterNames.forEach((adapterName) => {
     let sendOrderMock: jest.Mock
     let signerMock: AbstractSigner<Provider>
 
+    const mockIntermediateTokens = [
+      { address: '0x123', name: 'Token1', symbol: 'TK1', decimals: 18, chainId: 137 },
+      { address: '0x456', name: 'Token2', symbol: 'TK2', decimals: 6, chainId: 137 },
+    ]
+
     beforeEach(() => {
       const adapter = adapters[adapterName]
 
@@ -41,6 +48,17 @@ adapterNames.forEach((adapterName) => {
       quoteBridgeRequest.signer = signerMock
 
       jest.clearAllMocks()
+
+      // Clear localStorage for clean test state
+      if (typeof localStorage !== 'undefined') {
+        localStorage.clear()
+      }
+
+      // Mock gas estimation to avoid RPC errors in tests
+      const mockEstimateGas = jest.fn().mockResolvedValue(BigInt(200000))
+      if (signerMock.estimateGas) {
+        signerMock.estimateGas = mockEstimateGas
+      }
 
       mockProvider = new MockBridgeProvider()
       mockProvider.getQuote = getQuoteMock = jest.fn().mockResolvedValue(bridgeQuoteResult)
@@ -77,6 +95,16 @@ adapterNames.forEach((adapterName) => {
         quoteRequest: {
           receiver: customReceiver,
         },
+      })
+    }
+
+    async function postOrderWithIntermediateTokensCache(request: GetQuoteWithBridgeParams<BridgeQuoteResult>) {
+      return getQuoteWithBridge({
+        swapAndBridgeRequest: request.swapAndBridgeRequest,
+        provider: mockProvider,
+        tradingSdk,
+        intermediateTokensCache: request.intermediateTokensCache,
+        intermediateTokensTtl: request.intermediateTokensTtl,
       })
     }
 
@@ -162,6 +190,79 @@ adapterNames.forEach((adapterName) => {
 
       expect(orderAppData.metadata.hooks.post.length).toBe(1)
       expect(orderAppData.metadata.hooks.post[0]).toEqual(bridgeCallDetails.preAuthorizedBridgingHook.postHook)
+    })
+
+    it('should throw error when bridge provider fails to get quote', async () => {
+      mockProvider.getQuote = jest.fn().mockRejectedValue(new BridgeProviderQuoteError(BridgeQuoteErrors.QUOTE_ERROR))
+
+      await expect(postOrder(quoteBridgeRequest)).rejects.toThrow(BridgeProviderQuoteError)
+    })
+
+    it('should throw error when no intermediate tokens are available', async () => {
+      mockProvider.getIntermediateTokens = jest.fn().mockResolvedValue([])
+
+      await expect(postOrder(quoteBridgeRequest)).rejects.toThrow(BridgeProviderQuoteError)
+    })
+
+    it('should handle validTo override in advanced settings', async () => {
+      const customValidTo = Math.floor(Date.now() / 1000) + 3600 // 1 hour from now
+      const { postSwapOrderFromQuote } = await postOrder(quoteBridgeRequest)
+
+      await postSwapOrderFromQuote({
+        quoteRequest: {
+          validTo: customValidTo,
+        },
+      })
+
+      expect(getQuoteMock).toHaveBeenCalledTimes(2)
+      // Verify the validTo is passed correctly to the bridge request
+      expect(getUnsignedBridgeCallMock.mock.calls[1]).toBeDefined()
+    })
+
+    it('should cache intermediate tokens if intermediateTokensCache is provided', async () => {
+      mockProvider.getIntermediateTokens = jest.fn().mockResolvedValue(mockIntermediateTokens)
+
+      const intermediateTokensCache = new TTLCache<TokenInfo[]>('test', true)
+      const intermediateTokensTtl = 1000
+      // First call
+      await postOrderWithIntermediateTokensCache({
+        swapAndBridgeRequest: quoteBridgeRequest,
+        provider: mockProvider,
+        tradingSdk,
+        intermediateTokensCache,
+        intermediateTokensTtl,
+      })
+
+      // Second call immediately - should use cache
+      await postOrderWithIntermediateTokensCache({
+        swapAndBridgeRequest: quoteBridgeRequest,
+        provider: mockProvider,
+        tradingSdk,
+        intermediateTokensCache,
+        intermediateTokensTtl,
+      })
+
+      expect(mockProvider.getIntermediateTokens).toHaveBeenCalledTimes(1)
+    })
+
+    it('should not cache intermediate tokens if intermediateTokensCache is not provided', async () => {
+      mockProvider.getIntermediateTokens = jest.fn().mockResolvedValue(mockIntermediateTokens)
+
+      // First call
+      await postOrderWithIntermediateTokensCache({
+        swapAndBridgeRequest: quoteBridgeRequest,
+        provider: mockProvider,
+        tradingSdk,
+      })
+
+      // Second call
+      await postOrderWithIntermediateTokensCache({
+        swapAndBridgeRequest: quoteBridgeRequest,
+        provider: mockProvider,
+        tradingSdk,
+      })
+
+      expect(mockProvider.getIntermediateTokens).toHaveBeenCalledTimes(2)
     })
   })
 })
