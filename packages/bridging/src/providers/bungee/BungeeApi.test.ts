@@ -654,7 +654,7 @@ describe('BungeeApi', () => {
           expect.stringContaining(ACROSS_API_URL),
           expect.objectContaining({
             headers: expect.not.objectContaining({
-              'api-key': apiKey,
+              'x-api-key': apiKey,
             }),
           }),
         )
@@ -723,7 +723,10 @@ describe('BungeeApi', () => {
         expect(mockFetch).toHaveBeenCalledWith(
           expect.stringContaining(BUNGEE_BASE_URL),
           expect.objectContaining({
-            headers: expect.objectContaining({}),
+            headers: expect.not.objectContaining({
+              'x-api-key': expect.any(String),
+              affiliate: expect.anything(),
+            }),
           }),
         )
       })
@@ -754,7 +757,10 @@ describe('BungeeApi', () => {
         expect(mockFetch).toHaveBeenCalledWith(
           expect.stringContaining(BUNGEE_BASE_URL),
           expect.objectContaining({
-            headers: expect.objectContaining({}),
+            headers: expect.not.objectContaining({
+              'x-api-key': expect.any(String),
+              affiliate: expect.anything(),
+            }),
           }),
         )
       })

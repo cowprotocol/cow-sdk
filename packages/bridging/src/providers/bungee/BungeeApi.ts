@@ -380,7 +380,11 @@ export class BungeeApi {
   }
 
   private shouldAddAffiliate(apiType: BungeeApiType, baseUrl: string): boolean {
-    return this.isBungeeApi(apiType) && (this.shouldAddApiKey(apiType) || !baseUrl.includes(BUNGEE_BASE_URL))
+    if (!this.isBungeeApi(apiType)) return false
+    const defaultHost = new URL(BUNGEE_BASE_URL).host
+    const baseHost = new URL(baseUrl).host
+
+    return this.shouldAddApiKey(apiType) || baseHost !== defaultHost
   }
 
   private async makeApiCall<T>(
