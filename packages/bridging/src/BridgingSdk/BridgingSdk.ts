@@ -16,7 +16,25 @@ import { BridgeProviderError } from '../errors'
 import { SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { ALL_SUPPORTED_CHAINS, ChainInfo, CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
-import { AbstractProviderAdapter, enableLogging, setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { AbstractProviderAdapter, enableLogging, setGlobalAdapter, TTLCache } from '@cowprotocol/sdk-common'
+
+/**
+ * Cache configuration for BridgingSdk
+ */
+export interface BridgingSdkCacheConfig {
+  /**
+   * Enable caching for target networks and buy tokens
+   */
+  enabled: boolean
+  /**
+   * TTL in milliseconds for getTargetNetworks cache
+   */
+  targetNetworksTtl: number
+  /**
+   * TTL in milliseconds for getBuyTokens cache
+   */
+  buyTokensTtl: number
+}
 
 export interface BridgingSdkOptions {
   /**
@@ -38,6 +56,11 @@ export interface BridgingSdkOptions {
    * Enable logging for the bridging SDK.
    */
   enableLogging?: boolean
+
+  /**
+   * Cache configuration for BridgingSdk
+   */
+  cache?: BridgingSdkCacheConfig
 }
 
 /**
@@ -59,13 +82,23 @@ export interface GetOrderParams {
   env?: CowEnv
 }
 
-export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'enableLogging'>>
+export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'enableLogging' | 'cache'>>
+
+// Default cache configuration
+const DEFAULT_CACHE_CONFIG: BridgingSdkCacheConfig = {
+  enabled: true,
+  targetNetworksTtl: 5 * 60 * 1000, // 5 minutes
+  buyTokensTtl: 2 * 60 * 1000, // 2 minutes
+}
 
 /**
  * SDK for bridging for swapping tokens between different chains.
  */
 export class BridgingSdk {
   protected config: BridgingSdkConfig
+  private cacheConfig: BridgingSdkCacheConfig
+  private targetNetworksCache: TTLCache<ChainInfo[]>
+  private buyTokensCache: TTLCache<GetProviderBuyTokens>
 
   constructor(
     readonly options: BridgingSdkOptions,
@@ -75,7 +108,7 @@ export class BridgingSdk {
       setGlobalAdapter(adapter)
     }
 
-    const { providers, ...restOptions } = options
+    const { providers, cache, ...restOptions } = options
 
     // For simplicity, we support only a single provider in the initial implementation
     if (!providers || providers.length !== 1) {
@@ -95,6 +128,13 @@ export class BridgingSdk {
       tradingSdk,
       orderBookApi,
     }
+
+    // Initialize cache configuration
+    this.cacheConfig = { ...DEFAULT_CACHE_CONFIG, ...cache }
+
+    // Initialize cache instances with localStorage persistence
+    this.targetNetworksCache = new TTLCache<ChainInfo[]>('bridging-target-networks', this.cacheConfig.enabled)
+    this.buyTokensCache = new TTLCache<GetProviderBuyTokens>('bridging-buy-tokens', this.cacheConfig.enabled)
   }
 
   private get provider(): BridgeProvider<BridgeQuoteResult> {
@@ -125,7 +165,21 @@ export class BridgingSdk {
    * Get the available target networks for the bridging.
    */
   async getTargetNetworks(): Promise<ChainInfo[]> {
-    return this.provider.getNetworks()
+    if (!this.cacheConfig.enabled) {
+      return this.provider.getNetworks()
+    }
+
+    const cacheKey = `target-networks-${this.provider.info.dappId}`
+    const cached = this.targetNetworksCache.get(cacheKey)
+
+    if (cached) {
+      return cached
+    }
+
+    const result = await this.provider.getNetworks()
+    this.targetNetworksCache.set(cacheKey, result, this.cacheConfig.targetNetworksTtl)
+
+    return result
   }
 
   /**
@@ -134,7 +188,21 @@ export class BridgingSdk {
    * @param params
    */
   async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
-    return this.provider.getBuyTokens(params)
+    if (!this.cacheConfig.enabled) {
+      return this.provider.getBuyTokens(params)
+    }
+
+    const cacheKey = `buy-tokens-${this.provider.info.dappId}-${params.buyChainId}-${params.sellChainId || 'any'}-${params.sellTokenAddress || 'any'}`
+    const cached = this.buyTokensCache.get(cacheKey)
+
+    if (cached) {
+      return cached
+    }
+
+    const result = await this.provider.getBuyTokens(params)
+    this.buyTokensCache.set(cacheKey, result, this.cacheConfig.buyTokensTtl)
+
+    return result
   }
 
   /**
@@ -198,5 +266,31 @@ export class BridgingSdk {
 
   getProviderFromAppData(fullAppData: string): BridgeProvider<BridgeQuoteResult> | undefined {
     return findBridgeProviderFromHook(fullAppData, this.getProviders())
+  }
+
+  /**
+   * Clear all caches. Useful for testing and debugging.
+   */
+  clearCache(): void {
+    this.targetNetworksCache.clear()
+    this.buyTokensCache.clear()
+  }
+
+  /**
+   * Clean up expired cache entries. Useful for maintenance.
+   */
+  cleanupExpiredCache(): void {
+    this.targetNetworksCache.cleanup()
+    this.buyTokensCache.cleanup()
+  }
+
+  /**
+   * Get cache statistics for debugging.
+   */
+  getCacheStats(): { targetNetworks: number; buyTokens: number } {
+    return {
+      targetNetworks: this.targetNetworksCache.size(),
+      buyTokens: this.buyTokensCache.size(),
+    }
   }
 }
