@@ -1,4 +1,4 @@
-import { CowShedHooks } from './CoWShedHooks'
+import { CowShedHooks, clearAllCowShedHooksCaches } from './CoWShedHooks'
 import { ICoWShedCall } from '../types'
 import { ContractsSigningScheme as SigningScheme } from '@cowprotocol/sdk-contracts-ts'
 import { AdaptersTestSetup, createAdapters } from '../../tests/setup'
@@ -34,6 +34,8 @@ describe('CowShedHooks', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    // Clear shared caches before each test to prevent test interference
+    clearAllCowShedHooksCaches()
   })
 
   describe('constructor', () => {
@@ -240,6 +242,7 @@ describe('CowShedHooks', () => {
       for (const adapterName of adapterNames) {
         const adapter = adapters[adapterName]
         setGlobalAdapter(adapter)
+        clearAllCowShedHooksCaches() // Clear cache for each adapter iteration
 
         // Mock readContract to return EIP1271_MAGICVALUE
         const originalReadContract = adapter.readContract
@@ -279,6 +282,7 @@ describe('CowShedHooks', () => {
       for (const adapterName of adapterNames) {
         const adapter = adapters[adapterName]
         setGlobalAdapter(adapter)
+        clearAllCowShedHooksCaches() // Clear cache for each adapter iteration
 
         // Mock readContract to return invalid magic value
         const originalReadContract = adapter.readContract
@@ -318,6 +322,7 @@ describe('CowShedHooks', () => {
       for (const adapterName of adapterNames) {
         const adapter = adapters[adapterName]
         setGlobalAdapter(adapter)
+        clearAllCowShedHooksCaches() // Clear cache for each adapter iteration
 
         // Mock readContract to return EIP1271_MAGICVALUE
         const originalReadContract = adapter.readContract
@@ -374,6 +379,7 @@ describe('CowShedHooks', () => {
       for (const adapterName of adapterNames) {
         const adapter = adapters[adapterName]
         setGlobalAdapter(adapter)
+        clearAllCowShedHooksCaches() // Clear cache for each adapter iteration
 
         // Mock readContract to throw an error
         const originalReadContract = adapter.readContract
@@ -414,6 +420,7 @@ describe('CowShedHooks', () => {
       for (const adapterName of adapterNames) {
         const adapter = adapters[adapterName]
         setGlobalAdapter(adapter)
+        clearAllCowShedHooksCaches() // Clear cache for each adapter iteration
 
         // Mock getCode to return '0x' for EOA
         const originalGetCode = adapter.getCode
@@ -442,6 +449,7 @@ describe('CowShedHooks', () => {
       for (const adapterName of adapterNames) {
         const adapter = adapters[adapterName]
         setGlobalAdapter(adapter)
+        clearAllCowShedHooksCaches() // Clear cache for each adapter iteration
 
         // Mock getCode to return bytecode (indicating smart contract)
         const originalGetCode = adapter.getCode
@@ -520,6 +528,9 @@ describe('CowShedHooks', () => {
       const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
       for (const adapterName of adapterNames) {
+        // Clear caches to ensure clean state for each adapter test
+        clearAllCowShedHooksCaches()
+
         const adapter = adapters[adapterName]
         setGlobalAdapter(adapter)
 
@@ -582,7 +593,7 @@ describe('CowShedHooks', () => {
 
         // Should throw CoWShedEip1271SignatureInvalid
         await expect(
-          cowShed.signCalls(calls, mockNonce, mockDeadline, SigningScheme.EIP712, adapter.signer)
+          cowShed.signCalls(calls, mockNonce, mockDeadline, SigningScheme.EIP712, adapter.signer),
         ).rejects.toThrow('EIP1271 signature is invalid for CoW Shed')
 
         // Restore original methods
@@ -625,6 +636,264 @@ describe('CowShedHooks', () => {
         adapter.getCode = originalGetCode
         adapter.readContract = originalReadContract
       }
+    })
+  })
+
+  describe('Caching', () => {
+    beforeEach(() => {
+      // Clear shared caches before each test
+      clearAllCowShedHooksCaches()
+    })
+
+    describe('doesAccountHaveCode caching', () => {
+      it('should cache account code check results', async () => {
+        const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+        for (const adapterName of adapterNames) {
+          const adapter = adapters[adapterName]
+          setGlobalAdapter(adapter)
+          clearAllCowShedHooksCaches() // Clear cache for each adapter test
+
+          // Mock getCode to track calls
+          const originalGetCode = adapter.getCode
+          const getCodeSpy = jest.fn().mockResolvedValue('0x608060405234801561001057600080fd5b50')
+          adapter.getCode = getCodeSpy
+
+          const cowShed = new CowShedHooks(1, {
+            factoryAddress: MOCK_COW_SHED_FACTORY,
+            implementationAddress: MOCK_COW_SHED_IMPLEMENTATION,
+            proxyCreationCode: MOCK_INIT_CODE,
+          })
+
+          const testAccount = '0x1234567890123456789012345678901234567890'
+
+          // First call should hit the network
+          const result1 = await (cowShed as any).doesAccountHaveCode(testAccount)
+          expect(result1).toBe(true)
+          expect(getCodeSpy).toHaveBeenCalledTimes(1)
+
+          // Second call should use cache
+          const result2 = await (cowShed as any).doesAccountHaveCode(testAccount)
+          expect(result2).toBe(true)
+          expect(getCodeSpy).toHaveBeenCalledTimes(1) // Still 1, not 2
+
+          // Third call should also use cache
+          const result3 = await (cowShed as any).doesAccountHaveCode(testAccount)
+          expect(result3).toBe(true)
+          expect(getCodeSpy).toHaveBeenCalledTimes(1) // Still 1, not 3
+
+          // Different account should hit the network again
+          const testAccount2 = '0x9876543210987654321098765432109876543210'
+          const result4 = await (cowShed as any).doesAccountHaveCode(testAccount2)
+          expect(result4).toBe(true)
+          expect(getCodeSpy).toHaveBeenCalledTimes(2) // Now 2
+
+          // Restore original method
+          adapter.getCode = originalGetCode
+        }
+      })
+
+      it('should cache different results for different accounts', async () => {
+        const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+        for (const adapterName of adapterNames) {
+          const adapter = adapters[adapterName]
+          setGlobalAdapter(adapter)
+          clearAllCowShedHooksCaches() // Clear cache for each adapter test
+
+          // Mock getCode to return different values based on account
+          const originalGetCode = adapter.getCode
+          const getCodeSpy = jest.fn().mockImplementation((account: string) => {
+            if (account === '0x1111111111111111111111111111111111111111') {
+              return Promise.resolve('0x608060405234801561001057600080fd5b50') // Has code
+            }
+            return Promise.resolve('0x') // No code
+          })
+          adapter.getCode = getCodeSpy
+
+          const cowShed = new CowShedHooks(1, {
+            factoryAddress: MOCK_COW_SHED_FACTORY,
+            implementationAddress: MOCK_COW_SHED_IMPLEMENTATION,
+            proxyCreationCode: MOCK_INIT_CODE,
+          })
+
+          const contractAccount = '0x1111111111111111111111111111111111111111'
+          const eoaAccount = '0x2222222222222222222222222222222222222222'
+
+          // Check contract account
+          const result1 = await (cowShed as any).doesAccountHaveCode(contractAccount)
+          expect(result1).toBe(true)
+          expect(getCodeSpy).toHaveBeenCalledTimes(1)
+
+          // Check EOA account
+          const result2 = await (cowShed as any).doesAccountHaveCode(eoaAccount)
+          expect(result2).toBe(false)
+          expect(getCodeSpy).toHaveBeenCalledTimes(2)
+
+          // Check contract account again - should use cache
+          const result3 = await (cowShed as any).doesAccountHaveCode(contractAccount)
+          expect(result3).toBe(true)
+          expect(getCodeSpy).toHaveBeenCalledTimes(2) // Still 2
+
+          // Check EOA account again - should use cache
+          const result4 = await (cowShed as any).doesAccountHaveCode(eoaAccount)
+          expect(result4).toBe(false)
+          expect(getCodeSpy).toHaveBeenCalledTimes(2) // Still 2
+
+          // Restore original method
+          adapter.getCode = originalGetCode
+        }
+      })
+    })
+
+    describe('verifyEip1271Signature caching', () => {
+      it('should cache EIP1271 signature verification results', async () => {
+        const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+        for (const adapterName of adapterNames) {
+          const adapter = adapters[adapterName]
+          setGlobalAdapter(adapter)
+          clearAllCowShedHooksCaches() // Clear cache for each adapter test
+
+          // Mock readContract to track calls
+          const originalReadContract = adapter.readContract
+          const readContractSpy = jest.fn().mockResolvedValue('0x1626ba7e') // EIP1271_MAGICVALUE
+          adapter.readContract = readContractSpy
+
+          const cowShed = new CowShedHooks(1, {
+            factoryAddress: MOCK_COW_SHED_FACTORY,
+            implementationAddress: MOCK_COW_SHED_IMPLEMENTATION,
+            proxyCreationCode: MOCK_INIT_CODE,
+          })
+
+          const calls = createCallsForAdapter(adapter)
+          const nonce = adapter.utils.formatBytes32String('1')
+          const deadline = BigInt(1000000)
+          const proxy = cowShed.proxyOf(USER_MOCK)
+          const typedDataContext = cowShed.infoToSign(calls, nonce, deadline, proxy)
+          const signature = '0x1234abcd'
+          const account = '0x1234567890123456789012345678901234567890'
+
+          // First call should hit the network
+          const result1 = await cowShed.verifyEip1271Signature(account, signature, typedDataContext)
+          expect(result1).toBe(true)
+          expect(readContractSpy).toHaveBeenCalledTimes(1)
+
+          // Second call with same parameters should use cache
+          const result2 = await cowShed.verifyEip1271Signature(account, signature, typedDataContext)
+          expect(result2).toBe(true)
+          expect(readContractSpy).toHaveBeenCalledTimes(1) // Still 1, not 2
+
+          // Third call should also use cache
+          const result3 = await cowShed.verifyEip1271Signature(account, signature, typedDataContext)
+          expect(result3).toBe(true)
+          expect(readContractSpy).toHaveBeenCalledTimes(1) // Still 1, not 3
+
+          // Different signature should hit the network again
+          const differentSignature = '0xdeadbeef'
+          const result4 = await cowShed.verifyEip1271Signature(account, differentSignature, typedDataContext)
+          expect(result4).toBe(true)
+          expect(readContractSpy).toHaveBeenCalledTimes(2) // Now 2
+
+          // Restore original method
+          adapter.readContract = originalReadContract
+        }
+      })
+
+      it('should not cache failed EIP1271 signature verification results', async () => {
+        const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+        for (const adapterName of adapterNames) {
+          const adapter = adapters[adapterName]
+          setGlobalAdapter(adapter)
+          clearAllCowShedHooksCaches() // Clear cache for each adapter test
+
+          // Mock readContract to throw error
+          const originalReadContract = adapter.readContract
+          const originalConsoleError = console.error
+          const readContractSpy = jest.fn().mockRejectedValue(new Error('Contract call failed'))
+          adapter.readContract = readContractSpy
+          console.error = jest.fn() // Mock to avoid test noise
+
+          const cowShed = new CowShedHooks(1, {
+            factoryAddress: MOCK_COW_SHED_FACTORY,
+            implementationAddress: MOCK_COW_SHED_IMPLEMENTATION,
+            proxyCreationCode: MOCK_INIT_CODE,
+          })
+
+          const calls = createCallsForAdapter(adapter)
+          const nonce = adapter.utils.formatBytes32String('1')
+          const deadline = BigInt(1000000)
+          const proxy = cowShed.proxyOf(USER_MOCK)
+          const typedDataContext = cowShed.infoToSign(calls, nonce, deadline, proxy)
+          const signature = '0x1234abcd'
+          const account = '0x1234567890123456789012345678901234567890'
+
+          // First call should hit the network and fail
+          const result1 = await cowShed.verifyEip1271Signature(account, signature, typedDataContext)
+          expect(result1).toBe(false)
+          expect(readContractSpy).toHaveBeenCalledTimes(1)
+
+          // Second call should also hit the network (failures are not cached)
+          const result2 = await cowShed.verifyEip1271Signature(account, signature, typedDataContext)
+          expect(result2).toBe(false)
+          expect(readContractSpy).toHaveBeenCalledTimes(2) // Should be 2, not 1
+
+          // Restore original methods
+          adapter.readContract = originalReadContract
+          console.error = originalConsoleError
+        }
+      })
+
+      it('should create different cache keys for different parameters', async () => {
+        const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+        for (const adapterName of adapterNames) {
+          const adapter = adapters[adapterName]
+          setGlobalAdapter(adapter)
+          clearAllCowShedHooksCaches() // Clear cache for each adapter test
+
+          // Mock readContract to track calls
+          const originalReadContract = adapter.readContract
+          const readContractSpy = jest.fn().mockResolvedValue('0x1626ba7e')
+          adapter.readContract = readContractSpy
+
+          const cowShed = new CowShedHooks(1, {
+            factoryAddress: MOCK_COW_SHED_FACTORY,
+            implementationAddress: MOCK_COW_SHED_IMPLEMENTATION,
+            proxyCreationCode: MOCK_INIT_CODE,
+          })
+
+          const calls = createCallsForAdapter(adapter)
+          const nonce = adapter.utils.formatBytes32String('1')
+          const deadline = BigInt(1000000)
+          const proxy = cowShed.proxyOf(USER_MOCK)
+          const typedDataContext = cowShed.infoToSign(calls, nonce, deadline, proxy)
+
+          const account1 = '0x1111111111111111111111111111111111111111'
+          const account2 = '0x2222222222222222222222222222222222222222'
+          const signature1 = '0x1234abcd'
+          const signature2 = '0xdeadbeef'
+
+          // Different accounts should create different cache entries
+          await cowShed.verifyEip1271Signature(account1, signature1, typedDataContext)
+          expect(readContractSpy).toHaveBeenCalledTimes(1)
+
+          await cowShed.verifyEip1271Signature(account2, signature1, typedDataContext)
+          expect(readContractSpy).toHaveBeenCalledTimes(2)
+
+          // Different signatures should create different cache entries
+          await cowShed.verifyEip1271Signature(account1, signature2, typedDataContext)
+          expect(readContractSpy).toHaveBeenCalledTimes(3)
+
+          // Same parameters should use cache
+          await cowShed.verifyEip1271Signature(account1, signature1, typedDataContext)
+          expect(readContractSpy).toHaveBeenCalledTimes(3) // Still 3
+
+          // Restore original method
+          adapter.readContract = originalReadContract
+        }
+      })
     })
   })
 })
