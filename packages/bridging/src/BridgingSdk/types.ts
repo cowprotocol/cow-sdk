@@ -7,7 +7,9 @@ import {
   QuoteBridgeRequest,
   QuoteBridgeRequestWithoutAmount,
 } from '../types'
-import { SignerLike } from '@cowprotocol/sdk-common'
+import { SignerLike, TTLCache } from '@cowprotocol/sdk-common'
+import { BridgingSdkOptions } from './interfaces'
+import { TokenInfo } from '@cowprotocol/sdk-config'
 
 export type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
   /**
@@ -35,6 +37,16 @@ export type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
    * But we won't do that using users wallet and will use some static PK.
    */
   bridgeHookSigner?: SignerLike
+
+  /**
+   * Cache for intermediate tokens.
+   */
+  intermediateTokensCache?: TTLCache<TokenInfo[]>
+
+  /**
+   * TTL for intermediate tokens.
+   */
+  intermediateTokensTtl?: number
 }
 
 export interface GetBridgeResultResult {
@@ -54,3 +66,5 @@ export interface BridgeResultContext<T extends BridgeQuoteResult = BridgeQuoteRe
   validToOverride?: number
   appDataOverride?: SwapAdvancedSettings['appData']
 }
+
+export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'enableLogging' | 'cacheConfig'>>
