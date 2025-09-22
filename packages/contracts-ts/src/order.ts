@@ -1,4 +1,4 @@
-import { Bytes, getGlobalAdapter, TypedDataDomain, TypedDataTypes } from '@cowprotocol/sdk-common'
+import { Bytes, getGlobalAdapter, TypedDataDomain, TypedDataTypes, ZERO_ADDRESS } from '@cowprotocol/sdk-common'
 import { Order } from './types'
 
 /**
@@ -140,15 +140,14 @@ export type NormalizedOrder = Omit<Order, 'validTo' | 'appData' | 'kind' | 'sell
  * @returns A 32-byte hash encoded as a hex-string.
  */
 export function normalizeOrder(order: Order): NormalizedOrder {
-  const adapter = getGlobalAdapter()
-  if (order.receiver === adapter.ZERO_ADDRESS) {
+  if (order.receiver === ZERO_ADDRESS) {
     throw new Error('receiver cannot be address(0)')
   }
 
   const normalizedOrder = {
     ...order,
     sellTokenBalance: order.sellTokenBalance ?? OrderBalance.ERC20,
-    receiver: order.receiver ?? adapter.ZERO_ADDRESS,
+    receiver: order.receiver ?? ZERO_ADDRESS,
     validTo: timestamp(order.validTo),
     appData: hashify(order.appData),
     buyTokenBalance: normalizeBuyTokenBalance(order.buyTokenBalance),

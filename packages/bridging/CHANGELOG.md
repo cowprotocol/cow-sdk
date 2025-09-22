@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.1.0...sdk-bridging-v0.2.0) (2025-09-22)
+
+
+### ✨ Features
+
+* **bridge:** support multi provider quote requests ([#518](https://github.com/cowprotocol/cow-sdk/issues/518)) ([36ed8f9](https://github.com/cowprotocol/cow-sdk/commit/36ed8f999d0b532b1a6e9c50c3152e3242dd333e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-contracts-ts bumped to 0.1.1
+    * @cowprotocol/sdk-cow-shed bumped to 0.1.1
+    * @cowprotocol/sdk-trading bumped to 0.1.1
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 0.1.1
+
 ## [0.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.3.3-beta.0...sdk-bridging-v0.1.0) (2025-09-17)
 
 
