@@ -22,10 +22,10 @@ export function validateCrossChainRequest(sellTokenChainId: SupportedChainId, bu
 }
 
 // Static helper function for creating provider timeout promises
-export function createProviderTimeoutPromise(timeoutMs: number, providerDappId: string): Promise<never> {
+export function createBridgeQuoteTimeoutPromise(timeoutMs: number, prefix: string): Promise<never> {
   return new Promise<never>((_, reject) => {
     setTimeout(() => {
-      reject(new BridgeProviderError(`Provider ${providerDappId} timeout after ${timeoutMs}ms`, {}))
+      reject(new BridgeProviderError(`${prefix} timeout after ${timeoutMs}ms`, {}))
     }, timeoutMs)
   })
 }
@@ -45,15 +45,6 @@ export function safeCallProgressiveCallback(
     // Don't let callback errors affect the quote process
     console.warn('Error in onQuoteResult callback:', callbackError)
   }
-}
-
-// Static helper function for creating global timeout promises
-export function createGlobalTimeoutPromise(timeout: number, config: BridgingSdkConfig): Promise<void> {
-  return new Promise<void>((_, reject) => {
-    setTimeout(() => {
-      reject(new BridgeProviderError(`getMultiQuotes timeout after ${timeout}ms`, { config }))
-    }, timeout)
-  })
 }
 
 /**
@@ -85,7 +76,10 @@ export async function executeProviderQuotes(
 ): Promise<void> {
   try {
     // Wait for either all promises to complete or timeout
-    await Promise.race([Promise.allSettled(promises), createGlobalTimeoutPromise(timeout, config)])
+    await Promise.race([
+      Promise.allSettled(promises),
+      createBridgeQuoteTimeoutPromise(timeout, `Multi-quote with ${config.providers.length}`),
+    ])
   } catch {
     // If timeout occurs, we still return whatever results we have
     console.warn('getMultiQuotes timeout occurred, returning partial results')
