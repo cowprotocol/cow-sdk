@@ -10,7 +10,7 @@ import {
 } from '../utils'
 import { getQuoteWithBridge } from '../getQuoteWithBridge'
 import { BridgeProviderError } from '../../errors'
-import { BestQuoteStrategy, BestQuoteRequest } from './QuoteStrategy'
+import { BestQuoteStrategy, MultiQuoteRequest } from './QuoteStrategy'
 
 const DEFAULT_TOTAL_TIMEOUT_MS = 40_000 // 40 seconds
 const DEFAULT_PROVIDER_TIMEOUT_MS = 20_000 // 20 seconds
@@ -21,7 +21,7 @@ const DEFAULT_PROVIDER_TIMEOUT_MS = 20_000 // 20 seconds
 export class BestQuoteStrategyImpl implements BestQuoteStrategy {
   readonly strategyName = 'BestQuoteStrategy'
 
-  async execute(request: BestQuoteRequest, config: BridgingSdkConfig): Promise<MultiQuoteResult | null> {
+  async execute(request: MultiQuoteRequest, config: BridgingSdkConfig): Promise<MultiQuoteResult | null> {
     const { quoteBridgeRequest, providerDappIds, advancedSettings, options } = request
     const { sellTokenChainId, buyTokenChainId } = quoteBridgeRequest
 

@@ -29,24 +29,8 @@ export interface SingleQuoteRequest {
 /**
  * Request for multi quote strategy
  */
-export interface MultiQuoteRequest {
-  quoteBridgeRequest: QuoteBridgeRequest
+export interface MultiQuoteRequest extends SingleQuoteRequest {
   providerDappIds?: string[]
-  advancedSettings?: SwapAdvancedSettings
-  options?: {
-    onQuoteResult?: (result: MultiQuoteResult) => void
-    totalTimeout?: number
-    providerTimeout?: number
-  }
-}
-
-/**
- * Request for best quote strategy
- */
-export interface BestQuoteRequest {
-  quoteBridgeRequest: QuoteBridgeRequest
-  providerDappIds?: string[]
-  advancedSettings?: SwapAdvancedSettings
   options?: {
     onQuoteResult?: (result: MultiQuoteResult) => void
     totalTimeout?: number
@@ -71,7 +55,7 @@ export interface MultiQuoteStrategy extends QuoteStrategy<MultiQuoteRequest, Mul
 /**
  * Strategy for getting the best quote from multiple providers
  */
-export interface BestQuoteStrategy extends QuoteStrategy<BestQuoteRequest, MultiQuoteResult | null> {
+export interface BestQuoteStrategy extends QuoteStrategy<MultiQuoteRequest, MultiQuoteResult | null> {
   strategyName: 'BestQuoteStrategy'
 }
 
