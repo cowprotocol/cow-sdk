@@ -22,7 +22,7 @@ import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { ALL_SUPPORTED_CHAINS, ChainInfo, SupportedChainId } from '@cowprotocol/sdk-config'
 import { AbstractProviderAdapter, enableLogging, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import {
-  createProviderTimeoutPromise,
+  createBridgeQuoteTimeoutPromise,
   executeProviderQuotes,
   fillTimeoutResults,
   isBetterQuote,
@@ -421,7 +421,7 @@ export class BridgingSdk {
             provider,
             bridgeHookSigner: advancedSettings?.quoteSigner,
           }),
-          createProviderTimeoutPromise(providerTimeout, provider.info.dappId),
+          createBridgeQuoteTimeoutPromise(providerTimeout, `Provider ${provider.info.dappId}`),
         ])
 
         const result: MultiQuoteResult = {

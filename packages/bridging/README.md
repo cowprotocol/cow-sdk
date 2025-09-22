@@ -165,7 +165,7 @@ const multiQuoteRequest: MultiQuoteRequest = {
     slippageBps: 100, // 1% slippage tolerance
   },
   options: {
-    timeout: 15000,        // 15 seconds total timeout
+    totalTimeout: 15000,        // 15 seconds total timeout
     providerTimeout: 8000, // 8 seconds per provider timeout
   }
 }
@@ -204,7 +204,7 @@ const multiQuoteRequest: MultiQuoteRequest = {
         console.log(`❌ Error from ${result.providerDappId}: ${result.error?.message}`)
       }
     },
-    timeout: 20000,       // 20 seconds total timeout
+    totalTimeout: 20000,       // 20 seconds total timeout
     providerTimeout: 5000 // 5 seconds per provider timeout
   }
 }
@@ -249,7 +249,7 @@ const fetchQuotes = async () => {
             }))
           }
         },
-        timeout: 30000,       // 30 seconds total timeout
+        totalTimeout: 30000,       // 30 seconds total timeout
         providerTimeout: 10000 // 10 seconds per provider timeout
       }
     })
@@ -284,7 +284,7 @@ const results = await sdk.bridging.getMultiQuotes({
   quoteBridgeRequest: parameters,
   options: {
     // Global timeout: Maximum time to wait for all providers to complete
-    timeout: 30000,        // 30 seconds (default)
+    totalTimeout: 30000,        // 30 seconds (default)
 
     // Individual provider timeout: Maximum time each provider has to respond
     providerTimeout: 15000, // 15 seconds (default)
@@ -299,7 +299,7 @@ const results = await sdk.bridging.getMultiQuotes({
 
 **How timeouts work:**
 - `providerTimeout`: Each provider has this amount of time to complete their quote request. If exceeded, that provider returns a timeout error.
-- `timeout`: The total time to wait for all providers. After this time, any remaining providers are marked as timed out.
+- `totalTimeout`: The total time to wait for all providers. After this time, any remaining providers are marked as timed out.
 - Providers that complete within their individual timeout but after the global timeout will still be included in the final results.
 
 ## Best Quote Selection
