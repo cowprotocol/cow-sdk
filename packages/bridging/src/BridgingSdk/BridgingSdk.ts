@@ -164,15 +164,22 @@ export class BridgingSdk {
 
     if (sellTokenChainId !== buyTokenChainId) {
       // Cross-chain swap
-      return getQuoteWithBridge({
+
+      const baseParams = {
         swapAndBridgeRequest: quoteBridgeRequest,
         advancedSettings,
         tradingSdk,
         provider: this.provider,
         bridgeHookSigner: advancedSettings?.quoteSigner,
-        intermediateTokensCache: this.intermediateTokensCache,
-        intermediateTokensTtl: this.cacheConfig.intermediateTokensTtl,
-      })
+      } as const
+      const params = this.cacheConfig.enabled
+        ? {
+            ...baseParams,
+            intermediateTokensCache: this.intermediateTokensCache,
+            intermediateTokensTtl: this.cacheConfig.intermediateTokensTtl,
+          }
+        : baseParams
+      return getQuoteWithBridge(params)
     } else {
       // Single-chain swap
       return getQuoteWithoutBridge({
@@ -220,14 +227,24 @@ export class BridgingSdk {
 
     // Execute quotes in parallel
     const quotePromises = providersToQuery.map(async (provider): Promise<MultiQuoteResult> => {
+      const base = {
+        swapAndBridgeRequest: quoteBridgeRequest,
+        advancedSettings,
+        tradingSdk: this.config.tradingSdk,
+        provider,
+        bridgeHookSigner: advancedSettings?.quoteSigner,
+      } as const
+
+      const params = this.cacheConfig.enabled
+        ? {
+            ...base,
+            intermediateTokensCache: this.intermediateTokensCache,
+            intermediateTokensTtl: this.cacheConfig.intermediateTokensTtl,
+          }
+        : base
+
       try {
-        const quote = await getQuoteWithBridge({
-          swapAndBridgeRequest: quoteBridgeRequest,
-          advancedSettings,
-          tradingSdk: this.config.tradingSdk,
-          provider,
-          bridgeHookSigner: advancedSettings?.quoteSigner,
-        })
+        const quote = await getQuoteWithBridge(params)
 
         return {
           providerDappId: provider.info.dappId,
