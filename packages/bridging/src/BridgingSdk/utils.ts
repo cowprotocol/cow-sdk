@@ -1,6 +1,12 @@
 import { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 import { BridgeProviderError } from '../errors'
-import { BridgeProvider, BridgeQuoteResult, MultiQuoteProgressCallback, MultiQuoteResult, BestQuoteProgressCallback } from '../types'
+import {
+  BridgeProvider,
+  BridgeQuoteResult,
+  MultiQuoteProgressCallback,
+  MultiQuoteResult,
+  BestQuoteProgressCallback,
+} from '../types'
 import { BridgingSdkConfig } from './BridgingSdk'
 
 /**
@@ -125,4 +131,24 @@ export function safeCallBestQuoteCallback(
     // Don't let callback errors affect the quote process
     console.warn('Error in onQuoteResult callback:', callbackError)
   }
+}
+
+export function resolveProvidersToQuery(
+  providerDappIds: string[] | undefined,
+  providers: BridgeProvider<BridgeQuoteResult>[],
+): BridgeProvider<BridgeQuoteResult>[] {
+  if (!providerDappIds) {
+    return providers
+  }
+
+  return providerDappIds.map((dappId) => {
+    const provider = providers.find((p) => p.info.dappId === dappId)
+    if (!provider) {
+      throw new BridgeProviderError(
+        `Provider with dappId '${dappId}' not found. Available providers: ${providers.map((p) => p.info.dappId).join(', ')}`,
+        { providers },
+      )
+    }
+    return provider
+  })
 }
