@@ -41,6 +41,22 @@ export const COW_SHED_712_TYPES = {
   ],
 }
 
+// File-level cache maps shared across all CowShedHooks instances
+const accountCodeCache = new Map<string, boolean>()
+const eip1271Cache = new Map<string, boolean>()
+
+export function clearAllCowShedHooksCaches() {
+  accountCodeCache.clear()
+  eip1271Cache.clear()
+}
+
+/**
+ * Creates a cache key for EIP1271 signature validation
+ */
+function createEip1271CacheKey(account: string, hash: string, signature: string): string {
+  return `${account.toLowerCase()}:${hash}:${signature}`
+}
+
 export class CowShedHooks {
   constructor(
     private chainId: SupportedChainId,
@@ -128,11 +144,18 @@ export class CowShedHooks {
     typedDataContext: TypedDataContext,
   ): Promise<boolean> {
     const adapter = getGlobalAdapter()
-
     const { domain, types, message } = typedDataContext
-
     const hash = adapter.utils.hashTypedData(domain, types, message)
 
+    // Create cache key and check cache first
+    const cacheKey = createEip1271CacheKey(account, hash, signature)
+    const cachedResult = eip1271Cache.get(cacheKey)
+
+    if (typeof cachedResult !== 'undefined') {
+      return cachedResult
+    }
+
+    // Not in cache, verify with RPC
     try {
       const result = await adapter.readContract({
         address: account,
@@ -141,7 +164,12 @@ export class CowShedHooks {
         args: [hash, signature],
       })
 
-      return result === EIP1271_MAGICVALUE
+      const isValid = result === EIP1271_MAGICVALUE
+
+      // Cache the result
+      eip1271Cache.set(cacheKey, isValid)
+
+      return isValid
     } catch (error) {
       console.error('CoWShedHooks.verifyEip1271Signature', error)
 
@@ -180,10 +208,20 @@ export class CowShedHooks {
   }
 
   private async doesAccountHaveCode(account: string): Promise<boolean> {
+    const cachedResult = accountCodeCache.get(account.toLowerCase())
+
+    if (typeof cachedResult !== 'undefined') {
+      return cachedResult
+    }
+
+    // Not in cache, fetch from RPC
     const adapter = getGlobalAdapter()
-
     const userAccountCode = await adapter.getCode(account)
+    const hasCode = !!userAccountCode && userAccountCode !== '0x'
 
-    return !!userAccountCode && userAccountCode !== '0x'
+    // Cache the result
+    accountCodeCache.set(account.toLowerCase(), hasCode)
+
+    return hasCode
   }
 }
