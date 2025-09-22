@@ -1,6 +1,6 @@
 import { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 import { BridgeProviderError } from '../errors'
-import { BridgeProvider, BridgeQuoteResult, MultiQuoteProgressCallback, MultiQuoteResult } from '../types'
+import { BridgeProvider, BridgeQuoteResult, MultiQuoteProgressCallback, MultiQuoteResult, BestQuoteProgressCallback } from '../types'
 import { BridgingSdkConfig } from './BridgingSdk'
 
 /**
@@ -9,7 +9,7 @@ import { BridgingSdkConfig } from './BridgingSdk'
 export function validateCrossChainRequest(sellTokenChainId: SupportedChainId, buyTokenChainId: TargetChainId): void {
   if (sellTokenChainId === buyTokenChainId) {
     throw new BridgeProviderError(
-      'getMultiQuotes() is only for cross-chain bridging. For single-chain swaps, use getQuote() instead.',
+      'getMultiQuotes() and getBestQuote() are only for cross-chain bridging. For single-chain swaps, use getQuote() instead.',
       { sellTokenChainId, buyTokenChainId },
     )
   }
@@ -83,5 +83,46 @@ export async function executeProviderQuotes(
   } catch {
     // If timeout occurs, we still return whatever results we have
     console.warn('getMultiQuotes timeout occurred, returning partial results')
+  }
+}
+
+/**
+ * Compares two quotes to determine which has a higher buyAmount after slippage
+ * Returns true if quote1 is better than quote2, false otherwise
+ */
+export function isBetterQuote(quote1: MultiQuoteResult, quote2: MultiQuoteResult | null): boolean {
+  // If we don't have a current best quote, any successful quote is better
+  if (!quote2 || !quote2.quote) {
+    return !!quote1.quote
+  }
+
+  // If the new quote failed but we have a successful current best, it's not better
+  if (!quote1.quote) {
+    return false
+  }
+
+  // Both quotes are successful, compare buyAmount after slippage
+  const quote1BuyAmount = quote1.quote.bridge.amountsAndCosts.afterSlippage.buyAmount
+  const quote2BuyAmount = quote2.quote.bridge.amountsAndCosts.afterSlippage.buyAmount
+
+  return quote1BuyAmount > quote2BuyAmount
+}
+
+/**
+ * Safely calls the best quote progress callback
+ */
+export function safeCallBestQuoteCallback(
+  onQuoteResult: BestQuoteProgressCallback | undefined,
+  result: MultiQuoteResult,
+): void {
+  if (!onQuoteResult) {
+    return
+  }
+
+  try {
+    onQuoteResult(result)
+  } catch (callbackError) {
+    // Don't let callback errors affect the quote process
+    console.warn('Error in onQuoteResult callback:', callbackError)
   }
 }

@@ -353,7 +353,7 @@ adapterNames.forEach((adapterName) => {
             quoteBridgeRequest: sameChainRequest,
           }),
         ).rejects.toThrow(
-          'getMultiQuotes() is only for cross-chain bridging. For single-chain swaps, use getQuote() instead.',
+          'getMultiQuotes() and getBestQuote() are only for cross-chain bridging. For single-chain swaps, use getQuote() instead.',
         )
       })
 
@@ -765,6 +765,256 @@ adapterNames.forEach((adapterName) => {
         expect(mediumResult?.quote).toBeNull()
         expect(mediumResult?.error).toBeTruthy()
         expect(mediumResult?.error?.message).toContain('Provider mediumProvider timeout after 100ms')
+      })
+    })
+
+    describe('getBestQuote', () => {
+      let mockProvider2: MockBridgeProvider
+      let mockProvider3: MockBridgeProvider
+
+      beforeEach(async () => {
+        mockProvider2 = new MockBridgeProvider()
+        mockProvider2.info.dappId = 'cow-sdk://bridging/providers/mock2'
+        mockProvider2.info.name = 'Mock Bridge Provider 2'
+        // Override mockProvider to have a medium quote (50 ETH)
+        mockProvider.getQuote = jest.fn().mockResolvedValue({
+          ...bridgeQuoteResult,
+          amountsAndCosts: {
+            ...bridgeQuoteResult.amountsAndCosts,
+            afterSlippage: {
+              ...bridgeQuoteResult.amountsAndCosts.afterSlippage,
+              buyAmount: BigInt('50000000000000000000'), // 50 ETH - middle
+            },
+          },
+        })
+
+        mockProvider2.getQuote = jest.fn().mockResolvedValue({
+          ...bridgeQuoteResult,
+          amountsAndCosts: {
+            ...bridgeQuoteResult.amountsAndCosts,
+            afterSlippage: {
+              ...bridgeQuoteResult.amountsAndCosts.afterSlippage,
+              buyAmount: BigInt('40000000000000000000'), // 40 ETH - lower than mockProvider
+            },
+          },
+        })
+        mockProvider2.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+        mockProvider2.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
+
+        mockProvider3 = new MockBridgeProvider()
+        mockProvider3.info.dappId = 'cow-sdk://bridging/providers/mock3'
+        mockProvider3.info.name = 'Mock Bridge Provider 3'
+        mockProvider3.getQuote = jest.fn().mockResolvedValue({
+          ...bridgeQuoteResult,
+          amountsAndCosts: {
+            ...bridgeQuoteResult.amountsAndCosts,
+            afterSlippage: {
+              ...bridgeQuoteResult.amountsAndCosts.afterSlippage,
+              buyAmount: BigInt('60000000000000000000'), // 60 ETH - higher than mockProvider
+            },
+          },
+        })
+        mockProvider3.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+        mockProvider3.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
+
+        bridgingSdk = new BridgingSdk({
+          providers: [mockProvider, mockProvider2, mockProvider3],
+        })
+      })
+
+      it('should return the best quote from all providers', async () => {
+        const result = await bridgingSdk.getBestQuote({
+          quoteBridgeRequest,
+        })
+
+        expect(result).toBeTruthy()
+        expect(result?.providerDappId).toBe('cow-sdk://bridging/providers/mock3')
+        expect(result?.quote).toBeTruthy()
+        expect(result?.error).toBeUndefined()
+
+        // Verify it's actually the best quote (60 ETH)
+        expect(result?.quote?.bridge.amountsAndCosts.afterSlippage.buyAmount).toBe(BigInt('60000000000000000000'))
+      })
+
+      it('should return specific provider quote when only that provider is requested', async () => {
+        const result = await bridgingSdk.getBestQuote({
+          quoteBridgeRequest,
+          providerDappIds: ['mockProvider'],
+        })
+
+        expect(result).toBeTruthy()
+        expect(result?.providerDappId).toBe('mockProvider')
+        expect(result?.quote).toBeTruthy()
+
+        // Verify only the requested provider was called
+        expect(mockProvider.getQuote).toHaveBeenCalled()
+        expect(mockProvider2.getQuote).not.toHaveBeenCalled()
+        expect(mockProvider3.getQuote).not.toHaveBeenCalled()
+      })
+
+      it('should call onQuoteResult callback only when better quotes are found', async () => {
+        const progressiveResults: MultiQuoteResult[] = []
+        const onQuoteResult = jest.fn((result: MultiQuoteResult) => {
+          progressiveResults.push(result)
+        })
+
+        const result = await bridgingSdk.getBestQuote({
+          quoteBridgeRequest,
+          options: { onQuoteResult },
+        })
+
+        // Should have received callbacks for better quotes only
+        // At minimum, we should get the best quote callback
+        expect(onQuoteResult).toHaveBeenCalled()
+        expect(progressiveResults.length).toBeGreaterThan(0)
+
+        // Final result should be the best available quote (mock3 with 60 ETH)
+        expect(result?.providerDappId).toBe('cow-sdk://bridging/providers/mock3')
+        expect(result?.quote?.bridge.amountsAndCosts.afterSlippage.buyAmount).toBe(BigInt('60000000000000000000'))
+
+        // Verify all progressive results were improvements
+        let lastBuyAmount = BigInt(0)
+        for (const progressiveResult of progressiveResults) {
+          if (progressiveResult.quote) {
+            const currentBuyAmount = progressiveResult.quote.bridge.amountsAndCosts.afterSlippage.buyAmount
+            expect(currentBuyAmount).toBeGreaterThan(lastBuyAmount)
+            lastBuyAmount = currentBuyAmount
+          }
+        }
+      })
+
+      it('should return first provider error when all providers fail', async () => {
+        const error1 = new Error('Provider 1 failed')
+        const error2 = new Error('Provider 2 failed')
+        const error3 = new Error('Provider 3 failed')
+
+        mockProvider.getQuote = jest.fn().mockRejectedValue(error1)
+        mockProvider2.getQuote = jest.fn().mockRejectedValue(error2)
+        mockProvider3.getQuote = jest.fn().mockRejectedValue(error3)
+
+        const result = await bridgingSdk.getBestQuote({
+          quoteBridgeRequest,
+        })
+
+        expect(result).toBeTruthy()
+        expect(result?.quote).toBeNull()
+        expect(result?.error).toBeTruthy()
+        // Should return first provider's error (order is not guaranteed due to async)
+        expect(['mockProvider', 'cow-sdk://bridging/providers/mock2', 'cow-sdk://bridging/providers/mock3'])
+          .toContain(result?.providerDappId)
+      })
+
+      it('should return best available quote even when some providers fail', async () => {
+        const error = new Error('Provider failed')
+        mockProvider.getQuote = jest.fn().mockRejectedValue(error) // Fails
+        mockProvider2.getQuote = jest.fn().mockRejectedValue(error) // Fails
+        // mockProvider3 succeeds with 1.1 ETH
+
+        const result = await bridgingSdk.getBestQuote({
+          quoteBridgeRequest,
+        })
+
+        expect(result).toBeTruthy()
+        expect(result?.providerDappId).toBe('cow-sdk://bridging/providers/mock3')
+        expect(result?.quote).toBeTruthy()
+      })
+
+      it('should throw error for same-chain requests', async () => {
+        const sameChainRequest = {
+          ...quoteBridgeRequest,
+          buyTokenChainId: quoteBridgeRequest.sellTokenChainId,
+        }
+
+        await expect(
+          bridgingSdk.getBestQuote({
+            quoteBridgeRequest: sameChainRequest,
+          }),
+        ).rejects.toThrow('getMultiQuotes() and getBestQuote() are only for cross-chain bridging')
+      })
+
+      it('should handle callback errors gracefully without affecting quote process', async () => {
+        const onQuoteResult = jest.fn(() => {
+          throw new Error('Callback error')
+        })
+
+        // Mock console.warn to capture the warning
+        const consoleSpy = jest.spyOn(console, 'warn').mockImplementation()
+
+        const result = await bridgingSdk.getBestQuote({
+          quoteBridgeRequest,
+          options: { onQuoteResult },
+        })
+
+        // Quote should still succeed despite callback error
+        expect(result).toBeTruthy()
+        expect(result?.quote).toBeTruthy()
+
+        // Should have logged callback error warning
+        expect(consoleSpy).toHaveBeenCalledWith('Error in onQuoteResult callback:', expect.any(Error))
+
+        consoleSpy.mockRestore()
+      })
+
+      it('should respect timeout options', async () => {
+        // Make one provider fast, others slow (will timeout)
+        mockProvider.getQuote = jest.fn().mockImplementation(async () => {
+          await new Promise((resolve) => setTimeout(resolve, 10)) // 10ms delay - fast
+          return {
+            ...bridgeQuoteResult,
+            amountsAndCosts: {
+              ...bridgeQuoteResult.amountsAndCosts,
+              afterSlippage: {
+                ...bridgeQuoteResult.amountsAndCosts.afterSlippage,
+                buyAmount: BigInt('50000000000000000000'), // 50 ETH
+              },
+            },
+          }
+        })
+
+        mockProvider2.getQuote = jest.fn().mockImplementation(async () => {
+          await new Promise((resolve) => setTimeout(resolve, 200)) // 200ms delay - slow
+          return {
+            ...bridgeQuoteResult,
+            amountsAndCosts: {
+              ...bridgeQuoteResult.amountsAndCosts,
+              afterSlippage: {
+                ...bridgeQuoteResult.amountsAndCosts.afterSlippage,
+                buyAmount: BigInt('40000000000000000000'), // 40 ETH
+              },
+            },
+          }
+        })
+
+        mockProvider3.getQuote = jest.fn().mockImplementation(async () => {
+          await new Promise((resolve) => setTimeout(resolve, 200)) // 200ms delay - slow
+          return {
+            ...bridgeQuoteResult,
+            amountsAndCosts: {
+              ...bridgeQuoteResult.amountsAndCosts,
+              afterSlippage: {
+                ...bridgeQuoteResult.amountsAndCosts.afterSlippage,
+                buyAmount: BigInt('60000000000000000000'), // 60 ETH
+              },
+            },
+          }
+        })
+
+        const startTime = Date.now()
+        const result = await bridgingSdk.getBestQuote({
+          quoteBridgeRequest,
+          options: {
+            totalTimeout: 100,
+            providerTimeout: 50,
+          },
+        })
+        const elapsed = Date.now() - startTime
+
+        // Should complete around timeout time or earlier
+        expect(elapsed).toBeLessThan(150) // Should not wait for slow providers
+
+        // Should still return the quote from the fast provider
+        expect(result).toBeTruthy()
+        expect(result?.providerDappId).toBe('mockProvider')
       })
     })
   })
