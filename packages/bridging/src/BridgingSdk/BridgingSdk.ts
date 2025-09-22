@@ -374,7 +374,7 @@ export class BridgingSdk {
             provider,
             bridgeHookSigner: advancedSettings?.quoteSigner,
           }),
-          createProviderTimeoutPromise(providerTimeout, provider.info.dappId),
+          createBridgeQuoteTimeoutPromise(providerTimeout, provider.info.dappId),
         ])
 
         const result: MultiQuoteResult = {
