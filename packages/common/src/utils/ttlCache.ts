@@ -103,7 +103,15 @@ class LocalStorageWrapper implements CacheStorage {
 export class TTLCache<T> {
   private storage: CacheStorage
   private keyPrefix: string
-  private isMemoryStorage: boolean
+  private _isMemoryStorage: boolean = false
+
+  get isMemoryStorage(): boolean {
+    return this._isMemoryStorage && this.storage instanceof MemoryStorage
+  }
+
+  set isMemoryStorage(value: boolean) {
+    this._isMemoryStorage = value
+  }
 
   constructor(keyPrefix = 'ttl-cache', useLocalStorage = true) {
     this.keyPrefix = keyPrefix
@@ -115,6 +123,7 @@ export class TTLCache<T> {
     // Check if localStorage is actually available even when requested
     if (useLocalStorage && typeof localStorage === 'undefined') {
       this.isMemoryStorage = true
+      this.storage = new MemoryStorage()
     }
   }
 
@@ -178,8 +187,8 @@ export class TTLCache<T> {
    * Clear all cache entries with this cache's prefix
    */
   clear(): void {
-    if (this.isMemoryStorage && this.storage instanceof MemoryStorage) {
-      this.storage.clear(this.keyPrefix + ':')
+    if (this.isMemoryStorage) {
+      ;(this.storage as MemoryStorage).clear(this.keyPrefix + ':')
       return
     }
 
@@ -204,8 +213,8 @@ export class TTLCache<T> {
    * Get the number of cache entries (approximate for localStorage)
    */
   size(): number {
-    if (this.isMemoryStorage && this.storage instanceof MemoryStorage) {
-      return this.storage.size(this.keyPrefix + ':')
+    if (this.isMemoryStorage) {
+      return (this.storage as MemoryStorage).size(this.keyPrefix + ':')
     }
 
     if (typeof localStorage !== 'undefined') {

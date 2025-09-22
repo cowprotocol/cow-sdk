@@ -17,8 +17,7 @@ import { SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { ALL_SUPPORTED_CHAINS, ChainInfo, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import { AbstractProviderAdapter, enableLogging, setGlobalAdapter, TTLCache } from '@cowprotocol/sdk-common'
-import { BridgingSdkCacheConfig, BridgingSdkOptions, GetOrderParams } from './interfaces'
-import { BridgingSdkConfig } from './types'
+import { BridgingSdkCacheConfig, BridgingSdkConfig, BridgingSdkOptions, GetOrderParams } from './types'
 
 // Default cache configuration
 const DEFAULT_CACHE_CONFIG: BridgingSdkCacheConfig = {
@@ -112,7 +111,7 @@ export class BridgingSdk {
   async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
     const providerId = this.provider.info.dappId
 
-    const cacheKey = `${providerId}-${params.buyChainId}-${params.sellChainId}-${params.sellTokenAddress}`
+    const cacheKey = `${providerId}-${params.buyChainId}-${params.sellChainId}-${params.sellTokenAddress?.toLowerCase()}`
 
     if (this.cacheConfig.enabled && this.buyTokensCache.get(cacheKey)) {
       return this.buyTokensCache.get(cacheKey) as GetProviderBuyTokens

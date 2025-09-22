@@ -239,14 +239,14 @@ async function getBaseBridgeQuoteRequest<T extends BridgeQuoteResult>(params: {
   const { provider, swapAndBridgeRequest: quoteBridgeRequest, intermediateTokensCache, intermediateTokensTtl } = params
 
   let intermediateTokens: TokenInfo[] = []
-  const cacheKey = `${provider.info.dappId}-${quoteBridgeRequest.sellTokenChainId}-${quoteBridgeRequest.buyTokenChainId}-${quoteBridgeRequest.buyTokenAddress}`
+  const cacheKey = `${provider.info.dappId}-${quoteBridgeRequest.sellTokenChainId}-${quoteBridgeRequest.buyTokenChainId}-${quoteBridgeRequest.buyTokenAddress?.toLowerCase()}`
 
   if (intermediateTokensCache && intermediateTokensCache.get(cacheKey)) {
     intermediateTokens = intermediateTokensCache.get(cacheKey) as TokenInfo[]
   } else {
     intermediateTokens = await provider.getIntermediateTokens(quoteBridgeRequest)
 
-    if (intermediateTokensCache && intermediateTokensTtl && intermediateTokens.length > 0) {
+    if (intermediateTokensCache && intermediateTokensTtl) {
       intermediateTokensCache.set(cacheKey, intermediateTokens, intermediateTokensTtl)
     }
   }
