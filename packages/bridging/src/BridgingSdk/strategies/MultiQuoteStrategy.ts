@@ -1,7 +1,7 @@
 import { MultiQuoteResult, ProviderQuoteContext } from '../../types'
 import { BridgingSdkConfig } from '../BridgingSdk'
 import {
-  createProviderTimeoutPromise,
+  createBridgeQuoteTimeoutPromise,
   executeProviderQuotes,
   fillTimeoutResults,
   isBetterQuote,
@@ -95,7 +95,7 @@ export class MultiQuoteStrategyImpl implements MultiQuoteStrategy {
             provider,
             bridgeHookSigner: advancedSettings?.quoteSigner,
           }),
-          createProviderTimeoutPromise(providerTimeout, provider.info.dappId),
+          createBridgeQuoteTimeoutPromise(providerTimeout, `Provider ${provider.info.dappId}`),
         ])
 
         const result: MultiQuoteResult = {
