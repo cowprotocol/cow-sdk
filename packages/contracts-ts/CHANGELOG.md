@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.1.0...sdk-contracts-ts-v0.1.1) (2025-09-22)
+
+
+### 🐛 Bug Fixes
+
+* avoid using adapter in normalizeOrder ([#523](https://github.com/cowprotocol/cow-sdk/issues/523)) ([7c196c3](https://github.com/cowprotocol/cow-sdk/commit/7c196c39a6694924cbec09f159dd237da39d73a2))
+
 ## [0.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v2.3.0-beta.0...sdk-contracts-ts-v0.1.0) (2025-09-17)
 
 
