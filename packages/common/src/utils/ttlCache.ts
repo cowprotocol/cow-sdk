@@ -100,9 +100,14 @@ class LocalStorageWrapper implements CacheStorage {
  * TTL Cache with localStorage persistence
  * Automatically handles serialization/deserialization and TTL expiration
  */
+
+const DEFAULT_KEY_PREFIX = 'ttl-cache'
+const DEFAULT_TTL = 2 * 60 * 1000 // 2 minutes
+
 export class TTLCache<T> {
   private storage: CacheStorage
   private keyPrefix: string
+  private ttl: number
   private _isMemoryStorage: boolean = false
 
   get isMemoryStorage(): boolean {
@@ -113,8 +118,9 @@ export class TTLCache<T> {
     this._isMemoryStorage = value
   }
 
-  constructor(keyPrefix = 'ttl-cache', useLocalStorage = true) {
+  constructor(keyPrefix = DEFAULT_KEY_PREFIX, useLocalStorage = true, ttl = DEFAULT_TTL) {
     this.keyPrefix = keyPrefix
+    this.ttl = ttl
     this.storage = useLocalStorage ? new LocalStorageWrapper() : new MemoryStorage()
 
     // Detect if we're using memory storage (fallback scenario)
@@ -130,11 +136,11 @@ export class TTLCache<T> {
   /**
    * Set a value in the cache with TTL
    */
-  set(key: string, value: T, ttl: number): void {
+  set(key: string, value: T): void {
     const entry: CacheEntry<T> = {
       value,
       timestamp: Date.now(),
-      ttl,
+      ttl: this.ttl,
     }
 
     const storageKey = this.getStorageKey(key)

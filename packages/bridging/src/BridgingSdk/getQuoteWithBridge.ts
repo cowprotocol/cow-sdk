@@ -25,6 +25,7 @@ import { BridgeResultContext, GetBridgeResultResult, GetQuoteWithBridgeParams } 
 import { getBridgeSignedHook } from './getBridgeSignedHook'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from '../const'
 import { getHookMockForCostEstimation } from '../hooks/utils'
+import { getCacheKey } from './helpers'
 
 export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   params: GetQuoteWithBridgeParams<T>,
@@ -239,7 +240,13 @@ async function getBaseBridgeQuoteRequest<T extends BridgeQuoteResult>(params: {
   const { provider, swapAndBridgeRequest: quoteBridgeRequest, intermediateTokensCache, intermediateTokensTtl } = params
 
   let intermediateTokens: TokenInfo[] = []
-  const cacheKey = `${provider.info.dappId}-${quoteBridgeRequest.sellTokenChainId}-${quoteBridgeRequest.buyTokenChainId}-${quoteBridgeRequest.buyTokenAddress?.toLowerCase()}`
+
+  const cacheKey = getCacheKey({
+    id: provider.info.dappId,
+    buyChainId: quoteBridgeRequest.buyTokenChainId.toString(),
+    sellChainId: quoteBridgeRequest.sellTokenChainId.toString(),
+    tokenAddress: quoteBridgeRequest.buyTokenAddress,
+  })
 
   if (intermediateTokensCache && intermediateTokensCache.get(cacheKey)) {
     intermediateTokens = intermediateTokensCache.get(cacheKey) as TokenInfo[]
@@ -247,7 +254,7 @@ async function getBaseBridgeQuoteRequest<T extends BridgeQuoteResult>(params: {
     intermediateTokens = await provider.getIntermediateTokens(quoteBridgeRequest)
 
     if (intermediateTokensCache && intermediateTokensTtl) {
-      intermediateTokensCache.set(cacheKey, intermediateTokens, intermediateTokensTtl)
+      intermediateTokensCache.set(cacheKey, intermediateTokens)
     }
   }
 

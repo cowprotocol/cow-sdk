@@ -20,6 +20,7 @@ import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { ALL_SUPPORTED_CHAINS, ChainInfo, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import { AbstractProviderAdapter, enableLogging, setGlobalAdapter, TTLCache } from '@cowprotocol/sdk-common'
 import { BridgingSdkCacheConfig, BridgingSdkConfig, BridgingSdkOptions, GetOrderParams } from './types'
+import { getCacheKey } from './helpers'
 
 // Default cache configuration
 const DEFAULT_CACHE_CONFIG: BridgingSdkCacheConfig = {
@@ -70,8 +71,16 @@ export class BridgingSdk {
     this.cacheConfig = { ...DEFAULT_CACHE_CONFIG, ...cacheConfig }
 
     // Initialize cache instances with localStorage persistence
-    this.intermediateTokensCache = new TTLCache<TokenInfo[]>('bridging-intermediate-tokens', this.cacheConfig.enabled)
-    this.buyTokensCache = new TTLCache<GetProviderBuyTokens>('bridging-buy-tokens', this.cacheConfig.enabled)
+    this.intermediateTokensCache = new TTLCache<TokenInfo[]>(
+      'bridging-intermediate-tokens',
+      this.cacheConfig.enabled,
+      this.cacheConfig.intermediateTokensTtl,
+    )
+    this.buyTokensCache = new TTLCache<GetProviderBuyTokens>(
+      'bridging-buy-tokens',
+      this.cacheConfig.enabled,
+      this.cacheConfig.buyTokensTtl,
+    )
   }
 
   private get provider(): BridgeProvider<BridgeQuoteResult> {
@@ -113,7 +122,12 @@ export class BridgingSdk {
   async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
     const providerId = this.provider.info.dappId
 
-    const cacheKey = `${providerId}-${params.buyChainId}-${params.sellChainId}-${params.sellTokenAddress?.toLowerCase()}`
+    const cacheKey = getCacheKey({
+      id: providerId,
+      buyChainId: params.buyChainId.toString(),
+      sellChainId: params.sellChainId?.toString(),
+      tokenAddress: params.sellTokenAddress,
+    })
 
     if (this.cacheConfig.enabled && this.buyTokensCache.get(cacheKey)) {
       return this.buyTokensCache.get(cacheKey) as GetProviderBuyTokens
@@ -121,7 +135,7 @@ export class BridgingSdk {
 
     const result = await this.provider.getBuyTokens(params)
     if (this.cacheConfig.enabled) {
-      this.buyTokensCache.set(cacheKey, result, this.cacheConfig.buyTokensTtl)
+      this.buyTokensCache.set(cacheKey, result)
     }
     return result
   }
