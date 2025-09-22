@@ -279,7 +279,7 @@ adapterNames.forEach((adapterName) => {
         expect(results[2]?.providerDappId).toBe('cow-sdk://bridging/providers/mock3')
 
         // All should be successful
-        results.forEach(result => {
+        results.forEach((result) => {
           expect(result.quote).toBeTruthy()
           expect(result.error).toBeUndefined()
         })
@@ -301,7 +301,7 @@ adapterNames.forEach((adapterName) => {
         expect(results[1]?.providerDappId).toBe('cow-sdk://bridging/providers/mock3')
 
         // All should be successful
-        results.forEach(result => {
+        results.forEach((result) => {
           expect(result.quote).toBeTruthy()
           expect(result.error).toBeUndefined()
         })
@@ -348,9 +348,9 @@ adapterNames.forEach((adapterName) => {
         await expect(
           bridgingSdk.getMultiQuotes({
             quoteBridgeRequest: sameChainRequest,
-          })
+          }),
         ).rejects.toThrow(
-          'getMultiQuotes() is only for cross-chain bridging. For single-chain swaps, use getQuote() instead.'
+          'getMultiQuotes() is only for cross-chain bridging. For single-chain swaps, use getQuote() instead.',
         )
       })
 
@@ -359,16 +359,18 @@ adapterNames.forEach((adapterName) => {
           bridgingSdk.getMultiQuotes({
             quoteBridgeRequest,
             providerDappIds: ['unknown-provider'],
-          })
+          }),
         ).rejects.toThrow(
-          "Provider with dappId 'unknown-provider' not found. Available providers: mockProvider, cow-sdk://bridging/providers/mock2, cow-sdk://bridging/providers/mock3"
+          "Provider with dappId 'unknown-provider' not found. Available providers: mockProvider, cow-sdk://bridging/providers/mock2, cow-sdk://bridging/providers/mock3",
         )
       })
 
       it('should pass advanced settings to bridge quotes', async () => {
+        const validToMock = 1758524284
+
         const advancedSettings: SwapAdvancedSettings = {
           quoteRequest: {
-            validTo: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
+            validTo: validToMock,
           },
         }
 
@@ -382,9 +384,9 @@ adapterNames.forEach((adapterName) => {
           expect.anything(),
           expect.objectContaining({
             quoteRequest: expect.objectContaining({
-              validTo: expect.any(Number),
+              validTo: validToMock,
             }),
-          })
+          }),
         )
       })
 
@@ -394,13 +396,13 @@ adapterNames.forEach((adapterName) => {
 
         mockProvider.getQuote = jest.fn().mockImplementation(async () => {
           provider1StartTime = Date.now()
-          await new Promise(resolve => setTimeout(resolve, 100)) // 100ms delay
+          await new Promise((resolve) => setTimeout(resolve, 100)) // 100ms delay
           return bridgeQuoteResult
         })
 
         mockProvider2.getQuote = jest.fn().mockImplementation(async () => {
           provider2StartTime = Date.now()
-          await new Promise(resolve => setTimeout(resolve, 100)) // 100ms delay
+          await new Promise((resolve) => setTimeout(resolve, 100)) // 100ms delay
           return bridgeQuoteResult
         })
 
