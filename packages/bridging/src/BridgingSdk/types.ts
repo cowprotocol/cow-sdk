@@ -1,5 +1,5 @@
-import { QuoteResults, SwapAdvancedSettings, TradingAppDataInfo, TradingSdk } from '@cowprotocol/sdk-trading'
-import {
+import type { QuoteResults, SwapAdvancedSettings, TradingAppDataInfo, TradingSdk } from '@cowprotocol/sdk-trading'
+import type {
   BridgeHook,
   BridgeProvider,
   BridgeQuoteResult,
@@ -7,7 +7,8 @@ import {
   QuoteBridgeRequest,
   QuoteBridgeRequestWithoutAmount,
 } from '../types'
-import { SignerLike } from '@cowprotocol/sdk-common'
+import type { SignerLike } from '@cowprotocol/sdk-common'
+import type { CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
 
 export type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
   /**
@@ -53,4 +54,23 @@ export interface BridgeResultContext<T extends BridgeQuoteResult = BridgeQuoteRe
   hookGasLimit: number
   validToOverride?: number
   appDataOverride?: SwapAdvancedSettings['appData']
+}
+
+/**
+ * Parameters for the `getOrder` method.
+ */
+export interface GetOrderParams {
+  /**
+   * Id of a network where order was settled
+   */
+  chainId: SupportedChainId
+  /**
+   * The unique identifier of the order.
+   */
+  orderId: string
+
+  /**
+   * The environment of the order
+   */
+  env?: CowEnv
 }

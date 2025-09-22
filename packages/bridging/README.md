@@ -149,6 +149,159 @@ if (confirm(`You will get at least: ${buyAmount}, ok?`)) {
 }
 ```
 
+## Multi-Provider Quote Comparison
+
+The `getMultiQuotes()` method allows you to get quotes from multiple bridge providers simultaneously, with support for progressive results as each provider responds.
+
+### Basic Multi-Quote Usage
+
+```typescript
+import { MultiQuoteRequest } from '@cowprotocol/sdk-bridging'
+
+const multiQuoteRequest: MultiQuoteRequest = {
+  quoteBridgeRequest: parameters, // Same parameters as above
+  providerDappIds: ['provider1', 'provider2'], // Optional: specify which providers to query
+  advancedSettings: {
+    slippageBps: 100, // 1% slippage tolerance
+  },
+  options: {
+    timeout: 15000,        // 15 seconds total timeout
+    providerTimeout: 8000, // 8 seconds per provider timeout
+  }
+}
+
+// Get quotes from all providers
+const results = await sdk.bridging.getMultiQuotes(multiQuoteRequest)
+
+results.forEach((result) => {
+  if (result.quote) {
+    console.log(`Quote from ${result.providerDappId}:`, result.quote)
+  } else {
+    console.log(`Error from ${result.providerDappId}:`, result.error?.message)
+  }
+})
+```
+
+### Progressive Quote Results
+
+For better user experience, you can receive quotes progressively as each provider responds:
+
+```typescript
+const progressiveResults: MultiQuoteResult[] = []
+
+const multiQuoteRequest: MultiQuoteRequest = {
+  quoteBridgeRequest: parameters,
+  options: {
+    // Receive quotes as they arrive
+    onQuoteResult: (result) => {
+      progressiveResults.push(result)
+
+      if (result.quote) {
+        console.log(`✅ Quote received from ${result.providerDappId}`)
+        // Update UI immediately with the new quote
+        displayQuoteInUI(result)
+      } else {
+        console.log(`❌ Error from ${result.providerDappId}: ${result.error?.message}`)
+      }
+    },
+    timeout: 20000,       // 20 seconds total timeout
+    providerTimeout: 5000 // 5 seconds per provider timeout
+  }
+}
+
+// This will return all results once completed (or timed out)
+const finalResults = await sdk.bridging.getMultiQuotes(multiQuoteRequest)
+
+console.log(`Received ${finalResults.filter(r => r.quote).length} successful quotes out of ${finalResults.length} providers`)
+```
+
+### Advanced Multi-Quote Example
+
+```typescript
+// Example with React state management
+const [quotes, setQuotes] = useState<MultiQuoteResult[]>([])
+const [isLoading, setIsLoading] = useState(false)
+
+const fetchQuotes = async () => {
+  setIsLoading(true)
+  setQuotes([])
+
+  try {
+    const results = await sdk.bridging.getMultiQuotes({
+      quoteBridgeRequest: parameters,
+      options: {
+        onQuoteResult: (result) => {
+          // Add quote to state as it arrives
+          setQuotes(prev => [...prev, result])
+
+          if (result.quote) {
+            // Optional: Auto-select best quote
+            if (isBestQuote(result)) {
+              selectQuote(result)
+            }
+          } else {
+            // Handle errors
+            console.error(`Provider ${result.providerDappId} failed:`, result.error?.message)
+            // Update UI to show provider is unavailable
+            setProviderStatus(prev => ({
+              ...prev,
+              [result.providerDappId]: 'error'
+            }))
+          }
+        },
+        timeout: 30000,       // 30 seconds total timeout
+        providerTimeout: 10000 // 10 seconds per provider timeout
+      }
+    })
+
+    console.log('All quotes completed:', results)
+  } catch (error) {
+    console.error('Multi-quote failed:', error)
+  } finally {
+    setIsLoading(false)
+  }
+}
+
+// Helper function to determine best quote
+const isBestQuote = (result: MultiQuoteResult): boolean => {
+  if (!result.quote) return false
+
+  const currentBest = quotes.find(q => q.quote)
+  if (!currentBest?.quote) return true
+
+  // Compare buy amounts after slippage
+  return result.quote.bridge.amountsAndCosts.afterSlippage.buyAmount >
+         currentBest.quote.bridge.amountsAndCosts.afterSlippage.buyAmount
+}
+```
+
+### Timeout Configuration
+
+The `getMultiQuotes()` method supports two types of timeouts for fine-grained control:
+
+```typescript
+const results = await sdk.bridging.getMultiQuotes({
+  quoteBridgeRequest: parameters,
+  options: {
+    // Global timeout: Maximum time to wait for all providers to complete
+    timeout: 30000,        // 30 seconds (default)
+
+    // Individual provider timeout: Maximum time each provider has to respond
+    providerTimeout: 15000, // 15 seconds (default)
+
+    onQuoteResult: (result) => {
+      // Handle progressive results
+      console.log(`Received result from ${result.providerDappId}`);
+    }
+  }
+});
+```
+
+**How timeouts work:**
+- `providerTimeout`: Each provider has this amount of time to complete their quote request. If exceeded, that provider returns a timeout error.
+- `timeout`: The total time to wait for all providers. After this time, any remaining providers are marked as timed out.
+- Providers that complete within their individual timeout but after the global timeout will still be included in the final results.
+
 ## Supported Bridge Providers
 
 - Additional bridge providers are being integrated
