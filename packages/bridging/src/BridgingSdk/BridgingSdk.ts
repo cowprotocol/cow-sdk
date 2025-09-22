@@ -6,6 +6,8 @@ import {
   CrossChainOrder,
   CrossChainQuoteAndPost,
   GetProviderBuyTokens,
+  MultiQuoteRequest,
+  MultiQuoteResult,
   QuoteBridgeRequest,
 } from '../types'
 import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
@@ -77,9 +79,9 @@ export class BridgingSdk {
 
     const { providers, ...restOptions } = options
 
-    // For simplicity, we support only a single provider in the initial implementation
-    if (!providers || providers.length !== 1) {
-      throw new Error('Current implementation only supports a single bridge provider')
+    // Support both single and multiple providers
+    if (!providers || providers.length === 0) {
+      throw new Error('At least one bridge provider is required')
     }
 
     if (options.enableLogging !== undefined) {
@@ -178,6 +180,69 @@ export class BridgingSdk {
     }
   }
 
+  /**
+   * Get quotes from multiple bridge providers in parallel.
+   *
+   * This method is specifically for cross-chain bridging quotes. For single-chain swaps, use getQuote() instead.
+   *
+   * @param request - The multi-quote request containing quote parameters and optional provider dappIds
+   * @returns Array of results, one for each provider (successful quotes or errors)
+   * @throws Error if the request is for a single-chain swap (sellTokenChainId === buyTokenChainId)
+   */
+  async getMultiQuotes(request: MultiQuoteRequest): Promise<MultiQuoteResult[]> {
+    const { quoteBridgeRequest, providerDappIds, advancedSettings } = request
+    const { sellTokenChainId, buyTokenChainId } = quoteBridgeRequest
+
+    // Validate that this is a cross-chain request
+    if (sellTokenChainId === buyTokenChainId) {
+      throw new BridgeProviderError(
+        'getMultiQuotes() is only for cross-chain bridging. For single-chain swaps, use getQuote() instead.',
+        { config: this.config },
+      )
+    }
+
+    // Determine which providers to query
+    const providersToQuery = providerDappIds
+      ? providerDappIds.map((dappId) => {
+          const provider = this.getProviderByDappId(dappId)
+          if (!provider) {
+            throw new BridgeProviderError(
+              `Provider with dappId '${dappId}' not found. Available providers: ${this.config.providers.map((p) => p.info.dappId).join(', ')}`,
+              { config: this.config },
+            )
+          }
+          return provider
+        })
+      : this.config.providers
+
+    // Execute quotes in parallel
+    const quotePromises = providersToQuery.map(async (provider): Promise<MultiQuoteResult> => {
+      try {
+        const quote = await getQuoteWithBridge({
+          swapAndBridgeRequest: quoteBridgeRequest,
+          advancedSettings,
+          tradingSdk: this.config.tradingSdk,
+          provider,
+          bridgeHookSigner: advancedSettings?.quoteSigner,
+        })
+
+        return {
+          providerDappId: provider.info.dappId,
+          quote,
+          error: undefined,
+        }
+      } catch (error) {
+        return {
+          providerDappId: provider.info.dappId,
+          quote: null,
+          error: error instanceof BridgeProviderError ? error : new BridgeProviderError(String(error), {}),
+        }
+      }
+    })
+
+    return Promise.all(quotePromises)
+  }
+
   async getOrder(params: GetOrderParams): Promise<CrossChainOrder | null> {
     const { orderBookApi } = this.config
 
@@ -198,5 +263,9 @@ export class BridgingSdk {
 
   getProviderFromAppData(fullAppData: string): BridgeProvider<BridgeQuoteResult> | undefined {
     return findBridgeProviderFromHook(fullAppData, this.getProviders())
+  }
+
+  getProviderByDappId(dappId: string): BridgeProvider<BridgeQuoteResult> | undefined {
+    return this.config.providers.find((provider) => provider.info.dappId === dappId)
   }
 }

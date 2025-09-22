@@ -21,6 +21,7 @@ import {
 import {
   QuoteAndPost,
   QuoteResultsWithSigner,
+  SwapAdvancedSettings,
   TradeParameters,
   TradingSdk,
   WithPartialTraderParams,
@@ -238,6 +239,218 @@ adapterNames.forEach((adapterName) => {
 
         // Verify postSwapOrderFromQuote
         expect(postSwapOrderFromQuote).toBeDefined()
+      })
+    })
+
+    describe('getMultiQuotes', () => {
+      let mockProvider2: MockBridgeProvider
+      let mockProvider3: MockBridgeProvider
+
+      beforeEach(() => {
+        mockProvider2 = new MockBridgeProvider()
+        mockProvider2.info.dappId = 'cow-sdk://bridging/providers/mock2'
+        mockProvider2.info.name = 'Mock Bridge Provider 2'
+        mockProvider2.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
+        mockProvider2.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+        mockProvider2.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
+
+        mockProvider3 = new MockBridgeProvider()
+        mockProvider3.info.dappId = 'cow-sdk://bridging/providers/mock3'
+        mockProvider3.info.name = 'Mock Bridge Provider 3'
+        mockProvider3.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
+        mockProvider3.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+        mockProvider3.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
+
+        // Create SDK with multiple providers
+        bridgingSdk = new BridgingSdk({
+          providers: [mockProvider, mockProvider2, mockProvider3],
+          tradingSdk,
+        })
+      })
+
+      it('should get quotes from all providers when no specific providers requested', async () => {
+        const results = await bridgingSdk.getMultiQuotes({
+          quoteBridgeRequest,
+        })
+
+        expect(results).toHaveLength(3)
+        expect(results[0]?.providerDappId).toBe('mockProvider')
+        expect(results[1]?.providerDappId).toBe('cow-sdk://bridging/providers/mock2')
+        expect(results[2]?.providerDappId).toBe('cow-sdk://bridging/providers/mock3')
+
+        // All should be successful
+        results.forEach((result) => {
+          expect(result.quote).toBeTruthy()
+          expect(result.error).toBeUndefined()
+        })
+
+        // Verify all providers were called (note: the actual request may be modified by getQuoteWithBridge)
+        expect(mockProvider.getQuote).toHaveBeenCalled()
+        expect(mockProvider2.getQuote).toHaveBeenCalled()
+        expect(mockProvider3.getQuote).toHaveBeenCalled()
+      })
+
+      it('should get quotes from specific providers when requested', async () => {
+        const results = await bridgingSdk.getMultiQuotes({
+          quoteBridgeRequest,
+          providerDappIds: ['mockProvider', 'cow-sdk://bridging/providers/mock3'],
+        })
+
+        expect(results).toHaveLength(2)
+        expect(results[0]?.providerDappId).toBe('mockProvider')
+        expect(results[1]?.providerDappId).toBe('cow-sdk://bridging/providers/mock3')
+
+        // All should be successful
+        results.forEach((result) => {
+          expect(result.quote).toBeTruthy()
+          expect(result.error).toBeUndefined()
+        })
+
+        // Verify only requested providers were called
+        expect(mockProvider.getQuote).toHaveBeenCalled()
+        expect(mockProvider2.getQuote).not.toHaveBeenCalled()
+        expect(mockProvider3.getQuote).toHaveBeenCalled()
+      })
+
+      it('should handle provider errors gracefully', async () => {
+        const error = new Error('Provider failed')
+        mockProvider2.getQuote = jest.fn().mockRejectedValue(error)
+
+        const results = await bridgingSdk.getMultiQuotes({
+          quoteBridgeRequest,
+        })
+
+        expect(results).toHaveLength(3)
+
+        // First provider should succeed
+        expect(results[0]?.providerDappId).toBe('mockProvider')
+        expect(results[0]?.quote).toBeTruthy()
+        expect(results[0]?.error).toBeUndefined()
+
+        // Second provider should fail
+        expect(results[1]?.providerDappId).toBe('cow-sdk://bridging/providers/mock2')
+        expect(results[1]?.quote).toBeNull()
+        expect(results[1]?.error).toBeTruthy()
+        expect(results[1]?.error?.message).toContain('Provider failed')
+
+        // Third provider should succeed
+        expect(results[2]?.providerDappId).toBe('cow-sdk://bridging/providers/mock3')
+        expect(results[2]?.quote).toBeTruthy()
+        expect(results[2]?.error).toBeUndefined()
+      })
+
+      it('should throw error for same-chain requests', async () => {
+        const sameChainRequest = {
+          ...quoteBridgeRequest,
+          buyTokenChainId: quoteBridgeRequest.sellTokenChainId,
+        }
+
+        await expect(
+          bridgingSdk.getMultiQuotes({
+            quoteBridgeRequest: sameChainRequest,
+          }),
+        ).rejects.toThrow(
+          'getMultiQuotes() is only for cross-chain bridging. For single-chain swaps, use getQuote() instead.',
+        )
+      })
+
+      it('should throw error for unknown provider dappId', async () => {
+        await expect(
+          bridgingSdk.getMultiQuotes({
+            quoteBridgeRequest,
+            providerDappIds: ['unknown-provider'],
+          }),
+        ).rejects.toThrow(
+          "Provider with dappId 'unknown-provider' not found. Available providers: mockProvider, cow-sdk://bridging/providers/mock2, cow-sdk://bridging/providers/mock3",
+        )
+      })
+
+      it('should pass advanced settings to bridge quotes', async () => {
+        const validToMock = 1758524284
+
+        const advancedSettings: SwapAdvancedSettings = {
+          quoteRequest: {
+            validTo: validToMock,
+          },
+        }
+
+        await bridgingSdk.getMultiQuotes({
+          quoteBridgeRequest,
+          advancedSettings,
+        })
+
+        // Verify advanced settings were passed through (may have additional appData)
+        expect(tradingSdk.getQuoteResults).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.objectContaining({
+            quoteRequest: expect.objectContaining({
+              validTo: validToMock,
+            }),
+          }),
+        )
+      })
+
+      it('should execute quotes in parallel', async () => {
+        let provider1StartTime = 0
+        let provider2StartTime = 0
+
+        mockProvider.getQuote = jest.fn().mockImplementation(async () => {
+          provider1StartTime = Date.now()
+          await new Promise((resolve) => setTimeout(resolve, 100)) // 100ms delay
+          return bridgeQuoteResult
+        })
+
+        mockProvider2.getQuote = jest.fn().mockImplementation(async () => {
+          provider2StartTime = Date.now()
+          await new Promise((resolve) => setTimeout(resolve, 100)) // 100ms delay
+          return bridgeQuoteResult
+        })
+
+        const startTime = Date.now()
+        await bridgingSdk.getMultiQuotes({
+          quoteBridgeRequest,
+          providerDappIds: ['mockProvider', 'cow-sdk://bridging/providers/mock2'],
+        })
+        const totalTime = Date.now() - startTime
+
+        // Verify parallel execution: total time should be roughly the same as individual execution
+        // (not the sum of both executions)
+        expect(totalTime).toBeLessThan(180) // Should be less than 180ms (100ms + buffer)
+
+        // Verify both providers started around the same time (parallel execution)
+        expect(provider1StartTime).toBeDefined()
+        expect(provider2StartTime).toBeDefined()
+        const timeDiff = Math.abs(provider1StartTime - provider2StartTime)
+        expect(timeDiff).toBeLessThan(50) // Should start within 50ms of each other
+      })
+
+      it('should return quotes with correct structure', async () => {
+        const results = await bridgingSdk.getMultiQuotes({
+          quoteBridgeRequest,
+          providerDappIds: ['mockProvider'],
+        })
+
+        expect(results).toHaveLength(1)
+        const result = results[0]
+        expect(result).toBeDefined()
+
+        if (result) {
+          expect(result).toHaveProperty('providerDappId')
+          expect(result).toHaveProperty('quote')
+          expect(result).toHaveProperty('error')
+
+          expect(result.providerDappId).toBe('mockProvider')
+          expect(result.quote).toBeTruthy()
+          expect(result.error).toBeUndefined()
+
+          // Verify quote structure
+          if (result.quote) {
+            assertIsBridgeQuoteAndPost(result.quote)
+            expect(result.quote.bridge).toBeTruthy()
+            expect(result.quote.swap).toBeTruthy()
+            expect(result.quote.postSwapOrderFromQuote).toBeTruthy()
+          }
+        }
       })
     })
   })
