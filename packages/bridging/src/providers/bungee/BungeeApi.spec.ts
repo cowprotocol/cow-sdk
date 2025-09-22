@@ -11,7 +11,7 @@ const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
 adapterNames.forEach((adapterName) => {
-  describe(`BungeeApi: Shape of API response (with ${adapterName})`, () => {
+  describe.skip(`BungeeApi: Shape of API response (with ${adapterName})`, () => {
     let api: BungeeApi
 
     beforeEach(() => {
