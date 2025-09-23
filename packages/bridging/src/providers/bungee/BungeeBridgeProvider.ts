@@ -18,11 +18,11 @@ import {
   DEFAULT_EXTRA_GAS_PROXY_CREATION,
   RAW_PROVIDERS_FILES_PATH,
 } from '../../const'
-import { BungeeApi, BungeeApiOptions } from './BungeeApi'
+import { BungeeApi } from './BungeeApi'
 import { toBridgeQuoteResult } from './util'
 import { createBungeeDepositCall } from './createBungeeDepositCall'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
-import { BungeeBuildTx, BungeeQuote, BungeeQuoteAPIRequest } from './types'
+import { BungeeApiOptions, BungeeBuildTx, BungeeQuote, BungeeQuoteAPIRequest } from './types'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 import { getBridgingStatusFromEvents } from './getBridgingStatusFromEvents'
@@ -166,7 +166,7 @@ export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
       cowShedSdk: this.cowShedSdk,
       request,
       extraGas,
-      extraGasProxyCreation
+      extraGasProxyCreation,
     })
   }
 
