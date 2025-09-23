@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.1.1...sdk-contracts-ts-v0.2.0) (2025-09-23)
+
+
+### ✨ Features
+
+* **bridge:** make multi-quote method progressive ([#526](https://github.com/cowprotocol/cow-sdk/issues/526)) ([27536c6](https://github.com/cowprotocol/cow-sdk/commit/27536c63ec91a26323ffb341c1edbef0ab9331a3))
+
 ## [0.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.1.0...sdk-contracts-ts-v0.1.1) (2025-09-22)
 
 
