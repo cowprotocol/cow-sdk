@@ -311,6 +311,8 @@ export interface BungeeApiOptions extends Partial<BungeeApiUrlOptions> {
   includeBridges?: SupportedBridge[]
   affiliate?: string
   fallbackTimeoutMs?: number
+  apiKey?: string
+  customApiBaseUrl?: string
 }
 
 export interface IntermediateTokensParams {

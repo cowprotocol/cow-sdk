@@ -27,7 +27,9 @@ import { SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import { getGlobalAdapter, log } from '@cowprotocol/sdk-common'
 import {
   BUNGEE_API_FALLBACK_TIMEOUT,
+  BUNGEE_API_PATH,
   BUNGEE_BASE_URL,
+  BUNGEE_MANUAL_API_PATH,
   DEFAULT_API_OPTIONS,
   errorMessageMap,
   SUPPORTED_BRIDGES,
@@ -398,24 +400,23 @@ export class BungeeApi {
     // Determine which base URL to use based on fallback state
     const useFallback = this.shouldUseFallback(apiType)
 
-    // TODO
-    // const baseUrlMap = {
-    //   bungee:
-    //     this.options.apiKey && this.options.customApiBaseUrl
-    //       ? `${this.options.customApiBaseUrl}${BUNGEE_API_PATH}`
-    //       : this.options.apiBaseUrl || BUNGEE_API_URL,
-    //   'bungee-manual':
-    //     this.options.apiKey && this.options.customApiBaseUrl
-    //       ? `${this.options.customApiBaseUrl}${BUNGEE_MANUAL_API_PATH}`
-    //       : this.options.manualApiBaseUrl || BUNGEE_MANUAL_API_URL,
-    //   events: this.options.eventsApiBaseUrl || BUNGEE_EVENTS_API_URL,
-    //   across: this.options.acrossApiBaseUrl || ACROSS_API_URL,
-    // }
+    const customApiBaseUrl = this.options.apiKey ? this.options.customApiBaseUrl : undefined
+
     const baseUrlMap = {
-      bungee: resolveApiEndpointFromOptions('apiBaseUrl', this.options, useFallback),
+      bungee: resolveApiEndpointFromOptions(
+        'apiBaseUrl',
+        this.options,
+        useFallback,
+        customApiBaseUrl ? `${customApiBaseUrl}${BUNGEE_API_PATH}` : undefined,
+      ),
+      'bungee-manual': resolveApiEndpointFromOptions(
+        'manualApiBaseUrl',
+        this.options,
+        useFallback,
+        customApiBaseUrl ? `${customApiBaseUrl}${BUNGEE_MANUAL_API_PATH}` : undefined,
+      ),
       events: resolveApiEndpointFromOptions('eventsApiBaseUrl', this.options, useFallback),
       across: resolveApiEndpointFromOptions('acrossApiBaseUrl', this.options, useFallback),
-      'bungee-manual': resolveApiEndpointFromOptions('manualApiBaseUrl', this.options, useFallback),
     }
 
     const baseUrl = baseUrlMap[apiType]

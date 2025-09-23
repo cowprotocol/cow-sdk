@@ -1,12 +1,12 @@
 import { BungeeApi } from './BungeeApi'
-import { BungeeBridge, BungeeQuote, mockQuoteRequest, BungeeQuoteAPIResponse } from './types'
+import { BungeeBridge, BungeeQuote, BungeeQuoteAPIRequest, BungeeQuoteAPIResponse } from './types'
 import { BridgeQuoteErrors } from '../../errors'
 import {
   ACROSS_API_URL,
   BUNGEE_API_FALLBACK_TIMEOUT,
   BUNGEE_BASE_URL,
   BUNGEE_EVENTS_API_URL,
-  DEFAULT_API_OPTIONS
+  DEFAULT_API_OPTIONS,
 } from './consts'
 
 // Mock fetch globally
@@ -29,11 +29,11 @@ const mockQuoteResponse: BungeeQuoteAPIResponse = {
         symbol: 'USDC',
         decimals: 6,
         logoURI: 'https://example.com/usdc.png',
-        icon: 'usdc'
+        icon: 'usdc',
       },
       amount: '1000000',
       priceInUsd: 1,
-      valueInUsd: 1000
+      valueInUsd: 1000,
     },
     destinationExec: null,
     autoRoute: null,
@@ -49,20 +49,20 @@ const mockQuoteResponse: BungeeQuoteAPIResponse = {
             symbol: 'USDC',
             decimals: 6,
             logoURI: 'https://example.com/usdc.png',
-            icon: 'usdc'
+            icon: 'usdc',
           },
           amount: '990000',
           priceInUsd: 1,
           valueInUsd: 990,
           minAmountOut: '980000',
-          effectiveReceivedInUsd: 980
+          effectiveReceivedInUsd: 980,
         },
         affiliateFee: null,
         approvalData: {
           spenderAddress: '0x0000000000000000000000000000000000000003',
           amount: '1000000',
           tokenAddress: '0x0000000000000000000000000000000000000001',
-          userAddress: '0x123'
+          userAddress: '0x123',
         },
         gasFee: {
           gasToken: {
@@ -73,12 +73,12 @@ const mockQuoteResponse: BungeeQuoteAPIResponse = {
             decimals: 18,
             icon: 'eth',
             logoURI: 'https://example.com/eth.png',
-            chainAgnosticId: null
+            chainAgnosticId: null,
           },
           gasLimit: '100000',
           gasPrice: '20000000000',
           estimatedFee: '0.001',
-          feeInUsd: 2
+          feeInUsd: 2,
         },
         slippage: 0.5,
         estimatedTime: 300,
@@ -93,21 +93,21 @@ const mockQuoteResponse: BungeeQuoteAPIResponse = {
               symbol: 'USDC',
               decimals: 6,
               logoURI: 'https://example.com/usdc.png',
-              icon: 'usdc'
+              icon: 'usdc',
             },
             amount: '1000',
             feeInUsd: 1,
-            priceInUsd: 1
+            priceInUsd: 1,
           },
-          dexDetails: null
+          dexDetails: null,
         },
-        refuel: null
-      }
-    ]
-  }
+        refuel: null,
+      },
+    ],
+  },
 }
 
-const mockQuoteRequest: mockQuoteRequest = {
+const mockQuoteRequest: BungeeQuoteAPIRequest = {
   originChainId: '1',
   destinationChainId: '137',
   inputToken: '0x0000000000000000000000000000000000000001',
@@ -132,12 +132,12 @@ describe('BungeeApi', () => {
     beforeEach(() => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockQuoteResponse)
+        json: () => Promise.resolve(mockQuoteResponse),
       })
     })
 
     it('should fetch quote with required parameters', async () => {
-      const request: mockQuoteRequest = mockQuoteRequest
+      const request = mockQuoteRequest
 
       const quote = await api.getBungeeQuote(request)
 
@@ -153,7 +153,7 @@ describe('BungeeApi', () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 400,
-        json: () => Promise.resolve({ text: 'Error message' })
+        json: () => Promise.resolve({ text: 'Error message' }),
       })
 
       await expect(api.getBungeeQuote(mockQuoteRequest)).rejects.toThrow(BridgeQuoteErrors.API_ERROR)
@@ -169,22 +169,22 @@ describe('BungeeApi', () => {
           spenderAddress: '0x0000000000000000000000000000000000000003',
           amount: '1000000',
           tokenAddress: '0x0000000000000000000000000000000000000001',
-          userAddress: '0x123'
+          userAddress: '0x123',
         },
         txData: {
           data: '0x123456',
           to: '0x0000000000000000000000000000000000000001',
           chainId: 1,
-          value: '0'
+          value: '0',
         },
-        userOp: ''
-      }
+        userOp: '',
+      },
     }
 
     beforeEach(() => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockBuildTxResponse)
+        json: () => Promise.resolve(mockBuildTxResponse),
       })
     })
 
@@ -202,11 +202,11 @@ describe('BungeeApi', () => {
             symbol: 'USDC',
             decimals: 6,
             logoURI: 'https://example.com/usdc.png',
-            icon: 'usdc'
+            icon: 'usdc',
           },
           amount: '1000000',
           priceInUsd: 1,
-          valueInUsd: 1000
+          valueInUsd: 1000,
         },
         route: {
           quoteId: '123',
@@ -219,20 +219,20 @@ describe('BungeeApi', () => {
               symbol: 'USDC',
               decimals: 6,
               logoURI: 'https://example.com/usdc.png',
-              icon: 'usdc'
+              icon: 'usdc',
             },
             amount: '990000',
             priceInUsd: 1,
             valueInUsd: 990,
             minAmountOut: '980000',
-            effectiveReceivedInUsd: 980
+            effectiveReceivedInUsd: 980,
           },
           affiliateFee: null,
           approvalData: {
             spenderAddress: '0x0000000000000000000000000000000000000003',
             amount: '1000000',
             tokenAddress: '0x0000000000000000000000000000000000000001',
-            userAddress: '0x123'
+            userAddress: '0x123',
           },
           gasFee: {
             gasToken: {
@@ -243,12 +243,12 @@ describe('BungeeApi', () => {
               decimals: 18,
               icon: 'eth',
               logoURI: 'https://example.com/eth.png',
-              chainAgnosticId: null
+              chainAgnosticId: null,
             },
             gasLimit: '100000',
             gasPrice: '20000000000',
             estimatedFee: '0.001',
-            feeInUsd: 2
+            feeInUsd: 2,
           },
           slippage: 0.5,
           estimatedTime: 300,
@@ -263,18 +263,18 @@ describe('BungeeApi', () => {
                 symbol: 'USDC',
                 decimals: 6,
                 logoURI: 'https://example.com/usdc.png',
-                icon: 'usdc'
+                icon: 'usdc',
               },
               amount: '1000',
               feeInUsd: 1,
-              priceInUsd: 1
+              priceInUsd: 1,
             },
-            dexDetails: null
+            dexDetails: null,
           },
-          refuel: null
+          refuel: null,
         },
         routeBridge: BungeeBridge.Across,
-        quoteTimestamp: 1234567890
+        quoteTimestamp: 1234567890,
       }
 
       const buildTx = await api.getBungeeBuildTx(mockQuote)
@@ -288,7 +288,7 @@ describe('BungeeApi', () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 400,
-        json: () => Promise.resolve({ text: 'Error message' })
+        json: () => Promise.resolve({ text: 'Error message' }),
       })
 
       const mockQuote: BungeeQuote = {
@@ -304,11 +304,11 @@ describe('BungeeApi', () => {
             symbol: 'USDC',
             decimals: 6,
             logoURI: 'https://example.com/usdc.png',
-            icon: 'usdc'
+            icon: 'usdc',
           },
           amount: '1000000',
           priceInUsd: 1,
-          valueInUsd: 1000
+          valueInUsd: 1000,
         },
         route: {
           quoteId: '123',
@@ -321,20 +321,20 @@ describe('BungeeApi', () => {
               symbol: 'USDC',
               decimals: 6,
               logoURI: 'https://example.com/usdc.png',
-              icon: 'usdc'
+              icon: 'usdc',
             },
             amount: '990000',
             priceInUsd: 1,
             valueInUsd: 990,
             minAmountOut: '980000',
-            effectiveReceivedInUsd: 980
+            effectiveReceivedInUsd: 980,
           },
           affiliateFee: null,
           approvalData: {
             spenderAddress: '0x0000000000000000000000000000000000000003',
             amount: '1000000',
             tokenAddress: '0x0000000000000000000000000000000000000001',
-            userAddress: '0x123'
+            userAddress: '0x123',
           },
           gasFee: {
             gasToken: {
@@ -345,12 +345,12 @@ describe('BungeeApi', () => {
               decimals: 18,
               icon: 'eth',
               logoURI: 'https://example.com/eth.png',
-              chainAgnosticId: null
+              chainAgnosticId: null,
             },
             gasLimit: '100000',
             gasPrice: '20000000000',
             estimatedFee: '0.001',
-            feeInUsd: 2
+            feeInUsd: 2,
           },
           slippage: 0.5,
           estimatedTime: 300,
@@ -365,18 +365,18 @@ describe('BungeeApi', () => {
                 symbol: 'USDC',
                 decimals: 6,
                 logoURI: 'https://example.com/usdc.png',
-                icon: 'usdc'
+                icon: 'usdc',
               },
               amount: '1000',
               feeInUsd: 1,
-              priceInUsd: 1
+              priceInUsd: 1,
             },
-            dexDetails: null
+            dexDetails: null,
           },
-          refuel: null
+          refuel: null,
         },
         routeBridge: BungeeBridge.Across,
-        quoteTimestamp: 1234567890
+        quoteTimestamp: 1234567890,
       }
 
       await expect(api.getBungeeBuildTx(mockQuote)).rejects.toThrow(BridgeQuoteErrors.API_ERROR)
@@ -422,15 +422,15 @@ describe('BungeeApi', () => {
           destTokenName: 'USD Coin',
           destTokenSymbol: 'USDC',
           srcTxStatus: 'COMPLETED',
-          destTxStatus: 'COMPLETED'
-        }
-      ]
+          destTxStatus: 'COMPLETED',
+        },
+      ],
     }
 
     beforeEach(() => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockEventsResponse)
+        json: () => Promise.resolve(mockEventsResponse),
       })
     })
 
@@ -447,7 +447,7 @@ describe('BungeeApi', () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 400,
-        json: () => Promise.resolve({ text: 'Error message' })
+        json: () => Promise.resolve({ text: 'Error message' }),
       })
 
       await expect(api.getEvents({ orderId: '123' })).rejects.toThrow(BridgeQuoteErrors.API_ERROR)
@@ -456,13 +456,13 @@ describe('BungeeApi', () => {
 
   describe('getAcrossStatus', () => {
     const mockAcrossStatusResponse = {
-      status: 'filled'
+      status: 'filled',
     }
 
     beforeEach(() => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockAcrossStatusResponse)
+        json: () => Promise.resolve(mockAcrossStatusResponse),
       })
     })
 
@@ -477,7 +477,7 @@ describe('BungeeApi', () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 400,
-        json: () => Promise.resolve({ text: 'Error message' })
+        json: () => Promise.resolve({ text: 'Error message' }),
       })
 
       await expect(api.getAcrossStatus('0x123')).rejects.toThrow(BridgeQuoteErrors.API_ERROR)
@@ -491,7 +491,7 @@ describe('BungeeApi', () => {
 
       mockFetch.mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(mockQuoteResponse)
+        json: () => Promise.resolve(mockQuoteResponse),
       })
 
       await customApi.getBungeeQuote(mockQuoteRequest)

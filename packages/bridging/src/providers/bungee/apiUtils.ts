@@ -143,6 +143,7 @@ export function resolveApiEndpointFromOptions(
   key: keyof BungeeApiUrlOptions,
   options: Partial<BungeeApiUrlOptions>,
   useFallback: boolean,
+  customUrl?: string,
 ): BungeeApiUrlOptions[typeof key] {
-  return useFallback ? DEFAULT_API_OPTIONS[key] : options[key] || DEFAULT_API_OPTIONS[key]
+  return useFallback ? DEFAULT_API_OPTIONS[key] : customUrl || options[key] || DEFAULT_API_OPTIONS[key]
 }
