@@ -11,7 +11,7 @@ import type {
   TradeOptionalParameters,
   TraderParameters,
 } from '@cowprotocol/sdk-trading'
-import type { AccountAddress, SignerLike } from '@cowprotocol/sdk-common'
+import type { AccountAddress, SignerLike, TTLCache } from '@cowprotocol/sdk-common'
 import { BridgeProviderError } from './errors'
 
 export interface BridgeProviderInfo {
@@ -411,12 +411,68 @@ export interface CrossChainOrder {
 
 export interface MultiQuoteResult {
   providerDappId: string
-  quote: CrossChainQuoteAndPost | null
+  quote: BridgeQuoteAndPost | null
   error?: BridgeProviderError
 }
 
+/**
+ * Callback function called when a quote result is available from a provider
+ */
+export type MultiQuoteProgressCallback = (result: MultiQuoteResult) => void
+
+/**
+ * Callback function called when a better quote is found
+ */
+export type BestQuoteProgressCallback = (result: MultiQuoteResult) => void
+
+/**
+ * Options for controlling the behavior of getMultiQuotes
+ */
+export interface MultiQuoteOptions {
+  /**
+   * Callback function called as soon as each provider returns a result
+   * Allows for progressive display of quotes without waiting for all providers
+   */
+  onQuoteResult?: MultiQuoteProgressCallback
+
+  /**
+   * Maximum time to wait for all providers to respond (in milliseconds)
+   * Default: 40000 (40 seconds)
+   */
+  totalTimeout?: number
+
+  /**
+   * Maximum time to wait for each individual provider to respond (in milliseconds)
+   * If a provider takes longer than this, it will be considered timed out
+   * Default: 20000 (20 seconds)
+   */
+  providerTimeout?: number
+}
+
+// duplicate of packages/bridging/src/BridgingSdk/strategies/QuoteStrategy.ts
 export interface MultiQuoteRequest {
   quoteBridgeRequest: QuoteBridgeRequest
+  intermediateTokensCache?: TTLCache<TokenInfo[]>
+  intermediateTokensTtl?: number
   providerDappIds?: string[]
   advancedSettings?: SwapAdvancedSettings
+  options?: MultiQuoteOptions
+}
+
+interface MultiQuoteContext {
+  provider: BridgeProvider<BridgeQuoteResult>
+  quoteBridgeRequest: QuoteBridgeRequest
+  advancedSettings: SwapAdvancedSettings | undefined
+  providerTimeout: number
+  onQuoteResult: MultiQuoteProgressCallback | undefined
+}
+
+export interface ProviderQuoteContext extends MultiQuoteContext {
+  results: MultiQuoteResult[]
+  index: number
+}
+
+export interface BestQuoteProviderContext extends MultiQuoteContext {
+  bestResult: { current: MultiQuoteResult | null }
+  firstError: { current: MultiQuoteResult | null }
 }

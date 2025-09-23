@@ -6,12 +6,10 @@ import {
   CrossChainOrder,
   CrossChainQuoteAndPost,
   GetProviderBuyTokens,
-  MultiQuoteRequest,
   MultiQuoteResult,
+  MultiQuoteRequest,
   QuoteBridgeRequest,
 } from '../types'
-import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
-import { getQuoteWithBridge } from './getQuoteWithBridge'
 import { getCrossChainOrder } from './getCrossChainOrder'
 import { findBridgeProviderFromHook } from './findBridgeProviderFromHook'
 import { BridgeProviderError } from '../errors'
@@ -21,6 +19,17 @@ import { ALL_SUPPORTED_CHAINS, ChainInfo, SupportedChainId, TokenInfo } from '@c
 import { AbstractProviderAdapter, enableLogging, setGlobalAdapter, TTLCache } from '@cowprotocol/sdk-common'
 import { BridgingSdkCacheConfig, BridgingSdkConfig, BridgingSdkOptions, GetOrderParams } from './types'
 import { getCacheKey } from './helpers'
+
+import {
+  SingleQuoteStrategyImpl,
+  MultiQuoteStrategyImpl,
+  BestQuoteStrategyImpl,
+  SingleQuoteRequest,
+} from './strategies'
+
+const singleQuoteStrategy = new SingleQuoteStrategyImpl()
+const multiQuoteStrategy = new MultiQuoteStrategyImpl()
+const bestQuoteStrategy = new BestQuoteStrategyImpl()
 
 // Default cache configuration
 const DEFAULT_CACHE_CONFIG: BridgingSdkCacheConfig = {
@@ -159,108 +168,65 @@ export class BridgingSdk {
     quoteBridgeRequest: QuoteBridgeRequest,
     advancedSettings?: SwapAdvancedSettings,
   ): Promise<CrossChainQuoteAndPost> {
-    const { sellTokenChainId, buyTokenChainId } = quoteBridgeRequest
-    const tradingSdk = this.config.tradingSdk
+    const baseParams = {
+      quoteBridgeRequest,
+      advancedSettings,
+    } as const
 
-    if (sellTokenChainId !== buyTokenChainId) {
-      // Cross-chain swap
+    const request: SingleQuoteRequest = this.cacheConfig.enabled
+      ? {
+          ...baseParams,
+          intermediateTokensCache: this.intermediateTokensCache,
+          intermediateTokensTtl: this.cacheConfig.intermediateTokensTtl,
+        }
+      : baseParams
 
-      const baseParams = {
-        swapAndBridgeRequest: quoteBridgeRequest,
-        advancedSettings,
-        tradingSdk,
-        provider: this.provider,
-        bridgeHookSigner: advancedSettings?.quoteSigner,
-      } as const
-      const params = this.cacheConfig.enabled
-        ? {
-            ...baseParams,
-            intermediateTokensCache: this.intermediateTokensCache,
-            intermediateTokensTtl: this.cacheConfig.intermediateTokensTtl,
-          }
-        : baseParams
-      return getQuoteWithBridge(params)
-    } else {
-      // Single-chain swap
-      return getQuoteWithoutBridge({
-        quoteBridgeRequest,
-        advancedSettings,
-        tradingSdk,
-      })
-    }
+    return singleQuoteStrategy.execute(request, this.config)
   }
 
   /**
-   * Get quotes from multiple bridge providers in parallel.
+   * Get quotes from multiple bridge providers in parallel with progressive results.
    *
    * This method is specifically for cross-chain bridging quotes. For single-chain swaps, use getQuote() instead.
    *
-   * @param request - The multi-quote request containing quote parameters and optional provider dappIds
+   * Features:
+   * - Progressive results: Use the `onQuoteResult` callback to receive quotes as soon as each provider responds
+   * - Timeout support: Configure maximum wait time for all providers and individual provider timeouts
+   * - Parallel execution: All providers are queried simultaneously for best performance
+   *
+   * @param request - The multi-quote request containing quote parameters, provider dappIds, and options
    * @returns Array of results, one for each provider (successful quotes or errors)
    * @throws Error if the request is for a single-chain swap (sellTokenChainId === buyTokenChainId)
+   * ```
    */
   async getMultiQuotes(request: MultiQuoteRequest): Promise<MultiQuoteResult[]> {
-    const { quoteBridgeRequest, providerDappIds, advancedSettings } = request
-    const { sellTokenChainId, buyTokenChainId } = quoteBridgeRequest
-
-    // Validate that this is a cross-chain request
-    if (sellTokenChainId === buyTokenChainId) {
-      throw new BridgeProviderError(
-        'getMultiQuotes() is only for cross-chain bridging. For single-chain swaps, use getQuote() instead.',
-        { config: this.config },
-      )
-    }
-
-    // Determine which providers to query
-    const providersToQuery = providerDappIds
-      ? providerDappIds.map((dappId) => {
-          const provider = this.getProviderByDappId(dappId)
-          if (!provider) {
-            throw new BridgeProviderError(
-              `Provider with dappId '${dappId}' not found. Available providers: ${this.config.providers.map((p) => p.info.dappId).join(', ')}`,
-              { config: this.config },
-            )
-          }
-          return provider
-        })
-      : this.config.providers
-
-    // Execute quotes in parallel
-    const quotePromises = providersToQuery.map(async (provider): Promise<MultiQuoteResult> => {
-      const base = {
-        swapAndBridgeRequest: quoteBridgeRequest,
-        advancedSettings,
-        tradingSdk: this.config.tradingSdk,
-        provider,
-        bridgeHookSigner: advancedSettings?.quoteSigner,
-      } as const
-
-      const params = this.cacheConfig.enabled
-        ? {
-            ...base,
-            intermediateTokensCache: this.intermediateTokensCache,
-            intermediateTokensTtl: this.cacheConfig.intermediateTokensTtl,
-          }
-        : base
-
-      try {
-        const quote = await getQuoteWithBridge(params)
-
-        return {
-          providerDappId: provider.info.dappId,
-          quote,
-          error: undefined,
+    const multiQuoteRequest: MultiQuoteRequest = this.cacheConfig.enabled
+      ? request
+      : {
+          ...request,
+          intermediateTokensCache: this.intermediateTokensCache,
+          intermediateTokensTtl: this.cacheConfig.intermediateTokensTtl,
         }
-      } catch (error) {
-        return {
-          providerDappId: provider.info.dappId,
-          quote: null,
-          error: error instanceof BridgeProviderError ? error : new BridgeProviderError(String(error), {}),
-        }
-      }
-    })
+    return multiQuoteStrategy.execute(multiQuoteRequest, this.config)
+  }
 
-    return Promise.all(quotePromises)
+  /**
+   * Get the best quote from multiple bridge providers with progressive updates.
+   *
+   * This method is specifically for cross-chain bridging quotes. For single-chain swaps, use getQuote() instead.
+   *
+   * Features:
+   * - Returns only the best quote based on buyAmount after slippage
+   * - Progressive updates: Use the `onQuoteResult` callback to receive updates whenever a better quote is found
+   * - Timeout support: Configure maximum wait time for all providers and individual provider timeouts
+   * - Parallel execution: All providers are queried simultaneously for best performance
+   *
+   * @param request - The best quote request containing quote parameters, provider dappIds, and options
+   * @returns The best quote result found, or null if no successful quotes were obtained
+   * @throws Error if the request is for a single-chain swap (sellTokenChainId === buyTokenChainId)
+   */
+  async getBestQuote(request: MultiQuoteRequest): Promise<MultiQuoteResult | null> {
+    return bestQuoteStrategy.execute(request, this.config)
   }
 
   async getOrder(params: GetOrderParams): Promise<CrossChainOrder | null> {
