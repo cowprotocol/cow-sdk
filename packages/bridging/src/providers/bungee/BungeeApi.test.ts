@@ -1,4 +1,4 @@
-import { BungeeApi } from './BungeeApi'
+import { ACROSS_API_URL, BUNGEE_BASE_URL, BUNGEE_EVENTS_API_URL, BungeeApi } from './BungeeApi'
 import { BungeeQuote, BungeeQuoteAPIRequest, BungeeBridge, BungeeQuoteAPIResponse } from './types'
 import { BridgeQuoteErrors } from '../../errors'
 
@@ -100,6 +100,19 @@ const mockQuoteResponse: BungeeQuoteAPIResponse = {
   },
 }
 
+const bungeeQuoteApiRequest: BungeeQuoteAPIRequest = {
+  originChainId: '1',
+  destinationChainId: '137',
+  inputToken: '0x0000000000000000000000000000000000000001',
+  inputAmount: '1000000',
+  userAddress: '0x123',
+  receiverAddress: '0x456',
+  outputToken: '0x0000000000000000000000000000000000000002',
+  enableManual: true,
+  disableSwapping: true,
+  disableAuto: true,
+}
+
 describe('BungeeApi', () => {
   let api: BungeeApi
 
@@ -117,18 +130,7 @@ describe('BungeeApi', () => {
     })
 
     it('should fetch quote with required parameters', async () => {
-      const request: BungeeQuoteAPIRequest = {
-        originChainId: '1',
-        destinationChainId: '137',
-        inputToken: '0x0000000000000000000000000000000000000001',
-        inputAmount: '1000000',
-        userAddress: '0x123',
-        receiverAddress: '0x456',
-        outputToken: '0x0000000000000000000000000000000000000002',
-        enableManual: true,
-        disableSwapping: true,
-        disableAuto: true,
-      }
+      const request: BungeeQuoteAPIRequest = bungeeQuoteApiRequest
 
       const quote = await api.getBungeeQuote(request)
 
@@ -147,20 +149,7 @@ describe('BungeeApi', () => {
         json: () => Promise.resolve({ text: 'Error message' }),
       })
 
-      await expect(
-        api.getBungeeQuote({
-          originChainId: '1',
-          destinationChainId: '137',
-          inputToken: '0x0000000000000000000000000000000000000001',
-          inputAmount: '1000000',
-          userAddress: '0x123',
-          receiverAddress: '0x456',
-          outputToken: '0x0000000000000000000000000000000000000002',
-          enableManual: true,
-          disableSwapping: true,
-          disableAuto: true,
-        }),
-      ).rejects.toThrow(BridgeQuoteErrors.API_ERROR)
+      await expect(api.getBungeeQuote(bungeeQuoteApiRequest)).rejects.toThrow(BridgeQuoteErrors.API_ERROR)
     })
   })
 
@@ -498,20 +487,247 @@ describe('BungeeApi', () => {
         json: () => Promise.resolve(mockQuoteResponse),
       })
 
-      await customApi.getBungeeQuote({
-        originChainId: '1',
-        destinationChainId: '137',
-        inputToken: '0x0000000000000000000000000000000000000001',
-        inputAmount: '1000000',
-        userAddress: '0x123',
-        receiverAddress: '0x456',
-        outputToken: '0x0000000000000000000000000000000000000002',
-        enableManual: true,
-        disableSwapping: true,
-        disableAuto: true,
-      })
+      await customApi.getBungeeQuote(bungeeQuoteApiRequest)
 
       expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining(customUrl), expect.any(Object))
+    })
+  })
+
+  describe('apiKey and customApiBaseUrl', () => {
+    describe('when both apiKey and customApiBaseUrl are present', () => {
+      const customApiBaseUrl = 'https://custom-bungee-api.example.com'
+      const apiKey = 'test-api-key-123'
+      let customApi: BungeeApi
+
+      beforeEach(() => {
+        customApi = new BungeeApi({
+          apiKey,
+          customApiBaseUrl,
+        })
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve(mockQuoteResponse),
+        })
+      })
+
+      it('should use customApiBaseUrl for all API calls', async () => {
+        await customApi.getBungeeQuote(bungeeQuoteApiRequest)
+
+        expect(mockFetch).toHaveBeenCalledWith(
+          expect.stringContaining(customApiBaseUrl),
+          expect.objectContaining({
+            headers: expect.objectContaining({
+              'x-api-key': apiKey,
+            }),
+          }),
+        )
+      })
+      it('should use customApiBaseUrl for build tx calls', async () => {
+        const mockQuote: BungeeQuote = {
+          originChainId: 1,
+          destinationChainId: 137,
+          userAddress: '0x123',
+          receiverAddress: '0x456',
+          input: mockQuoteResponse.result.input,
+          route: mockQuoteResponse.result.manualRoutes[0] as any,
+          routeBridge: BungeeBridge.Across,
+          quoteTimestamp: 1234567890,
+        }
+
+        const mockBuildTxResponse = {
+          success: true,
+          statusCode: 200,
+          result: {
+            approvalData: {
+              spenderAddress: '0x0000000000000000000000000000000000000003',
+              amount: '1000000',
+              tokenAddress: '0x0000000000000000000000000000000000000001',
+              userAddress: '0x123',
+            },
+            txData: {
+              data: '0x123456',
+              to: '0x0000000000000000000000000000000000000001',
+              chainId: 1,
+              value: '0',
+            },
+            userOp: '',
+          },
+        }
+
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve(mockBuildTxResponse),
+        })
+
+        await customApi.getBungeeBuildTx(mockQuote)
+
+        expect(mockFetch).toHaveBeenCalledWith(
+          expect.stringContaining(customApiBaseUrl),
+          expect.objectContaining({
+            headers: expect.objectContaining({
+              'x-api-key': apiKey,
+            }),
+          }),
+        )
+      })
+
+      it('should not use customApiBaseUrl for events API calls', async () => {
+        const mockEventsResponse = {
+          success: true,
+          result: [
+            {
+              identifier: '123',
+              bridgeName: 'across',
+              fromChainId: 1,
+              isCowswapTrade: true,
+              orderId: '123',
+              sender: '0x123',
+              srcTxStatus: 'COMPLETED',
+              destTxStatus: 'COMPLETED',
+            },
+          ],
+        }
+
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve(mockEventsResponse),
+        })
+
+        await customApi.getEvents({ orderId: '123' })
+
+        expect(mockFetch).toHaveBeenCalledWith(
+          expect.stringContaining(BUNGEE_EVENTS_API_URL),
+          expect.objectContaining({
+            headers: expect.not.objectContaining({
+              'x-api-key': apiKey,
+            }),
+          }),
+        )
+      })
+
+      it('should not use customApiBaseUrl for across status API calls', async () => {
+        const mockAcrossStatusResponse = {
+          status: 'filled',
+        }
+
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve(mockAcrossStatusResponse),
+        })
+
+        await customApi.getAcrossStatus('0x123')
+
+        expect(mockFetch).toHaveBeenCalledWith(
+          expect.stringContaining(ACROSS_API_URL),
+          expect.objectContaining({
+            headers: expect.not.objectContaining({
+              'x-api-key': apiKey,
+            }),
+          }),
+        )
+      })
+    })
+
+    describe('when only apiKey is present', () => {
+      it('should use default URLs and not include api-key header', async () => {
+        const apiOnlyApi = new BungeeApi({
+          apiKey: 'test-api-key-123',
+        })
+
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve(mockQuoteResponse),
+        })
+
+        await apiOnlyApi.getBungeeQuote(bungeeQuoteApiRequest)
+
+        expect(mockFetch).toHaveBeenCalledWith(
+          expect.stringContaining(BUNGEE_BASE_URL),
+          expect.objectContaining({
+            headers: expect.not.objectContaining({
+              'x-api-key': expect.any(String),
+            }),
+          }),
+        )
+      })
+    })
+
+    describe('when only customApiBaseUrl is present', () => {
+      it('should use default URLs and not include api-key header', async () => {
+        const urlOnlyApi = new BungeeApi({
+          customApiBaseUrl: 'https://custom-bungee-api.example.com',
+        })
+
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve(mockQuoteResponse),
+        })
+
+        await urlOnlyApi.getBungeeQuote(bungeeQuoteApiRequest)
+
+        expect(mockFetch).toHaveBeenCalledWith(
+          expect.stringContaining(BUNGEE_BASE_URL),
+          expect.objectContaining({
+            headers: expect.not.objectContaining({
+              'x-api-key': expect.any(String),
+              affiliate: expect.anything(),
+            }),
+          }),
+        )
+      })
+    })
+
+    describe('when neither apiKey nor customApiBaseUrl are present', () => {
+      it('should use default behavior', async () => {
+        const defaultApi = new BungeeApi()
+
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve(mockQuoteResponse),
+        })
+
+        await defaultApi.getBungeeQuote(bungeeQuoteApiRequest)
+
+        expect(mockFetch).toHaveBeenCalledWith(
+          expect.stringContaining(BUNGEE_BASE_URL),
+          expect.objectContaining({
+            headers: expect.not.objectContaining({
+              'x-api-key': expect.any(String),
+              affiliate: expect.anything(),
+            }),
+          }),
+        )
+      })
+    })
+
+    describe('affiliate header behavior with custom API', () => {
+      it('should still include affiliate header when using custom API and affiliate is provided', async () => {
+        const customApiBaseUrl = 'https://custom-bungee-api.example.com'
+        const apiKey = 'test-api-key'
+
+        const customApi = new BungeeApi({
+          customApiBaseUrl,
+          apiKey,
+          affiliate: 'test-affiliate',
+        })
+
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve(mockQuoteResponse),
+        })
+
+        await customApi.getBungeeQuote(bungeeQuoteApiRequest)
+
+        expect(mockFetch).toHaveBeenCalledWith(
+          expect.stringContaining(customApiBaseUrl),
+          expect.objectContaining({
+            headers: expect.objectContaining({
+              'x-api-key': apiKey,
+              affiliate: 'test-affiliate',
+            }),
+          }),
+        )
+      })
     })
   })
 })

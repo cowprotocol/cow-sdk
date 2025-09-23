@@ -23,11 +23,13 @@ import { BuyTokensParams } from '../../types'
 import { SupportedChainId, TargetChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import { getGlobalAdapter, log } from '@cowprotocol/sdk-common'
 
-const BUNGEE_BASE_URL = 'https://public-backend.bungee.exchange'
-const BUNGEE_API_URL = `${BUNGEE_BASE_URL}/api/v1/bungee`
-const BUNGEE_MANUAL_API_URL = `${BUNGEE_BASE_URL}/api/v1/bungee-manual`
-const BUNGEE_EVENTS_API_URL = 'https://microservices.socket.tech/loki'
-const ACROSS_API_URL = 'https://app.across.to/api'
+export const BUNGEE_BASE_URL = 'https://public-backend.bungee.exchange'
+const BUNGEE_API_PATH = '/api/v1/bungee'
+export const BUNGEE_API_URL = `${BUNGEE_BASE_URL}${BUNGEE_API_PATH}`
+const BUNGEE_MANUAL_API_PATH = '/api/v1/bungee-manual'
+export const BUNGEE_MANUAL_API_URL = `${BUNGEE_BASE_URL}${BUNGEE_MANUAL_API_PATH}`
+export const BUNGEE_EVENTS_API_URL = 'https://microservices.socket.tech/loki'
+export const ACROSS_API_URL = 'https://app.across.to/api'
 
 const SUPPORTED_BRIDGES: SupportedBridge[] = ['across', 'cctp', 'gnosis-native-bridge']
 
@@ -47,6 +49,8 @@ export interface BungeeApiOptions {
   acrossApiBaseUrl?: string
   includeBridges?: SupportedBridge[]
   affiliate?: string
+  apiKey?: string
+  customApiBaseUrl?: string
 }
 
 interface IntermediateTokensParams {
@@ -367,10 +371,20 @@ export class BungeeApi {
     return bridges ?? this.options.includeBridges ?? SUPPORTED_BRIDGES
   }
 
-  private shouldAddAffiliate(apiType: BungeeApiType, baseUrl: string): boolean {
-    const isBungeeApi = apiType === 'bungee' || apiType === 'bungee-manual'
+  private isBungeeApi(apiType: BungeeApiType): boolean {
+    return apiType === 'bungee' || apiType === 'bungee-manual'
+  }
 
-    return !baseUrl.includes(BUNGEE_BASE_URL) && isBungeeApi
+  private shouldAddApiKey(apiType: BungeeApiType): boolean {
+    return this.isBungeeApi(apiType) && !!this.options.apiKey && !!this.options.customApiBaseUrl
+  }
+
+  private shouldAddAffiliate(apiType: BungeeApiType, baseUrl: string): boolean {
+    if (!this.isBungeeApi(apiType)) return false
+    const defaultHost = new URL(BUNGEE_BASE_URL).host
+    const baseHost = new URL(baseUrl).host
+
+    return this.shouldAddApiKey(apiType) || baseHost !== defaultHost
   }
 
   private async makeApiCall<T>(
@@ -380,15 +394,27 @@ export class BungeeApi {
     isValidResponse?: (response: unknown) => response is T,
   ): Promise<T> {
     const baseUrlMap = {
-      bungee: this.options.apiBaseUrl || BUNGEE_API_URL,
+      bungee:
+        this.options.apiKey && this.options.customApiBaseUrl
+          ? `${this.options.customApiBaseUrl}${BUNGEE_API_PATH}`
+          : this.options.apiBaseUrl || BUNGEE_API_URL,
+      'bungee-manual':
+        this.options.apiKey && this.options.customApiBaseUrl
+          ? `${this.options.customApiBaseUrl}${BUNGEE_MANUAL_API_PATH}`
+          : this.options.manualApiBaseUrl || BUNGEE_MANUAL_API_URL,
       events: this.options.eventsApiBaseUrl || BUNGEE_EVENTS_API_URL,
       across: this.options.acrossApiBaseUrl || ACROSS_API_URL,
-      'bungee-manual': this.options.manualApiBaseUrl || BUNGEE_MANUAL_API_URL,
     }
 
     const baseUrl = baseUrlMap[apiType]
+
     const url = `${baseUrl}${path}?${new URLSearchParams(params).toString()}`
     const headers: Record<string, string> = {}
+
+    // Add api-key header if both apiKey and customApiBaseUrl are present
+    if (this.shouldAddApiKey(apiType) && this.options.apiKey) {
+      headers['x-api-key'] = this.options.apiKey
+    }
 
     if (this.shouldAddAffiliate(apiType, baseUrl) && this.options.affiliate) {
       headers['affiliate'] = this.options.affiliate
