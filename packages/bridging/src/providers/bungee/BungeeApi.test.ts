@@ -100,6 +100,19 @@ const mockQuoteResponse: BungeeQuoteAPIResponse = {
   },
 }
 
+const bungeeQuoteApiRequest: BungeeQuoteAPIRequest = {
+  originChainId: '1',
+  destinationChainId: '137',
+  inputToken: '0x0000000000000000000000000000000000000001',
+  inputAmount: '1000000',
+  userAddress: '0x123',
+  receiverAddress: '0x456',
+  outputToken: '0x0000000000000000000000000000000000000002',
+  enableManual: true,
+  disableSwapping: true,
+  disableAuto: true,
+}
+
 describe('BungeeApi', () => {
   let api: BungeeApi
 
@@ -117,18 +130,7 @@ describe('BungeeApi', () => {
     })
 
     it('should fetch quote with required parameters', async () => {
-      const request: BungeeQuoteAPIRequest = {
-        originChainId: '1',
-        destinationChainId: '137',
-        inputToken: '0x0000000000000000000000000000000000000001',
-        inputAmount: '1000000',
-        userAddress: '0x123',
-        receiverAddress: '0x456',
-        outputToken: '0x0000000000000000000000000000000000000002',
-        enableManual: true,
-        disableSwapping: true,
-        disableAuto: true,
-      }
+      const request: BungeeQuoteAPIRequest = bungeeQuoteApiRequest
 
       const quote = await api.getBungeeQuote(request)
 
@@ -147,20 +149,7 @@ describe('BungeeApi', () => {
         json: () => Promise.resolve({ text: 'Error message' }),
       })
 
-      await expect(
-        api.getBungeeQuote({
-          originChainId: '1',
-          destinationChainId: '137',
-          inputToken: '0x0000000000000000000000000000000000000001',
-          inputAmount: '1000000',
-          userAddress: '0x123',
-          receiverAddress: '0x456',
-          outputToken: '0x0000000000000000000000000000000000000002',
-          enableManual: true,
-          disableSwapping: true,
-          disableAuto: true,
-        }),
-      ).rejects.toThrow(BridgeQuoteErrors.API_ERROR)
+      await expect(api.getBungeeQuote(bungeeQuoteApiRequest)).rejects.toThrow(BridgeQuoteErrors.API_ERROR)
     })
   })
 
@@ -498,18 +487,7 @@ describe('BungeeApi', () => {
         json: () => Promise.resolve(mockQuoteResponse),
       })
 
-      await customApi.getBungeeQuote({
-        originChainId: '1',
-        destinationChainId: '137',
-        inputToken: '0x0000000000000000000000000000000000000001',
-        inputAmount: '1000000',
-        userAddress: '0x123',
-        receiverAddress: '0x456',
-        outputToken: '0x0000000000000000000000000000000000000002',
-        enableManual: true,
-        disableSwapping: true,
-        disableAuto: true,
-      })
+      await customApi.getBungeeQuote(bungeeQuoteApiRequest)
 
       expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining(customUrl), expect.any(Object))
     })
@@ -533,18 +511,7 @@ describe('BungeeApi', () => {
       })
 
       it('should use customApiBaseUrl for all API calls', async () => {
-        await customApi.getBungeeQuote({
-          originChainId: '1',
-          destinationChainId: '137',
-          inputToken: '0x0000000000000000000000000000000000000001',
-          inputAmount: '1000000',
-          userAddress: '0x123',
-          receiverAddress: '0x456',
-          outputToken: '0x0000000000000000000000000000000000000002',
-          enableManual: true,
-          disableSwapping: true,
-          disableAuto: true,
-        })
+        await customApi.getBungeeQuote(bungeeQuoteApiRequest)
 
         expect(mockFetch).toHaveBeenCalledWith(
           expect.stringContaining(customApiBaseUrl),
@@ -672,18 +639,7 @@ describe('BungeeApi', () => {
           json: () => Promise.resolve(mockQuoteResponse),
         })
 
-        await apiOnlyApi.getBungeeQuote({
-          originChainId: '1',
-          destinationChainId: '137',
-          inputToken: '0x0000000000000000000000000000000000000001',
-          inputAmount: '1000000',
-          userAddress: '0x123',
-          receiverAddress: '0x456',
-          outputToken: '0x0000000000000000000000000000000000000002',
-          enableManual: true,
-          disableSwapping: true,
-          disableAuto: true,
-        })
+        await apiOnlyApi.getBungeeQuote(bungeeQuoteApiRequest)
 
         expect(mockFetch).toHaveBeenCalledWith(
           expect.stringContaining(BUNGEE_BASE_URL),
@@ -707,18 +663,7 @@ describe('BungeeApi', () => {
           json: () => Promise.resolve(mockQuoteResponse),
         })
 
-        await urlOnlyApi.getBungeeQuote({
-          originChainId: '1',
-          destinationChainId: '137',
-          inputToken: '0x0000000000000000000000000000000000000001',
-          inputAmount: '1000000',
-          userAddress: '0x123',
-          receiverAddress: '0x456',
-          outputToken: '0x0000000000000000000000000000000000000002',
-          enableManual: true,
-          disableSwapping: true,
-          disableAuto: true,
-        })
+        await urlOnlyApi.getBungeeQuote(bungeeQuoteApiRequest)
 
         expect(mockFetch).toHaveBeenCalledWith(
           expect.stringContaining(BUNGEE_BASE_URL),
@@ -741,18 +686,7 @@ describe('BungeeApi', () => {
           json: () => Promise.resolve(mockQuoteResponse),
         })
 
-        await defaultApi.getBungeeQuote({
-          originChainId: '1',
-          destinationChainId: '137',
-          inputToken: '0x0000000000000000000000000000000000000001',
-          inputAmount: '1000000',
-          userAddress: '0x123',
-          receiverAddress: '0x456',
-          outputToken: '0x0000000000000000000000000000000000000002',
-          enableManual: true,
-          disableSwapping: true,
-          disableAuto: true,
-        })
+        await defaultApi.getBungeeQuote(bungeeQuoteApiRequest)
 
         expect(mockFetch).toHaveBeenCalledWith(
           expect.stringContaining(BUNGEE_BASE_URL),
@@ -782,18 +716,7 @@ describe('BungeeApi', () => {
           json: () => Promise.resolve(mockQuoteResponse),
         })
 
-        await customApi.getBungeeQuote({
-          originChainId: '1',
-          destinationChainId: '137',
-          inputToken: '0x0000000000000000000000000000000000000001',
-          inputAmount: '1000000',
-          userAddress: '0x123',
-          receiverAddress: '0x456',
-          outputToken: '0x0000000000000000000000000000000000000002',
-          enableManual: true,
-          disableSwapping: true,
-          disableAuto: true,
-        })
+        await customApi.getBungeeQuote(bungeeQuoteApiRequest)
 
         expect(mockFetch).toHaveBeenCalledWith(
           expect.stringContaining(customApiBaseUrl),
