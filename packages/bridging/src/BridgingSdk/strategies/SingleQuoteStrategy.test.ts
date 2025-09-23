@@ -28,7 +28,7 @@ import {
 } from '@cowprotocol/sdk-trading'
 import { OrderBookApi, SigningScheme } from '@cowprotocol/sdk-order-book'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
-import { BridgingSdkConfig } from '../BridgingSdk'
+import { BridgingSdkConfig } from '../types'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { createAdapters } from '../../../tests/setup'
 import { expectToEqual } from '../../test'
@@ -264,12 +264,13 @@ adapterNames.forEach((adapterName) => {
             orderTypedData,
             suggestedSlippageBps: 0,
           },
-          postSwapOrderFromQuote: () => Promise.resolve({
-            orderId: '0x01',
-            signature: '0x02',
-            signingScheme: SigningScheme.EIP712,
-            orderToSign,
-          }),
+          postSwapOrderFromQuote: () =>
+            Promise.resolve({
+              orderId: '0x01',
+              signature: '0x02',
+              signingScheme: SigningScheme.EIP712,
+              orderToSign,
+            }),
         }
         tradingSdk.getQuote = jest.fn().mockResolvedValue(singleChainQuoteResult)
 
@@ -296,7 +297,7 @@ adapterNames.forEach((adapterName) => {
         }
 
         await expect(strategy.execute(request, configWithoutProviders)).rejects.toThrow(
-          'No provider found for cross-chain swap'
+          'No provider found for cross-chain swap',
         )
       })
     })

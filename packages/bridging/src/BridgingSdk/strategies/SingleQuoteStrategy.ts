@@ -1,7 +1,7 @@
 import { CrossChainQuoteAndPost } from '../../types'
 import { getQuoteWithoutBridge } from '../getQuoteWithoutBridge'
 import { getQuoteWithBridge } from '../getQuoteWithBridge'
-import { BridgingSdkConfig } from '../BridgingSdk'
+import { BridgingSdkConfig } from '../types'
 import { SingleQuoteStrategy, SingleQuoteRequest } from './QuoteStrategy'
 
 /**

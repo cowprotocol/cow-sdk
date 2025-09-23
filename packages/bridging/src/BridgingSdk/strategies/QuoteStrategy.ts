@@ -6,7 +6,7 @@ import {
   MultiQuoteResult,
   QuoteBridgeRequest,
 } from '../../types'
-import { BridgingSdkConfig } from '../BridgingSdk'
+import { BridgingSdkConfig } from '../types'
 import { TTLCache } from '@cowprotocol/sdk-common'
 import { TokenInfo } from '@cowprotocol/sdk-config'
 

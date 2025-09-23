@@ -1,5 +1,5 @@
 import { MultiQuoteResult, ProviderQuoteContext } from '../../types'
-import { BridgingSdkConfig } from '../BridgingSdk'
+import { BridgingSdkConfig } from '../types'
 import {
   createBridgeQuoteTimeoutPromise,
   executeProviderQuotes,
