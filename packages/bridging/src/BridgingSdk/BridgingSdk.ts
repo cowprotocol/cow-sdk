@@ -8,8 +8,9 @@ import {
   GetProviderBuyTokens,
   MultiQuoteRequest,
   MultiQuoteResult,
-  MultiQuoteProgressCallback,
   QuoteBridgeRequest,
+  ProviderQuoteContext,
+  BestQuoteProviderContext,
 } from '../types'
 import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
 import { getQuoteWithBridge } from './getQuoteWithBridge'
@@ -24,6 +25,8 @@ import {
   createBridgeQuoteTimeoutPromise,
   executeProviderQuotes,
   fillTimeoutResults,
+  isBetterQuote,
+  safeCallBestQuoteCallback,
   safeCallProgressiveCallback,
   validateCrossChainRequest,
 } from './utils'
@@ -216,16 +219,17 @@ export class BridgingSdk {
         continue
       }
 
-      const promise = this.createProviderQuotePromise(
+      const context: ProviderQuoteContext = {
         provider,
         quoteBridgeRequest,
         advancedSettings,
         providerTimeout,
         onQuoteResult,
         results,
-        i,
-      )
+        index: i,
+      }
 
+      const promise = this.createProviderQuotePromise(context)
       promises.push(promise)
     }
 
@@ -237,21 +241,73 @@ export class BridgingSdk {
 
     // Sort results by buyAmount after slippage (descending, best quotes first)
     results.sort((a, b) => {
-      // Put successful quotes before failed ones
-      if (a.quote && !b.quote) return -1
-      if (!a.quote && b.quote) return 1
-      if (!a.quote && !b.quote) return 0
-      // Not possible due to previous check
-      // but Typescript cannot understand that a and b not falsy in the followingcode
-      if (!a.quote || !b.quote) return 0
-
-      // Both have quotes, sort by buyAmount after slippage (descending)
-      const aBuyAmount = a.quote.bridge.amountsAndCosts.afterSlippage.buyAmount
-      const bBuyAmount = b.quote.bridge.amountsAndCosts.afterSlippage.buyAmount
-      return aBuyAmount > bBuyAmount ? -1 : aBuyAmount < bBuyAmount ? 1 : 0
+      // Use the same comparison logic as getBestQuote
+      if (isBetterQuote(a, b)) return -1
+      if (isBetterQuote(b, a)) return 1
+      return 0
     })
 
     return results
+  }
+
+  /**
+   * Get the best quote from multiple bridge providers with progressive updates.
+   *
+   * This method is specifically for cross-chain bridging quotes. For single-chain swaps, use getQuote() instead.
+   *
+   * Features:
+   * - Returns only the best quote based on buyAmount after slippage
+   * - Progressive updates: Use the `onQuoteResult` callback to receive updates whenever a better quote is found
+   * - Timeout support: Configure maximum wait time for all providers and individual provider timeouts
+   * - Parallel execution: All providers are queried simultaneously for best performance
+   *
+   * @param request - The best quote request containing quote parameters, provider dappIds, and options
+   * @returns The best quote result found, or null if no successful quotes were obtained
+   * @throws Error if the request is for a single-chain swap (sellTokenChainId === buyTokenChainId)
+   */
+  async getBestQuote(request: MultiQuoteRequest): Promise<MultiQuoteResult | null> {
+    const { quoteBridgeRequest, providerDappIds, advancedSettings, options } = request
+    const { sellTokenChainId, buyTokenChainId } = quoteBridgeRequest
+
+    // Validate that this is a cross-chain request
+    validateCrossChainRequest(sellTokenChainId, buyTokenChainId)
+
+    // Determine which providers to query
+    const providersToQuery = this.resolveProvidersToQuery(providerDappIds)
+
+    // Extract options with defaults
+    const {
+      onQuoteResult,
+      totalTimeout = DEFAULT_TOTAL_TIMEOUT_MS,
+      providerTimeout = DEFAULT_PROVIDER_TIMEOUT_MS,
+    } = options || {}
+
+    // Keep track of the current best result and first error using mutable containers
+    const bestResult = { current: null as MultiQuoteResult | null }
+    const firstError = { current: null as MultiQuoteResult | null }
+    const promises: Promise<void>[] = []
+
+    // Create a promise for each provider that handles both progressive callbacks and best result tracking
+    for (const provider of providersToQuery) {
+      const context: BestQuoteProviderContext = {
+        provider,
+        quoteBridgeRequest,
+        advancedSettings,
+        providerTimeout,
+        onQuoteResult,
+        bestResult,
+        firstError,
+      }
+
+      const promise = this.createBestQuoteProviderPromise(context)
+      promises.push(promise)
+    }
+
+    // Execute all provider quotes with timeout handling
+    await executeProviderQuotes(promises, totalTimeout, this.config)
+
+    // Return best result if available, otherwise return first error
+    return bestResult.current || firstError.current
   }
 
   async getOrder(params: GetOrderParams): Promise<CrossChainOrder | null> {
@@ -301,17 +357,59 @@ export class BridgingSdk {
   }
 
   /**
+   * Creates a promise that handles quote fetching for a single provider in getBestQuote
+   */
+  private createBestQuoteProviderPromise(context: BestQuoteProviderContext): Promise<void> {
+    const { provider, quoteBridgeRequest, advancedSettings, providerTimeout, onQuoteResult, bestResult, firstError } =
+      context
+
+    return (async (): Promise<void> => {
+      try {
+        // Race between the actual quote request and the provider timeout
+        const quote = await Promise.race([
+          getQuoteWithBridge({
+            swapAndBridgeRequest: quoteBridgeRequest,
+            advancedSettings,
+            tradingSdk: this.config.tradingSdk,
+            provider,
+            bridgeHookSigner: advancedSettings?.quoteSigner,
+          }),
+          createBridgeQuoteTimeoutPromise(providerTimeout, provider.info.dappId),
+        ])
+
+        const result: MultiQuoteResult = {
+          providerDappId: provider.info.dappId,
+          quote,
+          error: undefined,
+        }
+
+        // Check if this quote is better than the current best
+        if (isBetterQuote(result, bestResult.current)) {
+          bestResult.current = result
+          // Call callback only for better quotes
+          safeCallBestQuoteCallback(onQuoteResult, result)
+        }
+      } catch (error) {
+        const errorResult: MultiQuoteResult = {
+          providerDappId: provider.info.dappId,
+          quote: null,
+          error: error instanceof BridgeProviderError ? error : new BridgeProviderError(String(error), {}),
+        }
+
+        // Store the first error if we don't have one yet
+        if (!firstError.current) {
+          firstError.current = errorResult
+        }
+      }
+    })()
+  }
+
+  /**
    * Creates a promise that handles quote fetching for a single provider
    */
-  private createProviderQuotePromise(
-    provider: BridgeProvider<BridgeQuoteResult>,
-    quoteBridgeRequest: QuoteBridgeRequest,
-    advancedSettings: SwapAdvancedSettings | undefined,
-    providerTimeout: number,
-    onQuoteResult: MultiQuoteProgressCallback | undefined,
-    results: MultiQuoteResult[],
-    index: number,
-  ): Promise<void> {
+  private createProviderQuotePromise(context: ProviderQuoteContext): Promise<void> {
+    const { provider, quoteBridgeRequest, advancedSettings, providerTimeout, onQuoteResult, results, index } = context
+
     return (async (): Promise<void> => {
       try {
         // Race between the actual quote request and the provider timeout

@@ -302,6 +302,118 @@ const results = await sdk.bridging.getMultiQuotes({
 - `totalTimeout`: The total time to wait for all providers. After this time, any remaining providers are marked as timed out.
 - Providers that complete within their individual timeout but after the global timeout will still be included in the final results.
 
+## Best Quote Selection
+
+The `getBestQuote()` method provides an optimized way to get only the best quote from multiple providers, with progressive updates as better quotes are found. This is perfect for applications that only need the single best result.
+
+### Basic Best Quote Usage
+
+```typescript
+import { MultiQuoteRequest } from '@cowprotocol/sdk-bridging'
+
+// Get the best quote from all available providers
+const bestQuote = await sdk.bridging.getBestQuote({
+  quoteBridgeRequest: parameters, // Same parameters as above
+  providerDappIds: ['provider1', 'provider2'], // Optional: specify which providers to query
+  advancedSettings: {
+    slippageBps: 100, // 1% slippage tolerance
+  },
+  options: {
+    totalTimeout: 15000,       // 15 seconds total timeout
+    providerTimeout: 8000,     // 8 seconds per provider timeout
+  }
+})
+
+if (bestQuote?.quote) {
+  console.log(`Best quote from ${bestQuote.providerDappId}:`, bestQuote.quote)
+  const { buyAmount } = bestQuote.quote.bridge.amountsAndCosts.afterSlippage
+  console.log(`You will receive: ${buyAmount} tokens`)
+} else if (bestQuote?.error) {
+  console.log('All providers failed, first error:', bestQuote.error.message)
+} else {
+  console.log('No quotes available')
+}
+```
+
+### Progressive Best Quote Updates
+
+For real-time updates, you can receive notifications each time a better quote is found:
+
+```typescript
+let currentBest: MultiQuoteResult | null = null
+
+const bestQuote = await sdk.bridging.getBestQuote({
+  quoteBridgeRequest: parameters,
+  options: {
+    // Called whenever a better quote is found
+    onQuoteResult: (result) => {
+      currentBest = result
+      console.log(`🚀 New best quote from ${result.providerDappId}!`)
+
+      if (result.quote) {
+        const buyAmount = result.quote.bridge.amountsAndCosts.afterSlippage.buyAmount
+        console.log(`Better quote found: ${buyAmount} tokens`)
+
+        // Update UI immediately with the new best quote
+        updateBestQuoteInUI(result)
+      }
+    },
+    totalTimeout: 20000,      // 20 seconds total timeout
+    providerTimeout: 5000     // 5 seconds per provider timeout
+  }
+})
+
+console.log('Final best quote:', bestQuote)
+```
+
+### Error Handling with Best Quote
+
+When all providers fail, `getBestQuote()` returns the first provider's error:
+
+```typescript
+const bestQuote = await sdk.bridging.getBestQuote({
+  quoteBridgeRequest: parameters,
+  options: {
+    onQuoteResult: (result) => {
+      // Only called for successful quotes that are better than current best
+      console.log(`✅ Better quote from ${result.providerDappId}`)
+    }
+  }
+})
+
+if (bestQuote?.quote) {
+  // Success: we have the best available quote
+  console.log('Best quote found:', bestQuote.quote)
+} else if (bestQuote?.error) {
+  // All providers failed, this is the first error encountered
+  console.error('All providers failed:', bestQuote.error.message)
+  console.log('Failed provider:', bestQuote.providerDappId)
+} else {
+  // This should never happen, but good to handle
+  console.log('No quote or error returned')
+}
+```
+
+### Comparison: getBestQuote vs getMultiQuotes
+
+| Feature | `getBestQuote()` | `getMultiQuotes()` |
+|---------|------------------|-------------------|
+| **Returns** | Single best result | Array of all results |
+| **Progressive Callbacks** | Only for better quotes | For all results (success & error) |
+| **Error Handling** | Returns first error if all fail | Returns all errors in array |
+| **Performance** | Optimized for best result only | Returns complete data set |
+| **Use Case** | When you only need the best quote | When you need to compare all options |
+
+Choose `getBestQuote()` when:
+- You only need the single best quote
+- You want real-time updates as better quotes are found
+- You want to minimize callback overhead (only called for improvements)
+
+Choose `getMultiQuotes()` when:
+- You need to display all available options to users
+- You want to analyze all provider responses
+- You need to show provider-specific errors or statuses
+
 ## Supported Bridge Providers
 
 - Additional bridge providers are being integrated

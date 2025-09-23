@@ -421,6 +421,11 @@ export interface MultiQuoteResult {
 export type MultiQuoteProgressCallback = (result: MultiQuoteResult) => void
 
 /**
+ * Callback function called when a better quote is found
+ */
+export type BestQuoteProgressCallback = (result: MultiQuoteResult) => void
+
+/**
  * Options for controlling the behavior of getMultiQuotes
  */
 export interface MultiQuoteOptions {
@@ -449,4 +454,22 @@ export interface MultiQuoteRequest {
   providerDappIds?: string[]
   advancedSettings?: SwapAdvancedSettings
   options?: MultiQuoteOptions
+}
+
+interface MultiQuoteContext {
+  provider: BridgeProvider<BridgeQuoteResult>
+  quoteBridgeRequest: QuoteBridgeRequest
+  advancedSettings: SwapAdvancedSettings | undefined
+  providerTimeout: number
+  onQuoteResult: MultiQuoteProgressCallback | undefined
+}
+
+export interface ProviderQuoteContext extends MultiQuoteContext {
+  results: MultiQuoteResult[]
+  index: number
+}
+
+export interface BestQuoteProviderContext extends MultiQuoteContext {
+  bestResult: { current: MultiQuoteResult | null }
+  firstError: { current: MultiQuoteResult | null }
 }
