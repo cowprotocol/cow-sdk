@@ -1,3 +1,5 @@
+import type { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
+
 export type SupportedBridge = 'across' | 'cctp' | 'gnosis-native-bridge'
 
 export interface BungeeQuoteAPIRequest {
@@ -296,4 +298,33 @@ export type BungeeIntermediateTokensAPIResponse = {
     logoURI: string
     icon: string
   }>
+}
+
+export interface BungeeApiUrlOptions {
+  apiBaseUrl: string
+  manualApiBaseUrl: string
+  eventsApiBaseUrl: string
+  acrossApiBaseUrl: string
+}
+
+export interface BungeeApiOptions extends Partial<BungeeApiUrlOptions> {
+  includeBridges?: SupportedBridge[]
+  affiliate?: string
+  fallbackTimeoutMs?: number
+  apiKey?: string
+  customApiBaseUrl?: string
+}
+
+export interface IntermediateTokensParams {
+  fromChainId: SupportedChainId
+  toChainId: TargetChainId
+  toTokenAddress: string
+  includeBridges?: SupportedBridge[]
+}
+
+export interface GetBuyTokensParams {
+  toChainId: string
+  includeBridges: string
+  fromChainId?: string
+  fromTokenAddress?: string
 }
