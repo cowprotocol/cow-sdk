@@ -25,15 +25,39 @@ import { SOCKET_VERIFIER_ABI } from './abi'
 import { BuyTokensParams } from '../../types'
 import { SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import { getGlobalAdapter, log } from '@cowprotocol/sdk-common'
-import { BUNGEE_BASE_URL, DEFAULT_API_OPTIONS, errorMessageMap, SUPPORTED_BRIDGES } from './consts'
-import { isValidAcrossStatusResponse, isValidBungeeEventsResponse, isValidQuoteResponse } from './apiUtils'
+import {
+  BUNGEE_API_FALLBACK_TIMEOUT,
+  BUNGEE_BASE_URL,
+  DEFAULT_API_OPTIONS,
+  errorMessageMap,
+  SUPPORTED_BRIDGES,
+} from './consts'
+import {
+  isClientFetchError,
+  isInfrastructureError,
+  isValidAcrossStatusResponse,
+  isValidBungeeEventsResponse,
+  isValidQuoteResponse,
+  resolveApiEndpointFromOptions,
+} from './apiUtils'
 
 type BungeeApiType = 'bungee' | 'events' | 'across' | 'bungee-manual'
 
+interface FallbackState {
+  isUsingFallback: boolean
+  fallbackExpiresAt: number
+}
+
 export class BungeeApi {
+  private fallbackStates = new Map<BungeeApiType, FallbackState>()
+  private readonly fallbackTimeoutMs: number
+
   constructor(private readonly options: BungeeApiOptions = DEFAULT_API_OPTIONS) {
     // throw if any bridge is not supported
     this.validateBridges(this.getSupportedBridges())
+
+    // Set fallback timeout, default to 5 minutes
+    this.fallbackTimeoutMs = this.options.fallbackTimeoutMs ?? BUNGEE_API_FALLBACK_TIMEOUT
   }
 
   // TODO: why do we need options.includeBridges then? Practically, you cannot add more bridges dynamically
@@ -327,6 +351,28 @@ export class BungeeApi {
     return bridges ?? this.options.includeBridges ?? SUPPORTED_BRIDGES
   }
 
+  private shouldUseFallback(apiType: BungeeApiType): boolean {
+    const fallbackState = this.fallbackStates.get(apiType)
+    if (!fallbackState) return false
+
+    const now = Date.now()
+    if (now > fallbackState.fallbackExpiresAt) {
+      // Fallback period expired, remove state and don't use fallback
+      this.fallbackStates.delete(apiType)
+      return false
+    }
+
+    return fallbackState.isUsingFallback
+  }
+
+  private enableFallback(apiType: BungeeApiType): void {
+    const now = Date.now()
+    this.fallbackStates.set(apiType, {
+      isUsingFallback: true,
+      fallbackExpiresAt: now + this.fallbackTimeoutMs,
+    })
+  }
+
   private shouldAddAffiliate(apiType: BungeeApiType, baseUrl: string): boolean {
     const isBungeeApi = apiType === 'bungee' || apiType === 'bungee-manual'
 
@@ -339,11 +385,14 @@ export class BungeeApi {
     params: Record<string, string> | URLSearchParams,
     isValidResponse?: (response: unknown) => response is T,
   ): Promise<T> {
+    // Determine which base URL to use based on fallback state
+    const useFallback = this.shouldUseFallback(apiType)
+
     const baseUrlMap = {
-      bungee: this.options.apiBaseUrl || DEFAULT_API_OPTIONS.apiBaseUrl,
-      events: this.options.eventsApiBaseUrl || DEFAULT_API_OPTIONS.eventsApiBaseUrl,
-      across: this.options.acrossApiBaseUrl || DEFAULT_API_OPTIONS.acrossApiBaseUrl,
-      'bungee-manual': this.options.manualApiBaseUrl || DEFAULT_API_OPTIONS.manualApiBaseUrl,
+      bungee: resolveApiEndpointFromOptions('apiBaseUrl', this.options, useFallback),
+      events: resolveApiEndpointFromOptions('eventsApiBaseUrl', this.options, useFallback),
+      across: resolveApiEndpointFromOptions('acrossApiBaseUrl', this.options, useFallback),
+      'bungee-manual': resolveApiEndpointFromOptions('manualApiBaseUrl', this.options, useFallback),
     }
 
     const baseUrl = baseUrlMap[apiType]
@@ -356,18 +405,40 @@ export class BungeeApi {
 
     log(`Fetching ${apiType} API: GET ${url}. Params: ${JSON.stringify(params)}`)
 
-    const response = await fetch(url, { method: 'GET', headers })
+    try {
+      const response = await fetch(url, { method: 'GET', headers })
 
-    if (!response.ok) {
-      const errorBody = await response.json()
-      throw new BridgeProviderQuoteError(BridgeQuoteErrors.API_ERROR, { errorBody, type: errorMessageMap[apiType] })
+      if (!response.ok) {
+        // Check if this is an infrastructure error and we should enable fallback
+        if (isInfrastructureError(response.status) && !useFallback) {
+          // Enable fallback and retry once with default URLs
+          this.enableFallback(apiType)
+          log(
+            `Infrastructure error (${response.status}) detected for ${apiType} API. Enabling fallback for ${this.fallbackTimeoutMs}ms`,
+          )
+          return this.makeApiCall(apiType, path, params, isValidResponse)
+        }
+
+        const errorBody = await response.json()
+        throw new BridgeProviderQuoteError(BridgeQuoteErrors.API_ERROR, { errorBody, type: errorMessageMap[apiType] })
+      }
+
+      const json = await response.json()
+      if (isValidResponse && !isValidResponse(json)) {
+        throw new BridgeProviderQuoteError(BridgeQuoteErrors.INVALID_API_JSON_RESPONSE, { json, apiType, params })
+      }
+
+      return json
+    } catch (error) {
+      // Check if this is a network error and we should enable fallback
+      if (!useFallback && isClientFetchError(error)) {
+        // Enable fallback and retry once with default URLs
+        this.enableFallback(apiType)
+        log(`Network error detected for ${apiType} API. Enabling fallback for ${this.fallbackTimeoutMs}ms`)
+        return this.makeApiCall(apiType, path, params, isValidResponse)
+      }
+
+      throw error
     }
-
-    const json = await response.json()
-    if (isValidResponse && !isValidResponse(json)) {
-      throw new BridgeProviderQuoteError(BridgeQuoteErrors.INVALID_API_JSON_RESPONSE, { json, apiType, params })
-    }
-
-    return json
   }
 }

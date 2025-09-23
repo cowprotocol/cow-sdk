@@ -305,11 +305,12 @@ export interface BungeeApiUrlOptions {
   manualApiBaseUrl: string
   eventsApiBaseUrl: string
   acrossApiBaseUrl: string
-  includeBridges: SupportedBridge[]
 }
 
 export interface BungeeApiOptions extends Partial<BungeeApiUrlOptions> {
+  includeBridges?: SupportedBridge[]
   affiliate?: string
+  fallbackTimeoutMs?: number
 }
 
 export interface IntermediateTokensParams {

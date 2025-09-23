@@ -19,6 +19,7 @@ export const DEFAULT_API_OPTIONS: BungeeApiUrlOptions = {
   apiBaseUrl: BUNGEE_API_URL,
   eventsApiBaseUrl: BUNGEE_EVENTS_API_URL,
   acrossApiBaseUrl: ACROSS_API_URL,
-  includeBridges: SUPPORTED_BRIDGES,
   manualApiBaseUrl: BUNGEE_MANUAL_API_URL,
 } as const
+
+export const BUNGEE_API_FALLBACK_TIMEOUT = 300_000 // 5 min

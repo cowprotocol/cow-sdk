@@ -1,4 +1,5 @@
-import { AcrossStatusAPIResponse, BungeeEventsAPIResponse, BungeeQuoteAPIResponse } from './types'
+import { AcrossStatusAPIResponse, BungeeApiUrlOptions, BungeeEventsAPIResponse, BungeeQuoteAPIResponse } from './types'
+import { DEFAULT_API_OPTIONS } from './consts'
 
 /**
  * Validate the response from the Bungee API is a SuggestedFeesResponse
@@ -127,4 +128,21 @@ export function isValidAcrossStatusResponse(response: unknown): response is Acro
   }
 
   return true
+}
+
+export function isInfrastructureError(status: number): boolean {
+  // 5xx server errors, 429 rate limiting, 502/503/504 gateway errors
+  return status >= 500 || status === 429
+}
+
+export function isClientFetchError(error: unknown): boolean {
+  return error instanceof TypeError || (error instanceof Error && error.message?.includes('fetch'))
+}
+
+export function resolveApiEndpointFromOptions(
+  key: keyof BungeeApiUrlOptions,
+  options: Partial<BungeeApiUrlOptions>,
+  useFallback: boolean,
+): BungeeApiUrlOptions[typeof key] {
+  return useFallback ? DEFAULT_API_OPTIONS[key] : options[key] || DEFAULT_API_OPTIONS[key]
 }

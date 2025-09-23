@@ -1,6 +1,7 @@
 import { BungeeApi } from './BungeeApi'
 import { BungeeQuote, BungeeQuoteAPIRequest, BungeeBridge, BungeeQuoteAPIResponse } from './types'
 import { BridgeQuoteErrors } from '../../errors'
+import { BUNGEE_API_FALLBACK_TIMEOUT, DEFAULT_API_OPTIONS } from './consts'
 
 // Mock fetch globally
 const mockFetch = jest.fn()
@@ -98,6 +99,19 @@ const mockQuoteResponse: BungeeQuoteAPIResponse = {
       },
     ],
   },
+}
+
+const mockQuoteRequest: BungeeQuoteAPIRequest = {
+  originChainId: '1',
+  destinationChainId: '137',
+  inputToken: '0x0000000000000000000000000000000000000001',
+  inputAmount: '1000000',
+  userAddress: '0x123',
+  receiverAddress: '0x456',
+  outputToken: '0x0000000000000000000000000000000000000002',
+  enableManual: true,
+  disableSwapping: true,
+  disableAuto: true,
 }
 
 describe('BungeeApi', () => {
@@ -498,20 +512,352 @@ describe('BungeeApi', () => {
         json: () => Promise.resolve(mockQuoteResponse),
       })
 
-      await customApi.getBungeeQuote({
-        originChainId: '1',
-        destinationChainId: '137',
-        inputToken: '0x0000000000000000000000000000000000000001',
-        inputAmount: '1000000',
-        userAddress: '0x123',
-        receiverAddress: '0x456',
-        outputToken: '0x0000000000000000000000000000000000000002',
-        enableManual: true,
-        disableSwapping: true,
-        disableAuto: true,
-      })
+      await customApi.getBungeeQuote(mockQuoteRequest)
 
       expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining(customUrl), expect.any(Object))
+    })
+  })
+
+  describe('fallback mechanism', () => {
+    beforeEach(() => {
+      jest.useFakeTimers()
+    })
+
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
+    describe('fallback configuration', () => {
+      it('should use default fallback timeout (5 minutes) when not specified', () => {
+        const api = new BungeeApi()
+        // Access private property for testing
+        expect((api as any).fallbackTimeoutMs).toBe(BUNGEE_API_FALLBACK_TIMEOUT) // 5 minutes
+      })
+
+      it('should use custom fallback timeout when specified', () => {
+        const customTimeout = 600000 // 10 minutes
+        const api = new BungeeApi({ fallbackTimeoutMs: customTimeout })
+        expect((api as any).fallbackTimeoutMs).toBe(customTimeout)
+      })
+    })
+
+    describe('infrastructure error fallback', () => {
+      const customUrl = 'https://custom-api.example.com'
+      let customApi: BungeeApi
+
+      beforeEach(() => {
+        customApi = new BungeeApi({ apiBaseUrl: customUrl })
+      })
+
+      it('should activate fallback on 500 server error and retry with default URL', async () => {
+        let callCount = 0
+        mockFetch.mockImplementation(() => {
+          callCount++
+          if (callCount === 1) {
+            // First call to custom URL fails with 500
+            return Promise.resolve({
+              ok: false,
+              status: 500,
+              json: () => Promise.resolve({ error: 'Internal Server Error' }),
+            })
+          } else {
+            // Second call to default URL succeeds
+            return Promise.resolve({
+              ok: true,
+              json: () => Promise.resolve(mockQuoteResponse),
+            })
+          }
+        })
+
+        const result = await customApi.getBungeeQuote(mockQuoteRequest)
+
+        expect(result.route).toEqual(mockQuoteResponse.result.manualRoutes[0])
+        expect(mockFetch).toHaveBeenCalledTimes(2)
+        // First call should use custom URL
+        expect(mockFetch).toHaveBeenNthCalledWith(1, expect.stringContaining(customUrl), expect.any(Object))
+        // Second call should use default URL
+        expect(mockFetch).toHaveBeenNthCalledWith(
+          2,
+          expect.stringContaining(DEFAULT_API_OPTIONS.apiBaseUrl),
+          expect.any(Object),
+        )
+      })
+
+      it('should activate fallback on 502 gateway error', async () => {
+        let callCount = 0
+        mockFetch.mockImplementation(() => {
+          callCount++
+          if (callCount === 1) {
+            return Promise.resolve({
+              ok: false,
+              status: 502,
+              json: () => Promise.resolve({ error: 'Bad Gateway' }),
+            })
+          } else {
+            return Promise.resolve({
+              ok: true,
+              json: () => Promise.resolve(mockQuoteResponse),
+            })
+          }
+        })
+
+        const result = await customApi.getBungeeQuote(mockQuoteRequest)
+
+        expect(mockFetch).toHaveBeenCalledTimes(2)
+        expect(result.route).toEqual(mockQuoteResponse.result.manualRoutes[0])
+      })
+
+      it('should activate fallback on 429 rate limiting error', async () => {
+        let callCount = 0
+        mockFetch.mockImplementation(() => {
+          callCount++
+          if (callCount === 1) {
+            return Promise.resolve({
+              ok: false,
+              status: 429,
+              json: () => Promise.resolve({ error: 'Rate Limit Exceeded' }),
+            })
+          } else {
+            return Promise.resolve({
+              ok: true,
+              json: () => Promise.resolve(mockQuoteResponse),
+            })
+          }
+        })
+
+        const result = await customApi.getBungeeQuote(mockQuoteRequest)
+
+        expect(mockFetch).toHaveBeenCalledTimes(2)
+        expect(result.route).toEqual(mockQuoteResponse.result.manualRoutes[0])
+      })
+
+      it('should not activate fallback on 4xx client errors', async () => {
+        mockFetch.mockResolvedValue({
+          ok: false,
+          status: 400,
+          json: () => Promise.resolve({ error: 'Bad Request' }),
+        })
+
+        await expect(customApi.getBungeeQuote(mockQuoteRequest)).rejects.toThrow()
+
+        // Should only be called once (no retry)
+        expect(mockFetch).toHaveBeenCalledTimes(1)
+        expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining(customUrl), expect.any(Object))
+      })
+    })
+
+    describe('network error fallback', () => {
+      const customUrl = 'https://custom-api.example.com'
+      let customApi: BungeeApi
+
+      beforeEach(() => {
+        customApi = new BungeeApi({ apiBaseUrl: customUrl })
+      })
+
+      it('should activate fallback on network fetch error and retry with default URL', async () => {
+        let callCount = 0
+        mockFetch.mockImplementation(() => {
+          callCount++
+          if (callCount === 1) {
+            // First call to custom URL fails with network error
+            return Promise.reject(new TypeError('Failed to fetch'))
+          } else {
+            // Second call to default URL succeeds
+            return Promise.resolve({
+              ok: true,
+              json: () => Promise.resolve(mockQuoteResponse),
+            })
+          }
+        })
+
+        const result = await customApi.getBungeeQuote(mockQuoteRequest)
+
+        expect(result).toBeDefined()
+        expect(mockFetch).toHaveBeenCalledTimes(2)
+        // First call should use custom URL
+        expect(mockFetch).toHaveBeenNthCalledWith(1, expect.stringContaining(customUrl), expect.any(Object))
+        // Second call should use default URL
+        expect(mockFetch).toHaveBeenNthCalledWith(
+          2,
+          expect.stringContaining(DEFAULT_API_OPTIONS.apiBaseUrl),
+          expect.any(Object),
+        )
+      })
+
+      it('should activate fallback on connection timeout error', async () => {
+        let callCount = 0
+        mockFetch.mockImplementation(() => {
+          callCount++
+          if (callCount === 1) {
+            return Promise.reject(new Error('fetch timeout'))
+          } else {
+            return Promise.resolve({
+              ok: true,
+              json: () => Promise.resolve(mockQuoteResponse),
+            })
+          }
+        })
+
+        await customApi.getBungeeQuote(mockQuoteRequest)
+
+        expect(mockFetch).toHaveBeenCalledTimes(2)
+      })
+    })
+
+    describe('fallback state management', () => {
+      const customUrl = 'https://custom-api.example.com'
+      let customApi: BungeeApi
+
+      beforeEach(() => {
+        customApi = new BungeeApi({
+          apiBaseUrl: customUrl,
+          fallbackTimeoutMs: 300000, // 5 minutes
+        })
+      })
+
+      it('should use fallback URL immediately after activation', async () => {
+        // First call activates fallback
+        let callCount = 0
+        mockFetch.mockImplementation(() => {
+          callCount++
+          if (callCount === 1) {
+            return Promise.resolve({
+              ok: false,
+              status: 500,
+              json: () => Promise.resolve({ error: 'Server Error' }),
+            })
+          } else {
+            return Promise.resolve({
+              ok: true,
+              json: () => Promise.resolve(mockQuoteResponse),
+            })
+          }
+        })
+
+        await customApi.getBungeeQuote(mockQuoteRequest)
+
+        mockFetch.mockClear()
+
+        // Second call should immediately use fallback URL
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve(mockQuoteResponse),
+        })
+
+        await customApi.getBungeeQuote(mockQuoteRequest)
+
+        expect(mockFetch).toHaveBeenCalledTimes(1)
+        expect(mockFetch).toHaveBeenCalledWith(
+          expect.stringContaining(DEFAULT_API_OPTIONS.apiBaseUrl),
+          expect.any(Object),
+        )
+      })
+
+      it('should expire fallback after timeout period', async () => {
+        // Activate fallback
+        let callCount = 0
+        mockFetch.mockImplementation(() => {
+          callCount++
+          if (callCount === 1) {
+            return Promise.resolve({
+              ok: false,
+              status: 500,
+              json: () => Promise.resolve({ error: 'Server Error' }),
+            })
+          } else {
+            return Promise.resolve({
+              ok: true,
+              json: () => Promise.resolve(mockQuoteResponse),
+            })
+          }
+        })
+
+        await customApi.getBungeeQuote(mockQuoteRequest)
+
+        // Fast-forward time past fallback timeout
+        jest.advanceTimersByTime(300001) // 5 minutes + 1ms
+
+        mockFetch.mockClear()
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve(mockQuoteResponse),
+        })
+
+        // Should now use custom URL again
+        await customApi.getBungeeQuote(mockQuoteRequest)
+
+        expect(mockFetch).toHaveBeenCalledTimes(1)
+        expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining(customUrl), expect.any(Object))
+      })
+    })
+
+    describe('retry behavior', () => {
+      const customUrl = 'https://custom-api.example.com'
+      let customApi: BungeeApi
+
+      beforeEach(() => {
+        customApi = new BungeeApi({ apiBaseUrl: customUrl })
+      })
+
+      it('should not retry more than once when fallback fails', async () => {
+        // Both custom and fallback URLs fail
+        mockFetch.mockImplementation((url: string) => {
+          if (url.includes('custom-api')) {
+            return Promise.resolve({
+              ok: false,
+              status: 500,
+              json: () => Promise.resolve({ error: 'Custom Server Error' }),
+            })
+          } else {
+            return Promise.resolve({
+              ok: false,
+              status: 400,
+              json: () => Promise.resolve({ error: 'Fallback Error' }),
+            })
+          }
+        })
+
+        await expect(customApi.getBungeeQuote(mockQuoteRequest)).rejects.toThrow()
+
+        // Should be called exactly twice (original + one retry)
+        expect(mockFetch).toHaveBeenCalledTimes(2)
+      })
+
+      it('should not retry when already using fallback URLs', async () => {
+        // First activate fallback
+        let callCount = 0
+        mockFetch.mockImplementation(() => {
+          callCount++
+          if (callCount === 1) {
+            return Promise.resolve({
+              ok: false,
+              status: 500,
+              json: () => Promise.resolve({ error: 'Server Error' }),
+            })
+          } else {
+            return Promise.resolve({
+              ok: true,
+              json: () => Promise.resolve(mockQuoteResponse),
+            })
+          }
+        })
+
+        await customApi.getBungeeQuote(mockQuoteRequest)
+
+        mockFetch.mockClear()
+
+        // Now fallback URL fails - should not retry again
+        mockFetch.mockResolvedValue({
+          ok: false,
+          status: 500,
+          json: () => Promise.resolve({ error: 'Fallback Server Error' }),
+        })
+
+        await expect(customApi.getBungeeQuote(mockQuoteRequest)).rejects.toThrow()
+
+        // Should only be called once (no retry when already using fallback)
+        expect(mockFetch).toHaveBeenCalledTimes(1)
+      })
     })
   })
 })
