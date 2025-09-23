@@ -9,7 +9,7 @@ import {
   validateCrossChainRequest,
 } from '../utils'
 import { getQuoteWithBridge } from '../getQuoteWithBridge'
-import { BridgeProviderError } from '../../errors'
+import { BridgeProviderError, BridgeProviderQuoteError } from '../../errors'
 import { BestQuoteStrategy, MultiQuoteRequest } from './QuoteStrategy'
 
 const DEFAULT_TOTAL_TIMEOUT_MS = 40_000 // 40 seconds
@@ -100,7 +100,7 @@ export class BestQuoteStrategyImpl implements BestQuoteStrategy {
         const errorResult: MultiQuoteResult = {
           providerDappId: provider.info.dappId,
           quote: null,
-          error: error instanceof BridgeProviderError ? error : new BridgeProviderError(String(error), {}),
+          error: error instanceof BridgeProviderQuoteError ? error : new BridgeProviderError(String(error), {}),
         }
 
         // Store the first error if we don't have one yet
