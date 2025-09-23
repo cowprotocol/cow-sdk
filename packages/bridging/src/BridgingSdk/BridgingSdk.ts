@@ -8,6 +8,7 @@ import {
   GetProviderBuyTokens,
   MultiQuoteRequest,
   MultiQuoteResult,
+  MultiQuoteProgressCallback,
   QuoteBridgeRequest,
 } from '../types'
 import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
@@ -17,8 +18,19 @@ import { findBridgeProviderFromHook } from './findBridgeProviderFromHook'
 import { BridgeProviderError } from '../errors'
 import { SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
-import { ALL_SUPPORTED_CHAINS, ChainInfo, CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
+import { ALL_SUPPORTED_CHAINS, ChainInfo, SupportedChainId } from '@cowprotocol/sdk-config'
 import { AbstractProviderAdapter, enableLogging, setGlobalAdapter } from '@cowprotocol/sdk-common'
+import {
+  createBridgeQuoteTimeoutPromise,
+  executeProviderQuotes,
+  fillTimeoutResults,
+  safeCallProgressiveCallback,
+  validateCrossChainRequest,
+} from './utils'
+import { GetOrderParams } from './types'
+
+const DEFAULT_TOTAL_TIMEOUT_MS = 40_000 // 40 seconds
+const DEFAULT_PROVIDER_TIMEOUT_MS = 20_000 // 20 seconds
 
 export interface BridgingSdkOptions {
   /**
@@ -40,25 +52,6 @@ export interface BridgingSdkOptions {
    * Enable logging for the bridging SDK.
    */
   enableLogging?: boolean
-}
-
-/**
- * Parameters for the `getOrder` method.
- */
-export interface GetOrderParams {
-  /**
-   * Id of a network where order was settled
-   */
-  chainId: SupportedChainId
-  /**
-   * The unique identifier of the order.
-   */
-  orderId: string
-
-  /**
-   * The environment of the order
-   */
-  env?: CowEnv
 }
 
 export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'enableLogging'>>
@@ -181,66 +174,84 @@ export class BridgingSdk {
   }
 
   /**
-   * Get quotes from multiple bridge providers in parallel.
+   * Get quotes from multiple bridge providers in parallel with progressive results.
    *
    * This method is specifically for cross-chain bridging quotes. For single-chain swaps, use getQuote() instead.
    *
-   * @param request - The multi-quote request containing quote parameters and optional provider dappIds
+   * Features:
+   * - Progressive results: Use the `onQuoteResult` callback to receive quotes as soon as each provider responds
+   * - Timeout support: Configure maximum wait time for all providers and individual provider timeouts
+   * - Parallel execution: All providers are queried simultaneously for best performance
+   *
+   * @param request - The multi-quote request containing quote parameters, provider dappIds, and options
    * @returns Array of results, one for each provider (successful quotes or errors)
    * @throws Error if the request is for a single-chain swap (sellTokenChainId === buyTokenChainId)
+   * ```
    */
   async getMultiQuotes(request: MultiQuoteRequest): Promise<MultiQuoteResult[]> {
-    const { quoteBridgeRequest, providerDappIds, advancedSettings } = request
+    const { quoteBridgeRequest, providerDappIds, advancedSettings, options } = request
     const { sellTokenChainId, buyTokenChainId } = quoteBridgeRequest
 
     // Validate that this is a cross-chain request
-    if (sellTokenChainId === buyTokenChainId) {
-      throw new BridgeProviderError(
-        'getMultiQuotes() is only for cross-chain bridging. For single-chain swaps, use getQuote() instead.',
-        { config: this.config },
-      )
-    }
+    validateCrossChainRequest(sellTokenChainId, buyTokenChainId)
 
     // Determine which providers to query
-    const providersToQuery = providerDappIds
-      ? providerDappIds.map((dappId) => {
-          const provider = this.getProviderByDappId(dappId)
-          if (!provider) {
-            throw new BridgeProviderError(
-              `Provider with dappId '${dappId}' not found. Available providers: ${this.config.providers.map((p) => p.info.dappId).join(', ')}`,
-              { config: this.config },
-            )
-          }
-          return provider
-        })
-      : this.config.providers
+    const providersToQuery = this.resolveProvidersToQuery(providerDappIds)
 
-    // Execute quotes in parallel
-    const quotePromises = providersToQuery.map(async (provider): Promise<MultiQuoteResult> => {
-      try {
-        const quote = await getQuoteWithBridge({
-          swapAndBridgeRequest: quoteBridgeRequest,
-          advancedSettings,
-          tradingSdk: this.config.tradingSdk,
-          provider,
-          bridgeHookSigner: advancedSettings?.quoteSigner,
-        })
+    // Extract options with defaults
+    const {
+      onQuoteResult,
+      totalTimeout = DEFAULT_TOTAL_TIMEOUT_MS,
+      providerTimeout = DEFAULT_PROVIDER_TIMEOUT_MS,
+    } = options || {}
 
-        return {
-          providerDappId: provider.info.dappId,
-          quote,
-          error: undefined,
-        }
-      } catch (error) {
-        return {
-          providerDappId: provider.info.dappId,
-          quote: null,
-          error: error instanceof BridgeProviderError ? error : new BridgeProviderError(String(error), {}),
-        }
+    // Keep track of results for both progressive callbacks and final return
+    const results: MultiQuoteResult[] = []
+    const promises: Promise<void>[] = []
+
+    // Create a promise for each provider that handles both progressive callbacks and result collection
+    for (let i = 0; i < providersToQuery.length; i++) {
+      const provider = providersToQuery[i]
+      if (!provider) {
+        continue
       }
+
+      const promise = this.createProviderQuotePromise(
+        provider,
+        quoteBridgeRequest,
+        advancedSettings,
+        providerTimeout,
+        onQuoteResult,
+        results,
+        i,
+      )
+
+      promises.push(promise)
+    }
+
+    // Execute all provider quotes with timeout handling
+    await executeProviderQuotes(promises, totalTimeout, this.config)
+
+    // Ensure we have a result for each provider (fill with timeout errors if needed)
+    fillTimeoutResults(results, providersToQuery)
+
+    // Sort results by buyAmount after slippage (descending, best quotes first)
+    results.sort((a, b) => {
+      // Put successful quotes before failed ones
+      if (a.quote && !b.quote) return -1
+      if (!a.quote && b.quote) return 1
+      if (!a.quote && !b.quote) return 0
+      // Not possible due to previous check
+      // but Typescript cannot understand that a and b not falsy in the followingcode
+      if (!a.quote || !b.quote) return 0
+
+      // Both have quotes, sort by buyAmount after slippage (descending)
+      const aBuyAmount = a.quote.bridge.amountsAndCosts.afterSlippage.buyAmount
+      const bBuyAmount = b.quote.bridge.amountsAndCosts.afterSlippage.buyAmount
+      return aBuyAmount > bBuyAmount ? -1 : aBuyAmount < bBuyAmount ? 1 : 0
     })
 
-    return Promise.all(quotePromises)
+    return results
   }
 
   async getOrder(params: GetOrderParams): Promise<CrossChainOrder | null> {
@@ -267,5 +278,78 @@ export class BridgingSdk {
 
   getProviderByDappId(dappId: string): BridgeProvider<BridgeQuoteResult> | undefined {
     return this.config.providers.find((provider) => provider.info.dappId === dappId)
+  }
+
+  /**
+   * Resolves which providers to query based on the request
+   */
+  private resolveProvidersToQuery(providerDappIds?: string[]): BridgeProvider<BridgeQuoteResult>[] {
+    if (!providerDappIds) {
+      return this.config.providers
+    }
+
+    return providerDappIds.map((dappId) => {
+      const provider = this.getProviderByDappId(dappId)
+      if (!provider) {
+        throw new BridgeProviderError(
+          `Provider with dappId '${dappId}' not found. Available providers: ${this.config.providers.map((p) => p.info.dappId).join(', ')}`,
+          { config: this.config },
+        )
+      }
+      return provider
+    })
+  }
+
+  /**
+   * Creates a promise that handles quote fetching for a single provider
+   */
+  private createProviderQuotePromise(
+    provider: BridgeProvider<BridgeQuoteResult>,
+    quoteBridgeRequest: QuoteBridgeRequest,
+    advancedSettings: SwapAdvancedSettings | undefined,
+    providerTimeout: number,
+    onQuoteResult: MultiQuoteProgressCallback | undefined,
+    results: MultiQuoteResult[],
+    index: number,
+  ): Promise<void> {
+    return (async (): Promise<void> => {
+      try {
+        // Race between the actual quote request and the provider timeout
+        const quote = await Promise.race([
+          getQuoteWithBridge({
+            swapAndBridgeRequest: quoteBridgeRequest,
+            advancedSettings,
+            tradingSdk: this.config.tradingSdk,
+            provider,
+            bridgeHookSigner: advancedSettings?.quoteSigner,
+          }),
+          createBridgeQuoteTimeoutPromise(providerTimeout, `Provider ${provider.info.dappId}`),
+        ])
+
+        const result: MultiQuoteResult = {
+          providerDappId: provider.info.dappId,
+          quote,
+          error: undefined,
+        }
+
+        // Store result for final return
+        results[index] = result
+
+        // Call progressive callback if provided
+        safeCallProgressiveCallback(onQuoteResult, result)
+      } catch (error) {
+        const result: MultiQuoteResult = {
+          providerDappId: provider.info.dappId,
+          quote: null,
+          error: error instanceof BridgeProviderError ? error : new BridgeProviderError(String(error), {}),
+        }
+
+        // Store result for final return
+        results[index] = result
+
+        // Call progressive callback if provided
+        safeCallProgressiveCallback(onQuoteResult, result)
+      }
+    })()
   }
 }

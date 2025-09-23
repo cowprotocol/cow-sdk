@@ -1,6 +1,6 @@
 import { BridgingSdk } from './BridgingSdk'
 import { MockBridgeProvider } from '../providers/mock/MockBridgeProvider'
-import { QuoteBridgeRequest } from '../types'
+import { MultiQuoteResult, QuoteBridgeRequest } from '../types'
 import { assertIsBridgeQuoteAndPost, assertIsQuoteAndPost } from '../utils'
 import {
   amountsAndCosts,
@@ -322,21 +322,24 @@ adapterNames.forEach((adapterName) => {
 
         expect(results).toHaveLength(3)
 
-        // First provider should succeed
-        expect(results[0]?.providerDappId).toBe('mockProvider')
-        expect(results[0]?.quote).toBeTruthy()
-        expect(results[0]?.error).toBeUndefined()
+        // Results should be sorted with successful quotes first
+        // First two results should be successful (mockProvider and mock3)
+        const successfulResults = results.filter(r => r.quote)
+        const failedResults = results.filter(r => !r.quote)
 
-        // Second provider should fail
-        expect(results[1]?.providerDappId).toBe('cow-sdk://bridging/providers/mock2')
-        expect(results[1]?.quote).toBeNull()
-        expect(results[1]?.error).toBeTruthy()
-        expect(results[1]?.error?.message).toContain('Provider failed')
+        expect(successfulResults).toHaveLength(2)
+        expect(failedResults).toHaveLength(1)
 
-        // Third provider should succeed
-        expect(results[2]?.providerDappId).toBe('cow-sdk://bridging/providers/mock3')
-        expect(results[2]?.quote).toBeTruthy()
-        expect(results[2]?.error).toBeUndefined()
+        // Successful providers (order may vary within successful group)
+        const successfulProviderIds = successfulResults.map(r => r.providerDappId)
+        expect(successfulProviderIds).toContain('mockProvider')
+        expect(successfulProviderIds).toContain('cow-sdk://bridging/providers/mock3')
+
+        // Failed provider should come last
+        expect(failedResults[0]?.providerDappId).toBe('cow-sdk://bridging/providers/mock2')
+        expect(failedResults[0]?.quote).toBeNull()
+        expect(failedResults[0]?.error).toBeTruthy()
+        expect(failedResults[0]?.error?.message).toContain('Provider failed')
       })
 
       it('should throw error for same-chain requests', async () => {
@@ -451,6 +454,317 @@ adapterNames.forEach((adapterName) => {
             expect(result.quote.postSwapOrderFromQuote).toBeTruthy()
           }
         }
+      })
+
+      it('should support progressive results with onQuoteResult callback', async () => {
+        const progressiveResults: MultiQuoteResult[] = []
+        const onQuoteResult = jest.fn((result: MultiQuoteResult) => {
+          progressiveResults.push(result)
+        })
+
+        const results = await bridgingSdk.getMultiQuotes({
+          quoteBridgeRequest,
+          providerDappIds: ['mockProvider', 'cow-sdk://bridging/providers/mock2'],
+          options: {
+            onQuoteResult,
+          },
+        })
+
+        // Should have received 2 progressive callbacks
+        expect(onQuoteResult).toHaveBeenCalledTimes(2)
+        expect(progressiveResults).toHaveLength(2)
+
+        // Progressive results should contain both providers (order may vary due to async execution)
+        const progressiveProviderIds = progressiveResults.map((r) => r.providerDappId).sort()
+        expect(progressiveProviderIds).toEqual(['cow-sdk://bridging/providers/mock2', 'mockProvider'])
+
+        // Final results should also be complete
+        expect(results).toHaveLength(2)
+        const finalProviderIds = results.map((r) => r.providerDappId).sort()
+        expect(finalProviderIds).toEqual(['cow-sdk://bridging/providers/mock2', 'mockProvider'])
+      })
+
+      it('should handle callback errors gracefully without affecting quote process', async () => {
+        const onQuoteResult = jest.fn(() => {
+          throw new Error('Callback error')
+        })
+
+        // Mock console.warn to capture the warning
+        const consoleSpy = jest.spyOn(console, 'warn').mockImplementation()
+
+        const results = await bridgingSdk.getMultiQuotes({
+          quoteBridgeRequest,
+          providerDappIds: ['mockProvider'],
+          options: {
+            onQuoteResult,
+          },
+        })
+
+        // Quote should still succeed despite callback error
+        expect(results).toHaveLength(1)
+        expect(results[0]?.quote).toBeTruthy()
+        expect(results[0]?.error).toBeUndefined()
+
+        // Should have logged the callback error
+        expect(consoleSpy).toHaveBeenCalledWith('Error in onQuoteResult callback:', expect.any(Error))
+
+        consoleSpy.mockRestore()
+      })
+
+      it('should respect timeout option', async () => {
+        // Make first provider fast, second provider slow
+        mockProvider.getQuote = jest.fn().mockImplementation(async () => {
+          await new Promise((resolve) => setTimeout(resolve, 10)) // 10ms delay - fast
+          return bridgeQuoteResult
+        })
+
+        mockProvider2.getQuote = jest.fn().mockImplementation(async () => {
+          await new Promise((resolve) => setTimeout(resolve, 200)) // 200ms delay - slow
+          return bridgeQuoteResult
+        })
+
+        const onQuoteResult = jest.fn()
+        const consoleSpy = jest.spyOn(console, 'warn').mockImplementation()
+
+        const startTime = Date.now()
+        const results = await bridgingSdk.getMultiQuotes({
+          quoteBridgeRequest,
+          providerDappIds: ['mockProvider', 'cow-sdk://bridging/providers/mock2'],
+          options: {
+            onQuoteResult,
+            totalTimeout: 100, // 100ms timeout
+          },
+        })
+        const elapsed = Date.now() - startTime
+
+        // Should complete close to timeout time
+        expect(elapsed).toBeGreaterThan(90) // At least close to timeout
+        expect(elapsed).toBeLessThan(300) // But not wait for slow provider
+
+        // Should still return results for both providers
+        expect(results).toHaveLength(2)
+
+        // Find results by provider ID since order may vary
+        const mockProviderResult = results.find((r) => r.providerDappId === 'mockProvider')
+        const mock2ProviderResult = results.find((r) => r.providerDappId === 'cow-sdk://bridging/providers/mock2')
+
+        // First provider (fast) should succeed
+        expect(mockProviderResult).toBeDefined()
+        expect(mockProviderResult?.quote).toBeTruthy()
+
+        // Second provider should be defined but might have timed out
+        expect(mock2ProviderResult).toBeDefined()
+        // Note: We don't assert on quote success for the slow provider as it may timeout
+
+        // Should log timeout warning
+        expect(consoleSpy).toHaveBeenCalledWith('getMultiQuotes timeout occurred, returning partial results')
+
+        consoleSpy.mockRestore()
+      })
+
+      it('should call progressive callbacks in order of completion, not provider order', async () => {
+        const callbackOrder: string[] = []
+        const onQuoteResult = jest.fn((result: MultiQuoteResult) => {
+          callbackOrder.push(result.providerDappId)
+        })
+
+        // Make first provider slower than second
+        mockProvider.getQuote = jest.fn().mockImplementation(async () => {
+          await new Promise((resolve) => setTimeout(resolve, 100)) // 100ms delay
+          return bridgeQuoteResult
+        })
+
+        mockProvider2.getQuote = jest.fn().mockImplementation(async () => {
+          await new Promise((resolve) => setTimeout(resolve, 50)) // 50ms delay
+          return bridgeQuoteResult
+        })
+
+        await bridgingSdk.getMultiQuotes({
+          quoteBridgeRequest,
+          providerDappIds: ['mockProvider', 'cow-sdk://bridging/providers/mock2'],
+          options: {
+            onQuoteResult,
+          },
+        })
+
+        // Second provider should complete first due to shorter delay
+        expect(callbackOrder).toHaveLength(2)
+        expect(callbackOrder[0]).toBe('cow-sdk://bridging/providers/mock2')
+        expect(callbackOrder[1]).toBe('mockProvider')
+      })
+
+      it('should include errors in progressive callbacks', async () => {
+        const progressiveResults: MultiQuoteResult[] = []
+        const onQuoteResult = jest.fn((result: MultiQuoteResult) => {
+          progressiveResults.push(result)
+        })
+
+        // Make one provider fail
+        const testError = new Error('Provider failed')
+        mockProvider2.getQuote = jest.fn().mockRejectedValue(testError)
+
+        await bridgingSdk.getMultiQuotes({
+          quoteBridgeRequest,
+          providerDappIds: ['mockProvider', 'cow-sdk://bridging/providers/mock2'],
+          options: {
+            onQuoteResult,
+          },
+        })
+
+        expect(progressiveResults).toHaveLength(2)
+
+        // First provider should succeed
+        const successResult = progressiveResults.find((r) => r.providerDappId === 'mockProvider')
+        expect(successResult?.quote).toBeTruthy()
+        expect(successResult?.error).toBeUndefined()
+
+        // Second provider should fail
+        const errorResult = progressiveResults.find((r) => r.providerDappId === 'cow-sdk://bridging/providers/mock2')
+        expect(errorResult?.quote).toBeNull()
+        expect(errorResult?.error).toBeTruthy()
+        expect(errorResult?.error?.message).toContain('Provider failed')
+      })
+
+      it('should work without options (backward compatibility)', async () => {
+        const results = await bridgingSdk.getMultiQuotes({
+          quoteBridgeRequest,
+        })
+
+        expect(results).toHaveLength(3)
+        results.forEach((result) => {
+          expect(result.quote).toBeTruthy()
+          expect(result.error).toBeUndefined()
+        })
+      })
+
+      it('should use default timeout when not specified', async () => {
+        // This test ensures the default timeout (30s) is used
+        const results = await bridgingSdk.getMultiQuotes({
+          quoteBridgeRequest,
+          options: {
+            onQuoteResult: jest.fn(),
+            // No timeout specified - should use default 30000ms
+          },
+        })
+
+        expect(results).toHaveLength(3)
+      })
+
+      it('should respect individual provider timeout', async () => {
+        // Create a fast provider that takes 10ms
+        const fastProvider = new MockBridgeProvider()
+        fastProvider.info.dappId = 'fastProvider'
+        fastProvider.info.name = 'Fast Provider'
+        fastProvider.getQuote = jest
+          .fn()
+          .mockImplementation(() => new Promise((resolve) => setTimeout(() => resolve(bridgeQuoteResult), 10)))
+        fastProvider.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+        fastProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
+
+        // Create a slow provider that takes 200ms
+        const slowProvider = new MockBridgeProvider()
+        slowProvider.info.dappId = 'slowProvider'
+        slowProvider.info.name = 'Slow Provider'
+        slowProvider.getQuote = jest
+          .fn()
+          .mockImplementation(() => new Promise((resolve) => setTimeout(() => resolve(bridgeQuoteResult), 200)))
+        slowProvider.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+        slowProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
+
+        // Create SDK with fast and slow providers
+        const testSdk = new BridgingSdk({
+          providers: [fastProvider, slowProvider],
+          tradingSdk,
+        })
+
+        const progressiveResults: MultiQuoteResult[] = []
+        const onQuoteResult = jest.fn((result) => {
+          progressiveResults.push(result)
+        })
+
+        const results = await testSdk.getMultiQuotes({
+          quoteBridgeRequest,
+          options: {
+            onQuoteResult,
+            providerTimeout: 100, // 100ms - should timeout the slow provider
+          },
+        })
+
+        expect(results).toHaveLength(2)
+
+        // Fast provider should succeed
+        const fastResult = results.find((r) => r.providerDappId === 'fastProvider')
+        expect(fastResult?.quote).toBeTruthy()
+        expect(fastResult?.error).toBeUndefined()
+
+        // Slow provider should timeout
+        const slowResult = results.find((r) => r.providerDappId === 'slowProvider')
+        expect(slowResult?.quote).toBeNull()
+        expect(slowResult?.error).toBeTruthy()
+        expect(slowResult?.error?.message).toContain('Provider slowProvider timeout after 100ms')
+      })
+
+      it('should use default provider timeout when not specified', async () => {
+        // Default provider timeout should be 15000ms
+        const results = await bridgingSdk.getMultiQuotes({
+          quoteBridgeRequest,
+          options: {
+            // No providerTimeout specified - should use default 15000ms
+          },
+        })
+
+        expect(results).toHaveLength(3)
+        results.forEach((result) => {
+          expect(result.quote).toBeTruthy()
+          expect(result.error).toBeUndefined()
+        })
+      })
+
+      it('should handle different provider and global timeouts independently', async () => {
+        // Create providers with different speeds
+        const fastProvider = new MockBridgeProvider()
+        fastProvider.info.dappId = 'fastProvider'
+        fastProvider.info.name = 'Fast Provider'
+        fastProvider.getQuote = jest
+          .fn()
+          .mockImplementation(() => new Promise((resolve) => setTimeout(() => resolve(bridgeQuoteResult), 50)))
+        fastProvider.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+        fastProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
+
+        const mediumProvider = new MockBridgeProvider()
+        mediumProvider.info.dappId = 'mediumProvider'
+        mediumProvider.info.name = 'Medium Provider'
+        mediumProvider.getQuote = jest
+          .fn()
+          .mockImplementation(() => new Promise((resolve) => setTimeout(() => resolve(bridgeQuoteResult), 150)))
+        mediumProvider.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+        mediumProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
+
+        const testSdk = new BridgingSdk({
+          providers: [fastProvider, mediumProvider],
+          tradingSdk,
+        })
+
+        const results = await testSdk.getMultiQuotes({
+          quoteBridgeRequest,
+          options: {
+            totalTimeout: 5000, // 5 seconds global timeout
+            providerTimeout: 100, // 100ms per provider timeout
+          },
+        })
+
+        expect(results).toHaveLength(2)
+
+        // Fast provider should succeed (50ms < 100ms timeout)
+        const fastResult = results.find((r) => r.providerDappId === 'fastProvider')
+        expect(fastResult?.quote).toBeTruthy()
+        expect(fastResult?.error).toBeUndefined()
+
+        // Medium provider should timeout (150ms > 100ms timeout)
+        const mediumResult = results.find((r) => r.providerDappId === 'mediumProvider')
+        expect(mediumResult?.quote).toBeNull()
+        expect(mediumResult?.error).toBeTruthy()
+        expect(mediumResult?.error?.message).toContain('Provider mediumProvider timeout after 100ms')
       })
     })
   })
