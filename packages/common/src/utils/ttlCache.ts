@@ -299,26 +299,26 @@ export class TTLCache<T> {
       } catch {
         console.warn('TTLCache: Failed to cleanup expired entries')
       }
+    }
 
-      // Also clean instance-tracked keys (covers wrapper fallback/SSR)
-      const now = Date.now()
-      for (const key of Array.from(this.keys)) {
-        const item = this.storage.getItem(key)
-        if (!item) {
-          this.keys.delete(key)
-          continue
-        }
+    // Also clean instance-tracked keys (covers wrapper fallback/SSR)
+    const now = Date.now()
+    for (const key of Array.from(this.keys)) {
+      const item = this.storage.getItem(key)
+      if (!item) {
+        this.keys.delete(key)
+        continue
+      }
 
-        try {
-          const entry: CacheEntry<T> = JSON.parse(item)
-          if (now - entry.timestamp > entry.ttl) {
-            this.storage.removeItem(key)
-            this.keys.delete(key)
-          }
-        } catch {
+      try {
+        const entry: CacheEntry<T> = JSON.parse(item)
+        if (now - entry.timestamp > entry.ttl) {
           this.storage.removeItem(key)
           this.keys.delete(key)
         }
+      } catch {
+        this.storage.removeItem(key)
+        this.keys.delete(key)
       }
     }
   }
