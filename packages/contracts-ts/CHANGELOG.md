@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.2.0...sdk-contracts-ts-v0.2.1) (2025-09-24)
+
+
+### 🐛 Bug Fixes
+
+* **bridge:** multi-quote strategies should not swallow BridgeProviderQuoteError ([#533](https://github.com/cowprotocol/cow-sdk/issues/533)) ([7789699](https://github.com/cowprotocol/cow-sdk/commit/77896999aa2140b70cd2919ede279eb7ebcf0b7b))
+
 ## [0.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.1.1...sdk-contracts-ts-v0.2.0) (2025-09-23)
 
 
