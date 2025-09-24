@@ -216,9 +216,8 @@ export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
     }
   }
 
-  getExplorerUrl(bridgingId: string): string {
-    // TODO: Review with across how we get the explorer url based on the bridgingId
-    return `https://app.across.to/transactions/${bridgingId}`
+  getExplorerUrl(_: string): string {
+    return `https://app.across.to/transactions`
   }
 
   async getStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult> {
