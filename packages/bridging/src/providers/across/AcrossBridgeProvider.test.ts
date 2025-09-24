@@ -197,7 +197,7 @@ adapterNames.forEach((adapterName) => {
 
     describe('getExplorerUrl', () => {
       it('should return explorer url', () => {
-        expect(provider.getExplorerUrl('123')).toEqual('https://app.across.to/transactions/123')
+        expect(provider.getExplorerUrl('123')).toEqual('https://app.across.to/transactions')
       })
     })
 
