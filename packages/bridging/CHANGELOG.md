@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.3.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.3.1...sdk-bridging-v0.3.2) (2025-09-24)
+
+
+### 🐛 Bug Fixes
+
+* **bridge:** relax multi-quote errors wrapping ([#535](https://github.com/cowprotocol/cow-sdk/issues/535)) ([551f3d8](https://github.com/cowprotocol/cow-sdk/commit/551f3d899b125838101b7ba4214b37c2ceaf36ea))
+
+## [0.3.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.3.0...sdk-bridging-v0.3.1) (2025-09-24)
+
+
+### 🐛 Bug Fixes
+
+* **bridge:** multi-quote strategies should not swallow BridgeProviderQuoteError ([#533](https://github.com/cowprotocol/cow-sdk/issues/533)) ([7789699](https://github.com/cowprotocol/cow-sdk/commit/77896999aa2140b70cd2919ede279eb7ebcf0b7b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-contracts-ts bumped to 0.2.1
+    * @cowprotocol/sdk-cow-shed bumped to 0.1.3
+    * @cowprotocol/sdk-trading bumped to 0.1.3
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 0.1.3
+
 ## [0.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.2.0...sdk-bridging-v0.3.0) (2025-09-23)
 
 

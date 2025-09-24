@@ -113,7 +113,7 @@ export class MultiQuoteStrategyImpl implements MultiQuoteStrategy {
         const result: MultiQuoteResult = {
           providerDappId: provider.info.dappId,
           quote: null,
-          error: error instanceof BridgeProviderError ? error : new BridgeProviderError(String(error), {}),
+          error: error instanceof Error ? error : new BridgeProviderError(String(error), {}),
         }
 
         // Store result for final return
