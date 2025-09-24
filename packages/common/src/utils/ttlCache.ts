@@ -195,7 +195,7 @@ export class TTLCache<T> {
   clear(): void {
     const prefix = this.keyPrefix + ':'
 
-    if (this.isMemoryStorage && this.storage instanceof MemoryStorage) {
+    if (this.isMemoryStorage) {
       ;(this.storage as MemoryStorage).clear(prefix)
       this.keys.clear()
       return

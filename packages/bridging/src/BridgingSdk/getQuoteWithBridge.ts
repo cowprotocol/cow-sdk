@@ -260,7 +260,7 @@ async function getBaseBridgeQuoteRequest<T extends BridgeQuoteResult>(params: {
 
   // We just pick the first intermediate token for now
   const intermediateToken = intermediateTokens[0]
-  log(`Using ${intermediateToken} as intermediate tokens`)
+  log(`Using ${intermediateToken?.address ?? intermediateToken?.address} as intermediate tokens`)
 
   if (!intermediateToken) {
     throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_INTERMEDIATE_TOKENS, { intermediateTokens })
