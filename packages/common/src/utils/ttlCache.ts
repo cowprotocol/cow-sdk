@@ -109,6 +109,8 @@ export class TTLCache<T> {
   private keyPrefix: string
   private ttl: number
   private _isMemoryStorage: boolean = false
+  // Track keys written by this instance (covers wrapper fallback/SSR)
+  private keys = new Set<string>()
 
   get isMemoryStorage(): boolean {
     return this._isMemoryStorage && this.storage instanceof MemoryStorage
@@ -137,6 +139,9 @@ export class TTLCache<T> {
    * Set a value in the cache with TTL
    */
   set(key: string, value: T): void {
+    // Skip storing when TTL <= 0 (disabled)
+    if (this.ttl <= 0) return
+
     const entry: CacheEntry<T> = {
       value,
       timestamp: Date.now(),
@@ -149,6 +154,7 @@ export class TTLCache<T> {
     } catch (error) {
       console.warn('TTLCache: Failed to store cache entry', error)
     }
+    this.keys.add(storageKey)
   }
 
   /**
@@ -187,14 +193,18 @@ export class TTLCache<T> {
   delete(key: string): void {
     const storageKey = this.getStorageKey(key)
     this.storage.removeItem(storageKey)
+    this.keys.delete(storageKey)
   }
 
   /**
    * Clear all cache entries with this cache's prefix
    */
   clear(): void {
-    if (this.isMemoryStorage) {
-      ;(this.storage as MemoryStorage).clear(this.keyPrefix + ':')
+    const prefix = this.keyPrefix + ':'
+
+    if (this.isMemoryStorage && this.storage instanceof MemoryStorage) {
+      ;(this.storage as MemoryStorage).clear(prefix)
+      this.keys.clear()
       return
     }
 
@@ -203,7 +213,7 @@ export class TTLCache<T> {
         const keysToDelete: string[] = []
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i)
-          if (key && key.startsWith(this.keyPrefix + ':')) {
+          if (key && key.startsWith(prefix)) {
             keysToDelete.push(key)
           }
         }
@@ -213,14 +223,29 @@ export class TTLCache<T> {
         console.warn('TTLCache: Failed to clear localStorage cache')
       }
     }
+
+    // Always clear instance-tracked keys (covers wrapper fallback/SSR)
+    for (const key of Array.from(this.keys)) {
+      try {
+        this.storage.removeItem(key)
+      } catch (error) {
+        console.error('TTL Cache clear', error)
+      }
+      this.keys.delete(key)
+    }
   }
 
   /**
    * Get the number of cache entries (approximate for localStorage)
    */
   size(): number {
-    if (this.isMemoryStorage) {
-      return (this.storage as MemoryStorage).size(this.keyPrefix + ':')
+    const prefix = this.keyPrefix + ':'
+    if (this.isMemoryStorage && this.storage instanceof MemoryStorage) {
+      return (this.storage as MemoryStorage).size(prefix)
+    }
+    // In SSR or wrapper-fallback scenarios, rely on the per-instance index
+    if (typeof localStorage === 'undefined') {
+      return this.keys.size
     }
 
     if (typeof localStorage !== 'undefined') {
@@ -228,7 +253,7 @@ export class TTLCache<T> {
         let count = 0
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i)
-          if (key && key.startsWith(this.keyPrefix + ':')) {
+          if (key && key.startsWith(prefix)) {
             count++
           }
         }
@@ -244,6 +269,7 @@ export class TTLCache<T> {
    * Clean up expired entries
    */
   cleanup(): void {
+    const prefix = this.keyPrefix + ':'
     if (typeof localStorage !== 'undefined') {
       try {
         const keysToDelete: string[] = []
@@ -251,7 +277,7 @@ export class TTLCache<T> {
 
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i)
-          if (key && key.startsWith(this.keyPrefix + ':')) {
+          if (key && key.startsWith(prefix)) {
             const item = localStorage.getItem(key)
             if (item) {
               try {
@@ -270,6 +296,27 @@ export class TTLCache<T> {
         keysToDelete.forEach((key) => localStorage.removeItem(key))
       } catch {
         console.warn('TTLCache: Failed to cleanup expired entries')
+      }
+
+      // Also clean instance-tracked keys (covers wrapper fallback/SSR)
+      const now = Date.now()
+      for (const key of Array.from(this.keys)) {
+        const item = this.storage.getItem(key)
+        if (!item) {
+          this.keys.delete(key)
+          continue
+        }
+
+        try {
+          const entry: CacheEntry<T> = JSON.parse(item)
+          if (now - entry.timestamp > entry.ttl) {
+            this.storage.removeItem(key)
+            this.keys.delete(key)
+          }
+        } catch {
+          this.storage.removeItem(key)
+          this.keys.delete(key)
+        }
       }
     }
   }

@@ -125,7 +125,7 @@ adapterNames.forEach((adapterName) => {
           ...quoteBridgeRequest,
           sellTokenAddress: intermediateToken,
           sellTokenDecimals: intermediateTokenDecimals,
-          amount: BigInt(100 * 10 ** intermediateTokenDecimals).toString(),
+          amount: (100n * 10n ** BigInt(intermediateTokenDecimals)).toString(),
         })
 
         // Verify amounts and costs

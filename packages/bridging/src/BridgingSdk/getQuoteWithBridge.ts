@@ -110,7 +110,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
 
   const intermediateTokenAmount = swapResult.amountsAndCosts.afterSlippage.buyAmount // Estimated, as it will likely have surplus
   log(
-    `Expected to receive ${intermediateTokenAmount} of the intermediate token (${(intermediateTokenAmount / BigInt(10 ** intermediaryTokenDecimals)).toString()} formatted)`,
+    `Expected to receive ${intermediateTokenAmount} of the intermediate token (${(intermediateTokenAmount / 10n ** BigInt(intermediaryTokenDecimals)).toString()} formatted)`,
   )
 
   // Get the bridge result

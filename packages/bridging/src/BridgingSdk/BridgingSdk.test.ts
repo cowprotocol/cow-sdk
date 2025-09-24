@@ -340,9 +340,9 @@ adapterNames.forEach((adapterName) => {
         // Cleanup expired entries
         shortTtlSdk.cleanupExpiredCache()
 
-        // Cache should be cleaned up (note: localStorage cleanup is async and may not reflect immediately in size())
-        // So we test that expired entries are not returned
-        expect(mockProvider.getBuyTokens).toHaveBeenCalledTimes(1) // Should call provider again
+        // Next call should miss cache and hit provider again +
+        await shortTtlSdk.getBuyTokens({ buyChainId: 137 as TargetChainId })
+        expect(mockProvider.getBuyTokens).toHaveBeenCalledTimes(2)
       })
 
       it('should persist cache across SDK instances when using localStorage', async () => {
