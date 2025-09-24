@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.3.2...sdk-bridging-v0.3.3) (2025-09-24)
+
+
+### 🐛 Bug Fixes
+
+* **bridge:** fix Across tx explorer link ([#537](https://github.com/cowprotocol/cow-sdk/issues/537)) ([d76db02](https://github.com/cowprotocol/cow-sdk/commit/d76db02a53cebe6a18032293729d590affa0c38c))
+
 ## [0.3.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.3.1...sdk-bridging-v0.3.2) (2025-09-24)
 
 
