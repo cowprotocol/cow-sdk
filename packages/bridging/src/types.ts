@@ -12,7 +12,6 @@ import type {
   TraderParameters,
 } from '@cowprotocol/sdk-trading'
 import type { AccountAddress, SignerLike } from '@cowprotocol/sdk-common'
-import { BridgeProviderError, BridgeProviderQuoteError } from './errors'
 
 export interface BridgeProviderInfo {
   name: string
@@ -412,7 +411,7 @@ export interface CrossChainOrder {
 export interface MultiQuoteResult {
   providerDappId: string
   quote: BridgeQuoteAndPost | null
-  error?: BridgeProviderQuoteError | BridgeProviderError
+  error?: Error
 }
 
 /**
