@@ -175,6 +175,7 @@ export class TTLCache<T> {
       if (now - entry.timestamp > entry.ttl) {
         // Entry has expired, remove it
         this.storage.removeItem(storageKey)
+        this.keys.delete(storageKey)
         return undefined
       }
 
@@ -183,6 +184,7 @@ export class TTLCache<T> {
       console.warn('TTLCache: Failed to parse cache entry', error)
       // Remove corrupted entry
       this.storage.removeItem(storageKey)
+      this.keys.delete(storageKey)
       return undefined
     }
   }
