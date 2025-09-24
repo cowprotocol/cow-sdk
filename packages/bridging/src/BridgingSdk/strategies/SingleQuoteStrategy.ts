@@ -12,8 +12,8 @@ import { BaseSingleQuoteStrategy, SingleQuoteRequest } from './QuoteStrategy'
 export class SingleQuoteStrategy extends BaseSingleQuoteStrategy {
   readonly strategyName = 'SingleQuoteStrategy' as const
 
-  constructor(intermediateTokensCache?: TTLCache<TokenInfo[]>, intermediateTokensTtl?: number) {
-    super(intermediateTokensCache, intermediateTokensTtl)
+  constructor(intermediateTokensCache?: TTLCache<TokenInfo[]>) {
+    super(intermediateTokensCache)
   }
 
   async execute(request: SingleQuoteRequest, config: BridgingSdkConfig): Promise<CrossChainQuoteAndPost> {
@@ -36,14 +36,12 @@ export class SingleQuoteStrategy extends BaseSingleQuoteStrategy {
         bridgeHookSigner: advancedSettings?.quoteSigner,
       } as const
 
-      const request =
-        this.intermediateTokensCache && this.intermediateTokensTtl
-          ? {
-              ...baseParams,
-              intermediateTokensCache: this.intermediateTokensCache,
-              intermediateTokensTtl: this.intermediateTokensTtl,
-            }
-          : baseParams
+      const request = this.intermediateTokensCache
+        ? {
+            ...baseParams,
+            intermediateTokensCache: this.intermediateTokensCache,
+          }
+        : baseParams
 
       return getQuoteWithBridge(request)
     } else {

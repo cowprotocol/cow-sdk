@@ -108,16 +108,11 @@ export class TTLCache<T> {
   private storage: CacheStorage
   private keyPrefix: string
   private ttl: number
-  private _isMemoryStorage: boolean = false
   // Track keys written by this instance (covers wrapper fallback/SSR)
   private keys = new Set<string>()
 
   get isMemoryStorage(): boolean {
-    return this._isMemoryStorage && this.storage instanceof MemoryStorage
-  }
-
-  set isMemoryStorage(value: boolean) {
-    this._isMemoryStorage = value
+    return this.storage instanceof MemoryStorage
   }
 
   constructor(keyPrefix = DEFAULT_KEY_PREFIX, useLocalStorage = true, ttl = DEFAULT_TTL) {
@@ -125,12 +120,8 @@ export class TTLCache<T> {
     this.ttl = ttl
     this.storage = useLocalStorage ? new LocalStorageWrapper() : new MemoryStorage()
 
-    // Detect if we're using memory storage (fallback scenario)
-    this.isMemoryStorage = this.storage instanceof MemoryStorage
-
     // Check if localStorage is actually available even when requested
     if (useLocalStorage && typeof localStorage === 'undefined') {
-      this.isMemoryStorage = true
       this.storage = new MemoryStorage()
     }
   }
@@ -231,7 +222,7 @@ export class TTLCache<T> {
       try {
         this.storage.removeItem(key)
       } catch (error) {
-        console.error('TTL Cache clear', error)
+        console.warn('TTLCache: Failed to remove cache key', error)
       }
       this.keys.delete(key)
     }
@@ -261,10 +252,13 @@ export class TTLCache<T> {
         }
         return count
       } catch {
-        return 0
+        // localStorage exists but is blocked; use instance-tracked size
+        return this.keys.size
       }
     }
-    return 0
+
+    // Fallback for environments where we cannot inspect localStorage
+    return this.keys.size
   }
 
   /**

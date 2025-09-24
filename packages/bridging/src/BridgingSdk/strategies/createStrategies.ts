@@ -4,10 +4,10 @@ import { SingleQuoteStrategy } from './SingleQuoteStrategy'
 import { MultiQuoteStrategy } from './MultiQuoteStrategy'
 import { BestQuoteStrategy } from './BestQuoteStrategy'
 
-export function createStrategies(intermediateTokensCache?: TTLCache<TokenInfo[]>, intermediateTokensTtl?: number) {
+export function createStrategies(intermediateTokensCache?: TTLCache<TokenInfo[]>) {
   return {
-    singleQuoteStrategy: new SingleQuoteStrategy(intermediateTokensCache, intermediateTokensTtl),
-    multiQuoteStrategy: new MultiQuoteStrategy(intermediateTokensCache, intermediateTokensTtl),
-    bestQuoteStrategy: new BestQuoteStrategy(intermediateTokensCache, intermediateTokensTtl),
+    singleQuoteStrategy: new SingleQuoteStrategy(intermediateTokensCache),
+    multiQuoteStrategy: new MultiQuoteStrategy(intermediateTokensCache),
+    bestQuoteStrategy: new BestQuoteStrategy(intermediateTokensCache),
   }
 }

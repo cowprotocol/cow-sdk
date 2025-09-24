@@ -15,10 +15,7 @@ import { BridgingSdkConfig } from '../types'
  * Enforces constructor signature for cache parameters
  */
 export abstract class QuoteStrategy<TRequest, TResult> {
-  constructor(
-    protected intermediateTokensCache?: TTLCache<TokenInfo[]>,
-    protected intermediateTokensTtl?: number,
-  ) {}
+  constructor(protected intermediateTokensCache?: TTLCache<TokenInfo[]>) {}
 
   /**
    * Execute the quote strategy

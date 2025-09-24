@@ -24,8 +24,8 @@ const DEFAULT_PROVIDER_TIMEOUT_MS = 20_000 // 20 seconds
 export class MultiQuoteStrategy extends BaseMultiQuoteStrategy {
   readonly strategyName = 'MultiQuoteStrategy' as const
 
-  constructor(intermediateTokensCache?: TTLCache<TokenInfo[]>, intermediateTokensTtl?: number) {
-    super(intermediateTokensCache, intermediateTokensTtl)
+  constructor(intermediateTokensCache?: TTLCache<TokenInfo[]>) {
+    super(intermediateTokensCache)
   }
 
   async execute(request: MultiQuoteRequest, config: BridgingSdkConfig): Promise<MultiQuoteResult[]> {
@@ -100,14 +100,12 @@ export class MultiQuoteStrategy extends BaseMultiQuoteStrategy {
           bridgeHookSigner: advancedSettings?.quoteSigner,
         } as const
 
-        const request =
-          this.intermediateTokensCache && this.intermediateTokensTtl
-            ? {
-                ...baseParams,
-                intermediateTokensCache: this.intermediateTokensCache,
-                intermediateTokensTtl: this.intermediateTokensTtl,
-              }
-            : baseParams
+        const request = this.intermediateTokensCache
+          ? {
+              ...baseParams,
+              intermediateTokensCache: this.intermediateTokensCache,
+            }
+          : baseParams
 
         // Race between the actual quote request and the provider timeout
         const quote = await Promise.race([

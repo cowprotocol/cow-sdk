@@ -43,11 +43,6 @@ export type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
    * Cache for intermediate tokens.
    */
   intermediateTokensCache?: TTLCache<TokenInfo[]>
-
-  /**
-   * TTL for intermediate tokens.
-   */
-  intermediateTokensTtl?: number
 }
 
 export interface GetBridgeResultResult {

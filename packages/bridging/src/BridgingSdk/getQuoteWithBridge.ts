@@ -58,7 +58,6 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
     swapAndBridgeRequest: swapAndBridgeRequest,
     provider,
     intermediateTokensCache: params.intermediateTokensCache,
-    intermediateTokensTtl: params.intermediateTokensTtl,
   })
 
   // Get the hook mock for cost estimation
@@ -235,9 +234,8 @@ async function getBaseBridgeQuoteRequest<T extends BridgeQuoteResult>(params: {
   swapAndBridgeRequest: QuoteBridgeRequest
   provider: BridgeProvider<T>
   intermediateTokensCache?: TTLCache<TokenInfo[]>
-  intermediateTokensTtl?: number
 }): Promise<QuoteBridgeRequestWithoutAmount> {
-  const { provider, swapAndBridgeRequest: quoteBridgeRequest, intermediateTokensCache, intermediateTokensTtl } = params
+  const { provider, swapAndBridgeRequest: quoteBridgeRequest, intermediateTokensCache } = params
 
   let intermediateTokens: TokenInfo[] = []
 
@@ -248,14 +246,12 @@ async function getBaseBridgeQuoteRequest<T extends BridgeQuoteResult>(params: {
     tokenAddress: quoteBridgeRequest.buyTokenAddress,
   })
 
-  if (intermediateTokensCache && intermediateTokensCache.get(cacheKey)) {
-    intermediateTokens = intermediateTokensCache.get(cacheKey) as TokenInfo[]
+  const cached = intermediateTokensCache?.get(cacheKey)
+  if (cached) {
+    intermediateTokens = cached
   } else {
     intermediateTokens = await provider.getIntermediateTokens(quoteBridgeRequest)
-
-    if (intermediateTokensCache && intermediateTokensTtl) {
-      intermediateTokensCache.set(cacheKey, intermediateTokens)
-    }
+    intermediateTokensCache?.set(cacheKey, intermediateTokens)
   }
 
   if (intermediateTokens.length === 0) {

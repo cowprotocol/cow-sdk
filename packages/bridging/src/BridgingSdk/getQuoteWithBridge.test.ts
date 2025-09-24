@@ -104,7 +104,6 @@ adapterNames.forEach((adapterName) => {
         provider: mockProvider,
         tradingSdk,
         intermediateTokensCache: request.intermediateTokensCache,
-        intermediateTokensTtl: request.intermediateTokensTtl,
       })
     }
 
@@ -222,15 +221,14 @@ adapterNames.forEach((adapterName) => {
     it('should cache intermediate tokens if intermediateTokensCache is provided', async () => {
       mockProvider.getIntermediateTokens = jest.fn().mockResolvedValue(mockIntermediateTokens)
 
-      const intermediateTokensCache = new TTLCache<TokenInfo[]>('test', true)
       const intermediateTokensTtl = 1000
+      const intermediateTokensCache = new TTLCache<TokenInfo[]>('test', true, intermediateTokensTtl)
       // First call
       await postOrderWithIntermediateTokensCache({
         swapAndBridgeRequest: quoteBridgeRequest,
         provider: mockProvider,
         tradingSdk,
         intermediateTokensCache,
-        intermediateTokensTtl,
       })
 
       // Second call immediately - should use cache
@@ -239,7 +237,6 @@ adapterNames.forEach((adapterName) => {
         provider: mockProvider,
         tradingSdk,
         intermediateTokensCache,
-        intermediateTokensTtl,
       })
 
       expect(mockProvider.getIntermediateTokens).toHaveBeenCalledTimes(1)

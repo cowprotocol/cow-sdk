@@ -141,8 +141,10 @@ export class BridgingSdk {
       tokenAddress: params.sellTokenAddress,
     })
 
-    if (this.cacheConfig.enabled && this.buyTokensCache.get(cacheKey)) {
-      return this.buyTokensCache.get(cacheKey) as GetProviderBuyTokens
+    const cached = this.cacheConfig.enabled && this.buyTokensCache.get(cacheKey)
+
+    if (cached) {
+      return cached
     }
 
     const result = await this.provider.getBuyTokens(params)
