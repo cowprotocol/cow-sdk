@@ -26,7 +26,7 @@ export const NEAR_INTENTS_SUPPORTED_NETWORKS = [
   polygon,
 ]
 
-export const NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK: Record<string, ChainInfo> = {
+export const NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK = {
   arb: arbitrumOne,
   avax: avalanche,
   base,
@@ -35,9 +35,11 @@ export const NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK: Record<string, ChainInfo> =
   gnosis: gnosisChain,
   op: optimism,
   pol: polygon,
-}
+} as const satisfies Record<string, ChainInfo>
 
-export const WRAPPED_NATIVE_CURRENCIES: Record<string, Hex> = {
+export type NearBlockchainKey = keyof typeof NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK
+
+export const WRAPPED_NATIVE_CURRENCIES = {
   arb: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', // weth on arb
   avax: '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7', // wavax on avax
   base: '0x4200000000000000000000000000000000000006', // weth on base
@@ -46,7 +48,7 @@ export const WRAPPED_NATIVE_CURRENCIES: Record<string, Hex> = {
   gnosis: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d', // wxdai on gnosis
   op: '0x4200000000000000000000000000000000000006', // weth on op
   pol: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270', // wpol on pol
-}
+} as const satisfies Record<NearBlockchainKey, Hex>
 
 export const NEAR_INTENTS_STATUS_TO_COW_STATUS: Record<string, BridgeStatus> = {
   KNOWN_DEPOSIT_TX: BridgeStatus.IN_PROGRESS,
