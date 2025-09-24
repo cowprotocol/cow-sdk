@@ -1,4 +1,4 @@
-import { BestQuoteStrategyImpl } from './BestQuoteStrategy'
+import { BestQuoteStrategy } from './BestQuoteStrategy'
 import { MockBridgeProvider } from '../../providers/mock/MockBridgeProvider'
 import { MultiQuoteResult } from '../../types'
 import {
@@ -25,7 +25,7 @@ const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
 adapterNames.forEach((adapterName) => {
   describe(`BestQuoteStrategy with ${adapterName}`, () => {
-    let strategy: BestQuoteStrategyImpl
+    let strategy: BestQuoteStrategy
     let config: BridgingSdkConfig
     let tradingSdk: TradingSdk
     let orderBookApi: OrderBookApi
@@ -36,7 +36,7 @@ adapterNames.forEach((adapterName) => {
     let mockProvider3: MockBridgeProvider
 
     beforeEach(async () => {
-      strategy = new BestQuoteStrategyImpl()
+      strategy = new BestQuoteStrategy()
       jest.clearAllMocks()
 
       const adapter = adapters[adapterName]

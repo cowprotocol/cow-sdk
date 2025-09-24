@@ -1,4 +1,4 @@
-import { SingleQuoteStrategyImpl } from './SingleQuoteStrategy'
+import { SingleQuoteStrategy } from './SingleQuoteStrategy'
 import { MockBridgeProvider } from '../../providers/mock/MockBridgeProvider'
 import { QuoteBridgeRequest } from '../../types'
 import { assertIsBridgeQuoteAndPost, assertIsQuoteAndPost } from '../../utils'
@@ -38,7 +38,7 @@ const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
 adapterNames.forEach((adapterName) => {
   describe(`SingleQuoteStrategy with ${adapterName}`, () => {
-    let strategy: SingleQuoteStrategyImpl
+    let strategy: SingleQuoteStrategy
     let config: BridgingSdkConfig
     let tradingSdk: TradingSdk
     let orderBookApi: OrderBookApi
@@ -50,7 +50,7 @@ adapterNames.forEach((adapterName) => {
     mockProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
     beforeEach(() => {
-      strategy = new SingleQuoteStrategyImpl()
+      strategy = new SingleQuoteStrategy()
       jest.clearAllMocks()
 
       const adapter = adapters[adapterName]

@@ -1,14 +1,20 @@
+import { TTLCache } from '@cowprotocol/sdk-common'
+import { TokenInfo } from '@cowprotocol/sdk-config'
 import { CrossChainQuoteAndPost } from '../../types'
 import { getQuoteWithoutBridge } from '../getQuoteWithoutBridge'
 import { getQuoteWithBridge } from '../getQuoteWithBridge'
 import { BridgingSdkConfig } from '../types'
-import { SingleQuoteStrategy, SingleQuoteRequest } from './QuoteStrategy'
+import { BaseSingleQuoteStrategy, SingleQuoteRequest } from './QuoteStrategy'
 
 /**
  * Strategy for getting a single quote (handles both cross-chain and single-chain)
  */
-export class SingleQuoteStrategyImpl implements SingleQuoteStrategy {
-  readonly strategyName = 'SingleQuoteStrategy'
+export class SingleQuoteStrategy extends BaseSingleQuoteStrategy {
+  readonly strategyName = 'SingleQuoteStrategy' as const
+
+  constructor(intermediateTokensCache?: TTLCache<TokenInfo[]>, intermediateTokensTtl?: number) {
+    super(intermediateTokensCache, intermediateTokensTtl)
+  }
 
   async execute(request: SingleQuoteRequest, config: BridgingSdkConfig): Promise<CrossChainQuoteAndPost> {
     const { quoteBridgeRequest, advancedSettings } = request
@@ -22,13 +28,24 @@ export class SingleQuoteStrategyImpl implements SingleQuoteStrategy {
         throw new Error('No provider found for cross-chain swap')
       }
 
-      return getQuoteWithBridge({
+      const baseParams = {
         swapAndBridgeRequest: quoteBridgeRequest,
         advancedSettings,
         tradingSdk,
         provider,
         bridgeHookSigner: advancedSettings?.quoteSigner,
-      })
+      } as const
+
+      const request =
+        this.intermediateTokensCache && this.intermediateTokensTtl
+          ? {
+              ...baseParams,
+              intermediateTokensCache: this.intermediateTokensCache,
+              intermediateTokensTtl: this.intermediateTokensTtl,
+            }
+          : baseParams
+
+      return getQuoteWithBridge(request)
     } else {
       // Single-chain swap
       return getQuoteWithoutBridge({

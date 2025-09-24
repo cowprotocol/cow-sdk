@@ -19,17 +19,8 @@ import { ALL_SUPPORTED_CHAINS, ChainInfo, SupportedChainId, TokenInfo } from '@c
 import { AbstractProviderAdapter, enableLogging, setGlobalAdapter, TTLCache } from '@cowprotocol/sdk-common'
 import { BridgingSdkCacheConfig, BridgingSdkConfig, BridgingSdkOptions, GetOrderParams } from './types'
 import { getCacheKey } from './helpers'
-
-import {
-  SingleQuoteStrategyImpl,
-  MultiQuoteStrategyImpl,
-  BestQuoteStrategyImpl,
-  SingleQuoteRequest,
-} from './strategies'
-
-const singleQuoteStrategy = new SingleQuoteStrategyImpl()
-const multiQuoteStrategy = new MultiQuoteStrategyImpl()
-const bestQuoteStrategy = new BestQuoteStrategyImpl()
+import { SingleQuoteStrategy, MultiQuoteStrategy, BestQuoteStrategy } from './strategies'
+import { createStrategies } from './strategies/createStrategies'
 
 // Default cache configuration
 const DEFAULT_CACHE_CONFIG: BridgingSdkCacheConfig = {
@@ -46,6 +37,9 @@ export class BridgingSdk {
   private cacheConfig: BridgingSdkCacheConfig
   private intermediateTokensCache: TTLCache<TokenInfo[]>
   private buyTokensCache: TTLCache<GetProviderBuyTokens>
+  private singleQuoteStrategy: SingleQuoteStrategy
+  private multiQuoteStrategy: MultiQuoteStrategy
+  private bestQuoteStrategy: BestQuoteStrategy
 
   constructor(
     readonly options: BridgingSdkOptions,
@@ -90,6 +84,15 @@ export class BridgingSdk {
       this.cacheConfig.enabled,
       this.cacheConfig.buyTokensTtl,
     )
+
+    const { singleQuoteStrategy, multiQuoteStrategy, bestQuoteStrategy } = createStrategies(
+      this.intermediateTokensCache,
+      this.cacheConfig.intermediateTokensTtl,
+    )
+
+    this.singleQuoteStrategy = singleQuoteStrategy
+    this.multiQuoteStrategy = multiQuoteStrategy
+    this.bestQuoteStrategy = bestQuoteStrategy
   }
 
   private get provider(): BridgeProvider<BridgeQuoteResult> {
@@ -168,20 +171,13 @@ export class BridgingSdk {
     quoteBridgeRequest: QuoteBridgeRequest,
     advancedSettings?: SwapAdvancedSettings,
   ): Promise<CrossChainQuoteAndPost> {
-    const baseParams = {
-      quoteBridgeRequest,
-      advancedSettings,
-    } as const
-
-    const request: SingleQuoteRequest = this.cacheConfig.enabled
-      ? {
-          ...baseParams,
-          intermediateTokensCache: this.intermediateTokensCache,
-          intermediateTokensTtl: this.cacheConfig.intermediateTokensTtl,
-        }
-      : baseParams
-
-    return singleQuoteStrategy.execute(request, this.config)
+    return this.singleQuoteStrategy.execute(
+      {
+        quoteBridgeRequest,
+        advancedSettings,
+      },
+      this.config,
+    )
   }
 
   /**
@@ -200,14 +196,7 @@ export class BridgingSdk {
    * ```
    */
   async getMultiQuotes(request: MultiQuoteRequest): Promise<MultiQuoteResult[]> {
-    const multiQuoteRequest: MultiQuoteRequest = this.cacheConfig.enabled
-      ? request
-      : {
-          ...request,
-          intermediateTokensCache: this.intermediateTokensCache,
-          intermediateTokensTtl: this.cacheConfig.intermediateTokensTtl,
-        }
-    return multiQuoteStrategy.execute(multiQuoteRequest, this.config)
+    return this.multiQuoteStrategy.execute(request, this.config)
   }
 
   /**
@@ -226,7 +215,7 @@ export class BridgingSdk {
    * @throws Error if the request is for a single-chain swap (sellTokenChainId === buyTokenChainId)
    */
   async getBestQuote(request: MultiQuoteRequest): Promise<MultiQuoteResult | null> {
-    return bestQuoteStrategy.execute(request, this.config)
+    return this.bestQuoteStrategy.execute(request, this.config)
   }
 
   async getOrder(params: GetOrderParams): Promise<CrossChainOrder | null> {

@@ -1,4 +1,6 @@
 import { SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
+import { TTLCache } from '@cowprotocol/sdk-common'
+import { TokenInfo } from '@cowprotocol/sdk-config'
 import {
   BridgeProvider,
   BridgeQuoteResult,
@@ -7,17 +9,21 @@ import {
   QuoteBridgeRequest,
 } from '../../types'
 import { BridgingSdkConfig } from '../types'
-import { TTLCache } from '@cowprotocol/sdk-common'
-import { TokenInfo } from '@cowprotocol/sdk-config'
 
 /**
- * Base interface for all quote strategies
+ * Abstract base class for all quote strategies
+ * Enforces constructor signature for cache parameters
  */
-export interface QuoteStrategy<TRequest, TResult> {
+export abstract class QuoteStrategy<TRequest, TResult> {
+  constructor(
+    protected intermediateTokensCache?: TTLCache<TokenInfo[]>,
+    protected intermediateTokensTtl?: number,
+  ) {}
+
   /**
    * Execute the quote strategy
    */
-  execute(request: TRequest, config: BridgingSdkConfig): Promise<TResult>
+  abstract execute(request: TRequest, config: BridgingSdkConfig): Promise<TResult>
 }
 
 /**
@@ -26,8 +32,6 @@ export interface QuoteStrategy<TRequest, TResult> {
 export interface SingleQuoteRequest {
   quoteBridgeRequest: QuoteBridgeRequest
   advancedSettings?: SwapAdvancedSettings
-  intermediateTokensCache?: TTLCache<TokenInfo[]>
-  intermediateTokensTtl?: number
 }
 
 /**
@@ -45,22 +49,22 @@ export interface MultiQuoteRequest extends SingleQuoteRequest {
 /**
  * Strategy for getting a single quote (cross-chain or single-chain)
  */
-export interface SingleQuoteStrategy extends QuoteStrategy<SingleQuoteRequest, CrossChainQuoteAndPost> {
-  strategyName: 'SingleQuoteStrategy'
+export abstract class BaseSingleQuoteStrategy extends QuoteStrategy<SingleQuoteRequest, CrossChainQuoteAndPost> {
+  abstract readonly strategyName: 'SingleQuoteStrategy'
 }
 
 /**
  * Strategy for getting quotes from multiple providers
  */
-export interface MultiQuoteStrategy extends QuoteStrategy<MultiQuoteRequest, MultiQuoteResult[]> {
-  strategyName: 'MultiQuoteStrategy'
+export abstract class BaseMultiQuoteStrategy extends QuoteStrategy<MultiQuoteRequest, MultiQuoteResult[]> {
+  abstract readonly strategyName: 'MultiQuoteStrategy'
 }
 
 /**
  * Strategy for getting the best quote from multiple providers
  */
-export interface BestQuoteStrategy extends QuoteStrategy<MultiQuoteRequest, MultiQuoteResult | null> {
-  strategyName: 'BestQuoteStrategy'
+export abstract class BaseBestQuoteStrategy extends QuoteStrategy<MultiQuoteRequest, MultiQuoteResult | null> {
+  abstract readonly strategyName: 'BestQuoteStrategy'
 }
 
 /**
