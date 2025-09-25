@@ -151,7 +151,7 @@ jobs:
         run: |
           # Publish all packages and capture versions
           echo "Publishing packages..."
-          pnpm publish -r --filter="./packages/**" --tag ${{ steps.version.outputs.tag }} --no-git-checks > publish_output.txt 2>&1
+          pnpm publish -r --filter="./packages/**" --tag ${{ steps.version.outputs.tag }} --no-git-checks --access public > publish_output.txt 2>&1
 
           # Show the actual publish output for debugging
           echo "=== Full publish output ==="
@@ -201,13 +201,20 @@ jobs:
             To install these packages, configure npm to use GitHub Packages:
 
             \`\`\`bash
-            pnpm config set @cowprotocol:registry https://npm.pkg.github.com
-            pnpm config set //npm.pkg.github.com/:_authToken YOUR_GITHUB_TOKEN
+            npm config set //npm.pkg.github.com/:_authToken YOUR_GITHUB_TOKEN
             \`\`\`
 
             Then install any of the packages above. For example:
             \`\`\`bash
-            pnpm install ${publishedVersions[0]}
+
+            # Yarn
+            yarn add ${publishedVersions[0]} --registry https://npm.pkg.github.com
+
+            # pnpm
+            pnpm install ${publishedVersions[0]} --registry https://npm.pkg.github.com
+
+            # NPM
+            npm install ${publishedVersions[0]} --registry https://npm.pkg.github.com
             \`\`\`
 
             ### View Packages
