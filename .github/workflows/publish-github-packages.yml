@@ -119,8 +119,9 @@ jobs:
         id: version
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            # For PRs, use a pre-release version with PR number
-            VERSION_SUFFIX="pr-${{ github.event.number }}"
+            # For PRs, use PR number + commit hash for uniqueness
+            COMMIT_HASH=$(echo "${{ github.sha }}" | cut -c1-8)
+            VERSION_SUFFIX="pr-${{ github.event.number }}-$COMMIT_HASH"
             echo "version_suffix=$VERSION_SUFFIX" >> $GITHUB_OUTPUT
             echo "tag=pr" >> $GITHUB_OUTPUT
             echo "is_pr=true" >> $GITHUB_OUTPUT
@@ -134,15 +135,16 @@ jobs:
       - name: Create pre-release versions for PRs
         if: steps.version.outputs.is_pr == 'true'
         run: |
-          # Create pre-release versions for all packages
+          # Simple version update for all packages
           find packages -name "package.json" -exec sh -c '
-            for file; do
-              echo "Creating pre-release version for $file"
-              # Use npm version to create pre-release version
-              cd "$(dirname "$file")"
-              npm version prerelease --preid="${{ steps.version.outputs.version_suffix }}" --no-git-tag-version
-              cd - > /dev/null
-            done
+            CURRENT_VERSION=$(node -p "require(\"$1\").version")
+            NEW_VERSION="${CURRENT_VERSION}-${{ steps.version.outputs.version_suffix }}"
+            node -e "
+              const fs = require(\"fs\");
+              const pkg = JSON.parse(fs.readFileSync(\"$1\", \"utf8\"));
+              pkg.version = \"$NEW_VERSION\";
+              fs.writeFileSync(\"$1\", JSON.stringify(pkg, null, 2) + \"\\n\");
+            "
           ' _ {} \;
 
       - name: Debug auth (whoami)
