@@ -185,7 +185,7 @@ jobs:
               publishedVersions = versionsContent.trim().split('\n').filter(line => line.trim());
             } catch (error) {
               console.log('Could not read published versions file');
-              exit(1);
+              process.exit(1);
             }
 
             const commentBody = `## 📦 GitHub Packages Published
@@ -198,13 +198,7 @@ jobs:
 
             ### Installation
 
-            To install these packages, configure npm to use GitHub Packages:
-
-            \`\`\`bash
-            npm config set //npm.pkg.github.com/:_authToken YOUR_GITHUB_TOKEN
-            \`\`\`
-
-            Then install any of the packages above. For example:
+            These packages are **public** and can be installed directly. For example:
             \`\`\`bash
 
             # Yarn
