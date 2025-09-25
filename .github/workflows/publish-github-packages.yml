@@ -76,6 +76,11 @@ jobs:
         run: |
           # Override registry for @cowprotocol scope to use GitHub Packages
           echo "@cowprotocol:registry=https://${{ env.REGISTRY }}" >> ~/.npmrc
+
+          # Always authenticate
+          echo "always-auth=true" >> ~/.npmrc
+
+          # Set auth token
           echo "//${{ env.REGISTRY }}/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
           # Keep default registry as npmjs.org for other packages
           echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
