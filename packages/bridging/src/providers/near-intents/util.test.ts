@@ -20,7 +20,7 @@ describe('Near Intents Utils', () => {
       expect(adaptToken(tokenResponse)).toStrictEqual({
         chainId: SupportedChainId.MAINNET,
         decimals: 18,
-        address: WRAPPED_NATIVE_CURRENCIES['eth'],
+        address: WRAPPED_NATIVE_CURRENCIES[1],
         name: 'ETH',
         symbol: 'ETH',
       })
