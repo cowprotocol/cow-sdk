@@ -26,5 +26,3 @@ export class NearIntentsApi {
     return await OneClickService.getExecutionStatus(depositAddress)
   }
 }
-
-export default NearIntentsApi
