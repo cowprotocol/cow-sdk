@@ -201,6 +201,7 @@ jobs:
             });
 
             const commentBody = `## 📦 GitHub Packages Published
+            **Last updated:** ${timestamp}
 
             The following packages have been published to GitHub Packages with pre-release version \`${prVersion}\`:
 
@@ -209,14 +210,16 @@ jobs:
             ${isExternalPR ? '> **Note:** This is an external PR with the \`allow-publish\` label enabled.' : ''}
 
             ---
-            **Last updated:** ${timestamp}
 
             ### Installation
 
             These packages require authentication to install from GitHub Packages. First, configure your token:
 
             \`\`\`bash
-            # Set your GitHub token (create one at https://github.com/settings/tokens)
+            # Set your GitHub token
+            #  1. create one at https://github.com/settings/tokens. Make sure you select the option "Generate new token (classic)"
+            #  2. Check only the "read:packages" scope
+            #  3. Add the token to the npm config
             npm config set //npm.pkg.github.com/:_authToken YOUR_GITHUB_TOKEN
             \`\`\`
 
