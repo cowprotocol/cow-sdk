@@ -96,23 +96,17 @@ jobs:
             echo "is_pr=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Update package versions for PRs
+      - name: Create pre-release versions for PRs
         if: steps.version.outputs.is_pr == 'true'
         run: |
-          # Update all package.json files to use PR version
+          # Create pre-release versions for all packages
           find packages -name "package.json" -exec sh -c '
             for file; do
-              # Extract current version
-              CURRENT_VERSION=$(node -p "require(\"$file\").version")
-              # Create PR version
-              PR_VERSION="${CURRENT_VERSION}-${{ steps.version.outputs.version_suffix }}"
-              # Update package.json
-              node -e "
-                const fs = require(\"fs\");
-                const pkg = JSON.parse(fs.readFileSync(\"$file\", \"utf8\"));
-                pkg.version = \"$PR_VERSION\";
-                fs.writeFileSync(\"$file\", JSON.stringify(pkg, null, 2) + \"\\n\");
-              "
+              echo "Creating pre-release version for $file"
+              # Use npm version to create pre-release version
+              cd "$(dirname "$file")"
+              npm version prerelease --preid="${{ steps.version.outputs.version_suffix }}" --no-git-tag-version
+              cd - > /dev/null
             done
           ' _ {} \;
 
@@ -120,6 +114,12 @@ jobs:
         run: |
           # Publish all packages
           pnpm publish -r --filter="./packages/**" --tag ${{ steps.version.outputs.tag }} --no-git-checks --registry https://${{ env.REGISTRY }}
+
+      - name: Restore original versions (PR only)
+        if: steps.version.outputs.is_pr == 'true'
+        run: |
+          # Restore original package.json versions
+          git checkout -- packages/*/package.json
 
       - name: Create PR comment with package info
         if: steps.version.outputs.is_pr == 'true'
@@ -145,7 +145,7 @@ jobs:
             const prVersion = '${{ steps.version.outputs.version_suffix }}';
             const comment = `## 📦 GitHub Packages Published
 
-            The following packages have been published to GitHub Packages with version suffix \`${prVersion}\`:
+            The following packages have been published to GitHub Packages with pre-release version \`${prVersion}\`:
 
             ${packages.map(pkg => `- \`${pkg}@*-${prVersion}\``).join('\n')}
 
