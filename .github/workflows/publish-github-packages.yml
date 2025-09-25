@@ -79,16 +79,24 @@ jobs:
 
       - name: Configure npm for GitHub Packages
         run: |
-          # Override registry for @cowprotocol scope to use GitHub Packages
-          echo "@cowprotocol:registry=https://${{ env.REGISTRY }}" >> ~/.npmrc
+          # Create fresh .npmrc with proper registry configuration
+          cat > ~/.npmrc << EOF
+          shamefully-hoist=false
+          strict-peer-dependencies=false
+          node-linker=isolated
 
-          # Always authenticate
-          echo "always-auth=true" >> ~/.npmrc
+          @cowprotocol:registry=https://${{ env.REGISTRY }}
+          //${{ env.REGISTRY }}/:_authToken=${{ secrets.GITHUB_TOKEN }}
+          registry=https://registry.npmjs.org/
+          EOF
 
-          # Set auth token
-          echo "//${{ env.REGISTRY }}/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
-          # Keep default registry as npmjs.org for other packages
-          echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
+          # Debug: Show registry configuration (without token)
+          echo "=== npm registry configuration ==="
+          cat ~/.npmrc | sed 's/_authToken=.*/_authToken=***/' || true
+
+          # Test registry access
+          echo "=== Testing registry access ==="
+          npm view cpx version --registry=https://registry.npmjs.org/ || echo "Failed to access npmjs.org"
 
       - name: Cache pnpm store
         uses: actions/cache@v4
@@ -97,7 +105,12 @@ jobs:
           key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          echo "=== Installing dependencies ==="
+          pnpm install --frozen-lockfile
+
+          echo "=== Verifying package resolution ==="
+          pnpm list cpx --depth=0 || echo "cpx not found in root, checking if it's available from npmjs.org"
 
       - name: Generate code
         run: pnpm codegen
