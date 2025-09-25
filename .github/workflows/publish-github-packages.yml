@@ -1,7 +1,7 @@
 name: Publish to GitHub Packages
 
 on:
-  # Trigger on pull requests (for testing/validation)
+  # Trigger on pull requests (for testing/validation) - only from same repo
   pull_request:
     types: [opened, synchronize, reopened]
   # Trigger on pushes to main branch
@@ -26,7 +26,35 @@ jobs:
     name: Publish to GitHub Packages
     runs-on: ubuntu-latest
 
+    # Security: Only run on internal PRs, main branch pushes, or external PRs with explicit approval
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && (github.event.pull_request.head.repo.full_name == github.repository || contains(github.event.pull_request.labels.*.name, 'allow-publish')))
+
     steps:
+      - name: Security Check
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "🔒 Checking PR security..."
+            echo "PR from: ${{ github.event.pull_request.head.repo.full_name }}"
+            echo "Target repo: ${{ github.repository }}"
+
+            # Check if it's an internal PR
+            if [ "${{ github.event.pull_request.head.repo.full_name }}" = "${{ github.repository }}" ]; then
+              echo "✅ Internal PR - proceeding with publish"
+            else
+              # Check for allow-publish label
+              echo "🔍 Checking for 'allow-publish' label..."
+              if echo "${{ toJson(github.event.pull_request.labels) }}" | grep -q '"name":"allow-publish"'; then
+                echo "✅ External PR with 'allow-publish' label - proceeding with publish"
+              else
+                echo "❌ External PR without 'allow-publish' label - skipping publish for security"
+                echo "💡 To enable publishing for this external PR, add the 'allow-publish' label"
+                exit 1
+              fi
+            fi
+          else
+            echo "✅ Push to main branch - proceeding with publish"
+          fi
+
       - name: Cancel Previous Runs
         uses: styfle/cancel-workflow-action@0.8.0
         with:
@@ -150,11 +178,14 @@ jobs:
             ];
 
             const prVersion = '${{ steps.version.outputs.version_suffix }}';
+            const isExternalPR = '${{ github.event.pull_request.head.repo.full_name }}' !== '${{ github.repository }}';
             const comment = `## 📦 GitHub Packages Published
 
             The following packages have been published to GitHub Packages with pre-release version \`${prVersion}\`:
 
             ${packages.map(pkg => `- \`${pkg}@*-${prVersion}\``).join('\n')}
+
+            ${isExternalPR ? '> **Note:** This is an external PR with the \`allow-publish\` label enabled.' : ''}
 
             ### Installation
 
