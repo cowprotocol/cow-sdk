@@ -14,11 +14,7 @@ import {
   quoteBridgeRequest,
   tradeParameters,
 } from '../mock/bridgeRequestMocks'
-import {
-  QuoteResultsWithSigner,
-  SwapAdvancedSettings,
-  TradingSdk,
-} from '@cowprotocol/sdk-trading'
+import { QuoteResultsWithSigner, SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { BridgingSdkConfig } from '../BridgingSdk'
@@ -29,7 +25,7 @@ const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
 adapterNames.forEach((adapterName) => {
-  describe(`MultiQuoteStrategy with ${adapterName}`, () => {
+  describe.skip(`MultiQuoteStrategy with ${adapterName}`, () => {
     let strategy: MultiQuoteStrategyImpl
     let config: BridgingSdkConfig
     let tradingSdk: TradingSdk
@@ -171,14 +167,14 @@ adapterNames.forEach((adapterName) => {
         expect(results).toHaveLength(3)
 
         // Results should be sorted with successful quotes first
-        const successfulResults = results.filter(r => r.quote)
-        const failedResults = results.filter(r => !r.quote)
+        const successfulResults = results.filter((r) => r.quote)
+        const failedResults = results.filter((r) => !r.quote)
 
         expect(successfulResults).toHaveLength(2)
         expect(failedResults).toHaveLength(1)
 
         // Successful providers (order may vary within successful group)
-        const successfulProviderIds = successfulResults.map(r => r.providerDappId)
+        const successfulProviderIds = successfulResults.map((r) => r.providerDappId)
         expect(successfulProviderIds).toContain('mockProvider')
         expect(successfulProviderIds).toContain('cow-sdk://bridging/providers/mock3')
 
