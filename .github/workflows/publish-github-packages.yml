@@ -157,8 +157,14 @@ jobs:
 
       - name: Publish packages to GitHub Packages
         run: |
-          # Publish all packages
-          pnpm publish -r --filter="./packages/**" --tag ${{ steps.version.outputs.tag }} --no-git-checks
+          # Publish all packages and capture versions
+          echo "Publishing packages..."
+          pnpm publish -r --filter="./packages/**" --tag ${{ steps.version.outputs.tag }} --no-git-checks > publish_output.txt 2>&1
+
+          # Extract published versions
+          echo "=== Published packages ==="
+          grep -o '@cowprotocol/[^@]*@[0-9][^[:space:]]*' publish_output.txt > published_versions.txt || true
+          cat published_versions.txt || echo "No versions extracted"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -173,29 +179,24 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const packages = [
-              '@cowprotocol/cow-sdk',
-              '@cowprotocol/sdk-trading',
-              '@cowprotocol/sdk-bridging',
-              '@cowprotocol/sdk-common',
-              '@cowprotocol/sdk-config',
-              '@cowprotocol/sdk-contracts-ts',
-              '@cowprotocol/sdk-order-book',
-              '@cowprotocol/sdk-order-signing',
-              '@cowprotocol/sdk-cow-shed',
-              '@cowprotocol/sdk-composable',
-              '@cowprotocol/sdk-weiroll',
-              '@cowprotocol/sdk-subgraph',
-              '@cowprotocol/sdk-app-data'
-            ];
-
             const prVersion = '${{ steps.version.outputs.version_suffix }}';
             const isExternalPR = '${{ github.event.pull_request.head.repo.full_name }}' !== '${{ github.repository }}';
+
+            // Read published versions from file
+            const fs = require('fs');
+            let publishedVersions = [];
+            try {
+              const versionsContent = fs.readFileSync('published_versions.txt', 'utf8');
+              publishedVersions = versionsContent.trim().split('\n').filter(line => line.trim());
+            } catch (error) {
+              console.log('Could not read published versions file');
+            }
+
             const comment = `## 📦 GitHub Packages Published
 
             The following packages have been published to GitHub Packages with pre-release version \`${prVersion}\`:
 
-            ${packages.map(pkg => `- \`${pkg}@*-${prVersion}\``).join('\n')}
+            ${publishedVersions.map(pkg => `- \`${pkg}\``).join('\n')}
 
             ${isExternalPR ? '> **Note:** This is an external PR with the \`allow-publish\` label enabled.' : ''}
 
