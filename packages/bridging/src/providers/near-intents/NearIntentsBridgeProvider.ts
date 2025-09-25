@@ -130,7 +130,7 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     const { quote, timestamp: isoDate } = await this.api.getQuote({
       dry: false,
       swapType: QuoteRequest.swapType.EXACT_INPUT,
-      slippageTolerance: request.slippageBps || 100, // fallback to 1%,
+      slippageTolerance: request.slippageBps ?? 100,
       originAsset: sellToken.assetId,
       depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
       destinationAsset: buyToken.assetId,
