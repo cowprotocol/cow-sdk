@@ -161,10 +161,34 @@ jobs:
           echo "Publishing packages..."
           pnpm publish -r --filter="./packages/**" --tag ${{ steps.version.outputs.tag }} --no-git-checks > publish_output.txt 2>&1
 
+          # Show the actual publish output for debugging
+          echo "=== Full publish output ==="
+          cat publish_output.txt
+
           # Extract published versions
-          echo "=== Published packages ==="
+          echo "=== Extracting published versions ==="
+
+          # Try multiple patterns to catch different output formats
           grep -o '@cowprotocol/[^@]*@[0-9][^[:space:]]*' publish_output.txt > published_versions.txt || true
+          grep -o '@cowprotocol/[^@]*@[0-9][^[:space:]]*' publish_output.txt >> published_versions.txt || true
+          grep -o '@cowprotocol/[^@]*@[0-9][^[:space:]]*' publish_output.txt >> published_versions.txt || true
+
+          # Also try simpler pattern
+          grep -o '@cowprotocol/[^@]*@[^[:space:]]*' publish_output.txt >> published_versions.txt || true
+
+          # Remove duplicates and show results
+          sort -u published_versions.txt > published_versions_unique.txt
+          mv published_versions_unique.txt published_versions.txt
+
+          echo "=== Extracted versions ==="
           cat published_versions.txt || echo "No versions extracted"
+
+          # If still empty, try to extract from package.json files
+          if [ ! -s published_versions.txt ]; then
+            echo "=== Trying to extract from package.json files ==="
+            find packages -name "package.json" -exec sh -c 'echo "$(dirname "$1" | sed "s|packages/||"):$(node -p "require(\"$1\").version")"' _ {} \; > published_versions.txt
+            cat published_versions.txt
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
