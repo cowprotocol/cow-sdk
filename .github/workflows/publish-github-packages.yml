@@ -156,9 +156,9 @@ jobs:
           echo "=== Full publish output ==="
           cat publish_output.txt
 
-          # Extract published versions
+          # Extract published versions and remove duplicates
           echo "=== Extracting published versions ==="
-          grep -o '@cowprotocol/[^@]*@[0-9][^[:space:]]*' publish_output.txt > published_versions.txt
+          grep -o '@cowprotocol/[^@]*@[0-9][^[:space:]]*' publish_output.txt | sort -u > published_versions.txt
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
