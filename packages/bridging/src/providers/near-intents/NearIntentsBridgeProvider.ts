@@ -370,5 +370,3 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     throw new Error('Not implemented')
   }
 }
-
-export default NearIntentsBridgeProvider
