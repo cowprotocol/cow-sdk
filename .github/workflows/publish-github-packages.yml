@@ -135,16 +135,15 @@ jobs:
       - name: Create pre-release versions for PRs
         if: steps.version.outputs.is_pr == 'true'
         run: |
-          # Simple version update for all packages
+          # Create pre-release versions for all packages
           find packages -name "package.json" -exec sh -c '
-            CURRENT_VERSION=$(node -p "require(\"$1\").version")
-            NEW_VERSION="${CURRENT_VERSION}-${{ steps.version.outputs.version_suffix }}"
-            node -e "
-              const fs = require(\"fs\");
-              const pkg = JSON.parse(fs.readFileSync(\"$1\", \"utf8\"));
-              pkg.version = \"$NEW_VERSION\";
-              fs.writeFileSync(\"$1\", JSON.stringify(pkg, null, 2) + \"\\n\");
-            "
+          for file; do
+            echo "Creating pre-release version for $file"
+            # Use npm version to create pre-release version
+            cd "$(dirname "$file")"
+            npm version prerelease --preid="${{ steps.version.outputs.version_suffix }}" --no-git-tag-version
+            cd - > /dev/null
+          done
           ' _ {} \;
 
       - name: Debug auth (whoami)
