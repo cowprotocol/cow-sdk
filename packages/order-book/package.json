@@ -35,7 +35,7 @@
     "jest-fetch-mock": "^3.0.3",
     "openapi-typescript-codegen": "0.29.0",
     "ts-jest": "^29.0.0",
-    "tsup": "^7.2.0",
+    "tsup": "^8.3.5",
     "tsx": "^4.19.4",
     "typescript": "^5.2.2"
   },
