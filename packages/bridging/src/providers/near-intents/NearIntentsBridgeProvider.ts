@@ -83,8 +83,14 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
 
     const tokens = adaptTokens(await this.api.getTokens())
-    const sourceTokens = tokens.filter((token) => token.chainId === sellTokenChainId)
-    const targetTokens = tokens.filter((token) => token.chainId === buyTokenChainId)
+    const { sourceTokens, targetTokens } = tokens.reduce(
+      (acc, token) => {
+        if (token.chainId === sellTokenChainId) acc.sourceTokens.push(token)
+        if (token.chainId === buyTokenChainId) acc.targetTokens.push(token)
+        return acc
+      },
+      { sourceTokens: [] as TokenInfo[], targetTokens: [] as TokenInfo[] },
+    )
 
     const wrappedTokenAddresses = Object.values(WRAPPED_NATIVE_CURRENCIES).map((a) => a.toLowerCase())
     const buyTokenSupported = targetTokens.some((token) => {
