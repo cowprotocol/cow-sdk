@@ -11,7 +11,7 @@ import type {
   TradeOptionalParameters,
   TraderParameters,
 } from '@cowprotocol/sdk-trading'
-import type { AccountAddress, SignerLike } from '@cowprotocol/sdk-common'
+import type { AccountAddress, SignerLike, TTLCache } from '@cowprotocol/sdk-common'
 
 export interface BridgeProviderInfo {
   name: string
@@ -448,8 +448,11 @@ export interface MultiQuoteOptions {
   providerTimeout?: number
 }
 
+// duplicate of packages/bridging/src/BridgingSdk/strategies/QuoteStrategy.ts
 export interface MultiQuoteRequest {
   quoteBridgeRequest: QuoteBridgeRequest
+  intermediateTokensCache?: TTLCache<TokenInfo[]>
+  intermediateTokensTtl?: number
   providerDappIds?: string[]
   advancedSettings?: SwapAdvancedSettings
   options?: MultiQuoteOptions

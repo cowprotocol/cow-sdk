@@ -1,5 +1,9 @@
-import type { QuoteResults, SwapAdvancedSettings, TradingAppDataInfo, TradingSdk } from '@cowprotocol/sdk-trading'
-import type {
+import { QuoteResults, SwapAdvancedSettings, TradingAppDataInfo, TradingSdk } from '@cowprotocol/sdk-trading'
+import { SignerLike, TTLCache } from '@cowprotocol/sdk-common'
+import { TokenInfo } from '@cowprotocol/sdk-config'
+import { OrderBookApi } from '@cowprotocol/sdk-order-book'
+import { CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
+import {
   BridgeHook,
   BridgeProvider,
   BridgeQuoteResult,
@@ -7,8 +11,6 @@ import type {
   QuoteBridgeRequest,
   QuoteBridgeRequestWithoutAmount,
 } from '../types'
-import type { SignerLike } from '@cowprotocol/sdk-common'
-import type { CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
 
 export type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
   /**
@@ -36,6 +38,11 @@ export type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
    * But we won't do that using users wallet and will use some static PK.
    */
   bridgeHookSigner?: SignerLike
+
+  /**
+   * Cache for intermediate tokens.
+   */
+  intermediateTokensCache?: TTLCache<TokenInfo[]>
 }
 
 export interface GetBridgeResultResult {
@@ -54,6 +61,53 @@ export interface BridgeResultContext<T extends BridgeQuoteResult = BridgeQuoteRe
   hookGasLimit: number
   validToOverride?: number
   appDataOverride?: SwapAdvancedSettings['appData']
+}
+
+export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'enableLogging' | 'cacheConfig'>>
+
+/**
+ * Cache configuration for BridgingSdk
+ */
+export interface BridgingSdkCacheConfig {
+  /**
+   * Enable caching for target networks and buy tokens
+   */
+  enabled: boolean
+  /**
+   * TTL in milliseconds for getIntermediateTokens cache
+   */
+  intermediateTokensTtl: number
+  /**
+   * TTL in milliseconds for getBuyTokens cache
+   */
+  buyTokensTtl: number
+}
+
+export interface BridgingSdkOptions {
+  /**
+   * Providers for the bridging.
+   */
+  providers: BridgeProvider<BridgeQuoteResult>[]
+
+  /**
+   * Trading SDK.
+   */
+  tradingSdk?: TradingSdk
+
+  /**
+   * Order book API.
+   */
+  orderBookApi?: OrderBookApi
+
+  /**
+   * Enable logging for the bridging SDK.
+   */
+  enableLogging?: boolean
+
+  /**
+   * Cache configuration for BridgingSdk
+   */
+  cacheConfig?: BridgingSdkCacheConfig
 }
 
 /**

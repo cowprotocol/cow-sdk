@@ -1,5 +1,7 @@
+import { TTLCache } from '@cowprotocol/sdk-common'
+import { TokenInfo } from '@cowprotocol/sdk-config'
 import { MultiQuoteResult, ProviderQuoteContext } from '../../types'
-import { BridgingSdkConfig } from '../BridgingSdk'
+import { BridgingSdkConfig } from '../types'
 import {
   createBridgeQuoteTimeoutPromise,
   executeProviderQuotes,
@@ -11,7 +13,7 @@ import {
 } from '../utils'
 import { getQuoteWithBridge } from '../getQuoteWithBridge'
 import { BridgeProviderError } from '../../errors'
-import { MultiQuoteStrategy, MultiQuoteRequest } from './QuoteStrategy'
+import { BaseMultiQuoteStrategy, MultiQuoteRequest } from './QuoteStrategy'
 
 const DEFAULT_TOTAL_TIMEOUT_MS = 40_000 // 40 seconds
 const DEFAULT_PROVIDER_TIMEOUT_MS = 20_000 // 20 seconds
@@ -19,8 +21,12 @@ const DEFAULT_PROVIDER_TIMEOUT_MS = 20_000 // 20 seconds
 /**
  * Strategy for getting quotes from multiple providers
  */
-export class MultiQuoteStrategyImpl implements MultiQuoteStrategy {
-  readonly strategyName = 'MultiQuoteStrategy'
+export class MultiQuoteStrategy extends BaseMultiQuoteStrategy {
+  readonly strategyName = 'MultiQuoteStrategy' as const
+
+  constructor(intermediateTokensCache?: TTLCache<TokenInfo[]>) {
+    super(intermediateTokensCache)
+  }
 
   async execute(request: MultiQuoteRequest, config: BridgingSdkConfig): Promise<MultiQuoteResult[]> {
     const { quoteBridgeRequest, providerDappIds, advancedSettings, options } = request
@@ -86,15 +92,24 @@ export class MultiQuoteStrategyImpl implements MultiQuoteStrategy {
 
     return (async (): Promise<void> => {
       try {
+        const baseParams = {
+          swapAndBridgeRequest: quoteBridgeRequest,
+          advancedSettings,
+          tradingSdk: config.tradingSdk,
+          provider,
+          bridgeHookSigner: advancedSettings?.quoteSigner,
+        } as const
+
+        const request = this.intermediateTokensCache
+          ? {
+              ...baseParams,
+              intermediateTokensCache: this.intermediateTokensCache,
+            }
+          : baseParams
+
         // Race between the actual quote request and the provider timeout
         const quote = await Promise.race([
-          getQuoteWithBridge({
-            swapAndBridgeRequest: quoteBridgeRequest,
-            advancedSettings,
-            tradingSdk: config.tradingSdk,
-            provider,
-            bridgeHookSigner: advancedSettings?.quoteSigner,
-          }),
+          getQuoteWithBridge(request),
           createBridgeQuoteTimeoutPromise(providerTimeout, `Provider ${provider.info.dappId}`),
         ])
 

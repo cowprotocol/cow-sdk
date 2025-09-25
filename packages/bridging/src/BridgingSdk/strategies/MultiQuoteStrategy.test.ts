@@ -1,4 +1,4 @@
-import { MultiQuoteStrategyImpl } from './MultiQuoteStrategy'
+import { MultiQuoteStrategy } from './MultiQuoteStrategy'
 import { MockBridgeProvider } from '../../providers/mock/MockBridgeProvider'
 import { MultiQuoteResult } from '../../types'
 import { assertIsBridgeQuoteAndPost } from '../../utils'
@@ -14,14 +14,10 @@ import {
   quoteBridgeRequest,
   tradeParameters,
 } from '../mock/bridgeRequestMocks'
-import {
-  QuoteResultsWithSigner,
-  SwapAdvancedSettings,
-  TradingSdk,
-} from '@cowprotocol/sdk-trading'
+import { QuoteResultsWithSigner, SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
-import { BridgingSdkConfig } from '../BridgingSdk'
+import { BridgingSdkConfig } from '../types'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { createAdapters } from '../../../tests/setup'
 
@@ -30,7 +26,7 @@ const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
 adapterNames.forEach((adapterName) => {
   describe(`MultiQuoteStrategy with ${adapterName}`, () => {
-    let strategy: MultiQuoteStrategyImpl
+    let strategy: MultiQuoteStrategy
     let config: BridgingSdkConfig
     let tradingSdk: TradingSdk
     let orderBookApi: OrderBookApi
@@ -41,7 +37,7 @@ adapterNames.forEach((adapterName) => {
     let mockProvider3: MockBridgeProvider
 
     beforeEach(() => {
-      strategy = new MultiQuoteStrategyImpl()
+      strategy = new MultiQuoteStrategy()
       jest.clearAllMocks()
 
       const adapter = adapters[adapterName]
@@ -171,14 +167,14 @@ adapterNames.forEach((adapterName) => {
         expect(results).toHaveLength(3)
 
         // Results should be sorted with successful quotes first
-        const successfulResults = results.filter(r => r.quote)
-        const failedResults = results.filter(r => !r.quote)
+        const successfulResults = results.filter((r) => r.quote)
+        const failedResults = results.filter((r) => !r.quote)
 
         expect(successfulResults).toHaveLength(2)
         expect(failedResults).toHaveLength(1)
 
         // Successful providers (order may vary within successful group)
-        const successfulProviderIds = successfulResults.map(r => r.providerDappId)
+        const successfulProviderIds = successfulResults.map((r) => r.providerDappId)
         expect(successfulProviderIds).toContain('mockProvider')
         expect(successfulProviderIds).toContain('cow-sdk://bridging/providers/mock3')
 
