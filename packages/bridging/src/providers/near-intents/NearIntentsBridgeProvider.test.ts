@@ -6,7 +6,7 @@ import { padHex, zeroAddress } from 'viem'
 
 import { COW_SHED_PROXY_CREATION_GAS, DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION } from '../../const'
 import { createAdapters } from '../../../tests/setup'
-import NearIntentsApi from './NearIntentsApi'
+import { NearIntentsApi } from './NearIntentsApi'
 import { NEAR_INTENTS_HOOK_DAPP_ID, NearIntentsBridgeProvider } from './NearIntentsBridgeProvider'
 import { NEAR_INTENTS_SUPPORTED_NETWORKS } from './const'
 import { BridgeStatus } from '../../types'
