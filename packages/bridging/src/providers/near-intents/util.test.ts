@@ -1,9 +1,7 @@
-import { ETH_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
+import { ETH_ADDRESS, SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
 import { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 
 import { adaptToken, getTokenByAddressAndChainId } from './util'
-
-import { WRAPPED_NATIVE_CURRENCIES } from './const'
 
 describe('Near Intents Utils', () => {
   describe('adaptToken', () => {
@@ -20,7 +18,7 @@ describe('Near Intents Utils', () => {
       expect(adaptToken(tokenResponse)).toStrictEqual({
         chainId: SupportedChainId.MAINNET,
         decimals: 18,
-        address: WRAPPED_NATIVE_CURRENCIES[1],
+        address: WRAPPED_NATIVE_CURRENCIES[SupportedChainId.MAINNET],
         name: 'ETH',
         symbol: 'ETH',
       })
