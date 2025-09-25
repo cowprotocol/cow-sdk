@@ -174,7 +174,7 @@ jobs:
           # Restore original package.json versions
           git checkout -- packages/*/package.json
 
-      - name: Create PR comment with package info
+      - name: Update PR comment with package info
         if: steps.version.outputs.is_pr == 'true'
         uses: actions/github-script@v7
         with:
@@ -192,7 +192,7 @@ jobs:
               console.log('Could not read published versions file');
             }
 
-            const comment = `## 📦 GitHub Packages Published
+            const commentBody = `## 📦 GitHub Packages Published
 
             The following packages have been published to GitHub Packages with pre-release version \`${prVersion}\`:
 
@@ -218,9 +218,34 @@ jobs:
 
             You can view the published packages at: https://github.com/cowprotocol/cow-sdk/packages`;
 
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
+            // Find existing comment from this workflow
+            const comments = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: comment
+              issue_number: context.issue.number
             });
+
+            const existingComment = comments.data.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('📦 GitHub Packages Published')
+            );
+
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: commentBody
+              });
+              console.log('Updated existing comment');
+            } else {
+              // Create new comment if none exists
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+              console.log('Created new comment');
+            }
