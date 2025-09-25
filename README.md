@@ -107,14 +107,6 @@ We welcome contributions to the CoW Protocol SDK! Here's how to get started:
 4. **Make your changes** following our [Contributor Guidelines](CONTRIBUTING.md)
 5. **Create a pull request** short after creating it, you will be asked to sign the CLA (Contributor License Agreement). A comment with instructions will be added to the PR.
 
-### 🏷️ **Preview Deployments**
-
-For significant changes that need testing in real projects (like CoW Swap), our team may add the `allow-publish` label to your PR. This will:
-
-- **Automatically publish** preview packages to GitHub Packages
-- **Generate versioned packages** (e.g., `1.0.0-pr-123.0`)
-- **Enable easy testing** in projects by installing the preview version
-
 ### 📚 **Need Help?**
 
 - Check existing [issues](https://github.com/cowprotocol/cow-sdk/issues) for similar problems
