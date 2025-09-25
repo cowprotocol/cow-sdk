@@ -73,6 +73,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://${{ env.REGISTRY }}
           scope: ${{ env.SCOPE }}
+          always-auth: true
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -142,6 +143,16 @@ jobs:
               cd - > /dev/null
             done
           ' _ {} \;
+
+      - name: Debug auth (whoami)
+        run: npm whoami --registry=https://npm.pkg.github.com
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Debug ping
+        run: npm ping --registry=https://npm.pkg.github.com
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish packages to GitHub Packages
         run: |
