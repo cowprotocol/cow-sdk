@@ -12,8 +12,14 @@ import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { getCowTradeEvents } from '../../providers/across/util'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 import { NearIntentsApi } from './NearIntentsApi'
-import { WRAPPED_NATIVE_CURRENCIES, NEAR_INTENTS_STATUS_TO_COW_STATUS, NEAR_INTENTS_SUPPORTED_NETWORKS } from './const'
-import { adaptToken, adaptTokens, calculateDeadline, getTokenByAddressAndChainId } from './util'
+import { NEAR_INTENTS_STATUS_TO_COW_STATUS, NEAR_INTENTS_SUPPORTED_NETWORKS } from './const'
+import {
+  adaptToken,
+  adaptTokens,
+  calculateDeadline,
+  getTokenByAddressAndChainId,
+  isWrappedNativeCurrency,
+} from './util'
 
 import type { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
 import type { AbstractProviderAdapter, SignerLike } from '@cowprotocol/sdk-common'
@@ -92,10 +98,9 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
       { sourceTokens: [] as TokenInfo[], targetTokens: [] as TokenInfo[] },
     )
 
-    const wrappedTokenAddresses = Object.values(WRAPPED_NATIVE_CURRENCIES).map((a) => a.toLowerCase())
     const buyTokenSupported = targetTokens.some((token) => {
       // Supports both the native token and its wrapped version (e.g. POL and WPOL, where POL is represented by ETH_ADDRESS).
-      if (token.address === ETH_ADDRESS || wrappedTokenAddresses.includes(token.address.toLowerCase())) return true
+      if (token.address === ETH_ADDRESS || isWrappedNativeCurrency(token.chainId, token.address)) return true
       return token.address.toLowerCase() === buyTokenAddress.toLowerCase()
     })
     if (!buyTokenSupported) return []
