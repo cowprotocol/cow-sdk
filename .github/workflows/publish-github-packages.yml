@@ -118,16 +118,18 @@ jobs:
       - name: Determine version strategy
         id: version
         run: |
+          COMMIT_HASH=$(echo "${{ github.sha }}" | cut -c1-8)
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             # For PRs, use PR number + commit hash for uniqueness
-            COMMIT_HASH=$(echo "${{ github.sha }}" | cut -c1-8)
             VERSION_SUFFIX="pr-${{ github.event.number }}-$COMMIT_HASH"
             echo "version_suffix=$VERSION_SUFFIX" >> $GITHUB_OUTPUT
             echo "tag=pr" >> $GITHUB_OUTPUT
             echo "is_pr=true" >> $GITHUB_OUTPUT
           else
             # For main branch, use latest tag
-            echo "version_suffix=" >> $GITHUB_OUTPUT
+            BRANCH_NAME=$(echo "${{ github.ref }}" | sed 's/refs\/heads\///')
+            VERSION_SUFFIX="${BRANCH_NAME}-$COMMIT_HASH"
+            echo "version_suffix=$VERSION_SUFFIX" >> $GITHUB_OUTPUT
             echo "tag=latest" >> $GITHUB_OUTPUT
             echo "is_pr=false" >> $GITHUB_OUTPUT
           fi
