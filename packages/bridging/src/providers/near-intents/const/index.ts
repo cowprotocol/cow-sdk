@@ -26,18 +26,18 @@ export const NEAR_INTENTS_SUPPORTED_NETWORKS = [
   polygon,
 ]
 
-export const NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK = {
-  arb: arbitrumOne,
-  avax: avalanche,
-  base,
-  bsc: bnb,
-  eth: mainnet,
-  gnosis: gnosisChain,
-  op: optimism,
-  pol: polygon,
-} as const satisfies Record<string, ChainInfo>
+export const NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS = {
+  arb: arbitrumOne.id,
+  avax: avalanche.id,
+  base: base.id,
+  bsc: bnb.id,
+  eth: mainnet.id,
+  gnosis: gnosisChain.id,
+  op: optimism.id,
+  pol: polygon.id,
+} as const satisfies Record<string, number>
 
-export type NearBlockchainKey = keyof typeof NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK
+export type NearBlockchainKey = keyof typeof NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS
 
 export const WRAPPED_NATIVE_CURRENCIES = {
   arb: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', // weth on arb

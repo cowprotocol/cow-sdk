@@ -1,7 +1,7 @@
 import { ETH_ADDRESS, TokenInfo } from '@cowprotocol/sdk-config'
 import { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 
-import { NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK, WRAPPED_NATIVE_CURRENCIES } from './const'
+import { NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS, WRAPPED_NATIVE_CURRENCIES } from './const'
 
 import type { NearBlockchainKey } from './const'
 
@@ -15,13 +15,13 @@ export const calculateDeadline = (seconds: number) => {
 }
 
 export const adaptToken = (token: TokenResponse): TokenInfo | null => {
-  const network = NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK[token.blockchain as NearBlockchainKey]
-  if (!network) return null
+  const chainId = NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS[token.blockchain as NearBlockchainKey]
+  if (!chainId) return null
   const tokenAddress = token.contractAddress || WRAPPED_NATIVE_CURRENCIES[token.blockchain as NearBlockchainKey]
   if (!tokenAddress) return null
 
   return {
-    chainId: network.id,
+    chainId,
     decimals: token.decimals,
     address: tokenAddress,
     name: token.symbol, // TODO: how to handle? v0/tokens doesn't return the token name
@@ -43,13 +43,11 @@ export const getTokenByAddressAndChainId = (
   targetTokenChainId: number,
 ): TokenResponse | undefined => {
   return tokens.find((token) => {
-    const network = NEAR_INTENTS_BLOCKCHAIN_TO_COW_NETWORK[token.blockchain as NearBlockchainKey]
-    if (!network) return false
-    if (targetTokenAddress === ETH_ADDRESS) return network && network.id === targetTokenChainId
+    const chainId = NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS[token.blockchain as NearBlockchainKey]
+    if (!chainId) return false
+    if (targetTokenAddress === ETH_ADDRESS) return chainId === targetTokenChainId
     const tokenAddress =
       token.contractAddress?.toLowerCase() || WRAPPED_NATIVE_CURRENCIES[token.blockchain as NearBlockchainKey]
-    return (
-      tokenAddress?.toLowerCase() === targetTokenAddress.toLowerCase() && network && network.id === targetTokenChainId
-    )
+    return tokenAddress?.toLowerCase() === targetTokenAddress.toLowerCase() && chainId === targetTokenChainId
   })
 }
