@@ -1,7 +1,7 @@
-import { ETH_ADDRESS, TokenInfo } from '@cowprotocol/sdk-config'
+import { ETH_ADDRESS, SupportedChainId, TokenInfo, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
 import { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 
-import { NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS, WRAPPED_NATIVE_CURRENCIES } from './const'
+import { NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS } from './const'
 
 import type { NearBlockchainKey } from './const'
 
@@ -17,7 +17,7 @@ export const calculateDeadline = (seconds: number) => {
 export const adaptToken = (token: TokenResponse): TokenInfo | null => {
   const chainId = NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS[token.blockchain as NearBlockchainKey]
   if (!chainId) return null
-  const tokenAddress = token.contractAddress || WRAPPED_NATIVE_CURRENCIES[chainId]
+  const tokenAddress = token.contractAddress || WRAPPED_NATIVE_CURRENCIES[chainId as SupportedChainId]?.address
   if (!tokenAddress) return null
 
   return {
@@ -46,11 +46,11 @@ export const getTokenByAddressAndChainId = (
     const chainId = NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS[token.blockchain as NearBlockchainKey]
     if (!chainId) return false
     if (targetTokenAddress === ETH_ADDRESS) return chainId === targetTokenChainId
-    const tokenAddress = token.contractAddress?.toLowerCase() || WRAPPED_NATIVE_CURRENCIES[chainId]
+    const tokenAddress = token.contractAddress || WRAPPED_NATIVE_CURRENCIES[chainId as SupportedChainId]?.address
     return tokenAddress?.toLowerCase() === targetTokenAddress.toLowerCase() && chainId === targetTokenChainId
   })
 }
 
 export const isWrappedNativeCurrency = (chainId: number, tokenAddress: string): boolean => {
-  return WRAPPED_NATIVE_CURRENCIES[chainId]?.toLowerCase() === tokenAddress.toLowerCase()
+  return WRAPPED_NATIVE_CURRENCIES[chainId as SupportedChainId]?.address?.toLowerCase() === tokenAddress.toLowerCase()
 }
