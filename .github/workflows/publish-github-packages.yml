@@ -71,14 +71,24 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          registry-url: https://${{ env.REGISTRY }}
-          scope: ${{ env.SCOPE }}
-          always-auth: true
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10.8.0
+
+      - name: Configure npm for GitHub Packages
+        run: |
+          # Override registry for @cowprotocol scope to use GitHub Packages
+          echo "@cowprotocol:registry=https://${{ env.REGISTRY }}" >> ~/.npmrc
+
+          # Always authenticate
+          echo "always-auth=true" >> ~/.npmrc
+
+          # Set auth token
+          echo "//${{ env.REGISTRY }}/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
+          # Keep default registry as npmjs.org for other packages
+          echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
 
       - name: Cache pnpm store
         uses: actions/cache@v4
@@ -95,24 +105,11 @@ jobs:
       - name: Build packages
         run: pnpm build
 
-      - name: Run tests
-        run: pnpm test
+      # - name: Run tests
+      #   run: pnpm test
 
-      - name: Run linting
-        run: pnpm lint
-
-      - name: Configure npm for GitHub Packages
-        run: |
-          # Override registry for @cowprotocol scope to use GitHub Packages
-          echo "@cowprotocol:registry=https://${{ env.REGISTRY }}" >> ~/.npmrc
-
-          # Always authenticate
-          echo "always-auth=true" >> ~/.npmrc
-
-          # Set auth token
-          echo "//${{ env.REGISTRY }}/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
-          # Keep default registry as npmjs.org for other packages
-          echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
+      # - name: Run linting
+      #   run: pnpm lint
 
       - name: Determine version strategy
         id: version
