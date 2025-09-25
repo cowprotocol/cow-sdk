@@ -119,6 +119,8 @@ jobs:
         run: |
           # Publish all packages
           pnpm publish -r --filter="./packages/**" --tag ${{ steps.version.outputs.tag }} --no-git-checks --registry https://${{ env.REGISTRY }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Restore original versions (PR only)
         if: steps.version.outputs.is_pr == 'true'
