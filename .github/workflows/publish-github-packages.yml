@@ -209,7 +209,7 @@ jobs:
             ${isExternalPR ? '> **Note:** This is an external PR with the \`allow-publish\` label enabled.' : ''}
 
             ---
-            **Last updated:** ${timestamp}`
+            **Last updated:** ${timestamp}
 
             ### Installation
 
