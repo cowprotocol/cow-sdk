@@ -71,32 +71,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          scope: ${{ env.SCOPE }}
+          always-auth: true
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10.8.0
-
-      - name: Configure npm for GitHub Packages
-        run: |
-          # Create fresh .npmrc with proper registry configuration
-          cat > ~/.npmrc << EOF
-          shamefully-hoist=false
-          strict-peer-dependencies=false
-          node-linker=isolated
-
-          @cowprotocol:registry=https://${{ env.REGISTRY }}
-          //${{ env.REGISTRY }}/:_authToken=${{ secrets.GITHUB_TOKEN }}
-          registry=https://registry.npmjs.org/
-          EOF
-
-          # Debug: Show registry configuration (without token)
-          echo "=== npm registry configuration ==="
-          cat ~/.npmrc | sed 's/_authToken=.*/_authToken=***/' || true
-
-          # Test registry access
-          echo "=== Testing registry access ==="
-          npm view cpx version --registry=https://registry.npmjs.org/ || echo "Failed to access npmjs.org"
 
       - name: Cache pnpm store
         uses: actions/cache@v4
@@ -105,12 +86,7 @@ jobs:
           key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Install dependencies
-        run: |
-          echo "=== Installing dependencies ==="
-          pnpm install --frozen-lockfile
-
-          echo "=== Verifying package resolution ==="
-          pnpm list cpx --depth=0 || echo "cpx not found in root, checking if it's available from npmjs.org"
+        run: pnpm install --frozen-lockfile
 
       - name: Generate code
         run: pnpm codegen
@@ -123,6 +99,19 @@ jobs:
 
       # - name: Run linting
       #   run: pnpm lint
+
+      - name: Configure npm for GitHub Packages
+        run: |
+          # Override registry for @cowprotocol scope to use GitHub Packages
+          echo "@cowprotocol:registry=https://${{ env.REGISTRY }}" >> ~/.npmrc
+
+          # Always authenticate
+          echo "always-auth=true" >> ~/.npmrc
+
+          # Set auth token
+          echo "//${{ env.REGISTRY }}/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
+          # Keep default registry as npmjs.org for other packages
+          echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
 
       - name: Determine version strategy
         id: version
@@ -167,7 +156,7 @@ jobs:
       - name: Publish packages to GitHub Packages
         run: |
           # Publish all packages
-          pnpm publish -r --filter="./packages/**" --tag ${{ steps.version.outputs.tag }} --no-git-checks --registry https://${{ env.REGISTRY }}
+          pnpm publish -r --filter="./packages/**" --tag ${{ steps.version.outputs.tag }} --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
