@@ -17,6 +17,8 @@ export const NEAR_INTENTS_SUPPORTED_NETWORKS = [
   polygon,
 ]
 
+export type NearBlockchainKey = 'arb' | 'avax' | 'base' | 'bsc' | 'eth' | 'gnosis' | 'op' | 'pol'
+
 export const NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS = {
   arb: arbitrumOne.id,
   avax: avalanche.id,
@@ -26,20 +28,7 @@ export const NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS = {
   gnosis: gnosisChain.id,
   op: optimism.id,
   pol: polygon.id,
-} as const satisfies Record<string, number>
-
-export const CHAIN_ID_NEAR_INTENTS_BLOCKCHAIN = {
-  arb: arbitrumOne.id,
-  avax: avalanche.id,
-  base: base.id,
-  bsc: bnb.id,
-  eth: mainnet.id,
-  gnosis: gnosisChain.id,
-  op: optimism.id,
-  pol: polygon.id,
 } as const satisfies Record<NearBlockchainKey, number>
-
-export type NearBlockchainKey = keyof typeof NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS
 
 export const NEAR_INTENTS_STATUS_TO_COW_STATUS: Record<string, BridgeStatus> = {
   KNOWN_DEPOSIT_TX: BridgeStatus.IN_PROGRESS,
