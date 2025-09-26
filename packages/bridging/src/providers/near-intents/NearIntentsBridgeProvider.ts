@@ -286,15 +286,18 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     // A deposit address on NEAR Intents must be an EOA (no contract code).
     // We fetch the code for each address and filter out any contracts.
     // Expect exactly one valid EOA → the NEAR Intents deposit address.
-    const eoaAddresses = (
-      await Promise.all(buyTokenTransfersReceivers.map((address) => adapter.getCode(address)))
-    ).filter((code) => code === '0x')
-    if (eoaAddresses.length !== 1) {
-      throw new Error('Failed to retrieve the deposit address')
-    }
+    const codes = await Promise.all(buyTokenTransfersReceivers.map((a) => adapter.getCode(a)))
+    const eoa = [
+      ...new Set(
+        buyTokenTransfersReceivers
+          .map((a, i) => ({ a: a.toLowerCase(), code: codes[i] }))
+          .filter((x) => x.code === '0x' || x.code == null)
+          .map((x) => x.a),
+      ),
+    ]
+    if (eoa.length !== 1) throw new Error('Failed to retrieve the deposit address')
+    const depositAddress = eoa[0]!
 
-    // Resolve tokens + status in parallel
-    const depositAddress = eoaAddresses[0]!
     const [tokens, status] = await Promise.all([this.api.getTokens(), this.api.getStatus(depositAddress)])
 
     // Unpack quote data
