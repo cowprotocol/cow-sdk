@@ -274,32 +274,23 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     //   2. Sell USDC for AVAX on NEAR Intents.
     // This filter extracts the ERC20 Transfer logs of the buyToken (e.g. USDC)
     // that exactly match the buyAmount from the CoW trade.
+    const cowShedAccount = this.cowShedSdk.getCowShedAccount(chainId, tradeEvent.owner).toLowerCase()
     const buyTokenTransfersReceivers = receipt.logs
-      .filter(
-        (log) =>
+      .filter((log) => {
+        if (log.topics[0] !== '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef') return false
+
+        return (
           log.address.toLowerCase() === tradeEvent.buyToken.toLowerCase() &&
           log.topics[0] === '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' &&
-          log.topics[1] !== '0x0000000000000000000000000000000000000000000000000000000000000000' &&
-          log.topics[2] !== '0x0000000000000000000000000000000000000000000000000000000000000000' &&
-          BigInt(log.data) === BigInt(tradeEvent.buyAmount),
-      )
+          BigInt(log.data) === BigInt(tradeEvent.buyAmount) &&
+          log.topics[1] &&
+          `0x${log.topics[1].slice(26)}`.toLowerCase() === cowShedAccount // topics[1] is the ERC20 Transfer "from" address, this log is a transfer sent by the cow-shed account linked to the trade owner.
+        )
+      })
       .map((log) => `0x${log.topics[2]?.slice(26)}`)
 
-    // Resolve the unique EOA (Externally Owned Account) among the buyToken transfer recipients.
-    // A deposit address on NEAR Intents must be an EOA (no contract code).
-    // We fetch the code for each address and filter out any contracts.
-    // Expect exactly one valid EOA → the NEAR Intents deposit address.
-    const codes = await Promise.all(buyTokenTransfersReceivers.map((a) => adapter.getCode(a)))
-    const eoa = [
-      ...new Set(
-        buyTokenTransfersReceivers
-          .map((a, i) => ({ a: a.toLowerCase(), code: codes[i] }))
-          .filter((x) => x.code === '0x' || x.code == null)
-          .map((x) => x.a),
-      ),
-    ]
-    if (eoa.length !== 1) throw new Error('Failed to retrieve the deposit address')
-    const depositAddress = eoa[0]!
+    if (buyTokenTransfersReceivers.length !== 1) throw new Error('Failed to retrieve the deposit address')
+    const depositAddress = buyTokenTransfersReceivers[0]!
 
     const [tokens, status] = await Promise.all([this.api.getTokens(), this.api.getStatus(depositAddress)])
 
