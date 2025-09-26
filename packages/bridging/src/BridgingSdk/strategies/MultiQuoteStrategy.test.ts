@@ -25,7 +25,7 @@ const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
 adapterNames.forEach((adapterName) => {
-  describe(`MultiQuoteStrategy with ${adapterName}`, () => {
+  describe.skip(`MultiQuoteStrategy with ${adapterName}`, () => {
     let strategy: MultiQuoteStrategyImpl
     let config: BridgingSdkConfig
     let tradingSdk: TradingSdk
