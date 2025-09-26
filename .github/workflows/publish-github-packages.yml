@@ -220,19 +220,19 @@ jobs:
             #  1. create one at https://github.com/settings/tokens. Make sure you select the option "Generate new token (classic)"
             #  2. Check only the "read:packages" scope
             #  3. Add the token to the npm config
-            npm config set //npm.pkg.github.com/:_authToken YOUR_GITHUB_TOKEN
+            npm config set //${{ env.REGISTRY }}/:_authToken YOUR_GITHUB_TOKEN
             \`\`\`
 
             Then install any of the packages above:
             \`\`\`bash
             # Yarn
-            yarn add ${publishedVersions[0]} --registry https://npm.pkg.github.com
+            yarn add ${publishedVersions[0]} --registry https://${{ env.REGISTRY }}
 
             # pnpm
-            pnpm install ${publishedVersions[0]} --registry https://npm.pkg.github.com
+            pnpm install ${publishedVersions[0]} --registry https://${{ env.REGISTRY }}
 
             # NPM
-            npm install ${publishedVersions[0]} --registry https://npm.pkg.github.com
+            npm install ${publishedVersions[0]} --registry https://${{ env.REGISTRY }}
             \`\`\`
 
             ### View Packages
