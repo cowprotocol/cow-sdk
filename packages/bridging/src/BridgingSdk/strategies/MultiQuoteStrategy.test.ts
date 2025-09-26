@@ -14,11 +14,7 @@ import {
   quoteBridgeRequest,
   tradeParameters,
 } from '../mock/bridgeRequestMocks'
-import {
-  QuoteResultsWithSigner,
-  SwapAdvancedSettings,
-  TradingSdk,
-} from '@cowprotocol/sdk-trading'
+import { QuoteResultsWithSigner, SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { BridgingSdkConfig } from '../BridgingSdk'
@@ -171,14 +167,14 @@ adapterNames.forEach((adapterName) => {
         expect(results).toHaveLength(3)
 
         // Results should be sorted with successful quotes first
-        const successfulResults = results.filter(r => r.quote)
-        const failedResults = results.filter(r => !r.quote)
+        const successfulResults = results.filter((r) => r.quote)
+        const failedResults = results.filter((r) => !r.quote)
 
         expect(successfulResults).toHaveLength(2)
         expect(failedResults).toHaveLength(1)
 
         // Successful providers (order may vary within successful group)
-        const successfulProviderIds = successfulResults.map(r => r.providerDappId)
+        const successfulProviderIds = successfulResults.map((r) => r.providerDappId)
         expect(successfulProviderIds).toContain('mockProvider')
         expect(successfulProviderIds).toContain('cow-sdk://bridging/providers/mock3')
 
@@ -249,18 +245,28 @@ adapterNames.forEach((adapterName) => {
       })
 
       it('should execute quotes in parallel', async () => {
-        let provider1StartTime = 0
-        let provider2StartTime = 0
+        jest.useFakeTimers()
+
+        let provider1Called = false
+        let provider2Called = false
+        let provider1Resolved = false
+        let provider2Resolved = false
 
         mockProvider.getQuote = jest.fn().mockImplementation(async () => {
-          provider1StartTime = Date.now()
-          await new Promise((resolve) => setTimeout(resolve, 100)) // 100ms delay
+          provider1Called = true
+          await new Promise((resolve) => setTimeout(() => {
+            provider1Resolved = true
+            resolve(bridgeQuoteResult)
+          }, 100))
           return bridgeQuoteResult
         })
 
         mockProvider2.getQuote = jest.fn().mockImplementation(async () => {
-          provider2StartTime = Date.now()
-          await new Promise((resolve) => setTimeout(resolve, 100)) // 100ms delay
+          provider2Called = true
+          await new Promise((resolve) => setTimeout(() => {
+            provider2Resolved = true
+            resolve(bridgeQuoteResult)
+          }, 100))
           return bridgeQuoteResult
         })
 
@@ -271,18 +277,28 @@ adapterNames.forEach((adapterName) => {
           options: undefined,
         }
 
-        const startTime = Date.now()
-        await strategy.execute(request, config)
-        const totalTime = Date.now() - startTime
+        const executePromise = strategy.execute(request, config)
 
-        // Verify parallel execution: total time should be roughly the same as individual execution
-        expect(totalTime).toBeLessThan(180) // Should be less than 180ms (100ms + buffer)
+        // Verify both providers are called immediately (parallel start)
+        await jest.advanceTimersByTimeAsync(0) // Allow microtasks to run
+        expect(provider1Called).toBe(true)
+        expect(provider2Called).toBe(true)
+        expect(provider1Resolved).toBe(false)
+        expect(provider2Resolved).toBe(false)
 
-        // Verify both providers started around the same time (parallel execution)
-        expect(provider1StartTime).toBeDefined()
-        expect(provider2StartTime).toBeDefined()
-        const timeDiff = Math.abs(provider1StartTime - provider2StartTime)
-        expect(timeDiff).toBeLessThan(50) // Should start within 50ms of each other
+        // Advance time by 100ms to complete both providers
+        await jest.advanceTimersByTimeAsync(100)
+
+        const results = await executePromise
+
+        // Verify both providers completed successfully
+        expect(results).toHaveLength(2)
+        expect(provider1Resolved).toBe(true)
+        expect(provider2Resolved).toBe(true)
+        expect(mockProvider.getQuote).toHaveBeenCalled()
+        expect(mockProvider2.getQuote).toHaveBeenCalled()
+
+        jest.useRealTimers()
       })
 
       it('should return quotes with correct structure', async () => {
@@ -380,6 +396,8 @@ adapterNames.forEach((adapterName) => {
       })
 
       it('should respect timeout option', async () => {
+        jest.useFakeTimers()
+
         // Make first provider fast, second provider slow
         mockProvider.getQuote = jest.fn().mockImplementation(async () => {
           await new Promise((resolve) => setTimeout(resolve, 10)) // 10ms delay - fast
@@ -404,13 +422,18 @@ adapterNames.forEach((adapterName) => {
           },
         }
 
-        const startTime = Date.now()
-        const results = await strategy.execute(request, config)
-        const elapsed = Date.now() - startTime
+        const executePromise = strategy.execute(request, config)
 
-        // Should complete close to timeout time
-        expect(elapsed).toBeGreaterThan(90) // At least close to timeout
-        expect(elapsed).toBeLessThan(300) // But not wait for slow provider
+        // Advance time to complete fast provider (10ms)
+        await jest.advanceTimersByTimeAsync(10)
+
+        // Fast provider should complete, callback should be called once
+        expect(onQuoteResult).toHaveBeenCalledTimes(1)
+
+        // Advance time to reach timeout (total 100ms)
+        await jest.advanceTimersByTimeAsync(90)
+
+        const results = await executePromise
 
         // Should still return results for both providers
         expect(results).toHaveLength(2)
@@ -430,9 +453,12 @@ adapterNames.forEach((adapterName) => {
         expect(consoleSpy).toHaveBeenCalledWith('getMultiQuotes timeout occurred, returning partial results')
 
         consoleSpy.mockRestore()
+        jest.useRealTimers()
       })
 
       it('should call progressive callbacks in order of completion, not provider order', async () => {
+        jest.useFakeTimers()
+
         const callbackOrder: string[] = []
         const onQuoteResult = jest.fn((result: MultiQuoteResult) => {
           callbackOrder.push(result.providerDappId)
@@ -458,12 +484,24 @@ adapterNames.forEach((adapterName) => {
           },
         }
 
-        await strategy.execute(request, config)
+        const executePromise = strategy.execute(request, config)
+
+        // Advance time to complete second provider first (50ms)
+        await jest.advanceTimersByTimeAsync(50)
+        expect(callbackOrder).toHaveLength(1)
+        expect(callbackOrder[0]).toBe('cow-sdk://bridging/providers/mock2')
+
+        // Advance time to complete first provider (total 100ms)
+        await jest.advanceTimersByTimeAsync(50)
+
+        await executePromise
 
         // Second provider should complete first due to shorter delay
         expect(callbackOrder).toHaveLength(2)
         expect(callbackOrder[0]).toBe('cow-sdk://bridging/providers/mock2')
         expect(callbackOrder[1]).toBe('mockProvider')
+
+        jest.useRealTimers()
       })
 
       it('should include errors in progressive callbacks', async () => {
@@ -535,6 +573,8 @@ adapterNames.forEach((adapterName) => {
       })
 
       it('should respect individual provider timeout', async () => {
+        jest.useFakeTimers()
+
         // Create providers with different speeds
         const fastProvider = new MockBridgeProvider()
         fastProvider.info.dappId = 'fastProvider'
@@ -572,7 +612,17 @@ adapterNames.forEach((adapterName) => {
           },
         }
 
-        const results = await strategy.execute(request, testConfig)
+        const executePromise = strategy.execute(request, testConfig)
+
+        // Advance time to complete fast provider (10ms)
+        await jest.advanceTimersByTimeAsync(10)
+        expect(progressiveResults).toHaveLength(1)
+        expect(progressiveResults[0]?.providerDappId).toBe('fastProvider')
+
+        // Advance time to reach provider timeout (100ms)
+        await jest.advanceTimersByTimeAsync(90)
+
+        const results = await executePromise
 
         expect(results).toHaveLength(2)
 
@@ -586,6 +636,8 @@ adapterNames.forEach((adapterName) => {
         expect(slowResult?.quote).toBeNull()
         expect(slowResult?.error).toBeTruthy()
         expect(slowResult?.error?.message).toContain('Provider slowProvider timeout after 100ms')
+
+        jest.useRealTimers()
       })
 
       it('should use default provider timeout when not specified', async () => {
