@@ -142,7 +142,10 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
       deadline: calculateDeadline(validFor || 3600),
     })
 
-    const slippage = (1 - Number(quote.amountOutUsd) / Number(quote.amountInUsd)) * 100
+    const payoutRatio = Number(quote.amountOutUsd) / Number(quote.amountInUsd);
+    const slippage = (1 - payoutRatio)
+    const slippageBps = Math.trunc(slippage * 10_000);
+    const bridgeFee   = Math.abs(Number(quote.amountIn) * slippage);
 
     return {
       isSell: request.kind === OrderKind.SELL,
@@ -154,7 +157,7 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
         maxDeposit: BigInt(quote.amountIn),
       },
       fees: {
-        bridgeFee: BigInt(0),
+        bridgeFee: BigInt(bridgeFee), // The bridge fee is already included in `minAmountOut`. This means `bridgeFee` represents the maximum possible fee (worst case), but the actual fee may be lower.
         destinationGasFee: BigInt(0),
       },
       amountsAndCosts: {
@@ -170,7 +173,7 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
           sellAmount: BigInt(quote.minAmountOut),
           buyAmount: BigInt(quote.minAmountIn),
         },
-        slippageBps: Math.trunc(slippage * 100),
+        slippageBps,
         costs: {
           bridgingFee: {
             feeBps: 0,
