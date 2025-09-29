@@ -1,5 +1,10 @@
 import { EcdsaSigningScheme, SigningScheme } from '@cowprotocol/sdk-order-book'
-import { mapSupportedNetworks, SupportedChainId } from '@cowprotocol/sdk-config'
+import { CowEnv, mapSupportedNetworks, SupportedChainId } from '@cowprotocol/sdk-config'
+
+export const BFF_ENDPOINTS: Record<CowEnv, string> = {
+  prod: 'https://bff.cow.fi',
+  staging: 'https://bff.barn.cow.fi',
+}
 
 export const DEFAULT_QUOTE_VALIDITY = 60 * 30 // 30 min
 

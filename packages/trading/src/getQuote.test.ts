@@ -1,10 +1,18 @@
 import { ETH_FLOW_DEFAULT_SLIPPAGE_BPS } from './consts'
-import { getQuoteWithSigner } from './getQuote'
+import { getQuoteWithSigner, getQuoteRaw } from './getQuote'
 import { SwapParameters } from './types'
 import { ETH_ADDRESS, WRAPPED_NATIVE_CURRENCIES, SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderBookApi, OrderKind, OrderQuoteResponse } from '@cowprotocol/sdk-order-book'
 import { AdaptersTestSetup, createAdapters } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+
+// Mock suggestSlippageBpsWithApi
+jest.mock('./suggestSlippageBpsWithApi', () => ({
+  suggestSlippageBpsWithApi: jest.fn(),
+}))
+
+import { suggestSlippageBpsWithApi } from './suggestSlippageBpsWithApi'
+const mockSuggestSlippageBpsWithApi = suggestSlippageBpsWithApi as jest.MockedFunction<typeof suggestSlippageBpsWithApi>
 
 const quoteResponseMock = {
   quote: {
@@ -48,7 +56,7 @@ const orderBookApiMock = {
   getQuote: getQuoteMock,
 } as unknown as OrderBookApi
 
-describe('getQuoteToSign', () => {
+describe('getQuote', () => {
   let adapters: AdaptersTestSetup
 
   beforeAll(() => {
@@ -341,6 +349,117 @@ describe('getQuoteToSign', () => {
       results.forEach(({ result }) => {
         expect(result.orderToSign.appData.length).toBe(2 + 64)
       })
+    })
+  })
+
+  describe('getQuoteRaw', () => {
+    beforeEach(() => {
+      getQuoteMock.mockReset()
+      getQuoteMock.mockResolvedValue(quoteResponseMock)
+      mockSuggestSlippageBpsWithApi.mockReset()
+      mockSuggestSlippageBpsWithApi.mockResolvedValue(150)
+    })
+
+    it('should use suggestSlippageBpsWithApi to get suggested slippage', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+
+        const tradeParameters = {
+          sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+          sellTokenDecimals: 18,
+          buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+          buyTokenDecimals: 18,
+          amount: '100000000000000000',
+          kind: OrderKind.SELL,
+        }
+
+        const trader = {
+          chainId: SupportedChainId.GNOSIS_CHAIN,
+          appCode: '0x007',
+          account: '0xfb3c7eb936caa12b5a884d612393969a557d4307' as const,
+        }
+
+        const result = await getQuoteRaw(tradeParameters, trader, undefined, orderBookApiMock)
+
+        expect(mockSuggestSlippageBpsWithApi).toHaveBeenCalledWith({
+          isEthFlow: false,
+          quote: quoteResponseMock,
+          tradeParameters,
+          trader,
+          advancedSettings: undefined,
+          bffEnv: 'prod',
+        })
+
+        expect(result.suggestedSlippageBps).toBe(150)
+      }
+    })
+
+    it('should pass bffEnv from advancedSettings to suggestSlippageBpsWithApi', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+
+        const tradeParameters = {
+          sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+          sellTokenDecimals: 18,
+          buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+          buyTokenDecimals: 18,
+          amount: '100000000000000000',
+          kind: OrderKind.SELL,
+          env: 'staging' as const,
+        }
+
+        const trader = {
+          chainId: SupportedChainId.GNOSIS_CHAIN,
+          appCode: '0x007',
+          account: '0xfb3c7eb936caa12b5a884d612393969a557d4307' as const,
+        }
+
+        await getQuoteRaw(tradeParameters, trader, undefined, orderBookApiMock)
+
+        expect(mockSuggestSlippageBpsWithApi).toHaveBeenCalledWith({
+          isEthFlow: false,
+          quote: quoteResponseMock,
+          tradeParameters,
+          trader,
+          advancedSettings: undefined,
+          bffEnv: 'staging',
+        })
+      }
+    })
+
+    it('should handle EthFlow orders and pass isEthFlow correctly', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+
+        const tradeParameters = {
+          sellToken: ETH_ADDRESS, // This will trigger EthFlow
+          sellTokenDecimals: 18,
+          buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+          buyTokenDecimals: 18,
+          amount: '100000000000000000',
+          kind: OrderKind.SELL,
+        }
+
+        const trader = {
+          chainId: SupportedChainId.GNOSIS_CHAIN,
+          appCode: '0x007',
+          account: '0xfb3c7eb936caa12b5a884d612393969a557d4307' as const,
+        }
+
+        await getQuoteRaw(tradeParameters, trader, undefined, orderBookApiMock)
+
+        expect(mockSuggestSlippageBpsWithApi).toHaveBeenCalledWith(
+          expect.objectContaining({
+            isEthFlow: true,
+          }),
+        )
+      }
     })
   })
 })
