@@ -274,13 +274,13 @@ jobs:
             Then install any of the packages above, either by exact version (i.e. \`${publishedVersions[0]}\`) or more conveniently by using the tag (\`@cowprotocol/cow-sdk@${{ steps.version.outputs.tag }}\`):
             \`\`\`bash
             # Yarn
-            yarn add @cowprotocol/cow-sdk@${{ steps.version.outputs.tag }}
+            yarn add npm:@cowprotocol/cow-sdk@${{ steps.version.outputs.tag }}
 
             # pnpm
-            pnpm install @cowprotocol/cow-sdk@${{ steps.version.outputs.tag }}
+            pnpm install npm:@cowprotocol/cow-sdk@${{ steps.version.outputs.tag }}
 
             # NPM
-            npm install @cowprotocol/cow-sdk@${{ steps.version.outputs.tag }}
+            npm install npm:@cowprotocol/cow-sdk@${{ steps.version.outputs.tag }}
             \`\`\`
 
             ### View Packages
