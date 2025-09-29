@@ -265,13 +265,13 @@ jobs:
             Then install any of the packages above:
             \`\`\`bash
             # Yarn
-            yarn add ${publishedVersions[0]} --registry https://${{ env.REGISTRY }}
+            yarn add ${publishedVersions[0]}
 
             # pnpm
-            pnpm install ${publishedVersions[0]} --registry https://${{ env.REGISTRY }}
+            pnpm install ${publishedVersions[0]}
 
             # NPM
-            npm install ${publishedVersions[0]} --registry https://${{ env.REGISTRY }}
+            npm install ${publishedVersions[0]}
             \`\`\`
 
             ### View Packages
