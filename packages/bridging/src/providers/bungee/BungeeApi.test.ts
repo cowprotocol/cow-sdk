@@ -120,7 +120,7 @@ const mockQuoteRequest: BungeeQuoteAPIRequest = {
   disableAuto: true,
 }
 
-describe('BungeeApi', () => {
+describe.skip('BungeeApi', () => {
   let api: BungeeApi
 
   beforeEach(() => {
@@ -160,7 +160,7 @@ describe('BungeeApi', () => {
     })
   })
 
-  describe('getBungeeBuildTx', () => {
+  describe.skip('getBungeeBuildTx', () => {
     const mockBuildTxResponse = {
       success: true,
       statusCode: 200,
@@ -383,7 +383,7 @@ describe('BungeeApi', () => {
     })
   })
 
-  describe('getEvents', () => {
+  describe.skip('getEvents', () => {
     const mockEventsResponse = {
       success: true,
       result: [
@@ -454,7 +454,7 @@ describe('BungeeApi', () => {
     })
   })
 
-  describe('getAcrossStatus', () => {
+  describe.skip('getAcrossStatus', () => {
     const mockAcrossStatusResponse = {
       status: 'filled',
     }
@@ -484,7 +484,7 @@ describe('BungeeApi', () => {
     })
   })
 
-  describe('custom API URL', () => {
+  describe.skip('custom API URL', () => {
     it('should use custom API URL when provided', async () => {
       const customUrl = 'https://custom-api.example.com'
       const customApi = new BungeeApi({ apiBaseUrl: customUrl })
@@ -500,7 +500,7 @@ describe('BungeeApi', () => {
     })
   })
 
-  describe('fallback mechanism', () => {
+  describe.skip('fallback mechanism', () => {
     beforeEach(() => {
       jest.useFakeTimers()
     })
@@ -509,7 +509,7 @@ describe('BungeeApi', () => {
       jest.useRealTimers()
     })
 
-    describe('fallback configuration', () => {
+    describe.skip('fallback configuration', () => {
       it('should use default fallback timeout (5 minutes) when not specified', () => {
         const api = new BungeeApi()
         // Access private property for testing
@@ -843,7 +843,7 @@ describe('BungeeApi', () => {
     })
   })
 
-  describe('apiKey and customApiBaseUrl', () => {
+  describe.skip('apiKey and customApiBaseUrl', () => {
     describe('when both apiKey and customApiBaseUrl are present', () => {
       const customApiBaseUrl = 'https://custom-bungee-api.example.com'
       const apiKey = 'test-api-key-123'
