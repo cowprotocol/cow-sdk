@@ -289,47 +289,58 @@ adapterNames.forEach((adapterName) => {
       })
 
       it('should respect timeout options', async () => {
+        jest.useFakeTimers()
+
         // Make one provider fast, others slow (will timeout)
         mockProvider.getQuote = jest.fn().mockImplementation(async () => {
-          await new Promise((resolve) => setTimeout(resolve, 10)) // 10ms delay - fast
-          return {
-            ...bridgeQuoteResult,
-            amountsAndCosts: {
-              ...bridgeQuoteResult.amountsAndCosts,
-              afterSlippage: {
-                ...bridgeQuoteResult.amountsAndCosts.afterSlippage,
-                buyAmount: BigInt('50000000000000000000'), // 50 ETH
-              },
-            },
-          }
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve({
+                ...bridgeQuoteResult,
+                amountsAndCosts: {
+                  ...bridgeQuoteResult.amountsAndCosts,
+                  afterSlippage: {
+                    ...bridgeQuoteResult.amountsAndCosts.afterSlippage,
+                    buyAmount: BigInt('50000000000000000000'), // 50 ETH
+                  },
+                },
+              })
+            }, 10) // 10ms delay - fast
+          })
         })
 
         mockProvider2.getQuote = jest.fn().mockImplementation(async () => {
-          await new Promise((resolve) => setTimeout(resolve, 200)) // 200ms delay - slow
-          return {
-            ...bridgeQuoteResult,
-            amountsAndCosts: {
-              ...bridgeQuoteResult.amountsAndCosts,
-              afterSlippage: {
-                ...bridgeQuoteResult.amountsAndCosts.afterSlippage,
-                buyAmount: BigInt('40000000000000000000'), // 40 ETH
-              },
-            },
-          }
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve({
+                ...bridgeQuoteResult,
+                amountsAndCosts: {
+                  ...bridgeQuoteResult.amountsAndCosts,
+                  afterSlippage: {
+                    ...bridgeQuoteResult.amountsAndCosts.afterSlippage,
+                    buyAmount: BigInt('40000000000000000000'), // 40 ETH
+                  },
+                },
+              })
+            }, 200) // 200ms delay - slow
+          })
         })
 
         mockProvider3.getQuote = jest.fn().mockImplementation(async () => {
-          await new Promise((resolve) => setTimeout(resolve, 200)) // 200ms delay - slow
-          return {
-            ...bridgeQuoteResult,
-            amountsAndCosts: {
-              ...bridgeQuoteResult.amountsAndCosts,
-              afterSlippage: {
-                ...bridgeQuoteResult.amountsAndCosts.afterSlippage,
-                buyAmount: BigInt('60000000000000000000'), // 60 ETH
-              },
-            },
-          }
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve({
+                ...bridgeQuoteResult,
+                amountsAndCosts: {
+                  ...bridgeQuoteResult.amountsAndCosts,
+                  afterSlippage: {
+                    ...bridgeQuoteResult.amountsAndCosts.afterSlippage,
+                    buyAmount: BigInt('60000000000000000000'), // 60 ETH
+                  },
+                },
+              })
+            }, 200) // 200ms delay - slow
+          })
         })
 
         const request = {
@@ -342,16 +353,18 @@ adapterNames.forEach((adapterName) => {
           },
         }
 
-        const startTime = Date.now()
-        const result = await strategy.execute(request, config)
-        const elapsed = Date.now() - startTime
+        const resultPromise = strategy.execute(request, config)
 
-        // Should complete around timeout time or earlier
-        expect(elapsed).toBeLessThan(150) // Should not wait for slow providers
+        // Advance timers past the fast provider delay but before slow providers
+        jest.advanceTimersByTime(50)
+
+        const result = await resultPromise
 
         // Should still return the quote from the fast provider
         expect(result).toBeTruthy()
         expect(result?.providerDappId).toBe('mockProvider')
+
+        jest.useRealTimers()
       })
 
       it('should throw error for unknown provider dappId', async () => {
