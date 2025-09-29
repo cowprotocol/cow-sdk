@@ -86,7 +86,7 @@ export class BridgingSdk {
     )
 
     const { singleQuoteStrategy, multiQuoteStrategy, bestQuoteStrategy } = createStrategies(
-      this.intermediateTokensCache,
+      this.cacheConfig.enabled ? this.intermediateTokensCache : undefined,
     )
 
     this.singleQuoteStrategy = singleQuoteStrategy
