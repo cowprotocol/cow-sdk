@@ -147,7 +147,7 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     const slippageBps = Math.trunc(slippage * 10_000)
     const feeAmountInBuyCurrency = Math.trunc(Number(quote.amountIn) * slippage)
     const feeAmountInSellCurrency = Math.trunc(Number(quote.amountOut) * slippage)
-    const bridgeFee = Math.abs(Number(quote.amountIn) * slippage)
+    const bridgeFee = Math.trunc(Number(quote.amountIn) * slippage)
 
     return {
       isSell: request.kind === OrderKind.SELL,
