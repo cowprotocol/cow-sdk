@@ -71,7 +71,6 @@ describe('suggestSlippageBpsWithApi', () => {
       sellToken: '0x6b175474e89094c44da98b954eedeac495271d0f',
       buyToken: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
       chainId: SupportedChainId.MAINNET,
-      timeoutMs: 2000,
     })
     expect(result).toBe(250)
     expect(mockSuggestSlippageBps).not.toHaveBeenCalled()
@@ -160,7 +159,6 @@ describe('suggestSlippageBpsWithApi', () => {
       sellToken: '0x6b175474e89094c44da98b954eedeac495271d0f',
       buyToken: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
       chainId: SupportedChainId.MAINNET,
-      timeoutMs: 2000,
     })
   })
 
@@ -196,7 +194,6 @@ describe('suggestSlippageBpsWithApi', () => {
       sellToken: '0x6b175474e89094c44da98b954eedeac495271d0f',
       buyToken: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
       chainId: SupportedChainId.GNOSIS_CHAIN,
-      timeoutMs: 2000,
     })
     expect(result).toBe(180)
   })
