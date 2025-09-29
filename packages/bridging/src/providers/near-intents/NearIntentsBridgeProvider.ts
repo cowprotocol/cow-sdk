@@ -121,8 +121,8 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
       validFor,
       owner,
     } = request
-    const tokens = await this.api.getTokens()
 
+    const tokens = await this.api.getTokens()
     const sellToken = getTokenByAddressAndChainId(tokens, sellTokenAddress, sellTokenChainId)
     const buyToken = getTokenByAddressAndChainId(tokens, buyTokenAddress, buyTokenChainId)
     if (!sellToken || !buyToken) throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES)
@@ -142,10 +142,12 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
       deadline: calculateDeadline(validFor || 3600),
     })
 
-    const payoutRatio = Number(quote.amountOutUsd) / Number(quote.amountInUsd);
-    const slippage = (1 - payoutRatio)
-    const slippageBps = Math.trunc(slippage * 10_000);
-    const bridgeFee   = Math.abs(Number(quote.amountIn) * slippage);
+    const payoutRatio = Number(quote.amountOutUsd) / Number(quote.amountInUsd)
+    const slippage = 1 - payoutRatio
+    const slippageBps = Math.trunc(slippage * 10_000)
+    const feeAmountInBuyCurrency = Math.trunc(Number(quote.amountIn) * slippage)
+    const feeAmountInSellCurrency = Math.trunc(Number(quote.amountOut) * slippage)
+    const bridgeFee = Math.abs(Number(quote.amountIn) * slippage)
 
     return {
       isSell: request.kind === OrderKind.SELL,
@@ -162,23 +164,23 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
       },
       amountsAndCosts: {
         beforeFee: {
-          sellAmount: BigInt(quote.amountOut),
-          buyAmount: BigInt(quote.amountIn),
+          sellAmount: BigInt(quote.amountIn),
+          buyAmount: BigInt(quote.minAmountOut),
         },
         afterFee: {
-          sellAmount: BigInt(quote.amountOut),
-          buyAmount: BigInt(quote.amountIn),
+          sellAmount: BigInt(quote.amountIn),
+          buyAmount: BigInt(quote.amountOut),
         },
         afterSlippage: {
-          sellAmount: BigInt(quote.minAmountOut),
-          buyAmount: BigInt(quote.minAmountIn),
+          sellAmount: BigInt(quote.amountIn),
+          buyAmount: BigInt(quote.amountOut),
         },
         slippageBps,
         costs: {
           bridgingFee: {
-            feeBps: 0,
-            amountInSellCurrency: BigInt(0),
-            amountInBuyCurrency: BigInt(0),
+            feeBps: slippageBps,
+            amountInSellCurrency: BigInt(feeAmountInSellCurrency),
+            amountInBuyCurrency: BigInt(feeAmountInBuyCurrency),
           },
         },
       },
