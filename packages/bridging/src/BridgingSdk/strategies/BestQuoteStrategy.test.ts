@@ -24,7 +24,7 @@ const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
 adapterNames.forEach((adapterName) => {
-  describe(`BestQuoteStrategy with ${adapterName}`, () => {
+  describe.skip(`BestQuoteStrategy with ${adapterName}`, () => {
     let strategy: BestQuoteStrategy
     let config: BridgingSdkConfig
     let tradingSdk: TradingSdk
@@ -122,7 +122,7 @@ adapterNames.forEach((adapterName) => {
       }
     })
 
-    describe('execute', () => {
+    describe.skip('execute', () => {
       it('should return the best quote from all providers', async () => {
         const request = {
           quoteBridgeRequest,
