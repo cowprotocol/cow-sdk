@@ -14,7 +14,7 @@ on:
 env:
   NODE_VERSION: lts/jod
   REGISTRY: npm.pkg.github.com
-  SCOPE: '@cowprotocol'
+  SCOPE: "@cowprotocol"
 
 permissions:
   contents: read
@@ -248,15 +248,19 @@ jobs:
 
             ### Installation
 
-            These packages require authentication to install from GitHub Packages. First, configure your token:
+            These packages require authentication to install from GitHub Packages. First, create a \`.npmrc\` file:
 
             \`\`\`bash
-            # Set your GitHub token
-            #  1. create one at https://github.com/settings/tokens. Make sure you select the option "Generate new token (classic)"
-            #  2. Check only the "read:packages" scope
-            #  3. Add the token to the npm config
-            npm config set //${{ env.REGISTRY }}/:_authToken YOUR_GITHUB_TOKEN
+            # Create .npmrc file in your project root
+            echo "@cowprotocol:registry=https://${{ env.REGISTRY }}" > .npmrc
+            echo "//${{ env.REGISTRY }}/:_authToken=YOUR_GITHUB_TOKEN" >> .npmrc
             \`\`\`
+
+            **To get your GitHub token:**
+            1. Go to https://github.com/settings/tokens
+            2. Click "Generate new token (classic)"
+            3. Check only the "read:packages" scope
+            4. Copy the token and replace \`YOUR_GITHUB_TOKEN\` in the \`.npmrc\` file
 
             Then install any of the packages above:
             \`\`\`bash
