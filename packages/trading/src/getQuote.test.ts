@@ -57,6 +57,7 @@ const defaultOrderParams: SwapParameters = {
 }
 
 const getQuoteMock = jest.fn()
+
 const orderBookApiMock = {
   getQuote: getQuoteMock,
 } as unknown as OrderBookApi
