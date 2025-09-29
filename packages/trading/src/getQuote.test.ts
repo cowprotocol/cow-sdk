@@ -2,17 +2,22 @@ import { ETH_FLOW_DEFAULT_SLIPPAGE_BPS } from './consts'
 import { getQuoteWithSigner, getQuoteRaw } from './getQuote'
 import { SwapParameters } from './types'
 import { ETH_ADDRESS, WRAPPED_NATIVE_CURRENCIES, SupportedChainId } from '@cowprotocol/sdk-config'
-import { OrderBookApi, OrderKind, OrderQuoteResponse } from '@cowprotocol/sdk-order-book'
+import { OrderBookApi, OrderKind, OrderQuoteResponse, PriceQuality } from '@cowprotocol/sdk-order-book'
 import { AdaptersTestSetup, createAdapters } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 
-// Mock suggestSlippageBpsWithApi
+// Mock suggestSlippageBpsWithApi and suggestSlippageBps
 jest.mock('./suggestSlippageBpsWithApi', () => ({
   suggestSlippageBpsWithApi: jest.fn(),
 }))
+jest.mock('./suggestSlippageBps', () => ({
+  suggestSlippageBps: jest.fn(),
+}))
 
 import { suggestSlippageBpsWithApi } from './suggestSlippageBpsWithApi'
+import { suggestSlippageBps } from './suggestSlippageBps'
 const mockSuggestSlippageBpsWithApi = suggestSlippageBpsWithApi as jest.MockedFunction<typeof suggestSlippageBpsWithApi>
+const mockSuggestSlippageBps = suggestSlippageBps as jest.MockedFunction<typeof suggestSlippageBps>
 
 const quoteResponseMock = {
   quote: {
@@ -358,6 +363,8 @@ describe('getQuote', () => {
       getQuoteMock.mockResolvedValue(quoteResponseMock)
       mockSuggestSlippageBpsWithApi.mockReset()
       mockSuggestSlippageBpsWithApi.mockResolvedValue(150)
+      mockSuggestSlippageBps.mockReset()
+      mockSuggestSlippageBps.mockReturnValue(100)
     })
 
     it('should use suggestSlippageBpsWithApi to get suggested slippage', async () => {
@@ -460,6 +467,46 @@ describe('getQuote', () => {
           }),
         )
       }
+    })
+
+    it('should use suggestSlippageBps instead of API when priceQuality is FAST', async () => {
+      const adapterName = Object.keys(adapters)[0] as keyof typeof adapters
+      setGlobalAdapter(adapters[adapterName])
+
+      const tradeParameters = {
+        sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+        sellTokenDecimals: 18,
+        buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+        buyTokenDecimals: 18,
+        amount: '100000000000000000',
+        kind: OrderKind.SELL,
+      }
+
+      const trader = {
+        chainId: SupportedChainId.GNOSIS_CHAIN,
+        appCode: '0x007',
+        account: '0xfb3c7eb936caa12b5a884d612393969a557d4307' as const,
+      }
+
+      const advancedSettings = {
+        quoteRequest: {
+          priceQuality: PriceQuality.FAST,
+        },
+      }
+
+      const result = await getQuoteRaw(tradeParameters, trader, advancedSettings, orderBookApiMock)
+
+      // Verify that suggestSlippageBps was called instead of suggestSlippageBpsWithApi
+      expect(mockSuggestSlippageBps).toHaveBeenCalledWith({
+        isEthFlow: false,
+        quote: quoteResponseMock,
+        tradeParameters,
+        trader,
+        advancedSettings,
+        bffEnv: 'prod',
+      })
+      expect(mockSuggestSlippageBpsWithApi).not.toHaveBeenCalled()
+      expect(result.suggestedSlippageBps).toBe(100)
     })
   })
 })

@@ -23,10 +23,11 @@ import {
 import { buildAppData } from './appDataUtils'
 import { getOrderToSign } from './getOrderToSign'
 import { getOrderTypedData } from './getOrderTypedData'
-import { suggestSlippageBpsWithApi } from './suggestSlippageBpsWithApi'
+import { SuggestSlippageBpsWithApi, suggestSlippageBpsWithApi } from './suggestSlippageBpsWithApi'
 import { getPartnerFeeBps } from './utils/getPartnerFeeBps'
 import { adjustEthFlowOrderParams, getIsEthFlowOrder, swapParamsToLimitOrderParams } from './utils/misc'
 import { getDefaultSlippageBps } from './utils/slippage'
+import { suggestSlippageBps } from './suggestSlippageBps'
 
 // ETH-FLOW orders require different quote params
 // check the isEthFlow flag and set in quote req obj
@@ -124,15 +125,20 @@ export async function getQuoteRaw(
 
   const quote = await orderBookApi.getQuote(quoteRequest)
 
-  // Get the suggested slippage based on the quote
-  const suggestedSlippageBps = await suggestSlippageBpsWithApi({
+  const suggestSlippageParams: SuggestSlippageBpsWithApi = {
     isEthFlow,
     quote,
     tradeParameters,
     trader,
     advancedSettings,
     bffEnv: env,
-  })
+  }
+
+  // Get the suggested slippage based on the quote
+  const suggestedSlippageBps =
+    quoteRequest.priceQuality === PriceQuality.FAST
+      ? suggestSlippageBps(suggestSlippageParams)
+      : await suggestSlippageBpsWithApi(suggestSlippageParams)
 
   const commonResult = {
     isEthFlow,
