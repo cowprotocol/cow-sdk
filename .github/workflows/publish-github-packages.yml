@@ -283,6 +283,21 @@ jobs:
             npm install npm:@cowprotocol/cow-sdk@${{ steps.version.outputs.tag }}
             \`\`\`
 
+
+            ## Update to the latest version (only if you used the tag)
+            Every commit will publish a new package. To upgrade to the latest version, run:
+
+            \`\`\`bash
+            # Yarn
+            yarn upgrade @cowprotocol/cow-sdk
+
+            # pnpm
+            pnpm update @cowprotocol/cow-sdk
+
+            # NPM
+            npm update @cowprotocol/cow-sdk
+            \`\`\`
+
             ### View Packages
 
             You can view the published packages at: https://github.com/cowprotocol/cow-sdk/packages`;
