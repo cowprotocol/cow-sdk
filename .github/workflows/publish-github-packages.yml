@@ -135,14 +135,42 @@ jobs:
 
       - name: Create pre-release versions
         run: |
-          # Create pre-release versions for all packages
+          VERSION_SUFFIX="${{ steps.version.outputs.version_suffix }}"
+
+          # Instead of letting pnpm increment versions, we'll set them explicitly
+          echo "Setting explicit pre-release versions with suffix: $VERSION_SUFFIX"
           find packages -name "package.json" -exec sh -c '
           for file; do
-            echo "Creating pre-release version for $file"
-            # Use npm version to create pre-release version
+            echo "Setting explicit version for $file"
             cd "$(dirname "$file")"
-            pnpm version prerelease --preid="${{ steps.version.outputs.version_suffix }}" --no-git-tag-version
+
+            # Get the current base version (e.g., "0.1.0")
+            BASE_VERSION=$(grep -o "\"version\":[[:space:]]*\"[^\"]*\"" package.json | sed "s/\"version\":[[:space:]]*\"//" | sed "s/\"//")
+
+            # Create predictable version: base-version + suffix + .0
+            NEW_VERSION="${BASE_VERSION}-${VERSION_SUFFIX}.0"
+
+            # Update the version directly in package.json
+            sed -i "s/\"version\":[[:space:]]*\"[^\"]*\"/\"version\": \"$NEW_VERSION\"/" package.json
+
+            echo "  Updated to version: $NEW_VERSION"
             cd - > /dev/null
+          done
+          ' _ {} \;
+
+          # Now update all workspace dependencies to use the predictable versions
+          echo "Updating workspace dependencies to use consistent versions..."
+          find packages -name "package.json" -exec sh -c '
+          for file; do
+            echo "Updating dependencies in $file"
+            # Get the current version from this package
+            CURRENT_VERSION=$(grep -o "\"version\":[[:space:]]*\"[^\"]*\"" "$file" | sed "s/\"version\":[[:space:]]*\"//" | sed "s/\"//")
+
+            # Extract the base version (everything before the first dash)
+            BASE_VERSION=$(echo "$CURRENT_VERSION" | cut -d'-' -f1)
+
+            # Update all @cowprotocol workspace dependencies to use the predictable version format
+            sed -i "s/@cowprotocol\/\([^:]*\): workspace:\*/@cowprotocol\/\1: ${BASE_VERSION}-${VERSION_SUFFIX}.0/g" "$file"
           done
           ' _ {} \;
 
