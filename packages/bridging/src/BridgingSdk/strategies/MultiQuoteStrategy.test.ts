@@ -25,7 +25,7 @@ const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
 adapterNames.forEach((adapterName) => {
-  describe.skip(`MultiQuoteStrategy with ${adapterName}`, () => {
+  describe(`MultiQuoteStrategy with ${adapterName}`, () => {
     let strategy: MultiQuoteStrategyImpl
     let config: BridgingSdkConfig
     let tradingSdk: TradingSdk
@@ -254,19 +254,23 @@ adapterNames.forEach((adapterName) => {
 
         mockProvider.getQuote = jest.fn().mockImplementation(async () => {
           provider1Called = true
-          await new Promise((resolve) => setTimeout(() => {
-            provider1Resolved = true
-            resolve(bridgeQuoteResult)
-          }, 100))
+          await new Promise((resolve) =>
+            setTimeout(() => {
+              provider1Resolved = true
+              resolve(bridgeQuoteResult)
+            }, 100),
+          )
           return bridgeQuoteResult
         })
 
         mockProvider2.getQuote = jest.fn().mockImplementation(async () => {
           provider2Called = true
-          await new Promise((resolve) => setTimeout(() => {
-            provider2Resolved = true
-            resolve(bridgeQuoteResult)
-          }, 100))
+          await new Promise((resolve) =>
+            setTimeout(() => {
+              provider2Resolved = true
+              resolve(bridgeQuoteResult)
+            }, 100),
+          )
           return bridgeQuoteResult
         })
 
