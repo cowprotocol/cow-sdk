@@ -150,30 +150,39 @@ jobs:
         run: |
           echo "Updating inter-package dependencies to use new versions..."
 
-          # Create a map of package names to their new versions
-          declare -A package_versions
-
-          # Read all package.json files and extract name and version
+          # Create a temporary JSON file with package version mappings
+          echo "{" > package_versions.json
+          first=true
           for package_json in packages/*/package.json; do
             if [ -f "$package_json" ]; then
-              # Extract package name and version using node
               name=$(node -p "require('./$package_json').name")
               version=$(node -p "require('./$package_json').version")
               echo "Found package: $name@$version"
-              package_versions["$name"]="$version"
+
+              if [ "$first" = true ]; then
+                first=false
+              else
+                echo "," >> package_versions.json
+              fi
+              echo -n "  \"$name\": \"$version\"" >> package_versions.json
             fi
           done
+          echo "" >> package_versions.json
+          echo "}" >> package_versions.json
 
-          # Update dependencies in all package.json files
+          echo "=== Package version mappings ==="
+          cat package_versions.json
+          echo "================================="
+
+          # Update dependencies in all package.json files using the JSON file
           for package_json in packages/*/package.json; do
             if [ -f "$package_json" ]; then
               echo "Updating dependencies in $package_json"
 
-              # Create a temporary Node.js script to update dependencies
               node -e "
                 const fs = require('fs');
                 const packageJson = JSON.parse(fs.readFileSync('$package_json', 'utf8'));
-                const packageVersions = $(declare -p package_versions | sed 's/declare -A package_versions=//' | sed 's/\[\([^]]*\)\]=/[\"\1\"]=/g' | sed 's/^(/{\"/; s/$/}/' | sed 's/ \[\"/,\"/g' | sed 's/\]=/\":/g' | sed 's/ /,\"/g');
+                const packageVersions = JSON.parse(fs.readFileSync('package_versions.json', 'utf8'));
 
                 let updated = false;
 
@@ -196,10 +205,12 @@ jobs:
                 } else {
                   console.log('No updates needed for $package_json');
                 }
-              " 2>/dev/null || echo "Warning: Could not update $package_json"
+              " || echo "Warning: Could not update $package_json"
             fi
           done
 
+          # Clean up temporary file
+          rm -f package_versions.json
           echo "Inter-package dependency update completed."
 
       - name: Publish packages to GitHub Packages
