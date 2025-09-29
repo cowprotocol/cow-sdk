@@ -133,60 +133,10 @@ jobs:
             echo "is_pr=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Create pre-release versions
-        run: |
-          VERSION_SUFFIX="${{ steps.version.outputs.version_suffix }}"
-
-          # Debug: Show the version suffix
-          echo "=== Version Strategy Debug ==="
-          echo "VERSION_SUFFIX: '$VERSION_SUFFIX'"
-          echo "GitHub event: ${{ github.event_name }}"
-          echo "GitHub ref: ${{ github.ref }}"
-          echo "GitHub SHA: ${{ github.sha }}"
-
-          # Instead of letting pnpm increment versions, we'll set them explicitly
-          echo "Setting explicit pre-release versions with suffix: $VERSION_SUFFIX"
-          find packages -name "package.json" -exec sh -c '
-          VERSION_SUFFIX="$1"
-          for file; do
-            echo "Setting explicit version for $file"
-            cd "$(dirname "$file")"
-
-            # Get the current base version (e.g., "0.1.0")
-            BASE_VERSION=$(grep -o "\"version\":[[:space:]]*\"[^\"]*\"" package.json | sed "s/\"version\":[[:space:]]*\"//" | sed "s/\"//")
-
-            # Create predictable version: base-version + suffix + .0
-            NEW_VERSION="${BASE_VERSION}-${VERSION_SUFFIX}.0"
-
-            # Update the version directly in package.json
-            sed -i "s/\"version\":[[:space:]]*\"[^\"]*\"/\"version\": \"$NEW_VERSION\"/" package.json
-
-            echo "  Updated to version: $NEW_VERSION"
-            cd - > /dev/null
-          done
-          ' _ "$VERSION_SUFFIX" {} \;
-
-          # Now update all workspace dependencies to use the predictable versions
-          echo "Updating workspace dependencies to use consistent versions..."
-          find packages -name "package.json" -exec sh -c '
-          VERSION_SUFFIX="$1"
-          for file; do
-            echo "Updating dependencies in $file"
-            # Get the current version from this package
-            CURRENT_VERSION=$(grep -o "\"version\":[[:space:]]*\"[^\"]*\"" "$file" | sed "s/\"version\":[[:space:]]*\"//" | sed "s/\"//")
-
-            # Extract the base version (everything before the first dash)
-            BASE_VERSION=$(echo "$CURRENT_VERSION" | cut -d'-' -f1)
-
-            # Update all @cowprotocol workspace dependencies to use the predictable version format
-            sed -i "s/@cowprotocol\/\([^:]*\): workspace:\*/@cowprotocol\/\1: ${BASE_VERSION}-${VERSION_SUFFIX}.0/g" "$file"
-          done
-          ' _ "$VERSION_SUFFIX" {} \;
-
       - name: Publish packages to GitHub Packages
         run: |
-          # Publish all packages and capture versions
-          echo "Publishing packages..."
+          # Publish as-is with the determined tag
+          echo "Publishing packages with tag: ${{ steps.version.outputs.tag }}"
           pnpm publish -r --filter="./packages/**" --tag ${{ steps.version.outputs.tag }} --no-git-checks --access public > publish_output.txt 2>&1
 
           # Show the actual publish output for debugging
@@ -198,11 +148,6 @@ jobs:
           grep -o '@cowprotocol/[^@]*@[0-9][^[:space:]]*' publish_output.txt | sort -u > published_versions.txt
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Restore original versions
-        run: |
-          # Restore original package.json versions
-          git checkout -- packages/*/package.json
 
       - name: Update PR comment with package info
         if: steps.version.outputs.is_pr == 'true'
