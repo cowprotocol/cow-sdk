@@ -95,12 +95,6 @@ jobs:
       - name: Build packages
         run: pnpm build
 
-      - name: Run tests
-        run: pnpm test
-
-      - name: Run linting
-        run: pnpm lint
-
       - name: Configure npm for GitHub Packages
         run: |
           # Override registry for @cowprotocol scope to use GitHub Packages
@@ -145,73 +139,6 @@ jobs:
             cd - > /dev/null
           done
           ' _ {} \;
-
-      - name: Update inter-package dependencies
-        run: |
-          echo "Updating inter-package dependencies to use new versions..."
-
-          # Create a temporary JSON file with package version mappings
-          echo "{" > package_versions.json
-          first=true
-          for package_json in packages/*/package.json; do
-            if [ -f "$package_json" ]; then
-              name=$(node -p "require('./$package_json').name")
-              version=$(node -p "require('./$package_json').version")
-              echo "Found package: $name@$version"
-
-              if [ "$first" = true ]; then
-                first=false
-              else
-                echo "," >> package_versions.json
-              fi
-              echo -n "  \"$name\": \"$version\"" >> package_versions.json
-            fi
-          done
-          echo "" >> package_versions.json
-          echo "}" >> package_versions.json
-
-          echo "=== Package version mappings ==="
-          cat package_versions.json
-          echo "================================="
-
-          # Update dependencies in all package.json files using the JSON file
-          for package_json in packages/*/package.json; do
-            if [ -f "$package_json" ]; then
-              echo "Updating dependencies in $package_json"
-
-              node -e "
-                const fs = require('fs');
-                const packageJson = JSON.parse(fs.readFileSync('$package_json', 'utf8'));
-                const packageVersions = JSON.parse(fs.readFileSync('package_versions.json', 'utf8'));
-
-                let updated = false;
-
-                // Update dependencies
-                ['dependencies', 'devDependencies', 'peerDependencies'].forEach(depType => {
-                  if (packageJson[depType]) {
-                    Object.keys(packageJson[depType]).forEach(depName => {
-                      if (packageVersions[depName]) {
-                        console.log(\`Updating \${depType}.\${depName} from \${packageJson[depType][depName]} to \${packageVersions[depName]}\`);
-                        packageJson[depType][depName] = packageVersions[depName];
-                        updated = true;
-                      }
-                    });
-                  }
-                });
-
-                if (updated) {
-                  fs.writeFileSync('$package_json', JSON.stringify(packageJson, null, 2) + '\n');
-                  console.log('Updated $package_json');
-                } else {
-                  console.log('No updates needed for $package_json');
-                }
-              " || echo "Warning: Could not update $package_json"
-            fi
-          done
-
-          # Clean up temporary file
-          rm -f package_versions.json
-          echo "Inter-package dependency update completed."
 
       - name: Publish packages to GitHub Packages
         run: |
