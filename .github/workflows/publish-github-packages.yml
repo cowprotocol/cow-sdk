@@ -137,9 +137,17 @@ jobs:
         run: |
           VERSION_SUFFIX="${{ steps.version.outputs.version_suffix }}"
 
+          # Debug: Show the version suffix
+          echo "=== Version Strategy Debug ==="
+          echo "VERSION_SUFFIX: '$VERSION_SUFFIX'"
+          echo "GitHub event: ${{ github.event_name }}"
+          echo "GitHub ref: ${{ github.ref }}"
+          echo "GitHub SHA: ${{ github.sha }}"
+
           # Instead of letting pnpm increment versions, we'll set them explicitly
           echo "Setting explicit pre-release versions with suffix: $VERSION_SUFFIX"
           find packages -name "package.json" -exec sh -c '
+          VERSION_SUFFIX="$1"
           for file; do
             echo "Setting explicit version for $file"
             cd "$(dirname "$file")"
@@ -156,11 +164,12 @@ jobs:
             echo "  Updated to version: $NEW_VERSION"
             cd - > /dev/null
           done
-          ' _ {} \;
+          ' _ "$VERSION_SUFFIX" {} \;
 
           # Now update all workspace dependencies to use the predictable versions
           echo "Updating workspace dependencies to use consistent versions..."
           find packages -name "package.json" -exec sh -c '
+          VERSION_SUFFIX="$1"
           for file; do
             echo "Updating dependencies in $file"
             # Get the current version from this package
@@ -172,7 +181,7 @@ jobs:
             # Update all @cowprotocol workspace dependencies to use the predictable version format
             sed -i "s/@cowprotocol\/\([^:]*\): workspace:\*/@cowprotocol\/\1: ${BASE_VERSION}-${VERSION_SUFFIX}.0/g" "$file"
           done
-          ' _ {} \;
+          ' _ "$VERSION_SUFFIX" {} \;
 
       - name: Publish packages to GitHub Packages
         run: |
