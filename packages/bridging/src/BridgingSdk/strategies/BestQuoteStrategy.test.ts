@@ -13,10 +13,7 @@ import {
   quoteBridgeRequest,
   tradeParameters,
 } from '../mock/bridgeRequestMocks'
-import {
-  QuoteResultsWithSigner,
-  TradingSdk,
-} from '@cowprotocol/sdk-trading'
+import { QuoteResultsWithSigner, TradingSdk } from '@cowprotocol/sdk-trading'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { BridgingSdkConfig } from '../BridgingSdk'
@@ -221,8 +218,9 @@ adapterNames.forEach((adapterName) => {
         expect(result?.quote).toBeNull()
         expect(result?.error).toBeTruthy()
         // Should return first provider's error (order is not guaranteed due to async)
-        expect(['mockProvider', 'cow-sdk://bridging/providers/mock2', 'cow-sdk://bridging/providers/mock3'])
-          .toContain(result?.providerDappId)
+        expect(['mockProvider', 'cow-sdk://bridging/providers/mock2', 'cow-sdk://bridging/providers/mock3']).toContain(
+          result?.providerDappId,
+        )
       })
 
       it('should return best available quote even when some providers fail', async () => {
@@ -259,7 +257,7 @@ adapterNames.forEach((adapterName) => {
         }
 
         await expect(strategy.execute(request, config)).rejects.toThrow(
-          'getMultiQuotes() and getBestQuote() are only for cross-chain bridging'
+          'getMultiQuotes() and getBestQuote() are only for cross-chain bridging',
         )
       })
 
@@ -460,12 +458,16 @@ adapterNames.forEach((adapterName) => {
 
         // First callback should be from fast provider (mockProvider with 50 ETH)
         expect(progressiveResults[0]?.providerDappId).toBe('mockProvider')
-        expect(progressiveResults[0]?.quote?.bridge.amountsAndCosts.afterSlippage.buyAmount).toBe(BigInt('50000000000000000000'))
+        expect(progressiveResults[0]?.quote?.bridge.amountsAndCosts.afterSlippage.buyAmount).toBe(
+          BigInt('50000000000000000000'),
+        )
 
         // If we received a second callback, it should be the better quote from mock2
         if (progressiveResults.length > 1) {
           expect(progressiveResults[1]?.providerDappId).toBe('cow-sdk://bridging/providers/mock2')
-          expect(progressiveResults[1]?.quote?.bridge.amountsAndCosts.afterSlippage.buyAmount).toBe(BigInt('70000000000000000000'))
+          expect(progressiveResults[1]?.quote?.bridge.amountsAndCosts.afterSlippage.buyAmount).toBe(
+            BigInt('70000000000000000000'),
+          )
         }
       })
     })
