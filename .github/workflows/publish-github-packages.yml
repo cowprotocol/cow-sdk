@@ -35,16 +35,16 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "🔒 Checking PR security..."
-            echo "PR from: ${{ github.event.pull_request.head.repo.full_name }}"
-            echo "Target repo: ${{ github.repository }}"
+            echo "PR from: $REPO_NAME"
+            echo "Target repo: $REPOSITORY"
 
             # Check if it's an internal PR
-            if [ "${{ github.event.pull_request.head.repo.full_name }}" = "${{ github.repository }}" ]; then
+            if [ "$REPO_NAME" = "$REPOSITORY" ]; then
               echo "✅ Internal PR - proceeding with publish"
             else
               # Check for allow-publish label
               echo "🔍 Checking for 'allow-publish' label..."
-              if echo "${{ toJson(github.event.pull_request.labels) }}" | grep -q '"name":"allow-publish"'; then
+              if echo "$LABELS_JSON" | grep -q '"name":"allow-publish"'; then
                 echo "✅ External PR with 'allow-publish' label - proceeding with publish"
               else
                 echo "❌ External PR without 'allow-publish' label - skipping publish for security"
@@ -55,6 +55,11 @@ jobs:
           else
             echo "✅ Push to main branch - proceeding with publish"
           fi
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REPO_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+          REPOSITORY: ${{ github.repository }}
+          LABELS_JSON: ${{ toJson(github.event.pull_request.labels) }}
 
       - name: Cancel Previous Runs
         uses: styfle/cancel-workflow-action@0.8.0
