@@ -87,7 +87,7 @@ pnpm format
 # Type checking
 pnpm typecheck
 
-# Clean build artifact
+# Clean build artifacts
 pnpm clean
 ```
 
