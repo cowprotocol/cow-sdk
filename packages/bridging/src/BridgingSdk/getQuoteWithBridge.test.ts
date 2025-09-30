@@ -224,7 +224,6 @@ adapterNames.forEach((adapterName) => {
       // First call
       await postOrderWithIntermediateTokensCache({
         swapAndBridgeRequest: quoteBridgeRequest,
-        provider: mockProvider,
         tradingSdk,
         intermediateTokensCache,
       })
@@ -232,7 +231,6 @@ adapterNames.forEach((adapterName) => {
       // Second call immediately - should use cache
       await postOrderWithIntermediateTokensCache({
         swapAndBridgeRequest: quoteBridgeRequest,
-        provider: mockProvider,
         tradingSdk,
         intermediateTokensCache,
       })
@@ -246,14 +244,12 @@ adapterNames.forEach((adapterName) => {
       // First call
       await postOrderWithIntermediateTokensCache({
         swapAndBridgeRequest: quoteBridgeRequest,
-        provider: mockProvider,
         tradingSdk,
       })
 
       // Second call
       await postOrderWithIntermediateTokensCache({
         swapAndBridgeRequest: quoteBridgeRequest,
-        provider: mockProvider,
         tradingSdk,
       })
 
