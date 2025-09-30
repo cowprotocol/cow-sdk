@@ -3,7 +3,7 @@ import { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-da
 import {
   BridgeDeposit,
   BridgeHook,
-  BridgeProvider,
+  HookBridgeProvider,
   BridgeProviderInfo,
   BridgeQuoteResult,
   BridgeStatusResult,
@@ -58,7 +58,8 @@ export interface AcrossQuoteResult extends BridgeQuoteResult {
   suggestedFees: SuggestedFeesResponse
 }
 
-export class AcrossBridgeProvider implements BridgeProvider<AcrossQuoteResult> {
+export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResult> {
+  type = 'HookBridgeProvider' as const
   protected api: AcrossApi
   protected cowShedSdk: CowShedSdk
 

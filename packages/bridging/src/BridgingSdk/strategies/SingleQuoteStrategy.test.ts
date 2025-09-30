@@ -1,5 +1,5 @@
 import { SingleQuoteStrategy } from './SingleQuoteStrategy'
-import { MockBridgeProvider } from '../../providers/mock/MockBridgeProvider'
+import { HookMockBridgeProvider } from '../../providers/mock/MockBridgeProvider'
 import { QuoteBridgeRequest } from '../../types'
 import { assertIsBridgeQuoteAndPost, assertIsQuoteAndPost } from '../../utils'
 import {
@@ -44,7 +44,7 @@ adapterNames.forEach((adapterName) => {
     let orderBookApi: OrderBookApi
     let quoteResult: QuoteResultsWithSigner
 
-    const mockProvider = new MockBridgeProvider()
+    const mockProvider = new HookMockBridgeProvider()
     mockProvider.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
     mockProvider.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
     mockProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
@@ -116,7 +116,7 @@ adapterNames.forEach((adapterName) => {
         expectToEqual(swap.amountsAndCosts, amountsAndCosts)
 
         // Verify basic bridge info
-        expectToEqual(bridge.providerInfo, new MockBridgeProvider().info)
+        expectToEqual(bridge.providerInfo, new HookMockBridgeProvider().info)
         expectToEqual(bridge.quoteTimestamp, bridgeQuoteTimestamp)
         expectToEqual(bridge.expectedFillTimeSeconds, bridgeExpectedFillTimeSeconds)
 

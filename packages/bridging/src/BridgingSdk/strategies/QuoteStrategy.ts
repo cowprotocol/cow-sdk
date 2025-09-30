@@ -2,11 +2,11 @@ import { SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
 import { TTLCache } from '@cowprotocol/sdk-common'
 import { TokenInfo } from '@cowprotocol/sdk-config'
 import {
-  BridgeProvider,
   BridgeQuoteResult,
   CrossChainQuoteAndPost,
   MultiQuoteResult,
   QuoteBridgeRequest,
+  BridgeProvider,
 } from '../../types'
 import { BridgingSdkConfig } from '../types'
 
