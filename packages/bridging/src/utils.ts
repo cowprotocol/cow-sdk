@@ -1,6 +1,13 @@
 import { QuoteAndPost } from '@cowprotocol/sdk-trading'
 import { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
-import { BridgeQuoteAndPost, CrossChainQuoteAndPost } from './types'
+import {
+  BasicBridgeProvider,
+  BridgeProvider,
+  BridgeQuoteAndPost,
+  BridgeQuoteResult,
+  CrossChainQuoteAndPost,
+  HookBridgeProvider,
+} from './types'
 
 export function isBridgeQuoteAndPost(quote: CrossChainQuoteAndPost): quote is BridgeQuoteAndPost {
   return 'bridge' in quote
@@ -42,4 +49,16 @@ export function getPostHooks(fullAppData?: string): latestAppData.CoWHook[] {
 // TODO: Move to app-data project
 export function isAppDoc(appData: unknown): appData is latestAppData.AppDataRootSchema {
   return typeof appData === 'object' && appData !== null && 'version' in appData && 'metadata' in appData
+}
+
+export function isHookBridgeProvider<Q extends BridgeQuoteResult>(
+  provider: BridgeProvider<Q>,
+): provider is HookBridgeProvider<Q> {
+  return provider.type === 'HookBridgeProvider'
+}
+
+export function isBasicBridgeProvider<Q extends BridgeQuoteResult>(
+  provider: BridgeProvider<Q>,
+): provider is BasicBridgeProvider<Q> {
+  return provider.type === 'BasicBridgeProvider'
 }
