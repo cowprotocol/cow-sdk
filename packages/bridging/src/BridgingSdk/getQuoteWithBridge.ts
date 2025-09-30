@@ -29,7 +29,7 @@ import { getBridgeSignedHook } from './getBridgeSignedHook'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from '../const'
 import { getHookMockForCostEstimation } from '../hooks/utils'
 import { getCacheKey } from './helpers'
-import { isBasicBridgeProvider, isHookBridgeProvider } from 'utils'
+import { isBasicBridgeProvider, isHookBridgeProvider } from '../utils'
 
 export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   provider: BridgeProvider<T>,
