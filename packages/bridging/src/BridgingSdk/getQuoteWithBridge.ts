@@ -60,7 +60,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
 }
 
 // Common setup logic for both bridge provider types
-async function getCommonBridgeSetup<T extends BridgeQuoteResult>({
+async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
   provider,
   params,
   getBridgeHook,
@@ -74,6 +74,7 @@ async function getCommonBridgeSetup<T extends BridgeQuoteResult>({
   swapAndBridgeRequest: QuoteBridgeRequest
   signer: SignerLike
   bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount
+  intermediateTokenAmount: bigint
   intermediaryTokenDecimals: number
   swapResult: QuoteResults
   orderBookApi: any
@@ -121,24 +122,23 @@ async function getCommonBridgeSetup<T extends BridgeQuoteResult>({
   const { sellTokenDecimals: intermediaryTokenDecimals } = bridgeRequestWithoutAmount
 
   // Get the bridge hook if provided
-  let bridgeHook: cowAppDataLatestScheme.CoWHook | undefined
-  if (getBridgeHook) {
-    bridgeHook = await getBridgeHook(bridgeRequestWithoutAmount)
-  }
+  const bridgeHook = getBridgeHook ? await getBridgeHook(bridgeRequestWithoutAmount) : undefined
+  const advancedSettingsHooks = advancedSettings?.appData?.metadata?.hooks
+  const hooks = bridgeHook
+    ? {
+        pre: advancedSettingsHooks?.pre,
+        post: [...(advancedSettingsHooks?.post || []), bridgeHook],
+      }
+    : advancedSettingsHooks
 
   // Prepare advanced settings with optional hook
-  const advancedSettingsHooks = advancedSettings?.appData?.metadata?.hooks
+
   const finalAdvancedSettings: SwapAdvancedSettings = {
     ...advancedSettings,
     appData: {
       ...advancedSettings?.appData,
       metadata: {
-        hooks: bridgeHook
-          ? {
-              pre: advancedSettingsHooks?.pre,
-              post: [...(advancedSettingsHooks?.post || []), bridgeHook],
-            }
-          : advancedSettingsHooks,
+        hooks,
         bridging: {
           destinationChainId: buyTokenChainId.toString(),
           destinationTokenAddress: buyTokenAddress,
@@ -156,10 +156,16 @@ async function getCommonBridgeSetup<T extends BridgeQuoteResult>({
     signer,
   })
 
+  const intermediateTokenAmount = swapResult.amountsAndCosts.afterSlippage.buyAmount // Estimated, as it will likely have surplus
+  log(
+    `Expected to receive ${intermediateTokenAmount} of the intermediate token (${(intermediateTokenAmount / 10n ** BigInt(intermediaryTokenDecimals)).toString()} formatted)`,
+  )
+
   return {
     swapAndBridgeRequest,
     signer,
     bridgeRequestWithoutAmount,
+    intermediateTokenAmount,
     intermediaryTokenDecimals,
     swapResult,
     orderBookApi,
@@ -285,15 +291,15 @@ export async function getQuoteWithHookBridge<T extends BridgeQuoteResult>(
 ): Promise<BridgeQuoteAndPost> {
   const { quoteSigner } = params
 
-  // Get common setup with hook generation
+  // Get intermediate swap result
   const {
     signer,
     swapAndBridgeRequest,
     bridgeRequestWithoutAmount,
-    intermediaryTokenDecimals,
+    intermediateTokenAmount,
     orderBookApi,
     swapResult,
-  } = await getCommonBridgeSetup({
+  } = await getIntermediateSwapResult({
     provider,
     params,
     getBridgeHook: async (bridgeRequestWithoutAmount) => {
@@ -305,13 +311,8 @@ export async function getQuoteWithHookBridge<T extends BridgeQuoteResult>(
     },
   })
 
-  // Get the hook gas limit estimation for later use in getBridgeProviderQuote
+  // Get the hook gas limit estimation (for later use in getBridgeProviderQuote)
   const hookEstimatedGasLimit = await provider.getGasLimitEstimationForHook(bridgeRequestWithoutAmount)
-
-  const intermediateTokenAmount = swapResult.amountsAndCosts.afterSlippage.buyAmount // Estimated, as it will likely have surplus
-  log(
-    `Expected to receive ${intermediateTokenAmount} of the intermediate token (${(intermediateTokenAmount / 10n ** BigInt(intermediaryTokenDecimals)).toString()} formatted)`,
-  )
 
   // Get a new bridge provider quote result
   async function getBridgeProviderQuote(
@@ -328,7 +329,7 @@ export async function getQuoteWithHookBridge<T extends BridgeQuoteResult>(
       appDataInfo: { doc: appData, fullAppData, appDataKeccak256 },
       bridgeResult,
     } = await getHookBridgeResult(provider, {
-      swapAndBridgeRequest: { ...swapAndBridgeRequest, kind: OrderKind.SELL },
+      swapAndBridgeRequest,
       swapResult,
       bridgeRequestWithoutAmount: {
         ...bridgeRequestWithoutAmount,
@@ -391,58 +392,30 @@ export async function getQuoteWithReceiverAccountBridge<T extends BridgeQuoteRes
   provider: AccountBridgeProvider<T>,
   params: GetQuoteWithBridgeParams,
 ): Promise<BridgeQuoteAndPost> {
-  const { quoteSigner } = params
-
-  // Get common setup without hook generation
+  // Get intermediate swap result
   const {
     swapAndBridgeRequest,
     signer,
     bridgeRequestWithoutAmount,
-    intermediaryTokenDecimals,
+    intermediateTokenAmount,
     swapResult,
     orderBookApi,
-  } = await getCommonBridgeSetup({
+  } = await getIntermediateSwapResult({
     provider,
     params,
   })
 
-  const intermediateTokenAmount = swapResult.amountsAndCosts.afterSlippage.buyAmount // Estimated, as it will likely have surplus
-  log(
-    `Expected to receive ${intermediateTokenAmount} of the intermediate token (${(intermediateTokenAmount / 10n ** BigInt(intermediaryTokenDecimals)).toString()} formatted)`,
-  )
-
   // Get a new bridge provider quote result
-  async function getBridgeProviderQuote(
-    signer: SignerLike,
-    advancedSettings?: SwapAdvancedSettings,
-  ): Promise<{ swapResult: QuoteResults; bridgeResult: BridgeQuoteResults }> {
-    const appDataOverride = advancedSettings?.appData
-    const validToOverride = advancedSettings?.quoteRequest?.validTo
-
-    const {
-      bridgeReceiverOverride,
-      appDataInfo: { doc: appData, fullAppData, appDataKeccak256 },
-      bridgeResult,
-    } = await getAccountBridgeResult(provider, {
-      swapAndBridgeRequest: { ...swapAndBridgeRequest, kind: OrderKind.SELL },
-      swapResult,
+  async function getBridgeProviderQuote(): Promise<{ swapResult: QuoteResults; bridgeResult: BridgeQuoteResults }> {
+    const { bridgeReceiverOverride, bridgeResult } = await getAccountBridgeResult(provider, {
+      swapAndBridgeRequest,
       bridgeRequestWithoutAmount,
       intermediateTokenAmount,
-      signer,
-      appDataOverride,
-      validToOverride,
     })
 
     // Update the receiver
     log(`Bridge receiver override: ${bridgeReceiverOverride}`)
     swapResult.tradeParameters.receiver = bridgeReceiverOverride
-
-    log(`App data for swap: appDataKeccak256=${appDataKeccak256}, fullAppData="${fullAppData}"`)
-    swapResult.appDataInfo = {
-      fullAppData,
-      appDataKeccak256,
-      doc: appData,
-    }
 
     return {
       bridgeResult,
@@ -456,10 +429,7 @@ export async function getQuoteWithReceiverAccountBridge<T extends BridgeQuoteRes
     }
   }
 
-  const result = await getBridgeProviderQuote(
-    // Sign the hooks with quoteSigner if provided
-    quoteSigner ? getGlobalAdapter().createSigner(quoteSigner) : signer,
-  )
+  const result = await getBridgeProviderQuote()
 
   return {
     swap: result.swapResult,
@@ -504,16 +474,16 @@ async function getIntermediateTokens<T extends BridgeQuoteResult>(params: {
 
 export interface BaseBridgeResultContext {
   swapAndBridgeRequest: QuoteBridgeRequest
-  swapResult: QuoteResults
   intermediateTokenAmount: bigint
   bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount
-  signer?: SignerLike
-  validToOverride?: number
-  appDataOverride?: SwapAdvancedSettings['appData']
 }
 
 export interface HookBridgeResultContext extends BaseBridgeResultContext {
+  swapResult: QuoteResults
   hookGasLimit: number
+  appDataOverride?: SwapAdvancedSettings['appData']
+  validToOverride?: number
+  signer?: SignerLike
 }
 
 async function getHookBridgeResult<T extends BridgeQuoteResult>(
@@ -581,9 +551,8 @@ async function getAccountBridgeResult<T extends BridgeQuoteResult>(
 ): Promise<{
   bridgeResult: BridgeQuoteResults
   bridgeReceiverOverride: string
-  appDataInfo: TradingAppDataInfo
 }> {
-  const { swapResult, bridgeRequestWithoutAmount, intermediateTokenAmount, appDataOverride } = context
+  const { bridgeRequestWithoutAmount, intermediateTokenAmount } = context
 
   const bridgeRequest: QuoteBridgeRequest = {
     ...bridgeRequestWithoutAmount,
@@ -592,8 +561,6 @@ async function getAccountBridgeResult<T extends BridgeQuoteResult>(
 
   // Get the bridge quote
   const bridgingQuote = await provider.getQuote(bridgeRequest)
-
-  const appDataInfo = await mergeAppDataDoc(swapResult.appDataInfo.doc, appDataOverride || {})
 
   // Get the receiver account
   const bridgeReceiverOverride = await provider.getBridgeReceiverOverride(bridgeRequest, bridgingQuote)
@@ -611,5 +578,5 @@ async function getAccountBridgeResult<T extends BridgeQuoteResult>(
     amountsAndCosts: bridgingQuote.amountsAndCosts,
   }
 
-  return { bridgeResult, bridgeReceiverOverride, appDataInfo }
+  return { bridgeResult, bridgeReceiverOverride }
 }
