@@ -115,28 +115,35 @@ jobs:
           echo "always-auth=true" >> ~/.npmrc
 
           # Set auth token
-          echo "//$REGISTRY/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
+          echo "//$REGISTRY/:_authToken=$GITHUB_TOKEN" >> ~/.npmrc
           # Keep default registry as npmjs.org for other packages
           echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Determine version strategy
         id: version
         run: |
-          COMMIT_HASH=$(echo "${{ github.sha }}" | cut -c1-8)
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
+          COMMIT_HASH=$(echo "$SHA" | cut -c1-8)
+          if [ "$EVENT_NAME" = "pull_request" ]; then
             # For PRs, use PR number + commit hash for uniqueness
-            VERSION_SUFFIX="pr-${{ github.event.number }}-$COMMIT_HASH"
+            VERSION_SUFFIX="pr-$PR_NUMBER-$COMMIT_HASH"
             echo "version_suffix=$VERSION_SUFFIX" >> $GITHUB_OUTPUT
             echo "tag=pr" >> $GITHUB_OUTPUT
             echo "is_pr=true" >> $GITHUB_OUTPUT
           else
             # For main branch, use latest tag
-            BRANCH_NAME=$(echo "${{ github.ref }}" | sed 's/refs\/heads\///')
+            BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/refs\/heads\///')
             VERSION_SUFFIX="${BRANCH_NAME}-$COMMIT_HASH"
             echo "version_suffix=$VERSION_SUFFIX" >> $GITHUB_OUTPUT
             echo "tag=latest" >> $GITHUB_OUTPUT
             echo "is_pr=false" >> $GITHUB_OUTPUT
           fi
+        env:
+          SHA: ${{ github.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.number }}
+          BRANCH_NAME: ${{ github.ref }}
 
       - name: Create pre-release versions
         run: |
