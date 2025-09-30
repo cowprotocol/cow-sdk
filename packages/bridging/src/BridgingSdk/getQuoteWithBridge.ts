@@ -7,15 +7,10 @@ import {
   QuoteResultsWithSigner,
   SigningStepManager,
   SwapAdvancedSettings,
-  TradeParameters,
   TradingAppDataInfo,
-  TradingSdk,
-  WithPartialTraderParams,
 } from '@cowprotocol/sdk-trading'
-import { TokenInfo } from '@cowprotocol/sdk-config'
-import { getGlobalAdapter, jsonWithBigintReplacer, log, SignerLike, TTLCache } from '@cowprotocol/sdk-common'
+import { getGlobalAdapter, log, SignerLike } from '@cowprotocol/sdk-common'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
-import { cowAppDataLatestScheme } from '@cowprotocol/sdk-app-data'
 import {
   BridgeQuoteAndPost,
   BridgeQuoteResult,
@@ -27,13 +22,12 @@ import {
   ReceiverAccountBridgeProvider as AccountBridgeProvider,
   BridgeHook,
 } from '../types'
-import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../errors'
 import { GetQuoteWithBridgeParams } from './types'
 import { getBridgeSignedHook } from './getBridgeSignedHook'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from '../const'
 import { getHookMockForCostEstimation } from '../hooks/utils'
-import { getCacheKey } from './helpers'
 import { isHookBridgeProvider, isReceiverAccountBridgeProvider } from '../utils'
+import { getIntermediateSwapResult } from './getIntermediateSwapResult'
 
 export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   provider: BridgeProvider<T>,
@@ -60,164 +54,8 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
 }
 
 // Common setup logic for both bridge provider types
-async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
-  provider,
-  params,
-  getBridgeHook,
-}: {
-  provider: BridgeProvider<T>
-  params: GetQuoteWithBridgeParams
-  getBridgeHook?: (
-    bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount,
-  ) => Promise<cowAppDataLatestScheme.CoWHook>
-}): Promise<{
-  swapAndBridgeRequest: QuoteBridgeRequest
-  signer: SignerLike
-  bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount
-  intermediateTokenAmount: bigint
-  intermediaryTokenDecimals: number
-  swapResult: QuoteResults
-  orderBookApi: any
-}> {
-  const { swapAndBridgeRequest, advancedSettings, tradingSdk } = params
-  const {
-    kind,
-    sellTokenChainId,
-    sellTokenAddress,
-    buyTokenChainId,
-    buyTokenAddress,
-    amount,
-    signer: signerLike,
-  } = swapAndBridgeRequest
-
-  const adapter = getGlobalAdapter()
-  const signer = signerLike ? adapter.createSigner(signerLike) : adapter.signer
-
-  log(
-    `Cross-chain ${kind} ${amount} ${sellTokenAddress} (source chain ${sellTokenChainId}) for ${buyTokenAddress} (target chain ${buyTokenChainId})`,
-  )
-
-  // Get the swap params without the amount (includes the intermediate token as buyToken)
-  const intermediateTokens = await getIntermediateTokens({
-    provider,
-    quoteBridgeRequest: swapAndBridgeRequest,
-    intermediateTokensCache: params.intermediateTokensCache,
-  })
-
-  // We just pick the first intermediate token for now
-  const intermediateToken = intermediateTokens[0]
-
-  log(`Using ${intermediateToken?.name ?? intermediateToken?.address} as intermediate tokens`)
-
-  if (!intermediateToken) {
-    throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_INTERMEDIATE_TOKENS, { intermediateTokens })
-  }
-
-  const bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount = {
-    ...swapAndBridgeRequest,
-    sellTokenAddress: intermediateToken.address,
-    sellTokenDecimals: intermediateToken.decimals,
-  }
-
-  const { sellTokenDecimals: intermediaryTokenDecimals } = bridgeRequestWithoutAmount
-
-  // Get the bridge hook if provided
-  const bridgeHook = getBridgeHook ? await getBridgeHook(bridgeRequestWithoutAmount) : undefined
-  const advancedSettingsHooks = advancedSettings?.appData?.metadata?.hooks
-  const hooks = bridgeHook
-    ? {
-        pre: advancedSettingsHooks?.pre,
-        post: [...(advancedSettingsHooks?.post || []), bridgeHook],
-      }
-    : advancedSettingsHooks
-
-  // Prepare advanced settings with optional hook
-
-  const finalAdvancedSettings: SwapAdvancedSettings = {
-    ...advancedSettings,
-    appData: {
-      ...advancedSettings?.appData,
-      metadata: {
-        hooks,
-        bridging: {
-          destinationChainId: buyTokenChainId.toString(),
-          destinationTokenAddress: buyTokenAddress,
-        },
-      },
-    },
-  }
-
-  // Get swap quote
-  const { swapResult, orderBookApi } = await getSwapQuote({
-    swapAndBridgeRequest,
-    bridgeRequestWithoutAmount,
-    tradingSdk,
-    advancedSettings: finalAdvancedSettings,
-    signer,
-  })
-
-  const intermediateTokenAmount = swapResult.amountsAndCosts.afterSlippage.buyAmount // Estimated, as it will likely have surplus
-  log(
-    `Expected to receive ${intermediateTokenAmount} of the intermediate token (${(intermediateTokenAmount / 10n ** BigInt(intermediaryTokenDecimals)).toString()} formatted)`,
-  )
-
-  return {
-    swapAndBridgeRequest,
-    signer,
-    bridgeRequestWithoutAmount,
-    intermediateTokenAmount,
-    intermediaryTokenDecimals,
-    swapResult,
-    orderBookApi,
-  }
-}
 
 // Common helper function for getting swap quotes
-async function getSwapQuote(params: {
-  swapAndBridgeRequest: QuoteBridgeRequest
-  bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount
-  tradingSdk: TradingSdk
-  advancedSettings?: SwapAdvancedSettings
-  signer: SignerLike
-}): Promise<{ swapResult: QuoteResults; orderBookApi: any }> {
-  const { swapAndBridgeRequest, bridgeRequestWithoutAmount, tradingSdk, advancedSettings, signer } = params
-  const {
-    kind,
-    sellTokenChainId,
-    sellTokenAddress,
-    buyTokenChainId: _buyTokenChainId,
-    buyTokenAddress: _buyTokenAddress,
-    amount,
-    ...rest
-  } = swapAndBridgeRequest
-
-  const { sellTokenAddress: intermediateToken, sellTokenDecimals: intermediaryTokenDecimals } =
-    bridgeRequestWithoutAmount
-
-  // Get a CoW Protocol quote. This allows to get an estimation of the expected intermediate tokens received before bridging
-  const swapParams: WithPartialTraderParams<TradeParameters> = {
-    ...rest,
-    kind,
-    chainId: sellTokenChainId,
-    sellToken: sellTokenAddress,
-    buyToken: intermediateToken,
-    buyTokenDecimals: intermediaryTokenDecimals,
-    amount: amount.toString(),
-    signer,
-  }
-  const { signer: _, ...swapParamsToLog } = swapParams
-
-  log(
-    `Getting a quote for the swap (sell token to buy intermediate token). Delegate to trading SDK with params: ${JSON.stringify(
-      swapParamsToLog,
-      jsonWithBigintReplacer,
-    )}`,
-  )
-
-  const { result: swapResult, orderBookApi } = await tradingSdk.getQuoteResults(swapParams, advancedSettings)
-
-  return { swapResult, orderBookApi }
-}
 
 /**
  * Create a postSwapOrderFromQuote function that can be used to post the swap order from the quote
@@ -282,6 +120,61 @@ function createPostSwapOrderFromQuote(params: {
         signingStepManager?.onOrderSignError?.()
         throw error
       })
+  }
+}
+
+export async function getQuoteWithReceiverAccountBridge<T extends BridgeQuoteResult>(
+  provider: AccountBridgeProvider<T>,
+  params: GetQuoteWithBridgeParams,
+): Promise<BridgeQuoteAndPost> {
+  // Get intermediate swap result
+  const {
+    swapAndBridgeRequest,
+    signer,
+    bridgeRequestWithoutAmount,
+    intermediateTokenAmount,
+    swapResult,
+    orderBookApi,
+  } = await getIntermediateSwapResult({
+    provider,
+    params,
+  })
+
+  // Get a new bridge provider quote result
+  async function getBridgeProviderQuote(): Promise<{ swapResult: QuoteResults; bridgeResult: BridgeQuoteResults }> {
+    const { bridgeReceiverOverride, bridgeResult } = await getAccountBridgeResult(provider, {
+      swapAndBridgeRequest,
+      bridgeRequestWithoutAmount,
+      intermediateTokenAmount,
+    })
+
+    // Update the receiver
+    log(`Bridge receiver override: ${bridgeReceiverOverride}`)
+    swapResult.tradeParameters.receiver = bridgeReceiverOverride
+
+    return {
+      bridgeResult,
+      swapResult: {
+        ...swapResult,
+        tradeParameters: {
+          ...swapResult.tradeParameters,
+          receiver: bridgeReceiverOverride,
+        },
+      },
+    }
+  }
+
+  const result = await getBridgeProviderQuote()
+
+  return {
+    swap: result.swapResult,
+    bridge: result.bridgeResult,
+    postSwapOrderFromQuote: createPostSwapOrderFromQuote({
+      getBridgeProviderQuote,
+      signer,
+      sellTokenAddress: swapAndBridgeRequest.sellTokenAddress,
+      orderBookApi,
+    }),
   }
 }
 
@@ -388,94 +281,46 @@ export async function getQuoteWithHookBridge<T extends BridgeQuoteResult>(
   }
 }
 
-export async function getQuoteWithReceiverAccountBridge<T extends BridgeQuoteResult>(
-  provider: AccountBridgeProvider<T>,
-  params: GetQuoteWithBridgeParams,
-): Promise<BridgeQuoteAndPost> {
-  // Get intermediate swap result
-  const {
-    swapAndBridgeRequest,
-    signer,
-    bridgeRequestWithoutAmount,
-    intermediateTokenAmount,
-    swapResult,
-    orderBookApi,
-  } = await getIntermediateSwapResult({
-    provider,
-    params,
-  })
-
-  // Get a new bridge provider quote result
-  async function getBridgeProviderQuote(): Promise<{ swapResult: QuoteResults; bridgeResult: BridgeQuoteResults }> {
-    const { bridgeReceiverOverride, bridgeResult } = await getAccountBridgeResult(provider, {
-      swapAndBridgeRequest,
-      bridgeRequestWithoutAmount,
-      intermediateTokenAmount,
-    })
-
-    // Update the receiver
-    log(`Bridge receiver override: ${bridgeReceiverOverride}`)
-    swapResult.tradeParameters.receiver = bridgeReceiverOverride
-
-    return {
-      bridgeResult,
-      swapResult: {
-        ...swapResult,
-        tradeParameters: {
-          ...swapResult.tradeParameters,
-          receiver: bridgeReceiverOverride,
-        },
-      },
-    }
-  }
-
-  const result = await getBridgeProviderQuote()
-
-  return {
-    swap: result.swapResult,
-    bridge: result.bridgeResult,
-    postSwapOrderFromQuote: createPostSwapOrderFromQuote({
-      getBridgeProviderQuote,
-      signer,
-      sellTokenAddress: swapAndBridgeRequest.sellTokenAddress,
-      orderBookApi,
-    }),
-  }
-}
-
-async function getIntermediateTokens<T extends BridgeQuoteResult>(params: {
-  provider: BridgeProvider<T>
-  quoteBridgeRequest: QuoteBridgeRequest
-  intermediateTokensCache?: TTLCache<TokenInfo[]>
-}): Promise<TokenInfo[]> {
-  const { provider, quoteBridgeRequest, intermediateTokensCache } = params
-
-  let intermediateTokens: TokenInfo[] = []
-  const cacheKey = getCacheKey({
-    id: provider.info.dappId,
-    buyChainId: quoteBridgeRequest.buyTokenChainId.toString(),
-    sellChainId: quoteBridgeRequest.sellTokenChainId.toString(),
-    tokenAddress: quoteBridgeRequest.buyTokenAddress,
-  })
-  const cached = intermediateTokensCache?.get(cacheKey)
-  if (cached) {
-    intermediateTokens = cached
-  } else {
-    intermediateTokens = await provider.getIntermediateTokens(quoteBridgeRequest)
-    intermediateTokensCache?.set(cacheKey, intermediateTokens)
-  }
-
-  if (intermediateTokens.length === 0) {
-    throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_INTERMEDIATE_TOKENS)
-  }
-
-  return intermediateTokens
-}
-
 export interface BaseBridgeResultContext {
   swapAndBridgeRequest: QuoteBridgeRequest
   intermediateTokenAmount: bigint
   bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount
+}
+
+async function getAccountBridgeResult<T extends BridgeQuoteResult>(
+  provider: AccountBridgeProvider<T>,
+  context: BaseBridgeResultContext,
+): Promise<{
+  bridgeResult: BridgeQuoteResults
+  bridgeReceiverOverride: string
+}> {
+  const { bridgeRequestWithoutAmount, intermediateTokenAmount } = context
+
+  const bridgeRequest: QuoteBridgeRequest = {
+    ...bridgeRequestWithoutAmount,
+    amount: intermediateTokenAmount,
+  }
+
+  // Get the bridge quote
+  const bridgingQuote = await provider.getQuote(bridgeRequest)
+
+  // Get the receiver account
+  const bridgeReceiverOverride = await provider.getBridgeReceiverOverride(bridgeRequest, bridgingQuote)
+
+  // Prepare the bridge result
+  const bridgeResult: BridgeQuoteResults = {
+    providerInfo: provider.info,
+    tradeParameters: bridgeRequest, // Just the bridge (not the swap & bridge)
+    bridgeReceiverOverride: bridgeReceiverOverride,
+    isSell: bridgingQuote.isSell,
+    expectedFillTimeSeconds: bridgingQuote.expectedFillTimeSeconds,
+    fees: bridgingQuote.fees,
+    limits: bridgingQuote.limits,
+    quoteTimestamp: bridgingQuote.quoteTimestamp,
+    amountsAndCosts: bridgingQuote.amountsAndCosts,
+  }
+
+  return { bridgeResult, bridgeReceiverOverride }
 }
 
 export interface HookBridgeResultContext extends BaseBridgeResultContext {
@@ -543,40 +388,4 @@ async function getHookBridgeResult<T extends BridgeQuoteResult>(
   }
 
   return { bridgeResult, bridgeHook, appDataInfo }
-}
-
-async function getAccountBridgeResult<T extends BridgeQuoteResult>(
-  provider: AccountBridgeProvider<T>,
-  context: BaseBridgeResultContext,
-): Promise<{
-  bridgeResult: BridgeQuoteResults
-  bridgeReceiverOverride: string
-}> {
-  const { bridgeRequestWithoutAmount, intermediateTokenAmount } = context
-
-  const bridgeRequest: QuoteBridgeRequest = {
-    ...bridgeRequestWithoutAmount,
-    amount: intermediateTokenAmount,
-  }
-
-  // Get the bridge quote
-  const bridgingQuote = await provider.getQuote(bridgeRequest)
-
-  // Get the receiver account
-  const bridgeReceiverOverride = await provider.getBridgeReceiverOverride(bridgeRequest, bridgingQuote)
-
-  // Prepare the bridge result
-  const bridgeResult: BridgeQuoteResults = {
-    providerInfo: provider.info,
-    tradeParameters: bridgeRequest, // Just the bridge (not the swap & bridge)
-    bridgeReceiverOverride: bridgeReceiverOverride,
-    isSell: bridgingQuote.isSell,
-    expectedFillTimeSeconds: bridgingQuote.expectedFillTimeSeconds,
-    fees: bridgingQuote.fees,
-    limits: bridgingQuote.limits,
-    quoteTimestamp: bridgingQuote.quoteTimestamp,
-    amountsAndCosts: bridgingQuote.amountsAndCosts,
-  }
-
-  return { bridgeResult, bridgeReceiverOverride }
 }
