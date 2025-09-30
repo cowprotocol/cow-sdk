@@ -1,5 +1,5 @@
 import { BridgingSdk } from './BridgingSdk'
-import { MockBridgeProvider } from '../providers/mock/MockBridgeProvider'
+import { HookMockBridgeProvider } from '../providers/mock/MockBridgeProvider'
 import { assertIsBridgeQuoteAndPost } from '../utils'
 import {
   amountsAndCosts,
@@ -36,7 +36,7 @@ adapterNames.forEach((adapterName) => {
     let orderBookApi: OrderBookApi
     let quoteResult: QuoteResultsWithSigner
 
-    const mockProvider = new MockBridgeProvider()
+    const mockProvider = new HookMockBridgeProvider()
     mockProvider.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
     mockProvider.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
     mockProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
@@ -367,18 +367,18 @@ adapterNames.forEach((adapterName) => {
     })
 
     describe('getMultiQuotes', () => {
-      let mockProvider2: MockBridgeProvider
-      let mockProvider3: MockBridgeProvider
+      let mockProvider2: HookMockBridgeProvider
+      let mockProvider3: HookMockBridgeProvider
 
       beforeEach(() => {
-        mockProvider2 = new MockBridgeProvider()
+        mockProvider2 = new HookMockBridgeProvider()
         mockProvider2.info.dappId = 'cow-sdk://bridging/providers/mock2'
         mockProvider2.info.name = 'Mock Bridge Provider 2'
         mockProvider2.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
         mockProvider2.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
         mockProvider2.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
-        mockProvider3 = new MockBridgeProvider()
+        mockProvider3 = new HookMockBridgeProvider()
         mockProvider3.info.dappId = 'cow-sdk://bridging/providers/mock3'
         mockProvider3.info.name = 'Mock Bridge Provider 3'
         mockProvider3.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
@@ -441,11 +441,11 @@ adapterNames.forEach((adapterName) => {
     })
 
     describe('getBestQuote', () => {
-      let mockProvider2: MockBridgeProvider
-      let mockProvider3: MockBridgeProvider
+      let mockProvider2: HookMockBridgeProvider
+      let mockProvider3: HookMockBridgeProvider
 
       beforeEach(async () => {
-        mockProvider2 = new MockBridgeProvider()
+        mockProvider2 = new HookMockBridgeProvider()
         mockProvider2.info.dappId = 'cow-sdk://bridging/providers/mock2'
         mockProvider2.info.name = 'Mock Bridge Provider 2'
         // Override mockProvider to have a medium quote (50 ETH)
@@ -473,7 +473,7 @@ adapterNames.forEach((adapterName) => {
         mockProvider2.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
         mockProvider2.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
-        mockProvider3 = new MockBridgeProvider()
+        mockProvider3 = new HookMockBridgeProvider()
         mockProvider3.info.dappId = 'cow-sdk://bridging/providers/mock3'
         mockProvider3.info.name = 'Mock Bridge Provider 3'
         mockProvider3.getQuote = jest.fn().mockResolvedValue({
