@@ -159,7 +159,7 @@ export interface BridgeDeposit extends Omit<QuoteBridgeRequest, 'amount'> {
  * It contains the main information about the provider, and the methods to get the quote, the bridging params, the status, the cancelling and the refunding of the bridging.
  */
 export interface BridgeProvider<Q extends BridgeQuoteResult> {
-  type: 'BasicBridgeProvider' | 'HookBridgeProvider'
+  type: 'ReceiverAccountBridgeProvider' | 'HookBridgeProvider'
 
   info: BridgeProviderInfo
   /**
@@ -226,10 +226,20 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
 }
 
 /**
- * A basic bridge provider that doesn't rely on hooks to initiate the bridge.
+ * A basic bridge provider that relies on sending the tokens to a specific account.
+ * This provider doesn't rely on hooks to initiate the bridge.
  */
-export interface BasicBridgeProvider<Q extends BridgeQuoteResult> extends BridgeProvider<Q> {
-  type: 'BasicBridgeProvider'
+export interface ReceiverAccountBridgeProvider<Q extends BridgeQuoteResult> extends BridgeProvider<Q> {
+  type: 'ReceiverAccountBridgeProvider'
+
+  /**
+   * Get the receiver account to where the tokens will be sent in the source chain so they are automatically bridged to the destination chain.
+   *
+   * @param quoteRequest - The quote request
+   * @param quoteResult - The quote result
+   * @returns The receiver account
+   */
+  getBridgeReceiverOverride(quoteRequest: QuoteBridgeRequest, quoteResult: Q): Promise<string>
 }
 
 /**
@@ -402,7 +412,12 @@ export interface BridgeQuoteResults extends BridgeQuoteResult {
   /**
    * Bridge call details
    */
-  bridgeCallDetails: BridgeCallDetails
+  bridgeCallDetails?: BridgeCallDetails
+
+  /**
+   * Bridge recipient override
+   */
+  bridgeReceiverOverride?: string
 }
 
 export interface BridgingDepositParams {

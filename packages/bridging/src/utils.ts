@@ -1,7 +1,7 @@
 import { QuoteAndPost } from '@cowprotocol/sdk-trading'
 import { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
 import {
-  BasicBridgeProvider,
+  ReceiverAccountBridgeProvider,
   BridgeProvider,
   BridgeQuoteAndPost,
   BridgeQuoteResult,
@@ -57,8 +57,8 @@ export function isHookBridgeProvider<Q extends BridgeQuoteResult>(
   return provider.type === 'HookBridgeProvider'
 }
 
-export function isBasicBridgeProvider<Q extends BridgeQuoteResult>(
+export function isReceiverAccountBridgeProvider<Q extends BridgeQuoteResult>(
   provider: BridgeProvider<Q>,
-): provider is BasicBridgeProvider<Q> {
-  return provider.type === 'BasicBridgeProvider'
+): provider is ReceiverAccountBridgeProvider<Q> {
+  return provider.type === 'ReceiverAccountBridgeProvider'
 }

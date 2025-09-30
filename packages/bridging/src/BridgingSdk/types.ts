@@ -1,16 +1,9 @@
-import { QuoteResults, SwapAdvancedSettings, TradingAppDataInfo, TradingSdk } from '@cowprotocol/sdk-trading'
+import { SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { SignerLike, TTLCache } from '@cowprotocol/sdk-common'
 import { TokenInfo } from '@cowprotocol/sdk-config'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
-import {
-  BridgeHook,
-  BridgeQuoteResult,
-  BridgeQuoteResults,
-  QuoteBridgeRequest,
-  QuoteBridgeRequestWithoutAmount,
-  BridgeProvider,
-} from '../types'
+import { BridgeQuoteResult, QuoteBridgeRequest, BridgeProvider } from '../types'
 
 export type GetQuoteWithBridgeParams = {
   /**
@@ -29,9 +22,8 @@ export type GetQuoteWithBridgeParams = {
   tradingSdk: TradingSdk
 
   /**
-   * For quote fetching we have to sign bridging hooks.
+   * Some providers need a signer for quote fetching
    * But we won't do that using users wallet and will use some static PK.
-   * @deprecated Fix this
    */
   quoteSigner?: SignerLike
 
@@ -39,26 +31,6 @@ export type GetQuoteWithBridgeParams = {
    * Cache for intermediate tokens.
    */
   intermediateTokensCache?: TTLCache<TokenInfo[]>
-}
-
-export interface GetBridgeResultResult {
-  bridgeResult: BridgeQuoteResults
-
-  // TODO: Move this part somewhere else
-  // @deprecated Fix this
-  bridgeHook: BridgeHook
-  appDataInfo: TradingAppDataInfo
-}
-
-export interface HookBridgeResultContext {
-  swapAndBridgeRequest: QuoteBridgeRequest
-  swapResult: QuoteResults
-  intermediateTokenAmount: bigint
-  bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount
-  signer?: SignerLike
-  hookGasLimit: number
-  validToOverride?: number
-  appDataOverride?: SwapAdvancedSettings['appData']
 }
 
 export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'enableLogging' | 'cacheConfig'>>

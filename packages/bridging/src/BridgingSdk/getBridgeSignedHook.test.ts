@@ -1,8 +1,8 @@
 import { getBridgeSignedHook } from './getBridgeSignedHook'
 import { BridgeQuoteResult, HookBridgeProvider, QuoteBridgeRequest } from '../types'
-import { HookBridgeResultContext } from './types'
 import { createAdapters } from '../../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { HookBridgeResultContext } from './getQuoteWithBridge'
 
 jest.mock('@cowprotocol/sdk-order-book', () => ({
   ...jest.requireActual('@cowprotocol/sdk-order-book'),
