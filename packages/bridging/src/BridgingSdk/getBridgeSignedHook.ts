@@ -2,7 +2,7 @@ import { EvmCall } from '@cowprotocol/sdk-config'
 import { getGlobalAdapter } from '@cowprotocol/sdk-common'
 
 import { BridgeHook, BridgeQuoteResult, HookBridgeProvider, QuoteBridgeRequest } from '../types'
-import { HookBridgeResultContext } from './types'
+import { HookBridgeResultContext } from './getQuoteWithBridge'
 
 export async function getBridgeSignedHook(
   provider: HookBridgeProvider<BridgeQuoteResult>,
