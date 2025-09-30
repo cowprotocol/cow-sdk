@@ -129,7 +129,7 @@ jobs:
             # For PRs, use PR number + commit hash for uniqueness
             VERSION_SUFFIX="pr-$PR_NUMBER-$COMMIT_HASH"
             echo "version_suffix=$VERSION_SUFFIX" >> $GITHUB_OUTPUT
-            echo "tag=pr-${{ github.event.number }}" >> $GITHUB_OUTPUT
+            echo "tag=pr-$PR_NUMBER" >> $GITHUB_OUTPUT
             echo "is_pr=true" >> $GITHUB_OUTPUT
           else
             # For main branch, use latest tag
@@ -196,7 +196,7 @@ jobs:
         run: |
           # Publish all packages and capture versions
           echo "Publishing packages..."
-          pnpm publish -r --filter="./packages/**" --tag ${{ steps.version.outputs.tag }} --no-git-checks --access public > publish_output.txt 2>&1
+          pnpm publish -r --filter="./packages/**" --tag $TAG --no-git-checks --access public > publish_output.txt 2>&1
 
           # Show the actual publish output for debugging
           echo "=== Full publish output ==="
@@ -207,6 +207,7 @@ jobs:
           grep -o '@cowprotocol/[^@]*@[0-9][^[:space:]]*' publish_output.txt | sort -u > published_versions.txt
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
 
       - name: Restore original versions
         run: |
@@ -271,16 +272,16 @@ jobs:
             3. Check only the "read:packages" scope
             4. Copy the token and replace \`YOUR_GITHUB_TOKEN\` in the \`.npmrc\` file
 
-            Then install any of the packages above, either by exact version (i.e. \`${publishedVersions[0]}\`) or more conveniently by using the tag (\`@cowprotocol/cow-sdk@${{ steps.version.outputs.tag }}\`):
+            Then install any of the packages above, either by exact version (i.e. \`${publishedVersions[0]}\`) or more conveniently by using the tag (\`@cowprotocol/cow-sdk@$TAG\`):
             \`\`\`bash
             # Yarn
-            yarn add npm:@cowprotocol/cow-sdk@${{ steps.version.outputs.tag }}
+            yarn add npm:@cowprotocol/cow-sdk@$TAG
 
             # pnpm
-            pnpm install npm:@cowprotocol/cow-sdk@${{ steps.version.outputs.tag }}
+            pnpm install npm:@cowprotocol/cow-sdk@$TAG
 
             # NPM
-            npm install npm:@cowprotocol/cow-sdk@${{ steps.version.outputs.tag }}
+            npm install npm:@cowprotocol/cow-sdk@$TAG
             \`\`\`
 
 
@@ -337,3 +338,4 @@ jobs:
           VERSION_SUFFIX: ${{ steps.version.outputs.version_suffix }}
           FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
           REPOSITORY: ${{ github.repository }}
+          TAG: ${{ steps.version.outputs.tag }}
