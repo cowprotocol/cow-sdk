@@ -4,7 +4,7 @@ import { OrderKind } from '@cowprotocol/sdk-order-book'
 import {
   BridgeDeposit,
   BridgeHook,
-  BridgeProvider,
+  HookBridgeProvider,
   BridgeProviderInfo,
   BridgeQuoteResult,
   BridgeStatusResult,
@@ -62,7 +62,9 @@ export interface BungeeQuoteResult extends BridgeQuoteResult {
   buildTx: BungeeBuildTx
 }
 
-export class BungeeBridgeProvider implements BridgeProvider<BungeeQuoteResult> {
+export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResult> {
+  type = 'HookBridgeProvider' as const
+
   protected api: BungeeApi
   protected cowShedSdk: CowShedSdk
 
