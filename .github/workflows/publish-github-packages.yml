@@ -104,13 +104,13 @@ jobs:
       - name: Configure npm for GitHub Packages
         run: |
           # Override registry for @cowprotocol scope to use GitHub Packages
-          echo "@cowprotocol:registry=https://${{ env.REGISTRY }}" >> ~/.npmrc
+          echo "@cowprotocol:registry=https://$REGISTRY" >> ~/.npmrc
 
           # Always authenticate
           echo "always-auth=true" >> ~/.npmrc
 
           # Set auth token
-          echo "//${{ env.REGISTRY }}/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
+          echo "//$REGISTRY/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
           # Keep default registry as npmjs.org for other packages
           echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
 
@@ -252,8 +252,8 @@ jobs:
 
             \`\`\`bash
             # Create .npmrc file in your project root
-            echo "@cowprotocol:registry=https://${{ env.REGISTRY }}" > .npmrc
-            echo "//${{ env.REGISTRY }}/:_authToken=YOUR_GITHUB_TOKEN" >> .npmrc
+            echo "@cowprotocol:registry=https://$REGISTRY" > .npmrc
+            echo "//$REGISTRY/:_authToken=YOUR_GITHUB_TOKEN" >> .npmrc
             \`\`\`
 
             **To get your GitHub token:**
