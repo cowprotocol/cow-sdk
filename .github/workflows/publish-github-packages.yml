@@ -33,7 +33,7 @@ jobs:
     steps:
       - name: Security Check
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
+          if [ "$EVENT_NAME" = "pull_request" ]; then
             echo "🔒 Checking PR security..."
             echo "PR from: $REPO_NAME"
             echo "Target repo: $REPOSITORY"
@@ -149,15 +149,9 @@ jobs:
         run: |
           VERSION_SUFFIX="${{ steps.version.outputs.version_suffix }}"
 
-          # Debug: Show the version suffix
-          echo "=== Version Strategy Debug ==="
-          echo "VERSION_SUFFIX: '$VERSION_SUFFIX'"
-          echo "GitHub event: ${{ github.event_name }}"
-          echo "GitHub ref: ${{ github.ref }}"
-          echo "GitHub SHA: ${{ github.sha }}"
-
           # Instead of letting pnpm increment versions, we'll set them explicitly
           echo "Setting explicit pre-release versions with suffix: $VERSION_SUFFIX"
+
           find packages -name "package.json" -exec sh -c '
           VERSION_SUFFIX="$1"
           for file; do
@@ -194,6 +188,9 @@ jobs:
             sed -i "s/@cowprotocol\/\([^:]*\): workspace:\*/@cowprotocol\/\1: ${BASE_VERSION}-${VERSION_SUFFIX}.0/g" "$file"
           done
           ' _ "$VERSION_SUFFIX" {} \;
+        env:
+          VERSION_SUFFIX: ${{ steps.version.outputs.version_suffix }}
+          FILE: ${{ steps.version.outputs.file }}
 
       - name: Publish packages to GitHub Packages
         run: |
@@ -221,8 +218,8 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const prVersion = '${{ steps.version.outputs.version_suffix }}';
-            const isExternalPR = '${{ github.event.pull_request.head.repo.full_name }}' !== '${{ github.repository }}';
+            const prVersion = '$VERSION_SUFFIX';
+            const isExternalPR = '$FULL_NAME' !== '$REPOSITORY';
 
             // Read published versions from file
             const fs = require('fs');
@@ -321,3 +318,7 @@ jobs:
               });
               console.log('Created new comment');
             }
+        env:
+          VERSION_SUFFIX: ${{ steps.version.outputs.version_suffix }}
+          FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+          REPOSITORY: ${{ github.repository }}
