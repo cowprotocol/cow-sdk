@@ -1,5 +1,5 @@
 import { MultiQuoteStrategy } from './MultiQuoteStrategy'
-import { MockBridgeProvider } from '../../providers/mock/MockBridgeProvider'
+import { HookMockBridgeProvider } from '../../providers/mock/MockBridgeProvider'
 import { MultiQuoteResult } from '../../types'
 import { assertIsBridgeQuoteAndPost } from '../../utils'
 import {
@@ -32,9 +32,9 @@ adapterNames.forEach((adapterName) => {
     let orderBookApi: OrderBookApi
     let quoteResult: QuoteResultsWithSigner
 
-    const mockProvider = new MockBridgeProvider()
-    let mockProvider2: MockBridgeProvider
-    let mockProvider3: MockBridgeProvider
+    const mockProvider = new HookMockBridgeProvider()
+    let mockProvider2: HookMockBridgeProvider
+    let mockProvider3: HookMockBridgeProvider
 
     beforeEach(() => {
       strategy = new MultiQuoteStrategy()
@@ -52,14 +52,14 @@ adapterNames.forEach((adapterName) => {
       mockProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
       // Setup additional mock providers
-      mockProvider2 = new MockBridgeProvider()
+      mockProvider2 = new HookMockBridgeProvider()
       mockProvider2.info.dappId = 'cow-sdk://bridging/providers/mock2'
       mockProvider2.info.name = 'Mock Bridge Provider 2'
       mockProvider2.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
       mockProvider2.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
       mockProvider2.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
-      mockProvider3 = new MockBridgeProvider()
+      mockProvider3 = new HookMockBridgeProvider()
       mockProvider3.info.dappId = 'cow-sdk://bridging/providers/mock3'
       mockProvider3.info.name = 'Mock Bridge Provider 3'
       mockProvider3.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
@@ -580,7 +580,7 @@ adapterNames.forEach((adapterName) => {
         jest.useFakeTimers()
 
         // Create providers with different speeds
-        const fastProvider = new MockBridgeProvider()
+        const fastProvider = new HookMockBridgeProvider()
         fastProvider.info.dappId = 'fastProvider'
         fastProvider.getQuote = jest
           .fn()
@@ -588,7 +588,7 @@ adapterNames.forEach((adapterName) => {
         fastProvider.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
         fastProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
-        const slowProvider = new MockBridgeProvider()
+        const slowProvider = new HookMockBridgeProvider()
         slowProvider.info.dappId = 'slowProvider'
         slowProvider.getQuote = jest
           .fn()
