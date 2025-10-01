@@ -7,7 +7,7 @@ import {
   MultiQuoteResult,
   BestQuoteProgressCallback,
 } from '../types'
-import { BridgingSdkConfig } from './BridgingSdk'
+import { BridgingSdkConfig } from './types'
 
 /**
  * Validates that the request is for cross-chain bridging

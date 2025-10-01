@@ -1,4 +1,4 @@
-import { SingleQuoteStrategyImpl } from './SingleQuoteStrategy'
+import { SingleQuoteStrategy } from './SingleQuoteStrategy'
 import { MockBridgeProvider } from '../../providers/mock/MockBridgeProvider'
 import { QuoteBridgeRequest } from '../../types'
 import { assertIsBridgeQuoteAndPost, assertIsQuoteAndPost } from '../../utils'
@@ -28,7 +28,7 @@ import {
 } from '@cowprotocol/sdk-trading'
 import { OrderBookApi, SigningScheme } from '@cowprotocol/sdk-order-book'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
-import { BridgingSdkConfig } from '../BridgingSdk'
+import { BridgingSdkConfig } from '../types'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { createAdapters } from '../../../tests/setup'
 import { expectToEqual } from '../../test'
@@ -38,7 +38,7 @@ const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
 adapterNames.forEach((adapterName) => {
   describe(`SingleQuoteStrategy with ${adapterName}`, () => {
-    let strategy: SingleQuoteStrategyImpl
+    let strategy: SingleQuoteStrategy
     let config: BridgingSdkConfig
     let tradingSdk: TradingSdk
     let orderBookApi: OrderBookApi
@@ -50,7 +50,7 @@ adapterNames.forEach((adapterName) => {
     mockProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
     beforeEach(() => {
-      strategy = new SingleQuoteStrategyImpl()
+      strategy = new SingleQuoteStrategy()
       jest.clearAllMocks()
 
       const adapter = adapters[adapterName]
@@ -125,7 +125,7 @@ adapterNames.forEach((adapterName) => {
           ...quoteBridgeRequest,
           sellTokenAddress: intermediateToken,
           sellTokenDecimals: intermediateTokenDecimals,
-          amount: BigInt(100 * 10 ** intermediateTokenDecimals).toString(),
+          amount: (100n * 10n ** BigInt(intermediateTokenDecimals)).toString(),
         })
 
         // Verify amounts and costs
@@ -264,12 +264,13 @@ adapterNames.forEach((adapterName) => {
             orderTypedData,
             suggestedSlippageBps: 0,
           },
-          postSwapOrderFromQuote: () => Promise.resolve({
-            orderId: '0x01',
-            signature: '0x02',
-            signingScheme: SigningScheme.EIP712,
-            orderToSign,
-          }),
+          postSwapOrderFromQuote: () =>
+            Promise.resolve({
+              orderId: '0x01',
+              signature: '0x02',
+              signingScheme: SigningScheme.EIP712,
+              orderToSign,
+            }),
         }
         tradingSdk.getQuote = jest.fn().mockResolvedValue(singleChainQuoteResult)
 
@@ -296,7 +297,7 @@ adapterNames.forEach((adapterName) => {
         }
 
         await expect(strategy.execute(request, configWithoutProviders)).rejects.toThrow(
-          'No provider found for cross-chain swap'
+          'No provider found for cross-chain swap',
         )
       })
     })

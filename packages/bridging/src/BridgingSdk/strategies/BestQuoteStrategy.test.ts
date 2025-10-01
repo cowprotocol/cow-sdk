@@ -1,4 +1,4 @@
-import { BestQuoteStrategyImpl } from './BestQuoteStrategy'
+import { BestQuoteStrategy } from './BestQuoteStrategy'
 import { MockBridgeProvider } from '../../providers/mock/MockBridgeProvider'
 import { MultiQuoteResult } from '../../types'
 import {
@@ -16,7 +16,7 @@ import {
 import { QuoteResultsWithSigner, TradingSdk } from '@cowprotocol/sdk-trading'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
-import { BridgingSdkConfig } from '../BridgingSdk'
+import { BridgingSdkConfig } from '../types'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { createAdapters } from '../../../tests/setup'
 
@@ -25,7 +25,7 @@ const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
 adapterNames.forEach((adapterName) => {
   describe(`BestQuoteStrategy with ${adapterName}`, () => {
-    let strategy: BestQuoteStrategyImpl
+    let strategy: BestQuoteStrategy
     let config: BridgingSdkConfig
     let tradingSdk: TradingSdk
     let orderBookApi: OrderBookApi
@@ -36,7 +36,7 @@ adapterNames.forEach((adapterName) => {
     let mockProvider3: MockBridgeProvider
 
     beforeEach(async () => {
-      strategy = new BestQuoteStrategyImpl()
+      strategy = new BestQuoteStrategy()
       jest.clearAllMocks()
 
       const adapter = adapters[adapterName]

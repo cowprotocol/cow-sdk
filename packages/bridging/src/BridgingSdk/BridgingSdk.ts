@@ -15,49 +15,31 @@ import { findBridgeProviderFromHook } from './findBridgeProviderFromHook'
 import { BridgeProviderError } from '../errors'
 import { SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
-import { ALL_SUPPORTED_CHAINS, ChainInfo, SupportedChainId } from '@cowprotocol/sdk-config'
-import { AbstractProviderAdapter, enableLogging, setGlobalAdapter } from '@cowprotocol/sdk-common'
-import { GetOrderParams } from './types'
-import {
-  SingleQuoteStrategyImpl,
-  MultiQuoteStrategyImpl,
-  BestQuoteStrategyImpl,
-  SingleQuoteRequest,
-} from './strategies'
+import { ALL_SUPPORTED_CHAINS, ChainInfo, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { AbstractProviderAdapter, enableLogging, setGlobalAdapter, TTLCache } from '@cowprotocol/sdk-common'
+import { BridgingSdkCacheConfig, BridgingSdkConfig, BridgingSdkOptions, GetOrderParams } from './types'
+import { getCacheKey } from './helpers'
+import { SingleQuoteStrategy, MultiQuoteStrategy, BestQuoteStrategy } from './strategies'
+import { createStrategies } from './strategies/createStrategies'
 
-const singleQuoteStrategy = new SingleQuoteStrategyImpl()
-const multiQuoteStrategy = new MultiQuoteStrategyImpl()
-const bestQuoteStrategy = new BestQuoteStrategyImpl()
-
-export interface BridgingSdkOptions {
-  /**
-   * Providers for the bridging.
-   */
-  providers: BridgeProvider<BridgeQuoteResult>[]
-
-  /**
-   * Trading SDK.
-   */
-  tradingSdk?: TradingSdk
-
-  /**
-   * Order book API.
-   */
-  orderBookApi?: OrderBookApi
-
-  /**
-   * Enable logging for the bridging SDK.
-   */
-  enableLogging?: boolean
+// Default cache configuration
+const DEFAULT_CACHE_CONFIG: BridgingSdkCacheConfig = {
+  enabled: true,
+  intermediateTokensTtl: 5 * 60 * 1000, // 5 minutes
+  buyTokensTtl: 2 * 60 * 1000, // 2 minutes
 }
-
-export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'enableLogging'>>
 
 /**
  * SDK for bridging for swapping tokens between different chains.
  */
 export class BridgingSdk {
   protected config: BridgingSdkConfig
+  private cacheConfig: BridgingSdkCacheConfig
+  private intermediateTokensCache: TTLCache<TokenInfo[]>
+  private buyTokensCache: TTLCache<GetProviderBuyTokens>
+  private singleQuoteStrategy: SingleQuoteStrategy
+  private multiQuoteStrategy: MultiQuoteStrategy
+  private bestQuoteStrategy: BestQuoteStrategy
 
   constructor(
     readonly options: BridgingSdkOptions,
@@ -67,7 +49,7 @@ export class BridgingSdk {
       setGlobalAdapter(adapter)
     }
 
-    const { providers, ...restOptions } = options
+    const { providers, cacheConfig, ...restOptions } = options
 
     // Support both single and multiple providers
     if (!providers || providers.length === 0) {
@@ -87,6 +69,29 @@ export class BridgingSdk {
       tradingSdk,
       orderBookApi,
     }
+
+    // Initialize cache configuration
+    this.cacheConfig = { ...DEFAULT_CACHE_CONFIG, ...cacheConfig }
+
+    // Initialize cache instances with localStorage persistence
+    this.intermediateTokensCache = new TTLCache<TokenInfo[]>(
+      'bridging-intermediate-tokens',
+      this.cacheConfig.enabled,
+      this.cacheConfig.intermediateTokensTtl,
+    )
+    this.buyTokensCache = new TTLCache<GetProviderBuyTokens>(
+      'bridging-buy-tokens',
+      this.cacheConfig.enabled,
+      this.cacheConfig.buyTokensTtl,
+    )
+
+    const { singleQuoteStrategy, multiQuoteStrategy, bestQuoteStrategy } = createStrategies(
+      this.cacheConfig.enabled ? this.intermediateTokensCache : undefined,
+    )
+
+    this.singleQuoteStrategy = singleQuoteStrategy
+    this.multiQuoteStrategy = multiQuoteStrategy
+    this.bestQuoteStrategy = bestQuoteStrategy
   }
 
   private get provider(): BridgeProvider<BridgeQuoteResult> {
@@ -126,7 +131,26 @@ export class BridgingSdk {
    * @param params
    */
   async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
-    return this.provider.getBuyTokens(params)
+    const providerId = this.provider.info.dappId
+
+    const cacheKey = getCacheKey({
+      id: providerId,
+      buyChainId: params.buyChainId.toString(),
+      sellChainId: params.sellChainId?.toString(),
+      tokenAddress: params.sellTokenAddress,
+    })
+
+    const cached = this.cacheConfig.enabled && this.buyTokensCache.get(cacheKey)
+
+    if (cached) {
+      return cached
+    }
+
+    const result = await this.provider.getBuyTokens(params)
+    if (this.cacheConfig.enabled) {
+      this.buyTokensCache.set(cacheKey, result)
+    }
+    return result
   }
 
   /**
@@ -148,12 +172,13 @@ export class BridgingSdk {
     quoteBridgeRequest: QuoteBridgeRequest,
     advancedSettings?: SwapAdvancedSettings,
   ): Promise<CrossChainQuoteAndPost> {
-    const request: SingleQuoteRequest = {
-      quoteBridgeRequest,
-      advancedSettings,
-    }
-
-    return singleQuoteStrategy.execute(request, this.config)
+    return this.singleQuoteStrategy.execute(
+      {
+        quoteBridgeRequest,
+        advancedSettings,
+      },
+      this.config,
+    )
   }
 
   /**
@@ -172,7 +197,7 @@ export class BridgingSdk {
    * ```
    */
   async getMultiQuotes(request: MultiQuoteRequest): Promise<MultiQuoteResult[]> {
-    return multiQuoteStrategy.execute(request, this.config)
+    return this.multiQuoteStrategy.execute(request, this.config)
   }
 
   /**
@@ -191,7 +216,7 @@ export class BridgingSdk {
    * @throws Error if the request is for a single-chain swap (sellTokenChainId === buyTokenChainId)
    */
   async getBestQuote(request: MultiQuoteRequest): Promise<MultiQuoteResult | null> {
-    return bestQuoteStrategy.execute(request, this.config)
+    return this.bestQuoteStrategy.execute(request, this.config)
   }
 
   async getOrder(params: GetOrderParams): Promise<CrossChainOrder | null> {
@@ -214,6 +239,32 @@ export class BridgingSdk {
 
   getProviderFromAppData(fullAppData: string): BridgeProvider<BridgeQuoteResult> | undefined {
     return findBridgeProviderFromHook(fullAppData, this.getProviders())
+  }
+
+  /**
+   * Clear all caches. Useful for testing and debugging.
+   */
+  clearCache(): void {
+    this.intermediateTokensCache.clear()
+    this.buyTokensCache.clear()
+  }
+
+  /**
+   * Clean up expired cache entries. Useful for maintenance.
+   */
+  cleanupExpiredCache(): void {
+    this.intermediateTokensCache.cleanup()
+    this.buyTokensCache.cleanup()
+  }
+
+  /**
+   * Get cache statistics for debugging.
+   */
+  getCacheStats(): { intermediateTokens: number; buyTokens: number } {
+    return {
+      intermediateTokens: this.intermediateTokensCache.size(),
+      buyTokens: this.buyTokensCache.size(),
+    }
   }
 
   getProviderByDappId(dappId: string): BridgeProvider<BridgeQuoteResult> | undefined {
