@@ -149,8 +149,7 @@ export async function getQuoteRaw(
 
   // If no slippage is specified. AUTO slippage is used
   if (slippageBps === undefined) {
-    // If suggested slippage is greater than default, we use the suggested slippage
-    if (suggestedSlippageBps > defaultSlippageBps) {
+    if (suggestedSlippageBps) {
       // Recursive call, this time using the suggested slippage
       log(
         `Suggested slippage is greater than ${defaultSlippageBps} BPS (default), using the suggested slippage (${suggestedSlippageBps} BPS)`,
@@ -174,9 +173,7 @@ export async function getQuoteRaw(
         slippageBps: suggestedSlippageBps,
       }
     } else {
-      log(
-        `Suggested slippage is only ${suggestedSlippageBps} BPS. Using the default slippage (${defaultSlippageBps} BPS)`,
-      )
+      log(`No suggested slippage. Using the default slippage (${defaultSlippageBps} BPS)`)
     }
   }
 

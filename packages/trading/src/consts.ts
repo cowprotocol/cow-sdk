@@ -5,10 +5,8 @@ export const DEFAULT_QUOTE_VALIDITY = 60 * 30 // 30 min
 
 export const DEFAULT_SLIPPAGE_BPS = 50 // 0.5%
 
-export const ETH_FLOW_DEFAULT_SLIPPAGE_BPS: Record<SupportedChainId, number> = {
-  ...mapSupportedNetworks(DEFAULT_SLIPPAGE_BPS), // 0.5% by default for most chains
-  [SupportedChainId.MAINNET]: 200, // 2% for mainnet
-}
+export const ETH_FLOW_DEFAULT_SLIPPAGE_BPS: Record<SupportedChainId, number> =
+  mapSupportedNetworks(DEFAULT_SLIPPAGE_BPS) // 0.5%
 
 export const SIGN_SCHEME_MAP: Record<EcdsaSigningScheme, SigningScheme> = {
   [EcdsaSigningScheme.EIP712]: SigningScheme.EIP712,

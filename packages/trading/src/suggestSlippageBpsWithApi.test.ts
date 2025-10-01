@@ -103,7 +103,7 @@ describe('suggestSlippageBpsWithApi', () => {
 
   it('should fallback when API slippage is too low (below minimum)', async () => {
     const mockApiClient = {
-      getSlippageTolerance: jest.fn().mockResolvedValue({ slippageBps: 10 }), // Below default minimum of 50
+      getSlippageTolerance: jest.fn().mockResolvedValue({ slippageBps: -1 }), // Below default minimum of 0
     }
     MockCoWBFFClient.mockImplementation(() => mockApiClient as any)
 

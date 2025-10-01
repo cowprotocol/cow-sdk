@@ -1,7 +1,6 @@
 import { log } from '@cowprotocol/sdk-common'
 import { SuggestSlippageBps, suggestSlippageBps } from './suggestSlippageBps'
 import { CoWBFFClient } from './cowBffClient'
-import { getDefaultSlippageBps } from './utils/slippage'
 
 const MAX_SLIPPAGE_BPS = 10_000 // 100% in BPS (max slippage)
 
@@ -22,7 +21,7 @@ export interface SuggestSlippageBpsWithApi extends SuggestSlippageBps {
  * @returns Suggested slippage in basis points
  */
 export async function suggestSlippageBpsWithApi(params: SuggestSlippageBpsWithApi): Promise<number> {
-  const { trader, isEthFlow, bffOrigin, slippageApiTimeoutMs } = params
+  const { trader, bffOrigin, slippageApiTimeoutMs } = params
   const { sellToken, buyToken } = params.quote.quote
 
   // Try to get slippage from API first
@@ -39,7 +38,7 @@ export async function suggestSlippageBpsWithApi(params: SuggestSlippageBpsWithAp
       const apiSlippageBps = apiResponse.slippageBps
 
       // Validate API response is reasonable (between min and max)
-      const minSlippageBps = getDefaultSlippageBps(trader.chainId, isEthFlow)
+      const minSlippageBps = 0
 
       if (apiSlippageBps >= minSlippageBps && apiSlippageBps <= MAX_SLIPPAGE_BPS) {
         log(`Using API slippage tolerance: ${apiSlippageBps} BPS`)
