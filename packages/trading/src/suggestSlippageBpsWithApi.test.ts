@@ -50,6 +50,7 @@ const baseParams = {
     account: '0x123' as const,
   },
   isEthFlow: false,
+  bffOrigin: 'http://slippage.api',
 }
 
 describe('suggestSlippageBpsWithApi', () => {
@@ -66,7 +67,7 @@ describe('suggestSlippageBpsWithApi', () => {
 
     const result = await suggestSlippageBpsWithApi(baseParams)
 
-    expect(MockCoWBFFClient).toHaveBeenCalledWith('prod')
+    expect(MockCoWBFFClient).toHaveBeenCalledWith('http://slippage.api')
     expect(mockApiClient.getSlippageTolerance).toHaveBeenCalledWith({
       sellToken: '0x6b175474e89094c44da98b954eedeac495271d0f',
       buyToken: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
@@ -74,23 +75,6 @@ describe('suggestSlippageBpsWithApi', () => {
     })
     expect(result).toBe(250)
     expect(mockSuggestSlippageBps).not.toHaveBeenCalled()
-  })
-
-  it('should use staging environment when provided', async () => {
-    const mockApiClient = {
-      getSlippageTolerance: jest.fn().mockResolvedValue({ slippageBps: 200 }),
-    }
-    MockCoWBFFClient.mockImplementation(() => mockApiClient as any)
-
-    const paramsWithStagingEnv = {
-      ...baseParams,
-      bffEnv: 'staging' as const,
-    }
-
-    const result = await suggestSlippageBpsWithApi(paramsWithStagingEnv)
-
-    expect(MockCoWBFFClient).toHaveBeenCalledWith('staging')
-    expect(result).toBe(200)
   })
 
   it('should fallback to calculation when API returns null', async () => {

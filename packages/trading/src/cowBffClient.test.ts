@@ -14,201 +14,170 @@ describe('CoWBFFClient', () => {
   })
 
   describe('constructor', () => {
-    it('should use prod base URL when env is prod', () => {
-      const client = new CoWBFFClient('prod')
-      expect((client as any).baseUrl).toBe('https://bff.cow.fi')
-    })
+    describe('getSlippageTolerance', () => {
+      const sellToken = '0x6b175474e89094c44da98b954eedeac495271d0f'
+      const buyToken = '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599'
+      const chainId = 1
 
-    it('should use barn base URL when env is staging', () => {
-      const client = new CoWBFFClient('staging')
-      expect((client as any).baseUrl).toBe('https://bff.barn.cow.fi')
-    })
+      it('should return slippage tolerance on successful API response', async () => {
+        const client = new CoWBFFClient('http://slippage.api')
+        const mockResponse = { slippageBps: 150 }
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve(mockResponse),
+        })
 
-    it('should default to prod when no env provided', () => {
-      const client = new CoWBFFClient()
-      expect((client as any).baseUrl).toBe('https://bff.cow.fi')
-    })
-  })
+        const result = await client.getSlippageTolerance({ sellToken, buyToken, chainId })
 
-  describe('getSlippageTolerance', () => {
-    const sellToken = '0x6b175474e89094c44da98b954eedeac495271d0f'
-    const buyToken = '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599'
-    const chainId = 1
-
-    it('should return slippage tolerance on successful API response', async () => {
-      const client = new CoWBFFClient('prod')
-      const mockResponse = { slippageBps: 150 }
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockResponse),
-      })
-
-      const result = await client.getSlippageTolerance({ sellToken, buyToken, chainId })
-
-      expect(mockFetch).toHaveBeenCalledWith(
-        `https://bff.cow.fi/${chainId}/markets/${sellToken}-${buyToken}/slippageTolerance`,
-        {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
+        expect(mockFetch).toHaveBeenCalledWith(
+          `http://slippage.api/${chainId}/markets/${sellToken}-${buyToken}/slippageTolerance`,
+          {
+            method: 'GET',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            signal: expect.any(AbortSignal),
           },
-          signal: expect.any(AbortSignal),
-        }
-      )
-      expect(result).toEqual({ slippageBps: 150 })
-    })
-
-    it('should use staging URL when env is staging', async () => {
-      const client = new CoWBFFClient('staging')
-      const mockResponse = { slippageBps: 200 }
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockResponse),
+        )
+        expect(result).toEqual({ slippageBps: 150 })
       })
 
-      await client.getSlippageTolerance({ sellToken, buyToken, chainId })
-
-      expect(mockFetch).toHaveBeenCalledWith(
-        `https://bff.barn.cow.fi/${chainId}/markets/${sellToken}-${buyToken}/slippageTolerance`,
-        expect.any(Object)
-      )
-    })
-
-    it('should return null on HTTP error response', async () => {
-      const client = new CoWBFFClient()
-      mockFetch.mockResolvedValue({
-        ok: false,
-        status: 404,
-        statusText: 'Not Found',
-      })
-
-      const result = await client.getSlippageTolerance({ sellToken, buyToken, chainId })
-
-      expect(result).toBeNull()
-    })
-
-    it('should return null on invalid response structure', async () => {
-      const client = new CoWBFFClient()
-      const mockResponse = { invalidField: 'value' }
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockResponse),
-      })
-
-      const result = await client.getSlippageTolerance({ sellToken, buyToken, chainId })
-
-      expect(result).toBeNull()
-    })
-
-    it('should return null when slippageBps is not a number', async () => {
-      const client = new CoWBFFClient()
-      const mockResponse = { slippageBps: 'invalid' }
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockResponse),
-      })
-
-      const result = await client.getSlippageTolerance({ sellToken, buyToken, chainId })
-
-      expect(result).toBeNull()
-    })
-
-    it('should return null on network error', async () => {
-      const client = new CoWBFFClient()
-      mockFetch.mockRejectedValue(new Error('Network error'))
-
-      const result = await client.getSlippageTolerance({ sellToken, buyToken, chainId })
-
-      expect(result).toBeNull()
-    })
-
-    it('should return null when response is null', async () => {
-      const client = new CoWBFFClient()
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(null),
-      })
-
-      const result = await client.getSlippageTolerance({ sellToken, buyToken, chainId })
-
-      expect(result).toBeNull()
-    })
-
-    it('should construct correct URL for different chain IDs', async () => {
-      const client = new CoWBFFClient()
-      const mockResponse = { slippageBps: 100 }
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockResponse),
-      })
-
-      await client.getSlippageTolerance({ sellToken, buyToken, chainId: 137 })
-
-      expect(mockFetch).toHaveBeenCalledWith(
-        `https://bff.cow.fi/137/markets/${sellToken}-${buyToken}/slippageTolerance`,
-        expect.any(Object)
-      )
-    })
-
-    it('should apply timeout to fetch request', async () => {
-      const client = new CoWBFFClient()
-
-      // Mock fetch to simulate timeout by throwing AbortError
-      mockFetch.mockRejectedValue(new Error('The operation was aborted'))
-
-      const customTimeoutMs = 100
-      const result = await client.getSlippageTolerance({
-        sellToken,
-        buyToken,
-        chainId,
-        timeoutMs: customTimeoutMs,
-      })
-
-      expect(result).toBeNull()
-    })
-
-    it('should use default timeout of 2000ms when not specified', async () => {
-      const client = new CoWBFFClient()
-      const mockResponse = { slippageBps: 150 }
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockResponse),
-      })
-
-      await client.getSlippageTolerance({ sellToken, buyToken, chainId })
-
-      // Verify the call was made with signal (indicates timeout setup)
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          signal: expect.any(AbortSignal),
+      it('should return null on HTTP error response', async () => {
+        const client = new CoWBFFClient('http://slippage.api')
+        mockFetch.mockResolvedValue({
+          ok: false,
+          status: 404,
+          statusText: 'Not Found',
         })
-      )
-    })
 
-    it('should use custom timeout when specified', async () => {
-      const client = new CoWBFFClient()
-      const mockResponse = { slippageBps: 150 }
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockResponse),
+        const result = await client.getSlippageTolerance({ sellToken, buyToken, chainId })
+
+        expect(result).toBeNull()
       })
 
-      await client.getSlippageTolerance({
-        sellToken,
-        buyToken,
-        chainId,
-        timeoutMs: 5000,
-      })
-
-      // Verify the call was made with signal (indicates timeout setup)
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          signal: expect.any(AbortSignal),
+      it('should return null on invalid response structure', async () => {
+        const client = new CoWBFFClient('http://slippage.api')
+        const mockResponse = { invalidField: 'value' }
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve(mockResponse),
         })
-      )
+
+        const result = await client.getSlippageTolerance({ sellToken, buyToken, chainId })
+
+        expect(result).toBeNull()
+      })
+
+      it('should return null when slippageBps is not a number', async () => {
+        const client = new CoWBFFClient('http://slippage.api')
+        const mockResponse = { slippageBps: 'invalid' }
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve(mockResponse),
+        })
+
+        const result = await client.getSlippageTolerance({ sellToken, buyToken, chainId })
+
+        expect(result).toBeNull()
+      })
+
+      it('should return null on network error', async () => {
+        const client = new CoWBFFClient('http://slippage.api')
+        mockFetch.mockRejectedValue(new Error('Network error'))
+
+        const result = await client.getSlippageTolerance({ sellToken, buyToken, chainId })
+
+        expect(result).toBeNull()
+      })
+
+      it('should return null when response is null', async () => {
+        const client = new CoWBFFClient('http://slippage.api')
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve(null),
+        })
+
+        const result = await client.getSlippageTolerance({ sellToken, buyToken, chainId })
+
+        expect(result).toBeNull()
+      })
+
+      it('should construct correct URL for different chain IDs', async () => {
+        const client = new CoWBFFClient('http://slippage.api')
+        const mockResponse = { slippageBps: 100 }
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve(mockResponse),
+        })
+
+        await client.getSlippageTolerance({ sellToken, buyToken, chainId: 137 })
+
+        expect(mockFetch).toHaveBeenCalledWith(
+          `http://slippage.api/137/markets/${sellToken}-${buyToken}/slippageTolerance`,
+          expect.any(Object),
+        )
+      })
+
+      it('should apply timeout to fetch request', async () => {
+        const client = new CoWBFFClient('http://slippage.api')
+
+        // Mock fetch to simulate timeout by throwing AbortError
+        mockFetch.mockRejectedValue(new Error('The operation was aborted'))
+
+        const customTimeoutMs = 100
+        const result = await client.getSlippageTolerance({
+          sellToken,
+          buyToken,
+          chainId,
+          timeoutMs: customTimeoutMs,
+        })
+
+        expect(result).toBeNull()
+      })
+
+      it('should use default timeout of 2000ms when not specified', async () => {
+        const client = new CoWBFFClient('http://slippage.api')
+        const mockResponse = { slippageBps: 150 }
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve(mockResponse),
+        })
+
+        await client.getSlippageTolerance({ sellToken, buyToken, chainId })
+
+        // Verify the call was made with signal (indicates timeout setup)
+        expect(mockFetch).toHaveBeenCalledWith(
+          expect.any(String),
+          expect.objectContaining({
+            signal: expect.any(AbortSignal),
+          }),
+        )
+      })
+
+      it('should use custom timeout when specified', async () => {
+        const client = new CoWBFFClient('http://slippage.api')
+        const mockResponse = { slippageBps: 150 }
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve(mockResponse),
+        })
+
+        await client.getSlippageTolerance({
+          sellToken,
+          buyToken,
+          chainId,
+          timeoutMs: 5000,
+        })
+
+        // Verify the call was made with signal (indicates timeout setup)
+        expect(mockFetch).toHaveBeenCalledWith(
+          expect.any(String),
+          expect.objectContaining({
+            signal: expect.any(AbortSignal),
+          }),
+        )
+      })
     })
   })
 })

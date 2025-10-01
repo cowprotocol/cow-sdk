@@ -1,6 +1,5 @@
 import { log } from '@cowprotocol/sdk-common'
-import { SupportedChainId, CowEnv } from '@cowprotocol/sdk-config'
-import { BFF_ENDPOINTS } from './consts'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 
 const DEFAULT_TIMEOUT = 2000 // 2 sec
 
@@ -16,11 +15,7 @@ export interface SlippageToleranceRequest {
 }
 
 export class CoWBFFClient {
-  private readonly baseUrl: string
-
-  constructor(env: CowEnv = 'prod') {
-    this.baseUrl = BFF_ENDPOINTS[env]
-  }
+  constructor(private readonly baseUrl: string) {}
 
   /**
    * Fetches slippage tolerance from the API for a given token pair

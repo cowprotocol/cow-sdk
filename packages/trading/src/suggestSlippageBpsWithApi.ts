@@ -2,12 +2,11 @@ import { log } from '@cowprotocol/sdk-common'
 import { SuggestSlippageBps, suggestSlippageBps } from './suggestSlippageBps'
 import { CoWBFFClient } from './cowBffClient'
 import { getDefaultSlippageBps } from './utils/slippage'
-import { CowEnv } from '@cowprotocol/sdk-config'
 
 const MAX_SLIPPAGE_BPS = 10_000 // 100% in BPS (max slippage)
 
 export interface SuggestSlippageBpsWithApi extends SuggestSlippageBps {
-  bffEnv?: CowEnv
+  bffOrigin: string
   slippageApiTimeoutMs?: number
 }
 
@@ -23,12 +22,12 @@ export interface SuggestSlippageBpsWithApi extends SuggestSlippageBps {
  * @returns Suggested slippage in basis points
  */
 export async function suggestSlippageBpsWithApi(params: SuggestSlippageBpsWithApi): Promise<number> {
-  const { trader, isEthFlow, bffEnv = 'prod', slippageApiTimeoutMs } = params
+  const { trader, isEthFlow, bffOrigin, slippageApiTimeoutMs } = params
   const { sellToken, buyToken } = params.quote.quote
 
   // Try to get slippage from API first
   try {
-    const apiClient = new CoWBFFClient(bffEnv)
+    const apiClient = new CoWBFFClient(bffOrigin)
     const apiResponse = await apiClient.getSlippageTolerance({
       sellToken,
       buyToken,

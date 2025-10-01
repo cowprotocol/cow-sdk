@@ -389,53 +389,19 @@ describe('getQuote', () => {
           account: '0xfb3c7eb936caa12b5a884d612393969a557d4307' as const,
         }
 
-        const result = await getQuoteRaw(tradeParameters, trader, undefined, orderBookApiMock)
+        const advancedSettings = { bffOrigin: 'http://localhost:8080' }
+        const result = await getQuoteRaw(tradeParameters, trader, advancedSettings, orderBookApiMock)
 
         expect(mockSuggestSlippageBpsWithApi).toHaveBeenCalledWith({
           isEthFlow: false,
           quote: quoteResponseMock,
           tradeParameters,
           trader,
-          advancedSettings: undefined,
-          bffEnv: 'prod',
+          advancedSettings,
+          bffOrigin: advancedSettings.bffOrigin,
         })
 
         expect(result.suggestedSlippageBps).toBe(150)
-      }
-    })
-
-    it('should pass bffEnv from advancedSettings to suggestSlippageBpsWithApi', async () => {
-      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
-
-      for (const adapterName of adapterNames) {
-        setGlobalAdapter(adapters[adapterName])
-
-        const tradeParameters = {
-          sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
-          sellTokenDecimals: 18,
-          buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
-          buyTokenDecimals: 18,
-          amount: '100000000000000000',
-          kind: OrderKind.SELL,
-          env: 'staging' as const,
-        }
-
-        const trader = {
-          chainId: SupportedChainId.GNOSIS_CHAIN,
-          appCode: '0x007',
-          account: '0xfb3c7eb936caa12b5a884d612393969a557d4307' as const,
-        }
-
-        await getQuoteRaw(tradeParameters, trader, undefined, orderBookApiMock)
-
-        expect(mockSuggestSlippageBpsWithApi).toHaveBeenCalledWith({
-          isEthFlow: false,
-          quote: quoteResponseMock,
-          tradeParameters,
-          trader,
-          advancedSettings: undefined,
-          bffEnv: 'staging',
-        })
       }
     })
 
@@ -460,7 +426,8 @@ describe('getQuote', () => {
           account: '0xfb3c7eb936caa12b5a884d612393969a557d4307' as const,
         }
 
-        await getQuoteRaw(tradeParameters, trader, undefined, orderBookApiMock)
+        const advancedSettings = { bffOrigin: 'http://localhost:8080' }
+        await getQuoteRaw(tradeParameters, trader, advancedSettings, orderBookApiMock)
 
         expect(mockSuggestSlippageBpsWithApi).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -504,7 +471,6 @@ describe('getQuote', () => {
         tradeParameters,
         trader,
         advancedSettings,
-        bffEnv: 'prod',
       })
       expect(mockSuggestSlippageBpsWithApi).not.toHaveBeenCalled()
       expect(result.suggestedSlippageBps).toBe(100)

@@ -132,6 +132,10 @@ export interface SwapAdvancedSettings {
   additionalParams?: PostTradeAdditionalParams
   // In special case, when you want to fetch quote with a different signer
   quoteSigner?: SignerLike
+  /**
+   * Origin of BFF (backend for frontend)
+   */
+  bffOrigin?: string
 }
 
 export interface LimitOrderAdvancedSettings {
