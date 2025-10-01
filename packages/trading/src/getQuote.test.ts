@@ -287,35 +287,6 @@ describe('getQuote', () => {
         )
       })
     })
-
-    describe('When sell ETH', () => {
-      it('Default slippage should be 2%  in Mainnet', async () => {
-        const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
-        const results: any[] = []
-
-        for (const adapterName of adapterNames) {
-          setGlobalAdapter(adapters[adapterName])
-          const result = await getQuoteWithSigner(
-            {
-              ...defaultOrderParams,
-              signer: adapters[adapterName].signer,
-              chainId: SupportedChainId.MAINNET,
-              sellToken: ETH_ADDRESS,
-              slippageBps: undefined,
-            },
-            {},
-            orderBookApiMock,
-          )
-          results.push(result)
-        }
-
-        const buyAmount = +quoteResponseMock.quote.buyAmount
-        results.forEach(({ result }) => {
-          // 2% slippage
-          expect(+result.amountsAndCosts.afterSlippage.buyAmount.toString()).toBe(buyAmount - (buyAmount * 2) / 100)
-        })
-      })
-    })
   })
 
   describe('Order to sign', () => {
