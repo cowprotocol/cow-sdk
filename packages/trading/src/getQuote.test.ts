@@ -1,23 +1,20 @@
 import { ETH_FLOW_DEFAULT_SLIPPAGE_BPS } from './consts'
-import { getQuoteWithSigner, getQuoteRaw } from './getQuote'
+import { getQuoteWithSigner } from './getQuote'
 import { SwapParameters } from './types'
 import { ETH_ADDRESS, WRAPPED_NATIVE_CURRENCIES, SupportedChainId } from '@cowprotocol/sdk-config'
-import { OrderBookApi, OrderKind, OrderQuoteResponse, PriceQuality } from '@cowprotocol/sdk-order-book'
+import { OrderBookApi, OrderKind, OrderQuoteResponse } from '@cowprotocol/sdk-order-book'
 import { AdaptersTestSetup, createAdapters } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 
-// Mock suggestSlippageBpsWithApi and suggestSlippageBps
-jest.mock('./suggestSlippageBpsWithApi', () => ({
-  suggestSlippageBpsWithApi: jest.fn(),
-}))
 jest.mock('./suggestSlippageBps', () => ({
   suggestSlippageBps: jest.fn(),
 }))
 
-import { suggestSlippageBpsWithApi } from './suggestSlippageBpsWithApi'
-import { suggestSlippageBps } from './suggestSlippageBps'
-const mockSuggestSlippageBpsWithApi = suggestSlippageBpsWithApi as jest.MockedFunction<typeof suggestSlippageBpsWithApi>
-const mockSuggestSlippageBps = suggestSlippageBps as jest.MockedFunction<typeof suggestSlippageBps>
+jest.mock('./resolveSlippageSuggestion', () => ({
+  resolveSlippageSuggestion: jest.fn(),
+}))
+
+const { resolveSlippageSuggestion } = jest.requireMock('./resolveSlippageSuggestion')
 
 const quoteResponseMock = {
   quote: {
@@ -72,6 +69,8 @@ describe('getQuote', () => {
   beforeEach(() => {
     getQuoteMock.mockReset()
     getQuoteMock.mockResolvedValue(quoteResponseMock)
+    resolveSlippageSuggestion.mockReset()
+    resolveSlippageSuggestion.mockResolvedValue({ slippageBps: null })
   })
 
   describe('App data', () => {
@@ -329,122 +328,104 @@ describe('getQuote', () => {
     })
   })
 
-  describe('getQuoteRaw', () => {
-    beforeEach(() => {
-      getQuoteMock.mockReset()
-      getQuoteMock.mockResolvedValue(quoteResponseMock)
-      mockSuggestSlippageBpsWithApi.mockReset()
-      mockSuggestSlippageBpsWithApi.mockResolvedValue(150)
-      mockSuggestSlippageBps.mockReset()
-      mockSuggestSlippageBps.mockReturnValue(100)
-    })
-
-    it('should use suggestSlippageBpsWithApi to get suggested slippage', async () => {
+  describe('Slippage suggestion integration', () => {
+    it('Should use suggested slippage when AUTO slippage is used and suggestion is provided', async () => {
+      resolveSlippageSuggestion.mockResolvedValue({ slippageBps: 200 })
       const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+      const results: any[] = []
 
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
-
-        const tradeParameters = {
-          sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
-          sellTokenDecimals: 18,
-          buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
-          buyTokenDecimals: 18,
-          amount: '100000000000000000',
-          kind: OrderKind.SELL,
-        }
-
-        const trader = {
-          chainId: SupportedChainId.GNOSIS_CHAIN,
-          appCode: '0x007',
-          account: '0xfb3c7eb936caa12b5a884d612393969a557d4307' as const,
-        }
-
-        const advancedSettings = { bffOrigin: 'http://localhost:8080' }
-        const result = await getQuoteRaw(tradeParameters, trader, advancedSettings, orderBookApiMock)
-
-        expect(mockSuggestSlippageBpsWithApi).toHaveBeenCalledWith({
-          isEthFlow: false,
-          quote: quoteResponseMock,
-          tradeParameters,
-          trader,
-          advancedSettings,
-          bffOrigin: advancedSettings.bffOrigin,
-        })
-
-        expect(result.suggestedSlippageBps).toBe(150)
+        const result = await getQuoteWithSigner(
+          {
+            ...defaultOrderParams,
+            signer: adapters[adapterName].signer,
+            slippageBps: undefined, // AUTO slippage
+          },
+          {},
+          orderBookApiMock,
+        )
+        results.push(result)
       }
+
+      results.forEach(({ result }) => {
+        expect(result.suggestedSlippageBps).toBe(200)
+        const appData = JSON.parse(result.appDataInfo.fullAppData)
+        expect(appData.metadata.quote.slippageBips).toBe(200)
+      })
     })
 
-    it('should handle EthFlow orders and pass isEthFlow correctly', async () => {
+    it('Should use default slippage when suggested slippage is null', async () => {
+      resolveSlippageSuggestion.mockResolvedValue({ slippageBps: null })
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+      const results: any[] = []
+
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        const result = await getQuoteWithSigner(
+          {
+            ...defaultOrderParams,
+            signer: adapters[adapterName].signer,
+            slippageBps: undefined, // AUTO slippage
+          },
+          {},
+          orderBookApiMock,
+        )
+        results.push(result)
+      }
+
+      results.forEach(({ result }) => {
+        expect(result.suggestedSlippageBps).toBe(50) // Default slippage for non-EthFlow
+      })
+    })
+
+    it('Should pass getSlippageSuggestion callback from advanced settings', async () => {
+      const mockCallback = jest.fn().mockResolvedValue({ slippageBps: 300 })
       const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
+        await getQuoteWithSigner(
+          { ...defaultOrderParams, signer: adapters[adapterName].signer },
+          { getSlippageSuggestion: mockCallback },
+          orderBookApiMock,
+        )
 
-        const tradeParameters = {
-          sellToken: ETH_ADDRESS, // This will trigger EthFlow
-          sellTokenDecimals: 18,
-          buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
-          buyTokenDecimals: 18,
-          amount: '100000000000000000',
-          kind: OrderKind.SELL,
-        }
-
-        const trader = {
-          chainId: SupportedChainId.GNOSIS_CHAIN,
-          appCode: '0x007',
-          account: '0xfb3c7eb936caa12b5a884d612393969a557d4307' as const,
-        }
-
-        const advancedSettings = { bffOrigin: 'http://localhost:8080' }
-        await getQuoteRaw(tradeParameters, trader, advancedSettings, orderBookApiMock)
-
-        expect(mockSuggestSlippageBpsWithApi).toHaveBeenCalledWith(
-          expect.objectContaining({
-            isEthFlow: true,
-          }),
+        expect(resolveSlippageSuggestion).toHaveBeenCalledWith(
+          defaultOrderParams.chainId,
+          expect.any(Object),
+          expect.any(Object),
+          quoteResponseMock,
+          false,
+          expect.objectContaining({ getSlippageSuggestion: mockCallback }),
         )
       }
     })
 
-    it('should use suggestSlippageBps instead of API when priceQuality is FAST', async () => {
-      const adapterName = Object.keys(adapters)[0] as keyof typeof adapters
-      setGlobalAdapter(adapters[adapterName])
+    it('Should handle EthFlow orders correctly', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
-      const tradeParameters = {
-        sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
-        sellTokenDecimals: 18,
-        buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
-        buyTokenDecimals: 18,
-        amount: '100000000000000000',
-        kind: OrderKind.SELL,
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        await getQuoteWithSigner(
+          {
+            ...defaultOrderParams,
+            signer: adapters[adapterName].signer,
+            sellToken: ETH_ADDRESS,
+          },
+          {},
+          orderBookApiMock,
+        )
+
+        expect(resolveSlippageSuggestion).toHaveBeenCalledWith(
+          defaultOrderParams.chainId,
+          expect.any(Object),
+          expect.any(Object),
+          quoteResponseMock,
+          true, // isEthFlow should be true
+          expect.any(Object),
+        )
       }
-
-      const trader = {
-        chainId: SupportedChainId.GNOSIS_CHAIN,
-        appCode: '0x007',
-        account: '0xfb3c7eb936caa12b5a884d612393969a557d4307' as const,
-      }
-
-      const advancedSettings = {
-        quoteRequest: {
-          priceQuality: PriceQuality.FAST,
-        },
-      }
-
-      const result = await getQuoteRaw(tradeParameters, trader, advancedSettings, orderBookApiMock)
-
-      // Verify that suggestSlippageBps was called instead of suggestSlippageBpsWithApi
-      expect(mockSuggestSlippageBps).toHaveBeenCalledWith({
-        isEthFlow: false,
-        quote: quoteResponseMock,
-        tradeParameters,
-        trader,
-        advancedSettings,
-      })
-      expect(mockSuggestSlippageBpsWithApi).not.toHaveBeenCalled()
-      expect(result.suggestedSlippageBps).toBe(100)
     })
   })
 })

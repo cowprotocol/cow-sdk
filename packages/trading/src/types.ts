@@ -91,6 +91,18 @@ export interface TraderParameters {
 
 export type QuoterParameters = Omit<TraderParameters, 'signer'> & { account: AccountAddress }
 
+export interface SlippageToleranceResponse {
+  slippageBps: number | null
+}
+
+export interface SlippageToleranceRequest {
+  chainId: SupportedChainId
+  sellToken: OrderParameters['sellToken']
+  buyToken: OrderParameters['buyToken']
+  sellAmount?: bigint
+  buyAmount?: bigint
+}
+
 /**
  * Trade type, assets, amounts, and optional parameters.
  */
@@ -133,9 +145,9 @@ export interface SwapAdvancedSettings {
   // In special case, when you want to fetch quote with a different signer
   quoteSigner?: SignerLike
   /**
-   * Origin of BFF (backend for frontend)
+   * An optional callback to use custom logic for slippage suggestion
    */
-  bffOrigin?: string
+  getSlippageSuggestion?(request: SlippageToleranceRequest): Promise<SlippageToleranceResponse>
 }
 
 export interface LimitOrderAdvancedSettings {
