@@ -3,6 +3,7 @@ import { QuoterParameters, SlippageToleranceResponse, SwapAdvancedSettings, Trad
 import { suggestSlippageBps, SuggestSlippageBps } from './suggestSlippageBps'
 import { getPartnerFeeBps } from './utils/getPartnerFeeBps'
 import { getQuoteAmountsAndCosts, OrderQuoteResponse, PriceQuality } from '@cowprotocol/sdk-order-book'
+import { log } from '@cowprotocol/sdk-common'
 
 export async function resolveSlippageSuggestion(
   chainId: SupportedChainId,
@@ -21,7 +22,7 @@ export async function resolveSlippageSuggestion(
   }
   const getSlippageSuggestion = advancedSettings?.getSlippageSuggestion
 
-  const priceQuality = advancedSettings?.quoteRequest || PriceQuality.FAST
+  const priceQuality = advancedSettings?.quoteRequest?.priceQuality || PriceQuality.FAST
 
   const defaultSuggestion = suggestSlippageBps(suggestSlippageParams)
 
@@ -38,11 +39,16 @@ export async function resolveSlippageSuggestion(
     buyDecimals: tradeParameters.buyTokenDecimals,
   })
 
-  return getSlippageSuggestion({
-    chainId,
-    sellToken: tradeParameters.sellToken,
-    buyToken: tradeParameters.buyToken,
-    sellAmount: amountsAndCosts.afterSlippage.sellAmount,
-    buyAmount: amountsAndCosts.afterSlippage.buyAmount,
-  })
+  try {
+    return getSlippageSuggestion({
+      chainId,
+      sellToken: tradeParameters.sellToken,
+      buyToken: tradeParameters.buyToken,
+      sellAmount: amountsAndCosts.afterSlippage.sellAmount,
+      buyAmount: amountsAndCosts.afterSlippage.buyAmount,
+    })
+  } catch (e: unknown) {
+    log(`getSlippageSuggestion() error: ${(e as Error).message || String(e)}`)
+    return { slippageBps: defaultSuggestion }
+  }
 }
