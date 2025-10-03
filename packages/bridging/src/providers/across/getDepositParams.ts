@@ -24,7 +24,7 @@ export async function getDepositParams(
   /**
    * FIXME
    * TODO: this is a wrong logic! There might be different count of cowTradeEvents and depositEvents
-   * TODO: because of that, this function might not found a depositEvent
+   * TODO: because of that, this function might not find a depositEvent
    * TODO: example https://arbiscan.io/tx/0x0ebd35b986bac6f4d54409e42a9ec2c0713414992e06ad29537c12679149611a#eventlog
    */
   const depositEvent = depositEvents[orderTradeIndex]
