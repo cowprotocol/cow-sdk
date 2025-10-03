@@ -221,8 +221,9 @@ jobs:
             const tag = process.env.TAG;
             const fullName = process.env.FULL_NAME;
             const repository = process.env.REPOSITORY;
+            const registry = process.env.REGISTRY;
 
-            if (!prVersion || !tag || !fullName || !repository) {
+            if (!prVersion || !tag || !fullName || !repository || !registry) {
               console.log('Missing environment variables');
               process.exit(1);
             }
@@ -269,8 +270,8 @@ jobs:
 
             \`\`\`bash
             # Create .npmrc file in your project root
-            echo "@cowprotocol:registry=https://$REGISTRY" > .npmrc
-            echo "//$REGISTRY/:_authToken=YOUR_GITHUB_TOKEN" >> .npmrc
+            echo "@cowprotocol:registry=https://${registry}" > .npmrc
+            echo "//${registry}/:_authToken=YOUR_GITHUB_TOKEN" >> .npmrc
             \`\`\`
 
             **To get your GitHub token:**
