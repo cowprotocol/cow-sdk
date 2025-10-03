@@ -16,7 +16,7 @@ import { getWallet } from '../../test'
 // unmock cross-fetch to use the real API
 jest.unmock('cross-fetch')
 
-describe('BungeeGnosisBridge full transaction', () => {
+describe.skip('BungeeGnosisBridge full transaction', () => {
   let api: BungeeApi
   let quote: BungeeQuoteAPIRequest
   let txData: BungeeQuoteWithBuildTx

@@ -14,7 +14,7 @@ on:
 env:
   NODE_VERSION: lts/jod
   REGISTRY: npm.pkg.github.com
-  SCOPE: '@cowprotocol'
+  SCOPE: "@cowprotocol"
 
 permissions:
   contents: read
@@ -33,18 +33,18 @@ jobs:
     steps:
       - name: Security Check
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
+          if [ "$EVENT_NAME" = "pull_request" ]; then
             echo "🔒 Checking PR security..."
-            echo "PR from: ${{ github.event.pull_request.head.repo.full_name }}"
-            echo "Target repo: ${{ github.repository }}"
+            echo "PR from: $REPO_NAME"
+            echo "Target repo: $REPOSITORY"
 
             # Check if it's an internal PR
-            if [ "${{ github.event.pull_request.head.repo.full_name }}" = "${{ github.repository }}" ]; then
+            if [ "$REPO_NAME" = "$REPOSITORY" ]; then
               echo "✅ Internal PR - proceeding with publish"
             else
               # Check for allow-publish label
               echo "🔍 Checking for 'allow-publish' label..."
-              if echo "${{ toJson(github.event.pull_request.labels) }}" | grep -q '"name":"allow-publish"'; then
+              if echo "$LABELS_JSON" | grep -q '"name":"allow-publish"'; then
                 echo "✅ External PR with 'allow-publish' label - proceeding with publish"
               else
                 echo "❌ External PR without 'allow-publish' label - skipping publish for security"
@@ -55,6 +55,11 @@ jobs:
           else
             echo "✅ Push to main branch - proceeding with publish"
           fi
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REPO_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+          REPOSITORY: ${{ github.repository }}
+          LABELS_JSON: ${{ toJson(github.event.pull_request.labels) }}
 
       - name: Cancel Previous Runs
         uses: styfle/cancel-workflow-action@0.8.0
@@ -104,47 +109,88 @@ jobs:
       - name: Configure npm for GitHub Packages
         run: |
           # Override registry for @cowprotocol scope to use GitHub Packages
-          echo "@cowprotocol:registry=https://${{ env.REGISTRY }}" >> ~/.npmrc
+          echo "@cowprotocol:registry=https://$REGISTRY" >> ~/.npmrc
 
           # Always authenticate
           echo "always-auth=true" >> ~/.npmrc
 
           # Set auth token
-          echo "//${{ env.REGISTRY }}/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
+          echo "//$REGISTRY/:_authToken=$GITHUB_TOKEN" >> ~/.npmrc
           # Keep default registry as npmjs.org for other packages
           echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Determine version strategy
         id: version
         run: |
-          COMMIT_HASH=$(echo "${{ github.sha }}" | cut -c1-8)
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
+          COMMIT_HASH=$(echo "$SHA" | cut -c1-8)
+          if [ "$EVENT_NAME" = "pull_request" ]; then
             # For PRs, use PR number + commit hash for uniqueness
-            VERSION_SUFFIX="pr-${{ github.event.number }}-$COMMIT_HASH"
+            VERSION_SUFFIX="pr-$PR_NUMBER-$COMMIT_HASH"
             echo "version_suffix=$VERSION_SUFFIX" >> $GITHUB_OUTPUT
             echo "tag=pr" >> $GITHUB_OUTPUT
             echo "is_pr=true" >> $GITHUB_OUTPUT
           else
             # For main branch, use latest tag
-            BRANCH_NAME=$(echo "${{ github.ref }}" | sed 's/refs\/heads\///')
+            BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/refs\/heads\///')
             VERSION_SUFFIX="${BRANCH_NAME}-$COMMIT_HASH"
             echo "version_suffix=$VERSION_SUFFIX" >> $GITHUB_OUTPUT
             echo "tag=latest" >> $GITHUB_OUTPUT
             echo "is_pr=false" >> $GITHUB_OUTPUT
           fi
+        env:
+          SHA: ${{ github.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.number }}
+          BRANCH_NAME: ${{ github.ref }}
 
       - name: Create pre-release versions
         run: |
-          # Create pre-release versions for all packages
+          VERSION_SUFFIX="${{ steps.version.outputs.version_suffix }}"
+
+          # Instead of letting pnpm increment versions, we'll set them explicitly
+          echo "Setting explicit pre-release versions with suffix: $VERSION_SUFFIX"
+
           find packages -name "package.json" -exec sh -c '
+          VERSION_SUFFIX="$1"
           for file; do
-            echo "Creating pre-release version for $file"
-            # Use npm version to create pre-release version
+            echo "Setting explicit version for $file"
             cd "$(dirname "$file")"
-            pnpm version prerelease --preid="${{ steps.version.outputs.version_suffix }}" --no-git-tag-version
+
+            # Get the current base version (e.g., "0.1.0")
+            BASE_VERSION=$(grep -o "\"version\":[[:space:]]*\"[^\"]*\"" package.json | sed "s/\"version\":[[:space:]]*\"//" | sed "s/\"//")
+
+            # Create predictable version: base-version + suffix + .0
+            NEW_VERSION="${BASE_VERSION}-${VERSION_SUFFIX}.0"
+
+            # Update the version directly in package.json
+            sed -i "s/\"version\":[[:space:]]*\"[^\"]*\"/\"version\": \"$NEW_VERSION\"/" package.json
+
+            echo "  Updated to version: $NEW_VERSION"
             cd - > /dev/null
           done
-          ' _ {} \;
+          ' _ "$VERSION_SUFFIX" {} \;
+
+          # Now update all workspace dependencies to use the predictable versions
+          echo "Updating workspace dependencies to use consistent versions..."
+          find packages -name "package.json" -exec sh -c '
+          VERSION_SUFFIX="$1"
+          for file; do
+            echo "Updating dependencies in $file"
+            # Get the current version from this package
+            CURRENT_VERSION=$(grep -o "\"version\":[[:space:]]*\"[^\"]*\"" "$file" | sed "s/\"version\":[[:space:]]*\"//" | sed "s/\"//")
+
+            # Extract the base version (everything before the first dash)
+            BASE_VERSION=$(echo "$CURRENT_VERSION" | cut -d'-' -f1)
+
+            # Update all @cowprotocol workspace dependencies to use the predictable version format
+            sed -i "s/@cowprotocol\/\([^:]*\): workspace:\*/@cowprotocol\/\1: ${BASE_VERSION}-${VERSION_SUFFIX}.0/g" "$file"
+          done
+          ' _ "$VERSION_SUFFIX" {} \;
+        env:
+          VERSION_SUFFIX: ${{ steps.version.outputs.version_suffix }}
+          FILE: ${{ steps.version.outputs.file }}
 
       - name: Publish packages to GitHub Packages
         run: |
@@ -172,8 +218,8 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const prVersion = '${{ steps.version.outputs.version_suffix }}';
-            const isExternalPR = '${{ github.event.pull_request.head.repo.full_name }}' !== '${{ github.repository }}';
+            const prVersion = '$VERSION_SUFFIX';
+            const isExternalPR = '$FULL_NAME' !== '$REPOSITORY';
 
             // Read published versions from file
             const fs = require('fs');
@@ -211,26 +257,30 @@ jobs:
 
             ### Installation
 
-            These packages require authentication to install from GitHub Packages. First, configure your token:
+            These packages require authentication to install from GitHub Packages. First, create a \`.npmrc\` file:
 
             \`\`\`bash
-            # Set your GitHub token
-            #  1. create one at https://github.com/settings/tokens. Make sure you select the option "Generate new token (classic)"
-            #  2. Check only the "read:packages" scope
-            #  3. Add the token to the npm config
-            npm config set //${{ env.REGISTRY }}/:_authToken YOUR_GITHUB_TOKEN
+            # Create .npmrc file in your project root
+            echo "@cowprotocol:registry=https://$REGISTRY" > .npmrc
+            echo "//$REGISTRY/:_authToken=YOUR_GITHUB_TOKEN" >> .npmrc
             \`\`\`
+
+            **To get your GitHub token:**
+            1. Go to https://github.com/settings/tokens
+            2. Click "Generate new token (classic)"
+            3. Check only the "read:packages" scope
+            4. Copy the token and replace \`YOUR_GITHUB_TOKEN\` in the \`.npmrc\` file
 
             Then install any of the packages above:
             \`\`\`bash
             # Yarn
-            yarn add ${publishedVersions[0]} --registry https://${{ env.REGISTRY }}
+            yarn add ${publishedVersions[0]}
 
             # pnpm
-            pnpm install ${publishedVersions[0]} --registry https://${{ env.REGISTRY }}
+            pnpm install ${publishedVersions[0]}
 
             # NPM
-            npm install ${publishedVersions[0]} --registry https://${{ env.REGISTRY }}
+            npm install ${publishedVersions[0]}
             \`\`\`
 
             ### View Packages
@@ -268,3 +318,7 @@ jobs:
               });
               console.log('Created new comment');
             }
+        env:
+          VERSION_SUFFIX: ${{ steps.version.outputs.version_suffix }}
+          FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+          REPOSITORY: ${{ github.repository }}
