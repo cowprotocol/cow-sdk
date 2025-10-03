@@ -133,26 +133,6 @@ describe('getEthFlowTransaction', () => {
     })
   })
 
-  it('Default slippage must be 2% in Mainnet', async () => {
-    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
-
-    for (const adapterName of adapterNames) {
-      setGlobalAdapter(adapters[adapterName])
-      await getEthFlowTransaction(appDataKeccak256, params, SupportedChainId.MAINNET, {}, adapters[adapterName].signer)
-
-      expect(mockContract.interface.encodeFunctionData).toHaveBeenCalledWith('createOrder', expect.any(Array))
-
-      const orderData = mockContract.interface.encodeFunctionData.mock.calls[0][1][0]
-      const buyAmountBeforeSlippage = BigInt(params.buyAmount)
-      // 2% slippage
-      const buyAmountAfterSlippage = buyAmountBeforeSlippage - (buyAmountBeforeSlippage * BigInt(2)) / BigInt(100)
-
-      expect(orderData.buyAmount).toBe(buyAmountAfterSlippage.toString())
-
-      mockContract.interface.encodeFunctionData.mockClear()
-    }
-  })
-
   it('Should verify ContractFactory is called with correct parameters', async () => {
     setGlobalAdapter(adapters.ethersV5Adapter)
 

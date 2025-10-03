@@ -23,10 +23,10 @@ import {
 import { buildAppData } from './appDataUtils'
 import { getOrderToSign } from './getOrderToSign'
 import { getOrderTypedData } from './getOrderTypedData'
-import { suggestSlippageBps } from './suggestSlippageBps'
 import { getPartnerFeeBps } from './utils/getPartnerFeeBps'
 import { adjustEthFlowOrderParams, getIsEthFlowOrder, swapParamsToLimitOrderParams } from './utils/misc'
 import { getDefaultSlippageBps } from './utils/slippage'
+import { resolveSlippageSuggestion } from './resolveSlippageSuggestion'
 
 // ETH-FLOW orders require different quote params
 // check the isEthFlow flag and set in quote req obj
@@ -125,25 +125,25 @@ export async function getQuoteRaw(
   const quote = await orderBookApi.getQuote(quoteRequest)
 
   // Get the suggested slippage based on the quote
-  const suggestedSlippageBps = suggestSlippageBps({
-    isEthFlow,
-    quote,
+  const { slippageBps: suggestedSlippageBps } = await resolveSlippageSuggestion(
+    chainId,
     tradeParameters,
     trader,
+    quote,
+    isEthFlow,
     advancedSettings,
-  })
+  )
 
   const commonResult = {
     isEthFlow,
     quote,
     orderBookApi,
-    suggestedSlippageBps,
+    suggestedSlippageBps: suggestedSlippageBps || defaultSlippageBps,
   }
 
   // If no slippage is specified. AUTO slippage is used
   if (slippageBps === undefined) {
-    // If suggested slippage is greater than default, we use the suggested slippage
-    if (suggestedSlippageBps > defaultSlippageBps) {
+    if (suggestedSlippageBps) {
       // Recursive call, this time using the suggested slippage
       log(
         `Suggested slippage is greater than ${defaultSlippageBps} BPS (default), using the suggested slippage (${suggestedSlippageBps} BPS)`,
@@ -167,9 +167,7 @@ export async function getQuoteRaw(
         slippageBps: suggestedSlippageBps,
       }
     } else {
-      log(
-        `Suggested slippage is only ${suggestedSlippageBps} BPS. Using the default slippage (${defaultSlippageBps} BPS)`,
-      )
+      log(`No suggested slippage. Using the default slippage (${defaultSlippageBps} BPS)`)
     }
   }
 

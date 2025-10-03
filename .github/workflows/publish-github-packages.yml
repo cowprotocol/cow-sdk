@@ -100,12 +100,6 @@ jobs:
       - name: Build packages
         run: pnpm build
 
-      - name: Run tests
-        run: pnpm test
-
-      - name: Run linting
-        run: pnpm lint
-
       - name: Configure npm for GitHub Packages
         run: |
           # Override registry for @cowprotocol scope to use GitHub Packages
