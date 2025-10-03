@@ -147,8 +147,6 @@ jobs:
 
       - name: Create pre-release versions
         run: |
-          VERSION_SUFFIX="${{ steps.version.outputs.version_suffix }}"
-
           # Instead of letting pnpm increment versions, we'll set them explicitly
           echo "Setting explicit pre-release versions with suffix: $VERSION_SUFFIX"
 
@@ -219,9 +217,17 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const prVersion = '$VERSION_SUFFIX';
-            const tag = '$TAG';
-            const isExternalPR = '$FULL_NAME' !== '$REPOSITORY';
+            const prVersion = process.env.VERSION_SUFFIX;
+            const tag = process.env.TAG;
+            const fullName = process.env.FULL_NAME;
+            const repository = process.env.REPOSITORY;
+
+            if (!prVersion || !tag || !fullName || !repository) {
+              console.log('Missing environment variables');
+              process.exit(1);
+            }
+
+            const isExternalPR = fullName !== repository;
 
             // Read published versions from file
             const fs = require('fs');
