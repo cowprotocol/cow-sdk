@@ -220,6 +220,7 @@ jobs:
         with:
           script: |
             const prVersion = '$VERSION_SUFFIX';
+            const tag = '$TAG';
             const isExternalPR = '$FULL_NAME' !== '$REPOSITORY';
 
             // Read published versions from file
@@ -272,16 +273,16 @@ jobs:
             3. Check only the "read:packages" scope
             4. Copy the token and replace \`YOUR_GITHUB_TOKEN\` in the \`.npmrc\` file
 
-            Then install any of the packages above, either by exact version (i.e. \`${publishedVersions[0]}\`) or more conveniently by using the tag (\`@cowprotocol/cow-sdk@${TAG}\`):
+            Then install any of the packages above, either by exact version (i.e. \`${publishedVersions[0]}\`) or more conveniently by using the tag (\`@cowprotocol/cow-sdk@${tag}\`):
             \`\`\`bash
             # Yarn
-            yarn add npm:@cowprotocol/cow-sdk@${TAG}
+            yarn add npm:@cowprotocol/cow-sdk@${tag}
 
             # pnpm
-            pnpm install npm:@cowprotocol/cow-sdk@${TAG}
+            pnpm install npm:@cowprotocol/cow-sdk@${tag}
 
             # NPM
-            npm install npm:@cowprotocol/cow-sdk@${TAG}
+            npm install npm:@cowprotocol/cow-sdk@${tag}
             \`\`\`
 
 
