@@ -32,8 +32,7 @@ export class SingleQuoteStrategy extends BaseSingleQuoteStrategy {
         swapAndBridgeRequest: quoteBridgeRequest,
         advancedSettings,
         tradingSdk,
-        provider,
-        bridgeHookSigner: advancedSettings?.quoteSigner,
+        quoteSigner: advancedSettings?.quoteSigner,
       } as const
 
       const request = this.intermediateTokensCache
@@ -43,7 +42,7 @@ export class SingleQuoteStrategy extends BaseSingleQuoteStrategy {
           }
         : baseParams
 
-      return getQuoteWithBridge(request)
+      return getQuoteWithBridge(provider, request)
     } else {
       // Single-chain swap
       return getQuoteWithoutBridge({

@@ -2,7 +2,7 @@ import { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-da
 import {
   BridgeDeposit,
   BridgeHook,
-  BridgeProvider,
+  HookBridgeProvider,
   BridgeProviderInfo,
   BridgeQuoteResult,
   BridgeStatus,
@@ -112,7 +112,9 @@ const INTERMEDIATE_TOKENS: Partial<Record<TargetChainId, TokenInfo[]>> = {
   ],
 }
 
-export class MockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
+export class HookMockBridgeProvider implements HookBridgeProvider<BridgeQuoteResult> {
+  type = 'HookBridgeProvider' as const
+
   info: BridgeProviderInfo = {
     name: 'Mock',
     logoUrl: `${RAW_PROVIDERS_FILES_PATH}/mock/mock-logo.png`,

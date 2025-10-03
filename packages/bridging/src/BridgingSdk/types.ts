@@ -1,18 +1,11 @@
-import { QuoteResults, SwapAdvancedSettings, TradingAppDataInfo, TradingSdk } from '@cowprotocol/sdk-trading'
+import { SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { SignerLike, TTLCache } from '@cowprotocol/sdk-common'
 import { TokenInfo } from '@cowprotocol/sdk-config'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
-import {
-  BridgeHook,
-  BridgeProvider,
-  BridgeQuoteResult,
-  BridgeQuoteResults,
-  QuoteBridgeRequest,
-  QuoteBridgeRequestWithoutAmount,
-} from '../types'
+import { BridgeQuoteResult, QuoteBridgeRequest, BridgeProvider } from '../types'
 
-export type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
+export type GetQuoteWithBridgeParams = {
   /**
    * Overall request for the swap and the bridge.
    */
@@ -24,43 +17,20 @@ export type GetQuoteWithBridgeParams<T extends BridgeQuoteResult> = {
   advancedSettings?: SwapAdvancedSettings
 
   /**
-   * Provider for the bridge.
-   */
-  provider: BridgeProvider<T>
-
-  /**
    * Trading SDK.
    */
   tradingSdk: TradingSdk
 
   /**
-   * For quote fetching we have to sign bridging hooks.
+   * Some providers need a signer for quote fetching
    * But we won't do that using users wallet and will use some static PK.
    */
-  bridgeHookSigner?: SignerLike
+  quoteSigner?: SignerLike
 
   /**
    * Cache for intermediate tokens.
    */
   intermediateTokensCache?: TTLCache<TokenInfo[]>
-}
-
-export interface GetBridgeResultResult {
-  bridgeResult: BridgeQuoteResults
-  bridgeHook: BridgeHook
-  appDataInfo: TradingAppDataInfo
-}
-
-export interface BridgeResultContext<T extends BridgeQuoteResult = BridgeQuoteResult> {
-  swapAndBridgeRequest: QuoteBridgeRequest
-  swapResult: QuoteResults
-  intermediateTokenAmount: bigint
-  bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount
-  provider: BridgeProvider<T>
-  signer?: SignerLike
-  hookGasLimit: number
-  validToOverride?: number
-  appDataOverride?: SwapAdvancedSettings['appData']
 }
 
 export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'enableLogging' | 'cacheConfig'>>
