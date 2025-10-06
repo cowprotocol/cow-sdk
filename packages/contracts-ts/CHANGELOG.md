@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.2.1...sdk-contracts-ts-v0.3.0) (2025-10-06)
+
+
+### ✨ Features
+
+* **trading:** use suggested slippage from BFF ([#546](https://github.com/cowprotocol/cow-sdk/issues/546)) ([b6a59c7](https://github.com/cowprotocol/cow-sdk/commit/b6a59c780fbfb0f2e840276fe905b2efd810805c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.2.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.1.1
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.1.1
+    * @cowprotocol/sdk-viem-adapter bumped to 0.1.1
+
 ## [0.2.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.2.0...sdk-contracts-ts-v0.2.1) (2025-09-24)
 
 

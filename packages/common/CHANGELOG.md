@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.1.0...sdk-common-v0.2.0) (2025-10-06)
+
+
+### ✨ Features
+
+* add caching to SDK Bridging ([#521](https://github.com/cowprotocol/cow-sdk/issues/521)) ([0c44212](https://github.com/cowprotocol/cow-sdk/commit/0c442121af74c297a002c7c0f608fb3396b9a446))
+
 ## [0.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.5.0-beta.0...sdk-common-v0.1.0) (2025-09-17)
 
 
