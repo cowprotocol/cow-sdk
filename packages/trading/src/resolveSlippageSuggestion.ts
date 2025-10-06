@@ -40,13 +40,17 @@ export async function resolveSlippageSuggestion(
   })
 
   try {
-    return getSlippageSuggestion({
+    const suggestedSlippage = await getSlippageSuggestion({
       chainId,
       sellToken: tradeParameters.sellToken,
       buyToken: tradeParameters.buyToken,
       sellAmount: amountsAndCosts.afterSlippage.sellAmount,
       buyAmount: amountsAndCosts.afterSlippage.buyAmount,
     })
+
+    return {
+      slippageBps: Math.max(suggestedSlippage.slippageBps ?? 0, defaultSuggestion),
+    }
   } catch (e: unknown) {
     log(`getSlippageSuggestion() error: ${(e as Error).message || String(e)}`)
     return { slippageBps: defaultSuggestion }

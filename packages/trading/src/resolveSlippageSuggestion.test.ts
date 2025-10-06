@@ -159,8 +159,9 @@ describe('resolveSlippageSuggestion', () => {
   })
 
   describe('When priceQuality is OPTIMAL and getSlippageSuggestion is provided', () => {
-    it('Should call getSlippageSuggestion', async () => {
-      const mockGetSlippageSuggestion = jest.fn().mockResolvedValue({ slippageBps: 150 })
+    it('Should return max between defaultSuggestion and suggestedSlippage when suggested is higher', async () => {
+      suggestSlippageBps.mockReturnValue(50)
+      const mockGetSlippageSuggestion = jest.fn().mockResolvedValue({ slippageBps: 200 })
       const advancedSettings: SwapAdvancedSettings = {
         quoteRequest: { priceQuality: PriceQuality.OPTIMAL },
         getSlippageSuggestion: mockGetSlippageSuggestion,
@@ -175,8 +176,27 @@ describe('resolveSlippageSuggestion', () => {
         advancedSettings,
       )
 
-      expect(result).toEqual({ slippageBps: 150 })
-      expect(mockGetSlippageSuggestion).toHaveBeenCalled()
+      expect(result).toEqual({ slippageBps: 200 })
+    })
+
+    it('Should return max between defaultSuggestion and suggestedSlippage when default is higher', async () => {
+      suggestSlippageBps.mockReturnValue(300)
+      const mockGetSlippageSuggestion = jest.fn().mockResolvedValue({ slippageBps: 100 })
+      const advancedSettings: SwapAdvancedSettings = {
+        quoteRequest: { priceQuality: PriceQuality.OPTIMAL },
+        getSlippageSuggestion: mockGetSlippageSuggestion,
+      }
+
+      const result = await resolveSlippageSuggestion(
+        SupportedChainId.GNOSIS_CHAIN,
+        mockTradeParameters,
+        mockTrader,
+        mockQuoteResponse,
+        false,
+        advancedSettings,
+      )
+
+      expect(result).toEqual({ slippageBps: 300 })
     })
   })
 
