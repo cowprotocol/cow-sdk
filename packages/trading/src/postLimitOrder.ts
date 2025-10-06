@@ -3,12 +3,17 @@ import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { buildAppData } from './appDataUtils'
 import { postCoWProtocolTrade } from './postCoWProtocolTrade'
 import { log } from '@cowprotocol/sdk-common'
+import { validateLimitTradeParameters } from './validation'
 
 export async function postLimitOrder(
   params: LimitOrderParameters,
   advancedSettings?: LimitOrderAdvancedSettings,
   _orderBookApi?: OrderBookApi,
 ): Promise<OrderPostingResult> {
+  log('🔍 Validating limit order parameters...')
+  validateLimitTradeParameters(params)
+  log('✅ Limit order parameters validation passed')
+
   const appDataSlippage = advancedSettings?.appData?.metadata?.quote?.slippageBips
   const partnerFeeOverride = advancedSettings?.appData?.metadata?.partnerFee
 

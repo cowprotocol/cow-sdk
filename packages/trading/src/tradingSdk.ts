@@ -17,6 +17,7 @@ import { getPreSignTransaction } from './getPreSignTransaction'
 import { enableLogging, getGlobalAdapter } from '@cowprotocol/sdk-common'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { AbstractProviderAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { validateSwapParameters, validateLimitTradeParameters } from './validation'
 
 export type WithPartialTraderParams<T> = T & Partial<TraderParameters>
 
@@ -109,14 +110,18 @@ export class TradingSdk {
     params: WithPartialTraderParams<TradeParameters>,
     advancedSettings?: SwapAdvancedSettings,
   ): Promise<OrderPostingResult> {
-    return postSwapOrder(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
+    const mergedParams = this.mergeParams(params)
+    validateSwapParameters(mergedParams)
+    return postSwapOrder(mergedParams, advancedSettings, this.options.orderBookApi)
   }
 
   async postLimitOrder(
     params: WithPartialTraderParams<LimitTradeParameters>,
     advancedSettings?: LimitOrderAdvancedSettings,
   ): Promise<OrderPostingResult> {
-    return postLimitOrder(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
+    const mergedParams = this.mergeParams(params)
+    validateLimitTradeParameters(mergedParams)
+    return postLimitOrder(mergedParams, advancedSettings, this.options.orderBookApi)
   }
 
   /**

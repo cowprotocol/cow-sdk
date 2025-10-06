@@ -5,12 +5,18 @@ import { getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
 import { swapParamsToLimitOrderParams } from './utils/misc'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { mergeAppDataDoc } from './appDataUtils'
+import { validateSwapParameters } from './validation'
+import { log } from '@cowprotocol/sdk-common'
 
 export async function postSwapOrder(
   params: SwapParameters,
   advancedSettings?: SwapAdvancedSettings,
   orderBookApi?: OrderBookApi,
 ) {
+  log('🔍 Validating swap parameters...')
+  validateSwapParameters(params)
+  log('✅ Swap parameters validation passed')
+
   return postSwapOrderFromQuote(await getQuoteWithSigner(params, advancedSettings, orderBookApi), advancedSettings)
 }
 
