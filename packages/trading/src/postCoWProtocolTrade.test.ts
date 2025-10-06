@@ -26,9 +26,9 @@ const defaultOrderParams: LimitOrderParameters = {
   chainId: SupportedChainId.GNOSIS_CHAIN,
   signer: '0x006',
   appCode: '0x007',
-  sellToken: '0xaaa',
+  sellToken: '0xA0b86a33E6441c8C35a7ba3b7a6C03E2a3Ad32e7', // COW token
   sellTokenDecimals: 18,
-  buyToken: '0xbbb',
+  buyToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', // WETH
   buyTokenDecimals: 18,
   sellAmount: '1000000000000000000',
   buyAmount: '2000000000000000000',
@@ -64,10 +64,10 @@ const expectedAppData = {
 const getExpectedOrderBody = (appData: any) => ({
   appData: appData.fullAppData,
   appDataHash: appData.appDataKeccak256,
-  sellToken: '0xaaa',
+  sellToken: '0xA0b86a33E6441c8C35a7ba3b7a6C03E2a3Ad32e7', // COW token
   sellAmount: '1000000000000000000',
   sellTokenBalance: 'erc20',
-  buyToken: '0xbbb',
+  buyToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', // WETH
   buyAmount: '1990000000000000000',
   buyTokenBalance: 'erc20',
   feeAmount: '0',
