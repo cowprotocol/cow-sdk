@@ -58,10 +58,39 @@ describe('resolveSlippageSuggestion', () => {
     suggestSlippageBps.mockReturnValue(100)
   })
 
-  describe('When priceQuality is FAST or undefined', () => {
-    it('Should return default suggestion without calling getSlippageSuggestion when priceQuality is undefined', async () => {
+  describe('When priceQuality defaults to OPTIMAL', () => {
+    it('Should call getSlippageSuggestion when priceQuality is undefined (defaults to OPTIMAL)', async () => {
       const mockGetSlippageSuggestion = jest.fn().mockResolvedValue({ slippageBps: 200 })
       const advancedSettings: SwapAdvancedSettings = {
+        getSlippageSuggestion: mockGetSlippageSuggestion,
+      }
+
+      const result = await resolveSlippageSuggestion(
+        SupportedChainId.GNOSIS_CHAIN,
+        mockTradeParameters,
+        mockTrader,
+        mockQuoteResponse,
+        false,
+        advancedSettings,
+      )
+
+      expect(result).toEqual({ slippageBps: 200 })
+      expect(mockGetSlippageSuggestion).toHaveBeenCalled()
+      expect(suggestSlippageBps).toHaveBeenCalledWith({
+        isEthFlow: false,
+        quote: mockQuoteResponse,
+        tradeParameters: mockTradeParameters,
+        trader: mockTrader,
+        advancedSettings,
+      })
+    })
+  })
+
+  describe('When priceQuality is FAST', () => {
+    it('Should return default suggestion without calling getSlippageSuggestion', async () => {
+      const mockGetSlippageSuggestion = jest.fn().mockResolvedValue({ slippageBps: 200 })
+      const advancedSettings: SwapAdvancedSettings = {
+        quoteRequest: { priceQuality: PriceQuality.FAST },
         getSlippageSuggestion: mockGetSlippageSuggestion,
       }
 
