@@ -6,6 +6,16 @@ import { OrderBookApi, OrderKind, OrderQuoteResponse } from '@cowprotocol/sdk-or
 import { AdaptersTestSetup, createAdapters } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 
+jest.mock('./suggestSlippageBps', () => ({
+  suggestSlippageBps: jest.fn(),
+}))
+
+jest.mock('./resolveSlippageSuggestion', () => ({
+  resolveSlippageSuggestion: jest.fn(),
+}))
+
+const { resolveSlippageSuggestion } = jest.requireMock('./resolveSlippageSuggestion')
+
 const quoteResponseMock = {
   quote: {
     sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
@@ -44,11 +54,12 @@ const defaultOrderParams: SwapParameters = {
 }
 
 const getQuoteMock = jest.fn()
+
 const orderBookApiMock = {
   getQuote: getQuoteMock,
 } as unknown as OrderBookApi
 
-describe('getQuoteToSign', () => {
+describe('getQuote', () => {
   let adapters: AdaptersTestSetup
 
   beforeAll(() => {
@@ -58,6 +69,8 @@ describe('getQuoteToSign', () => {
   beforeEach(() => {
     getQuoteMock.mockReset()
     getQuoteMock.mockResolvedValue(quoteResponseMock)
+    resolveSlippageSuggestion.mockReset()
+    resolveSlippageSuggestion.mockResolvedValue({ slippageBps: null })
   })
 
   describe('App data', () => {
@@ -273,35 +286,6 @@ describe('getQuoteToSign', () => {
         )
       })
     })
-
-    describe('When sell ETH', () => {
-      it('Default slippage should be 2%  in Mainnet', async () => {
-        const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
-        const results: any[] = []
-
-        for (const adapterName of adapterNames) {
-          setGlobalAdapter(adapters[adapterName])
-          const result = await getQuoteWithSigner(
-            {
-              ...defaultOrderParams,
-              signer: adapters[adapterName].signer,
-              chainId: SupportedChainId.MAINNET,
-              sellToken: ETH_ADDRESS,
-              slippageBps: undefined,
-            },
-            {},
-            orderBookApiMock,
-          )
-          results.push(result)
-        }
-
-        const buyAmount = +quoteResponseMock.quote.buyAmount
-        results.forEach(({ result }) => {
-          // 2% slippage
-          expect(+result.amountsAndCosts.afterSlippage.buyAmount.toString()).toBe(buyAmount - (buyAmount * 2) / 100)
-        })
-      })
-    })
   })
 
   describe('Order to sign', () => {
@@ -341,6 +325,107 @@ describe('getQuoteToSign', () => {
       results.forEach(({ result }) => {
         expect(result.orderToSign.appData.length).toBe(2 + 64)
       })
+    })
+  })
+
+  describe('Slippage suggestion integration', () => {
+    it('Should use suggested slippage when AUTO slippage is used and suggestion is provided', async () => {
+      resolveSlippageSuggestion.mockResolvedValue({ slippageBps: 200 })
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+      const results: any[] = []
+
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        const result = await getQuoteWithSigner(
+          {
+            ...defaultOrderParams,
+            signer: adapters[adapterName].signer,
+            slippageBps: undefined, // AUTO slippage
+          },
+          {},
+          orderBookApiMock,
+        )
+        results.push(result)
+      }
+
+      results.forEach(({ result }) => {
+        expect(result.suggestedSlippageBps).toBe(200)
+        const appData = JSON.parse(result.appDataInfo.fullAppData)
+        expect(appData.metadata.quote.slippageBips).toBe(200)
+      })
+    })
+
+    it('Should use default slippage when suggested slippage is null', async () => {
+      resolveSlippageSuggestion.mockResolvedValue({ slippageBps: null })
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+      const results: any[] = []
+
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        const result = await getQuoteWithSigner(
+          {
+            ...defaultOrderParams,
+            signer: adapters[adapterName].signer,
+            slippageBps: undefined, // AUTO slippage
+          },
+          {},
+          orderBookApiMock,
+        )
+        results.push(result)
+      }
+
+      results.forEach(({ result }) => {
+        expect(result.suggestedSlippageBps).toBe(50) // Default slippage for non-EthFlow
+      })
+    })
+
+    it('Should pass getSlippageSuggestion callback from advanced settings', async () => {
+      const mockCallback = jest.fn().mockResolvedValue({ slippageBps: 300 })
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        await getQuoteWithSigner(
+          { ...defaultOrderParams, signer: adapters[adapterName].signer },
+          { getSlippageSuggestion: mockCallback },
+          orderBookApiMock,
+        )
+
+        expect(resolveSlippageSuggestion).toHaveBeenCalledWith(
+          defaultOrderParams.chainId,
+          expect.any(Object),
+          expect.any(Object),
+          quoteResponseMock,
+          false,
+          expect.objectContaining({ getSlippageSuggestion: mockCallback }),
+        )
+      }
+    })
+
+    it('Should handle EthFlow orders correctly', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        await getQuoteWithSigner(
+          {
+            ...defaultOrderParams,
+            signer: adapters[adapterName].signer,
+            sellToken: ETH_ADDRESS,
+          },
+          {},
+          orderBookApiMock,
+        )
+
+        expect(resolveSlippageSuggestion).toHaveBeenCalledWith(
+          defaultOrderParams.chainId,
+          expect.any(Object),
+          expect.any(Object),
+          quoteResponseMock,
+          true, // isEthFlow should be true
+          expect.any(Object),
+        )
+      }
     })
   })
 })
