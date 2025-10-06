@@ -59,6 +59,22 @@ function isValidAmount(amount: string): boolean {
 }
 
 /**
+ * Safely parses amount to BigInt with proper error handling
+ * Throws TradeValidationError instead of native TypeError
+ */
+function safeParseBigInt(amount: string, fieldName: string): bigint {
+  try {
+    return BigInt(amount)
+  } catch {
+    throw new TradeValidationError(
+      `Invalid ${fieldName}: ${amount}. Must be a positive integer in wei (no decimals, scientific notation, or empty strings allowed)`,
+      fieldName,
+      amount,
+    )
+  }
+}
+
+/**
  * Validates slippage tolerance is within reasonable bounds
  */
 function isValidSlippageBps(slippageBps: number | undefined): boolean {
@@ -247,8 +263,8 @@ export function getValidationSummary(errors: TradeValidationError[]): string {
  * Validates common edge cases that can cause silent failures
  */
 export function validateTradeAmounts(sellAmount: string, buyAmount: string, slippageBps?: number): void {
-  const sellBn = BigInt(sellAmount)
-  const buyBn = BigInt(buyAmount)
+  const sellBn = safeParseBigInt(sellAmount, 'sellAmount')
+  const buyBn = safeParseBigInt(buyAmount, 'buyAmount')
 
   if (sellBn < BigInt('1000')) {
     throw new TradeValidationError(
