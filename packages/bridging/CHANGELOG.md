@@ -1,5 +1,44 @@
 # Changelog
 
+## [0.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.3.3...sdk-bridging-v0.4.0) (2025-10-06)
+
+
+### ✨ Features
+
+* add caching to SDK Bridging ([#521](https://github.com/cowprotocol/cow-sdk/issues/521)) ([0c44212](https://github.com/cowprotocol/cow-sdk/commit/0c442121af74c297a002c7c0f608fb3396b9a446))
+* autopublish to npm registry in GH ([#539](https://github.com/cowprotocol/cow-sdk/issues/539)) ([9e4a755](https://github.com/cowprotocol/cow-sdk/commit/9e4a7551b5e0a32a7a9e4ca3781ec088e16e25af))
+
+
+### 🧪 Tests
+
+* fix MultiQuoteStrategy flacky tests ([#540](https://github.com/cowprotocol/cow-sdk/issues/540)) ([aa0f90c](https://github.com/cowprotocol/cow-sdk/commit/aa0f90c04b2eaf6da08698e487dcdc62cb7ad8c1))
+
+
+### 🔧 Miscellaneous
+
+* add TODO to Across getDepositParams ([#560](https://github.com/cowprotocol/cow-sdk/issues/560)) ([16ebe8e](https://github.com/cowprotocol/cow-sdk/commit/16ebe8ea0b297bba949571102c1d0602a403f5ee))
+* fix flaky test ([#547](https://github.com/cowprotocol/cow-sdk/issues/547)) ([4fb1861](https://github.com/cowprotocol/cow-sdk/commit/4fb18618c9d60387845cbb5741abafbbeed81991))
+* test solve issue dependencies ([#548](https://github.com/cowprotocol/cow-sdk/issues/548)) ([451b049](https://github.com/cowprotocol/cow-sdk/commit/451b04974889398a2ef5dfae079ef58011bff1f6))
+* use a better name for main packages ([#543](https://github.com/cowprotocol/cow-sdk/issues/543)) ([3c57f55](https://github.com/cowprotocol/cow-sdk/commit/3c57f553a88209b982959db15dba8740b7a5bb80))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.0.1
+    * @cowprotocol/sdk-common bumped to 0.2.0
+    * @cowprotocol/sdk-contracts-ts bumped to 0.3.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.1.4
+    * @cowprotocol/sdk-order-book bumped to 0.1.1
+    * @cowprotocol/sdk-trading bumped to 0.2.0
+    * @cowprotocol/sdk-weiroll bumped to 0.1.1
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 0.1.4
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.1.1
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.1.1
+    * @cowprotocol/sdk-viem-adapter bumped to 0.1.1
+
 ## [0.3.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.3.2...sdk-bridging-v0.3.3) (2025-09-24)
 
 
