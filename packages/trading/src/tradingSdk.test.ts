@@ -428,7 +428,7 @@ describe('TradingSdk', () => {
 
     it('should approve CoW Protocol Vault Relayer with specified amount', async () => {
       const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' // USDC
-      const amount = '1000000000' // 1000 USDC
+      const amount = 1000000000n // 1000 USDC
       const expectedTxHash = '0xapprove123'
 
       mockSigner.sendTransaction = jest.fn().mockResolvedValue({ hash: expectedTxHash })
@@ -449,7 +449,7 @@ describe('TradingSdk', () => {
 
     it('should use chainId from traderParams if not provided', async () => {
       const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
-      const amount = '1000000000'
+      const amount = 1000000000n
       const expectedTxHash = '0xapprove456'
 
       mockSigner.sendTransaction = jest.fn().mockResolvedValue({ hash: expectedTxHash })
@@ -466,7 +466,7 @@ describe('TradingSdk', () => {
     it('should throw error if chainId is missing', async () => {
       const sdkWithoutChainId = new TradingSdk({}, {}, ethersV5Adapter)
       const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
-      const amount = '1000000000'
+      const amount = 1000000000n
 
       await expect(
         sdkWithoutChainId.approveCowProtocol({
@@ -485,7 +485,7 @@ describe('TradingSdk', () => {
       jest.spyOn(ethersV5Adapter, 'createSigner').mockReturnValue(customMockSigner as any)
 
       const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
-      const amount = '1000000000'
+      const amount = 1000000000n
 
       const result = await tradingSdk.approveCowProtocol({
         tokenAddress,
