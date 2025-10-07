@@ -1,0 +1,42 @@
+{
+  "$id": "#flashloan/v0.2.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "Flashloan",
+  "description": "Information about flashloan parameters for the order",
+  "type": "object",
+  "required": [
+    "amount",
+    "liquidityProvider",
+    "protocolAdapter",
+    "receiver",
+    "token"
+  ],
+  "properties": {
+    "amount": {
+      "title": "Loan amount",
+      "description": "The amount of tokens to be flash loaned (in token units, as uint256)",
+      "$ref": "../definitions.json#/definitions/bigPositiveNumber"
+    },
+    "liquidityProvider": {
+      "title": "Liquidity provider address",
+      "description": "The Ethereum address of the flashloan liquidity provider",
+      "$ref": "../definitions.json#/definitions/ethereumAddress"
+    },
+    "protocolAdapter": {
+      "title": "Protocol adapter address",
+      "description": "The Ethereum address of the protocol adapter",
+      "$ref": "../definitions.json#/definitions/ethereumAddress"
+    },
+    "receiver": {
+      "title": "Receiver address",
+      "description": "The Ethereum address of the flashloan receiver",
+      "$ref": "../definitions.json#/definitions/ethereumAddress"
+    },
+    "token": {
+      "title": "Token address",
+      "description": "The Ethereum address of the token being borrowed",
+      "$ref": "../definitions.json#/definitions/ethereumAddress"
+    }
+  },
+  "additionalProperties": false
+}
