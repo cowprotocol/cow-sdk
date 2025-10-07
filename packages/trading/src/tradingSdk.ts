@@ -14,14 +14,16 @@ import { getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getTradeParametersAfterQuote, swapParamsToLimitOrderParams } from './utils/misc'
 import { getPreSignTransaction } from './getPreSignTransaction'
-import { enableLogging, getGlobalAdapter } from '@cowprotocol/sdk-common'
+import { AbstractProviderAdapter, enableLogging, getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { EnrichedOrder, OrderBookApi } from '@cowprotocol/sdk-order-book'
-import { AbstractProviderAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
 import { getEthFlowContract } from './getEthFlowTransaction'
 import { getEthFlowCancellation, getSettlementCancellation } from './onChainCancellation'
 import { resolveOrderBookApi } from './utils/resolveOrderBookApi'
 import { getSettlementContract } from './getSettlementContract'
+import { COW_PROTOCOL_VAULT_RELAYER_ADDRESS } from '@cowprotocol/sdk-config'
+import { resolveSigner } from './utils/resolveSigner'
+import { ERC20_ALLOWANCE_ABI, ERC20_APPROVE_ABI } from './consts'
 
 export type WithPartialTraderParams<T> = T & Partial<TraderParameters>
 
@@ -169,10 +171,8 @@ export class TradingSdk {
   }
 
   async getPreSignTransaction(params: OrderTraderParams): ReturnType<typeof getPreSignTransaction> {
-    const adapter = getGlobalAdapter()
-
     const traderParams = this.mergeParams(params)
-    const signer = traderParams.signer ? adapter.createSigner(traderParams.signer) : adapter.signer
+    const signer = resolveSigner(traderParams.signer)
 
     return getPreSignTransaction(signer, traderParams.chainId, params.orderUid)
   }
@@ -185,10 +185,7 @@ export class TradingSdk {
 
   async offChainCancelOrder(params: OrderTraderParams): Promise<boolean> {
     const orderBookApi = this.resolveOrderBookApi(params)
-    const adapter = getGlobalAdapter()
-
-    const signer = params.signer ? adapter.createSigner(params.signer) : adapter.signer
-
+    const signer = resolveSigner(params.signer)
     const { orderUid } = params
     const chainId = params.chainId || this.traderParams.chainId
 
@@ -223,6 +220,88 @@ export class TradingSdk {
       : getSettlementCancellation(getSettlementContract(chainId, signer), order))
 
     const txReceipt = await signer.sendTransaction(transaction)
+
+    return txReceipt.hash
+  }
+
+  /**
+   * Checks the current allowance for the CoW Protocol Vault Relayer to spend an ERC-20 token.
+   *
+   * @param params - Parameters including token address and owner address
+   * @returns Promise resolving to the current allowance amount as a bigint
+   *
+   * @example
+   * ```typescript
+   * const params = {
+   *   tokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC
+   *   owner: '0x123...',
+   *   chainId: 1,
+   * }
+   *
+   * const allowance = await sdk.getCowProtocolAllowance(params)
+   * console.log('Current allowance:', allowance.toString())
+   * ```
+   */
+  async getCowProtocolAllowance(
+    params: WithPartialTraderParams<{ tokenAddress: string; owner: string }>,
+  ): Promise<bigint> {
+    const chainId = params.chainId || this.traderParams.chainId
+
+    if (!chainId) {
+      throw new Error('Chain ID is missing in getCowProtocolAllowance() call')
+    }
+
+    const adapter = getGlobalAdapter()
+    const vaultRelayerAddress = COW_PROTOCOL_VAULT_RELAYER_ADDRESS[chainId]
+
+    return (await adapter.readContract({
+      address: params.tokenAddress,
+      abi: ERC20_ALLOWANCE_ABI,
+      functionName: 'allowance',
+      args: [params.owner, vaultRelayerAddress],
+    })) as bigint
+  }
+
+  /**
+   * Approves the CoW Protocol Vault Relayer to spend a specified amount of an ERC-20 token.
+   * This method creates an on-chain approval transaction.
+   *
+   * @param params - Parameters including token address and amount to approve
+   * @returns Promise resolving to the transaction hash of the approval transaction
+   *
+   * @example
+   * ```typescript
+   * const params = {
+   *   tokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC
+   *   amount: '1000000000', // 1000 USDC (6 decimals)
+   *   chainId: 1,
+   * }
+   *
+   * const txHash = await sdk.approveCowProtocol(params)
+   * console.log('Approval transaction:', txHash)
+   * ```
+   */
+  async approveCowProtocol(params: WithPartialTraderParams<{ tokenAddress: string; amount: bigint }>): Promise<string> {
+    const chainId = params.chainId || this.traderParams.chainId
+
+    if (!chainId) {
+      throw new Error('Chain ID is missing in approveCowProtocol() call')
+    }
+
+    const adapter = getGlobalAdapter()
+    const signer = resolveSigner(params.signer)
+
+    const vaultRelayerAddress = COW_PROTOCOL_VAULT_RELAYER_ADDRESS[chainId]
+
+    const txParams = {
+      to: params.tokenAddress,
+      data: adapter.utils.encodeFunction(ERC20_APPROVE_ABI, 'approve', [
+        vaultRelayerAddress,
+        '0x' + params.amount.toString(16),
+      ]),
+    }
+
+    const txReceipt = await signer.sendTransaction(txParams)
 
     return txReceipt.hash
   }
