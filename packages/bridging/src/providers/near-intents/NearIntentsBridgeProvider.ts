@@ -13,19 +13,13 @@ import { getCowTradeEvents } from '../../providers/across/util'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 import { NearIntentsApi } from './NearIntentsApi'
 import { NEAR_INTENTS_STATUS_TO_COW_STATUS, NEAR_INTENTS_SUPPORTED_NETWORKS } from './const'
-import {
-  adaptToken,
-  adaptTokens,
-  calculateDeadline,
-  getTokenByAddressAndChainId,
-  isWrappedNativeCurrency,
-} from './util'
+import { adaptToken, adaptTokens, calculateDeadline, getTokenByAddressAndChainId } from './util'
 
 import type { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
 import type { AbstractProviderAdapter, SignerLike } from '@cowprotocol/sdk-common'
 import type { ChainId, ChainInfo, EvmCall, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import type { CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
-import type { Hex } from 'viem'
+import type { Address, Hex } from 'viem'
 import type {
   BridgeDeposit,
   BridgeHook,
@@ -91,22 +85,25 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     const tokens = adaptTokens(await this.api.getTokens())
     const { sourceTokens, targetTokens } = tokens.reduce(
       (acc, token) => {
-        if (token.chainId === sellTokenChainId) acc.sourceTokens.push(token)
-        if (token.chainId === buyTokenChainId) acc.targetTokens.push(token)
+        if (token.chainId === sellTokenChainId) {
+          acc.sourceTokens.set(token.address as Address, token)
+        }
+        if (token.chainId === buyTokenChainId) {
+          acc.targetTokens.set(token.address as Address, token)
+        }
         return acc
       },
-      { sourceTokens: [] as TokenInfo[], targetTokens: [] as TokenInfo[] },
+      {
+        sourceTokens: new Map<Address, TokenInfo>(),
+        targetTokens: new Map<Address, TokenInfo>(),
+      },
     )
 
-    const buyTokenSupported = targetTokens.some((token) => {
-      // Supports both the native token and its wrapped version (e.g. POL and WPOL, where POL is represented by ETH_ADDRESS).
-      if (token.address === ETH_ADDRESS || isWrappedNativeCurrency(token.chainId, token.address)) return true
-      return token.address.toLowerCase() === buyTokenAddress.toLowerCase()
-    })
-    if (!buyTokenSupported) return []
+    const targetToken = targetTokens.get(buyTokenAddress.toLowerCase() as Address)
+    const targetSymbol = targetToken?.symbol?.toLowerCase()
+    if (!targetSymbol) return []
 
-    // If buyToken is supported, all source tokens can be used to buy buyToken
-    return sourceTokens
+    return Array.from(sourceTokens.values()).filter((token) => token.symbol?.toLowerCase() === targetSymbol)
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<NearIntentsQuoteResult> {
