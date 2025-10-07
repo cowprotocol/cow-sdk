@@ -1,9 +1,10 @@
 import { percentageToBps } from '@cowprotocol/sdk-common'
 import { getQuoteAmountsWithCosts, OrderQuoteResponse } from '@cowprotocol/sdk-order-book'
-import { getDefaultSlippageBps, getSlippagePercent } from './utils/slippage'
+import { getSlippagePercent } from './utils/slippage'
 import { suggestSlippageFromFee } from './suggestSlippageFromFee'
 import { suggestSlippageFromVolume } from './suggestSlippageFromVolume'
 import { QuoterParameters, SwapAdvancedSettings, TradeParameters } from './types'
+import { ETH_FLOW_DEFAULT_SLIPPAGE_BPS } from './consts'
 
 const MAX_SLIPPAGE_BPS = 10_000 // 100% in BPS (max slippage)
 
@@ -62,6 +63,8 @@ export function suggestSlippageBps(params: SuggestSlippageBps): number {
   // Convert to BPS
   const slippageBps = percentageToBps(slippagePercent)
 
+  const lowerCap = isEthFlow ? ETH_FLOW_DEFAULT_SLIPPAGE_BPS[trader.chainId] : 0
+
   // Clamp slippage to min/max
-  return Math.max(Math.min(slippageBps, MAX_SLIPPAGE_BPS), getDefaultSlippageBps(trader.chainId, isEthFlow))
+  return Math.max(Math.min(slippageBps, MAX_SLIPPAGE_BPS), lowerCap)
 }
