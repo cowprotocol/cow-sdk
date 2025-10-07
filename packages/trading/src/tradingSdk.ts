@@ -14,13 +14,14 @@ import { getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getTradeParametersAfterQuote, swapParamsToLimitOrderParams } from './utils/misc'
 import { getPreSignTransaction } from './getPreSignTransaction'
-import { ContractFactory, enableLogging, getGlobalAdapter } from '@cowprotocol/sdk-common'
+import { enableLogging, getGlobalAdapter } from '@cowprotocol/sdk-common'
 import { EnrichedOrder, OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { AbstractProviderAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
 import { getEthFlowContract } from './getEthFlowTransaction'
 import { getEthFlowCancellation, getSettlementCancellation } from './onChainCancellation'
 import { resolveOrderBookApi } from './utils/resolveOrderBookApi'
+import { getSettlementContract } from './getSettlementContract'
 
 export type WithPartialTraderParams<T> = T & Partial<TraderParameters>
 
@@ -167,15 +168,13 @@ export class TradingSdk {
     )
   }
 
-  async getPreSignTransaction(
-    params: WithPartialTraderParams<{ orderId: string; account: string }>,
-  ): ReturnType<typeof getPreSignTransaction> {
+  async getPreSignTransaction(params: OrderTraderParams): ReturnType<typeof getPreSignTransaction> {
     const adapter = getGlobalAdapter()
 
     const traderParams = this.mergeParams(params)
     const signer = traderParams.signer ? adapter.createSigner(traderParams.signer) : adapter.signer
 
-    return getPreSignTransaction(signer, traderParams.chainId, params.account, params.orderId)
+    return getPreSignTransaction(signer, traderParams.chainId, params.orderUid)
   }
 
   async getOrder(params: OrderTraderParams): Promise<EnrichedOrder> {
@@ -218,11 +217,10 @@ export class TradingSdk {
     const isEthFlowOrder = !!order.onchainOrderData
 
     const signer = params.signer ? getGlobalAdapter().createSigner(params.signer) : getGlobalAdapter().signer
-    const account = await signer.getAddress()
 
     const { transaction } = await (isEthFlowOrder
       ? getEthFlowCancellation(getEthFlowContract(signer, chainId, params.env), order)
-      : getSettlementCancellation(ContractFactory.createSettlementContract(account, signer), order))
+      : getSettlementCancellation(getSettlementContract(chainId, signer), order))
 
     const txReceipt = await signer.sendTransaction(transaction)
 

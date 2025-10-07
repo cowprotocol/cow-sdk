@@ -22,13 +22,77 @@
 
 .box {
   margin: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .box input {
   margin: 0 5px;
+  padding: 5px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(0, 0, 0, 0.2);
+  color: inherit;
+}
+
+.box input[type="text"] {
+  font-family: monospace;
 }
 
 .error {
   background-color: rgba(244, 67, 54, 0.15);
   padding: 10px;
+  border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+button {
+  padding: 10px 20px;
+  margin: 5px;
+  border-radius: 4px;
+  border: none;
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+code {
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (prefers-color-scheme: light) {
+  .box {
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+
+  .box input {
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+
+  code {
+    background-color: rgba(0, 0, 0, 0.08);
+  }
+
+  hr {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  }
 }

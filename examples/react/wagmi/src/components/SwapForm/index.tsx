@@ -1,4 +1,10 @@
-import { isSupportedChain, OrderKind, type QuoteAndPost, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/cow-sdk'
+import {
+  isSupportedChain,
+  NATIVE_CURRENCY_ADDRESS,
+  OrderKind,
+  type QuoteAndPost,
+  WRAPPED_NATIVE_CURRENCIES,
+} from '@cowprotocol/cow-sdk'
 import { useEffect, useState } from 'react'
 import { tradingSdk } from '../../cowSdk'
 import { useAccount } from 'wagmi'
@@ -16,12 +22,15 @@ export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
   const [isOrderPostingInProgress, setIsOrderPostingInProgress] = useState<boolean>(false)
 
   const [slippagePercent, setSlippagePercent] = useState(0.5)
+  const [sellTokenType, setSellTokenType] = useState<'WETH' | 'ETH'>('WETH')
 
   const slippageBps = slippagePercent * 100
   const isLoading = isOrderPostingInProgress || Boolean(account && sellAmount && !quoteAndPost)
 
   const WETH = chainId && isSupportedChain(chainId) ? WRAPPED_NATIVE_CURRENCIES[chainId] : null
   const USDC = chainId && isSupportedChain(chainId) ? USDC_TOKENS[chainId] : null
+  const sellToken =
+    WETH && sellTokenType === 'ETH' ? { ...WETH, symbol: 'ETH' as const, address: NATIVE_CURRENCY_ADDRESS } : WETH
 
   const postOrder = () => {
     if (!quoteAndPost) return
@@ -59,7 +68,7 @@ export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
 
     if (!chainId || !account || Number.isNaN(sellAmountNum) || sellAmountNum <= 0) return
 
-    if (!WETH || !USDC) return
+    if (!sellToken || !USDC) return
 
     setQuoteAndPost(null)
 
@@ -68,9 +77,9 @@ export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
         chainId,
         kind: OrderKind.SELL,
         owner: account,
-        amount: parseUnits(sellAmount, WETH.decimals).toString(),
-        sellToken: WETH.address,
-        sellTokenDecimals: WETH.decimals,
+        amount: parseUnits(sellAmount, sellToken.decimals).toString(),
+        sellToken: sellToken.address,
+        sellTokenDecimals: sellToken.decimals,
         buyToken: USDC.address,
         buyTokenDecimals: USDC.decimals,
         slippageBps,
@@ -80,7 +89,7 @@ export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
         setSwapError(null)
       })
       .catch(setSwapError)
-  }, [slippageBps, sellAmount, chainId, account, isSdkReady])
+  }, [slippageBps, sellAmount, chainId, account, isSdkReady, sellTokenType])
 
   const buyAmountRaw = quoteAndPost?.quoteResults.amountsAndCosts.afterNetworkCosts.buyAmount
   const buyAmountView = buyAmountRaw && USDC ? Number(formatUnits(buyAmountRaw, USDC.decimals)).toFixed(6) : undefined
@@ -88,18 +97,50 @@ export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
   return status === 'connected' ? (
     <div>
       {postedOrderHash && (
-        <div className="box">
-          <h4>Order has been posted</h4>
+        <div className="box" style={{ backgroundColor: '#d4edda' }}>
+          <h4>Order has been posted!</h4>
           <p>
-            <a href={`https://explorer.cow.fi/orders/${postedOrderHash}`}>See details in Explorer</a>
+            <strong>Order UID:</strong>
+            <br />
+            <code style={{ wordBreak: 'break-all', fontSize: '0.9em' }}>{postedOrderHash}</code>
+          </p>
+          <p>
+            <a href={`https://explorer.cow.fi/orders/${postedOrderHash}`} target="_blank" rel="noopener noreferrer">
+              View in CoW Explorer
+            </a>
+          </p>
+          <p style={{ fontSize: '0.9em', marginTop: '10px' }}>
+            Copy the Order UID above to manage this order in the "Order Management" section below.
           </p>
         </div>
       )}
 
       <div className="box">
+        <strong>Sell Token:</strong>
+        <label style={{ marginLeft: '10px' }}>
+          <input
+            type="radio"
+            value="WETH"
+            checked={sellTokenType === 'WETH'}
+            onChange={(e) => setSellTokenType(e.target.value as 'WETH')}
+          />
+          <span style={{ marginLeft: '5px' }}>WETH</span>
+        </label>
+        <label style={{ marginLeft: '10px' }}>
+          <input
+            type="radio"
+            value="ETH"
+            checked={sellTokenType === 'ETH'}
+            onChange={(e) => setSellTokenType(e.target.value as 'ETH')}
+          />
+          <span style={{ marginLeft: '5px' }}>ETH (Native)</span>
+        </label>
+      </div>
+
+      <div className="box">
         <strong>Sell</strong>
         <input type="number" value={sellAmount} onChange={(e) => setSellAmount(e.target.value)} />
-        <span>{WETH?.symbol}</span>
+        <span>{sellToken?.symbol}</span>
       </div>
       <div className="box">
         <strong>Buy</strong>
