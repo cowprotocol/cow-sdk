@@ -312,6 +312,194 @@ describe('TradingSdk', () => {
     })
   })
 
+  describe('getCowProtocolAllowance', () => {
+    const chainId = SupportedChainId.MAINNET
+    let mockSigner: any
+    let tradingSdk: TradingSdk
+    let ethersV5Adapter: any
+
+    beforeEach(() => {
+      mockSigner = {
+        getAddress: jest.fn().mockResolvedValue('0x21c3de23d98caddc406e3d31b25e807addf33333'),
+        sendTransaction: jest.fn().mockResolvedValue({ hash: '0xapprove123' }),
+        estimateGas: jest.fn().mockResolvedValue(BigInt(50000)),
+      }
+
+      ethersV5Adapter = adapters.ethersV5Adapter
+      jest.spyOn(ethersV5Adapter, 'signer', 'get').mockReturnValue(mockSigner)
+
+      tradingSdk = new TradingSdk(
+        {
+          chainId,
+          signer: mockSigner,
+          appCode: 'test',
+        },
+        {},
+        ethersV5Adapter,
+      )
+    })
+
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should get current allowance for CoW Protocol Vault Relayer', async () => {
+      const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+      const owner = '0x21c3de23d98caddc406e3d31b25e807addf33333'
+      const expectedAllowance = BigInt('1000000000000000000')
+
+      jest.spyOn(ethersV5Adapter, 'readContract').mockResolvedValue(expectedAllowance)
+
+      const allowance = await tradingSdk.getCowProtocolAllowance({
+        tokenAddress,
+        owner,
+        chainId,
+      })
+
+      expect(allowance).toBe(expectedAllowance)
+      expect(ethersV5Adapter.readContract).toHaveBeenCalledWith({
+        address: tokenAddress,
+        abi: expect.any(Array),
+        functionName: 'allowance',
+        args: [owner, expect.any(String)],
+      })
+    })
+
+    it('should use chainId from traderParams if not provided', async () => {
+      const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+      const owner = '0x21c3de23d98caddc406e3d31b25e807addf33333'
+      const expectedAllowance = BigInt('500000000')
+
+      jest.spyOn(ethersV5Adapter, 'readContract').mockResolvedValue(expectedAllowance)
+
+      const allowance = await tradingSdk.getCowProtocolAllowance({
+        tokenAddress,
+        owner,
+      })
+
+      expect(allowance).toBe(expectedAllowance)
+      expect(ethersV5Adapter.readContract).toHaveBeenCalled()
+    })
+
+    it('should throw error if chainId is missing', async () => {
+      const sdkWithoutChainId = new TradingSdk({}, {}, ethersV5Adapter)
+      const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+      const owner = '0x21c3de23d98caddc406e3d31b25e807addf33333'
+
+      await expect(
+        sdkWithoutChainId.getCowProtocolAllowance({
+          tokenAddress,
+          owner,
+        }),
+      ).rejects.toThrow('Chain ID is missing in getCowProtocolAllowance() call')
+    })
+  })
+
+  describe('approveCowProtocol', () => {
+    const chainId = SupportedChainId.MAINNET
+    let mockSigner: any
+    let tradingSdk: TradingSdk
+    let ethersV5Adapter: any
+
+    beforeEach(() => {
+      mockSigner = {
+        getAddress: jest.fn().mockResolvedValue('0x21c3de23d98caddc406e3d31b25e807addf33333'),
+        sendTransaction: jest.fn().mockResolvedValue({ hash: '0xapprove123' }),
+        estimateGas: jest.fn().mockResolvedValue(BigInt(50000)),
+      }
+
+      ethersV5Adapter = adapters.ethersV5Adapter
+      jest.spyOn(ethersV5Adapter, 'signer', 'get').mockReturnValue(mockSigner)
+
+      tradingSdk = new TradingSdk(
+        {
+          chainId,
+          signer: mockSigner,
+          appCode: 'test',
+        },
+        {},
+        ethersV5Adapter,
+      )
+    })
+
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should approve CoW Protocol Vault Relayer with specified amount', async () => {
+      const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' // USDC
+      const amount = '1000000000' // 1000 USDC
+      const expectedTxHash = '0xapprove123'
+
+      mockSigner.sendTransaction = jest.fn().mockResolvedValue({ hash: expectedTxHash })
+
+      const result = await tradingSdk.approveCowProtocol({
+        tokenAddress,
+        amount,
+        chainId,
+      })
+
+      expect(result).toBe(expectedTxHash)
+      expect(mockSigner.sendTransaction).toHaveBeenCalledTimes(1)
+
+      const txParams = (mockSigner.sendTransaction as jest.Mock).mock.calls[0][0]
+      expect(txParams.to).toBe(tokenAddress)
+      expect(txParams.data).toBeDefined()
+    })
+
+    it('should use chainId from traderParams if not provided', async () => {
+      const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+      const amount = '1000000000'
+      const expectedTxHash = '0xapprove456'
+
+      mockSigner.sendTransaction = jest.fn().mockResolvedValue({ hash: expectedTxHash })
+
+      const result = await tradingSdk.approveCowProtocol({
+        tokenAddress,
+        amount,
+      })
+
+      expect(result).toBe(expectedTxHash)
+      expect(mockSigner.sendTransaction).toHaveBeenCalled()
+    })
+
+    it('should throw error if chainId is missing', async () => {
+      const sdkWithoutChainId = new TradingSdk({}, {}, ethersV5Adapter)
+      const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+      const amount = '1000000000'
+
+      await expect(
+        sdkWithoutChainId.approveCowProtocol({
+          tokenAddress,
+          amount,
+        }),
+      ).rejects.toThrow('Chain ID is missing in approveCowProtocol() call')
+    })
+
+    it('should use provided signer if specified', async () => {
+      const customMockSigner = {
+        getAddress: jest.fn().mockResolvedValue('0x9999999999999999999999999999999999999999'),
+        sendTransaction: jest.fn().mockResolvedValue({ hash: '0xapprove789' }),
+      }
+
+      jest.spyOn(ethersV5Adapter, 'createSigner').mockReturnValue(customMockSigner as any)
+
+      const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+      const amount = '1000000000'
+
+      const result = await tradingSdk.approveCowProtocol({
+        tokenAddress,
+        amount,
+        chainId,
+        signer: 'custom-signer' as any,
+      })
+
+      expect(result).toBe('0xapprove789')
+      expect(ethersV5Adapter.createSigner).toHaveBeenCalledWith('custom-signer')
+      expect(customMockSigner.sendTransaction).toHaveBeenCalled()
+    })
+  })
+
   describe('onChainCancelOrder', () => {
     const txHash = '0xb70173b95de968998517243cddf6d7cd77d74495e3ae79977f7312cfc3fc5d43'
 

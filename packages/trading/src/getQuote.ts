@@ -27,6 +27,7 @@ import { getPartnerFeeBps } from './utils/getPartnerFeeBps'
 import { adjustEthFlowOrderParams, getIsEthFlowOrder, swapParamsToLimitOrderParams } from './utils/misc'
 import { getDefaultSlippageBps } from './utils/slippage'
 import { resolveSlippageSuggestion } from './resolveSlippageSuggestion'
+import { resolveSigner } from './utils/resolveSigner'
 
 // ETH-FLOW orders require different quote params
 // check the isEthFlow flag and set in quote req obj
@@ -238,8 +239,7 @@ export async function getQuoteWithSigner(
   advancedSettings?: SwapAdvancedSettings,
   orderBookApi?: OrderBookApi,
 ): Promise<QuoteResultsWithSigner> {
-  const adapter = getGlobalAdapter()
-  const signer = swapParameters.signer ? adapter.createSigner(swapParameters.signer) : adapter.signer
+  const signer = resolveSigner(swapParameters.signer)
 
   const trader = await getTrader(swapParameters)
   const result = await getQuote(swapParameters, trader, advancedSettings, orderBookApi)

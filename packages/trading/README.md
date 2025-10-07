@@ -44,9 +44,20 @@ Main functions:
 - `postLimitOrder` - Create a limit order.
 - `getQuote` - Fetch a quote for a swap order.
 
+Order Management:
+
+- `getOrder` - Retrieve order details by UID.
+- `offChainCancelOrder` - Cancel an order off-chain (soft cancel, free and fast).
+- `onChainCancelOrder` - Cancel an order on-chain (hard cancel, requires gas).
+
+Token Approval:
+
+- `getCowProtocolAllowance` - Check current token allowance for CoW Protocol.
+- `approveCowProtocol` - Approve CoW Protocol to spend tokens.
+
 Special cases:
 
-- 'setTraderParams' - In case if you work with different chains and need to switch between them in runtime.
+- `setTraderParams` - In case if you work with different chains and need to switch between them in runtime.
 - `postSellNativeCurrencyOrder` - Sell blockchain native tokens (e.g., ETH on Ethereum).
 - `getPreSignTransaction` - Sign an order using a smart contract wallet.
 
@@ -641,3 +652,199 @@ console.log('Order created, id: ', orderId)
 #### Limit order
 
 Same as for the swap order but without the `quoteRequest` parameter.
+
+## Order Management
+
+The SDK provides methods to manage existing orders, including retrieving order details and canceling orders.
+
+### getOrder
+
+Fetches details about an existing order by its UID.
+
+**Parameters:**
+- `orderUid` - The unique identifier of the order
+- `chainId` - (Optional) Chain ID, uses trader params if not provided
+
+**Returns:** `Promise<EnrichedOrder>` - Full order details including status, amounts, and metadata
+
+#### Example
+
+```typescript
+import { TradingSdk } from '@cowprotocol/sdk-trading'
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.MAINNET,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const orderUid = '0xd64389693b6cf89ad6c140a113b10df08073e5ef3063d05a02f3f42e1a42f0ad...'
+
+const order = await sdk.getOrder({ orderUid })
+
+console.log('Order status:', order.status)
+console.log('Sell amount:', order.sellAmount)
+console.log('Buy amount:', order.buyAmount)
+```
+
+### offChainCancelOrder
+
+Cancels an order off-chain by sending a signed cancellation request to the order book API. This is a "soft cancel" that is faster and doesn't require gas, but requires order book support.
+
+**Parameters:**
+- `orderUid` - The unique identifier of the order to cancel
+- `chainId` - (Optional) Chain ID, uses trader params if not provided
+- `signer` - (Optional) Custom signer, uses trader params signer if not provided
+
+**Returns:** `Promise<boolean>` - True if cancellation was successful
+
+#### Example
+
+```typescript
+import { TradingSdk } from '@cowprotocol/sdk-trading'
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.MAINNET,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const orderUid = '0xd64389693b6cf89ad6c140a113b10df08073e5ef3063d05a02f3f42e1a42f0ad...'
+
+const success = await sdk.offChainCancelOrder({ orderUid })
+
+if (success) {
+  console.log('Order cancelled successfully (off-chain)')
+}
+```
+
+### onChainCancelOrder
+
+Cancels an order on-chain by sending a transaction to invalidate it. This is a "hard cancel" that requires gas but guarantees cancellation. Automatically detects whether to use the Settlement contract or EthFlow contract based on order type.
+
+**Parameters:**
+- `orderUid` - The unique identifier of the order to cancel
+- `chainId` - (Optional) Chain ID, uses trader params if not provided
+- `signer` - (Optional) Custom signer, uses trader params signer if not provided
+
+**Returns:** `Promise<string>` - Transaction hash of the cancellation
+
+#### Example
+
+```typescript
+import { TradingSdk } from '@cowprotocol/sdk-trading'
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.MAINNET,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const orderUid = '0xd64389693b6cf89ad6c140a113b10df08073e5ef3063d05a02f3f42e1a42f0ad...'
+
+const txHash = await sdk.onChainCancelOrder({ orderUid })
+
+console.log('Cancellation transaction:', txHash)
+```
+
+## Token Approval
+
+Before trading ERC-20 tokens, you need to approve the CoW Protocol to spend them. The SDK provides methods to check and manage token approvals.
+
+### getCowProtocolAllowance
+
+Checks the current allowance for the CoW Protocol Vault Relayer to spend an ERC-20 token.
+
+**Parameters:**
+- `tokenAddress` - The ERC-20 token contract address
+- `owner` - The address of the token owner
+- `chainId` - (Optional) Chain ID, uses trader params if not provided
+
+**Returns:** `Promise<bigint>` - Current allowance amount
+
+#### Example
+
+```typescript
+import { TradingSdk } from '@cowprotocol/sdk-trading'
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.MAINNET,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' // USDC
+const owner = '0x...' // Your wallet address
+
+const allowance = await sdk.getCowProtocolAllowance({
+  tokenAddress,
+  owner,
+})
+
+console.log('Current allowance:', allowance.toString())
+```
+
+### approveCowProtocol
+
+Approves the CoW Protocol Vault Relayer to spend a specified amount of an ERC-20 token. This creates an on-chain approval transaction.
+
+**Parameters:**
+- `tokenAddress` - The ERC-20 token contract address
+- `amount` - The amount to approve (as bigint)
+- `chainId` - (Optional) Chain ID, uses trader params if not provided
+- `signer` - (Optional) Custom signer, uses trader params signer if not provided
+
+**Returns:** `Promise<string>` - Transaction hash of the approval
+
+#### Example
+
+```typescript
+import { TradingSdk } from '@cowprotocol/sdk-trading'
+import { parseUnits } from 'viem' // or ethers
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.MAINNET,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' // USDC
+const amount = parseUnits('1000', 6) // 1000 USDC (6 decimals)
+
+const txHash = await sdk.approveCowProtocol({
+  tokenAddress,
+  amount,
+})
+
+console.log('Approval transaction:', txHash)
+```
+
+#### Smart Approval Flow
+
+It's recommended to check the current allowance before approving to avoid unnecessary transactions:
+
+```typescript
+import { TradingSdk } from '@cowprotocol/sdk-trading'
+import { parseUnits } from 'viem'
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.MAINNET,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' // USDC
+const owner = '0x...' // Your wallet address
+const requiredAmount = parseUnits('1000', 6) // 1000 USDC
+
+// Check current allowance
+const currentAllowance = await sdk.getCowProtocolAllowance({
+  tokenAddress,
+  owner,
+})
+
+// Only approve if needed
+if (currentAllowance < requiredAmount) {
+  const txHash = await sdk.approveCowProtocol({
+    tokenAddress,
+    amount: requiredAmount,
+  })
+  console.log('Approval transaction:', txHash)
+} else {
+  console.log('Sufficient allowance already exists')
+}
+```

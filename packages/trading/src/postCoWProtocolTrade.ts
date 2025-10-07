@@ -5,7 +5,8 @@ import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
 import { getOrderToSign } from './getOrderToSign'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getIsEthFlowOrder } from './utils/misc'
-import { getGlobalAdapter, log, SignerLike } from '@cowprotocol/sdk-common'
+import { log, SignerLike } from '@cowprotocol/sdk-common'
+import { resolveSigner } from './utils/resolveSigner'
 
 export async function postCoWProtocolTrade(
   orderBookApi: OrderBookApi,
@@ -14,9 +15,7 @@ export async function postCoWProtocolTrade(
   additionalParams: PostTradeAdditionalParams = {},
   paramSigner?: SignerLike,
 ): Promise<OrderPostingResult> {
-  const adapter = getGlobalAdapter()
-
-  const signer = paramSigner ? adapter.createSigner(paramSigner) : adapter.signer
+  const signer = resolveSigner(paramSigner)
   const { networkCostsAmount = '0', signingScheme: _signingScheme = SigningScheme.EIP712 } = additionalParams
 
   const isEthFlow = getIsEthFlowOrder(params)

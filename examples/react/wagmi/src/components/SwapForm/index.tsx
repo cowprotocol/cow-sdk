@@ -20,17 +20,75 @@ export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
 
   const [postedOrderHash, setPostedOrderHash] = useState<string | null>(null)
   const [isOrderPostingInProgress, setIsOrderPostingInProgress] = useState<boolean>(false)
+  const [isApprovalInProgress, setIsApprovalInProgress] = useState<boolean>(false)
+  const [approvalTxHash, setApprovalTxHash] = useState<string | null>(null)
+  const [currentAllowance, setCurrentAllowance] = useState<bigint | null>(null)
+  const [isCheckingAllowance, setIsCheckingAllowance] = useState<boolean>(false)
 
   const [slippagePercent, setSlippagePercent] = useState(0.5)
   const [sellTokenType, setSellTokenType] = useState<'WETH' | 'ETH'>('WETH')
 
   const slippageBps = slippagePercent * 100
-  const isLoading = isOrderPostingInProgress || Boolean(account && sellAmount && !quoteAndPost)
+  const isLoading =
+    isOrderPostingInProgress ||
+    isApprovalInProgress ||
+    isCheckingAllowance ||
+    Boolean(account && sellAmount && !quoteAndPost)
 
   const WETH = chainId && isSupportedChain(chainId) ? WRAPPED_NATIVE_CURRENCIES[chainId] : null
   const USDC = chainId && isSupportedChain(chainId) ? USDC_TOKENS[chainId] : null
   const sellToken =
     WETH && sellTokenType === 'ETH' ? { ...WETH, symbol: 'ETH' as const, address: NATIVE_CURRENCY_ADDRESS } : WETH
+
+  const isNativeToken = sellToken?.address.toLowerCase() === NATIVE_CURRENCY_ADDRESS.toLowerCase()
+  const sellAmountBigInt = sellToken ? parseUnits(sellAmount, sellToken.decimals) : BigInt(0)
+  const hasInsufficientAllowance = currentAllowance !== null && currentAllowance < sellAmountBigInt
+  const needsApproval = !isNativeToken && (currentAllowance === null || hasInsufficientAllowance)
+
+  const checkAllowance = async () => {
+    if (!sellToken || !chainId || !account || isNativeToken) return
+
+    setIsCheckingAllowance(true)
+
+    try {
+      const allowance = await tradingSdk.getCowProtocolAllowance({
+        tokenAddress: sellToken.address,
+        owner: account,
+        chainId,
+      })
+
+      setCurrentAllowance(allowance)
+    } catch (err) {
+      console.error('Error checking allowance:', err)
+      setCurrentAllowance(null)
+    } finally {
+      setIsCheckingAllowance(false)
+    }
+  }
+
+  const approveToken = async () => {
+    if (!sellToken || !chainId) return
+
+    setIsApprovalInProgress(true)
+    setSwapError(null)
+
+    try {
+      const amount = parseUnits(sellAmount, sellToken.decimals)
+      const txHash = await tradingSdk.approveCowProtocol({
+        tokenAddress: sellToken.address,
+        amount,
+        chainId,
+      })
+
+      setApprovalTxHash(txHash)
+      // Refresh allowance after approval
+      await checkAllowance()
+    } catch (err) {
+      setSwapError(err as Error)
+    } finally {
+      setIsApprovalInProgress(false)
+    }
+  }
 
   const postOrder = () => {
     if (!quoteAndPost) return
@@ -60,7 +118,7 @@ export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
       })
   }
 
-  // Update quote
+  // Update quote and check allowance
   useEffect(() => {
     const sellAmountNum = Number(sellAmount)
 
@@ -71,6 +129,14 @@ export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
     if (!sellToken || !USDC) return
 
     setQuoteAndPost(null)
+    // Reset approval state when token or amount changes
+    setApprovalTxHash(null)
+    setCurrentAllowance(null)
+
+    // Check allowance for ERC-20 tokens
+    if (!isNativeToken) {
+      checkAllowance()
+    }
 
     tradingSdk
       .getQuote({
@@ -161,10 +227,46 @@ export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
         <span>%</span>
       </div>
 
+      {!isNativeToken && currentAllowance !== null && !hasInsufficientAllowance && (
+        <div className="box" style={{ backgroundColor: '#d4edda', color: '#155724' }}>
+          <strong>✓ Token Already Approved</strong>
+          <p style={{ fontSize: '0.9em', marginTop: '5px' }}>
+            Current allowance: {formatUnits(currentAllowance, sellToken?.decimals || 18)} {sellToken?.symbol}
+          </p>
+        </div>
+      )}
+
+      {approvalTxHash && hasInsufficientAllowance && (
+        <div className="box" style={{ backgroundColor: '#d4edda', color: '#155724' }}>
+          <strong>Token Approved!</strong>
+          <p style={{ fontSize: '0.9em', marginTop: '5px' }}>
+            Transaction: <code>{approvalTxHash}</code>
+          </p>
+        </div>
+      )}
+
       {swapError && <div className="box error">{swapError.message || JSON.stringify(swapError)}</div>}
 
-      <button disabled={isLoading} onClick={postOrder}>
-        {isLoading ? 'Loading...' : 'Post order'}
+      {needsApproval && !isCheckingAllowance && (
+        <div className="box" style={{ backgroundColor: '#fff3cd', padding: '10px' }}>
+          <p style={{ fontSize: '0.9em', marginBottom: '10px' }}>
+            ⚠️ {hasInsufficientAllowance ? 'Insufficient allowance.' : 'Before posting an order, you need to'} approve
+            the CoW Protocol to spend your {sellToken?.symbol}.
+          </p>
+          {hasInsufficientAllowance && currentAllowance !== null && (
+            <p style={{ fontSize: '0.85em', marginBottom: '10px', color: '#856404' }}>
+              Current: {formatUnits(currentAllowance, sellToken?.decimals || 18)} {sellToken?.symbol} | Required:{' '}
+              {sellAmount} {sellToken?.symbol}
+            </p>
+          )}
+          <button disabled={isLoading} onClick={approveToken}>
+            {isApprovalInProgress ? 'Approving...' : `Approve ${sellToken?.symbol}`}
+          </button>
+        </div>
+      )}
+
+      <button disabled={isLoading || (needsApproval && !approvalTxHash)} onClick={postOrder}>
+        {isOrderPostingInProgress ? 'Posting...' : 'Post order'}
       </button>
     </div>
   ) : (
