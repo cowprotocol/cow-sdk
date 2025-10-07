@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.2.1...sdk-trading-v0.3.0) (2025-10-07)
+
+
+### ✨ Features
+
+* **trading:** add methods to approve and check allowance ([#570](https://github.com/cowprotocol/cow-sdk/issues/570)) ([fc44e8b](https://github.com/cowprotocol/cow-sdk/commit/fc44e8bf602634194bed672ca20dcc4a8ff07446))
+* **trading:** add methods to cancel order ([#569](https://github.com/cowprotocol/cow-sdk/issues/569)) ([4735d47](https://github.com/cowprotocol/cow-sdk/commit/4735d47575ce1092f4213e579f752c3ac4ed9f7b))
+
 ## [0.2.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.2.0...sdk-trading-v0.2.1) (2025-10-07)
 
 

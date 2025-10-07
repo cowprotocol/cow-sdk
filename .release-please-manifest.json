@@ -1,6 +1,6 @@
 {
   "packages/app-data": "4.0.1",
-  "packages/bridging": "0.4.1",
+  "packages/bridging": "0.4.2",
   "packages/common": "0.2.0",
   "packages/composable": "0.1.4",
   "packages/config": "0.1.0",
@@ -9,10 +9,10 @@
   "packages/order-book": "0.1.1",
   "packages/order-signing": "0.1.4",
   "packages/subgraph": "0.1.1",
-  "packages/trading": "0.2.1",
+  "packages/trading": "0.3.0",
   "packages/weiroll": "0.1.1",
   "packages/providers/ethers-v5-adapter": "0.1.1",
   "packages/providers/ethers-v6-adapter": "0.1.1",
   "packages/providers/viem-adapter": "0.1.1",
-  "packages/sdk": "7.0.5"
+  "packages/sdk": "7.0.6"
 }
