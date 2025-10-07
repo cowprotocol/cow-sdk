@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.2.0...sdk-trading-v0.2.1) (2025-10-07)
+
+
+### 🐛 Bug Fixes
+
+* **slippage:** reduce lower cap from 0.5 to 0% ([#565](https://github.com/cowprotocol/cow-sdk/issues/565)) ([302fb72](https://github.com/cowprotocol/cow-sdk/commit/302fb72d1fca80edb7acdf83a6987991a7e487e3))
+
 ## [0.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.1.3...sdk-trading-v0.2.0) (2025-10-06)
 
 
