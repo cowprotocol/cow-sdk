@@ -12,7 +12,7 @@ import { postSwapOrder, postSwapOrderFromQuote } from './postSwapOrder'
 import { postLimitOrder } from './postLimitOrder'
 import { getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
-import { getIsEthFlowOrder, getTradeParametersAfterQuote, swapParamsToLimitOrderParams } from './utils/misc'
+import { getTradeParametersAfterQuote, swapParamsToLimitOrderParams } from './utils/misc'
 import { getPreSignTransaction } from './getPreSignTransaction'
 import { ContractFactory, enableLogging, getGlobalAdapter } from '@cowprotocol/sdk-common'
 import { EnrichedOrder, OrderBookApi } from '@cowprotocol/sdk-order-book'
@@ -188,6 +188,8 @@ export class TradingSdk {
     const orderBookApi = this.resolveOrderBookApi(params)
     const adapter = getGlobalAdapter()
 
+    const signer = params.signer ? adapter.createSigner(params.signer) : adapter.signer
+
     const { orderUid } = params
     const chainId = params.chainId || this.traderParams.chainId
 
@@ -195,7 +197,7 @@ export class TradingSdk {
       throw new Error('Chain ID is missing in offChainCancelOrder() call')
     }
 
-    const orderCancellationSigning = await OrderSigningUtils.signOrderCancellations([orderUid], chainId, adapter)
+    const orderCancellationSigning = await OrderSigningUtils.signOrderCancellations([orderUid], chainId, signer)
 
     await orderBookApi.sendSignedOrderCancellations({
       ...orderCancellationSigning,
@@ -205,15 +207,15 @@ export class TradingSdk {
     return true
   }
 
-  async onChainCancelOrder(params: OrderTraderParams): Promise<string> {
+  async onChainCancelOrder(params: OrderTraderParams, _order?: EnrichedOrder): Promise<string> {
     const chainId = params.chainId || this.traderParams.chainId
 
     if (!chainId) {
       throw new Error('Chain ID is missing in offChainCancelOrder() call')
     }
 
-    const order = await this.getOrder(params)
-    const isEthFlowOrder = getIsEthFlowOrder(order)
+    const order = _order ?? (await this.getOrder(params))
+    const isEthFlowOrder = !!order.onchainOrderData
 
     const signer = params.signer ? getGlobalAdapter().createSigner(params.signer) : getGlobalAdapter().signer
     const account = await signer.getAddress()
