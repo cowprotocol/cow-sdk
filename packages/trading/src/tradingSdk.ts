@@ -219,7 +219,7 @@ export class TradingSdk {
     const signer = params.signer ? getGlobalAdapter().createSigner(params.signer) : getGlobalAdapter().signer
 
     const { transaction } = await (isEthFlowOrder
-      ? getEthFlowCancellation(getEthFlowContract(signer, chainId, params.env), order)
+      ? getEthFlowCancellation(getEthFlowContract(signer, chainId, params.env ?? this.traderParams.env), order)
       : getSettlementCancellation(getSettlementContract(chainId, signer), order))
 
     const txReceipt = await signer.sendTransaction(transaction)
@@ -228,8 +228,8 @@ export class TradingSdk {
   }
 
   private resolveOrderBookApi(params: Partial<TraderParameters>): OrderBookApi {
-    const chainId = params.chainId || this.traderParams.chainId
-    const env = params.env || 'prod'
+    const chainId = params.chainId ?? this.traderParams.chainId
+    const env = params.env ?? this.traderParams.env ?? 'prod'
 
     if (!chainId) {
       throw new Error('Chain ID is missing in getOrder() call')
