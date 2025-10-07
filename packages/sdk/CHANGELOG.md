@@ -1,5 +1,14 @@
 # Changelog
 
+## [7.0.6](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.0.5...cow-sdk-v7.0.6) (2025-10-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-trading bumped to 0.3.0
+
 ## [7.0.5](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.0.4...cow-sdk-v7.0.5) (2025-10-07)
 
 
