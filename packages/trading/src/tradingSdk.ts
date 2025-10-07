@@ -15,10 +15,17 @@ import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getTradeParametersAfterQuote, swapParamsToLimitOrderParams } from './utils/misc'
 import { getPreSignTransaction } from './getPreSignTransaction'
 import { enableLogging, getGlobalAdapter } from '@cowprotocol/sdk-common'
-import { OrderBookApi } from '@cowprotocol/sdk-order-book'
+import { EnrichedOrder, OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { AbstractProviderAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
+import { getEthFlowContract } from './getEthFlowTransaction'
+import { getEthFlowCancellation, getSettlementCancellation } from './onChainCancellation'
+import { resolveOrderBookApi } from './utils/resolveOrderBookApi'
+import { getSettlementContract } from './getSettlementContract'
 
 export type WithPartialTraderParams<T> = T & Partial<TraderParameters>
+
+export type OrderTraderParams = WithPartialTraderParams<{ orderUid: string }>
 
 export interface TradingSdkOptions {
   enableLogging: boolean
@@ -161,15 +168,74 @@ export class TradingSdk {
     )
   }
 
-  async getPreSignTransaction(
-    params: WithPartialTraderParams<{ orderId: string; account: string }>,
-  ): ReturnType<typeof getPreSignTransaction> {
+  async getPreSignTransaction(params: OrderTraderParams): ReturnType<typeof getPreSignTransaction> {
     const adapter = getGlobalAdapter()
 
     const traderParams = this.mergeParams(params)
     const signer = traderParams.signer ? adapter.createSigner(traderParams.signer) : adapter.signer
 
-    return getPreSignTransaction(signer, traderParams.chainId, params.account, params.orderId)
+    return getPreSignTransaction(signer, traderParams.chainId, params.orderUid)
+  }
+
+  async getOrder(params: OrderTraderParams): Promise<EnrichedOrder> {
+    const orderBookApi = this.resolveOrderBookApi(params)
+
+    return orderBookApi.getOrder(params.orderUid)
+  }
+
+  async offChainCancelOrder(params: OrderTraderParams): Promise<boolean> {
+    const orderBookApi = this.resolveOrderBookApi(params)
+    const adapter = getGlobalAdapter()
+
+    const signer = params.signer ? adapter.createSigner(params.signer) : adapter.signer
+
+    const { orderUid } = params
+    const chainId = params.chainId || this.traderParams.chainId
+
+    if (!chainId) {
+      throw new Error('Chain ID is missing in offChainCancelOrder() call')
+    }
+
+    const orderCancellationSigning = await OrderSigningUtils.signOrderCancellations([orderUid], chainId, signer)
+
+    await orderBookApi.sendSignedOrderCancellations({
+      ...orderCancellationSigning,
+      orderUids: [orderUid],
+    })
+
+    return true
+  }
+
+  async onChainCancelOrder(params: OrderTraderParams, _order?: EnrichedOrder): Promise<string> {
+    const chainId = params.chainId || this.traderParams.chainId
+
+    if (!chainId) {
+      throw new Error('Chain ID is missing in offChainCancelOrder() call')
+    }
+
+    const order = _order ?? (await this.getOrder(params))
+    const isEthFlowOrder = !!order.onchainOrderData
+
+    const signer = params.signer ? getGlobalAdapter().createSigner(params.signer) : getGlobalAdapter().signer
+
+    const { transaction } = await (isEthFlowOrder
+      ? getEthFlowCancellation(getEthFlowContract(signer, chainId, params.env ?? this.traderParams.env), order)
+      : getSettlementCancellation(getSettlementContract(chainId, signer), order))
+
+    const txReceipt = await signer.sendTransaction(transaction)
+
+    return txReceipt.hash
+  }
+
+  private resolveOrderBookApi(params: Partial<TraderParameters>): OrderBookApi {
+    const chainId = params.chainId ?? this.traderParams.chainId
+    const env = params.env ?? this.traderParams.env ?? 'prod'
+
+    if (!chainId) {
+      throw new Error('Chain ID is missing in getOrder() call')
+    }
+
+    return resolveOrderBookApi(chainId, env)
   }
 
   private mergeParams<T>(params: T & Partial<TraderParameters>): T & TraderParameters {

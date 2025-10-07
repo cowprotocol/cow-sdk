@@ -1,5 +1,6 @@
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
 import { SwapForm } from './components/SwapForm'
+import { CancelOrder } from './components/CancelOrder'
 import { useBindCoWSdkToWagmi } from './hooks/useBindCoWSdkToWagmi.ts'
 
 function App() {
@@ -41,7 +42,12 @@ function App() {
       </div>
 
       <h2>Swap</h2>
-      {<SwapForm isSdkReady={isSdkReady} />}
+      <SwapForm isSdkReady={isSdkReady} />
+
+      <hr style={{ margin: '40px 0' }} />
+
+      <h2>Order Management</h2>
+      <CancelOrder isSdkReady={isSdkReady} />
     </>
   )
 }
