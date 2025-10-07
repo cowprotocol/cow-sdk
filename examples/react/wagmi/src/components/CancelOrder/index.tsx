@@ -117,9 +117,9 @@ export function CancelOrder({ isSdkReady }: { isSdkReady: boolean }) {
           </label>
         </div>
         <p style={{ fontSize: '0.9em', color: '#666', marginTop: '10px' }}>
-          <strong>Off-chain:</strong> Faster and free, but requires order book support.
+          <strong>Off-chain:</strong> Faster and free, uses order book.
           <br />
-          <strong>On-chain:</strong> Requires gas, but guarantees cancellation.
+          <strong>On-chain:</strong> An on-chain transaction.
         </p>
       </div>
 
