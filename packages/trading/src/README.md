@@ -379,14 +379,14 @@ console.log('Execute the transaction to sign the order', preSignTransaction)
 Both `postSwapOrder` and `postLimitOrder` functions have optional parameters.
 See `TradeOptionalParameters` type for more details.
 
-| **Parameter**       | **Type**     | **Default Value** | **Description**                                                                                                                                                                                   |
-| ------------------- | ------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `env`               | `Env`        | `prod`            | The environment to use (`prod` or `staging`).                                                                                                                                                     |
-| `partiallyFillable` | `boolean`    | `false`           | Indicates whether the order is fill-or-kill or partially fillable.                                                                                                                                |
-| `slippageBps`       | `number`     | 50                | Slippage tolerance applied to the order to get the limit price. Expressed in Basis Points (BPS). One basis point is equivalent to 0.01% (1/100th of a percent).                                   |
-| `receiver`          | `string`     | order creator     | The address that will receive the order's tokens.                                                                                                                                                 |
-| `validFor`          | `number`     | 30 mins           | The order expiration time in seconds.                                                                                                                                                             |
-| `partnerFee`        | `PartnerFee` | -                 | Partners of the protocol can specify their fee for the order, including the fee in basis points (BPS) and the fee recipient address. [Read more](https://docs.cow.fi/governance/fees/partner-fee) |
+| **Parameter**        | **Type**        | **Default Value** | **Description**                                                                                                                                                 |
+|-----------------------|-----------------|-------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `env`                | `Env`          | `prod`            | The environment to use (`prod` or `staging`).                                                                                                                   |
+| `partiallyFillable`  | `boolean`      | `false`           | Indicates whether the order is fill-or-kill or partially fillable.                                                                                              |
+| `slippageBps`        | `number`       | 50                | Slippage tolerance applied to the order to get the limit price. Expressed in Basis Points (BPS). One basis point is equivalent to 0.01% (1/100th of a percent). |
+| `receiver`           | `string`       | order creator     | The address that will receive the order's tokens.                                                                                                               |
+| `validFor` / `validTo` | `number`       | 30 mins (validFor) | Order expiration: Use `validFor` for seconds from now (e.g., 600 = 10 mins), OR use `validTo` for exact timestamp (e.g., 2524608000). Cannot use both.      |
+| `partnerFee`         | `PartnerFee`   | -                 | Partners of the protocol can specify their fee for the order, including the fee in basis points (BPS) and the fee recipient address. [Read more](https://docs.cow.fi/governance/fees/partner-fee)                  |
 
 ##### Example
 
@@ -408,8 +408,14 @@ const parameters: TradeParameters = {
   amount: '120000000000000000',
   // Optional parameters
   slippageBps: 200, // 2%
-  validFor: 1200, // 20 mins
-  receiver: '0xdef1ca1fb7f1232777520aa7f396b4e015f497ab', // Just a random address, don't use it!
+  validFor: 1200, // 20 mins from now
+  receiver: '0xdef1ca1fb7f1232777520aa7f396b4e015f497ab' // Just a random address, don't use it!
+}
+
+// Alternative: Using exact timestamp
+const parametersWithValidTo: TradeParameters = {
+  ...parameters,
+  validTo: 2524608000, // January 1, 2050 00:00:00 UTC
 }
 
 const { orderId } = await sdk.postSwapOrder(parameters)
