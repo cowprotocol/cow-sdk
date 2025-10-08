@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.3.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.3.1...sdk-trading-v0.3.2) (2025-10-08)
+
+
+### 🐛 Bug Fixes
+
+* **slippage:** use volatility slippage to calculate volume slippage ([#574](https://github.com/cowprotocol/cow-sdk/issues/574)) ([0d86551](https://github.com/cowprotocol/cow-sdk/commit/0d8655153199707bed13b8303dac4a7c5d50a57a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.2.1
+    * @cowprotocol/sdk-app-data bumped to 4.1.1
+    * @cowprotocol/sdk-order-book bumped to 0.1.2
+    * @cowprotocol/sdk-order-signing bumped to 0.1.5
+    * @cowprotocol/sdk-contracts-ts bumped to 0.3.1
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.1.2
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.1.2
+    * @cowprotocol/sdk-viem-adapter bumped to 0.1.2
+
 ## [0.3.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.3.0...sdk-trading-v0.3.1) (2025-10-08)
 
 
