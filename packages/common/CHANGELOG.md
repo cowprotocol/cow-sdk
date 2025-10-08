@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.2.0...sdk-common-v0.2.1) (2025-10-08)
+
+
+### 🐛 Bug Fixes
+
+* **slippage:** use volatility slippage to calculate volume slippage ([#574](https://github.com/cowprotocol/cow-sdk/issues/574)) ([0d86551](https://github.com/cowprotocol/cow-sdk/commit/0d8655153199707bed13b8303dac4a7c5d50a57a))
+
 ## [0.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.1.0...sdk-common-v0.2.0) (2025-10-06)
 
 
