@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.0.1...sdk-app-data-v4.1.0) (2025-10-08)
+
+
+### ✨ Features
+
+* **app-data:** update flashloan schema to 0.2.0 ([#572](https://github.com/cowprotocol/cow-sdk/issues/572)) ([e909dbd](https://github.com/cowprotocol/cow-sdk/commit/e909dbd059077fa80c52c9651b4ae2b6f6edd97c))
+
 ## [4.0.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.0.0...sdk-app-data-v4.0.1) (2025-10-06)
 
 
