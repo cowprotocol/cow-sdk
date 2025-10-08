@@ -65,7 +65,7 @@ describe('resolveSlippageSuggestion', () => {
         getSlippageSuggestion: mockGetSlippageSuggestion,
       }
 
-      const result = await resolveSlippageSuggestion(
+      await resolveSlippageSuggestion(
         SupportedChainId.GNOSIS_CHAIN,
         mockTradeParameters,
         mockTrader,
@@ -74,7 +74,6 @@ describe('resolveSlippageSuggestion', () => {
         advancedSettings,
       )
 
-      expect(result).toEqual({ slippageBps: 200 })
       expect(mockGetSlippageSuggestion).toHaveBeenCalled()
       expect(suggestSlippageBps).toHaveBeenCalledWith({
         isEthFlow: false,
@@ -82,6 +81,7 @@ describe('resolveSlippageSuggestion', () => {
         tradeParameters: mockTradeParameters,
         trader: mockTrader,
         advancedSettings,
+        volumeMultiplierPercent: 2, // 200 BPS = 2%
       })
     })
   })
@@ -138,7 +138,7 @@ describe('resolveSlippageSuggestion', () => {
         getSlippageSuggestion: mockGetSlippageSuggestion,
       }
 
-      const result = await resolveSlippageSuggestion(
+      await resolveSlippageSuggestion(
         SupportedChainId.GNOSIS_CHAIN,
         mockTradeParameters,
         mockTrader,
@@ -147,7 +147,6 @@ describe('resolveSlippageSuggestion', () => {
         advancedSettings,
       )
 
-      expect(result).toEqual({ slippageBps: 200 })
       expect(mockGetSlippageSuggestion).toHaveBeenCalledWith({
         chainId: SupportedChainId.GNOSIS_CHAIN,
         sellToken: mockTradeParameters.sellToken,
@@ -155,7 +154,14 @@ describe('resolveSlippageSuggestion', () => {
         sellAmount: expect.any(BigInt),
         buyAmount: expect.any(BigInt),
       })
-      expect(suggestSlippageBps).toHaveBeenCalled()
+      expect(suggestSlippageBps).toHaveBeenCalledWith({
+        isEthFlow: false,
+        quote: mockQuoteResponse,
+        tradeParameters: mockTradeParameters,
+        trader: mockTrader,
+        advancedSettings,
+        volumeMultiplierPercent: 2, // 200 BPS = 2%
+      })
     })
 
     it('Should pass amounts after partner fees to getSlippageSuggestion', async () => {
@@ -188,9 +194,9 @@ describe('resolveSlippageSuggestion', () => {
   })
 
   describe('When priceQuality is OPTIMAL and getSlippageSuggestion is provided', () => {
-    it('Should return max between defaultSuggestion and suggestedSlippage when suggested is higher', async () => {
-      suggestSlippageBps.mockReturnValue(50)
-      const mockGetSlippageSuggestion = jest.fn().mockResolvedValue({ slippageBps: 200 })
+    it('Should handle when getSlippageSuggestion returns null/undefined slippageBps', async () => {
+      suggestSlippageBps.mockReturnValue(150)
+      const mockGetSlippageSuggestion = jest.fn().mockResolvedValue({ slippageBps: null })
       const advancedSettings: SwapAdvancedSettings = {
         quoteRequest: { priceQuality: PriceQuality.OPTIMAL },
         getSlippageSuggestion: mockGetSlippageSuggestion,
@@ -205,27 +211,15 @@ describe('resolveSlippageSuggestion', () => {
         advancedSettings,
       )
 
-      expect(result).toEqual({ slippageBps: 200 })
-    })
-
-    it('Should return max between defaultSuggestion and suggestedSlippage when default is higher', async () => {
-      suggestSlippageBps.mockReturnValue(300)
-      const mockGetSlippageSuggestion = jest.fn().mockResolvedValue({ slippageBps: 100 })
-      const advancedSettings: SwapAdvancedSettings = {
-        quoteRequest: { priceQuality: PriceQuality.OPTIMAL },
-        getSlippageSuggestion: mockGetSlippageSuggestion,
-      }
-
-      const result = await resolveSlippageSuggestion(
-        SupportedChainId.GNOSIS_CHAIN,
-        mockTradeParameters,
-        mockTrader,
-        mockQuoteResponse,
-        false,
+      expect(result).toEqual({ slippageBps: 150 })
+      expect(suggestSlippageBps).toHaveBeenCalledTimes(1)
+      expect(suggestSlippageBps).toHaveBeenCalledWith({
+        isEthFlow: false,
+        quote: mockQuoteResponse,
+        tradeParameters: mockTradeParameters,
+        trader: mockTrader,
         advancedSettings,
-      )
-
-      expect(result).toEqual({ slippageBps: 300 })
+      })
     })
   })
 

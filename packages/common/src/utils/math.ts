@@ -15,6 +15,10 @@ export function percentageToBps(percentage: number | bigint): number {
   return Math.round(bps)
 }
 
+export function bpsToPercentage(bps: number): number {
+  return bps / 100
+}
+
 /**
  * Apply a percentage to a bigint value
  *

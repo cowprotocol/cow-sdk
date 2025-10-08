@@ -1,5 +1,6 @@
 import { percentageToBps } from '@cowprotocol/sdk-common'
 import { getQuoteAmountsWithCosts, OrderQuoteResponse } from '@cowprotocol/sdk-order-book'
+
 import { getSlippagePercent } from './utils/slippage'
 import { suggestSlippageFromFee } from './suggestSlippageFromFee'
 import { suggestSlippageFromVolume } from './suggestSlippageFromVolume'
@@ -17,13 +18,20 @@ export interface SuggestSlippageBps {
   quote: OrderQuoteResponse
   trader: QuoterParameters
   advancedSettings?: SwapAdvancedSettings
+  volumeMultiplierPercent?: number
 }
 
 /**
  * Return the slippage in BPS that would allow the fee to increase by the multiplying factor percent.
  */
 export function suggestSlippageBps(params: SuggestSlippageBps): number {
-  const { quote, tradeParameters, trader, isEthFlow } = params
+  const {
+    quote,
+    tradeParameters,
+    trader,
+    isEthFlow,
+    volumeMultiplierPercent = SLIPPAGE_VOLUME_MULTIPLIER_PERCENT,
+  } = params
   const { sellTokenDecimals, buyTokenDecimals } = tradeParameters
 
   // Calculate the amount of the sell token before and after network costs
@@ -46,7 +54,7 @@ export function suggestSlippageBps(params: SuggestSlippageBps): number {
     isSell,
     sellAmountBeforeNetworkCosts,
     sellAmountAfterNetworkCosts,
-    slippagePercent: SLIPPAGE_VOLUME_MULTIPLIER_PERCENT,
+    slippagePercent: volumeMultiplierPercent,
   })
 
   // Aggregate all slippages
