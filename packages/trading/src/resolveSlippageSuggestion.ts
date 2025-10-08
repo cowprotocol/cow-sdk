@@ -1,9 +1,10 @@
 import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { bpsToPercentage, log } from '@cowprotocol/sdk-common'
+import { getQuoteAmountsAndCosts, OrderQuoteResponse, PriceQuality } from '@cowprotocol/sdk-order-book'
+
 import { QuoterParameters, SlippageToleranceResponse, SwapAdvancedSettings, TradeParameters } from './types'
 import { suggestSlippageBps, SuggestSlippageBps } from './suggestSlippageBps'
 import { getPartnerFeeBps } from './utils/getPartnerFeeBps'
-import { getQuoteAmountsAndCosts, OrderQuoteResponse, PriceQuality } from '@cowprotocol/sdk-order-book'
-import { log } from '@cowprotocol/sdk-common'
 
 export async function resolveSlippageSuggestion(
   chainId: SupportedChainId,
@@ -48,8 +49,15 @@ export async function resolveSlippageSuggestion(
       buyAmount: amountsAndCosts.afterSlippage.buyAmount,
     })
 
+    const suggestedSlippageBps = suggestedSlippage.slippageBps
+
     return {
-      slippageBps: Math.max(suggestedSlippage.slippageBps ?? 0, defaultSuggestion),
+      slippageBps: suggestedSlippageBps
+        ? suggestSlippageBps({
+            ...suggestSlippageParams,
+            volumeMultiplierPercent: bpsToPercentage(suggestedSlippageBps),
+          })
+        : defaultSuggestion,
     }
   } catch (e: unknown) {
     log(`getSlippageSuggestion() error: ${(e as Error).message || String(e)}`)
