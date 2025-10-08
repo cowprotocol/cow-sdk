@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.3.0...sdk-trading-v0.3.1) (2025-10-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.1.0
+
 ## [0.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.2.1...sdk-trading-v0.3.0) (2025-10-07)
 
 
