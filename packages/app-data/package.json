@@ -61,7 +61,7 @@
   "dependencies": {
     "@cowprotocol/sdk-common": "workspace:*",
     "ajv": "^8.11.0",
-    "cross-fetch": "^3.1.5",
+    "cross-fetch": "^4.1.0",
     "ipfs-only-hash": "^4.0.0",
     "json-stringify-deterministic": "^1.0.8",
     "multiformats": "^9.6.4"
