@@ -7,7 +7,6 @@ import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
 import { aaveAdapterFactoryAbi } from './abi/AaveAdapterFactory'
 import { collateralSwapAdapterHookAbi } from './abi/CollateralSwapAdapterHook'
 
-const VALID_FOR = 1760030012
 // =================== Config ===================
 const RPC_URL = 'https://rpc.gnosischain.com'
 const PRIVATE_KEY = '0x' // private key here (0x...)
@@ -56,10 +55,7 @@ async function main() {
 
   const TOKENS = {
     oldUnderlying: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d', // WXDAI
-    oldCollateral: '0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533', // aGnoWXDAI
-    debt: '0x9C58BAcC331c9aa871AFD802DB6379a98e80CEdb', // GNO
     newUnderlying: '0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0', // USDC.e
-    newCollateral: '0xC0333cb85B59a788d8C7CAe5e1Fd6E229A3E5a65', // aUSDC.e
   } as const
 
   const AAVE_POOL_ADDRESS = '0xb50201558B00496A145fE76f7424749556E326D8' // See https://search.onaave.com/?q=sepolia
@@ -74,6 +70,8 @@ async function main() {
   const owner = account.address
   const sellAmount = 20000000000000000000n
   const slippageBps = 0
+  const validFor = 6 * 60 // 6h
+  const validTo = Math.ceil(Date.now() / 1000) + validFor
 
   const PERCENT_SCALE = 10_000
   const flashLoanFeeAmount = (sellAmount * BigInt(FLASHLOAN_FEE_PERCENT * PERCENT_SCALE)) / BigInt(100 * PERCENT_SCALE)
@@ -91,6 +89,7 @@ async function main() {
     buyToken: TOKENS.newUnderlying,
     buyTokenDecimals: 6,
     slippageBps,
+    validFor,
   })
 
   const {
@@ -105,7 +104,7 @@ async function main() {
   const order = {
     ...orderToSign,
     appData: HashZero,
-    validTo: VALID_FOR,
+    validTo,
     buyAmount: buyAmount.toString(),
     kind: KIND_SELL,
     sellTokenBalance: '0x5a28e9363bb942b639270062aa6bb295f434bcdfc42c97267bf003f272060dc9',
@@ -117,7 +116,7 @@ async function main() {
   const flashLoanParams = {
     borrower: AAVE_ADAPTER_FACTORY,
     lender: AAVE_POOL_ADDRESS,
-    flashLoanAsset: TOKENS.oldUnderlying,
+    flashLoanAsset: orderToSign.sellToken,
     flashLoanAmount: sellAmount.toString(),
     flashLoanFee: flashLoanFeeAmount.toString(),
   }
@@ -136,7 +135,7 @@ async function main() {
     sellAmount: order.sellAmount,
     buyAmount: order.buyAmount,
     kind: order.kind,
-    validTo: VALID_FOR, // max value for timestamp expiration for Order
+    validTo, // max value for timestamp expiration for Order
     flashLoanAmount: hookAmounts.flashLoanAmount,
     flashLoanFeeAmount: hookAmounts.flashLoanFeeAmount,
     hookSellAssetAmount: hookAmounts.sellAssetAmount,
@@ -159,7 +158,7 @@ async function main() {
     receiver: AAVE_ADAPTER_FACTORY,
     liquidityProvider: AAVE_POOL_ADDRESS,
     protocolAdapter: AAVE_ADAPTER_FACTORY,
-    token: TOKENS.oldUnderlying,
+    token: orderToSign.sellToken,
   }
   console.log('flashLoanHint', flashLoanHint)
 
@@ -183,7 +182,7 @@ async function main() {
       kind: orderToSign.kind,
       sellTokenDecimals: 18,
       buyTokenDecimals: 6,
-      validTo: VALID_FOR,
+      validTo,
       receiver: expectedInstanceAddress,
       slippageBps,
       owner: expectedInstanceAddress as AccountAddress,
