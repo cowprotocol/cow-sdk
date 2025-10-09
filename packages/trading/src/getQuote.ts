@@ -71,16 +71,19 @@ export async function getQuoteRaw(
     amount,
     kind,
     partnerFee,
-    validFor = DEFAULT_QUOTE_VALIDITY,
+    validFor,
     validTo,
     slippageBps,
     env = 'prod',
   } = tradeParameters
 
   // Validate that both validFor and validTo are not provided at the same time
-  if (validTo !== undefined && tradeParameters.validFor !== undefined) {
+  if (validTo !== undefined && validFor !== undefined) {
     throw new Error('Cannot specify both validFor and validTo. Use validFor for relative time or validTo for absolute time.')
   }
+
+  // Apply default value for validFor after validation
+  const effectiveValidFor = validFor ?? DEFAULT_QUOTE_VALIDITY
 
   log(
     `getQuote for: Swap ${amount} ${sellToken} for ${buyToken} on chain ${chainId} with ${
@@ -115,7 +118,7 @@ export async function getQuoteRaw(
     sellToken,
     buyToken,
     receiver,
-    ...(validTo !== undefined ? { validTo } : { validFor }),
+    ...(validTo !== undefined ? { validTo } : { validFor: effectiveValidFor }),
     appData: fullAppData,
     appDataHash: appDataKeccak256,
     priceQuality: PriceQuality.OPTIMAL, // Do not change this parameter because we rely on the fact that quote has id
