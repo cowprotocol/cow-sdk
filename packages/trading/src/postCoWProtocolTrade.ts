@@ -45,6 +45,13 @@ export async function postCoWProtocolTrade(
     } else {
       const signingResult = await OrderSigningUtils.signOrder(orderToSign, chainId, signer)
 
+      if (_signingScheme === SigningScheme.EIP1271) {
+        return {
+          signature: OrderSigningUtils.getEip1271Signature(orderToSign, signingResult.signature),
+          signingScheme: _signingScheme,
+        }
+      }
+
       return { signature: signingResult.signature, signingScheme: SIGN_SCHEME_MAP[signingResult.signingScheme] }
     }
   })()

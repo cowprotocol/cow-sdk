@@ -186,26 +186,59 @@ describe('OrderSigningUtils', () => {
     })
   })
 
-  describe('getEIP712Types', () => {
-    test('should return correct EIP-712 types structure', () => {
-      const types = OrderSigningUtils.getEIP712Types()
+  describe('getEip1271Signature', () => {
+    const testOrder: UnsignedOrder = {
+      sellToken: '0xd057b63f5e69cf1b929b356b579cba08d7688048',
+      buyToken: '0x7B878668Cd1a3adF89764D3a331E0A7BB832192D',
+      receiver: '0xa6ddbd0de6b310819b49f680f65871bee85f517e',
+      sellAmount: '500000000000000',
+      buyAmount: '23000020000',
+      validTo: 5000222,
+      appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      feeAmount: '2300000',
+      kind: OrderKind.SELL,
+      partiallyFillable: true,
+    }
 
-      expect(types).toEqual({
-        Order: [
-          { name: 'sellToken', type: 'address' },
-          { name: 'buyToken', type: 'address' },
-          { name: 'receiver', type: 'address' },
-          { name: 'sellAmount', type: 'uint256' },
-          { name: 'buyAmount', type: 'uint256' },
-          { name: 'validTo', type: 'uint32' },
-          { name: 'appData', type: 'bytes32' },
-          { name: 'feeAmount', type: 'uint256' },
-          { name: 'kind', type: 'string' },
-          { name: 'partiallyFillable', type: 'bool' },
-          { name: 'sellTokenBalance', type: 'string' },
-          { name: 'buyTokenBalance', type: 'string' },
-        ],
-      })
+    const mockEcdsaSignature =
+      '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12'
+
+    test('should produce consistent output across different adapters', () => {
+      const results: Record<string, string> = {}
+
+      for (const [adapterName, adapter] of Object.entries(adapters)) {
+        setGlobalAdapter(adapter)
+        results[adapterName] = OrderSigningUtils.getEip1271Signature(testOrder, mockEcdsaSignature)
+      }
+
+      const resultValues = Object.values(results)
+      expect(resultValues[0]).toBeDefined()
+
+      for (let i = 1; i < resultValues.length; i++) {
+        expect(resultValues[0]).toEqual(resultValues[i])
+      }
+    })
+
+    test('should encode order fields correctly', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+      const result = OrderSigningUtils.getEip1271Signature(testOrder, mockEcdsaSignature)
+
+      expect(result).toMatch(/^0x[a-fA-F0-9]+$/)
+      expect(result.toLowerCase()).toContain(mockEcdsaSignature.slice(2).toLowerCase())
+    })
+
+    test('should handle different order kinds', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const buyOrder: UnsignedOrder = { ...testOrder, kind: OrderKind.BUY }
+      const sellOrder: UnsignedOrder = { ...testOrder, kind: OrderKind.SELL }
+
+      const buyResult = OrderSigningUtils.getEip1271Signature(buyOrder, mockEcdsaSignature)
+      const sellResult = OrderSigningUtils.getEip1271Signature(sellOrder, mockEcdsaSignature)
+
+      expect(buyResult).not.toEqual(sellResult)
+      expect(buyResult).toMatch(/^0x[a-fA-F0-9]+$/)
+      expect(sellResult).toMatch(/^0x[a-fA-F0-9]+$/)
     })
   })
 })

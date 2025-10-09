@@ -72,6 +72,7 @@ export async function getQuoteRaw(
     kind,
     partnerFee,
     validFor = DEFAULT_QUOTE_VALIDITY,
+    validTo,
     slippageBps,
     env = 'prod',
   } = tradeParameters
@@ -109,7 +110,7 @@ export async function getQuoteRaw(
     sellToken,
     buyToken,
     receiver,
-    validFor,
+    ...(validTo ? { validTo } : { validFor }),
     appData: fullAppData,
     appDataHash: appDataKeccak256,
     priceQuality: PriceQuality.OPTIMAL, // Do not change this parameter because we rely on the fact that quote has id
