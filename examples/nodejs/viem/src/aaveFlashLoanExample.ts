@@ -67,15 +67,16 @@ async function main() {
   const AAVE_COLLATERAL_SWAP_ADAPTER_HOOK = '0xe80eE1e73f120b1106179Ae3D582CA4Fd768d517'
 
   const DEFAULT_GAS_LIMIT = '1000000' // FIXME: This should not be necessary, it should estimate correctly!
-  const CHAIN_ID = SupportedChainId.GNOSIS_CHAIN
-  const FLASHLOAN_FEE = '10000000000000000' // 0.05% of the flashloan amount
-  const OLD_COLLATERAL_AMOUNT = '20000000000000000000'
-  const NEW_COLLATERAL_AMOUNT = '18000000'
+
+  const FLASHLOAN_FEE_PERCENT = 0.05 // 0.05%
   const KIND_SELL = '0xf3b277728b3fee749481eb3e0b3b48980dbbab78658fc419025cb16eee346775'
 
   const owner = account.address
-  const amount = 19990000000000000000n
+  const sellAmount = 20000000000000000000n
   const slippageBps = 0
+
+  const PERCENT_SCALE = 10_000
+  const flashLoanFeeAmount = (sellAmount * BigInt(FLASHLOAN_FEE_PERCENT * PERCENT_SCALE)) / BigInt(100 * PERCENT_SCALE)
 
   console.log('Owner:', owner)
   console.log('Getting quote...')
@@ -84,7 +85,7 @@ async function main() {
     chainId,
     kind: OrderKind.SELL,
     owner,
-    amount: amount.toString(),
+    amount: (sellAmount - flashLoanFeeAmount).toString(),
     sellToken: TOKENS.oldUnderlying,
     sellTokenDecimals: 18,
     buyToken: TOKENS.newUnderlying,
@@ -93,14 +94,19 @@ async function main() {
   })
 
   const {
-    quoteResults: { orderToSign },
+    quoteResults: {
+      orderToSign,
+      amountsAndCosts: {
+        afterSlippage: { buyAmount },
+      },
+    },
   } = quoteAndPost
 
   const order = {
     ...orderToSign,
     appData: HashZero,
     validTo: VALID_FOR,
-    buyAmount: NEW_COLLATERAL_AMOUNT,
+    buyAmount: buyAmount.toString(),
     kind: KIND_SELL,
     sellTokenBalance: '0x5a28e9363bb942b639270062aa6bb295f434bcdfc42c97267bf003f272060dc9',
     buyTokenBalance: '0x5a28e9363bb942b639270062aa6bb295f434bcdfc42c97267bf003f272060dc9',
@@ -112,15 +118,15 @@ async function main() {
     borrower: AAVE_ADAPTER_FACTORY,
     lender: AAVE_POOL_ADDRESS,
     flashLoanAsset: TOKENS.oldUnderlying,
-    flashLoanAmount: OLD_COLLATERAL_AMOUNT,
-    flashLoanFee: FLASHLOAN_FEE,
+    flashLoanAmount: sellAmount.toString(),
+    flashLoanFee: flashLoanFeeAmount.toString(),
   }
 
   const hookAmounts = {
     flashLoanAmount: flashLoanParams.flashLoanAmount,
     flashLoanFeeAmount: flashLoanParams.flashLoanFee,
-    sellAssetAmount: OLD_COLLATERAL_AMOUNT,
-    buyAssetAmount: NEW_COLLATERAL_AMOUNT,
+    sellAssetAmount: sellAmount.toString(),
+    buyAssetAmount: buyAmount.toString(),
   }
 
   const hookOrderData = {
@@ -149,7 +155,7 @@ async function main() {
   console.log('expectedInstanceAddress', expectedInstanceAddress)
 
   const flashLoanHint = {
-    amount: OLD_COLLATERAL_AMOUNT, // this is actually in UNDERLYING but aave tokens are 1:1
+    amount: sellAmount.toString(), // this is actually in UNDERLYING but aave tokens are 1:1
     receiver: AAVE_ADAPTER_FACTORY,
     liquidityProvider: AAVE_POOL_ADDRESS,
     protocolAdapter: AAVE_ADAPTER_FACTORY,
