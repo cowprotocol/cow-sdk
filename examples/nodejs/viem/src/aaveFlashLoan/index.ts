@@ -17,6 +17,7 @@ import {
   AAVE_ADAPTER_FACTORY,
   AAVE_COLLATERAL_SWAP_ADAPTER_HOOK,
   AAVE_POOL_ADDRESS,
+  DEFAULT_HOOK_GAS_LIMIT,
   EMPTY_PERMIT_SIGN,
   HASH_ZERO,
 } from './const'
@@ -57,8 +58,6 @@ async function main() {
     oldUnderlying: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d', // WXDAI
     newUnderlying: '0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0', // USDC.e
   } as const
-
-  const DEFAULT_GAS_LIMIT = '1000000' // FIXME: This should not be necessary, it should estimate correctly!
 
   const owner = account.address
   const sellAmount = 20000000000000000000n
@@ -172,14 +171,28 @@ async function main() {
             {
               target: AAVE_ADAPTER_FACTORY,
               callData: preHookCallData,
-              gasLimit: DEFAULT_GAS_LIMIT,
+              gasLimit: (
+                await adapter.signer
+                  .estimateGas({
+                    to: AAVE_ADAPTER_FACTORY,
+                    data: preHookCallData,
+                  })
+                  .catch(() => DEFAULT_HOOK_GAS_LIMIT)
+              ).toString(),
             },
           ],
           post: [
             {
               target: expectedInstanceAddress,
               callData: postHookCallData,
-              gasLimit: DEFAULT_GAS_LIMIT,
+              gasLimit: (
+                await adapter.signer
+                  .estimateGas({
+                    to: expectedInstanceAddress,
+                    data: preHookCallData,
+                  })
+                  .catch(() => DEFAULT_HOOK_GAS_LIMIT)
+              ).toString(),
             },
           ],
         },
