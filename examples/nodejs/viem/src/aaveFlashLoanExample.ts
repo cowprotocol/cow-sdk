@@ -2,7 +2,14 @@ import 'dotenv/config'
 import { createPublicClient, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { gnosis } from 'viem/chains'
-import { SupportedChainId, TradingSdk, OrderKind, SigningScheme, AccountAddress } from '@cowprotocol/cow-sdk'
+import {
+  SupportedChainId,
+  TradingSdk,
+  OrderKind,
+  SigningScheme,
+  AccountAddress,
+  OrderSigningUtils,
+} from '@cowprotocol/cow-sdk'
 import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
 import { aaveAdapterFactoryAbi } from './abi/AaveAdapterFactory'
 import { collateralSwapAdapterHookAbi } from './abi/CollateralSwapAdapterHook'
@@ -65,7 +72,6 @@ async function main() {
   const DEFAULT_GAS_LIMIT = '1000000' // FIXME: This should not be necessary, it should estimate correctly!
 
   const FLASHLOAN_FEE_PERCENT = 0.05 // 0.05%
-  const KIND_SELL = '0xf3b277728b3fee749481eb3e0b3b48980dbbab78658fc419025cb16eee346775'
 
   const owner = account.address
   const sellAmount = 20000000000000000000n
@@ -101,14 +107,10 @@ async function main() {
     },
   } = quoteAndPost
 
-  const order = {
-    ...orderToSign,
+  const order: Record<string, string> = {
+    ...OrderSigningUtils.encodeUnsignedOrder(orderToSign),
     appData: HashZero,
-    validTo,
-    buyAmount: buyAmount.toString(),
-    kind: KIND_SELL,
-    sellTokenBalance: '0x5a28e9363bb942b639270062aa6bb295f434bcdfc42c97267bf003f272060dc9',
-    buyTokenBalance: '0x5a28e9363bb942b639270062aa6bb295f434bcdfc42c97267bf003f272060dc9',
+    validTo: validTo.toString(),
   }
 
   /////////////////////////////////////////////////////
@@ -144,14 +146,10 @@ async function main() {
 
   const expectedInstanceAddress = (await adapter.readContract({
     address: AAVE_ADAPTER_FACTORY,
-    args: [AAVE_COLLATERAL_SWAP_ADAPTER_HOOK, hookOrderData as any],
+    args: [AAVE_COLLATERAL_SWAP_ADAPTER_HOOK, hookOrderData],
     functionName: 'getInstanceDeterministicAddress',
     abi: aaveAdapterFactoryAbi,
-  })) as string
-
-  order.receiver = expectedInstanceAddress
-
-  console.log('expectedInstanceAddress', expectedInstanceAddress)
+  })) as AccountAddress
 
   const flashLoanHint = {
     amount: sellAmount.toString(), // this is actually in UNDERLYING but aave tokens are 1:1
@@ -160,17 +158,19 @@ async function main() {
     protocolAdapter: AAVE_ADAPTER_FACTORY,
     token: orderToSign.sellToken,
   }
-  console.log('flashLoanHint', flashLoanHint)
 
   const preHookCalldata = adapter.utils.encodeFunction(aaveAdapterFactoryAbi, 'deployAndTransferFlashLoan', [
     trader,
     AAVE_COLLATERAL_SWAP_ADAPTER_HOOK,
-    hookAmounts as any,
-    order,
+    hookAmounts,
+    {
+      ...order,
+      receiver: expectedInstanceAddress,
+    },
   ])
 
   const postHookCalldata = adapter.utils.encodeFunction(collateralSwapAdapterHookAbi, 'collateralSwapWithFlashLoan', [
-    getEmptyPermitSig() as any,
+    getEmptyPermitSig(),
   ])
   /////////////////////////////////////////////////////
 
@@ -178,8 +178,7 @@ async function main() {
 
   const result = await sdk.postLimitOrder(
     {
-      ...order,
-      kind: orderToSign.kind,
+      ...orderToSign,
       sellTokenDecimals: 18,
       buyTokenDecimals: 6,
       validTo,
