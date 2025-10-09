@@ -1,9 +1,10 @@
 import { OrderPostingResult, SwapAdvancedSettings, SwapParameters } from './types'
 
+import type { AccountAddress } from '@cowprotocol/sdk-common'
+import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { postCoWProtocolTrade } from './postCoWProtocolTrade'
 import { getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
 import { swapParamsToLimitOrderParams } from './utils/misc'
-import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { mergeAppDataDoc } from './appDataUtils'
 
 export async function postSwapOrder(
@@ -46,12 +47,13 @@ export async function postSwapOrderFromQuote(
    * Override order parameters with advanced settings
    */
   if (advancedSettings?.quoteRequest) {
-    const { receiver, validTo, sellToken, buyToken } = advancedSettings.quoteRequest
+    const { receiver, validTo, sellToken, buyToken, from } = advancedSettings.quoteRequest
 
     if (receiver) params.receiver = receiver
     if (validTo) params.validTo = validTo
     if (sellToken) params.sellToken = sellToken
     if (buyToken) params.buyToken = buyToken
+    if (from) params.owner = from as AccountAddress
   }
 
   return postCoWProtocolTrade(

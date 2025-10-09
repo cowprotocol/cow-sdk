@@ -1,0 +1,13 @@
+export const HASH_ZERO = '0x0000000000000000000000000000000000000000000000000000000000000000'
+
+export const EMPTY_PERMIT_SIGN = {
+  amount: 0,
+  deadline: 0,
+  v: 0,
+  r: HASH_ZERO, // bytes32(0) in Solidity
+  s: HASH_ZERO, // bytes32(0) in Solidity
+}
+
+export const AAVE_POOL_ADDRESS = '0xb50201558B00496A145fE76f7424749556E326D8' // See https://search.onaave.com/?q=sepolia
+export const AAVE_ADAPTER_FACTORY = '0x1186B5ad42E3e6d6c6901FC53b4A367540E6EcFE'
+export const AAVE_COLLATERAL_SWAP_ADAPTER_HOOK = '0xe80eE1e73f120b1106179Ae3D582CA4Fd768d517'

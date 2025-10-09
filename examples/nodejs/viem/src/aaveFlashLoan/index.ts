@@ -13,23 +13,18 @@ import {
 import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
 import { aaveAdapterFactoryAbi } from './abi/AaveAdapterFactory'
 import { collateralSwapAdapterHookAbi } from './abi/CollateralSwapAdapterHook'
+import {
+  AAVE_ADAPTER_FACTORY,
+  AAVE_COLLATERAL_SWAP_ADAPTER_HOOK,
+  AAVE_POOL_ADDRESS,
+  EMPTY_PERMIT_SIGN,
+  HASH_ZERO,
+} from './const'
 
 // =================== Config ===================
 const RPC_URL = 'https://rpc.gnosischain.com'
 const PRIVATE_KEY = '0x' // private key here (0x...)
 // ===============================================================
-
-const HashZero = '0x0000000000000000000000000000000000000000000000000000000000000000'
-
-function getEmptyPermitSig() {
-  return {
-    amount: 0,
-    deadline: 0,
-    v: 0,
-    r: HashZero, // bytes32(0) in Solidity
-    s: HashZero, // bytes32(0) in Solidity
-  }
-}
 
 async function main() {
   const chainId = SupportedChainId.GNOSIS_CHAIN
@@ -45,11 +40,9 @@ async function main() {
   })
 
   const account = privateKeyToAccount(PRIVATE_KEY as `0x${string}`)
-
   const trader = account.address
 
   const adapter = new ViemAdapter({ provider: publicClient, signer: account })
-
   const sdk = new TradingSdk(
     {
       chainId,
@@ -65,22 +58,18 @@ async function main() {
     newUnderlying: '0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0', // USDC.e
   } as const
 
-  const AAVE_POOL_ADDRESS = '0xb50201558B00496A145fE76f7424749556E326D8' // See https://search.onaave.com/?q=sepolia
-  const AAVE_ADAPTER_FACTORY = '0x1186B5ad42E3e6d6c6901FC53b4A367540E6EcFE'
-  const AAVE_COLLATERAL_SWAP_ADAPTER_HOOK = '0xe80eE1e73f120b1106179Ae3D582CA4Fd768d517'
-
   const DEFAULT_GAS_LIMIT = '1000000' // FIXME: This should not be necessary, it should estimate correctly!
-
-  const FLASHLOAN_FEE_PERCENT = 0.05 // 0.05%
 
   const owner = account.address
   const sellAmount = 20000000000000000000n
+
+  const flashloanFeePercent = 0.05 // 0.05%
   const slippageBps = 0
   const validFor = 6 * 60 // 6h
   const validTo = Math.ceil(Date.now() / 1000) + validFor
 
   const PERCENT_SCALE = 10_000
-  const flashLoanFeeAmount = (sellAmount * BigInt(FLASHLOAN_FEE_PERCENT * PERCENT_SCALE)) / BigInt(100 * PERCENT_SCALE)
+  const flashLoanFeeAmount = (sellAmount * BigInt(flashloanFeePercent * PERCENT_SCALE)) / BigInt(100 * PERCENT_SCALE)
 
   console.log('Owner:', owner)
   console.log('Getting quote...')
@@ -105,27 +94,18 @@ async function main() {
         afterSlippage: { buyAmount },
       },
     },
+    postSwapOrderFromQuote,
   } = quoteAndPost
 
   const order: Record<string, string> = {
     ...OrderSigningUtils.encodeUnsignedOrder(orderToSign),
-    appData: HashZero,
+    appData: HASH_ZERO,
     validTo: validTo.toString(),
   }
 
-  /////////////////////////////////////////////////////
-
-  const flashLoanParams = {
-    borrower: AAVE_ADAPTER_FACTORY,
-    lender: AAVE_POOL_ADDRESS,
-    flashLoanAsset: orderToSign.sellToken,
-    flashLoanAmount: sellAmount.toString(),
-    flashLoanFee: flashLoanFeeAmount.toString(),
-  }
-
   const hookAmounts = {
-    flashLoanAmount: flashLoanParams.flashLoanAmount,
-    flashLoanFeeAmount: flashLoanParams.flashLoanFee,
+    flashLoanAmount: sellAmount.toString(),
+    flashLoanFeeAmount: flashLoanFeeAmount.toString(),
     sellAssetAmount: sellAmount.toString(),
     buyAssetAmount: buyAmount.toString(),
   }
@@ -159,7 +139,7 @@ async function main() {
     token: orderToSign.sellToken,
   }
 
-  const preHookCalldata = adapter.utils.encodeFunction(aaveAdapterFactoryAbi, 'deployAndTransferFlashLoan', [
+  const preHookCallData = adapter.utils.encodeFunction(aaveAdapterFactoryAbi, 'deployAndTransferFlashLoan', [
     trader,
     AAVE_COLLATERAL_SWAP_ADAPTER_HOOK,
     hookAmounts,
@@ -169,50 +149,43 @@ async function main() {
     },
   ])
 
-  const postHookCalldata = adapter.utils.encodeFunction(collateralSwapAdapterHookAbi, 'collateralSwapWithFlashLoan', [
-    getEmptyPermitSig(),
+  const postHookCallData = adapter.utils.encodeFunction(collateralSwapAdapterHookAbi, 'collateralSwapWithFlashLoan', [
+    EMPTY_PERMIT_SIGN,
   ])
-  /////////////////////////////////////////////////////
 
   console.log('Posting order...')
 
-  const result = await sdk.postLimitOrder(
-    {
-      ...orderToSign,
-      sellTokenDecimals: 18,
-      buyTokenDecimals: 6,
+  const result = await postSwapOrderFromQuote({
+    quoteRequest: {
       validTo,
       receiver: expectedInstanceAddress,
-      slippageBps,
-      owner: expectedInstanceAddress as AccountAddress,
+      from: expectedInstanceAddress as AccountAddress,
     },
-    {
-      additionalParams: {
-        signingScheme: SigningScheme.EIP1271,
-      },
-      appData: {
-        metadata: {
-          flashloan: flashLoanHint,
-          hooks: {
-            pre: [
-              {
-                target: AAVE_ADAPTER_FACTORY,
-                callData: preHookCalldata,
-                gasLimit: DEFAULT_GAS_LIMIT,
-              },
-            ],
-            post: [
-              {
-                target: expectedInstanceAddress,
-                callData: postHookCalldata,
-                gasLimit: DEFAULT_GAS_LIMIT,
-              },
-            ],
-          },
+    additionalParams: {
+      signingScheme: SigningScheme.EIP1271,
+    },
+    appData: {
+      metadata: {
+        flashloan: flashLoanHint,
+        hooks: {
+          pre: [
+            {
+              target: AAVE_ADAPTER_FACTORY,
+              callData: preHookCallData,
+              gasLimit: DEFAULT_GAS_LIMIT,
+            },
+          ],
+          post: [
+            {
+              target: expectedInstanceAddress,
+              callData: postHookCallData,
+              gasLimit: DEFAULT_GAS_LIMIT,
+            },
+          ],
         },
       },
     },
-  )
+  })
 
   console.log('Posted:', result)
 }
