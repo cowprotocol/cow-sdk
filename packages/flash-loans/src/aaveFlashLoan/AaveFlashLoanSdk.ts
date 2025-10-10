@@ -1,14 +1,10 @@
-import {
-  AccountAddress,
-  getGlobalAdapter,
-  LatestAppDataDocVersion,
-  OrderPostingResult,
-  OrderSigningUtils,
-  SigningScheme,
-  SupportedChainId,
-  TradeParameters,
-  TradingSdk,
-} from '@cowprotocol/cow-sdk'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { OrderPostingResult, TradeParameters, TradingSdk } from '@cowprotocol/sdk-trading'
+import { AccountAddress, getGlobalAdapter } from '@cowprotocol/sdk-common'
+import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
+import { SigningScheme } from '@cowprotocol/sdk-order-book'
+import { LatestAppDataDocVersion } from '@cowprotocol/sdk-app-data'
+
 import {
   AAVE_ADAPTER_FACTORY,
   AAVE_COLLATERAL_SWAP_ADAPTER_HOOK,
