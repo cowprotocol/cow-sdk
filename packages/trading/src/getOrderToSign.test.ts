@@ -45,6 +45,17 @@ describe('getOrderToSign', () => {
     expect(result.validTo).toBe(currentTimestamp / 1000 + 600)
   })
 
+  it('When validTo is set, then should use exact validTo value', () => {
+    const exactValidTo = 2524608000 // January 1, 2050 00:00:00 UTC
+    const result = getOrderToSign(
+      params,
+      { ...defaultOrderParams, validTo: exactValidTo },
+      appDataKeccak256,
+    )
+
+    expect(result.validTo).toBe(exactValidTo)
+  })
+
   it('When both validTo and validFor are not set, then should use default value', () => {
     const result = getOrderToSign(
       params,

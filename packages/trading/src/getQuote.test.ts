@@ -241,6 +241,63 @@ describe('getQuote', () => {
         expect(call.onchainOrder).toEqual({ foo: 'bar' })
       }
     })
+
+    it('Should use validFor by default when validTo is not provided', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        await getQuoteWithSigner({ ...defaultOrderParams, signer: adapters[adapterName].signer }, {}, orderBookApiMock)
+
+        const call = getQuoteMock.mock.calls[0][0]
+        expect(call.validFor).toBeDefined()
+        expect(call.validTo).toBeUndefined()
+      }
+    })
+
+    it('Should use DEFAULT_QUOTE_VALIDITY when neither validFor nor validTo are provided', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        const orderParamsWithoutValidity = { ...defaultOrderParams, signer: adapters[adapterName].signer }
+        // Explicitly ensure neither validFor nor validTo are provided
+        delete (orderParamsWithoutValidity as any).validFor
+        delete (orderParamsWithoutValidity as any).validTo
+
+        await getQuoteWithSigner(orderParamsWithoutValidity, {}, orderBookApiMock)
+
+        const call = getQuoteMock.mock.calls[0][0]
+        expect(call.validFor).toBe(1800) // DEFAULT_QUOTE_VALIDITY = 60 * 30 = 1800 seconds
+        expect(call.validTo).toBeUndefined()
+      }
+    })
+
+    it('Should use exact validTo when provided', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+      const exactValidTo = 2524608000 // January 1, 2050 00:00:00 UTC
+
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        await getQuoteWithSigner({ ...defaultOrderParams, signer: adapters[adapterName].signer, validTo: exactValidTo }, {}, orderBookApiMock)
+
+        const call = getQuoteMock.mock.calls[0][0]
+        expect(call.validTo).toBe(exactValidTo)
+        expect(call.validFor).toBeUndefined()
+      }
+    })
+
+    it('Should throw error when both validFor and validTo are provided', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+      const exactValidTo = 2524608000 // January 1, 2050 00:00:00 UTC
+
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        await expect(
+          getQuoteWithSigner({ ...defaultOrderParams, signer: adapters[adapterName].signer, validTo: exactValidTo, validFor: 600 }, {}, orderBookApiMock)
+        ).rejects.toThrow('Cannot specify both validFor and validTo. Use validFor for relative time or validTo for absolute time.')
+      }
+    })
   })
 
   describe('Amounts and costs', () => {
