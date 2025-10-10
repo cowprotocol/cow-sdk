@@ -9,3 +9,5 @@ export const DEFAULT_HOOK_GAS_LIMIT = 1_000_000n
 export const PERCENT_SCALE = 10_000
 
 export const DEFAULT_VALIDITY = 10 * 60 // 10 min
+
+export const GAS_ESTIMATION_ADDITION_PERCENT = 10 // 10%

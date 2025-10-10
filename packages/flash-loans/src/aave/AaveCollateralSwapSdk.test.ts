@@ -6,7 +6,7 @@ import { TradingSdk, TradeParameters } from '@cowprotocol/sdk-trading'
 import { createAdapters, TEST_ADDRESS } from '../../tests/setup'
 
 import { AaveCollateralSwapSdk } from './AaveCollateralSwapSdk'
-import { AAVE_ADAPTER_FACTORY, HASH_ZERO } from './const'
+import { AAVE_ADAPTER_FACTORY, GAS_ESTIMATION_ADDITION_PERCENT, HASH_ZERO } from './const'
 
 const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
@@ -297,6 +297,71 @@ adapterNames.forEach((adapterName) => {
 
         const callArgs = (mockTradingSdk.getQuote as jest.Mock).mock.calls[0][0]
         expect(callArgs.amount).toBe(mockTradeParameters.amount)
+      })
+
+      test(`should add ${GAS_ESTIMATION_ADDITION_PERCENT}% to pre-hook gas estimation`, async () => {
+        const mockEstimatedGas = 500_000n
+        const expectedGasLimit = (mockEstimatedGas * BigInt(GAS_ESTIMATION_ADDITION_PERCENT + 100)) / 100n
+
+        jest.spyOn(adapter.signer, 'estimateGas').mockResolvedValue(mockEstimatedGas)
+
+        await flashLoanSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.SEPOLIA,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        expect(mockPostSwapOrderFromQuote).toHaveBeenCalledWith(
+          expect.objectContaining({
+            appData: {
+              metadata: expect.objectContaining({
+                hooks: expect.objectContaining({
+                  pre: expect.arrayContaining([
+                    expect.objectContaining({
+                      target: AAVE_ADAPTER_FACTORY,
+                      callData: expect.any(String),
+                      gasLimit: expectedGasLimit.toString(),
+                    }),
+                  ]),
+                }),
+              }),
+            },
+          }),
+        )
+      })
+
+      test(`should add ${GAS_ESTIMATION_ADDITION_PERCENT}% to post-hook gas estimation when collateralPermit is provided`, async () => {
+        const mockEstimatedGas = 300_000n
+        const expectedGasLimit = (mockEstimatedGas * BigInt(GAS_ESTIMATION_ADDITION_PERCENT + 100)) / 100n
+
+        jest.spyOn(adapter.signer, 'estimateGas').mockResolvedValue(mockEstimatedGas)
+
+        await flashLoanSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.SEPOLIA,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+            settings: {
+              collateralPermit: {
+                amount: 0,
+                deadline: 0,
+                v: 0,
+                r: HASH_ZERO,
+                s: HASH_ZERO,
+              },
+            },
+          },
+          mockTradingSdk,
+        )
+
+        const callArgs = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
+        const postHooks = callArgs.appData.metadata.hooks.post
+
+        expect(postHooks).toBeDefined()
+        expect(postHooks[0].gasLimit).toBe(expectedGasLimit.toString())
       })
     })
 

@@ -27,11 +27,13 @@ import {
   AAVE_POOL_ADDRESS,
   DEFAULT_HOOK_GAS_LIMIT,
   DEFAULT_VALIDITY,
+  GAS_ESTIMATION_ADDITION_PERCENT,
   HASH_ZERO,
   PERCENT_SCALE,
 } from './const'
 import { aaveAdapterFactoryAbi } from './abi/AaveAdapterFactory'
 import { collateralSwapAdapterHookAbi } from './abi/CollateralSwapAdapterHook'
+import { addPercentToValue } from './utils'
 
 /**
  * SDK for executing Aave flash loan operations, particularly collateral swaps.
@@ -375,6 +377,9 @@ export class AaveCollateralSwapSdk {
                 to: AAVE_ADAPTER_FACTORY,
                 data: preHookCallData,
               })
+              .then((gas) => {
+                return addPercentToValue(gas, GAS_ESTIMATION_ADDITION_PERCENT)
+              })
               .catch(() => DEFAULT_HOOK_GAS_LIMIT)
           ).toString(),
         },
@@ -389,6 +394,9 @@ export class AaveCollateralSwapSdk {
                   .estimateGas({
                     to: expectedInstanceAddress,
                     data: postHookCallData,
+                  })
+                  .then((gas) => {
+                    return addPercentToValue(gas, GAS_ESTIMATION_ADDITION_PERCENT)
                   })
                   .catch(() => DEFAULT_HOOK_GAS_LIMIT)
               ).toString(),
