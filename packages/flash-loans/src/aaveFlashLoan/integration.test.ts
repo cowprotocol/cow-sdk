@@ -1,4 +1,3 @@
-import 'dotenv/config'
 import { createPublicClient, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { gnosis } from 'viem/chains'
@@ -10,13 +9,13 @@ import { OrderKind } from '@cowprotocol/sdk-order-book'
 
 import { AaveFlashLoanSdk } from './AaveFlashLoanSdk'
 
+// =================== Config ===================
+const RPC_URL = 'https://rpc.gnosischain.com'
+const PRIVATE_KEY = '' // private key here (0x...)
+// ===============================================================
+
 describe.skip('AaveFlashLoanIntegration', () => {
   it('Test AaveFlashLoanSdk collateralSwap on Gnosis Chain', async () => {
-    // =================== Config ===================
-    const RPC_URL = 'https://rpc.gnosischain.com'
-    const PRIVATE_KEY = '0x' // private key here (0x...)
-    // ===============================================================
-
     const chainId = SupportedChainId.GNOSIS_CHAIN
 
     if (!PRIVATE_KEY) {
@@ -56,6 +55,6 @@ describe.skip('AaveFlashLoanIntegration', () => {
       flashLoanFeePercent: 0.05, // 0.05%
     })
 
-    expect(typeof result.orderId).toBe('string')
-  })
+    expect(result).toEqual({ result: 'orderId' })
+  }, 20_000)
 })
