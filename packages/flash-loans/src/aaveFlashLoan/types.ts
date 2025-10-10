@@ -16,6 +16,20 @@ export interface FlashLoanHint {
   token: string
 }
 
+export interface CollateralOrderData {
+  owner: string
+  sellAsset: string
+  buyAsset: string
+  sellAmount: string
+  buyAmount: string
+  kind: string
+  validTo: number
+  flashLoanAmount: string
+  flashLoanFeeAmount: string
+  hookSellAssetAmount: string
+  hookBuyAssetAmount: string
+}
+
 export type EncodedOrder = Record<string, string | number>
 
 /**

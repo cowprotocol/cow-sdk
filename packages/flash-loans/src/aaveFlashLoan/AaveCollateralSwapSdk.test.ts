@@ -5,7 +5,7 @@ import { TradingSdk, TradeParameters } from '@cowprotocol/sdk-trading'
 
 import { createAdapters, TEST_ADDRESS } from '../../tests/setup'
 
-import { AaveFlashLoanSdk } from './AaveFlashLoanSdk'
+import { AaveCollateralSwapSdk } from './AaveCollateralSwapSdk'
 import { AAVE_ADAPTER_FACTORY } from './const'
 
 const adapters = createAdapters()
@@ -59,9 +59,9 @@ const amountsAndCostsMock = {
 adapterNames.forEach((adapterName) => {
   const adapter = adapters[adapterName]
 
-  describe(`AaveFlashLoanSdk with ${adapterName}`, () => {
+  describe(`AaveCollateralSwapSdk with ${adapterName}`, () => {
     let mockTradingSdk: jest.Mocked<TradingSdk>
-    let flashLoanSdk: AaveFlashLoanSdk
+    let flashLoanSdk: AaveCollateralSwapSdk
     let mockPostSwapOrderFromQuote: jest.Mock
 
     beforeEach(() => {
@@ -83,15 +83,18 @@ adapterNames.forEach((adapterName) => {
         }),
       } as unknown as jest.Mocked<TradingSdk>
 
-      flashLoanSdk = new AaveFlashLoanSdk(mockTradingSdk)
+      flashLoanSdk = new AaveCollateralSwapSdk()
     })
 
     describe('collateralSwap', () => {
       test(`should successfully execute collateral swap with default fee`, async () => {
-        const result = await flashLoanSdk.collateralSwap({
-          chainId: SupportedChainId.SEPOLIA,
-          tradeParameters: mockTradeParameters,
-        })
+        const result = await flashLoanSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.SEPOLIA,
+            tradeParameters: mockTradeParameters,
+          },
+          mockTradingSdk,
+        )
 
         expect(result).toEqual({ orderId: 'mock-order-id' })
 
@@ -109,11 +112,14 @@ adapterNames.forEach((adapterName) => {
 
       test(`should calculate flash loan fee correctly`, async () => {
         const flashLoanFeePercent = 0.05 // 0.05%
-        await flashLoanSdk.collateralSwap({
-          chainId: SupportedChainId.SEPOLIA,
-          tradeParameters: mockTradeParameters,
-          flashLoanFeePercent,
-        })
+        await flashLoanSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.SEPOLIA,
+            tradeParameters: mockTradeParameters,
+            flashLoanFeePercent,
+          },
+          mockTradingSdk,
+        )
 
         expect(mockTradingSdk.getQuote).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -130,13 +136,16 @@ adapterNames.forEach((adapterName) => {
 
       test(`should use provided owner address`, async () => {
         const customOwner = '0x1234567890123456789012345678901234567890'
-        await flashLoanSdk.collateralSwap({
-          chainId: SupportedChainId.SEPOLIA,
-          tradeParameters: {
-            ...mockTradeParameters,
-            owner: customOwner,
+        await flashLoanSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.SEPOLIA,
+            tradeParameters: {
+              ...mockTradeParameters,
+              owner: customOwner,
+            },
           },
-        })
+          mockTradingSdk,
+        )
 
         expect(mockTradingSdk.getQuote).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -148,10 +157,13 @@ adapterNames.forEach((adapterName) => {
       test(`should use default validity when not provided`, async () => {
         const { validFor: _validFor, ...paramsWithoutValidFor } = mockTradeParameters
 
-        await flashLoanSdk.collateralSwap({
-          chainId: SupportedChainId.SEPOLIA,
-          tradeParameters: paramsWithoutValidFor as TradeParameters,
-        })
+        await flashLoanSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.SEPOLIA,
+            tradeParameters: paramsWithoutValidFor as TradeParameters,
+          },
+          mockTradingSdk,
+        )
 
         expect(mockTradingSdk.getQuote).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -161,10 +173,13 @@ adapterNames.forEach((adapterName) => {
       })
 
       test(`should handle different chain IDs`, async () => {
-        await flashLoanSdk.collateralSwap({
-          chainId: SupportedChainId.GNOSIS_CHAIN,
-          tradeParameters: mockTradeParameters,
-        })
+        await flashLoanSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.GNOSIS_CHAIN,
+            tradeParameters: mockTradeParameters,
+          },
+          mockTradingSdk,
+        )
 
         expect(mockTradingSdk.getQuote).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -174,10 +189,13 @@ adapterNames.forEach((adapterName) => {
       })
 
       test(`should post order with EIP1271 signing scheme`, async () => {
-        await flashLoanSdk.collateralSwap({
-          chainId: SupportedChainId.SEPOLIA,
-          tradeParameters: mockTradeParameters,
-        })
+        await flashLoanSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.SEPOLIA,
+            tradeParameters: mockTradeParameters,
+          },
+          mockTradingSdk,
+        )
 
         expect(mockPostSwapOrderFromQuote).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -189,10 +207,13 @@ adapterNames.forEach((adapterName) => {
       })
 
       test(`should include flash loan hint in app data`, async () => {
-        await flashLoanSdk.collateralSwap({
-          chainId: SupportedChainId.SEPOLIA,
-          tradeParameters: mockTradeParameters,
-        })
+        await flashLoanSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.SEPOLIA,
+            tradeParameters: mockTradeParameters,
+          },
+          mockTradingSdk,
+        )
 
         expect(mockPostSwapOrderFromQuote).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -210,10 +231,13 @@ adapterNames.forEach((adapterName) => {
       })
 
       test(`should include hooks in app data`, async () => {
-        await flashLoanSdk.collateralSwap({
-          chainId: SupportedChainId.SEPOLIA,
-          tradeParameters: mockTradeParameters,
-        })
+        await flashLoanSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.SEPOLIA,
+            tradeParameters: mockTradeParameters,
+          },
+          mockTradingSdk,
+        )
 
         expect(mockPostSwapOrderFromQuote).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -242,11 +266,14 @@ adapterNames.forEach((adapterName) => {
       })
 
       test(`should handle zero flash loan fee`, async () => {
-        await flashLoanSdk.collateralSwap({
-          chainId: SupportedChainId.SEPOLIA,
-          tradeParameters: mockTradeParameters,
-          flashLoanFeePercent: 0,
-        })
+        await flashLoanSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.SEPOLIA,
+            tradeParameters: mockTradeParameters,
+            flashLoanFeePercent: 0,
+          },
+          mockTradingSdk,
+        )
 
         const callArgs = (mockTradingSdk.getQuote as jest.Mock).mock.calls[0][0]
         expect(callArgs.amount).toBe(mockTradeParameters.amount)

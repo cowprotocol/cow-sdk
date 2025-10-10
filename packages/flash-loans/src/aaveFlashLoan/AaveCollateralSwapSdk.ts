@@ -5,6 +5,7 @@ import { SigningScheme } from '@cowprotocol/sdk-order-book'
 import { LatestAppDataDocVersion } from '@cowprotocol/sdk-app-data'
 
 import {
+  CollateralOrderData,
   CollateralSwapParams,
   CollateralSwapQuoteParams,
   EncodedOrder,
@@ -34,9 +35,7 @@ import { collateralSwapAdapterHookAbi } from './abi/CollateralSwapAdapterHook'
  * @see https://docs.aave.com/developers/guides/flash-loans
  * @see https://docs.cow.fi/
  */
-export class AaveFlashLoanSdk {
-  constructor(private tradingSdk: TradingSdk) {}
-
+export class AaveCollateralSwapSdk {
   /**
    * Executes a collateral swap using Aave flash loans.
    *
@@ -72,19 +71,19 @@ export class AaveFlashLoanSdk {
    * })
    * ```
    */
-  async collateralSwap(params: CollateralSwapParams): Promise<OrderPostingResult> {
-    const quoteParams = await this.getCollateralSwapQuoteParams(params)
+  async collateralSwap(params: CollateralSwapParams, tradingSdk: TradingSdk): Promise<OrderPostingResult> {
+    const quoteParams = await this.getSwapQuoteParams(params)
 
-    const quoteAndPost = await this.tradingSdk.getQuote(quoteParams)
+    const quoteAndPost = await tradingSdk.getQuote(quoteParams)
 
     const { quoteResults, postSwapOrderFromQuote } = quoteAndPost
 
-    const swapSettings = await this.getCollateralSwapSettings(params, quoteParams, quoteResults)
+    const swapSettings = await this.getOrderPostingSettings(params, quoteParams, quoteResults)
 
     return postSwapOrderFromQuote(swapSettings)
   }
 
-  async getCollateralSwapQuoteParams(params: CollateralSwapParams): Promise<CollateralSwapQuoteParams> {
+  async getSwapQuoteParams(params: CollateralSwapParams): Promise<CollateralSwapQuoteParams> {
     const { chainId, tradeParameters, flashLoanFeePercent = 0 } = params
     const { validFor = DEFAULT_VALIDITY, owner, amount } = tradeParameters
 
@@ -106,7 +105,7 @@ export class AaveFlashLoanSdk {
     }
   }
 
-  async getCollateralSwapSettings(
+  async getOrderPostingSettings(
     params: CollateralSwapParams,
     quoteParams: CollateralSwapQuoteParams,
     quoteResults: QuoteResults,
@@ -177,7 +176,7 @@ export class AaveFlashLoanSdk {
       flashLoanFeeAmount: hookAmounts.flashLoanFeeAmount,
       hookSellAssetAmount: hookAmounts.sellAssetAmount,
       hookBuyAssetAmount: hookAmounts.buyAssetAmount,
-    }
+    } as CollateralOrderData
 
     return (await getGlobalAdapter().readContract({
       address: AAVE_ADAPTER_FACTORY,
