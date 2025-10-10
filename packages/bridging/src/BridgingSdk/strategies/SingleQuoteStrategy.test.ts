@@ -1,5 +1,5 @@
 import { SingleQuoteStrategy } from './SingleQuoteStrategy'
-import { HookMockBridgeProvider } from '../../providers/mock/MockBridgeProvider'
+import { MockHookBridgeProvider } from '../../providers/mock/HookMockBridgeProvider'
 import { QuoteBridgeRequest } from '../../types'
 import { assertIsBridgeQuoteAndPost, assertIsQuoteAndPost } from '../../utils'
 import {
@@ -44,7 +44,7 @@ adapterNames.forEach((adapterName) => {
     let orderBookApi: OrderBookApi
     let quoteResult: QuoteResultsWithSigner
 
-    const mockProvider = new HookMockBridgeProvider()
+    const mockProvider = new MockHookBridgeProvider()
     mockProvider.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
     mockProvider.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
     mockProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
@@ -116,7 +116,7 @@ adapterNames.forEach((adapterName) => {
         expectToEqual(swap.amountsAndCosts, amountsAndCosts)
 
         // Verify basic bridge info
-        expectToEqual(bridge.providerInfo, new HookMockBridgeProvider().info)
+        expectToEqual(bridge.providerInfo, new MockHookBridgeProvider().info)
         expectToEqual(bridge.quoteTimestamp, bridgeQuoteTimestamp)
         expectToEqual(bridge.expectedFillTimeSeconds, bridgeExpectedFillTimeSeconds)
 
@@ -138,8 +138,12 @@ adapterNames.forEach((adapterName) => {
         expectToEqual(swapAmountsAndCosts.costs, amountsAndCosts.costs)
 
         // Verify bridge call details
-        expectToEqual(bridge.bridgeCallDetails.preAuthorizedBridgingHook, bridgeCallDetails.preAuthorizedBridgingHook)
-        expectToEqual(bridge.bridgeCallDetails.unsignedBridgeCall, bridgeCallDetails.unsignedBridgeCall)
+        if (bridge.bridgeCallDetails) {
+          expectToEqual(bridge.bridgeCallDetails.preAuthorizedBridgingHook, bridgeCallDetails.preAuthorizedBridgingHook)
+          expectToEqual(bridge.bridgeCallDetails.unsignedBridgeCall, bridgeCallDetails.unsignedBridgeCall)
+        } else {
+          fail('bridgeCallDetails should be defined (bridge provider uses hooks)')
+        }
       })
 
       it('should handle single-chain swap', async () => {

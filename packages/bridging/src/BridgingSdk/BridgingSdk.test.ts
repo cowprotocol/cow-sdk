@@ -1,6 +1,7 @@
 import { BridgingSdk } from './BridgingSdk'
-import { HookMockBridgeProvider } from '../providers/mock/MockBridgeProvider'
-import { assertIsBridgeQuoteAndPost } from '../utils'
+import { MockHookBridgeProvider } from '../providers/mock/HookMockBridgeProvider'
+import { MockReceiverAccountBridgeProvider } from '../providers/mock/ReceiverAccountMockBridgeProvider'
+import { assertIsBridgeQuoteAndPost, isHookBridgeProvider, isReceiverAccountBridgeProvider } from '../utils'
 import {
   amountsAndCosts,
   appDataInfo,
@@ -36,7 +37,7 @@ adapterNames.forEach((adapterName) => {
     let orderBookApi: OrderBookApi
     let quoteResult: QuoteResultsWithSigner
 
-    const mockProvider = new HookMockBridgeProvider()
+    const mockProvider = new MockHookBridgeProvider()
     mockProvider.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
     mockProvider.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
     mockProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
@@ -367,18 +368,18 @@ adapterNames.forEach((adapterName) => {
     })
 
     describe('getMultiQuotes', () => {
-      let mockProvider2: HookMockBridgeProvider
-      let mockProvider3: HookMockBridgeProvider
+      let mockProvider2: MockHookBridgeProvider
+      let mockProvider3: MockHookBridgeProvider
 
       beforeEach(() => {
-        mockProvider2 = new HookMockBridgeProvider()
+        mockProvider2 = new MockHookBridgeProvider()
         mockProvider2.info.dappId = 'cow-sdk://bridging/providers/mock2'
         mockProvider2.info.name = 'Mock Bridge Provider 2'
         mockProvider2.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
         mockProvider2.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
         mockProvider2.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
-        mockProvider3 = new HookMockBridgeProvider()
+        mockProvider3 = new MockHookBridgeProvider()
         mockProvider3.info.dappId = 'cow-sdk://bridging/providers/mock3'
         mockProvider3.info.name = 'Mock Bridge Provider 3'
         mockProvider3.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
@@ -399,7 +400,7 @@ adapterNames.forEach((adapterName) => {
 
         // Verify that the strategy pattern is working
         expect(results).toHaveLength(3)
-        expect(results[0]?.providerDappId).toBe('mockProvider')
+        expect(results[0]?.providerDappId).toBe('dapp-id-MockHookBridgeProvider')
         expect(results[1]?.providerDappId).toBe('cow-sdk://bridging/providers/mock2')
         expect(results[2]?.providerDappId).toBe('cow-sdk://bridging/providers/mock3')
 
@@ -430,22 +431,22 @@ adapterNames.forEach((adapterName) => {
       it('should pass provider filter to strategy', async () => {
         const results = await bridgingSdk.getMultiQuotes({
           quoteBridgeRequest,
-          providerDappIds: ['mockProvider', 'cow-sdk://bridging/providers/mock3'],
+          providerDappIds: ['dapp-id-MockHookBridgeProvider', 'cow-sdk://bridging/providers/mock3'],
         })
 
         // Verify only specified providers were used
         expect(results).toHaveLength(2)
-        expect(results[0]?.providerDappId).toBe('mockProvider')
+        expect(results[0]?.providerDappId).toBe('dapp-id-MockHookBridgeProvider')
         expect(results[1]?.providerDappId).toBe('cow-sdk://bridging/providers/mock3')
       })
     })
 
     describe('getBestQuote', () => {
-      let mockProvider2: HookMockBridgeProvider
-      let mockProvider3: HookMockBridgeProvider
+      let mockProvider2: MockHookBridgeProvider
+      let mockProvider3: MockHookBridgeProvider
 
       beforeEach(async () => {
-        mockProvider2 = new HookMockBridgeProvider()
+        mockProvider2 = new MockHookBridgeProvider()
         mockProvider2.info.dappId = 'cow-sdk://bridging/providers/mock2'
         mockProvider2.info.name = 'Mock Bridge Provider 2'
         // Override mockProvider to have a medium quote (50 ETH)
@@ -473,7 +474,7 @@ adapterNames.forEach((adapterName) => {
         mockProvider2.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
         mockProvider2.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
-        mockProvider3 = new HookMockBridgeProvider()
+        mockProvider3 = new MockHookBridgeProvider()
         mockProvider3.info.dappId = 'cow-sdk://bridging/providers/mock3'
         mockProvider3.info.name = 'Mock Bridge Provider 3'
         mockProvider3.getQuote = jest.fn().mockResolvedValue({
@@ -530,13 +531,123 @@ adapterNames.forEach((adapterName) => {
       it('should pass provider filter to strategy', async () => {
         const result = await bridgingSdk.getBestQuote({
           quoteBridgeRequest,
-          providerDappIds: ['mockProvider'],
+          providerDappIds: ['dapp-id-MockHookBridgeProvider'],
         })
 
         // Verify only specified provider was used
         expect(result).toBeTruthy()
-        expect(result?.providerDappId).toBe('mockProvider')
+        expect(result?.providerDappId).toBe('dapp-id-MockHookBridgeProvider')
         expect(result?.quote).toBeTruthy()
+      })
+    })
+
+    describe('Mixed Provider Types', () => {
+      let hookProvider: MockHookBridgeProvider
+      let receiverAccountProvider: MockReceiverAccountBridgeProvider
+
+      beforeEach(() => {
+        hookProvider = new MockHookBridgeProvider()
+        hookProvider.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
+        hookProvider.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+        hookProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
+
+        receiverAccountProvider = new MockReceiverAccountBridgeProvider()
+        receiverAccountProvider.getQuote = jest.fn().mockResolvedValue({
+          ...bridgeQuoteResult,
+          amountsAndCosts: {
+            ...bridgeQuoteResult.amountsAndCosts,
+            costs: {
+              bridgingFee: {
+                feeBps: 5,
+                amountInSellCurrency: 50000n,
+                amountInBuyCurrency: 50000n,
+              },
+            },
+          },
+        })
+
+        bridgingSdk = new BridgingSdk({
+          providers: [hookProvider, receiverAccountProvider],
+          tradingSdk,
+        })
+      })
+
+      it('should return the muxed types for the providers', () => {
+        const providers = bridgingSdk.getProviders()
+
+        expect(providers).toHaveLength(2)
+        expect(providers[0]).toEqual(hookProvider)
+        expect(isHookBridgeProvider(hookProvider)).toBe(true)
+
+        expect(providers[1]).toEqual(receiverAccountProvider)
+        expect(isReceiverAccountBridgeProvider(receiverAccountProvider)).toBe(true)
+      })
+
+      it('should get quotes from both provider types', async () => {
+        const results = await bridgingSdk.getMultiQuotes({
+          quoteBridgeRequest,
+        })
+
+        expect(results).toHaveLength(2)
+        expect(results[0]?.providerDappId).toBe('dapp-id-MockHookBridgeProvider')
+        expect(results[1]?.providerDappId).toBe('dapp-id-ReceiverAccountBridgeProvider')
+
+        // Both should return quotes
+        expect(results[0]?.quote).toBeTruthy()
+        expect(results[1]?.quote).toBeTruthy()
+      })
+
+      it('should compare quotes from different provider types in getBestQuote', async () => {
+        // Make hook provider have a lower quote
+        hookProvider.getQuote = jest.fn().mockResolvedValue({
+          ...bridgeQuoteResult,
+          amountsAndCosts: {
+            ...bridgeQuoteResult.amountsAndCosts,
+            afterSlippage: {
+              ...bridgeQuoteResult.amountsAndCosts.afterSlippage,
+              buyAmount: BigInt('50000000000000000000'), // 50 ETH
+            },
+          },
+        })
+
+        // Make receiver account provider have better quote
+        receiverAccountProvider.getQuote = jest.fn().mockResolvedValue({
+          ...bridgeQuoteResult,
+          amountsAndCosts: {
+            ...bridgeQuoteResult.amountsAndCosts,
+            afterSlippage: {
+              ...bridgeQuoteResult.amountsAndCosts.afterSlippage,
+              buyAmount: BigInt('70000000000000000000'), // 70 ETH - better than hook provider
+            },
+          },
+        })
+
+        const result = await bridgingSdk.getBestQuote({
+          quoteBridgeRequest,
+        })
+
+        // Should select the receiver account provider as it has better quote
+        expect(result).toBeTruthy()
+        expect(result?.providerDappId).toBe('dapp-id-ReceiverAccountBridgeProvider')
+        expect(result?.quote?.bridge.amountsAndCosts.afterSlippage.buyAmount).toBe(BigInt('70000000000000000000'))
+      })
+
+      it('should correctly identify provider types', () => {
+        const providers = bridgingSdk.getProviders()
+
+        const hook = providers.find((p) => p.info.dappId === 'dapp-id-MockHookBridgeProvider')
+        const receiver = providers.find((p) => p.info.dappId === 'dapp-id-ReceiverAccountBridgeProvider')
+
+        expect(hook).toBeDefined()
+        expect(receiver).toBeDefined()
+
+        if (!hook || !receiver) throw new Error('Hook or receiver not found') // Just to satisfy the linter (asserted above)
+
+        expect(isHookBridgeProvider(hook)).toBe(true)
+        expect(isReceiverAccountBridgeProvider(hook)).toBe(false)
+
+        expect(isHookBridgeProvider(receiver)).toBe(false)
+        expect(isReceiverAccountBridgeProvider(receiver)).toBe(true)
       })
     })
   })
