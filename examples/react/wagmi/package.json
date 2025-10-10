@@ -9,13 +9,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tanstack/react-query": "5.45.1",
+    "@cowprotocol/cow-sdk": "workspace:*",
+    "@cowprotocol/sdk-viem-adapter": "workspace:*",
+    "@tanstack/react-query": "^5.59.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "viem": "^2.28.4",
-    "wagmi": "latest",
-    "@cowprotocol/cow-sdk": "workspace:*",
-    "@cowprotocol/sdk-viem-adapter": "workspace:*"
+    "viem": "^2.38.0",
+    "wagmi": "^2.18.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.1",
