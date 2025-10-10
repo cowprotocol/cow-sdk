@@ -76,6 +76,11 @@ export interface TradeOptionalParameters {
   slippageBps?: latest.SlippageBips
   receiver?: OrderParameters['receiver']
   validFor?: OrderParameters['validTo']
+  /**
+   * Exact validTo timestamp in seconds since epoch.
+   * If provided, this will be used instead of calculating from validFor.
+   */
+  validTo?: OrderParameters['validTo']
   partnerFee?: latest.PartnerFee
 }
 
