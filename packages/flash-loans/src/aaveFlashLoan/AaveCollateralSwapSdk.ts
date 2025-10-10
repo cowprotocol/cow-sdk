@@ -49,26 +49,10 @@ export class AaveCollateralSwapSdk {
    *          smart contract address as the signer.
    *
    * @param {CollateralSwapParams} params - Configuration for the collateral swap.
+   * @param {TradingSdk} tradingSdk - @cowprotocol/sdk-trading.
    * @returns {Promise<OrderPostingResult>} The result of posting the order to CoW Protocol.
    *
    * @throws Will throw if the quote fails, contract deployment fails, or gas estimation fails.
-   *
-   * @example
-   * ```typescript
-   * const result = await flashLoanSdk.collateralSwap({
-   *   chainId: SupportedChainId.GNOSIS_CHAIN,
-   *   tradeParameters: {
-   *     sellToken: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',
-   *     sellTokenDecimals: 18,
-   *     buyToken: '0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0',
-   *     buyTokenDecimals: 6,
-   *     amount: '20000000000000000000',
-   *     kind: OrderKind.SELL,
-   *     validFor: 600,
-   *     slippageBps: 50,
-   *   },
-   *   flashLoanFeePercent: 0.05,
-   * })
    * ```
    */
   async collateralSwap(params: CollateralSwapParams, tradingSdk: TradingSdk): Promise<OrderPostingResult> {
@@ -83,6 +67,20 @@ export class AaveCollateralSwapSdk {
     return postSwapOrderFromQuote(swapSettings)
   }
 
+  /**
+   * Prepares quote parameters for the collateral swap operation.
+   *
+   * @remarks This method calculates the adjusted swap amount after deducting the flash loan fee,
+   *          resolves the trader address, and computes the order validity timestamp. The flash
+   *          loan fee is deducted from the sell amount before requesting a quote to ensure the
+   *          final swap amount covers both the desired output and the flash loan repayment.
+   *
+   * @param {CollateralSwapParams} params - The collateral swap parameters including chain ID,
+   *                                         trade parameters, and optional flash loan fee percentage.
+   * @returns {Promise<CollateralSwapQuoteParams>} Quote parameters with adjusted amounts and
+   *                                                 computed validity period.
+   * ```
+   */
   async getSwapQuoteParams(params: CollateralSwapParams): Promise<CollateralSwapQuoteParams> {
     const { chainId, tradeParameters, flashLoanFeePercent = 0 } = params
     const { validFor = DEFAULT_VALIDITY, owner, amount } = tradeParameters
@@ -105,6 +103,25 @@ export class AaveCollateralSwapSdk {
     }
   }
 
+  /**
+   * Generates order posting settings including hooks and flash loan metadata.
+   *
+   * @remarks This method constructs the complete order posting configuration for a flash loan-based
+   *          collateral swap. It:
+   *          - Encodes the order data for EIP-1271 signature verification
+   *          - Calculates the deterministic address for the adapter contract
+   *          - Configures pre and post-execution hooks for flash loan management
+   *          - Generates flash loan hint metadata for the order
+   *          - Sets up EIP-1271 signing scheme with the expected instance address
+   *
+   * @param {CollateralSwapParams} params - Original collateral swap parameters.
+   * @param {CollateralSwapQuoteParams} quoteParams - Processed quote parameters with adjusted amounts.
+   * @param {QuoteResults} quoteResults - Quote results from the trading SDK containing order details.
+   * @returns {Promise<SwapAdvancedSettings>} Advanced settings for posting the swap order with
+   *                                           flash loan hooks and metadata.
+   *
+   * @throws Will throw if contract address calculation fails or gas estimation fails.
+   */
   async getOrderPostingSettings(
     params: CollateralSwapParams,
     quoteParams: CollateralSwapQuoteParams,
