@@ -44,10 +44,10 @@ async function main() {
       sellTokenDecimals: 18,
       buyToken: '0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0', // USDC.e
       buyTokenDecimals: 6,
-      amount: '20000000000000000000',
+      amount: '20000000000000000000', // 20 WXDAI
       kind: OrderKind.SELL,
-      validFor: 6 * 60, // 6h
-      slippageBps: 0,
+      validFor: 10 * 60, // 10m
+      slippageBps: 8,
     },
     flashLoanFeePercent: 0.05, // 0.05%
   })

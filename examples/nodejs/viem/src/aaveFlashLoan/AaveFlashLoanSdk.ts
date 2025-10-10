@@ -107,7 +107,7 @@ export class AaveFlashLoanSdk {
   }
 
   private async getExpectedInstanceAddress(
-    trader: string,
+    trader: AccountAddress,
     hookAmounts: FlashLoanHookAmounts,
     order: EncodedOrder,
   ): Promise<AccountAddress> {
@@ -133,7 +133,7 @@ export class AaveFlashLoanSdk {
     })) as AccountAddress
   }
 
-  private getPreHookCallData(trader: string, hookAmounts: FlashLoanHookAmounts, order: EncodedOrder): string {
+  private getPreHookCallData(trader: AccountAddress, hookAmounts: FlashLoanHookAmounts, order: EncodedOrder): string {
     return getGlobalAdapter().utils.encodeFunction(aaveAdapterFactoryAbi, 'deployAndTransferFlashLoan', [
       trader,
       AAVE_COLLATERAL_SWAP_ADAPTER_HOOK,
