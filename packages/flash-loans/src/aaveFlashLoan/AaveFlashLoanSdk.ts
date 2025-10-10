@@ -18,17 +18,67 @@ import { aaveAdapterFactoryAbi } from './abi/AaveAdapterFactory'
 import { collateralSwapAdapterHookAbi } from './abi/CollateralSwapAdapterHook'
 import { EncodedOrder, FlashLoanHint, FlashLoanHookAmounts } from './types'
 
+/**
+ * Parameters for executing a collateral swap using Aave flash loans.
+ */
 interface CollateralSwapParams {
   chainId: SupportedChainId
+  /** Trade parameters including tokens, amounts, and validity period. */
   tradeParameters: TradeParameters
+  /** The flash loan fee as a percentage (e.g., 0.05 for 0.05%). Defaults to 0. */
   flashLoanFeePercent?: number
 }
 
 const DEFAULT_VALIDITY = 10 * 60 // 10 min
 
+/**
+ * SDK for executing Aave flash loan operations, particularly collateral swaps.
+ *
+ * @remarks This SDK facilitates flash loan-based collateral swaps using Aave Protocol V3,
+ *          integrated with CoW Protocol for optimal trading execution. It handles the
+ *          complex flow of flash loans, order creation, and hook configuration.
+ *
+ * @see https://docs.aave.com/developers/guides/flash-loans
+ * @see https://docs.cow.fi/
+ */
 export class AaveFlashLoanSdk {
   constructor(private tradingSdk: TradingSdk) {}
 
+  /**
+   * Executes a collateral swap using Aave flash loans.
+   *
+   * @remarks This method orchestrates a complex flash loan operation:
+   *          1. Borrows the sell token via Aave flash loan
+   *          2. Executes a CoW Protocol swap to the buy token
+   *          3. Uses CoW hooks to deploy adapter contracts and manage the swap
+   *          4. Repays the flash loan with fees
+   *
+   *          The order is signed using EIP-1271 with a deterministically generated
+   *          smart contract address as the signer.
+   *
+   * @param {CollateralSwapParams} params - Configuration for the collateral swap.
+   * @returns {Promise<OrderPostingResult>} The result of posting the order to CoW Protocol.
+   *
+   * @throws Will throw if the quote fails, contract deployment fails, or gas estimation fails.
+   *
+   * @example
+   * ```typescript
+   * const result = await flashLoanSdk.collateralSwap({
+   *   chainId: SupportedChainId.GNOSIS_CHAIN,
+   *   tradeParameters: {
+   *     sellToken: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',
+   *     sellTokenDecimals: 18,
+   *     buyToken: '0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0',
+   *     buyTokenDecimals: 6,
+   *     amount: '20000000000000000000',
+   *     kind: OrderKind.SELL,
+   *     validFor: 600,
+   *     slippageBps: 50,
+   *   },
+   *   flashLoanFeePercent: 0.05,
+   * })
+   * ```
+   */
   async collateralSwap(params: CollateralSwapParams): Promise<OrderPostingResult> {
     const { chainId, tradeParameters, flashLoanFeePercent = 0 } = params
     const { validFor = DEFAULT_VALIDITY, owner, amount } = tradeParameters
