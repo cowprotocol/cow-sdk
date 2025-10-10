@@ -1,35 +1,28 @@
-import { SupportedChainId } from '@cowprotocol/sdk-config'
-import { OrderPostingResult, TradeParameters, TradingSdk } from '@cowprotocol/sdk-trading'
+import { OrderPostingResult, QuoteResults, SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { AccountAddress, getGlobalAdapter } from '@cowprotocol/sdk-common'
 import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
 import { SigningScheme } from '@cowprotocol/sdk-order-book'
 import { LatestAppDataDocVersion } from '@cowprotocol/sdk-app-data'
 
 import {
+  CollateralSwapParams,
+  CollateralSwapQuoteParams,
+  EncodedOrder,
+  FlashLoanHint,
+  FlashLoanHookAmounts,
+} from './types'
+import {
   AAVE_ADAPTER_FACTORY,
   AAVE_COLLATERAL_SWAP_ADAPTER_HOOK,
   AAVE_POOL_ADDRESS,
   DEFAULT_HOOK_GAS_LIMIT,
+  DEFAULT_VALIDITY,
   EMPTY_PERMIT_SIGN,
   HASH_ZERO,
   PERCENT_SCALE,
 } from './const'
 import { aaveAdapterFactoryAbi } from './abi/AaveAdapterFactory'
 import { collateralSwapAdapterHookAbi } from './abi/CollateralSwapAdapterHook'
-import { EncodedOrder, FlashLoanHint, FlashLoanHookAmounts } from './types'
-
-/**
- * Parameters for executing a collateral swap using Aave flash loans.
- */
-interface CollateralSwapParams {
-  chainId: SupportedChainId
-  /** Trade parameters including tokens, amounts, and validity period. */
-  tradeParameters: TradeParameters
-  /** The flash loan fee as a percentage (e.g., 0.05 for 0.05%). Defaults to 0. */
-  flashLoanFeePercent?: number
-}
-
-const DEFAULT_VALIDITY = 10 * 60 // 10 min
 
 /**
  * SDK for executing Aave flash loan operations, particularly collateral swaps.
@@ -80,6 +73,18 @@ export class AaveFlashLoanSdk {
    * ```
    */
   async collateralSwap(params: CollateralSwapParams): Promise<OrderPostingResult> {
+    const quoteParams = await this.getCollateralSwapQuoteParams(params)
+
+    const quoteAndPost = await this.tradingSdk.getQuote(quoteParams)
+
+    const { quoteResults, postSwapOrderFromQuote } = quoteAndPost
+
+    const swapSettings = await this.getCollateralSwapSettings(params, quoteParams, quoteResults)
+
+    return postSwapOrderFromQuote(swapSettings)
+  }
+
+  async getCollateralSwapQuoteParams(params: CollateralSwapParams): Promise<CollateralSwapQuoteParams> {
     const { chainId, tradeParameters, flashLoanFeePercent = 0 } = params
     const { validFor = DEFAULT_VALIDITY, owner, amount } = tradeParameters
 
@@ -90,23 +95,26 @@ export class AaveFlashLoanSdk {
     const sellAmount = BigInt(amount)
     const flashLoanFeeAmount = (sellAmount * BigInt(flashLoanFeePercent * PERCENT_SCALE)) / BigInt(100 * PERCENT_SCALE)
 
-    const quoteAndPost = await this.tradingSdk.getQuote({
-      chainId,
+    return {
       ...tradeParameters,
+      flashLoanFeeAmount,
+      chainId,
       owner: trader,
       amount: (sellAmount - flashLoanFeeAmount).toString(),
       validFor,
-    })
+      validTo,
+    }
+  }
 
-    const {
-      quoteResults: {
-        orderToSign,
-        amountsAndCosts: {
-          afterSlippage: { buyAmount },
-        },
-      },
-      postSwapOrderFromQuote,
-    } = quoteAndPost
+  async getCollateralSwapSettings(
+    params: CollateralSwapParams,
+    quoteParams: CollateralSwapQuoteParams,
+    quoteResults: QuoteResults,
+  ): Promise<SwapAdvancedSettings> {
+    const { amount } = params.tradeParameters
+    const { flashLoanFeeAmount, validTo, owner: trader } = quoteParams
+    const { orderToSign } = quoteResults
+    const buyAmount = quoteResults.amountsAndCosts.afterSlippage.buyAmount
 
     const encodedOrder: EncodedOrder = {
       ...OrderSigningUtils.encodeUnsignedOrder(orderToSign),
@@ -115,23 +123,23 @@ export class AaveFlashLoanSdk {
     }
 
     const hookAmounts: FlashLoanHookAmounts = {
-      flashLoanAmount: sellAmount.toString(),
+      flashLoanAmount: amount,
       flashLoanFeeAmount: flashLoanFeeAmount.toString(),
-      sellAssetAmount: sellAmount.toString(),
+      sellAssetAmount: amount,
       buyAssetAmount: buyAmount.toString(),
     }
 
     const expectedInstanceAddress = await this.getExpectedInstanceAddress(trader, hookAmounts, encodedOrder)
 
     const flashLoanHint: FlashLoanHint = {
-      amount: sellAmount.toString(), // this is actually in UNDERLYING but aave tokens are 1:1
+      amount, // this is actually in UNDERLYING but aave tokens are 1:1
       receiver: AAVE_ADAPTER_FACTORY,
       liquidityProvider: AAVE_POOL_ADDRESS,
       protocolAdapter: AAVE_ADAPTER_FACTORY,
       token: orderToSign.sellToken,
     }
 
-    return postSwapOrderFromQuote({
+    return {
       quoteRequest: {
         validTo,
         receiver: expectedInstanceAddress,
@@ -149,7 +157,7 @@ export class AaveFlashLoanSdk {
           }),
         },
       },
-    })
+    }
   }
 
   private async getExpectedInstanceAddress(
