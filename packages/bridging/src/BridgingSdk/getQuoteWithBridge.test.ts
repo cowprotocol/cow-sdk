@@ -1,5 +1,5 @@
 import { getEthFlowContract, TradingSdk } from '@cowprotocol/sdk-trading'
-import { HookMockBridgeProvider } from '../providers/mock/MockBridgeProvider'
+import { MockHookBridgeProvider } from '../providers/mock/HookMockBridgeProvider'
 import { QuoteBridgeRequest } from '../types'
 import { getQuoteWithBridge } from './getQuoteWithBridge'
 import {
@@ -26,7 +26,7 @@ adapterNames.forEach((adapterName) => {
   describe(`getQuoteWithBridge with ${adapterName}`, () => {
     let tradingSdk: TradingSdk
     let orderBookApi: OrderBookApi
-    let mockProvider: HookMockBridgeProvider
+    let mockProvider: MockHookBridgeProvider
 
     let getQuoteMock: jest.Mock
     let getUnsignedBridgeCallMock: jest.Mock
@@ -60,7 +60,7 @@ adapterNames.forEach((adapterName) => {
         signerMock.estimateGas = mockEstimateGas
       }
 
-      mockProvider = new HookMockBridgeProvider()
+      mockProvider = new MockHookBridgeProvider()
       mockProvider.getQuote = getQuoteMock = jest.fn().mockResolvedValue(bridgeQuoteResult)
       mockProvider.getUnsignedBridgeCall = getUnsignedBridgeCallMock = jest
         .fn()
