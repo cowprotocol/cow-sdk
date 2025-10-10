@@ -90,7 +90,13 @@ export class AaveCollateralSwapSdk {
 
     const validTo = tradeParameters.validTo ?? Math.ceil(Date.now() / 1000) + validFor
     const sellAmount = BigInt(amount)
-    const flashLoanFeeAmount = (sellAmount * BigInt(flashLoanFeePercent * PERCENT_SCALE)) / BigInt(100 * PERCENT_SCALE)
+
+    if (!Number.isFinite(flashLoanFeePercent) || flashLoanFeePercent < 0 || flashLoanFeePercent > 100) {
+      throw new Error(`flashLoanFeePercent must be between 0 and 100, got: ${flashLoanFeePercent}`)
+    }
+
+    const flashLoanFeeAmount =
+      (sellAmount * BigInt(Math.round(flashLoanFeePercent * PERCENT_SCALE))) / BigInt(100 * PERCENT_SCALE)
 
     return {
       ...tradeParameters,

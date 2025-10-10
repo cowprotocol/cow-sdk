@@ -45,7 +45,6 @@ export interface CollateralSwapParams {
 
 export interface CollateralSwapQuoteParams extends Omit<TradeParameters, 'owner'> {
   chainId: SupportedChainId
-  amount: string
   validTo: number
   validFor: number
   owner: AccountAddress
