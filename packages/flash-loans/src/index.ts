@@ -1,1 +1,1 @@
-export * from './aaveFlashLoan/AaveFlashLoanSdk'
+export * from './aaveFlashLoan'
