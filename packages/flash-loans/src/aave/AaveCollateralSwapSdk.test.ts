@@ -6,7 +6,7 @@ import { TradingSdk, TradeParameters } from '@cowprotocol/sdk-trading'
 import { createAdapters, TEST_ADDRESS } from '../../tests/setup'
 
 import { AaveCollateralSwapSdk } from './AaveCollateralSwapSdk'
-import { AAVE_ADAPTER_FACTORY } from './const'
+import { AAVE_ADAPTER_FACTORY, HASH_ZERO } from './const'
 
 const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
@@ -21,6 +21,8 @@ const mockTradeParameters: TradeParameters = {
   validFor: 600,
   slippageBps: 50,
 }
+
+const collateralToken = '0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533' // aGnoWXDAI
 
 const mockOrderToSign = {
   sellToken: '0xd057b63f5e69cf1b929b356b579cba08d7688048',
@@ -92,6 +94,7 @@ adapterNames.forEach((adapterName) => {
           {
             chainId: SupportedChainId.SEPOLIA,
             tradeParameters: mockTradeParameters,
+            collateralToken,
           },
           mockTradingSdk,
         )
@@ -117,6 +120,7 @@ adapterNames.forEach((adapterName) => {
             chainId: SupportedChainId.SEPOLIA,
             tradeParameters: mockTradeParameters,
             flashLoanFeePercent,
+            collateralToken,
           },
           mockTradingSdk,
         )
@@ -143,6 +147,7 @@ adapterNames.forEach((adapterName) => {
               ...mockTradeParameters,
               owner: customOwner,
             },
+            collateralToken,
           },
           mockTradingSdk,
         )
@@ -161,6 +166,7 @@ adapterNames.forEach((adapterName) => {
           {
             chainId: SupportedChainId.SEPOLIA,
             tradeParameters: paramsWithoutValidFor as TradeParameters,
+            collateralToken,
           },
           mockTradingSdk,
         )
@@ -177,6 +183,7 @@ adapterNames.forEach((adapterName) => {
           {
             chainId: SupportedChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
+            collateralToken,
           },
           mockTradingSdk,
         )
@@ -193,6 +200,7 @@ adapterNames.forEach((adapterName) => {
           {
             chainId: SupportedChainId.SEPOLIA,
             tradeParameters: mockTradeParameters,
+            collateralToken,
           },
           mockTradingSdk,
         )
@@ -211,6 +219,7 @@ adapterNames.forEach((adapterName) => {
           {
             chainId: SupportedChainId.SEPOLIA,
             tradeParameters: mockTradeParameters,
+            collateralToken,
           },
           mockTradingSdk,
         )
@@ -230,11 +239,21 @@ adapterNames.forEach((adapterName) => {
         )
       })
 
-      test(`should include hooks in app data`, async () => {
+      test(`should include collateralPermit in app data`, async () => {
         await flashLoanSdk.collateralSwap(
           {
             chainId: SupportedChainId.SEPOLIA,
             tradeParameters: mockTradeParameters,
+            collateralToken,
+            settings: {
+              collateralPermit: {
+                amount: 0,
+                deadline: 0,
+                v: 0,
+                r: HASH_ZERO, // bytes32(0) in Solidity
+                s: HASH_ZERO, // bytes32(0) in Solidity
+              },
+            },
           },
           mockTradingSdk,
         )
@@ -271,12 +290,116 @@ adapterNames.forEach((adapterName) => {
             chainId: SupportedChainId.SEPOLIA,
             tradeParameters: mockTradeParameters,
             flashLoanFeePercent: 0,
+            collateralToken,
           },
           mockTradingSdk,
         )
 
         const callArgs = (mockTradingSdk.getQuote as jest.Mock).mock.calls[0][0]
         expect(callArgs.amount).toBe(mockTradeParameters.amount)
+      })
+    })
+
+    describe('getCollateralAllowance', () => {
+      test('should return the current allowance', async () => {
+        const mockAllowance = BigInt('5000000000000000000')
+        jest.spyOn(adapter, 'readContract').mockResolvedValue(mockAllowance as any)
+
+        const allowance = await flashLoanSdk.getCollateralAllowance({
+          trader: TEST_ADDRESS,
+          collateralToken,
+          amount: BigInt('1000000000000000000'),
+          instanceAddress: '0x1234567890123456789012345678901234567890',
+        })
+
+        expect(allowance).toBe(mockAllowance)
+        expect(adapter.readContract).toHaveBeenCalledWith(
+          expect.objectContaining({
+            address: collateralToken,
+            functionName: 'allowance',
+            args: [TEST_ADDRESS, '0x1234567890123456789012345678901234567890'],
+          }),
+        )
+      })
+
+      test('should return zero for no allowance', async () => {
+        jest.spyOn(adapter, 'readContract').mockResolvedValue(BigInt(0) as any)
+
+        const allowance = await flashLoanSdk.getCollateralAllowance({
+          trader: TEST_ADDRESS,
+          collateralToken,
+          amount: BigInt('1000000000000000000'),
+          instanceAddress: '0x1234567890123456789012345678901234567890',
+        })
+
+        expect(allowance).toBe(BigInt(0))
+      })
+
+      test('should call readContract with correct parameters', async () => {
+        const instanceAddress = '0xabcdef0123456789012345678901234567890abc'
+        jest.spyOn(adapter, 'readContract').mockResolvedValue(BigInt('1000000') as any)
+
+        await flashLoanSdk.getCollateralAllowance({
+          trader: TEST_ADDRESS,
+          collateralToken,
+          amount: BigInt('1000000000000000000'),
+          instanceAddress,
+        })
+
+        expect(adapter.readContract).toHaveBeenCalledWith({
+          address: collateralToken,
+          abi: expect.any(Array),
+          functionName: 'allowance',
+          args: [TEST_ADDRESS, instanceAddress],
+        })
+      })
+    })
+
+    describe('approveCollateral', () => {
+      test('should send approval transaction with correct parameters', async () => {
+        const mockTxResponse = { hash: '0xabc123' }
+        const sendTransactionSpy = jest
+          .spyOn(adapter.signer, 'sendTransaction')
+          .mockResolvedValue(mockTxResponse as any)
+
+        const amount = BigInt('20000000000000000000')
+        const instanceAddress = '0x1234567890123456789012345678901234567890'
+
+        const result = await flashLoanSdk.approveCollateral({
+          trader: TEST_ADDRESS,
+          collateralToken,
+          amount,
+          instanceAddress,
+        })
+
+        expect(result).toBe(mockTxResponse)
+        expect(sendTransactionSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            to: collateralToken,
+            data: expect.any(String),
+          }),
+        )
+      })
+
+      test('should encode approval amount in hex correctly', async () => {
+        const mockTxResponse = { hash: '0xdef456' }
+        const sendTransactionSpy = jest
+          .spyOn(adapter.signer, 'sendTransaction')
+          .mockResolvedValue(mockTxResponse as any)
+
+        const amount = BigInt('1000000000000000000')
+        const instanceAddress = '0xabcdef0123456789012345678901234567890abc'
+
+        await flashLoanSdk.approveCollateral({
+          trader: TEST_ADDRESS,
+          collateralToken,
+          amount,
+          instanceAddress,
+        })
+
+        const callArgs = sendTransactionSpy.mock.calls?.[0]?.[0]
+        expect(callArgs?.to).toBe(collateralToken)
+        expect(callArgs?.data).toContain('0x')
       })
     })
   })

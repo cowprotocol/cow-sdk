@@ -101,6 +101,7 @@ const result = await flashLoanSdk.collateralSwap(
       validFor: 600, // 10 minutes
       slippageBps: 50, // 0.5% slippage
     },
+    collateralToken: '0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533', // aGnoWXDAI (Aave interest-bearing WXDAI)
     flashLoanFeePercent: 0.05, // 0.05% flash loan fee
   },
   tradingSdk
@@ -111,6 +112,8 @@ console.log('Flash loan order created:', result.orderId)
 
 ### Advanced Usage with Quote Review
 
+For maximum control over the process, including manual approval management:
+
 ```typescript
 import { AaveCollateralSwapSdk } from '@cowprotocol/sdk-flash-loans'
 import { TradingSdk } from '@cowprotocol/sdk-trading'
@@ -119,8 +122,10 @@ import { OrderKind } from '@cowprotocol/sdk-order-book'
 
 const flashLoanSdk = new AaveCollateralSwapSdk()
 
+const collateralToken = '0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533' // aGnoWXDAI
+
 // Step 1: Prepare quote parameters
-const quoteParams = await flashLoanSdk.getSwapQuoteParams({
+const params = {
   chainId: SupportedChainId.GNOSIS_CHAIN,
   tradeParameters: {
     sellToken: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',
@@ -130,8 +135,11 @@ const quoteParams = await flashLoanSdk.getSwapQuoteParams({
     amount: '20000000000000000000',
     kind: OrderKind.SELL,
   },
+  collateralToken,
   flashLoanFeePercent: 0.05,
-})
+}
+
+const quoteParams = await flashLoanSdk.getSwapQuoteParams(params)
 
 // Step 2: Get quote
 const quoteAndPost = await tradingSdk.getQuote(quoteParams)
@@ -141,19 +149,42 @@ const { quoteResults } = quoteAndPost
 const buyAmount = quoteResults.amountsAndCosts.afterSlippage.buyAmount
 console.log(`You will receive at least: ${buyAmount} tokens`)
 
-// Step 4: Generate order settings
-const orderSettings = await flashLoanSdk.getOrderPostingSettings(
-  {
-    chainId: SupportedChainId.GNOSIS_CHAIN,
-    tradeParameters: quoteParams,
-    flashLoanFeePercent: 0.05,
-  },
+// Step 4: Generate order settings and get instance address
+const { swapSettings, instanceAddress } = await flashLoanSdk.getOrderPostingSettings(
+  params,
   quoteParams,
   quoteResults
 )
 
-// Step 5: Post the order with custom settings
-const result = await quoteAndPost.postSwapOrderFromQuote(orderSettings)
+// Step 5: Check collateral allowance
+const sellAmount = BigInt(params.tradeParameters.amount)
+const allowance = await flashLoanSdk.getCollateralAllowance({
+  trader: quoteParams.owner,
+  collateralToken,
+  amount: sellAmount,
+  instanceAddress,
+})
+
+console.log(`Current allowance: ${allowance.toString()}`)
+console.log(`Required amount: ${sellAmount.toString()}`)
+
+// Step 6: Approve collateral if needed
+if (allowance < sellAmount) {
+  console.log('Insufficient allowance, approving...')
+  const txResponse = await flashLoanSdk.approveCollateral({
+    trader: quoteParams.owner,
+    collateralToken,
+    amount: sellAmount,
+    instanceAddress,
+  })
+  console.log('Approval transaction:', txResponse.hash)
+  // Optionally wait for confirmation here
+} else {
+  console.log('Sufficient allowance already exists')
+}
+
+// Step 7: Post the order
+const result = await quoteAndPost.postSwapOrderFromQuote(swapSettings)
 console.log('Order posted:', result.orderId)
 ```
 
@@ -174,6 +205,151 @@ Aave flash loans typically charge a fee (currently 0.05% on most assets). This f
   amount: '20000000000000000000',
   flashLoanFeePercent: 0.05, // 0.05%
 }
+```
+
+## Collateral Token Parameter
+
+The `collateralToken` parameter specifies which Aave interest-bearing token (aToken) will be used as collateral for the flash loan operation.
+
+### What are aTokens?
+
+When you deposit assets into Aave, you receive aTokens (e.g., aWXDAI, aUSDC) that:
+- Represent your deposited collateral
+- Accrue interest automatically
+- Can be used for flash loan collateral swaps
+- Need approval for the flash loan adapter to spend
+
+### Common aTokens on Gnosis Chain
+
+```typescript
+const AAVE_TOKENS = {
+  aGnoWXDAI: '0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533', // Aave WXDAI
+  aGnoUSDC: '0xc6B7AcA6DE8a6044E0e32d0c841a89244A10D284',  // Aave USDC
+  // Add more as needed
+}
+```
+
+### Usage Example
+
+```typescript
+const result = await flashLoanSdk.collateralSwap(
+  {
+    chainId: SupportedChainId.GNOSIS_CHAIN,
+    tradeParameters: {
+      sellToken: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d', // WXDAI (what we're swapping)
+      buyToken: '0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0',  // USDC.e (what we want)
+      amount: '20000000000000000000',
+      kind: OrderKind.SELL,
+    },
+    collateralToken: '0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533', // aGnoWXDAI (our Aave collateral)
+    flashLoanFeePercent: 0.05,
+  },
+  tradingSdk
+)
+```
+
+**Important Notes:**
+- The `collateralToken` must be an Aave aToken address
+- You must have sufficient aToken balance for collateral
+- The SDK automatically handles approval of this token
+- This is different from `sellToken` (which is the underlying asset being swapped)
+
+## Collateral Token Approval
+
+Before executing a collateral swap, the flash loan adapter needs approval to spend your collateral tokens. The SDK handles this automatically but also provides methods for manual control.
+
+### Automatic Approval
+
+By default, `collateralSwap()` automatically checks and approves collateral if needed:
+
+```typescript
+// Automatic approval happens here
+const result = await flashLoanSdk.collateralSwap(
+  {
+    chainId: SupportedChainId.GNOSIS_CHAIN,
+    tradeParameters: { /* ... */ },
+    collateralToken: '0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533', // aGnoWXDAI
+  },
+  tradingSdk
+)
+```
+
+### Manual Approval with getCollateralAllowance and approveCollateral
+
+For more control over the approval process:
+
+```typescript
+// Step 1: Get the adapter instance address
+const quoteParams = await flashLoanSdk.getSwapQuoteParams(params)
+const quoteAndPost = await tradingSdk.getQuote(quoteParams)
+const { swapSettings, instanceAddress } = await flashLoanSdk.getOrderPostingSettings(
+  params,
+  quoteParams,
+  quoteAndPost.quoteResults
+)
+const sellAmount = BigInt(params.tradeParameters.amount)
+
+// Step 2: Check current allowance
+const allowance = await flashLoanSdk.getCollateralAllowance({
+  trader: quoteParams.owner,
+  collateralToken: '0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533',
+  amount: sellAmount,
+  instanceAddress,
+})
+
+console.log('Current allowance:', allowance.toString())
+
+// Step 3: Approve if needed
+if (allowance < sellAmount) {
+  const txResponse = await flashLoanSdk.approveCollateral({
+    trader: quoteParams.owner,
+    collateralToken: '0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533',
+    amount: sellAmount,
+    instanceAddress,
+  })
+  console.log('Approval transaction:', txResponse.hash)
+  // Wait for confirmation...
+}
+
+// Step 4: Execute swap with approval prevention
+const result = await flashLoanSdk.collateralSwap(
+  {
+    chainId: SupportedChainId.GNOSIS_CHAIN,
+    tradeParameters: { /* ... */ },
+    collateralToken: '0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533',
+    settings: {
+      preventApproval: true, // Skip automatic approval
+    },
+  },
+  tradingSdk
+)
+```
+
+### Gasless Approval with EIP-2612 Permit
+
+For tokens that support EIP-2612, you can use permit for gasless approval:
+
+```typescript
+// Generate permit signature (implementation varies by wallet)
+const collateralPermit = {
+  amount: 0,
+  deadline: Math.floor(Date.now() / 1000) + 3600, // 1 hour
+  v: 27,
+  r: '0x...',
+  s: '0x...',
+}
+
+const result = await flashLoanSdk.collateralSwap(
+  {
+    chainId: SupportedChainId.GNOSIS_CHAIN,
+    tradeParameters: { /* ... */ },
+    collateralToken: '0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533',
+    settings: {
+      collateralPermit, // Use permit instead of approve
+    },
+  },
+  tradingSdk
+)
 ```
 
 ## How Hooks Work

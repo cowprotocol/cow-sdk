@@ -43,6 +43,7 @@ describe.skip('AaveFlashLoanIntegration', () => {
     const result = await flashLoanSdk.collateralSwap(
       {
         chainId: SupportedChainId.GNOSIS_CHAIN,
+        collateralToken: '0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533', // aGnoWXDAI
         tradeParameters: {
           sellToken: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d', // WXDAI
           sellTokenDecimals: 18,

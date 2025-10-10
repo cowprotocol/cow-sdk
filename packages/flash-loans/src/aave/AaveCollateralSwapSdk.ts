@@ -1,12 +1,21 @@
 import { OrderPostingResult, QuoteResults, SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
-import { AccountAddress, getGlobalAdapter } from '@cowprotocol/sdk-common'
+import {
+  AccountAddress,
+  ERC20_ALLOWANCE_ABI,
+  ERC20_APPROVE_ABI,
+  getGlobalAdapter,
+  TransactionResponse,
+} from '@cowprotocol/sdk-common'
 import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
 import { SigningScheme } from '@cowprotocol/sdk-order-book'
 import { LatestAppDataDocVersion } from '@cowprotocol/sdk-app-data'
 
 import {
   CollateralOrderData,
+  CollateralParameters,
+  CollateralPermitData,
   CollateralSwapParams,
+  CollateralSwapPostParams,
   CollateralSwapQuoteParams,
   EncodedOrder,
   FlashLoanHint,
@@ -18,7 +27,6 @@ import {
   AAVE_POOL_ADDRESS,
   DEFAULT_HOOK_GAS_LIMIT,
   DEFAULT_VALIDITY,
-  EMPTY_PERMIT_SIGN,
   HASH_ZERO,
   PERCENT_SCALE,
 } from './const'
@@ -57,12 +65,34 @@ export class AaveCollateralSwapSdk {
    */
   async collateralSwap(params: CollateralSwapParams, tradingSdk: TradingSdk): Promise<OrderPostingResult> {
     const quoteParams = await this.getSwapQuoteParams(params)
+    const {
+      collateralToken,
+      tradeParameters: { amount },
+      settings,
+    } = params
+    const sellAmount = BigInt(amount)
 
     const quoteAndPost = await tradingSdk.getQuote(quoteParams)
 
     const { quoteResults, postSwapOrderFromQuote } = quoteAndPost
 
-    const swapSettings = await this.getOrderPostingSettings(params, quoteParams, quoteResults)
+    const { swapSettings, instanceAddress } = await this.getOrderPostingSettings(
+      params,
+      quoteParams,
+      quoteResults,
+      settings?.collateralPermit,
+    )
+
+    const collateralParams: CollateralParameters = {
+      instanceAddress,
+      trader: quoteParams.owner,
+      collateralToken: collateralToken,
+      amount: sellAmount,
+    }
+
+    if (!settings?.preventApproval && !settings?.collateralPermit) {
+      await this.approveCollateralIfNeeded(collateralParams, sellAmount)
+    }
 
     return postSwapOrderFromQuote(swapSettings)
   }
@@ -132,7 +162,8 @@ export class AaveCollateralSwapSdk {
     params: CollateralSwapParams,
     quoteParams: CollateralSwapQuoteParams,
     quoteResults: QuoteResults,
-  ): Promise<SwapAdvancedSettings> {
+    collateralPermit?: CollateralPermitData,
+  ): Promise<CollateralSwapPostParams> {
     const { amount } = params.tradeParameters
     const { flashLoanFeeAmount, validTo, owner: trader } = quoteParams
     const { orderToSign } = quoteResults
@@ -151,7 +182,7 @@ export class AaveCollateralSwapSdk {
       buyAssetAmount: buyAmount.toString(),
     }
 
-    const expectedInstanceAddress = await this.getExpectedInstanceAddress(trader, hookAmounts, encodedOrder)
+    const instanceAddress = await this.getExpectedInstanceAddress(trader, hookAmounts, encodedOrder)
 
     const flashLoanHint: FlashLoanHint = {
       amount, // this is actually in UNDERLYING but aave tokens are 1:1
@@ -161,11 +192,11 @@ export class AaveCollateralSwapSdk {
       token: orderToSign.sellToken,
     }
 
-    return {
+    const swapSettings: SwapAdvancedSettings = {
       quoteRequest: {
         validTo,
-        receiver: expectedInstanceAddress,
-        from: expectedInstanceAddress as AccountAddress,
+        receiver: instanceAddress,
+        from: instanceAddress as AccountAddress,
       },
       additionalParams: {
         signingScheme: SigningScheme.EIP1271,
@@ -173,13 +204,98 @@ export class AaveCollateralSwapSdk {
       appData: {
         metadata: {
           flashloan: flashLoanHint,
-          hooks: await this.getOrderHooks(trader, expectedInstanceAddress, hookAmounts, {
-            ...encodedOrder,
-            receiver: expectedInstanceAddress,
-          }),
+          hooks: await this.getOrderHooks(
+            trader,
+            instanceAddress,
+            hookAmounts,
+            {
+              ...encodedOrder,
+              receiver: instanceAddress,
+            },
+            collateralPermit,
+          ),
         },
       },
     }
+
+    return {
+      swapSettings,
+      instanceAddress,
+    }
+  }
+
+  /**
+   * Checks the current allowance for the flash loan adapter to spend collateral tokens.
+   *
+   * @remarks This method queries the ERC-20 token contract to determine how many tokens
+   *          the deterministic adapter instance address is approved to spend on behalf
+   *          of the trader. This is useful for verifying if approval is needed before
+   *          executing a collateral swap.
+   *
+   * @param {CollateralParameters} params - Parameters including trader address, collateral
+   *                                         token address, and adapter instance address.
+   * @returns {Promise<bigint>} The current allowance amount in token's smallest unit (wei).
+   *
+   * @example
+   * ```typescript
+   * const allowance = await sdk.getCollateralAllowance({
+   *   trader: '0x...',
+   *   collateralToken: '0x...',
+   *   amount: BigInt('1000000000000000000'),
+   *   instanceAddress: '0x...',
+   * })
+   * console.log('Current allowance:', allowance.toString())
+   * ```
+   */
+  async getCollateralAllowance(params: CollateralParameters): Promise<bigint> {
+    const { collateralToken, trader, instanceAddress } = params
+
+    const adapter = getGlobalAdapter()
+
+    return (await adapter.readContract({
+      address: collateralToken,
+      abi: ERC20_ALLOWANCE_ABI,
+      functionName: 'allowance',
+      args: [trader, instanceAddress],
+    })) as bigint
+  }
+
+  /**
+   * Approves the flash loan adapter to spend collateral tokens.
+   *
+   * @remarks This method sends an on-chain approval transaction to allow the deterministic
+   *          adapter instance address to spend the specified amount of collateral tokens.
+   *          The approval is required before executing a collateral swap unless using
+   *          EIP-2612 permit or preventApproval settings.
+   *
+   * @param {CollateralParameters} params - Parameters including trader address, collateral
+   *                                         token address, amount to approve, and adapter
+   *                                         instance address.
+   * @returns {Promise<TransactionResponse>} The transaction response from the approval transaction.
+   *
+   * @throws Will throw if the approval transaction fails or is rejected.
+   *
+   * @example
+   * ```typescript
+   * const txResponse = await sdk.approveCollateral({
+   *   trader: '0x...',
+   *   collateralToken: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',
+   *   amount: BigInt('20000000000000000000'),
+   *   instanceAddress: '0x...',
+   * })
+   * console.log('Approval transaction hash:', txResponse.hash)
+   * ```
+   */
+  async approveCollateral(params: CollateralParameters): Promise<TransactionResponse> {
+    const { collateralToken, amount, instanceAddress } = params
+    const adapter = getGlobalAdapter()
+
+    const txParams = {
+      to: collateralToken,
+      data: adapter.utils.encodeFunction(ERC20_APPROVE_ABI, 'approve', [instanceAddress, '0x' + amount.toString(16)]),
+    }
+
+    return adapter.signer.sendTransaction(txParams)
   }
 
   private async getExpectedInstanceAddress(
@@ -209,6 +325,18 @@ export class AaveCollateralSwapSdk {
     })) as AccountAddress
   }
 
+  private async approveCollateralIfNeeded(collateralParams: CollateralParameters, sellAmount: bigint): Promise<void> {
+    const allowance = await this.getCollateralAllowance(collateralParams).catch((error) => {
+      console.error('[AaveCollateralSwapSdk] Could not get allowance for collateral token', error)
+
+      return null
+    })
+
+    if (!allowance || allowance < sellAmount) {
+      await this.approveCollateral(collateralParams)
+    }
+  }
+
   private getPreHookCallData(trader: AccountAddress, hookAmounts: FlashLoanHookAmounts, order: EncodedOrder): string {
     return getGlobalAdapter().utils.encodeFunction(aaveAdapterFactoryAbi, 'deployAndTransferFlashLoan', [
       trader,
@@ -218,9 +346,9 @@ export class AaveCollateralSwapSdk {
     ])
   }
 
-  private getPostHookCallData(): string {
+  private getPostHookCallData(collateralPermit: CollateralPermitData): string {
     return getGlobalAdapter().utils.encodeFunction(collateralSwapAdapterHookAbi, 'collateralSwapWithFlashLoan', [
-      EMPTY_PERMIT_SIGN,
+      collateralPermit,
     ])
   }
 
@@ -229,11 +357,12 @@ export class AaveCollateralSwapSdk {
     expectedInstanceAddress: AccountAddress,
     hookAmounts: FlashLoanHookAmounts,
     order: EncodedOrder,
+    collateralPermit?: CollateralPermitData,
   ): Promise<LatestAppDataDocVersion['metadata']['hooks']> {
     const adapter = getGlobalAdapter()
 
     const preHookCallData = this.getPreHookCallData(trader, hookAmounts, order)
-    const postHookCallData = this.getPostHookCallData()
+    const postHookCallData = collateralPermit ? this.getPostHookCallData(collateralPermit) : undefined
 
     return {
       pre: [
@@ -250,20 +379,22 @@ export class AaveCollateralSwapSdk {
           ).toString(),
         },
       ],
-      post: [
-        {
-          target: expectedInstanceAddress,
-          callData: postHookCallData,
-          gasLimit: (
-            await adapter.signer
-              .estimateGas({
-                to: expectedInstanceAddress,
-                data: postHookCallData,
-              })
-              .catch(() => DEFAULT_HOOK_GAS_LIMIT)
-          ).toString(),
-        },
-      ],
+      post: postHookCallData
+        ? [
+            {
+              target: expectedInstanceAddress,
+              callData: postHookCallData,
+              gasLimit: (
+                await adapter.signer
+                  .estimateGas({
+                    to: expectedInstanceAddress,
+                    data: postHookCallData,
+                  })
+                  .catch(() => DEFAULT_HOOK_GAS_LIMIT)
+              ).toString(),
+            },
+          ]
+        : undefined,
     }
   }
 }
