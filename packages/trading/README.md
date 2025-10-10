@@ -690,6 +690,8 @@ console.log('Buy amount:', order.buyAmount)
 
 Cancels an order off-chain by sending a signed cancellation request to the order book API. This is a "soft cancel" that is faster and doesn't require gas, but requires order book support.
 
+You always can cancel orders using [CoW Swap](https://swap.cow.fi), [see the tutorial for more details](https://docs.cow.fi/cow-protocol/tutorials/cow-swap/swap#cancel-your-order).
+
 **Parameters:**
 - `orderUid` - The unique identifier of the order to cancel
 - `chainId` - (Optional) Chain ID, uses trader params if not provided
