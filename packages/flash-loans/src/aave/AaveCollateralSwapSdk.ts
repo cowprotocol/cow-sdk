@@ -300,7 +300,7 @@ export class AaveCollateralSwapSdk {
     return adapter.signer.sendTransaction(txParams)
   }
 
-  private async getExpectedInstanceAddress(
+  async getExpectedInstanceAddress(
     trader: AccountAddress,
     hookAmounts: FlashLoanHookAmounts,
     order: EncodedOrder,
