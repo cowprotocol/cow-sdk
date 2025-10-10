@@ -51,8 +51,8 @@ export class AaveCollateralSwapSdk {
    *
    * @remarks This method orchestrates a complex flash loan operation:
    *          1. Borrows the sell token via Aave flash loan
-   *          2. Executes a CoW Protocol swap to the buy token
-   *          3. Uses CoW hooks to deploy adapter contracts and manage the swap
+   *          2. Uses CoW hooks to deploy adapter contracts and manage the swap
+   *          3. Executes a CoW Protocol swap to the buy token
    *          4. Repays the flash loan with fees
    *
    *          The order is signed using EIP-1271 with a deterministically generated
