@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.3.2...sdk-trading-v0.4.0) (2025-10-11)
+
+
+### ✨ Features
+
+* **trading:** add validTo parameter to getQuote ([#576](https://github.com/cowprotocol/cow-sdk/issues/576)) ([fcf4258](https://github.com/cowprotocol/cow-sdk/commit/fcf425806044c0ea8b83cfb4116d2f7fb9fcc6e0))
+
+
+### 📚 Documentation
+
+* add link to cancel order doc ([#580](https://github.com/cowprotocol/cow-sdk/issues/580)) ([9764178](https://github.com/cowprotocol/cow-sdk/commit/97641785500141c7e68a96483f17a624724b5386))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-order-signing bumped to 0.1.6
+    * @cowprotocol/sdk-contracts-ts bumped to 0.4.0
+
 ## [0.3.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.3.1...sdk-trading-v0.3.2) (2025-10-08)
 
 
