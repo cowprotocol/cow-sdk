@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.5](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.4.4...sdk-bridging-v0.4.5) (2025-10-11)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-contracts-ts bumped to 0.4.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.1.6
+    * @cowprotocol/sdk-trading bumped to 0.4.0
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 0.1.6
+
 ## [0.4.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.4.3...sdk-bridging-v0.4.4) (2025-10-08)
 
 
