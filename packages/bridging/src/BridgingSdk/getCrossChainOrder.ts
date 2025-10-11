@@ -1,4 +1,4 @@
-import { BridgeProvider, BridgeQuoteResult, BridgeStatus, CrossChainOrder } from '../types'
+import { BridgeQuoteResult, BridgeStatus, CrossChainOrder, BridgeProvider } from '../types'
 
 import { BridgeOrderParsingError } from '../errors'
 import { findBridgeProviderFromHook } from './findBridgeProviderFromHook'
