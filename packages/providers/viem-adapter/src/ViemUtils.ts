@@ -22,7 +22,6 @@ import {
   getAddress,
   encodeAbiParameters,
   decodeAbiParameters,
-  stringToHex,
   hexToBigInt,
   slice,
   parseAbi,
@@ -40,6 +39,7 @@ import {
   AbiParameter,
   parseUnits,
   sliceHex,
+  toBytes,
 } from 'viem'
 import { ViemInterfaceWrapper } from './ViemInterfaceWrapper'
 import { ViemParamType } from './ViemParamtype'
@@ -166,7 +166,7 @@ export class ViemUtils implements AdapterUtils {
   }
 
   id(text: string): `0x${string}` {
-    return keccak256(stringToHex(text))
+    return keccak256(toBytes(text))
   }
 
   toBigIntish(value: `0x${string}` | string | number): bigint {
@@ -241,11 +241,7 @@ export class ViemUtils implements AdapterUtils {
     })
   }
 
-  encodeFunction(
-    abi: Array<{ name: string; inputs: Array<{ type: string }>; type: string }>,
-    functionName: string,
-    args: ContractValue[],
-  ): string {
+  encodeFunction(abi: Abi, functionName: string, args: ContractValue[]): string {
     const functionAbi = abi.find((item) => item.type === 'function' && item.name === functionName)
     if (!functionAbi) {
       throw new Error(`Function ${functionName} not found in ABI`)

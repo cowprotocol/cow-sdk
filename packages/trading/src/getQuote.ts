@@ -118,7 +118,7 @@ export async function getQuoteRaw(
     sellToken,
     buyToken,
     receiver,
-    ...(validTo !== undefined ? { validTo } : { validFor: effectiveValidFor }),
+    ...(typeof validTo === 'number' ? { validTo } : { validFor: effectiveValidFor }),
     appData: fullAppData,
     appDataHash: appDataKeccak256,
     priceQuality: PriceQuality.OPTIMAL, // Do not change this parameter because we rely on the fact that quote has id
