@@ -130,13 +130,15 @@ export class AaveCollateralSwapSdk {
     const flashLoanFeeAmount =
       (sellAmount * BigInt(Math.round(flashLoanFeePercent * PERCENT_SCALE))) / BigInt(100 * PERCENT_SCALE)
 
+    // Omit validFor because we use validTo instead (it is defined above)
+    const { validFor: _, ...restParameters } = tradeParameters
+
     return {
-      ...tradeParameters,
+      ...restParameters,
       flashLoanFeeAmount,
       chainId,
       owner: trader,
       amount: (sellAmount - flashLoanFeeAmount).toString(),
-      validFor,
       validTo,
     }
   }

@@ -159,25 +159,6 @@ adapterNames.forEach((adapterName) => {
         )
       })
 
-      test(`should use default validity when not provided`, async () => {
-        const { validFor: _validFor, ...paramsWithoutValidFor } = mockTradeParameters
-
-        await flashLoanSdk.collateralSwap(
-          {
-            chainId: SupportedChainId.SEPOLIA,
-            tradeParameters: paramsWithoutValidFor as TradeParameters,
-            collateralToken,
-          },
-          mockTradingSdk,
-        )
-
-        expect(mockTradingSdk.getQuote).toHaveBeenCalledWith(
-          expect.objectContaining({
-            validFor: 600,
-          }),
-        )
-      })
-
       test(`should handle different chain IDs`, async () => {
         await flashLoanSdk.collateralSwap(
           {

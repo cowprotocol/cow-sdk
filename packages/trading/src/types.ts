@@ -141,10 +141,7 @@ export interface SigningStepManager {
   onOrderSignError?(): void
 }
 
-export interface SwapAdvancedSettings {
-  quoteRequest?: Partial<Omit<OrderQuoteRequest, 'kind'> & { validTo: number }>
-  appData?: AppDataParams
-  additionalParams?: PostTradeAdditionalParams
+export interface SwapAdvancedSettings extends LimitOrderAdvancedSettings {
   // In special case, when you want to fetch quote with a different signer
   quoteSigner?: SignerLike
   /**
@@ -154,6 +151,8 @@ export interface SwapAdvancedSettings {
 }
 
 export interface LimitOrderAdvancedSettings {
+  // TODO: rename to TradeParamsOverride
+  quoteRequest?: Partial<Omit<OrderQuoteRequest, 'kind'> & { validTo: number }>
   appData?: AppDataParams
   additionalParams?: PostTradeAdditionalParams
 }
