@@ -228,7 +228,7 @@ adapterNames.forEach((adapterName) => {
             collateralToken,
             settings: {
               collateralPermit: {
-                amount: 0,
+                amount: '0',
                 deadline: 0,
                 v: 0,
                 r: HASH_ZERO, // bytes32(0) in Solidity
@@ -327,7 +327,7 @@ adapterNames.forEach((adapterName) => {
             collateralToken,
             settings: {
               collateralPermit: {
-                amount: 0,
+                amount: '0',
                 deadline: 0,
                 v: 0,
                 r: HASH_ZERO,
