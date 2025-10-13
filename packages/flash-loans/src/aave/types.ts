@@ -74,7 +74,7 @@ export interface CollateralParameters {
 }
 
 export interface CollateralPermitData {
-  amount: number
+  amount: string
   deadline: number
   v: number
   r: string
