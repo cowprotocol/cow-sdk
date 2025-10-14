@@ -123,7 +123,7 @@ jobs:
             # For PRs, use PR number + commit hash for uniqueness
             VERSION_SUFFIX="pr-$PR_NUMBER-$COMMIT_HASH"
             echo "version_suffix=$VERSION_SUFFIX" >> $GITHUB_OUTPUT
-            echo "tag=pr" >> $GITHUB_OUTPUT
+            echo "tag=pr-$PR_NUMBER" >> $GITHUB_OUTPUT
             echo "is_pr=true" >> $GITHUB_OUTPUT
           else
             # For main branch, use latest tag
@@ -141,8 +141,6 @@ jobs:
 
       - name: Create pre-release versions
         run: |
-          VERSION_SUFFIX="${{ steps.version.outputs.version_suffix }}"
-
           # Instead of letting pnpm increment versions, we'll set them explicitly
           echo "Setting explicit pre-release versions with suffix: $VERSION_SUFFIX"
 
@@ -190,7 +188,7 @@ jobs:
         run: |
           # Publish all packages and capture versions
           echo "Publishing packages..."
-          pnpm publish -r --filter="./packages/**" --tag ${{ steps.version.outputs.tag }} --no-git-checks --access public > publish_output.txt 2>&1
+          pnpm publish -r --filter="./packages/**" --tag $TAG --no-git-checks --access public > publish_output.txt 2>&1
 
           # Show the actual publish output for debugging
           echo "=== Full publish output ==="
@@ -201,6 +199,7 @@ jobs:
           grep -o '@cowprotocol/[^@]*@[0-9][^[:space:]]*' publish_output.txt | sort -u > published_versions.txt
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
 
       - name: Restore original versions
         run: |
@@ -212,8 +211,18 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const prVersion = '$VERSION_SUFFIX';
-            const isExternalPR = '$FULL_NAME' !== '$REPOSITORY';
+            const prVersion = process.env.VERSION_SUFFIX;
+            const tag = process.env.TAG;
+            const fullName = process.env.FULL_NAME;
+            const repository = process.env.REPOSITORY;
+            const registry = process.env.REGISTRY;
+
+            if (!prVersion || !tag || !fullName || !repository || !registry) {
+              console.log('Missing environment variables');
+              process.exit(1);
+            }
+
+            const isExternalPR = fullName !== repository;
 
             // Read published versions from file
             const fs = require('fs');
@@ -255,8 +264,8 @@ jobs:
 
             \`\`\`bash
             # Create .npmrc file in your project root
-            echo "@cowprotocol:registry=https://$REGISTRY" > .npmrc
-            echo "//$REGISTRY/:_authToken=YOUR_GITHUB_TOKEN" >> .npmrc
+            echo "@cowprotocol:registry=https://${registry}" > .npmrc
+            echo "//${registry}/:_authToken=YOUR_GITHUB_TOKEN" >> .npmrc
             \`\`\`
 
             **To get your GitHub token:**
@@ -265,16 +274,31 @@ jobs:
             3. Check only the "read:packages" scope
             4. Copy the token and replace \`YOUR_GITHUB_TOKEN\` in the \`.npmrc\` file
 
-            Then install any of the packages above:
+            Then install any of the packages above, either by exact version (i.e. \`${publishedVersions[0]}\`) or more conveniently by using the tag (\`@cowprotocol/cow-sdk@${tag}\`):
             \`\`\`bash
             # Yarn
-            yarn add ${publishedVersions[0]}
+            yarn add npm:@cowprotocol/cow-sdk@${tag}
 
             # pnpm
-            pnpm install ${publishedVersions[0]}
+            pnpm install npm:@cowprotocol/cow-sdk@${tag}
 
             # NPM
-            npm install ${publishedVersions[0]}
+            npm install npm:@cowprotocol/cow-sdk@${tag}
+            \`\`\`
+
+
+            ## Update to the latest version (only if you used the tag)
+            Every commit will publish a new package. To upgrade to the latest version, run:
+
+            \`\`\`bash
+            # Yarn
+            yarn upgrade @cowprotocol/cow-sdk
+
+            # pnpm
+            pnpm update @cowprotocol/cow-sdk
+
+            # NPM
+            npm update @cowprotocol/cow-sdk
             \`\`\`
 
             ### View Packages
@@ -316,3 +340,4 @@ jobs:
           VERSION_SUFFIX: ${{ steps.version.outputs.version_suffix }}
           FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
           REPOSITORY: ${{ github.repository }}
+          TAG: ${{ steps.version.outputs.tag }}
