@@ -20,7 +20,7 @@ describe('Flashloan metadata v1.7.0', () => {
 
     // then
     expect(appDataDoc.metadata.flashloan).toEqual(validFlashloanMetadata)
-    expect(appDataDoc.version).toBe('1.7.0')
+    expect(appDataDoc.version).toBe('1.8.0')
   })
 
   test('Validates valid flashloan metadata v1.7.0', async () => {
@@ -59,7 +59,9 @@ describe('Flashloan metadata v1.7.0', () => {
 
     // then
     expect(validation.success).toBeFalsy()
-    expect(validation.errors).toContain('data/metadata/flashloan/liquidityProvider must match pattern "^0x[a-fA-F0-9]{40}$"')
+    expect(validation.errors).toContain(
+      'data/metadata/flashloan/liquidityProvider must match pattern "^0x[a-fA-F0-9]{40}$"',
+    )
   })
 
   test('Fails validation with invalid amount', async () => {
@@ -165,6 +167,6 @@ describe('Flashloan metadata v1.7.0', () => {
 
     // then
     expect(appDataDoc.metadata).toEqual(metadata)
-    expect(appDataDoc.version).toBe('1.7.0')
+    expect(appDataDoc.version).toBe('1.8.0')
   })
 })
