@@ -1,5 +1,5 @@
 {
-  "$id": "https://cowswap.exchange/schemas/app-data/v0.11.0.json",
+  "$id": "https://cowswap.exchange/schemas/app-data/v1.0.0.json",
   "$schema": "http://json-schema.org/draft-07/schema",
   "description": "Metadata JSON document for adding information to orders.",
   "required": ["version", "metadata"],
@@ -10,7 +10,7 @@
     "version": {
       "$ref": "definitions.json#/definitions/version",
       "readOnly": true,
-      "default": "0.11.0"
+      "default": "1.0.0"
     },
     "appCode": {
       "$id": "#/properties/appCode",
