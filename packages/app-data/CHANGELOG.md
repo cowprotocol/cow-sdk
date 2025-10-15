@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.1.1...sdk-app-data-v4.1.2) (2025-10-15)
+
+
+### 🐛 Bug Fixes
+
+* **app-data:** fix typos and ids in schemas ([#586](https://github.com/cowprotocol/cow-sdk/issues/586)) ([5a4461a](https://github.com/cowprotocol/cow-sdk/commit/5a4461a2a171689db04f7c805c9e2c835bbd36dd))
+
 ## [4.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.1.0...sdk-app-data-v4.1.1) (2025-10-08)
 
 
