@@ -10,7 +10,7 @@
     "version": {
       "$ref": "definitions.json#/definitions/version",
       "readOnly": true,
-      "default": "0.11.0"
+      "default": "1.1.0"
     },
     "appCode": {
       "$id": "#/properties/appCode",

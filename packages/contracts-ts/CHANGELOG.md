@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.3.1...sdk-contracts-ts-v0.4.0) (2025-10-15)
+
+
+### ✨ Features
+
+* **trading:** add validTo parameter to getQuote ([#576](https://github.com/cowprotocol/cow-sdk/issues/576)) ([fcf4258](https://github.com/cowprotocol/cow-sdk/commit/fcf425806044c0ea8b83cfb4116d2f7fb9fcc6e0))
+
+
+### 🐛 Bug Fixes
+
+* **app-data:** fix typos and ids in schemas ([#586](https://github.com/cowprotocol/cow-sdk/issues/586)) ([5a4461a](https://github.com/cowprotocol/cow-sdk/commit/5a4461a2a171689db04f7c805c9e2c835bbd36dd))
+
 ## [0.3.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.3.0...sdk-contracts-ts-v0.3.1) (2025-10-08)
 
 
