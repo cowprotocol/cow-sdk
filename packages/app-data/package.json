@@ -25,7 +25,7 @@
   "scripts": {
     "clean": "rm -rf dist/* && rm -rf .turbo && rm -rf node_modules && rm -rf schemas/",
     "compile": "tsx src/scripts/compile.ts",
-    "prebuild": "pnpm run clean && pnpm install && pnpm run compile",
+    "prebuild": "pnpm run check-schema-ids && pnpm run validate-schemas && pnpm run clean && pnpm install && pnpm run compile",
     "build": "tsup src/index.ts --format cjs,esm --dts --external multiformats",
     "dev": "pnpm run compile && tsup src/index.ts --format cjs,esm --watch --dts --external multiformats",
     "lint": "eslint src/**/*.ts",
@@ -33,6 +33,8 @@
     "test:coverage": "jest --coverage --json --outputFile=jest.results.json && npx coveralls < ./coverage/lcov.info",
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
     "typecheck": "tsc --noEmit",
+    "validate-schemas": "node scripts/validate-schemas.js",
+    "check-schema-ids": "node scripts/check-schema-ids.js",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {

@@ -11,7 +11,7 @@
     "version": {
       "$ref": "../definitions.json#/definitions/version",
       "readOnly": true,
-      "default": "0.1.0"
+      "default": "0.2.0"
     },
     "pre": {
       "$id": "#/properties/hooks/pre",
