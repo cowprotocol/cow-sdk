@@ -93,7 +93,7 @@ function checkSchemaId(filePath) {
 }
 
 // Main check
-const schemasDir = path.join(__dirname, 'src', 'schemas')
+const schemasDir = path.join(__dirname, '..', 'src', 'schemas')
 const schemaFiles = findSchemaFiles(schemasDir)
 
 console.log(`Checking ${schemaFiles.length} schema files for ID mismatches...\n`)

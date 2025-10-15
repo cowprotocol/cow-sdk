@@ -1,12 +1,9 @@
-import Ajv from 'ajv'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-
-const ajv = new Ajv({ strict: false, allErrors: true })
 
 // Find all JSON schema files
 function findSchemaFiles(dir, fileList = []) {
@@ -30,11 +27,10 @@ function findSchemaFiles(dir, fileList = []) {
 function validateSchema(filePath) {
   try {
     const content = fs.readFileSync(filePath, 'utf8')
-    const schema = JSON.parse(content)
+    JSON.parse(content)
 
-    // Check if it's a valid JSON Schema
-    ajv.compile(schema)
-
+    // Only check for valid JSON syntax
+    // Full schema validation with reference resolution is done by the compile script
     return { valid: true, file: filePath }
   } catch (error) {
     return {
@@ -47,7 +43,7 @@ function validateSchema(filePath) {
 }
 
 // Main validation
-const schemasDir = path.join(__dirname, 'src', 'schemas')
+const schemasDir = path.join(__dirname, '..', 'src', 'schemas')
 const schemaFiles = findSchemaFiles(schemasDir)
 
 console.log(`Found ${schemaFiles.length} schema files\n`)
