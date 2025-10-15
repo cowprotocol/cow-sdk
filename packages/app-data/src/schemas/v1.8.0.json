@@ -1,8 +1,11 @@
 {
-  "$id": "https://cowswap.exchange/schemas/app-data/v1.1.0.json",
+  "$id": "https://cowswap.exchange/schemas/app-data/v1.8.0.json",
   "$schema": "http://json-schema.org/draft-07/schema",
   "description": "Metadata JSON document for adding information to orders.",
-  "required": ["version", "metadata"],
+  "required": [
+    "version",
+    "metadata"
+  ],
   "title": "AppData Root Schema",
   "type": "object",
   "additionalProperties": false,
@@ -10,12 +13,14 @@
     "version": {
       "$ref": "definitions.json#/definitions/version",
       "readOnly": true,
-      "default": "1.1.0"
+      "default": "1.8.0"
     },
     "appCode": {
       "$id": "#/properties/appCode",
       "description": "The code identifying the CLI, UI, service generating the order.",
-      "examples": ["CoW Swap"],
+      "examples": [
+        "CoW Swap"
+      ],
       "title": "App Code",
       "type": "string"
     },
@@ -24,7 +29,12 @@
       "description": "Environment from which the order came from.",
       "title": "Environment",
       "type": "string",
-      "examples": ["production", "development", "staging", "ens"]
+      "examples": [
+        "production",
+        "development",
+        "staging",
+        "ens"
+      ]
     },
     "metadata": {
       "$id": "#/properties/metadata",
@@ -42,25 +52,31 @@
           "$ref": "referrer/v0.2.0.json#"
         },
         "utm": {
-          "$ref": "utm/v0.2.0.json#"
+          "$ref": "utm/v0.3.0.json#"
         },
         "quote": {
-          "$ref": "quote/v1.0.0.json#"
+          "$ref": "quote/v1.1.0.json#"
         },
         "orderClass": {
           "$ref": "orderClass/v0.3.0.json#"
         },
         "hooks": {
-          "$ref": "hooks/v0.1.0.json#"
+          "$ref": "hooks/v0.2.0.json#"
         },
         "widget": {
           "$ref": "widget/v0.1.0.json#"
         },
         "partnerFee": {
-          "$ref": "partnerFee/v0.1.0.json#"
+          "$ref": "partnerFee/v1.0.0.json#"
         },
         "replacedOrder": {
           "$ref": "replacedOrder/v0.1.0.json#"
+        },
+        "bridging": {
+          "$ref": "bridging/v0.1.0.json#"
+        },
+        "flashloan": {
+          "$ref": "flashloan/v0.2.0.json#"
         }
       }
     }

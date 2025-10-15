@@ -1,5 +1,9 @@
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // Find all JSON schema files
 function findSchemaFiles(dir, fileList = []) {
@@ -54,13 +58,18 @@ function checkSchemaId(filePath) {
 
     const issues = []
 
+    // Normalize versions for comparison (remove 'v' prefix if present)
+    const normalizedFileVersion = fileVersion.replace(/^v/, '')
+    const normalizedIdVersion = idVersion ? idVersion.replace(/^v/, '') : null
+    const normalizedDefaultVersion = defaultVersion
+
     // Check if schema ID version matches filename
-    if (idVersion && idVersion !== fileVersion) {
+    if (normalizedIdVersion && normalizedIdVersion !== normalizedFileVersion) {
       issues.push(`ID version mismatch: file=${fileVersion}, $id=${idVersion}`)
     }
 
     // Check if default version matches filename
-    if (defaultVersion && defaultVersion !== fileVersion) {
+    if (normalizedDefaultVersion && normalizedDefaultVersion !== normalizedFileVersion) {
       issues.push(`Default version mismatch: file=${fileVersion}, default=${defaultVersion}`)
     }
 

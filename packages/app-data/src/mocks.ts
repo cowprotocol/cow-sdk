@@ -40,7 +40,7 @@ export const APP_DATA_DOC_WITH_FLASHLOAN = {
 }
 
 export const APP_DATA_DOC_WITH_FLASHLOAN_V170 = {
-  version: '1.7.0',
+  version: '1.8.0',
   appCode: 'aave-v3-flashloan',
   metadata: {
     flashloan: {
