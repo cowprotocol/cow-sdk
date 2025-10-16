@@ -13,6 +13,7 @@ import schemaV1_0_0 from '../schemas/v1.0.0.json'
 import schemaV1_1_0 from '../schemas/v1.1.0.json'
 import schemaV1_2_0 from '../schemas/v1.2.0.json'
 import schemaV1_4_0 from '../schemas/v1.4.0.json'
+import schemaV1_9_0 from '../schemas/v1.9.0.json'
 import { buildAssertInvalidFn, buildAssertValidFn } from './test-utils'
 
 const ADDRESS = '0xb6BAd41ae76A11D10f7b0E664C5007b908bC77C9'
@@ -1158,5 +1159,79 @@ describe('Schema v1.4.0: Upgrade partnerFee metadata to 1.0.0', () => {
         },
       ],
     ),
+  )
+})
+
+describe('Schema v1.9.0: hooks metadata update to 0.3.0', () => {
+  const ajv = new Ajv()
+  const validator = ajv.compile(schemaV1_9_0)
+
+  const BASE_DOCUMENT = {
+    version: '1.9.0',
+    metadata: {},
+  }
+
+  test('Minimal valid schema', buildAssertValidFn(validator, BASE_DOCUMENT))
+
+  test(
+    'With minimal hooks v0.3.0',
+    buildAssertValidFn(validator, {
+      ...BASE_DOCUMENT,
+      metadata: { hooks: {} },
+    }),
+  )
+
+  test(
+    'With type field in hooks',
+    buildAssertValidFn(validator, {
+      ...BASE_DOCUMENT,
+      metadata: {
+        hooks: {
+          pre: [
+            {
+              target: '0x0102030405060708091011121314151617181920',
+              callData: '0x01020304',
+              gasLimit: '10000',
+              type: 'whatever(no strict validation)',
+            },
+          ],
+          post: [
+            {
+              target: '0x0102030405060708091011121314151617181920',
+              callData: '0x',
+              gasLimit: '10000',
+              type: 'whatever(no strict validation)',
+            },
+          ],
+        },
+      },
+    }),
+  )
+
+  test(
+    'With dappId in hooks',
+    buildAssertValidFn(validator, {
+      ...BASE_DOCUMENT,
+      metadata: {
+        hooks: {
+          pre: [
+            {
+              target: '0x0102030405060708091011121314151617181920',
+              callData: '0x01020304',
+              gasLimit: '10000',
+              dappId: '0xa90ef8a908e7f6f4b5e8c3d6e8f9a0b1c2d3e4f5',
+            },
+          ],
+          post: [
+            {
+              target: '0x0102030405060708091011121314151617181920',
+              callData: '0x',
+              gasLimit: '10000',
+              dappId: 'whatever(no strict validation anymore)',
+            },
+          ],
+        },
+      },
+    }),
   )
 })
