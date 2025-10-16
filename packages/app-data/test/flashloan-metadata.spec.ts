@@ -2,7 +2,7 @@ import { generateAppDataDoc } from '../src/api/generateAppDataDoc'
 import { validateAppDataDoc } from '../src/api/validateAppDataDoc'
 import { LATEST_APP_DATA_VERSION } from '../src/generatedTypes'
 
-describe('Flashloan metadata v1.7.0', () => {
+describe('Flashloan metadata', () => {
   const validFlashloanMetadata = {
     amount: '2000000000000000000',
     liquidityProvider: '0xb50201558B00496A145fE76f7424749556E326D8',
