@@ -2,6 +2,7 @@ import type { SupportedChainId } from '@cowprotocol/sdk-config'
 import type { TradeParameters, SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
 import type { AccountAddress } from '@cowprotocol/sdk-common'
 import type { Address } from '@cowprotocol/sdk-order-book'
+import type { UnsignedOrder } from '@cowprotocol/sdk-order-signing'
 
 export interface FlashLoanHookAmounts {
   flashLoanAmount: string
@@ -54,12 +55,23 @@ export interface CollateralSwapParams {
   }
 }
 
-export interface CollateralSwapQuoteParams extends Omit<TradeParameters, 'owner'> {
+export interface CollateralSwapTradeParams {
   chainId: SupportedChainId
   validTo: number
   owner: AccountAddress
   flashLoanFeeAmount: bigint
 }
+
+export interface CollateralSwapOrder {
+  sellAmount: bigint
+  buyAmount: bigint
+  orderToSign: UnsignedOrder
+  collateralPermit?: CollateralPermitData
+}
+
+export interface CollateralSwapQuoteParams
+  extends Omit<TradeParameters, 'owner' | 'validTo'>,
+    CollateralSwapTradeParams {}
 
 export interface CollateralSwapPostParams {
   swapSettings: SwapAdvancedSettings

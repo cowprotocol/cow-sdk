@@ -1,4 +1,4 @@
-import { OrderPostingResult, QuoteResults, SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
+import { OrderPostingResult, SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import {
   AccountAddress,
   ERC20_ALLOWANCE_ABI,
@@ -17,6 +17,8 @@ import {
   CollateralSwapParams,
   CollateralSwapPostParams,
   CollateralSwapQuoteParams,
+  CollateralSwapOrder,
+  CollateralSwapTradeParams,
   EncodedOrder,
   FlashLoanHint,
   FlashLoanHookAmounts,
@@ -78,12 +80,12 @@ export class AaveCollateralSwapSdk {
 
     const { quoteResults, postSwapOrderFromQuote } = quoteAndPost
 
-    const { swapSettings, instanceAddress } = await this.getOrderPostingSettings(
-      params,
-      quoteParams,
-      quoteResults,
-      settings?.collateralPermit,
-    )
+    const { swapSettings, instanceAddress } = await this.getOrderPostingSettings(quoteParams, {
+      sellAmount,
+      buyAmount: quoteResults.amountsAndCosts.afterSlippage.buyAmount,
+      orderToSign: quoteResults.orderToSign,
+      collateralPermit: settings?.collateralPermit,
+    })
 
     const collateralParams: CollateralParameters = {
       instanceAddress,
@@ -151,27 +153,33 @@ export class AaveCollateralSwapSdk {
    *          - Encodes the order data for EIP-1271 signature verification
    *          - Calculates the deterministic address for the adapter contract
    *          - Configures pre and post-execution hooks for flash loan management
-   *          - Generates flash loan hint metadata for the order
+   *          - Generates flash loan hint metadata conforming to the flashloan v0.2.0 schema
    *          - Sets up EIP-1271 signing scheme with the expected instance address
+   *          - Includes hooks configuration following the hooks v0.2.0 schema
    *
-   * @param {CollateralSwapParams} params - Original collateral swap parameters.
-   * @param {CollateralSwapQuoteParams} quoteParams - Processed quote parameters with adjusted amounts.
-   * @param {QuoteResults} quoteResults - Quote results from the trading SDK containing order details.
-   * @returns {Promise<SwapAdvancedSettings>} Advanced settings for posting the swap order with
-   *                                           flash loan hooks and metadata.
+   *          The flash loan metadata includes information about the Aave pool, protocol adapter,
+   *          and token amounts required for execution. The hooks enable the order to trigger
+   *          flash loan deployment (pre-hook) and collateral swap execution (post-hook).
+   *
+   * @param {CollateralSwapTradeParams} params - Trade parameters including chain ID, validity period,
+   *                                              owner address, and flash loan fee amount.
+   * @param {CollateralSwapOrder} settings - Order configuration including sell/buy amounts, the
+   *                                          unsigned order to sign, and optional collateral permit data.
+   * @returns {Promise<CollateralSwapPostParams>} Object containing swap advanced settings with
+   *                                               appData metadata (flashloan + hooks) and the
+   *                                               deterministic adapter instance address.
    *
    * @throws Will throw if contract address calculation fails or gas estimation fails.
+   * ```
    */
   async getOrderPostingSettings(
-    params: CollateralSwapParams,
-    quoteParams: CollateralSwapQuoteParams,
-    quoteResults: QuoteResults,
-    collateralPermit?: CollateralPermitData,
+    params: CollateralSwapTradeParams,
+    settings: CollateralSwapOrder,
   ): Promise<CollateralSwapPostParams> {
-    const { amount } = params.tradeParameters
-    const { flashLoanFeeAmount, validTo, owner: trader } = quoteParams
-    const { orderToSign } = quoteResults
-    const buyAmount = quoteResults.amountsAndCosts.afterSlippage.buyAmount
+    const { sellAmount, buyAmount, orderToSign, collateralPermit } = settings
+    const { flashLoanFeeAmount, validTo, owner: trader } = params
+
+    const amount = sellAmount.toString()
 
     const encodedOrder: EncodedOrder = {
       ...OrderSigningUtils.encodeUnsignedOrder(orderToSign),

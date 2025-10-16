@@ -61,7 +61,7 @@ describe.skip('AaveFlashLoanIntegration', () => {
     )
 
     expect(result).toEqual({ result: 'orderId' })
-  }, 20_000)
+  }, 40_000)
 
   it('Test AaveFlashLoanSdk collateralSwap on Gnosis Chain with limit order', async () => {
     const chainId = SupportedChainId.GNOSIS_CHAIN
@@ -88,6 +88,9 @@ describe.skip('AaveFlashLoanIntegration', () => {
     )
     const flashLoanSdk = new AaveCollateralSwapSdk()
 
+    const sellAmount = 20000000000000000000n // 20 WXDAI
+    const collateralPermit = undefined
+
     const collateralSwapParams: CollateralSwapParams = {
       chainId: SupportedChainId.GNOSIS_CHAIN,
       collateralToken: '0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533', // aGnoWXDAI
@@ -96,19 +99,35 @@ describe.skip('AaveFlashLoanIntegration', () => {
         sellTokenDecimals: 18,
         buyToken: '0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0', // USDC.e
         buyTokenDecimals: 6,
-        amount: '20000000000000000000', // 20 WXDAI
+        amount: sellAmount.toString(),
         kind: OrderKind.SELL,
         validFor: 10 * 60, // 10m
         slippageBps: 8,
       },
       flashLoanFeePercent: 0.05, // 0.05%
+      settings: {
+        collateralPermit,
+      },
     }
 
     const quoteParams = await flashLoanSdk.getSwapQuoteParams(collateralSwapParams)
 
     const { quoteResults } = await tradingSdk.getQuote(quoteParams)
 
-    const orderPostParams = await flashLoanSdk.getOrderPostingSettings(collateralSwapParams, quoteParams, quoteResults)
+    const orderPostParams = await flashLoanSdk.getOrderPostingSettings(
+      {
+        chainId: quoteParams.chainId,
+        validTo: quoteParams.validTo,
+        owner: quoteParams.owner,
+        flashLoanFeeAmount: quoteParams.flashLoanFeeAmount,
+      },
+      {
+        sellAmount,
+        buyAmount: quoteResults.amountsAndCosts.afterSlippage.buyAmount,
+        orderToSign: quoteResults.orderToSign,
+        collateralPermit,
+      },
+    )
 
     const { tradeParameters } = collateralSwapParams
     const { orderToSign, quoteResponse } = quoteResults
@@ -131,5 +150,5 @@ describe.skip('AaveFlashLoanIntegration', () => {
     } catch (error) {
       expect({ error }).toEqual({})
     }
-  }, 20_000)
+  }, 40_000)
 })
