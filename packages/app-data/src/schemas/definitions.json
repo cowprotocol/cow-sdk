@@ -70,7 +70,8 @@
         "100",
         "hedera-hashgraph"
       ],
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     }
   }
 }
