@@ -50,9 +50,15 @@
     },
     "dappId": {
       "$id": "#/definitions/dappId",
-      "pattern": "^[a-fA-F0-9]{64}$",
       "title": "A hex string representing a dApp ID",
       "examples": ["75716a3cb48fdbb43ebdff58ce6c541f6a2c269be690513131355800367f2da2"],
+      "type": "string"
+    },
+    "hookType": {
+      "$id": "#/definitions/hookType",
+      "title": "Hook Type",
+      "description": "Non-typed identifier of a hook, usually in the form of a URL.",
+      "examples": ["cow-swap://libs/hook-dapp-lib/permit", "cow-sdk://bridging/providers/socket"],
       "type": "string"
     },
     "chainId": {
