@@ -3,6 +3,30 @@ import type { ContractsOrder as Order, OrderUidParams } from '@cowprotocol/sdk-c
 import type { SigningResult, UnsignedOrder } from './types'
 import { getGlobalAdapter, Signer, TypedDataDomain } from '@cowprotocol/sdk-common'
 import { generateOrderId, getDomain, signOrder, signOrderCancellation, signOrderCancellations } from './utils'
+import { BuyTokenDestination, SellTokenSource } from '@cowprotocol/sdk-order-book'
+
+export const ORDER_PRIMARY_TYPE = 'Order' as const
+
+/**
+ * The EIP-712 types used for signing a GPv2Order.Data struct. This is useful for when
+ * signing orders using smart contracts, whereby this SDK cannot do the EIP-1271 signing for you.
+ */
+export const COW_EIP712_TYPES = {
+  [ORDER_PRIMARY_TYPE]: [
+    { name: 'sellToken', type: 'address' },
+    { name: 'buyToken', type: 'address' },
+    { name: 'receiver', type: 'address' },
+    { name: 'sellAmount', type: 'uint256' },
+    { name: 'buyAmount', type: 'uint256' },
+    { name: 'validTo', type: 'uint32' },
+    { name: 'appData', type: 'bytes32' },
+    { name: 'feeAmount', type: 'uint256' },
+    { name: 'kind', type: 'string' },
+    { name: 'partiallyFillable', type: 'bool' },
+    { name: 'sellTokenBalance', type: 'string' },
+    { name: 'buyTokenBalance', type: 'string' },
+  ],
+}
 
 /**
  * Utility class for signing order intents and cancellations.
@@ -129,27 +153,72 @@ export class OrderSigningUtils {
     return adapter.utils.hashDomain(getDomain(chainId), types)
   }
 
+  static getEIP712Types(): typeof COW_EIP712_TYPES {
+    return COW_EIP712_TYPES
+  }
+
   /**
-   * Get the EIP-712 types used for signing a GPv2Order.Data struct. This is useful for when
-   * signing orders using smart contracts, whereby this SDK cannot do the EIP-1271 signing for you.
-   * @returns The EIP-712 types used for signing.
+   * Encodes an order and ECDSA signature for EIP-1271 smart contract signature verification.
+   *
+   * @remarks This method encodes the order data and ECDSA signature into a format suitable for
+   *          EIP-1271 signature verification by smart contracts. The order struct is ABI-encoded
+   *          as a tuple along with the ECDSA signature bytes. String fields in the order are
+   *          hashed using keccak256 before encoding.
+   *
+   * @param {UnsignedOrder} orderToSign The unsigned order to encode for EIP-1271 verification.
+   * @param {string} ecdsaSignature The ECDSA signature (typically 65 bytes hex-encoded) to include in the encoding.
+   * @returns {string} The ABI-encoded order struct and signature, ready for EIP-1271 verification.
+   *
+   * @see https://eips.ethereum.org/EIPS/eip-1271
+   *
+   * @example
+   * ```typescript
+   * const orderToSign: UnsignedOrder = { ... }
+   * const ecdsaSignature = '0x...' // 65 bytes signature from signing the order
+   *
+   * const eip1271Signature = OrderSigningUtils.getEip1271Signature(orderToSign, ecdsaSignature)
+   * // Use eip1271Signature with a smart contract wallet that implements EIP-1271
+   * ```
    */
-  static getEIP712Types(): Record<string, unknown> {
-    return {
-      Order: [
-        { name: 'sellToken', type: 'address' },
-        { name: 'buyToken', type: 'address' },
-        { name: 'receiver', type: 'address' },
-        { name: 'sellAmount', type: 'uint256' },
-        { name: 'buyAmount', type: 'uint256' },
-        { name: 'validTo', type: 'uint32' },
-        { name: 'appData', type: 'bytes32' },
-        { name: 'feeAmount', type: 'uint256' },
-        { name: 'kind', type: 'string' },
-        { name: 'partiallyFillable', type: 'bool' },
-        { name: 'sellTokenBalance', type: 'string' },
-        { name: 'buyTokenBalance', type: 'string' },
+  static getEip1271Signature(orderToSign: UnsignedOrder, ecdsaSignature: string): string {
+    const adapter = getGlobalAdapter()
+    const EIP712Types = COW_EIP712_TYPES[ORDER_PRIMARY_TYPE]
+
+    const components = EIP712Types.map((component) => ({
+      name: component.name,
+      type: component.type === 'string' ? 'bytes32' : component.type,
+    }))
+
+    const values = Object.values(OrderSigningUtils.encodeUnsignedOrder(orderToSign))
+
+    return adapter.utils.encodeAbi(
+      [
+        {
+          components,
+          type: 'tuple',
+        },
+        { type: 'bytes' },
       ],
+      [values, ecdsaSignature],
+    ) as string
+  }
+
+  static encodeUnsignedOrder(orderToSign: UnsignedOrder): Record<string, string> {
+    const order: UnsignedOrder = {
+      ...orderToSign,
+      sellTokenBalance: orderToSign.sellTokenBalance ?? SellTokenSource.ERC20,
+      buyTokenBalance: orderToSign.buyTokenBalance ?? BuyTokenDestination.ERC20,
     }
+
+    const adapter = getGlobalAdapter()
+    const EIP712Types = COW_EIP712_TYPES[ORDER_PRIMARY_TYPE]
+
+    return EIP712Types.reduce<Record<string, string>>((acc, { name, type }) => {
+      const value = (order as Record<string, unknown>)[name] as string
+
+      acc[name] = type === 'string' ? String(adapter.utils.id(value)) : value
+
+      return acc
+    }, {})
   }
 }
