@@ -12,26 +12,31 @@ import { BridgeQuoteResult, QuoteBridgeRequest, QuoteBridgeRequestWithoutAmount,
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../errors'
 import { GetQuoteWithBridgeParams } from './types'
 import { getCacheKey } from './helpers'
+import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 
-export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
-  provider,
-  params,
-  getBridgeHook,
-}: {
+export interface GetIntermediateSwapResultParams {
   provider: BridgeProvider<T>
   params: GetQuoteWithBridgeParams
   getBridgeHook?: (
     bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount,
   ) => Promise<cowAppDataLatestScheme.CoWHook>
-}): Promise<{
+}
+
+export interface GetIntermediateSwapResultResult {
   swapAndBridgeRequest: QuoteBridgeRequest
   signer: SignerLike
   bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount
   intermediateTokenAmount: bigint
   intermediaryTokenDecimals: number
   swapResult: QuoteResults
-  orderBookApi: any
-}> {
+  orderBookApi: OrderBookApi
+}
+
+export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
+  provider,
+  params,
+  getBridgeHook,
+}: GetIntermediateSwapResultParams): Promise<GetIntermediateSwapResultResult> {
   const { swapAndBridgeRequest, advancedSettings, tradingSdk } = params
   const {
     kind,
@@ -160,7 +165,7 @@ async function getSwapQuote(params: {
   tradingSdk: TradingSdk
   advancedSettings?: SwapAdvancedSettings
   signer: SignerLike
-}): Promise<{ swapResult: QuoteResults; orderBookApi: any }> {
+}): Promise<{ swapResult: QuoteResults; orderBookApi: OrderBookApi }> {
   const { swapAndBridgeRequest, bridgeRequestWithoutAmount, tradingSdk, advancedSettings, signer } = params
   const {
     kind,

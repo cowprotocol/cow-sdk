@@ -10,7 +10,7 @@ import {
   TradingAppDataInfo,
 } from '@cowprotocol/sdk-trading'
 import { getGlobalAdapter, log, SignerLike } from '@cowprotocol/sdk-common'
-import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { OrderBookApi, OrderKind } from '@cowprotocol/sdk-order-book'
 import {
   BridgeQuoteAndPost,
   BridgeQuoteResult,
@@ -53,9 +53,15 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   throw new Error('Provider type is unknown: ' + provider.type)
 }
 
-// Common setup logic for both bridge provider types
-
-// Common helper function for getting swap quotes
+export interface CreatePostSwapOrderFromQuoteParams {
+  getBridgeProviderQuote: (
+    signer: SignerLike,
+    advancedSettings?: SwapAdvancedSettings,
+  ) => Promise<{ swapResult: QuoteResults; bridgeResult: BridgeQuoteResults }>
+  signer: SignerLike
+  sellTokenAddress: string
+  orderBookApi: OrderBookApi
+}
 
 /**
  * Create a postSwapOrderFromQuote function that can be used to post the swap order from the quote
@@ -63,15 +69,9 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
  * @param params
  * @returns
  */
-function createPostSwapOrderFromQuote(params: {
-  getBridgeProviderQuote: (
-    signer: SignerLike,
-    advancedSettings?: SwapAdvancedSettings,
-  ) => Promise<{ swapResult: QuoteResults; bridgeResult: BridgeQuoteResults }>
-  signer: SignerLike
-  sellTokenAddress: string
-  orderBookApi: any
-}): BridgeQuoteAndPost['postSwapOrderFromQuote'] {
+function createPostSwapOrderFromQuote(
+  params: CreatePostSwapOrderFromQuoteParams,
+): BridgeQuoteAndPost['postSwapOrderFromQuote'] {
   const { getBridgeProviderQuote, signer, sellTokenAddress, orderBookApi } = params
 
   return async function postSwapOrderFromQuote(
