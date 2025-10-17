@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - next
   workflow_dispatch:
 
 env:
@@ -42,11 +43,11 @@ jobs:
         id: release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          target-branch: main
+          target-branch: ${{ github.ref_name }}
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
 
-      # 7️⃣ Determine npm tag based on version
+      # 7️⃣ Determine npm tag based on version and branch
       - name: Determine npm tag
         id: npm_tag
         if: steps.release.outputs.releases_created == 'true'
@@ -54,8 +55,12 @@ jobs:
           # Get the first package version from release outputs
           VERSION=$(echo '$RELEASE_OUTPUTS' | jq -r '.[] | select(type == "string" and test("^[0-9]")) | select(. != null)' | head -n1)
 
-          # If version contains prerelease identifier (rc, alpha, beta, etc.), use 'next' tag
-          if [[ "$VERSION" =~ -rc\.|-.+\. ]] || [[ "$VERSION" =~ -rc$|-(alpha|beta|next|canary) ]]; then
+          # On 'next' branch, always use 'next' tag
+          if [[ "${{ github.ref_name }}" == "next" ]]; then
+            echo "tag=next" >> $GITHUB_OUTPUT
+            echo "Publishing from next branch with tag: next"
+          # On 'main' branch, check if version is prerelease
+          elif [[ "$VERSION" =~ -rc\.|-.+\. ]] || [[ "$VERSION" =~ -rc$|-(alpha|beta|next|canary) ]]; then
             echo "tag=next" >> $GITHUB_OUTPUT
             echo "Publishing as prerelease with tag: next"
           else
