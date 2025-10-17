@@ -46,13 +46,31 @@ jobs:
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
 
-      # 7️⃣ Setup npm auth
+      # 7️⃣ Determine npm tag based on version
+      - name: Determine npm tag
+        id: npm_tag
+        if: steps.release.outputs.releases_created == 'true'
+        run: |
+          # Get the first package version from release outputs
+          VERSION=$(echo '${{ toJSON(steps.release.outputs) }}' | jq -r '.[] | select(type == "string" and test("^[0-9]")) | select(. != null)' | head -n1)
+
+          # If version contains prerelease identifier (rc, alpha, beta, etc.), use 'next' tag
+          if [[ "$VERSION" =~ -rc\.|-.+\. ]] || [[ "$VERSION" =~ -rc$|-(alpha|beta|next|canary) ]]; then
+            echo "tag=next" >> $GITHUB_OUTPUT
+            echo "Publishing as prerelease with tag: next"
+          else
+            echo "tag=latest" >> $GITHUB_OUTPUT
+            echo "Publishing as stable release with tag: latest"
+          fi
+
+      # 8️⃣ Setup npm auth
       - name: Setup npm auth
+        if: steps.release.outputs.releases_created == 'true'
         run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # 8️⃣ Publish changed packages
+      # 9️⃣ Publish changed packages
       - name: Publish changed packages
         if: steps.release.outputs.releases_created == 'true'
-        run: pnpm publish -r --filter="./packages/**" --tag latest --no-git-checks
+        run: pnpm publish -r --filter="./packages/**" --tag ${{ steps.npm_tag.outputs.tag }} --no-git-checks
