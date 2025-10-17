@@ -47,7 +47,6 @@ jobs:
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
           prerelease: ${{ github.ref_name == 'next' }}
-          prerelease-type: ${{ github.ref_name == 'next' && 'rc' || '' }}
 
       # 7️⃣ Determine npm tag based on version and branch
       - name: Determine npm tag
