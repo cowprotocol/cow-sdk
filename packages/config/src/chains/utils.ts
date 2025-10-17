@@ -42,3 +42,11 @@ export function isTargetChainId(chainId: ChainId): chainId is TargetChainId {
 export function isZkSyncChain(chainId: ChainId): boolean {
   return Boolean(getChainInfo(chainId)?.isZkSync)
 }
+
+/**
+ * Check if the chain is under development.
+ * @param chainId
+ */
+export function isChainUnderDevelopment(chainId: ChainId): boolean {
+  return Boolean(getChainInfo(chainId)?.isUnderDevelopment)
+}

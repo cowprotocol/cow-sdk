@@ -154,4 +154,11 @@ export interface ChainInfo {
    * Whether the chain is zkSync based.
    */
   readonly isZkSync?: boolean
+
+  /**
+   * Whether the chain is under development.
+   * A chain might show up already as a supported chain, but still be under development (not all features are ready,
+   * related services running, contracts deployed, etc).
+   */
+  readonly isUnderDevelopment?: boolean
 }
