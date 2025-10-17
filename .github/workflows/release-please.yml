@@ -46,6 +46,7 @@ jobs:
           target-branch: ${{ github.ref_name }}
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
+          prerelease: ${{ github.ref_name == 'next' }}
 
       # 7️⃣ Determine npm tag based on version and branch
       - name: Determine npm tag
