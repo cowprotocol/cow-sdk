@@ -52,7 +52,7 @@ jobs:
         if: steps.release.outputs.releases_created == 'true'
         run: |
           # Get the first package version from release outputs
-          VERSION=$(echo '${{ toJSON(steps.release.outputs) }}' | jq -r '.[] | select(type == "string" and test("^[0-9]")) | select(. != null)' | head -n1)
+          VERSION=$(echo '$RELEASE_OUTPUTS' | jq -r '.[] | select(type == "string" and test("^[0-9]")) | select(. != null)' | head -n1)
 
           # If version contains prerelease identifier (rc, alpha, beta, etc.), use 'next' tag
           if [[ "$VERSION" =~ -rc\.|-.+\. ]] || [[ "$VERSION" =~ -rc$|-(alpha|beta|next|canary) ]]; then
@@ -62,6 +62,8 @@ jobs:
             echo "tag=latest" >> $GITHUB_OUTPUT
             echo "Publishing as stable release with tag: latest"
           fi
+        env:
+          RELEASE_OUTPUTS: ${{ toJSON(steps.release.outputs) }}
 
       # 8️⃣ Setup npm auth
       - name: Setup npm auth
@@ -73,4 +75,6 @@ jobs:
       # 9️⃣ Publish changed packages
       - name: Publish changed packages
         if: steps.release.outputs.releases_created == 'true'
-        run: pnpm publish -r --filter="./packages/**" --tag ${{ steps.npm_tag.outputs.tag }} --no-git-checks
+        run: pnpm publish -r --filter="./packages/**" --tag $TAG --no-git-checks
+        env:
+          TAG: ${{ steps.npm_tag.outputs.tag }}
