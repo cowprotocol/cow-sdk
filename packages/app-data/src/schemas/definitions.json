@@ -59,7 +59,8 @@
       "title": "Hook Type",
       "description": "Non-typed identifier of a hook, usually in the form of a URL.",
       "examples": ["cow-swap://libs/hook-dapp-lib/permit", "cow-sdk://bridging/providers/socket"],
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "chainId": {
       "$id": "#/definitions/chainId",
@@ -70,8 +71,7 @@
         "100",
         "hedera-hashgraph"
       ],
-      "type": "string",
-      "minLength": 1
+      "type": "string"
     }
   }
 }
