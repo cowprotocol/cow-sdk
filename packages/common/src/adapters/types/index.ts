@@ -116,7 +116,7 @@ export interface Block {
   transactions: readonly string[] | string[] | any[] // Can be hashes or full transaction objects
 }
 
-export type ContractValue = string | number | boolean | bigint
+export type ContractValue = string | number | boolean | bigint | Record<string, string | number | boolean | bigint>
 
 export type ParamType = {
   type?: string

@@ -16,10 +16,8 @@ import {
   TokenAmount,
 } from '@cowprotocol/sdk-order-book'
 import type { AccountAddress, SignerLike } from '@cowprotocol/sdk-common'
-import type { UnsignedOrder } from '@cowprotocol/sdk-order-signing'
+import type { ORDER_PRIMARY_TYPE, UnsignedOrder } from '@cowprotocol/sdk-order-signing'
 import type { SupportedChainId, CowEnv } from '@cowprotocol/sdk-config'
-
-export const ORDER_PRIMARY_TYPE = 'Order' as const
 
 /**
  * EIP-712 typed data domain.
@@ -143,10 +141,7 @@ export interface SigningStepManager {
   onOrderSignError?(): void
 }
 
-export interface SwapAdvancedSettings {
-  quoteRequest?: Partial<Omit<OrderQuoteRequest, 'kind'> & { validTo: number }>
-  appData?: AppDataParams
-  additionalParams?: PostTradeAdditionalParams
+export interface SwapAdvancedSettings extends LimitOrderAdvancedSettings {
   // In special case, when you want to fetch quote with a different signer
   quoteSigner?: SignerLike
   /**
@@ -156,6 +151,8 @@ export interface SwapAdvancedSettings {
 }
 
 export interface LimitOrderAdvancedSettings {
+  // TODO: rename to TradeParamsOverride
+  quoteRequest?: Partial<Omit<OrderQuoteRequest, 'kind'> & { validTo: number }>
   appData?: AppDataParams
   additionalParams?: PostTradeAdditionalParams
 }
