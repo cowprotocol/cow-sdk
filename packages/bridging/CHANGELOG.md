@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.4.6...sdk-bridging-v0.5.0) (2025-10-17)
+
+
+### ✨ Features
+
+* refactor and cleanup ([1168207](https://github.com/cowprotocol/cow-sdk/commit/1168207de7588b13255de83d85304391099295f7))
+
+
+### 🔧 Miscellaneous
+
+* adapt bridging logic ([faa8ae7](https://github.com/cowprotocol/cow-sdk/commit/faa8ae7c1fae18bff979e64da484e9ca084cae6e))
+* adapt providers ([b62aa0c](https://github.com/cowprotocol/cow-sdk/commit/b62aa0c1def13fa3a4e0ca6d0ef1d6883a633b47))
+* add assertion functions for provider types ([3cad8c0](https://github.com/cowprotocol/cow-sdk/commit/3cad8c0d5fd225c669022476eb5a3aca8ad6282a))
+* basic implementation of account bridge provider ([b683477](https://github.com/cowprotocol/cow-sdk/commit/b683477c075c5d046f821d3a711bba20d3c1b198))
+* fix test ([933cdae](https://github.com/cowprotocol/cow-sdk/commit/933cdae2d821f638642cd9de27e9afa3ebe41756))
+* improve types ([94265a0](https://github.com/cowprotocol/cow-sdk/commit/94265a0d4a688962202d3101ae5277b425396b30))
+* refactor ([8f463bb](https://github.com/cowprotocol/cow-sdk/commit/8f463bbb75de5e8ed71b6d843478286fbf23cb43))
+* refactor ([762a8ff](https://github.com/cowprotocol/cow-sdk/commit/762a8ff48a66ca639287ebadb1d0633de8ab645e))
+
 ## [0.4.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.4.5...sdk-bridging-v0.4.6) (2025-10-17)
 
 
