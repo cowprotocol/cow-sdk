@@ -9,6 +9,7 @@ import { polygon } from '../details/polygon'
 import { lens } from '../details/lens'
 import { bnb } from '../details/bnb'
 import { optimism } from '../details/optimism'
+import { linea } from '../details/linea'
 
 /**
  * Details of all supported chains.
@@ -22,6 +23,7 @@ export const ALL_SUPPORTED_CHAINS_MAP: Record<SupportedChainId, ChainInfo> = {
   [SupportedChainId.POLYGON]: polygon,
   [SupportedChainId.BNB]: bnb,
   [SupportedChainId.LENS]: lens,
+  [SupportedChainId.LINEA]: linea,
   [SupportedChainId.SEPOLIA]: sepolia,
 }
 
