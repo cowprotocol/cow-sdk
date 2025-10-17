@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.4.6...sdk-bridging-v0.5.0) (2025-10-17)
+## [0.5.0-rc.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.4.6...sdk-bridging-v0.5.0-rc.0) (2025-10-17)
 
 
 ### ✨ Features
