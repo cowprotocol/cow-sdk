@@ -211,7 +211,7 @@ adapterNames.forEach((adapterName) => {
               metadata: expect.objectContaining({
                 flashloan: expect.objectContaining({
                   amount: expect.any(String),
-                  receiver: AAVE_ADAPTER_FACTORY,
+                  receiver: AAVE_ADAPTER_FACTORY[SupportedChainId.SEPOLIA],
                   token: mockTradeParameters.sellToken,
                 }),
               }),
@@ -246,7 +246,7 @@ adapterNames.forEach((adapterName) => {
                 hooks: expect.objectContaining({
                   pre: expect.arrayContaining([
                     expect.objectContaining({
-                      target: AAVE_ADAPTER_FACTORY,
+                      target: AAVE_ADAPTER_FACTORY[SupportedChainId.SEPOLIA],
                       callData: expect.any(String),
                       gasLimit: expect.any(String),
                     }),
@@ -302,7 +302,7 @@ adapterNames.forEach((adapterName) => {
                 hooks: expect.objectContaining({
                   pre: expect.arrayContaining([
                     expect.objectContaining({
-                      target: AAVE_ADAPTER_FACTORY,
+                      target: AAVE_ADAPTER_FACTORY[SupportedChainId.SEPOLIA],
                       callData: expect.any(String),
                       gasLimit: expectedGasLimit.toString(),
                     }),

@@ -36,6 +36,7 @@ import {
 import { aaveAdapterFactoryAbi } from './abi/AaveAdapterFactory'
 import { collateralSwapAdapterHookAbi } from './abi/CollateralSwapAdapterHook'
 import { addPercentToValue } from './utils'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 
 /**
  * SDK for executing Aave flash loan operations, particularly collateral swaps.
@@ -177,7 +178,7 @@ export class AaveCollateralSwapSdk {
     settings: CollateralSwapOrder,
   ): Promise<CollateralSwapPostParams> {
     const { sellAmount, buyAmount, orderToSign, collateralPermit } = settings
-    const { flashLoanFeeAmount, validTo, owner: trader } = params
+    const { chainId, flashLoanFeeAmount, validTo, owner: trader } = params
 
     const amount = sellAmount.toString()
 
@@ -194,13 +195,13 @@ export class AaveCollateralSwapSdk {
       buyAssetAmount: buyAmount.toString(),
     }
 
-    const instanceAddress = await this.getExpectedInstanceAddress(trader, hookAmounts, encodedOrder)
+    const instanceAddress = await this.getExpectedInstanceAddress(chainId, trader, hookAmounts, encodedOrder)
 
     const flashLoanHint: FlashLoanHint = {
       amount, // this is actually in UNDERLYING but aave tokens are 1:1
-      receiver: AAVE_ADAPTER_FACTORY,
+      receiver: AAVE_ADAPTER_FACTORY[chainId],
       liquidityProvider: AAVE_POOL_ADDRESS,
-      protocolAdapter: AAVE_ADAPTER_FACTORY,
+      protocolAdapter: AAVE_ADAPTER_FACTORY[chainId],
       token: orderToSign.sellToken,
     }
 
@@ -217,6 +218,7 @@ export class AaveCollateralSwapSdk {
         metadata: {
           flashloan: flashLoanHint,
           hooks: await this.getOrderHooks(
+            chainId,
             trader,
             instanceAddress,
             hookAmounts,
@@ -311,6 +313,7 @@ export class AaveCollateralSwapSdk {
   }
 
   async getExpectedInstanceAddress(
+    chainId: SupportedChainId,
     trader: AccountAddress,
     hookAmounts: FlashLoanHookAmounts,
     order: EncodedOrder,
@@ -330,8 +333,8 @@ export class AaveCollateralSwapSdk {
     } as CollateralOrderData
 
     return (await getGlobalAdapter().readContract({
-      address: AAVE_ADAPTER_FACTORY,
-      args: [AAVE_COLLATERAL_SWAP_ADAPTER_HOOK, hookOrderData],
+      address: AAVE_ADAPTER_FACTORY[chainId],
+      args: [AAVE_COLLATERAL_SWAP_ADAPTER_HOOK[chainId], hookOrderData],
       functionName: 'getInstanceDeterministicAddress',
       abi: aaveAdapterFactoryAbi,
     })) as AccountAddress
@@ -349,10 +352,15 @@ export class AaveCollateralSwapSdk {
     }
   }
 
-  private getPreHookCallData(trader: AccountAddress, hookAmounts: FlashLoanHookAmounts, order: EncodedOrder): string {
+  private getPreHookCallData(
+    chainId: SupportedChainId,
+    trader: AccountAddress,
+    hookAmounts: FlashLoanHookAmounts,
+    order: EncodedOrder,
+  ): string {
     return getGlobalAdapter().utils.encodeFunction(aaveAdapterFactoryAbi, 'deployAndTransferFlashLoan', [
       trader,
-      AAVE_COLLATERAL_SWAP_ADAPTER_HOOK,
+      AAVE_COLLATERAL_SWAP_ADAPTER_HOOK[chainId],
       hookAmounts,
       order,
     ])
@@ -365,6 +373,7 @@ export class AaveCollateralSwapSdk {
   }
 
   private async getOrderHooks(
+    chainId: SupportedChainId,
     trader: AccountAddress,
     expectedInstanceAddress: AccountAddress,
     hookAmounts: FlashLoanHookAmounts,
@@ -373,18 +382,18 @@ export class AaveCollateralSwapSdk {
   ): Promise<LatestAppDataDocVersion['metadata']['hooks']> {
     const adapter = getGlobalAdapter()
 
-    const preHookCallData = this.getPreHookCallData(trader, hookAmounts, order)
+    const preHookCallData = this.getPreHookCallData(chainId, trader, hookAmounts, order)
     const postHookCallData = collateralPermit ? this.getPostHookCallData(collateralPermit) : undefined
 
     return {
       pre: [
         {
-          target: AAVE_ADAPTER_FACTORY,
+          target: AAVE_ADAPTER_FACTORY[chainId],
           callData: preHookCallData,
           gasLimit: (
             await adapter.signer
               .estimateGas({
-                to: AAVE_ADAPTER_FACTORY,
+                to: AAVE_ADAPTER_FACTORY[chainId],
                 data: preHookCallData,
               })
               .then((gas) => {
