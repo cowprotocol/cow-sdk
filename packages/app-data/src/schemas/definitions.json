@@ -50,10 +50,10 @@
     },
     "dappId": {
       "$id": "#/definitions/dappId",
-      "pattern": "^[a-fA-F0-9]{64}$",
       "title": "A hex string representing a dApp ID",
       "examples": ["75716a3cb48fdbb43ebdff58ce6c541f6a2c269be690513131355800367f2da2"],
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "chainId": {
       "$id": "#/definitions/chainId",

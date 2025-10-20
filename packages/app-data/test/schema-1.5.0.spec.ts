@@ -15,6 +15,24 @@ describe('Schema v1.5.0: Add bridging metadata 1.0.0', () => {
   test('Minimal valid schema', buildAssertValidFn(validator, BASE_DOCUMENT))
 
   test(
+    'Hook dappId accepts non-hex arbitrary string',
+    buildAssertValidFn(validator, {
+      ...BASE_DOCUMENT,
+      metadata: {
+        hooks: {
+          pre: [
+            {
+              target: '0x0102030405060708091011121314151617181920',
+              callData: '0x01020304',
+              gasLimit: '10000',
+              dappId: 'my_dapp-123-not-hex',
+            },
+          ],
+        },
+      },
+    }),
+  )
+  test(
     'Valid destination token address and chainId (EVM)',
     buildAssertValidFn(validator, {
       ...BASE_DOCUMENT,

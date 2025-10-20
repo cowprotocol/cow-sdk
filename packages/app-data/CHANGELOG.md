@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.1.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.1.2...sdk-app-data-v4.1.3) (2025-10-17)
+
+
+### 🐛 Bug Fixes
+
+* **app-data:** remove dappId validation ([#591](https://github.com/cowprotocol/cow-sdk/issues/591)) ([9db80c3](https://github.com/cowprotocol/cow-sdk/commit/9db80c34923c6b12ed9ecb3ed26ca1a99acd2b8f))
+
+
+### 🔧 Miscellaneous
+
+* release main ([#592](https://github.com/cowprotocol/cow-sdk/issues/592)) ([e4d7212](https://github.com/cowprotocol/cow-sdk/commit/e4d7212af322beced743e985bd1fbedaef66cdcb))
+
 ## [4.1.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.1.1...sdk-app-data-v4.1.2) (2025-10-15)
 
 
