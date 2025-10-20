@@ -9,7 +9,16 @@ import {
   BridgeProvider,
 } from '../../types'
 import { RAW_PROVIDERS_FILES_PATH } from '../../const'
-import { ChainId, ChainInfo, EvmCall, mainnet, optimism, sepolia, TokenInfo } from '@cowprotocol/sdk-config'
+import {
+  ChainId,
+  ChainInfo,
+  EvmCall,
+  mainnet,
+  optimism,
+  sepolia,
+  SupportedChainId,
+  TokenInfo,
+} from '@cowprotocol/sdk-config'
 import { BRIDGING_PARAMS, BUY_TOKENS, INTERMEDIATE_TOKENS, MOCK_CALL, QUOTE, STATUS } from './mockData'
 
 export abstract class BaseMockBridgeProvider implements Omit<BridgeProvider<BridgeQuoteResult>, 'type'> {
@@ -44,13 +53,13 @@ export abstract class BaseMockBridgeProvider implements Omit<BridgeProvider<Brid
   }
 
   async getBridgingParams(
-    _chainId: ChainId,
-    _orderUid: string,
+    chainId: ChainId,
+    orderUid: string,
     _txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult }> {
     return {
       params: BRIDGING_PARAMS,
-      status: await this.getStatus(''),
+      status: await this.getStatus(orderUid, chainId),
     }
   }
 
@@ -58,7 +67,7 @@ export abstract class BaseMockBridgeProvider implements Omit<BridgeProvider<Brid
     return 'https://www.google.com/search?q=' + bridgingId
   }
 
-  async getStatus(_bridgingId: string): Promise<BridgeStatusResult> {
+  async getStatus(_bridgingId: string, _originChainId: SupportedChainId): Promise<BridgeStatusResult> {
     return STATUS
   }
 
