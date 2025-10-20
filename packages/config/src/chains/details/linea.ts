@@ -28,7 +28,7 @@ export const linea: ChainInfo = {
       http: ['https://rpc.linea.build'],
     },
   },
-  color: '#61dfff',
+  color: '#61dfff', // Brand assets https://linea.build/assets
   website: {
     name: 'Linea',
     url: 'https://linea.build/',
