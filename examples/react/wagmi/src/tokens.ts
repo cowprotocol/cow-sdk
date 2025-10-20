@@ -57,6 +57,21 @@ export const USDC_TOKENS: Record<SupportedChainId, TokenInfo> = {
     name: 'USD Coin',
     symbol: 'USDC',
   },
+  [SupportedChainId.LINEA]: {
+    chainId: SupportedChainId.LINEA,
+    address: '0x176211869cA2b568f2A7D4EE941E073a821EE1ff', // USDC (Native Linea)
+    decimals: 6,
+    name: 'USD Coin',
+    symbol: 'USDC',
+  },
+  [SupportedChainId.PLASMA]: {
+    // TODO: This is USDT, not USDC!!! Update if/when there's a USDC deployment on Plasma
+    chainId: SupportedChainId.PLASMA,
+    address: '0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb', // USDT (Native Plasma)
+    decimals: 6,
+    name: 'USD Coin',
+    symbol: 'USDC',
+  },
   [SupportedChainId.SEPOLIA]: {
     chainId: SupportedChainId.SEPOLIA,
     address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238', // USDC (Sepolia testnet deployment by Circle)
