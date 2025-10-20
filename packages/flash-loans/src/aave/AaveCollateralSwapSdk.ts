@@ -22,6 +22,7 @@ import {
   EncodedOrder,
   FlashLoanHint,
   FlashLoanHookAmounts,
+  HookData,
 } from './types'
 import {
   AAVE_ADAPTER_FACTORY,
@@ -37,6 +38,8 @@ import { aaveAdapterFactoryAbi } from './abi/AaveAdapterFactory'
 import { collateralSwapAdapterHookAbi } from './abi/CollateralSwapAdapterHook'
 import { addPercentToValue } from './utils'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
+
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 /**
  * SDK for executing Aave flash loan operations, particularly collateral swaps.
@@ -318,23 +321,11 @@ export class AaveCollateralSwapSdk {
     hookAmounts: FlashLoanHookAmounts,
     order: EncodedOrder,
   ): Promise<AccountAddress> {
-    const hookOrderData = {
-      owner: trader,
-      sellAsset: order.sellToken,
-      buyAsset: order.buyToken,
-      sellAmount: order.sellAmount,
-      buyAmount: order.buyAmount,
-      kind: order.kind,
-      validTo: order.validTo,
-      flashLoanAmount: hookAmounts.flashLoanAmount,
-      flashLoanFeeAmount: hookAmounts.flashLoanFeeAmount,
-      hookSellAssetAmount: hookAmounts.sellAssetAmount,
-      hookBuyAssetAmount: hookAmounts.buyAssetAmount,
-    } as CollateralOrderData
+    const hookData = this.buildHookOrderData(trader, hookAmounts, order) as CollateralOrderData
 
     return (await getGlobalAdapter().readContract({
       address: AAVE_ADAPTER_FACTORY[chainId],
-      args: [AAVE_COLLATERAL_SWAP_ADAPTER_HOOK[chainId], hookOrderData],
+      args: [AAVE_COLLATERAL_SWAP_ADAPTER_HOOK[chainId], hookData],
       functionName: 'getInstanceDeterministicAddress',
       abi: aaveAdapterFactoryAbi,
     })) as AccountAddress
@@ -358,12 +349,36 @@ export class AaveCollateralSwapSdk {
     hookAmounts: FlashLoanHookAmounts,
     order: EncodedOrder,
   ): string {
+    const hookData = this.buildHookOrderData(trader, hookAmounts, order)
+
     return getGlobalAdapter().utils.encodeFunction(aaveAdapterFactoryAbi, 'deployAndTransferFlashLoan', [
-      trader,
       AAVE_COLLATERAL_SWAP_ADAPTER_HOOK[chainId],
-      hookAmounts,
-      order,
+      hookData,
     ])
+  }
+
+  private buildHookOrderData(
+    trader: AccountAddress,
+    hookAmounts: FlashLoanHookAmounts,
+    order: EncodedOrder,
+  ): HookData {
+    const { sellToken, buyToken, sellAmount, buyAmount, kind, validTo } = order
+    const parsedValidTo = typeof validTo === 'number' ? validTo : Number(validTo ?? 0)
+
+    return {
+      owner: trader,
+      receiver: ZERO_ADDRESS,
+      sellToken: String(sellToken),
+      buyToken: String(buyToken),
+      sellAmount: String(sellAmount),
+      buyAmount: String(buyAmount),
+      kind: String(kind),
+      validTo: parsedValidTo,
+      flashLoanAmount: hookAmounts.flashLoanAmount,
+      flashLoanFeeAmount: hookAmounts.flashLoanFeeAmount,
+      hookSellTokenAmount: hookAmounts.sellAssetAmount,
+      hookBuyTokenAmount: hookAmounts.buyAssetAmount,
+    }
   }
 
   private getPostHookCallData(collateralPermit: CollateralPermitData): string {
