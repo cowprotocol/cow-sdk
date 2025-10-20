@@ -1,6 +1,6 @@
-import { Variables, request } from 'graphql-request'
+import { request, Variables } from 'graphql-request'
 import { DocumentNode } from 'graphql/index'
-import { SupportedChainId, ApiContext, DEFAULT_COW_API_CONTEXT } from '@cowprotocol/sdk-config'
+import { ApiContext, DEFAULT_COW_API_CONTEXT, SupportedChainId } from '@cowprotocol/sdk-config'
 import { CowError } from '@cowprotocol/sdk-common'
 import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphql'
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
@@ -47,6 +47,8 @@ export class SubgraphApi {
       [SupportedChainId.AVALANCHE]: null,
       [SupportedChainId.LENS]: null,
       [SupportedChainId.BNB]: null,
+      [SupportedChainId.LINEA]: null,
+      [SupportedChainId.PLASMA]: null,
     }
     this.context = {
       ...DEFAULT_COW_API_CONTEXT,
