@@ -53,13 +53,13 @@ export abstract class BaseMockBridgeProvider implements Omit<BridgeProvider<Brid
   }
 
   async getBridgingParams(
-    chainId: ChainId,
-    orderUid: string,
+    _chainId: ChainId,
+    _orderUid: string,
     _txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult }> {
     return {
       params: BRIDGING_PARAMS,
-      status: await this.getStatus(orderUid, chainId),
+      status: await this.getStatus(BRIDGING_PARAMS.bridgingId, BRIDGING_PARAMS.sourceChainId as SupportedChainId),
     }
   }
 
