@@ -10,6 +10,8 @@ export const BungeeCowswapLibAddresses: Record<TargetChainId, string | undefined
   [SupportedChainId.POLYGON]: BUNGEE_COWSWAP_LIB_ADDRESS,
   [SupportedChainId.LENS]: undefined, // TODO: confirm
   [SupportedChainId.BNB]: undefined, // TODO: confirm
+  [SupportedChainId.LINEA]: undefined, // TODO: confirm
+  [SupportedChainId.PLASMA]: undefined, // TODO: confirm
   [SupportedChainId.SEPOLIA]: undefined,
   [AdditionalTargetChainId.OPTIMISM]: BUNGEE_COWSWAP_LIB_ADDRESS,
 }
@@ -24,6 +26,8 @@ export const SocketVerifierAddresses: Record<TargetChainId, string | undefined> 
   [SupportedChainId.POLYGON]: SOCKET_VERIFIER_ADDRESS,
   [SupportedChainId.LENS]: undefined, // TODO: confirm
   [SupportedChainId.BNB]: undefined, // TODO: confirm
+  [SupportedChainId.LINEA]: undefined, // TODO: confirm
+  [SupportedChainId.PLASMA]: undefined, // TODO: confirm
   [SupportedChainId.SEPOLIA]: undefined,
   [AdditionalTargetChainId.OPTIMISM]: SOCKET_VERIFIER_ADDRESS,
 }
@@ -38,6 +42,8 @@ export const BungeeApproveAndBridgeV1Addresses: Record<TargetChainId, string | u
   [SupportedChainId.POLYGON]: BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS,
   [SupportedChainId.LENS]: undefined, // TODO: confirm
   [SupportedChainId.BNB]: undefined, // TODO: confirm
+  [SupportedChainId.LINEA]: undefined, // TODO: confirm
+  [SupportedChainId.PLASMA]: undefined, // TODO: confirm
   [SupportedChainId.SEPOLIA]: undefined,
   [AdditionalTargetChainId.OPTIMISM]: BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS,
 }
