@@ -19,12 +19,17 @@ export const aaveAdapterFactoryAbi = [
             internalType: 'address',
           },
           {
-            name: 'sellAsset',
+            name: 'receiver',
             type: 'address',
             internalType: 'address',
           },
           {
-            name: 'buyAsset',
+            name: 'sellToken',
+            type: 'address',
+            internalType: 'address',
+          },
+          {
+            name: 'buyToken',
             type: 'address',
             internalType: 'address',
           },
@@ -59,12 +64,12 @@ export const aaveAdapterFactoryAbi = [
             internalType: 'uint256',
           },
           {
-            name: 'hookSellAssetAmount',
+            name: 'hookSellTokenAmount',
             type: 'uint256',
             internalType: 'uint256',
           },
           {
-            name: 'hookBuyAssetAmount',
+            name: 'hookBuyTokenAmount',
             type: 'uint256',
             internalType: 'uint256',
           },
@@ -85,59 +90,32 @@ export const aaveAdapterFactoryAbi = [
     name: 'deployAndTransferFlashLoan',
     inputs: [
       {
-        name: 'owner',
-        type: 'address',
-        internalType: 'address',
-      },
-      {
         name: 'adapterImplementation',
         type: 'address',
         internalType: 'address',
       },
       {
-        name: 'hookAmounts',
+        name: 'hookData',
         type: 'tuple',
-        internalType: 'struct DataTypes.HookAmounts',
+        internalType: 'struct DataTypes.HookOrderData',
         components: [
           {
-            name: 'flashLoanAmount',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'flashLoanFeeAmount',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'sellAssetAmount',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
-            name: 'buyAssetAmount',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-        ],
-      },
-      {
-        name: 'order',
-        type: 'tuple',
-        internalType: 'struct GPv2Order.Data',
-        components: [
-          {
-            name: 'sellToken',
+            name: 'owner',
             type: 'address',
-            internalType: 'contract IERC20',
-          },
-          {
-            name: 'buyToken',
-            type: 'address',
-            internalType: 'contract IERC20',
+            internalType: 'address',
           },
           {
             name: 'receiver',
+            type: 'address',
+            internalType: 'address',
+          },
+          {
+            name: 'sellToken',
+            type: 'address',
+            internalType: 'address',
+          },
+          {
+            name: 'buyToken',
             type: 'address',
             internalType: 'address',
           },
@@ -152,39 +130,34 @@ export const aaveAdapterFactoryAbi = [
             internalType: 'uint256',
           },
           {
-            name: 'validTo',
-            type: 'uint32',
-            internalType: 'uint32',
-          },
-          {
-            name: 'appData',
-            type: 'bytes32',
-            internalType: 'bytes32',
-          },
-          {
-            name: 'feeAmount',
-            type: 'uint256',
-            internalType: 'uint256',
-          },
-          {
             name: 'kind',
             type: 'bytes32',
             internalType: 'bytes32',
           },
           {
-            name: 'partiallyFillable',
-            type: 'bool',
-            internalType: 'bool',
+            name: 'validTo',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            name: 'sellTokenBalance',
-            type: 'bytes32',
-            internalType: 'bytes32',
+            name: 'flashLoanAmount',
+            type: 'uint256',
+            internalType: 'uint256',
           },
           {
-            name: 'buyTokenBalance',
-            type: 'bytes32',
-            internalType: 'bytes32',
+            name: 'flashLoanFeeAmount',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'hookSellTokenAmount',
+            type: 'uint256',
+            internalType: 'uint256',
+          },
+          {
+            name: 'hookBuyTokenAmount',
+            type: 'uint256',
+            internalType: 'uint256',
           },
         ],
       },
