@@ -1,15 +1,15 @@
 import 'cross-fetch/polyfill'
 import { RateLimiter } from 'limiter'
 import {
-  SupportedChainId,
-  DEFAULT_COW_API_CONTEXT,
-  ENVS_LIST,
   ApiBaseUrls,
   ApiContext,
   CowEnv,
+  DEFAULT_COW_API_CONTEXT,
+  ENVS_LIST,
   PartialApiContext,
+  SupportedChainId,
 } from '@cowprotocol/sdk-config'
-import { CowError, log, jsonWithBigintReplacer } from '@cowprotocol/sdk-common'
+import { CowError, jsonWithBigintReplacer, log } from '@cowprotocol/sdk-common'
 import {
   Address,
   AppDataHash,
@@ -48,6 +48,8 @@ export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.AVALANCHE]: `${PROD_BASE_URL}/avalanche`,
   [SupportedChainId.LENS]: `${PROD_BASE_URL}/lens`,
   [SupportedChainId.BNB]: `${PROD_BASE_URL}/bnb`,
+  [SupportedChainId.LINEA]: `${PROD_BASE_URL}/linea`,
+  [SupportedChainId.PLASMA]: `${PROD_BASE_URL}/plasma`,
 }
 
 /**
@@ -63,6 +65,8 @@ export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.AVALANCHE]: `${STAGING_BASE_URL}/avalanche`,
   [SupportedChainId.LENS]: `${STAGING_BASE_URL}/lens`,
   [SupportedChainId.BNB]: `${STAGING_BASE_URL}/bnb`,
+  [SupportedChainId.LINEA]: `${STAGING_BASE_URL}/linea`,
+  [SupportedChainId.PLASMA]: `${STAGING_BASE_URL}/plasma`,
 }
 
 function cleanObjectFromUndefinedValues(obj: Record<string, string>): typeof obj {
