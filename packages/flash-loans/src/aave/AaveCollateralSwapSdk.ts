@@ -209,6 +209,18 @@ export class AaveCollateralSwapSdk {
       token: orderToSign.sellToken,
     }
 
+    const hooks = await this.getOrderHooks(
+      chainId,
+      trader,
+      instanceAddress,
+      hookAmounts,
+      {
+        ...encodedOrder,
+        receiver: instanceAddress,
+      },
+      collateralPermit,
+    )
+
     const swapSettings: SwapAdvancedSettings = {
       quoteRequest: {
         validTo,
@@ -277,17 +289,7 @@ export class AaveCollateralSwapSdk {
       appData: {
         metadata: {
           flashloan: flashLoanHint,
-          hooks: await this.getOrderHooks(
-            chainId,
-            trader,
-            instanceAddress,
-            hookAmounts,
-            {
-              ...encodedOrder,
-              receiver: instanceAddress,
-            },
-            collateralPermit,
-          ),
+          hooks,
         },
       },
     }
@@ -405,13 +407,14 @@ export class AaveCollateralSwapSdk {
     trader: AccountAddress,
     hookAmounts: FlashLoanHookAmounts,
     order: EncodedOrder,
+    instanceAddress: AccountAddress,
   ): string {
     const hookData = this.buildHookOrderData(trader, hookAmounts, order)
     const adapterImplementation = AAVE_COLLATERAL_SWAP_ADAPTER_HOOK[chainId]
 
     return getGlobalAdapter().utils.encodeFunction(aaveAdapterFactoryAbi, 'deployAndTransferFlashLoan', [
       adapterImplementation,
-      hookData,
+      { ...hookData, receiver: instanceAddress },
     ])
   }
 
@@ -455,7 +458,7 @@ export class AaveCollateralSwapSdk {
   ): Promise<LatestAppDataDocVersion['metadata']['hooks']> {
     const adapter = getGlobalAdapter()
 
-    const preHookCallData = this.getPreHookCallData(chainId, trader, hookAmounts, order)
+    const preHookCallData = this.getPreHookCallData(chainId, trader, hookAmounts, order, expectedInstanceAddress)
     const postHookCallData = collateralPermit ? this.getPostHookCallData(collateralPermit) : undefined
 
     return {
