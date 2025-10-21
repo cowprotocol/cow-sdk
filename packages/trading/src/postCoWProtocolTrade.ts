@@ -16,7 +16,11 @@ export async function postCoWProtocolTrade(
   paramSigner?: SignerLike,
 ): Promise<OrderPostingResult> {
   const signer = resolveSigner(paramSigner)
-  const { networkCostsAmount = '0', signingScheme: _signingScheme = SigningScheme.EIP712 } = additionalParams
+  const {
+    networkCostsAmount = '0',
+    signingScheme: _signingScheme = SigningScheme.EIP712,
+    customEIP1271Signature,
+  } = additionalParams
 
   const isEthFlow = getIsEthFlowOrder(params)
 
@@ -46,6 +50,13 @@ export async function postCoWProtocolTrade(
       const signingResult = await OrderSigningUtils.signOrder(orderToSign, chainId, signer)
 
       if (_signingScheme === SigningScheme.EIP1271) {
+        if (customEIP1271Signature) {
+          return {
+            signature: await customEIP1271Signature(orderToSign, signer),
+            signingScheme: _signingScheme,
+          }
+        }
+
         return {
           signature: OrderSigningUtils.getEip1271Signature(orderToSign, signingResult.signature),
           signingScheme: _signingScheme,

@@ -11,7 +11,7 @@ import { AaveCollateralSwapSdk } from './AaveCollateralSwapSdk'
 import { CollateralSwapParams } from './types'
 
 // =================== Config ===================
-const RPC_URL = 'https://rpc.gnosischain.com'
+const RPC_URL = 'https://rpc.gnosis.gateway.fm'
 const PRIVATE_KEY = '' // private key here (0x...)
 // ===============================================================
 
@@ -41,27 +41,31 @@ describe.skip('AaveFlashLoanIntegration', () => {
     )
     const flashLoanSdk = new AaveCollateralSwapSdk()
 
-    const result = await flashLoanSdk.collateralSwap(
-      {
-        chainId: SupportedChainId.GNOSIS_CHAIN,
-        collateralToken: '0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533', // aGnoWXDAI
-        tradeParameters: {
-          sellToken: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d', // WXDAI
-          sellTokenDecimals: 18,
-          buyToken: '0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0', // USDC.e
-          buyTokenDecimals: 6,
-          amount: '20000000000000000000', // 20 WXDAI
-          kind: OrderKind.SELL,
-          validFor: 10 * 60, // 10m
-          slippageBps: 8,
+    try {
+      const result = await flashLoanSdk.collateralSwap(
+        {
+          chainId: SupportedChainId.GNOSIS_CHAIN,
+          collateralToken: '0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533', // aGnoWXDAI
+          tradeParameters: {
+            sellToken: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d', // WXDAI
+            sellTokenDecimals: 18,
+            buyToken: '0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0', // USDC.e
+            buyTokenDecimals: 6,
+            amount: '20000000000000000000', // 20 WXDAI
+            kind: OrderKind.SELL,
+            validFor: 10 * 60, // 10m
+            slippageBps: 8,
+          },
+          flashLoanFeePercent: 0.05, // 0.05%
         },
-        flashLoanFeePercent: 0.05, // 0.05%
-      },
-      tradingSdk,
-    )
+        tradingSdk,
+      )
 
-    expect(result).toEqual({ result: 'orderId' })
-  }, 40_000)
+      expect(result).toEqual({ result: 'orderId' })
+    } catch (error) {
+      expect({ error }).toEqual({})
+    }
+  }, 120_000)
 
   it('Test AaveFlashLoanSdk collateralSwap on Gnosis Chain with limit order', async () => {
     const chainId = SupportedChainId.GNOSIS_CHAIN
@@ -150,5 +154,5 @@ describe.skip('AaveFlashLoanIntegration', () => {
     } catch (error) {
       expect({ error }).toEqual({})
     }
-  }, 40_000)
+  }, 120_000)
 })

@@ -1,12 +1,15 @@
 import { OrderPostingResult, SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import {
+  AbstractSigner,
   AccountAddress,
   ERC20_ALLOWANCE_ABI,
   ERC20_APPROVE_ABI,
   getGlobalAdapter,
+  Provider,
   TransactionResponse,
+  ZERO_ADDRESS,
 } from '@cowprotocol/sdk-common'
-import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
+import { OrderSigningUtils, UnsignedOrder } from '@cowprotocol/sdk-order-signing'
 import { SigningScheme } from '@cowprotocol/sdk-order-book'
 import { LatestAppDataDocVersion } from '@cowprotocol/sdk-app-data'
 
@@ -22,7 +25,6 @@ import {
   EncodedOrder,
   FlashLoanHint,
   FlashLoanHookAmounts,
-  HookData,
 } from './types'
 import {
   AAVE_ADAPTER_FACTORY,
@@ -38,8 +40,6 @@ import { aaveAdapterFactoryAbi } from './abi/AaveAdapterFactory'
 import { collateralSwapAdapterHookAbi } from './abi/CollateralSwapAdapterHook'
 import { addPercentToValue } from './utils'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
-
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 /**
  * SDK for executing Aave flash loan operations, particularly collateral swaps.
@@ -216,6 +216,50 @@ export class AaveCollateralSwapSdk {
       },
       additionalParams: {
         signingScheme: SigningScheme.EIP1271,
+        async customEIP1271Signature(orderToSign: UnsignedOrder, signer: AbstractSigner<Provider>) {
+          const adapterFactoryAddress = AAVE_ADAPTER_FACTORY[chainId]
+          const encodedOrder = OrderSigningUtils.encodeUnsignedOrder(orderToSign)
+
+          const domain = {
+            name: 'AaveAdapterFactory',
+            version: '1',
+            chainId,
+            verifyingContract: adapterFactoryAddress,
+          }
+
+          const types = {
+            // TODO: it's not a valid primaryType, I don't know the real value
+            Order: [
+              { name: 'adapterInstance', type: 'address' },
+              { name: 'sellToken', type: 'address' },
+              { name: 'buyToken', type: 'address' },
+              { name: 'sellAmount', type: 'uint256' },
+              { name: 'buyAmount', type: 'uint256' },
+              { name: 'kind', type: 'bytes32' },
+              { name: 'validTo', type: 'uint32' },
+              { name: 'appData', type: 'bytes32' },
+            ],
+          }
+
+          const message = {
+            adapterInstance: instanceAddress,
+            sellToken: encodedOrder.sellToken,
+            buyToken: encodedOrder.buyToken,
+            sellAmount: encodedOrder.sellAmount,
+            buyAmount: encodedOrder.buyAmount,
+            kind: encodedOrder.kind,
+            validTo: encodedOrder.validTo,
+            appData: encodedOrder.appData,
+          }
+
+          const ecdsaSignature = await signer.signTypedData(domain, types, message)
+
+          const signature = OrderSigningUtils.getEip1271Signature(orderToSign, ecdsaSignature)
+
+          console.log('AAVE SIGNATURE', signature)
+
+          return signature
+        },
       },
       appData: {
         metadata: {
@@ -321,7 +365,7 @@ export class AaveCollateralSwapSdk {
     hookAmounts: FlashLoanHookAmounts,
     order: EncodedOrder,
   ): Promise<AccountAddress> {
-    const hookData = this.buildHookOrderData(trader, hookAmounts, order) as CollateralOrderData
+    const hookData = this.buildHookOrderData(trader, hookAmounts, order)
 
     return (await getGlobalAdapter().readContract({
       address: AAVE_ADAPTER_FACTORY[chainId],
@@ -350,9 +394,10 @@ export class AaveCollateralSwapSdk {
     order: EncodedOrder,
   ): string {
     const hookData = this.buildHookOrderData(trader, hookAmounts, order)
+    const adapterImplementation = AAVE_COLLATERAL_SWAP_ADAPTER_HOOK[chainId]
 
     return getGlobalAdapter().utils.encodeFunction(aaveAdapterFactoryAbi, 'deployAndTransferFlashLoan', [
-      AAVE_COLLATERAL_SWAP_ADAPTER_HOOK[chainId],
+      adapterImplementation,
       hookData,
     ])
   }
@@ -361,7 +406,7 @@ export class AaveCollateralSwapSdk {
     trader: AccountAddress,
     hookAmounts: FlashLoanHookAmounts,
     order: EncodedOrder,
-  ): HookData {
+  ): CollateralOrderData {
     const { sellToken, buyToken, sellAmount, buyAmount, kind, validTo } = order
     const parsedValidTo = typeof validTo === 'number' ? validTo : Number(validTo ?? 0)
 

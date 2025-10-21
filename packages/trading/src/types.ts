@@ -15,7 +15,7 @@ import {
   SigningScheme,
   TokenAmount,
 } from '@cowprotocol/sdk-order-book'
-import type { AccountAddress, SignerLike } from '@cowprotocol/sdk-common'
+import type { AbstractSigner, AccountAddress, Provider, SignerLike } from '@cowprotocol/sdk-common'
 import type { ORDER_PRIMARY_TYPE, UnsignedOrder } from '@cowprotocol/sdk-order-signing'
 import type { SupportedChainId, CowEnv } from '@cowprotocol/sdk-config'
 
@@ -281,4 +281,5 @@ export interface PostTradeAdditionalParams {
    * You might need other types of signing, for example PRESIGN when sign order via Smart Contract wallets.
    */
   signingScheme?: SigningScheme
+  customEIP1271Signature?: (orderToSign: UnsignedOrder, signer: AbstractSigner<Provider>) => Promise<string>
 }

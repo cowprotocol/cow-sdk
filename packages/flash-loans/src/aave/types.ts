@@ -18,21 +18,6 @@ export interface FlashLoanHint {
   token: string
 }
 
-export interface HookData {
-  owner: string
-  receiver: string
-  sellToken: string
-  buyToken: string
-  sellAmount: string
-  buyAmount: string
-  kind: string
-  validTo: number
-  flashLoanAmount: string
-  flashLoanFeeAmount: string
-  hookSellTokenAmount: string
-  hookBuyTokenAmount: string
-}
-
 export interface CollateralOrderData {
   owner: string
   receiver: string
