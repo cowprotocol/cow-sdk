@@ -17,6 +17,7 @@ type PartialSubgraphApiContext = Partial<SubgraphApiContext>
 
 /**
  * TheGraph API client for CoW Protocol.
+ *
  * * @deprecated not currently maintained, might be removed in the future
  */
 export class SubgraphApi {
