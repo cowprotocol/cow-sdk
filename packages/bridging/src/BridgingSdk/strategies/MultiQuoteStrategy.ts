@@ -96,8 +96,7 @@ export class MultiQuoteStrategy extends BaseMultiQuoteStrategy {
           swapAndBridgeRequest: quoteBridgeRequest,
           advancedSettings,
           tradingSdk: config.tradingSdk,
-          provider,
-          bridgeHookSigner: advancedSettings?.quoteSigner,
+          quoteSigner: advancedSettings?.quoteSigner,
         } as const
 
         const request = this.intermediateTokensCache
@@ -109,7 +108,7 @@ export class MultiQuoteStrategy extends BaseMultiQuoteStrategy {
 
         // Race between the actual quote request and the provider timeout
         const quote = await Promise.race([
-          getQuoteWithBridge(request),
+          getQuoteWithBridge(provider, request),
           createBridgeQuoteTimeoutPromise(providerTimeout, `Provider ${provider.info.dappId}`),
         ])
 

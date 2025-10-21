@@ -1,5 +1,4 @@
 import {
-  BridgeProvider,
   BridgeQuoteResult,
   BridgeStatusResult,
   BuyTokensParams,
@@ -9,6 +8,7 @@ import {
   MultiQuoteResult,
   MultiQuoteRequest,
   QuoteBridgeRequest,
+  BridgeProvider,
 } from '../types'
 import { getCrossChainOrder } from './getCrossChainOrder'
 import { findBridgeProviderFromHook } from './findBridgeProviderFromHook'

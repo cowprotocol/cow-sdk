@@ -1,5 +1,5 @@
 import { BestQuoteStrategy } from './BestQuoteStrategy'
-import { MockBridgeProvider } from '../../providers/mock/MockBridgeProvider'
+import { MockHookBridgeProvider } from '../../providers/mock/HookMockBridgeProvider'
 import { MultiQuoteResult } from '../../types'
 import {
   amountsAndCosts,
@@ -31,9 +31,9 @@ adapterNames.forEach((adapterName) => {
     let orderBookApi: OrderBookApi
     let quoteResult: QuoteResultsWithSigner
 
-    const mockProvider = new MockBridgeProvider()
-    let mockProvider2: MockBridgeProvider
-    let mockProvider3: MockBridgeProvider
+    const mockProvider = new MockHookBridgeProvider()
+    let mockProvider2: MockHookBridgeProvider
+    let mockProvider3: MockHookBridgeProvider
 
     beforeEach(async () => {
       strategy = new BestQuoteStrategy()
@@ -59,7 +59,7 @@ adapterNames.forEach((adapterName) => {
       mockProvider.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
       mockProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
-      mockProvider2 = new MockBridgeProvider()
+      mockProvider2 = new MockHookBridgeProvider()
       mockProvider2.info.dappId = 'cow-sdk://bridging/providers/mock2'
       mockProvider2.info.name = 'Mock Bridge Provider 2'
       mockProvider2.getQuote = jest.fn().mockResolvedValue({
@@ -75,7 +75,7 @@ adapterNames.forEach((adapterName) => {
       mockProvider2.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
       mockProvider2.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
-      mockProvider3 = new MockBridgeProvider()
+      mockProvider3 = new MockHookBridgeProvider()
       mockProvider3.info.dappId = 'cow-sdk://bridging/providers/mock3'
       mockProvider3.info.name = 'Mock Bridge Provider 3'
       mockProvider3.getQuote = jest.fn().mockResolvedValue({

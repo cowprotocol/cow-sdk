@@ -1,5 +1,5 @@
 import { MultiQuoteStrategy } from './MultiQuoteStrategy'
-import { MockBridgeProvider } from '../../providers/mock/MockBridgeProvider'
+import { MockHookBridgeProvider } from '../../providers/mock/HookMockBridgeProvider'
 import { MultiQuoteResult } from '../../types'
 import { assertIsBridgeQuoteAndPost } from '../../utils'
 import {
@@ -32,9 +32,9 @@ adapterNames.forEach((adapterName) => {
     let orderBookApi: OrderBookApi
     let quoteResult: QuoteResultsWithSigner
 
-    const mockProvider = new MockBridgeProvider()
-    let mockProvider2: MockBridgeProvider
-    let mockProvider3: MockBridgeProvider
+    const mockProvider = new MockHookBridgeProvider()
+    let mockProvider2: MockHookBridgeProvider
+    let mockProvider3: MockHookBridgeProvider
 
     beforeEach(() => {
       strategy = new MultiQuoteStrategy()
@@ -52,14 +52,14 @@ adapterNames.forEach((adapterName) => {
       mockProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
       // Setup additional mock providers
-      mockProvider2 = new MockBridgeProvider()
+      mockProvider2 = new MockHookBridgeProvider()
       mockProvider2.info.dappId = 'cow-sdk://bridging/providers/mock2'
       mockProvider2.info.name = 'Mock Bridge Provider 2'
       mockProvider2.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
       mockProvider2.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
       mockProvider2.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
-      mockProvider3 = new MockBridgeProvider()
+      mockProvider3 = new MockHookBridgeProvider()
       mockProvider3.info.dappId = 'cow-sdk://bridging/providers/mock3'
       mockProvider3.info.name = 'Mock Bridge Provider 3'
       mockProvider3.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
@@ -109,7 +109,7 @@ adapterNames.forEach((adapterName) => {
         const results = await strategy.execute(request, config)
 
         expect(results).toHaveLength(3)
-        expect(results[0]?.providerDappId).toBe('mockProvider')
+        expect(results[0]?.providerDappId).toBe('dapp-id-MockHookBridgeProvider')
         expect(results[1]?.providerDappId).toBe('cow-sdk://bridging/providers/mock2')
         expect(results[2]?.providerDappId).toBe('cow-sdk://bridging/providers/mock3')
 
@@ -128,7 +128,7 @@ adapterNames.forEach((adapterName) => {
       it('should get quotes from specific providers when requested', async () => {
         const request = {
           quoteBridgeRequest,
-          providerDappIds: ['mockProvider', 'cow-sdk://bridging/providers/mock3'],
+          providerDappIds: ['dapp-id-MockHookBridgeProvider', 'cow-sdk://bridging/providers/mock3'],
           advancedSettings: undefined,
           options: undefined,
         }
@@ -136,7 +136,7 @@ adapterNames.forEach((adapterName) => {
         const results = await strategy.execute(request, config)
 
         expect(results).toHaveLength(2)
-        expect(results[0]?.providerDappId).toBe('mockProvider')
+        expect(results[0]?.providerDappId).toBe('dapp-id-MockHookBridgeProvider')
         expect(results[1]?.providerDappId).toBe('cow-sdk://bridging/providers/mock3')
 
         // All should be successful
@@ -175,7 +175,7 @@ adapterNames.forEach((adapterName) => {
 
         // Successful providers (order may vary within successful group)
         const successfulProviderIds = successfulResults.map((r) => r.providerDappId)
-        expect(successfulProviderIds).toContain('mockProvider')
+        expect(successfulProviderIds).toContain('dapp-id-MockHookBridgeProvider')
         expect(successfulProviderIds).toContain('cow-sdk://bridging/providers/mock3')
 
         // Failed provider should be in the results
@@ -212,7 +212,7 @@ adapterNames.forEach((adapterName) => {
         }
 
         await expect(strategy.execute(request, config)).rejects.toThrow(
-          "Provider with dappId 'unknown-provider' not found. Available providers: mockProvider, cow-sdk://bridging/providers/mock2, cow-sdk://bridging/providers/mock3",
+          "Provider with dappId 'unknown-provider' not found. Available providers: dapp-id-MockHookBridgeProvider, cow-sdk://bridging/providers/mock2, cow-sdk://bridging/providers/mock3",
         )
       })
 
@@ -276,7 +276,7 @@ adapterNames.forEach((adapterName) => {
 
         const request = {
           quoteBridgeRequest,
-          providerDappIds: ['mockProvider', 'cow-sdk://bridging/providers/mock2'],
+          providerDappIds: ['dapp-id-MockHookBridgeProvider', 'cow-sdk://bridging/providers/mock2'],
           advancedSettings: undefined,
           options: undefined,
         }
@@ -308,7 +308,7 @@ adapterNames.forEach((adapterName) => {
       it('should return quotes with correct structure', async () => {
         const request = {
           quoteBridgeRequest,
-          providerDappIds: ['mockProvider'],
+          providerDappIds: ['dapp-id-MockHookBridgeProvider'],
           advancedSettings: undefined,
           options: undefined,
         }
@@ -324,7 +324,7 @@ adapterNames.forEach((adapterName) => {
           expect(result).toHaveProperty('quote')
           expect(result).toHaveProperty('error')
 
-          expect(result.providerDappId).toBe('mockProvider')
+          expect(result.providerDappId).toBe('dapp-id-MockHookBridgeProvider')
           expect(result.quote).toBeTruthy()
           expect(result.error).toBeUndefined()
 
@@ -346,7 +346,7 @@ adapterNames.forEach((adapterName) => {
 
         const request = {
           quoteBridgeRequest,
-          providerDappIds: ['mockProvider', 'cow-sdk://bridging/providers/mock2'],
+          providerDappIds: ['dapp-id-MockHookBridgeProvider', 'cow-sdk://bridging/providers/mock2'],
           advancedSettings: undefined,
           options: {
             onQuoteResult,
@@ -361,12 +361,12 @@ adapterNames.forEach((adapterName) => {
 
         // Progressive results should contain both providers (order may vary due to async execution)
         const progressiveProviderIds = progressiveResults.map((r) => r.providerDappId).sort()
-        expect(progressiveProviderIds).toEqual(['cow-sdk://bridging/providers/mock2', 'mockProvider'])
+        expect(progressiveProviderIds).toEqual(['cow-sdk://bridging/providers/mock2', 'dapp-id-MockHookBridgeProvider'])
 
         // Final results should also be complete
         expect(results).toHaveLength(2)
         const finalProviderIds = results.map((r) => r.providerDappId).sort()
-        expect(finalProviderIds).toEqual(['cow-sdk://bridging/providers/mock2', 'mockProvider'])
+        expect(finalProviderIds).toEqual(['cow-sdk://bridging/providers/mock2', 'dapp-id-MockHookBridgeProvider'])
       })
 
       it('should handle callback errors gracefully without affecting quote process', async () => {
@@ -379,7 +379,7 @@ adapterNames.forEach((adapterName) => {
 
         const request = {
           quoteBridgeRequest,
-          providerDappIds: ['mockProvider'],
+          providerDappIds: ['dapp-id-MockHookBridgeProvider'],
           advancedSettings: undefined,
           options: {
             onQuoteResult,
@@ -418,7 +418,7 @@ adapterNames.forEach((adapterName) => {
 
         const request = {
           quoteBridgeRequest,
-          providerDappIds: ['mockProvider', 'cow-sdk://bridging/providers/mock2'],
+          providerDappIds: ['dapp-id-MockHookBridgeProvider', 'cow-sdk://bridging/providers/mock2'],
           advancedSettings: undefined,
           options: {
             onQuoteResult,
@@ -443,7 +443,7 @@ adapterNames.forEach((adapterName) => {
         expect(results).toHaveLength(2)
 
         // Find results by provider ID since order may vary
-        const mockProviderResult = results.find((r) => r.providerDappId === 'mockProvider')
+        const mockProviderResult = results.find((r) => r.providerDappId === 'dapp-id-MockHookBridgeProvider')
         const mock2ProviderResult = results.find((r) => r.providerDappId === 'cow-sdk://bridging/providers/mock2')
 
         // First provider (fast) should succeed
@@ -481,7 +481,7 @@ adapterNames.forEach((adapterName) => {
 
         const request = {
           quoteBridgeRequest,
-          providerDappIds: ['mockProvider', 'cow-sdk://bridging/providers/mock2'],
+          providerDappIds: ['dapp-id-MockHookBridgeProvider', 'cow-sdk://bridging/providers/mock2'],
           advancedSettings: undefined,
           options: {
             onQuoteResult,
@@ -503,7 +503,7 @@ adapterNames.forEach((adapterName) => {
         // Second provider should complete first due to shorter delay
         expect(callbackOrder).toHaveLength(2)
         expect(callbackOrder[0]).toBe('cow-sdk://bridging/providers/mock2')
-        expect(callbackOrder[1]).toBe('mockProvider')
+        expect(callbackOrder[1]).toBe('dapp-id-MockHookBridgeProvider')
 
         jest.useRealTimers()
       })
@@ -520,7 +520,7 @@ adapterNames.forEach((adapterName) => {
 
         const request = {
           quoteBridgeRequest,
-          providerDappIds: ['mockProvider', 'cow-sdk://bridging/providers/mock2'],
+          providerDappIds: ['dapp-id-MockHookBridgeProvider', 'cow-sdk://bridging/providers/mock2'],
           advancedSettings: undefined,
           options: {
             onQuoteResult,
@@ -532,7 +532,7 @@ adapterNames.forEach((adapterName) => {
         expect(progressiveResults).toHaveLength(2)
 
         // First provider should succeed
-        const successResult = progressiveResults.find((r) => r.providerDappId === 'mockProvider')
+        const successResult = progressiveResults.find((r) => r.providerDappId === 'dapp-id-MockHookBridgeProvider')
         expect(successResult?.quote).toBeTruthy()
         expect(successResult?.error).toBeUndefined()
 
@@ -580,7 +580,7 @@ adapterNames.forEach((adapterName) => {
         jest.useFakeTimers()
 
         // Create providers with different speeds
-        const fastProvider = new MockBridgeProvider()
+        const fastProvider = new MockHookBridgeProvider()
         fastProvider.info.dappId = 'fastProvider'
         fastProvider.getQuote = jest
           .fn()
@@ -588,7 +588,7 @@ adapterNames.forEach((adapterName) => {
         fastProvider.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
         fastProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
-        const slowProvider = new MockBridgeProvider()
+        const slowProvider = new MockHookBridgeProvider()
         slowProvider.info.dappId = 'slowProvider'
         slowProvider.getQuote = jest
           .fn()

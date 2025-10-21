@@ -153,9 +153,15 @@ export interface BridgeDeposit extends Omit<QuoteBridgeRequest, 'amount'> {
   minBuyAmount: string
 }
 
+/**
+ * Main interface for a bridge provider.
+ *
+ * It contains the main information about the provider, and the methods to get the quote, the bridging params, the status, the cancelling and the refunding of the bridging.
+ */
 export interface BridgeProvider<Q extends BridgeQuoteResult> {
-  info: BridgeProviderInfo
+  type: 'ReceiverAccountBridgeProvider' | 'HookBridgeProvider'
 
+  info: BridgeProviderInfo
   /**
    * Get basic supported chains
    */
@@ -182,6 +188,66 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    * @param request - The quote request
    */
   getQuote(request: QuoteBridgeRequest): Promise<Q>
+
+  /**
+   * Get the identifier of the bridging transaction from the settlement transaction.
+   * @param chainId
+   * @param orderUid - The unique identifier of the order
+   * @param txHash - The hash of the settlement transaction in which the bridging post-hook was executed
+   */
+  getBridgingParams(
+    chainId: ChainId,
+    orderUid: string,
+    txHash: string,
+  ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null>
+
+  /**
+   * Get the explorer url for a bridging id.
+   *
+   * @param bridgingId - The bridging id
+   */
+  getExplorerUrl(bridgingId: string): string
+
+  /**
+   * Get the status of a bridging transaction.
+   *
+   * @param bridgingId - The bridging id
+   * @param originChainId - id of network where funds were deposited
+   */
+  getStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult>
+
+  // Get a transaction to cancel a bridging transaction.
+  // TODO: Review if we support cancelling bridging
+  getCancelBridgingTx(bridgingId: string): Promise<EvmCall>
+
+  // Get a transaction to refund a bridging transaction.
+  // TODO: Review if we support refunding bridging
+  getRefundBridgingTx(bridgingId: string): Promise<EvmCall>
+}
+
+/**
+ * A basic bridge provider that relies on sending the tokens to a specific account.
+ * This provider doesn't rely on hooks to initiate the bridge.
+ */
+export interface ReceiverAccountBridgeProvider<Q extends BridgeQuoteResult> extends BridgeProvider<Q> {
+  type: 'ReceiverAccountBridgeProvider'
+
+  /**
+   * Get the receiver account to where the tokens will be sent in the source chain so they are automatically bridged to the destination chain.
+   *
+   * @param quoteRequest - The quote request
+   * @param quoteResult - The quote result
+   * @returns The receiver account
+   */
+  getBridgeReceiverOverride(quoteRequest: QuoteBridgeRequest, quoteResult: Q): Promise<string>
+}
+
+/**
+ * A bridge provider that uses a hook to initiate the bridge.
+ *
+ */
+export interface HookBridgeProvider<Q extends BridgeQuoteResult> extends BridgeProvider<Q> {
+  type: 'HookBridgeProvider'
 
   /**
    * Get an unsigned bridge call for a quote.
@@ -241,41 +307,6 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    * @param hook - The bridge hook
    */
   decodeBridgeHook(hook: latestAppData.CoWHook): Promise<BridgeDeposit>
-
-  /**
-   * Get the identifier of the bridging transaction from the settlement transaction.
-   * @param chainId
-   * @param orderUid - The unique identifier of the order
-   * @param txHash - The hash of the settlement transaction in which the bridging post-hook was executed
-   */
-  getBridgingParams(
-    chainId: ChainId,
-    orderUid: string,
-    txHash: string,
-  ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null>
-
-  /**
-   * Get the explorer url for a bridging id.
-   *
-   * @param bridgingId - The bridging id
-   */
-  getExplorerUrl(bridgingId: string): string
-
-  /**
-   * Get the status of a bridging transaction.
-   *
-   * @param bridgingId - The bridging id
-   * @param originChainId - id of network where funds were deposited
-   */
-  getStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult>
-
-  // Get a transaction to cancel a bridging transaction.
-  // TODO: Review if we support cancelling bridging
-  getCancelBridgingTx(bridgingId: string): Promise<EvmCall>
-
-  // Get a transaction to refund a bridging transaction.
-  // TODO: Review if we support refunding bridging
-  getRefundBridgingTx(bridgingId: string): Promise<EvmCall>
 }
 
 /**
@@ -381,7 +412,12 @@ export interface BridgeQuoteResults extends BridgeQuoteResult {
   /**
    * Bridge call details
    */
-  bridgeCallDetails: BridgeCallDetails
+  bridgeCallDetails?: BridgeCallDetails
+
+  /**
+   * Bridge recipient override
+   */
+  bridgeReceiverOverride?: string
 }
 
 export interface BridgingDepositParams {

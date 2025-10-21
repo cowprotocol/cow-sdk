@@ -1,11 +1,11 @@
 import { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 import { BridgeProviderError } from '../errors'
 import {
-  BridgeProvider,
   BridgeQuoteResult,
   MultiQuoteProgressCallback,
   MultiQuoteResult,
   BestQuoteProgressCallback,
+  BridgeProvider,
 } from '../types'
 import { BridgingSdkConfig } from './types'
 

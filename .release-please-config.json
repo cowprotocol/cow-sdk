@@ -10,7 +10,9 @@
     },
     "packages/bridging": {
       "package-name": "@cowprotocol/sdk-bridging",
-      "release-type": "node"
+      "release-type": "node",
+      "versioning": "prerelease",
+      "prerelease": true
     },
     "packages/common": {
       "package-name": "@cowprotocol/sdk-common",

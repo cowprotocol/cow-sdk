@@ -1,8 +1,8 @@
 import { getBridgeSignedHook } from './getBridgeSignedHook'
-import { QuoteBridgeRequest } from '../types'
-import { BridgeResultContext } from './types'
+import { BridgeQuoteResult, HookBridgeProvider, QuoteBridgeRequest } from '../types'
 import { createAdapters } from '../../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { HookBridgeResultContext } from './getQuoteWithBridge'
 
 jest.mock('@cowprotocol/sdk-order-book', () => ({
   ...jest.requireActual('@cowprotocol/sdk-order-book'),
@@ -25,6 +25,11 @@ const unsignedBridgeCallMock = {
 const signedHookMock = {}
 
 const owner = '0x000a1'
+const providerMock = {
+  getQuote: jest.fn().mockResolvedValue(bridgingQuoteMock),
+  getUnsignedBridgeCall: jest.fn().mockResolvedValue(unsignedBridgeCallMock),
+  getSignedHook: jest.fn().mockResolvedValue(signedHookMock),
+} as unknown as HookBridgeProvider<BridgeQuoteResult>
 
 const contextMock = {
   swapResult: {
@@ -35,14 +40,9 @@ const contextMock = {
       owner,
     },
   },
-  provider: {
-    getQuote: jest.fn().mockResolvedValue(bridgingQuoteMock),
-    getUnsignedBridgeCall: jest.fn().mockResolvedValue(unsignedBridgeCallMock),
-    getSignedHook: jest.fn().mockResolvedValue(signedHookMock),
-  },
   signer: {},
   hookGasLimit: 100000n,
-} as unknown as BridgeResultContext
+} as unknown as HookBridgeResultContext
 
 const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
@@ -60,10 +60,10 @@ adapterNames.forEach((adapterName) => {
     })
 
     it('Should create a bridge hook nonce based on orderId and specified owner', async () => {
-      await getBridgeSignedHook(bridgeRequestMock, contextMock)
+      await getBridgeSignedHook(providerMock, bridgeRequestMock, contextMock)
 
-      expect(contextMock.provider.getSignedHook).toHaveBeenCalledTimes(1)
-      expect(contextMock.provider.getSignedHook).toHaveBeenCalledWith(
+      expect(providerMock.getSignedHook).toHaveBeenCalledTimes(1)
+      expect(providerMock.getSignedHook).toHaveBeenCalledWith(
         bridgeRequestMock.sellTokenChainId,
         unsignedBridgeCallMock,
         // nonce
@@ -78,17 +78,17 @@ adapterNames.forEach((adapterName) => {
     it('Should calculate deadline based on orderToSign.validTo first of all', async () => {
       const expectedValidTo = 1750000000
 
-      await getBridgeSignedHook(bridgeRequestMock, {
+      await getBridgeSignedHook(providerMock, bridgeRequestMock, {
         ...contextMock,
         swapResult: {
           orderToSign: {
             validTo: expectedValidTo,
           },
         },
-      } as unknown as BridgeResultContext)
+      } as unknown as HookBridgeResultContext)
 
-      expect(contextMock.provider.getSignedHook).toHaveBeenCalledTimes(1)
-      expect(contextMock.provider.getSignedHook).toHaveBeenCalledWith(
+      expect(providerMock.getSignedHook).toHaveBeenCalledTimes(1)
+      expect(providerMock.getSignedHook).toHaveBeenCalledWith(
         expect.anything(),
         expect.anything(),
         expect.anything(),
@@ -102,7 +102,7 @@ adapterNames.forEach((adapterName) => {
     it('Should use validTo override for deadline if set', async () => {
       const expectedValidTo = 2900000000
 
-      await getBridgeSignedHook(bridgeRequestMock, {
+      await getBridgeSignedHook(providerMock, bridgeRequestMock, {
         ...contextMock,
         swapResult: {
           orderToSign: {
@@ -110,10 +110,10 @@ adapterNames.forEach((adapterName) => {
           },
         },
         validToOverride: expectedValidTo,
-      } as unknown as BridgeResultContext)
+      } as unknown as HookBridgeResultContext)
 
-      expect(contextMock.provider.getSignedHook).toHaveBeenCalledTimes(1)
-      expect(contextMock.provider.getSignedHook).toHaveBeenCalledWith(
+      expect(providerMock.getSignedHook).toHaveBeenCalledTimes(1)
+      expect(providerMock.getSignedHook).toHaveBeenCalledWith(
         expect.anything(),
         expect.anything(),
         expect.anything(),

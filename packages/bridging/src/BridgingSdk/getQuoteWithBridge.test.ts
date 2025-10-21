@@ -1,6 +1,6 @@
 import { getEthFlowContract, TradingSdk } from '@cowprotocol/sdk-trading'
-import { MockBridgeProvider } from '../providers/mock/MockBridgeProvider'
-import { BridgeQuoteResult, QuoteBridgeRequest } from '../types'
+import { MockHookBridgeProvider } from '../providers/mock/HookMockBridgeProvider'
+import { QuoteBridgeRequest } from '../types'
 import { getQuoteWithBridge } from './getQuoteWithBridge'
 import {
   bridgeCallDetails,
@@ -26,7 +26,7 @@ adapterNames.forEach((adapterName) => {
   describe(`getQuoteWithBridge with ${adapterName}`, () => {
     let tradingSdk: TradingSdk
     let orderBookApi: OrderBookApi
-    let mockProvider: MockBridgeProvider
+    let mockProvider: MockHookBridgeProvider
 
     let getQuoteMock: jest.Mock
     let getUnsignedBridgeCallMock: jest.Mock
@@ -60,7 +60,7 @@ adapterNames.forEach((adapterName) => {
         signerMock.estimateGas = mockEstimateGas
       }
 
-      mockProvider = new MockBridgeProvider()
+      mockProvider = new MockHookBridgeProvider()
       mockProvider.getQuote = getQuoteMock = jest.fn().mockResolvedValue(bridgeQuoteResult)
       mockProvider.getUnsignedBridgeCall = getUnsignedBridgeCallMock = jest
         .fn()
@@ -81,9 +81,8 @@ adapterNames.forEach((adapterName) => {
     })
 
     async function postOrder(request: QuoteBridgeRequest) {
-      return getQuoteWithBridge({
+      return getQuoteWithBridge(mockProvider, {
         swapAndBridgeRequest: request,
-        provider: mockProvider,
         tradingSdk,
       })
     }
@@ -98,10 +97,9 @@ adapterNames.forEach((adapterName) => {
       })
     }
 
-    async function postOrderWithIntermediateTokensCache(request: GetQuoteWithBridgeParams<BridgeQuoteResult>) {
-      return getQuoteWithBridge({
+    async function postOrderWithIntermediateTokensCache(request: GetQuoteWithBridgeParams) {
+      return getQuoteWithBridge(mockProvider, {
         swapAndBridgeRequest: request.swapAndBridgeRequest,
-        provider: mockProvider,
         tradingSdk,
         intermediateTokensCache: request.intermediateTokensCache,
       })
@@ -226,7 +224,6 @@ adapterNames.forEach((adapterName) => {
       // First call
       await postOrderWithIntermediateTokensCache({
         swapAndBridgeRequest: quoteBridgeRequest,
-        provider: mockProvider,
         tradingSdk,
         intermediateTokensCache,
       })
@@ -234,7 +231,6 @@ adapterNames.forEach((adapterName) => {
       // Second call immediately - should use cache
       await postOrderWithIntermediateTokensCache({
         swapAndBridgeRequest: quoteBridgeRequest,
-        provider: mockProvider,
         tradingSdk,
         intermediateTokensCache,
       })
@@ -248,14 +244,12 @@ adapterNames.forEach((adapterName) => {
       // First call
       await postOrderWithIntermediateTokensCache({
         swapAndBridgeRequest: quoteBridgeRequest,
-        provider: mockProvider,
         tradingSdk,
       })
 
       // Second call
       await postOrderWithIntermediateTokensCache({
         swapAndBridgeRequest: quoteBridgeRequest,
-        provider: mockProvider,
         tradingSdk,
       })
 

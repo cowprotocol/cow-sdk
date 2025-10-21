@@ -1,12 +1,13 @@
 import { EvmCall } from '@cowprotocol/sdk-config'
 import { getGlobalAdapter } from '@cowprotocol/sdk-common'
 
-import { BridgeHook, BridgeQuoteResult, QuoteBridgeRequest } from '../types'
-import { BridgeResultContext } from './types'
+import { BridgeHook, BridgeQuoteResult, HookBridgeProvider, QuoteBridgeRequest } from '../types'
+import { HookBridgeResultContext } from './getQuoteWithBridge'
 
 export async function getBridgeSignedHook(
+  provider: HookBridgeProvider<BridgeQuoteResult>,
   bridgeRequest: QuoteBridgeRequest,
-  { provider, signer, hookGasLimit, swapResult, validToOverride }: BridgeResultContext,
+  { signer, hookGasLimit, swapResult, validToOverride }: HookBridgeResultContext,
 ): Promise<{ hook: BridgeHook; unsignedBridgeCall: EvmCall; bridgingQuote: BridgeQuoteResult }> {
   const adapter = getGlobalAdapter()
 
