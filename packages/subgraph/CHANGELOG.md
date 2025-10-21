@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2-rc.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v0.1.2...sdk-subgraph-v0.1.2-rc.0) (2025-10-21)
+
+
+### ✨ Features
+
+* test rc version ([09f73b6](https://github.com/cowprotocol/cow-sdk/commit/09f73b6067e7d668b2c758b73087f4e3d3a256ba))
+
 ## [0.1.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v0.1.1...sdk-subgraph-v0.1.2) (2025-10-08)
 
 
