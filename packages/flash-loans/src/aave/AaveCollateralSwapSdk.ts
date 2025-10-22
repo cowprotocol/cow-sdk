@@ -433,17 +433,7 @@ export class AaveCollateralSwapSdk {
         {
           target: expectedInstanceAddress,
           callData: postHookCallData,
-          gasLimit: (
-            await adapter.signer
-              .estimateGas({
-                to: expectedInstanceAddress,
-                data: postHookCallData,
-              })
-              .then((gas) => {
-                return addPercentToValue(gas, GAS_ESTIMATION_ADDITION_PERCENT)
-              })
-              .catch(() => DEFAULT_HOOK_GAS_LIMIT)
-          ).toString(),
+          gasLimit: DEFAULT_HOOK_GAS_LIMIT.toString(),
         },
       ],
     }
