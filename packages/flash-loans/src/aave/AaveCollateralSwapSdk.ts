@@ -35,6 +35,7 @@ import {
   ADAPTER_SIGNATURE_TYPES,
   DEFAULT_HOOK_GAS_LIMIT,
   DEFAULT_VALIDITY,
+  EMPTY_PERMIT,
   GAS_ESTIMATION_ADDITION_PERCENT,
   HASH_ZERO,
   PERCENT_SCALE,
@@ -391,7 +392,7 @@ export class AaveCollateralSwapSdk {
     }
   }
 
-  private getPostHookCallData(collateralPermit: CollateralPermitData): string {
+  private getPostHookCallData(collateralPermit: CollateralPermitData = EMPTY_PERMIT): string {
     return getGlobalAdapter().utils.encodeFunction(collateralSwapAdapterHookAbi, 'collateralSwapWithFlashLoan', [
       collateralPermit,
     ])
@@ -408,7 +409,7 @@ export class AaveCollateralSwapSdk {
     const adapter = getGlobalAdapter()
 
     const preHookCallData = this.getPreHookCallData(chainId, trader, hookAmounts, order, expectedInstanceAddress)
-    const postHookCallData = collateralPermit ? this.getPostHookCallData(collateralPermit) : undefined
+    const postHookCallData = this.getPostHookCallData(collateralPermit)
 
     return {
       pre: [
@@ -428,25 +429,23 @@ export class AaveCollateralSwapSdk {
           ).toString(),
         },
       ],
-      post: postHookCallData
-        ? [
-            {
-              target: expectedInstanceAddress,
-              callData: postHookCallData,
-              gasLimit: (
-                await adapter.signer
-                  .estimateGas({
-                    to: expectedInstanceAddress,
-                    data: postHookCallData,
-                  })
-                  .then((gas) => {
-                    return addPercentToValue(gas, GAS_ESTIMATION_ADDITION_PERCENT)
-                  })
-                  .catch(() => DEFAULT_HOOK_GAS_LIMIT)
-              ).toString(),
-            },
-          ]
-        : undefined,
+      post: [
+        {
+          target: expectedInstanceAddress,
+          callData: postHookCallData,
+          gasLimit: (
+            await adapter.signer
+              .estimateGas({
+                to: expectedInstanceAddress,
+                data: postHookCallData,
+              })
+              .then((gas) => {
+                return addPercentToValue(gas, GAS_ESTIMATION_ADDITION_PERCENT)
+              })
+              .catch(() => DEFAULT_HOOK_GAS_LIMIT)
+          ).toString(),
+        },
+      ],
     }
   }
 
