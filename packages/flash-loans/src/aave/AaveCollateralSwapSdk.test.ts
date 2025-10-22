@@ -188,9 +188,10 @@ adapterNames.forEach((adapterName) => {
 
         expect(mockPostSwapOrderFromQuote).toHaveBeenCalledWith(
           expect.objectContaining({
-            additionalParams: {
+            additionalParams: expect.objectContaining({
               signingScheme: SigningScheme.EIP1271,
-            },
+              customEIP1271Signature: expect.any(Function),
+            }),
           }),
         )
       })
@@ -446,6 +447,85 @@ adapterNames.forEach((adapterName) => {
         const callArgs = sendTransactionSpy.mock.calls?.[0]?.[0]
         expect(callArgs?.to).toBe(collateralToken)
         expect(callArgs?.data).toContain('0x')
+      })
+    })
+
+    describe('customEIP1271Signature', () => {
+      test('should generate EIP-1271 signature with correct domain', async () => {
+        const mockEcdsaSignature = '0xabcd1234567890'
+        const signTypedDataSpy = jest
+          .spyOn(adapter.signer, 'signTypedData')
+          .mockResolvedValue(mockEcdsaSignature as any)
+
+        await flashLoanSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.SEPOLIA,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        // Extract the customEIP1271Signature function from the call
+        const swapSettingsCall = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
+        const customSignatureFn = swapSettingsCall.additionalParams.customEIP1271Signature
+
+        expect(customSignatureFn).toBeDefined()
+        expect(typeof customSignatureFn).toBe('function')
+
+        // Call the custom signature function
+        await customSignatureFn(mockOrderToSign, adapter.signer)
+
+        // Verify signTypedData was called with correct domain
+        expect(signTypedDataSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            name: 'AaveAdapterFactory',
+            version: '1',
+            chainId: SupportedChainId.SEPOLIA,
+            verifyingContract: AAVE_ADAPTER_FACTORY[SupportedChainId.SEPOLIA],
+          }),
+          expect.any(Object),
+          expect.any(Object),
+        )
+      })
+
+      test('should include correct signature types in EIP-712 message', async () => {
+        const mockEcdsaSignature = '0xabcd1234567890'
+        const signTypedDataSpy = jest
+          .spyOn(adapter.signer, 'signTypedData')
+          .mockResolvedValue(mockEcdsaSignature as any)
+
+        await flashLoanSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.SEPOLIA,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        const swapSettingsCall = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
+        const customSignatureFn = swapSettingsCall.additionalParams.customEIP1271Signature
+
+        await customSignatureFn(mockOrderToSign, adapter.signer)
+
+        // Verify signature types are correct
+        expect(signTypedDataSpy).toHaveBeenCalledWith(
+          expect.any(Object),
+          expect.objectContaining({
+            AdapterOrderSig: expect.arrayContaining([
+              { name: 'instance', type: 'address' },
+              { name: 'sellToken', type: 'address' },
+              { name: 'buyToken', type: 'address' },
+              { name: 'sellAmount', type: 'uint256' },
+              { name: 'buyAmount', type: 'uint256' },
+              { name: 'kind', type: 'bytes32' },
+              { name: 'validTo', type: 'uint32' },
+              { name: 'appData', type: 'bytes32' },
+            ]),
+          }),
+          expect.any(Object),
+        )
       })
     })
   })

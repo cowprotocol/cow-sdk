@@ -19,3 +19,19 @@ export const PERCENT_SCALE = 10_000
 export const DEFAULT_VALIDITY = 10 * 60 // 10 min
 
 export const GAS_ESTIMATION_ADDITION_PERCENT = 10 // 10%
+
+export const ADAPTER_DOMAIN_NAME = 'AaveAdapterFactory'
+export const ADAPTER_DOMAIN_VERSION = '1'
+
+export const ADAPTER_SIGNATURE_TYPES = {
+  AdapterOrderSig: [
+    { name: 'instance', type: 'address' },
+    { name: 'sellToken', type: 'address' },
+    { name: 'buyToken', type: 'address' },
+    { name: 'sellAmount', type: 'uint256' },
+    { name: 'buyAmount', type: 'uint256' },
+    { name: 'kind', type: 'bytes32' },
+    { name: 'validTo', type: 'uint32' },
+    { name: 'appData', type: 'bytes32' },
+  ],
+}

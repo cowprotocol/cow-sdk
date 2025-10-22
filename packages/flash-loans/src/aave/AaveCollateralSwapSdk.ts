@@ -30,6 +30,9 @@ import {
   AAVE_ADAPTER_FACTORY,
   AAVE_COLLATERAL_SWAP_ADAPTER_HOOK,
   AAVE_POOL_ADDRESS,
+  ADAPTER_DOMAIN_NAME,
+  ADAPTER_DOMAIN_VERSION,
+  ADAPTER_SIGNATURE_TYPES,
   DEFAULT_HOOK_GAS_LIMIT,
   DEFAULT_VALIDITY,
   GAS_ESTIMATION_ADDITION_PERCENT,
@@ -228,44 +231,8 @@ export class AaveCollateralSwapSdk {
       },
       additionalParams: {
         signingScheme: SigningScheme.EIP1271,
-        async customEIP1271Signature(orderToSign: UnsignedOrder, signer: AbstractSigner<Provider>) {
-          const adapterFactoryAddress = AAVE_ADAPTER_FACTORY[chainId]
-          const encodedOrder = OrderSigningUtils.encodeUnsignedOrder(orderToSign)
-
-          const domain = {
-            name: 'AaveAdapterFactory',
-            version: '1',
-            chainId,
-            verifyingContract: adapterFactoryAddress,
-          }
-
-          const types = {
-            AdapterOrderSig: [
-              { name: 'instance', type: 'address' },
-              { name: 'sellToken', type: 'address' },
-              { name: 'buyToken', type: 'address' },
-              { name: 'sellAmount', type: 'uint256' },
-              { name: 'buyAmount', type: 'uint256' },
-              { name: 'kind', type: 'bytes32' },
-              { name: 'validTo', type: 'uint32' },
-              { name: 'appData', type: 'bytes32' },
-            ],
-          }
-
-          const message = {
-            instance: instanceAddress,
-            sellToken: encodedOrder.sellToken,
-            buyToken: encodedOrder.buyToken,
-            sellAmount: encodedOrder.sellAmount,
-            buyAmount: encodedOrder.buyAmount,
-            kind: encodedOrder.kind,
-            validTo: encodedOrder.validTo,
-            appData: encodedOrder.appData,
-          }
-
-          const ecdsaSignature = await signer.signTypedData(domain, types, message)
-
-          return OrderSigningUtils.getEip1271Signature(orderToSign, ecdsaSignature)
+        customEIP1271Signature: (orderToSign: UnsignedOrder, signer: AbstractSigner<Provider>) => {
+          return this.adapterEIP1271Signature(chainId, instanceAddress, orderToSign, signer)
         },
       },
       appData: {
@@ -481,5 +448,37 @@ export class AaveCollateralSwapSdk {
           ]
         : undefined,
     }
+  }
+
+  private async adapterEIP1271Signature(
+    chainId: SupportedChainId,
+    instanceAddress: AccountAddress,
+    orderToSign: UnsignedOrder,
+    signer: AbstractSigner<Provider>,
+  ) {
+    const adapterFactoryAddress = AAVE_ADAPTER_FACTORY[chainId]
+    const encodedOrder = OrderSigningUtils.encodeUnsignedOrder(orderToSign)
+
+    const domain = {
+      name: ADAPTER_DOMAIN_NAME,
+      version: ADAPTER_DOMAIN_VERSION,
+      chainId,
+      verifyingContract: adapterFactoryAddress,
+    }
+
+    const message = {
+      instance: instanceAddress,
+      sellToken: encodedOrder.sellToken,
+      buyToken: encodedOrder.buyToken,
+      sellAmount: encodedOrder.sellAmount,
+      buyAmount: encodedOrder.buyAmount,
+      kind: encodedOrder.kind,
+      validTo: encodedOrder.validTo,
+      appData: encodedOrder.appData,
+    }
+
+    const ecdsaSignature = await signer.signTypedData(domain, ADAPTER_SIGNATURE_TYPES, message)
+
+    return OrderSigningUtils.getEip1271Signature(orderToSign, ecdsaSignature)
   }
 }
