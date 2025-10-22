@@ -36,13 +36,11 @@ import {
   DEFAULT_HOOK_GAS_LIMIT,
   DEFAULT_VALIDITY,
   EMPTY_PERMIT,
-  GAS_ESTIMATION_ADDITION_PERCENT,
   HASH_ZERO,
   PERCENT_SCALE,
 } from './const'
 import { aaveAdapterFactoryAbi } from './abi/AaveAdapterFactory'
 import { collateralSwapAdapterHookAbi } from './abi/CollateralSwapAdapterHook'
-import { addPercentToValue } from './utils'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 
 /**
@@ -406,8 +404,6 @@ export class AaveCollateralSwapSdk {
     order: EncodedOrder,
     collateralPermit?: CollateralPermitData,
   ): Promise<LatestAppDataDocVersion['metadata']['hooks']> {
-    const adapter = getGlobalAdapter()
-
     const preHookCallData = this.getPreHookCallData(chainId, trader, hookAmounts, order, expectedInstanceAddress)
     const postHookCallData = this.getPostHookCallData(collateralPermit)
 
@@ -416,24 +412,14 @@ export class AaveCollateralSwapSdk {
         {
           target: AAVE_ADAPTER_FACTORY[chainId],
           callData: preHookCallData,
-          gasLimit: (
-            await adapter.signer
-              .estimateGas({
-                to: AAVE_ADAPTER_FACTORY[chainId],
-                data: preHookCallData,
-              })
-              .then((gas) => {
-                return addPercentToValue(gas, GAS_ESTIMATION_ADDITION_PERCENT)
-              })
-              .catch(() => DEFAULT_HOOK_GAS_LIMIT)
-          ).toString(),
+          gasLimit: DEFAULT_HOOK_GAS_LIMIT.pre.toString(),
         },
       ],
       post: [
         {
           target: expectedInstanceAddress,
           callData: postHookCallData,
-          gasLimit: DEFAULT_HOOK_GAS_LIMIT.toString(),
+          gasLimit: DEFAULT_HOOK_GAS_LIMIT.post.toString(),
         },
       ],
     }

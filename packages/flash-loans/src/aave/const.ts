@@ -13,7 +13,10 @@ export const AAVE_COLLATERAL_SWAP_ADAPTER_HOOK = {
   [SupportedChainId.GNOSIS_CHAIN]: '0x0aeC794e544B81D96149a4C8C1cC57c6F31A978A',
 }
 
-export const DEFAULT_HOOK_GAS_LIMIT = 1_000_000n
+export const DEFAULT_HOOK_GAS_LIMIT = {
+  pre: 300_000n,
+  post: 600_000n,
+}
 
 export const PERCENT_SCALE = 10_000
 
