@@ -87,6 +87,7 @@ describe('AaveFlashLoanIntegration', () => {
         chainId,
         appCode: 'aave-v3-flashloan',
         signer: account,
+        env: 'staging',
       },
       {},
       adapter,
