@@ -63,7 +63,7 @@ describe.skip('AaveFlashLoanIntegration', () => {
 
       expect(result).toEqual({ result: 'orderId' })
     } catch (error) {
-      expect({ error }).toEqual({})
+      expect((error as { body: unknown }).body || error).toEqual({})
     }
   }, 120_000)
 
@@ -152,7 +152,7 @@ describe.skip('AaveFlashLoanIntegration', () => {
 
       expect(result).toEqual({ result: 'orderId' })
     } catch (error) {
-      expect({ error }).toEqual({})
+      expect((error as { body: unknown }).body || error).toEqual({})
     }
   }, 120_000)
 })

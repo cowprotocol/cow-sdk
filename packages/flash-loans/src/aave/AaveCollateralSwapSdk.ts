@@ -40,7 +40,6 @@ import { aaveAdapterFactoryAbi } from './abi/AaveAdapterFactory'
 import { collateralSwapAdapterHookAbi } from './abi/CollateralSwapAdapterHook'
 import { addPercentToValue } from './utils'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
-import { concat, Hex, toBytes } from 'viem'
 
 /**
  * SDK for executing Aave flash loan operations, particularly collateral swaps.
@@ -230,60 +229,43 @@ export class AaveCollateralSwapSdk {
       additionalParams: {
         signingScheme: SigningScheme.EIP1271,
         async customEIP1271Signature(orderToSign: UnsignedOrder, signer: AbstractSigner<Provider>) {
-          const adapter = getGlobalAdapter()
-
           const adapterFactoryAddress = AAVE_ADAPTER_FACTORY[chainId]
           const encodedOrder = OrderSigningUtils.encodeUnsignedOrder(orderToSign)
 
-          const ADAPTER_ORDER_TYPEHASH = '0x1ca15395c04ac473d5b42656e3782ae1fce1a113fdb5432b57f8fb0870fa3178'
+          const domain = {
+            name: 'AaveAdapterFactory',
+            version: '1',
+            chainId,
+            verifyingContract: adapterFactoryAddress,
+          }
 
-          const domainSeparator = (await adapter.readContract({
-            address: adapterFactoryAddress,
-            abi: aaveAdapterFactoryAbi,
-            functionName: 'DOMAIN_SEPARATOR',
-            args: [],
-          })) as Hex
-
-          const encodedStruct = adapter.utils.encodeAbi(
-            [
-              { type: 'bytes32' }, // typehash
-              { type: 'address' }, // adapterInstance
-              { type: 'address' }, // sellToken
-              { type: 'address' }, // buyToken
-              { type: 'uint256' }, // sellAmount
-              { type: 'uint256' }, // buyAmount
-              { type: 'bytes32' }, // kind
-              { type: 'uint32' }, // validTo
-              { type: 'bytes32' }, // appData
+          const types = {
+            AdapterOrderSig: [
+              { name: 'instance', type: 'address' },
+              { name: 'sellToken', type: 'address' },
+              { name: 'buyToken', type: 'address' },
+              { name: 'sellAmount', type: 'uint256' },
+              { name: 'buyAmount', type: 'uint256' },
+              { name: 'kind', type: 'bytes32' },
+              { name: 'validTo', type: 'uint32' },
+              { name: 'appData', type: 'bytes32' },
             ],
-            [
-              ADAPTER_ORDER_TYPEHASH,
-              instanceAddress,
-              encodedOrder.sellToken,
-              encodedOrder.buyToken,
-              encodedOrder.sellAmount,
-              encodedOrder.buyAmount,
-              encodedOrder.kind,
-              encodedOrder.validTo,
-              encodedOrder.appData,
-            ],
-          )
+          }
 
-          const structHash = adapter.utils.keccak256(encodedStruct) as Hex
+          const message = {
+            instance: instanceAddress,
+            sellToken: encodedOrder.sellToken,
+            buyToken: encodedOrder.buyToken,
+            sellAmount: encodedOrder.sellAmount,
+            buyAmount: encodedOrder.buyAmount,
+            kind: encodedOrder.kind,
+            validTo: encodedOrder.validTo,
+            appData: encodedOrder.appData,
+          }
 
-          // TODO: wrap concat and toBytes to adapter.utils
-          // https://viem.sh/docs/utilities/hashTypedData#hashtypeddata
-          const digest = adapter.utils.keccak256(
-            concat([toBytes('0x1901'), adapter.utils.arrayify(domainSeparator), adapter.utils.arrayify(structHash)]),
-          )
+          const ecdsaSignature = await signer.signTypedData(domain, types, message)
 
-          const ecdsaSignature = await signer.signMessage(digest)
-
-          const signature = OrderSigningUtils.getEip1271Signature(orderToSign, ecdsaSignature)
-
-          console.log('AAVE SIGNATURE', signature)
-
-          return signature
+          return OrderSigningUtils.getEip1271Signature(orderToSign, ecdsaSignature)
         },
       },
       appData: {
