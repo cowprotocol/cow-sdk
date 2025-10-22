@@ -1,4 +1,5 @@
 import { mapAddressToSupportedNetworks, SupportedChainId } from '@cowprotocol/sdk-config'
+import { CollateralPermitData } from './types'
 
 export const HASH_ZERO = '0x0000000000000000000000000000000000000000000000000000000000000000'
 
@@ -34,4 +35,12 @@ export const ADAPTER_SIGNATURE_TYPES = {
     { name: 'validTo', type: 'uint32' },
     { name: 'appData', type: 'bytes32' },
   ],
+}
+
+export const EMPTY_PERMIT: CollateralPermitData = {
+  amount: '0',
+  deadline: 0,
+  v: 0,
+  r: HASH_ZERO,
+  s: HASH_ZERO,
 }
