@@ -20,7 +20,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage --json --outputFile=jest.results.json && npx coveralls < ./coverage/lcov.info",
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
-    "test:bungeeGnosisBridge": "yarn test --testPathPattern=BungeeGnosisBridge",
+    "test:aave-collateral-integration": "npx jest --testNamePattern=^AaveFlashLoanIntegration",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },

@@ -12,11 +12,11 @@ import { CollateralSwapParams } from './types'
 
 // =================== Config ===================
 const RPC_URL = 'https://rpc.gnosis.gateway.fm'
-const PRIVATE_KEY = '' // private key here (0x...)
+const PRIVATE_KEY = process.env.PRIVATE_KEY
 // ===============================================================
 
-describe.skip('AaveFlashLoanIntegration', () => {
-  it('Test AaveFlashLoanSdk collateralSwap on Gnosis Chain with swap', async () => {
+describe('AaveFlashLoanIntegration', () => {
+  it.skip('Test AaveFlashLoanSdk collateralSwap on Gnosis Chain with swap', async () => {
     const chainId = SupportedChainId.GNOSIS_CHAIN
 
     if (!PRIVATE_KEY) {
@@ -68,7 +68,7 @@ describe.skip('AaveFlashLoanIntegration', () => {
     }
   }, 120_000)
 
-  it('Test AaveFlashLoanSdk collateralSwap on Gnosis Chain with limit order', async () => {
+  it.skip('Test AaveFlashLoanSdk collateralSwap on Gnosis Chain with limit order', async () => {
     const chainId = SupportedChainId.GNOSIS_CHAIN
 
     if (!PRIVATE_KEY) {
