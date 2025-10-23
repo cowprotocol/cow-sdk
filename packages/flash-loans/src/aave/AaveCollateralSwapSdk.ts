@@ -135,8 +135,7 @@ export class AaveCollateralSwapSdk {
       throw new Error(`flashLoanFeePercent must be between 0 and 100, got: ${flashLoanFeePercent}`)
     }
 
-    const flashLoanFeeAmount =
-      (sellAmount * BigInt(Math.round(flashLoanFeePercent * PERCENT_SCALE))) / BigInt(100 * PERCENT_SCALE)
+    const { flashLoanFeeAmount, sellAmountToSign } = this.calculateFlashLoanAmounts({ flashLoanFeePercent, sellAmount })
 
     // Omit validFor because we use validTo instead (it is defined above)
     const { validFor: _, ...restParameters } = tradeParameters
@@ -146,7 +145,7 @@ export class AaveCollateralSwapSdk {
       flashLoanFeeAmount,
       chainId,
       owner: trader,
-      amount: (sellAmount - flashLoanFeeAmount).toString(),
+      amount: sellAmountToSign.toString(),
       validTo,
     }
   }
@@ -205,7 +204,7 @@ export class AaveCollateralSwapSdk {
     const flashLoanHint: FlashLoanHint = {
       amount, // this is actually in UNDERLYING but aave tokens are 1:1
       receiver: AAVE_ADAPTER_FACTORY[chainId],
-      liquidityProvider: AAVE_POOL_ADDRESS,
+      liquidityProvider: AAVE_POOL_ADDRESS[chainId],
       protocolAdapter: AAVE_ADAPTER_FACTORY[chainId],
       token: orderToSign.sellToken,
     }
@@ -347,6 +346,19 @@ export class AaveCollateralSwapSdk {
 
     if (!allowance || allowance < sellAmount) {
       await this.approveCollateral(collateralParams)
+    }
+  }
+
+  calculateFlashLoanAmounts({ sellAmount, flashLoanFeePercent }: { sellAmount: bigint; flashLoanFeePercent: number }): {
+    flashLoanFeeAmount: bigint
+    sellAmountToSign: bigint
+  } {
+    const flashLoanFeeAmount =
+      (sellAmount * BigInt(Math.round(flashLoanFeePercent * PERCENT_SCALE))) / BigInt(100 * PERCENT_SCALE)
+
+    return {
+      flashLoanFeeAmount,
+      sellAmountToSign: sellAmount - flashLoanFeeAmount,
     }
   }
 

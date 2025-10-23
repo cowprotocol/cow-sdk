@@ -3,12 +3,18 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { gnosis } from 'viem/chains'
 
 import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
-import { LimitTradeParameters, TradingSdk } from '@cowprotocol/sdk-trading'
+import {
+  buildAppData,
+  BuildAppDataParams,
+  getOrderToSign,
+  LimitTradeParameters,
+  TradingSdk,
+} from '@cowprotocol/sdk-trading'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 
 import { AaveCollateralSwapSdk } from './AaveCollateralSwapSdk'
-import { CollateralSwapParams } from './types'
+import { AccountAddress } from '@cowprotocol/sdk-common'
 
 // =================== Config ===================
 const RPC_URL = 'https://rpc.gnosis.gateway.fm'
@@ -80,12 +86,13 @@ describe('AaveFlashLoanIntegration', () => {
       transport: http(RPC_URL),
     })
     const account = privateKeyToAccount(PRIVATE_KEY as `0x${string}`)
+    const appCode = 'aave-v3-flashloan'
 
     const adapter = new ViemAdapter({ provider: publicClient, signer: account })
     const tradingSdk = new TradingSdk(
       {
         chainId,
-        appCode: 'aave-v3-flashloan',
+        appCode,
         signer: account,
         env: 'staging',
       },
@@ -94,60 +101,66 @@ describe('AaveFlashLoanIntegration', () => {
     )
     const flashLoanSdk = new AaveCollateralSwapSdk()
 
+    const owner = (await adapter.signer.getAddress()) as AccountAddress
     const sellAmount = 20000000000000000000n // 20 WXDAI
+    // The amount is before slippage and partner fee!
+    const buyAmount = 18000000n // 18 USDC.e
+    const validTo = Math.ceil(Date.now() / 1000) + 10 * 60 // 10m
+    const flashLoanFeePercent = 0.05 // 0.05%
+    const slippageBps = 8 // 0.08%
+    const partnerFee = {
+      volumeBps: 10, // 0.1%
+      recipient: owner, // TODO: set a correct partnerFee recipient
+    }
+    // Set true if you sell native token
+    const isEthFlow = false
     const collateralPermit = undefined
 
-    const collateralSwapParams: CollateralSwapParams = {
-      chainId: SupportedChainId.GNOSIS_CHAIN,
-      collateralToken: '0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533', // aGnoWXDAI
-      tradeParameters: {
-        sellToken: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d', // WXDAI
-        sellTokenDecimals: 18,
-        buyToken: '0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0', // USDC.e
-        buyTokenDecimals: 6,
-        amount: sellAmount.toString(),
-        kind: OrderKind.SELL,
-        validFor: 10 * 60, // 10m
-        slippageBps: 8,
-      },
-      flashLoanFeePercent: 0.05, // 0.05%
-      settings: {
-        collateralPermit,
-      },
+    const { flashLoanFeeAmount, sellAmountToSign } = flashLoanSdk.calculateFlashLoanAmounts({
+      flashLoanFeePercent,
+      sellAmount,
+    })
+
+    const limitOrder: LimitTradeParameters = {
+      sellToken: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d', // WXDAI
+      sellTokenDecimals: 18,
+      buyToken: '0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0', // USDC.e
+      buyTokenDecimals: 6,
+      sellAmount: sellAmountToSign.toString(),
+      buyAmount: buyAmount.toString(),
+      kind: OrderKind.SELL,
+      validTo,
+      slippageBps,
     }
 
-    const quoteParams = await flashLoanSdk.getSwapQuoteParams(collateralSwapParams)
+    const buildAppDataParams: BuildAppDataParams = {
+      slippageBps,
+      orderClass: 'market',
+      appCode,
+      partnerFee,
+    }
+    const appDataInfo = await buildAppData(buildAppDataParams)
 
-    const { quoteResults } = await tradingSdk.getQuote(quoteParams)
+    const orderToSign = getOrderToSign(
+      { chainId, from: owner, networkCostsAmount: '0', isEthFlow },
+      limitOrder,
+      appDataInfo.appDataKeccak256,
+    )
 
     const orderPostParams = await flashLoanSdk.getOrderPostingSettings(
       {
-        chainId: quoteParams.chainId,
-        validTo: quoteParams.validTo,
-        owner: quoteParams.owner,
-        flashLoanFeeAmount: quoteParams.flashLoanFeeAmount,
+        chainId,
+        validTo,
+        owner,
+        flashLoanFeeAmount,
       },
       {
         sellAmount,
-        buyAmount: quoteResults.amountsAndCosts.afterSlippage.buyAmount,
-        orderToSign: quoteResults.orderToSign,
+        buyAmount,
+        orderToSign,
         collateralPermit,
       },
     )
-
-    const { tradeParameters } = collateralSwapParams
-    const { orderToSign, quoteResponse } = quoteResults
-
-    const limitOrder: LimitTradeParameters = {
-      sellToken: tradeParameters.sellToken,
-      sellTokenDecimals: tradeParameters.sellTokenDecimals,
-      buyToken: tradeParameters.buyToken,
-      buyTokenDecimals: tradeParameters.buyTokenDecimals,
-      kind: tradeParameters.kind,
-      sellAmount: orderToSign.sellAmount,
-      buyAmount: orderToSign.buyAmount,
-      quoteId: quoteResponse.id,
-    }
 
     try {
       const result = await tradingSdk.postLimitOrder(limitOrder, orderPostParams.swapSettings)

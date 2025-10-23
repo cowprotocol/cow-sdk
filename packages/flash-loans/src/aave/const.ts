@@ -3,7 +3,8 @@ import { CollateralPermitData } from './types'
 
 export const HASH_ZERO = '0x0000000000000000000000000000000000000000000000000000000000000000'
 
-export const AAVE_POOL_ADDRESS = '0xb50201558B00496A145fE76f7424749556E326D8' // See https://search.onaave.com/?q=sepolia
+// See https://search.onaave.com/?q=sepolia
+export const AAVE_POOL_ADDRESS = mapAddressToSupportedNetworks('0xb50201558B00496A145fE76f7424749556E326D8')
 export const AAVE_ADAPTER_FACTORY = {
   ...mapAddressToSupportedNetworks('0x1186B5ad42E3e6d6c6901FC53b4A367540E6EcFE'),
   [SupportedChainId.GNOSIS_CHAIN]: '0x889ee28C0a8a41a312546A8eeD77b4b097C84016',
