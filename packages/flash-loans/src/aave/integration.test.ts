@@ -3,18 +3,13 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { gnosis } from 'viem/chains'
 
 import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
-import {
-  buildAppData,
-  BuildAppDataParams,
-  getOrderToSign,
-  LimitTradeParameters,
-  TradingSdk,
-} from '@cowprotocol/sdk-trading'
+import { getOrderToSign, LimitTradeParameters, TradingSdk } from '@cowprotocol/sdk-trading'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 
 import { AaveCollateralSwapSdk } from './AaveCollateralSwapSdk'
 import { AccountAddress } from '@cowprotocol/sdk-common'
+import { HASH_ZERO } from './const'
 
 // =================== Config ===================
 const RPC_URL = 'https://rpc.gnosis.gateway.fm'
@@ -107,7 +102,7 @@ describe('AaveFlashLoanIntegration', () => {
     const buyAmount = 18000000n // 18 USDC.e
     const validTo = Math.ceil(Date.now() / 1000) + 10 * 60 // 10m
     const flashLoanFeePercent = 0.05 // 0.05%
-    const slippageBps = 8 // 0.08%
+    const slippageBps = 0 // 0.08%
     const partnerFee = {
       volumeBps: 10, // 0.1%
       recipient: owner, // TODO: set a correct partnerFee recipient
@@ -131,20 +126,13 @@ describe('AaveFlashLoanIntegration', () => {
       kind: OrderKind.SELL,
       validTo,
       slippageBps,
-    }
-
-    const buildAppDataParams: BuildAppDataParams = {
-      slippageBps,
-      orderClass: 'market',
-      appCode,
       partnerFee,
     }
-    const appDataInfo = await buildAppData(buildAppDataParams)
 
     const orderToSign = getOrderToSign(
       { chainId, from: owner, networkCostsAmount: '0', isEthFlow },
       limitOrder,
-      appDataInfo.appDataKeccak256,
+      HASH_ZERO,
     )
 
     const orderPostParams = await flashLoanSdk.getOrderPostingSettings(
