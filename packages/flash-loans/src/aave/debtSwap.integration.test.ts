@@ -16,60 +16,8 @@ const RPC_URL = 'https://rpc.gnosis.gateway.fm'
 const PRIVATE_KEY = process.env.PRIVATE_KEY
 // ===============================================================
 
-describe('AaveFlashLoanIntegration.collateralSwap', () => {
-  it.skip('Test AaveFlashLoanSdk collateralSwap on Gnosis Chain with swap', async () => {
-    const chainId = SupportedChainId.GNOSIS_CHAIN
-
-    if (!PRIVATE_KEY) {
-      throw new Error('Set PRIVATE_KEY to run this example')
-    }
-
-    const publicClient = createPublicClient({
-      chain: gnosis,
-      transport: http(RPC_URL),
-    })
-    const account = privateKeyToAccount(PRIVATE_KEY as `0x${string}`)
-
-    const adapter = new ViemAdapter({ provider: publicClient, signer: account })
-    const tradingSdk = new TradingSdk(
-      {
-        chainId,
-        appCode: 'aave-v3-flashloan',
-        signer: account,
-        env: 'staging',
-      },
-      {},
-      adapter,
-    )
-    const flashLoanSdk = new AaveCollateralSwapSdk()
-
-    try {
-      const result = await flashLoanSdk.collateralSwap(
-        {
-          chainId: SupportedChainId.GNOSIS_CHAIN,
-          collateralToken: '0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533', // aGnoWXDAI
-          tradeParameters: {
-            sellToken: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d', // WXDAI
-            sellTokenDecimals: 18,
-            buyToken: '0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0', // USDC.e
-            buyTokenDecimals: 6,
-            amount: '20000000000000000000', // 20 WXDAI
-            kind: OrderKind.SELL,
-            validFor: 10 * 60, // 10m
-            slippageBps: 8,
-          },
-          flashLoanFeePercent: 0.05, // 0.05%
-        },
-        tradingSdk,
-      )
-
-      expect(result).toEqual({ result: 'orderId' })
-    } catch (error) {
-      expect((error as { body: unknown }).body || error).toEqual({})
-    }
-  }, 120_000)
-
-  it.skip('Test AaveFlashLoanSdk collateralSwap on Gnosis Chain with limit order', async () => {
+describe('AaveFlashLoanIntegration.debtSwap', () => {
+  it.skip('Test AaveFlashLoanSdk debtSwap on Gnosis Chain with limit order', async () => {
     const chainId = SupportedChainId.GNOSIS_CHAIN
 
     if (!PRIVATE_KEY) {
@@ -136,7 +84,7 @@ describe('AaveFlashLoanIntegration.collateralSwap', () => {
     )
 
     const orderPostParams = await flashLoanSdk.getOrderPostingSettings(
-      AaveFlashLoanType.CollateralSwap,
+      AaveFlashLoanType.DebtSwap,
       {
         chainId,
         validTo,

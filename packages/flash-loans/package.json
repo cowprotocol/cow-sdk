@@ -20,7 +20,9 @@
     "test": "jest",
     "test:coverage": "jest --coverage --json --outputFile=jest.results.json && npx coveralls < ./coverage/lcov.info",
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
-    "test:aave-collateral-integration": "npx jest --testNamePattern=^AaveFlashLoanIntegration",
+    "test:integration:aave-collateral-swap": "npx jest --testNamePattern=^AaveFlashLoanIntegration.collateralSwap",
+    "test:integration:aave-debt-swap": "npx jest --testNamePattern=^AaveFlashLoanIntegration.debtSwap",
+    "test:integration:aave-rapey-collateral": "npx jest --testNamePattern=^AaveFlashLoanIntegration.repayCollateral",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
