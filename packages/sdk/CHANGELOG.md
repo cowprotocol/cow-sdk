@@ -1,5 +1,20 @@
 # Changelog
 
+## [7.0.11](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.0.10...cow-sdk-v7.0.11) (2025-10-24)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.1.4
+    * @cowprotocol/sdk-common bumped to 0.2.2
+    * @cowprotocol/sdk-config bumped to 0.2.0
+    * @cowprotocol/sdk-contracts-ts bumped to 0.4.1
+    * @cowprotocol/sdk-order-book bumped to 0.1.3
+    * @cowprotocol/sdk-order-signing bumped to 0.1.7
+    * @cowprotocol/sdk-trading bumped to 0.4.2
+
 ## [7.0.10](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.0.9...cow-sdk-v7.0.10) (2025-10-17)
 
 

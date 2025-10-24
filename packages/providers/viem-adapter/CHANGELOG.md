@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.1.2...sdk-viem-adapter-v0.1.3) (2025-10-24)
+
+
+### 🐛 Bug Fixes
+
+* **trading:** add EIP1271 signature support ([#584](https://github.com/cowprotocol/cow-sdk/issues/584)) ([ca9e834](https://github.com/cowprotocol/cow-sdk/commit/ca9e834e2b0edf8a757e01383b2218d5ecfbe25e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.2.2
+
 ## [0.1.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.1.1...sdk-viem-adapter-v0.1.2) (2025-10-08)
 
 

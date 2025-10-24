@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.4.6...sdk-bridging-v0.5.0) (2025-10-24)
+
+
+### ✨ Features
+
+* allow other bridge provider families in CoW Swap: Recipient based ([#552](https://github.com/cowprotocol/cow-sdk/issues/552)) ([ae56511](https://github.com/cowprotocol/cow-sdk/commit/ae565112dd1fe107d7b297eddf529e07f06529fb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.1.4
+    * @cowprotocol/sdk-common bumped to 0.2.2
+    * @cowprotocol/sdk-config bumped to 0.2.0
+    * @cowprotocol/sdk-contracts-ts bumped to 0.4.1
+    * @cowprotocol/sdk-cow-shed bumped to 0.1.7
+    * @cowprotocol/sdk-order-book bumped to 0.1.3
+    * @cowprotocol/sdk-trading bumped to 0.4.2
+    * @cowprotocol/sdk-weiroll bumped to 0.1.3
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 0.1.7
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.1.3
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.1.3
+    * @cowprotocol/sdk-viem-adapter bumped to 0.1.3
+
 ## [0.4.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.4.5...sdk-bridging-v0.4.6) (2025-10-17)
 
 
