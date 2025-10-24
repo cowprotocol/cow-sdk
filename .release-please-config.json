@@ -34,6 +34,10 @@
       "package-name": "@cowprotocol/sdk-cow-shed",
       "release-type": "node"
     },
+    "packages/flash-loans": {
+      "package-name": "@cowprotocol/sdk-flash-loans",
+      "release-type": "node"
+    },
     "packages/order-book": {
       "package-name": "@cowprotocol/sdk-order-book",
       "release-type": "node"

@@ -14,7 +14,14 @@ import { getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getTradeParametersAfterQuote, swapParamsToLimitOrderParams } from './utils/misc'
 import { getPreSignTransaction } from './getPreSignTransaction'
-import { AbstractProviderAdapter, enableLogging, getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
+import {
+  AbstractProviderAdapter,
+  enableLogging,
+  ERC20_ALLOWANCE_ABI,
+  ERC20_APPROVE_ABI,
+  getGlobalAdapter,
+  setGlobalAdapter,
+} from '@cowprotocol/sdk-common'
 import { EnrichedOrder, OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
 import { getEthFlowContract } from './getEthFlowTransaction'
@@ -23,7 +30,6 @@ import { resolveOrderBookApi } from './utils/resolveOrderBookApi'
 import { getSettlementContract } from './getSettlementContract'
 import { COW_PROTOCOL_VAULT_RELAYER_ADDRESS } from '@cowprotocol/sdk-config'
 import { resolveSigner } from './utils/resolveSigner'
-import { ERC20_ALLOWANCE_ABI, ERC20_APPROVE_ABI } from './consts'
 
 export type WithPartialTraderParams<T> = T & Partial<TraderParameters>
 

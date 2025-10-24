@@ -1,6 +1,5 @@
-import { ORDER_TYPE_FIELDS } from '@cowprotocol/sdk-contracts-ts'
-import { ORDER_PRIMARY_TYPE, OrderTypedData } from './types'
-import { OrderSigningUtils, UnsignedOrder } from '@cowprotocol/sdk-order-signing'
+import { OrderTypedData } from './types'
+import { COW_EIP712_TYPES, ORDER_PRIMARY_TYPE, OrderSigningUtils, UnsignedOrder } from '@cowprotocol/sdk-order-signing'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 
 const EIP712DomainTypes = [
@@ -20,7 +19,7 @@ export async function getOrderTypedData(
     domain,
     primaryType: ORDER_PRIMARY_TYPE,
     types: {
-      [ORDER_PRIMARY_TYPE]: ORDER_TYPE_FIELDS,
+      ...COW_EIP712_TYPES,
       EIP712Domain: EIP712DomainTypes,
     },
     message: orderToSign,
