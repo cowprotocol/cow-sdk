@@ -45,9 +45,9 @@ describe('AaveFlashLoanIntegration.debtSwap', () => {
     const flashLoanSdk = new AaveCollateralSwapSdk()
 
     const owner = (await adapter.signer.getAddress()) as AccountAddress
-    const sellAmount = 20000000000000000000n // 20 WXDAI
+    const sellAmount = 2000000n // 2 USDC.e
     // The amount is before slippage and partner fee!
-    const buyAmount = 18000000n // 18 USDC.e
+    const buyAmount = 11000000000000000n // 0.011 GNO
     const validTo = Math.ceil(Date.now() / 1000) + 10 * 60 // 10m
     const flashLoanFeePercent = 0.05 // 0.05%
     const slippageBps = 0 // 0.08%
@@ -65,16 +65,18 @@ describe('AaveFlashLoanIntegration.debtSwap', () => {
     })
 
     const limitOrder: LimitTradeParameters = {
-      sellToken: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d', // WXDAI
-      sellTokenDecimals: 18,
-      buyToken: '0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0', // USDC.e
-      buyTokenDecimals: 6,
+      sellToken: '0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0', // USDC.e
+      sellTokenDecimals: 6,
+      buyToken: '0x9C58BAcC331c9aa871AFD802DB6379a98e80CEdb', // GNO
+      buyTokenDecimals: 18,
       sellAmount: sellAmountToSign.toString(),
       buyAmount: buyAmount.toString(),
-      kind: OrderKind.SELL,
+      kind: OrderKind.BUY,
       validTo,
-      slippageBps,
-      partnerFee,
+      slippageBps: 0,
+      partnerFee: undefined,
+      //slippageBps,
+      //partnerFee,
     }
 
     const orderToSign = getOrderToSign(
