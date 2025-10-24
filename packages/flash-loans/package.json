@@ -22,7 +22,7 @@
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
     "test:integration:aave-collateral-swap": "npx jest --testNamePattern=^AaveFlashLoanIntegration.collateralSwap",
     "test:integration:aave-debt-swap": "npx jest --testNamePattern=^AaveFlashLoanIntegration.debtSwap",
-    "test:integration:aave-rapey-collateral": "npx jest --testNamePattern=^AaveFlashLoanIntegration.repayCollateral",
+    "test:integration:aave-repay-collateral": "npx jest --testNamePattern=^AaveFlashLoanIntegration.repayCollateral",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
