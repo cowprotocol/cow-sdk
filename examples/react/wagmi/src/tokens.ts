@@ -69,8 +69,8 @@ export const USDC_TOKENS: Record<SupportedChainId, TokenInfo> = {
     chainId: SupportedChainId.PLASMA,
     address: '0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb', // USDT (Native Plasma)
     decimals: 6,
-    name: 'USD Coin',
-    symbol: 'USDC',
+    name: 'USDT',
+    symbol: 'USDT',
   },
   [SupportedChainId.SEPOLIA]: {
     chainId: SupportedChainId.SEPOLIA,
