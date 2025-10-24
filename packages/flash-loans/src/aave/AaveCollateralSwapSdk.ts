@@ -17,10 +17,10 @@ import {
   CollateralOrderData,
   CollateralParameters,
   CollateralPermitData,
+  CollateralSwapOrder,
   CollateralSwapParams,
   CollateralSwapPostParams,
   CollateralSwapQuoteParams,
-  CollateralSwapOrder,
   CollateralSwapTradeParams,
   EncodedOrder,
   FlashLoanHint,
@@ -28,8 +28,9 @@ import {
 } from './types'
 import {
   AAVE_ADAPTER_FACTORY,
-  AAVE_COLLATERAL_SWAP_ADAPTER_HOOK,
+  AAVE_HOOK_ADAPTER_PER_TYPE,
   AAVE_POOL_ADDRESS,
+  AaveFlashLoanType,
   ADAPTER_DOMAIN_NAME,
   ADAPTER_DOMAIN_VERSION,
   ADAPTER_SIGNATURE_TYPES,
@@ -42,6 +43,8 @@ import {
 import { aaveAdapterFactoryAbi } from './abi/AaveAdapterFactory'
 import { collateralSwapAdapterHookAbi } from './abi/CollateralSwapAdapterHook'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { debtSwapAdapterAbi } from './abi/DebtSwapAdapter'
+import { repayWithCollateralAdapterAbi } from './abi/RepayWithCollateralAdapter'
 
 /**
  * SDK for executing Aave flash loan operations, particularly collateral swaps.
@@ -86,12 +89,16 @@ export class AaveCollateralSwapSdk {
 
     const { quoteResults, postSwapOrderFromQuote } = quoteAndPost
 
-    const { swapSettings, instanceAddress } = await this.getOrderPostingSettings(quoteParams, {
-      sellAmount,
-      buyAmount: quoteResults.amountsAndCosts.afterSlippage.buyAmount,
-      orderToSign: quoteResults.orderToSign,
-      collateralPermit: settings?.collateralPermit,
-    })
+    const { swapSettings, instanceAddress } = await this.getOrderPostingSettings(
+      AaveFlashLoanType.CollateralSwap,
+      quoteParams,
+      {
+        sellAmount,
+        buyAmount: quoteResults.amountsAndCosts.afterSlippage.buyAmount,
+        orderToSign: quoteResults.orderToSign,
+        collateralPermit: settings?.collateralPermit,
+      },
+    )
 
     const collateralParams: CollateralParameters = {
       instanceAddress,
@@ -178,6 +185,7 @@ export class AaveCollateralSwapSdk {
    * ```
    */
   async getOrderPostingSettings(
+    flashLoanType: AaveFlashLoanType,
     params: CollateralSwapTradeParams,
     settings: CollateralSwapOrder,
   ): Promise<CollateralSwapPostParams> {
@@ -199,7 +207,13 @@ export class AaveCollateralSwapSdk {
       buyAssetAmount: buyAmount.toString(),
     }
 
-    const instanceAddress = await this.getExpectedInstanceAddress(chainId, trader, hookAmounts, encodedOrder)
+    const instanceAddress = await this.getExpectedInstanceAddress(
+      flashLoanType,
+      chainId,
+      trader,
+      hookAmounts,
+      encodedOrder,
+    )
 
     const flashLoanHint: FlashLoanHint = {
       amount, // this is actually in UNDERLYING but aave tokens are 1:1
@@ -210,6 +224,7 @@ export class AaveCollateralSwapSdk {
     }
 
     const hooks = await this.getOrderHooks(
+      flashLoanType,
       chainId,
       trader,
       instanceAddress,
@@ -322,6 +337,7 @@ export class AaveCollateralSwapSdk {
   }
 
   async getExpectedInstanceAddress(
+    flashLoanType: AaveFlashLoanType,
     chainId: SupportedChainId,
     trader: AccountAddress,
     hookAmounts: FlashLoanHookAmounts,
@@ -331,7 +347,7 @@ export class AaveCollateralSwapSdk {
 
     return (await getGlobalAdapter().readContract({
       address: AAVE_ADAPTER_FACTORY[chainId],
-      args: [AAVE_COLLATERAL_SWAP_ADAPTER_HOOK[chainId], hookData],
+      args: [AAVE_HOOK_ADAPTER_PER_TYPE[flashLoanType][chainId], hookData],
       functionName: 'getInstanceDeterministicAddress',
       abi: aaveAdapterFactoryAbi,
     })) as AccountAddress
@@ -363,6 +379,7 @@ export class AaveCollateralSwapSdk {
   }
 
   private getPreHookCallData(
+    flashLoanType: AaveFlashLoanType,
     chainId: SupportedChainId,
     trader: AccountAddress,
     hookAmounts: FlashLoanHookAmounts,
@@ -370,7 +387,7 @@ export class AaveCollateralSwapSdk {
     instanceAddress: AccountAddress,
   ): string {
     const hookData = this.buildHookOrderData(trader, hookAmounts, order)
-    const adapterImplementation = AAVE_COLLATERAL_SWAP_ADAPTER_HOOK[chainId]
+    const adapterImplementation = AAVE_HOOK_ADAPTER_PER_TYPE[flashLoanType][chainId]
 
     return getGlobalAdapter().utils.encodeFunction(aaveAdapterFactoryAbi, 'deployAndTransferFlashLoan', [
       adapterImplementation,
@@ -402,13 +419,36 @@ export class AaveCollateralSwapSdk {
     }
   }
 
-  private getPostHookCallData(collateralPermit: CollateralPermitData = EMPTY_PERMIT): string {
+  private getFlashLoanPostHook(flashLoanType: AaveFlashLoanType, collateralPermit?: CollateralPermitData): string {
+    if (flashLoanType === AaveFlashLoanType.DebtSwap) {
+      return this.getDebtSwapPostHookCallData(collateralPermit)
+    }
+
+    if (flashLoanType === AaveFlashLoanType.RepayCollateral) {
+      return this.getRepayPostHookCallData(collateralPermit)
+    }
+
+    return this.getCollateralSwapPostHookCallData(collateralPermit)
+  }
+
+  private getCollateralSwapPostHookCallData(collateralPermit: CollateralPermitData = EMPTY_PERMIT): string {
     return getGlobalAdapter().utils.encodeFunction(collateralSwapAdapterHookAbi, 'collateralSwapWithFlashLoan', [
       collateralPermit,
     ])
   }
 
+  private getDebtSwapPostHookCallData(collateralPermit: CollateralPermitData = EMPTY_PERMIT): string {
+    return getGlobalAdapter().utils.encodeFunction(debtSwapAdapterAbi, 'debtSwapWithFlashLoan', [collateralPermit])
+  }
+
+  private getRepayPostHookCallData(collateralPermit: CollateralPermitData = EMPTY_PERMIT): string {
+    return getGlobalAdapter().utils.encodeFunction(repayWithCollateralAdapterAbi, 'repayDebtWithFlashLoan', [
+      collateralPermit,
+    ])
+  }
+
   private async getOrderHooks(
+    flashLoanType: AaveFlashLoanType,
     chainId: SupportedChainId,
     trader: AccountAddress,
     expectedInstanceAddress: AccountAddress,
@@ -416,8 +456,15 @@ export class AaveCollateralSwapSdk {
     order: EncodedOrder,
     collateralPermit?: CollateralPermitData,
   ): Promise<LatestAppDataDocVersion['metadata']['hooks']> {
-    const preHookCallData = this.getPreHookCallData(chainId, trader, hookAmounts, order, expectedInstanceAddress)
-    const postHookCallData = this.getPostHookCallData(collateralPermit)
+    const preHookCallData = this.getPreHookCallData(
+      flashLoanType,
+      chainId,
+      trader,
+      hookAmounts,
+      order,
+      expectedInstanceAddress,
+    )
+    const postHookCallData = this.getFlashLoanPostHook(flashLoanType, collateralPermit)
 
     return {
       pre: [

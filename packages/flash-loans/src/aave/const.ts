@@ -3,15 +3,24 @@ import { CollateralPermitData } from './types'
 
 export const HASH_ZERO = '0x0000000000000000000000000000000000000000000000000000000000000000'
 
+export enum AaveFlashLoanType {
+  CollateralSwap = 'CollateralSwap',
+  DebtSwap = 'DebtSwap',
+  RepayCollateral = 'RepayCollateral',
+}
+
 // See https://search.onaave.com/?q=sepolia
 export const AAVE_POOL_ADDRESS = mapAddressToSupportedNetworks('0xb50201558B00496A145fE76f7424749556E326D8')
-export const AAVE_ADAPTER_FACTORY = {
-  ...mapAddressToSupportedNetworks('0x1186B5ad42E3e6d6c6901FC53b4A367540E6EcFE'),
-  [SupportedChainId.GNOSIS_CHAIN]: '0x889ee28C0a8a41a312546A8eeD77b4b097C84016',
-}
-export const AAVE_COLLATERAL_SWAP_ADAPTER_HOOK = {
-  ...mapAddressToSupportedNetworks('0xe80eE1e73f120b1106179Ae3D582CA4Fd768d517'),
-  [SupportedChainId.GNOSIS_CHAIN]: '0x0aeC794e544B81D96149a4C8C1cC57c6F31A978A',
+export const AAVE_ADAPTER_FACTORY = mapAddressToSupportedNetworks('0x889ee28C0a8a41a312546A8eeD77b4b097C84016')
+
+const AAVE_COLLATERAL_SWAP_ADAPTER_HOOK = mapAddressToSupportedNetworks('0x0aeC794e544B81D96149a4C8C1cC57c6F31A978A')
+const AAVE_DEBT_SWAP_ADAPTER_HOOK = mapAddressToSupportedNetworks('0x2d13ADCFa398073d7406e5e1aF3dD14663cdBF30')
+const AAVE_REPAY_COLLATERAL_ADAPTER_HOOK = mapAddressToSupportedNetworks('0x193fd444802D6BC18a9AE0613D33C024F16A9dDC')
+
+export const AAVE_HOOK_ADAPTER_PER_TYPE: Record<AaveFlashLoanType, Record<SupportedChainId, string>> = {
+  [AaveFlashLoanType.CollateralSwap]: AAVE_COLLATERAL_SWAP_ADAPTER_HOOK,
+  [AaveFlashLoanType.DebtSwap]: AAVE_DEBT_SWAP_ADAPTER_HOOK,
+  [AaveFlashLoanType.RepayCollateral]: AAVE_REPAY_COLLATERAL_ADAPTER_HOOK,
 }
 
 export const DEFAULT_HOOK_GAS_LIMIT = {
