@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.0.0...sdk-flash-loans-v1.1.0) (2025-10-24)
+
+
+### ✨ Features
+
+* **flash-loans:** support debtSwap and repayCollateral ([#616](https://github.com/cowprotocol/cow-sdk/issues/616)) ([cdd9f8a](https://github.com/cowprotocol/cow-sdk/commit/cdd9f8a3fdc73be56d727f0ec320c2f11516f778))
+
 ## 1.0.0 (2025-10-24)
 
 
