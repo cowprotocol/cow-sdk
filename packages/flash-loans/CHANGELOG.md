@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.1.0...sdk-flash-loans-v1.1.1) (2025-10-24)
+
+
+### 🔧 Miscellaneous
+
+* update debt swap test ([#621](https://github.com/cowprotocol/cow-sdk/issues/621)) ([5e0a66b](https://github.com/cowprotocol/cow-sdk/commit/5e0a66b2d7a8c34adf4dc50e3640f462a1e13188))
+* update repay test ([#619](https://github.com/cowprotocol/cow-sdk/issues/619)) ([8c81142](https://github.com/cowprotocol/cow-sdk/commit/8c81142197e0b05c73ac7bf84cb9ccd022171d64))
+
 ## [1.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.0.0...sdk-flash-loans-v1.1.0) (2025-10-24)
 
 
