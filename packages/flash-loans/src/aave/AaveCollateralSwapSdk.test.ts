@@ -6,7 +6,7 @@ import { TradingSdk, TradeParameters } from '@cowprotocol/sdk-trading'
 import { createAdapters, TEST_ADDRESS } from '../../tests/setup'
 
 import { AaveCollateralSwapSdk } from './AaveCollateralSwapSdk'
-import { AAVE_ADAPTER_FACTORY, GAS_ESTIMATION_ADDITION_PERCENT, HASH_ZERO } from './const'
+import { AAVE_ADAPTER_FACTORY, HASH_ZERO } from './const'
 
 const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
@@ -281,12 +281,7 @@ adapterNames.forEach((adapterName) => {
         expect(callArgs.amount).toBe(mockTradeParameters.amount)
       })
 
-      test(`should add ${GAS_ESTIMATION_ADDITION_PERCENT}% to pre-hook gas estimation`, async () => {
-        const mockEstimatedGas = 500_000n
-        const expectedGasLimit = (mockEstimatedGas * BigInt(GAS_ESTIMATION_ADDITION_PERCENT + 100)) / 100n
-
-        jest.spyOn(adapter.signer, 'estimateGas').mockResolvedValue(mockEstimatedGas)
-
+      test(`should use default gas limit for pre-hook`, async () => {
         await flashLoanSdk.collateralSwap(
           {
             chainId: SupportedChainId.SEPOLIA,
@@ -305,7 +300,7 @@ adapterNames.forEach((adapterName) => {
                     expect.objectContaining({
                       target: AAVE_ADAPTER_FACTORY[SupportedChainId.SEPOLIA],
                       callData: expect.any(String),
-                      gasLimit: expectedGasLimit.toString(),
+                      gasLimit: '300000',
                     }),
                   ]),
                 }),
@@ -315,26 +310,12 @@ adapterNames.forEach((adapterName) => {
         )
       })
 
-      test(`should add ${GAS_ESTIMATION_ADDITION_PERCENT}% to post-hook gas estimation when collateralPermit is provided`, async () => {
-        const mockEstimatedGas = 300_000n
-        const expectedGasLimit = (mockEstimatedGas * BigInt(GAS_ESTIMATION_ADDITION_PERCENT + 100)) / 100n
-
-        jest.spyOn(adapter.signer, 'estimateGas').mockResolvedValue(mockEstimatedGas)
-
+      test(`should use default gas limit for post-hook`, async () => {
         await flashLoanSdk.collateralSwap(
           {
             chainId: SupportedChainId.SEPOLIA,
             tradeParameters: mockTradeParameters,
             collateralToken,
-            settings: {
-              collateralPermit: {
-                amount: '0',
-                deadline: 0,
-                v: 0,
-                r: HASH_ZERO,
-                s: HASH_ZERO,
-              },
-            },
           },
           mockTradingSdk,
         )
@@ -343,7 +324,29 @@ adapterNames.forEach((adapterName) => {
         const postHooks = callArgs.appData.metadata.hooks.post
 
         expect(postHooks).toBeDefined()
-        expect(postHooks[0].gasLimit).toBe(expectedGasLimit.toString())
+        expect(postHooks[0].gasLimit).toBe('600000')
+      })
+
+      test(`should always include post-hook with empty permit by default`, async () => {
+        await flashLoanSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.SEPOLIA,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        const callArgs = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
+        const postHooks = callArgs.appData.metadata.hooks.post
+
+        expect(postHooks).toBeDefined()
+        expect(postHooks).toHaveLength(1)
+        expect(postHooks[0]).toMatchObject({
+          target: expect.any(String),
+          callData: expect.any(String),
+          gasLimit: '600000',
+        })
       })
     })
 
@@ -450,6 +453,61 @@ adapterNames.forEach((adapterName) => {
       })
     })
 
+    describe('calculateFlashLoanAmounts', () => {
+      test('should calculate correct flash loan fee amount', () => {
+        const sellAmount = BigInt('1000000000000000000') // 1 ETH
+        const flashLoanFeePercent = 0.05 // 0.05%
+
+        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeePercent })
+
+        // 0.05% of 1 ETH = 0.0005 ETH = 500000000000000 wei
+        expect(result.flashLoanFeeAmount).toBe(BigInt('500000000000000'))
+        expect(result.sellAmountToSign).toBe(BigInt('999500000000000000'))
+      })
+
+      test('should handle zero flash loan fee', () => {
+        const sellAmount = BigInt('1000000000000000000') // 1 ETH
+        const flashLoanFeePercent = 0
+
+        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeePercent })
+
+        expect(result.flashLoanFeeAmount).toBe(BigInt('0'))
+        expect(result.sellAmountToSign).toBe(sellAmount)
+      })
+
+      test('should calculate fee for small amounts', () => {
+        const sellAmount = BigInt('100') // Very small amount
+        const flashLoanFeePercent = 0.09 // 0.09%
+
+        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeePercent })
+
+        // Fee should be 0 due to rounding down
+        expect(result.flashLoanFeeAmount).toBe(BigInt('0'))
+        expect(result.sellAmountToSign).toBe(sellAmount)
+      })
+
+      test('should calculate fee for large percentage', () => {
+        const sellAmount = BigInt('10000000000000000000') // 10 ETH
+        const flashLoanFeePercent = 1.0 // 1%
+
+        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeePercent })
+
+        // 1% of 10 ETH = 0.1 ETH = 100000000000000000 wei
+        expect(result.flashLoanFeeAmount).toBe(BigInt('100000000000000000'))
+        expect(result.sellAmountToSign).toBe(BigInt('9900000000000000000'))
+      })
+
+      test('should handle fractional percentages precisely', () => {
+        const sellAmount = BigInt('1000000000000000000') // 1 ETH
+        const flashLoanFeePercent = 0.0123 // 0.0123%
+
+        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeePercent })
+
+        expect(result.flashLoanFeeAmount).toBe(BigInt('123000000000000'))
+        expect(result.sellAmountToSign).toBe(BigInt('999877000000000000'))
+      })
+    })
+
     describe('customEIP1271Signature', () => {
       test('should generate EIP-1271 signature with correct domain', async () => {
         const mockEcdsaSignature = '0xabcd1234567890'
@@ -526,6 +584,68 @@ adapterNames.forEach((adapterName) => {
           }),
           expect.any(Object),
         )
+      })
+
+      test('should sign message with correct order parameters', async () => {
+        const mockEcdsaSignature = '0xabcd1234567890'
+        const signTypedDataSpy = jest
+          .spyOn(adapter.signer, 'signTypedData')
+          .mockResolvedValue(mockEcdsaSignature as any)
+
+        await flashLoanSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.SEPOLIA,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        const swapSettingsCall = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
+        const customSignatureFn = swapSettingsCall.additionalParams.customEIP1271Signature
+
+        await customSignatureFn(mockOrderToSign, adapter.signer)
+
+        // Verify the message contains the expected instance address and order details
+        expect(signTypedDataSpy).toHaveBeenCalledWith(
+          expect.any(Object),
+          expect.any(Object),
+          expect.objectContaining({
+            instance: expect.any(String), // instanceAddress
+            sellToken: mockOrderToSign.sellToken,
+            buyToken: mockOrderToSign.buyToken,
+            sellAmount: mockOrderToSign.sellAmount,
+            buyAmount: mockOrderToSign.buyAmount,
+            kind: expect.any(String), // kind is encoded as bytes32 hash
+            validTo: mockOrderToSign.validTo,
+            appData: mockOrderToSign.appData,
+          }),
+        )
+      })
+
+      test('should return EIP-1271 formatted signature', async () => {
+        const mockEcdsaSignature =
+          '0xabcd1234567890abcd1234567890abcd1234567890abcd1234567890abcd1234567890abcd1234567890abcd1234567890abcd1234567890abcd123456789012'
+        jest.spyOn(adapter.signer, 'signTypedData').mockResolvedValue(mockEcdsaSignature as any)
+
+        await flashLoanSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.SEPOLIA,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        const swapSettingsCall = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
+        const customSignatureFn = swapSettingsCall.additionalParams.customEIP1271Signature
+
+        const signature = await customSignatureFn(mockOrderToSign, adapter.signer)
+
+        // Signature should be formatted as EIP-1271 signature (owner + ECDSA signature)
+        expect(signature).toBeDefined()
+        expect(typeof signature).toBe('string')
+        expect(signature).toContain('0x')
       })
     })
   })
