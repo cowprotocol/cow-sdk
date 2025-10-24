@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.1.0...sdk-config-v0.2.0) (2025-10-24)
+
+
+### ✨ Features
+
+* add isUnderDevelopment flag to chain info ([#597](https://github.com/cowprotocol/cow-sdk/issues/597)) ([f502fa9](https://github.com/cowprotocol/cow-sdk/commit/f502fa9aea85915ef92192539ec1ff9f2651e534))
+
 ## [0.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.3.3-beta.0...sdk-config-v0.1.0) (2025-09-17)
 
 

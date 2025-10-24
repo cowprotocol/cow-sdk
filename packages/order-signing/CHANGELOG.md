@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.1.7](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-signing-v0.1.6...sdk-order-signing-v0.1.7) (2025-10-24)
+
+
+### 🐛 Bug Fixes
+
+* **trading:** add EIP1271 signature support ([#584](https://github.com/cowprotocol/cow-sdk/issues/584)) ([ca9e834](https://github.com/cowprotocol/cow-sdk/commit/ca9e834e2b0edf8a757e01383b2218d5ecfbe25e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.2.2
+    * @cowprotocol/sdk-config bumped to 0.2.0
+    * @cowprotocol/sdk-contracts-ts bumped to 0.4.1
+    * @cowprotocol/sdk-order-book bumped to 0.1.3
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.1.3
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.1.3
+    * @cowprotocol/sdk-viem-adapter bumped to 0.1.3
+
 ## [0.1.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-signing-v0.1.5...sdk-order-signing-v0.1.6) (2025-10-15)
 
 

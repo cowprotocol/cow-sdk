@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.2.1...sdk-common-v0.2.2) (2025-10-24)
+
+
+### 🐛 Bug Fixes
+
+* **trading:** add EIP1271 signature support ([#584](https://github.com/cowprotocol/cow-sdk/issues/584)) ([ca9e834](https://github.com/cowprotocol/cow-sdk/commit/ca9e834e2b0edf8a757e01383b2218d5ecfbe25e))
+
 ## [0.2.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.2.0...sdk-common-v0.2.1) (2025-10-08)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-viem-adapter",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Viem adapter for CoW Protocol SDK",
   "main": "dist/index.js",
   "module": "./dist/index.mjs",

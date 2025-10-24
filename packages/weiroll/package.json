@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-weiroll",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "CowProtocol Weiroll package",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
