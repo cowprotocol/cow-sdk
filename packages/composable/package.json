@@ -38,16 +38,16 @@
     "@cowprotocol/sdk-ethers-v6-adapter": "workspace:*",
     "@cowprotocol/sdk-viem-adapter": "workspace:*",
     "@cow-sdk/typescript-config": "workspace:*",
-    "@types/jest": "^29.5.5",
-    "@types/node": "^20.17.31",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.9.1",
     "coveralls": "^3.1.1",
     "ethers-v5": "npm:ethers@^5.7.2",
     "ethers-v6": "npm:ethers@^6.13.7",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.1.1",
-    "eslint": "^8.48.0",
-    "tsup": "^7.2.0",
-    "typescript": "^5.2.2",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5",
+    "eslint": "^9.38.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3",
     "viem": "^2.28.4"
   }
 }
