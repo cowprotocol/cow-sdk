@@ -28,8 +28,8 @@
   },
   "devDependencies": {
     "@cow-sdk/typescript-config": "workspace:*",
-    "@types/node": "^20.5.2",
-    "tsup": "^7.2.0",
-    "typescript": "^5.2.2"
+    "@types/node": "^24.9.1",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3"
   }
 }
