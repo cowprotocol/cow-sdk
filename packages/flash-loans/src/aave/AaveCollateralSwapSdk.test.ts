@@ -506,6 +506,26 @@ adapterNames.forEach((adapterName) => {
         expect(result.flashLoanFeeAmount).toBe(BigInt('123000000000000'))
         expect(result.sellAmountToSign).toBe(BigInt('999877000000000000'))
       })
+
+      test('should match Aave PercentageMath.percentMul() rounding behavior', () => {
+        // This test verifies we match Aave's round-to-nearest behavior
+        // Aave uses: (amount * percentage + HALF_PERCENTAGE_FACTOR) / PERCENTAGE_FACTOR
+
+        // Test case: 2345678 wei at 0.05% fee (chosen to demonstrate rounding up)
+        const sellAmount = BigInt('2345678')
+        const flashLoanFeePercent = 0.05 // 0.05%
+
+        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeePercent })
+
+        // Manual calculation:
+        // feePercent = 0.05 * 10000 = 500
+        // Without rounding: (2345678 * 500) / 1000000 = 1172839000 / 1000000 = 1172
+        // With rounding: (2345678 * 500 + 500000) / 1000000 = (1172839000 + 500000) / 1000000 = 1173339000 / 1000000 = 1173
+        // Remainder is 839000, which is > 500000, so it rounds up
+
+        expect(result.flashLoanFeeAmount).toBe(BigInt('1173'))
+        expect(result.sellAmountToSign).toBe(BigInt('2345678') - BigInt('1173'))
+      })
     })
 
     describe('customEIP1271Signature', () => {
