@@ -34,11 +34,9 @@ import {
   ADAPTER_DOMAIN_NAME,
   ADAPTER_DOMAIN_VERSION,
   ADAPTER_SIGNATURE_TYPES,
-  BASIS_POINTS_SCALE,
   DEFAULT_HOOK_GAS_LIMIT,
   DEFAULT_VALIDITY,
   EMPTY_PERMIT,
-  HALF_BASIS_POINTS_SCALE,
   HASH_ZERO,
   PERCENT_SCALE,
 } from './const'
@@ -144,7 +142,10 @@ export class AaveCollateralSwapSdk {
       throw new Error(`flashLoanFeePercent must be between 0 and 100, got: ${flashLoanFeePercent}`)
     }
 
-    const { flashLoanFeeAmount, sellAmountToSign } = this.calculateFlashLoanAmounts({ flashLoanFeePercent, sellAmount })
+    const { flashLoanFeeAmount, sellAmountToSign } = this.calculateFlashLoanAmounts({
+      flashLoanFeeBps: flashLoanFeePercent * 100, // Convert percentage (0.05 for 0.05%) to bps (5)
+      sellAmount,
+    })
 
     // Omit validFor because we use validTo instead (it is defined above)
     const { validFor: _, ...restParameters } = tradeParameters
@@ -367,15 +368,23 @@ export class AaveCollateralSwapSdk {
     }
   }
 
-  calculateFlashLoanAmounts({ sellAmount, flashLoanFeePercent }: { sellAmount: bigint; flashLoanFeePercent: number }): {
+  calculateFlashLoanAmounts({ sellAmount, flashLoanFeeBps }: { sellAmount: bigint; flashLoanFeeBps: number }): {
     flashLoanFeeAmount: bigint
     sellAmountToSign: bigint
   } {
     // Match Aave's PercentageMath.percentMul() rounding behavior:
     // Aave: (value * percentage + HALF_PERCENTAGE_FACTOR) / PERCENTAGE_FACTOR where PERCENTAGE_FACTOR = 10000
-    // Here: (value * percentage + 500_000) / 1_000_000 (scaled 100x for basis points conversion)
-    const flashLoanFeeAmount =
-      (sellAmount * BigInt(Math.round(flashLoanFeePercent * PERCENT_SCALE)) + HALF_BASIS_POINTS_SCALE) / BASIS_POINTS_SCALE
+    // flashLoanFeeBps is in basis points (5 for 0.05%, 50 for 0.5%, etc.)
+    const bps = BigInt(Math.round(flashLoanFeeBps))
+    const PERCENTAGE_FACTOR = BigInt(PERCENT_SCALE) // 10000
+
+    // Calculate with Aave's formula, but manually handle rounding since BigInt division truncates
+    const product = sellAmount * bps
+    const quotient = product / PERCENTAGE_FACTOR
+    const remainder = product % PERCENTAGE_FACTOR
+    
+    // Round up if remainder is present (ceil behavior for fees)
+    const flashLoanFeeAmount = quotient + (remainder > 0n ? 1n : 0n)
 
     return {
       flashLoanFeeAmount,

@@ -456,9 +456,9 @@ adapterNames.forEach((adapterName) => {
     describe('calculateFlashLoanAmounts', () => {
       test('should calculate correct flash loan fee amount', () => {
         const sellAmount = BigInt('1000000000000000000') // 1 ETH
-        const flashLoanFeePercent = 0.05 // 0.05%
+        const flashLoanFeeBps = 5 // 0.05%
 
-        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeePercent })
+        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeeBps })
 
         // 0.05% of 1 ETH = 0.0005 ETH = 500000000000000 wei
         expect(result.flashLoanFeeAmount).toBe(BigInt('500000000000000'))
@@ -467,9 +467,9 @@ adapterNames.forEach((adapterName) => {
 
       test('should handle zero flash loan fee', () => {
         const sellAmount = BigInt('1000000000000000000') // 1 ETH
-        const flashLoanFeePercent = 0
+        const flashLoanFeeBps = 0
 
-        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeePercent })
+        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeeBps })
 
         expect(result.flashLoanFeeAmount).toBe(BigInt('0'))
         expect(result.sellAmountToSign).toBe(sellAmount)
@@ -477,20 +477,20 @@ adapterNames.forEach((adapterName) => {
 
       test('should calculate fee for small amounts', () => {
         const sellAmount = BigInt('100') // Very small amount
-        const flashLoanFeePercent = 0.09 // 0.09%
+        const flashLoanFeeBps = 9 // 0.09%
 
-        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeePercent })
+        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeeBps })
 
-        // Fee should be 0 due to rounding down
-        expect(result.flashLoanFeeAmount).toBe(BigInt('0'))
-        expect(result.sellAmountToSign).toBe(sellAmount)
+        // 100 * 9 / 10000 = 0.09, ceil rounds up to 1
+        expect(result.flashLoanFeeAmount).toBe(BigInt('1'))
+        expect(result.sellAmountToSign).toBe(BigInt('99'))
       })
 
       test('should calculate fee for large percentage', () => {
         const sellAmount = BigInt('10000000000000000000') // 10 ETH
-        const flashLoanFeePercent = 1.0 // 1%
+        const flashLoanFeeBps = 100 // 1%
 
-        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeePercent })
+        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeeBps })
 
         // 1% of 10 ETH = 0.1 ETH = 100000000000000000 wei
         expect(result.flashLoanFeeAmount).toBe(BigInt('100000000000000000'))
@@ -499,32 +499,119 @@ adapterNames.forEach((adapterName) => {
 
       test('should handle fractional percentages precisely', () => {
         const sellAmount = BigInt('1000000000000000000') // 1 ETH
-        const flashLoanFeePercent = 0.0123 // 0.0123%
+        const flashLoanFeeBps = 123 // 1.23% (123 basis points)
 
-        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeePercent })
+        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeeBps })
 
-        expect(result.flashLoanFeeAmount).toBe(BigInt('123000000000000'))
-        expect(result.sellAmountToSign).toBe(BigInt('999877000000000000'))
+        // 1000000000000000000 * 123 / 10000 = 12300000000000000 (exact)
+        expect(result.flashLoanFeeAmount).toBe(BigInt('12300000000000000'))
+        expect(result.sellAmountToSign).toBe(BigInt('987700000000000000'))
+      })
+
+      test('should round up for very small amounts with tiny remainders', () => {
+        // Test edge case: amount so small that fee rounds to 1 wei
+        const sellAmount = BigInt('1') // 1 wei
+        const flashLoanFeeBps = 5 // 0.05%
+
+        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeeBps })
+
+        // 1 * 5 / 10000 = 0.0005, should round up to 1
+        expect(result.flashLoanFeeAmount).toBe(BigInt('1'))
+        expect(result.sellAmountToSign).toBe(BigInt('0'))
+      })
+
+      test('should handle exact division with no remainder', () => {
+        // Test case where division is exact (no rounding needed)
+        const sellAmount = BigInt('10000') // 10000 wei
+        const flashLoanFeeBps = 1 // 0.01%
+
+        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeeBps })
+
+        // 10000 * 1 / 10000 = 1 (exact)
+        expect(result.flashLoanFeeAmount).toBe(BigInt('1'))
+        expect(result.sellAmountToSign).toBe(BigInt('9999'))
+      })
+
+      test('should round up for small remainder', () => {
+        // Test with remainder = 1
+        const sellAmount = BigInt('10001')
+        const flashLoanFeeBps = 1 // 0.01%
+
+        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeeBps })
+
+        // 10001 * 1 / 10000 = 1.0001, should round up to 2
+        expect(result.flashLoanFeeAmount).toBe(BigInt('2'))
+        expect(result.sellAmountToSign).toBe(BigInt('9999'))
+      })
+
+      test('should round up for medium amounts', () => {
+        // Test with typical DeFi amounts
+        const sellAmount = BigInt('1500000000000000000') // 1.5 ETH
+        const flashLoanFeeBps = 9 // 0.09%
+
+        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeeBps })
+
+        // 1.5 ETH * 0.09% = 0.00135 ETH = 1350000000000000 wei
+        // 1500000000000000000 * 9 / 10000 = 1350000000000000 (exact)
+        expect(result.flashLoanFeeAmount).toBe(BigInt('1350000000000000'))
+        expect(result.sellAmountToSign).toBe(BigInt('1498650000000000000'))
+      })
+
+      test('should round up for large amounts with small remainder', () => {
+        // Test with very large amounts (100 ETH)
+        const sellAmount = BigInt('100000000000000000001') // 100 ETH + 1 wei
+        const flashLoanFeeBps = 5 // 0.05%
+
+        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeeBps })
+
+        // 100000000000000000001 * 5 / 10000 = 50000000000000000.0005
+        // Should round up to 50000000000000001
+        expect(result.flashLoanFeeAmount).toBe(BigInt('50000000000000001'))
+        expect(result.sellAmountToSign).toBe(BigInt('99950000000000000000'))
+      })
+
+      test('should handle maximum uint256-like amounts', () => {
+        // Test with very large numbers (close to max supply of common tokens)
+        const sellAmount = BigInt('1000000000000000000000000') // 1 million tokens with 18 decimals
+        const flashLoanFeeBps = 10 // 0.1%
+
+        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeeBps })
+
+        // 1000000000000000000000000 * 10 / 10000 = 1000000000000000000000 (exact)
+        expect(result.flashLoanFeeAmount).toBe(BigInt('1000000000000000000000'))
+        expect(result.sellAmountToSign).toBe(BigInt('999000000000000000000000'))
+      })
+
+      test('should round up with fractional percentage that creates remainder', () => {
+        // Test with percentage that guarantees a remainder
+        const sellAmount = BigInt('123456789')
+        const flashLoanFeeBps = 7 // 0.07%
+
+        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeeBps })
+
+        // 123456789 * 7 / 10000 = 86419.7523, should round up to 86420
+        expect(result.flashLoanFeeAmount).toBe(BigInt('86420'))
+        expect(result.sellAmountToSign).toBe(BigInt('123370369'))
       })
 
       test('should match Aave PercentageMath.percentMul() rounding behavior', () => {
-        // This test verifies we match Aave's round-to-nearest behavior
-        // Aave uses: (amount * percentage + HALF_PERCENTAGE_FACTOR) / PERCENTAGE_FACTOR
+        // This test verifies we use ceil rounding (round up on any remainder)
+        // Our implementation: if (remainder > 0) round up by 1
 
-        // Test case: 2345678 wei at 0.05% fee (chosen to demonstrate rounding up)
-        const sellAmount = BigInt('2345678')
-        const flashLoanFeePercent = 0.05 // 0.05%
+        const sellAmount = BigInt('2813982695824406449')
+        const flashLoanFeeBps = 5 // 0.05%
 
-        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeePercent })
+        const result = flashLoanSdk.calculateFlashLoanAmounts({ sellAmount, flashLoanFeeBps })
 
         // Manual calculation:
-        // feePercent = 0.05 * 10000 = 500
-        // Without rounding: (2345678 * 500) / 1000000 = 1172839000 / 1000000 = 1172
-        // With rounding: (2345678 * 500 + 500000) / 1000000 = (1172839000 + 500000) / 1000000 = 1173339000 / 1000000 = 1173
-        // Remainder is 839000, which is > 500000, so it rounds up
+        // bps = 0.05 * 100 = 5
+        // product = 2813982695824406449 * 5 = 14069913479122032245
+        // quotient = 14069913479122032245 / 10000 = 1406991347912203 (truncated)
+        // remainder = 14069913479122032245 % 10000 = 2245
+        // Since remainder > 0, round up: 1406991347912203 + 1 = 1406991347912204
 
-        expect(result.flashLoanFeeAmount).toBe(BigInt('1173'))
-        expect(result.sellAmountToSign).toBe(BigInt('2345678') - BigInt('1173'))
+        expect(result.flashLoanFeeAmount).toBe(BigInt('1406991347912204'))
+        expect(result.sellAmountToSign).toBe(BigInt('2813982695824406449') - BigInt('1406991347912204'))
       })
     })
 
