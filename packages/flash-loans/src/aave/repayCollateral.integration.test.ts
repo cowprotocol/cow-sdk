@@ -49,7 +49,7 @@ describe('AaveFlashLoanIntegration.repayCollateral', () => {
     // The amount is before slippage and partner fee!
     const buyAmount = 11000000000000000n // 0.011 GNO
     const validTo = Math.ceil(Date.now() / 1000) + 10 * 60 // 10m
-    const flashLoanFeePercent = 0.05 // 0.05%
+    const flashLoanFeeBps = 5 // 0.05%
     // const slippageBps = 8 // 0.08%
     // const partnerFee = {
     //   volumeBps: 10, // 0.1%
@@ -61,7 +61,7 @@ describe('AaveFlashLoanIntegration.repayCollateral', () => {
     const collateralPermit = undefined
 
     const { flashLoanFeeAmount, sellAmountToSign } = flashLoanSdk.calculateFlashLoanAmounts({
-      flashLoanFeePercent,
+      flashLoanFeeBps,
       sellAmount,
     })
 
