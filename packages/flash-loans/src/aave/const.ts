@@ -30,6 +30,11 @@ export const DEFAULT_HOOK_GAS_LIMIT = {
 
 export const PERCENT_SCALE = 10_000
 
+// Constants for flash loan fee calculation matching Aave's PercentageMath.percentMul()
+// Aave uses PERCENTAGE_FACTOR = 10000, but we scale 100× for basis points conversion
+export const BASIS_POINTS_SCALE = BigInt(100 * PERCENT_SCALE) // 1_000_000
+export const HALF_BASIS_POINTS_SCALE = BASIS_POINTS_SCALE / 2n // 500_000
+
 export const DEFAULT_VALIDITY = 10 * 60 // 10 min
 
 export const GAS_ESTIMATION_ADDITION_PERCENT = 10 // 10%

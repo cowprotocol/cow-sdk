@@ -34,9 +34,11 @@ import {
   ADAPTER_DOMAIN_NAME,
   ADAPTER_DOMAIN_VERSION,
   ADAPTER_SIGNATURE_TYPES,
+  BASIS_POINTS_SCALE,
   DEFAULT_HOOK_GAS_LIMIT,
   DEFAULT_VALIDITY,
   EMPTY_PERMIT,
+  HALF_BASIS_POINTS_SCALE,
   HASH_ZERO,
   PERCENT_SCALE,
 } from './const'
@@ -372,9 +374,6 @@ export class AaveCollateralSwapSdk {
     // Match Aave's PercentageMath.percentMul() rounding behavior:
     // Aave: (value * percentage + HALF_PERCENTAGE_FACTOR) / PERCENTAGE_FACTOR where PERCENTAGE_FACTOR = 10000
     // Here: (value * percentage + 500_000) / 1_000_000 (scaled 100x for basis points conversion)
-    const BASIS_POINTS_SCALE = BigInt(100 * PERCENT_SCALE) // 1_000_000
-    const HALF_BASIS_POINTS_SCALE = BASIS_POINTS_SCALE / 2n // 500_000
-
     const flashLoanFeeAmount =
       (sellAmount * BigInt(Math.round(flashLoanFeePercent * PERCENT_SCALE)) + HALF_BASIS_POINTS_SCALE) / BASIS_POINTS_SCALE
 
