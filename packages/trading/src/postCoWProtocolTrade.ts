@@ -1,7 +1,7 @@
 import { OrderBookApi, OrderCreation, SigningScheme } from '@cowprotocol/sdk-order-book'
 import { TradingAppDataInfo, LimitTradeParameters, OrderPostingResult, PostTradeAdditionalParams } from './types'
 import { SIGN_SCHEME_MAP } from './consts'
-import { OrderSigningUtils, UnsignedOrder } from '@cowprotocol/sdk-order-signing'
+import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
 import { getOrderToSign } from './getOrderToSign'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getIsEthFlowOrder } from './utils/misc'
@@ -20,7 +20,7 @@ export async function postCoWProtocolTrade(
     networkCostsAmount = '0',
     signingScheme: _signingScheme = SigningScheme.EIP712,
     customEIP1271Signature,
-    orderToSign: orderToSignFromParams,
+    applyQuoteAdjustments,
   } = additionalParams
 
   const isEthFlow = getIsEthFlowOrder(params)
@@ -41,12 +41,11 @@ export async function postCoWProtocolTrade(
   const chainId = orderBookApi.context.chainId
   const from = owner || (await signer.getAddress())
 
-  let orderToSign: UnsignedOrder
-  if (orderToSignFromParams) {
-    orderToSign = orderToSignFromParams
-  } else {
-    orderToSign = getOrderToSign({ chainId, from, networkCostsAmount, isEthFlow }, params, appData.appDataKeccak256)
-  }
+  const orderToSign = getOrderToSign(
+    { chainId, from, networkCostsAmount, isEthFlow, applyQuoteAdjustments },
+    params,
+    appData.appDataKeccak256,
+  )
 
   log('Signing order...')
 

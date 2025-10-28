@@ -250,7 +250,7 @@ export class AaveCollateralSwapSdk {
         customEIP1271Signature: (orderToSign: UnsignedOrder, signer: AbstractSigner<Provider>) => {
           return this.adapterEIP1271Signature(chainId, instanceAddress, orderToSign, signer)
         },
-        orderToSign,
+        applyQuoteAdjustments: true,
       },
       appData: {
         metadata: {
