@@ -282,4 +282,10 @@ export interface PostTradeAdditionalParams {
    */
   signingScheme?: SigningScheme
   customEIP1271Signature?: (orderToSign: UnsignedOrder, signer: AbstractSigner<Provider>) => Promise<string>
+
+  /**
+   * The order to sign.
+   * This allows to override the order to sign with custom values, useful e.g. when you want to send limit orders forcing amounts without costs included.
+   */
+  orderToSign?: UnsignedOrder
 }
