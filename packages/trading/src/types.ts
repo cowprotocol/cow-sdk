@@ -284,8 +284,8 @@ export interface PostTradeAdditionalParams {
   customEIP1271Signature?: (orderToSign: UnsignedOrder, signer: AbstractSigner<Provider>) => Promise<string>
 
   /**
-   * The order to sign.
-   * This allows to override the order to sign with custom values, useful e.g. when you want to send limit orders forcing amounts without costs included.
+   * By default, the quote adjustments are applied to the order.
+   * You might want to disable this to send limit orders forcing amounts without costs included.
    */
-  orderToSign?: UnsignedOrder
+  applyQuoteAdjustments?: boolean
 }
