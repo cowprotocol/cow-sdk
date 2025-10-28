@@ -72,9 +72,29 @@ describe('getOrderToSign', () => {
     expect(result.buyAmount).toBe('1990000000000000000')
   })
 
+  it('When sell order and quote adjustments disabled, then buy amount should remain unchanged', () => {
+    const result = getOrderToSign(
+      { ...params, applyQuoteAdjustments: false },
+      { ...defaultOrderParams, kind: OrderKind.SELL },
+      appDataKeccak256,
+    )
+
+    expect(result.buyAmount).toBe(defaultOrderParams.buyAmount)
+  })
+
   it('When buy order, then sell amount should be adjusted to slippage', () => {
     const result = getOrderToSign(params, { ...defaultOrderParams, kind: OrderKind.BUY }, appDataKeccak256)
 
     expect(result.sellAmount).toBe('1005000000000000000')
+  })
+
+  it('When buy order and quote adjustments disabled, then sell amount should remain unchanged', () => {
+    const result = getOrderToSign(
+      { ...params, applyQuoteAdjustments: false },
+      { ...defaultOrderParams, kind: OrderKind.BUY },
+      appDataKeccak256,
+    )
+
+    expect(result.sellAmount).toBe(defaultOrderParams.sellAmount)
   })
 })

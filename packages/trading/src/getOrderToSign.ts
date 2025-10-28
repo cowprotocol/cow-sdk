@@ -17,10 +17,11 @@ interface OrderToSignParams {
   isEthFlow: boolean
   from: string
   networkCostsAmount?: string
+  applyQuoteAdjustments?: boolean
 }
 
 export function getOrderToSign(
-  { chainId, from, networkCostsAmount = '0', isEthFlow }: OrderToSignParams,
+  { chainId, from, networkCostsAmount = '0', isEthFlow, applyQuoteAdjustments = true }: OrderToSignParams,
   limitOrderParams: LimitTradeParameters,
   appDataKeccak256: string,
 ): UnsignedOrder {
@@ -54,19 +55,26 @@ export function getOrderToSign(
     partiallyFillable,
   }
 
-  const { afterSlippage } = getQuoteAmountsAndCosts({
-    orderParams,
-    slippagePercentBps: slippageBps,
-    partnerFeeBps: getPartnerFeeBps(partnerFee),
-    sellDecimals: sellTokenDecimals,
-    buyDecimals: buyTokenDecimals,
-  })
+  let sellAmountToUse = sellAmount
+  let buyAmountToUse = buyAmount
+
+  if (applyQuoteAdjustments) {
+    const { afterSlippage } = getQuoteAmountsAndCosts({
+      orderParams,
+      slippagePercentBps: slippageBps,
+      partnerFeeBps: getPartnerFeeBps(partnerFee),
+      sellDecimals: sellTokenDecimals,
+      buyDecimals: buyTokenDecimals,
+    })
+    sellAmountToUse = afterSlippage.sellAmount.toString()
+    buyAmountToUse = afterSlippage.buyAmount.toString()
+  }
 
   return {
     sellToken,
     buyToken,
-    sellAmount: afterSlippage.sellAmount.toString(),
-    buyAmount: afterSlippage.buyAmount.toString(),
+    sellAmount: sellAmountToUse,
+    buyAmount: buyAmountToUse,
     validTo,
     kind,
     partiallyFillable,
