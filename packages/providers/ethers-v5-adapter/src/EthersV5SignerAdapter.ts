@@ -54,6 +54,8 @@ export class EthersV5SignerAdapter extends AbstractSigner<RpcProvider> {
       wait: async (confirmations?: number) => {
         const receipt = await tx.wait(confirmations)
         return {
+          from: receipt.from,
+          to: receipt.to,
           transactionHash: receipt.transactionHash,
           blockNumber: BigInt(receipt.blockNumber),
           blockHash: receipt.blockHash,
