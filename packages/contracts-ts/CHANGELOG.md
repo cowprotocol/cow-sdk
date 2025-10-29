@@ -1,18 +1,5 @@
 # Changelog
 
-## [0.4.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.4.1...sdk-contracts-ts-v0.4.2) (2025-10-29)
-
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @cowprotocol/sdk-common bumped to 0.3.0
-  * devDependencies
-    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.2.0
-    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.2.0
-    * @cowprotocol/sdk-viem-adapter bumped to 0.2.0
-
 ## [0.4.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.4.0...sdk-contracts-ts-v0.4.1) (2025-10-24)
 
 

@@ -1,19 +1,5 @@
 # Changelog
 
-## [0.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.1.3...sdk-viem-adapter-v0.2.0) (2025-10-29)
-
-
-### ✨ Features
-
-* add from/to fields for receipt ([#629](https://github.com/cowprotocol/cow-sdk/issues/629)) ([3dd3868](https://github.com/cowprotocol/cow-sdk/commit/3dd38682741ac93bfbd9b7d9a4fe79df7283dca0))
-
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @cowprotocol/sdk-common bumped to 0.3.0
-
 ## [0.1.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.1.2...sdk-viem-adapter-v0.1.3) (2025-10-24)
 
 
