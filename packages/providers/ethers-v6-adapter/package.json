@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-ethers-v6-adapter",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "Ethers v6 adapter for CoW Protocol SDK",
   "main": "dist/index.js",
   "module": "./dist/index.mjs",

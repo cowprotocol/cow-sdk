@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-common",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "Common utilities and types for CoW Protocol SDK",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
