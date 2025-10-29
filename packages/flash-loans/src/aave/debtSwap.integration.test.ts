@@ -49,7 +49,6 @@ describe('AaveFlashLoanIntegration.debtSwap', () => {
     // The amount is before slippage and partner fee!
     const buyAmount = 11000000000000000n // 0.011 GNO
     const validTo = Math.ceil(Date.now() / 1000) + 10 * 60 // 10m
-    const flashLoanFeePercent = 0.05 // 0.05%
 
     // Set true if you sell native token
     const isEthFlow = false
