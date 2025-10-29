@@ -73,7 +73,7 @@ export interface Log {
  */
 export interface TransactionReceipt {
   from: string
-  to: string
+  to: string | null
   transactionHash: string
   blockNumber: bigint
   blockHash: string

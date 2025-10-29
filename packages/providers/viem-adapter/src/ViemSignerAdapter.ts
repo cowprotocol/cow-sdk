@@ -96,6 +96,8 @@ export class ViemSignerAdapter extends AbstractSigner<PublicClient> {
         })
 
         return {
+          from: receipt.from,
+          to: receipt.to,
           transactionHash: receipt.transactionHash,
           blockNumber: BigInt(receipt.blockNumber),
           blockHash: receipt.blockHash,
