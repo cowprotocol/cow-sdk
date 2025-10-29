@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v5-adapter-v0.1.3...sdk-ethers-v5-adapter-v0.2.0) (2025-10-29)
+
+
+### ✨ Features
+
+* add from/to fields for receipt ([#629](https://github.com/cowprotocol/cow-sdk/issues/629)) ([3dd3868](https://github.com/cowprotocol/cow-sdk/commit/3dd38682741ac93bfbd9b7d9a4fe79df7283dca0))
+
+
+### 🔧 Miscellaneous
+
+* release main ([#620](https://github.com/cowprotocol/cow-sdk/issues/620)) ([b36394a](https://github.com/cowprotocol/cow-sdk/commit/b36394a2ba38957edb47ffc4451ea6624d66737b))
+* revert release ([#634](https://github.com/cowprotocol/cow-sdk/issues/634)) ([fc7bf61](https://github.com/cowprotocol/cow-sdk/commit/fc7bf61444619d4b2c3a3dd55b7ce52c197b1878))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.3.0
+
 ## [0.1.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v5-adapter-v0.1.2...sdk-ethers-v5-adapter-v0.1.3) (2025-10-24)
 
 

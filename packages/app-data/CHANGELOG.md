@@ -1,5 +1,24 @@
 # Changelog
 
+## [4.1.5](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.1.4...sdk-app-data-v4.1.5) (2025-10-29)
+
+
+### 🔧 Miscellaneous
+
+* release main ([#620](https://github.com/cowprotocol/cow-sdk/issues/620)) ([b36394a](https://github.com/cowprotocol/cow-sdk/commit/b36394a2ba38957edb47ffc4451ea6624d66737b))
+* revert release ([#634](https://github.com/cowprotocol/cow-sdk/issues/634)) ([fc7bf61](https://github.com/cowprotocol/cow-sdk/commit/fc7bf61444619d4b2c3a3dd55b7ce52c197b1878))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.3.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.2.0
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.2.0
+    * @cowprotocol/sdk-viem-adapter bumped to 0.2.0
+
 ## [4.1.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.1.3...sdk-app-data-v4.1.4) (2025-10-24)
 
 
