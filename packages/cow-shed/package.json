@@ -40,7 +40,7 @@
     "coveralls": "^3.1.1",
     "ethers-v5": "npm:ethers@^5.7.2",
     "ethers-v6": "npm:ethers@^6.13.7",
-    "viem": "^2.28.4",
+    "viem": "^2.38.5",
     "jest": "^29.7.0",
     "jest-fetch-mock": "^3.0.3",
     "ts-jest": "^29.0.0",
