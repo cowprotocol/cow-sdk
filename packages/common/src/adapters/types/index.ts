@@ -72,6 +72,8 @@ export interface Log {
  * Standardized transaction receipt
  */
 export interface TransactionReceipt {
+  from: string
+  to: string | null
   transactionHash: string
   blockNumber: bigint
   blockHash: string

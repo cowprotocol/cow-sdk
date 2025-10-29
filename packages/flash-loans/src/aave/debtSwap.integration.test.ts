@@ -49,12 +49,7 @@ describe('AaveFlashLoanIntegration.debtSwap', () => {
     // The amount is before slippage and partner fee!
     const buyAmount = 11000000000000000n // 0.011 GNO
     const validTo = Math.ceil(Date.now() / 1000) + 10 * 60 // 10m
-    const flashLoanFeeBps = 5 // 0.05%
-    // const slippageBps = 0 // 0.08%
-    // const partnerFee = {
-    //   volumeBps: 10, // 0.1%
-    //   recipient: owner, // TODO: set a correct partnerFee recipient
-    // }
+    const flashLoanFeePercent = 0.05 // 0.05%
 
     // Set true if you sell native token
     const isEthFlow = false
@@ -76,8 +71,6 @@ describe('AaveFlashLoanIntegration.debtSwap', () => {
       validTo,
       slippageBps: 0,
       partnerFee: undefined,
-      //slippageBps,
-      //partnerFee,
     }
 
     const orderToSign = getOrderToSign(

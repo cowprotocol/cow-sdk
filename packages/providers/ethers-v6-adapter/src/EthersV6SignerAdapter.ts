@@ -48,6 +48,8 @@ export class EthersV6SignerAdapter extends AbstractSigner<Provider> {
           throw new Error('Transaction failed')
         }
         return {
+          from: receipt.from,
+          to: receipt.to,
           transactionHash: receipt.hash,
           blockNumber: BigInt(receipt.blockNumber),
           blockHash: receipt.blockHash || '',

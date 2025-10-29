@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.2.2...sdk-common-v0.3.0) (2025-10-29)
+
+
+### ✨ Features
+
+* add from/to fields for receipt ([#629](https://github.com/cowprotocol/cow-sdk/issues/629)) ([3dd3868](https://github.com/cowprotocol/cow-sdk/commit/3dd38682741ac93bfbd9b7d9a4fe79df7283dca0))
+
+
+### 🔧 Miscellaneous
+
+* release main ([#620](https://github.com/cowprotocol/cow-sdk/issues/620)) ([b36394a](https://github.com/cowprotocol/cow-sdk/commit/b36394a2ba38957edb47ffc4451ea6624d66737b))
+* revert release ([#634](https://github.com/cowprotocol/cow-sdk/issues/634)) ([fc7bf61](https://github.com/cowprotocol/cow-sdk/commit/fc7bf61444619d4b2c3a3dd55b7ce52c197b1878))
+
 ## [0.2.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.2.1...sdk-common-v0.2.2) (2025-10-24)
 
 
