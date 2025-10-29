@@ -250,6 +250,7 @@ export class AaveCollateralSwapSdk {
         customEIP1271Signature: (orderToSign: UnsignedOrder, signer: AbstractSigner<Provider>) => {
           return this.adapterEIP1271Signature(chainId, instanceAddress, orderToSign, signer)
         },
+        applyCostsSlippageAndFees: false,
       },
       appData: {
         metadata: {
@@ -382,7 +383,7 @@ export class AaveCollateralSwapSdk {
     const product = sellAmount * bps
     const quotient = product / PERCENTAGE_FACTOR
     const remainder = product % PERCENTAGE_FACTOR
-    
+
     // Round up if remainder is present (ceil behavior for fees)
     const flashLoanFeeAmount = quotient + (remainder > 0n ? 1n : 0n)
 

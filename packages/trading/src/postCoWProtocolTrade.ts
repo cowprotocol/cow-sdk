@@ -20,6 +20,7 @@ export async function postCoWProtocolTrade(
     networkCostsAmount = '0',
     signingScheme: _signingScheme = SigningScheme.EIP712,
     customEIP1271Signature,
+    applyCostsSlippageAndFees,
   } = additionalParams
 
   const isEthFlow = getIsEthFlowOrder(params)
@@ -39,7 +40,12 @@ export async function postCoWProtocolTrade(
 
   const chainId = orderBookApi.context.chainId
   const from = owner || (await signer.getAddress())
-  const orderToSign = getOrderToSign({ chainId, from, networkCostsAmount, isEthFlow }, params, appData.appDataKeccak256)
+
+  const orderToSign = getOrderToSign(
+    { chainId, from, networkCostsAmount, isEthFlow, applyCostsSlippageAndFees },
+    params,
+    appData.appDataKeccak256,
+  )
 
   log('Signing order...')
 
