@@ -284,8 +284,9 @@ export interface PostTradeAdditionalParams {
   customEIP1271Signature?: (orderToSign: UnsignedOrder, signer: AbstractSigner<Provider>) => Promise<string>
 
   /**
-   * By default, the quote adjustments are applied to the order.
-   * You might want to disable this to send limit orders forcing amounts without costs included.
+   * By default, we adjust the quoted sell/buy amounts to include network gas costs, slippage buffer,
+   * partner fees, and similar extras. Disable this when you prefer to post the raw amounts provided
+   * by the caller (for example, for limit orders that should not include these costs).
    */
-  applyQuoteAdjustments?: boolean
+  applyCostsSlippageAndFees?: boolean
 }

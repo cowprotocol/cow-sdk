@@ -17,11 +17,11 @@ interface OrderToSignParams {
   isEthFlow: boolean
   from: string
   networkCostsAmount?: string
-  applyQuoteAdjustments?: boolean
+  applyCostsSlippageAndFees?: boolean
 }
 
 export function getOrderToSign(
-  { chainId, from, networkCostsAmount = '0', isEthFlow, applyQuoteAdjustments = true }: OrderToSignParams,
+  { chainId, from, networkCostsAmount = '0', isEthFlow, applyCostsSlippageAndFees = true }: OrderToSignParams,
   limitOrderParams: LimitTradeParameters,
   appDataKeccak256: string,
 ): UnsignedOrder {
@@ -58,7 +58,7 @@ export function getOrderToSign(
   let sellAmountToUse = sellAmount
   let buyAmountToUse = buyAmount
 
-  if (applyQuoteAdjustments) {
+  if (applyCostsSlippageAndFees) {
     const { afterSlippage } = getQuoteAmountsAndCosts({
       orderParams,
       slippagePercentBps: slippageBps,

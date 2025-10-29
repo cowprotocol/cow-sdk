@@ -47,11 +47,7 @@ describe('getOrderToSign', () => {
 
   it('When validTo is set, then should use exact validTo value', () => {
     const exactValidTo = 2524608000 // January 1, 2050 00:00:00 UTC
-    const result = getOrderToSign(
-      params,
-      { ...defaultOrderParams, validTo: exactValidTo },
-      appDataKeccak256,
-    )
+    const result = getOrderToSign(params, { ...defaultOrderParams, validTo: exactValidTo }, appDataKeccak256)
 
     expect(result.validTo).toBe(exactValidTo)
   })
@@ -72,9 +68,9 @@ describe('getOrderToSign', () => {
     expect(result.buyAmount).toBe('1990000000000000000')
   })
 
-  it('When sell order and quote adjustments disabled, then buy amount should remain unchanged', () => {
+  it('When sell order and cost/slippage adjustments disabled, then buy amount should remain unchanged', () => {
     const result = getOrderToSign(
-      { ...params, applyQuoteAdjustments: false },
+      { ...params, applyCostsSlippageAndFees: false },
       { ...defaultOrderParams, kind: OrderKind.SELL },
       appDataKeccak256,
     )
@@ -88,9 +84,9 @@ describe('getOrderToSign', () => {
     expect(result.sellAmount).toBe('1005000000000000000')
   })
 
-  it('When buy order and quote adjustments disabled, then sell amount should remain unchanged', () => {
+  it('When buy order and cost/slippage adjustments disabled, then sell amount should remain unchanged', () => {
     const result = getOrderToSign(
-      { ...params, applyQuoteAdjustments: false },
+      { ...params, applyCostsSlippageAndFees: false },
       { ...defaultOrderParams, kind: OrderKind.BUY },
       appDataKeccak256,
     )

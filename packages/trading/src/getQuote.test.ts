@@ -279,7 +279,11 @@ describe('getQuote', () => {
 
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
-        await getQuoteWithSigner({ ...defaultOrderParams, signer: adapters[adapterName].signer, validTo: exactValidTo }, {}, orderBookApiMock)
+        await getQuoteWithSigner(
+          { ...defaultOrderParams, signer: adapters[adapterName].signer, validTo: exactValidTo },
+          {},
+          orderBookApiMock,
+        )
 
         const call = getQuoteMock.mock.calls[0][0]
         expect(call.validTo).toBe(exactValidTo)
@@ -294,8 +298,14 @@ describe('getQuote', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
         await expect(
-          getQuoteWithSigner({ ...defaultOrderParams, signer: adapters[adapterName].signer, validTo: exactValidTo, validFor: 600 }, {}, orderBookApiMock)
-        ).rejects.toThrow('Cannot specify both validFor and validTo. Use validFor for relative time or validTo for absolute time.')
+          getQuoteWithSigner(
+            { ...defaultOrderParams, signer: adapters[adapterName].signer, validTo: exactValidTo, validFor: 600 },
+            {},
+            orderBookApiMock,
+          ),
+        ).rejects.toThrow(
+          'Cannot specify both validFor and validTo. Use validFor for relative time or validTo for absolute time.',
+        )
       }
     })
   })
