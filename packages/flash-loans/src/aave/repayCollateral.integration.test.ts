@@ -49,14 +49,14 @@ describe('AaveFlashLoanIntegration.repayCollateral', () => {
     // The amount is before slippage and partner fee!
     const buyAmount = 11000000000000000n // 0.011 GNO
     const validTo = Math.ceil(Date.now() / 1000) + 10 * 60 // 10m
-    const flashLoanFeePercent = 0.05 // 0.05%
+    const flashLoanFeeBps = 5 // 0.05%
 
     // Set true if you sell native token
     const isEthFlow = false
     const collateralPermit = undefined
 
     const { flashLoanFeeAmount, sellAmountToSign } = flashLoanSdk.calculateFlashLoanAmounts({
-      flashLoanFeePercent,
+      flashLoanFeeBps,
       sellAmount,
     })
 
@@ -69,7 +69,6 @@ describe('AaveFlashLoanIntegration.repayCollateral', () => {
       buyAmount: buyAmount.toString(),
       kind: OrderKind.BUY,
       validTo,
-      // TODO: BUY orders do not work if you add slippage and/or partnerFee
       slippageBps: 0,
       partnerFee: undefined,
     }
