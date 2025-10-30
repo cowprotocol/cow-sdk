@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.4.3...sdk-trading-v0.4.4) (2025-10-30)
+
+
+### 🐛 Bug Fixes
+
+* flashloan fee calculation now matches aave's ([#622](https://github.com/cowprotocol/cow-sdk/issues/622)) ([8d11b7f](https://github.com/cowprotocol/cow-sdk/commit/8d11b7fbbc8ff797253f26772a0e5c940286f2d9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-order-signing bumped to 0.1.9
+    * @cowprotocol/sdk-contracts-ts bumped to 0.4.3
+
 ## [0.4.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.4.2...sdk-trading-v0.4.3) (2025-10-29)
 
 
