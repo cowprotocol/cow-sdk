@@ -79,7 +79,9 @@ export async function getQuoteRaw(
 
   // Validate that both validFor and validTo are not provided at the same time
   if (validTo !== undefined && validFor !== undefined) {
-    throw new Error('Cannot specify both validFor and validTo. Use validFor for relative time or validTo for absolute time.')
+    throw new Error(
+      'Cannot specify both validFor and validTo. Use validFor for relative time or validTo for absolute time.',
+    )
   }
 
   // Apply default value for validFor after validation
