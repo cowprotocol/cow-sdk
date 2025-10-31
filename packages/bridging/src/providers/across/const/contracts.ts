@@ -15,6 +15,10 @@ export const ACROSS_SPOOK_CONTRACT_ADDRESSES: Record<TargetChainId, string | und
   [SupportedChainId.LENS]: '0xe7cb3e167e7475dE1331Cf6E0CEb187654619E12',
   // https://docs.across.to/reference/contract-addresses/bnb-smart-chain
   [SupportedChainId.BNB]: '0x4e8E101924eDE233C13e2D8622DC8aED2872d505',
+  // https://docs.across.to/reference/contract-addresses/linea-chain-id-59144
+  [SupportedChainId.LINEA]: '0xE0BCff426509723B18D6b2f0D8F4602d143bE3e0',
+  // https://docs.across.to/reference/contract-addresses/plasma
+  [SupportedChainId.PLASMA]: '0x50039fAEfebef707cFD94D6d462fE6D10B39207a',
 
   // Not supported chains
   // TODO: This first integration is a draft, some of this chains might be supported, so we will need to update here as we iterate on the provider
@@ -37,4 +41,6 @@ export const ACROSS_MATH_CONTRACT_ADDRESSES: Record<TargetChainId, string | unde
   [SupportedChainId.AVALANCHE]: undefined,
   [SupportedChainId.LENS]: undefined, // TODO: confirm
   [SupportedChainId.BNB]: undefined, // TODO: confirm
+  [SupportedChainId.LINEA]: undefined, // TODO: confirm
+  [SupportedChainId.PLASMA]: undefined, // TODO: confirm
 }
