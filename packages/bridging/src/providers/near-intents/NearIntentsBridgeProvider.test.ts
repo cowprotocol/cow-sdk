@@ -4,7 +4,6 @@ import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { GetExecutionStatusResponse, QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 import { padHex, zeroAddress } from 'viem'
 
-import { COW_SHED_PROXY_CREATION_GAS, DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION } from '../../const'
 import { createAdapters } from '../../../tests/setup'
 import { NearIntentsApi } from './NearIntentsApi'
 import { NEAR_INTENTS_HOOK_DAPP_ID, NearIntentsBridgeProvider } from './NearIntentsBridgeProvider'
@@ -13,7 +12,6 @@ import { BridgeStatus } from '../../types'
 
 import type { TargetChainId } from '@cowprotocol/sdk-config'
 import type { QuoteBridgeRequest } from '../../types'
-import type { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
 
 // Mock NearIntentsApi
 jest.mock('./NearIntentsApi')
@@ -190,13 +188,19 @@ adapterNames.forEach((adapterName) => {
           quoteTimestamp: 1756910815987,
           expectedFillTimeSeconds: 49,
           limits: { minDeposit: 35000000000000n, maxDeposit: 35000000000000n },
-          fees: { bridgeFee: 0n, destinationGasFee: 0n },
+          fees: { bridgeFee: 4849936143039n, destinationGasFee: 0n },
           amountsAndCosts: {
-            beforeFee: { sellAmount: 468413404557660287n, buyAmount: 35000000000000n },
-            afterFee: { sellAmount: 468413404557660287n, buyAmount: 35000000000000n },
-            afterSlippage: { sellAmount: 463000005761085287n, buyAmount: 35000000000000n },
+            beforeFee: { buyAmount: 468413404557660287n, sellAmount: 35000000000000n },
+            afterFee: { buyAmount: 463000005761085287n, sellAmount: 35000000000000n },
+            afterSlippage: { buyAmount: 463000005761085287n, sellAmount: 35000000000000n },
             slippageBps: 1385,
-            costs: { bridgingFee: { feeBps: 0, amountInSellCurrency: 0n, amountInBuyCurrency: 0n } },
+            costs: {
+              bridgingFee: {
+                feeBps: 1385,
+                amountInSellCurrency: 64907860018526376n,
+                amountInBuyCurrency: 4849936143039n,
+              },
+            },
           },
         })
       })
@@ -210,12 +214,6 @@ adapterNames.forEach((adapterName) => {
           logoUrl: expect.stringContaining('near-intents-logo.png'),
           website: 'https://www.near.org/intents',
         })
-      })
-    })
-
-    describe('decodeBridgeHook', () => {
-      it('should throw error as not implemented', async () => {
-        await expect(() => provider.decodeBridgeHook({} as unknown as latestAppData.CoWHook)).toThrow('Not implemented')
       })
     })
 
@@ -319,46 +317,6 @@ adapterNames.forEach((adapterName) => {
     describe('getRefundBridgingTx', () => {
       it('should throw error as not implemented', async () => {
         await expect(() => provider.getRefundBridgingTx('123')).toThrow('Not implemented')
-      })
-    })
-
-    describe('getGasLimitEstimationForHook', () => {
-      it('should return default gas limit estimation', async () => {
-        mockGetCode.mockResolvedValue('0x1234567890')
-        const gasLimit = await provider.getGasLimitEstimationForHook({
-          kind: OrderKind.SELL,
-          sellTokenAddress: ETH_ADDRESS,
-          sellTokenChainId: SupportedChainId.MAINNET,
-          buyTokenChainId: SupportedChainId.POLYGON,
-          amount: 1000000000000000000n,
-          receiver: zeroAddress,
-          account: zeroAddress,
-          sellTokenDecimals: 18,
-          buyTokenAddress: zeroAddress,
-          buyTokenDecimals: 6,
-          appCode: zeroAddress,
-          signer: padHex('0x'),
-        })
-        expect(gasLimit).toEqual(DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION)
-      })
-
-      it('should return default gas limit estimation and deploy proxy account', async () => {
-        mockGetCode.mockResolvedValue(undefined)
-        const gasLimit = await provider.getGasLimitEstimationForHook({
-          kind: OrderKind.SELL,
-          sellTokenAddress: ETH_ADDRESS,
-          sellTokenChainId: SupportedChainId.MAINNET,
-          buyTokenChainId: SupportedChainId.POLYGON,
-          amount: 1000000000000000000n,
-          receiver: zeroAddress,
-          account: zeroAddress,
-          sellTokenDecimals: 18,
-          buyTokenAddress: zeroAddress,
-          buyTokenDecimals: 6,
-          appCode: zeroAddress,
-          signer: padHex('0x'),
-        })
-        expect(gasLimit).toEqual(DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION + COW_SHED_PROXY_CREATION_GAS)
       })
     })
   })
