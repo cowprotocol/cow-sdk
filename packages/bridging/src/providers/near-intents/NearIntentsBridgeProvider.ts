@@ -2,28 +2,20 @@ import { getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { ETH_ADDRESS } from '@cowprotocol/sdk-config'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
-import { createWeirollContract, createWeirollDelegateCall, WeirollCommandFlags } from '@cowprotocol/sdk-weiroll'
 import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
-import { erc20Abi } from 'viem'
 import { BridgeStatus } from '../../types'
 
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
-import { getCowTradeEvents } from '../../providers/across/util'
-import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 import { NearIntentsApi } from './NearIntentsApi'
 import { NEAR_INTENTS_STATUS_TO_COW_STATUS, NEAR_INTENTS_SUPPORTED_NETWORKS } from './const'
 import { adaptToken, adaptTokens, calculateDeadline, getTokenByAddressAndChainId } from './util'
 
-import type { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
-import type { AbstractProviderAdapter, SignerLike } from '@cowprotocol/sdk-common'
+import type { AbstractProviderAdapter } from '@cowprotocol/sdk-common'
 import type { ChainId, ChainInfo, EvmCall, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import type { CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
 import type { Address, Hex } from 'viem'
 import type {
-  BridgeDeposit,
-  BridgeHook,
-  BridgeProvider,
   BridgeProviderInfo,
   BridgeQuoteResult,
   BridgeStatusResult,
@@ -31,6 +23,7 @@ import type {
   BuyTokensParams,
   GetProviderBuyTokens,
   QuoteBridgeRequest,
+  ReceiverAccountBridgeProvider,
 } from '../../types'
 
 export interface NearIntentsQuoteResult extends BridgeQuoteResult {
@@ -43,7 +36,9 @@ export interface NearIntentsBridgeProviderOptions {
   cowShedOptions?: CowShedSdkOptions
 }
 
-export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuoteResult> {
+export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<NearIntentsQuoteResult> {
+  type = 'ReceiverAccountBridgeProvider' as const
+
   protected api: NearIntentsApi
   protected cowShedSdk: CowShedSdk
 
@@ -184,75 +179,8 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     }
   }
 
-  async getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: NearIntentsQuoteResult): Promise<EvmCall> {
-    const { account, sellTokenAddress, sellTokenChainId } = request
-    const { depositAddress } = quote
-
-    const cowShedAccount = this.cowShedSdk.getCowShedAccount(sellTokenChainId, account)
-
-    const adapter = getGlobalAdapter()
-    return createWeirollDelegateCall((planner) => {
-      const amount = planner.add(
-        createWeirollContract(
-          adapter.getContract(sellTokenAddress, erc20Abi),
-          WeirollCommandFlags.STATICCALL,
-        ).balanceOf(cowShedAccount),
-      )
-      planner.add(
-        createWeirollContract(adapter.getContract(sellTokenAddress, erc20Abi), WeirollCommandFlags.CALL).transfer(
-          depositAddress,
-          amount,
-        ),
-      )
-    })
-  }
-
-  async getGasLimitEstimationForHook(request: QuoteBridgeRequest): Promise<number> {
-    return getGasLimitEstimationForHook({
-      cowShedSdk: this.cowShedSdk,
-      request,
-    })
-  }
-
-  async getSignedHook(
-    chainId: SupportedChainId,
-    unsignedCall: EvmCall,
-    bridgeHookNonce: string,
-    deadline: bigint,
-    hookGasLimit: number,
-    signer?: SignerLike,
-  ): Promise<BridgeHook> {
-    const { signedMulticall, cowShedAccount, gasLimit } = await this.cowShedSdk.signCalls({
-      calls: [
-        {
-          target: unsignedCall.to,
-          value: unsignedCall.value,
-          callData: unsignedCall.data,
-          allowFailure: false,
-          isDelegateCall: true,
-        },
-      ],
-      chainId,
-      signer,
-      gasLimit: BigInt(hookGasLimit),
-      deadline,
-      nonce: bridgeHookNonce,
-    })
-
-    const { to, data } = signedMulticall
-    return {
-      postHook: {
-        target: to,
-        callData: data,
-        gasLimit: gasLimit.toString(),
-        dappId: NEAR_INTENTS_HOOK_DAPP_ID,
-      },
-      recipient: cowShedAccount,
-    }
-  }
-
-  decodeBridgeHook(hook: latestAppData.CoWHook): Promise<BridgeDeposit> {
-    throw new Error('Not implemented')
+  async getBridgeReceiverOverride(request: QuoteBridgeRequest, quote: NearIntentsQuoteResult): Promise<string> {
+    return quote.depositAddress
   }
 
   async getBridgingParams(
@@ -264,32 +192,8 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
     const receipt = await adapter.getTransactionReceipt(txHash)
     if (!receipt) return null
 
-    const tradeEvent = (await getCowTradeEvents(chainId, receipt.logs)).find((event) => event.orderUid === orderUid)
-    if (!tradeEvent) return null
-
-    // Identify the recipient addresses of the buyToken transfer.
-    // Example: to swap CRV → AVAX via CoW + NEAR Intents, the flow is:
-    //   1. Sell CRV for USDC on CoW.
-    //   2. Sell USDC for AVAX on NEAR Intents.
-    // This filter extracts the ERC20 Transfer logs of the buyToken (e.g. USDC)
-    // that exactly match the buyAmount from the CoW trade.
-    const cowShedAccount = this.cowShedSdk.getCowShedAccount(chainId, tradeEvent.owner).toLowerCase()
-    const buyTokenTransfersReceivers = receipt.logs
-      .filter((log) => {
-        if (log.topics[0] !== '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef') return false
-
-        return (
-          log.address.toLowerCase() === tradeEvent.buyToken.toLowerCase() &&
-          log.topics[0] === '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' &&
-          BigInt(log.data) === BigInt(tradeEvent.buyAmount) &&
-          log.topics[1] &&
-          `0x${log.topics[1].slice(26)}`.toLowerCase() === cowShedAccount // topics[1] is the ERC20 Transfer "from" address, this log is a transfer sent by the cow-shed account linked to the trade owner.
-        )
-      })
-      .map((log) => `0x${log.topics[2]?.slice(26)}`)
-
-    if (buyTokenTransfersReceivers.length !== 1) throw new Error('Failed to retrieve the deposit address')
-    const depositAddress = buyTokenTransfersReceivers[0]!
+    const depositAddress = await receipt.to
+    if (!depositAddress) return null
 
     const [tokens, status] = await Promise.all([this.api.getTokens(), this.api.getStatus(depositAddress)])
 
@@ -327,7 +231,7 @@ export class NearIntentsBridgeProvider implements BridgeProvider<NearIntentsQuot
         outputTokenAddress: outputToken.contractAddress ?? ETH_ADDRESS,
         inputAmount: BigInt(quote.amountIn),
         outputAmount: BigInt(quote.amountOut),
-        owner: tradeEvent.owner,
+        owner: receipt.from,
         quoteTimestamp,
         fillDeadline: quoteTimestamp + quote.timeEstimate,
         recipient: qr.recipient,
