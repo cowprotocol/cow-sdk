@@ -157,15 +157,15 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       amountsAndCosts: {
         beforeFee: {
           sellAmount: BigInt(quote.amountIn),
-          buyAmount: BigInt(quote.minAmountOut),
+          buyAmount: BigInt(quote.amountOut),
         },
         afterFee: {
           sellAmount: BigInt(quote.amountIn),
-          buyAmount: BigInt(quote.amountOut),
+          buyAmount: BigInt(quote.minAmountOut),
         },
         afterSlippage: {
           sellAmount: BigInt(quote.amountIn),
-          buyAmount: BigInt(quote.amountOut),
+          buyAmount: BigInt(quote.minAmountOut),
         },
         slippageBps,
         costs: {
