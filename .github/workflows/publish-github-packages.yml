@@ -27,8 +27,8 @@ jobs:
     name: Publish to GitHub Packages
     runs-on: ubuntu-latest
 
-    # Security: Only run on internal PRs, main branch pushes, or external PRs with explicit approval
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && (github.event.pull_request.head.repo.full_name == github.repository || contains(github.event.pull_request.labels.*.name, 'allow-publish')))
+    # Security: Only run on internal PRs, main branch pushes, external PRs with explicit approval, or manual triggers
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && (github.event.pull_request.head.repo.full_name == github.repository || contains(github.event.pull_request.labels.*.name, 'allow-publish')))
 
     steps:
       - name: Security Check
