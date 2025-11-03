@@ -462,6 +462,12 @@ export class AaveCollateralSwapSdk {
     ])
   }
 
+  private readonly AAVE_DAPP_ID_PER_TYPE: Record<AaveFlashLoanType, string> = {
+    [AaveFlashLoanType.CollateralSwap]: 'aave://flashloans/v3/collateral',
+    [AaveFlashLoanType.DebtSwap]: 'aave://flashloans/v3/debt',
+    [AaveFlashLoanType.RepayCollateral]: 'aave://flashloans/v3/repay',
+  }
+
   private async getOrderHooks(
     flashLoanType: AaveFlashLoanType,
     chainId: SupportedChainId,
@@ -481,12 +487,15 @@ export class AaveCollateralSwapSdk {
     )
     const postHookCallData = this.getFlashLoanPostHook(flashLoanType, collateralPermit)
 
+    const dappId = this.AAVE_DAPP_ID_PER_TYPE[flashLoanType]
+
     return {
       pre: [
         {
           target: AAVE_ADAPTER_FACTORY[chainId],
           callData: preHookCallData,
           gasLimit: DEFAULT_HOOK_GAS_LIMIT.pre.toString(),
+          dappId,
         },
       ],
       post: [
@@ -494,6 +503,7 @@ export class AaveCollateralSwapSdk {
           target: expectedInstanceAddress,
           callData: postHookCallData,
           gasLimit: DEFAULT_HOOK_GAS_LIMIT.post.toString(),
+          dappId,
         },
       ],
     }
