@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.1.2...sdk-flash-loans-v1.1.3) (2025-11-04)
+
+
+### 🐛 Bug Fixes
+
+* make adapters hook helpers public ([#639](https://github.com/cowprotocol/cow-sdk/issues/639)) ([f8760ae](https://github.com/cowprotocol/cow-sdk/commit/f8760ae6084f7df729f140f9bea799566c217287))
+
 ## [1.1.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.1.1...sdk-flash-loans-v1.1.2) (2025-10-30)
 
 
