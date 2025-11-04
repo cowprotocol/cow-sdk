@@ -26,11 +26,12 @@ import type {
   ReceiverAccountBridgeProvider,
 } from '../../types'
 
+export const NEAR_INTENTS_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/near-intents`
+export const REFERRAL = 'cow'
+
 export interface NearIntentsQuoteResult extends BridgeQuoteResult {
   depositAddress: Hex
 }
-
-export const NEAR_INTENTS_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/near-intents`
 
 export interface NearIntentsBridgeProviderOptions {
   cowShedOptions?: CowShedSdkOptions
@@ -132,6 +133,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       recipient: receiver || account,
       recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
       deadline: calculateDeadline(validFor || 3600),
+      referral: REFERRAL,
     })
 
     const payoutRatio = Number(quote.amountOutUsd) / Number(quote.amountInUsd)
