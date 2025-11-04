@@ -14,7 +14,7 @@ import { adaptToken, adaptTokens, calculateDeadline, getTokenByAddressAndChainId
 import type { AbstractProviderAdapter } from '@cowprotocol/sdk-common'
 import type { ChainId, ChainInfo, EvmCall, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import type { CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
-import type { Address, Hex } from 'viem'
+import type { Address } from '@cowprotocol/sdk-order-book'
 import type {
   BridgeProviderInfo,
   BridgeQuoteResult,
@@ -27,7 +27,7 @@ import type {
 } from '../../types'
 
 export interface NearIntentsQuoteResult extends BridgeQuoteResult {
-  depositAddress: Hex
+  depositAddress: string
 }
 
 export const NEAR_INTENTS_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/near-intents`
@@ -134,6 +134,10 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       deadline: calculateDeadline(validFor || 3600),
     })
 
+    if (!quote.depositAddress) {
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES, { message: 'Missing deposit address in quote' })
+    }
+
     const payoutRatio = Number(quote.amountOutUsd) / Number(quote.amountInUsd)
     const slippage = 1 - payoutRatio
     const slippageBps = Math.trunc(slippage * 10_000)
@@ -143,7 +147,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
 
     return {
       isSell: request.kind === OrderKind.SELL,
-      depositAddress: quote.depositAddress as Hex,
+      depositAddress: quote.depositAddress,
       quoteTimestamp: new Date(isoDate).getTime(),
       expectedFillTimeSeconds: quote.timeEstimate,
       limits: {
@@ -179,13 +183,13 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     }
   }
 
-  async getBridgeReceiverOverride(request: QuoteBridgeRequest, quote: NearIntentsQuoteResult): Promise<string> {
+  async getBridgeReceiverOverride(_request: QuoteBridgeRequest, quote: NearIntentsQuoteResult): Promise<string> {
     return quote.depositAddress
   }
 
   async getBridgingParams(
-    chainId: ChainId,
-    orderUid: string,
+    _chainId: ChainId,
+    _orderUid: string,
     txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
     const adapter = getGlobalAdapter()
@@ -246,7 +250,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     return `https://explorer.near-intents.org/transactions/${bridgingId}`
   }
 
-  async getStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult> {
+  async getStatus(bridgingId: string, _originChainId: SupportedChainId): Promise<BridgeStatusResult> {
     // bridingId must be the deposit address
     try {
       const statusResponse = await this.api.getStatus(bridgingId)
@@ -262,11 +266,11 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     }
   }
 
-  getCancelBridgingTx(bridgingId: string): Promise<EvmCall> {
+  getCancelBridgingTx(_bridgingId: string): Promise<EvmCall> {
     throw new Error('Not implemented')
   }
 
-  getRefundBridgingTx(bridgingId: string): Promise<EvmCall> {
+  getRefundBridgingTx(_bridgingId: string): Promise<EvmCall> {
     throw new Error('Not implemented')
   }
 }
