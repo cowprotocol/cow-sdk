@@ -463,9 +463,9 @@ export class AaveCollateralSwapSdk {
   }
 
   private readonly AAVE_DAPP_ID_PER_TYPE: Record<AaveFlashLoanType, string> = {
-    [AaveFlashLoanType.CollateralSwap]: 'aave://flashloans/v3/collateral',
-    [AaveFlashLoanType.DebtSwap]: 'aave://flashloans/v3/debt',
-    [AaveFlashLoanType.RepayCollateral]: 'aave://flashloans/v3/repay',
+    [AaveFlashLoanType.CollateralSwap]: 'cow-sdk://flashloans/aave/v3/collateral-swap',
+    [AaveFlashLoanType.DebtSwap]: 'cow-sdk://flashloans/aave/v3/debt-swap',
+    [AaveFlashLoanType.RepayCollateral]: 'cow-sdk://flashloans/aave/v3/repay-with-collateral',
   }
 
   private async getOrderHooks(
