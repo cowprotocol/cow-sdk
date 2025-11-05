@@ -36,7 +36,7 @@ import {
   TokenInfo,
 } from '@cowprotocol/sdk-config'
 import { CowShedSdk, CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
-import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { EnrichedOrder, OrderKind } from '@cowprotocol/sdk-order-book'
 
 type SupportedTokensState = Record<ChainId, Record<string, TokenInfo>>
 
@@ -198,9 +198,10 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
 
   async getBridgingParams(
     chainId: ChainId,
-    orderUid: string,
+    order: EnrichedOrder,
     txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
+    const orderUid = order.uid
     const adapter = getGlobalAdapter()
 
     const txReceipt = await adapter.getTransactionReceipt(txHash)

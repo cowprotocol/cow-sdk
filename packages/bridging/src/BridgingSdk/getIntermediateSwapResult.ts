@@ -90,7 +90,6 @@ export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
     : advancedSettingsHooks
 
   // Prepare advanced settings with optional hook
-
   const finalAdvancedSettings: SwapAdvancedSettings = {
     ...advancedSettings,
     appData: {
