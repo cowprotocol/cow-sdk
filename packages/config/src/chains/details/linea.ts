@@ -31,15 +31,15 @@ export const linea: ChainInfo = {
   color: '#61dfff', // Brand assets https://linea.build/assets
   website: {
     name: 'Linea',
-    url: 'https://linea.build/',
+    url: 'https://linea.build',
   },
   docs: {
     name: 'Linea Docs',
-    url: 'https://docs.linea.build/',
+    url: 'https://docs.linea.build',
   },
   blockExplorer: {
     name: 'LineaScan',
-    url: 'https://lineascan.build/',
+    url: 'https://lineascan.build',
   },
   bridges: [
     {

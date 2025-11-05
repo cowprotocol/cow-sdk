@@ -34,15 +34,15 @@ export const plasma: ChainInfo = {
   color: '#569F8C', // brand kit https://www.plasma.to/brand
   website: {
     name: 'Plasma',
-    url: 'https://www.plasma.to/',
+    url: 'https://www.plasma.to',
   },
   docs: {
     name: 'Plasma Docs',
-    url: 'https://docs.plasma.to/',
+    url: 'https://docs.plasma.to',
   },
   blockExplorer: {
     name: 'PlasmaScan',
-    url: 'https://plasmascan.to/',
+    url: 'https://plasmascan.to',
   },
   // No native bridge available AFAICT
   // bridges: [
