@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v0.1.4...sdk-subgraph-v0.2.0) (2025-11-05)
+
+
+### ✨ Features
+
+* **new-chains:** add q4 chains ([#606](https://github.com/cowprotocol/cow-sdk/issues/606)) ([2501382](https://github.com/cowprotocol/cow-sdk/commit/2501382e80acb7f6bb0f87adbb5a9325de2c56cc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.3.0
+
 ## [0.1.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v0.1.3...sdk-subgraph-v0.1.4) (2025-10-29)
 
 

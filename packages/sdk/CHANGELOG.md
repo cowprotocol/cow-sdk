@@ -1,5 +1,24 @@
 # Changelog
 
+## [7.1.0](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.0.13...cow-sdk-v7.1.0) (2025-11-05)
+
+
+### ✨ Features
+
+* **new-chains:** add q4 chains ([#606](https://github.com/cowprotocol/cow-sdk/issues/606)) ([2501382](https://github.com/cowprotocol/cow-sdk/commit/2501382e80acb7f6bb0f87adbb5a9325de2c56cc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.1.6
+    * @cowprotocol/sdk-config bumped to 0.3.0
+    * @cowprotocol/sdk-contracts-ts bumped to 0.4.4
+    * @cowprotocol/sdk-order-book bumped to 0.2.0
+    * @cowprotocol/sdk-order-signing bumped to 0.1.10
+    * @cowprotocol/sdk-trading bumped to 0.4.5
+
 ## [7.0.13](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.0.12...cow-sdk-v7.0.13) (2025-10-30)
 
 
