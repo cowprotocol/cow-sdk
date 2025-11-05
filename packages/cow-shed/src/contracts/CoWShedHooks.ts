@@ -11,6 +11,7 @@ import {
   getGlobalAdapter,
   setGlobalAdapter,
   SignerLike,
+  TTLCache,
   TypedDataContext,
   TypedDataDomain,
 } from '@cowprotocol/sdk-common'
@@ -41,7 +42,12 @@ export const COW_SHED_712_TYPES = {
   ],
 }
 
+const FIVE_MINUTES = 5 * 60 * 1000
+
 export class CowShedHooks {
+  private eip1271SignatureCache: TTLCache<boolean>
+  private accountCodeCache: TTLCache<boolean>
+
   constructor(
     private chainId: SupportedChainId,
     private customOptions?: ICoWShedOptions,
@@ -51,6 +57,10 @@ export class CowShedHooks {
     if (adapter) {
       setGlobalAdapter(adapter)
     }
+
+    // Initialize caches with 5-minute TTL (300000ms)
+    this.eip1271SignatureCache = new TTLCache<boolean>('cowshed-eip1271-signature', true, FIVE_MINUTES)
+    this.accountCodeCache = new TTLCache<boolean>('cowshed-account-code', true, FIVE_MINUTES)
   }
 
   proxyOf(user: string) {
@@ -133,6 +143,13 @@ export class CowShedHooks {
 
     const hash = adapter.utils.hashTypedData(domain, types, message)
 
+    // Check cache first
+    const cacheKey = `${account}:${signature}:${hash}`
+    const cachedResult = this.eip1271SignatureCache.get(cacheKey)
+    if (cachedResult !== undefined) {
+      return cachedResult
+    }
+
     try {
       const result = await adapter.readContract({
         address: account,
@@ -141,7 +158,12 @@ export class CowShedHooks {
         args: [hash, signature],
       })
 
-      return result === EIP1271_MAGICVALUE
+      const isValid = result === EIP1271_MAGICVALUE
+
+      // Store result in cache
+      this.eip1271SignatureCache.set(cacheKey, isValid)
+
+      return isValid
     } catch (error) {
       console.error('CoWShedHooks.verifyEip1271Signature', error)
 
@@ -180,10 +202,21 @@ export class CowShedHooks {
   }
 
   private async doesAccountHaveCode(account: string): Promise<boolean> {
+    // Check cache first
+    const cachedResult = this.accountCodeCache.get(account)
+    if (cachedResult !== undefined) {
+      return cachedResult
+    }
+
     const adapter = getGlobalAdapter()
 
     const userAccountCode = await adapter.getCode(account)
 
-    return !!userAccountCode && userAccountCode !== '0x'
+    const hasCode = !!userAccountCode && userAccountCode !== '0x'
+
+    // Store result in cache
+    this.accountCodeCache.set(account, hasCode)
+
+    return hasCode
   }
 }
