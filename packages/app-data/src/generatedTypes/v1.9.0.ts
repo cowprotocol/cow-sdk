@@ -244,7 +244,7 @@ export interface ReplacedOrder {
   uid: ReplacedOrderUID;
 }
 export interface Bridging {
-  providerId?: IdOfBridgingProvider;
+  providerId: IdOfBridgingProvider;
   destinationChainId: BridgingDestinationChainId;
   destinationTokenAddress: BridgingDestinationTokenAddress;
 }
