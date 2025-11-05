@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.1.3...sdk-flash-loans-v1.2.0) (2025-11-05)
+
+
+### ✨ Features
+
+* **flash-loans:** add dappId to aave hooks ([#645](https://github.com/cowprotocol/cow-sdk/issues/645)) ([b5312af](https://github.com/cowprotocol/cow-sdk/commit/b5312af11d2b164c125aa899a56ee0b1645ba18f))
+
 ## [1.1.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.1.2...sdk-flash-loans-v1.1.3) (2025-11-04)
 
 
