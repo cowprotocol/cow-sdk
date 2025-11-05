@@ -1,4 +1,4 @@
-import { getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { ETH_ADDRESS } from '@cowprotocol/sdk-config'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
@@ -14,7 +14,7 @@ import { adaptToken, adaptTokens, calculateDeadline, getTokenByAddressAndChainId
 import type { AbstractProviderAdapter } from '@cowprotocol/sdk-common'
 import type { ChainId, ChainInfo, EvmCall, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import type { CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
-import type { Address } from '@cowprotocol/sdk-order-book'
+import type { Address, EnrichedOrder } from '@cowprotocol/sdk-order-book'
 import type {
   BridgeProviderInfo,
   BridgeQuoteResult,
@@ -189,14 +189,10 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
 
   async getBridgingParams(
     _chainId: ChainId,
-    _orderUid: string,
-    txHash: string,
+    order: EnrichedOrder,
+    _txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
-    const adapter = getGlobalAdapter()
-    const receipt = await adapter.getTransactionReceipt(txHash)
-    if (!receipt) return null
-
-    const depositAddress = await receipt.to
+    const depositAddress = order.receiver
     if (!depositAddress) return null
 
     const [tokens, status] = await Promise.all([this.api.getTokens(), this.api.getStatus(depositAddress)])
@@ -235,7 +231,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
         outputTokenAddress: outputToken.contractAddress ?? ETH_ADDRESS,
         inputAmount: BigInt(quote.amountIn),
         outputAmount: BigInt(quote.amountOut),
-        owner: receipt.from,
+        owner: order.owner,
         quoteTimestamp,
         fillDeadline: quoteTimestamp + quote.timeEstimate,
         recipient: qr.recipient,

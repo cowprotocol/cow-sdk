@@ -1,5 +1,5 @@
 import { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
-import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { EnrichedOrder, OrderKind } from '@cowprotocol/sdk-order-book'
 
 import {
   BridgeDeposit,
@@ -212,9 +212,10 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
 
   async getBridgingParams(
     _chainId: ChainId,
-    orderId: string,
+    order: EnrichedOrder,
     _txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
+    const orderId = order.uid
     const events = await this.api.getEvents({ orderId })
     const event = events?.[0]
 

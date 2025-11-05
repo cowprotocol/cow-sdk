@@ -192,12 +192,12 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
   /**
    * Get the identifier of the bridging transaction from the settlement transaction.
    * @param chainId
-   * @param orderUid - The unique identifier of the order
+   * @param order - CoW Protocol order
    * @param txHash - The hash of the settlement transaction in which the bridging post-hook was executed
    */
   getBridgingParams(
     chainId: ChainId,
-    orderUid: string,
+    order: EnrichedOrder,
     txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null>
 
