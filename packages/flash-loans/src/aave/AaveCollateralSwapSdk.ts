@@ -28,6 +28,7 @@ import {
 } from './types'
 import {
   AAVE_ADAPTER_FACTORY,
+  AAVE_DAPP_ID_PER_TYPE,
   AAVE_HOOK_ADAPTER_PER_TYPE,
   AAVE_POOL_ADDRESS,
   AaveFlashLoanType,
@@ -393,7 +394,7 @@ export class AaveCollateralSwapSdk {
     }
   }
 
-  private getPreHookCallData(
+  getPreHookCallData(
     flashLoanType: AaveFlashLoanType,
     chainId: SupportedChainId,
     trader: AccountAddress,
@@ -410,7 +411,7 @@ export class AaveCollateralSwapSdk {
     ])
   }
 
-  private buildHookOrderData(
+  buildHookOrderData(
     trader: AccountAddress,
     hookAmounts: FlashLoanHookAmounts,
     order: EncodedOrder,
@@ -434,7 +435,7 @@ export class AaveCollateralSwapSdk {
     }
   }
 
-  private getFlashLoanPostHook(flashLoanType: AaveFlashLoanType, collateralPermit?: CollateralPermitData): string {
+  getFlashLoanPostHook(flashLoanType: AaveFlashLoanType, collateralPermit?: CollateralPermitData): string {
     if (flashLoanType === AaveFlashLoanType.DebtSwap) {
       return this.getDebtSwapPostHookCallData(collateralPermit)
     }
@@ -446,23 +447,23 @@ export class AaveCollateralSwapSdk {
     return this.getCollateralSwapPostHookCallData(collateralPermit)
   }
 
-  private getCollateralSwapPostHookCallData(collateralPermit: CollateralPermitData = EMPTY_PERMIT): string {
+  getCollateralSwapPostHookCallData(collateralPermit: CollateralPermitData = EMPTY_PERMIT): string {
     return getGlobalAdapter().utils.encodeFunction(collateralSwapAdapterHookAbi, 'collateralSwapWithFlashLoan', [
       collateralPermit,
     ])
   }
 
-  private getDebtSwapPostHookCallData(collateralPermit: CollateralPermitData = EMPTY_PERMIT): string {
+  getDebtSwapPostHookCallData(collateralPermit: CollateralPermitData = EMPTY_PERMIT): string {
     return getGlobalAdapter().utils.encodeFunction(debtSwapAdapterAbi, 'debtSwapWithFlashLoan', [collateralPermit])
   }
 
-  private getRepayPostHookCallData(collateralPermit: CollateralPermitData = EMPTY_PERMIT): string {
+  getRepayPostHookCallData(collateralPermit: CollateralPermitData = EMPTY_PERMIT): string {
     return getGlobalAdapter().utils.encodeFunction(repayWithCollateralAdapterAbi, 'repayDebtWithFlashLoan', [
       collateralPermit,
     ])
   }
 
-  private async getOrderHooks(
+  async getOrderHooks(
     flashLoanType: AaveFlashLoanType,
     chainId: SupportedChainId,
     trader: AccountAddress,
@@ -480,6 +481,7 @@ export class AaveCollateralSwapSdk {
       expectedInstanceAddress,
     )
     const postHookCallData = this.getFlashLoanPostHook(flashLoanType, collateralPermit)
+    const dappId = AAVE_DAPP_ID_PER_TYPE[flashLoanType]
 
     return {
       pre: [
@@ -487,6 +489,7 @@ export class AaveCollateralSwapSdk {
           target: AAVE_ADAPTER_FACTORY[chainId],
           callData: preHookCallData,
           gasLimit: DEFAULT_HOOK_GAS_LIMIT.pre.toString(),
+          dappId,
         },
       ],
       post: [
@@ -494,6 +497,7 @@ export class AaveCollateralSwapSdk {
           target: expectedInstanceAddress,
           callData: postHookCallData,
           gasLimit: DEFAULT_HOOK_GAS_LIMIT.post.toString(),
+          dappId,
         },
       ],
     }
