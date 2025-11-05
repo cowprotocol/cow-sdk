@@ -98,6 +98,7 @@ export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
       metadata: {
         hooks,
         bridging: {
+          providerId: provider.info.dappId,
           destinationChainId: buyTokenChainId.toString(),
           destinationTokenAddress: buyTokenAddress,
         },
