@@ -16,7 +16,7 @@ export const plasma: ChainInfo = {
     chainId: SupportedChainId.PLASMA,
     name: 'Plasma',
     symbol: 'XPL',
-    logoUrl: '', //TODO: add plasma token image
+    logoUrl: light,
   },
   addressPrefix: 'plasma',
   isTestnet: false,
