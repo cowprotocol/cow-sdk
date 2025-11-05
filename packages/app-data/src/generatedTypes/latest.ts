@@ -1,3 +1,3 @@
 // generated file, do not edit manually
 
-export * as cowAppDataLatestScheme from './v1.8.0'
+export * as cowAppDataLatestScheme from './v1.9.0'

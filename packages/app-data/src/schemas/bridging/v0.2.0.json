@@ -1,0 +1,36 @@
+{
+  "$id": "#bridging/v0.2.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "required": [
+    "dappId",
+    "destinationChainId",
+    "destinationTokenAddress"
+  ],
+  "title": "Bridging",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "providerId": {
+      "$ref": "../definitions.json#/definitions/dappId",
+      "title": "Id of bridging provider",
+      "description": "The id links order with a bridging provider which processes it"
+    },
+    "destinationChainId": {
+      "$ref": "../definitions.json#/definitions/chainId",
+      "title": "Bridging destination chainId",
+      "description": "Id of a blockchain where funds will be received"
+    },
+    "destinationTokenAddress": {
+      "title": "Bridging destination token address",
+      "description": "Address of a token that will be received at destination chain. The chain might be EVM or non-EVM. Some chains might even not have a token address. E.g.: Bitcoin",
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9\\-.]{1,64}$",
+      "examples": [
+        "0x00E989b87700514118Fa55326CD1cCE82faebEF6",
+        "A.b19436aae4d94622.FiatToken",
+        "0.0.456858",
+        "1337"
+      ]
+    }
+  }
+}
