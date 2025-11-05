@@ -28,6 +28,7 @@ import {
 } from './types'
 import {
   AAVE_ADAPTER_FACTORY,
+  AAVE_DAPP_ID_PER_TYPE,
   AAVE_HOOK_ADAPTER_PER_TYPE,
   AAVE_POOL_ADDRESS,
   AaveFlashLoanType,
@@ -480,6 +481,7 @@ export class AaveCollateralSwapSdk {
       expectedInstanceAddress,
     )
     const postHookCallData = this.getFlashLoanPostHook(flashLoanType, collateralPermit)
+    const dappId = AAVE_DAPP_ID_PER_TYPE[flashLoanType]
 
     return {
       pre: [
@@ -487,6 +489,7 @@ export class AaveCollateralSwapSdk {
           target: AAVE_ADAPTER_FACTORY[chainId],
           callData: preHookCallData,
           gasLimit: DEFAULT_HOOK_GAS_LIMIT.pre.toString(),
+          dappId,
         },
       ],
       post: [
@@ -494,6 +497,7 @@ export class AaveCollateralSwapSdk {
           target: expectedInstanceAddress,
           callData: postHookCallData,
           gasLimit: DEFAULT_HOOK_GAS_LIMIT.post.toString(),
+          dappId,
         },
       ],
     }
