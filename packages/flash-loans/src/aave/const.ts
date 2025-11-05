@@ -62,3 +62,9 @@ export const EMPTY_PERMIT: CollateralPermitData = {
   r: HASH_ZERO,
   s: HASH_ZERO,
 }
+
+export const AAVE_DAPP_ID_PER_TYPE: Record<AaveFlashLoanType, string> = {
+  [AaveFlashLoanType.CollateralSwap]: 'cow-sdk://flashloans/aave/v3/collateral-swap',
+  [AaveFlashLoanType.DebtSwap]: 'cow-sdk://flashloans/aave/v3/debt-swap',
+  [AaveFlashLoanType.RepayCollateral]: 'cow-sdk://flashloans/aave/v3/repay-with-collateral',
+}
