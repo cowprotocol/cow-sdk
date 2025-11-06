@@ -1,9 +1,9 @@
 import { TTLCache } from '@cowprotocol/sdk-common'
 import { TokenInfo } from '@cowprotocol/sdk-config'
-import { MultiQuoteResult, ProviderQuoteContext } from '../../types'
-import { BridgingSdkConfig } from '../types'
+import { DefaultBridgeProvider, MultiQuoteResult, ProviderQuoteContext } from '../../types'
+import { TradingSdk } from '@cowprotocol/sdk-trading'
 import {
-  createBridgeQuoteTimeoutPromise,
+  createBridgeRequestTimeoutPromise,
   executeProviderQuotes,
   fillTimeoutResults,
   isBetterQuote,
@@ -28,7 +28,11 @@ export class MultiQuoteStrategy extends BaseMultiQuoteStrategy {
     super(intermediateTokensCache)
   }
 
-  async execute(request: MultiQuoteRequest, config: BridgingSdkConfig): Promise<MultiQuoteResult[]> {
+  async execute(
+    request: MultiQuoteRequest,
+    tradingSdk: TradingSdk,
+    providers: DefaultBridgeProvider[],
+  ): Promise<MultiQuoteResult[]> {
     const { quoteBridgeRequest, providerDappIds, advancedSettings, options } = request
     const { sellTokenChainId, buyTokenChainId } = quoteBridgeRequest
 
@@ -36,7 +40,7 @@ export class MultiQuoteStrategy extends BaseMultiQuoteStrategy {
     validateCrossChainRequest(sellTokenChainId, buyTokenChainId)
 
     // Determine which providers to query
-    const providersToQuery = resolveProvidersToQuery(providerDappIds, config.providers)
+    const providersToQuery = resolveProvidersToQuery(providerDappIds, providers)
 
     // Extract options with defaults
     const {
@@ -66,12 +70,12 @@ export class MultiQuoteStrategy extends BaseMultiQuoteStrategy {
         index: i,
       }
 
-      const promise = this.createProviderQuotePromise(context, config)
+      const promise = this.createProviderQuotePromise(context, tradingSdk)
       promises.push(promise)
     }
 
     // Execute all provider quotes with timeout handling
-    await executeProviderQuotes(promises, totalTimeout, config)
+    await executeProviderQuotes(promises, totalTimeout, providers)
 
     // Ensure we have a result for each provider (fill with timeout errors if needed)
     fillTimeoutResults(results, providersToQuery)
@@ -87,7 +91,7 @@ export class MultiQuoteStrategy extends BaseMultiQuoteStrategy {
     return results
   }
 
-  private createProviderQuotePromise(context: ProviderQuoteContext, config: BridgingSdkConfig): Promise<void> {
+  private createProviderQuotePromise(context: ProviderQuoteContext, tradingSdk: TradingSdk): Promise<void> {
     const { provider, quoteBridgeRequest, advancedSettings, providerTimeout, onQuoteResult, results, index } = context
 
     return (async (): Promise<void> => {
@@ -95,7 +99,7 @@ export class MultiQuoteStrategy extends BaseMultiQuoteStrategy {
         const baseParams = {
           swapAndBridgeRequest: quoteBridgeRequest,
           advancedSettings,
-          tradingSdk: config.tradingSdk,
+          tradingSdk,
           quoteSigner: advancedSettings?.quoteSigner,
         } as const
 
@@ -109,7 +113,7 @@ export class MultiQuoteStrategy extends BaseMultiQuoteStrategy {
         // Race between the actual quote request and the provider timeout
         const quote = await Promise.race([
           getQuoteWithBridge(provider, request),
-          createBridgeQuoteTimeoutPromise(providerTimeout, `Provider ${provider.info.dappId}`),
+          createBridgeRequestTimeoutPromise(providerTimeout, `Provider ${provider.info.dappId}`),
         ])
 
         const result: MultiQuoteResult = {

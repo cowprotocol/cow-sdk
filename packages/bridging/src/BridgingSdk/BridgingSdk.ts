@@ -1,6 +1,4 @@
 import {
-  BridgeQuoteResult,
-  BridgeStatusResult,
   BuyTokensParams,
   CrossChainOrder,
   CrossChainQuoteAndPost,
@@ -8,19 +6,19 @@ import {
   MultiQuoteResult,
   MultiQuoteRequest,
   QuoteBridgeRequest,
-  BridgeProvider,
+  DefaultBridgeProvider,
 } from '../types'
 import { getCrossChainOrder } from './getCrossChainOrder'
 import { findBridgeProviderFromHook } from './findBridgeProviderFromHook'
-import { BridgeProviderError } from '../errors'
 import { SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
-import { ALL_SUPPORTED_CHAINS, ChainInfo, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { ALL_SUPPORTED_CHAINS, ChainInfo, TokenInfo } from '@cowprotocol/sdk-config'
 import { AbstractProviderAdapter, enableLogging, setGlobalAdapter, TTLCache } from '@cowprotocol/sdk-common'
 import { BridgingSdkCacheConfig, BridgingSdkConfig, BridgingSdkOptions, GetOrderParams } from './types'
 import { getCacheKey } from './helpers'
 import { SingleQuoteStrategy, MultiQuoteStrategy, BestQuoteStrategy } from './strategies'
 import { createStrategies } from './strategies/createStrategies'
+import { createBridgeRequestTimeoutPromise } from './utils'
 
 // Default cache configuration
 const DEFAULT_CACHE_CONFIG: BridgingSdkCacheConfig = {
@@ -28,6 +26,8 @@ const DEFAULT_CACHE_CONFIG: BridgingSdkCacheConfig = {
   intermediateTokensTtl: 5 * 60 * 1000, // 5 minutes
   buyTokensTtl: 2 * 60 * 1000, // 2 minutes
 }
+
+const DEFAULT_MULTI_PROVIDER_REQUEST_TIMEOUT = 10 * 1000 // 10 seconds
 
 /**
  * SDK for bridging for swapping tokens between different chains.
@@ -40,6 +40,8 @@ export class BridgingSdk {
   private singleQuoteStrategy: SingleQuoteStrategy
   private multiQuoteStrategy: MultiQuoteStrategy
   private bestQuoteStrategy: BestQuoteStrategy
+
+  private availableProvidersIds: string[] = []
 
   constructor(
     readonly options: BridgingSdkOptions,
@@ -94,21 +96,19 @@ export class BridgingSdk {
     this.bestQuoteStrategy = bestQuoteStrategy
   }
 
-  private get provider(): BridgeProvider<BridgeQuoteResult> {
-    const { providers } = this.config
-
-    if (!providers[0]) {
-      throw new BridgeProviderError('No provider found', { config: this.config })
-    }
-
-    return providers[0]
+  setAvailableProviders(ids: string[]) {
+    this.availableProvidersIds = ids
   }
 
   /**
    * Get the providers for the bridging.
    */
-  getProviders(): BridgeProvider<BridgeQuoteResult>[] {
-    return this.config.providers
+  getAvailableProviders(): DefaultBridgeProvider[] {
+    if (this.availableProvidersIds.length === 0) {
+      return this.config.providers
+    }
+
+    return this.config.providers.filter((provider) => this.availableProvidersIds.includes(provider.info.dappId))
   }
 
   /**
@@ -122,7 +122,25 @@ export class BridgingSdk {
    * Get the available target networks for the bridging.
    */
   async getTargetNetworks(): Promise<ChainInfo[]> {
-    return this.provider.getNetworks()
+    const providers = this.getAvailableProviders()
+
+    const results = await Promise.race([
+      Promise.allSettled(providers.map((provider) => provider.getNetworks())),
+      createBridgeRequestTimeoutPromise(
+        DEFAULT_MULTI_PROVIDER_REQUEST_TIMEOUT,
+        `Multi-provider getTargetNetworks with ${providers.length}`,
+      ),
+    ])
+
+    return results.reduce<ChainInfo[]>((acc, result) => {
+      if (result.status === 'fulfilled') {
+        const networksToAdd = (result.value || []).filter((network) => !acc.includes(network))
+
+        return acc.concat(networksToAdd)
+      }
+
+      return acc
+    }, [])
   }
 
   /**
@@ -131,26 +149,30 @@ export class BridgingSdk {
    * @param params
    */
   async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
-    const providerId = this.provider.info.dappId
+    const providers = this.getAvailableProviders()
 
-    const cacheKey = getCacheKey({
-      id: providerId,
-      buyChainId: params.buyChainId.toString(),
-      sellChainId: params.sellChainId?.toString(),
-      tokenAddress: params.sellTokenAddress,
-    })
+    const results = await Promise.race([
+      Promise.allSettled(providers.map((provider) => this.getBuyTokensFromProvider(provider, params))),
+      createBridgeRequestTimeoutPromise(
+        DEFAULT_MULTI_PROVIDER_REQUEST_TIMEOUT,
+        `Multi-provider getBuyTokens with ${providers.length}`,
+      ),
+    ])
 
-    const cached = this.cacheConfig.enabled && this.buyTokensCache.get(cacheKey)
+    return results.reduce(
+      (acc, result) => {
+        if (result.status === 'fulfilled') {
+          if (result.value.isRouteAvailable) {
+            acc.isRouteAvailable = true
+          }
 
-    if (cached) {
-      return cached
-    }
+          acc.tokens.push(...(result.value.tokens || []))
+        }
 
-    const result = await this.provider.getBuyTokens(params)
-    if (this.cacheConfig.enabled) {
-      this.buyTokensCache.set(cacheKey, result)
-    }
-    return result
+        return acc
+      },
+      { isRouteAvailable: false, tokens: [] } as GetProviderBuyTokens,
+    )
   }
 
   /**
@@ -177,7 +199,8 @@ export class BridgingSdk {
         quoteBridgeRequest,
         advancedSettings,
       },
-      this.config,
+      this.config.tradingSdk,
+      this.getAvailableProviders(),
     )
   }
 
@@ -197,7 +220,7 @@ export class BridgingSdk {
    * ```
    */
   async getMultiQuotes(request: MultiQuoteRequest): Promise<MultiQuoteResult[]> {
-    return this.multiQuoteStrategy.execute(request, this.config)
+    return this.multiQuoteStrategy.execute(request, this.config.tradingSdk, this.getAvailableProviders())
   }
 
   /**
@@ -216,7 +239,7 @@ export class BridgingSdk {
    * @throws Error if the request is for a single-chain swap (sellTokenChainId === buyTokenChainId)
    */
   async getBestQuote(request: MultiQuoteRequest): Promise<MultiQuoteResult | null> {
-    return this.bestQuoteStrategy.execute(request, this.config)
+    return this.bestQuoteStrategy.execute(request, this.config.tradingSdk, this.getAvailableProviders())
   }
 
   async getOrder(params: GetOrderParams): Promise<CrossChainOrder | null> {
@@ -229,16 +252,12 @@ export class BridgingSdk {
       orderId,
       orderBookApi,
       env,
-      providers: this.config.providers,
+      providers: this.getAvailableProviders(),
     })
   }
 
-  async getOrderBridgingStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult> {
-    return this.provider.getStatus(bridgingId, originChainId)
-  }
-
-  getProviderFromAppData(fullAppData: string): BridgeProvider<BridgeQuoteResult> | undefined {
-    return findBridgeProviderFromHook(fullAppData, this.getProviders())
+  getProviderFromAppData(fullAppData: string): DefaultBridgeProvider | undefined {
+    return findBridgeProviderFromHook(fullAppData, this.getAvailableProviders())
   }
 
   /**
@@ -267,7 +286,33 @@ export class BridgingSdk {
     }
   }
 
-  getProviderByDappId(dappId: string): BridgeProvider<BridgeQuoteResult> | undefined {
-    return this.config.providers.find((provider) => provider.info.dappId === dappId)
+  getProviderByDappId(dappId: string): DefaultBridgeProvider | undefined {
+    return this.getAvailableProviders().find((provider) => provider.info.dappId === dappId)
+  }
+
+  private async getBuyTokensFromProvider(
+    provider: DefaultBridgeProvider,
+    params: BuyTokensParams,
+  ): Promise<GetProviderBuyTokens> {
+    const providerId = provider.info.dappId
+
+    const cacheKey = getCacheKey({
+      id: providerId,
+      buyChainId: params.buyChainId.toString(),
+      sellChainId: params.sellChainId?.toString(),
+      tokenAddress: params.sellTokenAddress,
+    })
+
+    const cached = this.cacheConfig.enabled && this.buyTokensCache.get(cacheKey)
+
+    if (cached) {
+      return cached
+    }
+
+    const result = await provider.getBuyTokens(params)
+    if (this.cacheConfig.enabled) {
+      this.buyTokensCache.set(cacheKey, result)
+    }
+    return result
   }
 }
