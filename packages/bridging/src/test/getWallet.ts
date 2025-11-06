@@ -6,9 +6,7 @@ import {
   bnb,
   gnosisChain,
   lens,
-  linea,
   mainnet,
-  plasma,
   polygon,
   sepolia,
   SupportedChainId,
@@ -24,8 +22,6 @@ const DEFAULT_RPC_URL: Record<SupportedChainId, string | undefined> = {
   [SupportedChainId.AVALANCHE]: avalanche.rpcUrls.default.http[0],
   [SupportedChainId.LENS]: lens.rpcUrls.default.http[0],
   [SupportedChainId.BNB]: bnb.rpcUrls.default.http[0],
-  [SupportedChainId.LINEA]: linea.rpcUrls.default.http[0],
-  [SupportedChainId.PLASMA]: plasma.rpcUrls.default.http[0],
 }
 
 export async function getRpcProvider(chainId: SupportedChainId) {

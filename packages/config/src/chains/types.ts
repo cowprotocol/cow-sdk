@@ -14,10 +14,8 @@ export enum SupportedChainId {
   POLYGON = 137,
   LENS = 232,
   BASE = 8453,
-  PLASMA = 9745,
   ARBITRUM_ONE = 42161,
   AVALANCHE = 43114,
-  LINEA = 59144,
   SEPOLIA = 11155111,
 }
 
