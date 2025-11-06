@@ -65,9 +65,11 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
 
   async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
     const tokens = adaptTokens(await this.api.getTokens())
+    const filteredTokens = tokens.filter((token) => token.chainId === params.buyChainId)
+
     return {
-      tokens: tokens.filter((token) => token.chainId === params.buyChainId),
-      isRouteAvailable: tokens.length > 0,
+      tokens: filteredTokens,
+      isRouteAvailable: filteredTokens.length > 0,
     }
   }
 
@@ -254,8 +256,8 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       const statusResponse = await this.api.getStatus(bridgingId)
       return {
         status: NEAR_INTENTS_STATUS_TO_COW_STATUS[statusResponse.status] || BridgeStatus.UNKNOWN,
-        depositTxHash: statusResponse.swapDetails.originChainTxHashes[0]?.hash,
-        fillTxHash: statusResponse.swapDetails.destinationChainTxHashes[0]?.hash,
+        depositTxHash: statusResponse.swapDetails?.originChainTxHashes[0]?.hash,
+        fillTxHash: statusResponse.swapDetails?.destinationChainTxHashes[0]?.hash,
       }
     } catch {
       return {

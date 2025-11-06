@@ -111,7 +111,7 @@ describe('Near Intents Utils', () => {
       ).toStrictEqual(token)
     })
 
-    it('should return null if the token is not found', () => {
+    it('should return undefined if the token is not found', () => {
       const tokens: TokenResponse[] = [
         {
           assetId: 'nep141:eth.omft.near',
