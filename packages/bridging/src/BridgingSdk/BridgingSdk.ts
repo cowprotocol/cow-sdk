@@ -159,20 +159,29 @@ export class BridgingSdk {
       ),
     ])
 
-    return results.reduce(
-      (acc, result) => {
-        if (result.status === 'fulfilled') {
-          if (result.value.isRouteAvailable) {
-            acc.isRouteAvailable = true
+    const isRouteAvailable = results.reduce((isRouteAvailable, result) => {
+      if (result.status === 'fulfilled' && result.value.isRouteAvailable) {
+        return true
+      }
+
+      return isRouteAvailable
+    }, false)
+
+    const tokens = results.reduce((tokens, result) => {
+      if (result.status === 'fulfilled' && result.value.tokens) {
+        result.value.tokens.forEach((token) => {
+          const addressLower = token.address.toLowerCase()
+
+          if (!tokens.get(addressLower)) {
+            tokens.set(addressLower, token)
           }
+        })
+      }
 
-          acc.tokens.push(...(result.value.tokens || []))
-        }
+      return tokens
+    }, new Map<string, TokenInfo>())
 
-        return acc
-      },
-      { isRouteAvailable: false, tokens: [] } as GetProviderBuyTokens,
-    )
+    return { isRouteAvailable, tokens: [...tokens.values()] }
   }
 
   /**
