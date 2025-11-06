@@ -71,7 +71,7 @@ export const DEFAULT_VALIDITY = 10 * 60 // 10 min
 
 export const GAS_ESTIMATION_ADDITION_PERCENT = 10 // 10%
 
-export const ADAPTER_DOMAIN_NAME = 'AaveAdapterFactory'
+export const ADAPTER_DOMAIN_NAME = 'AaveV3AdapterFactory'
 export const ADAPTER_DOMAIN_VERSION = '1'
 
 export const ADAPTER_SIGNATURE_TYPES = {
