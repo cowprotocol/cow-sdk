@@ -1,4 +1,4 @@
-import { SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
+import { SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { TTLCache } from '@cowprotocol/sdk-common'
 import { TokenInfo } from '@cowprotocol/sdk-config'
 import {
@@ -7,8 +7,8 @@ import {
   MultiQuoteResult,
   QuoteBridgeRequest,
   BridgeProvider,
+  DefaultBridgeProvider,
 } from '../../types'
-import { BridgingSdkConfig } from '../types'
 
 /**
  * Abstract base class for all quote strategies
@@ -20,7 +20,7 @@ export abstract class QuoteStrategy<TRequest, TResult> {
   /**
    * Execute the quote strategy
    */
-  abstract execute(request: TRequest, config: BridgingSdkConfig): Promise<TResult>
+  abstract execute(request: TRequest, tradingSdk: TradingSdk, providers: DefaultBridgeProvider[]): Promise<TResult>
 }
 
 /**

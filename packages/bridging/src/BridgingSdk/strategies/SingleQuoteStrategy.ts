@@ -1,9 +1,9 @@
 import { TTLCache } from '@cowprotocol/sdk-common'
 import { TokenInfo } from '@cowprotocol/sdk-config'
-import { CrossChainQuoteAndPost } from '../../types'
+import { TradingSdk } from '@cowprotocol/sdk-trading'
+import { CrossChainQuoteAndPost, DefaultBridgeProvider } from '../../types'
 import { getQuoteWithoutBridge } from '../getQuoteWithoutBridge'
 import { getQuoteWithBridge } from '../getQuoteWithBridge'
-import { BridgingSdkConfig } from '../types'
 import { BaseSingleQuoteStrategy, SingleQuoteRequest } from './QuoteStrategy'
 
 /**
@@ -16,10 +16,13 @@ export class SingleQuoteStrategy extends BaseSingleQuoteStrategy {
     super(intermediateTokensCache)
   }
 
-  async execute(request: SingleQuoteRequest, config: BridgingSdkConfig): Promise<CrossChainQuoteAndPost> {
+  async execute(
+    request: SingleQuoteRequest,
+    tradingSdk: TradingSdk,
+    providers: DefaultBridgeProvider[],
+  ): Promise<CrossChainQuoteAndPost> {
     const { quoteBridgeRequest, advancedSettings } = request
     const { sellTokenChainId, buyTokenChainId } = quoteBridgeRequest
-    const { tradingSdk, providers } = config
 
     if (sellTokenChainId !== buyTokenChainId) {
       // Cross-chain swap
