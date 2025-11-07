@@ -6,7 +6,7 @@ import { TradingSdk, TradeParameters } from '@cowprotocol/sdk-trading'
 import { createAdapters, TEST_ADDRESS } from '../../tests/setup'
 
 import { AaveCollateralSwapSdk } from './AaveCollateralSwapSdk'
-import { AAVE_ADAPTER_FACTORY, HASH_ZERO } from './const'
+import { AAVE_ADAPTER_FACTORY, ADAPTER_DOMAIN_NAME, HASH_ZERO } from './const'
 
 const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
@@ -644,7 +644,7 @@ adapterNames.forEach((adapterName) => {
         // Verify signTypedData was called with correct domain
         expect(signTypedDataSpy).toHaveBeenCalledWith(
           expect.objectContaining({
-            name: 'AaveAdapterFactory',
+            name: ADAPTER_DOMAIN_NAME,
             version: '1',
             chainId: SupportedChainId.GNOSIS_CHAIN,
             verifyingContract: AAVE_ADAPTER_FACTORY[SupportedChainId.GNOSIS_CHAIN],
