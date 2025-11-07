@@ -166,16 +166,16 @@ export const aaveAdapterFactoryAbi = [
     stateMutability: 'nonpayable',
   },
   {
-    inputs: [],
+    type: 'function',
     name: 'DOMAIN_SEPARATOR',
+    inputs: [],
     outputs: [
       {
-        internalType: 'bytes32',
         name: '',
         type: 'bytes32',
+        internalType: 'bytes32',
       },
     ],
     stateMutability: 'view',
-    type: 'function',
   },
 ] as const

@@ -9,13 +9,45 @@ export enum AaveFlashLoanType {
   RepayCollateral = 'RepayCollateral',
 }
 
-// See https://search.onaave.com/?q=sepolia
-export const AAVE_POOL_ADDRESS = mapAddressToSupportedNetworks('0xb50201558B00496A145fE76f7424749556E326D8')
-export const AAVE_ADAPTER_FACTORY = mapAddressToSupportedNetworks('0x889ee28C0a8a41a312546A8eeD77b4b097C84016')
+// See https://aave.com/docs/resources/addresses
+export const AAVE_POOL_ADDRESS: Record<SupportedChainId, string> = {
+  [SupportedChainId.SEPOLIA]: '',
+  [SupportedChainId.LENS]: '',
+  [SupportedChainId.GNOSIS_CHAIN]: '0xb50201558B00496A145fE76f7424749556E326D8',
+  [SupportedChainId.MAINNET]: '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2',
+  [SupportedChainId.BASE]: '0xA238Dd80C259a72e81d7e4664a9801593F98d1c5',
+  [SupportedChainId.ARBITRUM_ONE]: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
+  [SupportedChainId.AVALANCHE]: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
+  [SupportedChainId.BNB]: '0x6807dc923806fE8Fd134338EABCA509979a7e0cB',
+  [SupportedChainId.POLYGON]: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
+  [SupportedChainId.LINEA]: '0xc47b8C00b0f69a36fa203Ffeac0334874574a8Ac',
+  [SupportedChainId.PLASMA]: '0x925a2A7214Ed92428B5b1B090F80b25700095e12',
+}
+export const AAVE_ADAPTER_FACTORY: Record<SupportedChainId, string> = {
+  ...mapAddressToSupportedNetworks(''),
+  [SupportedChainId.GNOSIS_CHAIN]: '0x7f230F7Cee38ca371b871B74B3C6ded4932A2f93',
+  [SupportedChainId.MAINNET]: '0x22E08c56a6799e28e7b05A117D853B9b46abc017',
+  [SupportedChainId.BASE]: '0xc5D68e305e0b5998f895e34d4440954072F285B6',
+}
 
-const AAVE_COLLATERAL_SWAP_ADAPTER_HOOK = mapAddressToSupportedNetworks('0x0aeC794e544B81D96149a4C8C1cC57c6F31A978A')
-const AAVE_DEBT_SWAP_ADAPTER_HOOK = mapAddressToSupportedNetworks('0x2d13ADCFa398073d7406e5e1aF3dD14663cdBF30')
-const AAVE_REPAY_COLLATERAL_ADAPTER_HOOK = mapAddressToSupportedNetworks('0x193fd444802D6BC18a9AE0613D33C024F16A9dDC')
+const AAVE_COLLATERAL_SWAP_ADAPTER_HOOK: Record<SupportedChainId, string> = {
+  ...mapAddressToSupportedNetworks(''),
+  [SupportedChainId.GNOSIS_CHAIN]: '0x837aA74e8daf7Fd7160f078ca455a67B7F441E4b',
+  [SupportedChainId.MAINNET]: '0xFEb471EC22E5572dbb44229301c266f4C305A78a',
+  [SupportedChainId.BASE]: '0xBb45A7898A6f06a9c148BfeD0C103140F0079cd9',
+}
+const AAVE_DEBT_SWAP_ADAPTER_HOOK: Record<SupportedChainId, string> = {
+  ...mapAddressToSupportedNetworks(''),
+  [SupportedChainId.GNOSIS_CHAIN]: '0xC9A495A17B1eeC18AE0f0865840B8fd3f8a9DE3F',
+  [SupportedChainId.MAINNET]: '0x238f57A2c3F0696fB20295075a0F9A18EfC67D3a',
+  [SupportedChainId.BASE]: '0xaCbd34fAB78BD6C8738eb32dDAFd688df98CD2E3',
+}
+const AAVE_REPAY_COLLATERAL_ADAPTER_HOOK: Record<SupportedChainId, string> = {
+  ...mapAddressToSupportedNetworks(''),
+  [SupportedChainId.GNOSIS_CHAIN]: '0x2890CE372f3a397B6f3BB3a71B1836A6F3F33657',
+  [SupportedChainId.MAINNET]: '0x9eB0ffd318e862D344792a8e589e8393E8bEd96F',
+  [SupportedChainId.BASE]: '0x1549445700D0Cb2D7Ce85ECd5a7FD7Ba4a3D40A7',
+}
 
 export const AAVE_HOOK_ADAPTER_PER_TYPE: Record<AaveFlashLoanType, Record<SupportedChainId, string>> = {
   [AaveFlashLoanType.CollateralSwap]: AAVE_COLLATERAL_SWAP_ADAPTER_HOOK,
@@ -39,7 +71,7 @@ export const DEFAULT_VALIDITY = 10 * 60 // 10 min
 
 export const GAS_ESTIMATION_ADDITION_PERCENT = 10 // 10%
 
-export const ADAPTER_DOMAIN_NAME = 'AaveAdapterFactory'
+export const ADAPTER_DOMAIN_NAME = 'AaveV3AdapterFactory'
 export const ADAPTER_DOMAIN_VERSION = '1'
 
 export const ADAPTER_SIGNATURE_TYPES = {
