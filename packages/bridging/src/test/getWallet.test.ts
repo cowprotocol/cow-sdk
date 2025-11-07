@@ -1,5 +1,5 @@
 import { ethers } from 'ethers'
-import { getWallet, getRpcProvider, getPk } from './getWallet'
+import { getPk, getRpcProvider, getWallet } from './getWallet'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 
 // Mock ethers to avoid actual network calls
@@ -92,6 +92,8 @@ describe('getWallet utilities', () => {
         SupportedChainId.AVALANCHE,
         SupportedChainId.LENS,
         SupportedChainId.BNB,
+        SupportedChainId.LINEA,
+        SupportedChainId.PLASMA,
       ]
 
       for (const chainId of chainIds) {

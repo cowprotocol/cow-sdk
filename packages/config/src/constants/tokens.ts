@@ -73,6 +73,20 @@ export const WRAPPED_NATIVE_CURRENCIES: Record<SupportedChainId, TokenInfo> = {
     name: 'Wrapped BNB',
     symbol: 'WBNB',
   }),
+  [SupportedChainId.PLASMA]: getWrappedTokenForChain(
+    SupportedChainId.PLASMA,
+    '0x6100e367285b01f48d07953803a2d8dca5d19873',
+    {
+      decimals: 18,
+      name: 'Wrapped XPL',
+      symbol: 'WXPL',
+    },
+  ),
+  [SupportedChainId.LINEA]: getWrappedTokenForChain(
+    SupportedChainId.LINEA,
+    '0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f',
+    wrappedNativeCurrencyEth,
+  ),
 }
 
 function getWrappedTokenForChain(
