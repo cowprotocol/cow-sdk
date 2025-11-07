@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-cow-shed-v0.1.10...sdk-cow-shed-v0.2.0) (2025-11-07)
+
+
+### ✨ Features
+
+* **cow-shed:** add ttl cache for RPC calls ([#644](https://github.com/cowprotocol/cow-sdk/issues/644)) ([10e1139](https://github.com/cowprotocol/cow-sdk/commit/10e1139f4e8d75ea2c737937d276835a1692ff8a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-contracts-ts bumped to 0.5.0
+
 ## [0.1.10](https://github.com/cowprotocol/cow-sdk/compare/sdk-cow-shed-v0.1.9...sdk-cow-shed-v0.1.10) (2025-11-05)
 
 
