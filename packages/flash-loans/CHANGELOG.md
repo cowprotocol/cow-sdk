@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.2.1...sdk-flash-loans-v1.3.0) (2025-11-07)
+
+
+### ✨ Features
+
+* **flash-loans:** support Mainnet, Gnosis, and Base for AAVE ([#657](https://github.com/cowprotocol/cow-sdk/issues/657)) ([c7f2327](https://github.com/cowprotocol/cow-sdk/commit/c7f2327f4672a899c2775dd8ab8d3543ad08cdd6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-trading bumped to 0.4.6
+    * @cowprotocol/sdk-order-signing bumped to 0.1.11
+
 ## [1.2.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.2.0...sdk-flash-loans-v1.2.1) (2025-11-05)
 
 
