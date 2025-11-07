@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.2.0...sdk-config-v0.3.0) (2025-11-05)
+
+
+### ✨ Features
+
+* **new-chains:** add q4 chains ([#606](https://github.com/cowprotocol/cow-sdk/issues/606)) ([2501382](https://github.com/cowprotocol/cow-sdk/commit/2501382e80acb7f6bb0f87adbb5a9325de2c56cc))
+
 ## [0.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.1.0...sdk-config-v0.2.0) (2025-10-24)
 
 

@@ -6,7 +6,7 @@ import { TradingSdk, TradeParameters } from '@cowprotocol/sdk-trading'
 import { createAdapters, TEST_ADDRESS } from '../../tests/setup'
 
 import { AaveCollateralSwapSdk } from './AaveCollateralSwapSdk'
-import { AAVE_ADAPTER_FACTORY, HASH_ZERO } from './const'
+import { AAVE_ADAPTER_FACTORY, ADAPTER_DOMAIN_NAME, HASH_ZERO } from './const'
 
 const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
@@ -92,7 +92,7 @@ adapterNames.forEach((adapterName) => {
       test(`should successfully execute collateral swap with default fee`, async () => {
         const result = await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.SEPOLIA,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -103,7 +103,7 @@ adapterNames.forEach((adapterName) => {
 
         expect(mockTradingSdk.getQuote).toHaveBeenCalledWith(
           expect.objectContaining({
-            chainId: SupportedChainId.SEPOLIA,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             sellToken: mockTradeParameters.sellToken,
             buyToken: mockTradeParameters.buyToken,
             kind: OrderKind.SELL,
@@ -117,7 +117,7 @@ adapterNames.forEach((adapterName) => {
         const flashLoanFeePercent = 0.05 // 0.05%
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.SEPOLIA,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             flashLoanFeePercent,
             collateralToken,
@@ -142,7 +142,7 @@ adapterNames.forEach((adapterName) => {
         const customOwner = '0x1234567890123456789012345678901234567890'
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.SEPOLIA,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             tradeParameters: {
               ...mockTradeParameters,
               owner: customOwner,
@@ -179,7 +179,7 @@ adapterNames.forEach((adapterName) => {
       test(`should post order with EIP1271 signing scheme`, async () => {
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.SEPOLIA,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -199,7 +199,7 @@ adapterNames.forEach((adapterName) => {
       test(`should include flash loan hint in app data`, async () => {
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.SEPOLIA,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -212,7 +212,7 @@ adapterNames.forEach((adapterName) => {
               metadata: expect.objectContaining({
                 flashloan: expect.objectContaining({
                   amount: expect.any(String),
-                  receiver: AAVE_ADAPTER_FACTORY[SupportedChainId.SEPOLIA],
+                  receiver: AAVE_ADAPTER_FACTORY[SupportedChainId.GNOSIS_CHAIN],
                   token: mockTradeParameters.sellToken,
                 }),
               }),
@@ -224,7 +224,7 @@ adapterNames.forEach((adapterName) => {
       test(`should include collateralPermit in app data`, async () => {
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.SEPOLIA,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
             settings: {
@@ -247,7 +247,7 @@ adapterNames.forEach((adapterName) => {
                 hooks: expect.objectContaining({
                   pre: expect.arrayContaining([
                     expect.objectContaining({
-                      target: AAVE_ADAPTER_FACTORY[SupportedChainId.SEPOLIA],
+                      target: AAVE_ADAPTER_FACTORY[SupportedChainId.GNOSIS_CHAIN],
                       callData: expect.any(String),
                       gasLimit: expect.any(String),
                     }),
@@ -269,7 +269,7 @@ adapterNames.forEach((adapterName) => {
       test(`should handle zero flash loan fee`, async () => {
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.SEPOLIA,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             flashLoanFeePercent: 0,
             collateralToken,
@@ -284,7 +284,7 @@ adapterNames.forEach((adapterName) => {
       test(`should use default gas limit for pre-hook`, async () => {
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.SEPOLIA,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -298,7 +298,7 @@ adapterNames.forEach((adapterName) => {
                 hooks: expect.objectContaining({
                   pre: expect.arrayContaining([
                     expect.objectContaining({
-                      target: AAVE_ADAPTER_FACTORY[SupportedChainId.SEPOLIA],
+                      target: AAVE_ADAPTER_FACTORY[SupportedChainId.GNOSIS_CHAIN],
                       callData: expect.any(String),
                       gasLimit: '300000',
                     }),
@@ -313,7 +313,7 @@ adapterNames.forEach((adapterName) => {
       test(`should use default gas limit for post-hook`, async () => {
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.SEPOLIA,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -330,7 +330,7 @@ adapterNames.forEach((adapterName) => {
       test(`should always include post-hook with empty permit by default`, async () => {
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.SEPOLIA,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -624,7 +624,7 @@ adapterNames.forEach((adapterName) => {
 
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.SEPOLIA,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -644,10 +644,10 @@ adapterNames.forEach((adapterName) => {
         // Verify signTypedData was called with correct domain
         expect(signTypedDataSpy).toHaveBeenCalledWith(
           expect.objectContaining({
-            name: 'AaveAdapterFactory',
+            name: ADAPTER_DOMAIN_NAME,
             version: '1',
-            chainId: SupportedChainId.SEPOLIA,
-            verifyingContract: AAVE_ADAPTER_FACTORY[SupportedChainId.SEPOLIA],
+            chainId: SupportedChainId.GNOSIS_CHAIN,
+            verifyingContract: AAVE_ADAPTER_FACTORY[SupportedChainId.GNOSIS_CHAIN],
           }),
           expect.any(Object),
           expect.any(Object),
@@ -662,7 +662,7 @@ adapterNames.forEach((adapterName) => {
 
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.SEPOLIA,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -701,7 +701,7 @@ adapterNames.forEach((adapterName) => {
 
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.SEPOLIA,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -737,7 +737,7 @@ adapterNames.forEach((adapterName) => {
 
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.SEPOLIA,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },

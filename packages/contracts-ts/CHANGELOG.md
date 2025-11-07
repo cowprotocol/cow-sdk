@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.4.4...sdk-contracts-ts-v0.5.0) (2025-11-07)
+
+
+### ✨ Features
+
+* **flash-loans:** support Mainnet, Gnosis, and Base for AAVE ([#657](https://github.com/cowprotocol/cow-sdk/issues/657)) ([c7f2327](https://github.com/cowprotocol/cow-sdk/commit/c7f2327f4672a899c2775dd8ab8d3543ad08cdd6))
+
+## [0.4.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.4.3...sdk-contracts-ts-v0.4.4) (2025-11-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.3.0
+
 ## [0.4.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.4.2...sdk-contracts-ts-v0.4.3) (2025-10-30)
 
 
