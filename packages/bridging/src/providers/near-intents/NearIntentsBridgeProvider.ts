@@ -82,10 +82,10 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     const { sourceTokens, targetTokens } = tokens.reduce(
       (acc, token) => {
         if (token.chainId === sellTokenChainId) {
-          acc.sourceTokens.set(token.address as Address, token)
+          acc.sourceTokens.set(token.address.toLowerCase() as Address, token)
         }
         if (token.chainId === buyTokenChainId) {
-          acc.targetTokens.set(token.address as Address, token)
+          acc.targetTokens.set(token.address.toLowerCase() as Address, token)
         }
         return acc
       },
