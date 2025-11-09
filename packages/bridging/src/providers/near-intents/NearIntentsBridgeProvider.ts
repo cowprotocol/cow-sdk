@@ -290,8 +290,6 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
 
       const quoteHash = hashQuote({ quote, quoteRequest, timestamp })
 
-      if (!isHex(quoteHash)) return false
-
       const depositAddr = getAddress(quote.depositAddress as Address)
       const { signature } = await this.api.getAttestation({
         quoteHash,
