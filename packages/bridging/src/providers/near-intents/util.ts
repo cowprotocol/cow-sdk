@@ -1,9 +1,11 @@
 import { ETH_ADDRESS, SupportedChainId, TokenInfo, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
-import { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
+import stringify from 'json-stable-stringify'
+import { Hex, sha256, stringToBytes } from 'viem'
 
 import { NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS } from './const'
 
 import type { NearBlockchainKey } from './const'
+import type { Quote, QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 
 export const calculateDeadline = (seconds: number) => {
   const secs = Number(seconds)
@@ -53,4 +55,20 @@ export const getTokenByAddressAndChainId = (
 
 export const isWrappedNativeCurrency = (chainId: number, tokenAddress: string): boolean => {
   return WRAPPED_NATIVE_CURRENCIES[chainId as SupportedChainId]?.address?.toLowerCase() === tokenAddress.toLowerCase()
+}
+
+export const hashQuote = ({
+  quote,
+  quoteRequest,
+  timestamp,
+}: {
+  quote: Quote
+  quoteRequest: QuoteRequest
+  timestamp: any
+}): Hex => {
+  const data = stringify({ ...quoteRequest, ...quote, timestamp })
+  if (!data) {
+    throw new Error('Failed to serialize quote data: quote or quoteRequest may be undefined or invalid')
+  }
+  return sha256(stringToBytes(data!))
 }

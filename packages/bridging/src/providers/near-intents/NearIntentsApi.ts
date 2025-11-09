@@ -7,6 +7,18 @@ import type {
   TokenResponse,
 } from '@defuse-protocol/one-click-sdk-typescript'
 
+import type { Address, Hex } from 'viem'
+
+interface GetAttestationRequest {
+  depositAddress: Address
+  quoteHash: Hex
+}
+
+interface GetAttestationResponse {
+  signature: Hex
+  version: number
+}
+
 export class NearIntentsApi {
   private cachedTokens: TokenResponse[] = []
 
@@ -24,5 +36,21 @@ export class NearIntentsApi {
 
   async getStatus(depositAddress: string): Promise<GetExecutionStatusResponse> {
     return await OneClickService.getExecutionStatus(depositAddress)
+  }
+
+  async getAttestation(request: GetAttestationRequest): Promise<GetAttestationResponse> {
+    const response = await fetch('https://1click.chaindefuser.com/v0/attestation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`)
+    }
+
+    return (await response.json()) as GetAttestationResponse
   }
 }
