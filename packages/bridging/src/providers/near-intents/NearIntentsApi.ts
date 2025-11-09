@@ -1,4 +1,4 @@
-import { OneClickService } from '@defuse-protocol/one-click-sdk-typescript'
+import { OneClickService, OpenAPI } from '@defuse-protocol/one-click-sdk-typescript'
 
 import type {
   GetExecutionStatusResponse,
@@ -39,7 +39,7 @@ export class NearIntentsApi {
   }
 
   async getAttestation(request: GetAttestationRequest): Promise<GetAttestationResponse> {
-    const response = await fetch('https://1click.chaindefuser.com/v0/attestation', {
+    const response = await fetch(`${OpenAPI.BASE}/v0/attestation`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
