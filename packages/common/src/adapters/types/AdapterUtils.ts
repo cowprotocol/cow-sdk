@@ -11,6 +11,8 @@ import {
   ParamType,
 } from '.'
 
+export type Hex = `0x${string}`
+
 /**
  * Abstract class defining the interface for adapter utilities
  * Based on the EthersV6Utils implementation
@@ -32,7 +34,7 @@ export abstract class AdapterUtils {
   abstract getCreate2Address(from: string, salt: Bytes, initCodeHash: Bytes): string
 
   /**
-   * Concatenates multiple Bytes values
+   * Concatenates multiple Bytes values into hex string
    */
   abstract hexConcat(items: ReadonlyArray<Bytes>): string
 
@@ -44,7 +46,12 @@ export abstract class AdapterUtils {
   /**
    * Computes the keccak256 hash of data
    */
-  abstract keccak256(data: Bytes): string
+  abstract keccak256(data: Bytes): Hex
+
+  /**
+   * Computes the sha256 hash of data
+   */
+  abstract sha256(data: Bytes): Hex
 
   /**
    * Pads a value with zeros to the specified length
@@ -74,7 +81,9 @@ export abstract class AdapterUtils {
   /**
    * Returns the checksum address of an Ethereum address
    */
-  abstract getChecksumAddress(address: string): string
+  abstract getChecksumAddress(address: string): Hex
+
+  abstract recoverAddress(hash: Hex, signature: Hex): Promise<Hex>
 
   /**
    * Encodes values using ABI encoding

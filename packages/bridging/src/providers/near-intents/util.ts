@@ -1,11 +1,12 @@
-import { ETH_ADDRESS, SupportedChainId, TokenInfo, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
 import stringify from 'json-stable-stringify'
-import { Hex, sha256, stringToBytes } from 'viem'
+import type { Quote, QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
+import { getGlobalAdapter } from '@cowprotocol/sdk-common'
+import { ETH_ADDRESS, SupportedChainId, TokenInfo, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
+import type { Hex } from 'viem'
 
 import { NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS } from './const'
 
 import type { NearBlockchainKey } from './const'
-import type { Quote, QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 
 export const calculateDeadline = (seconds: number) => {
   const secs = Number(seconds)
@@ -66,9 +67,10 @@ export const hashQuote = ({
   quoteRequest: QuoteRequest
   timestamp: any
 }): Hex => {
+  const adapter = getGlobalAdapter()
   const data = stringify({ ...quoteRequest, ...quote, timestamp })
   if (!data) {
     throw new Error('Failed to serialize quote data: quote or quoteRequest may be undefined or invalid')
   }
-  return sha256(stringToBytes(data!))
+  return adapter.utils.sha256(adapter.utils.toUtf8Bytes(data))
 }

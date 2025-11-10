@@ -12,6 +12,7 @@ import { BridgeStatus } from '../../types'
 
 import type { TargetChainId } from '@cowprotocol/sdk-config'
 import type { QuoteBridgeRequest } from '../../types'
+import type { QuoteResponse } from '@defuse-protocol/one-click-sdk-typescript'
 
 // Mock NearIntentsApi
 jest.mock('./NearIntentsApi')
@@ -317,6 +318,56 @@ adapterNames.forEach((adapterName) => {
     describe('getRefundBridgingTx', () => {
       it('should throw error as not implemented', async () => {
         await expect(() => provider.getRefundBridgingTx('123')).toThrow('Not implemented')
+      })
+    })
+
+    describe('recoverDepositAddress', () => {
+      const mockQuoteResponse: QuoteResponse = {
+        quote: {
+          amountIn: '35000000000000',
+          amountInFormatted: '0.000035',
+          amountInUsd: '0.1566',
+          minAmountIn: '35000000000000',
+          amountOut: '468413404557660287',
+          amountOutFormatted: '0.468413404557660287',
+          amountOutUsd: '0.1349',
+          minAmountOut: '463000005761085287',
+          timeEstimate: 49,
+          deadline: '2025-09-04T14:46:59.148Z',
+          timeWhenInactive: '2025-09-04T14:46:59.148Z',
+          depositAddress: '0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e',
+        },
+        quoteRequest: {
+          depositMode: QuoteRequest.depositMode.SIMPLE,
+          quoteWaitingTimeMs: 3000,
+          dry: false,
+          swapType: QuoteRequest.swapType.EXACT_INPUT,
+          slippageTolerance: 100,
+          originAsset: 'nep141:eth.omft.near',
+          depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
+          destinationAsset: 'nep245:v2_1.omni.hot.tg:137_11111111111111111111',
+          amount: '35000000000000',
+          refundTo: '0x0000000000000000000000000000000000000000',
+          refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
+          recipient: '0x0000000000000000000000000000000000000000',
+          recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
+          deadline: '2025-09-03T15:46:55.000Z',
+        },
+        signature: 'ed25519:Y54QM45ockDtJf3uAVhV8xndF79GPeQW5fJaZZLKfnaj8mW9NaBDsGg3uVXY1Fge73fYDAsdn9qokhjm2rsJATz',
+        timestamp: '2025-09-03T14:46:55.987Z',
+      }
+
+      it('should return true when signature is valid and from correct attestator', async () => {
+        jest.spyOn(provider.getApi(), 'getAttestation').mockResolvedValue({
+          version: 1,
+          signature:
+            '0x66edc32e2ab001213321ab7d959a2207fcef5190cc9abb6da5b0d2a8a9af2d4d2b0700e2c317c4106f337fd934fbbb0bf62efc8811a78603b33a8265d3b8f8cb1c',
+        })
+
+        const recoveredAddress = await provider.recoverDepositAddress(mockQuoteResponse)
+
+        // Just a test value
+        expect(recoveredAddress).toBe('0xCa545a774087a784EcEDa609C822FB0379efdb1b')
       })
     })
   })

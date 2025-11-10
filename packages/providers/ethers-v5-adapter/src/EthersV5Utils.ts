@@ -4,6 +4,7 @@ import {
   BigIntish,
   ContractValue,
   GenericContractInterface,
+  Hex,
   ParamType as CommonParamType,
 } from '@cowprotocol/sdk-common'
 import { BytesLike, ethers, TypedDataDomain, TypedDataField } from 'ethers'
@@ -36,8 +37,12 @@ export class EthersV5Utils implements AdapterUtils {
     return contractInterface.encodeDeploy(encodeDeployArgs)
   }
 
-  keccak256(data: BytesLike) {
-    return ethers.utils.keccak256(data)
+  keccak256(data: BytesLike): Hex {
+    return ethers.utils.keccak256(data) as Hex
+  }
+
+  sha256(data: BytesLike): Hex {
+    return ethers.utils.sha256(data) as Hex
   }
 
   hexZeroPad(value: BytesLike, length: number): string {
@@ -64,8 +69,12 @@ export class EthersV5Utils implements AdapterUtils {
     return ethers.utils._TypedDataEncoder.hash(domain, types, data)
   }
 
-  getChecksumAddress(address: string): string {
-    return ethers.utils.getAddress(address)
+  getChecksumAddress(address: string): Hex {
+    return ethers.utils.getAddress(address) as Hex
+  }
+
+  async recoverAddress(hash: Hex, signature: Hex): Promise<Hex> {
+    return ethers.utils.recoverAddress(hash, signature) as Hex
   }
 
   encodeAbi(types: string[], values: ContractValue[]): BytesLike {

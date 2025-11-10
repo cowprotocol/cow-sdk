@@ -4,7 +4,6 @@ import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { OrderKind, EnrichedOrder } from '@cowprotocol/sdk-order-book'
 import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
 import { BridgeStatus } from '../../types'
-import { concat, getAddress, hexToBytes, isHex, keccak256, recoverAddress } from 'viem'
 
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
@@ -146,8 +145,11 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       referral: REFERRAL,
     })
 
-    if (!(await this.verifyDepositAddress(quoteResponse)))
+    const recoveredDepositAddress = await this.recoverDepositAddress(quoteResponse)
+
+    if (recoveredDepositAddress?.toLowerCase() !== ATTESTATOR_ADDRESS.toLowerCase()) {
       throw new BridgeProviderQuoteError(BridgeQuoteErrors.API_ERROR)
+    }
 
     const { quote, timestamp: isoDate } = quoteResponse
 
@@ -196,14 +198,14 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     }
   }
 
-  async getBridgeReceiverOverride(request: QuoteBridgeRequest, quote: NearIntentsQuoteResult): Promise<string> {
+  async getBridgeReceiverOverride(_request: QuoteBridgeRequest, quote: NearIntentsQuoteResult): Promise<string> {
     return quote.depositAddress
   }
 
   async getBridgingParams(
-    chainId: ChainId,
+    _chainId: ChainId,
     order: EnrichedOrder,
-    txHash: string,
+    _txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
     const depositAddress = order.receiver
     if (!depositAddress) return null
@@ -283,29 +285,29 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     throw new Error('Not implemented')
   }
 
-  private async verifyDepositAddress({ quote, quoteRequest, timestamp }: QuoteResponse): Promise<boolean> {
+  async recoverDepositAddress({ quote, quoteRequest, timestamp }: QuoteResponse): Promise<Address | null> {
     try {
-      if (!quote?.depositAddress) return false
+      if (!quote?.depositAddress) return null
 
+      const utils = getGlobalAdapter().utils
       const quoteHash = hashQuote({ quote, quoteRequest, timestamp })
 
-      const depositAddr = getAddress(quote.depositAddress as Address)
+      const depositAddr = utils.getChecksumAddress(quote.depositAddress as Address)
       const { signature } = await this.api.getAttestation({
         quoteHash,
         depositAddress: depositAddr,
       })
-      if (!signature || !isHex(signature)) return false
+      if (!signature || !utils.isHexString(signature)) return null
 
       // Build message bytes (prefix || version || depositAddress || quoteHash)
-      const payload = concat([hexToBytes(depositAddr), hexToBytes(quoteHash)])
-      const messageBytes = concat([hexToBytes(ATTESTATION_PREFIX_CONST), hexToBytes(ATTESTION_VERSION_BYTE), payload])
+      const payload = utils.hexConcat([depositAddr, quoteHash])
+      const messageBytes = utils.hexConcat([ATTESTATION_PREFIX_CONST, ATTESTION_VERSION_BYTE, payload])
 
-      const hash = keccak256(messageBytes)
-      const recovered = await recoverAddress({ hash, signature })
+      const hash = utils.keccak256(messageBytes)
 
-      return getAddress(recovered) === getAddress(ATTESTATOR_ADDRESS)
+      return utils.recoverAddress(hash, signature)
     } catch {
-      return false
+      return null
     }
   }
 }

@@ -40,6 +40,8 @@ import {
   parseUnits,
   sliceHex,
   toBytes,
+  sha256,
+  recoverAddress,
 } from 'viem'
 import { ViemInterfaceWrapper } from './ViemInterfaceWrapper'
 import { ViemParamType } from './ViemParamtype'
@@ -98,8 +100,12 @@ export class ViemUtils implements AdapterUtils {
     return paddedBytes
   }
 
-  keccak256(data: Hex): string {
+  keccak256(data: Hex): `0x${string}` {
     return keccak256(data)
+  }
+
+  sha256(data: Hex): Hex {
+    return sha256(data)
   }
 
   private bytesToHex(bytes: Uint8Array): Hex {
@@ -147,6 +153,10 @@ export class ViemUtils implements AdapterUtils {
 
   getChecksumAddress(address: Address): Address {
     return getAddress(address)
+  }
+
+  recoverAddress(hash: Hex, signature: Hex): Promise<Hex> {
+    return recoverAddress({ hash, signature })
   }
 
   encodeAbi(types: { type: string; name: string }[] | string[], values: ContractValue[]): `0x${string}` {
