@@ -18,7 +18,7 @@ describe('Near Intents Utils', () => {
       expect(adaptToken(tokenResponse)).toStrictEqual({
         chainId: SupportedChainId.MAINNET,
         decimals: 18,
-        address: WRAPPED_NATIVE_CURRENCIES[SupportedChainId.MAINNET].address,
+        address: WRAPPED_NATIVE_CURRENCIES[SupportedChainId.MAINNET],
         name: 'ETH',
         symbol: 'ETH',
       })
@@ -111,7 +111,7 @@ describe('Near Intents Utils', () => {
       ).toStrictEqual(token)
     })
 
-    it('should return undefined if the token is not found', () => {
+    it('should return null if the token is not found', () => {
       const tokens: TokenResponse[] = [
         {
           assetId: 'nep141:eth.omft.near',

@@ -39,3 +39,7 @@ export const NEAR_INTENTS_STATUS_TO_COW_STATUS: Record<string, BridgeStatus> = {
   REFUNDED: BridgeStatus.REFUND,
   FAILED: BridgeStatus.UNKNOWN,
 }
+
+export const ATTESTATION_PREFIX_CONST = '0x0a773570'
+export const ATTESTION_VERSION_BYTE = '0x00'
+export const ATTESTATOR_ADDRESS = '0x...' // TODO: Add attestator address here

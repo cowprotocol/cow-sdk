@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-bridging",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Bridging for CoW Protocol",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -33,7 +33,8 @@
     "@cowprotocol/sdk-order-book": "workspace:*",
     "@cowprotocol/sdk-trading": "workspace:*",
     "@cowprotocol/sdk-weiroll": "workspace:*",
-    "@defuse-protocol/one-click-sdk-typescript": "0.1.1-0.2"
+    "@defuse-protocol/one-click-sdk-typescript": "0.1.1-0.2",
+    "json-stable-stringify": "^1.3.0"
   },
   "devDependencies": {
     "@cow-sdk/typescript-config": "workspace:*",

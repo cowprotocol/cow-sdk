@@ -1,20 +1,28 @@
-import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { ETH_ADDRESS } from '@cowprotocol/sdk-config'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
-import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { OrderKind, EnrichedOrder } from '@cowprotocol/sdk-order-book'
 import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
 import { BridgeStatus } from '../../types'
+import { concat, getAddress, hexToBytes, isHex, keccak256, recoverAddress } from 'viem'
 
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { NearIntentsApi } from './NearIntentsApi'
-import { NEAR_INTENTS_STATUS_TO_COW_STATUS, NEAR_INTENTS_SUPPORTED_NETWORKS } from './const'
-import { adaptToken, adaptTokens, calculateDeadline, getTokenByAddressAndChainId } from './util'
+import {
+  ATTESTATION_PREFIX_CONST,
+  ATTESTATOR_ADDRESS,
+  ATTESTION_VERSION_BYTE,
+  NEAR_INTENTS_STATUS_TO_COW_STATUS,
+  NEAR_INTENTS_SUPPORTED_NETWORKS,
+} from './const'
+import { adaptToken, adaptTokens, calculateDeadline, getTokenByAddressAndChainId, hashQuote } from './util'
 
+import type { QuoteResponse } from '@defuse-protocol/one-click-sdk-typescript'
 import type { AbstractProviderAdapter } from '@cowprotocol/sdk-common'
 import type { ChainId, ChainInfo, EvmCall, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import type { CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
-import type { Address, EnrichedOrder } from '@cowprotocol/sdk-order-book'
+import type { Address, Hex } from 'viem'
 import type {
   BridgeProviderInfo,
   BridgeQuoteResult,
@@ -30,7 +38,7 @@ export const NEAR_INTENTS_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/ne
 export const REFERRAL = 'cow'
 
 export interface NearIntentsQuoteResult extends BridgeQuoteResult {
-  depositAddress: string
+  depositAddress: Hex
 }
 
 export interface NearIntentsBridgeProviderOptions {
@@ -84,10 +92,10 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     const { sourceTokens, targetTokens } = tokens.reduce(
       (acc, token) => {
         if (token.chainId === sellTokenChainId) {
-          acc.sourceTokens.set(token.address as Address, token)
+          acc.sourceTokens.set(token.address.toLowerCase() as Address, token)
         }
         if (token.chainId === buyTokenChainId) {
-          acc.targetTokens.set(token.address as Address, token)
+          acc.targetTokens.set(token.address.toLowerCase() as Address, token)
         }
         return acc
       },
@@ -122,7 +130,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     const buyToken = getTokenByAddressAndChainId(tokens, buyTokenAddress, buyTokenChainId)
     if (!sellToken || !buyToken) throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES)
 
-    const { quote, timestamp: isoDate } = await this.api.getQuote({
+    const quoteResponse = await this.api.getQuote({
       dry: false,
       swapType: QuoteRequest.swapType.EXACT_INPUT,
       slippageTolerance: request.slippageBps ?? 100,
@@ -138,9 +146,10 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       referral: REFERRAL,
     })
 
-    if (!quote.depositAddress) {
-      throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES, { message: 'Missing deposit address in quote' })
-    }
+    if (!(await this.verifyDepositAddress(quoteResponse)))
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.API_ERROR)
+
+    const { quote, timestamp: isoDate } = quoteResponse
 
     const payoutRatio = Number(quote.amountOutUsd) / Number(quote.amountInUsd)
     const slippage = 1 - payoutRatio
@@ -151,7 +160,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
 
     return {
       isSell: request.kind === OrderKind.SELL,
-      depositAddress: quote.depositAddress,
+      depositAddress: quote.depositAddress as Hex,
       quoteTimestamp: new Date(isoDate).getTime(),
       expectedFillTimeSeconds: quote.timeEstimate,
       limits: {
@@ -187,14 +196,14 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     }
   }
 
-  async getBridgeReceiverOverride(_request: QuoteBridgeRequest, quote: NearIntentsQuoteResult): Promise<string> {
+  async getBridgeReceiverOverride(request: QuoteBridgeRequest, quote: NearIntentsQuoteResult): Promise<string> {
     return quote.depositAddress
   }
 
   async getBridgingParams(
-    _chainId: ChainId,
+    chainId: ChainId,
     order: EnrichedOrder,
-    _txHash: string,
+    txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
     const depositAddress = order.receiver
     if (!depositAddress) return null
@@ -272,5 +281,31 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
 
   getRefundBridgingTx(_bridgingId: string): Promise<EvmCall> {
     throw new Error('Not implemented')
+  }
+
+  private async verifyDepositAddress({ quote, quoteRequest, timestamp }: QuoteResponse): Promise<boolean> {
+    try {
+      if (!quote?.depositAddress) return false
+
+      const quoteHash = hashQuote({ quote, quoteRequest, timestamp })
+
+      const depositAddr = getAddress(quote.depositAddress as Address)
+      const { signature } = await this.api.getAttestation({
+        quoteHash,
+        depositAddress: depositAddr,
+      })
+      if (!signature || !isHex(signature)) return false
+
+      // Build message bytes (prefix || version || depositAddress || quoteHash)
+      const payload = concat([hexToBytes(depositAddr), hexToBytes(quoteHash)])
+      const messageBytes = concat([hexToBytes(ATTESTATION_PREFIX_CONST), hexToBytes(ATTESTION_VERSION_BYTE), payload])
+
+      const hash = keccak256(messageBytes)
+      const recovered = await recoverAddress({ hash, signature })
+
+      return getAddress(recovered) === getAddress(ATTESTATOR_ADDRESS)
+    } catch {
+      return false
+    }
   }
 }
