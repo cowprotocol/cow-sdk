@@ -144,7 +144,8 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       referral: REFERRAL,
     })
 
-    if (!(await this.verifyDepositAddress(quoteResponse))) throw new Error('Invalid deposit address')
+    if (!(await this.verifyDepositAddress(quoteResponse)))
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.API_ERROR)
 
     const { quote, timestamp: isoDate } = quoteResponse
 
