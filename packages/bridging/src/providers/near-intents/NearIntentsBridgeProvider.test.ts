@@ -7,7 +7,7 @@ import { padHex, zeroAddress } from 'viem'
 import { createAdapters } from '../../../tests/setup'
 import { NearIntentsApi } from './NearIntentsApi'
 import { NEAR_INTENTS_HOOK_DAPP_ID, NearIntentsBridgeProvider } from './NearIntentsBridgeProvider'
-import { NEAR_INTENTS_SUPPORTED_NETWORKS } from './const'
+import { ATTESTATOR_ADDRESS, NEAR_INTENTS_SUPPORTED_NETWORKS } from './const'
 import { BridgeStatus } from '../../types'
 
 import type { TargetChainId } from '@cowprotocol/sdk-config'
@@ -37,6 +37,7 @@ const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
 const mockGetCode = jest.fn()
+let originalRecoverDepositAddress: any
 
 adapterNames.forEach((adapterName) => {
   describe(`NearIntentsBridgeProvider for ${adapterName}`, () => {
@@ -47,6 +48,10 @@ adapterNames.forEach((adapterName) => {
       adapter.getCode = mockGetCode
       setGlobalAdapter(adapter)
       provider = new NearIntentsBridgeProviderTest()
+      originalRecoverDepositAddress = provider.recoverDepositAddress.bind(provider)
+
+      const mockRecoverDepositAddress = jest.fn().mockResolvedValue(ATTESTATOR_ADDRESS.toLowerCase())
+      provider.recoverDepositAddress = mockRecoverDepositAddress
     })
 
     afterEach(() => {
@@ -358,6 +363,7 @@ adapterNames.forEach((adapterName) => {
       }
 
       it('should return true when signature is valid and from correct attestator', async () => {
+        provider.recoverDepositAddress = originalRecoverDepositAddress
         jest.spyOn(provider.getApi(), 'getAttestation').mockResolvedValue({
           version: 1,
           signature:
