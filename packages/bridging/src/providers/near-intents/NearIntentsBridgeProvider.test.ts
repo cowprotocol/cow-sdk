@@ -212,6 +212,7 @@ adapterNames.forEach((adapterName) => {
         expect(provider.info).toEqual({
           dappId: NEAR_INTENTS_HOOK_DAPP_ID,
           name: 'Near Intents',
+          type: 'ReceiverAccountBridgeProvider',
           logoUrl: expect.stringContaining('near-intents-logo.png'),
           website: 'https://www.near.org/intents',
         })

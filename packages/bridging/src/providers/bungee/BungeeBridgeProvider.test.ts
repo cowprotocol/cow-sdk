@@ -306,6 +306,7 @@ adapterNames.forEach((adapterName) => {
         expect(provider.info).toEqual({
           dappId: BUNGEE_HOOK_DAPP_ID,
           name: 'Bungee',
+          type: 'HookBridgeProvider',
           logoUrl: expect.stringContaining('bungee-logo.png'),
           website: 'https://www.bungee.exchange',
         })
