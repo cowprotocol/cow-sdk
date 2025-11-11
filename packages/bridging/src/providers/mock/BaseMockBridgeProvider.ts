@@ -22,7 +22,11 @@ import {
 import { BRIDGING_PARAMS, BUY_TOKENS, INTERMEDIATE_TOKENS, MOCK_CALL, QUOTE, STATUS } from './mockData'
 import { EnrichedOrder } from '@cowprotocol/sdk-order-book'
 
-export abstract class BaseMockBridgeProvider implements Omit<BridgeProvider<BridgeQuoteResult>, 'type'> {
+const providerType = 'HookBridgeProvider' as const
+
+export abstract class BaseMockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
+  type = providerType
+
   info: BridgeProviderInfo
 
   constructor(name: string) {
@@ -31,6 +35,7 @@ export abstract class BaseMockBridgeProvider implements Omit<BridgeProvider<Brid
       logoUrl: `${RAW_PROVIDERS_FILES_PATH}/mock/mock-logo.png`,
       dappId: 'dapp-id-' + name,
       website: `https://mock.com/${name}`,
+      type: providerType,
     }
   }
 

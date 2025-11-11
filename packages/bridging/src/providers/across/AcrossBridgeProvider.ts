@@ -58,8 +58,10 @@ export interface AcrossQuoteResult extends BridgeQuoteResult {
   suggestedFees: SuggestedFeesResponse
 }
 
+const providerType = 'HookBridgeProvider' as const
+
 export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResult> {
-  type = 'HookBridgeProvider' as const
+  type = providerType
   protected api: AcrossApi
   protected cowShedSdk: CowShedSdk
 
@@ -79,6 +81,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     logoUrl: `${RAW_PROVIDERS_FILES_PATH}/across/across-logo.png`,
     dappId: ACROSS_HOOK_DAPP_ID,
     website: 'https://across.to',
+    type: providerType,
   }
 
   async getNetworks(): Promise<ChainInfo[]> {

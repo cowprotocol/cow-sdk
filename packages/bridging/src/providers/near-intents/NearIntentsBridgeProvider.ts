@@ -44,8 +44,10 @@ export interface NearIntentsBridgeProviderOptions {
   cowShedOptions?: CowShedSdkOptions
 }
 
+const providerType = 'ReceiverAccountBridgeProvider' as const
+
 export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<NearIntentsQuoteResult> {
-  type = 'ReceiverAccountBridgeProvider' as const
+  type = providerType
 
   protected api: NearIntentsApi
   protected cowShedSdk: CowShedSdk
@@ -55,6 +57,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     logoUrl: `${RAW_PROVIDERS_FILES_PATH}/near-intents/near-intents-logo.png`,
     dappId: NEAR_INTENTS_HOOK_DAPP_ID,
     website: 'https://www.near.org/intents',
+    type: providerType,
   }
 
   constructor(options?: NearIntentsBridgeProviderOptions, _adapter?: AbstractProviderAdapter) {
@@ -146,9 +149,14 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     })
 
     const recoveredDepositAddress = await this.recoverDepositAddress(quoteResponse)
+    // TODO: enable once ATTESTATOR_ADDRESS is defined
+    const shouldCheckRecoveredDepositAddress = false
 
-    if (recoveredDepositAddress?.toLowerCase() !== ATTESTATOR_ADDRESS.toLowerCase()) {
-      throw new BridgeProviderQuoteError(BridgeQuoteErrors.API_ERROR)
+    if (
+      shouldCheckRecoveredDepositAddress &&
+      recoveredDepositAddress?.toLowerCase() !== ATTESTATOR_ADDRESS.toLowerCase()
+    ) {
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.QUOTE_DOES_NOT_MATCH_DEPOSIT_ADDRESS)
     }
 
     const { quote, timestamp: isoDate } = quoteResponse

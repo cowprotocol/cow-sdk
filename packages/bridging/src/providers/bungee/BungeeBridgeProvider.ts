@@ -62,8 +62,10 @@ export interface BungeeQuoteResult extends BridgeQuoteResult {
   buildTx: BungeeBuildTx
 }
 
+const providerType = 'HookBridgeProvider' as const
+
 export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResult> {
-  type = 'HookBridgeProvider' as const
+  type = providerType
 
   protected api: BungeeApi
   protected cowShedSdk: CowShedSdk
@@ -86,6 +88,7 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
     logoUrl: `${RAW_PROVIDERS_FILES_PATH}/bungee/bungee-logo.png`,
     dappId: BUNGEE_HOOK_DAPP_ID,
     website: 'https://www.bungee.exchange',
+    type: providerType,
   }
 
   async getNetworks(): Promise<ChainInfo[]> {

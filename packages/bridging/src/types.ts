@@ -13,11 +13,14 @@ import type {
 } from '@cowprotocol/sdk-trading'
 import type { AccountAddress, SignerLike, TTLCache } from '@cowprotocol/sdk-common'
 
+export type BridgeProviderType = 'ReceiverAccountBridgeProvider' | 'HookBridgeProvider'
+
 export interface BridgeProviderInfo {
   name: string
   logoUrl: string
   dappId: string
   website: string
+  type: BridgeProviderType
 }
 
 interface WithSellToken {
@@ -159,7 +162,7 @@ export interface BridgeDeposit extends Omit<QuoteBridgeRequest, 'amount'> {
  * It contains the main information about the provider, and the methods to get the quote, the bridging params, the status, the cancelling and the refunding of the bridging.
  */
 export interface BridgeProvider<Q extends BridgeQuoteResult> {
-  type: 'ReceiverAccountBridgeProvider' | 'HookBridgeProvider'
+  type: BridgeProviderType
 
   info: BridgeProviderInfo
   /**
