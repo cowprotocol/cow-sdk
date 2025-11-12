@@ -110,8 +110,12 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     const targetToken = targetTokens.get(buyTokenAddress.toLowerCase() as Address)
     if (!targetToken) return []
 
+    const targetSymbol = targetToken?.symbol?.toLowerCase()
     // If targetToken is supported, all source tokens can be used to buy targetToken
-    return Array.from(sourceTokens.values())
+    return Array.from(sourceTokens.values()).filter(
+      (token) =>
+        token.symbol?.toLowerCase() === targetSymbol && token.address.toLowerCase() !== ETH_ADDRESS.toLowerCase(),
+    )
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<NearIntentsQuoteResult> {
