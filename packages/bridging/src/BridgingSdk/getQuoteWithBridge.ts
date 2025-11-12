@@ -21,6 +21,7 @@ import {
   HookBridgeProvider,
   ReceiverAccountBridgeProvider as AccountBridgeProvider,
   BridgeHook,
+  DefaultBridgeProvider,
 } from '../types'
 import { GetQuoteWithBridgeParams } from './types'
 import { getBridgeSignedHook } from './getBridgeSignedHook'
@@ -54,6 +55,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
 }
 
 export interface CreatePostSwapOrderFromQuoteParams {
+  provider: DefaultBridgeProvider
   getBridgeProviderQuote: (
     signer: SignerLike,
     advancedSettings?: SwapAdvancedSettings,
@@ -61,6 +63,7 @@ export interface CreatePostSwapOrderFromQuoteParams {
   signer: SignerLike
   sellTokenAddress: string
   orderBookApi: OrderBookApi
+  initialSwapResult: QuoteResults
 }
 
 /**
@@ -72,7 +75,7 @@ export interface CreatePostSwapOrderFromQuoteParams {
 function createPostSwapOrderFromQuote(
   params: CreatePostSwapOrderFromQuoteParams,
 ): BridgeQuoteAndPost['postSwapOrderFromQuote'] {
-  const { getBridgeProviderQuote, signer, sellTokenAddress, orderBookApi } = params
+  const { provider, getBridgeProviderQuote, signer, sellTokenAddress, orderBookApi, initialSwapResult } = params
 
   return async function postSwapOrderFromQuote(
     advancedSettings?: SwapAdvancedSettings,
@@ -80,11 +83,16 @@ function createPostSwapOrderFromQuote(
   ) {
     await signingStepManager?.beforeBridgingSign?.()
 
-    // Sign the hooks with the real signer
-    const { swapResult } = await getBridgeProviderQuote(signer, advancedSettings).catch((error) => {
-      signingStepManager?.onBridgingSignError?.()
-      throw error
-    })
+    const swapResult =
+      provider.type === 'ReceiverAccountBridgeProvider'
+        ? initialSwapResult
+        : // Sign the hooks with the real signer
+          (
+            await getBridgeProviderQuote(signer, advancedSettings).catch((error) => {
+              signingStepManager?.onBridgingSignError?.()
+              throw error
+            })
+          ).swapResult
 
     await signingStepManager?.afterBridgingSign?.()
 
@@ -170,10 +178,12 @@ export async function getQuoteWithReceiverAccountBridge<T extends BridgeQuoteRes
     swap: result.swapResult,
     bridge: result.bridgeResult,
     postSwapOrderFromQuote: createPostSwapOrderFromQuote({
+      provider,
       getBridgeProviderQuote,
       signer,
       sellTokenAddress: swapAndBridgeRequest.sellTokenAddress,
       orderBookApi,
+      initialSwapResult: result.swapResult,
     }),
   }
 }
@@ -277,6 +287,8 @@ export async function getQuoteWithHookBridge<T extends BridgeQuoteResult>(
       signer,
       sellTokenAddress: swapAndBridgeRequest.sellTokenAddress,
       orderBookApi,
+      provider,
+      initialSwapResult: result.swapResult,
     }),
   }
 }
