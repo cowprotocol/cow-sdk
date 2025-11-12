@@ -41,11 +41,31 @@ import {
   HASH_ZERO,
   PERCENT_SCALE,
 } from './const'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { aaveAdapterFactoryAbi } from './abi/AaveAdapterFactory'
 import { collateralSwapAdapterHookAbi } from './abi/CollateralSwapAdapterHook'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { debtSwapAdapterAbi } from './abi/DebtSwapAdapter'
 import { repayWithCollateralAdapterAbi } from './abi/RepayWithCollateralAdapter'
+
+/**
+ * Configuration options for the AaveCollateralSwapSdk.
+ * @param {Record<AaveFlashLoanType, Record<SupportedChainId, string>>} hookAdapterPerType -
+ *        Mapping of flash loan types to chain-specific hook adapter addresses.
+ *        Defaults to the predefined addresses from the constants.
+ * @example
+ * ```typescript
+ * const config: AaveCollateralSwapSdkConfig = {
+ *   hookAdapterPerType: {
+ *     [AaveFlashLoanType.CollateralSwap]: {
+ *       [SupportedChainId.GNOSIS_CHAIN]: '0x...',
+ *     },
+ *   },
+ * }
+ * ```
+ */
+export type AaveCollateralSwapSdkConfig = {
+  hookAdapterPerType?: Record<AaveFlashLoanType, Record<SupportedChainId, string>>
+}
 
 /**
  * SDK for executing Aave flash loan operations, particularly collateral swaps.
@@ -58,6 +78,19 @@ import { repayWithCollateralAdapterAbi } from './abi/RepayWithCollateralAdapter'
  * @see https://docs.cow.fi/
  */
 export class AaveCollateralSwapSdk {
+  private readonly hookAdapterPerType: Record<AaveFlashLoanType, Record<SupportedChainId, string>>
+
+  /**
+   * Creates an instance of AaveCollateralSwapSdk.
+   *
+   * @param {Object} config - Configuration options for the SDK.
+   * @param {Record<AaveFlashLoanType, Record<SupportedChainId, string>>} config.hookAdapterPerType -
+   *        Mapping of flash loan types to chain-specific hook adapter addresses.
+   *        Defaults to the predefined addresses from the constants.
+   */
+  constructor(config?: AaveCollateralSwapSdkConfig) {
+    this.hookAdapterPerType = config?.hookAdapterPerType ?? AAVE_HOOK_ADAPTER_PER_TYPE
+  }
   /**
    * Executes a collateral swap using Aave flash loans.
    *
@@ -352,7 +385,7 @@ export class AaveCollateralSwapSdk {
 
     return (await getGlobalAdapter().readContract({
       address: AAVE_ADAPTER_FACTORY[chainId],
-      args: [AAVE_HOOK_ADAPTER_PER_TYPE[flashLoanType][chainId], hookData],
+      args: [this.hookAdapterPerType[flashLoanType][chainId], hookData],
       functionName: 'getInstanceDeterministicAddress',
       abi: aaveAdapterFactoryAbi,
     })) as AccountAddress
@@ -403,7 +436,7 @@ export class AaveCollateralSwapSdk {
     instanceAddress: AccountAddress,
   ): string {
     const hookData = this.buildHookOrderData(trader, hookAmounts, order)
-    const adapterImplementation = AAVE_HOOK_ADAPTER_PER_TYPE[flashLoanType][chainId]
+    const adapterImplementation = this.hookAdapterPerType[flashLoanType][chainId]
 
     return getGlobalAdapter().utils.encodeFunction(aaveAdapterFactoryAbi, 'deployAndTransferFlashLoan', [
       adapterImplementation,
