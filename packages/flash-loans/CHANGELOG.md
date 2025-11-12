@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.3.0...sdk-flash-loans-v1.4.0) (2025-11-12)
+
+
+### ✨ Features
+
+* allow aave sdk to provide the helper addresses in the construct… ([#666](https://github.com/cowprotocol/cow-sdk/issues/666)) ([828ae7d](https://github.com/cowprotocol/cow-sdk/commit/828ae7d120a06b9d550c9f7c1e52bb86f783d0b8))
+
 ## [1.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.2.1...sdk-flash-loans-v1.3.0) (2025-11-07)
 
 
