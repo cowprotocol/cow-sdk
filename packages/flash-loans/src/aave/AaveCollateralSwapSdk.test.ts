@@ -6,7 +6,13 @@ import { TradingSdk, TradeParameters } from '@cowprotocol/sdk-trading'
 import { createAdapters, TEST_ADDRESS } from '../../tests/setup'
 
 import { AaveCollateralSwapSdk } from './AaveCollateralSwapSdk'
-import { AAVE_ADAPTER_FACTORY, ADAPTER_DOMAIN_NAME, HASH_ZERO } from './const'
+import {
+  AAVE_ADAPTER_FACTORY,
+  ADAPTER_DOMAIN_NAME,
+  AAVE_HOOK_ADAPTER_PER_TYPE,
+  AaveFlashLoanType,
+  HASH_ZERO,
+} from './const'
 
 const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
@@ -753,6 +759,196 @@ adapterNames.forEach((adapterName) => {
         expect(signature).toBeDefined()
         expect(typeof signature).toBe('string')
         expect(signature).toContain('0x')
+      })
+    })
+
+    describe('constructor configuration', () => {
+      beforeEach(() => {
+        // Clear any existing mocks before each test
+        jest.clearAllMocks()
+      })
+
+      const setupReadContractMock = () => {
+        return jest.spyOn(adapter, 'readContract').mockImplementation((...args: any[]) => {
+          const params = args[0]
+          if (params.functionName === 'getInstanceDeterministicAddress') {
+            return Promise.resolve('0x1234567890123456789012345678901234567890' as any)
+          }
+          if (params.functionName === 'allowance') {
+            return Promise.resolve(BigInt(0) as any)
+          }
+          return Promise.resolve('0x0000000000000000000000000000000000000000' as any)
+        })
+      }
+
+      test('should use default hook adapter addresses when no config provided', async () => {
+        const defaultSdk = new AaveCollateralSwapSdk()
+        const readContractSpy = setupReadContractMock()
+
+        await defaultSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.GNOSIS_CHAIN,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        // Verify that the default address was used
+        const readContractCalls = readContractSpy.mock.calls
+        const getInstanceCall = readContractCalls.find(
+          (call) => call[0]?.functionName === 'getInstanceDeterministicAddress',
+        )
+
+        expect(getInstanceCall).toBeDefined()
+        expect(getInstanceCall?.[0]?.args?.[0]).toBe(
+          AAVE_HOOK_ADAPTER_PER_TYPE[AaveFlashLoanType.CollateralSwap][SupportedChainId.GNOSIS_CHAIN],
+        )
+      })
+
+      test('should use custom hook adapter addresses when provided', async () => {
+        const customHookAdapterAddress = '0x1234567890123456789012345678901234567890'
+        const customConfig = {
+          hookAdapterPerType: {
+            ...AAVE_HOOK_ADAPTER_PER_TYPE,
+            [AaveFlashLoanType.CollateralSwap]: {
+              ...AAVE_HOOK_ADAPTER_PER_TYPE[AaveFlashLoanType.CollateralSwap],
+              [SupportedChainId.GNOSIS_CHAIN]: customHookAdapterAddress,
+            },
+          },
+        }
+
+        const customSdk = new AaveCollateralSwapSdk(customConfig)
+        const readContractSpy = setupReadContractMock()
+
+        await customSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.GNOSIS_CHAIN,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        // Verify that the custom address was used in getInstanceDeterministicAddress
+        const readContractCalls = readContractSpy.mock.calls
+        const getInstanceCall = readContractCalls.find(
+          (call) => call[0]?.functionName === 'getInstanceDeterministicAddress',
+        )
+
+        expect(getInstanceCall).toBeDefined()
+        expect(getInstanceCall?.[0]?.args?.[0]).toBe(customHookAdapterAddress)
+
+        // Verify that the custom address is used in the pre-hook call data
+        const swapSettingsCall = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
+        const preHookCallData = swapSettingsCall.appData.metadata.hooks.pre[0].callData
+
+        // The call data should contain the custom adapter address
+        // We can verify this by checking if the encoded function includes the custom address
+        expect(preHookCallData).toBeDefined()
+        expect(typeof preHookCallData).toBe('string')
+        // The call data should be a hex string that includes the custom address (without 0x prefix)
+        const customAddressWithoutPrefix = customHookAdapterAddress.toLowerCase().slice(2)
+        expect(preHookCallData.toLowerCase()).toContain(customAddressWithoutPrefix)
+      })
+
+      test('should use custom hook adapter addresses for different flash loan types', async () => {
+        const customCollateralSwapAddress = '0x1111111111111111111111111111111111111111'
+        const customDebtSwapAddress = '0x2222222222222222222222222222222222222222'
+        const customRepayAddress = '0x3333333333333333333333333333333333333333'
+
+        const customConfig = {
+          hookAdapterPerType: {
+            [AaveFlashLoanType.CollateralSwap]: {
+              ...AAVE_HOOK_ADAPTER_PER_TYPE[AaveFlashLoanType.CollateralSwap],
+              [SupportedChainId.GNOSIS_CHAIN]: customCollateralSwapAddress,
+            },
+            [AaveFlashLoanType.DebtSwap]: {
+              ...AAVE_HOOK_ADAPTER_PER_TYPE[AaveFlashLoanType.DebtSwap],
+              [SupportedChainId.GNOSIS_CHAIN]: customDebtSwapAddress,
+            },
+            [AaveFlashLoanType.RepayCollateral]: {
+              ...AAVE_HOOK_ADAPTER_PER_TYPE[AaveFlashLoanType.RepayCollateral],
+              [SupportedChainId.GNOSIS_CHAIN]: customRepayAddress,
+            },
+          },
+        }
+
+        const customSdk = new AaveCollateralSwapSdk(customConfig)
+        const readContractSpy = setupReadContractMock()
+
+        await customSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.GNOSIS_CHAIN,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        // Verify that the custom CollateralSwap address was used
+        const readContractCalls = readContractSpy.mock.calls
+        const getInstanceCall = readContractCalls.find(
+          (call) => call[0]?.functionName === 'getInstanceDeterministicAddress',
+        )
+
+        expect(getInstanceCall).toBeDefined()
+        expect(getInstanceCall?.[0]?.args?.[0]).toBe(customCollateralSwapAddress)
+      })
+
+      test('should use custom hook adapter addresses for different chains', async () => {
+        const customGnosisAddress = '0x4444444444444444444444444444444444444444'
+        const customMainnetAddress = '0x5555555555555555555555555555555555555555'
+
+        const customConfig = {
+          hookAdapterPerType: {
+            ...AAVE_HOOK_ADAPTER_PER_TYPE,
+            [AaveFlashLoanType.CollateralSwap]: {
+              ...AAVE_HOOK_ADAPTER_PER_TYPE[AaveFlashLoanType.CollateralSwap],
+              [SupportedChainId.GNOSIS_CHAIN]: customGnosisAddress,
+              [SupportedChainId.MAINNET]: customMainnetAddress,
+            },
+          },
+        }
+
+        const customSdk = new AaveCollateralSwapSdk(customConfig)
+        const readContractSpy = setupReadContractMock()
+
+        // Test with Gnosis Chain
+        await customSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.GNOSIS_CHAIN,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        let readContractCalls = readContractSpy.mock.calls
+        let getInstanceCall = readContractCalls.find(
+          (call) => call[0]?.functionName === 'getInstanceDeterministicAddress',
+        )
+
+        expect(getInstanceCall?.[0]?.args?.[0]).toBe(customGnosisAddress)
+
+        // Reset mocks
+        readContractSpy.mockClear()
+        mockPostSwapOrderFromQuote.mockClear()
+
+        // Test with Mainnet
+        await customSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.MAINNET,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        readContractCalls = readContractSpy.mock.calls
+        getInstanceCall = readContractCalls.find((call) => call[0]?.functionName === 'getInstanceDeterministicAddress')
+
+        expect(getInstanceCall?.[0]?.args?.[0]).toBe(customMainnetAddress)
       })
     })
   })
