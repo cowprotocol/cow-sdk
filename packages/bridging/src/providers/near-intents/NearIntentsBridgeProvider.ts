@@ -222,6 +222,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
 
     // Unpack quote data
     const qr = status.quoteResponse?.quoteRequest
+    const swapDetails = status.swapDetails
     const quote = status.quoteResponse?.quote
     const timestampMs = Date.parse(status.quoteResponse?.timestamp ?? '')
     if (!qr || !quote || Number.isNaN(timestampMs)) {
@@ -253,7 +254,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
         inputTokenAddress: inputToken.contractAddress ?? ETH_ADDRESS,
         outputTokenAddress: outputToken.contractAddress ?? ETH_ADDRESS,
         inputAmount: BigInt(quote.amountIn),
-        outputAmount: BigInt(quote.amountOut),
+        outputAmount: swapDetails.amountOut ? BigInt(swapDetails.amountOut) : BigInt(quote.amountOut),
         owner: order.owner,
         quoteTimestamp,
         fillDeadline: quoteTimestamp + quote.timeEstimate,
