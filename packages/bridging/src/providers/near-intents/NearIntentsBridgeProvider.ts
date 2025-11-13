@@ -119,7 +119,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
      * * And CoW Swap will try to swap USDT (bnb) -> USDT (bnb) which is not allowed
      */
     return Array.from(sourceTokens.values()).filter((token) => {
-      return token.address.toLowerCase() !== sellTokenAddress.toLowerCase()
+      return token.address?.toLowerCase() !== sellTokenAddress.toLowerCase()
     })
   }
 
