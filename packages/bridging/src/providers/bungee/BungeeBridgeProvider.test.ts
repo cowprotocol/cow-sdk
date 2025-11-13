@@ -278,7 +278,7 @@ adapterNames.forEach((adapterName) => {
               bridgingFee: {
                 feeBps: 50,
                 amountInSellCurrency: 5000000000000000n,
-                amountInBuyCurrency: 0n,
+                amountInBuyCurrency: 5000n,
               },
             },
             slippageBps: 0,
