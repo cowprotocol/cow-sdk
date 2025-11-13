@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.4.0...sdk-flash-loans-v1.5.0) (2025-11-13)
+
+
+### ✨ Features
+
+* **flash-loans:** update smartcontract addresses ([#676](https://github.com/cowprotocol/cow-sdk/issues/676)) ([3d78116](https://github.com/cowprotocol/cow-sdk/commit/3d781167dfe6a02646c546b481f058d2ed0f664f))
+
 ## [1.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.3.0...sdk-flash-loans-v1.4.0) (2025-11-12)
 
 
