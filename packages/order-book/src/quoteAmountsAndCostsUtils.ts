@@ -170,7 +170,7 @@ function getQuoteAmountsWithProtocolFee(params: {
       },
     }
   } else {
-    // todo not implemented yet, but it's the same formula as for sell orders'
+    // todo not implemented yet, it's the same formula as for sell orders'
     // sellAmount doesn't include the network fee for BUY orders
     const ONE_PLUS_PROTOCOL_FEE_BPS = ONE_HUNDRED_BPS + protocolFeeBpsBig
     const sellAmountWithNetworkFee = sellAmountAfterNetworkCosts.big + networkCostAmount.big
