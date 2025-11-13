@@ -149,7 +149,10 @@ async function getIntermediateTokens<T extends BridgeQuoteResult>(params: {
     intermediateTokens = cached
   } else {
     intermediateTokens = await provider.getIntermediateTokens(quoteBridgeRequest)
-    intermediateTokensCache?.set(cacheKey, intermediateTokens)
+
+    if (intermediateTokens?.length) {
+      intermediateTokensCache?.set(cacheKey, intermediateTokens)
+    }
   }
 
   if (intermediateTokens.length === 0) {
