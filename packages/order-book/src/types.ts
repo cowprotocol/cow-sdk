@@ -24,9 +24,6 @@ export interface Costs<T> {
   protocolFee: {
     amount: T
     bps: number
-    // need to understand - do I need to calculate it?
-    amountInSellCurrency: T
-    amountInBuyCurrency: T
   }
 }
 

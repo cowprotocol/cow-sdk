@@ -59,8 +59,6 @@ export function mapQuoteAmountsAndCosts<T, R>(
       protocolFee: {
         ...protocolFee,
         amount: mapper(protocolFee.amount),
-        amountInSellCurrency: mapper(protocolFee.amountInSellCurrency),
-        amountInBuyCurrency: mapper(protocolFee.amountInBuyCurrency),
       },
     },
     beforeNetworkCosts: serializeAmounts(value.beforeNetworkCosts),
