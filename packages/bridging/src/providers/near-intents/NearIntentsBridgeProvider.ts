@@ -83,7 +83,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       throw new BridgeProviderQuoteError(BridgeQuoteErrors.ONLY_SELL_ORDER_SUPPORTED, { kind: request.kind })
     }
 
-    const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
+    const { sellTokenChainId, buyTokenChainId, buyTokenAddress, sellTokenAddress } = request
 
     const tokens = adaptTokens(await this.api.getTokens())
     const { sourceTokens, targetTokens } = tokens.reduce(
@@ -107,8 +107,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     if (!targetSymbol) return []
 
     return Array.from(sourceTokens.values()).filter(
-      (token) =>
-        token.symbol?.toLowerCase() === targetSymbol && token.address.toLowerCase() !== ETH_ADDRESS.toLowerCase(),
+      (token) => token.address?.toLowerCase() !== sellTokenAddress.toLowerCase(),
     )
   }
 
