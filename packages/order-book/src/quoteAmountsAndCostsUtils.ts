@@ -86,10 +86,10 @@ function _getQuoteAmountsWithCosts(params: {
 }
 
 function getQuoteAmountsWithPartnerFee(params: {
-  sellAmountAfterNetworkCosts: BigNumber
-  buyAmountAfterNetworkCosts: BigNumber
-  buyAmountBeforeNetworkCosts: BigNumber
-  sellAmountBeforeNetworkCosts: BigNumber
+  sellAmountAfterNetworkCosts: bigint
+  buyAmountAfterNetworkCosts: bigint
+  buyAmountBeforeNetworkCosts: bigint
+  sellAmountBeforeNetworkCosts: bigint
   isSell: boolean
   partnerFeeBps: number
 }) {
@@ -105,20 +105,20 @@ function getQuoteAmountsWithPartnerFee(params: {
   /**
    * Partner fee is always added on the surplus amount, for sell-orders it's buy amount, for buy-orders it's sell amount
    */
-  const surplusAmount = isSell ? buyAmountBeforeNetworkCosts.big : sellAmountBeforeNetworkCosts.big
-  const partnerFeeAmount = partnerFeeBps > 0 ? (surplusAmount * BigInt(partnerFeeBps)) / ONE_HUNDRED_BPS : BigInt(0)
+  const surplusAmount = isSell ? buyAmountBeforeNetworkCosts : sellAmountBeforeNetworkCosts
+  const partnerFeeAmount = partnerFeeBps > 0 ? (surplusAmount * BigInt(partnerFeeBps)) / ONE_HUNDRED_BPS : 0n
 
   /**
    * Partner fee is always added on the surplus token, for sell-orders it's buy token, for buy-orders it's sell token
    */
   const afterPartnerFees = isSell
     ? {
-        sellAmount: sellAmountAfterNetworkCosts.big,
-        buyAmount: buyAmountAfterNetworkCosts.big - partnerFeeAmount,
+        sellAmount: sellAmountAfterNetworkCosts,
+        buyAmount: buyAmountAfterNetworkCosts - partnerFeeAmount,
       }
     : {
-        sellAmount: sellAmountAfterNetworkCosts.big + partnerFeeAmount,
-        buyAmount: buyAmountAfterNetworkCosts.big,
+        sellAmount: sellAmountAfterNetworkCosts + partnerFeeAmount,
+        buyAmount: buyAmountAfterNetworkCosts,
       }
 
   return {
@@ -128,9 +128,9 @@ function getQuoteAmountsWithPartnerFee(params: {
 }
 
 function getQuoteAmountsWithProtocolFee(params: {
-  sellAmountAfterNetworkCosts: BigNumber
-  buyAmountAfterNetworkCosts: BigNumber
-  networkCostAmount: BigNumber
+  sellAmountAfterNetworkCosts: bigint
+  buyAmountAfterNetworkCosts: bigint
+  networkCostAmount: bigint
   isSell: boolean
   protocolFeeBps: number
 }) {
@@ -156,7 +156,7 @@ function getQuoteAmountsWithProtocolFee(params: {
      * We need to reconstruct the original buyAmount and calculate the fee amount.
      */
     const ONE_MINUS_PROTOCOL_FEE_BPS = ONE_HUNDRED_BPS - protocolFeeBpsBig
-    const protocolFeeAmountInBuy = (buyAmountAfterNetworkCosts.big * protocolFeeBpsBig) / ONE_MINUS_PROTOCOL_FEE_BPS
+    const protocolFeeAmountInBuy = (buyAmountAfterNetworkCosts * protocolFeeBpsBig) / ONE_MINUS_PROTOCOL_FEE_BPS
 
     return {
       protocolFeeAmount: protocolFeeAmountInBuy,
@@ -167,17 +167,17 @@ function getQuoteAmountsWithProtocolFee(params: {
     }
   } else {
     /**
-     * todo This is not implemented properly yet for buyAmount/sellAmount calculations
+     * BUY orders formula: protocolFeeInSell = (quoteSellAmount + feeAmount) * protocolFeeBps  / (1 + protocolFeeBps)
      */
     const ONE_PLUS_PROTOCOL_FEE_BPS = ONE_HUNDRED_BPS + protocolFeeBpsBig
-    const sellAmountWithNetworkFee = sellAmountAfterNetworkCosts.big + networkCostAmount.big
+    const sellAmountWithNetworkFee = sellAmountAfterNetworkCosts + networkCostAmount
     const protocolFeeAmountInSell = (sellAmountWithNetworkFee * protocolFeeBpsBig) / ONE_PLUS_PROTOCOL_FEE_BPS
 
     return {
       protocolFeeAmount: protocolFeeAmountInSell,
       afterProtocolFees: {
-        sellAmount: sellAmountAfterNetworkCosts, // todo
-        buyAmount: buyAmountAfterNetworkCosts, // todo
+        sellAmount: sellAmountAfterNetworkCosts + protocolFeeAmountInSell,
+        buyAmount: buyAmountAfterNetworkCosts,
       },
     }
   }
@@ -227,9 +227,9 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
 
 
   const { afterProtocolFees, protocolFeeAmount } = getQuoteAmountsWithProtocolFee({
-    sellAmountAfterNetworkCosts,
-    buyAmountAfterNetworkCosts, // todo this case is not handled yet
-    networkCostAmount,
+    sellAmountAfterNetworkCosts: sellAmountAfterNetworkCosts.big,
+    buyAmountAfterNetworkCosts: buyAmountAfterNetworkCosts.big, // todo this case is not handled yet
+    networkCostAmount: networkCostAmount.big,
     isSell,
     protocolFeeBps,
   })
@@ -238,8 +238,8 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
   const { afterPartnerFees, partnerFeeAmount } = getQuoteAmountsWithPartnerFee({
     sellAmountAfterNetworkCosts: afterProtocolFees.sellAmount,
     buyAmountAfterNetworkCosts: afterProtocolFees.buyAmount,
-    buyAmountBeforeNetworkCosts,
-    sellAmountBeforeNetworkCosts,
+    buyAmountBeforeNetworkCosts: buyAmountBeforeNetworkCosts.big,
+    sellAmountBeforeNetworkCosts: sellAmountBeforeNetworkCosts.big,
     isSell,
     partnerFeeBps,
   })
@@ -276,10 +276,7 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
       buyAmount: buyAmountAfterNetworkCosts.big,
     },
     afterPartnerFees,
-    afterProtocolFees: {
-      sellAmount: afterProtocolFees.sellAmount.big,
-      buyAmount: afterProtocolFees.buyAmount.big,
-    },
+    afterProtocolFees,
     afterSlippage,
   }
 }
