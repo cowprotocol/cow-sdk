@@ -33,7 +33,7 @@ export function mapQuoteAmountsAndCosts<T, R>(
   mapper: (value: T) => R,
 ): QuoteAmountsAndCosts<R> {
   const {
-    costs: { networkFee, partnerFee },
+    costs: { networkFee, partnerFee, protocolFee },
   } = value
 
   function serializeAmounts(value: { sellAmount: T; buyAmount: T }): { sellAmount: R; buyAmount: R } {
@@ -56,10 +56,17 @@ export function mapQuoteAmountsAndCosts<T, R>(
         ...partnerFee,
         amount: mapper(partnerFee.amount),
       },
+      protocolFee: {
+        ...protocolFee,
+        amount: mapper(protocolFee.amount),
+        amountInSellCurrency: mapper(protocolFee.amountInSellCurrency),
+        amountInBuyCurrency: mapper(protocolFee.amountInBuyCurrency),
+      },
     },
     beforeNetworkCosts: serializeAmounts(value.beforeNetworkCosts),
     afterNetworkCosts: serializeAmounts(value.afterNetworkCosts),
     afterPartnerFees: serializeAmounts(value.afterPartnerFees),
+    afterProtocolFees: serializeAmounts(value.afterProtocolFees),
     afterSlippage: serializeAmounts(value.afterSlippage),
   }
 }

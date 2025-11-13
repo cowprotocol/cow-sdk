@@ -21,6 +21,13 @@ export interface Costs<T> {
     amount: T
     bps: number
   }
+  protocolFee: {
+    amount: T
+    bps: number
+    // need to understand - do I need to calculate it?
+    amountInSellCurrency: T
+    amountInBuyCurrency: T
+  }
 }
 
 /**
@@ -32,6 +39,7 @@ export interface Costs<T> {
  * The order of adding fees and costs is as follows:
  * 1. Network fee is always added to the sell amount
  * 2. Partner fee is added to the surplus amount (sell amount for sell-orders, buy amount for buy-orders)
+ * 3. Protocol fee is applied after partner fees (volume-based fee)
  *
  * For sell-orders the partner fee is subtracted from the buy amount after network costs.
  * For buy-orders the partner fee is added on top of the sell amount after network costs.
@@ -70,6 +78,13 @@ export interface QuoteAmountsAndCosts<T = bigint> {
    * This amount could be shown to the user, as the expected to receive amount already including any fees or costs.
    */
   afterPartnerFees: Amounts<T>
+
+  /**
+   * Amounts after including protocol fees (if any).
+   *
+   * Protocol fee is applied after partner fees but before slippage.
+   */
+  afterProtocolFees: Amounts<T>
 
   /**
    * Amounts after including the slippage tolerance.
