@@ -127,7 +127,7 @@ function getQuoteAmountsWithPartnerFee(params: {
   }
 }
 
-function getQuoteAmountsWithProtocolFee(params: {
+function getProtocolFeeAmount(params: {
   sellAmountAfterNetworkCosts: bigint
   buyAmountAfterNetworkCosts: bigint
   networkCostAmount: bigint
@@ -137,13 +137,7 @@ function getQuoteAmountsWithProtocolFee(params: {
   const { sellAmountAfterNetworkCosts, buyAmountAfterNetworkCosts, networkCostAmount, isSell, protocolFeeBps } = params
 
   if (protocolFeeBps <= 0) {
-    return {
-      protocolFeeAmount: 0n,
-      afterProtocolFees: {
-        sellAmount: sellAmountAfterNetworkCosts,
-        buyAmount: buyAmountAfterNetworkCosts,
-      },
-    }
+    return 0n
   }
 
   const protocolFeeBpsBig = BigInt(protocolFeeBps)
@@ -156,30 +150,14 @@ function getQuoteAmountsWithProtocolFee(params: {
      * We need to reconstruct the original buyAmount and calculate the fee amount.
      */
     const ONE_MINUS_PROTOCOL_FEE_BPS = ONE_HUNDRED_BPS - protocolFeeBpsBig
-    const protocolFeeAmountInBuy = (buyAmountAfterNetworkCosts * protocolFeeBpsBig) / ONE_MINUS_PROTOCOL_FEE_BPS
-
-    return {
-      protocolFeeAmount: protocolFeeAmountInBuy,
-      afterProtocolFees: {
-        sellAmount: sellAmountAfterNetworkCosts,
-        buyAmount: buyAmountAfterNetworkCosts, // Already includes protocol fee (deducted by API)
-      },
-    }
+    return (buyAmountAfterNetworkCosts * protocolFeeBpsBig) / ONE_MINUS_PROTOCOL_FEE_BPS
   } else {
     /**
-     * BUY orders formula: protocolFeeInSell = (quoteSellAmount + feeAmount) * protocolFeeBps  / (1 + protocolFeeBps)
+     * BUY orders formula: protocolFeeInSell = (quoteSellAmount + feeAmount) * proto colFeeBps  / (1 + protocolFeeBps)
      */
     const ONE_PLUS_PROTOCOL_FEE_BPS = ONE_HUNDRED_BPS + protocolFeeBpsBig
     const sellAmountWithNetworkFee = sellAmountAfterNetworkCosts + networkCostAmount
-    const protocolFeeAmountInSell = (sellAmountWithNetworkFee * protocolFeeBpsBig) / ONE_PLUS_PROTOCOL_FEE_BPS
-
-    return {
-      protocolFeeAmount: protocolFeeAmountInSell,
-      afterProtocolFees: {
-        sellAmount: sellAmountAfterNetworkCosts + protocolFeeAmountInSell,
-        buyAmount: buyAmountAfterNetworkCosts,
-      },
-    }
+    return (sellAmountWithNetworkFee * protocolFeeBpsBig) / ONE_PLUS_PROTOCOL_FEE_BPS
   }
 }
 
@@ -226,9 +204,9 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
   } = _getQuoteAmountsWithCosts({ sellDecimals, buyDecimals, orderParams })
 
 
-  const { afterProtocolFees, protocolFeeAmount } = getQuoteAmountsWithProtocolFee({
+  const protocolFeeAmount = getProtocolFeeAmount({
     sellAmountAfterNetworkCosts: sellAmountAfterNetworkCosts.big,
-    buyAmountAfterNetworkCosts: buyAmountAfterNetworkCosts.big, // todo this case is not handled yet
+    buyAmountAfterNetworkCosts: buyAmountAfterNetworkCosts.big,
     networkCostAmount: networkCostAmount.big,
     isSell,
     protocolFeeBps,
@@ -236,15 +214,15 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
 
   // Get amounts including partner fees
   const { afterPartnerFees, partnerFeeAmount } = getQuoteAmountsWithPartnerFee({
-    sellAmountAfterNetworkCosts: afterProtocolFees.sellAmount,
-    buyAmountAfterNetworkCosts: afterProtocolFees.buyAmount,
+    sellAmountAfterNetworkCosts: sellAmountAfterNetworkCosts.big,
+    buyAmountAfterNetworkCosts: buyAmountAfterNetworkCosts.big,
     buyAmountBeforeNetworkCosts: buyAmountBeforeNetworkCosts.big,
     sellAmountBeforeNetworkCosts: sellAmountBeforeNetworkCosts.big,
     isSell,
     partnerFeeBps,
   })
 
-  // Get amounts including slippage (now using afterProtocolFees instead of afterPartnerFees)
+  // Get amounts including slippage
   const { afterSlippage } = getQuoteAmountsWithSlippage({
     afterPartnerFees,
     isSell,
@@ -276,7 +254,6 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
       buyAmount: buyAmountAfterNetworkCosts.big,
     },
     afterPartnerFees,
-    afterProtocolFees,
     afterSlippage,
   }
 }

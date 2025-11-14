@@ -60,6 +60,7 @@ describe('Calculation of before/after fees amounts', () => {
           buyDecimals,
           slippagePercentBps: 0,
           partnerFeeBps: undefined,
+          protocolFeeBps: undefined,
         })
 
         expect(result.afterNetworkCosts.sellAmount.toString()).toBe(
@@ -74,6 +75,7 @@ describe('Calculation of before/after fees amounts', () => {
           buyDecimals,
           slippagePercentBps: 0,
           partnerFeeBps: undefined,
+          protocolFeeBps: undefined,
         })
 
         expect(result.beforeNetworkCosts.buyAmount.toString()).toBe(
@@ -99,6 +101,7 @@ describe('Calculation of before/after fees amounts', () => {
           buyDecimals,
           partnerFeeBps,
           slippagePercentBps: 0,
+          protocolFeeBps: undefined,
         })
 
         const buyAmountBeforeNetworkCosts =
@@ -120,6 +123,7 @@ describe('Calculation of before/after fees amounts', () => {
           buyDecimals,
           partnerFeeBps,
           slippagePercentBps: 0,
+          protocolFeeBps: undefined,
         })
 
         const partnerFeeAmount = Math.floor((+orderParams.sellAmount * partnerFeeBps) / 100 / 100)
@@ -141,6 +145,7 @@ describe('Calculation of before/after fees amounts', () => {
           buyDecimals,
           partnerFeeBps: undefined,
           slippagePercentBps,
+          protocolFeeBps: undefined,
         })
 
         const buyAmountAfterNetworkCosts = +orderParams.buyAmount
@@ -160,6 +165,7 @@ describe('Calculation of before/after fees amounts', () => {
           buyDecimals,
           partnerFeeBps: undefined,
           slippagePercentBps,
+          protocolFeeBps: undefined,
         })
 
         const sellAmountAfterNetworkCosts = +orderParams.sellAmount + +orderParams.feeAmount
