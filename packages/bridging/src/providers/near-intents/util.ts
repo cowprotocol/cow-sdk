@@ -64,7 +64,39 @@ export const hashQuote = ({
   timestamp: any
 }): Hex => {
   const adapter = getGlobalAdapter()
-  const data = stringify({ ...quoteRequest, ...quote, timestamp })
+  const data = stringify({
+    dry: false,
+    swapType: quoteRequest.swapType,
+    slippageTolerance: quoteRequest.slippageTolerance,
+    originAsset: quoteRequest.originAsset,
+    depositType: quoteRequest.depositType,
+    destinationAsset: quoteRequest.destinationAsset,
+    amount: quoteRequest.amount,
+    refundTo: quoteRequest.refundTo,
+    refundType: quoteRequest.refundType,
+    recipient: quoteRequest.recipient,
+    recipientType: quoteRequest.recipientType,
+    deadline: quoteRequest.deadline,
+    quoteWaitingTimeMs: !!quoteRequest.quoteWaitingTimeMs ? quoteRequest.quoteWaitingTimeMs : undefined,
+    referral: !!quoteRequest.referral ? quoteRequest.referral : undefined,
+    virtualChainRecipient: !!quoteRequest.virtualChainRecipient ? quoteRequest.virtualChainRecipient : undefined,
+    virtualChainRefundRecipient: !!quoteRequest.virtualChainRefundRecipient
+      ? quoteRequest.virtualChainRefundRecipient
+      : undefined,
+    customRecipientMsg: undefined,
+    sessionId: undefined,
+    connectedWallets: undefined,
+    depositMode: quoteRequest.depositMode,
+    amountIn: quote.amountIn,
+    amountInFormatted: quote.amountInFormatted,
+    amountInUsd: quote.amountInUsd,
+    minAmountIn: quote.minAmountIn,
+    amountOut: quote.amountOut,
+    amountOutFormatted: quote.amountOutFormatted,
+    amountOutUsd: quote.amountOutUsd,
+    minAmountOut: quote.minAmountOut,
+    timestamp,
+  })
   if (!data) {
     throw new Error('Failed to serialize quote data: quote or quoteRequest may be undefined or invalid')
   }
