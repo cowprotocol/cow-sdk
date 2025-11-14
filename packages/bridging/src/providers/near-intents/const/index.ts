@@ -42,4 +42,4 @@ export const NEAR_INTENTS_STATUS_TO_COW_STATUS: Record<string, BridgeStatus> = {
 
 export const ATTESTATION_PREFIX_CONST = '0x0a773570'
 export const ATTESTION_VERSION_BYTE = '0x00'
-export const ATTESTATOR_ADDRESS = '0x...' // TODO: Add attestator address here
+export const ATTESTATOR_ADDRESS = '0x0073DD100b51C555E41B2a452E5933ef76F42790'
