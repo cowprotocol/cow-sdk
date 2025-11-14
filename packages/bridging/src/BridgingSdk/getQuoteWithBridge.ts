@@ -83,16 +83,26 @@ function createPostSwapOrderFromQuote(
   ) {
     await signingStepManager?.beforeBridgingSign?.()
 
-    const swapResult =
-      provider.type === 'ReceiverAccountBridgeProvider'
-        ? initialSwapResult
-        : // Sign the hooks with the real signer
-          (
-            await getBridgeProviderQuote(signer, advancedSettings).catch((error) => {
-              signingStepManager?.onBridgingSignError?.()
-              throw error
-            })
-          ).swapResult
+    const skipQuoteRefetch = isReceiverAccountBridgeProvider(provider)
+
+    const appDataOverride = advancedSettings?.appData
+    const appDataInfo =
+      appDataOverride && skipQuoteRefetch
+        ? await mergeAppDataDoc(initialSwapResult.appDataInfo.doc, appDataOverride)
+        : initialSwapResult.appDataInfo
+
+    const swapResult: QuoteResults = skipQuoteRefetch
+      ? {
+          ...initialSwapResult,
+          appDataInfo,
+        }
+      : // Sign the hooks with the real signer
+        (
+          await getBridgeProviderQuote(signer, advancedSettings).catch((error) => {
+            signingStepManager?.onBridgingSignError?.()
+            throw error
+          })
+        ).swapResult
 
     await signingStepManager?.afterBridgingSign?.()
 
