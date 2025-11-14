@@ -48,7 +48,9 @@ export const getTokenByAddressAndChainId = (
   return tokens.find((token) => {
     const chainId = NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS[token.blockchain as NearBlockchainKey]
     if (!chainId) return false
-    if (targetTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase()) return chainId === targetTokenChainId
+    if (targetTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase()) {
+      return chainId === targetTokenChainId && !token.contractAddress
+    }
     const tokenAddress = token.contractAddress || ETH_ADDRESS
     return tokenAddress?.toLowerCase() === targetTokenAddress.toLowerCase() && chainId === targetTokenChainId
   })
