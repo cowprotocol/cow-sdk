@@ -50,7 +50,7 @@
     },
     "dappId": {
       "$id": "#/definitions/dappId",
-      "title": "A hex string representing a dApp ID",
+      "title": "An arbitrary string representing a dApp ID",
       "examples": ["75716a3cb48fdbb43ebdff58ce6c541f6a2c269be690513131355800367f2da2"],
       "type": "string",
       "minLength": 1
