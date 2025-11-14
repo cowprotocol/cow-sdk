@@ -59,7 +59,7 @@ export async function mergeAppDataDoc(
           hooks: {},
         },
       }
-    : _doc
+    : { ..._doc }
 
   const appData = (appDataOverride ? deepmerge(doc, appDataOverride) : doc) as LatestAppDataDocVersion
   const { fullAppData, appDataKeccak256 } = await generateAppDataFromDoc(appData)

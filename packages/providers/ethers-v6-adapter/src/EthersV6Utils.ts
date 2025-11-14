@@ -1,4 +1,4 @@
-import { AdapterUtils, ContractValue, CowError, ParamType as CommonParamType } from '@cowprotocol/sdk-common'
+import { AdapterUtils, ContractValue, CowError, Hex, ParamType as CommonParamType } from '@cowprotocol/sdk-common'
 import {
   Interface,
   TypedDataField,
@@ -30,6 +30,8 @@ import {
   parseUnits,
   ParamType,
   isAddress,
+  sha256,
+  recoverAddress,
 } from 'ethers'
 import { TypedDataDomain } from 'ethers'
 import { EthersV6InterfaceWrapper } from './EthersV6InterfaceWrapper'
@@ -77,8 +79,12 @@ export class EthersV6Utils implements AdapterUtils {
     return encodeBytes32String(text)
   }
 
-  keccak256(data: BytesLike): string {
-    return keccak256(this.toEthersBytesLike(data))
+  keccak256(data: BytesLike): Hex {
+    return keccak256(this.toEthersBytesLike(data)) as Hex
+  }
+
+  sha256(data: BytesLike): Hex {
+    return sha256(this.toEthersBytesLike(data)) as Hex
   }
 
   // Helper method to convert our BytesLike to ethers BytesLike
@@ -122,8 +128,12 @@ export class EthersV6Utils implements AdapterUtils {
     return TypedDataEncoder.hash(domain, types, data)
   }
 
-  getChecksumAddress(address: string): string {
-    return getAddress(address)
+  getChecksumAddress(address: string): Hex {
+    return getAddress(address) as Hex
+  }
+
+  async recoverAddress(hash: Hex, signature: Hex): Promise<Hex> {
+    return recoverAddress(hash, signature) as Hex
   }
 
   encodeAbi(types: string[], values: ContractValue[]): BytesLike {
