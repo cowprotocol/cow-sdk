@@ -208,12 +208,13 @@ export async function getQuote(
     orderParams: quote.quote,
     slippagePercentBps: slippageBps,
     partnerFeeBps: getPartnerFeeBps(partnerFee),
+    protocolFeeBps: quote.protocolFeeBps ? Number(quote.protocolFeeBps) : undefined,
     sellDecimals: sellTokenDecimals,
     buyDecimals: buyTokenDecimals,
   })
 
   const orderToSign = getOrderToSign(
-    { chainId, from, networkCostsAmount: quote.quote.feeAmount, isEthFlow },
+    { chainId, from, networkCostsAmount: quote.quote.feeAmount, isEthFlow, protocolFeeBps: quote.protocolFeeBps ? Number(quote.protocolFeeBps) : undefined },
     swapParamsToLimitOrderParams(tradeParameters, quote),
     appDataInfo.appDataKeccak256,
   )
