@@ -8,6 +8,6 @@ export const ACROSS_DEPOSIT_EVENT_INTERFACE = () => {
 
 export const COW_TRADE_EVENT_INTERFACE = () => {
   return getGlobalAdapter().utils.createInterface([
-    'event Trade(address owner, address sellToken, address buyToken, uint256 sellAmount, uint256 buyAmount, uint256 feeAmount, bytes orderUid)',
+    'event Trade(address indexed owner, address sellToken, address buyToken, uint256 sellAmount, uint256 buyAmount, uint256 feeAmount, bytes orderUid)',
   ])
 }
