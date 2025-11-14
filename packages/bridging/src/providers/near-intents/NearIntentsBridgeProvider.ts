@@ -158,13 +158,8 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     })
 
     const recoveredDepositAddress = await this.recoverDepositAddress(quoteResponse)
-    // TODO: enable once ATTESTATOR_ADDRESS is defined
-    const shouldCheckRecoveredDepositAddress = false
 
-    if (
-      shouldCheckRecoveredDepositAddress &&
-      recoveredDepositAddress?.toLowerCase() !== ATTESTATOR_ADDRESS.toLowerCase()
-    ) {
+    if (recoveredDepositAddress?.toLowerCase() !== ATTESTATOR_ADDRESS.toLowerCase()) {
       throw new BridgeProviderQuoteError(BridgeQuoteErrors.QUOTE_DOES_NOT_MATCH_DEPOSIT_ADDRESS)
     }
 
