@@ -72,7 +72,7 @@ export interface CreatePostSwapOrderFromQuoteParams {
  * @param params
  * @returns
  */
-function createPostSwapOrderFromQuote(
+export function createPostSwapOrderFromQuote(
   params: CreatePostSwapOrderFromQuoteParams,
 ): BridgeQuoteAndPost['postSwapOrderFromQuote'] {
   const { provider, getBridgeProviderQuote, signer, sellTokenAddress, orderBookApi, initialSwapResult } = params

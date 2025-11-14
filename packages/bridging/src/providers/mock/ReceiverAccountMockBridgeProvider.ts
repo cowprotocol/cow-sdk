@@ -27,8 +27,8 @@ export class MockReceiverAccountBridgeProvider
     type: providerType,
   }
 
-  // Mock receiver address that will be used for bridging
-  private mockReceiverAddress = '0xBdC3EEE0000000000000000000000000DeAdBeeF'
+  // Mock receiver address that will be used for bridging (properly checksummed)
+  private mockReceiverAddress = '0x9999999999999999999999999999999999999999'
 
   async getBridgeReceiverOverride(_quoteRequest: QuoteBridgeRequest, _quoteResult: BridgeQuoteResult): Promise<string> {
     return this.mockReceiverAddress
