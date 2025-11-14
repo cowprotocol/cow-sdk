@@ -13,3 +13,10 @@ export type { AcrossQuoteResult, AcrossBridgeProviderOptions } from './providers
 
 export { BungeeBridgeProvider } from './providers/bungee/BungeeBridgeProvider'
 export type { BungeeQuoteResult, BungeeBridgeProviderOptions } from './providers/bungee/BungeeBridgeProvider'
+
+export { NearIntentsBridgeProvider } from './providers/near-intents/NearIntentsBridgeProvider'
+
+export type {
+  NearIntentsQuoteResult,
+  NearIntentsBridgeProviderOptions,
+} from './providers/near-intents/NearIntentsBridgeProvider'
