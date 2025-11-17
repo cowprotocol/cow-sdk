@@ -161,7 +161,7 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
   } = _getQuoteAmountsWithCosts({ sellDecimals, buyDecimals, orderParams })
 
   // for market orders: reconstruct protocolFee from quote amounts that already have it deducted
-  // todo for limit orders need to adjust
+  // todo for limit orders need to adjust (if it's needed here)
   const protocolFeeAmount = getProtocolFeeAmount({
     sellAmountAfterNetworkCosts: sellAmountAfterNetworkCosts.big,
     buyAmountAfterNetworkCosts: buyAmountAfterNetworkCosts.big,
@@ -170,7 +170,7 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
   })
 
   // restore amounts before protocolFee (but after network costs)
-  // this is needed because partnerFee should be calculated from amounts with protocolFee
+  // this is needed because partnerFee should be calculated from amounts with protocolFee (for the same volume)
   // for sell orders: protocolFee was deducted from buyAmount, so we add it back
   // for buy orders: protocolFee was added to sellAmount, so we subtract it
   // if protocolFeeBps is 0, use buyAmountBeforeNetworkCosts (calculated from quotePrice)
