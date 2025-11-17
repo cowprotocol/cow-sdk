@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.5.1...sdk-flash-loans-v1.5.2) (2025-11-17)
+
+
+### 🐛 Bug Fixes
+
+* pump flashloans sdk version ([#687](https://github.com/cowprotocol/cow-sdk/issues/687)) ([d31fb42](https://github.com/cowprotocol/cow-sdk/commit/d31fb421424ed3df81de09b0e2d36b7023466931))
+
 ## [1.5.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.5.0...sdk-flash-loans-v1.5.1) (2025-11-17)
 
 
