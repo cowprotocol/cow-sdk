@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.5.0...sdk-flash-loans-v1.5.1) (2025-11-17)
+
+
+### 🔧 Miscellaneous
+
+* allow to set the factory contract and aave pools in the sdk ([#680](https://github.com/cowprotocol/cow-sdk/issues/680)) ([b90529c](https://github.com/cowprotocol/cow-sdk/commit/b90529cd27fdeb4060bc0a53702df6f8104495b7))
+
 ## [1.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.4.0...sdk-flash-loans-v1.5.0) (2025-11-13)
 
 
