@@ -201,7 +201,6 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
   } = _getQuoteAmountsWithCosts({ sellDecimals, buyDecimals, orderParams })
 
   // for market orders: reconstruct protocolFee from quote amounts that already have it deducted
-  // todo for limit orders need to adjust (if it's needed here)
   const protocolFeeAmount = getProtocolFeeAmount({
     sellAmountAfterNetworkCosts: sellAmountAfterNetworkCosts.big,
     buyAmountAfterNetworkCosts: buyAmountAfterNetworkCosts.big,
