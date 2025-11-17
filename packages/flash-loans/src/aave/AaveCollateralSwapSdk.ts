@@ -65,6 +65,7 @@ import { repayWithCollateralAdapterAbi } from './abi/RepayWithCollateralAdapter'
  */
 export type AaveCollateralSwapSdkConfig = {
   hookAdapterPerType?: Record<AaveFlashLoanType, Record<SupportedChainId, string>>
+  adapterFactoryAddresses?: Record<SupportedChainId, string>
 }
 
 /**
@@ -80,6 +81,8 @@ export type AaveCollateralSwapSdkConfig = {
 export class AaveCollateralSwapSdk {
   private readonly hookAdapterPerType: Record<AaveFlashLoanType, Record<SupportedChainId, string>>
 
+  private readonly adapterFactoryAddresses: Record<SupportedChainId, string>
+
   /**
    * Creates an instance of AaveCollateralSwapSdk.
    *
@@ -90,6 +93,7 @@ export class AaveCollateralSwapSdk {
    */
   constructor(config?: AaveCollateralSwapSdkConfig) {
     this.hookAdapterPerType = config?.hookAdapterPerType ?? AAVE_HOOK_ADAPTER_PER_TYPE
+    this.adapterFactoryAddresses = config?.adapterFactoryAddresses ?? AAVE_ADAPTER_FACTORY
   }
   /**
    * Executes a collateral swap using Aave flash loans.
@@ -254,9 +258,9 @@ export class AaveCollateralSwapSdk {
 
     const flashLoanHint: FlashLoanHint = {
       amount, // this is actually in UNDERLYING but aave tokens are 1:1
-      receiver: AAVE_ADAPTER_FACTORY[chainId],
+      receiver: this.adapterFactoryAddresses[chainId],
       liquidityProvider: AAVE_POOL_ADDRESS[chainId],
-      protocolAdapter: AAVE_ADAPTER_FACTORY[chainId],
+      protocolAdapter: this.adapterFactoryAddresses[chainId],
       token: orderToSign.sellToken,
     }
 
@@ -384,23 +388,11 @@ export class AaveCollateralSwapSdk {
     const hookData = this.buildHookOrderData(trader, hookAmounts, order)
 
     return (await getGlobalAdapter().readContract({
-      address: AAVE_ADAPTER_FACTORY[chainId],
+      address: this.adapterFactoryAddresses[chainId],
       args: [this.hookAdapterPerType[flashLoanType][chainId], hookData],
       functionName: 'getInstanceDeterministicAddress',
       abi: aaveAdapterFactoryAbi,
     })) as AccountAddress
-  }
-
-  private async approveCollateralIfNeeded(collateralParams: CollateralParameters, sellAmount: bigint): Promise<void> {
-    const allowance = await this.getCollateralAllowance(collateralParams).catch((error) => {
-      console.error('[AaveCollateralSwapSdk] Could not get allowance for collateral token', error)
-
-      return null
-    })
-
-    if (!allowance || allowance < sellAmount) {
-      await this.approveCollateral(collateralParams)
-    }
   }
 
   calculateFlashLoanAmounts({ sellAmount, flashLoanFeeBps }: { sellAmount: bigint; flashLoanFeeBps: number }): {
@@ -519,7 +511,7 @@ export class AaveCollateralSwapSdk {
     return {
       pre: [
         {
-          target: AAVE_ADAPTER_FACTORY[chainId],
+          target: this.adapterFactoryAddresses[chainId],
           callData: preHookCallData,
           gasLimit: DEFAULT_HOOK_GAS_LIMIT.pre.toString(),
           dappId,
@@ -536,13 +528,25 @@ export class AaveCollateralSwapSdk {
     }
   }
 
+  private async approveCollateralIfNeeded(collateralParams: CollateralParameters, sellAmount: bigint): Promise<void> {
+    const allowance = await this.getCollateralAllowance(collateralParams).catch((error) => {
+      console.error('[AaveCollateralSwapSdk] Could not get allowance for collateral token', error)
+
+      return null
+    })
+
+    if (!allowance || allowance < sellAmount) {
+      await this.approveCollateral(collateralParams)
+    }
+  }
+
   private async adapterEIP1271Signature(
     chainId: SupportedChainId,
     instanceAddress: AccountAddress,
     orderToSign: UnsignedOrder,
     signer: AbstractSigner<Provider>,
   ) {
-    const adapterFactoryAddress = AAVE_ADAPTER_FACTORY[chainId]
+    const adapterFactoryAddress = this.adapterFactoryAddresses[chainId]
     const encodedOrder = OrderSigningUtils.encodeUnsignedOrder(orderToSign)
 
     const domain = {
