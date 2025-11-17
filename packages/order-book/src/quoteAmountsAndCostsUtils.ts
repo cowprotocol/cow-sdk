@@ -86,10 +86,10 @@ function _getQuoteAmountsWithCosts(params: {
 }
 
 function getQuoteAmountsWithPartnerFee(params: {
-  sellAmountAfterNetworkCosts: bigint
-  buyAmountAfterNetworkCosts: bigint
-  buyAmountBeforeNetworkCosts: bigint
-  sellAmountBeforeNetworkCosts: bigint
+  sellAmountAfterNetworkCosts: BigNumber
+  buyAmountAfterNetworkCosts: BigNumber
+  buyAmountBeforeNetworkCosts: BigNumber
+  sellAmountBeforeNetworkCosts: BigNumber
   isSell: boolean
   partnerFeeBps: number
 }) {
@@ -105,20 +105,20 @@ function getQuoteAmountsWithPartnerFee(params: {
   /**
    * Partner fee is always added on the surplus amount, for sell-orders it's buy amount, for buy-orders it's sell amount
    */
-  const surplusAmount = isSell ? buyAmountBeforeNetworkCosts : sellAmountBeforeNetworkCosts
-  const partnerFeeAmount = partnerFeeBps > 0 ? (surplusAmount * BigInt(partnerFeeBps)) / ONE_HUNDRED_BPS : 0n
+  const surplusAmount = isSell ? buyAmountBeforeNetworkCosts.big : sellAmountBeforeNetworkCosts.big
+  const partnerFeeAmount = partnerFeeBps > 0 ? (surplusAmount * BigInt(partnerFeeBps)) / ONE_HUNDRED_BPS : BigInt(0)
 
   /**
    * Partner fee is always added on the surplus token, for sell-orders it's buy token, for buy-orders it's sell token
    */
   const afterPartnerFees = isSell
     ? {
-        sellAmount: sellAmountAfterNetworkCosts,
-        buyAmount: buyAmountAfterNetworkCosts - partnerFeeAmount,
-      }
+      sellAmount: sellAmountAfterNetworkCosts.big,
+      buyAmount: buyAmountAfterNetworkCosts.big - partnerFeeAmount,
+    }
     : {
-        sellAmount: sellAmountAfterNetworkCosts + partnerFeeAmount,
-        buyAmount: buyAmountAfterNetworkCosts,
+        sellAmount: sellAmountAfterNetworkCosts.big + partnerFeeAmount,
+        buyAmount: buyAmountAfterNetworkCosts.big,
       }
 
   return {
@@ -203,7 +203,6 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
     quotePrice,
   } = _getQuoteAmountsWithCosts({ sellDecimals, buyDecimals, orderParams })
 
-
   const protocolFeeAmount = getProtocolFeeAmount({
     sellAmountAfterNetworkCosts: sellAmountAfterNetworkCosts.big,
     buyAmountAfterNetworkCosts: buyAmountAfterNetworkCosts.big,
@@ -214,10 +213,10 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
 
   // Get amounts including partner fees
   const { afterPartnerFees, partnerFeeAmount } = getQuoteAmountsWithPartnerFee({
-    sellAmountAfterNetworkCosts: sellAmountAfterNetworkCosts.big,
-    buyAmountAfterNetworkCosts: buyAmountAfterNetworkCosts.big,
-    buyAmountBeforeNetworkCosts: buyAmountBeforeNetworkCosts.big,
-    sellAmountBeforeNetworkCosts: sellAmountBeforeNetworkCosts.big,
+    sellAmountAfterNetworkCosts: sellAmountAfterNetworkCosts,
+    buyAmountAfterNetworkCosts: buyAmountAfterNetworkCosts,
+    buyAmountBeforeNetworkCosts: buyAmountBeforeNetworkCosts,
+    sellAmountBeforeNetworkCosts: sellAmountBeforeNetworkCosts,
     isSell,
     partnerFeeBps,
   })
