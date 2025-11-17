@@ -213,10 +213,10 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
 
   // Get amounts including partner fees
   const { afterPartnerFees, partnerFeeAmount } = getQuoteAmountsWithPartnerFee({
-    sellAmountAfterNetworkCosts: sellAmountAfterNetworkCosts,
-    buyAmountAfterNetworkCosts: buyAmountAfterNetworkCosts,
-    buyAmountBeforeNetworkCosts: buyAmountBeforeNetworkCosts,
-    sellAmountBeforeNetworkCosts: sellAmountBeforeNetworkCosts,
+    sellAmountAfterNetworkCosts,
+    buyAmountAfterNetworkCosts,
+    buyAmountBeforeNetworkCosts,
+    sellAmountBeforeNetworkCosts,
     isSell,
     partnerFeeBps,
   })
