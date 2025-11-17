@@ -36,7 +36,9 @@ export interface Costs<T> {
  * The order of adding fees and costs is as follows:
  * 1. Network fee is always added to the sell amount
  * 2. Partner fee is added to the surplus amount (sell amount for sell-orders, buy amount for buy-orders)
- * 3. Protocol fee --- need to clarify this one
+ * 3. Protocol fee is already baked into the quoted amounts:
+ *    - for SELL orders it has been deducted from the buy amount
+ *    - for BUY orders it has been added on top of the sell amount.
  *
  * For sell-orders the partner fee is subtracted from the buy amount after network costs.
  * For buy-orders the partner fee is added on top of the sell amount after network costs.

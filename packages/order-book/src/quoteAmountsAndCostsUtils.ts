@@ -102,8 +102,6 @@ function getQuoteAmountsWithPartnerFee(params: {
     partnerFeeBps,
   } = params
 
-  // calculate partnerFee from amounts with protocolFee (correct order: network -> protocol -> partner)
-  // partner fee is calculated from the surplus amount (buy amount for sell, sell amount for buy)
   const surplusAmountForPartnerFee = isSell ? buyAmountBeforeProtocolFee : sellAmountBeforeProtocolFee
   const partnerFeeAmount =
     partnerFeeBps > 0 ? (surplusAmountForPartnerFee * BigInt(partnerFeeBps)) / ONE_HUNDRED_BPS : BigInt(0)
@@ -286,8 +284,8 @@ type BigNumber = {
 }
 
 /**
- * bigInt works well with subtraction and addition, but it's not very good with multiplication and division
- * to multiply/divide token amounts we have to convert them to numbers, but we have to be careful with precision
+ * BigInt works well with subtraction and addition, but it's not very good with multiplication and division
+ * To multiply/divide token amounts we have to convert them to numbers, but we have to be careful with precision
  * @param value
  * @param decimals
  */
