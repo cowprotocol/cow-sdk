@@ -10,6 +10,7 @@ import {
   AAVE_ADAPTER_FACTORY,
   ADAPTER_DOMAIN_NAME,
   AAVE_HOOK_ADAPTER_PER_TYPE,
+  AAVE_POOL_ADDRESS,
   AaveFlashLoanType,
   HASH_ZERO,
 } from './const'
@@ -949,6 +950,276 @@ adapterNames.forEach((adapterName) => {
         getInstanceCall = readContractCalls.find((call) => call[0]?.functionName === 'getInstanceDeterministicAddress')
 
         expect(getInstanceCall?.[0]?.args?.[0]).toBe(customMainnetAddress)
+      })
+
+      test('should use default aaveAdapterFactory when not provided', async () => {
+        const defaultSdk = new AaveCollateralSwapSdk()
+        const readContractSpy = setupReadContractMock()
+
+        await defaultSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.GNOSIS_CHAIN,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        // Verify that the default address was used in getInstanceDeterministicAddress
+        const readContractCalls = readContractSpy.mock.calls
+        const getInstanceCall = readContractCalls.find(
+          (call) => call[0]?.functionName === 'getInstanceDeterministicAddress',
+        )
+
+        expect(getInstanceCall).toBeDefined()
+        expect(getInstanceCall?.[0]?.address).toBe(AAVE_ADAPTER_FACTORY[SupportedChainId.GNOSIS_CHAIN])
+
+        // Verify that the default address is used in flashLoanHint
+        const swapSettingsCall = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
+        const flashLoanHint = swapSettingsCall.appData.metadata.flashloan
+
+        expect(flashLoanHint.receiver).toBe(AAVE_ADAPTER_FACTORY[SupportedChainId.GNOSIS_CHAIN])
+        expect(flashLoanHint.protocolAdapter).toBe(AAVE_ADAPTER_FACTORY[SupportedChainId.GNOSIS_CHAIN])
+
+        // Verify that the default address is used in pre-hook target
+        const preHook = swapSettingsCall.appData.metadata.hooks.pre[0]
+        expect(preHook.target).toBe(AAVE_ADAPTER_FACTORY[SupportedChainId.GNOSIS_CHAIN])
+      })
+
+      test('should use custom aaveAdapterFactory when provided', async () => {
+        const customAdapterFactory = '0xAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+        const customConfig = {
+          aaveAdapterFactory: {
+            ...AAVE_ADAPTER_FACTORY,
+            [SupportedChainId.GNOSIS_CHAIN]: customAdapterFactory,
+          },
+        }
+
+        const customSdk = new AaveCollateralSwapSdk(customConfig)
+        const readContractSpy = setupReadContractMock()
+
+        await customSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.GNOSIS_CHAIN,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        // Verify that the custom address was used in getInstanceDeterministicAddress
+        const readContractCalls = readContractSpy.mock.calls
+        const getInstanceCall = readContractCalls.find(
+          (call) => call[0]?.functionName === 'getInstanceDeterministicAddress',
+        )
+
+        expect(getInstanceCall).toBeDefined()
+        expect(getInstanceCall?.[0]?.address).toBe(customAdapterFactory)
+
+        // Verify that the custom address is used in flashLoanHint
+        const swapSettingsCall = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
+        const flashLoanHint = swapSettingsCall.appData.metadata.flashloan
+
+        expect(flashLoanHint.receiver).toBe(customAdapterFactory)
+        expect(flashLoanHint.protocolAdapter).toBe(customAdapterFactory)
+
+        // Verify that the custom address is used in pre-hook target
+        const preHook = swapSettingsCall.appData.metadata.hooks.pre[0]
+        expect(preHook.target).toBe(customAdapterFactory)
+
+        // Verify that the custom address is used in EIP1271 signature domain
+        const customSignatureFn = swapSettingsCall.additionalParams.customEIP1271Signature
+        const signTypedDataSpy = jest.spyOn(adapter.signer, 'signTypedData').mockResolvedValue('0xabcd' as any)
+
+        await customSignatureFn(mockOrderToSign, adapter.signer)
+
+        expect(signTypedDataSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            verifyingContract: customAdapterFactory,
+          }),
+          expect.any(Object),
+          expect.any(Object),
+        )
+      })
+
+      test('should use default aavePoolAddress when not provided', async () => {
+        const defaultSdk = new AaveCollateralSwapSdk()
+        setupReadContractMock()
+
+        await defaultSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.GNOSIS_CHAIN,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        // Verify that the default address is used in flashLoanHint
+        const swapSettingsCall = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
+        const flashLoanHint = swapSettingsCall.appData.metadata.flashloan
+
+        expect(flashLoanHint.liquidityProvider).toBe(AAVE_POOL_ADDRESS[SupportedChainId.GNOSIS_CHAIN])
+      })
+
+      test('should use custom aavePoolAddress when provided', async () => {
+        const customPoolAddress = '0xBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'
+        const customConfig = {
+          aavePoolAddress: {
+            ...AAVE_POOL_ADDRESS,
+            [SupportedChainId.GNOSIS_CHAIN]: customPoolAddress,
+          },
+        }
+
+        const customSdk = new AaveCollateralSwapSdk(customConfig)
+        setupReadContractMock()
+
+        await customSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.GNOSIS_CHAIN,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        // Verify that the custom address is used in flashLoanHint
+        const swapSettingsCall = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
+        const flashLoanHint = swapSettingsCall.appData.metadata.flashloan
+
+        expect(flashLoanHint.liquidityProvider).toBe(customPoolAddress)
+      })
+
+      test('should use custom aaveAdapterFactory and aavePoolAddress together', async () => {
+        const customAdapterFactory = '0xCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC'
+        const customPoolAddress = '0xDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD'
+        const customConfig = {
+          aaveAdapterFactory: {
+            ...AAVE_ADAPTER_FACTORY,
+            [SupportedChainId.GNOSIS_CHAIN]: customAdapterFactory,
+          },
+          aavePoolAddress: {
+            ...AAVE_POOL_ADDRESS,
+            [SupportedChainId.GNOSIS_CHAIN]: customPoolAddress,
+          },
+        }
+
+        const customSdk = new AaveCollateralSwapSdk(customConfig)
+        const readContractSpy = setupReadContractMock()
+
+        await customSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.GNOSIS_CHAIN,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        // Verify that both custom addresses are used
+        const swapSettingsCall = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
+        const flashLoanHint = swapSettingsCall.appData.metadata.flashloan
+
+        expect(flashLoanHint.receiver).toBe(customAdapterFactory)
+        expect(flashLoanHint.liquidityProvider).toBe(customPoolAddress)
+        expect(flashLoanHint.protocolAdapter).toBe(customAdapterFactory)
+
+        // Verify getInstanceDeterministicAddress uses custom adapter factory
+        const readContractCalls = readContractSpy.mock.calls
+        const getInstanceCall = readContractCalls.find(
+          (call) => call[0]?.functionName === 'getInstanceDeterministicAddress',
+        )
+
+        expect(getInstanceCall?.[0]?.address).toBe(customAdapterFactory)
+      })
+
+      test('should use custom aaveAdapterFactory for different chains', async () => {
+        const customGnosisFactory = '0xEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE'
+        const customMainnetFactory = '0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'
+        const customConfig = {
+          aaveAdapterFactory: {
+            ...AAVE_ADAPTER_FACTORY,
+            [SupportedChainId.GNOSIS_CHAIN]: customGnosisFactory,
+            [SupportedChainId.MAINNET]: customMainnetFactory,
+          },
+        }
+
+        const customSdk = new AaveCollateralSwapSdk(customConfig)
+        const readContractSpy = setupReadContractMock()
+
+        // Test with Gnosis Chain
+        await customSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.GNOSIS_CHAIN,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        let swapSettingsCall = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
+        expect(swapSettingsCall.appData.metadata.flashloan.receiver).toBe(customGnosisFactory)
+
+        // Reset mocks
+        readContractSpy.mockClear()
+        mockPostSwapOrderFromQuote.mockClear()
+
+        // Test with Mainnet
+        await customSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.MAINNET,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        swapSettingsCall = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
+        expect(swapSettingsCall.appData.metadata.flashloan.receiver).toBe(customMainnetFactory)
+      })
+
+      test('should use custom aavePoolAddress for different chains', async () => {
+        const customGnosisPool = '0x1111111111111111111111111111111111111111'
+        const customMainnetPool = '0x2222222222222222222222222222222222222222'
+        const customConfig = {
+          aavePoolAddress: {
+            ...AAVE_POOL_ADDRESS,
+            [SupportedChainId.GNOSIS_CHAIN]: customGnosisPool,
+            [SupportedChainId.MAINNET]: customMainnetPool,
+          },
+        }
+
+        const customSdk = new AaveCollateralSwapSdk(customConfig)
+        setupReadContractMock()
+
+        // Test with Gnosis Chain
+        await customSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.GNOSIS_CHAIN,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        let swapSettingsCall = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
+        expect(swapSettingsCall.appData.metadata.flashloan.liquidityProvider).toBe(customGnosisPool)
+
+        // Reset mocks
+        mockPostSwapOrderFromQuote.mockClear()
+
+        // Test with Mainnet
+        await customSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.MAINNET,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        swapSettingsCall = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
+        expect(swapSettingsCall.appData.metadata.flashloan.liquidityProvider).toBe(customMainnetPool)
       })
     })
   })
