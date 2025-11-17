@@ -176,4 +176,116 @@ describe('Calculation of before/after fees amounts', () => {
       })
     })
   })
+
+  describe('Protocol fee', () => {
+    const protocolFeeBps = 20 // 0.20%
+
+    describe('Sell order', () => {
+      it('calculates protocol fee from quote amounts', () => {
+        const orderParams = SELL_ORDER
+        const result = getQuoteAmountsAndCosts({
+          orderParams,
+          sellDecimals,
+          buyDecimals,
+          slippagePercentBps: 0,
+          partnerFeeBps: undefined,
+          protocolFeeBps,
+        })
+
+        const buyAfter = BigInt(orderParams.buyAmount)
+        const bps = BigInt(protocolFeeBps)
+        const denominator = 10_000n - bps
+        const expectedProtocolFeeAmount = (buyAfter * bps) / denominator
+        const expectedBuyBeforeProtocol = buyAfter + expectedProtocolFeeAmount
+
+        expect(result.costs.protocolFee.amount.toString()).toBe(expectedProtocolFeeAmount.toString())
+        expect(result.beforeNetworkCosts.buyAmount.toString()).toBe(expectedBuyBeforeProtocol.toString())
+      })
+
+      it('calculates partner fee on top of amounts before protocol fee', () => {
+        const orderParams = SELL_ORDER
+        const partnerFeeBps = 100
+
+        const result = getQuoteAmountsAndCosts({
+          orderParams,
+          sellDecimals,
+          buyDecimals,
+          slippagePercentBps: 0,
+          partnerFeeBps,
+          protocolFeeBps,
+        })
+
+        const buyAfter = BigInt(orderParams.buyAmount)
+        const protocolBps = BigInt(protocolFeeBps)
+        const protocolDenominator = 10_000n - protocolBps
+        const expectedProtocolFeeAmount = (buyAfter * protocolBps) / protocolDenominator
+        const buyBeforeProtocol = buyAfter + expectedProtocolFeeAmount
+
+        const partnerBps = BigInt(partnerFeeBps)
+        const expectedPartnerFeeAmount = (buyBeforeProtocol * partnerBps) / 10_000n
+
+        expect(result.costs.partnerFee.amount.toString()).toBe(expectedPartnerFeeAmount.toString())
+        expect(result.afterPartnerFees.buyAmount.toString()).toBe(
+          (buyAfter - expectedPartnerFeeAmount).toString(),
+        )
+      })
+    })
+
+    describe('Buy order', () => {
+      it('calculates protocol fee from quote amounts', () => {
+        const orderParams = BUY_ORDER
+        const result = getQuoteAmountsAndCosts({
+          orderParams,
+          sellDecimals,
+          buyDecimals,
+          slippagePercentBps: 0,
+          partnerFeeBps: undefined,
+          protocolFeeBps,
+        })
+
+        const sellBefore = BigInt(orderParams.sellAmount)
+        const network = BigInt(orderParams.feeAmount)
+        const sellAfter = sellBefore + network
+
+        const bps = BigInt(protocolFeeBps)
+        const denominator = 10_000n + bps
+        const expectedProtocolFeeAmount = (sellAfter * bps) / denominator
+        const expectedSellBeforeProtocol = sellAfter - expectedProtocolFeeAmount
+
+        expect(result.costs.protocolFee.amount.toString()).toBe(expectedProtocolFeeAmount.toString())
+        expect(result.beforeNetworkCosts.sellAmount.toString()).toBe(expectedSellBeforeProtocol.toString())
+      })
+
+      it('calculates partner fee on top of amounts before protocol fee', () => {
+        const orderParams = BUY_ORDER
+        const partnerFeeBps = 100
+
+        const result = getQuoteAmountsAndCosts({
+          orderParams,
+          sellDecimals,
+          buyDecimals,
+          slippagePercentBps: 0,
+          partnerFeeBps,
+          protocolFeeBps,
+        })
+
+        const sellBefore = BigInt(orderParams.sellAmount)
+        const network = BigInt(orderParams.feeAmount)
+        const sellAfter = sellBefore + network
+
+        const protocolBps = BigInt(protocolFeeBps)
+        const protocolDenominator = 10_000n + protocolBps
+        const expectedProtocolFeeAmount = (sellAfter * protocolBps) / protocolDenominator
+        const sellBeforeProtocol = sellAfter - expectedProtocolFeeAmount
+
+        const partnerBps = BigInt(partnerFeeBps)
+        const expectedPartnerFeeAmount = (sellBeforeProtocol * partnerBps) / 10_000n
+
+        expect(result.costs.partnerFee.amount.toString()).toBe(expectedPartnerFeeAmount.toString())
+        expect(result.afterPartnerFees.sellAmount.toString()).toBe(
+          (sellAfter + expectedPartnerFeeAmount).toString(),
+        )
+      })
+    })
+  })
 })
