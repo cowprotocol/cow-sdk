@@ -149,6 +149,7 @@ function getProtocolFeeAmount(params: {
   } else {
     /**
      * BUY orders formula: protocolFeeInSell = (quoteSellAmount + feeAmount) * protocolFeeBps / (1 + protocolFeeBps)
+     * the sellAmountAfterNetworkCosts already includes the protocol fee (it was added to sellAmount by the API).
      */
     const ONE_PLUS_PROTOCOL_FEE_BPS = ONE_HUNDRED_BPS + protocolFeeBpsBig
     // sellAmountAfterNetworkCosts is already sellAmount + networkCosts (check _getQuoteAmountsWithCosts)
