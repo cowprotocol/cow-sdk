@@ -82,7 +82,6 @@ export type AaveCollateralSwapSdkConfig = {
 }
 
 /**
->>>>>>> Stashed changes
  * SDK for executing Aave flash loan operations, particularly collateral swaps.
  *
  * @remarks This SDK facilitates flash loan-based collateral swaps using Aave Protocol V3,
