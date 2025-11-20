@@ -16,18 +16,29 @@ export function getQuoteAmountsWithCosts(params: {
   sellDecimals: number
   buyDecimals: number
   orderParams: OrderParameters
+  protocolFeeBps?: number
 }) {
-  const { sellDecimals, buyDecimals, orderParams } = params
+  const { sellDecimals, buyDecimals, orderParams, protocolFeeBps = 0 } = params
+
+  const isSell = orderParams.kind === OrderKind.SELL
+
+  const protocolFeeAmount = getProtocolFeeAmount({ orderParams, isSell, protocolFeeBps })
+  const protocolFeeAmountDecimals = isSell ? buyDecimals : sellDecimals
 
   const {
     sellAmountAfterNetworkCosts,
     buyAmountAfterNetworkCosts,
     buyAmountBeforeNetworkCosts,
-    isSell,
     networkCostAmount,
     quotePrice,
     sellAmountBeforeNetworkCosts,
-  } = _getQuoteAmountsWithCosts({ sellDecimals, buyDecimals, orderParams })
+  } = _getQuoteAmountsWithCosts({
+    sellDecimals,
+    buyDecimals,
+    orderParams,
+    protocolFeeAmount: getBigNumber(protocolFeeAmount, protocolFeeAmountDecimals),
+    isSell,
+  })
 
   return {
     isSell,
@@ -44,9 +55,10 @@ function _getQuoteAmountsWithCosts(params: {
   sellDecimals: number
   buyDecimals: number
   orderParams: OrderParameters
+  isSell: boolean
+  protocolFeeAmount: BigNumber
 }) {
-  const { sellDecimals, buyDecimals, orderParams } = params
-  const isSell = orderParams.kind === OrderKind.SELL
+  const { sellDecimals, buyDecimals, orderParams, isSell, protocolFeeAmount } = params
   /**
    * Wrap raw values into bigNumbers
    * We also make amounts names more specific with "beforeNetworkCosts" and "afterNetworkCosts" suffixes
@@ -57,11 +69,16 @@ function _getQuoteAmountsWithCosts(params: {
 
   /**
    * This is an actual price of the quote since it's derrived only from the quote sell and buy amounts
+   * if protocolFeeBps is 0, this price will be the same
    */
-  const quotePrice = buyAmountAfterNetworkCosts.num / sellAmountBeforeNetworkCosts.num
+  const quotePrice = isSell
+    ? // For SELL order is already deducting protocol fees from buyAmount, so we need to add it back to get the actual price
+    (buyAmountAfterNetworkCosts.num + protocolFeeAmount.num) / sellAmountBeforeNetworkCosts.num
+    : // For BUY order is already adding protocol fees to sellAmount, so we need to subtract it to get the actual price
+    buyAmountAfterNetworkCosts.num / (sellAmountBeforeNetworkCosts.num - protocolFeeAmount.num)
 
   /**
-   * Before networkCosts + networkCosts = After networkCosts :)
+   * Before amount + networkCosts = After networkCosts :)
    */
   const sellAmountAfterNetworkCosts = getBigNumber(
     sellAmountBeforeNetworkCosts.big + networkCostAmount.big,
@@ -109,13 +126,13 @@ function getQuoteAmountsWithPartnerFee(params: {
   // calculate amounts after partner fees
   const afterPartnerFees = isSell
     ? {
-        sellAmount: sellAmountAfterNetworkCosts,
-        buyAmount: buyAmountAfterNetworkCosts - partnerFeeAmount,
-      }
+      sellAmount: sellAmountAfterNetworkCosts,
+      buyAmount: buyAmountAfterNetworkCosts - partnerFeeAmount,
+    }
     : {
-        sellAmount: sellAmountAfterNetworkCosts + partnerFeeAmount,
-        buyAmount: buyAmountAfterNetworkCosts,
-      }
+      sellAmount: sellAmountAfterNetworkCosts + partnerFeeAmount,
+      buyAmount: buyAmountAfterNetworkCosts,
+    }
 
   return {
     partnerFeeAmount,
@@ -123,17 +140,16 @@ function getQuoteAmountsWithPartnerFee(params: {
   }
 }
 
-function getProtocolFeeAmount(params: {
-  sellAmountAfterNetworkCosts: bigint
-  buyAmountAfterNetworkCosts: bigint
-  isSell: boolean
-  protocolFeeBps: number
-}) {
-  const { sellAmountAfterNetworkCosts, buyAmountAfterNetworkCosts, isSell, protocolFeeBps } = params
-
+function getProtocolFeeAmount(params: { orderParams: OrderParameters; isSell: boolean; protocolFeeBps: number }) {
+  const { orderParams, protocolFeeBps, isSell } = params
   if (protocolFeeBps <= 0) {
     return 0n
   }
+
+  const { sellAmount: sellAmountStr, buyAmount: buyAmountStr, feeAmount: feeAmountStr } = orderParams
+  const sellAmount = BigInt(sellAmountStr)
+  const buyAmount = BigInt(buyAmountStr)
+  const feeAmount = BigInt(feeAmountStr)
 
   const protocolFeeBpsBig = BigInt(protocolFeeBps)
 
@@ -144,16 +160,16 @@ function getProtocolFeeAmount(params: {
      * The buyAmountAfterNetworkCosts already includes the protocol fee (it was deducted from buyAmount by the API).
      * We need to reconstruct the original buyAmount and calculate the fee amount.
      */
-    const ONE_MINUS_PROTOCOL_FEE_BPS = ONE_HUNDRED_BPS - protocolFeeBpsBig
-    return (buyAmountAfterNetworkCosts * protocolFeeBpsBig) / ONE_MINUS_PROTOCOL_FEE_BPS
+    const denominator = ONE_HUNDRED_BPS - protocolFeeBpsBig
+    return (buyAmount * protocolFeeBpsBig) / denominator
   } else {
     /**
      * BUY orders formula: protocolFeeInSell = (quoteSellAmount + feeAmount) * protocolFeeBps / (1 + protocolFeeBps)
      * the sellAmountAfterNetworkCosts already includes the protocol fee (it was added to sellAmount by the API).
      */
-    const ONE_PLUS_PROTOCOL_FEE_BPS = ONE_HUNDRED_BPS + protocolFeeBpsBig
+    const denominator = ONE_HUNDRED_BPS + protocolFeeBpsBig
     // sellAmountAfterNetworkCosts is already sellAmount + networkCosts (check _getQuoteAmountsWithCosts)
-    return (sellAmountAfterNetworkCosts * protocolFeeBpsBig) / ONE_PLUS_PROTOCOL_FEE_BPS
+    return ((sellAmount + feeAmount) * protocolFeeBpsBig) / denominator
   }
 }
 
@@ -170,13 +186,13 @@ function getQuoteAmountsWithSlippage(params: {
    */
   const afterSlippage = isSell
     ? {
-        sellAmount: afterPartnerFees.sellAmount,
-        buyAmount: afterPartnerFees.buyAmount - getSlippageAmount(afterPartnerFees.buyAmount),
-      }
+      sellAmount: afterPartnerFees.sellAmount,
+      buyAmount: afterPartnerFees.buyAmount - getSlippageAmount(afterPartnerFees.buyAmount),
+    }
     : {
-        sellAmount: afterPartnerFees.sellAmount + getSlippageAmount(afterPartnerFees.sellAmount),
-        buyAmount: afterPartnerFees.buyAmount,
-      }
+      sellAmount: afterPartnerFees.sellAmount + getSlippageAmount(afterPartnerFees.sellAmount),
+      buyAmount: afterPartnerFees.buyAmount,
+    }
 
   return {
     afterSlippage,
@@ -187,24 +203,30 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
   const { orderParams, sellDecimals, buyDecimals, slippagePercentBps } = params
   const partnerFeeBps = params.partnerFeeBps ?? 0
   const protocolFeeBps = params.protocolFeeBps ?? 0
+  const isSell = orderParams.kind === OrderKind.SELL
+
+  // for market orders: reconstruct protocolFee from quote amounts that already have it deducted
+  const protocolFeeAmount = getProtocolFeeAmount({
+    orderParams,
+    isSell,
+    protocolFeeBps,
+  })
+  const protocolFeeAmountDecimals = isSell ? buyDecimals : sellDecimals
 
   // Get amounts from quote (for market orders, these already include protocolFee deducted)
   const {
-    isSell,
     networkCostAmount,
     sellAmountBeforeNetworkCosts,
     buyAmountAfterNetworkCosts,
     sellAmountAfterNetworkCosts,
     buyAmountBeforeNetworkCosts,
     quotePrice,
-  } = _getQuoteAmountsWithCosts({ sellDecimals, buyDecimals, orderParams })
-
-  // for market orders: reconstruct protocolFee from quote amounts that already have it deducted
-  const protocolFeeAmount = getProtocolFeeAmount({
-    sellAmountAfterNetworkCosts: sellAmountAfterNetworkCosts.big,
-    buyAmountAfterNetworkCosts: buyAmountAfterNetworkCosts.big,
+  } = _getQuoteAmountsWithCosts({
+    sellDecimals,
+    buyDecimals,
+    orderParams,
     isSell,
-    protocolFeeBps,
+    protocolFeeAmount: getBigNumber(protocolFeeAmount, protocolFeeAmountDecimals),
   })
 
   // restore amounts before protocolFee (but after network costs)
