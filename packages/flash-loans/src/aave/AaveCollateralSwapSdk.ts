@@ -79,6 +79,7 @@ export type AaveCollateralSwapSdkConfig = {
   hookAdapterPerType?: Record<AaveFlashLoanType, Record<SupportedChainId, string>>
   aaveAdapterFactory?: Record<SupportedChainId, string>
   aavePoolAddress?: Record<SupportedChainId, string>
+  hooksGasLimit?: { pre: bigint; post: bigint }
 }
 
 /**
@@ -95,6 +96,7 @@ export class AaveCollateralSwapSdk {
   private readonly hookAdapterPerType: Record<AaveFlashLoanType, Record<SupportedChainId, string>>
   private readonly aaveAdapterFactory: Record<SupportedChainId, string>
   private readonly aavePoolAddress: Record<SupportedChainId, string>
+  private readonly hooksGasLimit: { pre: bigint; post: bigint }
 
   /**
    * Creates an instance of AaveCollateralSwapSdk.
@@ -114,6 +116,7 @@ export class AaveCollateralSwapSdk {
     this.hookAdapterPerType = config?.hookAdapterPerType ?? AAVE_HOOK_ADAPTER_PER_TYPE
     this.aaveAdapterFactory = config?.aaveAdapterFactory ?? AAVE_ADAPTER_FACTORY
     this.aavePoolAddress = config?.aavePoolAddress ?? AAVE_POOL_ADDRESS
+    this.hooksGasLimit = config?.hooksGasLimit ?? DEFAULT_HOOK_GAS_LIMIT
   }
 
   /**
@@ -546,7 +549,7 @@ export class AaveCollateralSwapSdk {
         {
           target: this.aaveAdapterFactory[chainId],
           callData: preHookCallData,
-          gasLimit: DEFAULT_HOOK_GAS_LIMIT.pre.toString(),
+          gasLimit: this.hooksGasLimit.pre.toString(),
           dappId,
         },
       ],
@@ -554,7 +557,7 @@ export class AaveCollateralSwapSdk {
         {
           target: expectedInstanceAddress,
           callData: postHookCallData,
-          gasLimit: DEFAULT_HOOK_GAS_LIMIT.post.toString(),
+          gasLimit: this.hooksGasLimit.post.toString(),
           dappId,
         },
       ],
