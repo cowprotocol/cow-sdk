@@ -144,16 +144,16 @@ function getProtocolFeeAmount(params: {
      * The buyAmountAfterNetworkCosts already includes the protocol fee (it was deducted from buyAmount by the API).
      * We need to reconstruct the original buyAmount and calculate the fee amount.
      */
-    const ONE_MINUS_PROTOCOL_FEE_BPS = ONE_HUNDRED_BPS - protocolFeeBpsBig
-    return (buyAmountAfterNetworkCosts * protocolFeeBpsBig) / ONE_MINUS_PROTOCOL_FEE_BPS
+    const denominator = ONE_HUNDRED_BPS - protocolFeeBpsBig
+    return (buyAmountAfterNetworkCosts * protocolFeeBpsBig) / denominator
   } else {
     /**
      * BUY orders formula: protocolFeeInSell = (quoteSellAmount + feeAmount) * protocolFeeBps / (1 + protocolFeeBps)
      * the sellAmountAfterNetworkCosts already includes the protocol fee (it was added to sellAmount by the API).
      */
-    const ONE_PLUS_PROTOCOL_FEE_BPS = ONE_HUNDRED_BPS + protocolFeeBpsBig
+    const denominator = ONE_HUNDRED_BPS + protocolFeeBpsBig
     // sellAmountAfterNetworkCosts is already sellAmount + networkCosts (check _getQuoteAmountsWithCosts)
-    return (sellAmountAfterNetworkCosts * protocolFeeBpsBig) / ONE_PLUS_PROTOCOL_FEE_BPS
+    return (sellAmountAfterNetworkCosts * protocolFeeBpsBig) / denominator
   }
 }
 
@@ -240,18 +240,34 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
     slippagePercentBps,
   })
 
-  // restore beforeNetworkCosts (amounts before all fees: network, protocol, partner)
-  // for sell orders: buyAmount needs protocolFee added back
-  // for buy orders: sellAmount needs protocolFee subtracted
+  const beforeAllFees = isSell
+    ? {
+      // SELL:
+      // - sellAmountBeforeNetworkCosts: before any fees (network only applies to sell)
+      // - buyAmountBeforeProtocolFee: before protocol/partner; network does not affect buy
+      sellAmount: sellAmountBeforeNetworkCosts.big,
+      buyAmount: buyAmountBeforeProtocolFee,
+    }
+    : {
+      // BUY:
+      // - sellAmountBeforeNetworkCosts: before network/protocol/partner
+      // - buyAmountBeforeNetworkCosts: buy is not changed by network/protocol/partner (only by slippage later)
+      sellAmount: sellAmountBeforeNetworkCosts.big,
+      buyAmount: buyAmountBeforeNetworkCosts.big,
+    }
+
+  // restore beforeNetworkCosts (amounts before **network** costs, but already including protocol/partner fee effects)
+  // for sell orders: protocol fee was deducted from buyAmount, so we add it back
+  // for buy orders: protocol fee was added to sellAmount, so we subtract it
   const beforeNetworkCosts = isSell
     ? {
-        sellAmount: sellAmountBeforeNetworkCosts.big,
-        buyAmount: buyAmountBeforeProtocolFee,
-      }
+      sellAmount: sellAmountBeforeNetworkCosts.big,
+      buyAmount: buyAmountBeforeProtocolFee,
+    }
     : {
-        sellAmount: sellAmountBeforeProtocolFee,
-        buyAmount: buyAmountBeforeNetworkCosts.big,
-      }
+      sellAmount: sellAmountBeforeProtocolFee,
+      buyAmount: buyAmountBeforeNetworkCosts.big,
+    }
 
   return {
     isSell,
@@ -270,6 +286,7 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
       },
     },
     beforeNetworkCosts,
+    beforeAllFees,
     afterNetworkCosts: {
       sellAmount: sellAmountAfterNetworkCosts.big,
       buyAmount: buyAmountAfterNetworkCosts.big,

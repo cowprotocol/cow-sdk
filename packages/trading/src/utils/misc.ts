@@ -61,6 +61,7 @@ export function mapQuoteAmountsAndCosts<T, R>(
         amount: mapper(protocolFee.amount),
       },
     },
+    beforeAllFees: serializeAmounts(value.beforeAllFees),
     beforeNetworkCosts: serializeAmounts(value.beforeNetworkCosts),
     afterNetworkCosts: serializeAmounts(value.afterNetworkCosts),
     afterPartnerFees: serializeAmounts(value.afterPartnerFees),

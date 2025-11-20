@@ -95,6 +95,10 @@ export const orderQuoteResponse: OrderQuoteResponse = {
 // Swap costs
 export const amountsAndCosts: QuoteAmountsAndCosts = {
   isSell: true,
+  beforeAllFees: {
+    sellAmount: BigInt('100000000'),
+    buyAmount: BigInt('100000000000000000000'),
+  },
   afterNetworkCosts: {
     sellAmount: BigInt('100000000'),
     buyAmount: BigInt('100000000000000000000'),
