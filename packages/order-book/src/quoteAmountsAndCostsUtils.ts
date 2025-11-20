@@ -242,11 +242,8 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
 
   const beforeAllFees = isSell
     ? {
-      // SELL:
-      // - sellAmountBeforeNetworkCosts: before any fees (network only applies to sell)
-      // - buyAmountBeforeProtocolFee: before protocol/partner; network does not affect buy
       sellAmount: sellAmountBeforeNetworkCosts.big,
-      buyAmount: buyAmountBeforeProtocolFee,
+      buyAmount: buyAmountBeforeProtocolFee + networkCostAmount.big,
     }
     : {
       // BUY:
