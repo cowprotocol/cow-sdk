@@ -1,7 +1,8 @@
 import { generateAppDataDoc } from '../src/api/generateAppDataDoc'
 import { validateAppDataDoc } from '../src/api/validateAppDataDoc'
+import { LATEST_APP_DATA_VERSION } from '../src/generatedTypes'
 
-describe('Flashloan metadata v1.7.0', () => {
+describe('Flashloan metadata', () => {
   const validFlashloanMetadata = {
     amount: '2000000000000000000',
     liquidityProvider: '0xb50201558B00496A145fE76f7424749556E326D8',
@@ -10,7 +11,7 @@ describe('Flashloan metadata v1.7.0', () => {
     token: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',
   }
 
-  test('Creates appDataDoc with flashloan metadata v1.7.0', async () => {
+  test('Creates appDataDoc with flashloan metadata latest', async () => {
     // when
     const appDataDoc = await generateAppDataDoc({
       metadata: {
@@ -20,7 +21,7 @@ describe('Flashloan metadata v1.7.0', () => {
 
     // then
     expect(appDataDoc.metadata.flashloan).toEqual(validFlashloanMetadata)
-    expect(appDataDoc.version).toBe('1.8.0')
+    expect(appDataDoc.version).toBe(LATEST_APP_DATA_VERSION)
   })
 
   test('Validates valid flashloan metadata v1.7.0', async () => {
@@ -152,7 +153,7 @@ describe('Flashloan metadata v1.7.0', () => {
     expect(appDataDocWithAllFields.metadata.flashloan.token).toBeDefined()
   })
 
-  test('Creates appDataDoc with flashloan and other metadata v1.7.0', async () => {
+  test('Creates appDataDoc with flashloan and other metadata latest', async () => {
     // given
     const metadata = {
       flashloan: validFlashloanMetadata,
@@ -167,6 +168,6 @@ describe('Flashloan metadata v1.7.0', () => {
 
     // then
     expect(appDataDoc.metadata).toEqual(metadata)
-    expect(appDataDoc.version).toBe('1.8.0')
+    expect(appDataDoc.version).toBe(LATEST_APP_DATA_VERSION)
   })
 })
