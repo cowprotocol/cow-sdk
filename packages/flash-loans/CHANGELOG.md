@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.5.2...sdk-flash-loans-v1.5.3) (2025-11-20)
+
+
+### 🐛 Bug Fixes
+
+* **flash-loans:** add hooksGasLimit parameter ([#691](https://github.com/cowprotocol/cow-sdk/issues/691)) ([32ebb2b](https://github.com/cowprotocol/cow-sdk/commit/32ebb2b2ae1a27e31b3ccc141ccf7ec610db2ed6))
+
 ## [1.5.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.5.1...sdk-flash-loans-v1.5.2) (2025-11-17)
 
 
