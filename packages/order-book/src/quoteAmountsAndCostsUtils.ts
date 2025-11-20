@@ -245,13 +245,13 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
   // for buy orders: sellAmount needs protocolFee subtracted
   const beforeNetworkCosts = isSell
     ? {
-        sellAmount: sellAmountBeforeNetworkCosts.big,
-        buyAmount: buyAmountBeforeProtocolFee,
-      }
+      sellAmount: sellAmountBeforeNetworkCosts.big,
+      buyAmount: buyAmountBeforeNetworkCosts.big,
+    }
     : {
-        sellAmount: sellAmountBeforeProtocolFee,
-        buyAmount: buyAmountBeforeNetworkCosts.big,
-      }
+      sellAmount: sellAmountAfterNetworkCosts.big,
+      buyAmount: buyAmountBeforeNetworkCosts.big,
+    }
 
   return {
     isSell,
