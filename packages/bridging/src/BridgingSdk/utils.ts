@@ -6,8 +6,8 @@ import {
   MultiQuoteResult,
   BestQuoteProgressCallback,
   BridgeProvider,
+  DefaultBridgeProvider,
 } from '../types'
-import { BridgingSdkConfig } from './types'
 
 /**
  * Validates that the request is for cross-chain bridging
@@ -22,7 +22,7 @@ export function validateCrossChainRequest(sellTokenChainId: SupportedChainId, bu
 }
 
 // Static helper function for creating provider timeout promises
-export function createBridgeQuoteTimeoutPromise(timeoutMs: number, prefix: string): Promise<never> {
+export function createBridgeRequestTimeoutPromise(timeoutMs: number, prefix: string): Promise<never> {
   return new Promise<never>((_, reject) => {
     setTimeout(() => {
       reject(new BridgeProviderError(`${prefix} timeout after ${timeoutMs}ms`, {}))
@@ -72,13 +72,13 @@ export function fillTimeoutResults(
 export async function executeProviderQuotes(
   promises: Promise<void>[],
   timeout: number,
-  config: BridgingSdkConfig,
+  providers: DefaultBridgeProvider[],
 ): Promise<void> {
   try {
     // Wait for either all promises to complete or timeout
     await Promise.race([
       Promise.allSettled(promises),
-      createBridgeQuoteTimeoutPromise(timeout, `Multi-quote with ${config.providers.length}`),
+      createBridgeRequestTimeoutPromise(timeout, `Multi-quote with ${providers.length}`),
     ])
   } catch {
     // If timeout occurs, we still return whatever results we have

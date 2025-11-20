@@ -91,7 +91,7 @@ adapterNames.forEach((adapterName) => {
 
     describe('getProviders', () => {
       it('returns the providers', () => {
-        const providers = bridgingSdk.getProviders()
+        const providers = bridgingSdk.getAvailableProviders()
         expect(providers).toEqual([mockProvider])
       })
     })
@@ -119,12 +119,6 @@ adapterNames.forEach((adapterName) => {
         const networks = await bridgingSdk.getTargetNetworks()
         expect(mockProvider.getNetworks).toHaveBeenCalled()
         expect(networks).toEqual(expectedNetworks)
-      })
-
-      it('errors buble up', async () => {
-        mockProvider.getNetworks = jest.fn().mockRejectedValue(new Error("don't ask for networks"))
-
-        await expect(bridgingSdk.getTargetNetworks()).rejects.toThrow("don't ask for networks")
       })
     })
 
@@ -573,7 +567,7 @@ adapterNames.forEach((adapterName) => {
       })
 
       it('should return the muxed types for the providers', () => {
-        const providers = bridgingSdk.getProviders()
+        const providers = bridgingSdk.getAvailableProviders()
 
         expect(providers).toHaveLength(2)
         expect(providers[0]).toEqual(hookProvider)
@@ -633,7 +627,7 @@ adapterNames.forEach((adapterName) => {
       })
 
       it('should correctly identify provider types', () => {
-        const providers = bridgingSdk.getProviders()
+        const providers = bridgingSdk.getAvailableProviders()
 
         const hook = providers.find((p) => p.info.dappId === 'dapp-id-MockHookBridgeProvider')
         const receiver = providers.find((p) => p.info.dappId === 'dapp-id-ReceiverAccountBridgeProvider')

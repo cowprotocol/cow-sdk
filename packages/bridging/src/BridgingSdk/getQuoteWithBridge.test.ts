@@ -1,5 +1,6 @@
 import { getEthFlowContract, TradingSdk } from '@cowprotocol/sdk-trading'
 import { MockHookBridgeProvider } from '../providers/mock/HookMockBridgeProvider'
+import { MockReceiverAccountBridgeProvider } from '../providers/mock/ReceiverAccountMockBridgeProvider'
 import { QuoteBridgeRequest } from '../types'
 import { getQuoteWithBridge } from './getQuoteWithBridge'
 import {
@@ -254,6 +255,195 @@ adapterNames.forEach((adapterName) => {
       })
 
       expect(mockProvider.getIntermediateTokens).toHaveBeenCalledTimes(2)
+    })
+  })
+})
+
+describe('createPostSwapOrderFromQuote with ReceiverAccountBridgeProvider', () => {
+  const adapters = createAdapters()
+  const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+  adapterNames.forEach((adapterName) => {
+    describe(`with ${adapterName}`, () => {
+      let tradingSdk: TradingSdk
+      let orderBookApi: OrderBookApi
+      let mockProvider: MockReceiverAccountBridgeProvider
+      let signerMock: AbstractSigner<Provider>
+      let getQuoteMock: jest.Mock
+      let sendOrderMock: jest.Mock
+      let uploadAppDataMock: jest.Mock
+
+      beforeEach(() => {
+        const adapter = adapters[adapterName]
+
+        setGlobalAdapter(adapter)
+
+        signerMock = getMockSigner(adapter)
+
+        quoteBridgeRequest.signer = signerMock
+
+        jest.clearAllMocks()
+
+        // Clear localStorage for clean test state
+        if (typeof localStorage !== 'undefined') {
+          localStorage.clear()
+        }
+
+        mockProvider = new MockReceiverAccountBridgeProvider()
+        mockProvider.getQuote = getQuoteMock = jest.fn().mockResolvedValue(bridgeQuoteResult)
+
+        sendOrderMock = jest.fn().mockResolvedValue('0x01')
+        uploadAppDataMock = jest.fn().mockResolvedValue('0xappDataHash123')
+        orderBookApi = {
+          context: {
+            chainId: SupportedChainId.GNOSIS_CHAIN,
+          },
+          getQuote: jest.fn().mockResolvedValue(orderQuoteResponse),
+          uploadAppData: uploadAppDataMock,
+          sendOrder: sendOrderMock,
+        } as unknown as OrderBookApi
+
+        tradingSdk = new TradingSdk({}, { orderBookApi })
+      })
+
+      it('should override appDataInfo with advancedSettings.appData when provided', async () => {
+        const { postSwapOrderFromQuote } = await getQuoteWithBridge(mockProvider, {
+          swapAndBridgeRequest: quoteBridgeRequest,
+          tradingSdk,
+        })
+
+        const customAppData = {
+          metadata: {
+            quote: {
+              slippageBips: 100,
+            },
+            referrer: {
+              address: '0x1234567890123456789012345678901234567890',
+            },
+          },
+        }
+
+        await postSwapOrderFromQuote({
+          appData: customAppData,
+        })
+
+        // Verify that sendOrder was called
+        expect(sendOrderMock).toHaveBeenCalledTimes(1)
+
+        // Verify that the order's appData includes the custom metadata
+        const sendOrderCall = sendOrderMock.mock.calls[0][0]
+        const orderAppData = JSON.parse(sendOrderCall.appData)
+
+        // Should have the custom metadata merged
+        expect(orderAppData.metadata.quote.slippageBips).toBe(100)
+        expect(orderAppData.metadata.referrer.address).toBe('0x1234567890123456789012345678901234567890')
+
+        // Verify that getQuote was NOT called again (skipQuoteRefetch = true for ReceiverAccountBridgeProvider)
+        expect(getQuoteMock).toHaveBeenCalledTimes(1) // Only the initial call
+      })
+
+      it('should use initial appDataInfo when no advancedSettings.appData is provided', async () => {
+        const { postSwapOrderFromQuote, swap } = await getQuoteWithBridge(mockProvider, {
+          swapAndBridgeRequest: quoteBridgeRequest,
+          tradingSdk,
+        })
+
+        const initialAppData = swap.appDataInfo.doc
+
+        await postSwapOrderFromQuote()
+
+        // Verify that sendOrder was called
+        expect(sendOrderMock).toHaveBeenCalledTimes(1)
+
+        // Verify that the order's appData matches the initial appData
+        const sendOrderCall = sendOrderMock.mock.calls[0][0]
+        const orderAppData = JSON.parse(sendOrderCall.appData)
+
+        // Should have the same structure as initial appData
+        expect(orderAppData.appCode).toBe(initialAppData.appCode)
+        expect(orderAppData.version).toBe(initialAppData.version)
+
+        // Verify that getQuote was NOT called again
+        expect(getQuoteMock).toHaveBeenCalledTimes(1)
+      })
+
+      it('should merge advancedSettings.appData with initial appDataInfo correctly', async () => {
+        const { postSwapOrderFromQuote } = await getQuoteWithBridge(mockProvider, {
+          swapAndBridgeRequest: quoteBridgeRequest,
+          tradingSdk,
+        })
+
+        const customAppData = {
+          metadata: {
+            orderClass: {
+              orderClass: 'limit' as const,
+            },
+            utm: {
+              utmSource: 'test-source',
+              utmMedium: 'test-medium',
+              utmCampaign: 'test-campaign',
+            },
+          },
+        }
+
+        await postSwapOrderFromQuote({
+          appData: customAppData,
+        })
+
+        // Verify that sendOrder was called
+        expect(sendOrderMock).toHaveBeenCalledTimes(1)
+
+        // Verify that the merged appData contains both initial and custom metadata
+        const sendOrderCall = sendOrderMock.mock.calls[0][0]
+        const orderAppData = JSON.parse(sendOrderCall.appData)
+
+        // Should have the custom metadata
+        expect(orderAppData.metadata.orderClass.orderClass).toBe('limit')
+        expect(orderAppData.metadata.utm.utmSource).toBe('test-source')
+        expect(orderAppData.metadata.utm.utmMedium).toBe('test-medium')
+        expect(orderAppData.metadata.utm.utmCampaign).toBe('test-campaign')
+
+        // Should preserve the initial appCode and version
+        expect(orderAppData.appCode).toBeDefined()
+        expect(orderAppData.version).toBeDefined()
+      })
+
+      it('should not refetch quote when using ReceiverAccountBridgeProvider', async () => {
+        const { postSwapOrderFromQuote } = await getQuoteWithBridge(mockProvider, {
+          swapAndBridgeRequest: quoteBridgeRequest,
+          tradingSdk,
+        })
+
+        const customAppData = {
+          metadata: {
+            quote: {
+              slippageBips: 200,
+            },
+          },
+        }
+
+        // Call postSwapOrderFromQuote with custom appData
+        await postSwapOrderFromQuote({
+          appData: customAppData,
+        })
+
+        // Verify getQuote was only called once (during initial quote, not during post)
+        expect(getQuoteMock).toHaveBeenCalledTimes(1)
+
+        // Call again with different appData
+        await postSwapOrderFromQuote({
+          appData: {
+            metadata: {
+              quote: {
+                slippageBips: 300,
+              },
+            },
+          },
+        })
+
+        // Still should be called only once
+        expect(getQuoteMock).toHaveBeenCalledTimes(1)
+      })
     })
   })
 })
