@@ -45,7 +45,7 @@
     "@cowprotocol/sdk-viem-adapter": "workspace:*",
     "ethers-v5": "npm:ethers@^5.7.2",
     "ethers-v6": "npm:ethers@^6.13.7",
-    "viem": "^2.28.4",
+    "viem": "^2.38.5",
     "@types/jest": "^29.5.14",
     "@types/node": "^20.17.31",
     "@types/semver-sort": "^0.0.1",
