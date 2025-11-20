@@ -253,6 +253,16 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
       buyAmount: buyAmountBeforeNetworkCosts.big,
     }
 
+  const beforeAllFees = isSell
+    ? {
+      sellAmount: sellAmountBeforeNetworkCosts.big,
+      buyAmount: buyAmountBeforeNetworkCosts.big + protocolFeeAmount,
+    }
+    : {
+      sellAmount: sellAmountBeforeNetworkCosts.big - protocolFeeAmount,
+      buyAmount: buyAmountBeforeNetworkCosts.big,
+    }
+
   return {
     isSell,
     costs: {
@@ -270,6 +280,7 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
       },
     },
     beforeNetworkCosts,
+    beforeAllFees,
     afterNetworkCosts: {
       sellAmount: sellAmountAfterNetworkCosts.big,
       buyAmount: buyAmountAfterNetworkCosts.big,

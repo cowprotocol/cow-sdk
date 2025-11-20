@@ -60,6 +60,8 @@ export interface QuoteAmountsAndCosts<T = bigint> {
    */
   costs: Costs<T>
 
+  beforeAllFees: Amounts<T>
+
   /**
    * Amounts before network costs. This amount could be shown to the user to reflect how much they are expected to get
    * before applying any costs or fees (if costs and fees are displayed separately).
