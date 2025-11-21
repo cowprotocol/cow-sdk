@@ -107,6 +107,10 @@ export const amountsAndCosts: QuoteAmountsAndCosts = {
     sellAmount: BigInt('100000000'),
     buyAmount: BigInt('100000000000000000000'),
   },
+  beforeAllFees: {
+    sellAmount: BigInt('100000000'),
+    buyAmount: BigInt('100000000000000000000'),
+  },
 
   costs: {
     networkFee: {
@@ -117,6 +121,10 @@ export const amountsAndCosts: QuoteAmountsAndCosts = {
       amount: BigInt('100000000'),
       bps: 100,
     },
+    protocolFee: {
+      amount: 0n,
+      bps: 0
+    }
   },
   beforeNetworkCosts: {
     sellAmount: BigInt('100000000'),
