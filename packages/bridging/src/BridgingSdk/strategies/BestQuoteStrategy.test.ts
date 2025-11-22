@@ -24,7 +24,7 @@ const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
 adapterNames.forEach((adapterName) => {
-  describe.skip(`BestQuoteStrategy with ${adapterName}`, () => {
+  describe(`BestQuoteStrategy with ${adapterName}`, () => {
     let strategy: BestQuoteStrategy
     let config: BridgingSdkConfig
     let tradingSdk: TradingSdk
@@ -122,7 +122,7 @@ adapterNames.forEach((adapterName) => {
       }
     })
 
-    describe.skip('execute', () => {
+    describe('execute', () => {
       it('should return the best quote from all providers', async () => {
         const request = {
           quoteBridgeRequest,
@@ -131,7 +131,7 @@ adapterNames.forEach((adapterName) => {
           options: undefined,
         }
 
-        const result = await strategy.execute(request, config)
+        const result = await strategy.execute(request, config.tradingSdk, config.providers)
 
         expect(result).toBeTruthy()
         expect(result?.providerDappId).toBe('cow-sdk://bridging/providers/mock3')
@@ -145,15 +145,15 @@ adapterNames.forEach((adapterName) => {
       it('should return specific provider quote when only that provider is requested', async () => {
         const request = {
           quoteBridgeRequest,
-          providerDappIds: ['mockProvider'],
+          providerDappIds: ['dapp-id-MockHookBridgeProvider'],
           advancedSettings: undefined,
           options: undefined,
         }
 
-        const result = await strategy.execute(request, config)
+        const result = await strategy.execute(request, config.tradingSdk, config.providers)
 
         expect(result).toBeTruthy()
-        expect(result?.providerDappId).toBe('mockProvider')
+        expect(result?.providerDappId).toBe('dapp-id-MockHookBridgeProvider')
         expect(result?.quote).toBeTruthy()
 
         // Verify only the requested provider was called
@@ -175,7 +175,7 @@ adapterNames.forEach((adapterName) => {
           options: { onQuoteResult },
         }
 
-        const result = await strategy.execute(request, config)
+        const result = await strategy.execute(request, config.tradingSdk, config.providers)
 
         // Should have received callbacks for better quotes only
         expect(onQuoteResult).toHaveBeenCalled()
@@ -212,15 +212,17 @@ adapterNames.forEach((adapterName) => {
           options: undefined,
         }
 
-        const result = await strategy.execute(request, config)
+        const result = await strategy.execute(request, config.tradingSdk, config.providers)
 
         expect(result).toBeTruthy()
         expect(result?.quote).toBeNull()
         expect(result?.error).toBeTruthy()
         // Should return first provider's error (order is not guaranteed due to async)
-        expect(['mockProvider', 'cow-sdk://bridging/providers/mock2', 'cow-sdk://bridging/providers/mock3']).toContain(
-          result?.providerDappId,
-        )
+        expect([
+          'dapp-id-MockHookBridgeProvider',
+          'cow-sdk://bridging/providers/mock2',
+          'cow-sdk://bridging/providers/mock3',
+        ]).toContain(result?.providerDappId)
       })
 
       it('should return best available quote even when some providers fail', async () => {
@@ -236,7 +238,7 @@ adapterNames.forEach((adapterName) => {
           options: undefined,
         }
 
-        const result = await strategy.execute(request, config)
+        const result = await strategy.execute(request, config.tradingSdk, config.providers)
 
         expect(result).toBeTruthy()
         expect(result?.providerDappId).toBe('cow-sdk://bridging/providers/mock3')
@@ -256,7 +258,7 @@ adapterNames.forEach((adapterName) => {
           options: undefined,
         }
 
-        await expect(strategy.execute(request, config)).rejects.toThrow(
+        await expect(strategy.execute(request, config.tradingSdk, config.providers)).rejects.toThrow(
           'getMultiQuotes() and getBestQuote() are only for cross-chain bridging',
         )
       })
@@ -276,7 +278,7 @@ adapterNames.forEach((adapterName) => {
           options: { onQuoteResult },
         }
 
-        const result = await strategy.execute(request, config)
+        const result = await strategy.execute(request, config.tradingSdk, config.providers)
 
         // Quote should still succeed despite callback error
         expect(result).toBeTruthy()
@@ -353,7 +355,7 @@ adapterNames.forEach((adapterName) => {
           },
         }
 
-        const resultPromise = strategy.execute(request, config)
+        const resultPromise = strategy.execute(request, config.tradingSdk, config.providers)
 
         // Advance timers past the fast provider delay but before slow providers
         jest.advanceTimersByTime(50)
@@ -362,7 +364,7 @@ adapterNames.forEach((adapterName) => {
 
         // Should still return the quote from the fast provider
         expect(result).toBeTruthy()
-        expect(result?.providerDappId).toBe('mockProvider')
+        expect(result?.providerDappId).toBe('dapp-id-MockHookBridgeProvider')
 
         jest.useRealTimers()
       })
@@ -375,8 +377,8 @@ adapterNames.forEach((adapterName) => {
           options: undefined,
         }
 
-        await expect(strategy.execute(request, config)).rejects.toThrow(
-          "Provider with dappId 'unknown-provider' not found. Available providers: mockProvider, cow-sdk://bridging/providers/mock2, cow-sdk://bridging/providers/mock3",
+        await expect(strategy.execute(request, config.tradingSdk, config.providers)).rejects.toThrow(
+          "Provider with dappId 'unknown-provider' not found. Available providers: dapp-id-MockHookBridgeProvider, cow-sdk://bridging/providers/mock2, cow-sdk://bridging/providers/mock3",
         )
       })
 
@@ -391,13 +393,15 @@ adapterNames.forEach((adapterName) => {
           },
         }
 
-        const result = await strategy.execute(request, config)
+        const result = await strategy.execute(request, config.tradingSdk, config.providers)
 
         expect(result).toBeTruthy()
         expect(result?.quote).toBeTruthy()
       })
 
-      it('should handle mixed provider speeds correctly', async () => {
+      it(
+        'should handle mixed provider speeds correctly',
+        async () => {
         // Fast provider with good quote
         mockProvider.getQuote = jest.fn().mockImplementation(async () => {
           await new Promise((resolve) => setTimeout(resolve, 20)) // 20ms delay
@@ -459,7 +463,7 @@ adapterNames.forEach((adapterName) => {
           },
         }
 
-        const result = await strategy.execute(request, config)
+        const result = await strategy.execute(request, config.tradingSdk, config.providers)
 
         // Should get the best available quote from completed providers (mock2 with 70 ETH)
         expect(result).toBeTruthy()
@@ -470,7 +474,7 @@ adapterNames.forEach((adapterName) => {
         expect(progressiveResults.length).toBeGreaterThanOrEqual(1)
 
         // First callback should be from fast provider (mockProvider with 50 ETH)
-        expect(progressiveResults[0]?.providerDappId).toBe('mockProvider')
+        expect(progressiveResults[0]?.providerDappId).toBe('dapp-id-MockHookBridgeProvider')
         expect(progressiveResults[0]?.quote?.bridge.amountsAndCosts.afterSlippage.buyAmount).toBe(
           BigInt('50000000000000000000'),
         )
@@ -482,10 +486,12 @@ adapterNames.forEach((adapterName) => {
             BigInt('70000000000000000000'),
           )
         }
-      })
+        },
+        10000,
+      ) // 10 second timeout for this test
     })
 
-    describe.skip('strategyName', () => {
+    describe('strategyName', () => {
       it('should have the correct strategy name', () => {
         expect(strategy.strategyName).toBe('BestQuoteStrategy')
       })

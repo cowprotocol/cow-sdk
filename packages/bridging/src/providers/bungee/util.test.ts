@@ -238,4 +238,266 @@ describe('Bungee Utils', () => {
       expect(getDisplayNameFromBungeeBridge('Invalid' as BungeeBridge)).toBeUndefined()
     })
   })
+
+  describe('feeBuyToken calculation in toBridgeQuoteResult', () => {
+    it('should correctly calculate feeBuyToken based on price ratio (18 decimals sell -> 6 decimals buy)', () => {
+      const request: QuoteBridgeRequest = {
+        kind: OrderKind.SELL,
+        sellTokenChainId: SupportedChainId.MAINNET,
+        sellTokenAddress: '0x1234567890123456789012345678901234567890',
+        sellTokenDecimals: 18,
+        buyTokenChainId: SupportedChainId.POLYGON,
+        buyTokenAddress: '0x1234567890123456789012345678901234567890',
+        buyTokenDecimals: 6,
+        amount: 1000000000000000000n, // 1 ETH
+        appCode: 'test',
+        account: '0x1234567890123456789012345678901234567890',
+        signer: '0x1234567890123456789012345678901234567890',
+      }
+
+      const bungeeQuoteWithBuildTx: BungeeQuoteWithBuildTx = {
+        bungeeQuote: {
+          originChainId: 1,
+          destinationChainId: 137,
+          userAddress: '0x123',
+          receiverAddress: '0x789',
+          input: {
+            token: {
+              chainId: 1,
+              address: '0x123',
+              name: 'ETH',
+              symbol: 'ETH',
+              decimals: 18,
+              logoURI: '',
+              icon: '',
+            },
+            amount: '1000000000000000000', // 1 ETH
+            priceInUsd: 2000,
+            valueInUsd: 2000,
+          },
+          route: {
+            affiliateFee: null,
+            quoteId: '123',
+            quoteExpiry: 1234567890,
+            output: {
+              token: {
+                chainId: 137,
+                address: '0x456',
+                name: 'USDC',
+                symbol: 'USDC',
+                decimals: 6,
+                logoURI: '',
+                icon: '',
+              },
+              amount: '2000000000', // 2000 USDC
+              priceInUsd: 1,
+              valueInUsd: 2000,
+              minAmountOut: '1990000000',
+              effectiveReceivedInUsd: 1990,
+            },
+            approvalData: {
+              spenderAddress: '0x123',
+              amount: '1000000000000000000',
+              tokenAddress: '0x123',
+              userAddress: '0x123',
+            },
+            gasFee: {
+              gasToken: {
+                chainId: 1,
+                address: '0x123',
+                symbol: 'ETH',
+                name: 'Ethereum',
+                decimals: 18,
+                icon: '',
+                logoURI: '',
+                chainAgnosticId: null,
+              },
+              gasLimit: '100000',
+              gasPrice: '1000000000',
+              estimatedFee: '50000',
+              feeInUsd: 1,
+            },
+            slippage: 0,
+            estimatedTime: 300,
+            routeDetails: {
+              name: 'across',
+              logoURI: '',
+              routeFee: {
+                token: {
+                  chainId: 1,
+                  address: '0x123',
+                  name: 'ETH',
+                  symbol: 'ETH',
+                  decimals: 18,
+                  logoURI: '',
+                  icon: '',
+                },
+                amount: '10000000000000000', // 0.01 ETH fee
+                feeInUsd: 20,
+                priceInUsd: 2000,
+              },
+              dexDetails: null,
+            },
+            refuel: null,
+          },
+          routeBridge: BungeeBridge.Across,
+          quoteTimestamp: 1234567890,
+        },
+        buildTx: {
+          approvalData: {
+            spenderAddress: '0x123',
+            amount: '1000000000000000000',
+            tokenAddress: '0x123',
+            userAddress: '0x123',
+          },
+          txData: {
+            data: '0x',
+            to: '0x123',
+            chainId: 1,
+            value: '0',
+          },
+          userOp: '',
+        },
+      }
+
+      const result = toBridgeQuoteResult(request, 0, bungeeQuoteWithBuildTx)
+
+      // feeBuyToken = feeSellToken * (buyAmount / sellAmount)
+      // feeBuyToken = 10000000000000000 * (2000000000 / 1000000000000000000)
+      // feeBuyToken = 10000000000000000 * 2000000000 / 1000000000000000000
+      // feeBuyToken = 20000000
+      expect(result.amountsAndCosts.costs.bridgingFee.amountInBuyCurrency).toBe(20000000n)
+      expect(result.amountsAndCosts.costs.bridgingFee.amountInSellCurrency).toBe(10000000000000000n)
+    })
+
+    it('should correctly calculate feeBuyToken for same decimals (18 decimals both)', () => {
+      const request: QuoteBridgeRequest = {
+        kind: OrderKind.SELL,
+        sellTokenChainId: SupportedChainId.MAINNET,
+        sellTokenAddress: '0x1234567890123456789012345678901234567890',
+        sellTokenDecimals: 18,
+        buyTokenChainId: SupportedChainId.POLYGON,
+        buyTokenAddress: '0x1234567890123456789012345678901234567890',
+        buyTokenDecimals: 18,
+        amount: 1000000000000000000n, // 1 token
+        appCode: 'test',
+        account: '0x1234567890123456789012345678901234567890',
+        signer: '0x1234567890123456789012345678901234567890',
+      }
+
+      const bungeeQuoteWithBuildTx: BungeeQuoteWithBuildTx = {
+        bungeeQuote: {
+          originChainId: 1,
+          destinationChainId: 137,
+          userAddress: '0x123',
+          receiverAddress: '0x789',
+          input: {
+            token: {
+              chainId: 1,
+              address: '0x123',
+              name: 'Token A',
+              symbol: 'TKNA',
+              decimals: 18,
+              logoURI: '',
+              icon: '',
+            },
+            amount: '1000000000000000000',
+            priceInUsd: 100,
+            valueInUsd: 100,
+          },
+          route: {
+            affiliateFee: null,
+            quoteId: '123',
+            quoteExpiry: 1234567890,
+            output: {
+              token: {
+                chainId: 137,
+                address: '0x456',
+                name: 'Token B',
+                symbol: 'TKNB',
+                decimals: 18,
+                logoURI: '',
+                icon: '',
+              },
+              amount: '950000000000000000', // 0.95 tokens (5% price difference)
+              priceInUsd: 105.26,
+              valueInUsd: 100,
+              minAmountOut: '940000000000000000',
+              effectiveReceivedInUsd: 99,
+            },
+            approvalData: {
+              spenderAddress: '0x123',
+              amount: '1000000000000000000',
+              tokenAddress: '0x123',
+              userAddress: '0x123',
+            },
+            gasFee: {
+              gasToken: {
+                chainId: 1,
+                address: '0x123',
+                symbol: 'ETH',
+                name: 'Ethereum',
+                decimals: 18,
+                icon: '',
+                logoURI: '',
+                chainAgnosticId: null,
+              },
+              gasLimit: '100000',
+              gasPrice: '1000000000',
+              estimatedFee: '50000',
+              feeInUsd: 1,
+            },
+            slippage: 0,
+            estimatedTime: 300,
+            routeDetails: {
+              name: 'across',
+              logoURI: '',
+              routeFee: {
+                token: {
+                  chainId: 1,
+                  address: '0x123',
+                  name: 'Token A',
+                  symbol: 'TKNA',
+                  decimals: 18,
+                  logoURI: '',
+                  icon: '',
+                },
+                amount: '50000000000000000', // 0.05 tokens fee
+                feeInUsd: 5,
+                priceInUsd: 100,
+              },
+              dexDetails: null,
+            },
+            refuel: null,
+          },
+          routeBridge: BungeeBridge.Across,
+          quoteTimestamp: 1234567890,
+        },
+        buildTx: {
+          approvalData: {
+            spenderAddress: '0x123',
+            amount: '1000000000000000000',
+            tokenAddress: '0x123',
+            userAddress: '0x123',
+          },
+          txData: {
+            data: '0x',
+            to: '0x123',
+            chainId: 1,
+            value: '0',
+          },
+          userOp: '',
+        },
+      }
+
+      const result = toBridgeQuoteResult(request, 0, bungeeQuoteWithBuildTx)
+
+      // feeBuyToken = feeSellToken * (buyAmount / sellAmount)
+      // feeBuyToken = 50000000000000000 * (950000000000000000 / 1000000000000000000)
+      // feeBuyToken = 50000000000000000 * 0.95
+      // feeBuyToken = 47500000000000000
+      expect(result.amountsAndCosts.costs.bridgingFee.amountInBuyCurrency).toBe(47500000000000000n)
+      expect(result.amountsAndCosts.costs.bridgingFee.amountInSellCurrency).toBe(50000000000000000n)
+    })
+  })
 })

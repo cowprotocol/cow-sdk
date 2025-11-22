@@ -1,9 +1,9 @@
 import { TTLCache } from '@cowprotocol/sdk-common'
 import { TokenInfo } from '@cowprotocol/sdk-config'
-import { MultiQuoteResult, BestQuoteProviderContext } from '../../types'
-import { BridgingSdkConfig } from '../types'
+import { MultiQuoteResult, BestQuoteProviderContext, DefaultBridgeProvider } from '../../types'
+import { TradingSdk } from '@cowprotocol/sdk-trading'
 import {
-  createBridgeQuoteTimeoutPromise,
+  createBridgeRequestTimeoutPromise,
   executeProviderQuotes,
   isBetterQuote,
   resolveProvidersToQuery,
@@ -27,7 +27,11 @@ export class BestQuoteStrategy extends BaseBestQuoteStrategy {
     super(intermediateTokensCache)
   }
 
-  async execute(request: MultiQuoteRequest, config: BridgingSdkConfig): Promise<MultiQuoteResult | null> {
+  async execute(
+    request: MultiQuoteRequest,
+    tradingSdk: TradingSdk,
+    providers: DefaultBridgeProvider[],
+  ): Promise<MultiQuoteResult | null> {
     const { quoteBridgeRequest, providerDappIds, advancedSettings, options } = request
     const { sellTokenChainId, buyTokenChainId } = quoteBridgeRequest
 
@@ -35,7 +39,7 @@ export class BestQuoteStrategy extends BaseBestQuoteStrategy {
     validateCrossChainRequest(sellTokenChainId, buyTokenChainId)
 
     // Determine which providers to query
-    const providersToQuery = resolveProvidersToQuery(providerDappIds, config.providers)
+    const providersToQuery = resolveProvidersToQuery(providerDappIds, providers)
 
     // Extract options with defaults
     const {
@@ -61,18 +65,18 @@ export class BestQuoteStrategy extends BaseBestQuoteStrategy {
         firstError,
       }
 
-      const promise = this.createBestQuoteProviderPromise(context, config)
+      const promise = this.createBestQuoteProviderPromise(context, tradingSdk)
       promises.push(promise)
     }
 
     // Execute all provider quotes with timeout handling
-    await executeProviderQuotes(promises, totalTimeout, config)
+    await executeProviderQuotes(promises, totalTimeout, providers)
 
     // Return best result if available, otherwise return first error
     return bestResult.current || firstError.current
   }
 
-  private createBestQuoteProviderPromise(context: BestQuoteProviderContext, config: BridgingSdkConfig): Promise<void> {
+  private createBestQuoteProviderPromise(context: BestQuoteProviderContext, tradingSdk: TradingSdk): Promise<void> {
     const { provider, quoteBridgeRequest, advancedSettings, providerTimeout, onQuoteResult, bestResult, firstError } =
       context
 
@@ -81,7 +85,7 @@ export class BestQuoteStrategy extends BaseBestQuoteStrategy {
         const baseParams = {
           swapAndBridgeRequest: quoteBridgeRequest,
           advancedSettings,
-          tradingSdk: config.tradingSdk,
+          tradingSdk,
           provider,
           quoteSigner: advancedSettings?.quoteSigner,
         } as const
@@ -96,7 +100,7 @@ export class BestQuoteStrategy extends BaseBestQuoteStrategy {
         // Race between the actual quote request and the provider timeout
         const quote = await Promise.race([
           getQuoteWithBridge(provider, request),
-          createBridgeQuoteTimeoutPromise(providerTimeout, `Provider ${provider.info.dappId}`),
+          createBridgeRequestTimeoutPromise(providerTimeout, `Provider ${provider.info.dappId}`),
         ])
 
         const result: MultiQuoteResult = {

@@ -106,7 +106,7 @@ adapterNames.forEach((adapterName) => {
           options: undefined,
         }
 
-        const results = await strategy.execute(request, config)
+        const results = await strategy.execute(request, config.tradingSdk, config.providers)
 
         expect(results).toHaveLength(3)
         expect(results[0]?.providerDappId).toBe('dapp-id-MockHookBridgeProvider')
@@ -133,7 +133,7 @@ adapterNames.forEach((adapterName) => {
           options: undefined,
         }
 
-        const results = await strategy.execute(request, config)
+        const results = await strategy.execute(request, config.tradingSdk, config.providers)
 
         expect(results).toHaveLength(2)
         expect(results[0]?.providerDappId).toBe('dapp-id-MockHookBridgeProvider')
@@ -162,7 +162,7 @@ adapterNames.forEach((adapterName) => {
           options: undefined,
         }
 
-        const results = await strategy.execute(request, config)
+        const results = await strategy.execute(request, config.tradingSdk, config.providers)
 
         expect(results).toHaveLength(3)
 
@@ -198,7 +198,7 @@ adapterNames.forEach((adapterName) => {
           options: undefined,
         }
 
-        await expect(strategy.execute(request, config)).rejects.toThrow(
+        await expect(strategy.execute(request, config.tradingSdk, config.providers)).rejects.toThrow(
           'getMultiQuotes() and getBestQuote() are only for cross-chain bridging. For single-chain swaps, use getQuote() instead.',
         )
       })
@@ -211,7 +211,7 @@ adapterNames.forEach((adapterName) => {
           options: undefined,
         }
 
-        await expect(strategy.execute(request, config)).rejects.toThrow(
+        await expect(strategy.execute(request, config.tradingSdk, config.providers)).rejects.toThrow(
           "Provider with dappId 'unknown-provider' not found. Available providers: dapp-id-MockHookBridgeProvider, cow-sdk://bridging/providers/mock2, cow-sdk://bridging/providers/mock3",
         )
       })
@@ -231,7 +231,7 @@ adapterNames.forEach((adapterName) => {
           options: undefined,
         }
 
-        await strategy.execute(request, config)
+        await strategy.execute(request, config.tradingSdk, config.providers)
 
         // Verify advanced settings were passed through
         expect(tradingSdk.getQuoteResults).toHaveBeenCalledWith(
@@ -281,7 +281,7 @@ adapterNames.forEach((adapterName) => {
           options: undefined,
         }
 
-        const executePromise = strategy.execute(request, config)
+        const executePromise = strategy.execute(request, config.tradingSdk, config.providers)
 
         // Verify both providers are called immediately (parallel start)
         await jest.advanceTimersByTimeAsync(0) // Allow microtasks to run
@@ -313,7 +313,7 @@ adapterNames.forEach((adapterName) => {
           options: undefined,
         }
 
-        const results = await strategy.execute(request, config)
+        const results = await strategy.execute(request, config.tradingSdk, config.providers)
 
         expect(results).toHaveLength(1)
         const result = results[0]
@@ -353,7 +353,7 @@ adapterNames.forEach((adapterName) => {
           },
         }
 
-        const results = await strategy.execute(request, config)
+        const results = await strategy.execute(request, config.tradingSdk, config.providers)
 
         // Should have received 2 progressive callbacks
         expect(onQuoteResult).toHaveBeenCalledTimes(2)
@@ -386,7 +386,7 @@ adapterNames.forEach((adapterName) => {
           },
         }
 
-        const results = await strategy.execute(request, config)
+        const results = await strategy.execute(request, config.tradingSdk, config.providers)
 
         // Quote should still succeed despite callback error
         expect(results).toHaveLength(1)
@@ -426,7 +426,7 @@ adapterNames.forEach((adapterName) => {
           },
         }
 
-        const executePromise = strategy.execute(request, config)
+        const executePromise = strategy.execute(request, config.tradingSdk, config.providers)
 
         // Advance time to complete fast provider (10ms)
         await jest.advanceTimersByTimeAsync(10)
@@ -488,7 +488,7 @@ adapterNames.forEach((adapterName) => {
           },
         }
 
-        const executePromise = strategy.execute(request, config)
+        const executePromise = strategy.execute(request, config.tradingSdk, config.providers)
 
         // Advance time to complete second provider first (50ms)
         await jest.advanceTimersByTimeAsync(50)
@@ -527,7 +527,7 @@ adapterNames.forEach((adapterName) => {
           },
         }
 
-        await strategy.execute(request, config)
+        await strategy.execute(request, config.tradingSdk, config.providers)
 
         expect(progressiveResults).toHaveLength(2)
 
@@ -551,7 +551,7 @@ adapterNames.forEach((adapterName) => {
           options: undefined,
         }
 
-        const results = await strategy.execute(request, config)
+        const results = await strategy.execute(request, config.tradingSdk, config.providers)
 
         expect(results).toHaveLength(3)
         results.forEach((result) => {
@@ -571,7 +571,7 @@ adapterNames.forEach((adapterName) => {
           },
         }
 
-        const results = await strategy.execute(request, config)
+        const results = await strategy.execute(request, config.tradingSdk, config.providers)
 
         expect(results).toHaveLength(3)
       })
@@ -616,7 +616,7 @@ adapterNames.forEach((adapterName) => {
           },
         }
 
-        const executePromise = strategy.execute(request, testConfig)
+        const executePromise = strategy.execute(request, testConfig.tradingSdk, testConfig.providers)
 
         // Advance time to complete fast provider (10ms)
         await jest.advanceTimersByTimeAsync(10)
@@ -654,7 +654,7 @@ adapterNames.forEach((adapterName) => {
           },
         }
 
-        const results = await strategy.execute(request, config)
+        const results = await strategy.execute(request, config.tradingSdk, config.providers)
 
         expect(results).toHaveLength(3)
         results.forEach((result) => {

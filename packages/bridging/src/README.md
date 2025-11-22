@@ -308,17 +308,6 @@ if (order) {
 }
 ```
 
-### getOrderBridgingStatus()
-
-Check the bridging status of a cross-chain order.
-
-```typescript
-const status = await bridgingSdk.getOrderBridgingStatus('bridging-id', SupportedChainId.MAINNET)
-
-console.log('Bridging status:', status.status)
-console.log('Fill time:', status.fillTimeInSeconds)
-```
-
 ## Examples
 
 ### React App
