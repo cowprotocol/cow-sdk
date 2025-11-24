@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.8.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.7.0...sdk-bridging-v0.8.0) (2025-11-24)
+
+
+### ✨ Features
+
+* **bridge:** add quote id and signature metadata ([#701](https://github.com/cowprotocol/cow-sdk/issues/701)) ([35a25a7](https://github.com/cowprotocol/cow-sdk/commit/35a25a7fcc2724073355b3dba4b8f6d3b7419032))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.3.0
+    * @cowprotocol/sdk-contracts-ts bumped to 0.7.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.2.2
+    * @cowprotocol/sdk-trading bumped to 0.5.1
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 0.1.13
+
 ## [0.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.6.1...sdk-bridging-v0.7.0) (2025-11-24)
 
 
