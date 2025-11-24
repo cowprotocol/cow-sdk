@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.6.1...sdk-bridging-v0.7.0) (2025-11-24)
+
+
+### ✨ Features
+
+* **bridge:** add NearIntents bridge provider ([#663](https://github.com/cowprotocol/cow-sdk/issues/663)) ([afd63bc](https://github.com/cowprotocol/cow-sdk/commit/afd63bce3765e2adc81b73357e233399111e3595))
+* **bridge:** support Near bridge provider ([#642](https://github.com/cowprotocol/cow-sdk/issues/642)) ([c7d8633](https://github.com/cowprotocol/cow-sdk/commit/c7d86335601cfd772d72dfe65a0e941ce916769a))
+* implement protocol fee ([#689](https://github.com/cowprotocol/cow-sdk/issues/689)) ([ec5bdad](https://github.com/cowprotocol/cow-sdk/commit/ec5bdada1ebf17afd42a9c8cabd617cf8be79d50))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.2.0
+    * @cowprotocol/sdk-common bumped to 0.4.0
+    * @cowprotocol/sdk-config bumped to 0.4.0
+    * @cowprotocol/sdk-contracts-ts bumped to 0.6.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.2.1
+    * @cowprotocol/sdk-order-book bumped to 0.3.0
+    * @cowprotocol/sdk-trading bumped to 0.5.0
+    * @cowprotocol/sdk-weiroll bumped to 0.1.6
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.0
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.0
+    * @cowprotocol/sdk-order-signing bumped to 0.1.12
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.0
+
 ## [0.6.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.6.0...sdk-bridging-v0.6.1) (2025-11-07)
 
 

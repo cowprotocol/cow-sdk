@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v5-adapter-v0.2.0...sdk-ethers-v5-adapter-v0.3.0) (2025-11-24)
+
+
+### ✨ Features
+
+* **bridge:** add NearIntents bridge provider ([#663](https://github.com/cowprotocol/cow-sdk/issues/663)) ([afd63bc](https://github.com/cowprotocol/cow-sdk/commit/afd63bce3765e2adc81b73357e233399111e3595))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.4.0
+
 ## [0.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v5-adapter-v0.1.3...sdk-ethers-v5-adapter-v0.2.0) (2025-10-29)
 
 
