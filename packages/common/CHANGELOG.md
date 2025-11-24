@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.3.0...sdk-common-v0.4.0) (2025-11-24)
+
+
+### ✨ Features
+
+* **bridge:** add NearIntents bridge provider ([#663](https://github.com/cowprotocol/cow-sdk/issues/663)) ([afd63bc](https://github.com/cowprotocol/cow-sdk/commit/afd63bce3765e2adc81b73357e233399111e3595))
+
 ## [0.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.2.2...sdk-common-v0.3.0) (2025-10-29)
 
 
