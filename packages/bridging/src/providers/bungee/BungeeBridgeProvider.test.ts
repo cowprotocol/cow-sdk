@@ -278,7 +278,7 @@ adapterNames.forEach((adapterName) => {
               bridgingFee: {
                 feeBps: 50,
                 amountInSellCurrency: 5000000000000000n,
-                amountInBuyCurrency: 0n,
+                amountInBuyCurrency: 5000n,
               },
             },
             slippageBps: 0,
@@ -306,6 +306,7 @@ adapterNames.forEach((adapterName) => {
         expect(provider.info).toEqual({
           dappId: BUNGEE_HOOK_DAPP_ID,
           name: 'Bungee',
+          type: 'HookBridgeProvider',
           logoUrl: expect.stringContaining('bungee-logo.png'),
           website: 'https://www.bungee.exchange',
         })

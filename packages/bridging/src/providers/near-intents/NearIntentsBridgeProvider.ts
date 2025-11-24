@@ -1,7 +1,7 @@
 import { getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { ETH_ADDRESS } from '@cowprotocol/sdk-config'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
-import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { OrderKind, EnrichedOrder } from '@cowprotocol/sdk-order-book'
 import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
 import { BridgeStatus } from '../../types'
 
@@ -44,8 +44,10 @@ export interface NearIntentsBridgeProviderOptions {
   cowShedOptions?: CowShedSdkOptions
 }
 
+const providerType = 'ReceiverAccountBridgeProvider' as const
+
 export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<NearIntentsQuoteResult> {
-  type = 'ReceiverAccountBridgeProvider' as const
+  type = providerType
 
   protected api: NearIntentsApi
   protected cowShedSdk: CowShedSdk
@@ -55,6 +57,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     logoUrl: `${RAW_PROVIDERS_FILES_PATH}/near-intents/near-intents-logo.png`,
     dappId: NEAR_INTENTS_HOOK_DAPP_ID,
     website: 'https://www.near.org/intents',
+    type: providerType,
   }
 
   constructor(options?: NearIntentsBridgeProviderOptions, _adapter?: AbstractProviderAdapter) {
@@ -72,9 +75,11 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
 
   async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
     const tokens = adaptTokens(await this.api.getTokens())
+    const filteredTokens = tokens.filter((token) => token.chainId === params.buyChainId)
+
     return {
-      tokens: tokens.filter((token) => token.chainId === params.buyChainId),
-      isRouteAvailable: tokens.length > 0,
+      tokens: filteredTokens,
+      isRouteAvailable: filteredTokens.length > 0,
     }
   }
 
@@ -83,7 +88,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       throw new BridgeProviderQuoteError(BridgeQuoteErrors.ONLY_SELL_ORDER_SUPPORTED, { kind: request.kind })
     }
 
-    const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
+    const { sellTokenChainId, buyTokenChainId, buyTokenAddress, sellTokenAddress } = request
 
     const tokens = adaptTokens(await this.api.getTokens())
     const { sourceTokens, targetTokens } = tokens.reduce(
@@ -103,10 +108,19 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     )
 
     const targetToken = targetTokens.get(buyTokenAddress.toLowerCase() as Address)
+
     if (!targetToken) return []
 
-    // If targetToken is supported, all source tokens can be used to buy targetToken
-    return Array.from(sourceTokens.values())
+    /**
+     * Example: trade USDT (bnb) -> POL (polygon)
+     * sellTokenAddress - address of USDT on bnb
+     * We have to exclude USDT from sourceTokens
+     * Otherwise, the result of getIntermediateTokens() will include USDT
+     * * And CoW Swap will try to swap USDT (bnb) -> USDT (bnb) which is not allowed
+     */
+    return Array.from(sourceTokens.values()).filter((token) => {
+      return token.address?.toLowerCase() !== sellTokenAddress.toLowerCase()
+    })
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<NearIntentsQuoteResult> {
@@ -146,7 +160,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     const recoveredDepositAddress = await this.recoverDepositAddress(quoteResponse)
 
     if (recoveredDepositAddress?.toLowerCase() !== ATTESTATOR_ADDRESS.toLowerCase()) {
-      throw new BridgeProviderQuoteError(BridgeQuoteErrors.API_ERROR)
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.QUOTE_DOES_NOT_MATCH_DEPOSIT_ADDRESS)
     }
 
     const { quote, timestamp: isoDate } = quoteResponse
@@ -202,20 +216,17 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
 
   async getBridgingParams(
     _chainId: ChainId,
-    _orderUid: string,
-    txHash: string,
+    order: EnrichedOrder,
+    _txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
-    const adapter = getGlobalAdapter()
-    const receipt = await adapter.getTransactionReceipt(txHash)
-    if (!receipt) return null
-
-    const depositAddress = await receipt.to
+    const depositAddress = order.receiver
     if (!depositAddress) return null
 
     const [tokens, status] = await Promise.all([this.api.getTokens(), this.api.getStatus(depositAddress)])
 
     // Unpack quote data
     const qr = status.quoteResponse?.quoteRequest
+    const swapDetails = status.swapDetails
     const quote = status.quoteResponse?.quote
     const timestampMs = Date.parse(status.quoteResponse?.timestamp ?? '')
     if (!qr || !quote || Number.isNaN(timestampMs)) {
@@ -247,8 +258,8 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
         inputTokenAddress: inputToken.contractAddress ?? ETH_ADDRESS,
         outputTokenAddress: outputToken.contractAddress ?? ETH_ADDRESS,
         inputAmount: BigInt(quote.amountIn),
-        outputAmount: BigInt(quote.amountOut),
-        owner: receipt.from,
+        outputAmount: swapDetails.amountOut ? BigInt(swapDetails.amountOut) : BigInt(quote.amountOut),
+        owner: order.owner,
         quoteTimestamp,
         fillDeadline: quoteTimestamp + quote.timeEstimate,
         recipient: qr.recipient,
@@ -263,14 +274,14 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     return `https://explorer.near-intents.org/transactions/${bridgingId}`
   }
 
-  async getStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult> {
+  async getStatus(bridgingId: string, _originChainId: SupportedChainId): Promise<BridgeStatusResult> {
     // bridingId must be the deposit address
     try {
       const statusResponse = await this.api.getStatus(bridgingId)
       return {
         status: NEAR_INTENTS_STATUS_TO_COW_STATUS[statusResponse.status] || BridgeStatus.UNKNOWN,
-        depositTxHash: statusResponse.swapDetails.originChainTxHashes[0]?.hash,
-        fillTxHash: statusResponse.swapDetails.destinationChainTxHashes[0]?.hash,
+        depositTxHash: statusResponse.swapDetails?.originChainTxHashes[0]?.hash,
+        fillTxHash: statusResponse.swapDetails?.destinationChainTxHashes[0]?.hash,
       }
     } catch {
       return {
@@ -279,11 +290,11 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     }
   }
 
-  getCancelBridgingTx(bridgingId: string): Promise<EvmCall> {
+  getCancelBridgingTx(_bridgingId: string): Promise<EvmCall> {
     throw new Error('Not implemented')
   }
 
-  getRefundBridgingTx(bridgingId: string): Promise<EvmCall> {
+  getRefundBridgingTx(_bridgingId: string): Promise<EvmCall> {
     throw new Error('Not implemented')
   }
 

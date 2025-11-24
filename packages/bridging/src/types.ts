@@ -13,11 +13,14 @@ import type {
 } from '@cowprotocol/sdk-trading'
 import type { AccountAddress, SignerLike, TTLCache } from '@cowprotocol/sdk-common'
 
+export type BridgeProviderType = 'ReceiverAccountBridgeProvider' | 'HookBridgeProvider'
+
 export interface BridgeProviderInfo {
   name: string
   logoUrl: string
   dappId: string
   website: string
+  type: BridgeProviderType
 }
 
 interface WithSellToken {
@@ -159,7 +162,7 @@ export interface BridgeDeposit extends Omit<QuoteBridgeRequest, 'amount'> {
  * It contains the main information about the provider, and the methods to get the quote, the bridging params, the status, the cancelling and the refunding of the bridging.
  */
 export interface BridgeProvider<Q extends BridgeQuoteResult> {
-  type: 'ReceiverAccountBridgeProvider' | 'HookBridgeProvider'
+  type: BridgeProviderType
 
   info: BridgeProviderInfo
   /**
@@ -192,12 +195,12 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
   /**
    * Get the identifier of the bridging transaction from the settlement transaction.
    * @param chainId
-   * @param orderUid - The unique identifier of the order
+   * @param order - CoW Protocol order
    * @param txHash - The hash of the settlement transaction in which the bridging post-hook was executed
    */
   getBridgingParams(
     chainId: ChainId,
-    orderUid: string,
+    order: EnrichedOrder,
     txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null>
 
@@ -511,3 +514,5 @@ export interface BestQuoteProviderContext extends MultiQuoteContext {
   bestResult: { current: MultiQuoteResult | null }
   firstError: { current: MultiQuoteResult | null }
 }
+
+export type DefaultBridgeProvider = BridgeProvider<BridgeQuoteResult>

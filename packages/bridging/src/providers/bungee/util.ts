@@ -59,8 +59,11 @@ function toAmountsAndCosts(
 
   // Calculate the fee
   const feeSellToken = bungeeQuote.route.routeDetails.routeFee.amount
-  // @note feeBuyToken is 0, since routeFee is taken in the src chain intermediate token
-  const feeBuyToken = 0
+  // Calculate feeBuyToken based on price ratio between buy and sell amounts
+  // feeBuyToken = feeSellToken * (buyAmount / sellAmount)
+  const feeBuyToken = sellAmountBeforeFee > 0n
+    ? (BigInt(feeSellToken) * buyAmountBeforeFee) / sellAmountBeforeFee
+    : 0n
 
   // Apply slippage
   const buyAmountAfterSlippage = applyBps(buyAmountAfterFee, slippageBps)
@@ -87,7 +90,7 @@ function toAmountsAndCosts(
       bridgingFee: {
         feeBps: bridgeFeeBps,
         amountInSellCurrency: BigInt(feeSellToken),
-        amountInBuyCurrency: BigInt(feeBuyToken),
+        amountInBuyCurrency: feeBuyToken,
       },
     },
     slippageBps,

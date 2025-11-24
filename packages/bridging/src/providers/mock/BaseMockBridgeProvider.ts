@@ -1,5 +1,4 @@
 import {
-  BridgeProviderInfo,
   BridgeQuoteResult,
   BridgeStatusResult,
   BridgingDepositParams,
@@ -8,7 +7,6 @@ import {
   QuoteBridgeRequest,
   BridgeProvider,
 } from '../../types'
-import { RAW_PROVIDERS_FILES_PATH } from '../../const'
 import {
   ChainId,
   ChainInfo,
@@ -20,17 +18,21 @@ import {
   TokenInfo,
 } from '@cowprotocol/sdk-config'
 import { BRIDGING_PARAMS, BUY_TOKENS, INTERMEDIATE_TOKENS, MOCK_CALL, QUOTE, STATUS } from './mockData'
+import { EnrichedOrder } from '@cowprotocol/sdk-order-book'
+import { RAW_PROVIDERS_FILES_PATH } from '../../const'
 
-export abstract class BaseMockBridgeProvider implements Omit<BridgeProvider<BridgeQuoteResult>, 'type'> {
-  info: BridgeProviderInfo
+const name = 'BaseMockBridgeProvider'
+const providerType = 'HookBridgeProvider' as const
 
-  constructor(name: string) {
-    this.info = {
-      name,
-      logoUrl: `${RAW_PROVIDERS_FILES_PATH}/mock/mock-logo.png`,
-      dappId: 'dapp-id-' + name,
-      website: `https://mock.com/${name}`,
-    }
+export abstract class BaseMockBridgeProvider implements BridgeProvider<BridgeQuoteResult> {
+  type = providerType
+
+  info = {
+    name,
+    logoUrl: `${RAW_PROVIDERS_FILES_PATH}/mock/mock-logo.png`,
+    dappId: 'dapp-id-' + name,
+    website: `https://mock.com/${name}`,
+    type: providerType,
   }
 
   async getNetworks(): Promise<ChainInfo[]> {
@@ -54,7 +56,7 @@ export abstract class BaseMockBridgeProvider implements Omit<BridgeProvider<Brid
 
   async getBridgingParams(
     _chainId: ChainId,
-    _orderUid: string,
+    _order: EnrichedOrder,
     _txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult }> {
     return {

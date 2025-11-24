@@ -29,12 +29,12 @@ export function assertIsQuoteAndPost(quote: CrossChainQuoteAndPost): asserts quo
   }
 }
 
-export function getPostHooks(fullAppData?: string): latestAppData.CoWHook[] {
+export function getPostHooks(fullAppData?: string | object): latestAppData.CoWHook[] {
   if (!fullAppData) {
     return []
   }
 
-  const appData = JSON.parse(fullAppData)
+  const appData = typeof fullAppData === 'string' ? JSON.parse(fullAppData) : fullAppData
   if (!isAppDoc(appData)) {
     return []
   }

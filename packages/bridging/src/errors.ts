@@ -7,6 +7,7 @@ export enum BridgeQuoteErrors {
   QUOTE_ERROR = 'QUOTE_ERROR',
   NO_ROUTES = 'NO_ROUTES',
   INVALID_BRIDGE = 'INVALID_BRIDGE',
+  QUOTE_DOES_NOT_MATCH_DEPOSIT_ADDRESS = 'QUOTE_DOES_NOT_MATCH_DEPOSIT_ADDRESS',
 }
 
 export class BridgeProviderQuoteError extends Error {

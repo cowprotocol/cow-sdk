@@ -36,7 +36,7 @@ import {
   TokenInfo,
 } from '@cowprotocol/sdk-config'
 import { CowShedSdk, CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
-import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { EnrichedOrder, OrderKind } from '@cowprotocol/sdk-order-book'
 
 type SupportedTokensState = Record<ChainId, Record<string, TokenInfo>>
 
@@ -58,8 +58,10 @@ export interface AcrossQuoteResult extends BridgeQuoteResult {
   suggestedFees: SuggestedFeesResponse
 }
 
+const providerType = 'HookBridgeProvider' as const
+
 export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResult> {
-  type = 'HookBridgeProvider' as const
+  type = providerType
   protected api: AcrossApi
   protected cowShedSdk: CowShedSdk
 
@@ -79,6 +81,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     logoUrl: `${RAW_PROVIDERS_FILES_PATH}/across/across-logo.png`,
     dappId: ACROSS_HOOK_DAPP_ID,
     website: 'https://across.to',
+    type: providerType,
   }
 
   async getNetworks(): Promise<ChainInfo[]> {
@@ -198,9 +201,10 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
 
   async getBridgingParams(
     chainId: ChainId,
-    orderUid: string,
+    order: EnrichedOrder,
     txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
+    const orderUid = order.uid
     const adapter = getGlobalAdapter()
 
     const txReceipt = await adapter.getTransactionReceipt(txHash)

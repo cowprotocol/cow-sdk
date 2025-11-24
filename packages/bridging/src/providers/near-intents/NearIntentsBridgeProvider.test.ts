@@ -1,17 +1,14 @@
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
-import { ETH_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
-import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { GetExecutionStatusResponse, QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
-import { padHex, zeroAddress } from 'viem'
 
 import { createAdapters } from '../../../tests/setup'
 import { NearIntentsApi } from './NearIntentsApi'
 import { NEAR_INTENTS_HOOK_DAPP_ID, NearIntentsBridgeProvider } from './NearIntentsBridgeProvider'
-import { ATTESTATOR_ADDRESS, NEAR_INTENTS_SUPPORTED_NETWORKS } from './const'
+import { NEAR_INTENTS_SUPPORTED_NETWORKS } from './const'
 import { BridgeStatus } from '../../types'
 
 import type { TargetChainId } from '@cowprotocol/sdk-config'
-import type { QuoteBridgeRequest } from '../../types'
 import type { QuoteResponse } from '@defuse-protocol/one-click-sdk-typescript'
 
 // Mock NearIntentsApi
@@ -37,7 +34,6 @@ const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
 const mockGetCode = jest.fn()
-let originalRecoverDepositAddress: any
 
 adapterNames.forEach((adapterName) => {
   describe(`NearIntentsBridgeProvider for ${adapterName}`, () => {
@@ -48,10 +44,6 @@ adapterNames.forEach((adapterName) => {
       adapter.getCode = mockGetCode
       setGlobalAdapter(adapter)
       provider = new NearIntentsBridgeProviderTest()
-      originalRecoverDepositAddress = provider.recoverDepositAddress.bind(provider)
-
-      const mockRecoverDepositAddress = jest.fn().mockResolvedValue(ATTESTATOR_ADDRESS.toLowerCase())
-      provider.recoverDepositAddress = mockRecoverDepositAddress
     })
 
     afterEach(() => {
@@ -112,111 +104,12 @@ adapterNames.forEach((adapterName) => {
       })
     })
 
-    describe('getQuote', () => {
-      beforeEach(() => {
-        const api = new NearIntentsApi()
-        jest.spyOn(api, 'getTokens').mockResolvedValue([
-          {
-            assetId: 'nep141:eth.omft.near',
-            decimals: 18,
-            blockchain: TokenResponse.blockchain.ETH,
-            symbol: 'ETH',
-            price: 4463.25,
-            priceUpdatedAt: '2025-09-03T14:42:00.329Z',
-          },
-          {
-            assetId: 'nep245:v2_1.omni.hot.tg:137_11111111111111111111',
-            decimals: 18,
-            blockchain: TokenResponse.blockchain.POL,
-            symbol: 'POL',
-            price: 0.287879,
-            priceUpdatedAt: '2025-09-03T14:42:00.329Z',
-          },
-        ])
-        jest.spyOn(api, 'getQuote').mockResolvedValue({
-          quote: {
-            amountIn: '35000000000000',
-            amountInFormatted: '0.000035',
-            amountInUsd: '0.1566',
-            minAmountIn: '35000000000000',
-            amountOut: '468413404557660287',
-            amountOutFormatted: '0.468413404557660287',
-            amountOutUsd: '0.1349',
-            minAmountOut: '463000005761085287',
-            timeEstimate: 49,
-            deadline: '2025-09-04T14:46:59.148Z',
-            timeWhenInactive: '2025-09-04T14:46:59.148Z',
-            depositAddress: '0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e',
-          },
-          quoteRequest: {
-            depositMode: QuoteRequest.depositMode.SIMPLE,
-            quoteWaitingTimeMs: 3000,
-            dry: false,
-            swapType: QuoteRequest.swapType.EXACT_INPUT,
-            slippageTolerance: 100,
-            originAsset: 'nep141:eth.omft.near',
-            depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
-            destinationAsset: 'nep245:v2_1.omni.hot.tg:137_11111111111111111111',
-            amount: '35000000000000',
-            refundTo: '0x0000000000000000000000000000000000000000',
-            refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
-            recipient: '0x0000000000000000000000000000000000000000',
-            recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
-            deadline: '2025-09-03T15:46:55.000Z',
-          },
-          signature: 'ed25519:Y54QM45ockDtJf3uAVhV8xndF79GPeQW5fJaZZLKfnaj8mW9NaBDsGg3uVXY1Fge73fYDAsdn9qokhjm2rsJATz',
-          timestamp: '2025-09-03T14:46:55.987Z',
-        })
-        provider.setApi(api)
-      })
-
-      it('should return quote with deposit address', async () => {
-        const request: QuoteBridgeRequest = {
-          kind: OrderKind.SELL,
-          sellTokenAddress: ETH_ADDRESS,
-          sellTokenChainId: SupportedChainId.MAINNET,
-          buyTokenChainId: SupportedChainId.POLYGON,
-          amount: 35000000000000n,
-          receiver: zeroAddress,
-          account: zeroAddress,
-          sellTokenDecimals: 18,
-          buyTokenAddress: ETH_ADDRESS,
-          buyTokenDecimals: 6,
-          appCode: zeroAddress,
-          signer: padHex('0x1'),
-        }
-
-        const quote = await provider.getQuote(request)
-
-        expect(quote).toEqual({
-          isSell: true,
-          depositAddress: '0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e',
-          quoteTimestamp: 1756910815987,
-          expectedFillTimeSeconds: 49,
-          limits: { minDeposit: 35000000000000n, maxDeposit: 35000000000000n },
-          fees: { bridgeFee: 4849936143039n, destinationGasFee: 0n },
-          amountsAndCosts: {
-            beforeFee: { buyAmount: 468413404557660287n, sellAmount: 35000000000000n },
-            afterFee: { buyAmount: 463000005761085287n, sellAmount: 35000000000000n },
-            afterSlippage: { buyAmount: 463000005761085287n, sellAmount: 35000000000000n },
-            slippageBps: 1385,
-            costs: {
-              bridgingFee: {
-                feeBps: 1385,
-                amountInSellCurrency: 64907860018526376n,
-                amountInBuyCurrency: 4849936143039n,
-              },
-            },
-          },
-        })
-      })
-    })
-
     describe('info', () => {
       it('should return provider info', () => {
         expect(provider.info).toEqual({
           dappId: NEAR_INTENTS_HOOK_DAPP_ID,
           name: 'Near Intents',
+          type: 'ReceiverAccountBridgeProvider',
           logoUrl: expect.stringContaining('near-intents-logo.png'),
           website: 'https://www.near.org/intents',
         })
@@ -363,7 +256,6 @@ adapterNames.forEach((adapterName) => {
       }
 
       it('should return true when signature is valid and from correct attestator', async () => {
-        provider.recoverDepositAddress = originalRecoverDepositAddress
         jest.spyOn(provider.getApi(), 'getAttestation').mockResolvedValue({
           version: 1,
           signature:
@@ -373,7 +265,7 @@ adapterNames.forEach((adapterName) => {
         const recoveredAddress = await provider.recoverDepositAddress(mockQuoteResponse)
 
         // Just a test value
-        expect(recoveredAddress).toBe('0xCa545a774087a784EcEDa609C822FB0379efdb1b')
+        expect(recoveredAddress).toBe('0x4Ea61d574a6c80A6e53727Fe13a2cDc0627f4DA7')
       })
     })
   })
