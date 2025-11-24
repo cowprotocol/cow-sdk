@@ -138,6 +138,7 @@ describe('Bungee Utils', () => {
       const slippageBps = 30
       const result = toBridgeQuoteResult(request, slippageBps, mockBungeeQuoteWithBuildTx)
 
+      expect(result.id).toBe('123')
       expect(result.isSell).toBe(true)
       expect(result.quoteTimestamp).toBe(1234567890)
       expect(result.expectedFillTimeSeconds).toBe(300)
@@ -147,6 +148,38 @@ describe('Bungee Utils', () => {
       expect(result.limits.maxDeposit).toBe(BigInt(0))
       expect(result.bungeeQuote).toEqual(mockBungeeQuoteWithBuildTx.bungeeQuote)
       expect(result.buildTx).toEqual(mockBungeeQuoteWithBuildTx.buildTx)
+    })
+
+    it('should include quote id from bungee response', () => {
+      const request: QuoteBridgeRequest = {
+        kind: OrderKind.SELL,
+        sellTokenChainId: SupportedChainId.MAINNET,
+        sellTokenAddress: '0x1234567890123456789012345678901234567890',
+        sellTokenDecimals: 18,
+        buyTokenChainId: SupportedChainId.POLYGON,
+        buyTokenAddress: '0x1234567890123456789012345678901234567890',
+        buyTokenDecimals: 6,
+        amount: mockAmount,
+        appCode: 'test',
+        account: '0x1234567890123456789012345678901234567890',
+        signer: '0x1234567890123456789012345678901234567890',
+      }
+
+      const customQuoteId = 'custom-bungee-quote-id-xyz'
+      const mockBungeeQuoteWithCustomId: BungeeQuoteWithBuildTx = {
+        ...mockBungeeQuoteWithBuildTx,
+        bungeeQuote: {
+          ...mockBungeeQuoteWithBuildTx.bungeeQuote,
+          route: {
+            ...mockBungeeQuoteWithBuildTx.bungeeQuote.route,
+            quoteId: customQuoteId,
+          },
+        },
+      }
+
+      const result = toBridgeQuoteResult(request, 30, mockBungeeQuoteWithCustomId)
+
+      expect(result.id).toBe(customQuoteId)
     })
   })
 

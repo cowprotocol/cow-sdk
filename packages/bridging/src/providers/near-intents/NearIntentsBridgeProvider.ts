@@ -159,7 +159,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
 
     const recoveredDepositAddress = await this.recoverDepositAddress(quoteResponse)
 
-    if (recoveredDepositAddress?.toLowerCase() !== ATTESTATOR_ADDRESS.toLowerCase()) {
+    if (recoveredDepositAddress?.address.toLowerCase() !== ATTESTATOR_ADDRESS.toLowerCase()) {
       throw new BridgeProviderQuoteError(BridgeQuoteErrors.QUOTE_DOES_NOT_MATCH_DEPOSIT_ADDRESS)
     }
 
@@ -173,6 +173,8 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     const bridgeFee = Math.trunc(Number(quote.amountIn) * slippage)
 
     return {
+      id: recoveredDepositAddress.quoteHash,
+      signature: quoteResponse.signature,
       isSell: request.kind === OrderKind.SELL,
       depositAddress: quote.depositAddress as Hex,
       quoteTimestamp: new Date(isoDate).getTime(),
@@ -298,7 +300,11 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     throw new Error('Not implemented')
   }
 
-  async recoverDepositAddress({ quote, quoteRequest, timestamp }: QuoteResponse): Promise<Address | null> {
+  async recoverDepositAddress({
+    quote,
+    quoteRequest,
+    timestamp,
+  }: QuoteResponse): Promise<{ address: Address; quoteHash: string } | null> {
     try {
       if (!quote?.depositAddress) return null
 
@@ -318,7 +324,10 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
 
       const hash = utils.keccak256(messageBytes)
 
-      return utils.recoverAddress(hash, signature)
+      return {
+        address: await utils.recoverAddress(hash, signature),
+        quoteHash,
+      }
     } catch {
       return null
     }

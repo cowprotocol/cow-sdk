@@ -256,6 +256,39 @@ adapterNames.forEach((adapterName) => {
 
       expect(mockProvider.getIntermediateTokens).toHaveBeenCalledTimes(2)
     })
+
+    it('should update app-data with bridge quote details for HookBridgeProvider', async () => {
+      const quoteWithIdAndSignature = {
+        ...bridgeQuoteResult,
+        id: 'hook-quote-id-789',
+        signature: '0xhook-signature-789',
+      }
+      mockProvider.getQuote = jest.fn().mockResolvedValue(quoteWithIdAndSignature)
+
+      const result = await postOrder(quoteBridgeRequest)
+
+      const appData = result.swap.appDataInfo.doc
+      expect(appData.metadata.bridging?.quoteId).toBe('hook-quote-id-789')
+      expect(appData.metadata.bridging?.quoteSignature).toBe('0xhook-signature-789')
+    })
+
+    it('should preserve existing bridging metadata when updating with quote details', async () => {
+      const quoteWithIdAndSignature = {
+        ...bridgeQuoteResult,
+        id: 'preserve-test-id',
+        signature: '0xpreserve-signature',
+      }
+      mockProvider.getQuote = jest.fn().mockResolvedValue(quoteWithIdAndSignature)
+
+      const result = await postOrder(quoteBridgeRequest)
+
+      const appData = result.swap.appDataInfo.doc
+      // Should have the new quote details
+      expect(appData.metadata.bridging?.quoteId).toBe('preserve-test-id')
+      expect(appData.metadata.bridging?.quoteSignature).toBe('0xpreserve-signature')
+      // Should preserve existing bridging metadata structure
+      expect(appData.metadata.bridging).toBeDefined()
+    })
   })
 })
 
@@ -304,6 +337,96 @@ describe('createPostSwapOrderFromQuote with ReceiverAccountBridgeProvider', () =
         } as unknown as OrderBookApi
 
         tradingSdk = new TradingSdk({}, { orderBookApi })
+      })
+
+      it('should include bridge quote id and signature in bridge result', async () => {
+        const quoteWithIdAndSignature = {
+          ...bridgeQuoteResult,
+          id: 'test-quote-id-123',
+          signature: '0xsignature123',
+        }
+        mockProvider.getQuote = jest.fn().mockResolvedValue(quoteWithIdAndSignature)
+
+        const result = await getQuoteWithBridge(mockProvider, {
+          swapAndBridgeRequest: quoteBridgeRequest,
+          tradingSdk,
+        })
+
+        expect(result.bridge.id).toBe('test-quote-id-123')
+        expect(result.bridge.signature).toBe('0xsignature123')
+      })
+
+      it('should update app-data with bridge quote details when id and signature are present', async () => {
+        const quoteWithIdAndSignature = {
+          ...bridgeQuoteResult,
+          id: 'test-quote-id-456',
+          signature: '0xsignature456',
+        }
+        mockProvider.getQuote = jest.fn().mockResolvedValue(quoteWithIdAndSignature)
+
+        const result = await getQuoteWithBridge(mockProvider, {
+          swapAndBridgeRequest: quoteBridgeRequest,
+          tradingSdk,
+        })
+
+        const appData = result.swap.appDataInfo.doc
+        expect(appData.metadata.bridging?.quoteId).toBe('test-quote-id-456')
+        expect(appData.metadata.bridging?.quoteSignature).toBe('0xsignature456')
+      })
+
+      it('should not update app-data bridging fields when quote has no id or signature', async () => {
+        const quoteWithoutIdAndSignature = {
+          ...bridgeQuoteResult,
+          id: undefined,
+          signature: undefined,
+        }
+        mockProvider.getQuote = jest.fn().mockResolvedValue(quoteWithoutIdAndSignature)
+
+        const result = await getQuoteWithBridge(mockProvider, {
+          swapAndBridgeRequest: quoteBridgeRequest,
+          tradingSdk,
+        })
+
+        const appData = result.swap.appDataInfo.doc
+        // Should not have quoteId or quoteSignature fields if not present in quote
+        expect(appData.metadata.bridging?.quoteId).toBeUndefined()
+        expect(appData.metadata.bridging?.quoteSignature).toBeUndefined()
+      })
+
+      it('should update app-data with only quote id when signature is not present', async () => {
+        const quoteWithIdOnly = {
+          ...bridgeQuoteResult,
+          id: 'test-quote-id-only',
+          signature: undefined,
+        }
+        mockProvider.getQuote = jest.fn().mockResolvedValue(quoteWithIdOnly)
+
+        const result = await getQuoteWithBridge(mockProvider, {
+          swapAndBridgeRequest: quoteBridgeRequest,
+          tradingSdk,
+        })
+
+        const appData = result.swap.appDataInfo.doc
+        expect(appData.metadata.bridging?.quoteId).toBe('test-quote-id-only')
+        expect(appData.metadata.bridging?.quoteSignature).toBeUndefined()
+      })
+
+      it('should update app-data with only signature when id is not present', async () => {
+        const quoteWithSignatureOnly = {
+          ...bridgeQuoteResult,
+          id: undefined,
+          signature: '0xsignature-only',
+        }
+        mockProvider.getQuote = jest.fn().mockResolvedValue(quoteWithSignatureOnly)
+
+        const result = await getQuoteWithBridge(mockProvider, {
+          swapAndBridgeRequest: quoteBridgeRequest,
+          tradingSdk,
+        })
+
+        const appData = result.swap.appDataInfo.doc
+        expect(appData.metadata.bridging?.quoteId).toBeUndefined()
+        expect(appData.metadata.bridging?.quoteSignature).toBe('0xsignature-only')
       })
 
       it('should override appDataInfo with advancedSettings.appData when provided', async () => {

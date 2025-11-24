@@ -55,6 +55,14 @@ export type QuoteBridgeRequestWithoutAmount = Omit<QuoteBridgeRequest, 'amount'>
 
 export interface BridgeQuoteResult {
   /**
+   * Unique ID of a quote
+   */
+  id?: string
+  /**
+   * Provider who implement ReceiverAccountBridgeProvider must return a signature of a quote than will be used to verify the quote deposit address validity
+   */
+  signature?: string
+  /**
    * Whether the quote is a sell or buy order.
    */
   isSell: boolean
