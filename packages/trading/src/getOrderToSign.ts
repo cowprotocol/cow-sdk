@@ -18,10 +18,11 @@ interface OrderToSignParams {
   from: string
   networkCostsAmount?: string
   applyCostsSlippageAndFees?: boolean
+  protocolFeeBps?: number
 }
 
 export function getOrderToSign(
-  { chainId, from, networkCostsAmount = '0', isEthFlow, applyCostsSlippageAndFees = true }: OrderToSignParams,
+  { chainId, from, networkCostsAmount = '0', isEthFlow, applyCostsSlippageAndFees = true, protocolFeeBps }: OrderToSignParams,
   limitOrderParams: LimitTradeParameters,
   appDataKeccak256: string,
 ): UnsignedOrder {
@@ -63,6 +64,7 @@ export function getOrderToSign(
       orderParams,
       slippagePercentBps: slippageBps,
       partnerFeeBps: getPartnerFeeBps(partnerFee),
+      protocolFeeBps,
       sellDecimals: sellTokenDecimals,
       buyDecimals: buyTokenDecimals,
     })
