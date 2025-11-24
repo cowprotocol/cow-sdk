@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.2.0...sdk-app-data-v4.3.0) (2025-11-24)
+
+
+### ✨ Features
+
+* **bridge:** add quote id and signature metadata ([#701](https://github.com/cowprotocol/cow-sdk/issues/701)) ([35a25a7](https://github.com/cowprotocol/cow-sdk/commit/35a25a7fcc2724073355b3dba4b8f6d3b7419032))
+
 ## [4.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.1.6...sdk-app-data-v4.2.0) (2025-11-24)
 
 

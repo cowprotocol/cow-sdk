@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.6.0...sdk-contracts-ts-v0.7.0) (2025-11-24)
+
+
+### ✨ Features
+
+* **bridge:** add quote id and signature metadata ([#701](https://github.com/cowprotocol/cow-sdk/issues/701)) ([35a25a7](https://github.com/cowprotocol/cow-sdk/commit/35a25a7fcc2724073355b3dba4b8f6d3b7419032))
+
 ## [0.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.5.0...sdk-contracts-ts-v0.6.0) (2025-11-24)
 
 
