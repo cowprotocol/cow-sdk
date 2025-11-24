@@ -21,6 +21,7 @@ export function toBridgeQuoteResult(
   const { bungeeQuote, buildTx } = bungeeQuoteWithBuildTx
 
   return {
+    id: bungeeQuoteWithBuildTx.bungeeQuote.route.quoteId.toString(),
     isSell: kind === OrderKind.SELL,
     amountsAndCosts: toAmountsAndCosts(request, slippageBps, bungeeQuote),
     quoteTimestamp: Number(bungeeQuote.quoteTimestamp),
@@ -61,9 +62,7 @@ function toAmountsAndCosts(
   const feeSellToken = bungeeQuote.route.routeDetails.routeFee.amount
   // Calculate feeBuyToken based on price ratio between buy and sell amounts
   // feeBuyToken = feeSellToken * (buyAmount / sellAmount)
-  const feeBuyToken = sellAmountBeforeFee > 0n
-    ? (BigInt(feeSellToken) * buyAmountBeforeFee) / sellAmountBeforeFee
-    : 0n
+  const feeBuyToken = sellAmountBeforeFee > 0n ? (BigInt(feeSellToken) * buyAmountBeforeFee) / sellAmountBeforeFee : 0n
 
   // Apply slippage
   const buyAmountAfterSlippage = applyBps(buyAmountAfterFee, slippageBps)

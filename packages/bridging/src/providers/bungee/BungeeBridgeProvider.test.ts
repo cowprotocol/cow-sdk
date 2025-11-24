@@ -285,6 +285,7 @@ adapterNames.forEach((adapterName) => {
           },
           quoteTimestamp: 1234567890,
           expectedFillTimeSeconds: 300,
+          id: '123',
           fees: {
             bridgeFee: 5000000000000000n,
             destinationGasFee: 0n,

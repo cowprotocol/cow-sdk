@@ -9,6 +9,7 @@ import {
   SwapAdvancedSettings,
   TradingAppDataInfo,
 } from '@cowprotocol/sdk-trading'
+import type { cowAppDataLatestScheme } from '@cowprotocol/sdk-app-data'
 import { getGlobalAdapter, log, SignerLike } from '@cowprotocol/sdk-common'
 import { OrderBookApi, OrderKind } from '@cowprotocol/sdk-order-book'
 import {
@@ -169,6 +170,13 @@ export async function getQuoteWithReceiverAccountBridge<T extends BridgeQuoteRes
     // Update the receiver
     log(`Bridge receiver override: ${bridgeReceiverOverride}`)
     swapResult.tradeParameters.receiver = bridgeReceiverOverride
+
+    // Update appData with bridge quote details
+    swapResult.appDataInfo = await mergeAppDataDoc(swapResult.appDataInfo.doc, {
+      metadata: {
+        bridging: overrideAppDataWithBridgingQuoteDetails(swapResult.appDataInfo.doc.metadata.bridging, bridgeResult),
+      },
+    })
 
     return {
       bridgeResult,
@@ -331,6 +339,8 @@ async function getAccountBridgeResult<T extends BridgeQuoteResult>(
 
   // Prepare the bridge result
   const bridgeResult: BridgeQuoteResults = {
+    id: bridgingQuote.id,
+    signature: bridgingQuote.signature,
     providerInfo: provider.info,
     tradeParameters: bridgeRequest, // Just the bridge (not the swap & bridge)
     bridgeReceiverOverride: bridgeReceiverOverride,
@@ -386,6 +396,7 @@ async function getHookBridgeResult<T extends BridgeQuoteResult>(
 
   const appDataInfo = await mergeAppDataDoc(swapAppData.doc, {
     metadata: {
+      bridging: overrideAppDataWithBridgingQuoteDetails(swapResult.appDataInfo.doc.metadata.bridging, bridgingQuote),
       hooks: {
         pre: swapResultHooks?.pre,
         post: [...postHooks, ...[bridgeHook.postHook]],
@@ -410,4 +421,17 @@ async function getHookBridgeResult<T extends BridgeQuoteResult>(
   }
 
   return { bridgeResult, bridgeHook, appDataInfo }
+}
+
+function overrideAppDataWithBridgingQuoteDetails(
+  bridgingMetaData: cowAppDataLatestScheme.Bridging | undefined,
+  quote: BridgeQuoteResult,
+): typeof bridgingMetaData {
+  if (!bridgingMetaData) return bridgingMetaData
+
+  return {
+    ...bridgingMetaData,
+    ...(quote.id ? { quoteId: quote.id } : undefined),
+    ...(quote.signature ? { quoteSignature: quote.signature } : undefined),
+  }
 }

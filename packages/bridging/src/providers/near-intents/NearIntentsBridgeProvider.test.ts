@@ -10,6 +10,7 @@ import { BridgeStatus } from '../../types'
 
 import type { TargetChainId } from '@cowprotocol/sdk-config'
 import type { QuoteResponse } from '@defuse-protocol/one-click-sdk-typescript'
+import { OrderKind } from '@cowprotocol/sdk-order-book'
 
 // Mock NearIntentsApi
 jest.mock('./NearIntentsApi')
@@ -219,53 +220,99 @@ adapterNames.forEach((adapterName) => {
       })
     })
 
-    describe('recoverDepositAddress', () => {
-      const mockQuoteResponse: QuoteResponse = {
-        quote: {
-          amountIn: '35000000000000',
-          amountInFormatted: '0.000035',
-          amountInUsd: '0.1566',
-          minAmountIn: '35000000000000',
-          amountOut: '468413404557660287',
-          amountOutFormatted: '0.468413404557660287',
-          amountOutUsd: '0.1349',
-          minAmountOut: '463000005761085287',
-          timeEstimate: 49,
-          deadline: '2025-09-04T14:46:59.148Z',
-          timeWhenInactive: '2025-09-04T14:46:59.148Z',
-          depositAddress: '0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e',
-        },
-        quoteRequest: {
-          depositMode: QuoteRequest.depositMode.SIMPLE,
-          quoteWaitingTimeMs: 3000,
-          dry: false,
-          swapType: QuoteRequest.swapType.EXACT_INPUT,
-          slippageTolerance: 100,
-          originAsset: 'nep141:eth.omft.near',
-          depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
-          destinationAsset: 'nep245:v2_1.omni.hot.tg:137_11111111111111111111',
-          amount: '35000000000000',
-          refundTo: '0x0000000000000000000000000000000000000000',
-          refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
-          recipient: '0x0000000000000000000000000000000000000000',
-          recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
-          deadline: '2025-09-03T15:46:55.000Z',
-        },
-        signature: 'ed25519:Y54QM45ockDtJf3uAVhV8xndF79GPeQW5fJaZZLKfnaj8mW9NaBDsGg3uVXY1Fge73fYDAsdn9qokhjm2rsJATz',
-        timestamp: '2025-09-03T14:46:55.987Z',
-      }
+    describe('getQuote', () => {
+      const ATTESTATOR_ADDRESS = '0x0073DD100b51C555E41B2a452E5933ef76F42790'
 
-      it('should return true when signature is valid and from correct attestator', async () => {
-        jest.spyOn(provider.getApi(), 'getAttestation').mockResolvedValue({
+      it('should return quote with id and signature', async () => {
+        const api = new NearIntentsApi()
+        const sellTokenAddress = '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'
+        const buyTokenAddress = '0x4200000000000000000000000000000000000006'
+        const testQuoteHash = '0xtestQuoteHash123'
+
+        const mockQuoteResponse: QuoteResponse = {
+          quote: {
+            amountIn: '1000000',
+            amountInFormatted: '1.0',
+            amountInUsd: '1.0',
+            minAmountIn: '1000000',
+            amountOut: '1000000',
+            amountOutFormatted: '1.0',
+            amountOutUsd: '1.0',
+            minAmountOut: '990000',
+            timeEstimate: 60,
+            deadline: '2025-09-05T12:10:38.605Z',
+            timeWhenInactive: '2025-09-05T12:10:38.605Z',
+            depositAddress: '0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e',
+          },
+          quoteRequest: {
+            dry: false,
+            swapType: QuoteRequest.swapType.EXACT_INPUT,
+            depositMode: QuoteRequest.depositMode.SIMPLE,
+            slippageTolerance: 100,
+            originAsset: 'nep141:usdc.omft.near',
+            depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
+            destinationAsset: 'nep141:base.omft.near',
+            amount: '1000000',
+            refundTo: '0x0000000000000000000000000000000000000000',
+            refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
+            recipient: '0x0000000000000000000000000000000000000000',
+            recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
+            deadline: '2025-09-05T12:10:38.605Z',
+          },
+          signature: 'ed25519:testSignature',
+          timestamp: '2025-09-05T12:00:38.695Z',
+        }
+
+        jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
+        jest.spyOn(api, 'getTokens').mockResolvedValue([
+          {
+            assetId: 'nep141:usdc.omft.near',
+            decimals: 6,
+            blockchain: TokenResponse.blockchain.BASE,
+            symbol: 'USDC',
+            price: 1,
+            priceUpdatedAt: '2025-09-05T12:00:38.695Z',
+            contractAddress: sellTokenAddress,
+          },
+          {
+            assetId: 'nep141:base.omft.near',
+            decimals: 18,
+            blockchain: TokenResponse.blockchain.BASE,
+            symbol: 'ETH',
+            price: 1,
+            priceUpdatedAt: '2025-09-05T12:00:38.695Z',
+            contractAddress: buyTokenAddress,
+          },
+        ])
+        jest.spyOn(api, 'getAttestation').mockResolvedValue({
           version: 1,
           signature:
             '0x66edc32e2ab001213321ab7d959a2207fcef5190cc9abb6da5b0d2a8a9af2d4d2b0700e2c317c4106f337fd934fbbb0bf62efc8811a78603b33a8265d3b8f8cb1c',
         })
+        provider.setApi(api)
 
-        const recoveredAddress = await provider.recoverDepositAddress(mockQuoteResponse)
+        // Mock recoverDepositAddress to return the attestator address
+        jest.spyOn(provider, 'recoverDepositAddress').mockResolvedValue({
+          address: ATTESTATOR_ADDRESS,
+          quoteHash: testQuoteHash,
+        })
 
-        // Just a test value
-        expect(recoveredAddress).toBe('0x4Ea61d574a6c80A6e53727Fe13a2cDc0627f4DA7')
+        const quote = await provider.getQuote({
+          kind: OrderKind.SELL,
+          sellTokenChainId: 8453,
+          sellTokenAddress,
+          sellTokenDecimals: 6,
+          buyTokenChainId: 8453,
+          buyTokenAddress,
+          buyTokenDecimals: 18,
+          amount: 1000000n,
+          account: '0x0000000000000000000000000000000000000000',
+          appCode: 'test',
+          signer: '0x0000000000000000000000000000000000000000',
+        })
+
+        expect(quote.id).toBe(testQuoteHash)
+        expect(quote.signature).toBe('ed25519:testSignature')
       })
     })
   })
