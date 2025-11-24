@@ -41,11 +41,46 @@ import {
   HASH_ZERO,
   PERCENT_SCALE,
 } from './const'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { aaveAdapterFactoryAbi } from './abi/AaveAdapterFactory'
 import { collateralSwapAdapterHookAbi } from './abi/CollateralSwapAdapterHook'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { debtSwapAdapterAbi } from './abi/DebtSwapAdapter'
 import { repayWithCollateralAdapterAbi } from './abi/RepayWithCollateralAdapter'
+
+/**
+ * Configuration options for the AaveCollateralSwapSdk.
+ * @param {Record<AaveFlashLoanType, Record<SupportedChainId, string>>} hookAdapterPerType -
+ *        Mapping of flash loan types to chain-specific hook adapter addresses.
+ *        Defaults to the predefined addresses from the constants.
+ * @param {Record<SupportedChainId, string>} aaveAdapterFactory -
+ *        Mapping of chain IDs to Aave adapter factory addresses.
+ *        Defaults to the predefined addresses from the constants.
+ * @param {Record<SupportedChainId, string>} aavePoolAddress -
+ *        Mapping of chain IDs to Aave pool addresses.
+ *        Defaults to the predefined addresses from the constants.
+ * @example
+ * ```typescript
+ * const config: AaveCollateralSwapSdkConfig = {
+ *   hookAdapterPerType: {
+ *     [AaveFlashLoanType.CollateralSwap]: {
+ *       [SupportedChainId.GNOSIS_CHAIN]: '0x...',
+ *     },
+ *   },
+ *   aaveAdapterFactory: {
+ *     [SupportedChainId.MAINNET]: '0x...',
+ *   },
+ *   aavePoolAddress: {
+ *     [SupportedChainId.MAINNET]: '0x...',
+ *   },
+ * }
+ * ```
+ */
+export type AaveCollateralSwapSdkConfig = {
+  hookAdapterPerType?: Record<AaveFlashLoanType, Record<SupportedChainId, string>>
+  aaveAdapterFactory?: Record<SupportedChainId, string>
+  aavePoolAddress?: Record<SupportedChainId, string>
+  hooksGasLimit?: { pre: bigint; post: bigint }
+}
 
 /**
  * SDK for executing Aave flash loan operations, particularly collateral swaps.
@@ -58,6 +93,32 @@ import { repayWithCollateralAdapterAbi } from './abi/RepayWithCollateralAdapter'
  * @see https://docs.cow.fi/
  */
 export class AaveCollateralSwapSdk {
+  private readonly hookAdapterPerType: Record<AaveFlashLoanType, Record<SupportedChainId, string>>
+  private readonly aaveAdapterFactory: Record<SupportedChainId, string>
+  private readonly aavePoolAddress: Record<SupportedChainId, string>
+  private readonly hooksGasLimit: { pre: bigint; post: bigint }
+
+  /**
+   * Creates an instance of AaveCollateralSwapSdk.
+   *
+   * @param {Object} config - Configuration options for the SDK.
+   * @param {Record<AaveFlashLoanType, Record<SupportedChainId, string>>} config.hookAdapterPerType -
+   *        Mapping of flash loan types to chain-specific hook adapter addresses.
+   *        Defaults to the predefined addresses from the constants.
+   * @param {Record<SupportedChainId, string>} config.aaveAdapterFactory -
+   *        Mapping of chain IDs to Aave adapter factory addresses.
+   *        Defaults to the predefined addresses from the constants.
+   * @param {Record<SupportedChainId, string>} config.aavePoolAddress -
+   *        Mapping of chain IDs to Aave pool addresses.
+   *        Defaults to the predefined addresses from the constants.
+   */
+  constructor(config?: AaveCollateralSwapSdkConfig) {
+    this.hookAdapterPerType = config?.hookAdapterPerType ?? AAVE_HOOK_ADAPTER_PER_TYPE
+    this.aaveAdapterFactory = config?.aaveAdapterFactory ?? AAVE_ADAPTER_FACTORY
+    this.aavePoolAddress = config?.aavePoolAddress ?? AAVE_POOL_ADDRESS
+    this.hooksGasLimit = config?.hooksGasLimit ?? DEFAULT_HOOK_GAS_LIMIT
+  }
+
   /**
    * Executes a collateral swap using Aave flash loans.
    *
@@ -221,9 +282,9 @@ export class AaveCollateralSwapSdk {
 
     const flashLoanHint: FlashLoanHint = {
       amount, // this is actually in UNDERLYING but aave tokens are 1:1
-      receiver: AAVE_ADAPTER_FACTORY[chainId],
-      liquidityProvider: AAVE_POOL_ADDRESS[chainId],
-      protocolAdapter: AAVE_ADAPTER_FACTORY[chainId],
+      receiver: this.aaveAdapterFactory[chainId],
+      liquidityProvider: this.aavePoolAddress[chainId],
+      protocolAdapter: this.aaveAdapterFactory[chainId],
       token: orderToSign.sellToken,
     }
 
@@ -351,8 +412,8 @@ export class AaveCollateralSwapSdk {
     const hookData = this.buildHookOrderData(trader, hookAmounts, order)
 
     return (await getGlobalAdapter().readContract({
-      address: AAVE_ADAPTER_FACTORY[chainId],
-      args: [AAVE_HOOK_ADAPTER_PER_TYPE[flashLoanType][chainId], hookData],
+      address: this.aaveAdapterFactory[chainId],
+      args: [this.hookAdapterPerType[flashLoanType][chainId], hookData],
       functionName: 'getInstanceDeterministicAddress',
       abi: aaveAdapterFactoryAbi,
     })) as AccountAddress
@@ -403,7 +464,7 @@ export class AaveCollateralSwapSdk {
     instanceAddress: AccountAddress,
   ): string {
     const hookData = this.buildHookOrderData(trader, hookAmounts, order)
-    const adapterImplementation = AAVE_HOOK_ADAPTER_PER_TYPE[flashLoanType][chainId]
+    const adapterImplementation = this.hookAdapterPerType[flashLoanType][chainId]
 
     return getGlobalAdapter().utils.encodeFunction(aaveAdapterFactoryAbi, 'deployAndTransferFlashLoan', [
       adapterImplementation,
@@ -486,9 +547,9 @@ export class AaveCollateralSwapSdk {
     return {
       pre: [
         {
-          target: AAVE_ADAPTER_FACTORY[chainId],
+          target: this.aaveAdapterFactory[chainId],
           callData: preHookCallData,
-          gasLimit: DEFAULT_HOOK_GAS_LIMIT.pre.toString(),
+          gasLimit: this.hooksGasLimit.pre.toString(),
           dappId,
         },
       ],
@@ -496,7 +557,7 @@ export class AaveCollateralSwapSdk {
         {
           target: expectedInstanceAddress,
           callData: postHookCallData,
-          gasLimit: DEFAULT_HOOK_GAS_LIMIT.post.toString(),
+          gasLimit: this.hooksGasLimit.post.toString(),
           dappId,
         },
       ],
@@ -509,7 +570,7 @@ export class AaveCollateralSwapSdk {
     orderToSign: UnsignedOrder,
     signer: AbstractSigner<Provider>,
   ) {
-    const adapterFactoryAddress = AAVE_ADAPTER_FACTORY[chainId]
+    const adapterFactoryAddress = this.aaveAdapterFactory[chainId]
     const encodedOrder = OrderSigningUtils.encodeUnsignedOrder(orderToSign)
 
     const domain = {

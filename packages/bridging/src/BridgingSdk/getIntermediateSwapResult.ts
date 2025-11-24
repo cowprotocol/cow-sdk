@@ -90,7 +90,6 @@ export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
     : advancedSettingsHooks
 
   // Prepare advanced settings with optional hook
-
   const finalAdvancedSettings: SwapAdvancedSettings = {
     ...advancedSettings,
     appData: {
@@ -98,6 +97,7 @@ export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
       metadata: {
         hooks,
         bridging: {
+          providerId: provider.info.dappId,
           destinationChainId: buyTokenChainId.toString(),
           destinationTokenAddress: buyTokenAddress,
         },
@@ -149,7 +149,10 @@ async function getIntermediateTokens<T extends BridgeQuoteResult>(params: {
     intermediateTokens = cached
   } else {
     intermediateTokens = await provider.getIntermediateTokens(quoteBridgeRequest)
-    intermediateTokensCache?.set(cacheKey, intermediateTokens)
+
+    if (intermediateTokens?.length) {
+      intermediateTokensCache?.set(cacheKey, intermediateTokens)
+    }
   }
 
   if (intermediateTokens.length === 0) {

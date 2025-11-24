@@ -1,5 +1,5 @@
 import { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
-import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { EnrichedOrder, OrderKind } from '@cowprotocol/sdk-order-book'
 
 import {
   BridgeDeposit,
@@ -62,8 +62,10 @@ export interface BungeeQuoteResult extends BridgeQuoteResult {
   buildTx: BungeeBuildTx
 }
 
+const providerType = 'HookBridgeProvider' as const
+
 export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResult> {
-  type = 'HookBridgeProvider' as const
+  type = providerType
 
   protected api: BungeeApi
   protected cowShedSdk: CowShedSdk
@@ -86,6 +88,7 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
     logoUrl: `${RAW_PROVIDERS_FILES_PATH}/bungee/bungee-logo.png`,
     dappId: BUNGEE_HOOK_DAPP_ID,
     website: 'https://www.bungee.exchange',
+    type: providerType,
   }
 
   async getNetworks(): Promise<ChainInfo[]> {
@@ -212,9 +215,10 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
 
   async getBridgingParams(
     _chainId: ChainId,
-    orderId: string,
+    order: EnrichedOrder,
     _txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
+    const orderId = order.uid
     const events = await this.api.getEvents({ orderId })
     const event = events?.[0]
 

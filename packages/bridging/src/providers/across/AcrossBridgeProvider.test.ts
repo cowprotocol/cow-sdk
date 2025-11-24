@@ -181,6 +181,7 @@ adapterNames.forEach((adapterName) => {
         expect(provider.info).toEqual({
           dappId: ACROSS_HOOK_DAPP_ID,
           name: 'Across',
+          type: 'HookBridgeProvider',
           logoUrl: expect.stringContaining('across-logo.png'),
           website: 'https://across.to',
         })

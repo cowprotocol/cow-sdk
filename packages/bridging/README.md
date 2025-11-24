@@ -132,7 +132,7 @@ const parameters: QuoteBridgeRequest = {
   appCode: 'YOUR_APP_CODE',
 }
 
-const quoteResult = await sdk.bridging.getQuote(parameters)
+const quoteResult = await bridgingSdk.getQuote(parameters)
 assertIsBridgeQuoteAndPost(quoteResult)
 const { swap, bridge, postSwapOrderFromQuote } = quoteResult
 
@@ -171,7 +171,7 @@ const multiQuoteRequest: MultiQuoteRequest = {
 }
 
 // Get quotes from all providers
-const results = await sdk.bridging.getMultiQuotes(multiQuoteRequest)
+const results = await bridgingSdk.getMultiQuotes(multiQuoteRequest)
 
 results.forEach((result) => {
   if (result.quote) {
@@ -210,7 +210,7 @@ const multiQuoteRequest: MultiQuoteRequest = {
 }
 
 // This will return all results once completed (or timed out)
-const finalResults = await sdk.bridging.getMultiQuotes(multiQuoteRequest)
+const finalResults = await bridgingSdk.getMultiQuotes(multiQuoteRequest)
 
 console.log(`Received ${finalResults.filter(r => r.quote).length} successful quotes out of ${finalResults.length} providers`)
 ```
@@ -227,7 +227,7 @@ const fetchQuotes = async () => {
   setQuotes([])
 
   try {
-    const results = await sdk.bridging.getMultiQuotes({
+    const results = await bridgingSdk.getMultiQuotes({
       quoteBridgeRequest: parameters,
       options: {
         onQuoteResult: (result) => {
@@ -280,7 +280,7 @@ const isBestQuote = (result: MultiQuoteResult): boolean => {
 The `getMultiQuotes()` method supports two types of timeouts for fine-grained control:
 
 ```typescript
-const results = await sdk.bridging.getMultiQuotes({
+const results = await bridgingSdk.getMultiQuotes({
   quoteBridgeRequest: parameters,
   options: {
     // Global timeout: Maximum time to wait for all providers to complete
@@ -312,7 +312,7 @@ The `getBestQuote()` method provides an optimized way to get only the best quote
 import { MultiQuoteRequest } from '@cowprotocol/sdk-bridging'
 
 // Get the best quote from all available providers
-const bestQuote = await sdk.bridging.getBestQuote({
+const bestQuote = await bridgingSdk.getBestQuote({
   quoteBridgeRequest: parameters, // Same parameters as above
   providerDappIds: ['provider1', 'provider2'], // Optional: specify which providers to query
   advancedSettings: {
@@ -342,7 +342,7 @@ For real-time updates, you can receive notifications each time a better quote is
 ```typescript
 let currentBest: MultiQuoteResult | null = null
 
-const bestQuote = await sdk.bridging.getBestQuote({
+const bestQuote = await bridgingSdk.getBestQuote({
   quoteBridgeRequest: parameters,
   options: {
     // Called whenever a better quote is found
@@ -371,7 +371,7 @@ console.log('Final best quote:', bestQuote)
 When all providers fail, `getBestQuote()` returns the first provider's error:
 
 ```typescript
-const bestQuote = await sdk.bridging.getBestQuote({
+const bestQuote = await bridgingSdk.getBestQuote({
   quoteBridgeRequest: parameters,
   options: {
     onQuoteResult: (result) => {
@@ -413,6 +413,75 @@ Choose `getMultiQuotes()` when:
 - You need to display all available options to users
 - You want to analyze all provider responses
 - You need to show provider-specific errors or statuses
+
+## Provider Management
+
+The BridgingSdk provides methods to manage which bridge providers are actively used for quotes and operations.
+
+### Getting Available Providers
+
+Use `getAvailableProviders()` to retrieve the list of currently active providers:
+
+```typescript
+// Get all active providers
+const providers = bridgingSdk.getAvailableProviders()
+
+providers.forEach((provider) => {
+  console.log(`Provider: ${provider.info.name}`)
+  console.log(`Dapp ID: ${provider.info.dappId}`)
+  console.log(`Networks: ${provider.info.supportedChains.join(', ')}`)
+})
+```
+
+### Filtering Active Providers
+
+Use `setAvailableProviders()` to dynamically filter which providers should be used for bridge operations:
+
+```typescript
+// Initially, all configured providers are available
+const allProviders = bridgingSdk.getAvailableProviders()
+console.log(`Total providers: ${allProviders.length}`)
+
+// Filter to use only specific providers
+bridgingSdk.setAvailableProviders(['across', 'hop-protocol'])
+
+// Now only the specified providers will be used
+const filteredProviders = bridgingSdk.getAvailableProviders()
+console.log(`Active providers: ${filteredProviders.length}`)
+
+// Reset to use all providers again
+bridgingSdk.setAvailableProviders([])
+const resetProviders = bridgingSdk.getAvailableProviders()
+console.log(`Reset to all providers: ${resetProviders.length}`)
+```
+
+### Dynamic Provider Selection Example
+
+```typescript
+// Example: Let users select their preferred bridge providers
+const [selectedProviders, setSelectedProviders] = useState<string[]>([])
+
+// Function to update active providers based on user selection
+const updateActiveProviders = (providerIds: string[]) => {
+  bridgingSdk.setAvailableProviders(providerIds)
+  setSelectedProviders(providerIds)
+
+  console.log(`Updated to use ${providerIds.length} provider(s)`)
+}
+
+// Get quotes only from selected providers
+const getQuotesFromSelectedProviders = async () => {
+  // The SDK will automatically use only the providers set via setAvailableProviders
+  const quote = await bridgingSdk.getQuote(parameters)
+  // Or for multi-provider quotes
+  const multiQuotes = await bridgingSdk.getMultiQuotes({
+    quoteBridgeRequest: parameters
+    // No need to specify providerDappIds, setAvailableProviders already filtered them
+  })
+
+  return quote
+}
+```
 
 ## Supported Bridge Providers
 
