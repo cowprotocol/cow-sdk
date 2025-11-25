@@ -43,6 +43,6 @@
     "@cowprotocol/sdk-common": "workspace:*",
     "@cowprotocol/sdk-config": "workspace:*",
     "graphql": "^16.11.0",
-    "graphql-request": "^4.3.0"
+    "graphql-request": "^7.3.4"
   }
 }
