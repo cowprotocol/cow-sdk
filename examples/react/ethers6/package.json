@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "ethers": "^6.13.7",
+    "ethers": "^6.15.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "@cowprotocol/cow-sdk": "workspace:*",

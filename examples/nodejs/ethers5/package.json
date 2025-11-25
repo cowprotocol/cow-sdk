@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "dotenv": "^16.4.5",
-    "ethers": "5.7.2",
+    "ethers": "6.15.0",
     "@cowprotocol/cow-sdk": "workspace:*",
     "@cowprotocol/sdk-ethers-v5-adapter": "workspace:*",
     "@ethersproject/providers": "^5.5.3"
