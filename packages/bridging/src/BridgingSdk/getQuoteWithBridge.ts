@@ -9,6 +9,7 @@ import {
   SwapAdvancedSettings,
   TradingAppDataInfo,
 } from '@cowprotocol/sdk-trading'
+import type { cowAppDataLatestScheme } from '@cowprotocol/sdk-app-data'
 import { getGlobalAdapter, log, SignerLike } from '@cowprotocol/sdk-common'
 import { OrderBookApi, OrderKind } from '@cowprotocol/sdk-order-book'
 import {
@@ -21,6 +22,7 @@ import {
   HookBridgeProvider,
   ReceiverAccountBridgeProvider as AccountBridgeProvider,
   BridgeHook,
+  DefaultBridgeProvider,
 } from '../types'
 import { GetQuoteWithBridgeParams } from './types'
 import { getBridgeSignedHook } from './getBridgeSignedHook'
@@ -54,6 +56,7 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
 }
 
 export interface CreatePostSwapOrderFromQuoteParams {
+  provider: DefaultBridgeProvider
   getBridgeProviderQuote: (
     signer: SignerLike,
     advancedSettings?: SwapAdvancedSettings,
@@ -61,6 +64,7 @@ export interface CreatePostSwapOrderFromQuoteParams {
   signer: SignerLike
   sellTokenAddress: string
   orderBookApi: OrderBookApi
+  initialSwapResult: QuoteResults
 }
 
 /**
@@ -69,10 +73,10 @@ export interface CreatePostSwapOrderFromQuoteParams {
  * @param params
  * @returns
  */
-function createPostSwapOrderFromQuote(
+export function createPostSwapOrderFromQuote(
   params: CreatePostSwapOrderFromQuoteParams,
 ): BridgeQuoteAndPost['postSwapOrderFromQuote'] {
-  const { getBridgeProviderQuote, signer, sellTokenAddress, orderBookApi } = params
+  const { provider, getBridgeProviderQuote, signer, sellTokenAddress, orderBookApi, initialSwapResult } = params
 
   return async function postSwapOrderFromQuote(
     advancedSettings?: SwapAdvancedSettings,
@@ -80,11 +84,26 @@ function createPostSwapOrderFromQuote(
   ) {
     await signingStepManager?.beforeBridgingSign?.()
 
-    // Sign the hooks with the real signer
-    const { swapResult } = await getBridgeProviderQuote(signer, advancedSettings).catch((error) => {
-      signingStepManager?.onBridgingSignError?.()
-      throw error
-    })
+    const skipQuoteRefetch = isReceiverAccountBridgeProvider(provider)
+
+    const appDataOverride = advancedSettings?.appData
+    const appDataInfo =
+      appDataOverride && skipQuoteRefetch
+        ? await mergeAppDataDoc(initialSwapResult.appDataInfo.doc, appDataOverride)
+        : initialSwapResult.appDataInfo
+
+    const swapResult: QuoteResults = skipQuoteRefetch
+      ? {
+          ...initialSwapResult,
+          appDataInfo,
+        }
+      : // Sign the hooks with the real signer
+        (
+          await getBridgeProviderQuote(signer, advancedSettings).catch((error) => {
+            signingStepManager?.onBridgingSignError?.()
+            throw error
+          })
+        ).swapResult
 
     await signingStepManager?.afterBridgingSign?.()
 
@@ -152,6 +171,13 @@ export async function getQuoteWithReceiverAccountBridge<T extends BridgeQuoteRes
     log(`Bridge receiver override: ${bridgeReceiverOverride}`)
     swapResult.tradeParameters.receiver = bridgeReceiverOverride
 
+    // Update appData with bridge quote details
+    swapResult.appDataInfo = await mergeAppDataDoc(swapResult.appDataInfo.doc, {
+      metadata: {
+        bridging: overrideAppDataWithBridgingQuoteDetails(swapResult.appDataInfo.doc.metadata.bridging, bridgeResult),
+      },
+    })
+
     return {
       bridgeResult,
       swapResult: {
@@ -170,10 +196,12 @@ export async function getQuoteWithReceiverAccountBridge<T extends BridgeQuoteRes
     swap: result.swapResult,
     bridge: result.bridgeResult,
     postSwapOrderFromQuote: createPostSwapOrderFromQuote({
+      provider,
       getBridgeProviderQuote,
       signer,
       sellTokenAddress: swapAndBridgeRequest.sellTokenAddress,
       orderBookApi,
+      initialSwapResult: result.swapResult,
     }),
   }
 }
@@ -277,6 +305,8 @@ export async function getQuoteWithHookBridge<T extends BridgeQuoteResult>(
       signer,
       sellTokenAddress: swapAndBridgeRequest.sellTokenAddress,
       orderBookApi,
+      provider,
+      initialSwapResult: result.swapResult,
     }),
   }
 }
@@ -309,6 +339,8 @@ async function getAccountBridgeResult<T extends BridgeQuoteResult>(
 
   // Prepare the bridge result
   const bridgeResult: BridgeQuoteResults = {
+    id: bridgingQuote.id,
+    signature: bridgingQuote.signature,
     providerInfo: provider.info,
     tradeParameters: bridgeRequest, // Just the bridge (not the swap & bridge)
     bridgeReceiverOverride: bridgeReceiverOverride,
@@ -364,6 +396,7 @@ async function getHookBridgeResult<T extends BridgeQuoteResult>(
 
   const appDataInfo = await mergeAppDataDoc(swapAppData.doc, {
     metadata: {
+      bridging: overrideAppDataWithBridgingQuoteDetails(swapResult.appDataInfo.doc.metadata.bridging, bridgingQuote),
       hooks: {
         pre: swapResultHooks?.pre,
         post: [...postHooks, ...[bridgeHook.postHook]],
@@ -388,4 +421,17 @@ async function getHookBridgeResult<T extends BridgeQuoteResult>(
   }
 
   return { bridgeResult, bridgeHook, appDataInfo }
+}
+
+function overrideAppDataWithBridgingQuoteDetails(
+  bridgingMetaData: cowAppDataLatestScheme.Bridging | undefined,
+  quote: BridgeQuoteResult,
+): typeof bridgingMetaData {
+  if (!bridgingMetaData) return bridgingMetaData
+
+  return {
+    ...bridgingMetaData,
+    ...(quote.id ? { quoteId: quote.id } : undefined),
+    ...(quote.signature ? { quoteSignature: quote.signature } : undefined),
+  }
 }

@@ -97,7 +97,7 @@ adapterNames.forEach((adapterName) => {
           advancedSettings: undefined,
         }
 
-        const quote = await strategy.execute(request, config)
+        const quote = await strategy.execute(request, config.tradingSdk, config.providers)
 
         assertIsBridgeQuoteAndPost(quote)
         const { bridge, swap, postSwapOrderFromQuote } = quote
@@ -191,7 +191,7 @@ adapterNames.forEach((adapterName) => {
           advancedSettings: undefined,
         }
 
-        const quote = await strategy.execute(request, config)
+        const quote = await strategy.execute(request, config.tradingSdk, config.providers)
 
         // We get a single-chain quote
         assertIsQuoteAndPost(quote)
@@ -224,7 +224,7 @@ adapterNames.forEach((adapterName) => {
           advancedSettings,
         }
 
-        await strategy.execute(request, config)
+        await strategy.execute(request, config.tradingSdk, config.providers)
 
         // Verify advanced settings were passed through
         expect(tradingSdk.getQuoteResults).toHaveBeenCalledWith(
@@ -283,7 +283,7 @@ adapterNames.forEach((adapterName) => {
           advancedSettings,
         }
 
-        await strategy.execute(request, config)
+        await strategy.execute(request, config.tradingSdk, config.providers)
 
         // Verify advanced settings were passed through
         expect(tradingSdk.getQuote).toHaveBeenCalledWith(tradeParameters, advancedSettings)
@@ -300,9 +300,9 @@ adapterNames.forEach((adapterName) => {
           advancedSettings: undefined,
         }
 
-        await expect(strategy.execute(request, configWithoutProviders)).rejects.toThrow(
-          'No provider found for cross-chain swap',
-        )
+        await expect(
+          strategy.execute(request, configWithoutProviders.tradingSdk, configWithoutProviders.providers),
+        ).rejects.toThrow('No provider found for cross-chain swap')
       })
     })
 

@@ -12,6 +12,23 @@
 
 > Check [**@cowprotocol/cow-sdk**](https://github.com/cowprotocol/cow-sdk/tree/main/packages/sdk/README.md) to learn how to trade on the CoW Protocol (get quote, verify amounts, sign and send order)
 
+### Supported chains
+
+CoW Swap is currently available on the following chains:
+
+- **Ethereum** (1)
+- **BNB** (56)
+- **Gnosis Chain** (100)
+- **Polygon** (137)
+- **Lens** (232)
+- **Base** (8453)
+- **Plasma** (9745) (Under development)
+- **Arbitrum One** (42161)
+- **Avalanche** (43114)
+- **Linea** (59144) (Under development)
+- **Sepolia** (11155111) (Testnet)
+
+
 ## Technical Overview
 
 This is a **TypeScript monorepo** containing the complete CoW Protocol SDK ecosystem. The repository is organized into multiple packages that provide different levels of abstraction and functionality for interacting with CoW Protocol.

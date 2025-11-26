@@ -36,6 +36,7 @@ export async function resolveSlippageSuggestion(
     orderParams: quote.quote,
     slippagePercentBps: 0,
     partnerFeeBps: getPartnerFeeBps(tradeParameters.partnerFee),
+    protocolFeeBps: quote.protocolFeeBps ? Number(quote.protocolFeeBps) : undefined,
     sellDecimals: tradeParameters.sellTokenDecimals,
     buyDecimals: tradeParameters.buyTokenDecimals,
   })

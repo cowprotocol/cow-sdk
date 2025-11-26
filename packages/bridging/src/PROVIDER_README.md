@@ -131,6 +131,8 @@ export interface YourBridgeQuoteResult extends BridgeQuoteResult {
 }
 
 export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult> {
+  type = 'HookBridgeProvider' // 'ReceiverAccountBridgeProvider' | 'HookBridgeProvider'
+
   protected api: YourBridgeApi
   protected cowShedSdk: CowShedSdk
 
@@ -144,6 +146,7 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
     logoUrl: `/your-bridge/logo.png`,
     dappId: YOUR_BRIDGE_HOOK_DAPP_ID,
     website: 'https://yourbridge.example',
+    type: 'HookBridgeProvider'
   }
 
   // Implement all required methods...

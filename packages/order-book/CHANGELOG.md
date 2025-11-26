@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.2.0...sdk-order-book-v0.3.0) (2025-11-24)
+
+
+### ✨ Features
+
+* implement protocol fee ([#689](https://github.com/cowprotocol/cow-sdk/issues/689)) ([ec5bdad](https://github.com/cowprotocol/cow-sdk/commit/ec5bdada1ebf17afd42a9c8cabd617cf8be79d50))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.4.0
+    * @cowprotocol/sdk-common bumped to 0.4.0
+
 ## [0.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.1.4...sdk-order-book-v0.2.0) (2025-11-05)
 
 

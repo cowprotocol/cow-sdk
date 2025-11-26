@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.6.0...sdk-contracts-ts-v0.7.0) (2025-11-24)
+
+
+### ✨ Features
+
+* **bridge:** add quote id and signature metadata ([#701](https://github.com/cowprotocol/cow-sdk/issues/701)) ([35a25a7](https://github.com/cowprotocol/cow-sdk/commit/35a25a7fcc2724073355b3dba4b8f6d3b7419032))
+
+## [0.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.5.0...sdk-contracts-ts-v0.6.0) (2025-11-24)
+
+
+### ✨ Features
+
+* **bridge:** support Near bridge provider ([#642](https://github.com/cowprotocol/cow-sdk/issues/642)) ([c7d8633](https://github.com/cowprotocol/cow-sdk/commit/c7d86335601cfd772d72dfe65a0e941ce916769a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.4.0
+    * @cowprotocol/sdk-config bumped to 0.4.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.0
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.0
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.0
+
 ## [0.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.4.4...sdk-contracts-ts-v0.5.0) (2025-11-07)
 
 

@@ -1,0 +1,39 @@
+{
+  "$id": "#bridging/v0.3.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "required": ["providerId", "destinationChainId", "destinationTokenAddress"],
+  "title": "Bridging",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "providerId": {
+      "$ref": "../definitions.json#/definitions/dappId",
+      "title": "Id of bridging provider",
+      "description": "The id links order with a bridging provider which processes it"
+    },
+    "destinationChainId": {
+      "$ref": "../definitions.json#/definitions/chainId",
+      "title": "Bridging destination chainId",
+      "description": "Id of a blockchain where funds will be received"
+    },
+    "destinationTokenAddress": {
+      "title": "Bridging destination token address",
+      "description": "Address of a token that will be received at destination chain. The chain might be EVM or non-EVM. Some chains might even not have a token address. E.g.: Bitcoin",
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9\\-.]{1,64}$",
+      "examples": ["0x00E989b87700514118Fa55326CD1cCE82faebEF6", "A.b19436aae4d94622.FiatToken", "0.0.456858", "1337"]
+    },
+    "quoteId": {
+      "title": "Bridge provider quote id",
+      "description": "An ID of a quote which is used for bridging",
+      "type": "string",
+      "examples": ["60012"]
+    },
+    "quoteSignature": {
+      "title": "Bridge provider quote signature",
+      "description": "Provider who implement ReceiverAccountBridgeProvider must return a signature of a quote than will be used to verify the quote deposit address validity",
+      "type": "string",
+      "examples": ["ed25519:Y54QM45ockDtJf3uAVhV8xndF79GPeQW5fJaZZLKfnaj8mW9NaBDsGg3uVXY1Fge73fYDAsdn9qokhjm2rsJATz"]
+    }
+  }
+}

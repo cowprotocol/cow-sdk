@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.3.0...sdk-config-v0.4.0) (2025-11-24)
+
+
+### ✨ Features
+
+* **bridge:** support Near bridge provider ([#642](https://github.com/cowprotocol/cow-sdk/issues/642)) ([c7d8633](https://github.com/cowprotocol/cow-sdk/commit/c7d86335601cfd772d72dfe65a0e941ce916769a))
+
 ## [0.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.2.0...sdk-config-v0.3.0) (2025-11-05)
 
 

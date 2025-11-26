@@ -1,5 +1,69 @@
 # Changelog
 
+## [1.5.5](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.5.4...sdk-flash-loans-v1.5.5) (2025-11-24)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.3.0
+    * @cowprotocol/sdk-trading bumped to 0.5.1
+    * @cowprotocol/sdk-order-signing bumped to 0.1.13
+
+## [1.5.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.5.3...sdk-flash-loans-v1.5.4) (2025-11-24)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.4.0
+    * @cowprotocol/sdk-app-data bumped to 4.2.0
+    * @cowprotocol/sdk-trading bumped to 0.5.0
+    * @cowprotocol/sdk-order-signing bumped to 0.1.12
+    * @cowprotocol/sdk-order-book bumped to 0.3.0
+    * @cowprotocol/sdk-config bumped to 0.4.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.0
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.0
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.0
+
+## [1.5.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.5.2...sdk-flash-loans-v1.5.3) (2025-11-20)
+
+
+### 🐛 Bug Fixes
+
+* **flash-loans:** add hooksGasLimit parameter ([#691](https://github.com/cowprotocol/cow-sdk/issues/691)) ([32ebb2b](https://github.com/cowprotocol/cow-sdk/commit/32ebb2b2ae1a27e31b3ccc141ccf7ec610db2ed6))
+
+## [1.5.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.5.1...sdk-flash-loans-v1.5.2) (2025-11-17)
+
+
+### 🐛 Bug Fixes
+
+* pump flashloans sdk version ([#687](https://github.com/cowprotocol/cow-sdk/issues/687)) ([d31fb42](https://github.com/cowprotocol/cow-sdk/commit/d31fb421424ed3df81de09b0e2d36b7023466931))
+
+## [1.5.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.5.0...sdk-flash-loans-v1.5.1) (2025-11-17)
+
+
+### 🔧 Miscellaneous
+
+* allow to set the factory contract and aave pools in the sdk ([#680](https://github.com/cowprotocol/cow-sdk/issues/680)) ([b90529c](https://github.com/cowprotocol/cow-sdk/commit/b90529cd27fdeb4060bc0a53702df6f8104495b7))
+
+## [1.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.4.0...sdk-flash-loans-v1.5.0) (2025-11-13)
+
+
+### ✨ Features
+
+* **flash-loans:** update smartcontract addresses ([#676](https://github.com/cowprotocol/cow-sdk/issues/676)) ([3d78116](https://github.com/cowprotocol/cow-sdk/commit/3d781167dfe6a02646c546b481f058d2ed0f664f))
+
+## [1.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.3.0...sdk-flash-loans-v1.4.0) (2025-11-12)
+
+
+### ✨ Features
+
+* allow aave sdk to provide the helper addresses in the construct… ([#666](https://github.com/cowprotocol/cow-sdk/issues/666)) ([828ae7d](https://github.com/cowprotocol/cow-sdk/commit/828ae7d120a06b9d550c9f7c1e52bb86f783d0b8))
+
 ## [1.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.2.1...sdk-flash-loans-v1.3.0) (2025-11-07)
 
 
