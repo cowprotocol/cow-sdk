@@ -12,14 +12,14 @@
   "dependencies": {
     "ethers": "^6.13.7",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1",
+    "react-dom": "^19.2.0",
     "@cowprotocol/cow-sdk": "workspace:*",
     "@cowprotocol/sdk-ethers-v6-adapter": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
     "@types/react": "^19.1.10",
-    "@types/react-dom": "^19.1.7",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react-swc": "^4.0.0",
     "eslint": "^9.33.0",
     "eslint-plugin-react-hooks": "^5.2.0",
