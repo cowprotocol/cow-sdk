@@ -9,7 +9,7 @@
     "dev": "node --loader ts-node/esm src/index.ts"
   },
   "dependencies": {
-    "dotenv": "^16.4.5",
+    "dotenv": "^17.2.3",
     "ethers": "^6.13.7",
     "@cowprotocol/cow-sdk": "workspace:*",
     "@cowprotocol/sdk-ethers-v6-adapter": "workspace:*"

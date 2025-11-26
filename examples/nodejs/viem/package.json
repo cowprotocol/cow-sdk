@@ -9,7 +9,7 @@
     "dev": "node --loader ts-node/esm src/index.ts"
   },
   "dependencies": {
-    "dotenv": "^16.4.5",
+    "dotenv": "^17.2.3",
     "viem": "^2.28.4",
     "@cowprotocol/cow-sdk": "workspace:*",
     "@cowprotocol/sdk-viem-adapter": "workspace:*"
