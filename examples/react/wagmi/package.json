@@ -12,13 +12,13 @@
     "@cowprotocol/cow-sdk": "workspace:*",
     "@cowprotocol/sdk-viem-adapter": "workspace:*",
     "@tanstack/react-query": "5.45.1",
-    "react": "^18.3.1",
+    "react": "^19.2.0",
     "react-dom": "^18.3.1",
     "viem": "^2.38.6",
     "wagmi": "latest"
   },
   "devDependencies": {
-    "@types/react": "^18.3.1",
+    "@types/react": "^19.2.7",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.2.1",
     "@wagmi/cli": "latest",
