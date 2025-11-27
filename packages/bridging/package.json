@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-bridging",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "Bridging for CoW Protocol",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

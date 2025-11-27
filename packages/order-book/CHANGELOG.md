@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.3.1...sdk-order-book-v0.3.2) (2025-11-27)
+
+
+### 🐛 Bug Fixes
+
+* avoid protocol fee double-count in sell quotes ([#719](https://github.com/cowprotocol/cow-sdk/issues/719)) ([ad5b372](https://github.com/cowprotocol/cow-sdk/commit/ad5b37219f0c6ad61b84a9327d03a9610c41bd4e))
+
 ## [0.3.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.3.0...sdk-order-book-v0.3.1) (2025-11-27)
 
 
