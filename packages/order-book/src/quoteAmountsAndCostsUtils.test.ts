@@ -229,6 +229,26 @@ describe('Calculation of before/after fees amounts', () => {
           (buyAfter - expectedPartnerFeeAmount).toString(),
         )
       })
+
+      it('SELL beforeAllFees includes protocol fee once', () => {
+        const orderParams = SELL_ORDER
+
+        const result = getQuoteAmountsAndCosts({
+          orderParams,
+          sellDecimals,
+          buyDecimals,
+          slippagePercentBps: 0,
+          partnerFeeBps: undefined,
+          protocolFeeBps,
+        })
+
+        const expectedBeforeAllFeesBuyAmount =
+          result.afterNetworkCosts.buyAmount +
+          result.costs.protocolFee.amount +
+          result.costs.networkFee.amountInBuyCurrency
+
+        expect(result.beforeAllFees.buyAmount).toBe(expectedBeforeAllFeesBuyAmount)
+      })
     })
 
     describe('Buy order', () => {
@@ -285,6 +305,26 @@ describe('Calculation of before/after fees amounts', () => {
         expect(result.afterPartnerFees.sellAmount.toString()).toBe(
           (sellAfter + expectedPartnerFeeAmount).toString(),
         )
+      })
+
+      it('restores beforeAllFees.sellAmount with a single protocol fee deduction', () => {
+        const orderParams = BUY_ORDER
+
+        const result = getQuoteAmountsAndCosts({
+          orderParams,
+          sellDecimals,
+          buyDecimals,
+          slippagePercentBps: 0,
+          partnerFeeBps: undefined,
+          protocolFeeBps,
+        })
+
+        const expectedBeforeAllFeesSellAmount =
+          result.afterNetworkCosts.sellAmount -
+          result.costs.protocolFee.amount -
+          result.costs.networkFee.amountInSellCurrency
+
+        expect(result.beforeAllFees.sellAmount).toBe(expectedBeforeAllFeesSellAmount)
       })
     })
   })
