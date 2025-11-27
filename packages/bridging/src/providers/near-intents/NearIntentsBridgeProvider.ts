@@ -143,7 +143,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
 
     const quoteResponse = await this.api.getQuote({
       dry: false,
-      swapType: QuoteRequest.swapType.EXACT_INPUT,
+      swapType: QuoteRequest.swapType.FLEX_INPUT,
       slippageTolerance: request.slippageBps ?? 100,
       originAsset: sellToken.assetId,
       depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
