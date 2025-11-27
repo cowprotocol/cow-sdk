@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.7](https://github.com/cowprotocol/cow-sdk/compare/sdk-weiroll-v0.1.6...sdk-weiroll-v0.1.7) (2025-11-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.4.1
+
 ## [0.1.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-weiroll-v0.1.5...sdk-weiroll-v0.1.6) (2025-11-24)
 
 

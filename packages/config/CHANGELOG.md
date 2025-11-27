@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.4.0...sdk-config-v0.4.1) (2025-11-27)
+
+
+### 🐛 Bug Fixes
+
+* use the blue linea logo instead of the yellow one ([#717](https://github.com/cowprotocol/cow-sdk/issues/717)) ([e044446](https://github.com/cowprotocol/cow-sdk/commit/e0444463b7097b8ebc0134aeacfdf460e4b51684))
+
 ## [0.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.3.0...sdk-config-v0.4.0) (2025-11-24)
 
 
