@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.8.0...sdk-bridging-v0.8.1) (2025-11-27)
+
+
+### 🐛 Bug Fixes
+
+* **bridge:** capture surplus in Near intents ([#714](https://github.com/cowprotocol/cow-sdk/issues/714)) ([b74ebc8](https://github.com/cowprotocol/cow-sdk/commit/b74ebc8a0c730f9254f81b3cff64695894ed193e))
+
 ## [0.8.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.7.0...sdk-bridging-v0.8.0) (2025-11-24)
 
 
