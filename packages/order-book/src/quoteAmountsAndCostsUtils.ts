@@ -278,7 +278,7 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
   const beforeAllFees = isSell
     ? {
         sellAmount: sellAmountBeforeNetworkCosts.big,
-        buyAmount: buyAmountBeforeNetworkCosts.big + protocolFeeAmount,
+        buyAmount: buyAmountBeforeNetworkCosts.big,
       }
     : {
         sellAmount: sellAmountBeforeNetworkCosts.big - protocolFeeAmount,
