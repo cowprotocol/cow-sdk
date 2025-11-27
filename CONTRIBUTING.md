@@ -1,5 +1,14 @@
 # Contributing
 
+## Prerequisites
+
+- Node.js 22+
+- pnpm 10.8+
+
+```sh
+npm i -g pnpm
+```
+
 ## Pull Request Guidelines
 
 ### 📏 **Keep PRs Small and Focused**
@@ -59,4 +68,13 @@ npx release-please release-pr \
 
 ```shell
 pnpm --filter @cowprotocol/sdk-subgraph exec npm publish --tag rc
+```
+
+## Know how
+
+### Reset pnpm store
+
+```sh
+pnpm store prune
+rm -rf "$(pnpm store path)"
 ```
