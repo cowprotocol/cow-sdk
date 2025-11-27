@@ -200,7 +200,7 @@ export class OrderBookApi {
 
     const { offset = 0, limit = 10, ...rest } = request
 
-    const params: Record<string, string> = { ...rest, offset: offset?.toString(), limit: limit?.toString() }
+    const params: Record<string, string> = { ...rest, offset: offset.toString(), limit: limit.toString() }
 
     const query = new URLSearchParams(cleanObjectFromUndefinedValues(params))
 
