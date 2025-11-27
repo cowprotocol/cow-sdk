@@ -292,7 +292,7 @@ describe('CoW Api', () => {
     })
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      `https://api.cow.fi/xdai/api/v1/trades?owner=${TRADE_RESPONSE.owner}`,
+      `https://api.cow.fi/xdai/api/v1/trades?owner=${TRADE_RESPONSE.owner}&offset=0&limit=10`,
       FETCH_RESPONSE_PARAMETERS,
     )
     expect(trades.length).toEqual(5)
@@ -307,7 +307,7 @@ describe('CoW Api', () => {
     })
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      `https://api.cow.fi/xdai/api/v1/trades?orderUid=${TRADE_RESPONSE.orderUid}`,
+      `https://api.cow.fi/xdai/api/v1/trades?orderUid=${TRADE_RESPONSE.orderUid}&offset=0&limit=10`,
       FETCH_RESPONSE_PARAMETERS,
     )
     expect(trades.length).toEqual(5)
@@ -348,7 +348,7 @@ describe('CoW Api', () => {
     )
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://api.cow.fi/xdai/api/v1/trades?owner=invalidOwner',
+      'https://api.cow.fi/xdai/api/v1/trades?owner=invalidOwner&offset=0&limit=10',
       FETCH_RESPONSE_PARAMETERS,
     )
   })
@@ -502,7 +502,7 @@ describe('CoW Api', () => {
     })
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      `https://api.cow.fi/xdai/api/v1/trades?owner=${TRADE_RESPONSE.owner}`,
+      `https://api.cow.fi/xdai/api/v1/trades?owner=${TRADE_RESPONSE.owner}&offset=0&limit=10`,
       FETCH_RESPONSE_PARAMETERS,
     )
     expect(trades.length).toEqual(5)
