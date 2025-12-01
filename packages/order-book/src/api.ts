@@ -88,6 +88,16 @@ export type GetOrdersRequest = {
   offset?: number
   limit?: number
 }
+
+/**
+ * The parameters for the `getTrades` request.
+ */
+export type GetTradesRequest = {
+  owner?: Address
+  orderUid?: UID
+  offset?: number
+  limit?: number
+}
 // TODO: Review and update the documentation
 /**
  * The CoW Protocol OrderBook API client.
@@ -181,17 +191,18 @@ export class OrderBookApi {
    * @param contextOverride Optional context override for this request.
    * @returns A list of trades matching the request.
    */
-  getTrades(
-    request: { owner?: Address; orderUid?: UID },
-    contextOverride: PartialApiContext = {},
-  ): Promise<Array<Trade>> {
+  getTrades(request: GetTradesRequest, contextOverride: PartialApiContext = {}): Promise<Array<Trade>> {
     if (request.owner && request.orderUid) {
       return Promise.reject(new CowError('Cannot specify both owner and orderId'))
     } else if (!request.owner && !request.orderUid) {
       return Promise.reject(new CowError('Must specify either owner or orderId'))
     }
 
-    const query = new URLSearchParams(cleanObjectFromUndefinedValues(request))
+    const { offset = 0, limit = 10, ...rest } = request
+
+    const params: Record<string, string> = { ...rest, offset: offset.toString(), limit: limit.toString() }
+
+    const query = new URLSearchParams(cleanObjectFromUndefinedValues(params))
 
     return this.fetch({ path: '/api/v1/trades', method: 'GET', query }, contextOverride)
   }
