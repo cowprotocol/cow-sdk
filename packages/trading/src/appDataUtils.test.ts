@@ -166,8 +166,8 @@ describe('AppData utils', () => {
           },
           {
             metadata: {
-              hooks: {
-                pre: ['0xhook1'],
+              replacedOrder: {
+                uid: '0x123',
               },
             },
           },
@@ -184,7 +184,7 @@ describe('AppData utils', () => {
         expect(parsedData.metadata.quote.slippageBips).toBe(200)
         expect(parsedData.metadata.orderClass.orderClass).toBe('limit')
         expect(parsedData.metadata.partnerFee.volumeBps).toBe(100)
-        expect(parsedData.metadata.hooks.pre).toEqual(['0xhook1'])
+        expect(parsedData.metadata.replacedOrder.uid).toBe('0x123')
       })
     })
 
