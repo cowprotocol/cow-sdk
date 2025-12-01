@@ -1,7 +1,7 @@
 import { buildAppData, generateAppDataFromDoc, getDefaultUtmParams } from './appDataUtils'
 import { createAdapters } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
-import sdkPackageJson from '@cowprotocol/cow-sdk/package.json'
+import sdkPackageJson from '../../sdk/package.json'
 
 describe('AppData utils', () => {
   let adapters: ReturnType<typeof createAdapters>

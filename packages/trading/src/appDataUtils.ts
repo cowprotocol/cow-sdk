@@ -7,8 +7,8 @@ import {
 } from '@cowprotocol/sdk-app-data'
 import { getGlobalAdapter } from '@cowprotocol/sdk-common'
 import deepmerge from 'deepmerge'
-// Import the SDK package.json to get the version
-import sdkPackageJson from '@cowprotocol/cow-sdk/package.json'
+// Import the SDK package.json to get the version (relative path for build compatibility)
+import sdkPackageJson from '../../sdk/package.json'
 
 /**
  * Get default UTM parameters for developer attribution tracking
