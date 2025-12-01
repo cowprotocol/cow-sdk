@@ -7,6 +7,21 @@ import {
 } from '@cowprotocol/sdk-app-data'
 import { getGlobalAdapter } from '@cowprotocol/sdk-common'
 import deepmerge from 'deepmerge'
+// Import the SDK package.json to get the version
+import sdkPackageJson from '@cowprotocol/cow-sdk/package.json'
+
+/**
+ * Get default UTM parameters for developer attribution tracking
+ */
+export function getDefaultUtmParams() {
+  return {
+    utmCampaign: 'developer-cohort',
+    utmContent: '',
+    utmMedium: `cow-sdk@${sdkPackageJson.version}`,
+    utmSource: 'cowmunity',
+    utmTerm: 'js',
+  }
+}
 
 export async function buildAppData(
   { slippageBps, appCode, orderClass: orderClassName, partnerFee }: BuildAppDataParams,
@@ -16,15 +31,23 @@ export async function buildAppData(
   const orderClass = { orderClass: orderClassName }
   const metadataApiSdk = new MetadataApi(getGlobalAdapter())
 
+  // Only add default UTM if user hasn't provided their own
+  // This ensures backward compatibility - if advancedParams.metadata.utm is provided,
+  // the user has full control over UTM parameters
+  const shouldAddDefaultUtm = !advancedParams?.metadata?.utm
+
+  const baseMetadata = {
+    quote: quoteParams,
+    orderClass,
+    partnerFee,
+    ...(shouldAddDefaultUtm ? { utm: getDefaultUtmParams() } : {}),
+  }
+
   const doc = await metadataApiSdk.generateAppDataDoc(
     deepmerge(
       {
         appCode,
-        metadata: {
-          quote: quoteParams,
-          orderClass,
-          partnerFee,
-        },
+        metadata: baseMetadata,
       },
       advancedParams || {},
     ),

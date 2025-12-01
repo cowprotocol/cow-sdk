@@ -236,6 +236,46 @@ This example demonstrates the simplest way to trade on CoW Protocol.
 For more advanced use cases, you can use additional parameters such as `receiver`, `partiallyFillable`, `validTo`, and others.
 Refer to the [Trading SDK documentation](https://github.com/cowprotocol/cow-sdk/tree/main/packages/trading/README.md) for comprehensive details.
 
+## Developer Attribution (UTM Tracking)
+
+The SDK automatically includes UTM tracking in all orders to attribute trading volume to developers. Default parameters:
+
+```typescript
+{
+  utmSource: 'cowmunity',
+  utmMedium: 'cow-sdk@7.1.6',  // SDK version
+  utmCampaign: 'developer-cohort',
+  utmContent: '',
+  utmTerm: 'js'
+}
+```
+
+**Customize or disable** via `advancedSettings.appData.metadata.utm`:
+
+```typescript
+// Custom UTM
+await sdk.getQuote(parameters, {
+  appData: {
+    metadata: {
+      utm: { utmContent: 'my-integration-v2' }
+    }
+  }
+})
+
+// Disable UTM
+await sdk.getQuote(parameters, {
+  appData: {
+    metadata: {
+      utm: {}
+    }
+  }
+})
+```
+
+> **Note:** Providing any `utm` field gives you full control - the SDK will not add defaults.
+
+> **Tip:** Use `utmContent` for graffiti without affecting your `appCode`. The `appCode` parameter tracks your integration on [CoW Protocol's Dune dashboards](https://dune.com/cowprotocol/cowswap), while `utmContent` is available for custom identifiers or experimentation - all while attributing your volume to SDK integrators' collective impact.
+
 
 ## Adapters
 
