@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.3.2...sdk-order-book-v0.4.0) (2025-12-01)
+
+
+### ✨ Features
+
+* add offset & limit params to getTrades ([#713](https://github.com/cowprotocol/cow-sdk/issues/713)) ([3d3dde0](https://github.com/cowprotocol/cow-sdk/commit/3d3dde0a6d6b8e371fcba983c2bc06687bb6daeb))
+
 ## [0.3.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.3.1...sdk-order-book-v0.3.2) (2025-11-27)
 
 
