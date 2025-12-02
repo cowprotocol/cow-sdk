@@ -2,7 +2,7 @@ import { SupportedChainId } from '../chains'
 import { TokenInfo } from '../types/tokens'
 
 export const NATIVE_CURRENCY_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
-export const TOKEN_LIST_IMAGES_PATH = 'https://raw.githubusercontent.com/cowprotocol/token-lists/main/src/public/images'
+export const TOKEN_LIST_IMAGES_PATH = 'https://files.cow.fi/token-lists/images'
 
 const wrappedNativeCurrencyEth = {
   decimals: 18,
