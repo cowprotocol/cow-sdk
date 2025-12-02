@@ -1,4 +1,4 @@
-# @cowprotocol/app-data
+# @cowprotocol/sdk-app-data
 
 AppData schema definitions
 
@@ -9,13 +9,13 @@ For more details, check [the docs](https://docs.cow.fi/cow-sdk/order-meta-data-a
 ## Installation
 
 ```bash
-pnpm add @cowprotocol/app-data
+pnpm add @cowprotocol/sdk-app-data
 ```
 
 ## Usage
 
 ```typescript
-import { MetadataApi } from '@cowprotocol/app-data'
+import { MetadataApi } from '@cowprotocol/sdk-app-data'
 import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
 import { JsonRpcProvider, Wallet } from 'ethers'
 
@@ -85,7 +85,7 @@ Schemas are exposed as json files, where the version is the file name:
 ```js
 // Getting the version v0.4.0
 // If you use TypeScript, enable `resolveJsonModule` in tsconfig.
-const schema = require('@cowprotocol/app-data/schemas/v0.4.0.json')
+const schema = require('@cowprotocol/sdk-app-data/schemas/v0.4.0.json')
 
 // Now you can for example run validation against a schema
 ```
@@ -95,7 +95,7 @@ const schema = require('@cowprotocol/app-data/schemas/v0.4.0.json')
 There are also type definitions
 
 ```js
-import { v0_4_0 } from '@cowprotocol/app-data'
+import { v0_4_0 } from '@cowprotocol/sdk-app-data'
 
 // Note: this example is
 function createAppDataV0_4_0(appCode: v0_4_0.AppCode, metadata: v0_4_0.Metadata): v0_4_0.AppDataRootSchema {
@@ -116,7 +116,7 @@ import {
   LATEST_APP_DATA_VERSION,
   LATEST_QUOTE_METADATA_VERSION,
   LATEST_REFERRER_METADATA_VERSION,
-} from '@cowprotocol/app-data'
+} from '@cowprotocol/sdk-app-data'
 ```
 
 ### Utils
@@ -126,7 +126,7 @@ _Get appData schema_
 To get a schema definition by version
 
 ```js
-import { getAppDataSchema } from '@cowprotocol/app-data'
+import { getAppDataSchema } from '@cowprotocol/sdk-app-data'
 
 const schema = getAppDataSchema('0.1.0')
 ```
@@ -140,7 +140,7 @@ It'll return an object with a boolean indicating `success` and `errors`, if any.
 The version to validate against will be taken from the doc itself.
 
 ```js
-import { validateAppDataDoc } from '@cowprotocol/app-data'
+import { validateAppDataDoc } from '@cowprotocol/sdk-app-data'
 
 let doc = { version: '0.4.0', metadata: {} }
 
