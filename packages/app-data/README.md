@@ -1,10 +1,14 @@
-# @cowprotocol/sdk-app-data
+<p align="center">
+  <img width="400" src="https://github.com/cowprotocol/cow-sdk/raw/main/docs/images/CoW.png" />
+</p>
+
+# Cow AppData SDK
 
 AppData schema definitions
 
 These schemas are used in the data encoded on `appData` field for CowProtocol orders.
 
-For more details, check [the docs](https://docs.cow.fi/cow-sdk/order-meta-data-appdata).
+For more details, check [the docs](https://docs.cow.fi/cow-protocol/reference/core/intents/app-data).
 
 ## Installation
 
