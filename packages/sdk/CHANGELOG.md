@@ -1,5 +1,20 @@
 # Changelog
 
+## [7.2.0](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.1.6...cow-sdk-v7.2.0) (2025-12-03)
+
+
+### ✨ Features
+
+* **app-data:** add UTM Tracking for Developer Attribution ([#722](https://github.com/cowprotocol/cow-sdk/issues/722)) ([0cd79d1](https://github.com/cowprotocol/cow-sdk/commit/0cd79d185630cc44b111979e873e30c760904976))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.3.2
+    * @cowprotocol/sdk-trading bumped to 0.6.0
+
 ## [7.1.6](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.1.5...cow-sdk-v7.1.6) (2025-12-01)
 
 

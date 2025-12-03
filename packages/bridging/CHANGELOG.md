@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.8.5](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.8.4...sdk-bridging-v0.8.5) (2025-12-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.3.2
+    * @cowprotocol/sdk-trading bumped to 0.6.0
+
 ## [0.8.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.8.3...sdk-bridging-v0.8.4) (2025-12-01)
 
 
