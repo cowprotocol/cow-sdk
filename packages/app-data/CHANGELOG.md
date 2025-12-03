@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.3.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.3.1...sdk-app-data-v4.3.2) (2025-12-03)
+
+
+### 📚 Documentation
+
+* **app-data:** updated readme ([#725](https://github.com/cowprotocol/cow-sdk/issues/725)) ([c86fb55](https://github.com/cowprotocol/cow-sdk/commit/c86fb55f0a97b50da935da24e1f57796b86b4325))
+
 ## [4.3.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.3.0...sdk-app-data-v4.3.1) (2025-11-27)
 
 
