@@ -29,7 +29,7 @@ export abstract class BaseMockBridgeProvider implements BridgeProvider<BridgeQuo
 
   info = {
     name,
-    logoUrl: `${RAW_PROVIDERS_FILES_PATH}/mock/mock-logo.webp`,
+    logoUrl: `${RAW_PROVIDERS_FILES_PATH}/mock/mock-logo.png`,
     dappId: 'dapp-id-' + name,
     website: `https://mock.com/${name}`,
     type: providerType,
