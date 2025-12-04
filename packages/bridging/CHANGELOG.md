@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.9.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.8.5...sdk-bridging-v0.9.0) (2025-12-03)
+
+
+### ✨ Features
+
+* use aws for token and chain images ([#724](https://github.com/cowprotocol/cow-sdk/issues/724)) ([2a8e220](https://github.com/cowprotocol/cow-sdk/commit/2a8e2205acc5143efecbc9caee89d01f32570e0d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.3.3
+    * @cowprotocol/sdk-config bumped to 0.5.0
+    * @cowprotocol/sdk-contracts-ts bumped to 0.7.2
+    * @cowprotocol/sdk-cow-shed bumped to 0.2.4
+    * @cowprotocol/sdk-order-book bumped to 0.4.1
+    * @cowprotocol/sdk-trading bumped to 0.6.1
+    * @cowprotocol/sdk-weiroll bumped to 0.1.8
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 0.1.17
+
 ## [0.8.5](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.8.4...sdk-bridging-v0.8.5) (2025-12-03)
 
 
