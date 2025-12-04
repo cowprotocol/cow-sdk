@@ -14,7 +14,7 @@ export class MockHookBridgeProvider extends BaseMockBridgeProvider implements Ho
 
   info = {
     name,
-    logoUrl: `${RAW_PROVIDERS_FILES_PATH}/mock/mock-logo.png`,
+    logoUrl: `${RAW_PROVIDERS_FILES_PATH}/mock/mock-logo.webp`,
     dappId: 'dapp-id-' + name,
     website: `https://mock.com/${name}`,
     type: providerType,
