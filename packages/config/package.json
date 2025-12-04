@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-config",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Configuration constants and settings for CoW Protocol SDK",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

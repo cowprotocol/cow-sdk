@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-trading",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "CowProtocol trading",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-contracts-ts",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "TypeScript contract bindings for CoW Protocol SDK",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
