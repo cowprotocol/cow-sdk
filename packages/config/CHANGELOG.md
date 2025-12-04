@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.5.0...sdk-config-v0.6.0) (2025-12-04)
+
+
+### ✨ Features
+
+* use aws for token and chain images ([#724](https://github.com/cowprotocol/cow-sdk/issues/724)) ([1b23c5e](https://github.com/cowprotocol/cow-sdk/commit/1b23c5e5f7e1763b710b95f444ad052395808277))
+
+
+### 🔧 Miscellaneous
+
+* revert use aws for token and chain images ([#724](https://github.com/cowprotocol/cow-sdk/issues/724)) ([f73bc96](https://github.com/cowprotocol/cow-sdk/commit/f73bc96156796ce4928f64f963295501dfc69a5c))
+
 ## [0.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.4.1...sdk-config-v0.5.0) (2025-12-03)
 
 
