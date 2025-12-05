@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.5.12](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.5.11...sdk-flash-loans-v1.5.12) (2025-12-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.3.5
+    * @cowprotocol/sdk-trading bumped to 0.6.3
+    * @cowprotocol/sdk-order-signing bumped to 0.1.19
+    * @cowprotocol/sdk-order-book bumped to 0.4.3
+    * @cowprotocol/sdk-config bumped to 0.6.1
+
 ## [1.5.11](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.5.10...sdk-flash-loans-v1.5.11) (2025-12-04)
 
 

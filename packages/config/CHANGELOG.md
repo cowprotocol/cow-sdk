@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.6.0...sdk-config-v0.6.1) (2025-12-05)
+
+
+### 🐛 Bug Fixes
+
+* linea no longer under dev ([#734](https://github.com/cowprotocol/cow-sdk/issues/734)) ([548bf29](https://github.com/cowprotocol/cow-sdk/commit/548bf2917a71117bf981b254d0211baacdbc9fff))
+
 ## [0.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.5.0...sdk-config-v0.6.0) (2025-12-04)
 
 
