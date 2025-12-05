@@ -46,6 +46,5 @@ export const linea: ChainInfo = {
       name: 'Linea Bridge',
       url: 'https://linea.build/hub/bridge',
     },
-  ],
-  isUnderDevelopment: true, // TODO: Remove when ready for production
+  ]
 }
