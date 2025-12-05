@@ -1,18 +1,18 @@
 import { createAdapters, TEST_ADDRESS } from './setup'
 import { CowError, setGlobalAdapter, TypedDataDomain } from '@cowprotocol/sdk-common'
 import {
+  computeOrderUid,
   ContractsOrder as Order,
   ContractsOrderKind as OrderKind,
-  ContractsSigningScheme as SigningScheme,
-  hashOrder,
-  computeOrderUid,
-  extractOrderUidParams,
-  signOrder,
   ContractsSignature as Signature,
+  ContractsSigningScheme as SigningScheme,
   decodeSigningScheme,
-  encodeSigningScheme,
   decodeTradeFlags,
+  encodeSigningScheme,
   encodeTradeFlags,
+  extractOrderUidParams,
+  hashOrder,
+  signOrder,
 } from '../src'
 
 describe('Order Hashing and Signing', () => {
@@ -62,6 +62,34 @@ describe('Order Hashing and Signing', () => {
 
       // Verify hash format (should be 0x-prefixed 32 byte hash)
       expect(firstHash).toMatch(/^0x[0-9a-f]{64}$/i)
+    })
+
+    test('Test specific order', () => {
+      setGlobalAdapter(adapters['viemAdapter'])
+
+      const domain = {
+        name: 'Gnosis Protocol',
+        version: 'v2',
+        chainId: 1,
+        verifyingContract: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+      }
+      const order = {
+        sellToken: '0x55d398326f99059ff775485246999027b3197955',
+        buyToken: '0x992879cd8ce0c312d98648875b5a8d6d042cbf34',
+        receiver: '0xb2b9cf602366301908e419b1b77053696072c544',
+        sellAmount: '1000000000000000000',
+        buyAmount: '500000000000000000',
+        validTo: 1700000000,
+        appData: '0x4f4c6e0216c345cffef4b8c1d4e9be348987e4a3276bd9ab62c10c4cd10d5fe8',
+        feeAmount: '1000000000000000',
+        kind: 'buy',
+        partiallyFillable: true,
+        sellTokenBalance: 'erc20',
+        buyTokenBalance: 'erc20',
+      }
+      const hash = hashOrder(domain, order as Order)
+
+      expect(hash).toBe('0x19ada31e9c1ef24aae404c25630712f47cc485c031233510262d910ba7e5c023')
     })
   })
 
