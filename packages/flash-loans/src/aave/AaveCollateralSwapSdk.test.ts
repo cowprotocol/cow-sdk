@@ -355,6 +355,58 @@ adapterNames.forEach((adapterName) => {
           gasLimit: '600000',
         })
       })
+
+      test(`should use custom preHookGasLimit when provided`, async () => {
+        const customPreHookGasLimit = 500000n
+
+        await flashLoanSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.GNOSIS_CHAIN,
+            tradeParameters: {
+              ...mockTradeParameters,
+            },
+            settings: {
+              hooksGasLimit: {
+                preHookGasLimit: customPreHookGasLimit,
+              },
+            },
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        const callArgs = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
+        const preHooks = callArgs.appData.metadata.hooks.pre
+
+        expect(preHooks).toBeDefined()
+        expect(preHooks[0].gasLimit).toBe(customPreHookGasLimit.toString())
+      })
+
+      test(`should use custom postHookGasLimit when provided`, async () => {
+        const customPostHookGasLimit = 800000n
+
+        await flashLoanSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.GNOSIS_CHAIN,
+            tradeParameters: {
+              ...mockTradeParameters,
+            },
+            collateralToken,
+            settings: {
+              hooksGasLimit: {
+                postHookGasLimit: customPostHookGasLimit,
+              },
+            },
+          },
+          mockTradingSdk,
+        )
+
+        const callArgs = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
+        const postHooks = callArgs.appData.metadata.hooks.post
+
+        expect(postHooks).toBeDefined()
+        expect(postHooks[0].gasLimit).toBe(customPostHookGasLimit.toString())
+      })
     })
 
     describe('getCollateralAllowance', () => {
