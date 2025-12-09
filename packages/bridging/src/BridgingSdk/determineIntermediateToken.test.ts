@@ -95,7 +95,7 @@ describe('determineIntermediateToken', () => {
 
   describe('priority level: HIGH (correlated tokens)', () => {
     it('should prioritize correlated tokens over non-correlated', async () => {
-      const getCorrelatedTokens = async () => [wethMainnet]
+      const getCorrelatedTokens = async () => [wethMainnet.address]
 
       const result = await determineIntermediateToken(
         SupportedChainId.MAINNET,
@@ -107,7 +107,7 @@ describe('determineIntermediateToken', () => {
     })
 
     it('should prioritize stablecoins over correlated tokens', async () => {
-      const getCorrelatedTokens = async () => [wethMainnet]
+      const getCorrelatedTokens = async () => [wethMainnet.address]
 
       const result = await determineIntermediateToken(
         SupportedChainId.MAINNET,
@@ -127,7 +127,7 @@ describe('determineIntermediateToken', () => {
         symbol: 'DAI',
       }
 
-      const getCorrelatedTokens = async () => [wethMainnet, daiToken]
+      const getCorrelatedTokens = async () => [wethMainnet.address, daiToken.address]
 
       const result = await determineIntermediateToken(
         SupportedChainId.MAINNET,
@@ -169,7 +169,7 @@ describe('determineIntermediateToken', () => {
     })
 
     it('should prioritize correlated tokens over native token', async () => {
-      const getCorrelatedTokens = async () => [wethMainnet]
+      const getCorrelatedTokens = async () => [wethMainnet.address]
 
       const result = await determineIntermediateToken(
         SupportedChainId.MAINNET,

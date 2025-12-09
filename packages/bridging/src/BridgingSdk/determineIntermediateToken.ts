@@ -28,7 +28,7 @@ enum TokenPriority {
 export async function determineIntermediateToken(
   sourceChainId: SupportedChainId,
   intermediateTokens: TokenInfo[],
-  getCorrelatedTokens?: (chainId: SupportedChainId) => Promise<TokenInfo[]>,
+  getCorrelatedTokens?: (chainId: SupportedChainId) => Promise<string[]>,
 ): Promise<TokenInfo> {
   const firstToken = intermediateTokens[0]
 
@@ -78,12 +78,12 @@ export async function determineIntermediateToken(
 
 async function resolveCorrelatedTokens(
   sourceChainId: SupportedChainId,
-  getCorrelatedTokens: ((chainId: SupportedChainId) => Promise<TokenInfo[]>) | undefined,
+  getCorrelatedTokens: ((chainId: SupportedChainId) => Promise<string[]>) | undefined,
 ): Promise<Set<string>> {
   if (getCorrelatedTokens) {
     try {
       const tokens = await getCorrelatedTokens(sourceChainId)
-      return new Set<string>(tokens.map((t) => t.address.toLowerCase()))
+      return new Set<string>(tokens)
     } catch (error) {
       console.warn(
         '[determineIntermediateToken] Failed to fetch correlated tokens, falling back to basic priority',

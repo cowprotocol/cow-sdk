@@ -17,7 +17,7 @@ import {
 } from '@cowprotocol/sdk-order-book'
 import type { AbstractSigner, AccountAddress, Provider, SignerLike } from '@cowprotocol/sdk-common'
 import type { ORDER_PRIMARY_TYPE, UnsignedOrder } from '@cowprotocol/sdk-order-signing'
-import type { SupportedChainId, CowEnv, TokenInfo } from '@cowprotocol/sdk-config'
+import type { SupportedChainId, CowEnv } from '@cowprotocol/sdk-config'
 
 /**
  * EIP-712 typed data domain.
@@ -149,7 +149,7 @@ export interface SwapAdvancedSettings extends LimitOrderAdvancedSettings {
    */
   getSlippageSuggestion?(request: SlippageToleranceRequest): Promise<SlippageToleranceResponse>
 
-  getCorrelatedTokens?(chainId: SupportedChainId): Promise<TokenInfo[]>
+  getCorrelatedTokens?(chainId: SupportedChainId): Promise<string[]>
 }
 
 export interface LimitOrderAdvancedSettings {
