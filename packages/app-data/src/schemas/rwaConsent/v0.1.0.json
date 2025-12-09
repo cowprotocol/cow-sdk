@@ -1,0 +1,99 @@
+{
+  "$id": "#rwaConsent/v0.1.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "required": ["schema", "wallet", "rwa", "geo", "userDeclaration"],
+  "title": "RWA Consent",
+  "description": "RWA geoblocking and T&C attestation payload for compliance",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "$id": "#/properties/schema",
+      "type": "string",
+      "const": "cow-rwa-consent-v1",
+      "description": "Schema identifier for RWA consent"
+    },
+    "wallet": {
+      "$id": "#/properties/wallet",
+      "type": "string",
+      "description": "Wallet address that gave consent",
+      "pattern": "^0x[a-fA-F0-9]{40}$",
+      "examples": ["0x1234567890123456789012345678901234567890"]
+    },
+    "rwa": {
+      "$id": "#/properties/rwa",
+      "type": "object",
+      "description": "RWA token information",
+      "required": ["issuer"],
+      "additionalProperties": false,
+      "properties": {
+        "issuer": {
+          "$id": "#/properties/rwa/issuer",
+          "type": "string",
+          "description": "RWA token issuer identifier",
+          "examples": ["ONDO", "BACKED"]
+        },
+        "assetGroup": {
+          "$id": "#/properties/rwa/assetGroup",
+          "type": "string",
+          "description": "Asset group classification",
+          "examples": ["tokenized_securities", "stablecoins"]
+        }
+      }
+    },
+    "geo": {
+      "$id": "#/properties/geo",
+      "type": "object",
+      "description": "Geographical status information",
+      "required": ["ipStatus", "checkedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "ipStatus": {
+          "$id": "#/properties/geo/ipStatus",
+          "type": "string",
+          "enum": ["ALLOWED", "UNKNOWN"],
+          "description": "IP geolocation status. ALLOWED means IP is from allowed jurisdiction. UNKNOWN means IP could not be determined (VPN, privacy settings, etc.)"
+        },
+        "country": {
+          "$id": "#/properties/geo/country",
+          "type": "string",
+          "description": "ISO 3166-1 alpha-2 country code",
+          "pattern": "^[A-Z]{2}$",
+          "examples": ["US", "DE", "GB"]
+        },
+        "checkedAt": {
+          "$id": "#/properties/geo/checkedAt",
+          "type": "number",
+          "description": "Unix timestamp when geo check was performed",
+          "examples": [1732700000]
+        }
+      }
+    },
+    "userDeclaration": {
+      "$id": "#/properties/userDeclaration",
+      "type": "object",
+      "description": "User's self-certification declaration",
+      "required": ["notUsEuSanctioned", "acceptedTosVersion", "declaredAt"],
+      "additionalProperties": false,
+      "properties": {
+        "notUsEuSanctioned": {
+          "$id": "#/properties/userDeclaration/notUsEuSanctioned",
+          "type": "boolean",
+          "description": "User declares they are not a US person, EU resident, or resident of a sanctioned country"
+        },
+        "acceptedTosVersion": {
+          "$id": "#/properties/userDeclaration/acceptedTosVersion",
+          "type": "string",
+          "description": "Version of the RWA Terms of Service accepted by the user",
+          "examples": ["rwa-tos-2025-01-01"]
+        },
+        "declaredAt": {
+          "$id": "#/properties/userDeclaration/declaredAt",
+          "type": "number",
+          "description": "Unix timestamp when user made the declaration",
+          "examples": [1732700000]
+        }
+      }
+    }
+  }
+}
