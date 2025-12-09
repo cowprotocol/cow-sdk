@@ -1,18 +1,12 @@
 {
   "$id": "#rwaConsent/v0.1.0.json",
   "$schema": "http://json-schema.org/draft-07/schema",
-  "required": ["schema", "wallet", "rwa", "geo", "userDeclaration"],
+  "required": ["wallet", "rwa", "geo", "userDeclaration"],
   "title": "RWA Consent",
   "description": "RWA geoblocking and T&C attestation payload for compliance",
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "schema": {
-      "$id": "#/properties/schema",
-      "type": "string",
-      "const": "cow-rwa-consent-v1",
-      "description": "Schema identifier for RWA consent"
-    },
     "wallet": {
       "$id": "#/properties/wallet",
       "type": "string",
@@ -45,27 +39,21 @@
       "$id": "#/properties/geo",
       "type": "object",
       "description": "Geographical status information",
-      "required": ["ipStatus", "checkedAt"],
+      "required": ["ipStatus"],
       "additionalProperties": false,
       "properties": {
         "ipStatus": {
           "$id": "#/properties/geo/ipStatus",
           "type": "string",
           "enum": ["ALLOWED", "UNKNOWN"],
-          "description": "IP geolocation status. ALLOWED means IP is from allowed jurisdiction. UNKNOWN means IP could not be determined (VPN, privacy settings, etc.)"
+          "description": "IP geolocation status. ALLOWED means IP is from allowed jurisdiction. UNKNOWN means IP could not be determined."
         },
         "country": {
           "$id": "#/properties/geo/country",
           "type": "string",
-          "description": "ISO 3166-1 alpha-2 country code",
+          "description": "ISO 3166-1 alpha-2 country code. Present for ALLOWED, null for UNKNOWN.",
           "pattern": "^[A-Z]{2}$",
           "examples": ["US", "DE", "GB"]
-        },
-        "checkedAt": {
-          "$id": "#/properties/geo/checkedAt",
-          "type": "number",
-          "description": "Unix timestamp when geo check was performed",
-          "examples": [1732700000]
         }
       }
     },
@@ -73,25 +61,19 @@
       "$id": "#/properties/userDeclaration",
       "type": "object",
       "description": "User's self-certification declaration",
-      "required": ["notUsEuSanctioned", "acceptedTosVersion", "declaredAt"],
+      "required": ["notRestricted", "acceptedTosVersion"],
       "additionalProperties": false,
       "properties": {
-        "notUsEuSanctioned": {
-          "$id": "#/properties/userDeclaration/notUsEuSanctioned",
+        "notRestricted": {
+          "$id": "#/properties/userDeclaration/notRestricted",
           "type": "boolean",
-          "description": "User declares they are not a US person, EU resident, or resident of a sanctioned country"
+          "description": "User declares they are not restricted from accessing this token"
         },
         "acceptedTosVersion": {
           "$id": "#/properties/userDeclaration/acceptedTosVersion",
           "type": "string",
           "description": "Version of the RWA Terms of Service accepted by the user",
           "examples": ["rwa-tos-2025-01-01"]
-        },
-        "declaredAt": {
-          "$id": "#/properties/userDeclaration/declaredAt",
-          "type": "number",
-          "description": "Unix timestamp when user made the declaration",
-          "examples": [1732700000]
         }
       }
     }

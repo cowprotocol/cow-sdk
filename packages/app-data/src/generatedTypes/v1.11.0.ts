@@ -274,10 +274,6 @@ export interface Flashloan {
  */
 export interface RWAConsent {
   /**
-   * Schema identifier for RWA consent
-   */
-  schema: "cow-rwa-consent-v1";
-  /**
    * Wallet address that gave consent
    */
   wallet: string;
@@ -299,33 +295,25 @@ export interface RWAConsent {
    */
   geo: {
     /**
-     * IP geolocation status. ALLOWED means IP is from allowed jurisdiction. UNKNOWN means IP could not be determined (VPN, privacy settings, etc.)
+     * IP geolocation status. ALLOWED means IP is from allowed jurisdiction. UNKNOWN means IP could not be determined.
      */
     ipStatus: "ALLOWED" | "UNKNOWN";
     /**
-     * ISO 3166-1 alpha-2 country code
+     * ISO 3166-1 alpha-2 country code. Present for ALLOWED, null for UNKNOWN.
      */
     country?: string;
-    /**
-     * Unix timestamp when geo check was performed
-     */
-    checkedAt: number;
   };
   /**
    * User's self-certification declaration
    */
   userDeclaration: {
     /**
-     * User declares they are not a US person, EU resident, or resident of a sanctioned country
+     * User declares they are not restricted from accessing this token
      */
-    notUsEuSanctioned: boolean;
+    notRestricted: boolean;
     /**
      * Version of the RWA Terms of Service accepted by the user
      */
     acceptedTosVersion: string;
-    /**
-     * Unix timestamp when user made the declaration
-     */
-    declaredAt: number;
   };
 }
