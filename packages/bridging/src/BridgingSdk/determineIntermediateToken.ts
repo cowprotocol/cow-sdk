@@ -1,6 +1,6 @@
 import { SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../errors'
-import { isHighPriorityToken, isCorrelatedToken, isNativeToken } from './tokenPriority'
+import { isStablecoinPriorityToken, isCorrelatedToken, isNativeToken } from './tokenPriority'
 
 /**
  * Priority levels for intermediate token selection
@@ -45,7 +45,7 @@ export async function determineIntermediateToken(
 
   // Calculate priority for each token
   const tokensWithPriority = intermediateTokens.map((token) => {
-    if (isHighPriorityToken(token.chainId, token.address)) {
+    if (isStablecoinPriorityToken(token.chainId, token.address)) {
       return { token, priority: TokenPriority.HIGHEST }
     }
     if (isCorrelatedToken(token.address, correlatedTokens)) {

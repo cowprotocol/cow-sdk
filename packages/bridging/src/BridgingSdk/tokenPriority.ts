@@ -4,7 +4,7 @@ import { NATIVE_CURRENCY_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-conf
  * High-priority stablecoins registry (USDC and USDT)
  * These tokens get the highest priority when selecting intermediate tokens
  */
-export const HIGH_PRIORITY_TOKENS: Partial<Record<SupportedChainId, Set<string>>> = {
+export const PRIORITY_STABLECOIN_TOKENS: Partial<Record<SupportedChainId, Set<string>>> = {
   [SupportedChainId.MAINNET]: new Set([
     '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC
     '0xdac17f958d2ee523a2206206994597c13d831ec7', // USDT
@@ -15,6 +15,7 @@ export const HIGH_PRIORITY_TOKENS: Partial<Record<SupportedChainId, Set<string>>
   ]),
   [SupportedChainId.GNOSIS_CHAIN]: new Set([
     '0xddafbb505ad214d7b80b1f830fccc89b60fb7a83', // USDC
+    '0x2a22f9c3b484c3629090feed35f17ff8f88f76f0', // USDC.e
     '0x4ecaba5870353805a9f068101a40e0f32ed605c6', // USDT
   ]),
   [SupportedChainId.POLYGON]: new Set([
@@ -23,6 +24,7 @@ export const HIGH_PRIORITY_TOKENS: Partial<Record<SupportedChainId, Set<string>>
   ]),
   [SupportedChainId.BASE]: new Set([
     '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', // USDC
+    '0xfde4c96c8593536e31f229ea8f37b2ada2699bb2', // USDT
   ]),
   [SupportedChainId.ARBITRUM_ONE]: new Set([
     '0xaf88d065e77c8cc2239327c5edb3a432268e5831', // USDC
@@ -34,6 +36,7 @@ export const HIGH_PRIORITY_TOKENS: Partial<Record<SupportedChainId, Set<string>>
   ]),
   [SupportedChainId.LINEA]: new Set([
     '0x176211869ca2b568f2a7d4ee941e073a821ee1ff', // USDC
+    '0xA219439258ca9da29E9Cc4cE5596924745e12B93', // USDT
   ]),
   [SupportedChainId.SEPOLIA]: new Set([
     '0x1c7d4b196cb0c7b01d743fbc6116a902379c7238', // USDC
@@ -43,8 +46,8 @@ export const HIGH_PRIORITY_TOKENS: Partial<Record<SupportedChainId, Set<string>>
 /**
  * Checks if a token is in the high-priority registry (USDC/USDT)
  */
-export function isHighPriorityToken(chainId: SupportedChainId, tokenAddress: string): boolean {
-  const chainTokens = HIGH_PRIORITY_TOKENS[chainId]
+export function isStablecoinPriorityToken(chainId: SupportedChainId, tokenAddress: string): boolean {
+  const chainTokens = PRIORITY_STABLECOIN_TOKENS[chainId]
   if (!chainTokens) return false
 
   return chainTokens.has(tokenAddress.toLowerCase())
