@@ -10,19 +10,20 @@ The **`BridgingSDK`** lets you 🌉 _swap tokens across chains_ and bridge asset
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Installation](#installation)
-3. [Quick Start](#quick-start)
-4. [Configuration](#configuration)
-5. [Core Methods](#core-methods)
-6. [Examples](#examples)
+2. [How It Works: Intermediate Token Selection](#how-it-works-intermediate-token-selection)
+3. [Installation](#installation)
+4. [Quick Start](#quick-start)
+5. [Configuration](#configuration)
+6. [Core Methods](#core-methods)
+7. [Examples](#examples)
    - [React App](#react-app)
    - [Node.js App](#nodejs-app)
-7. [Types and Interfaces](#types-and-interfaces)
-8. [Error Handling](#error-handling)
-9. [Order Monitoring](#order-monitoring)
-10. [Token Validation](#token-validation)
-11. [Network Validation](#network-validation)
-12. [Complete Type Reference](#complete-type-reference)
+8. [Types and Interfaces](#types-and-interfaces)
+9. [Error Handling](#error-handling)
+10. [Order Monitoring](#order-monitoring)
+11. [Token Validation](#token-validation)
+12. [Network Validation](#network-validation)
+13. [Complete Type Reference](#complete-type-reference)
 
 ## Overview
 
@@ -37,6 +38,76 @@ Supported bridge providers:
 
 > Since `BridgingSdk` is compatible with [TradingSDK](https://github.com/cowprotocol/cow-sdk/tree/main/packages/trading/README.md), almost everything described for `TradingSDK` applies to `BridgingSdk` as well.
 > The main difference is smart contract wallet support. Currently, `BridgingSdk` only supports EOA wallets; this will likely change soon — stay tuned!
+
+## How It Works: Intermediate Token Selection
+
+When executing cross-chain swaps, the SDK uses a **two-step process**:
+
+1. **Swap on source chain**: Sell token → Intermediate token (using CoW Protocol)
+2. **Bridge to destination**: Intermediate token → Buy token on target chain (using bridge provider)
+
+A **bridge provider** is responsible for proposing an array of possible intermediate tokens.
+If this array includes only one token, then it will be used by default, otherwise the array will be sorted with following algorithm.
+
+### Intermediate Token Priority System
+
+Tokens are evaluated and ranked using a **4-tier priority system**:
+
+#### 🥇 **Priority 1 - HIGHEST: Stablecoins (USDC/USDT)**
+
+- Pre-configured registry of USDC and USDT addresses across all supported chains
+- Best liquidity and price stability
+- Optimal for bridging with minimal slippage
+- **Example**: If USDC is available as an intermediate token, it will always be selected first
+
+#### 🥈 **Priority 2 - HIGH: Correlated Tokens**
+
+- Tokens provided via external sources (e.g., CMS API)
+- Known to have high liquidity or price correlation
+- Fetched dynamically based on the source chain
+- **Example**: WETH, DAI, or other major tokens with proven liquidity
+
+#### 🥉 **Priority 3 - MEDIUM: Native Chain Tokens**
+
+- Native blockchain currency (ETH, MATIC, AVAX, BNB, etc.)
+- Generally good liquidity but may have different bridging characteristics
+- Recognized by the special address `0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE`
+- **Example**: ETH on Ethereum mainnet, MATIC on Polygon
+
+#### 📊 **Priority 4 - LOW: Other Tokens**
+
+- Any other ERC-20 tokens
+- Used as fallback when no higher-priority options are available
+- May have lower liquidity or higher slippage
+
+
+### Example Scenarios
+
+**Scenario 1: Stablecoin Available**
+```
+Candidates: [DAI, WETH, USDC]
+Selected: USDC (HIGHEST priority - stablecoin)
+```
+
+**Scenario 2: No Stablecoin**
+```
+Candidates: [RandomToken, WETH (correlated), NativeETH]
+Selected: WETH (HIGH priority - correlated token)
+```
+
+**Scenario 3: Only Native and Random Tokens**
+```
+Candidates: [RandomToken1, NativeETH, RandomToken2]
+Selected: NativeETH (MEDIUM priority - native currency)
+```
+
+**Scenario 4: All Low Priority**
+```
+Candidates: [TokenA, TokenB, TokenC]
+Selected: TokenA (first in list when all have same priority)
+```
+
+> **Note**: The intermediate token is selected from the list of tokens supported by the bridge provider for the specific route. The SDK doesn't create new routing options but intelligently chooses the best one from available options.
 
 ## Installation
 

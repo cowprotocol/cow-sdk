@@ -63,8 +63,12 @@ export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
     intermediateTokensCache: params.intermediateTokensCache,
   })
 
-  // We just pick the first intermediate token for now
-  const intermediateToken = determineIntermediateToken(intermediateTokens)
+  // Determine the best intermediate token based on priority (USDC/USDT > CMS correlated > others)
+  const intermediateToken = await determineIntermediateToken(
+    sellTokenChainId,
+    intermediateTokens,
+    params.advancedSettings?.getCorrelatedTokens,
+  )
 
   log(`Using ${intermediateToken?.name ?? intermediateToken?.address} as intermediate tokens`)
 
