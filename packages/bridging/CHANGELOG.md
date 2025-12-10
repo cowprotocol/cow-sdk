@@ -1,23 +1,5 @@
 # Changelog
 
-## [0.11.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.10.1...sdk-bridging-v0.11.0) (2025-12-10)
-
-
-### ✨ Features
-
-* **bridge:** determine intermediate token ([#738](https://github.com/cowprotocol/cow-sdk/issues/738)) ([381e885](https://github.com/cowprotocol/cow-sdk/commit/381e885d398623cfd731b439e7e62e8b863736c8))
-
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @cowprotocol/sdk-contracts-ts bumped to 0.8.0
-    * @cowprotocol/sdk-cow-shed bumped to 0.2.7
-    * @cowprotocol/sdk-trading bumped to 0.7.0
-  * devDependencies
-    * @cowprotocol/sdk-order-signing bumped to 0.1.20
-
 ## [0.10.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.10.0...sdk-bridging-v0.10.1) (2025-12-05)
 
 

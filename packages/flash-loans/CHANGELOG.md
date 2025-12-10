@@ -1,20 +1,5 @@
 # Changelog
 
-## [1.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.5.12...sdk-flash-loans-v1.6.0) (2025-12-10)
-
-
-### ✨ Features
-
-* **flash-loans:** support flexible gasLimit options ([#736](https://github.com/cowprotocol/cow-sdk/issues/736)) ([14cbb36](https://github.com/cowprotocol/cow-sdk/commit/14cbb362a68462dddc028d5f5852f038f349daa3))
-
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @cowprotocol/sdk-trading bumped to 0.7.0
-    * @cowprotocol/sdk-order-signing bumped to 0.1.20
-
 ## [1.5.12](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.5.11...sdk-flash-loans-v1.5.12) (2025-12-05)
 
 

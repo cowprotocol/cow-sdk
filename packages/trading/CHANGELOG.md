@@ -1,20 +1,5 @@
 # Changelog
 
-## [0.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.6.3...sdk-trading-v0.7.0) (2025-12-10)
-
-
-### ✨ Features
-
-* **bridge:** determine intermediate token ([#738](https://github.com/cowprotocol/cow-sdk/issues/738)) ([381e885](https://github.com/cowprotocol/cow-sdk/commit/381e885d398623cfd731b439e7e62e8b863736c8))
-
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @cowprotocol/sdk-order-signing bumped to 0.1.20
-    * @cowprotocol/sdk-contracts-ts bumped to 0.8.0
-
 ## [0.6.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.6.2...sdk-trading-v0.6.3) (2025-12-05)
 
 

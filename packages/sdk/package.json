@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/cow-sdk",
-  "version": "7.2.4",
+  "version": "7.2.3",
   "license": "(MIT OR Apache-2.0)",
   "description": "CoW Protocol SDK - get quote, configure your order, and trade",
   "main": "./dist/index.js",
