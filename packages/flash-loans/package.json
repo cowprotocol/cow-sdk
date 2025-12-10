@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-flash-loans",
-  "version": "1.5.12",
+  "version": "1.6.0",
   "description": "Flash loans for CoW Protocol",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
