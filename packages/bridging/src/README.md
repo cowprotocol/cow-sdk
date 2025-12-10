@@ -53,28 +53,28 @@ If this array includes only one token, then it will be used by default, otherwis
 
 Tokens are evaluated and ranked using a **4-tier priority system**:
 
-#### 🥇 **Priority 1 - HIGHEST: Stablecoins (USDC/USDT)**
+#### 🥇 **HIGHEST: Stablecoins (USDC/USDT)**
 
 - Pre-configured registry of USDC and USDT addresses across all supported chains
 - Best liquidity and price stability
 - Optimal for bridging with minimal slippage
 - **Example**: If USDC is available as an intermediate token, it will always be selected first
 
-#### 🥈 **Priority 2 - HIGH: Correlated Tokens**
+#### 🥈 **HIGH: Correlated Tokens**
 
 - Tokens provided via external sources (e.g., CMS API)
 - Known to have high liquidity or price correlation
 - Fetched dynamically based on the source chain
 - **Example**: WETH, DAI, or other major tokens with proven liquidity
 
-#### 🥉 **Priority 3 - MEDIUM: Native Chain Tokens**
+#### 🥉 **MEDIUM: Native Chain Tokens**
 
 - Native blockchain currency (ETH, MATIC, AVAX, BNB, etc.)
 - Generally good liquidity but may have different bridging characteristics
 - Recognized by the special address `0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE`
 - **Example**: ETH on Ethereum mainnet, MATIC on Polygon
 
-#### 📊 **Priority 4 - LOW: Other Tokens**
+#### 📊 **LOW: Other Tokens**
 
 - Any other ERC-20 tokens
 - Used as fallback when no higher-priority options are available
