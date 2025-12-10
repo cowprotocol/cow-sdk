@@ -13,6 +13,7 @@ import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../errors'
 import { GetQuoteWithBridgeParams } from './types'
 import { getCacheKey } from './helpers'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
+import { determineIntermediateToken } from './determineIntermediateToken'
 
 export interface GetIntermediateSwapResultParams<T extends BridgeQuoteResult> {
   provider: BridgeProvider<T>
@@ -62,14 +63,14 @@ export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
     intermediateTokensCache: params.intermediateTokensCache,
   })
 
-  // We just pick the first intermediate token for now
-  const intermediateToken = intermediateTokens[0]
+  // Determine the best intermediate token based on priority (USDC/USDT > CMS correlated > others)
+  const intermediateToken = await determineIntermediateToken(
+    sellTokenChainId,
+    intermediateTokens,
+    params.advancedSettings?.getCorrelatedTokens,
+  )
 
   log(`Using ${intermediateToken?.name ?? intermediateToken?.address} as intermediate tokens`)
-
-  if (!intermediateToken) {
-    throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_INTERMEDIATE_TOKENS, { intermediateTokens })
-  }
 
   const bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount = {
     ...swapAndBridgeRequest,
