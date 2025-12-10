@@ -1,4 +1,4 @@
-import { OneClickService, OpenAPI } from '@defuse-protocol/one-click-sdk-typescript'
+import { ApiError, OneClickService, OpenAPI } from '@defuse-protocol/one-click-sdk-typescript'
 
 import type {
   GetExecutionStatusResponse,
@@ -8,6 +8,8 @@ import type {
 } from '@defuse-protocol/one-click-sdk-typescript'
 
 import type { Address, Hex } from 'viem'
+
+import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 
 interface GetAttestationRequest {
   depositAddress: Address
@@ -31,7 +33,22 @@ export class NearIntentsApi {
   }
 
   async getQuote(request: QuoteRequest): Promise<QuoteResponse> {
-    return await OneClickService.getQuote(request)
+    try {
+      return await OneClickService.getQuote(request)
+    } catch (error: unknown) {
+      if (error instanceof ApiError) {
+        const message = error.body?.message
+        if (message && typeof message === 'string' && message.toLowerCase().includes('amount is too low')) {
+          const minAmountMatch = message.match(/try at least (\d+)/)
+          const minAmount = minAmountMatch ? minAmountMatch[1] : undefined
+          throw new BridgeProviderQuoteError(BridgeQuoteErrors.SELL_AMOUNT_TOO_SMALL, {
+            originalMessage: message,
+            minAmount,
+          })
+        }
+      }
+      throw error
+    }
   }
 
   async getStatus(depositAddress: string): Promise<GetExecutionStatusResponse> {
