@@ -19,6 +19,7 @@ import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { BridgingSdkConfig } from '../types'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { createAdapters } from '../../../tests/setup'
+import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 
 const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
@@ -196,7 +197,7 @@ adapterNames.forEach((adapterName) => {
         }
       })
 
-      it('should return first provider error when all providers fail', async () => {
+      it('should return an error when all providers fail', async () => {
         const error1 = new Error('Provider 1 failed')
         const error2 = new Error('Provider 2 failed')
         const error3 = new Error('Provider 3 failed')
@@ -217,12 +218,43 @@ adapterNames.forEach((adapterName) => {
         expect(result).toBeTruthy()
         expect(result?.quote).toBeNull()
         expect(result?.error).toBeTruthy()
-        // Should return first provider's error (order is not guaranteed due to async)
+        // Should return one of the provider errors
         expect([
           'dapp-id-MockHookBridgeProvider',
           'cow-sdk://bridging/providers/mock2',
           'cow-sdk://bridging/providers/mock3',
         ]).toContain(result?.providerDappId)
+      })
+
+      it('should prioritize more informative errors over generic ones', async () => {
+        // Provider 1: Generic NO_ROUTES error (low priority)
+        const noRoutesError = new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES)
+        mockProvider.getQuote = jest.fn().mockRejectedValue(noRoutesError)
+
+        // Provider 2: SELL_AMOUNT_TOO_SMALL error (high priority - most actionable)
+        const sellAmountError = new BridgeProviderQuoteError(BridgeQuoteErrors.SELL_AMOUNT_TOO_SMALL)
+        mockProvider2.getQuote = jest.fn().mockRejectedValue(sellAmountError)
+
+        // Provider 3: API_ERROR (medium priority)
+        const apiError = new BridgeProviderQuoteError(BridgeQuoteErrors.API_ERROR)
+        mockProvider3.getQuote = jest.fn().mockRejectedValue(apiError)
+
+        const request = {
+          quoteBridgeRequest,
+          providerDappIds: undefined,
+          advancedSettings: undefined,
+          options: undefined,
+        }
+
+        const result = await strategy.execute(request, config.tradingSdk, config.providers)
+
+        expect(result).toBeTruthy()
+        expect(result?.quote).toBeNull()
+        expect(result?.error).toBeTruthy()
+        // Should return SELL_AMOUNT_TOO_SMALL as it has the highest priority
+        expect(result?.providerDappId).toBe('cow-sdk://bridging/providers/mock2')
+        expect(result?.error).toBeInstanceOf(BridgeProviderQuoteError)
+        expect((result?.error as BridgeProviderQuoteError).message).toBe(BridgeQuoteErrors.SELL_AMOUNT_TOO_SMALL)
       })
 
       it('should return best available quote even when some providers fail', async () => {
@@ -399,9 +431,7 @@ adapterNames.forEach((adapterName) => {
         expect(result?.quote).toBeTruthy()
       })
 
-      it(
-        'should handle mixed provider speeds correctly',
-        async () => {
+      it('should handle mixed provider speeds correctly', async () => {
         // Fast provider with good quote
         mockProvider.getQuote = jest.fn().mockImplementation(async () => {
           await new Promise((resolve) => setTimeout(resolve, 20)) // 20ms delay
@@ -486,9 +516,7 @@ adapterNames.forEach((adapterName) => {
             BigInt('70000000000000000000'),
           )
         }
-        },
-        10000,
-      ) // 10 second timeout for this test
+      }, 10000) // 10 second timeout for this test
     })
 
     describe('strategyName', () => {
