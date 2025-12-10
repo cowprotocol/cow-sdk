@@ -1,5 +1,22 @@
 # Changelog
 
+## [7.2.4](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.2.3...cow-sdk-v7.2.4) (2025-12-10)
+
+
+### 🔧 Miscellaneous
+
+* release main ([#741](https://github.com/cowprotocol/cow-sdk/issues/741)) ([32fb8bb](https://github.com/cowprotocol/cow-sdk/commit/32fb8bbe6b1172c2666f330d0d50cdc2f7c2554f))
+* revert not published release ([5facf05](https://github.com/cowprotocol/cow-sdk/commit/5facf05c67121404b7b5aa1e77950961b06eca81))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-contracts-ts bumped to 0.8.0
+    * @cowprotocol/sdk-order-signing bumped to 0.1.20
+    * @cowprotocol/sdk-trading bumped to 0.7.0
+
 ## [7.2.3](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.2.2...cow-sdk-v7.2.3) (2025-12-05)
 
 

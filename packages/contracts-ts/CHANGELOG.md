@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.8.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.7.4...sdk-contracts-ts-v0.8.0) (2025-12-10)
+
+
+### ✨ Features
+
+* **bridge:** determine intermediate token ([#738](https://github.com/cowprotocol/cow-sdk/issues/738)) ([381e885](https://github.com/cowprotocol/cow-sdk/commit/381e885d398623cfd731b439e7e62e8b863736c8))
+
+
+### 🔧 Miscellaneous
+
+* release main ([#741](https://github.com/cowprotocol/cow-sdk/issues/741)) ([32fb8bb](https://github.com/cowprotocol/cow-sdk/commit/32fb8bbe6b1172c2666f330d0d50cdc2f7c2554f))
+* revert not published release ([5facf05](https://github.com/cowprotocol/cow-sdk/commit/5facf05c67121404b7b5aa1e77950961b06eca81))
+
 ## [0.7.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.7.3...sdk-contracts-ts-v0.7.4) (2025-12-05)
 
 
