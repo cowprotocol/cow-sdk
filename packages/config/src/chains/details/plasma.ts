@@ -51,5 +51,4 @@ export const plasma: ChainInfo = {
   //     url: '',
   //   },
   // ],
-  isUnderDevelopment: true, // TODO: Remove when ready for production
 }
