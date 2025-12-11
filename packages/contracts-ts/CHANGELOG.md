@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.8.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.8.0...sdk-contracts-ts-v0.8.1) (2025-12-11)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.6.2
+
 ## [0.8.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.7.4...sdk-contracts-ts-v0.8.0) (2025-12-10)
 
 
