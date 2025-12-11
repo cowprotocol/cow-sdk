@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.12.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.11.0...sdk-bridging-v0.12.0) (2025-12-11)
+
+
+### ✨ Features
+
+* add new SELL_AMOUNT_TOO_SMALL error and catch it in near provider ([#743](https://github.com/cowprotocol/cow-sdk/issues/743)) ([4e6c896](https://github.com/cowprotocol/cow-sdk/commit/4e6c8961d318cf4b45f145121eaf65ec30e91de0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.3.6
+    * @cowprotocol/sdk-config bumped to 0.6.2
+    * @cowprotocol/sdk-contracts-ts bumped to 0.8.1
+    * @cowprotocol/sdk-cow-shed bumped to 0.2.8
+    * @cowprotocol/sdk-order-book bumped to 0.4.4
+    * @cowprotocol/sdk-trading bumped to 0.7.1
+    * @cowprotocol/sdk-weiroll bumped to 0.1.11
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 0.1.21
+
 ## [0.11.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.10.1...sdk-bridging-v0.11.0) (2025-12-10)
 
 

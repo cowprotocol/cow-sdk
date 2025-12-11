@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.6.1...sdk-config-v0.6.2) (2025-12-11)
+
+
+### 🐛 Bug Fixes
+
+* remove isUnderDevelopment flag from plasma ([#739](https://github.com/cowprotocol/cow-sdk/issues/739)) ([b9cf7b7](https://github.com/cowprotocol/cow-sdk/commit/b9cf7b7a6405d27b11719128a7680a771bc3e602))
+
 ## [0.6.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.6.0...sdk-config-v0.6.1) (2025-12-05)
 
 

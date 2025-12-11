@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.21](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v0.1.20...sdk-composable-v0.1.21) (2025-12-11)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.6.2
+    * @cowprotocol/sdk-contracts-ts bumped to 0.8.1
+    * @cowprotocol/sdk-order-book bumped to 0.4.4
+    * @cowprotocol/sdk-order-signing bumped to 0.1.21
+
 ## [0.1.20](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v0.1.19...sdk-composable-v0.1.20) (2025-12-10)
 
 
