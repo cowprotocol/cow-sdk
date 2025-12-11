@@ -5,6 +5,7 @@ import { TradingSdk } from '@cowprotocol/sdk-trading'
 import {
   createBridgeRequestTimeoutPromise,
   executeProviderQuotes,
+  isBetterError,
   isBetterQuote,
   resolveProvidersToQuery,
   safeCallBestQuoteCallback,
@@ -48,9 +49,9 @@ export class BestQuoteStrategy extends BaseBestQuoteStrategy {
       providerTimeout = DEFAULT_PROVIDER_TIMEOUT_MS,
     } = options || {}
 
-    // Keep track of the current best result and first error using mutable containers
+    // Keep track of the current best result and best error using mutable containers
     const bestResult = { current: null as MultiQuoteResult | null }
-    const firstError = { current: null as MultiQuoteResult | null }
+    const bestError = { current: null as MultiQuoteResult | null }
     const promises: Promise<void>[] = []
 
     // Create a promise for each provider that handles both progressive callbacks and best result tracking
@@ -62,7 +63,7 @@ export class BestQuoteStrategy extends BaseBestQuoteStrategy {
         providerTimeout,
         onQuoteResult,
         bestResult,
-        firstError,
+        bestError,
       }
 
       const promise = this.createBestQuoteProviderPromise(context, tradingSdk)
@@ -72,12 +73,12 @@ export class BestQuoteStrategy extends BaseBestQuoteStrategy {
     // Execute all provider quotes with timeout handling
     await executeProviderQuotes(promises, totalTimeout, providers)
 
-    // Return best result if available, otherwise return first error
-    return bestResult.current || firstError.current
+    // Return best result if available, otherwise return best error (highest priority)
+    return bestResult.current || bestError.current
   }
 
   private createBestQuoteProviderPromise(context: BestQuoteProviderContext, tradingSdk: TradingSdk): Promise<void> {
-    const { provider, quoteBridgeRequest, advancedSettings, providerTimeout, onQuoteResult, bestResult, firstError } =
+    const { provider, quoteBridgeRequest, advancedSettings, providerTimeout, onQuoteResult, bestResult, bestError } =
       context
 
     return (async (): Promise<void> => {
@@ -122,9 +123,9 @@ export class BestQuoteStrategy extends BaseBestQuoteStrategy {
           error: error instanceof Error ? error : new BridgeProviderError(String(error), {}),
         }
 
-        // Store the first error if we don't have one yet
-        if (!firstError.current) {
-          firstError.current = errorResult
+        // Store the best error (highest priority) instead of just the first one
+        if (isBetterError(errorResult, bestError.current)) {
+          bestError.current = errorResult
         }
       }
     })()

@@ -520,7 +520,7 @@ export interface ProviderQuoteContext extends MultiQuoteContext {
 
 export interface BestQuoteProviderContext extends MultiQuoteContext {
   bestResult: { current: MultiQuoteResult | null }
-  firstError: { current: MultiQuoteResult | null }
+  bestError: { current: MultiQuoteResult | null }
 }
 
 export type DefaultBridgeProvider = BridgeProvider<BridgeQuoteResult>
