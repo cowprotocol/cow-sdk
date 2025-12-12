@@ -192,11 +192,11 @@ export type TokenAddress = string;
  */
 export type WrapperAddress = string;
 /**
- * Any additional data. The format of this data will vary depending on the wrapper you are calling
+ * Any additional data. The format of this data will vary depending on the wrapper you are calling. If left unspecified, this field defaults to 0x (empty wrapper data)
  */
 export type WrapperData = string;
 /**
- * Whether or not this wrapper must be executed exactly as given with the order
+ * Whether or not this wrapper must be executed exactly as given with the order. If left unspecified, this field defaults to `false` (wrapper data must be executed with the order exactly as given)
  */
 export type IsOmittable = boolean;
 /**

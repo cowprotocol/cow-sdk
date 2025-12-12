@@ -19,12 +19,12 @@
       },
       "data": {
         "title": "Wrapper data",
-        "description": "Any additional data. The format of this data will vary depending on the wrapper you are calling",
+        "description": "Any additional data. The format of this data will vary depending on the wrapper you are calling. If left unspecified, this field defaults to 0x (empty wrapper data)",
         "$ref": "../definitions.json#/definitions/hexData"
       },
       "is_omittable": {
         "title": "Is Omittable",
-        "description": "Whether or not this wrapper must be executed exactly as given with the order",
+        "description": "Whether or not this wrapper must be executed exactly as given with the order. If left unspecified, this field defaults to `false` (wrapper data must be executed with the order exactly as given)",
         "type": "boolean"
       }
     },
