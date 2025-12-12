@@ -115,7 +115,7 @@ async function compile(): Promise<void> {
           getLatestMetadataDocVersion('widget'),
           getLatestMetadataDocVersion('partnerFee'),
           getLatestMetadataDocVersion('replacedOrder'),
-          getLatestMetadataDocVersion('rwaConsent'),
+          getLatestMetadataDocVersion('userConsents'),
         ])
 
         const [
@@ -128,7 +128,7 @@ async function compile(): Promise<void> {
           latestWidgetVersion,
           latestPartnerFeeVersion,
           latestReplacedOrderVersion,
-          latestRwaConsentVersion,
+          latestUserConsentsVersion,
         ] = metadataResults.map((result) => (result.status === 'fulfilled' ? result.value : ''))
 
         const additionalTypesExport = `
@@ -144,7 +144,7 @@ export const LATEST_SIGNER_METADATA_VERSION = '${extractSemver(latestSignerVersi
 export const LATEST_WIDGET_METADATA_VERSION = '${extractSemver(latestWidgetVersion || '')}'
 export const LATEST_PARTNER_FEE_METADATA_VERSION = '${extractSemver(latestPartnerFeeVersion || '')}'
 export const LATEST_REPLACED_ORDER_METADATA_VERSION = '${extractSemver(latestReplacedOrderVersion || '')}'
-export const LATEST_RWA_CONSENT_METADATA_VERSION = '${extractSemver(latestRwaConsentVersion || '')}'
+export const LATEST_USER_CONSENTS_METADATA_VERSION = '${extractSemver(latestUserConsentsVersion || '')}'
 
 export type LatestAppDataDocVersion = ${latestExport}.AppDataRootSchema
 export type AnyAppDataDocVersion = ${allVersions}
@@ -212,7 +212,7 @@ async function getLatestMetadataDocVersion(
     | 'widget'
     | 'partnerFee'
     | 'replacedOrder'
-    | 'rwaConsent',
+    | 'userConsents',
 ): Promise<string> {
   const metadataPath = path.join(SCHEMAS_SRC_PATH, metadataDocName)
   try {

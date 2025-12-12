@@ -68,8 +68,8 @@
         "flashloan": {
           "$ref": "flashloan/v0.2.0.json#"
         },
-        "rwaConsent": {
-          "$ref": "rwaConsent/v0.1.0.json#"
+        "userConsents": {
+          "$ref": "userConsents/v0.1.0.json#"
         }
       }
     }

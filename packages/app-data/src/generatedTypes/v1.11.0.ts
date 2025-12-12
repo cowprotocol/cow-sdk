@@ -187,6 +187,19 @@ export type ReceiverAddress = string;
  * The Ethereum address of the token being borrowed
  */
 export type TokenAddress = string;
+/**
+ * Array of user consents for terms acceptance
+ */
+export type UserConsents = {
+  /**
+   * IPFS hash of the accepted terms
+   */
+  terms: string;
+  /**
+   * ISO 8601 date-time when user accepted the terms in the UI
+   */
+  acceptedDate: string;
+}[];
 
 /**
  * Metadata JSON document for adding information to orders.
@@ -212,7 +225,7 @@ export interface Metadata {
   replacedOrder?: ReplacedOrder;
   bridging?: Bridging;
   flashloan?: Flashloan;
-  rwaConsent?: RWAConsent;
+  userConsents?: UserConsents;
 }
 export interface Referrer {
   address: ReferrerAddress;
@@ -268,52 +281,4 @@ export interface Flashloan {
   protocolAdapter: ProtocolAdapterAddress;
   receiver: ReceiverAddress;
   token: TokenAddress;
-}
-/**
- * RWA geoblocking and T&C attestation payload for compliance
- */
-export interface RWAConsent {
-  /**
-   * Wallet address that gave consent
-   */
-  wallet: string;
-  /**
-   * RWA token information
-   */
-  rwa: {
-    /**
-     * RWA token issuer identifier
-     */
-    issuer: string;
-    /**
-     * Asset group classification
-     */
-    assetGroup?: string;
-  };
-  /**
-   * Geographical status information
-   */
-  geo: {
-    /**
-     * IP geolocation status. ALLOWED means IP is from allowed jurisdiction. UNKNOWN means IP could not be determined.
-     */
-    ipStatus: "ALLOWED" | "UNKNOWN";
-    /**
-     * ISO 3166-1 alpha-2 country code. Present for ALLOWED, null for UNKNOWN.
-     */
-    country?: string;
-  };
-  /**
-   * User's self-certification declaration
-   */
-  userDeclaration: {
-    /**
-     * User declares they are not restricted from accessing this token
-     */
-    notRestricted: boolean;
-    /**
-     * Version of the RWA Terms of Service accepted by the user
-     */
-    acceptedTosVersion: string;
-  };
 }
