@@ -1,0 +1,33 @@
+{
+  "$id": "#wrappers/v0.1.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "Wrappers",
+  "description": "Information about wrappers to execute for the order",
+  "type": "array",
+  "items": {
+    "title": "Wrapper Entry",
+    "description": "Information about an individual wrapper to execute for the order",
+    "type": "object",
+    "required": [
+      "address"
+    ],
+    "properties": {
+      "address": {
+        "title": "Wrapper address",
+        "description": "The Ethereum address of the wrapper to execute",
+        "$ref": "../definitions.json#/definitions/ethereumAddress"
+      },
+      "data": {
+        "title": "Wrapper data",
+        "description": "Any additional data. The format of this data will vary depending on the wrapper you are calling",
+        "$ref": "../definitions.json#/definitions/hexData"
+      },
+      "is_omittable": {
+        "title": "Is Omittable",
+        "description": "Whether or not this wrapper must be executed exactly as given with the order",
+        "type": "boolean"
+      }
+    },
+    "additionalProperties": false
+  }
+}
