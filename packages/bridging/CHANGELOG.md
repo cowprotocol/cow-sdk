@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.12.0...sdk-bridging-v0.12.1) (2025-12-17)
+
+
+### 🐛 Bug Fixes
+
+* bungee across bridge config ([#748](https://github.com/cowprotocol/cow-sdk/issues/748)) ([6219b05](https://github.com/cowprotocol/cow-sdk/commit/6219b05ebda268e71ce68fd06146545ff0a4f25c))
+
 ## [0.12.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.11.0...sdk-bridging-v0.12.0) (2025-12-11)
 
 
