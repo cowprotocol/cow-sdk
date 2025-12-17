@@ -20,7 +20,8 @@
     "test": "jest",
     "test:coverage": "jest --coverage --json --outputFile=jest.results.json && npx coveralls < ./coverage/lcov.info",
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
-    "test:bungeeGnosisBridge": "yarn test --testPathPattern=BungeeGnosisBridge",
+    "test:bungeeGnosisBridge": "jest --testPathPattern=BungeeGnosisBridge",
+    "test:bungeeAcrossBridge": "jest --testPathPattern=BungeeAcrossBridge",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
