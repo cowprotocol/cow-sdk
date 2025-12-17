@@ -1,0 +1,852 @@
+<p align="center">
+  <img width="400" src="https://github.com/cowprotocol/cow-sdk/raw/main/docs/images/CoW.png" />
+</p>
+
+# Trading SDK
+
+CoW Protocol is intent based, decentralized trading protocol that allows users to trade ERC-20 tokens.
+This SDK makes it easier to interact with CoW Protocol by handling order parameters, calculating amounts, and signing orders.
+
+## Basic Trading Flow
+
+1. 🔎 Get a quote (price) for a trade
+2. ✍️ Sign the order
+3. ✅ Post the order to the order-book
+
+The CoW Protocol provides very flexible and powerful trading capabilities. However, this flexibility comes with a cost: the complexity of the protocol. This SDK serves to simplify the interaction with the CoW Protocol. It will put all necessary parameters to your order, calculates proper amounts, and signs the order.
+
+## Why Use This SDK?
+
+- **App-data** - Order metadata handling
+- **Order signing** - EIP-712 signature management
+- **Network costs** - Automatic fee and slippage calculations
+- **Order parameters** - Validity, partial fills, etc.
+- **Quote API settings** - Price quality, signing scheme, etc.
+- **Order types** - Market, limit, on-chain trades, etc.
+
+> See the [examples](https://github.com/cowprotocol/cow-sdk/tree/main/examples) for usage.
+
+## Installation
+
+```bash
+npm install @cowprotocol/sdk-trading
+or
+pnpm add @cowprotocol/sdk-trading
+or
+yarn add @cowprotocol/sdk-trading
+```
+
+## TradingSdk Functions
+
+Main functions:
+
+- `postSwapOrder` - Get a quote and create a swap order.
+- `postLimitOrder` - Create a limit order.
+- `getQuote` - Fetch a quote for a swap order.
+
+Order Management:
+
+- `getOrder` - Retrieve order details by UID.
+- `offChainCancelOrder` - Cancel an order off-chain (soft cancel, free and fast).
+- `onChainCancelOrder` - Cancel an order on-chain (hard cancel, requires gas).
+
+Token Approval:
+
+- `getCowProtocolAllowance` - Check current token allowance for CoW Protocol.
+- `approveCowProtocol` - Approve CoW Protocol to spend tokens.
+
+Special cases:
+
+- `setTraderParams` - In case if you work with different chains and need to switch between them in runtime.
+- `postSellNativeCurrencyOrder` - Sell blockchain native tokens (e.g., ETH on Ethereum).
+- `getPreSignTransaction` - Sign an order using a smart contract wallet.
+
+### Setup
+
+You need:
+
+- `chainId` - Supported chain ID ([see list](https://docs.cow.fi/cow-protocol/reference/sdks/core-utilities/sdk-config)).
+- `appCode` - Unique app identifier for tracking orders.
+- `signer` - Private key, ethers signer, or `Eip1193` provider (optional - will use global adapter's signer if not provided).
+
+## Usage
+
+### Individual package usage
+
+```typescript
+import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/sdk-trading'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+// There are EthersV5Adapter and EthersV6Adapter as well
+// @cowprotocol/sdk-ethers-v5-adapter, @cowprotocol/sdk-ethers-v6-adapter
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  // You also can set `walletClient` instead of `signer` using `useWalletClient` from wagmi
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
+
+// Initialize the SDK
+const sdk = new TradingSdk(
+  {
+    appCode: 'YOUR_APP_CODE',
+  },
+  {
+    chainId: SupportedChainId.SEPOLIA,
+  },
+  adapter, // Pass the adapter
+)
+
+// Define trade parameters
+const parameters: TradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000',
+}
+
+// Post the order
+const orderId = await sdk.postSwapOrder(parameters)
+console.log('Order created, id: ', orderId)
+```
+
+### Options
+
+For detailed information about trading steps you can enable the SDK logging:
+
+```typescript
+import { SupportedChainId, TradingSdk, TradingSdkOptions } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  // You also can set `walletClient` instead of `signer` using `useWalletClient` from wagmi
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
+
+const traderParams = {
+  chainId: SupportedChainId.SEPOLIA,
+  appCode: '<YOUR_APP_CODE>',
+  signer: '<privateKeyOrEthersSigner>', // signer is optional - will use global adapter's signer if not provided
+}
+
+const sdkOptions: TradingSdkOptions = {
+  enableLogging: true, // enables detailed logging of trading steps
+  disableUtm: false, // set to true to disable UTM tracking completely
+}
+
+const sdk = new TradingSdk(traderParams, sdkOptions, adapter)
+```
+
+### getQuote
+
+In case if you want to get a quote and only then create an order, you can use the `getQuote` function.
+
+The parameters required are the same as for the `postSwapOrder` function.
+
+The function returns `quoteResults` object with the following properties:
+
+- `tradeParameters` - trade type, assets, amounts and other optional parameters
+- `amountsAndCosts` - the order sell/buy amounts including network costs, fees and slippage
+- `orderToSign` - order parameters to sign (see [order signing](https://docs.cow.fi/cow-protocol/reference/sdks/cow-sdk/classes/OrderSigningUtils))
+- `quoteResponse` - DTO from [quote API](https://api.cow.fi/docs/#/default/post_api_v1_quote)
+- `appDataInfo` - [order's metadata](https://docs.cow.fi/cow-protocol/reference/sdks/app-data)
+- `orderTypedData` - EIP-712 typed data for signing
+
+Another parameter is returned by this function is `postSwapOrderFromQuote`.
+It can be used to create an order from the received quote.
+
+#### Example
+
+```typescript
+import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  // You also can set `walletClient` instead of `signer` using `useWalletClient` from wagmi
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
+
+// Proper adapter initialization (see setup example above)
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const parameters: TradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000',
+}
+
+const { quoteResults, postSwapOrderFromQuote } = await sdk.getQuote(parameters)
+
+const buyAmount = quoteResults.amountsAndCosts.afterSlippage.buyAmount
+
+if (confirm(`You will get at least: ${buyAmount}, ok?`)) {
+  const orderId = await postSwapOrderFromQuote()
+
+  console.log('Order created, id: ', orderId)
+}
+```
+
+### postSwapOrder
+
+This function fetches a quote for a swap order and just creates the order.
+
+The parameters required are:
+
+- `kind` - the order kind (sell/buy)
+- `sellToken` - the sell token address
+- `sellTokenDecimals` - the sell token decimals
+- `buyToken` - the buy token address
+- `buyTokenDecimals` - the buy token decimals
+- `amount` - the amount to sell/buy in atoms
+
+> When sell token is a blockchain native token (ETH for Ethereum), then order will be created as an on-chain transaction. See the `postSellNativeCurrencyOrder` method below for more details.
+
+#### Example
+
+```typescript
+import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  // You also can set `walletClient` instead of `signer` using `useWalletClient` from wagmi
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
+
+// Proper adapter initialization (see setup example above)
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const parameters: TradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000',
+}
+
+const { orderId } = await sdk.postSwapOrder(parameters)
+
+console.log('Order created, id: ', orderId)
+```
+
+### postLimitOrder
+
+This main difference between this function and `postSwapOrder` is that here you need to specify both sell and buy amounts.
+
+You need to provide the following parameters:
+
+- `kind` - the order kind (sell/buy)
+- `sellToken` - the sell token address
+- `sellTokenDecimals` - the sell token decimals
+- `buyToken` - the buy token address
+- `buyTokenDecimals` - the buy token decimals
+- `sellAmount` - the amount to sell in atoms
+- `buyAmount` - the amount to buy in atoms
+
+And optional parameters:
+
+- `quoteId` - id of the quote from the quote API (see getQuote function)
+- `validTo` - the order expiration time in seconds
+
+```typescript
+import { SupportedChainId, OrderKind, LimitTradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  // You also can set `walletClient` instead of `signer` using `useWalletClient` from wagmi
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
+
+// Proper adapter initialization (see setup example above)
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const limitOrderParameters: LimitTradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  sellAmount: '120000000000000000',
+  buyAmount: '66600000000000000000',
+}
+
+const { orderId } = await sdk.postLimitOrder(limitOrderParameters)
+
+console.log('Order created, id: ', orderId)
+```
+
+### postSellNativeCurrencyOrder
+
+CoW Protocol supports on-chain trades for selling blockchain native tokens (ETH for Ethereum).
+In this case, the order is created as an on-chain transaction.
+You don't have to think about the case when you use `postSwapOrder` function, it will be handled automatically.
+But if you need more flexible way to create an order to sell native token, you can use the `postSellNativeCurrencyOrder` function.
+
+> We consider the order as native token selling order if the sell token has '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' address.
+
+```typescript
+import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
+
+// Proper adapter initialization (see setup example above)
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const parameters: TradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000',
+}
+
+const { orderId } = await sdk.postSellNativeCurrencyOrder(parameters)
+
+console.log('Order created, id: ', orderId)
+```
+
+### Get quote for a smart-contract wallet
+
+If you want to use a smart-contract wallet to sign the order, you should specify the `signingScheme` parameter in order to get more accurate quote in terms of gas efficiency.
+Smart-contract wallets are supported by using a different signing scheme - `SigningScheme.PRESIGN`.
+
+#### Example
+
+```typescript
+import {
+  SupportedChainId,
+  OrderKind,
+  TradeParameters,
+  SwapAdvancedSettings,
+  SigningScheme,
+  TradingSdk,
+} from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
+
+// Proper adapter initialization (see setup example above)
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const parameters: TradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000',
+}
+
+const advancedParameters: SwapAdvancedSettings = {
+  quoteRequest: {
+    // Specify the signing scheme
+    signingScheme: SigningScheme.PRESIGN,
+  },
+}
+
+const { quoteResults } = await sdk.getQuote(parameters)
+
+console.log('Quote:', quoteResults)
+```
+
+### Create an order with smart-contract wallet
+
+If you want to create an order with a smart-contract wallet, you should specify the `signingScheme` parameter in the `postSwapOrder` function.
+And then you need to send a transaction from `getPreSignTransaction` result in order to sign the order.
+
+#### Example of Swap order
+
+```typescript
+import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
+
+// Proper adapter initialization (see setup example above)
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const parameters: TradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000',
+}
+
+const advancedParameters: SwapAdvancedSettings = {
+  quoteRequest: {
+    // Specify the signing scheme
+    signingScheme: SigningScheme.PRESIGN,
+  },
+}
+
+const smartContractWalletAddress = '0x<smartContractWalletAddress>'
+const { orderId } = await sdk.postSwapOrder(parameters, advancedParameters)
+const preSignTransaction = await sdk.getPreSignTransaction({ orderId, account: smartContractWalletAddress })
+
+console.log('Order created with "pre-sign" state, id: ', orderId)
+console.log('Execute the transaction to sign the order', preSignTransaction)
+```
+
+#### Example of Limit order
+
+```typescript
+import {
+  SupportedChainId,
+  OrderKind,
+  LimitTradeParameters,
+  LimitOrderAdvancedSettings,
+  SigningScheme,
+  TradingSdk,
+} from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
+
+// Proper adapter initialization (see setup example above)
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const smartContractWalletAddress = '0x<smartContractWalletAddress>'
+
+const limitOrderParameters: LimitTradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  sellAmount: '120000000000000000',
+  buyAmount: '66600000000000000000',
+  owner: smartContractWalletAddress, // See note bellow why you need to specify the parameter
+}
+
+const advancedParameters: LimitOrderAdvancedSettings = {
+  additionalParams: {
+    signingScheme: SigningScheme.PRESIGN,
+  },
+}
+
+const { orderId } = await sdk.postLimitOrder(limitOrderParameters, advancedParameters)
+const preSignTransaction = await sdk.getPreSignTransaction({ orderId, account: smartContractWalletAddress })
+
+console.log('Order created with "pre-sign" state, id: ', orderId)
+console.log('Execute the transaction to sign the order', preSignTransaction)
+```
+
+> **Note:** it's important to specify the `owner` parameter if you create an order with a smart-contract wallet, and it differs from the signer (for example Safe).
+> CoW Protocol will use `owner` in order to check the order owner balance, allowance and other things.
+
+### Optional parameters
+
+Both `postSwapOrder` and `postLimitOrder` functions have optional parameters.
+See `TradeOptionalParameters` type for more details.
+
+| **Parameter**       | **Type**     | **Default Value** | **Description**                                                                                                                                                                                   |
+| ------------------- | ------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `env`               | `Env`        | `prod`            | The environment to use (`prod` or `staging`).                                                                                                                                                     |
+| `partiallyFillable` | `boolean`    | `false`           | Indicates whether the order is fill-or-kill or partially fillable.                                                                                                                                |
+| `slippageBps`       | `number`     | 50                | Slippage tolerance applied to the order to get the limit price. Expressed in Basis Points (BPS). One basis point is equivalent to 0.01% (1/100th of a percent).                                   |
+| `receiver`          | `string`     | order creator     | The address that will receive the order's tokens.                                                                                                                                                 |
+| `validFor`          | `number`     | 30 mins           | The order expiration time in seconds.                                                                                                                                                             |
+| `partnerFee`        | `PartnerFee` | -                 | Partners of the protocol can specify their fee for the order, including the fee in basis points (BPS) and the fee recipient address. [Read more](https://docs.cow.fi/governance/fees/partner-fee) |
+
+##### Example
+
+```typescript
+import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
+
+// Proper adapter initialization (see setup example above)
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const parameters: TradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000',
+  // Optional parameters
+  slippageBps: 200, // 2%
+  validFor: 1200, // 20 mins
+  receiver: '0xdef1ca1fb7f1232777520aa7f396b4e015f497ab', // Just a random address, don't use it!
+}
+
+const { orderId } = await sdk.postSwapOrder(parameters)
+
+console.log('Order created, id: ', orderId)
+```
+
+### Advanced swap order creation
+
+By default, the SDK requires only the basic parameters to create an order.
+However, you can provide additional parameters to customize the order creation.
+
+#### Swap
+
+1. `quoteRequest` - the quote request object. It is used to get a quote from the quote API ([read more](https://docs.cow.fi/cow-protocol/reference/sdks/cow-sdk/modules#orderquoterequest))
+2. `appData` - the order's metadata ([read more](https://docs.cow.fi/cow-protocol/reference/sdks/app-data/modules#appdataparams))
+
+##### Example
+
+```typescript
+import {
+  SupportedChainId,
+  OrderKind,
+  TradeParameters,
+  TradingSdk,
+  SwapAdvancedSettings,
+  PriceQuality,
+} from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
+
+// Proper adapter initialization (see setup example above)
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const parameters: TradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000',
+}
+
+const advancedSettings: SwapAdvancedSettings = {
+  quoteRequest: {
+    priceQuality: PriceQuality.FAST,
+    validFor: 120,
+  },
+  appData: {
+    hooks: {
+      version: 1,
+      pre: [
+        {
+          target: '0xdef1ca1fb7fbcdc777520aa7f396b4e015f497ab',
+          callData: '0x70a08231000000000000000000000000d8da6bf26964af9d7eed9e03e53415d37aa96045',
+          gasLimit: 21000,
+        },
+      ],
+    },
+  },
+}
+const { orderId } = await sdk.postSwapOrder(parameters, advancedSettings)
+
+console.log('Order created, id: ', orderId)
+```
+
+#### Limit order
+
+Same as for the swap order but without the `quoteRequest` parameter.
+
+## Order Management
+
+The SDK provides methods to manage existing orders, including retrieving order details and canceling orders.
+
+### getOrder
+
+Fetches details about an existing order by its UID.
+
+**Parameters:**
+- `orderUid` - The unique identifier of the order
+- `chainId` - (Optional) Chain ID, uses trader params if not provided
+
+**Returns:** `Promise<EnrichedOrder>` - Full order details including status, amounts, and metadata
+
+#### Example
+
+```typescript
+import { TradingSdk } from '@cowprotocol/sdk-trading'
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.MAINNET,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const orderUid = '0xd64389693b6cf89ad6c140a113b10df08073e5ef3063d05a02f3f42e1a42f0ad...'
+
+const order = await sdk.getOrder({ orderUid })
+
+console.log('Order status:', order.status)
+console.log('Sell amount:', order.sellAmount)
+console.log('Buy amount:', order.buyAmount)
+```
+
+### offChainCancelOrder
+
+Cancels an order off-chain by sending a signed cancellation request to the order book API. This is a "soft cancel" that is faster and doesn't require gas, but requires order book support.
+
+You always can cancel orders using [CoW Swap](https://swap.cow.fi), [see the tutorial for more details](https://docs.cow.fi/cow-protocol/tutorials/cow-swap/swap#cancel-your-order).
+
+**Parameters:**
+- `orderUid` - The unique identifier of the order to cancel
+- `chainId` - (Optional) Chain ID, uses trader params if not provided
+- `signer` - (Optional) Custom signer, uses trader params signer if not provided
+
+**Returns:** `Promise<boolean>` - True if cancellation was successful
+
+#### Example
+
+```typescript
+import { TradingSdk } from '@cowprotocol/sdk-trading'
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.MAINNET,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const orderUid = '0xd64389693b6cf89ad6c140a113b10df08073e5ef3063d05a02f3f42e1a42f0ad...'
+
+const success = await sdk.offChainCancelOrder({ orderUid })
+
+if (success) {
+  console.log('Order cancelled successfully (off-chain)')
+}
+```
+
+### onChainCancelOrder
+
+Cancels an order on-chain by sending a transaction to invalidate it. This is a "hard cancel" that requires gas but guarantees cancellation. Automatically detects whether to use the Settlement contract or EthFlow contract based on order type.
+
+**Parameters:**
+- `orderUid` - The unique identifier of the order to cancel
+- `chainId` - (Optional) Chain ID, uses trader params if not provided
+- `signer` - (Optional) Custom signer, uses trader params signer if not provided
+
+**Returns:** `Promise<string>` - Transaction hash of the cancellation
+
+#### Example
+
+```typescript
+import { TradingSdk } from '@cowprotocol/sdk-trading'
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.MAINNET,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const orderUid = '0xd64389693b6cf89ad6c140a113b10df08073e5ef3063d05a02f3f42e1a42f0ad...'
+
+const txHash = await sdk.onChainCancelOrder({ orderUid })
+
+console.log('Cancellation transaction:', txHash)
+```
+
+## Token Approval
+
+Before trading ERC-20 tokens, you need to approve the CoW Protocol to spend them. The SDK provides methods to check and manage token approvals.
+
+### getCowProtocolAllowance
+
+Checks the current allowance for the CoW Protocol Vault Relayer to spend an ERC-20 token.
+
+**Parameters:**
+- `tokenAddress` - The ERC-20 token contract address
+- `owner` - The address of the token owner
+- `chainId` - (Optional) Chain ID, uses trader params if not provided
+
+**Returns:** `Promise<bigint>` - Current allowance amount
+
+#### Example
+
+```typescript
+import { TradingSdk } from '@cowprotocol/sdk-trading'
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.MAINNET,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' // USDC
+const owner = '0x...' // Your wallet address
+
+const allowance = await sdk.getCowProtocolAllowance({
+  tokenAddress,
+  owner,
+})
+
+console.log('Current allowance:', allowance.toString())
+```
+
+### approveCowProtocol
+
+Approves the CoW Protocol Vault Relayer to spend a specified amount of an ERC-20 token. This creates an on-chain approval transaction.
+
+**Parameters:**
+- `tokenAddress` - The ERC-20 token contract address
+- `amount` - The amount to approve (as bigint)
+- `chainId` - (Optional) Chain ID, uses trader params if not provided
+- `signer` - (Optional) Custom signer, uses trader params signer if not provided
+
+**Returns:** `Promise<string>` - Transaction hash of the approval
+
+#### Example
+
+```typescript
+import { TradingSdk } from '@cowprotocol/sdk-trading'
+import { parseUnits } from 'viem' // or ethers
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.MAINNET,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' // USDC
+const amount = parseUnits('1000', 6) // 1000 USDC (6 decimals)
+
+const txHash = await sdk.approveCowProtocol({
+  tokenAddress,
+  amount,
+})
+
+console.log('Approval transaction:', txHash)
+```
+
+#### Smart Approval Flow
+
+It's recommended to check the current allowance before approving to avoid unnecessary transactions:
+
+```typescript
+import { TradingSdk } from '@cowprotocol/sdk-trading'
+import { parseUnits } from 'viem'
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.MAINNET,
+  appCode: '<YOUR_APP_CODE>',
+}, {}, adapter)
+
+const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' // USDC
+const owner = '0x...' // Your wallet address
+const requiredAmount = parseUnits('1000', 6) // 1000 USDC
+
+// Check current allowance
+const currentAllowance = await sdk.getCowProtocolAllowance({
+  tokenAddress,
+  owner,
+})
+
+// Only approve if needed
+if (currentAllowance < requiredAmount) {
+  const txHash = await sdk.approveCowProtocol({
+    tokenAddress,
+    amount: requiredAmount,
+  })
+  console.log('Approval transaction:', txHash)
+} else {
+  console.log('Sufficient allowance already exists')
+}
+```

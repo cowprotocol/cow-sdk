@@ -1,0 +1,133 @@
+import { TTLCache } from '@cowprotocol/sdk-common'
+import { TokenInfo } from '@cowprotocol/sdk-config'
+import { MultiQuoteResult, BestQuoteProviderContext, DefaultBridgeProvider } from '../../types'
+import { TradingSdk } from '@cowprotocol/sdk-trading'
+import {
+  createBridgeRequestTimeoutPromise,
+  executeProviderQuotes,
+  isBetterError,
+  isBetterQuote,
+  resolveProvidersToQuery,
+  safeCallBestQuoteCallback,
+  validateCrossChainRequest,
+} from '../utils'
+import { getQuoteWithBridge } from '../getQuoteWithBridge'
+import { BaseBestQuoteStrategy, MultiQuoteRequest } from './QuoteStrategy'
+import { BridgeProviderError } from '../../errors'
+
+const DEFAULT_TOTAL_TIMEOUT_MS = 40_000 // 40 seconds
+const DEFAULT_PROVIDER_TIMEOUT_MS = 20_000 // 20 seconds
+
+/**
+ * Strategy for getting the best quote from multiple providers
+ */
+export class BestQuoteStrategy extends BaseBestQuoteStrategy {
+  readonly strategyName = 'BestQuoteStrategy' as const
+
+  constructor(intermediateTokensCache?: TTLCache<TokenInfo[]>) {
+    super(intermediateTokensCache)
+  }
+
+  async execute(
+    request: MultiQuoteRequest,
+    tradingSdk: TradingSdk,
+    providers: DefaultBridgeProvider[],
+  ): Promise<MultiQuoteResult | null> {
+    const { quoteBridgeRequest, providerDappIds, advancedSettings, options } = request
+    const { sellTokenChainId, buyTokenChainId } = quoteBridgeRequest
+
+    // Validate that this is a cross-chain request
+    validateCrossChainRequest(sellTokenChainId, buyTokenChainId)
+
+    // Determine which providers to query
+    const providersToQuery = resolveProvidersToQuery(providerDappIds, providers)
+
+    // Extract options with defaults
+    const {
+      onQuoteResult,
+      totalTimeout = DEFAULT_TOTAL_TIMEOUT_MS,
+      providerTimeout = DEFAULT_PROVIDER_TIMEOUT_MS,
+    } = options || {}
+
+    // Keep track of the current best result and best error using mutable containers
+    const bestResult = { current: null as MultiQuoteResult | null }
+    const bestError = { current: null as MultiQuoteResult | null }
+    const promises: Promise<void>[] = []
+
+    // Create a promise for each provider that handles both progressive callbacks and best result tracking
+    for (const provider of providersToQuery) {
+      const context: BestQuoteProviderContext = {
+        provider,
+        quoteBridgeRequest,
+        advancedSettings,
+        providerTimeout,
+        onQuoteResult,
+        bestResult,
+        bestError,
+      }
+
+      const promise = this.createBestQuoteProviderPromise(context, tradingSdk)
+      promises.push(promise)
+    }
+
+    // Execute all provider quotes with timeout handling
+    await executeProviderQuotes(promises, totalTimeout, providers)
+
+    // Return best result if available, otherwise return best error (highest priority)
+    return bestResult.current || bestError.current
+  }
+
+  private createBestQuoteProviderPromise(context: BestQuoteProviderContext, tradingSdk: TradingSdk): Promise<void> {
+    const { provider, quoteBridgeRequest, advancedSettings, providerTimeout, onQuoteResult, bestResult, bestError } =
+      context
+
+    return (async (): Promise<void> => {
+      try {
+        const baseParams = {
+          swapAndBridgeRequest: quoteBridgeRequest,
+          advancedSettings,
+          tradingSdk,
+          provider,
+          quoteSigner: advancedSettings?.quoteSigner,
+        } as const
+
+        const request = this.intermediateTokensCache
+          ? {
+              ...baseParams,
+              intermediateTokensCache: this.intermediateTokensCache,
+            }
+          : baseParams
+
+        // Race between the actual quote request and the provider timeout
+        const quote = await Promise.race([
+          getQuoteWithBridge(provider, request),
+          createBridgeRequestTimeoutPromise(providerTimeout, `Provider ${provider.info.dappId}`),
+        ])
+
+        const result: MultiQuoteResult = {
+          providerDappId: provider.info.dappId,
+          quote,
+          error: undefined,
+        }
+
+        // Check if this quote is better than the current best
+        if (isBetterQuote(result, bestResult.current)) {
+          bestResult.current = result
+          // Call callback only for better quotes
+          safeCallBestQuoteCallback(onQuoteResult, result)
+        }
+      } catch (error) {
+        const errorResult: MultiQuoteResult = {
+          providerDappId: provider.info.dappId,
+          quote: null,
+          error: error instanceof Error ? error : new BridgeProviderError(String(error), {}),
+        }
+
+        // Store the best error (highest priority) instead of just the first one
+        if (isBetterError(errorResult, bestError.current)) {
+          bestError.current = errorResult
+        }
+      }
+    })()
+  }
+}

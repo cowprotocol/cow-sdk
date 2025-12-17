@@ -1,0 +1,343 @@
+name: Publish to GitHub Packages
+
+on:
+  # Trigger on pull requests (for testing/validation) - only from same repo
+  pull_request:
+    types: [opened, synchronize, reopened]
+  # Trigger on pushes to main branch
+  push:
+    branches:
+      - main
+  # Allow manual triggering
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: lts/jod
+  REGISTRY: npm.pkg.github.com
+  SCOPE: "@cowprotocol"
+
+permissions:
+  contents: read
+  packages: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  publish:
+    name: Publish to GitHub Packages
+    runs-on: ubuntu-latest
+
+    # Security: Only run on internal PRs, main branch pushes, external PRs with explicit approval, or manual triggers
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && (github.event.pull_request.head.repo.full_name == github.repository || contains(github.event.pull_request.labels.*.name, 'allow-publish')))
+
+    steps:
+      - name: Security Check
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            echo "🔒 Checking PR security..."
+            echo "PR from: $REPO_NAME"
+            echo "Target repo: $REPOSITORY"
+
+            # Check if it's an internal PR
+            if [ "$REPO_NAME" = "$REPOSITORY" ]; then
+              echo "✅ Internal PR - proceeding with publish"
+            else
+              # Check for allow-publish label
+              echo "🔍 Checking for 'allow-publish' label..."
+              if echo "$LABELS_JSON" | grep -q '"name":"allow-publish"'; then
+                echo "✅ External PR with 'allow-publish' label - proceeding with publish"
+              else
+                echo "❌ External PR without 'allow-publish' label - skipping publish for security"
+                echo "💡 To enable publishing for this external PR, add the 'allow-publish' label"
+                exit 1
+              fi
+            fi
+          else
+            echo "✅ Push to main branch - proceeding with publish"
+          fi
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REPO_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+          REPOSITORY: ${{ github.repository }}
+          LABELS_JSON: ${{ toJson(github.event.pull_request.labels) }}
+
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.8.0
+        with:
+          access_token: ${{ github.token }}
+
+      - name: Remove broken apt repos [Ubuntu]
+        run: |
+          for apt_file in `grep -lr microsoft /etc/apt/sources.list.d/`; do sudo rm $apt_file; done
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          scope: ${{ env.SCOPE }}
+          always-auth: true
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.8.0
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate code
+        run: pnpm codegen
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Configure npm for GitHub Packages
+        run: |
+          # Override registry for @cowprotocol scope to use GitHub Packages
+          echo "@cowprotocol:registry=https://$REGISTRY" >> ~/.npmrc
+
+          # Always authenticate
+          echo "always-auth=true" >> ~/.npmrc
+
+          # Set auth token
+          echo "//$REGISTRY/:_authToken=$GITHUB_TOKEN" >> ~/.npmrc
+          # Keep default registry as npmjs.org for other packages
+          echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine version strategy
+        id: version
+        run: |
+          COMMIT_HASH=$(echo "$SHA" | cut -c1-8)
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            # For PRs, use PR number + commit hash for uniqueness
+            VERSION_SUFFIX="pr-$PR_NUMBER-$COMMIT_HASH"
+            echo "version_suffix=$VERSION_SUFFIX" >> $GITHUB_OUTPUT
+            echo "tag=pr-$PR_NUMBER" >> $GITHUB_OUTPUT
+            echo "is_pr=true" >> $GITHUB_OUTPUT
+          else
+            # For main branch, use latest tag
+            BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/refs\/heads\///')
+            VERSION_SUFFIX="${BRANCH_NAME}-$COMMIT_HASH"
+            echo "version_suffix=$VERSION_SUFFIX" >> $GITHUB_OUTPUT
+            echo "tag=latest" >> $GITHUB_OUTPUT
+            echo "is_pr=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          SHA: ${{ github.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.number }}
+          BRANCH_NAME: ${{ github.ref }}
+
+      - name: Create pre-release versions
+        run: |
+          # Instead of letting pnpm increment versions, we'll set them explicitly
+          echo "Setting explicit pre-release versions with suffix: $VERSION_SUFFIX"
+
+          find packages -name "package.json" -exec sh -c '
+          VERSION_SUFFIX="$1"
+          for file; do
+            echo "Setting explicit version for $file"
+            cd "$(dirname "$file")"
+
+            # Get the current base version (e.g., "0.1.0")
+            BASE_VERSION=$(grep -o "\"version\":[[:space:]]*\"[^\"]*\"" package.json | sed "s/\"version\":[[:space:]]*\"//" | sed "s/\"//")
+
+            # Create predictable version: base-version + suffix + .0
+            NEW_VERSION="${BASE_VERSION}-${VERSION_SUFFIX}.0"
+
+            # Update the version directly in package.json
+            sed -i "s/\"version\":[[:space:]]*\"[^\"]*\"/\"version\": \"$NEW_VERSION\"/" package.json
+
+            echo "  Updated to version: $NEW_VERSION"
+            cd - > /dev/null
+          done
+          ' _ "$VERSION_SUFFIX" {} \;
+
+          # Now update all workspace dependencies to use the predictable versions
+          echo "Updating workspace dependencies to use consistent versions..."
+          find packages -name "package.json" -exec sh -c '
+          VERSION_SUFFIX="$1"
+          for file; do
+            echo "Updating dependencies in $file"
+            # Get the current version from this package
+            CURRENT_VERSION=$(grep -o "\"version\":[[:space:]]*\"[^\"]*\"" "$file" | sed "s/\"version\":[[:space:]]*\"//" | sed "s/\"//")
+
+            # Extract the base version (everything before the first dash)
+            BASE_VERSION=$(echo "$CURRENT_VERSION" | cut -d'-' -f1)
+
+            # Update all @cowprotocol workspace dependencies to use the predictable version format
+            sed -i "s/@cowprotocol\/\([^:]*\): workspace:\*/@cowprotocol\/\1: ${BASE_VERSION}-${VERSION_SUFFIX}.0/g" "$file"
+          done
+          ' _ "$VERSION_SUFFIX" {} \;
+        env:
+          VERSION_SUFFIX: ${{ steps.version.outputs.version_suffix }}
+          FILE: ${{ steps.version.outputs.file }}
+
+      - name: Publish packages to GitHub Packages
+        run: |
+          # Publish all packages and capture versions
+          echo "Publishing packages..."
+          pnpm publish -r --filter="./packages/**" --tag $TAG --no-git-checks --access public > publish_output.txt 2>&1
+
+          # Show the actual publish output for debugging
+          echo "=== Full publish output ==="
+          cat publish_output.txt
+
+          # Extract published versions and remove duplicates
+          echo "=== Extracting published versions ==="
+          grep -o '@cowprotocol/[^@]*@[0-9][^[:space:]]*' publish_output.txt | sort -u > published_versions.txt
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
+
+      - name: Restore original versions
+        run: |
+          # Restore original package.json versions
+          git checkout -- packages/*/package.json
+
+      - name: Update PR comment with package info
+        if: steps.version.outputs.is_pr == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prVersion = process.env.VERSION_SUFFIX;
+            const tag = process.env.TAG;
+            const fullName = process.env.FULL_NAME;
+            const repository = process.env.REPOSITORY;
+            const registry = process.env.REGISTRY;
+
+            if (!prVersion || !tag || !fullName || !repository || !registry) {
+              console.log('Missing environment variables');
+              process.exit(1);
+            }
+
+            const isExternalPR = fullName !== repository;
+
+            // Read published versions from file
+            const fs = require('fs');
+            let publishedVersions = [];
+            try {
+              const versionsContent = fs.readFileSync('published_versions.txt', 'utf8');
+              publishedVersions = versionsContent.trim().split('\n').filter(line => line.trim());
+            } catch (error) {
+              console.log('Could not read published versions file');
+              process.exit(1);
+            }
+
+            const now = new Date().toISOString();
+            const timestamp = new Date(now).toLocaleString('en-US', {
+              timeZone: 'UTC',
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              timeZoneName: 'short'
+            });
+
+            const commentBody = `## 📦 GitHub Packages Published
+            **Last updated:** ${timestamp}
+
+            The following packages have been published to GitHub Packages with pre-release version \`${prVersion}\`:
+
+            ${publishedVersions.map(pkg => `- \`${pkg}\``).join('\n')}
+
+            ${isExternalPR ? '> **Note:** This is an external PR with the \`allow-publish\` label enabled.' : ''}
+
+            ---
+
+            ### Installation
+
+            These packages require authentication to install from GitHub Packages. First, create a \`.npmrc\` file:
+
+            \`\`\`bash
+            # Create .npmrc file in your project root
+            echo "@cowprotocol:registry=https://${registry}" > .npmrc
+            echo "//${registry}/:_authToken=YOUR_GITHUB_TOKEN" >> .npmrc
+            \`\`\`
+
+            **To get your GitHub token:**
+            1. Go to https://github.com/settings/tokens
+            2. Click "Generate new token (classic)"
+            3. Check only the "read:packages" scope
+            4. Copy the token and replace \`YOUR_GITHUB_TOKEN\` in the \`.npmrc\` file
+
+            Then install any of the packages above, either by exact version (i.e. \`${publishedVersions[0]}\`) or more conveniently by using the tag (\`@cowprotocol/cow-sdk@${tag}\`):
+            \`\`\`bash
+            # Yarn
+            yarn add npm:@cowprotocol/cow-sdk@${tag}
+
+            # pnpm
+            pnpm install npm:@cowprotocol/cow-sdk@${tag}
+
+            # NPM
+            npm install npm:@cowprotocol/cow-sdk@${tag}
+            \`\`\`
+
+
+            ## Update to the latest version (only if you used the tag)
+            Every commit will publish a new package. To upgrade to the latest version, run:
+
+            \`\`\`bash
+            # Yarn
+            yarn upgrade @cowprotocol/cow-sdk
+
+            # pnpm
+            pnpm update @cowprotocol/cow-sdk
+
+            # NPM
+            npm update @cowprotocol/cow-sdk
+            \`\`\`
+
+            ### View Packages
+
+            You can view the published packages at: https://github.com/cowprotocol/cow-sdk/packages`;
+
+            // Find existing comment from this workflow
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+
+            const existingComment = comments.data.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('📦 GitHub Packages Published')
+            );
+
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: commentBody
+              });
+              console.log('Updated existing comment');
+            } else {
+              // Create new comment if none exists
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+              console.log('Created new comment');
+            }
+        env:
+          VERSION_SUFFIX: ${{ steps.version.outputs.version_suffix }}
+          FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+          REPOSITORY: ${{ github.repository }}
+          TAG: ${{ steps.version.outputs.tag }}

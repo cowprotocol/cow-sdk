@@ -1,0 +1,86 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "node",
+  "include-component-in-tag": true,
+  "tag-separator": "-",
+  "packages": {
+    "packages/app-data": {
+      "package-name": "@cowprotocol/sdk-app-data",
+      "release-type": "node"
+    },
+    "packages/bridging": {
+      "package-name": "@cowprotocol/sdk-bridging",
+      "release-type": "node"
+    },
+    "packages/common": {
+      "package-name": "@cowprotocol/sdk-common",
+      "release-type": "node"
+    },
+    "packages/composable": {
+      "package-name": "@cowprotocol/sdk-composable",
+      "release-type": "node"
+    },
+    "packages/config": {
+      "package-name": "@cowprotocol/sdk-config",
+      "release-type": "node"
+    },
+    "packages/contracts-ts": {
+      "package-name": "@cowprotocol/sdk-contracts-ts",
+      "release-type": "node"
+    },
+    "packages/cow-shed": {
+      "package-name": "@cowprotocol/sdk-cow-shed",
+      "release-type": "node"
+    },
+    "packages/flash-loans": {
+      "package-name": "@cowprotocol/sdk-flash-loans",
+      "release-type": "node"
+    },
+    "packages/order-book": {
+      "package-name": "@cowprotocol/sdk-order-book",
+      "release-type": "node"
+    },
+    "packages/order-signing": {
+      "package-name": "@cowprotocol/sdk-order-signing",
+      "release-type": "node"
+    },
+    "packages/subgraph": {
+      "package-name": "@cowprotocol/sdk-subgraph",
+      "release-type": "node"
+    },
+    "packages/trading": {
+      "package-name": "@cowprotocol/sdk-trading",
+      "release-type": "node"
+    },
+    "packages/weiroll": {
+      "package-name": "@cowprotocol/sdk-weiroll",
+      "release-type": "node"
+    },
+    "packages/providers/ethers-v5-adapter": {
+      "package-name": "@cowprotocol/sdk-ethers-v5-adapter",
+      "release-type": "node"
+    },
+    "packages/providers/ethers-v6-adapter": {
+      "package-name": "@cowprotocol/sdk-ethers-v6-adapter",
+      "release-type": "node"
+    },
+    "packages/providers/viem-adapter": {
+      "package-name": "@cowprotocol/sdk-viem-adapter",
+      "release-type": "node"
+    },
+    "packages/sdk": {
+      "package-name": "@cowprotocol/cow-sdk",
+      "release-type": "node"
+    }
+  },
+  "plugins": ["node-workspace"],
+  "changelog-sections": [
+    { "type": "feat", "section": "✨ Features" },
+    { "type": "fix", "section": "🐛 Bug Fixes" },
+    { "type": "perf", "section": "⚡ Performance" },
+    { "type": "refactor", "section": "♻️ Refactoring" },
+    { "type": "docs", "section": "📚 Documentation" },
+    { "type": "test", "section": "🧪 Tests" },
+    { "type": "chore", "section": "🔧 Miscellaneous", "hidden": false }
+  ]
+}

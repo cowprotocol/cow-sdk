@@ -1,0 +1,526 @@
+import type { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
+import type { Address, Amounts, EnrichedOrder, OrderKind } from '@cowprotocol/sdk-order-book'
+import type { EvmCall, TokenInfo, ChainInfo, SupportedChainId, TargetChainId, ChainId } from '@cowprotocol/sdk-config'
+import type {
+  OrderPostingResult,
+  QuoteAndPost,
+  QuoteResults,
+  QuoterParameters,
+  SigningStepManager,
+  SwapAdvancedSettings,
+  TradeOptionalParameters,
+  TraderParameters,
+} from '@cowprotocol/sdk-trading'
+import type { AccountAddress, SignerLike, TTLCache } from '@cowprotocol/sdk-common'
+
+export type BridgeProviderType = 'ReceiverAccountBridgeProvider' | 'HookBridgeProvider'
+
+export interface BridgeProviderInfo {
+  name: string
+  logoUrl: string
+  dappId: string
+  website: string
+  type: BridgeProviderType
+}
+
+interface WithSellToken {
+  sellTokenChainId: SupportedChainId
+  sellTokenAddress: Address
+  sellTokenDecimals: number
+}
+
+interface WithBuyToken {
+  buyTokenChainId: TargetChainId
+  buyTokenAddress: Address
+  buyTokenDecimals: number
+}
+
+type WithQuoter = Omit<QuoterParameters, 'chainId'>
+type WithTrader = Pick<TraderParameters, 'signer'>
+
+/**
+ * Parameters for getting a bridge quote
+ */
+export type QuoteBridgeRequest = {
+  kind: OrderKind
+  amount: bigint
+  owner?: AccountAddress
+} & WithSellToken &
+  WithBuyToken &
+  WithQuoter &
+  WithTrader &
+  TradeOptionalParameters
+
+export type QuoteBridgeRequestWithoutAmount = Omit<QuoteBridgeRequest, 'amount'>
+
+export interface BridgeQuoteResult {
+  /**
+   * Unique ID of a quote
+   */
+  id?: string
+  /**
+   * Provider who implement ReceiverAccountBridgeProvider must return a signature of a quote than will be used to verify the quote deposit address validity
+   */
+  signature?: string
+  /**
+   * Whether the quote is a sell or buy order.
+   */
+  isSell: boolean
+
+  /**
+   * Costs and amounts of the bridging.
+   */
+  amountsAndCosts: BridgeQuoteAmountsAndCosts
+
+  /**
+   * The estimated time in seconds it takes to fill the order.
+   */
+  expectedFillTimeSeconds?: number
+
+  /**
+   * The timestamp of the quote.
+   */
+  quoteTimestamp: number
+
+  fees: {
+    /**
+     * The amount that should go to the relayer as a fee to cover relayer capital costs.
+     * In token atoms.
+     */
+    bridgeFee: bigint
+    /**
+     * The amount that should go to the relayer as a fee to cover relayer gas costs.
+     * In token atoms.
+     */
+    destinationGasFee: bigint
+  }
+
+  limits: {
+    /**
+     * The minimum amount that should be deposited in the source chain.
+     * In token atoms.
+     */
+    minDeposit: bigint
+    /**
+     * The maximum amount that can be deposited in the source chain.
+     * In token atoms.
+     */
+    maxDeposit: bigint
+  }
+}
+
+export interface BridgeHook {
+  postHook: latestAppData.CoWHook
+  recipient: string
+}
+
+export enum BridgeStatus {
+  IN_PROGRESS = 'in_progress',
+  EXECUTED = 'executed',
+  EXPIRED = 'expired',
+  REFUND = 'refund',
+  UNKNOWN = 'unknown',
+}
+
+export interface BridgeStatusResult {
+  status: BridgeStatus
+  fillTimeInSeconds?: number
+  /**
+   * Transaction hash of the deposit on the origin chain.
+   */
+  depositTxHash?: string
+  /**
+   * Transaction hash of the fill on the destination chain.
+   * Only present when fillStatus is 'filled'.
+   */
+  fillTxHash?: string
+}
+
+/**
+ * When sellChainId and/or sellTokenAddress are specified
+ * then the buy tokens list will be additionally filtered
+ */
+export interface BuyTokensParams {
+  buyChainId: TargetChainId
+  sellChainId?: SupportedChainId
+  sellTokenAddress?: string
+}
+
+export interface GetProviderBuyTokens {
+  tokens: TokenInfo[]
+  isRouteAvailable: boolean
+}
+
+/**
+ * A bridge deposit. It includes the provideer information, sell amount and the minimum buy amount.
+ *
+ * It models the minimal information for a bridging order.
+ *
+ */
+export interface BridgeDeposit extends Omit<QuoteBridgeRequest, 'amount'> {
+  readonly provider: BridgeProviderInfo
+
+  sellTokenAmount: string
+  minBuyAmount: string
+}
+
+/**
+ * Main interface for a bridge provider.
+ *
+ * It contains the main information about the provider, and the methods to get the quote, the bridging params, the status, the cancelling and the refunding of the bridging.
+ */
+export interface BridgeProvider<Q extends BridgeQuoteResult> {
+  type: BridgeProviderType
+
+  info: BridgeProviderInfo
+  /**
+   * Get basic supported chains
+   */
+  getNetworks(): Promise<ChainInfo[]>
+
+  /**
+   * Get supported tokens for a chain
+   */
+  getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens>
+
+  /**
+   * Get intermediate tokens given a quote request.
+   *
+   * An intermediate token, is a token in the source chain, that could be used to bridge the tokens to the destination chain.
+   * This method returns a sorted list of tokens, they are sorted by priority, so first tokens are more likely to be more liquid.
+   *
+   * @param request - The quote request
+   */
+  getIntermediateTokens(request: QuoteBridgeRequest): Promise<TokenInfo[]>
+
+  /**
+   * Get a quote for a bridge request.
+   *
+   * @param request - The quote request
+   */
+  getQuote(request: QuoteBridgeRequest): Promise<Q>
+
+  /**
+   * Get the identifier of the bridging transaction from the settlement transaction.
+   * @param chainId
+   * @param order - CoW Protocol order
+   * @param txHash - The hash of the settlement transaction in which the bridging post-hook was executed
+   */
+  getBridgingParams(
+    chainId: ChainId,
+    order: EnrichedOrder,
+    txHash: string,
+  ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null>
+
+  /**
+   * Get the explorer url for a bridging id.
+   *
+   * @param bridgingId - The bridging id
+   */
+  getExplorerUrl(bridgingId: string): string
+
+  /**
+   * Get the status of a bridging transaction.
+   *
+   * @param bridgingId - The bridging id
+   * @param originChainId - id of network where funds were deposited
+   */
+  getStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult>
+
+  // Get a transaction to cancel a bridging transaction.
+  // TODO: Review if we support cancelling bridging
+  getCancelBridgingTx(bridgingId: string): Promise<EvmCall>
+
+  // Get a transaction to refund a bridging transaction.
+  // TODO: Review if we support refunding bridging
+  getRefundBridgingTx(bridgingId: string): Promise<EvmCall>
+}
+
+/**
+ * A basic bridge provider that relies on sending the tokens to a specific account.
+ * This provider doesn't rely on hooks to initiate the bridge.
+ */
+export interface ReceiverAccountBridgeProvider<Q extends BridgeQuoteResult> extends BridgeProvider<Q> {
+  type: 'ReceiverAccountBridgeProvider'
+
+  /**
+   * Get the receiver account to where the tokens will be sent in the source chain so they are automatically bridged to the destination chain.
+   *
+   * @param quoteRequest - The quote request
+   * @param quoteResult - The quote result
+   * @returns The receiver account
+   */
+  getBridgeReceiverOverride(quoteRequest: QuoteBridgeRequest, quoteResult: Q): Promise<string>
+}
+
+/**
+ * A bridge provider that uses a hook to initiate the bridge.
+ *
+ */
+export interface HookBridgeProvider<Q extends BridgeQuoteResult> extends BridgeProvider<Q> {
+  type: 'HookBridgeProvider'
+
+  /**
+   * Get an unsigned bridge call for a quote.
+   *
+   * The transaction details should be executed in the context of cow-shed account.
+   *
+   * @param request - The quote request
+   * @param quote - The quote
+   * @returns The unsigned transaction details that cow-shed needs to sign
+   */
+  getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: Q): Promise<EvmCall>
+
+  /**
+   * Returns the estimated gas cost for executing the bridge hook.
+   *
+   * This method helps calculate the final amount of tokens the user will receive more accurately.
+   * The estimation is done without the amount parameter to break a circular dependency:
+   * 1. Hook gas costs affect the final amount
+   * 2. The final amount could affect hook gas costs
+   *
+   * By estimating gas costs independently, we can resolve this dependency cycle.
+   * For some providers, the `extraGas` parameter adds additional gas‐unit buffer to the hook
+   * and `extraGasProxyCreation` parameter adds additional gas‐unit buffer for the proxy creation
+   * (see DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION and DEFAULT_EXTRA_GAS_PROXY_CREATION).
+   */
+  getGasLimitEstimationForHook(
+    request: Omit<QuoteBridgeRequest, 'amount'> & { extraGas?: number; extraGasProxyCreation?: number },
+  ): Promise<number>
+
+  /**
+   * Get a pre-authorized hook for initiating a bridge.
+   *
+   * The hook contains the ethereum call that the trampoline contract will need to execute during the settlement to initate the bridge.
+   *
+   * Typically, this hook will:
+   *  - Get the balance of cow-shed account
+   *  - Ensure the approval for the bridge lock contract is set
+   *  - Deposit into  the bridge contract
+   *
+   * This hook will include the pre-authorization (signature) of the owner of the cow-shed account (the trader).
+   */
+  getSignedHook(
+    chainId: SupportedChainId,
+    unsignedCall: EvmCall,
+    bridgeHookNonce: string,
+    deadline: bigint,
+    hookGasLimit: number,
+    signer?: SignerLike,
+  ): Promise<BridgeHook>
+
+  /**
+   * Decode a bridge hook into a bridge deposit information.
+   *
+   * This method is used to recover the information about the limit order placed into the bridge locking contract.
+   * This allows to load an order from the orderbook and decode the bridging hook and understand what was the minimum buy amount the user signed to receive in the destination chain.
+   *
+   * @param hook - The bridge hook
+   */
+  decodeBridgeHook(hook: latestAppData.CoWHook): Promise<BridgeDeposit>
+}
+
+/**
+ * A quote and post for a cross-chain swap.
+ *
+ * If the order happens in a single chain, it returns the quote and post details for CoW Protocol.
+ * If the order happens in multiple chains, it returns the quote and post details for CoW Protocol, the bridging
+ * details, and a summary of the overall multi-step order.
+ */
+export type CrossChainQuoteAndPost = QuoteAndPost | BridgeQuoteAndPost
+
+export interface BridgeQuoteAndPost {
+  /**
+   * The quote results for the CoW Protocol order.
+   */
+  swap: QuoteResults
+
+  /**
+   * The quote results for the bridging.
+   *
+   * Includes the bridging details.
+   */
+  bridge: BridgeQuoteResults
+
+  /**
+   * Callback to post the swap order.
+   */
+  postSwapOrderFromQuote(
+    advancedSettings?: SwapAdvancedSettings,
+    signingStepManager?: SigningStepManager,
+  ): Promise<OrderPostingResult>
+}
+
+export interface BridgeCosts<T = bigint> {
+  bridgingFee: {
+    feeBps: number
+    amountInSellCurrency: T
+    amountInBuyCurrency: T
+  }
+
+  // TODO: I could see here some additional flags that might be useful in the UI, but as this is a prototype. Leaving it until we get some experience with bridging. Leaving it as comments for future consideration.
+  // needToClaimInDestinationChain: boolean
+  // automaticRefundOnExpiration: boolean
+  // automaticRefundOnFailure: boolean
+}
+
+export interface BridgeQuoteAmountsAndCosts<T = bigint> {
+  /**
+   * Costs of the bridging.
+   */
+  costs: BridgeCosts<T>
+
+  /**
+   * Amounts before fees
+   */
+  beforeFee: Amounts<T>
+
+  /**
+   * Amounts after fees.
+   */
+  afterFee: Amounts<T>
+
+  /**
+   * Amounts after slippage tolerance.
+   *
+   * It includes the fees and the slippage tolerance, so its the minimum amount that the user will receive.
+   */
+  afterSlippage: Amounts<T>
+
+  /**
+   * The slippage tolerance in basis points.
+   */
+  slippageBps: number
+}
+
+/**
+ * Details about the bridge call.
+ */
+export interface BridgeCallDetails {
+  /**
+   * Unsigned call to initiate the bridge. This call should be executed in the context of user's cow-shed account.
+   */
+  unsignedBridgeCall: EvmCall
+
+  /**
+   * Pre-authorized hook to initiate the bridge. This hook has been signed, and is ready to be executed by the
+   * CoW Protocol Trampoline contract after settling the swap order that buys the intermediate token.
+   */
+  preAuthorizedBridgingHook: BridgeHook
+}
+
+export interface BridgeQuoteResults extends BridgeQuoteResult {
+  /**
+   * Bridge provider information
+   */
+  providerInfo: BridgeProviderInfo
+
+  /**
+   * Trade parameters
+   */
+  tradeParameters: QuoteBridgeRequest
+
+  /**
+   * Bridge call details
+   */
+  bridgeCallDetails?: BridgeCallDetails
+
+  /**
+   * Bridge recipient override
+   */
+  bridgeReceiverOverride?: string
+}
+
+export interface BridgingDepositParams {
+  inputTokenAddress: Address
+  outputTokenAddress: Address
+  inputAmount: bigint
+  outputAmount: bigint | null
+  owner: Address
+  quoteTimestamp: number | null
+  fillDeadline: number | null
+  recipient: Address
+  sourceChainId: number
+  destinationChainId: number
+  bridgingId: string
+}
+
+export interface CrossChainOrder {
+  provider: BridgeProvider<BridgeQuoteResult>
+  chainId: SupportedChainId
+  order: EnrichedOrder
+  statusResult: BridgeStatusResult
+  bridgingParams: BridgingDepositParams
+  tradeTxHash: string
+  explorerUrl?: string
+}
+
+export interface MultiQuoteResult {
+  providerDappId: string
+  quote: BridgeQuoteAndPost | null
+  error?: Error
+}
+
+/**
+ * Callback function called when a quote result is available from a provider
+ */
+export type MultiQuoteProgressCallback = (result: MultiQuoteResult) => void
+
+/**
+ * Callback function called when a better quote is found
+ */
+export type BestQuoteProgressCallback = (result: MultiQuoteResult) => void
+
+/**
+ * Options for controlling the behavior of getMultiQuotes
+ */
+export interface MultiQuoteOptions {
+  /**
+   * Callback function called as soon as each provider returns a result
+   * Allows for progressive display of quotes without waiting for all providers
+   */
+  onQuoteResult?: MultiQuoteProgressCallback
+
+  /**
+   * Maximum time to wait for all providers to respond (in milliseconds)
+   * Default: 40000 (40 seconds)
+   */
+  totalTimeout?: number
+
+  /**
+   * Maximum time to wait for each individual provider to respond (in milliseconds)
+   * If a provider takes longer than this, it will be considered timed out
+   * Default: 20000 (20 seconds)
+   */
+  providerTimeout?: number
+}
+
+// duplicate of packages/bridging/src/BridgingSdk/strategies/QuoteStrategy.ts
+export interface MultiQuoteRequest {
+  quoteBridgeRequest: QuoteBridgeRequest
+  intermediateTokensCache?: TTLCache<TokenInfo[]>
+  intermediateTokensTtl?: number
+  providerDappIds?: string[]
+  advancedSettings?: SwapAdvancedSettings
+  options?: MultiQuoteOptions
+}
+
+interface MultiQuoteContext {
+  provider: BridgeProvider<BridgeQuoteResult>
+  quoteBridgeRequest: QuoteBridgeRequest
+  advancedSettings: SwapAdvancedSettings | undefined
+  providerTimeout: number
+  onQuoteResult: MultiQuoteProgressCallback | undefined
+}
+
+export interface ProviderQuoteContext extends MultiQuoteContext {
+  results: MultiQuoteResult[]
+  index: number
+}
+
+export interface BestQuoteProviderContext extends MultiQuoteContext {
+  bestResult: { current: MultiQuoteResult | null }
+  bestError: { current: MultiQuoteResult | null }
+}
+
+export type DefaultBridgeProvider = BridgeProvider<BridgeQuoteResult>

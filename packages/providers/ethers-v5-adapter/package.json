@@ -1,0 +1,37 @@
+{
+  "name": "@cowprotocol/sdk-ethers-v5-adapter",
+  "version": "0.3.0",
+  "description": "Ethers v5 adapter for CoW Protocol SDK",
+  "main": "dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "dev": "tsup src/index.ts --format esm,cjs --watch --dts",
+    "lint": "eslint src/**/*.ts",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@cowprotocol/sdk-common": "workspace:*"
+  },
+  "peerDependencies": {
+    "@ethersproject/abstract-signer": "^5.8.0",
+    "@typechain/ethers-v5": "^11.1.2",
+    "ethers": "^5.7.2"
+  },
+  "devDependencies": {
+    "@cow-sdk/typescript-config": "workspace:*",
+    "@types/node": "^20.5.2",
+    "tsup": "^7.2.0",
+    "typescript": "^5.2.2"
+  }
+}
