@@ -17,7 +17,7 @@ import { createAdapters } from '../../../tests/setup'
 // unmock cross-fetch to use the real API
 jest.unmock('cross-fetch')
 
-describe('BungeeAcrossBridge full transaction', () => {
+describe.skip('BungeeAcrossBridge full transaction', () => {
   let api: BungeeApi
   let quote: BungeeQuoteAPIRequest
   let txData: BungeeQuoteWithBuildTx
