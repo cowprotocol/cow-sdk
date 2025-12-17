@@ -211,26 +211,6 @@ export const decodeAmountsBungeeTxData = (txData: string, bridge: BungeeBridge) 
   )}`
   const inputAmountBigNumber = BigInt(inputAmountBytes)
 
-  // decode output amount if available
-  // check if output amount is available
-  if (bridge === BungeeBridge.Across) {
-    const acrossBridgeIndices = BungeeTxDataBytesIndices[bridge][functionSelector]
-    if (!acrossBridgeIndices) {
-      throw new Error(`Unsupported bridge type: ${bridge}`)
-    }
-
-    const outputAmountBytes = `0x${txData.slice(
-      acrossBridgeIndices.outputAmount.bytesString_startIndex,
-      acrossBridgeIndices.outputAmount.bytesString_startIndex + acrossBridgeIndices.outputAmount.bytesString_length,
-    )}`
-    const outputAmountBigNumber = BigInt(outputAmountBytes)
-    return {
-      inputAmountBytes,
-      inputAmountBigNumber,
-      outputAmountBytes,
-      outputAmountBigNumber,
-    }
-  }
   return {
     inputAmountBytes,
     inputAmountBigNumber,
