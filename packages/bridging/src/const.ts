@@ -8,3 +8,5 @@ export const DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION = 200_000
 export const COW_SHED_PROXY_CREATION_GAS = 360_000
 export const DEFAULT_EXTRA_GAS_PROXY_CREATION = 400_000
 export const HOOK_DAPP_BRIDGE_PROVIDER_PREFIX = 'cow-sdk://bridging/providers'
+
+export const DEFAULT_BRIDGE_SLIPPAGE_BPS = 50 // 0.5%

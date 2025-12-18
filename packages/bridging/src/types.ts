@@ -49,7 +49,8 @@ export type QuoteBridgeRequest = {
   WithBuyToken &
   WithQuoter &
   WithTrader &
-  TradeOptionalParameters
+  Omit<TradeOptionalParameters, 'slippageBps'> &
+  Partial<{ swapSlippageBps: latestAppData.SlippageBips; bridgeSlippageBps: latestAppData.SlippageBips }>
 
 export type QuoteBridgeRequestWithoutAmount = Omit<QuoteBridgeRequest, 'amount'>
 

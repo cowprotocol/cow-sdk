@@ -163,7 +163,7 @@ async function getIntermediateTokens<T extends BridgeQuoteResult>(params: {
   return intermediateTokens
 }
 
-async function getSwapQuote(params: {
+export async function getSwapQuote(params: {
   swapAndBridgeRequest: QuoteBridgeRequest
   bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount
   tradingSdk: TradingSdk
@@ -177,7 +177,9 @@ async function getSwapQuote(params: {
     sellTokenAddress,
     buyTokenChainId: _buyTokenChainId,
     buyTokenAddress: _buyTokenAddress,
+    bridgeSlippageBps: _bridgeSlippageBps,
     amount,
+    swapSlippageBps,
     ...rest
   } = swapAndBridgeRequest
 
@@ -193,6 +195,7 @@ async function getSwapQuote(params: {
     buyToken: intermediateToken,
     buyTokenDecimals: intermediaryTokenDecimals,
     amount: amount.toString(),
+    slippageBps: swapSlippageBps,
     signer,
   }
   const { signer: _, ...swapParamsToLog } = swapParams
