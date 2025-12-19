@@ -5,7 +5,7 @@ import { OrderKind, EnrichedOrder } from '@cowprotocol/sdk-order-book'
 import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
 import { BridgeStatus } from '../../types'
 
-import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
+import { DEFAULT_BRIDGE_SLIPPAGE_BPS, HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { NearIntentsApi } from './NearIntentsApi'
 import {
@@ -144,7 +144,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     const quoteResponse = await this.api.getQuote({
       dry: false,
       swapType: QuoteRequest.swapType.FLEX_INPUT,
-      slippageTolerance: request.slippageBps ?? 100,
+      slippageTolerance: request.bridgeSlippageBps ?? DEFAULT_BRIDGE_SLIPPAGE_BPS,
       originAsset: sellToken.assetId,
       depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
       destinationAsset: buyToken.assetId,
