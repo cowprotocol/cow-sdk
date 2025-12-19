@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.12.1...sdk-bridging-v1.0.0) (2025-12-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* **bridge:** split swap and bridge slippages ([#750](https://github.com/cowprotocol/cow-sdk/issues/750))
+
+### ✨ Features
+
+* **bridge:** split swap and bridge slippages ([#750](https://github.com/cowprotocol/cow-sdk/issues/750)) ([3ae7b57](https://github.com/cowprotocol/cow-sdk/commit/3ae7b574d1215ae598ec0a519ec003a9f21b7a7f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-contracts-ts bumped to 1.0.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.2.9
+    * @cowprotocol/sdk-trading bumped to 0.7.2
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 0.1.22
+
 ## [0.12.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.12.0...sdk-bridging-v0.12.1) (2025-12-17)
 
 
