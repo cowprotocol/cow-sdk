@@ -365,7 +365,9 @@ adapterNames.forEach((adapterName) => {
       let mockProvider2: MockHookBridgeProvider
       let mockProvider3: MockHookBridgeProvider
 
-      beforeEach(() => {
+      beforeEach(async () => {
+        mockProvider.getNetworks = jest.fn().mockResolvedValue(ALL_SUPPORTED_CHAINS)
+
         mockProvider2 = new MockHookBridgeProvider()
         mockProvider2.info.dappId = 'cow-sdk://bridging/providers/mock2'
         mockProvider2.info.name = 'Mock Bridge Provider 2'
@@ -394,9 +396,12 @@ adapterNames.forEach((adapterName) => {
 
         // Verify that the strategy pattern is working
         expect(results).toHaveLength(3)
-        expect(results[0]?.providerDappId).toBe('dapp-id-MockHookBridgeProvider')
-        expect(results[1]?.providerDappId).toBe('cow-sdk://bridging/providers/mock2')
-        expect(results[2]?.providerDappId).toBe('cow-sdk://bridging/providers/mock3')
+
+        // Results are sorted by best quote, so we need to check by provider ID
+        const providerIds = results.map((r) => r.providerDappId)
+        expect(providerIds).toContain('dapp-id-MockHookBridgeProvider')
+        expect(providerIds).toContain('cow-sdk://bridging/providers/mock2')
+        expect(providerIds).toContain('cow-sdk://bridging/providers/mock3')
 
         // All should be successful
         results.forEach((result) => {
@@ -430,8 +435,9 @@ adapterNames.forEach((adapterName) => {
 
         // Verify only specified providers were used
         expect(results).toHaveLength(2)
-        expect(results[0]?.providerDappId).toBe('dapp-id-MockHookBridgeProvider')
-        expect(results[1]?.providerDappId).toBe('cow-sdk://bridging/providers/mock3')
+        const providerIds = results.map((r) => r.providerDappId)
+        expect(providerIds).toContain('dapp-id-MockHookBridgeProvider')
+        expect(providerIds).toContain('cow-sdk://bridging/providers/mock3')
       })
     })
 
@@ -539,7 +545,7 @@ adapterNames.forEach((adapterName) => {
       let hookProvider: MockHookBridgeProvider
       let receiverAccountProvider: MockReceiverAccountBridgeProvider
 
-      beforeEach(() => {
+      beforeEach(async () => {
         hookProvider = new MockHookBridgeProvider()
         hookProvider.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
         hookProvider.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
@@ -583,12 +589,14 @@ adapterNames.forEach((adapterName) => {
         })
 
         expect(results).toHaveLength(2)
-        expect(results[0]?.providerDappId).toBe('dapp-id-MockHookBridgeProvider')
-        expect(results[1]?.providerDappId).toBe('dapp-id-ReceiverAccountBridgeProvider')
+
+        // Results are sorted by best quote, so find by provider ID
+        const hookResult = results.find((r) => r.providerDappId === 'dapp-id-MockHookBridgeProvider')
+        const receiverResult = results.find((r) => r.providerDappId === 'dapp-id-ReceiverAccountBridgeProvider')
 
         // Both should return quotes
-        expect(results[0]?.quote).toBeTruthy()
-        expect(results[1]?.quote).toBeTruthy()
+        expect(hookResult?.quote).toBeTruthy()
+        expect(receiverResult?.quote).toBeTruthy()
       })
 
       it('should compare quotes from different provider types in getBestQuote', async () => {

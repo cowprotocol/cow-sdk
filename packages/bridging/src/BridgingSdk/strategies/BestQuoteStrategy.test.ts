@@ -390,7 +390,7 @@ adapterNames.forEach((adapterName) => {
         const resultPromise = strategy.execute(request, config.tradingSdk, config.providers)
 
         // Advance timers past the fast provider delay but before slow providers
-        jest.advanceTimersByTime(50)
+        await jest.advanceTimersByTimeAsync(50)
 
         const result = await resultPromise
 
