@@ -37,6 +37,10 @@ interface WithBuyToken {
 
 type WithQuoter = Omit<QuoterParameters, 'chainId'>
 type WithTrader = Pick<TraderParameters, 'signer'>
+type WithSwapAndBrideSlippage = Partial<{
+  swapSlippageBps: latestAppData.SlippageBips
+  bridgeSlippageBps: latestAppData.SlippageBips
+}>
 
 /**
  * Parameters for getting a bridge quote
@@ -50,7 +54,7 @@ export type QuoteBridgeRequest = {
   WithQuoter &
   WithTrader &
   Omit<TradeOptionalParameters, 'slippageBps'> &
-  Partial<{ swapSlippageBps: latestAppData.SlippageBips; bridgeSlippageBps: latestAppData.SlippageBips }>
+  WithSwapAndBrideSlippage
 
 export type QuoteBridgeRequestWithoutAmount = Omit<QuoteBridgeRequest, 'amount'>
 
