@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.8.1...sdk-contracts-ts-v1.0.0) (2025-12-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* **bridge:** split swap and bridge slippages ([#750](https://github.com/cowprotocol/cow-sdk/issues/750))
+
+### ✨ Features
+
+* **bridge:** split swap and bridge slippages ([#750](https://github.com/cowprotocol/cow-sdk/issues/750)) ([3ae7b57](https://github.com/cowprotocol/cow-sdk/commit/3ae7b574d1215ae598ec0a519ec003a9f21b7a7f))
+
 ## [0.8.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.8.0...sdk-contracts-ts-v0.8.1) (2025-12-11)
 
 
