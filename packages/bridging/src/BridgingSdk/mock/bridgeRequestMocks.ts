@@ -64,7 +64,7 @@ export const quoteBridgeRequest: QuoteBridgeRequest = {
   account,
   receiver,
   partiallyFillable: false,
-  slippageBps: 50,
+  swapSlippageBps: 50,
 }
 
 // Response from Orderbook API
@@ -123,8 +123,8 @@ export const amountsAndCosts: QuoteAmountsAndCosts = {
     },
     protocolFee: {
       amount: 0n,
-      bps: 0
-    }
+      bps: 0,
+    },
   },
   beforeNetworkCosts: {
     sellAmount: BigInt('100000000'),
