@@ -429,6 +429,28 @@ describe('createPostSwapOrderFromQuote with ReceiverAccountBridgeProvider', () =
         expect(appData.metadata.bridging?.quoteSignature).toBe('0xsignature-only')
       })
 
+      it('should update app-data with attestationSignature and quoteBody for ReceiverAccountBridgeProvider', async () => {
+        const quoteWithAllFields = {
+          ...bridgeQuoteResult,
+          id: 'test-quote-id-789',
+          signature: '0xsignature789',
+          attestationSignature: '0xattestation-signature-abc',
+          quoteBody: '{"test":"quote-body"}',
+        }
+        mockProvider.getQuote = jest.fn().mockResolvedValue(quoteWithAllFields)
+
+        const result = await getQuoteWithBridge(mockProvider, {
+          swapAndBridgeRequest: quoteBridgeRequest,
+          tradingSdk,
+        })
+
+        const appData = result.swap.appDataInfo.doc
+        expect(appData.metadata.bridging?.quoteId).toBe('test-quote-id-789')
+        expect(appData.metadata.bridging?.quoteSignature).toBe('0xsignature789')
+        expect(appData.metadata.bridging?.attestationSignature).toBe('0xattestation-signature-abc')
+        expect(appData.metadata.bridging?.quoteBody).toBe('{"test":"quote-body"}')
+      })
+
       it('should override appDataInfo with advancedSettings.appData when provided', async () => {
         const { postSwapOrderFromQuote } = await getQuoteWithBridge(mockProvider, {
           swapAndBridgeRequest: quoteBridgeRequest,

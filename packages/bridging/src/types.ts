@@ -68,6 +68,14 @@ export interface BridgeQuoteResult {
    */
   signature?: string
   /**
+   * For ReceiverAccountBridgeProvider, this is the attestation signature from the bridge provider that validates the deposit address. Empty for other provider types.
+   */
+  attestationSignature?: string
+  /**
+   * A stringified JSON of quote which is associated with the order.
+   */
+  quoteBody?: string
+  /**
    * Whether the quote is a sell or buy order.
    */
   isSell: boolean
