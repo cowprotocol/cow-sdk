@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.23](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-signing-v0.1.22...sdk-order-signing-v0.1.23) (2025-12-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-order-book bumped to 0.5.0
+
 ## [0.1.22](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-signing-v0.1.21...sdk-order-signing-v0.1.22) (2025-12-19)
 
 
