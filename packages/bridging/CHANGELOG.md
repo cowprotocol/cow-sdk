@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v1.0.0...sdk-bridging-v1.1.0) (2025-12-22)
+
+
+### ✨ Features
+
+* improve order priority ([#745](https://github.com/cowprotocol/cow-sdk/issues/745)) ([1de00ba](https://github.com/cowprotocol/cow-sdk/commit/1de00ba5007d4e8ef78be73e7b47e99ece105ef0))
+
+
+### 🐛 Bug Fixes
+
+* **bridge:** filter providers when do MultiQuote ([#753](https://github.com/cowprotocol/cow-sdk/issues/753)) ([aa4aa96](https://github.com/cowprotocol/cow-sdk/commit/aa4aa961914436595ceb901602d5da09f1f54ae9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.4.0
+    * @cowprotocol/sdk-order-book bumped to 0.5.0
+    * @cowprotocol/sdk-trading bumped to 0.7.3
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 0.1.23
+
 ## [1.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v0.12.1...sdk-bridging-v1.0.0) (2025-12-19)
 
 

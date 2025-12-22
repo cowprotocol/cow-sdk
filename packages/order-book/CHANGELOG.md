@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.4.4...sdk-order-book-v0.5.0) (2025-12-22)
+
+
+### ✨ Features
+
+* use trades v2 for pagination support ([#752](https://github.com/cowprotocol/cow-sdk/issues/752)) ([282169c](https://github.com/cowprotocol/cow-sdk/commit/282169c8cd9886f4488c30ddcc2f149b23e2e9ce))
+
 ## [0.4.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.4.3...sdk-order-book-v0.4.4) (2025-12-11)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.3.6...sdk-app-data-v4.4.0) (2025-12-22)
+
+
+### ✨ Features
+
+* **app-data:** add `wrappers` to app-data ([#746](https://github.com/cowprotocol/cow-sdk/issues/746)) ([6d1868a](https://github.com/cowprotocol/cow-sdk/commit/6d1868a7430a33caa46caa7bf41465e42ecd5a8f))
+
 ## [4.3.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.3.5...sdk-app-data-v4.3.6) (2025-12-11)
 
 
