@@ -204,7 +204,7 @@ export class OrderBookApi {
 
     const query = new URLSearchParams(cleanObjectFromUndefinedValues(params))
 
-    return this.fetch({ path: '/api/v1/trades', method: 'GET', query }, contextOverride)
+    return this.fetch({ path: '/api/v2/trades', method: 'GET', query }, contextOverride)
   }
 
   /**
