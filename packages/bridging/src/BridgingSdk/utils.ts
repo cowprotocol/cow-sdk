@@ -8,6 +8,7 @@ import {
   BridgeProvider,
   DefaultBridgeProvider,
 } from '../types'
+import { OrderBookApiError } from '@cowprotocol/sdk-order-book'
 
 /**
  * Validates that the request is for cross-chain bridging
@@ -149,6 +150,10 @@ export function resolveProvidersToQuery(
 
 function getErrorPriority(error: Error | undefined): number {
   if (!error) return 0
+
+  if (error instanceof OrderBookApiError) {
+    return 10
+  }
 
   if (error instanceof BridgeProviderQuoteError) {
     return BridgeQuoteErrorPriorities[error.message as keyof typeof BridgeQuoteErrorPriorities] ?? 0
