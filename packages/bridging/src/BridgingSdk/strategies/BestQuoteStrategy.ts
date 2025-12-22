@@ -3,7 +3,6 @@ import { TokenInfo } from '@cowprotocol/sdk-config'
 import { MultiQuoteResult, BestQuoteProviderContext, DefaultBridgeProvider } from '../../types'
 import { TradingSdk } from '@cowprotocol/sdk-trading'
 import {
-  createBridgeRequestTimeoutPromise,
   executeProviderQuotes,
   isBetterError,
   isBetterQuote,
@@ -11,9 +10,9 @@ import {
   safeCallBestQuoteCallback,
   validateCrossChainRequest,
 } from '../utils'
-import { getQuoteWithBridge } from '../getQuoteWithBridge'
 import { BaseBestQuoteStrategy, MultiQuoteRequest } from './QuoteStrategy'
 import { BridgeProviderError } from '../../errors'
+import { fetchMultiQuote } from './utils'
 
 const DEFAULT_TOTAL_TIMEOUT_MS = 40_000 // 40 seconds
 const DEFAULT_PROVIDER_TIMEOUT_MS = 20_000 // 20 seconds
@@ -78,37 +77,13 @@ export class BestQuoteStrategy extends BaseBestQuoteStrategy {
   }
 
   private createBestQuoteProviderPromise(context: BestQuoteProviderContext, tradingSdk: TradingSdk): Promise<void> {
-    const { provider, quoteBridgeRequest, advancedSettings, providerTimeout, onQuoteResult, bestResult, bestError } =
-      context
+    const { provider, onQuoteResult, bestResult, bestError } = context
 
     return (async (): Promise<void> => {
       try {
-        const baseParams = {
-          swapAndBridgeRequest: quoteBridgeRequest,
-          advancedSettings,
-          tradingSdk,
-          provider,
-          quoteSigner: advancedSettings?.quoteSigner,
-        } as const
+        const result = await fetchMultiQuote(context, tradingSdk, this.intermediateTokensCache)
 
-        const request = this.intermediateTokensCache
-          ? {
-              ...baseParams,
-              intermediateTokensCache: this.intermediateTokensCache,
-            }
-          : baseParams
-
-        // Race between the actual quote request and the provider timeout
-        const quote = await Promise.race([
-          getQuoteWithBridge(provider, request),
-          createBridgeRequestTimeoutPromise(providerTimeout, `Provider ${provider.info.dappId}`),
-        ])
-
-        const result: MultiQuoteResult = {
-          providerDappId: provider.info.dappId,
-          quote,
-          error: undefined,
-        }
+        if (!result) return
 
         // Check if this quote is better than the current best
         if (isBetterQuote(result, bestResult.current)) {

@@ -510,7 +510,7 @@ export interface MultiQuoteRequest {
   options?: MultiQuoteOptions
 }
 
-interface MultiQuoteContext {
+export interface MultiQuoteContext {
   provider: BridgeProvider<BridgeQuoteResult>
   quoteBridgeRequest: QuoteBridgeRequest
   advancedSettings: SwapAdvancedSettings | undefined

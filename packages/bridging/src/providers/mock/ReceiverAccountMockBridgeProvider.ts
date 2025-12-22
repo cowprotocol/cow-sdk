@@ -1,6 +1,7 @@
 import { ReceiverAccountBridgeProvider, BridgeQuoteResult, QuoteBridgeRequest } from '../../types'
 import { BaseMockBridgeProvider } from './BaseMockBridgeProvider'
 import { RAW_PROVIDERS_FILES_PATH } from '../../const'
+import { ALL_SUPPORTED_CHAINS } from '@cowprotocol/sdk-config'
 
 const name = 'ReceiverAccountBridgeProvider'
 const providerType = 'ReceiverAccountBridgeProvider' as const
@@ -32,5 +33,9 @@ export class MockReceiverAccountBridgeProvider
 
   async getBridgeReceiverOverride(_quoteRequest: QuoteBridgeRequest, _quoteResult: BridgeQuoteResult): Promise<string> {
     return this.mockReceiverAddress
+  }
+
+  async getNetworks() {
+    return ALL_SUPPORTED_CHAINS
   }
 }
