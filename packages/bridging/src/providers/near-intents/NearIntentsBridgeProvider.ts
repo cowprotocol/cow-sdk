@@ -311,6 +311,9 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     throw new Error('Not implemented')
   }
 
+  /**
+   * A script to verify depositAddress from appData: https://codesandbox.io/p/sandbox/h7tngy
+   */
   async recoverDepositAddress({
     quote,
     quoteRequest,
