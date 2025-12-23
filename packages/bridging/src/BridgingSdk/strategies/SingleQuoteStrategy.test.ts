@@ -121,8 +121,12 @@ adapterNames.forEach((adapterName) => {
         expectToEqual(bridge.expectedFillTimeSeconds, bridgeExpectedFillTimeSeconds)
 
         expect(bridge.isSell).toEqual(true)
-        expectToEqual(bridge.tradeParameters, {
+
+        const expectedResponse = {
           ...quoteBridgeRequest,
+        }
+        expectToEqual(bridge.tradeParameters, {
+          ...expectedResponse,
           sellTokenAddress: intermediateToken,
           sellTokenDecimals: intermediateTokenDecimals,
           amount: (100n * 10n ** BigInt(intermediateTokenDecimals)).toString(),
@@ -157,9 +161,10 @@ adapterNames.forEach((adapterName) => {
           buyTokenDecimals: mainnetDaiDecimals,
         }
 
-        const { sellTokenAddress, buyTokenAddress, amount, ...rest } = singleChainRequest
+        const { sellTokenAddress, buyTokenAddress, amount, swapSlippageBps, ...rest } = singleChainRequest
         const tradeParameters: WithPartialTraderParams<TradeParameters> = {
           ...rest,
+          slippageBps: swapSlippageBps,
           sellToken: sellTokenAddress,
           buyToken: buyTokenAddress,
           amount: amount.toString(),
@@ -249,9 +254,10 @@ adapterNames.forEach((adapterName) => {
           },
         }
 
-        const { sellTokenAddress, buyTokenAddress, amount, ...rest } = singleChainRequest
+        const { sellTokenAddress, buyTokenAddress, amount, swapSlippageBps, ...rest } = singleChainRequest
         const tradeParameters: WithPartialTraderParams<TradeParameters> = {
           ...rest,
+          slippageBps: swapSlippageBps,
           sellToken: sellTokenAddress,
           buyToken: buyTokenAddress,
           amount: amount.toString(),
