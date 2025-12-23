@@ -1,6 +1,6 @@
 {
   "packages/app-data": "4.4.0",
-  "packages/bridging": "1.1.0",
+  "packages/bridging": "1.1.1",
   "packages/common": "0.4.0",
   "packages/composable": "0.1.23",
   "packages/config": "0.6.2",

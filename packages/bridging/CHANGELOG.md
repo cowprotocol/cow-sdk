@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v1.1.0...sdk-bridging-v1.1.1) (2025-12-23)
+
+
+### 🐛 Bug Fixes
+
+* **bridge:** use swapSlippageBps for non-bridge swaps ([#757](https://github.com/cowprotocol/cow-sdk/issues/757)) ([5f86ea5](https://github.com/cowprotocol/cow-sdk/commit/5f86ea59904922e164b2ee97f64e1b1148f9a92e))
+
 ## [1.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v1.0.0...sdk-bridging-v1.1.0) (2025-12-22)
 
 
