@@ -85,7 +85,7 @@ describe('postLimitOrder', () => {
         orderBookApiMock,
         appDataMock,
         { ...defaultOrderParams, signer: adapters[adapterName], env: 'prod' },
-        undefined,
+        { applyCostsSlippageAndFees: false },
         expect.anything(),
       )
       postCoWProtocolTradeMock.mockReset()
