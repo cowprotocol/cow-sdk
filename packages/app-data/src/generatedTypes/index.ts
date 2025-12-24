@@ -40,7 +40,7 @@ export const LATEST_WRAPPERS_METADATA_VERSION = '0.1.0'
 export const LATEST_USER_CONSENTS_METADATA_VERSION = '0.1.0'
 
 export type LatestAppDataDocVersion = v1_11_0.AppDataRootSchema
-export type AnyAppDataDocVersion =
+export type AnyAppDataDocVersion = 
   | v1_11_0.AppDataRootSchema
   | v1_10_0.AppDataRootSchema
   | v1_9_0.AppDataRootSchema
