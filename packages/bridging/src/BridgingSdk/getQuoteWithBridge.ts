@@ -341,6 +341,8 @@ async function getAccountBridgeResult<T extends BridgeQuoteResult>(
   const bridgeResult: BridgeQuoteResults = {
     id: bridgingQuote.id,
     signature: bridgingQuote.signature,
+    attestationSignature: bridgingQuote.attestationSignature,
+    quoteBody: bridgingQuote.quoteBody,
     providerInfo: provider.info,
     tradeParameters: bridgeRequest, // Just the bridge (not the swap & bridge)
     bridgeReceiverOverride: bridgeReceiverOverride,
@@ -407,6 +409,10 @@ async function getHookBridgeResult<T extends BridgeQuoteResult>(
   // Prepare the bridge result
   const bridgeResult: BridgeQuoteResults = {
     providerInfo: provider.info,
+    id: bridgingQuote.id,
+    signature: bridgingQuote.signature,
+    attestationSignature: bridgingQuote.attestationSignature,
+    quoteBody: bridgingQuote.quoteBody,
     tradeParameters: bridgeRequest, // Just the bridge (not the swap & bridge)
     bridgeCallDetails: {
       unsignedBridgeCall: unsignedBridgeCall,
@@ -433,5 +439,7 @@ function overrideAppDataWithBridgingQuoteDetails(
     ...bridgingMetaData,
     ...(quote.id ? { quoteId: quote.id } : undefined),
     ...(quote.signature ? { quoteSignature: quote.signature } : undefined),
+    ...(quote.attestationSignature ? { attestationSignature: quote.attestationSignature } : undefined),
+    ...(quote.quoteBody ? { quoteBody: quote.quoteBody } : undefined),
   }
 }

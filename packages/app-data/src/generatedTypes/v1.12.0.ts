@@ -168,6 +168,14 @@ export type BridgeProviderQuoteId = string;
  */
 export type BridgeProviderQuoteSignature = string;
 /**
+ * For ReceiverAccountBridgeProvider, this is the attestation signature from the bridge provider that validates the deposit address. Empty for other provider types.
+ */
+export type BridgeProviderAttestationSignature = string;
+/**
+ * A stringified JSON of quote which is associated with the order.
+ */
+export type BridgeProviderQuoteBody = string;
+/**
  * The amount of tokens to be flash loaned (in token units, as uint256)
  */
 export type LoanAmount = string;
@@ -288,6 +296,8 @@ export interface Bridging {
   destinationTokenAddress: BridgingDestinationTokenAddress;
   quoteId?: BridgeProviderQuoteId;
   quoteSignature?: BridgeProviderQuoteSignature;
+  attestationSignature?: BridgeProviderAttestationSignature;
+  quoteBody?: BridgeProviderQuoteBody;
 }
 /**
  * Information about flashloan parameters for the order

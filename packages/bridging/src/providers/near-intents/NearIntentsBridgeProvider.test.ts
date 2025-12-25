@@ -295,6 +295,8 @@ adapterNames.forEach((adapterName) => {
         jest.spyOn(provider, 'recoverDepositAddress').mockResolvedValue({
           address: ATTESTATOR_ADDRESS,
           quoteHash: testQuoteHash,
+          stringifiedQuote: '',
+          attestationSignature: '',
         })
 
         const quote = await provider.getQuote({
@@ -313,6 +315,64 @@ adapterNames.forEach((adapterName) => {
 
         expect(quote.id).toBe(testQuoteHash)
         expect(quote.signature).toBe('ed25519:testSignature')
+      })
+
+      it('should return stringifiedQuote and attestationSignature', async () => {
+        const api = new NearIntentsApi()
+
+        const mockQuoteResponse: QuoteResponse = {
+          quote: {
+            amountIn: '1000000',
+            amountInFormatted: '1.0',
+            amountInUsd: '1.0',
+            minAmountIn: '1000000',
+            amountOut: '1000000',
+            amountOutFormatted: '1.0',
+            amountOutUsd: '1.0',
+            minAmountOut: '990000',
+            timeEstimate: 60,
+            deadline: '2025-09-05T12:10:38.605Z',
+            timeWhenInactive: '2025-09-05T12:10:38.605Z',
+            depositAddress: '0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e',
+          },
+          quoteRequest: {
+            dry: false,
+            swapType: QuoteRequest.swapType.EXACT_INPUT,
+            depositMode: QuoteRequest.depositMode.SIMPLE,
+            slippageTolerance: 100,
+            originAsset: 'nep141:usdc.omft.near',
+            depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
+            destinationAsset: 'nep141:base.omft.near',
+            amount: '1000000',
+            refundTo: '0x0000000000000000000000000000000000000000',
+            refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
+            recipient: '0x0000000000000000000000000000000000000000',
+            recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
+            deadline: '2025-09-05T12:10:38.605Z',
+          },
+          signature: 'ed25519:testSignature',
+          timestamp: '2025-09-05T12:00:38.695Z',
+        }
+
+        const mockAttestationSignature =
+          '0x66edc32e2ab001213321ab7d959a2207fcef5190cc9abb6da5b0d2a8a9af2d4d2b0700e2c317c4106f337fd934fbbb0bf62efc8811a78603b33a8265d3b8f8cb1c'
+
+        jest.spyOn(api, 'getAttestation').mockResolvedValue({
+          version: 1,
+          signature: mockAttestationSignature,
+        })
+        provider.setApi(api)
+
+        const result = await provider.recoverDepositAddress(mockQuoteResponse)
+
+        expect(result).not.toBeNull()
+        expect(result?.attestationSignature).toBe(mockAttestationSignature)
+        expect(result?.stringifiedQuote).toBeDefined()
+        expect(result?.stringifiedQuote.length).toBeGreaterThan(0)
+        expect(result?.quoteHash).toBeDefined()
+        expect(result?.quoteHash.length).toBeGreaterThan(0)
+        expect(result?.address).toBeDefined()
+        expect(result?.address.length).toBeGreaterThan(0)
       })
     })
   })

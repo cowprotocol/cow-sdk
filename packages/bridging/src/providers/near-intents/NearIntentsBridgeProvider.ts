@@ -36,8 +36,17 @@ import type {
 export const NEAR_INTENTS_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/near-intents`
 export const REFERRAL = 'cow'
 
+interface DepositAddressContext {
+  address: Address
+  quoteHash: string
+  stringifiedQuote: string
+  attestationSignature: string
+}
+
 export interface NearIntentsQuoteResult extends BridgeQuoteResult {
   depositAddress: Hex
+  attestationSignature: string
+  quoteBody: string
 }
 
 export interface NearIntentsBridgeProviderOptions {
@@ -175,6 +184,8 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     return {
       id: recoveredDepositAddress.quoteHash,
       signature: quoteResponse.signature,
+      attestationSignature: recoveredDepositAddress.attestationSignature,
+      quoteBody: recoveredDepositAddress.stringifiedQuote,
       isSell: request.kind === OrderKind.SELL,
       depositAddress: quote.depositAddress as Hex,
       quoteTimestamp: new Date(isoDate).getTime(),
@@ -300,16 +311,19 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     throw new Error('Not implemented')
   }
 
+  /**
+   * A script to verify depositAddress from appData: https://codesandbox.io/p/sandbox/h7tngy
+   */
   async recoverDepositAddress({
     quote,
     quoteRequest,
     timestamp,
-  }: QuoteResponse): Promise<{ address: Address; quoteHash: string } | null> {
+  }: QuoteResponse): Promise<DepositAddressContext | null> {
     try {
       if (!quote?.depositAddress) return null
 
       const utils = getGlobalAdapter().utils
-      const quoteHash = hashQuote({ quote, quoteRequest, timestamp })
+      const { hash: quoteHash, stringifiedQuote } = hashQuote({ quote, quoteRequest, timestamp })
 
       const depositAddr = utils.getChecksumAddress(quote.depositAddress as Address)
       const { signature } = await this.api.getAttestation({
@@ -327,6 +341,8 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       return {
         address: await utils.recoverAddress(hash, signature),
         quoteHash,
+        stringifiedQuote,
+        attestationSignature: signature,
       }
     } catch {
       return null
