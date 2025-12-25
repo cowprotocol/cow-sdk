@@ -38,6 +38,7 @@ export const LATEST_WIDGET_METADATA_VERSION = '0.1.0'
 export const LATEST_PARTNER_FEE_METADATA_VERSION = '1.0.0'
 export const LATEST_REPLACED_ORDER_METADATA_VERSION = '0.1.0'
 export const LATEST_WRAPPERS_METADATA_VERSION = '0.1.0'
+export const LATEST_USER_CONSENTS_METADATA_VERSION = '0.1.0'
 
 export type LatestAppDataDocVersion = v1_12_0.AppDataRootSchema
 export type AnyAppDataDocVersion = 

@@ -70,8 +70,12 @@
         },
         "wrappers": {
           "$ref": "wrappers/v0.1.0.json#"
+        },
+        "userConsents": {
+          "$ref": "userConsents/v0.1.0.json#"
         }
       }
     }
   }
 }
+

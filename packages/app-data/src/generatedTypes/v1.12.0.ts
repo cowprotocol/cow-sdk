@@ -211,6 +211,19 @@ export type IsOmittable = boolean;
  * Information about wrappers to execute for the order
  */
 export type Wrappers = WrapperEntry[];
+/**
+ * Array of user consents for terms acceptance
+ */
+export type UserConsents = {
+  /**
+   * IPFS hash of the accepted terms
+   */
+  terms: string;
+  /**
+   * ISO 8601 date-time when user accepted the terms in the UI
+   */
+  acceptedDate: string;
+}[];
 
 /**
  * Metadata JSON document for adding information to orders.
@@ -237,6 +250,7 @@ export interface Metadata {
   bridging?: Bridging;
   flashloan?: Flashloan;
   wrappers?: Wrappers;
+  userConsents?: UserConsents;
 }
 export interface Referrer {
   address: ReferrerAddress;

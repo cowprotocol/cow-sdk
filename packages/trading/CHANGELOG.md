@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.7.3...sdk-trading-v0.7.4) (2025-12-24)
+
+
+### 🐛 Bug Fixes
+
+* change applyCostsSlippageAndFees default for limit orders ([#760](https://github.com/cowprotocol/cow-sdk/issues/760)) ([d10c17b](https://github.com/cowprotocol/cow-sdk/commit/d10c17b10097616a4e042b04a862bc6cb3b1b0af))
+
 ## [0.7.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.7.2...sdk-trading-v0.7.3) (2025-12-22)
 
 

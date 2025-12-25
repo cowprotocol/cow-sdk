@@ -34,5 +34,10 @@ export async function postLimitOrder(
     advancedSettings?.appData,
   )
 
-  return postCoWProtocolTrade(orderBookApi, appDataInfo, params, advancedSettings?.additionalParams, params.signer)
+  const additionalParams = {
+    ...(advancedSettings?.additionalParams ?? {}),
+    applyCostsSlippageAndFees: advancedSettings?.additionalParams?.applyCostsSlippageAndFees ?? false,
+  }
+
+  return postCoWProtocolTrade(orderBookApi, appDataInfo, params, additionalParams, params.signer)
 }
