@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v1.1.2...sdk-bridging-v1.2.0) (2025-12-25)
+
+
+### ✨ Features
+
+* **bridge:** extend bridging appData with attestation data ([#756](https://github.com/cowprotocol/cow-sdk/issues/756)) ([ff04417](https://github.com/cowprotocol/cow-sdk/commit/ff044172bdfa2997393e2bf9a331119815d2fc12))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.5.0
+    * @cowprotocol/sdk-trading bumped to 0.8.0
+
 ## [1.1.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v1.1.1...sdk-bridging-v1.1.2) (2025-12-24)
 
 
