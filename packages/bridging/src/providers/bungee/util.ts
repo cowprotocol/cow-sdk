@@ -4,6 +4,7 @@ import { BungeeTxDataBytesIndices } from './const/misc'
 import { BungeeBridge, BungeeBridgeNames } from './types'
 import { BridgeQuoteAmountsAndCosts, QuoteBridgeRequest } from '../../types'
 import { getBigNumber, OrderKind } from '@cowprotocol/sdk-order-book'
+import stringify from 'json-stable-stringify'
 
 /**
  * Convert a QuoteBridgeRequest to a BungeeQuoteResult
@@ -26,6 +27,7 @@ export function toBridgeQuoteResult(
     amountsAndCosts: toAmountsAndCosts(request, slippageBps, bungeeQuote),
     quoteTimestamp: Number(bungeeQuote.quoteTimestamp),
     expectedFillTimeSeconds: Number(bungeeQuote.route.estimatedTime),
+    quoteBody: stringify(bungeeQuote),
     fees: {
       // @note routeFee is taken in the src chain intermediate token
       bridgeFee: BigInt(bungeeQuote.route.routeDetails.routeFee.amount),

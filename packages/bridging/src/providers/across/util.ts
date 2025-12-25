@@ -8,6 +8,7 @@ import { ACROSS_SPOOK_CONTRACT_ADDRESSES } from './const/contracts'
 import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 import { getBigNumber, OrderKind } from '@cowprotocol/sdk-order-book'
 import { getGlobalAdapter, Log } from '@cowprotocol/sdk-common'
+import stringify from 'json-stable-stringify'
 
 const PCT_100_PERCENT = 10n ** 18n
 
@@ -51,6 +52,7 @@ export function toBridgeQuoteResult(
     isSell: kind === OrderKind.SELL,
     amountsAndCosts: toAmountsAndCosts(request, slippageBps, suggestedFees),
     quoteTimestamp: Number(suggestedFees.timestamp),
+    quoteBody: stringify(suggestedFees),
     expectedFillTimeSeconds: Number(suggestedFees.estimatedFillTimeSec),
     fees: {
       bridgeFee: BigInt(suggestedFees.relayerCapitalFee.total),
