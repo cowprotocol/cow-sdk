@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.4.0...sdk-app-data-v4.5.0) (2025-12-25)
+
+
+### ✨ Features
+
+* **app-data:** add user terms consents ([#763](https://github.com/cowprotocol/cow-sdk/issues/763)) ([1fc0b26](https://github.com/cowprotocol/cow-sdk/commit/1fc0b26ba250505db19c9189dd52a5e021c9616e))
+* **bridge:** extend bridging appData with attestation data ([#756](https://github.com/cowprotocol/cow-sdk/issues/756)) ([ff04417](https://github.com/cowprotocol/cow-sdk/commit/ff044172bdfa2997393e2bf9a331119815d2fc12))
+
 ## [4.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.3.6...sdk-app-data-v4.4.0) (2025-12-22)
 
 

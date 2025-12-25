@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.8.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.7.4...sdk-trading-v0.8.0) (2025-12-25)
+
+
+### ✨ Features
+
+* **app-data:** add user terms consents ([#763](https://github.com/cowprotocol/cow-sdk/issues/763)) ([1fc0b26](https://github.com/cowprotocol/cow-sdk/commit/1fc0b26ba250505db19c9189dd52a5e021c9616e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.5.0
+
 ## [0.7.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.7.3...sdk-trading-v0.7.4) (2025-12-24)
 
 

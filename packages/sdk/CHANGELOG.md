@@ -1,5 +1,15 @@
 # Changelog
 
+## [7.2.9](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.2.8...cow-sdk-v7.2.9) (2025-12-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.5.0
+    * @cowprotocol/sdk-trading bumped to 0.8.0
+
 ## [7.2.8](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.2.7...cow-sdk-v7.2.8) (2025-12-24)
 
 
