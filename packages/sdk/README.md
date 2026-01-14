@@ -353,8 +353,10 @@ We will perform the following operations:
 5. Get trades for the order
 6. Cancel the order (signing + sending)
 
+> Try it live: https://codesandbox.io/p/devbox/cow-sdk-example-forked-x63k52
+
 ```typescript
-import { OrderBookApi, OrderSigningUtils, SupportedChainId, OrderKind } from '@cowprotocol/cow-sdk'
+import { OrderBookApi, OrderSigningUtils, SupportedChainId, OrderQuoteSideKindSell, SigningScheme, setGlobalAdapter } from '@cowprotocol/cow-sdk'
 import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
 import { JsonRpcProvider, Wallet } from 'ethers'
 
@@ -364,13 +366,17 @@ const provider = new JsonRpcProvider('YOUR_RPC_URL')
 const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
 const adapter = new EthersV6Adapter({ provider, signer: wallet })
 
+setGlobalAdapter(adapter)
+
+const receiver = account
+
 const quoteRequest = {
   sellToken: '0x6a023ccd1ff6f2045c3309768ead9e68f978f6e1', // WETH on Gnosis Chain
   buyToken: '0x9c58bacc331c9aa871afd802db6379a98e80cedb', // GNO on Gnosis Chain
   from: account,
-  receiver: account,
+  receiver,
   sellAmountBeforeFee: (0.4 * 10 ** 18).toString(), // 0.4 WETH
-  kind: OrderKind.SELL,
+  kind: OrderQuoteSideKindSell.SELL,
 }
 
 const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.GNOSIS_CHAIN })
@@ -378,15 +384,27 @@ const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.GNOSIS_CHAIN }
 async function main() {
   const { quote } = await orderBookApi.getQuote(quoteRequest)
 
-  const orderSigningResult = await OrderSigningUtils.signOrder(quote, chainId, adapter)
+  const orderData = {
+    ...quote,
+    // Add fee to sellAmount for sell orders
+    sellAmount: (BigInt(quote.sellAmount) + BigInt(quote.feeAmount)).toString(),
+    receiver,
+    feeAmount: "0",
+  };
 
-  const orderId = await orderBookApi.sendOrder({ ...quote, ...orderSigningResult })
+  const orderSigningResult = await OrderSigningUtils.signOrder(orderData, chainId, adapter.signer)
+
+  const orderId = await orderBookApi.sendOrder({
+    ...orderData,
+    ...orderSigningResult,
+    signingScheme: SigningScheme.EIP712,
+  })
 
   const order = await orderBookApi.getOrder(orderId)
 
   const trades = await orderBookApi.getTrades({ orderId })
 
-  const orderCancellationSigningResult = await OrderSigningUtils.signOrderCancellations([orderId], chainId, adapter)
+  const orderCancellationSigningResult = await OrderSigningUtils.signOrderCancellations([orderId], chainId, adapter.signer)
 
   const cancellationResult = await orderBookApi.sendSignedOrderCancellations({
     ...orderCancellationSigningResult,
