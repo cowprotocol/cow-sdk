@@ -1,4 +1,5 @@
 import { SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { Address } from '@cowprotocol/sdk-common'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../errors'
 import { isStablecoinPriorityToken, isCorrelatedToken, isNativeToken } from './tokenPriority'
 
@@ -6,6 +7,7 @@ import { isStablecoinPriorityToken, isCorrelatedToken, isNativeToken } from './t
  * Priority levels for intermediate token selection
  */
 enum TokenPriority {
+  HIGHEST = 5, // Same as sell token
   HIGH = 4, // USDC/USDT from hardcoded registry
   MEDIUM = 3, // Tokens in CMS correlated tokens list
   LOW = 2, // Blockchain native token
@@ -16,6 +18,7 @@ enum TokenPriority {
  * Determines the best intermediate token from a list of candidates using a priority-based algorithm.
  *
  * @param sourceChainId - The chain ID where the swap originates
+ * @param sourceTokenAddress - An address of selling token
  * @param intermediateTokens - Array of candidate intermediate tokens to evaluate
  * @param getCorrelatedTokens - Optional callback to fetch tokens with known high liquidity/correlation.
  *                               Called with `sourceChainId` and should return a list of correlated tokens.
@@ -27,6 +30,7 @@ enum TokenPriority {
  */
 export async function determineIntermediateToken(
   sourceChainId: SupportedChainId,
+  sourceTokenAddress: Address,
   intermediateTokens: TokenInfo[],
   getCorrelatedTokens?: (chainId: SupportedChainId) => Promise<string[]>,
 ): Promise<TokenInfo> {
@@ -45,6 +49,9 @@ export async function determineIntermediateToken(
 
   // Calculate priority for each token
   const tokensWithPriority = intermediateTokens.map((token) => {
+    if (token.address.toLowerCase() === sourceTokenAddress.toLowerCase()) {
+      return { token, priority: TokenPriority.HIGHEST }
+    }
     if (isStablecoinPriorityToken(token.chainId, token.address)) {
       return { token, priority: TokenPriority.HIGH }
     }
