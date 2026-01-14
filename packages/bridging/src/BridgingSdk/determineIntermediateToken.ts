@@ -6,10 +6,10 @@ import { isStablecoinPriorityToken, isCorrelatedToken, isNativeToken } from './t
  * Priority levels for intermediate token selection
  */
 enum TokenPriority {
-  HIGHEST = 4, // USDC/USDT from hardcoded registry
-  HIGH = 3, // Tokens in CMS correlated tokens list
-  MEDIUM = 2, // Blockchain native token
-  LOW = 1, // Other tokens
+  HIGH = 4, // USDC/USDT from hardcoded registry
+  MEDIUM = 3, // Tokens in CMS correlated tokens list
+  LOW = 2, // Blockchain native token
+  LOWEST = 1, // Other tokens
 }
 
 /**
@@ -46,16 +46,16 @@ export async function determineIntermediateToken(
   // Calculate priority for each token
   const tokensWithPriority = intermediateTokens.map((token) => {
     if (isStablecoinPriorityToken(token.chainId, token.address)) {
-      return { token, priority: TokenPriority.HIGHEST }
-    }
-    if (isCorrelatedToken(token.address, correlatedTokens)) {
       return { token, priority: TokenPriority.HIGH }
     }
-    if (isNativeToken(token.address)) {
+    if (isCorrelatedToken(token.address, correlatedTokens)) {
       return { token, priority: TokenPriority.MEDIUM }
     }
+    if (isNativeToken(token.address)) {
+      return { token, priority: TokenPriority.LOW }
+    }
 
-    return { token, priority: TokenPriority.LOW }
+    return { token, priority: TokenPriority.LOWEST }
   })
 
   // Sort by priority (highest first), then by original order for stability
