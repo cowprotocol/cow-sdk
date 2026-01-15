@@ -22,10 +22,10 @@ CoW Swap is currently available on the following chains:
 - **Polygon** (137)
 - **Lens** (232)
 - **Base** (8453)
-- **Plasma** (9745) (Under development)
+- **Plasma** (9745)
 - **Arbitrum One** (42161)
 - **Avalanche** (43114)
-- **Linea** (59144) (Under development)
+- **Linea** (59144)
 - **Sepolia** (11155111) (Testnet)
 
 
