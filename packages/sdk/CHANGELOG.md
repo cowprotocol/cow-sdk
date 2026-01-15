@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.2.10](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.2.9...cow-sdk-v7.2.10) (2026-01-15)
+
+
+### 📚 Documentation
+
+* update Low-Level SDK Usage Example ([#766](https://github.com/cowprotocol/cow-sdk/issues/766)) ([0b6949c](https://github.com/cowprotocol/cow-sdk/commit/0b6949cff628d390c17db8661cd917e486c75af3))
+
 ## [7.2.9](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.2.8...cow-sdk-v7.2.9) (2025-12-25)
 
 

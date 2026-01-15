@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v1.2.0...sdk-bridging-v1.3.0) (2026-01-15)
+
+
+### ✨ Features
+
+* add plasma support for Near bridge provider ([#769](https://github.com/cowprotocol/cow-sdk/issues/769)) ([a3db993](https://github.com/cowprotocol/cow-sdk/commit/a3db993e9fedb54b87d7a2048c163c5fdaec7272))
+
 ## [1.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v1.1.2...sdk-bridging-v1.2.0) (2025-12-25)
 
 
