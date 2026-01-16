@@ -1,21 +1,24 @@
 import { SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { Address, areAddressesEqual, isNativeToken, isWrappedNativeToken } from '@cowprotocol/sdk-common'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../errors'
-import { isStablecoinPriorityToken, isCorrelatedToken, isNativeToken } from './tokenPriority'
+import { isStablecoinPriorityToken, isCorrelatedToken } from './tokenPriority'
 
 /**
  * Priority levels for intermediate token selection
  */
 enum TokenPriority {
-  HIGHEST = 4, // USDC/USDT from hardcoded registry
-  HIGH = 3, // Tokens in CMS correlated tokens list
-  MEDIUM = 2, // Blockchain native token
-  LOW = 1, // Other tokens
+  HIGHEST = 5, // Same as sell token
+  HIGH = 4, // USDC/USDT from hardcoded registry
+  MEDIUM = 3, // Tokens in CMS correlated tokens list
+  LOW = 2, // Blockchain native token
+  LOWEST = 1, // Other tokens
 }
 
 /**
  * Determines the best intermediate token from a list of candidates using a priority-based algorithm.
  *
  * @param sourceChainId - The chain ID where the swap originates
+ * @param sourceTokenAddress - An address of selling token
  * @param intermediateTokens - Array of candidate intermediate tokens to evaluate
  * @param getCorrelatedTokens - Optional callback to fetch tokens with known high liquidity/correlation.
  *                               Called with `sourceChainId` and should return a list of correlated tokens.
@@ -27,6 +30,7 @@ enum TokenPriority {
  */
 export async function determineIntermediateToken(
   sourceChainId: SupportedChainId,
+  sourceTokenAddress: Address,
   intermediateTokens: TokenInfo[],
   getCorrelatedTokens?: (chainId: SupportedChainId) => Promise<string[]>,
 ): Promise<TokenInfo> {
@@ -43,19 +47,31 @@ export async function determineIntermediateToken(
 
   const correlatedTokens = await resolveCorrelatedTokens(sourceChainId, getCorrelatedTokens)
 
+  const sellTokenLike = { chainId: sourceChainId, address: sourceTokenAddress }
+  const isSellNativeOrWrapped = isNativeToken(sellTokenLike) || isWrappedNativeToken(sellTokenLike)
+
   // Calculate priority for each token
   const tokensWithPriority = intermediateTokens.map((token) => {
-    if (isStablecoinPriorityToken(token.chainId, token.address)) {
-      return { token, priority: TokenPriority.HIGHEST }
+    const isNativeOrWrapped = isNativeToken(token) || isWrappedNativeToken(token)
+
+    if (areAddressesEqual(token.address, sourceTokenAddress)) {
+      // Native/wrapped -> native/wrapped is not supported yet (backend restriction)
+      if (!(isSellNativeOrWrapped && isNativeOrWrapped)) {
+        return { token, priority: TokenPriority.HIGHEST }
+      }
     }
-    if (isCorrelatedToken(token.address, correlatedTokens)) {
+    if (isStablecoinPriorityToken(token.chainId, token.address)) {
       return { token, priority: TokenPriority.HIGH }
     }
-    if (isNativeToken(token.address)) {
+    if (isCorrelatedToken(token.address, correlatedTokens)) {
       return { token, priority: TokenPriority.MEDIUM }
     }
+    // Native/wrapped -> native/wrapped is not supported yet (backend restriction)
+    if (isNativeToken(token) && !isSellNativeOrWrapped) {
+      return { token, priority: TokenPriority.LOW }
+    }
 
-    return { token, priority: TokenPriority.LOW }
+    return { token, priority: TokenPriority.LOWEST }
   })
 
   // Sort by priority (highest first), then by original order for stability
