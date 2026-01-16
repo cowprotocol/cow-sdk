@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.2.11](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.2.10...cow-sdk-v7.2.11) (2026-01-16)
+
+
+### 🔧 Miscellaneous
+
+* remove `under development` comment from Linea and Plasma ([#770](https://github.com/cowprotocol/cow-sdk/issues/770)) ([cbb5361](https://github.com/cowprotocol/cow-sdk/commit/cbb53611674553e40d42ffcb3d0f599f49ec2fa1))
+
 ## [7.2.10](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.2.9...cow-sdk-v7.2.10) (2026-01-15)
 
 
