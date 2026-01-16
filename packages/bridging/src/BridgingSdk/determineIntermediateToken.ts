@@ -52,11 +52,11 @@ export async function determineIntermediateToken(
 
   // Calculate priority for each token
   const tokensWithPriority = intermediateTokens.map((token) => {
-    const isNativeOrWrapped = isNativeToken(token) || isWrappedNativeToken(token)
+    const isIntermediateNativeOrWrapped = isNativeToken(token) || isWrappedNativeToken(token)
 
     if (areAddressesEqual(token.address, sourceTokenAddress)) {
       // Native/wrapped -> native/wrapped is not supported yet (backend restriction)
-      if (!(isSellNativeOrWrapped && isNativeOrWrapped)) {
+      if (!(isSellNativeOrWrapped && isIntermediateNativeOrWrapped)) {
         return { token, priority: TokenPriority.HIGHEST }
       }
     }
