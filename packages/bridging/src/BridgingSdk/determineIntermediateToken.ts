@@ -1,7 +1,7 @@
 import { SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
-import { Address } from '@cowprotocol/sdk-common'
+import { Address, areAddressesEqual, isNativeToken, isWrappedNativeToken } from '@cowprotocol/sdk-common'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../errors'
-import { isStablecoinPriorityToken, isCorrelatedToken, isNativeToken } from './tokenPriority'
+import { isStablecoinPriorityToken, isCorrelatedToken } from './tokenPriority'
 
 /**
  * Priority levels for intermediate token selection
@@ -47,10 +47,18 @@ export async function determineIntermediateToken(
 
   const correlatedTokens = await resolveCorrelatedTokens(sourceChainId, getCorrelatedTokens)
 
+  const sellTokenLike = { chainId: sourceChainId, address: sourceTokenAddress }
+  const isSellNativeOrWrapped = isNativeToken(sellTokenLike) || isWrappedNativeToken(sellTokenLike)
+
   // Calculate priority for each token
   const tokensWithPriority = intermediateTokens.map((token) => {
-    if (token.address.toLowerCase() === sourceTokenAddress.toLowerCase()) {
-      return { token, priority: TokenPriority.HIGHEST }
+    const isNativeOrWrapped = isNativeToken(token) || isWrappedNativeToken(token)
+
+    if (areAddressesEqual(token.address, sourceTokenAddress)) {
+      // Native/wrapped -> native/wrapped is not supported yet (backend restriction)
+      if (!(isSellNativeOrWrapped && isNativeOrWrapped)) {
+        return { token, priority: TokenPriority.HIGHEST }
+      }
     }
     if (isStablecoinPriorityToken(token.chainId, token.address)) {
       return { token, priority: TokenPriority.HIGH }
@@ -58,7 +66,8 @@ export async function determineIntermediateToken(
     if (isCorrelatedToken(token.address, correlatedTokens)) {
       return { token, priority: TokenPriority.MEDIUM }
     }
-    if (isNativeToken(token.address)) {
+    // Native/wrapped -> native/wrapped is not supported yet (backend restriction)
+    if (isNativeToken(token) && !isSellNativeOrWrapped) {
       return { token, priority: TokenPriority.LOW }
     }
 

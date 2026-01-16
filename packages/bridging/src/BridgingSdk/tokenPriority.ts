@@ -1,4 +1,4 @@
-import { NATIVE_CURRENCY_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 
 /**
  * High-priority stablecoins registry (USDC and USDT)
@@ -58,11 +58,4 @@ export function isStablecoinPriorityToken(chainId: SupportedChainId, tokenAddres
  */
 export function isCorrelatedToken(tokenAddress: string, correlatedTokens: Set<string>): boolean {
   return correlatedTokens.has(tokenAddress.toLowerCase())
-}
-
-/**
- * Checks if a token is the native blockchain currency (ETH, MATIC, AVAX, etc.)
- */
-export function isNativeToken(tokenAddress: string): boolean {
-  return tokenAddress.toLowerCase() === NATIVE_CURRENCY_ADDRESS.toLowerCase()
 }
