@@ -496,6 +496,10 @@ importers:
         version: 2.30.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
 
   packages/common:
+    dependencies:
+      '@cowprotocol/sdk-config':
+        specifier: workspace:*
+        version: link:../config
     devDependencies:
       '@cow-sdk/typescript-config':
         specifier: workspace:*

@@ -20,6 +20,9 @@
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
     "prepublishOnly": "npm run build"
   },
+  "dependencies": {
+    "@cowprotocol/sdk-config": "workspace:*"
+  },
   "devDependencies": {
     "@cow-sdk/typescript-config": "workspace:*",
     "@types/node": "^20.17.31",
