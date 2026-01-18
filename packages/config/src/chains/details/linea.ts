@@ -38,7 +38,7 @@ export const linea: ChainInfo = {
     url: 'https://docs.linea.build',
   },
   blockExplorer: {
-    name: 'LineaScan',
+    name: 'Lineascan',
     url: 'https://lineascan.build',
   },
   bridges: [
@@ -46,5 +46,5 @@ export const linea: ChainInfo = {
       name: 'Linea Bridge',
       url: 'https://linea.build/hub/bridge',
     },
-  ]
+  ],
 }

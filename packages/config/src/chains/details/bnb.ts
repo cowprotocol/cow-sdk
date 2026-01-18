@@ -41,7 +41,7 @@ export const bnb: ChainInfo = {
     url: 'https://docs.bnbchain.org',
   },
   blockExplorer: {
-    name: 'BscScan',
+    name: 'Bscscan',
     url: 'https://bscscan.com',
   },
   bridges: [

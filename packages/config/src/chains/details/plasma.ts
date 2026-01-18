@@ -41,7 +41,7 @@ export const plasma: ChainInfo = {
     url: 'https://docs.plasma.to',
   },
   blockExplorer: {
-    name: 'PlasmaScan',
+    name: 'Plasmascan',
     url: 'https://plasmascan.to',
   },
   // No native bridge available AFAICT
