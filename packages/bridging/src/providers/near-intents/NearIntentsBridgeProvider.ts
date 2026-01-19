@@ -97,7 +97,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       throw new BridgeProviderQuoteError(BridgeQuoteErrors.ONLY_SELL_ORDER_SUPPORTED, { kind: request.kind })
     }
 
-    const { sellTokenChainId, buyTokenChainId, buyTokenAddress, sellTokenAddress } = request
+    const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
 
     const tokens = adaptTokens(await this.api.getTokens())
     const { sourceTokens, targetTokens } = tokens.reduce(
@@ -120,16 +120,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
 
     if (!targetToken) return []
 
-    /**
-     * Example: trade USDT (bnb) -> POL (polygon)
-     * sellTokenAddress - address of USDT on bnb
-     * We have to exclude USDT from sourceTokens
-     * Otherwise, the result of getIntermediateTokens() will include USDT
-     * * And CoW Swap will try to swap USDT (bnb) -> USDT (bnb) which is not allowed
-     */
-    return Array.from(sourceTokens.values()).filter((token) => {
-      return token.address?.toLowerCase() !== sellTokenAddress.toLowerCase()
-    })
+    return Array.from(sourceTokens.values())
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<NearIntentsQuoteResult> {
