@@ -30,7 +30,7 @@ export * from './latest'
 
 export const LATEST_APP_DATA_VERSION = '1.13.0'
 export const LATEST_QUOTE_METADATA_VERSION = '1.1.0'
-export const LATEST_REFERRER_METADATA_VERSION = '0.2.0'
+export const LATEST_REFERRER_METADATA_VERSION = '0.3.0'
 export const LATEST_ORDER_CLASS_METADATA_VERSION = '0.3.0'
 export const LATEST_UTM_METADATA_VERSION = '0.3.0'
 export const LATEST_HOOKS_METADATA_VERSION = '0.2.0'
