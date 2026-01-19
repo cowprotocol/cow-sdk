@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-cow-shed",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "CowProtocol Cow Shed package",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
