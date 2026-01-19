@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.4.0...sdk-common-v0.5.0) (2026-01-19)
+
+
+### ✨ Features
+
+* **bridge:** allow sell token as intermediate token ([#768](https://github.com/cowprotocol/cow-sdk/issues/768)) ([8c367ac](https://github.com/cowprotocol/cow-sdk/commit/8c367ac704ad10003618c8916e32529c5c9eb815))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.6.3
+
 ## [0.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.3.0...sdk-common-v0.4.0) (2025-11-24)
 
 

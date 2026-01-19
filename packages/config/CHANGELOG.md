@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.6.2...sdk-config-v0.6.3) (2026-01-19)
+
+
+### 🐛 Bug Fixes
+
+* unify spelling for chain explorers ([#773](https://github.com/cowprotocol/cow-sdk/issues/773)) ([e89c4ba](https://github.com/cowprotocol/cow-sdk/commit/e89c4baa769b9f14982e8f4c7d19fdb8a6e2e5f6))
+
 ## [0.6.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.6.1...sdk-config-v0.6.2) (2025-12-11)
 
 

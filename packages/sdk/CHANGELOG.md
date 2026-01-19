@@ -1,5 +1,25 @@
 # Changelog
 
+## [7.2.11](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.2.10...cow-sdk-v7.2.11) (2026-01-19)
+
+
+### 🔧 Miscellaneous
+
+* remove `under development` comment from Linea and Plasma ([#770](https://github.com/cowprotocol/cow-sdk/issues/770)) ([cbb5361](https://github.com/cowprotocol/cow-sdk/commit/cbb53611674553e40d42ffcb3d0f599f49ec2fa1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.5.1
+    * @cowprotocol/sdk-common bumped to 0.5.0
+    * @cowprotocol/sdk-config bumped to 0.6.3
+    * @cowprotocol/sdk-contracts-ts bumped to 1.1.0
+    * @cowprotocol/sdk-order-book bumped to 0.5.1
+    * @cowprotocol/sdk-order-signing bumped to 0.1.24
+    * @cowprotocol/sdk-trading bumped to 0.8.1
+
 ## [7.2.10](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.2.9...cow-sdk-v7.2.10) (2026-01-15)
 
 
