@@ -26,11 +26,16 @@ export class NearIntentsApi {
 
   constructor(apiKey?: string) {
     if (apiKey) {
+    // TODO: testing only, remove before merging
+    console.log('NearIntentsApi constructor: apiKey is set?', !!apiKey)
       OpenAPI.TOKEN = apiKey
     }
   }
 
   async getTokens(): Promise<TokenResponse[]> {
+    // TODO: testing only, remove before merging
+    console.log('NearIntentsApi getTokens: OpenAPI.TOKEN is set?', !!OpenAPI.TOKEN)
+
     if (this.cachedTokens.length === 0) {
       const response = await OneClickService.getTokens()
       this.cachedTokens = response
@@ -39,6 +44,8 @@ export class NearIntentsApi {
   }
 
   async getQuote(request: QuoteRequest): Promise<QuoteResponse> {
+    // TODO: testing only, remove before merging
+    console.log('NearIntentsApi getQuote: OpenAPI.TOKEN is set?', !!OpenAPI.TOKEN)
     try {
       return await OneClickService.getQuote(request)
     } catch (error: unknown) {
@@ -65,6 +72,8 @@ export class NearIntentsApi {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     }
+    // TODO: testing only, remove before merging
+    console.log('NearIntentsApi getAttestation: OpenAPI.TOKEN is set?', !!OpenAPI.TOKEN)
     if (OpenAPI.TOKEN) {
       headers['Authorization'] = `Bearer ${OpenAPI.TOKEN}`
     }
