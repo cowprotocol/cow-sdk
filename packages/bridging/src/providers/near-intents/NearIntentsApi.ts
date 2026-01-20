@@ -62,11 +62,15 @@ export class NearIntentsApi {
   }
 
   async getAttestation(request: GetAttestationRequest): Promise<GetAttestationResponse> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    if (OpenAPI.TOKEN) {
+      headers['Authorization'] = `Bearer ${OpenAPI.TOKEN}`
+    }
     const response = await fetch(`${OpenAPI.BASE}/v0/attestation`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(request),
     })
 
