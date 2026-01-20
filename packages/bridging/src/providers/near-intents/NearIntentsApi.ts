@@ -24,6 +24,12 @@ interface GetAttestationResponse {
 export class NearIntentsApi {
   private cachedTokens: TokenResponse[] = []
 
+  constructor(apiKey?: string) {
+    if (apiKey) {
+      OpenAPI.TOKEN = apiKey
+    }
+  }
+
   async getTokens(): Promise<TokenResponse[]> {
     if (this.cachedTokens.length === 0) {
       const response = await OneClickService.getTokens()
