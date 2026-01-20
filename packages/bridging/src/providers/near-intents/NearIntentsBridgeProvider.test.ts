@@ -3,21 +3,22 @@ import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { GetExecutionStatusResponse, QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 
 import { createAdapters } from '../../../tests/setup'
+import { BridgeStatus } from '../../types'
 import { NearIntentsApi } from './NearIntentsApi'
+import type { NearIntentsBridgeProviderOptions } from './NearIntentsBridgeProvider'
 import { NEAR_INTENTS_HOOK_DAPP_ID, NearIntentsBridgeProvider } from './NearIntentsBridgeProvider'
 import { NEAR_INTENTS_SUPPORTED_NETWORKS } from './const'
-import { BridgeStatus } from '../../types'
 
 import type { TargetChainId } from '@cowprotocol/sdk-config'
-import type { QuoteResponse } from '@defuse-protocol/one-click-sdk-typescript'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
+import type { QuoteResponse } from '@defuse-protocol/one-click-sdk-typescript'
 
 // Mock NearIntentsApi
 jest.mock('./NearIntentsApi')
 
 class NearIntentsBridgeProviderTest extends NearIntentsBridgeProvider {
-  constructor() {
-    super({})
+  constructor(options: NearIntentsBridgeProviderOptions = {}) {
+    super(options)
   }
 
   // Re-expose the API for testing
@@ -45,6 +46,17 @@ adapterNames.forEach((adapterName) => {
       adapter.getCode = mockGetCode
       setGlobalAdapter(adapter)
       provider = new NearIntentsBridgeProviderTest()
+    })
+
+    it('should pass apiKey to api', () => {
+      const apiKey = 'test-api-key'
+      const providerWithKey = new NearIntentsBridgeProviderTest({ apiKey })
+      expect(providerWithKey.getApi()).toBeInstanceOf(NearIntentsApi)
+      // Since NearIntentsApi is mocked, we can check if it was called with the apiKey.
+      // However, the current mock setup might be tricky to inspect the constructor directly
+      // without changing how the mock is defined at the top of the file.
+      // Let's verify the mock calls.
+      expect(NearIntentsApi).toHaveBeenCalledWith(apiKey)
     })
 
     afterEach(() => {
