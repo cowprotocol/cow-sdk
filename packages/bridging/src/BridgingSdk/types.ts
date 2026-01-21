@@ -31,6 +31,11 @@ export type GetQuoteWithBridgeParams = {
    * Cache for intermediate tokens.
    */
   intermediateTokensCache?: TTLCache<TokenInfo[]>
+
+  /**
+   * Allows bridging trades like (USDC (mainnet) -> USDC (mainnet) -> DAI (base)
+   */
+  allowIntermediateEqSellToken?: boolean
 }
 
 export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'enableLogging' | 'cacheConfig'>>

@@ -25,6 +25,7 @@ export async function fetchMultiQuote(
     advancedSettings,
     tradingSdk,
     quoteSigner: advancedSettings?.quoteSigner,
+    allowIntermediateEqSellToken: advancedSettings?.allowIntermediateEqSellToken,
   } as const
 
   const request = intermediateTokensCache

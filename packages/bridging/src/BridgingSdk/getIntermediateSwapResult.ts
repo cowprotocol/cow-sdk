@@ -38,7 +38,7 @@ export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
   params,
   getBridgeHook,
 }: GetIntermediateSwapResultParams<T>): Promise<GetIntermediateSwapResultResult> {
-  const { swapAndBridgeRequest, advancedSettings, tradingSdk } = params
+  const { swapAndBridgeRequest, advancedSettings, tradingSdk, allowIntermediateEqSellToken } = params
   const {
     kind,
     sellTokenChainId,
@@ -69,6 +69,7 @@ export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
     sellTokenAddress,
     intermediateTokens,
     params.advancedSettings?.getCorrelatedTokens,
+    allowIntermediateEqSellToken,
   )
 
   log(`Using ${intermediateToken?.name ?? intermediateToken?.address} as intermediate tokens`)
