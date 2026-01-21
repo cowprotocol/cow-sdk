@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.4.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v1.4.0...sdk-bridging-v1.4.1) (2026-01-21)
+
+
+### 🐛 Bug Fixes
+
+* add optional apiKey for NearIntentsBridgeProvider ([#775](https://github.com/cowprotocol/cow-sdk/issues/775)) ([7546a4c](https://github.com/cowprotocol/cow-sdk/commit/7546a4c75fe43b5ee8381a45eb6608d5e8593436))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-contracts-ts bumped to 1.1.1
+    * @cowprotocol/sdk-cow-shed bumped to 0.2.11
+    * @cowprotocol/sdk-trading bumped to 0.8.2
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 0.1.25
+
 ## [1.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v1.3.0...sdk-bridging-v1.4.0) (2026-01-19)
 
 
