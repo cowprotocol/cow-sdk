@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.1.0...sdk-contracts-ts-v1.1.1) (2026-01-21)
+
+
+### 🐛 Bug Fixes
+
+* add optional apiKey for NearIntentsBridgeProvider ([#775](https://github.com/cowprotocol/cow-sdk/issues/775)) ([7546a4c](https://github.com/cowprotocol/cow-sdk/commit/7546a4c75fe43b5ee8381a45eb6608d5e8593436))
+
 ## [1.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.0.0...sdk-contracts-ts-v1.1.0) (2026-01-19)
 
 
