@@ -1,7 +1,7 @@
 import { getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { ETH_ADDRESS } from '@cowprotocol/sdk-config'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
-import { OrderKind, EnrichedOrder } from '@cowprotocol/sdk-order-book'
+import { EnrichedOrder, OrderKind } from '@cowprotocol/sdk-order-book'
 import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
 import { BridgeStatus } from '../../types'
 
@@ -17,10 +17,10 @@ import {
 } from './const'
 import { adaptToken, adaptTokens, calculateDeadline, getTokenByAddressAndChainId, hashQuote } from './util'
 
-import type { QuoteResponse } from '@defuse-protocol/one-click-sdk-typescript'
 import type { AbstractProviderAdapter } from '@cowprotocol/sdk-common'
 import type { ChainId, ChainInfo, EvmCall, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import type { CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
+import type { QuoteResponse } from '@defuse-protocol/one-click-sdk-typescript'
 import type { Address, Hex } from 'viem'
 import type {
   BridgeProviderInfo,
@@ -51,6 +51,7 @@ export interface NearIntentsQuoteResult extends BridgeQuoteResult {
 
 export interface NearIntentsBridgeProviderOptions {
   cowShedOptions?: CowShedSdkOptions
+  apiKey?: string
 }
 
 const providerType = 'ReceiverAccountBridgeProvider' as const
@@ -74,7 +75,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     if (adapter) {
       setGlobalAdapter(adapter)
     }
-    this.api = new NearIntentsApi()
+    this.api = new NearIntentsApi(options?.apiKey)
     this.cowShedSdk = new CowShedSdk(adapter, options?.cowShedOptions?.factoryOptions)
   }
 
