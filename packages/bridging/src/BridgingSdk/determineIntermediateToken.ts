@@ -33,6 +33,7 @@ export async function determineIntermediateToken(
   sourceTokenAddress: Address,
   intermediateTokens: TokenInfo[],
   getCorrelatedTokens?: (chainId: SupportedChainId) => Promise<string[]>,
+  allowIntermediateEqSellToken?: boolean,
 ): Promise<TokenInfo> {
   const firstToken = intermediateTokens[0]
 
@@ -50,8 +51,12 @@ export async function determineIntermediateToken(
   const sellTokenLike = { chainId: sourceChainId, address: sourceTokenAddress }
   const isSellNativeOrWrapped = isNativeToken(sellTokenLike) || isWrappedNativeToken(sellTokenLike)
 
+  const filteredTokens = allowIntermediateEqSellToken
+    ? intermediateTokens
+    : intermediateTokens.filter((token) => !areAddressesEqual(token.address, sourceTokenAddress))
+
   // Calculate priority for each token
-  const tokensWithPriority = intermediateTokens.map((token) => {
+  const tokensWithPriority = filteredTokens.map((token) => {
     const isNativeOrWrapped = isNativeToken(token) || isWrappedNativeToken(token)
 
     if (areAddressesEqual(token.address, sourceTokenAddress)) {
@@ -80,13 +85,13 @@ export async function determineIntermediateToken(
       return b.priority - a.priority // Higher priority first
     }
     // Maintain original order for tokens with same priority
-    return intermediateTokens.indexOf(a.token) - intermediateTokens.indexOf(b.token)
+    return filteredTokens.indexOf(a.token) - filteredTokens.indexOf(b.token)
   })
 
   const result = tokensWithPriority[0]?.token
 
   if (!result) {
-    throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_INTERMEDIATE_TOKENS, { intermediateTokens })
+    throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_INTERMEDIATE_TOKENS, { intermediateTokens: filteredTokens })
   }
 
   return result
