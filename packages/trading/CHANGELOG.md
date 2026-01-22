@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.9.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.8.2...sdk-trading-v0.9.0) (2026-01-22)
+
+
+### ✨ Features
+
+* **bridge:** add a flag to control intermediate=sell token ([#777](https://github.com/cowprotocol/cow-sdk/issues/777)) ([588dffa](https://github.com/cowprotocol/cow-sdk/commit/588dffaf418b8220293fe803186e3801597282d0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-order-signing bumped to 0.1.26
+    * @cowprotocol/sdk-contracts-ts bumped to 1.2.0
+
 ## [0.8.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.8.1...sdk-trading-v0.8.2) (2026-01-21)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.1.1...sdk-contracts-ts-v1.2.0) (2026-01-22)
+
+
+### ✨ Features
+
+* **bridge:** add a flag to control intermediate=sell token ([#777](https://github.com/cowprotocol/cow-sdk/issues/777)) ([588dffa](https://github.com/cowprotocol/cow-sdk/commit/588dffaf418b8220293fe803186e3801597282d0))
+
 ## [1.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.1.0...sdk-contracts-ts-v1.1.1) (2026-01-21)
 
 

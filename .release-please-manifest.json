@@ -1,19 +1,19 @@
 {
   "packages/app-data": "4.5.1",
-  "packages/bridging": "1.4.1",
+  "packages/bridging": "1.5.0",
   "packages/common": "0.5.0",
-  "packages/composable": "0.1.25",
+  "packages/composable": "0.1.26",
   "packages/config": "0.6.3",
-  "packages/contracts-ts": "1.1.1",
-  "packages/cow-shed": "0.2.11",
+  "packages/contracts-ts": "1.2.0",
+  "packages/cow-shed": "0.2.12",
   "packages/order-book": "0.5.1",
-  "packages/order-signing": "0.1.25",
+  "packages/order-signing": "0.1.26",
   "packages/subgraph": "0.2.7",
-  "packages/trading": "0.8.2",
+  "packages/trading": "0.9.0",
   "packages/weiroll": "0.1.12",
   "packages/providers/ethers-v5-adapter": "0.3.1",
   "packages/providers/ethers-v6-adapter": "0.3.1",
   "packages/providers/viem-adapter": "0.3.1",
-  "packages/sdk": "7.2.12",
-  "packages/flash-loans": "1.6.7"
+  "packages/sdk": "7.2.13",
+  "packages/flash-loans": "1.6.8"
 }
