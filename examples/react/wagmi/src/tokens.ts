@@ -86,11 +86,4 @@ export const USDC_TOKENS: Record<SupportedChainId, TokenInfo> = {
     name: 'USD Coin',
     symbol: 'USDC',
   },
-  [SupportedChainId.OPTIMISM]: {
-    chainId: SupportedChainId.OPTIMISM,
-    address: '0x7F5c764cBc14f9669B88837ca1490cCa17c31607', // USDC (Native Optimism)
-    decimals: 6,
-    name: 'USD Coin',
-    symbol: 'USDC',
-  },
 }
