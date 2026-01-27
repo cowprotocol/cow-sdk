@@ -95,7 +95,6 @@ describe('getWallet utilities', () => {
         SupportedChainId.LINEA,
         SupportedChainId.PLASMA,
         SupportedChainId.INK,
-        // SupportedChainId.OPTIMISM, // TODO: Why missing?
       ]
 
       for (const chainId of chainIds) {
