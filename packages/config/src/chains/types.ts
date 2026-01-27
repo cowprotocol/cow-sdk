@@ -17,6 +17,7 @@ export enum SupportedChainId {
   PLASMA = 9745,
   ARBITRUM_ONE = 42161,
   AVALANCHE = 43114,
+  INK = 57073,
   LINEA = 59144,
   SEPOLIA = 11155111,
 }

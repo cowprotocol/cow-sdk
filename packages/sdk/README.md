@@ -27,6 +27,7 @@ The SDK supports all CoW Protocol enabled networks:
 - **BNB** (56) - `SupportedChainId.BNB`
 - **Linea** (59144) - `SupportedChainId.LINEA`
 - **Plasma** (9745) - `SupportedChainId.PLASMA`
+- **Ink** (57073) - `SupportedChainId.INK`
 - **Sepolia** (11155111) - `SupportedChainId.SEPOLIA` (Testnet)
 
 ## 🔗 **Related Resources**
