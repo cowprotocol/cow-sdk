@@ -314,5 +314,5 @@ export interface Flashloan {
 export interface WrapperEntry {
   address: WrapperAddress;
   data?: WrapperData;
-  is_omittable?: IsOmittable;
+  isOmittable?: IsOmittable;
 }

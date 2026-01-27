@@ -69,7 +69,7 @@
           "$ref": "flashloan/v0.2.0.json#"
         },
         "wrappers": {
-          "$ref": "wrappers/v0.1.0.json#"
+          "$ref": "wrappers/v0.2.0.json#"
         },
         "userConsents": {
           "$ref": "userConsents/v0.1.0.json#"
