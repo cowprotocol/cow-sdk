@@ -1,5 +1,7 @@
 import { AdditionalTargetChainId, SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 
+// See https://docs.across.to/reference/contract-addresses
+
 export const ACROSS_SPOOK_CONTRACT_ADDRESSES: Record<TargetChainId, string | undefined> = {
   // https://docs.across.to/reference/contract-addresses/mainnet-chain-id-1
   [SupportedChainId.MAINNET]: '0x5c7BCd6E7De5423a257D81B442095A1a6ced35C5',
@@ -11,22 +13,23 @@ export const ACROSS_SPOOK_CONTRACT_ADDRESSES: Record<TargetChainId, string | und
   [SupportedChainId.SEPOLIA]: '0x5ef6C01E11889d86803e0B23e3cB3F9E9d97B662',
   // https://docs.across.to/reference/contract-addresses/polygon-chain-id-137
   [SupportedChainId.POLYGON]: '0x9295ee1d8C5b022Be115A2AD3c30C72E34e7F096',
-  // https://docs.across.to/reference/contract-addresses/lens-chain-id-232
-  [SupportedChainId.LENS]: '0xe7cb3e167e7475dE1331Cf6E0CEb187654619E12', // TODO: Doesn't match. It should be 0xb234cA484866c811d0e6D3318866F583781ED045
+  // https://docs.across.to/reference/contract-addresses/lens-chain
+  [SupportedChainId.LENS]: '0xb234cA484866c811d0e6D3318866F583781ED045',
   // https://docs.across.to/reference/contract-addresses/bnb-smart-chain
   [SupportedChainId.BNB]: '0x4e8E101924eDE233C13e2D8622DC8aED2872d505',
   // https://docs.across.to/reference/contract-addresses/linea-chain-id-59144
-  [SupportedChainId.LINEA]: '0xE0BCff426509723B18D6b2f0D8F4602d143bE3e0', // TODO: Should this be 0x7E63A5f1a8F0B4d0934B2f2327DAED3F6bb2ee75? (Linea_SpokePool rather than SpokePoolPeriphery)
+  [SupportedChainId.LINEA]: '0x7E63A5f1a8F0B4d0934B2f2327DAED3F6bb2ee75',
   // https://docs.across.to/reference/contract-addresses/plasma
   [SupportedChainId.PLASMA]: '0x50039fAEfebef707cFD94D6d462fE6D10B39207a',
   // https://docs.across.to/reference/contract-addresses/ink-chain-id-57073
   [SupportedChainId.INK]: '0xeF684C38F94F48775959ECf2012D7E864ffb9dd4',
+  // https://docs.across.to/reference/contract-addresses/optimism-chain-id-10
+  [AdditionalTargetChainId.OPTIMISM]: '0x6f26Bf09B1C792e3228e5467807a900A503c0281',
 
   // Not supported chains
   // TODO: This first integration is a draft, some of this chains might be supported, so we will need to update here as we iterate on the provider
   [SupportedChainId.GNOSIS_CHAIN]: undefined,
   [SupportedChainId.AVALANCHE]: undefined,
-  [AdditionalTargetChainId.OPTIMISM]: undefined, // TODO: This one seems to be supported?
 }
 
 export const ACROSS_MATH_CONTRACT_ADDRESSES: Record<TargetChainId, string | undefined> = {
