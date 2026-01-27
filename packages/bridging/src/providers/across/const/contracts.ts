@@ -45,4 +45,5 @@ export const ACROSS_MATH_CONTRACT_ADDRESSES: Record<TargetChainId, string | unde
   [SupportedChainId.BNB]: undefined, // TODO: confirm
   [SupportedChainId.LINEA]: undefined, // TODO: confirm
   [SupportedChainId.PLASMA]: undefined, // TODO: confirm
+  [SupportedChainId.INK]: undefined, // TODO: confirm
 }
