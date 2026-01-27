@@ -43,23 +43,27 @@ export type TargetChainId = SupportedChainId | AdditionalTargetChainId
  */
 export type ChainId = number
 
+export type HttpsString = `https://${string}`
+export type WssString = `wss://${string}`
+export type Address = `0x${string}`;
+
 export interface ThemedImage {
   light: string
   dark: string
 }
 
 export interface WebUrl {
-  url: string
+  url: HttpsString
   name: string
 }
 
 export type ChainRpcUrls = {
-  http: readonly string[]
-  webSocket?: readonly string[]
+  http: readonly HttpsString[]
+  webSocket?: readonly WssString[]
 }
 
 export type ChainContract = {
-  address: string
+  address: Address
   blockCreated?: number | undefined
 }
 

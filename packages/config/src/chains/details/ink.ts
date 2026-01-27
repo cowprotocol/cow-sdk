@@ -25,7 +25,7 @@ export const ink: ChainInfo = {
   },
   rpcUrls: {
     default: {
-      http: ['https://rpc-ten.inkonchain.com'], // TODO: Which one do we prefer to use? https://docs.inkonchain.com/tools/rpc
+      http: ['https://rpc-ten.inkonchain.com'],
     },
   },
   color: '#7132f5', // Brand assets https://docs.inkonchain.com/work-with-ink/brand-kit
@@ -35,11 +35,11 @@ export const ink: ChainInfo = {
   },
   docs: {
     name: 'Ink Docs',
-    url: 'https://docs.inkonchain.com/',
+    url: 'https://docs.inkonchain.com',
   },
   blockExplorer: {
     name: 'Ink Explorer',
-    url: 'https://explorer.inkonchain.com/',
+    url: 'https://explorer.inkonchain.com',
     // Note: doesn't seem to be Etherscan derived. Will need to consider it in the code.
     // TODO: add a flag to indicate that the explorer is not Etherscan derived and handle it in the code..
   },
@@ -49,4 +49,5 @@ export const ink: ChainInfo = {
       url: 'https://inkonchain.com/bridge',
     },
   ],
+  isUnderDevelopment: true,
 }
