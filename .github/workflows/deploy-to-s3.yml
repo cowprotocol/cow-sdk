@@ -29,8 +29,10 @@ jobs:
           aws-region: eu-central-1
 
       - name: Upload to S3
+        # We do not use --delete so that old assets (e.g. chain images) remain in S3.
+        # Deleting them on deploy would break previous SDK versions still in use until the new version is live.
         run: |
-          aws s3 sync src s3://files.cow.fi/cow-sdk --delete
+          aws s3 sync src s3://files.cow.fi/cow-sdk
 
       - name: Invalidate CloudFront cache
         run: |
