@@ -13,15 +13,14 @@ export const APP_DATA_HEX = '0x337aa6e6c2a7a0d1eb79a35ebd88b08fc963d5f7a3fc953b7
 
 export const APP_DATA_DOC_CUSTOM = {
   ...APP_DATA_DOC,
+  version: '1.14.0',
   environment: 'test',
   metadata: {
     referrer: {
-      address: '0x1f5B740436Fc5935622e92aa3b46818906F416E9',
-      version: '0.1.0',
+      code: 'COWREF1',
     },
     quote: {
       slippageBips: 1,
-      version: '0.2.0',
     },
   },
 }

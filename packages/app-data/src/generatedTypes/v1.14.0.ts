@@ -21,9 +21,10 @@ export type Environment = string;
  * The address of the trader who signs the CoW Swap order. This field should normally be omitted; it is recommended to use it if the signer is a smart-contract wallet using EIP-1271 signatures.
  */
 export type Signer = string;
-export type Referrer = {
-  [k: string]: unknown;
-};
+/**
+ * Affiliate/referral code (case-insensitive, stored uppercase).
+ */
+export type ReferrerCode = string;
 /**
  * Tracks in which medium the traffic originated from (twitter, facebook, etc.)
  */
@@ -253,6 +254,9 @@ export interface Metadata {
   flashloan?: Flashloan;
   wrappers?: Wrappers;
   userConsents?: UserConsents;
+}
+export interface Referrer {
+  code: ReferrerCode;
 }
 export interface UTMCodes {
   utmSource?: UTMSource;

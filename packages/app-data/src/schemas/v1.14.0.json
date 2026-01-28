@@ -39,7 +39,7 @@
           "$ref": "signer/v0.1.0.json#"
         },
         "referrer": {
-          "$ref": "referrer/v0.3.0.json#"
+          "$ref": "referrer/v1.0.0.json#"
         },
         "utm": {
           "$ref": "utm/v0.3.0.json#"

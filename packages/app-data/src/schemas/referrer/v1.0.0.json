@@ -1,27 +1,16 @@
 {
-  "$id": "#referrer/v0.3.0.json",
+  "$id": "#referrer/v1.0.0.json",
   "$schema": "http://json-schema.org/draft-07/schema",
   "title": "Referrer",
   "type": "object",
   "additionalProperties": false,
-  "anyOf": [
-    {
-      "required": ["address"]
-    },
-    {
-      "required": ["code"]
-    }
-  ],
+  "required": ["code"],
   "properties": {
-    "address": {
-      "$ref": "../definitions.json#/definitions/ethereumAddress",
-      "title": "Referrer address"
-    },
     "code": {
       "type": "string",
       "title": "Referrer code",
       "description": "Affiliate/referral code (case-insensitive, stored uppercase).",
-      "pattern": "^[A-Z0-9_-]{6,12}$"
+      "pattern": "^[A-Z0-9_-]{5,20}$"
     }
   }
 }
