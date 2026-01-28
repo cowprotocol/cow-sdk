@@ -72,13 +72,6 @@ export const USDC_TOKENS: Record<SupportedChainId, TokenInfo> = {
     name: 'USDT',
     symbol: 'USDT',
   },
-  [SupportedChainId.INK]: {
-    chainId: SupportedChainId.INK,
-    address: '0x2D270e6886d130D724215A266106e6832161EAEd', // USDC (Native Ink)
-    decimals: 6,
-    name: 'USDC',
-    symbol: 'USDC',
-  },
   [SupportedChainId.SEPOLIA]: {
     chainId: SupportedChainId.SEPOLIA,
     address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238', // USDC (Sepolia testnet deployment by Circle)
