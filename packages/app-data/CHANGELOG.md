@@ -1,5 +1,25 @@
 # Changelog
 
+## [4.5.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.5.1...sdk-app-data-v4.5.2) (2026-01-28)
+
+
+### 🐛 Bug Fixes
+
+* **app-data:** rename `is_omittable` property as camelCase in appData ([6b16d0d](https://github.com/cowprotocol/cow-sdk/commit/6b16d0dab7831035651529169c572df79e79640d))
+* **app-data:** rename `is_omittable` property in wrappers app data ([bb5c637](https://github.com/cowprotocol/cow-sdk/commit/bb5c6375135937389974916267fee850666fa2dd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.1
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 0.7.0
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.2
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.2
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.2
+
 ## [4.5.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.5.0...sdk-app-data-v4.5.1) (2026-01-19)
 
 
