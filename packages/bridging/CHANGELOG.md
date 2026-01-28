@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v1.6.0...sdk-bridging-v1.7.0) (2026-01-28)
+
+
+### ✨ Features
+
+* allow new code property in referrer schema ([#774](https://github.com/cowprotocol/cow-sdk/issues/774)) ([2b648b6](https://github.com/cowprotocol/cow-sdk/commit/2b648b6a1db03fd34002c49572d8e8e556d03593))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.6.0
+    * @cowprotocol/sdk-common bumped to 0.5.2
+    * @cowprotocol/sdk-config bumped to 0.7.1
+    * @cowprotocol/sdk-contracts-ts bumped to 1.4.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.2.14
+    * @cowprotocol/sdk-order-book bumped to 0.6.1
+    * @cowprotocol/sdk-trading bumped to 0.9.2
+    * @cowprotocol/sdk-weiroll bumped to 0.1.14
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.3
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.3
+    * @cowprotocol/sdk-order-signing bumped to 0.1.28
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.3
+
 ## [1.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v1.5.0...sdk-bridging-v1.6.0) (2026-01-28)
 
 

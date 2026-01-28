@@ -1,5 +1,24 @@
 # Changelog
 
+## [4.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.5.2...sdk-app-data-v4.6.0) (2026-01-28)
+
+
+### ✨ Features
+
+* allow new code property in referrer schema ([#774](https://github.com/cowprotocol/cow-sdk/issues/774)) ([2b648b6](https://github.com/cowprotocol/cow-sdk/commit/2b648b6a1db03fd34002c49572d8e8e556d03593))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.2
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 0.7.1
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.3
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.3
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.3
+
 ## [4.5.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.5.1...sdk-app-data-v4.5.2) (2026-01-28)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.7.0...sdk-config-v0.7.1) (2026-01-28)
+
+
+### 🐛 Bug Fixes
+
+* **ink:** swap Ink logo with filled version ([#783](https://github.com/cowprotocol/cow-sdk/issues/783)) ([bfc0ba7](https://github.com/cowprotocol/cow-sdk/commit/bfc0ba72108bf376bdcdd2194ba312c6b8a50e3a))
+
 ## [0.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.6.3...sdk-config-v0.7.0) (2026-01-28)
 
 
