@@ -25,6 +25,7 @@ CoW Swap is currently available on the following chains:
 - **Plasma** (9745)
 - **Arbitrum One** (42161)
 - **Avalanche** (43114)
+- **Ink** (57073)
 - **Linea** (59144)
 - **Sepolia** (11155111) (Testnet)
 

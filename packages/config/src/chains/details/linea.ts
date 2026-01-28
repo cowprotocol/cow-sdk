@@ -1,8 +1,7 @@
 import { ChainInfo, SupportedChainId } from '../types'
 import { nativeCurrencyTemplate, RAW_CHAINS_FILES_PATH } from '../../constants'
 
-const light = `${RAW_CHAINS_FILES_PATH}/images/linea-logo-light.svg`
-const dark = `${RAW_CHAINS_FILES_PATH}/images/linea-logo-dark.svg`
+const lineaLogo = `${RAW_CHAINS_FILES_PATH}/images/linea-logo.svg`
 
 // See https://github.com/wevm/viem/blob/main/src/chains/definitions/linea.ts
 // and https://github.com/ethereum-lists/chains/blob/master/_data/chains/eip155-59144.json
@@ -10,7 +9,7 @@ export const linea: ChainInfo = {
   id: SupportedChainId.LINEA,
   label: 'Linea',
   eip155Label: 'Linea Mainnet',
-  logo: { light, dark },
+  logo: { light: lineaLogo, dark: lineaLogo },
   nativeCurrency: {
     ...nativeCurrencyTemplate,
     chainId: SupportedChainId.LINEA,
