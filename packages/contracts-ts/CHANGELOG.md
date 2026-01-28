@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.2.0...sdk-contracts-ts-v1.3.0) (2026-01-28)
+
+
+### ✨ Features
+
+* **ink:** reapply "feat/COW-163: Add Ink network ([#781](https://github.com/cowprotocol/cow-sdk/issues/781))" ([7c23332](https://github.com/cowprotocol/cow-sdk/commit/7c23332dac4f8c91d5f75ae68297906e20f20362))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.1
+    * @cowprotocol/sdk-config bumped to 0.7.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.2
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.2
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.2
+
 ## [1.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.1.1...sdk-contracts-ts-v1.2.0) (2026-01-22)
 
 

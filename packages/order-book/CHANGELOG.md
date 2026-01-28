@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.5.1...sdk-order-book-v0.6.0) (2026-01-28)
+
+
+### ✨ Features
+
+* **ink:** reapply "feat/COW-163: Add Ink network ([#781](https://github.com/cowprotocol/cow-sdk/issues/781))" ([7c23332](https://github.com/cowprotocol/cow-sdk/commit/7c23332dac4f8c91d5f75ae68297906e20f20362))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.7.0
+    * @cowprotocol/sdk-common bumped to 0.5.1
+
 ## [0.5.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.5.0...sdk-order-book-v0.5.1) (2026-01-19)
 
 

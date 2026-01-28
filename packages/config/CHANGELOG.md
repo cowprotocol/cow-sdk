@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.6.3...sdk-config-v0.7.0) (2026-01-28)
+
+
+### ✨ Features
+
+* **ink:** reapply "feat/COW-163: Add Ink network ([#781](https://github.com/cowprotocol/cow-sdk/issues/781))" ([7c23332](https://github.com/cowprotocol/cow-sdk/commit/7c23332dac4f8c91d5f75ae68297906e20f20362))
+
 ## [0.6.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.6.2...sdk-config-v0.6.3) (2026-01-19)
 
 
