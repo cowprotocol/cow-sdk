@@ -463,7 +463,7 @@ describe('createPostSwapOrderFromQuote with ReceiverAccountBridgeProvider', () =
               slippageBips: 100,
             },
             referrer: {
-              address: '0x1234567890123456789012345678901234567890',
+              code: 'COWREF1',
             },
           },
         }
@@ -481,7 +481,7 @@ describe('createPostSwapOrderFromQuote with ReceiverAccountBridgeProvider', () =
 
         // Should have the custom metadata merged
         expect(orderAppData.metadata.quote.slippageBips).toBe(100)
-        expect(orderAppData.metadata.referrer.address).toBe('0x1234567890123456789012345678901234567890')
+        expect(orderAppData.metadata.referrer.code).toBe('COWREF1')
 
         // Verify that getQuote was NOT called again (skipQuoteRefetch = true for ReceiverAccountBridgeProvider)
         expect(getQuoteMock).toHaveBeenCalledTimes(1) // Only the initial call
