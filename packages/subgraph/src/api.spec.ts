@@ -339,6 +339,7 @@ describe('CoW subgraph URL', () => {
       [SupportedChainId.BNB]: null,
       [SupportedChainId.LINEA]: null,
       [SupportedChainId.PLASMA]: null,
+      [SupportedChainId.INK]: null,
     }
 
     const customSubgraphApi = new SubgraphApi('FakeApiKey', {
