@@ -2,8 +2,7 @@ name: Deploy to S3
 # Workflow copied from https://github.com/cowprotocol/token-lists/blob/main/.github/workflows/s3Deploy.yml
 
 on:
-  release:
-    types: [created]
+  workflow_call:
   # Allow manual trigger
   workflow_dispatch:
 
