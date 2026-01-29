@@ -16,6 +16,8 @@ permissions:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
     steps:
       # 1️⃣ Checkout the repo
       - uses: actions/checkout@v4
@@ -56,3 +58,12 @@ jobs:
       - name: Publish changed packages
         if: steps.release.outputs.releases_created == 'true'
         run: pnpm publish -r --filter="./packages/**" --tag latest --no-git-checks
+
+  deploy-to-s3:
+    needs: release-please
+    if: needs.release-please.result == 'success' && needs.release-please.outputs.releases_created == 'true'
+    uses: ./.github/workflows/deploy-to-s3.yml
+    permissions:
+      id-token: write
+      contents: read
+    secrets: inherit
