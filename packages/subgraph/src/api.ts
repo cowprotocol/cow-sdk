@@ -49,7 +49,6 @@ export class SubgraphApi {
       [SupportedChainId.BNB]: null,
       [SupportedChainId.LINEA]: null,
       [SupportedChainId.PLASMA]: null,
-      [SupportedChainId.INK]: null,
     }
     this.context = {
       ...DEFAULT_COW_API_CONTEXT,

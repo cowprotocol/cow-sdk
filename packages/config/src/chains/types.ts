@@ -17,7 +17,6 @@ export enum SupportedChainId {
   PLASMA = 9745,
   ARBITRUM_ONE = 42161,
   AVALANCHE = 43114,
-  INK = 57073,
   LINEA = 59144,
   SEPOLIA = 11155111,
 }
@@ -43,27 +42,23 @@ export type TargetChainId = SupportedChainId | AdditionalTargetChainId
  */
 export type ChainId = number
 
-export type HttpsString = `https://${string}`
-export type WssString = `wss://${string}`
-export type Address = `0x${string}`;
-
 export interface ThemedImage {
   light: string
   dark: string
 }
 
 export interface WebUrl {
-  url: HttpsString
+  url: string
   name: string
 }
 
 export type ChainRpcUrls = {
-  http: readonly HttpsString[]
-  webSocket?: readonly WssString[]
+  http: readonly string[]
+  webSocket?: readonly string[]
 }
 
 export type ChainContract = {
-  address: Address
+  address: string
   blockCreated?: number | undefined
 }
 

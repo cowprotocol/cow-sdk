@@ -50,7 +50,6 @@ export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.BNB]: `${PROD_BASE_URL}/bnb`,
   [SupportedChainId.LINEA]: `${PROD_BASE_URL}/linea`,
   [SupportedChainId.PLASMA]: `${PROD_BASE_URL}/plasma`,
-  [SupportedChainId.INK]: `${PROD_BASE_URL}/ink`,
 }
 
 /**
@@ -68,7 +67,6 @@ export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.BNB]: `${STAGING_BASE_URL}/bnb`,
   [SupportedChainId.LINEA]: `${STAGING_BASE_URL}/linea`,
   [SupportedChainId.PLASMA]: `${STAGING_BASE_URL}/plasma`,
-  [SupportedChainId.INK]: `${STAGING_BASE_URL}/ink`,
 }
 
 function cleanObjectFromUndefinedValues(obj: Record<string, string>): typeof obj {
