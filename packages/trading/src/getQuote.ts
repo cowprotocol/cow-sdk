@@ -39,6 +39,8 @@ const ETH_FLOW_AUX_QUOTE_PARAMS = {
   verificationGasLimit: 0,
 }
 
+const PROTOCOL_FEE_BPS_MIN = 0.0001
+
 export type QuoteResultsWithSigner = {
   result: QuoteResults & { signer: AbstractSigner<unknown> }
   orderBookApi: OrderBookApi
@@ -135,6 +137,16 @@ export async function getQuoteRaw(
   log('Getting quote...')
 
   const quote = await orderBookApi.getQuote(quoteRequest)
+
+  if (quote.protocolFeeBps) {
+    const protocolFeeBps = Number(quote.protocolFeeBps)
+    /**
+     * Do not allow invalid protocolFeeBps or when it's less than PROTOCOL_FEE_BPS_MIN
+     */
+    if (Number.isNaN(protocolFeeBps) || protocolFeeBps < PROTOCOL_FEE_BPS_MIN) {
+      quote.protocolFeeBps = '0'
+    }
+  }
 
   // Get the suggested slippage based on the quote
   const { slippageBps: suggestedSlippageBps } = await resolveSlippageSuggestion(
