@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.7.1...sdk-config-v0.7.2) (2026-02-02)
+
+
+### 🐛 Bug Fixes
+
+* support decimals in protocolFeeBps ([#787](https://github.com/cowprotocol/cow-sdk/issues/787)) ([f53ae65](https://github.com/cowprotocol/cow-sdk/commit/f53ae65931d85e354779767ed67e0e4df944a2bc))
+
 ## [0.7.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.7.0...sdk-config-v0.7.1) (2026-01-28)
 
 

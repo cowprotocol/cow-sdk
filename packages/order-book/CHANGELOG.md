@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.6.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.6.1...sdk-order-book-v0.6.2) (2026-02-02)
+
+
+### 🐛 Bug Fixes
+
+* support decimals in protocolFeeBps ([#787](https://github.com/cowprotocol/cow-sdk/issues/787)) ([f53ae65](https://github.com/cowprotocol/cow-sdk/commit/f53ae65931d85e354779767ed67e0e4df944a2bc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.7.2
+    * @cowprotocol/sdk-common bumped to 0.5.3
+
 ## [0.6.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.6.0...sdk-order-book-v0.6.1) (2026-01-28)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-order-signing",
-  "version": "0.1.28",
+  "version": "0.1.29",
   "description": "TypeScript order signing for CoW Protocol SDK",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
