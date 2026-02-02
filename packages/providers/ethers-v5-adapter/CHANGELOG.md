@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v5-adapter-v0.3.3...sdk-ethers-v5-adapter-v0.3.4) (2026-02-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.3
+
 ## [0.3.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v5-adapter-v0.3.2...sdk-ethers-v5-adapter-v0.3.3) (2026-01-28)
 
 

@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.4.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.4.0...sdk-contracts-ts-v1.4.1) (2026-02-02)
+
+
+### 🐛 Bug Fixes
+
+* support decimals in protocolFeeBps ([#787](https://github.com/cowprotocol/cow-sdk/issues/787)) ([f53ae65](https://github.com/cowprotocol/cow-sdk/commit/f53ae65931d85e354779767ed67e0e4df944a2bc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.3
+    * @cowprotocol/sdk-config bumped to 0.7.2
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.4
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.4
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.4
+
 ## [1.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.3.0...sdk-contracts-ts-v1.4.0) (2026-01-28)
 
 
