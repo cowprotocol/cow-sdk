@@ -136,11 +136,6 @@ export async function getQuoteRaw(
 
   const quote = await orderBookApi.getQuote(quoteRequest)
 
-  // TODO: remove after testing
-  if (localStorage.getItem('protocolFeeOverride')) {
-    quote.protocolFeeBps = localStorage.getItem('protocolFeeOverride') ?? '0'
-  }
-
   // Get the suggested slippage based on the quote
   const { slippageBps: suggestedSlippageBps } = await resolveSlippageSuggestion(
     chainId,
