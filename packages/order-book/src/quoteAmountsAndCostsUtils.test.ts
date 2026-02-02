@@ -225,9 +225,7 @@ describe('Calculation of before/after fees amounts', () => {
         const expectedPartnerFeeAmount = (buyBeforeProtocol * partnerBps) / 10_000n
 
         expect(result.costs.partnerFee.amount.toString()).toBe(expectedPartnerFeeAmount.toString())
-        expect(result.afterPartnerFees.buyAmount.toString()).toBe(
-          (buyAfter - expectedPartnerFeeAmount).toString(),
-        )
+        expect(result.afterPartnerFees.buyAmount.toString()).toBe((buyAfter - expectedPartnerFeeAmount).toString())
       })
 
       it('SELL beforeAllFees includes protocol fee once', () => {
@@ -248,6 +246,34 @@ describe('Calculation of before/after fees amounts', () => {
           result.costs.networkFee.amountInBuyCurrency
 
         expect(result.beforeAllFees.buyAmount).toBe(expectedBeforeAllFeesBuyAmount)
+      })
+
+      it('protocolFeeBps can be a decimal number', () => {
+        const protocolFeeBps = 0.003
+        const orderParams = SELL_ORDER
+
+        const result = getQuoteAmountsAndCosts({
+          orderParams,
+          sellDecimals,
+          buyDecimals,
+          slippagePercentBps: 0,
+          partnerFeeBps: undefined,
+          protocolFeeBps,
+        })
+
+        const buyAfter = BigInt(orderParams.buyAmount)
+        const bps = BigInt(protocolFeeBps * 100_000)
+        const denominator = 10_000n * 100_000n - bps
+        const expectedProtocolFeeAmount = (buyAfter * bps) / denominator
+        const expectedBuyBeforeProtocol = buyAfter + expectedProtocolFeeAmount
+
+        expect(result.costs.protocolFee.amount.toString()).toBe(expectedProtocolFeeAmount.toString())
+        expect(result.beforeNetworkCosts.buyAmount.toString()).toBe(expectedBuyBeforeProtocol.toString())
+
+        expect(result.costs.protocolFee).toEqual({
+          amount: 5589n,
+          bps: protocolFeeBps,
+        })
       })
     })
 
@@ -302,9 +328,7 @@ describe('Calculation of before/after fees amounts', () => {
         const expectedPartnerFeeAmount = (sellBeforeProtocol * partnerBps) / 10_000n
 
         expect(result.costs.partnerFee.amount.toString()).toBe(expectedPartnerFeeAmount.toString())
-        expect(result.afterPartnerFees.sellAmount.toString()).toBe(
-          (sellAfter + expectedPartnerFeeAmount).toString(),
-        )
+        expect(result.afterPartnerFees.sellAmount.toString()).toBe((sellAfter + expectedPartnerFeeAmount).toString())
       })
 
       it('restores beforeAllFees.sellAmount with a single protocol fee deduction', () => {
@@ -325,6 +349,37 @@ describe('Calculation of before/after fees amounts', () => {
           result.costs.networkFee.amountInSellCurrency
 
         expect(result.beforeAllFees.sellAmount).toBe(expectedBeforeAllFeesSellAmount)
+      })
+    })
+
+    it('protocolFeeBps can be a decimal number', () => {
+      const protocolFeeBps = 0.00071
+
+      const orderParams = BUY_ORDER
+      const result = getQuoteAmountsAndCosts({
+        orderParams,
+        sellDecimals,
+        buyDecimals,
+        slippagePercentBps: 0,
+        partnerFeeBps: undefined,
+        protocolFeeBps,
+      })
+
+      const sellBefore = BigInt(orderParams.sellAmount)
+      const network = BigInt(orderParams.feeAmount)
+      const sellAfter = sellBefore + network
+
+      const bps = BigInt(protocolFeeBps * 100_000)
+      const denominator = 10_000n * 100_000n + bps
+      const expectedProtocolFeeAmount = (sellAfter * bps) / denominator
+      const expectedSellBeforeProtocol = sellAfter - expectedProtocolFeeAmount
+
+      expect(result.costs.protocolFee.amount.toString()).toBe(expectedProtocolFeeAmount.toString())
+      expect(result.beforeNetworkCosts.sellAmount.toString()).toBe(expectedSellBeforeProtocol.toString())
+
+      expect(result.costs.protocolFee).toEqual({
+        amount: 12206189769n,
+        bps: protocolFeeBps,
       })
     })
   })

@@ -11,7 +11,6 @@ import { bnb } from '../details/bnb'
 import { optimism } from '../details/optimism'
 import { linea } from '../details/linea'
 import { plasma } from '../details/plasma'
-import { ink } from '../details/ink'
 
 /**
  * Details of all supported chains.
@@ -27,7 +26,6 @@ export const ALL_SUPPORTED_CHAINS_MAP: Record<SupportedChainId, ChainInfo> = {
   [SupportedChainId.LENS]: lens,
   [SupportedChainId.PLASMA]: plasma,
   [SupportedChainId.LINEA]: linea,
-  [SupportedChainId.INK]: ink,
   [SupportedChainId.SEPOLIA]: sepolia,
 }
 

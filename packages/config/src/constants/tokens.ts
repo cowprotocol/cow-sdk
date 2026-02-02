@@ -87,11 +87,6 @@ export const WRAPPED_NATIVE_CURRENCIES: Record<SupportedChainId, TokenInfo> = {
     '0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f',
     wrappedNativeCurrencyEth,
   ),
-  [SupportedChainId.INK]: getWrappedTokenForChain(
-    SupportedChainId.INK,
-    '0x4200000000000000000000000000000000000006',
-    wrappedNativeCurrencyEth,
-  ),
 }
 
 function getWrappedTokenForChain(

@@ -11,7 +11,6 @@ import {
   plasma,
   polygon,
   sepolia,
-  ink,
   SupportedChainId,
 } from '@cowprotocol/sdk-config'
 
@@ -27,7 +26,6 @@ const DEFAULT_RPC_URL: Record<SupportedChainId, string | undefined> = {
   [SupportedChainId.BNB]: bnb.rpcUrls.default.http[0],
   [SupportedChainId.LINEA]: linea.rpcUrls.default.http[0],
   [SupportedChainId.PLASMA]: plasma.rpcUrls.default.http[0],
-  [SupportedChainId.INK]: ink.rpcUrls.default.http[0],
 }
 
 export async function getRpcProvider(chainId: SupportedChainId) {
