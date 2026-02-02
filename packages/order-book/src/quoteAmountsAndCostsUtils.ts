@@ -10,6 +10,7 @@ export interface QuoteAmountsAndCostsParams {
   protocolFeeBps: number | undefined
 }
 
+const HUNDRED_THOUSANDS = 100_000
 const ONE_HUNDRED_BPS = BigInt(100 * 100)
 
 export function getQuoteAmountsWithCosts(params: {
@@ -151,7 +152,8 @@ function getProtocolFeeAmount(params: { orderParams: OrderParameters; isSell: bo
   const buyAmount = BigInt(buyAmountStr)
   const feeAmount = BigInt(feeAmountStr)
 
-  const protocolFeeBpsBig = BigInt(protocolFeeBps)
+  const protocolFeeScale = BigInt(HUNDRED_THOUSANDS)
+  const protocolFeeBpsBig = BigInt(protocolFeeBps * HUNDRED_THOUSANDS)
 
   if (isSell) {
     /**
@@ -160,14 +162,14 @@ function getProtocolFeeAmount(params: { orderParams: OrderParameters; isSell: bo
      * The buyAmountAfterNetworkCosts already includes the protocol fee (it was deducted from buyAmount by the API).
      * We need to reconstruct the original buyAmount and calculate the fee amount.
      */
-    const denominator = ONE_HUNDRED_BPS - protocolFeeBpsBig
+    const denominator = ONE_HUNDRED_BPS * protocolFeeScale - protocolFeeBpsBig
     return (buyAmount * protocolFeeBpsBig) / denominator
   } else {
     /**
      * BUY orders formula: protocolFeeInSell = (quoteSellAmount + feeAmount) * protocolFeeBps / (1 + protocolFeeBps)
      * the sellAmountAfterNetworkCosts already includes the protocol fee (it was added to sellAmount by the API).
      */
-    const denominator = ONE_HUNDRED_BPS + protocolFeeBpsBig
+    const denominator = ONE_HUNDRED_BPS * protocolFeeScale + protocolFeeBpsBig
     // sellAmountAfterNetworkCosts is already sellAmount + networkCosts (check _getQuoteAmountsWithCosts)
     return ((sellAmount + feeAmount) * protocolFeeBpsBig) / denominator
   }
