@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.7.2...sdk-config-v0.7.3) (2026-02-02)
+
+
+### 🔧 Miscellaneous
+
+* revert revert Ink network ([#789](https://github.com/cowprotocol/cow-sdk/issues/789)) ([a00dbbd](https://github.com/cowprotocol/cow-sdk/commit/a00dbbd6a26238bcee2d4452487d16551560c59f))
+
 ## [0.7.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.7.1...sdk-config-v0.7.2) (2026-02-02)
 
 

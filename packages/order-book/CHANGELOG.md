@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.6.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.6.2...sdk-order-book-v0.6.3) (2026-02-02)
+
+
+### 🔧 Miscellaneous
+
+* revert revert Ink network ([#789](https://github.com/cowprotocol/cow-sdk/issues/789)) ([a00dbbd](https://github.com/cowprotocol/cow-sdk/commit/a00dbbd6a26238bcee2d4452487d16551560c59f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.7.3
+    * @cowprotocol/sdk-common bumped to 0.5.4
+
 ## [0.6.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.6.1...sdk-order-book-v0.6.2) (2026-02-02)
 
 
