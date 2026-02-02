@@ -136,6 +136,11 @@ export async function getQuoteRaw(
 
   const quote = await orderBookApi.getQuote(quoteRequest)
 
+  // TODO: remove after testing
+  if (localStorage.getItem('protocolFeeOverride')) {
+    quote.protocolFeeBps = localStorage.getItem('protocolFeeOverride') ?? '0'
+  }
+
   // Get the suggested slippage based on the quote
   const { slippageBps: suggestedSlippageBps } = await resolveSlippageSuggestion(
     chainId,
@@ -214,7 +219,13 @@ export async function getQuote(
   })
 
   const orderToSign = getOrderToSign(
-    { chainId, from, networkCostsAmount: quote.quote.feeAmount, isEthFlow, protocolFeeBps: quote.protocolFeeBps ? Number(quote.protocolFeeBps) : undefined },
+    {
+      chainId,
+      from,
+      networkCostsAmount: quote.quote.feeAmount,
+      isEthFlow,
+      protocolFeeBps: quote.protocolFeeBps ? Number(quote.protocolFeeBps) : undefined,
+    },
     swapParamsToLimitOrderParams(tradeParameters, quote),
     appDataInfo.appDataKeccak256,
   )
