@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.7.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v1.7.1...sdk-bridging-v1.7.2) (2026-02-02)
+
+
+### 🔧 Miscellaneous
+
+* revert revert Ink network ([#789](https://github.com/cowprotocol/cow-sdk/issues/789)) ([a00dbbd](https://github.com/cowprotocol/cow-sdk/commit/a00dbbd6a26238bcee2d4452487d16551560c59f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.6.2
+    * @cowprotocol/sdk-common bumped to 0.5.4
+    * @cowprotocol/sdk-config bumped to 0.7.3
+    * @cowprotocol/sdk-contracts-ts bumped to 1.4.2
+    * @cowprotocol/sdk-cow-shed bumped to 0.2.16
+    * @cowprotocol/sdk-order-book bumped to 0.6.3
+    * @cowprotocol/sdk-trading bumped to 0.9.4
+    * @cowprotocol/sdk-weiroll bumped to 0.1.16
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.5
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.5
+    * @cowprotocol/sdk-order-signing bumped to 0.1.30
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.5
+
 ## [1.7.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v1.7.0...sdk-bridging-v1.7.1) (2026-02-02)
 
 

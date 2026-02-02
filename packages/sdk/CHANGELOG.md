@@ -1,5 +1,25 @@
 # Changelog
 
+## [7.3.3](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.3.2...cow-sdk-v7.3.3) (2026-02-02)
+
+
+### 🔧 Miscellaneous
+
+* revert revert Ink network ([#789](https://github.com/cowprotocol/cow-sdk/issues/789)) ([a00dbbd](https://github.com/cowprotocol/cow-sdk/commit/a00dbbd6a26238bcee2d4452487d16551560c59f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.6.2
+    * @cowprotocol/sdk-common bumped to 0.5.4
+    * @cowprotocol/sdk-config bumped to 0.7.3
+    * @cowprotocol/sdk-contracts-ts bumped to 1.4.2
+    * @cowprotocol/sdk-order-book bumped to 0.6.3
+    * @cowprotocol/sdk-order-signing bumped to 0.1.30
+    * @cowprotocol/sdk-trading bumped to 0.9.4
+
 ## [7.3.2](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.3.1...cow-sdk-v7.3.2) (2026-02-02)
 
 
