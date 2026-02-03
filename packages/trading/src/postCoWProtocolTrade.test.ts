@@ -42,11 +42,13 @@ const currentTimestamp = 1487076708000
 const signatureMock = { signature: '0x000a1', signingScheme: 'eip712' }
 
 const sendOrderMock = jest.fn()
+const uploadAppDataMock = jest.fn()
 const orderBookApiMock = {
   context: {
     chainId: defaultOrderParams.chainId,
   },
   sendOrder: sendOrderMock,
+  uploadAppData: uploadAppDataMock,
 } as unknown as OrderBookApi
 const appDataMock = {
   appDataKeccak256: '0xaf1908d8e30f63bf4a6dbd41d2191eb092ac0af626b37c720596426130717658',
@@ -101,6 +103,7 @@ describe('postCoWProtocolTrade', () => {
     signOrderMock.mockReset()
     postSellNativeCurrencyOrderMock.mockReset()
     sendOrderMock.mockReset()
+    uploadAppDataMock.mockReset()
   })
 
   // TODO: will be fixed later
@@ -169,6 +172,22 @@ describe('postCoWProtocolTrade', () => {
         }),
       )
       expect(ownerAddress).not.toBe(TEST_ADDRESS)
+      sendOrderMock.mockReset()
+    }
+  })
+
+  it('should call uploadAppData with appDataKeccak256 and fullAppData', async () => {
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      const order = { ...defaultOrderParams }
+
+      await postCoWProtocolTrade(orderBookApiMock, appDataMock, order, {}, adapters[adapterName].signer)
+
+      expect(uploadAppDataMock).toHaveBeenCalledTimes(1)
+      expect(uploadAppDataMock).toHaveBeenCalledWith(appDataMock.appDataKeccak256, appDataMock.fullAppData)
+      uploadAppDataMock.mockReset()
       sendOrderMock.mockReset()
     }
   })

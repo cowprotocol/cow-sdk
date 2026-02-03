@@ -70,6 +70,7 @@ describe('postSwapOrder', () => {
       },
       getQuote: jest.fn().mockResolvedValue(SELL_ORDER_QUOTE_MOCK),
       sendOrder: jest.fn().mockResolvedValue('0x01'),
+      uploadAppData: jest.fn().mockResolvedValue(null),
     }
 
     for (const adapterName of Object.keys(adapters) as Array<keyof AdaptersTestSetup>) {
@@ -137,6 +138,7 @@ describe('postSwapOrder', () => {
       },
       getQuote: jest.fn().mockResolvedValue(quoteResponseMock),
       sendOrder: jest.fn().mockResolvedValue('0x01'),
+      uploadAppData: jest.fn().mockResolvedValue(null),
     }
 
     for (const adapterName of Object.keys(adapters) as Array<keyof AdaptersTestSetup>) {
@@ -170,6 +172,7 @@ describe('postSwapOrder', () => {
       },
       getQuote: jest.fn().mockResolvedValue(SELL_ORDER_QUOTE_MOCK),
       sendOrder: jest.fn().mockResolvedValue('0x01'),
+      uploadAppData: jest.fn().mockResolvedValue(null),
     }
 
     const orderParams = {
@@ -203,6 +206,7 @@ describe('postSwapOrder', () => {
       },
       getQuote: jest.fn().mockResolvedValue(SELL_ORDER_QUOTE_MOCK),
       sendOrder: jest.fn().mockResolvedValue('0x01'),
+      uploadAppData: jest.fn().mockResolvedValue(null),
     }
     const slippageBips = 800
 
@@ -240,6 +244,7 @@ describe('postSwapOrder', () => {
       },
       getQuote: jest.fn().mockResolvedValue(SELL_ORDER_QUOTE_MOCK),
       sendOrder: jest.fn().mockResolvedValue('0x01'),
+      uploadAppData: jest.fn().mockResolvedValue(null),
     }
     const validTo = 5600000
     const receiver = '0x974caa59e49682cda0ad2bbe82983419a2ecc400'
