@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.2.16](https://github.com/cowprotocol/cow-sdk/compare/sdk-cow-shed-v0.2.15...sdk-cow-shed-v0.2.16) (2026-02-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.7.3
+    * @cowprotocol/sdk-common bumped to 0.5.4
+    * @cowprotocol/sdk-contracts-ts bumped to 1.4.2
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.5
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.5
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.5
+
+## [0.2.15](https://github.com/cowprotocol/cow-sdk/compare/sdk-cow-shed-v0.2.14...sdk-cow-shed-v0.2.15) (2026-02-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.7.2
+    * @cowprotocol/sdk-common bumped to 0.5.3
+    * @cowprotocol/sdk-contracts-ts bumped to 1.4.1
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.4
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.4
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.4
+
 ## [0.2.14](https://github.com/cowprotocol/cow-sdk/compare/sdk-cow-shed-v0.2.13...sdk-cow-shed-v0.2.14) (2026-01-28)
 
 
