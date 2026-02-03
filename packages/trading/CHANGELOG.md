@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.9.4...sdk-trading-v0.10.0) (2026-02-03)
+
+
+### ✨ Features
+
+* **trading:** upload appData before order signing ([#786](https://github.com/cowprotocol/cow-sdk/issues/786)) ([de819d1](https://github.com/cowprotocol/cow-sdk/commit/de819d183531d938daf165809ef0cf9ef2537f58))
+
 ## [0.9.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.9.3...sdk-trading-v0.9.4) (2026-02-02)
 
 
