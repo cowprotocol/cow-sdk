@@ -7,7 +7,6 @@ import {
   areTokensEqual,
   EvmAddressKey,
   BtcAddressKey,
-  AddressKey,
 } from './token'
 import { isEvmAddress, isBtcAddress } from './address'
 
