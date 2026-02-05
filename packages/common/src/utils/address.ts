@@ -7,7 +7,7 @@ export type AddressKey = `0x${string}`
 
 /**
  * Gets an address key for a given address.
- * Normalizes the address to lowercase with 0x prefix.
+ * Normalizes the address to lowercase with 0x prefix. (could be different for Solana/BTC)
  *
  * @param address - The address string
  * @returns The normalized address key
