@@ -1,16 +1,10 @@
 import { Nullish } from '../types'
 import { getChainInfo, isSupportedChain, SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
+import { AddressKey, getAddressKey } from './address'
 
 interface TokenLike {
   chainId: number
   address: string
-}
-
-export type AddressKey = `0x${string}`
-
-// For Solana might have different result
-export function getAddressKey(address: string): AddressKey {
-  return `${address.toLowerCase()}` as AddressKey
 }
 
 export interface TokenIdentifier {
