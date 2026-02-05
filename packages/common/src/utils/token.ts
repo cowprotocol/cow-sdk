@@ -9,7 +9,7 @@ interface TokenLike {
 export type AddressKey = `0x${string}`
 
 // For Solana might have different result
-export function getTokenAddressKey(address: string): AddressKey {
+export function getAddressKey(address: string): AddressKey {
   return `${address.toLowerCase()}` as AddressKey
 }
 
@@ -21,7 +21,7 @@ export interface TokenIdentifier {
 export type TokenId = `${number}:${AddressKey}`
 
 export function getTokenId(token: TokenIdentifier): TokenId {
-  return `${token.chainId}:${getTokenAddressKey(token.address)}`
+  return `${token.chainId}:${getAddressKey(token.address)}`
 }
 
 export function areTokensEqual(a: TokenLike | undefined | null, b: TokenLike | undefined | null): boolean {
@@ -32,7 +32,7 @@ export function areTokensEqual(a: TokenLike | undefined | null, b: TokenLike | u
 
 export function areAddressesEqual(a: Nullish<string>, b: Nullish<string>): boolean {
   if (a && b) {
-    return getTokenAddressKey(a) === getTokenAddressKey(b)
+    return getAddressKey(a) === getAddressKey(b)
   }
 
   return false
