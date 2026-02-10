@@ -302,6 +302,12 @@ describe('determineIntermediateToken', () => {
       expect(result).toBe(usdcMainnet)
     })
 
+    it('should throw when single intermediate token equals sell token and allowIntermediateEqSellToken is falsy', async () => {
+      await expect(
+        determineIntermediateToken(SupportedChainId.MAINNET, cowMainnet.address, [cowMainnet], undefined, false),
+      ).rejects.toThrow(BridgeProviderQuoteError)
+    })
+
     it('should keep sell token when allowIntermediateEqSellToken is true', async () => {
       const result = await determineIntermediateToken(
         SupportedChainId.MAINNET,

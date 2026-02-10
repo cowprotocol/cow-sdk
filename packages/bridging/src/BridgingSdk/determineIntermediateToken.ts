@@ -43,6 +43,10 @@ export async function determineIntermediateToken(
 
   // If only one token, return it immediately
   if (intermediateTokens.length === 1) {
+    if (!allowIntermediateEqSellToken && areAddressesEqual(firstToken.address, sourceTokenAddress)) {
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_INTERMEDIATE_TOKENS, { firstToken })
+    }
+
     return firstToken
   }
 
