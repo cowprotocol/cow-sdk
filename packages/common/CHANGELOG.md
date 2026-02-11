@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.5.4...sdk-common-v0.6.0) (2026-02-05)
+
+
+### ✨ Features
+
+* move address utils ([#795](https://github.com/cowprotocol/cow-sdk/issues/795)) ([d18212c](https://github.com/cowprotocol/cow-sdk/commit/d18212c868ca2c16525a530f7914c9440f147414))
+* rename getTokenAddressKey to getAddressKey ([#793](https://github.com/cowprotocol/cow-sdk/issues/793)) ([7fbb9ae](https://github.com/cowprotocol/cow-sdk/commit/7fbb9ae54fb8ce6df78126d2e6c3ac3495a5ded7))
+
 ## [0.5.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.5.3...sdk-common-v0.5.4) (2026-02-02)
 
 

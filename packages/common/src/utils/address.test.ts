@@ -1,5 +1,4 @@
-import { isEvmAddress, isBtcAddress } from './address'
-import { EvmAddressKey, BtcAddressKey } from './token'
+import { isEvmAddress, isBtcAddress, BtcAddressKey, EvmAddressKey } from './address'
 
 describe('isEvmAddress', () => {
   describe('valid EVM addresses', () => {

@@ -5,10 +5,10 @@ import {
   getTokenId,
   areAddressesEqual,
   areTokensEqual,
-  EvmAddressKey,
-  BtcAddressKey,
+
+
 } from './token'
-import { isEvmAddress, isBtcAddress } from './address'
+import { isEvmAddress, isBtcAddress, BtcAddressKey, EvmAddressKey } from './address'
 
 describe('getEvmAddressKey', () => {
   it('should normalize EVM address to lowercase', () => {

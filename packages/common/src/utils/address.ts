@@ -1,5 +1,3 @@
-import { EvmAddressKey, BtcAddressKey } from './token'
-
 /**
  * Regular expression pattern for validating EVM addresses.
  * Matches addresses that start with 0x followed by exactly 40 hexadecimal characters.
@@ -23,6 +21,10 @@ const BTC_BECH32_MAINNET_PATTERN = /^bc1[a-z0-9]{39,59}$/i
  * Matches addresses that start with tb1, followed by 39-59 alphanumeric characters (case-insensitive).
  */
 const BTC_BECH32_TESTNET_PATTERN = /^tb1[a-z0-9]{39,59}$/i
+
+export type EvmAddressKey = `0x${string}`
+export type BtcAddressKey = string
+export type AddressKey = EvmAddressKey | BtcAddressKey
 
 /**
  * Validates if a string is a valid EVM address.

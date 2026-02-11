@@ -1,32 +1,16 @@
 import { Nullish } from '../types'
 import { getChainInfo, isSupportedChain, SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
-import { isEvmAddress, isBtcAddress } from './address'
+import { AddressKey, BtcAddressKey, EvmAddressKey, isBtcAddress, isEvmAddress } from './address'
 
 interface TokenLike {
   chainId: number
   address: string
 }
 
-export type EvmAddressKey = `0x${string}`
-export type BtcAddressKey = string
-export type AddressKey = EvmAddressKey | BtcAddressKey
-
-/**
- * Gets an EVM address key. Normalizes the address to lowercase with 0x prefix.
- *
- * @param address - The EVM address string
- * @returns The normalized EVM address key
- */
 export function getEvmAddressKey(address: string): EvmAddressKey {
   return `${address.toLowerCase()}` as EvmAddressKey
 }
 
-/**
- * Gets a BTC address key. BTC addresses are case-sensitive and should not be normalized.
- *
- * @param address - BTC address in any valid format (legacy, SegWit, Bech32)
- * @returns The address as-is, preserving case sensitivity
- */
 export function getBtcAddressKey(address: string): BtcAddressKey {
   return address
 }
