@@ -1,4 +1,4 @@
-import type { SupportedChainId } from '@cowprotocol/sdk-config'
+import type { SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import type { ContractsOrder as Order, OrderUidParams } from '@cowprotocol/sdk-contracts-ts'
 import type { SigningResult, UnsignedOrder } from './types'
 import { getGlobalAdapter, Signer, TypedDataDomain } from '@cowprotocol/sdk-common'
@@ -74,24 +74,24 @@ export class OrderSigningUtils {
    *          specified `chainId`. Please ensure that the `chainId` is correct for the network you are
    *          using.
    * @param {UnsignedOrder} order The unsigned order intent to be placed.
-   * @param {SupportedChainId} chainId The CoW Protocol `chainId` context that's being used.
+   * @param {SupportedEvmChainId} chainId The CoW Protocol `chainId` context that's being used.
    * @param {Signer} signer The signer who is placing the order intent.
    * @returns {Promise<SigningResult>} Encoded signature including signing scheme for the order.
    */
-  static async signOrder(order: UnsignedOrder, chainId: SupportedChainId, signer: Signer): Promise<SigningResult> {
+  static async signOrder(order: UnsignedOrder, chainId: SupportedEvmChainId, signer: Signer): Promise<SigningResult> {
     return signOrder(order, chainId, signer)
   }
 
   /**
    * Sign a cancellation message of an order intent with the specified signer.
    * @param {string} orderUid The unique identifier of the order to cancel.
-   * @param {SupportedChainId} chainId The CoW Protocol `chainid` context that's being used.
+   * @param {SupportedEvmChainId} chainId The CoW Protocol `chainid` context that's being used.
    * @param {Signer} signer The signer who initially placed the order intent.
    * @returns {Promise<SigningResult>} Encoded signature including signing scheme for the cancellation.
    */
   static async signOrderCancellation(
     orderUid: string,
-    chainId: SupportedChainId,
+    chainId: SupportedEvmChainId,
     signer: Signer,
   ): Promise<SigningResult> {
     return signOrderCancellation(orderUid, chainId, signer)
@@ -100,13 +100,13 @@ export class OrderSigningUtils {
   /**
    * Sign a cancellation message of multiple order intents with the specified signer.
    * @param {string[]} orderUids An array of `orderUid` to cancel.
-   * @param {SupportedChainId} chainId The CoW Protocol `chainId` context that's being used.
+   * @param {SupportedEvmChainId} chainId The CoW Protocol `chainId` context that's being used.
    * @param {Signer} signer The signer who initially placed the order intents.
    * @returns {Promise<SigningResult>} Encoded signature including signing scheme for the cancellation.
    */
   static async signOrderCancellations(
     orderUids: string[],
-    chainId: SupportedChainId,
+    chainId: SupportedEvmChainId,
     signer: Signer,
   ): Promise<SigningResult> {
     return signOrderCancellations(orderUids, chainId, signer)
@@ -114,22 +114,22 @@ export class OrderSigningUtils {
 
   /**
    * Get the EIP-712 typed domain data being used for signing.
-   * @param {SupportedChainId} chainId The CoW Protocol `chainId` context that's being used.
+   * @param {SupportedEvmChainId} chainId The CoW Protocol `chainId` context that's being used.
    * @return The EIP-712 typed domain data.
    * @see https://eips.ethereum.org/EIPS/eip-712
    */
-  static async getDomain(chainId: SupportedChainId): Promise<TypedDataDomain> {
+  static async getDomain(chainId: SupportedEvmChainId): Promise<TypedDataDomain> {
     return getDomain(chainId)
   }
 
   /**
    * Hashes the order intent and generate deterministic order ID.
-   * @param {SupportedChainId} chainId The CoW Protocol `chainId` context that's being used.
+   * @param {SupportedEvmChainId} chainId The CoW Protocol `chainId` context that's being used.
    * @param {Order} order order to sign
    * @param {Pick<OrderUidParams, 'owner'>} params order unique identifier parameters.
    */
   static async generateOrderId(
-    chainId: SupportedChainId,
+    chainId: SupportedEvmChainId,
     order: Order,
     params: Pick<OrderUidParams, 'owner'>,
   ): Promise<{ orderId: string; orderDigest: string }> {
@@ -138,10 +138,10 @@ export class OrderSigningUtils {
 
   /**
    * Get the domain separator hash for the EIP-712 typed domain data being used for signing.
-   * @param chainId {SupportedChainId} chainId The CoW Protocol protocol `chainId` context that's being used.
+   * @param chainId {SupportedEvmChainId} chainId The CoW Protocol protocol `chainId` context that's being used.
    * @returns A string representation of the EIP-712 typed domain data hash.
    */
-  static async getDomainSeparator(chainId: SupportedChainId): Promise<string> {
+  static async getDomainSeparator(chainId: SupportedEvmChainId): Promise<string> {
     const adapter = getGlobalAdapter()
     const types = [
       { name: 'name', type: 'string' },

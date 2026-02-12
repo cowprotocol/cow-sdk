@@ -2,7 +2,7 @@ import { WeirollContract } from '@cowprotocol/sdk-weiroll'
 import { ACROSS_MATH_CONTRACT_ADDRESSES, ACROSS_SPOOK_CONTRACT_ADDRESSES } from './const/contracts'
 import { WeirollCommandFlags, createWeirollContract, createWeirollDelegateCall } from '@cowprotocol/sdk-weiroll'
 import { ACROSS_MATH_ABI, ACROSS_SPOKE_POOL_ABI } from './abi'
-import { EvmCall, TargetChainId } from '@cowprotocol/sdk-config'
+import { EvmCall, TargetEvmChainId } from '@cowprotocol/sdk-config'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { QuoteBridgeRequest } from '../../types'
@@ -11,7 +11,7 @@ import { getGlobalAdapter } from '@cowprotocol/sdk-common'
 const ERC20_BALANCE_OF_ABI = ['function balanceOf(address account) external view returns (uint256)'] as const
 const ERC20_APPROVE_OF_ABI = ['function approve(address spender, uint256 amount) external returns (bool)'] as const
 
-function getSpookPoolContract(sellTokenChainId: TargetChainId): WeirollContract {
+function getSpookPoolContract(sellTokenChainId: TargetEvmChainId): WeirollContract {
   const adapter = getGlobalAdapter()
   const spokePoolAddress = ACROSS_SPOOK_CONTRACT_ADDRESSES[sellTokenChainId]
   if (!spokePoolAddress) {
@@ -23,7 +23,7 @@ function getSpookPoolContract(sellTokenChainId: TargetChainId): WeirollContract 
   )
 }
 
-function getMathContract(sellTokenChainId: TargetChainId): WeirollContract {
+function getMathContract(sellTokenChainId: TargetEvmChainId): WeirollContract {
   const adapter = getGlobalAdapter()
   const mathContractAddress = ACROSS_MATH_CONTRACT_ADDRESSES[sellTokenChainId]
   if (!mathContractAddress) {

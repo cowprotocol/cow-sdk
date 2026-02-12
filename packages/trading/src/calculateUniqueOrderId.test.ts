@@ -5,7 +5,7 @@ jest.mock('@cowprotocol/sdk-order-signing', () => ({
 }))
 
 import { calculateUniqueOrderId } from './calculateUniqueOrderId'
-import { SupportedChainId, MAX_VALID_TO_EPOCH, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId, MAX_VALID_TO_EPOCH, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
 import { OrderSigningUtils as OrderSigningUtilsMock, UnsignedOrder } from '@cowprotocol/sdk-order-signing'
 import { BuyTokenDestination, OrderKind, SellTokenSource } from '@cowprotocol/sdk-order-book'
 
@@ -40,26 +40,26 @@ describe('calculateUniqueOrderId', () => {
   })
 
   it('Should always set validTo to the maximum value', async () => {
-    await calculateUniqueOrderId(SupportedChainId.MAINNET, orderMock)
+    await calculateUniqueOrderId(SupportedEvmChainId.MAINNET, orderMock)
 
     const [chainId, order] = generateOrderId.mock.calls[0]
 
-    expect(chainId).toBe(SupportedChainId.MAINNET)
+    expect(chainId).toBe(SupportedEvmChainId.MAINNET)
     expect(order.validTo).toBe(MAX_VALID_TO_EPOCH)
   })
   it('Should always set sellToken to wrapped native token', async () => {
-    await calculateUniqueOrderId(SupportedChainId.MAINNET, orderMock)
+    await calculateUniqueOrderId(SupportedEvmChainId.MAINNET, orderMock)
 
     const [chainId, order] = generateOrderId.mock.calls[0]
 
-    expect(chainId).toBe(SupportedChainId.MAINNET)
-    expect(order.sellToken).toBe(WRAPPED_NATIVE_CURRENCIES[SupportedChainId.MAINNET].address)
+    expect(chainId).toBe(SupportedEvmChainId.MAINNET)
+    expect(order.sellToken).toBe(WRAPPED_NATIVE_CURRENCIES[SupportedEvmChainId.MAINNET].address)
   })
 
   describe('When checkEthFlowOrderExists is set', () => {
     it('Then the callback should be called with the orderId and orderDigest', async () => {
       const checkEthFlowOrderExists = jest.fn().mockResolvedValue(false)
-      await calculateUniqueOrderId(SupportedChainId.MAINNET, orderMock, checkEthFlowOrderExists)
+      await calculateUniqueOrderId(SupportedEvmChainId.MAINNET, orderMock, checkEthFlowOrderExists)
 
       expect(checkEthFlowOrderExists).toHaveBeenCalledWith('0xab444', '0x000dd')
       expect(checkEthFlowOrderExists).toHaveBeenCalledTimes(1)
@@ -79,11 +79,11 @@ describe('calculateUniqueOrderId', () => {
             })(),
           )
         })
-        await calculateUniqueOrderId(SupportedChainId.MAINNET, orderMock, checkEthFlowOrderExists)
+        await calculateUniqueOrderId(SupportedEvmChainId.MAINNET, orderMock, checkEthFlowOrderExists)
 
         const [chainId, order] = generateOrderId.mock.calls[1]
 
-        expect(chainId).toBe(SupportedChainId.MAINNET)
+        expect(chainId).toBe(SupportedEvmChainId.MAINNET)
         expect(order.buyAmount).toBe('99')
       })
     })

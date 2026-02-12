@@ -1,7 +1,7 @@
 import { AdaptersTestSetup, createAdapters, TEST_ADDRESS } from './setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { OrderSigningUtils } from '../src/orderSigningUtils'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { UnsignedOrder } from '../src/types'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 
@@ -31,7 +31,7 @@ describe('OrderSigningUtils', () => {
 
       for (const [adapterName, adapter] of Object.entries(adapters)) {
         setGlobalAdapter(adapter)
-        const result = await OrderSigningUtils.signOrder(testOrder, SupportedChainId.SEPOLIA, adapter.signer)
+        const result = await OrderSigningUtils.signOrder(testOrder, SupportedEvmChainId.SEPOLIA, adapter.signer)
         signatures[adapterName] = result.signature
       }
 
@@ -55,7 +55,7 @@ describe('OrderSigningUtils', () => {
 
       for (const [adapterName, adapter] of Object.entries(adapters)) {
         setGlobalAdapter(adapter)
-        const result = await OrderSigningUtils.signOrderCancellation(orderId, SupportedChainId.SEPOLIA, adapter.signer)
+        const result = await OrderSigningUtils.signOrderCancellation(orderId, SupportedEvmChainId.SEPOLIA, adapter.signer)
         signatures[adapterName] = result.signature
       }
 
@@ -87,7 +87,7 @@ describe('OrderSigningUtils', () => {
         setGlobalAdapter(adapter)
         const result = await OrderSigningUtils.signOrderCancellations(
           ordersUids,
-          SupportedChainId.SEPOLIA,
+          SupportedEvmChainId.SEPOLIA,
           adapter.signer,
         )
         signatures[adapterName] = result.signature
@@ -110,7 +110,7 @@ describe('OrderSigningUtils', () => {
 
       for (const [adapterName, adapter] of Object.entries(adapters)) {
         setGlobalAdapter(adapter)
-        domains[adapterName] = await OrderSigningUtils.getDomain(SupportedChainId.SEPOLIA)
+        domains[adapterName] = await OrderSigningUtils.getDomain(SupportedEvmChainId.SEPOLIA)
       }
 
       // All domains should be identical
@@ -149,7 +149,7 @@ describe('OrderSigningUtils', () => {
 
       for (const [adapterName, adapter] of Object.entries(adapters)) {
         setGlobalAdapter(adapter)
-        orderIds[adapterName] = await OrderSigningUtils.generateOrderId(SupportedChainId.SEPOLIA, testOrder, params)
+        orderIds[adapterName] = await OrderSigningUtils.generateOrderId(SupportedEvmChainId.SEPOLIA, testOrder, params)
       }
 
       // All order IDs should be identical
@@ -172,7 +172,7 @@ describe('OrderSigningUtils', () => {
 
       for (const [adapterName, adapter] of Object.entries(adapters)) {
         setGlobalAdapter(adapter)
-        domainSeparators[adapterName] = await OrderSigningUtils.getDomainSeparator(SupportedChainId.SEPOLIA)
+        domainSeparators[adapterName] = await OrderSigningUtils.getDomainSeparator(SupportedEvmChainId.SEPOLIA)
       }
 
       // All domain separators should be identical

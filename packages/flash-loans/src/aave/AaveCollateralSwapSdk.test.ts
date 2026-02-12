@@ -1,5 +1,5 @@
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { OrderKind, SigningScheme } from '@cowprotocol/sdk-order-book'
 import { TradingSdk, TradeParameters } from '@cowprotocol/sdk-trading'
 
@@ -99,7 +99,7 @@ adapterNames.forEach((adapterName) => {
       test(`should successfully execute collateral swap with default fee`, async () => {
         const result = await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -110,7 +110,7 @@ adapterNames.forEach((adapterName) => {
 
         expect(mockTradingSdk.getQuote).toHaveBeenCalledWith(
           expect.objectContaining({
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             sellToken: mockTradeParameters.sellToken,
             buyToken: mockTradeParameters.buyToken,
             kind: OrderKind.SELL,
@@ -124,7 +124,7 @@ adapterNames.forEach((adapterName) => {
         const flashLoanFeePercent = 0.05 // 0.05%
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             flashLoanFeePercent,
             collateralToken,
@@ -149,7 +149,7 @@ adapterNames.forEach((adapterName) => {
         const customOwner = '0x1234567890123456789012345678901234567890'
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: {
               ...mockTradeParameters,
               owner: customOwner,
@@ -169,7 +169,7 @@ adapterNames.forEach((adapterName) => {
       test(`should handle different chain IDs`, async () => {
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -178,7 +178,7 @@ adapterNames.forEach((adapterName) => {
 
         expect(mockTradingSdk.getQuote).toHaveBeenCalledWith(
           expect.objectContaining({
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
           }),
         )
       })
@@ -186,7 +186,7 @@ adapterNames.forEach((adapterName) => {
       test(`should post order with EIP1271 signing scheme`, async () => {
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -206,7 +206,7 @@ adapterNames.forEach((adapterName) => {
       test(`should include flash loan hint in app data`, async () => {
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -219,7 +219,7 @@ adapterNames.forEach((adapterName) => {
               metadata: expect.objectContaining({
                 flashloan: expect.objectContaining({
                   amount: expect.any(String),
-                  receiver: AAVE_ADAPTER_FACTORY[SupportedChainId.GNOSIS_CHAIN],
+                  receiver: AAVE_ADAPTER_FACTORY[SupportedEvmChainId.GNOSIS_CHAIN],
                   token: mockTradeParameters.sellToken,
                 }),
               }),
@@ -231,7 +231,7 @@ adapterNames.forEach((adapterName) => {
       test(`should include collateralPermit in app data`, async () => {
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
             settings: {
@@ -254,7 +254,7 @@ adapterNames.forEach((adapterName) => {
                 hooks: expect.objectContaining({
                   pre: expect.arrayContaining([
                     expect.objectContaining({
-                      target: AAVE_ADAPTER_FACTORY[SupportedChainId.GNOSIS_CHAIN],
+                      target: AAVE_ADAPTER_FACTORY[SupportedEvmChainId.GNOSIS_CHAIN],
                       callData: expect.any(String),
                       gasLimit: expect.any(String),
                     }),
@@ -276,7 +276,7 @@ adapterNames.forEach((adapterName) => {
       test(`should handle zero flash loan fee`, async () => {
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             flashLoanFeePercent: 0,
             collateralToken,
@@ -291,7 +291,7 @@ adapterNames.forEach((adapterName) => {
       test(`should use default gas limit for pre-hook`, async () => {
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -305,7 +305,7 @@ adapterNames.forEach((adapterName) => {
                 hooks: expect.objectContaining({
                   pre: expect.arrayContaining([
                     expect.objectContaining({
-                      target: AAVE_ADAPTER_FACTORY[SupportedChainId.GNOSIS_CHAIN],
+                      target: AAVE_ADAPTER_FACTORY[SupportedEvmChainId.GNOSIS_CHAIN],
                       callData: expect.any(String),
                       gasLimit: '300000',
                     }),
@@ -320,7 +320,7 @@ adapterNames.forEach((adapterName) => {
       test(`should use default gas limit for post-hook`, async () => {
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -337,7 +337,7 @@ adapterNames.forEach((adapterName) => {
       test(`should always include post-hook with empty permit by default`, async () => {
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -361,7 +361,7 @@ adapterNames.forEach((adapterName) => {
 
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: {
               ...mockTradeParameters,
             },
@@ -387,7 +387,7 @@ adapterNames.forEach((adapterName) => {
 
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: {
               ...mockTradeParameters,
             },
@@ -683,7 +683,7 @@ adapterNames.forEach((adapterName) => {
 
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -705,8 +705,8 @@ adapterNames.forEach((adapterName) => {
           expect.objectContaining({
             name: ADAPTER_DOMAIN_NAME,
             version: '1',
-            chainId: SupportedChainId.GNOSIS_CHAIN,
-            verifyingContract: AAVE_ADAPTER_FACTORY[SupportedChainId.GNOSIS_CHAIN],
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+            verifyingContract: AAVE_ADAPTER_FACTORY[SupportedEvmChainId.GNOSIS_CHAIN],
           }),
           expect.any(Object),
           expect.any(Object),
@@ -721,7 +721,7 @@ adapterNames.forEach((adapterName) => {
 
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -760,7 +760,7 @@ adapterNames.forEach((adapterName) => {
 
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -796,7 +796,7 @@ adapterNames.forEach((adapterName) => {
 
         await flashLoanSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -840,7 +840,7 @@ adapterNames.forEach((adapterName) => {
 
         await defaultSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -855,7 +855,7 @@ adapterNames.forEach((adapterName) => {
 
         expect(getInstanceCall).toBeDefined()
         expect(getInstanceCall?.[0]?.args?.[0]).toBe(
-          AAVE_HOOK_ADAPTER_PER_TYPE[AaveFlashLoanType.CollateralSwap][SupportedChainId.GNOSIS_CHAIN],
+          AAVE_HOOK_ADAPTER_PER_TYPE[AaveFlashLoanType.CollateralSwap][SupportedEvmChainId.GNOSIS_CHAIN],
         )
       })
 
@@ -866,7 +866,7 @@ adapterNames.forEach((adapterName) => {
             ...AAVE_HOOK_ADAPTER_PER_TYPE,
             [AaveFlashLoanType.CollateralSwap]: {
               ...AAVE_HOOK_ADAPTER_PER_TYPE[AaveFlashLoanType.CollateralSwap],
-              [SupportedChainId.GNOSIS_CHAIN]: customHookAdapterAddress,
+              [SupportedEvmChainId.GNOSIS_CHAIN]: customHookAdapterAddress,
             },
           },
         }
@@ -876,7 +876,7 @@ adapterNames.forEach((adapterName) => {
 
         await customSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -914,15 +914,15 @@ adapterNames.forEach((adapterName) => {
           hookAdapterPerType: {
             [AaveFlashLoanType.CollateralSwap]: {
               ...AAVE_HOOK_ADAPTER_PER_TYPE[AaveFlashLoanType.CollateralSwap],
-              [SupportedChainId.GNOSIS_CHAIN]: customCollateralSwapAddress,
+              [SupportedEvmChainId.GNOSIS_CHAIN]: customCollateralSwapAddress,
             },
             [AaveFlashLoanType.DebtSwap]: {
               ...AAVE_HOOK_ADAPTER_PER_TYPE[AaveFlashLoanType.DebtSwap],
-              [SupportedChainId.GNOSIS_CHAIN]: customDebtSwapAddress,
+              [SupportedEvmChainId.GNOSIS_CHAIN]: customDebtSwapAddress,
             },
             [AaveFlashLoanType.RepayCollateral]: {
               ...AAVE_HOOK_ADAPTER_PER_TYPE[AaveFlashLoanType.RepayCollateral],
-              [SupportedChainId.GNOSIS_CHAIN]: customRepayAddress,
+              [SupportedEvmChainId.GNOSIS_CHAIN]: customRepayAddress,
             },
           },
         }
@@ -932,7 +932,7 @@ adapterNames.forEach((adapterName) => {
 
         await customSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -958,8 +958,8 @@ adapterNames.forEach((adapterName) => {
             ...AAVE_HOOK_ADAPTER_PER_TYPE,
             [AaveFlashLoanType.CollateralSwap]: {
               ...AAVE_HOOK_ADAPTER_PER_TYPE[AaveFlashLoanType.CollateralSwap],
-              [SupportedChainId.GNOSIS_CHAIN]: customGnosisAddress,
-              [SupportedChainId.MAINNET]: customMainnetAddress,
+              [SupportedEvmChainId.GNOSIS_CHAIN]: customGnosisAddress,
+              [SupportedEvmChainId.MAINNET]: customMainnetAddress,
             },
           },
         }
@@ -970,7 +970,7 @@ adapterNames.forEach((adapterName) => {
         // Test with Gnosis Chain
         await customSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -991,7 +991,7 @@ adapterNames.forEach((adapterName) => {
         // Test with Mainnet
         await customSdk.collateralSwap(
           {
-            chainId: SupportedChainId.MAINNET,
+            chainId: SupportedEvmChainId.MAINNET,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -1010,7 +1010,7 @@ adapterNames.forEach((adapterName) => {
 
         await defaultSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -1024,18 +1024,18 @@ adapterNames.forEach((adapterName) => {
         )
 
         expect(getInstanceCall).toBeDefined()
-        expect(getInstanceCall?.[0]?.address).toBe(AAVE_ADAPTER_FACTORY[SupportedChainId.GNOSIS_CHAIN])
+        expect(getInstanceCall?.[0]?.address).toBe(AAVE_ADAPTER_FACTORY[SupportedEvmChainId.GNOSIS_CHAIN])
 
         // Verify that the default address is used in flashLoanHint
         const swapSettingsCall = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
         const flashLoanHint = swapSettingsCall.appData.metadata.flashloan
 
-        expect(flashLoanHint.receiver).toBe(AAVE_ADAPTER_FACTORY[SupportedChainId.GNOSIS_CHAIN])
-        expect(flashLoanHint.protocolAdapter).toBe(AAVE_ADAPTER_FACTORY[SupportedChainId.GNOSIS_CHAIN])
+        expect(flashLoanHint.receiver).toBe(AAVE_ADAPTER_FACTORY[SupportedEvmChainId.GNOSIS_CHAIN])
+        expect(flashLoanHint.protocolAdapter).toBe(AAVE_ADAPTER_FACTORY[SupportedEvmChainId.GNOSIS_CHAIN])
 
         // Verify that the default address is used in pre-hook target
         const preHook = swapSettingsCall.appData.metadata.hooks.pre[0]
-        expect(preHook.target).toBe(AAVE_ADAPTER_FACTORY[SupportedChainId.GNOSIS_CHAIN])
+        expect(preHook.target).toBe(AAVE_ADAPTER_FACTORY[SupportedEvmChainId.GNOSIS_CHAIN])
       })
 
       test('should use custom aaveAdapterFactory when provided', async () => {
@@ -1043,7 +1043,7 @@ adapterNames.forEach((adapterName) => {
         const customConfig = {
           aaveAdapterFactory: {
             ...AAVE_ADAPTER_FACTORY,
-            [SupportedChainId.GNOSIS_CHAIN]: customAdapterFactory,
+            [SupportedEvmChainId.GNOSIS_CHAIN]: customAdapterFactory,
           },
         }
 
@@ -1052,7 +1052,7 @@ adapterNames.forEach((adapterName) => {
 
         await customSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -1100,7 +1100,7 @@ adapterNames.forEach((adapterName) => {
 
         await defaultSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -1111,7 +1111,7 @@ adapterNames.forEach((adapterName) => {
         const swapSettingsCall = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
         const flashLoanHint = swapSettingsCall.appData.metadata.flashloan
 
-        expect(flashLoanHint.liquidityProvider).toBe(AAVE_POOL_ADDRESS[SupportedChainId.GNOSIS_CHAIN])
+        expect(flashLoanHint.liquidityProvider).toBe(AAVE_POOL_ADDRESS[SupportedEvmChainId.GNOSIS_CHAIN])
       })
 
       test('should use custom aavePoolAddress when provided', async () => {
@@ -1119,7 +1119,7 @@ adapterNames.forEach((adapterName) => {
         const customConfig = {
           aavePoolAddress: {
             ...AAVE_POOL_ADDRESS,
-            [SupportedChainId.GNOSIS_CHAIN]: customPoolAddress,
+            [SupportedEvmChainId.GNOSIS_CHAIN]: customPoolAddress,
           },
         }
 
@@ -1128,7 +1128,7 @@ adapterNames.forEach((adapterName) => {
 
         await customSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -1148,11 +1148,11 @@ adapterNames.forEach((adapterName) => {
         const customConfig = {
           aaveAdapterFactory: {
             ...AAVE_ADAPTER_FACTORY,
-            [SupportedChainId.GNOSIS_CHAIN]: customAdapterFactory,
+            [SupportedEvmChainId.GNOSIS_CHAIN]: customAdapterFactory,
           },
           aavePoolAddress: {
             ...AAVE_POOL_ADDRESS,
-            [SupportedChainId.GNOSIS_CHAIN]: customPoolAddress,
+            [SupportedEvmChainId.GNOSIS_CHAIN]: customPoolAddress,
           },
         }
 
@@ -1161,7 +1161,7 @@ adapterNames.forEach((adapterName) => {
 
         await customSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -1191,8 +1191,8 @@ adapterNames.forEach((adapterName) => {
         const customConfig = {
           aaveAdapterFactory: {
             ...AAVE_ADAPTER_FACTORY,
-            [SupportedChainId.GNOSIS_CHAIN]: customGnosisFactory,
-            [SupportedChainId.MAINNET]: customMainnetFactory,
+            [SupportedEvmChainId.GNOSIS_CHAIN]: customGnosisFactory,
+            [SupportedEvmChainId.MAINNET]: customMainnetFactory,
           },
         }
 
@@ -1202,7 +1202,7 @@ adapterNames.forEach((adapterName) => {
         // Test with Gnosis Chain
         await customSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -1219,7 +1219,7 @@ adapterNames.forEach((adapterName) => {
         // Test with Mainnet
         await customSdk.collateralSwap(
           {
-            chainId: SupportedChainId.MAINNET,
+            chainId: SupportedEvmChainId.MAINNET,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -1236,8 +1236,8 @@ adapterNames.forEach((adapterName) => {
         const customConfig = {
           aavePoolAddress: {
             ...AAVE_POOL_ADDRESS,
-            [SupportedChainId.GNOSIS_CHAIN]: customGnosisPool,
-            [SupportedChainId.MAINNET]: customMainnetPool,
+            [SupportedEvmChainId.GNOSIS_CHAIN]: customGnosisPool,
+            [SupportedEvmChainId.MAINNET]: customMainnetPool,
           },
         }
 
@@ -1247,7 +1247,7 @@ adapterNames.forEach((adapterName) => {
         // Test with Gnosis Chain
         await customSdk.collateralSwap(
           {
-            chainId: SupportedChainId.GNOSIS_CHAIN,
+            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },
@@ -1263,7 +1263,7 @@ adapterNames.forEach((adapterName) => {
         // Test with Mainnet
         await customSdk.collateralSwap(
           {
-            chainId: SupportedChainId.MAINNET,
+            chainId: SupportedEvmChainId.MAINNET,
             tradeParameters: mockTradeParameters,
             collateralToken,
           },

@@ -1,5 +1,5 @@
 import { BungeeApi } from './BungeeApi'
-import { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId, TargetEvmChainId } from '@cowprotocol/sdk-config'
 import { createAdapters } from '../../../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import fetchMock from 'jest-fetch-mock'
@@ -27,8 +27,8 @@ adapterNames.forEach((adapterName) => {
       it('should return a quote from Arbitrum to Base', async () => {
         const result = await api.getBungeeQuote({
           userAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
-          originChainId: SupportedChainId.ARBITRUM_ONE.toString(),
-          destinationChainId: SupportedChainId.BASE.toString(),
+          originChainId: SupportedEvmChainId.ARBITRUM_ONE.toString(),
+          destinationChainId: SupportedEvmChainId.BASE.toString(),
           inputToken: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1', // weth
           inputAmount: '3000000000000000', // 0.0003 eth
           receiverAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
@@ -39,8 +39,8 @@ adapterNames.forEach((adapterName) => {
         })
 
         expect(result).toBeDefined()
-        expect(result.originChainId).toBe(SupportedChainId.ARBITRUM_ONE)
-        expect(result.destinationChainId).toBe(SupportedChainId.BASE)
+        expect(result.originChainId).toBe(SupportedEvmChainId.ARBITRUM_ONE)
+        expect(result.destinationChainId).toBe(SupportedEvmChainId.BASE)
         expect(result.route).toBeDefined()
         expect(result.routeBridge).toBeDefined()
       })
@@ -48,8 +48,8 @@ adapterNames.forEach((adapterName) => {
       it('should return a quote from Mainnet to Gnosis', async () => {
         const result = await api.getBungeeQuote({
           userAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
-          originChainId: SupportedChainId.MAINNET.toString(),
-          destinationChainId: SupportedChainId.GNOSIS_CHAIN.toString(),
+          originChainId: SupportedEvmChainId.MAINNET.toString(),
+          destinationChainId: SupportedEvmChainId.GNOSIS_CHAIN.toString(),
           inputToken: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // dai
           inputAmount: '10000000000000000000', // 10 dai
           receiverAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
@@ -60,8 +60,8 @@ adapterNames.forEach((adapterName) => {
         })
 
         expect(result).toBeDefined()
-        expect(result.originChainId).toBe(SupportedChainId.MAINNET)
-        expect(result.destinationChainId).toBe(SupportedChainId.GNOSIS_CHAIN)
+        expect(result.originChainId).toBe(SupportedEvmChainId.MAINNET)
+        expect(result.destinationChainId).toBe(SupportedEvmChainId.GNOSIS_CHAIN)
         expect(result.route).toBeDefined()
         expect(result.routeBridge).toBe('gnosis-native-bridge')
       })
@@ -70,8 +70,8 @@ adapterNames.forEach((adapterName) => {
       it.skip('should return a quote from Mainnet to Polygon', async () => {
         const result = await api.getBungeeQuote({
           userAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
-          originChainId: SupportedChainId.MAINNET.toString(),
-          destinationChainId: SupportedChainId.POLYGON.toString(),
+          originChainId: SupportedEvmChainId.MAINNET.toString(),
+          destinationChainId: SupportedEvmChainId.POLYGON.toString(),
           inputToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', // weth
           inputAmount: '1000000000000000000',
           receiverAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
@@ -82,8 +82,8 @@ adapterNames.forEach((adapterName) => {
         })
 
         expect(result).toBeDefined()
-        expect(result.originChainId).toBe(SupportedChainId.MAINNET)
-        expect(result.destinationChainId).toBe(SupportedChainId.POLYGON)
+        expect(result.originChainId).toBe(SupportedEvmChainId.MAINNET)
+        expect(result.destinationChainId).toBe(SupportedEvmChainId.POLYGON)
         expect(result.route).toBeDefined()
         expect(result.routeBridge).toBeDefined()
       }, 10_000)
@@ -94,8 +94,8 @@ adapterNames.forEach((adapterName) => {
         // First get a quote
         const quote = await api.getBungeeQuote({
           userAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
-          originChainId: SupportedChainId.ARBITRUM_ONE.toString(),
-          destinationChainId: SupportedChainId.BASE.toString(),
+          originChainId: SupportedEvmChainId.ARBITRUM_ONE.toString(),
+          destinationChainId: SupportedEvmChainId.BASE.toString(),
           inputToken: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', // weth
           inputAmount: '2389939424141418',
           receiverAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
@@ -121,8 +121,8 @@ adapterNames.forEach((adapterName) => {
         // First get a quote
         const quote = await api.getBungeeQuote({
           userAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
-          originChainId: SupportedChainId.MAINNET.toString(),
-          destinationChainId: SupportedChainId.GNOSIS_CHAIN.toString(),
+          originChainId: SupportedEvmChainId.MAINNET.toString(),
+          destinationChainId: SupportedEvmChainId.GNOSIS_CHAIN.toString(),
           inputToken: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // dai
           inputAmount: '10000000000000000000', // 10 dai
           receiverAddress: '0x016f34D4f2578c3e9DFfC3f2b811Ba30c0c9e7f3',
@@ -139,7 +139,7 @@ adapterNames.forEach((adapterName) => {
         expect(result.txData).toBeDefined()
         expect(result.txData.data).toBeDefined()
         expect(result.txData.to).toBeDefined()
-        expect(result.txData.chainId).toBe(SupportedChainId.MAINNET)
+        expect(result.txData.chainId).toBe(SupportedEvmChainId.MAINNET)
         expect(result.txData.value).toBeDefined()
         expect(result.approvalData).toBeDefined()
       })
@@ -187,7 +187,7 @@ adapterNames.forEach((adapterName) => {
           )
           expect(event?.srcTransactionHash).toBe('0x120040a5440d8a07dc06de21322899f1a8c1611adbb3e7ee024622de9f9f6bca')
           expect(event?.bridgeName).toBe('gnosis-native-bridge')
-          expect(event?.fromChainId).toBe(SupportedChainId.MAINNET)
+          expect(event?.fromChainId).toBe(SupportedEvmChainId.MAINNET)
           expect(event?.isCowswapTrade).toBe(true)
           expect(event?.orderId).toBe(
             '0x0dc2da6dfaf0d82435d7afa1cab8cfe628c75a03e3981978c762d51bc7eef19d279a80cb2b913ade60b1c5d4333966f45c3dd8b168a6ef92',
@@ -215,7 +215,7 @@ adapterNames.forEach((adapterName) => {
 
     describe('getBuyTokens', () => {
       it('should return tokens for supported chain', async () => {
-        const result = await api.getBuyTokens({ buyChainId: SupportedChainId.ARBITRUM_ONE })
+        const result = await api.getBuyTokens({ buyChainId: SupportedEvmChainId.ARBITRUM_ONE })
 
         expect(result).toBeDefined()
         expect(Array.isArray(result)).toBe(true)
@@ -234,12 +234,12 @@ adapterNames.forEach((adapterName) => {
           expect(usdc?.symbol).toBe('USDC')
           expect(usdc?.logoUrl).toBeDefined()
           expect(usdc?.decimals).toBe(6)
-          expect(usdc?.chainId).toBe(SupportedChainId.ARBITRUM_ONE)
+          expect(usdc?.chainId).toBe(SupportedEvmChainId.ARBITRUM_ONE)
         }
       })
 
       it('should return empty array for unsupported chain', async () => {
-        const result = await api.getBuyTokens({ buyChainId: 12345 as TargetChainId })
+        const result = await api.getBuyTokens({ buyChainId: 12345 as TargetEvmChainId })
         expect(result).toBeDefined()
         expect(Array.isArray(result)).toBe(true)
         expect(result.length).toBe(0)
@@ -250,8 +250,8 @@ adapterNames.forEach((adapterName) => {
       // TODO: flacky test
       it.skip('should return the intermediate tokens from Arbitrum to Base', async () => {
         const result = await api.getIntermediateTokens({
-          fromChainId: SupportedChainId.ARBITRUM_ONE,
-          toChainId: SupportedChainId.BASE,
+          fromChainId: SupportedEvmChainId.ARBITRUM_ONE,
+          toChainId: SupportedEvmChainId.BASE,
           toTokenAddress: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', // USDC
         })
 
@@ -274,15 +274,15 @@ adapterNames.forEach((adapterName) => {
           expect(usdc?.symbol).toBe('USDC')
           expect(usdc?.logoUrl).toBeDefined()
           expect(usdc?.decimals).toBe(6)
-          expect(usdc?.chainId).toBe(SupportedChainId.ARBITRUM_ONE)
+          expect(usdc?.chainId).toBe(SupportedEvmChainId.ARBITRUM_ONE)
         }
       })
 
       // TODO: flacky test
       it.skip('should return the intermediate tokens from Mainnet to Gnosis', async () => {
         const result = await api.getIntermediateTokens({
-          fromChainId: SupportedChainId.MAINNET,
-          toChainId: SupportedChainId.GNOSIS_CHAIN,
+          fromChainId: SupportedEvmChainId.MAINNET,
+          toChainId: SupportedEvmChainId.GNOSIS_CHAIN,
           toTokenAddress: '0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83', // USDC
         })
 
@@ -305,7 +305,7 @@ adapterNames.forEach((adapterName) => {
           expect(usdc?.symbol).toBe('USDC')
           expect(usdc?.logoUrl).toBeDefined()
           expect(usdc?.decimals).toBe(6)
-          expect(usdc?.chainId).toBe(SupportedChainId.MAINNET)
+          expect(usdc?.chainId).toBe(SupportedEvmChainId.MAINNET)
         }
       })
     })

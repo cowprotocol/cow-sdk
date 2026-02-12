@@ -32,7 +32,7 @@ import {
   mainnet,
   optimism,
   polygon,
-  SupportedChainId,
+  SupportedEvmChainId,
   TokenInfo,
 } from '@cowprotocol/sdk-config'
 import { CowShedSdk, CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
@@ -158,7 +158,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
   }
 
   async getSignedHook(
-    chainId: SupportedChainId,
+    chainId: SupportedEvmChainId,
     unsignedCall: EvmCall,
     bridgeHookNonce: string,
     deadline: bigint,
@@ -225,7 +225,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     return `https://app.across.to/transactions`
   }
 
-  async getStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult> {
+  async getStatus(bridgingId: string, originChainId: SupportedEvmChainId): Promise<BridgeStatusResult> {
     const depositStatus = await this.api.getDepositStatus({
       originChainId: originChainId.toString(),
       depositId: bridgingId,

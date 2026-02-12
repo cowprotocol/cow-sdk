@@ -10,7 +10,7 @@ import {
   quoteBridgeRequest,
 } from './mock/bridgeRequestMocks'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
-import { SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import { createAdapters } from '../../tests/setup'
 import { AbstractSigner, setGlobalAdapter, Provider, TTLCache } from '@cowprotocol/sdk-common'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../errors'
@@ -27,9 +27,9 @@ const mockIntermediateTokens: TokenInfo[] = [
     name: 'COW',
     symbol: 'COW',
     decimals: intermediateTokenDecimals,
-    chainId: SupportedChainId.MAINNET,
+    chainId: SupportedEvmChainId.MAINNET,
   },
-  { address: '0x456', name: 'Token2', symbol: 'TK2', decimals: 6, chainId: SupportedChainId.MAINNET },
+  { address: '0x456', name: 'Token2', symbol: 'TK2', decimals: 6, chainId: SupportedEvmChainId.MAINNET },
 ]
 
 adapterNames.forEach((adapterName) => {
@@ -70,7 +70,7 @@ adapterNames.forEach((adapterName) => {
 
       orderBookApi = {
         context: {
-          chainId: SupportedChainId.GNOSIS_CHAIN,
+          chainId: SupportedEvmChainId.GNOSIS_CHAIN,
         },
         getQuote: jest.fn().mockResolvedValue(orderQuoteResponse),
         uploadAppData: jest.fn().mockResolvedValue(''),
@@ -544,7 +544,7 @@ adapterNames.forEach((adapterName) => {
         const params2: GetQuoteWithBridgeParams = {
           swapAndBridgeRequest: {
             ...quoteBridgeRequest,
-            buyTokenChainId: SupportedChainId.ARBITRUM_ONE,
+            buyTokenChainId: SupportedEvmChainId.ARBITRUM_ONE,
           },
           tradingSdk,
           intermediateTokensCache,

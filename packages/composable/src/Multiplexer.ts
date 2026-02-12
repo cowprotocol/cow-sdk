@@ -2,7 +2,7 @@ import { StandardMerkleTree } from '@openzeppelin/merkle-tree'
 
 import { ProofLocation, ProofWithParams, ConditionalOrderParams, ComposableCoW, GPv2Order } from './types'
 import { ConditionalOrder } from './ConditionalOrder'
-import { COMPOSABLE_COW_CONTRACT_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
+import { COMPOSABLE_COW_CONTRACT_ADDRESS, SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { getGlobalAdapter, Provider } from '@cowprotocol/sdk-common'
 import { ComposableCowFactoryAbi } from './abis/ComposableCowFactoryAbi'
 
@@ -43,7 +43,7 @@ export type Orders = Record<string, ConditionalOrder<unknown, unknown>>
 export class Multiplexer {
   static orderTypeRegistry: Record<string, new (...args: unknown[]) => ConditionalOrder<unknown, unknown>> = {}
 
-  public chain: SupportedChainId
+  public chain: SupportedEvmChainId
   public location: ProofLocation
 
   private orders: Orders = {}
@@ -57,7 +57,7 @@ export class Multiplexer {
    * @param location The location of the proofs for the conditional orders.
    */
   constructor(
-    chain: SupportedChainId,
+    chain: SupportedEvmChainId,
     orders?: Orders,
     root?: string,
     location: ProofLocation = ProofLocation.PRIVATE,
@@ -384,7 +384,7 @@ export class Multiplexer {
   static async poll(
     owner: string,
     p: ProofWithParams,
-    chain: SupportedChainId,
+    chain: SupportedEvmChainId,
     provider: Provider,
     offChainInputFn?: (owner: string, params: ConditionalOrderParams) => Promise<string>,
   ): Promise<[GPv2Order.DataStruct, string]> {

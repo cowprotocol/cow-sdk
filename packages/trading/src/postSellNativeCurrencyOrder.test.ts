@@ -1,5 +1,5 @@
 import { TradingAppDataInfo, LimitOrderParameters } from './types'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { OrderBookApi, OrderKind } from '@cowprotocol/sdk-order-book'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getEthFlowTransaction } from './getEthFlowTransaction'
@@ -13,7 +13,7 @@ jest.mock('./getEthFlowTransaction', () => ({
 const mockedGetEthFlowTransaction = getEthFlowTransaction as jest.Mock
 
 const defaultOrderParams: Omit<LimitOrderParameters, 'signer'> & { quoteId: number } = {
-  chainId: SupportedChainId.GNOSIS_CHAIN,
+  chainId: SupportedEvmChainId.GNOSIS_CHAIN,
   appCode: '0x007',
   sellToken: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
   sellTokenDecimals: 18,
@@ -32,7 +32,7 @@ const currentTimestamp = 1487076708000
 const uploadAppDataMock = jest.fn()
 const orderBookApiMock = {
   uploadAppData: uploadAppDataMock,
-  context: { chainId: SupportedChainId.GNOSIS_CHAIN },
+  context: { chainId: SupportedEvmChainId.GNOSIS_CHAIN },
 } as unknown as OrderBookApi
 
 const appDataMock = {
@@ -152,7 +152,7 @@ describe('postSellNativeCurrencyTrade', () => {
         expect(mockedGetEthFlowTransaction).toHaveBeenCalledWith(
           appDataMock.appDataKeccak256,
           defaultOrderParams,
-          SupportedChainId.GNOSIS_CHAIN,
+          SupportedEvmChainId.GNOSIS_CHAIN,
           {
             networkCostsAmount: '0',
             checkEthFlowOrderExists,
@@ -250,7 +250,7 @@ describe('postSellNativeCurrencyTrade', () => {
         expect(mockedGetEthFlowTransaction).toHaveBeenCalledWith(
           appDataMock.appDataKeccak256,
           defaultOrderParams,
-          SupportedChainId.GNOSIS_CHAIN,
+          SupportedEvmChainId.GNOSIS_CHAIN,
           {},
           expect.any(Object),
         )

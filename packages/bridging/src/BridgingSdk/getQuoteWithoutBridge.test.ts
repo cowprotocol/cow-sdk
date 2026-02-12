@@ -1,6 +1,6 @@
 import { TradingSdk } from '@cowprotocol/sdk-trading'
 import { OrderBookApi, OrderKind } from '@cowprotocol/sdk-order-book'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { getQuoteWithoutBridge } from './getQuoteWithoutBridge'
 import { QuoteBridgeRequest } from '../types'
 import { createAdapters } from '../../tests/setup'
@@ -29,7 +29,7 @@ adapterNames.forEach((adapterName) => {
 
       orderBookApi = {
         context: {
-          chainId: SupportedChainId.GNOSIS_CHAIN,
+          chainId: SupportedEvmChainId.GNOSIS_CHAIN,
         },
         getQuote: getQuoteMock,
         uploadAppData: jest.fn().mockResolvedValue(''),
@@ -43,10 +43,10 @@ adapterNames.forEach((adapterName) => {
     it('should override slippageBps with swapSlippageBps in getQuote call', async () => {
       const quoteBridgeRequest: QuoteBridgeRequest = {
         kind: OrderKind.SELL,
-        sellTokenChainId: SupportedChainId.GNOSIS_CHAIN,
+        sellTokenChainId: SupportedEvmChainId.GNOSIS_CHAIN,
         sellTokenAddress: '0x6810e776880c02933d47db1b9fc05908e5386b96',
         sellTokenDecimals: 18,
-        buyTokenChainId: SupportedChainId.MAINNET,
+        buyTokenChainId: SupportedEvmChainId.MAINNET,
         buyTokenAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
         buyTokenDecimals: 6,
         amount: 1000000000000000000n,

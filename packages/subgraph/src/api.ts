@@ -1,13 +1,13 @@
 import { request, Variables } from 'graphql-request'
 import { DocumentNode } from 'graphql/index'
-import { ApiContext, DEFAULT_COW_API_CONTEXT, SupportedChainId } from '@cowprotocol/sdk-config'
+import { ApiContext, DEFAULT_COW_API_CONTEXT, SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { CowError } from '@cowprotocol/sdk-common'
 import { LastDaysVolumeQuery, LastHoursVolumeQuery, TotalsQuery } from './graphql'
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
 
 const SUBGRAPH_BASE_URL = 'https://gateway.thegraph.com/api/'
 
-export type SubgraphApiBaseUrls = Record<SupportedChainId, string | null>
+export type SubgraphApiBaseUrls = Record<SupportedEvmChainId, string | null>
 
 interface SubgraphApiContext extends Omit<ApiContext, 'baseUrls'> {
   baseUrls?: SubgraphApiBaseUrls
@@ -38,18 +38,18 @@ export class SubgraphApi {
   constructor(apiKey: string, context: PartialSubgraphApiContext = {}) {
     const baseUrl = SUBGRAPH_BASE_URL + `${apiKey}/subgraphs/id`
     this.SUBGRAPH_PROD_CONFIG = {
-      [SupportedChainId.MAINNET]: baseUrl + '/8mdwJG7YCSwqfxUbhCypZvoubeZcFVpCHb4zmHhvuKTD',
-      [SupportedChainId.GNOSIS_CHAIN]: baseUrl + '/HTQcP2gLuAy235CMNE8ApN4cbzpLVjjNxtCAUfpzRubq',
-      [SupportedChainId.ARBITRUM_ONE]: baseUrl + '/CQ8g2uJCjdAkUSNkVbd9oqqRP2GALKu1jJCD3fyY5tdc',
-      [SupportedChainId.BASE]: baseUrl + '/EYfBtJDj2thuBCVhdpYDpzfsWzDg3qzpEsitqMouU4Rg',
-      [SupportedChainId.SEPOLIA]: baseUrl + '/31isonmztVX9ejBneP6SaVDQwEtyKCGBb3RTafB9Uf2y',
-      [SupportedChainId.POLYGON]: null,
-      [SupportedChainId.AVALANCHE]: null,
-      [SupportedChainId.LENS]: null,
-      [SupportedChainId.BNB]: null,
-      [SupportedChainId.LINEA]: null,
-      [SupportedChainId.PLASMA]: null,
-      [SupportedChainId.INK]: null,
+      [SupportedEvmChainId.MAINNET]: baseUrl + '/8mdwJG7YCSwqfxUbhCypZvoubeZcFVpCHb4zmHhvuKTD',
+      [SupportedEvmChainId.GNOSIS_CHAIN]: baseUrl + '/HTQcP2gLuAy235CMNE8ApN4cbzpLVjjNxtCAUfpzRubq',
+      [SupportedEvmChainId.ARBITRUM_ONE]: baseUrl + '/CQ8g2uJCjdAkUSNkVbd9oqqRP2GALKu1jJCD3fyY5tdc',
+      [SupportedEvmChainId.BASE]: baseUrl + '/EYfBtJDj2thuBCVhdpYDpzfsWzDg3qzpEsitqMouU4Rg',
+      [SupportedEvmChainId.SEPOLIA]: baseUrl + '/31isonmztVX9ejBneP6SaVDQwEtyKCGBb3RTafB9Uf2y',
+      [SupportedEvmChainId.POLYGON]: null,
+      [SupportedEvmChainId.AVALANCHE]: null,
+      [SupportedEvmChainId.LENS]: null,
+      [SupportedEvmChainId.BNB]: null,
+      [SupportedEvmChainId.LINEA]: null,
+      [SupportedEvmChainId.PLASMA]: null,
+      [SupportedEvmChainId.INK]: null,
     }
     this.context = {
       ...DEFAULT_COW_API_CONTEXT,

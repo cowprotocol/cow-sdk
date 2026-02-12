@@ -1,4 +1,4 @@
-import { ChainInfo, SupportedChainId } from '../types'
+import { ChainInfo, SupportedEvmChainId } from '../types'
 import { nativeCurrencyTemplate } from '../../constants/tokens'
 import { RAW_CHAINS_FILES_PATH } from '../../constants/paths'
 
@@ -7,13 +7,13 @@ const bnbLogo = `${RAW_CHAINS_FILES_PATH}/images/bnb-logo.svg`
 // See https://github.com/wevm/viem/blob/main/src/chains/definitions/bsc.ts
 // and https://github.com/ethereum-lists/chains/blob/master/_data/chains/eip155-56.json
 export const bnb: ChainInfo = {
-  id: SupportedChainId.BNB,
+  id: SupportedEvmChainId.BNB,
   label: 'BNB',
   eip155Label: 'BNB Chain Mainnet',
   logo: { light: bnbLogo, dark: bnbLogo },
   nativeCurrency: {
     ...nativeCurrencyTemplate,
-    chainId: SupportedChainId.BNB,
+    chainId: SupportedEvmChainId.BNB,
     name: 'BNB Chain Native Token',
     symbol: 'BNB',
     logoUrl: bnbLogo,

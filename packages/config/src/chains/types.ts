@@ -7,7 +7,7 @@ import { TokenInfo } from '../types/tokens'
  *
  * @enum
  */
-export enum SupportedChainId {
+export enum SupportedEvmChainId {
   MAINNET = 1,
   BNB = 56,
   GNOSIS_CHAIN = 100,
@@ -22,19 +22,39 @@ export enum SupportedChainId {
   SEPOLIA = 11155111,
 }
 
-/**
- * Chains where you can buy tokens using the bridge functionality. This enum contains chains that are not already included in the SupportedChainId enum.
- */
-export enum AdditionalTargetChainId {
-  OPTIMISM = 10,
+export enum SupportedSolanaChainId {
+  MAINNET = 'solana'
+}
+
+export enum SupportedBitcoinChainId {
+  MAINNET = 'bitcoin'
 }
 
 /**
- * Chains where you can buy tokens using the bridge functionality.
- *
- * This enum contains all the supported chains and some additional ones supported by the different bridges.
+ * Chains where you can buy tokens using the bridge functionality. This enum contains chains that are not already included in the SupportedChainId enum.
  */
-export type TargetChainId = SupportedChainId | AdditionalTargetChainId
+export enum AdditionalEvmTargetChainId {
+  OPTIMISM = 10,
+}
+
+export const ALL_EVM_CHAINS_MAP = {
+  ...SupportedEvmChainId,
+  ...AdditionalEvmTargetChainId,
+} as const
+
+export const ALL_CHAINS_MAP = {
+  ...SupportedEvmChainId,
+  ...AdditionalEvmTargetChainId,
+  ...SupportedSolanaChainId,
+  ...SupportedBitcoinChainId,
+} as const
+
+/**
+ *
+ */
+export type TargetEvmChainId = SupportedEvmChainId | AdditionalEvmTargetChainId
+
+export type TargetChainId = (typeof ALL_CHAINS_MAP)[keyof typeof ALL_CHAINS_MAP]
 
 /**
  * The chain id of the chain.

@@ -1,4 +1,4 @@
-import { AdditionalTargetChainId, ChainInfo, SupportedChainId } from '../types'
+import { AdditionalEvmTargetChainId, ChainInfo, SupportedEvmChainId } from '../types'
 import { mainnet } from '../details/mainnet'
 import { gnosisChain } from '../details/gnosis'
 import { arbitrumOne } from '../details/arbitrum'
@@ -16,19 +16,19 @@ import { ink } from '../details/ink'
 /**
  * Details of all supported chains.
  */
-export const ALL_SUPPORTED_CHAINS_MAP: Record<SupportedChainId, ChainInfo> = {
-  [SupportedChainId.MAINNET]: mainnet,
-  [SupportedChainId.GNOSIS_CHAIN]: gnosisChain,
-  [SupportedChainId.ARBITRUM_ONE]: arbitrumOne,
-  [SupportedChainId.BASE]: base,
-  [SupportedChainId.AVALANCHE]: avalanche,
-  [SupportedChainId.POLYGON]: polygon,
-  [SupportedChainId.BNB]: bnb,
-  [SupportedChainId.LENS]: lens,
-  [SupportedChainId.PLASMA]: plasma,
-  [SupportedChainId.LINEA]: linea,
-  [SupportedChainId.INK]: ink,
-  [SupportedChainId.SEPOLIA]: sepolia,
+export const ALL_SUPPORTED_CHAINS_MAP: Record<SupportedEvmChainId, ChainInfo> = {
+  [SupportedEvmChainId.MAINNET]: mainnet,
+  [SupportedEvmChainId.GNOSIS_CHAIN]: gnosisChain,
+  [SupportedEvmChainId.ARBITRUM_ONE]: arbitrumOne,
+  [SupportedEvmChainId.BASE]: base,
+  [SupportedEvmChainId.AVALANCHE]: avalanche,
+  [SupportedEvmChainId.POLYGON]: polygon,
+  [SupportedEvmChainId.BNB]: bnb,
+  [SupportedEvmChainId.LENS]: lens,
+  [SupportedEvmChainId.PLASMA]: plasma,
+  [SupportedEvmChainId.LINEA]: linea,
+  [SupportedEvmChainId.INK]: ink,
+  [SupportedEvmChainId.SEPOLIA]: sepolia,
 }
 
 /**
@@ -39,15 +39,15 @@ export const ALL_SUPPORTED_CHAINS = Object.values(ALL_SUPPORTED_CHAINS_MAP)
 /**
  * The list of supported chains.
  */
-export const ALL_SUPPORTED_CHAIN_IDS: SupportedChainId[] = ALL_SUPPORTED_CHAINS.map(
+export const ALL_SUPPORTED_CHAIN_IDS: SupportedEvmChainId[] = ALL_SUPPORTED_CHAINS.map(
   (chain) => chain.id,
-) as SupportedChainId[]
+) as SupportedEvmChainId[]
 
 /**
  * Maps a chain where you can bridge to, but not sell tokens from (not supported by CoW Protocol)
  */
-export const ADDITIONAL_TARGET_CHAINS_MAP: Record<AdditionalTargetChainId, ChainInfo> = {
-  [AdditionalTargetChainId.OPTIMISM]: optimism,
+export const ADDITIONAL_TARGET_CHAINS_MAP: Record<AdditionalEvmTargetChainId, ChainInfo> = {
+  [AdditionalEvmTargetChainId.OPTIMISM]: optimism,
 }
 
 /**

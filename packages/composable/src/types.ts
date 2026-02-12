@@ -1,4 +1,4 @@
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { Bytes, Provider } from '@cowprotocol/sdk-common'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 
@@ -151,7 +151,7 @@ export type ProofWithParams = {
 
 export type OwnerContext = {
   owner: string
-  chainId: SupportedChainId
+  chainId: SupportedEvmChainId
   provider: Provider
 }
 

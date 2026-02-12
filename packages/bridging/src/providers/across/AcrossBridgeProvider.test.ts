@@ -9,7 +9,7 @@ import {
   AcrossBridgeProviderOptions,
 } from './AcrossBridgeProvider'
 import { SuggestedFeesResponse } from './types'
-import { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId, TargetEvmChainId } from '@cowprotocol/sdk-config'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { createAdapters } from '../../../tests/setup'
 import { DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION } from '../../const'
@@ -19,8 +19,8 @@ import stringify from 'json-stable-stringify'
 jest.mock('./AcrossApi')
 
 const mockTokens = [
-  { chainId: SupportedChainId.POLYGON, address: '0x123', decimals: 18, symbol: 'TOKEN1', name: 'Token 1' },
-  { chainId: SupportedChainId.POLYGON, address: '0x456', decimals: 6, symbol: 'TOKEN2', name: 'Token 2' },
+  { chainId: SupportedEvmChainId.POLYGON, address: '0x123', decimals: 18, symbol: 'TOKEN1', name: 'Token 1' },
+  { chainId: SupportedEvmChainId.POLYGON, address: '0x456', decimals: 6, symbol: 'TOKEN2', name: 'Token 2' },
 ]
 
 class AcrossBridgeProviderTest extends AcrossBridgeProvider {
@@ -80,7 +80,7 @@ adapterNames.forEach((adapterName) => {
       })
 
       it('should return tokens for supported chain', async () => {
-        const result = await provider.getBuyTokens({ buyChainId: SupportedChainId.POLYGON })
+        const result = await provider.getBuyTokens({ buyChainId: SupportedEvmChainId.POLYGON })
 
         expect(result.tokens).toEqual(mockTokens)
         expect(result.isRouteAvailable).toEqual(true)
@@ -88,7 +88,7 @@ adapterNames.forEach((adapterName) => {
       })
 
       it('should return empty array for unsupported chain', async () => {
-        const result = await provider.getBuyTokens({ buyChainId: 12345 as TargetChainId })
+        const result = await provider.getBuyTokens({ buyChainId: 12345 as TargetEvmChainId })
 
         // The token result is empty and we don't call getTokenInfos
         expect(result.tokens).toEqual([])
@@ -129,8 +129,8 @@ adapterNames.forEach((adapterName) => {
         const request: QuoteBridgeRequest = {
           kind: OrderKind.SELL,
           sellTokenAddress: '0x123',
-          sellTokenChainId: SupportedChainId.MAINNET,
-          buyTokenChainId: SupportedChainId.POLYGON,
+          sellTokenChainId: SupportedEvmChainId.MAINNET,
+          buyTokenChainId: SupportedEvmChainId.POLYGON,
           amount: 1000000000000000000n,
           receiver: '0x789',
           account: '0x123',
@@ -218,14 +218,14 @@ adapterNames.forEach((adapterName) => {
       })
 
       it('should return a valid status when passed a valid bridging id', async () => {
-        const status = await provider.getStatus('123', SupportedChainId.MAINNET)
+        const status = await provider.getStatus('123', SupportedEvmChainId.MAINNET)
 
         expect(status).toEqual({
           status: BridgeStatus.EXECUTED,
         })
 
         expect(provider.getApi().getDepositStatus).toHaveBeenCalledWith({
-          originChainId: SupportedChainId.MAINNET.toString(),
+          originChainId: SupportedEvmChainId.MAINNET.toString(),
           depositId: '123',
         })
       })
@@ -248,8 +248,8 @@ adapterNames.forEach((adapterName) => {
         const request: QuoteBridgeRequest = {
           kind: OrderKind.SELL,
           sellTokenAddress: '0x123',
-          sellTokenChainId: SupportedChainId.MAINNET,
-          buyTokenChainId: SupportedChainId.ARBITRUM_ONE,
+          sellTokenChainId: SupportedEvmChainId.MAINNET,
+          buyTokenChainId: SupportedEvmChainId.ARBITRUM_ONE,
           amount: 1000000000000000000n,
           receiver: '0x789',
           account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address

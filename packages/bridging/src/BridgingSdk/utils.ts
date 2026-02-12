@@ -1,4 +1,4 @@
-import { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId, TargetEvmChainId } from '@cowprotocol/sdk-config'
 import { BridgeProviderError, BridgeProviderQuoteError, BridgeQuoteErrorPriorities } from '../errors'
 import {
   BridgeQuoteResult,
@@ -13,7 +13,7 @@ import { OrderBookApiError } from '@cowprotocol/sdk-order-book'
 /**
  * Validates that the request is for cross-chain bridging
  */
-export function validateCrossChainRequest(sellTokenChainId: SupportedChainId, buyTokenChainId: TargetChainId): void {
+export function validateCrossChainRequest(sellTokenChainId: SupportedEvmChainId, buyTokenChainId: TargetEvmChainId): void {
   if (sellTokenChainId === buyTokenChainId) {
     throw new BridgeProviderError(
       'getMultiQuotes() and getBestQuote() are only for cross-chain bridging. For single-chain swaps, use getQuote() instead.',

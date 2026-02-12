@@ -1,16 +1,16 @@
-import { AdditionalTargetChainId, SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
+import { AdditionalTargetChainId, SupportedEvmChainId, TargetEvmChainId } from '@cowprotocol/sdk-config'
 
 /**
  * Chain config for Across. Includes all the supported tokens for the chain.
  */
 export interface AcrossChainConfig {
-  chainId: TargetChainId
+  chainId: TargetEvmChainId
   tokens: { [name: string]: string | undefined }
 }
 
 const ACROSS_CHAIN_CONFIGS: AcrossChainConfig[] = [
   {
-    chainId: SupportedChainId.MAINNET,
+    chainId: SupportedEvmChainId.MAINNET,
     tokens: {
       usdc: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
       weth: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
@@ -20,7 +20,7 @@ const ACROSS_CHAIN_CONFIGS: AcrossChainConfig[] = [
     },
   },
   {
-    chainId: SupportedChainId.POLYGON,
+    chainId: SupportedEvmChainId.POLYGON,
     tokens: {
       usdc: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
       weth: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
@@ -30,7 +30,7 @@ const ACROSS_CHAIN_CONFIGS: AcrossChainConfig[] = [
     },
   },
   {
-    chainId: SupportedChainId.ARBITRUM_ONE,
+    chainId: SupportedEvmChainId.ARBITRUM_ONE,
     tokens: {
       usdc: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
       weth: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
@@ -40,7 +40,7 @@ const ACROSS_CHAIN_CONFIGS: AcrossChainConfig[] = [
     },
   },
   {
-    chainId: SupportedChainId.BASE,
+    chainId: SupportedEvmChainId.BASE,
     tokens: {
       usdc: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
       weth: '0x4200000000000000000000000000000000000006',
@@ -59,7 +59,7 @@ const ACROSS_CHAIN_CONFIGS: AcrossChainConfig[] = [
   },
 ]
 
-export const ACROSS_TOKEN_MAPPING: Partial<Record<TargetChainId, AcrossChainConfig>> = ACROSS_CHAIN_CONFIGS.reduce(
+export const ACROSS_TOKEN_MAPPING: Partial<Record<TargetEvmChainId, AcrossChainConfig>> = ACROSS_CHAIN_CONFIGS.reduce(
   (acc, config) => {
     acc[config.chainId] = config
     return acc

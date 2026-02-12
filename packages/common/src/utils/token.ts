@@ -1,5 +1,5 @@
 import { Nullish } from '../types'
-import { getChainInfo, isSupportedChain, SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
+import { getChainInfo, isSupportedChain, SupportedEvmChainId, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
 import { AddressKey, BtcAddressKey, EvmAddressKey, isBtcAddress, isEvmAddress } from './address'
 
 interface TokenLike {
@@ -70,5 +70,5 @@ export function isNativeToken(token: TokenLike): boolean {
 }
 
 export function isWrappedNativeToken(token: TokenLike): boolean {
-  return areAddressesEqual(WRAPPED_NATIVE_CURRENCIES[token.chainId as SupportedChainId]?.address, token.address)
+  return areAddressesEqual(WRAPPED_NATIVE_CURRENCIES[token.chainId as SupportedEvmChainId]?.address, token.address)
 }

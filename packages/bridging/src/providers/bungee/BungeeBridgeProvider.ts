@@ -27,6 +27,7 @@ import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 import { getBridgingStatusFromEvents } from './getBridgingStatusFromEvents'
 import {
+  ALL_CHAINS_MAP,
   arbitrumOne,
   avalanche,
   base,
@@ -37,7 +38,7 @@ import {
   mainnet,
   optimism,
   polygon,
-  SupportedChainId,
+  SupportedEvmChainId,
   TokenInfo,
 } from '@cowprotocol/sdk-config'
 import { CowShedSdk, CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
@@ -176,7 +177,7 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
   }
 
   async getSignedHook(
-    chainId: SupportedChainId,
+    chainId: SupportedEvmChainId,
     unsignedCall: EvmCall,
     bridgeHookNonce: string,
     deadline: bigint,
@@ -280,6 +281,6 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
     const { sellTokenChainId, buyTokenChainId } = request
 
     // Bungee requires extra gas for bridging from Mainnet to Gnosis
-    return sellTokenChainId === SupportedChainId.MAINNET && buyTokenChainId === SupportedChainId.GNOSIS_CHAIN
+    return sellTokenChainId === SupportedEvmChainId.MAINNET && buyTokenChainId === ALL_CHAINS_MAP.GNOSIS_CHAIN
   }
 }

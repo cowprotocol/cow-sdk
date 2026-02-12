@@ -1,7 +1,7 @@
 import { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
 import { BridgeDeposit, BridgeHook, HookBridgeProvider, BridgeQuoteResult, QuoteBridgeRequest } from '../../types'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
-import { ALL_SUPPORTED_CHAINS, EvmCall, SupportedChainId } from '@cowprotocol/sdk-config'
+import { ALL_SUPPORTED_CHAINS, EvmCall, SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { MOCK_CALL } from './mockData'
 import { BaseMockBridgeProvider } from './BaseMockBridgeProvider'
@@ -28,7 +28,7 @@ export class MockHookBridgeProvider extends BaseMockBridgeProvider implements Ho
     return MOCK_CALL
   }
 
-  async getSignedHook(_chainId: SupportedChainId, _unsignedCall: EvmCall): Promise<BridgeHook> {
+  async getSignedHook(_chainId: SupportedEvmChainId, _unsignedCall: EvmCall): Promise<BridgeHook> {
     return {
       recipient: '0x0000000000000000000000000000000000000001',
       postHook: {

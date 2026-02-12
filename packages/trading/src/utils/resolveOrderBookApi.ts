@@ -1,13 +1,13 @@
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
-import { CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
+import { CowEnv, SupportedEvmChainId } from '@cowprotocol/sdk-config'
 
-const orderBookApiCache = new Map<CowEnv, Map<SupportedChainId, OrderBookApi>>([
+const orderBookApiCache = new Map<CowEnv, Map<SupportedEvmChainId, OrderBookApi>>([
   ['prod', new Map()],
   ['staging', new Map()],
 ])
 
 export function resolveOrderBookApi(
-  chainId: SupportedChainId,
+  chainId: SupportedEvmChainId,
   env: CowEnv,
   existingOrderBookApi?: OrderBookApi,
 ): OrderBookApi {
@@ -18,7 +18,7 @@ export function resolveOrderBookApi(
     return existingOrderBookApi
   }
 
-  const envCache = orderBookApiCache.get(env) ?? new Map<SupportedChainId, OrderBookApi>()
+  const envCache = orderBookApiCache.get(env) ?? new Map<SupportedEvmChainId, OrderBookApi>()
   const cached = envCache.get(chainId)
 
   if (cached) return cached

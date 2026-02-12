@@ -4,7 +4,7 @@ import {
   ecdsaSignTypedData,
   EIP1271_MAGICVALUE,
 } from '@cowprotocol/sdk-contracts-ts'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
 
 import {
   AbstractProviderAdapter,
@@ -49,7 +49,7 @@ export class CowShedHooks {
   private accountCodeCache: TTLCache<boolean>
 
   constructor(
-    private chainId: SupportedChainId,
+    private chainId: SupportedEvmChainId,
     private customOptions?: ICoWShedOptions,
     public readonly version: CoWShedVersion = COW_SHED_LATEST_VERSION,
     adapter?: AbstractProviderAdapter,

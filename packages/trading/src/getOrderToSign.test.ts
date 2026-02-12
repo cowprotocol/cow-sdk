@@ -1,6 +1,6 @@
 import { getOrderToSign } from './getOrderToSign'
 import { LimitOrderParameters } from './types'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { DEFAULT_QUOTE_VALIDITY } from './consts'
 
@@ -9,7 +9,7 @@ const currentTimestamp = 1487076708000
 const params: any = { from: '0xaaa444' }
 
 const defaultOrderParams: LimitOrderParameters = {
-  chainId: SupportedChainId.GNOSIS_CHAIN,
+  chainId: SupportedEvmChainId.GNOSIS_CHAIN,
   signer: '0x006',
   appCode: '0x007',
   sellToken: '0xaaa',
