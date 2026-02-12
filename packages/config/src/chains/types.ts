@@ -53,10 +53,9 @@ export type TargetChainId = (typeof ALL_CHAINS_MAP)[keyof typeof ALL_CHAINS_MAP]
 
 /**
  * The chain id of the chain.
- *
- * TODO: Should we generalize it even more to allow non-EVM chains? We should probably revisit also the chain interface, and some other types.
+ * Can be a number for EVM chains or a string for non-EVM chains (e.g., Bitcoin, Solana).
  */
-export type ChainId = number
+export type ChainId = number | string
 
 export type HttpsString = `https://${string}`
 export type WssString = `wss://${string}`

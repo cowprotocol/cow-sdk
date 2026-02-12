@@ -28,6 +28,8 @@ import {
   base,
   ChainId,
   ChainInfo,
+  isEvmChain,
+  isSupportedChain,
   EvmCall,
   mainnet,
   optimism,
@@ -204,6 +206,10 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     order: EnrichedOrder,
     txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
+    if (!isEvmChain(chainId) || !isSupportedChain(chainId)) {
+      return null
+    }
+
     const orderUid = order.uid
     const adapter = getGlobalAdapter()
 

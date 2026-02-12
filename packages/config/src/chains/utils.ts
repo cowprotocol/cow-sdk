@@ -2,6 +2,17 @@ import { ADDITIONAL_TARGET_CHAINS_MAP, ALL_SUPPORTED_CHAINS_MAP } from './const'
 import { AdditionalEvmTargetChainId, ChainId, ChainInfo, SupportedEvmChainId, TargetEvmChainId } from './types'
 
 /**
+ * Type guard to check if a chain ID represents an EVM chain.
+ * EVM chains use numeric chain IDs, while non-EVM chains (Bitcoin, Solana) use string identifiers.
+ *
+ * @param chainId - The chain ID to check
+ * @returns True if the chain ID is a number (EVM chain), false otherwise
+ */
+export function isEvmChain(chainId: ChainId): chainId is number {
+  return typeof chainId === 'number'
+}
+
+/**
  * Return the chain info for a given chain id or undefined if the chain is not known (not supported by CoW Protocol or the bridge providers).
  * @param chainId
  */
@@ -20,16 +31,18 @@ export function getChainInfo(chainId: ChainId): ChainInfo | undefined {
 
 /**
  * Check if the chain is supported by CoW Protocol.
+ * Only works for EVM chains (numeric chain IDs).
  */
 export function isSupportedChain(chainId: ChainId): chainId is SupportedEvmChainId {
-  return chainId in ALL_SUPPORTED_CHAINS_MAP
+  return isEvmChain(chainId) && chainId in ALL_SUPPORTED_CHAINS_MAP
 }
 
 /**
  * Check if the chain is supported by the bridge providers.
+ * Only works for EVM chains (numeric chain IDs).
  */
 export function isAdditionalTargetChain(chainId: ChainId): chainId is AdditionalEvmTargetChainId {
-  return chainId in ADDITIONAL_TARGET_CHAINS_MAP
+  return isEvmChain(chainId) && chainId in ADDITIONAL_TARGET_CHAINS_MAP
 }
 
 /**
