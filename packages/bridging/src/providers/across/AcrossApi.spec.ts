@@ -1,6 +1,6 @@
 import { AcrossApi } from './AcrossApi'
 import { DepositStatusResponse } from './types'
-import { AdditionalTargetChainId, SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { AdditionalEvmTargetChainId, SupportedEvmChainId } from '@cowprotocol/sdk-config'
 
 describe('AcrossApi: Shape of API response', () => {
   let api: AcrossApi
@@ -69,7 +69,7 @@ describe('AcrossApi: Shape of API response', () => {
   it('getDepositStatus', async () => {
     // Attempt to make a REAL API call. The API implementation will assert the result shape matches the expected object
     const result: DepositStatusResponse = await api.getDepositStatus({
-      originChainId: AdditionalTargetChainId.OPTIMISM.toString(),
+      originChainId: AdditionalEvmTargetChainId.OPTIMISM.toString(),
       depositId: '1349975',
     })
 

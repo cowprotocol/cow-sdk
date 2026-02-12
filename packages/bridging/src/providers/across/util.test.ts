@@ -11,7 +11,7 @@ import {
 } from './util'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { SuggestedFeesResponse } from './types'
-import { AdditionalTargetChainId, SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { AdditionalEvmTargetChainId, SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { createAdapters } from '../../../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
@@ -19,7 +19,7 @@ import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 describe('Across Utils', () => {
   describe('getChainConfigs', () => {
     it('should return chain configs for supported chains', () => {
-      const result = getChainConfigs(SupportedEvmChainId.MAINNET, AdditionalTargetChainId.OPTIMISM)
+      const result = getChainConfigs(SupportedEvmChainId.MAINNET, AdditionalEvmTargetChainId.OPTIMISM)
       expect(result?.sourceChainConfig).toHaveProperty('tokens')
       expect(result?.sourceChainConfig).toHaveProperty('chainId')
       expect(result?.targetChainConfig).toHaveProperty('tokens')

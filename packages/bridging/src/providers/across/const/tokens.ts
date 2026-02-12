@@ -1,4 +1,4 @@
-import { AdditionalTargetChainId, SupportedEvmChainId, TargetEvmChainId } from '@cowprotocol/sdk-config'
+import { AdditionalEvmTargetChainId, SupportedEvmChainId, TargetEvmChainId } from '@cowprotocol/sdk-config'
 
 /**
  * Chain config for Across. Includes all the supported tokens for the chain.
@@ -48,7 +48,7 @@ const ACROSS_CHAIN_CONFIGS: AcrossChainConfig[] = [
     },
   },
   {
-    chainId: AdditionalTargetChainId.OPTIMISM,
+    chainId: AdditionalEvmTargetChainId.OPTIMISM,
     tokens: {
       usdc: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
       weth: '0x4200000000000000000000000000000000000006',

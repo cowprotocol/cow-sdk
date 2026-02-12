@@ -1,4 +1,4 @@
-import { AdditionalTargetChainId, SupportedEvmChainId, TargetEvmChainId } from '@cowprotocol/sdk-config'
+import { AdditionalEvmTargetChainId, SupportedEvmChainId, TargetEvmChainId } from '@cowprotocol/sdk-config'
 
 const BUNGEE_COWSWAP_LIB_ADDRESS = '0x75b6ba5fcab20848ca00f132d253638fea82e598'
 export const BungeeCowswapLibAddresses: Record<TargetEvmChainId, string | undefined> = {
@@ -14,7 +14,7 @@ export const BungeeCowswapLibAddresses: Record<TargetEvmChainId, string | undefi
   [SupportedEvmChainId.PLASMA]: undefined, // TODO: confirm
   [SupportedEvmChainId.INK]: undefined, // TODO: confirm
   [SupportedEvmChainId.SEPOLIA]: undefined,
-  [AdditionalTargetChainId.OPTIMISM]: BUNGEE_COWSWAP_LIB_ADDRESS,
+  [AdditionalEvmTargetChainId.OPTIMISM]: BUNGEE_COWSWAP_LIB_ADDRESS,
 }
 
 const SOCKET_VERIFIER_ADDRESS = '0xa27A3f5A96DF7D8Be26EE2790999860C00eb688D'
@@ -31,7 +31,7 @@ export const SocketVerifierAddresses: Record<TargetEvmChainId, string | undefine
   [SupportedEvmChainId.PLASMA]: undefined, // TODO: confirm
   [SupportedEvmChainId.INK]: undefined, // TODO: confirm
   [SupportedEvmChainId.SEPOLIA]: undefined,
-  [AdditionalTargetChainId.OPTIMISM]: SOCKET_VERIFIER_ADDRESS,
+  [AdditionalEvmTargetChainId.OPTIMISM]: SOCKET_VERIFIER_ADDRESS,
 }
 
 const BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS = '0xD06a673fe1fa27B1b9E5BA0be980AB15Dbce85cc'
@@ -48,5 +48,5 @@ export const BungeeApproveAndBridgeV1Addresses: Record<TargetEvmChainId, string 
   [SupportedEvmChainId.PLASMA]: undefined, // TODO: confirm
   [SupportedEvmChainId.INK]: undefined, // TODO: confirm
   [SupportedEvmChainId.SEPOLIA]: undefined,
-  [AdditionalTargetChainId.OPTIMISM]: BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS,
+  [AdditionalEvmTargetChainId.OPTIMISM]: BUNGEE_APPROVE_AND_BRIDGE_V1_ADDRESS,
 }

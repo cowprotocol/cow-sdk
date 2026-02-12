@@ -1,4 +1,4 @@
-import { AdditionalTargetChainId, EvmCall, SupportedEvmChainId, TargetEvmChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { AdditionalEvmTargetChainId, EvmCall, SupportedEvmChainId, TargetEvmChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import { BridgeQuoteResult, BridgeStatus, BridgeStatusResult, BridgingDepositParams } from '../../types'
 
 export const BRIDGING_PARAMS: BridgingDepositParams = {
@@ -47,7 +47,7 @@ export const BUY_TOKENS = [
     decimals: 18,
   },
   {
-    chainId: AdditionalTargetChainId.OPTIMISM,
+    chainId: AdditionalEvmTargetChainId.OPTIMISM,
     address: '0x4200000000000000000000000000000000000006',
     logoUrl: 'https://swap.cow.fi/assets/network-mainnet-logo-BJe1wK_m.svg',
     name: 'Wrapped Ether',
@@ -66,10 +66,10 @@ export const INTERMEDIATE_TOKENS: Partial<Record<TargetEvmChainId, TokenInfo[]>>
       decimals: 18,
     },
   ],
-  [AdditionalTargetChainId.OPTIMISM]: [
+  [AdditionalEvmTargetChainId.OPTIMISM]: [
     {
       address: '0x68f180fcCe6836688e9084f035309E29Bf0A2095',
-      chainId: AdditionalTargetChainId.OPTIMISM,
+      chainId: AdditionalEvmTargetChainId.OPTIMISM,
       name: 'Wrapped BTC ',
       symbol: 'WBTC',
       decimals: 8,

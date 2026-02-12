@@ -1,4 +1,4 @@
-import { AdditionalTargetChainId, SupportedEvmChainId, TargetEvmChainId } from '@cowprotocol/sdk-config'
+import { AdditionalEvmTargetChainId, SupportedEvmChainId, TargetEvmChainId } from '@cowprotocol/sdk-config'
 
 // See https://docs.across.to/reference/contract-addresses
 
@@ -24,7 +24,7 @@ export const ACROSS_SPOOK_CONTRACT_ADDRESSES: Record<TargetEvmChainId, string | 
   // https://docs.across.to/reference/contract-addresses/ink-chain-id-57073
   [SupportedEvmChainId.INK]: '0xeF684C38F94F48775959ECf2012D7E864ffb9dd4',
   // https://docs.across.to/reference/contract-addresses/optimism-chain-id-10
-  [AdditionalTargetChainId.OPTIMISM]: '0x6f26Bf09B1C792e3228e5467807a900A503c0281',
+  [AdditionalEvmTargetChainId.OPTIMISM]: '0x6f26Bf09B1C792e3228e5467807a900A503c0281',
 
   // Not supported chains
   // TODO: This first integration is a draft, some of this chains might be supported, so we will need to update here as we iterate on the provider
@@ -42,7 +42,7 @@ export const ACROSS_MATH_CONTRACT_ADDRESSES: Record<TargetEvmChainId, string | u
   [SupportedEvmChainId.GNOSIS_CHAIN]: undefined,
   [SupportedEvmChainId.SEPOLIA]: undefined,
   [SupportedEvmChainId.POLYGON]: undefined,
-  [AdditionalTargetChainId.OPTIMISM]: undefined,
+  [AdditionalEvmTargetChainId.OPTIMISM]: undefined,
   [SupportedEvmChainId.AVALANCHE]: undefined,
   [SupportedEvmChainId.LENS]: undefined, // TODO: confirm
   [SupportedEvmChainId.BNB]: undefined, // TODO: confirm
