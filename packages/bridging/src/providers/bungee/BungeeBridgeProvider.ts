@@ -27,7 +27,6 @@ import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 import { getBridgingStatusFromEvents } from './getBridgingStatusFromEvents'
 import {
-  ALL_CHAINS_MAP,
   arbitrumOne,
   avalanche,
   base,

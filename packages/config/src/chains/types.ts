@@ -37,11 +37,6 @@ export enum AdditionalEvmTargetChainId {
   OPTIMISM = 10,
 }
 
-export const ALL_EVM_CHAINS_MAP = {
-  ...SupportedEvmChainId,
-  ...AdditionalEvmTargetChainId,
-} as const
-
 export const ALL_CHAINS_MAP = {
   ...SupportedEvmChainId,
   ...AdditionalEvmTargetChainId,
