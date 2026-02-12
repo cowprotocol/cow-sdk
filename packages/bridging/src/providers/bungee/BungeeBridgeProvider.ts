@@ -281,6 +281,6 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
     const { sellTokenChainId, buyTokenChainId } = request
 
     // Bungee requires extra gas for bridging from Mainnet to Gnosis
-    return sellTokenChainId === SupportedEvmChainId.MAINNET && buyTokenChainId === ALL_CHAINS_MAP.GNOSIS_CHAIN
+    return sellTokenChainId === SupportedEvmChainId.MAINNET && buyTokenChainId === SupportedEvmChainId.GNOSIS_CHAIN
   }
 }
