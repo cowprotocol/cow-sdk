@@ -1,9 +1,9 @@
 import { Nullish } from '../types'
-import { getChainInfo, isEvmChain, isSupportedChain, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
+import { ChainId, getChainInfo, isEvmChain, isSupportedChain, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
 import { AddressKey, BtcAddressKey, EvmAddressKey, isBtcAddress, isEvmAddress } from './address'
 
 interface TokenLike {
-  chainId: number
+  chainId: ChainId
   address: string
 }
 
@@ -23,16 +23,16 @@ export function getTokenAddressKey(address: string): EvmAddressKey {
 
 export interface TokenIdentifier {
   address: string
-  chainId: number
+  chainId: ChainId
 }
 
-export type TokenId = `${number}:${AddressKey}`
+export type TokenId = `${ChainId}:${AddressKey}`
 
 export function getTokenId(token: TokenIdentifier): TokenId {
   const addressKey = isEvmAddress(token.address)
     ? getEvmAddressKey(token.address)
     : getBtcAddressKey(token.address)
-  return `${token.chainId}:${addressKey}`
+  return `${token.chainId}:${addressKey}` as TokenId
 }
 
 export function areTokensEqual(a: TokenLike | undefined | null, b: TokenLike | undefined | null): boolean {
