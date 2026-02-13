@@ -1,10 +1,10 @@
 import { ETH_FLOW_DEFAULT_SLIPPAGE_BPS } from './consts'
-import { getQuoteWithSigner } from './getQuote'
-import { SwapParameters } from './types'
+import { getQuoteWithSigner, getQuoteWithoutSigner } from './getQuote'
+import { QuoterParameters, SwapParameters } from './types'
 import { ETH_ADDRESS, WRAPPED_NATIVE_CURRENCIES, SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderBookApi, OrderKind, OrderQuoteResponse } from '@cowprotocol/sdk-order-book'
 import { AdaptersTestSetup, createAdapters } from '../tests/setup'
-import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { AccountAddress, setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 jest.mock('./suggestSlippageBps', () => ({
   suggestSlippageBps: jest.fn(),
@@ -494,5 +494,66 @@ describe('getQuote', () => {
         )
       }
     })
+  })
+})
+
+describe('getQuoteWithoutSigner', () => {
+  const ownerAddress = '0xfb3c7eb936caa12b5a884d612393969a557d4307' as AccountAddress
+
+  const quoterParams: QuoterParameters = {
+    chainId: SupportedChainId.GNOSIS_CHAIN,
+    appCode: '0x007',
+    account: ownerAddress,
+  }
+
+  const tradeParams = {
+    sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+    sellTokenDecimals: 18,
+    buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+    buyTokenDecimals: 18,
+    amount: '100000000000000000',
+    kind: OrderKind.SELL as const,
+    slippageBps: 50,
+  }
+
+  beforeEach(() => {
+    getQuoteMock.mockReset()
+    getQuoteMock.mockResolvedValue(quoteResponseMock)
+    resolveSlippageSuggestion.mockReset()
+    resolveSlippageSuggestion.mockResolvedValue({ slippageBps: null })
+  })
+
+  it('should return quote results without requiring a signer', async () => {
+    const { result, orderBookApi } = await getQuoteWithoutSigner(
+      tradeParams,
+      quoterParams,
+      {},
+      orderBookApiMock,
+    )
+
+    expect(result).toBeDefined()
+    expect(result.quoteResponse).toEqual(quoteResponseMock)
+    expect(result.amountsAndCosts).toBeDefined()
+    expect(result.orderToSign).toBeDefined()
+    expect(result.orderTypedData).toBeDefined()
+    expect(orderBookApi).toBe(orderBookApiMock)
+  })
+
+  it('should use the account address as the quote "from" field', async () => {
+    await getQuoteWithoutSigner(tradeParams, quoterParams, {}, orderBookApiMock)
+
+    expect(getQuoteMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: ownerAddress,
+      }),
+    )
+  })
+
+  it('should include slippage and appCode in app data', async () => {
+    const { result } = await getQuoteWithoutSigner(tradeParams, quoterParams, {}, orderBookApiMock)
+
+    const appData = JSON.parse(result.appDataInfo.fullAppData)
+    expect(appData.metadata.quote.slippageBips).toBe(50)
+    expect(appData.appCode).toBe(quoterParams.appCode)
   })
 })
