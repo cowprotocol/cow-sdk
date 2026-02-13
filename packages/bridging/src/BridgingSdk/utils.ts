@@ -1,4 +1,4 @@
-import { isEvmChain, SupportedEvmChainId, TargetEvmChainId } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId, TargetEvmChainId } from '@cowprotocol/sdk-config'
 import { BridgeProviderError, BridgeProviderQuoteError, BridgeQuoteErrorPriorities } from '../errors'
 import {
   BridgeQuoteResult,
@@ -14,11 +14,6 @@ import { OrderBookApiError } from '@cowprotocol/sdk-order-book'
  * Validates that the request is for cross-chain bridging
  */
 export function validateCrossChainRequest(sellTokenChainId: SupportedEvmChainId, buyTokenChainId: TargetEvmChainId): void {
-  // Both chain IDs should be EVM chains for this validation
-  if (!isEvmChain(sellTokenChainId) || !isEvmChain(buyTokenChainId)) {
-    // Non-EVM chains are always cross-chain with EVM chains
-    return
-  }
 
   if (sellTokenChainId === buyTokenChainId) {
     throw new BridgeProviderError(
