@@ -264,6 +264,12 @@ export async function getTrader(swapParameters: SwapParameters): Promise<QuoterP
   }
 }
 
+/**
+ * Gets a quote without requiring a signer.
+ * Alias for {@link getQuote} — provided for discoverability alongside `getQuoteWithSigner`.
+ */
+export { getQuote as getQuoteWithoutSigner }
+
 export async function getQuoteWithSigner(
   swapParameters: SwapParameters,
   advancedSettings?: SwapAdvancedSettings,

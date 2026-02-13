@@ -3,6 +3,8 @@ import {
   LimitTradeParameters,
   OrderPostingResult,
   QuoteAndPost,
+  QuoterParameters,
+  QuoteResults,
   SigningStepManager,
   SwapAdvancedSettings,
   TradeParameters,
@@ -10,12 +12,13 @@ import {
 } from './types'
 import { postSwapOrder, postSwapOrderFromQuote } from './postSwapOrder'
 import { postLimitOrder } from './postLimitOrder'
-import { getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
+import { getQuote, getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getTradeParametersAfterQuote, swapParamsToLimitOrderParams } from './utils/misc'
 import { getPreSignTransaction } from './getPreSignTransaction'
 import {
   AbstractProviderAdapter,
+  AccountAddress,
   enableLogging,
   ERC20_ALLOWANCE_ABI,
   ERC20_APPROVE_ABI,
@@ -28,10 +31,18 @@ import { getEthFlowContract } from './getEthFlowTransaction'
 import { getEthFlowCancellation, getSettlementCancellation } from './onChainCancellation'
 import { resolveOrderBookApi } from './utils/resolveOrderBookApi'
 import { getSettlementContract } from './getSettlementContract'
-import { COW_PROTOCOL_VAULT_RELAYER_ADDRESS } from '@cowprotocol/sdk-config'
+import { COW_PROTOCOL_VAULT_RELAYER_ADDRESS, SupportedChainId, CowEnv } from '@cowprotocol/sdk-config'
 import { resolveSigner } from './utils/resolveSigner'
 
 export type WithPartialTraderParams<T> = T & Partial<TraderParameters>
+
+/**
+ * Parameters for quoting that don't require a signer.
+ * Requires `owner` (the account address) instead of a signer,
+ * since quoting only needs an address to estimate costs.
+ */
+export type QuoteOnlyParams<T> = T &
+  Partial<Omit<TraderParameters, 'signer'>> & { owner: AccountAddress }
 
 export type OrderTraderParams = WithPartialTraderParams<{ orderUid: string }>
 
@@ -111,6 +122,55 @@ export class TradingSdk {
           })
       },
     }
+  }
+
+  /**
+   * Gets a quote without requiring a signer or wallet connection.
+   * Useful for building UIs that preview swap quotes before the user connects a wallet.
+   *
+   * Unlike {@link getQuote}, this method only requires an `owner` address (the account
+   * to quote for) instead of a signer. The returned result contains quote information
+   * but no `postSwapOrderFromQuote` helper, since posting requires signing.
+   *
+   * @param params - Trade parameters with `owner` address. Signer is not needed.
+   * @param advancedSettings - Optional advanced settings for the swap quote.
+   * @returns Quote results including amounts, costs, slippage, and order data.
+   *
+   * @example
+   * ```typescript
+   * // Get a quote without a connected wallet
+   * const sdk = new TradingSdk(
+   *   { chainId: 1, appCode: 'My App' },
+   *   { orderBookApi },
+   * )
+   *
+   * const quoteResults = await sdk.getQuoteOnly({
+   *   owner: '0x1234...', // any valid address
+   *   kind: OrderKind.SELL,
+   *   sellToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+   *   sellTokenDecimals: 6,
+   *   buyToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+   *   buyTokenDecimals: 18,
+   *   amount: '1000000000', // 1000 USDC
+   * })
+   *
+   * console.log(quoteResults.amountsAndCosts)
+   * ```
+   */
+  async getQuoteOnly(
+    params: QuoteOnlyParams<TradeParameters>,
+    advancedSettings?: SwapAdvancedSettings,
+  ): Promise<QuoteResults> {
+    const quoterParams = this.mergeQuoterParams(params)
+    const trader: QuoterParameters = {
+      chainId: quoterParams.chainId,
+      appCode: quoterParams.appCode,
+      env: quoterParams.env,
+      account: quoterParams.owner,
+    }
+    const result = await getQuote(quoterParams, trader, advancedSettings, this.options.orderBookApi)
+
+    return result.result
   }
 
   async getQuoteResults(
@@ -336,6 +396,32 @@ export class TradingSdk {
     return {
       ...params,
       ...traderParams,
+    }
+  }
+
+  /**
+   * Merges quoter-specific parameters (chainId, appCode, env, owner) without requiring a signer.
+   * Used by quote-only operations that don't need signing capability.
+   */
+  private mergeQuoterParams<T extends { owner: AccountAddress }>(
+    params: T & Partial<Omit<TraderParameters, 'signer'>>,
+  ): T & { chainId: SupportedChainId; appCode: string; env: CowEnv } {
+    const chainId = params.chainId || this.traderParams.chainId
+    const appCode = params.appCode || this.traderParams.appCode
+    const env = params.env || this.traderParams.env || 'prod'
+
+    if (!chainId) {
+      throw new Error('Missing quoter parameters: chainId')
+    }
+    if (!appCode) {
+      throw new Error('Missing quoter parameters: appCode')
+    }
+
+    return {
+      ...params,
+      chainId,
+      appCode,
+      env,
     }
   }
 }
