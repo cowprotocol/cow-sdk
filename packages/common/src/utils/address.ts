@@ -6,9 +6,10 @@ const EVM_ADDRESS_PATTERN = /^0x[a-fA-F0-9]{40}$/
 
 /**
  * Regular expression pattern for validating Bitcoin legacy addresses (P2PKH/P2SH).
- * Matches addresses that start with 1 or 3, followed by 25-34 base58 encoded characters.
+ * Matches addresses that start with 1 or 3, followed by 24-33 base58 encoded characters.
+ * Total address length: 25-34 characters (including the prefix).
  */
-const BTC_LEGACY_ADDRESS_PATTERN = /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/
+const BTC_LEGACY_ADDRESS_PATTERN = /^[13][a-km-zA-HJ-NP-Z1-9]{24,33}$/
 
 /**
  * Regular expression pattern for validating Bitcoin Bech32 mainnet addresses (P2WPKH/P2WSH).
@@ -48,7 +49,7 @@ export function isEvmAddress(address: string | null | undefined): address is Evm
  */
 export function isBtcAddress(address: string | null | undefined): address is BtcAddressKey {
   if (typeof address !== 'string') return false
-  if (address.length < 26 || address.length > 62) return false
+  if (address.length < 25 || address.length > 62) return false
 
   if (BTC_LEGACY_ADDRESS_PATTERN.test(address)) {
     return true
