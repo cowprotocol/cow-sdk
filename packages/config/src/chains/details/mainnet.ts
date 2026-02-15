@@ -1,5 +1,5 @@
 import { nativeCurrencyTemplate } from '../../constants/tokens'
-import { ChainInfo, SupportedChainId } from '../types'
+import { ChainInfo, SupportedEvmChainId } from '../types'
 import { RAW_CHAINS_FILES_PATH } from '../../constants/paths'
 
 const ethereumLogo = `${RAW_CHAINS_FILES_PATH}/images/mainnet-logo.svg`
@@ -10,12 +10,12 @@ const ethereumLogo = `${RAW_CHAINS_FILES_PATH}/images/mainnet-logo.svg`
  * See also https://github.com/wevm/viem/blob/main/src/chains/definitions/mainnet.ts
  */
 export const mainnet: ChainInfo = {
-  id: SupportedChainId.MAINNET,
+  id: SupportedEvmChainId.MAINNET,
   label: 'Ethereum',
   eip155Label: 'Ethereum Mainnet',
   nativeCurrency: {
     ...nativeCurrencyTemplate,
-    chainId: SupportedChainId.MAINNET,
+    chainId: SupportedEvmChainId.MAINNET,
   },
   addressPrefix: 'eth',
   isTestnet: false,

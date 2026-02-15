@@ -1,5 +1,5 @@
 import { mapAddressToSupportedNetworks } from './utils'
-import { SupportedChainId } from '../types'
+import { SupportedEvmChainId } from '../types'
 
 export const ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 export const EXTENSIBLE_FALLBACK_HANDLER = '0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5'
@@ -37,17 +37,17 @@ const BARN_ETH_FLOW_ADDRESS_LENS = '0xFb337f8a725A142f65fb9ff4902d41cc901de222'
 /**
  * An object containing the addresses of ETH flow contracts for each supported chain for production.
  */
-export const ETH_FLOW_ADDRESSES: Record<SupportedChainId, string> = {
+export const ETH_FLOW_ADDRESSES: Record<SupportedEvmChainId, string> = {
   ...mapAddressToSupportedNetworks(ETH_FLOW_ADDRESS),
-  [SupportedChainId.LENS]: ETH_FLOW_ADDRESS_LENS,
+  [SupportedEvmChainId.LENS]: ETH_FLOW_ADDRESS_LENS,
 }
 
 /**
  * An object containing the addresses of ETH flow contracts for each supported chain for barn.
  */
-export const BARN_ETH_FLOW_ADDRESSES: Record<SupportedChainId, string> = {
+export const BARN_ETH_FLOW_ADDRESSES: Record<SupportedEvmChainId, string> = {
   ...mapAddressToSupportedNetworks(BARN_ETH_FLOW_ADDRESS),
-  [SupportedChainId.LENS]: BARN_ETH_FLOW_ADDRESS_LENS,
+  [SupportedEvmChainId.LENS]: BARN_ETH_FLOW_ADDRESS_LENS,
 }
 
 export const MAX_VALID_TO_EPOCH = 4294967295 // Max uint32 (Feb 07 2106 07:28:15 GMT+0100)

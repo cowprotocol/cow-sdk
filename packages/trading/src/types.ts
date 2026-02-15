@@ -17,7 +17,7 @@ import {
 } from '@cowprotocol/sdk-order-book'
 import type { AbstractSigner, AccountAddress, Provider, SignerLike } from '@cowprotocol/sdk-common'
 import type { ORDER_PRIMARY_TYPE, UnsignedOrder } from '@cowprotocol/sdk-order-signing'
-import type { SupportedChainId, CowEnv } from '@cowprotocol/sdk-config'
+import type { SupportedEvmChainId, CowEnv } from '@cowprotocol/sdk-config'
 
 /**
  * EIP-712 typed data domain.
@@ -86,7 +86,7 @@ export interface TradeOptionalParameters {
  * Information about the trader.
  */
 export interface TraderParameters {
-  chainId: SupportedChainId
+  chainId: SupportedEvmChainId
   appCode: latest.AppCode
   signer?: SignerLike
   env?: CowEnv
@@ -99,7 +99,7 @@ export interface SlippageToleranceResponse {
 }
 
 export interface SlippageToleranceRequest {
-  chainId: SupportedChainId
+  chainId: SupportedEvmChainId
   sellToken: OrderParameters['sellToken']
   buyToken: OrderParameters['buyToken']
   sellAmount?: bigint
@@ -149,7 +149,7 @@ export interface SwapAdvancedSettings extends LimitOrderAdvancedSettings {
    */
   getSlippageSuggestion?(request: SlippageToleranceRequest): Promise<SlippageToleranceResponse>
 
-  getCorrelatedTokens?(chainId: SupportedChainId): Promise<string[]>
+  getCorrelatedTokens?(chainId: SupportedEvmChainId): Promise<string[]>
 
   /**
    * Allows bridging trades like (USDC (mainnet) -> USDC (mainnet) -> DAI (base)

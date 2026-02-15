@@ -1,4 +1,4 @@
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { Signer } from '@cowprotocol/sdk-common'
 import { GAS_LIMIT_DEFAULT } from './consts'
 import { calculateGasMargin } from './utils/misc'
@@ -7,7 +7,7 @@ import { getSettlementContract } from './getSettlementContract'
 
 export async function getPreSignTransaction(
   signer: Signer,
-  chainId: SupportedChainId,
+  chainId: SupportedEvmChainId,
   orderId: string,
 ): Promise<TransactionParams> {
   const contract = getSettlementContract(chainId, signer)

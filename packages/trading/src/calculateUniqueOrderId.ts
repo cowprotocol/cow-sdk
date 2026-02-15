@@ -6,13 +6,13 @@ import {
   MAX_VALID_TO_EPOCH,
   WRAPPED_NATIVE_CURRENCIES,
 } from '@cowprotocol/sdk-config'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import type { ContractsOrder as Order } from '@cowprotocol/sdk-contracts-ts'
 import { EthFlowOrderExistsCallback } from './types'
 import { unsignedOrderForSigning } from './utils/order'
 
 export async function calculateUniqueOrderId(
-  chainId: SupportedChainId,
+  chainId: SupportedEvmChainId,
   order: UnsignedOrder,
   checkEthFlowOrderExists?: EthFlowOrderExistsCallback,
   env?: CowEnv,

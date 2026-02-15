@@ -1,7 +1,7 @@
 import { gql } from 'graphql-request'
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { CowError } from '@cowprotocol/sdk-common'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { LAST_DAYS_VOLUME_QUERY, LAST_HOURS_VOLUME_QUERY, TOTALS_QUERY } from './queries'
 import { SubgraphApi, SubgraphApiBaseUrls } from './api'
 
@@ -247,7 +247,7 @@ describe('CoW subgraph URL', () => {
     const totals = await cowSubgraphApi.getTotals()
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      prodUrls[SupportedChainId.MAINNET],
+      prodUrls[SupportedEvmChainId.MAINNET],
       getFetchParameters(TOTALS_QUERY, 'Totals'),
     )
     expect(totals).toEqual(TOTALS_RESPONSE.data.totals[0])
@@ -261,7 +261,7 @@ describe('CoW subgraph URL', () => {
     const response = await cowSubgraphApi.getLastDaysVolume(7)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      prodUrls[SupportedChainId.MAINNET],
+      prodUrls[SupportedEvmChainId.MAINNET],
       getFetchParameters(LAST_DAYS_VOLUME_QUERY, 'LastDaysVolume', { days: 7 }),
     )
     expect(response).toEqual(LAST_7_DAYS_VOLUME_RESPONSE.data)
@@ -275,7 +275,7 @@ describe('CoW subgraph URL', () => {
     const response = await cowSubgraphApi.getLastHoursVolume(24)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      prodUrls[SupportedChainId.MAINNET],
+      prodUrls[SupportedEvmChainId.MAINNET],
       getFetchParameters(LAST_HOURS_VOLUME_QUERY, 'LastHoursVolume', { hours: 24 }),
     )
     expect(response).toEqual(LAST_24_HOURS_VOLUME_RESPONSE.data)
@@ -299,7 +299,7 @@ describe('CoW subgraph URL', () => {
     const response = await cowSubgraphApi.runQuery(query)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      prodUrls[SupportedChainId.MAINNET],
+      prodUrls[SupportedEvmChainId.MAINNET],
       getFetchParameters(query, 'TokensByVolume'),
     )
     expect(response).toEqual(TOKENS_BY_VOLUME_RESPONSE.data)
@@ -321,25 +321,25 @@ describe('CoW subgraph URL', () => {
     await expect(cowSubgraphApi.runQuery(query)).rejects.toThrowError(CowError)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      prodUrls[SupportedChainId.MAINNET],
+      prodUrls[SupportedEvmChainId.MAINNET],
       getFetchParameters(query, 'InvalidQuery'),
     )
   })
 
   test('Uses urls from custom env config', async () => {
     const customEnvConfig: SubgraphApiBaseUrls = {
-      [SupportedChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-staging',
-      [SupportedChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc-staging',
-      [SupportedChainId.BASE]: null,
-      [SupportedChainId.ARBITRUM_ONE]: null,
-      [SupportedChainId.SEPOLIA]: null,
-      [SupportedChainId.POLYGON]: null,
-      [SupportedChainId.AVALANCHE]: null,
-      [SupportedChainId.LENS]: null,
-      [SupportedChainId.BNB]: null,
-      [SupportedChainId.LINEA]: null,
-      [SupportedChainId.PLASMA]: null,
-      [SupportedChainId.INK]: null,
+      [SupportedEvmChainId.MAINNET]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-staging',
+      [SupportedEvmChainId.GNOSIS_CHAIN]: 'https://api.thegraph.com/subgraphs/name/cowprotocol/cow-gc-staging',
+      [SupportedEvmChainId.BASE]: null,
+      [SupportedEvmChainId.ARBITRUM_ONE]: null,
+      [SupportedEvmChainId.SEPOLIA]: null,
+      [SupportedEvmChainId.POLYGON]: null,
+      [SupportedEvmChainId.AVALANCHE]: null,
+      [SupportedEvmChainId.LENS]: null,
+      [SupportedEvmChainId.BNB]: null,
+      [SupportedEvmChainId.LINEA]: null,
+      [SupportedEvmChainId.PLASMA]: null,
+      [SupportedEvmChainId.INK]: null,
     }
 
     const customSubgraphApi = new SubgraphApi('FakeApiKey', {
@@ -354,7 +354,7 @@ describe('CoW subgraph URL', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      customEnvConfig[SupportedChainId.MAINNET],
+      customEnvConfig[SupportedEvmChainId.MAINNET],
       getFetchParameters(TOTALS_QUERY, 'Totals'),
     )
     expect(totals).toEqual(TOTALS_RESPONSE.data.totals[0])

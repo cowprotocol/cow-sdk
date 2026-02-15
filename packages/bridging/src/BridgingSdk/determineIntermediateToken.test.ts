@@ -1,11 +1,11 @@
-import { NATIVE_CURRENCY_ADDRESS, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { NATIVE_CURRENCY_ADDRESS, SupportedEvmChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import { determineIntermediateToken } from './determineIntermediateToken'
 import { BridgeProviderQuoteError } from '../errors'
 
 describe('determineIntermediateToken', () => {
   // Sample tokens for testing
   const cowMainnet: TokenInfo = {
-    chainId: SupportedChainId.MAINNET,
+    chainId: SupportedEvmChainId.MAINNET,
     address: '0xDEf1CA1fb7FBcDC777520aa7f396b4E015F497aB', // COW on Mainnet
     decimals: 18,
     name: 'COW',
@@ -14,7 +14,7 @@ describe('determineIntermediateToken', () => {
 
   // Sample tokens for testing
   const usdcMainnet: TokenInfo = {
-    chainId: SupportedChainId.MAINNET,
+    chainId: SupportedEvmChainId.MAINNET,
     address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC on Mainnet
     decimals: 6,
     name: 'USDC',
@@ -22,7 +22,7 @@ describe('determineIntermediateToken', () => {
   }
 
   const usdtMainnet: TokenInfo = {
-    chainId: SupportedChainId.MAINNET,
+    chainId: SupportedEvmChainId.MAINNET,
     address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', // USDT on Mainnet
     decimals: 6,
     name: 'USDT',
@@ -30,7 +30,7 @@ describe('determineIntermediateToken', () => {
   }
 
   const wethMainnet: TokenInfo = {
-    chainId: SupportedChainId.MAINNET,
+    chainId: SupportedEvmChainId.MAINNET,
     address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // WETH on Mainnet
     decimals: 18,
     name: 'WETH',
@@ -38,7 +38,7 @@ describe('determineIntermediateToken', () => {
   }
 
   const nativeEth: TokenInfo = {
-    chainId: SupportedChainId.MAINNET,
+    chainId: SupportedEvmChainId.MAINNET,
     address: NATIVE_CURRENCY_ADDRESS,
     decimals: 18,
     name: 'Ether',
@@ -46,7 +46,7 @@ describe('determineIntermediateToken', () => {
   }
 
   const randomToken: TokenInfo = {
-    chainId: SupportedChainId.MAINNET,
+    chainId: SupportedEvmChainId.MAINNET,
     address: '0x1111111111111111111111111111111111111111',
     decimals: 18,
     name: 'Random',
@@ -54,7 +54,7 @@ describe('determineIntermediateToken', () => {
   }
 
   const usdcArbitrum: TokenInfo = {
-    chainId: SupportedChainId.ARBITRUM_ONE,
+    chainId: SupportedEvmChainId.ARBITRUM_ONE,
     address: '0xaf88d065e77c8cc2239327c5edb3a432268e5831', // USDC on Arbitrum
     decimals: 6,
     name: 'USDC',
@@ -64,13 +64,13 @@ describe('determineIntermediateToken', () => {
   describe('error handling', () => {
     it('should throw error when no intermediate tokens provided', async () => {
       await expect(
-        determineIntermediateToken(SupportedChainId.MAINNET, cowMainnet.address, [], undefined, true),
+        determineIntermediateToken(SupportedEvmChainId.MAINNET, cowMainnet.address, [], undefined, true),
       ).rejects.toThrow(BridgeProviderQuoteError)
     })
 
     it('should throw error when intermediateTokens is empty array', async () => {
       await expect(
-        determineIntermediateToken(SupportedChainId.MAINNET, cowMainnet.address, [], undefined, true),
+        determineIntermediateToken(SupportedEvmChainId.MAINNET, cowMainnet.address, [], undefined, true),
       ).rejects.toThrow(BridgeProviderQuoteError)
     })
   })
@@ -78,7 +78,7 @@ describe('determineIntermediateToken', () => {
   describe('priority level: HIGHEST (same as sell token)', () => {
     it('should prioritize sell token over others', async () => {
       const result = await determineIntermediateToken(
-        SupportedChainId.MAINNET,
+        SupportedEvmChainId.MAINNET,
         cowMainnet.address,
         [cowMainnet, randomToken, wethMainnet, usdcMainnet],
         undefined,
@@ -92,7 +92,7 @@ describe('determineIntermediateToken', () => {
   describe('priority level: HIGH (stablecoins)', () => {
     it('should prioritize USDC over other tokens', async () => {
       const result = await determineIntermediateToken(
-        SupportedChainId.MAINNET,
+        SupportedEvmChainId.MAINNET,
         cowMainnet.address,
         [randomToken, wethMainnet, usdcMainnet],
         undefined,
@@ -104,7 +104,7 @@ describe('determineIntermediateToken', () => {
 
     it('should prioritize USDT over other tokens', async () => {
       const result = await determineIntermediateToken(
-        SupportedChainId.MAINNET,
+        SupportedEvmChainId.MAINNET,
         cowMainnet.address,
         [randomToken, wethMainnet, usdtMainnet],
         undefined,
@@ -116,7 +116,7 @@ describe('determineIntermediateToken', () => {
 
     it('should prioritize first stablecoin when both USDC and USDT present', async () => {
       const result = await determineIntermediateToken(
-        SupportedChainId.MAINNET,
+        SupportedEvmChainId.MAINNET,
         cowMainnet.address,
         [usdcMainnet, usdtMainnet],
         undefined,
@@ -127,7 +127,7 @@ describe('determineIntermediateToken', () => {
 
       // Order matters - maintain stable sort
       const result2 = await determineIntermediateToken(
-        SupportedChainId.MAINNET,
+        SupportedEvmChainId.MAINNET,
         cowMainnet.address,
         [usdtMainnet, usdcMainnet],
         undefined,
@@ -139,7 +139,7 @@ describe('determineIntermediateToken', () => {
 
     it('should prioritize stablecoins on different chains', async () => {
       const result = await determineIntermediateToken(
-        SupportedChainId.ARBITRUM_ONE,
+        SupportedEvmChainId.ARBITRUM_ONE,
         cowMainnet.address,
         [randomToken, usdcArbitrum],
         undefined,
@@ -155,7 +155,7 @@ describe('determineIntermediateToken', () => {
       const getCorrelatedTokens = async () => [wethMainnet.address]
 
       const result = await determineIntermediateToken(
-        SupportedChainId.MAINNET,
+        SupportedEvmChainId.MAINNET,
         cowMainnet.address,
         [randomToken, wethMainnet],
         getCorrelatedTokens,
@@ -169,7 +169,7 @@ describe('determineIntermediateToken', () => {
       const getCorrelatedTokens = async () => [wethMainnet.address]
 
       const result = await determineIntermediateToken(
-        SupportedChainId.MAINNET,
+        SupportedEvmChainId.MAINNET,
         cowMainnet.address,
         [wethMainnet, usdcMainnet],
         getCorrelatedTokens,
@@ -181,7 +181,7 @@ describe('determineIntermediateToken', () => {
 
     it('should handle multiple correlated tokens with stable sort', async () => {
       const daiToken: TokenInfo = {
-        chainId: SupportedChainId.MAINNET,
+        chainId: SupportedEvmChainId.MAINNET,
         address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
         decimals: 18,
         name: 'DAI',
@@ -191,7 +191,7 @@ describe('determineIntermediateToken', () => {
       const getCorrelatedTokens = async () => [wethMainnet.address, daiToken.address]
 
       const result = await determineIntermediateToken(
-        SupportedChainId.MAINNET,
+        SupportedEvmChainId.MAINNET,
         cowMainnet.address,
         [randomToken, wethMainnet, daiToken],
         getCorrelatedTokens,
@@ -208,7 +208,7 @@ describe('determineIntermediateToken', () => {
       }
 
       const result = await determineIntermediateToken(
-        SupportedChainId.MAINNET,
+        SupportedEvmChainId.MAINNET,
         cowMainnet.address,
         [randomToken, wethMainnet],
         getCorrelatedTokens,
@@ -223,7 +223,7 @@ describe('determineIntermediateToken', () => {
   describe('priority level: LOW (native tokens)', () => {
     it('should prioritize native token over random tokens', async () => {
       const result = await determineIntermediateToken(
-        SupportedChainId.MAINNET,
+        SupportedEvmChainId.MAINNET,
         cowMainnet.address,
         [randomToken, nativeEth],
         undefined,
@@ -235,7 +235,7 @@ describe('determineIntermediateToken', () => {
 
     it('should prioritize stablecoins over native token', async () => {
       const result = await determineIntermediateToken(
-        SupportedChainId.MAINNET,
+        SupportedEvmChainId.MAINNET,
         cowMainnet.address,
         [nativeEth, usdcMainnet],
         undefined,
@@ -249,7 +249,7 @@ describe('determineIntermediateToken', () => {
       const getCorrelatedTokens = async () => [wethMainnet.address]
 
       const result = await determineIntermediateToken(
-        SupportedChainId.MAINNET,
+        SupportedEvmChainId.MAINNET,
         cowMainnet.address,
         [nativeEth, wethMainnet],
         getCorrelatedTokens,
@@ -263,21 +263,21 @@ describe('determineIntermediateToken', () => {
   describe('priority level: LOWEST (other tokens)', () => {
     it('should return first token when all have low priority', async () => {
       const token1: TokenInfo = {
-        chainId: SupportedChainId.MAINNET,
+        chainId: SupportedEvmChainId.MAINNET,
         address: '0x1111111111111111111111111111111111111111',
         decimals: 18,
         name: 'Token1',
       }
 
       const token2: TokenInfo = {
-        chainId: SupportedChainId.MAINNET,
+        chainId: SupportedEvmChainId.MAINNET,
         address: '0x2222222222222222222222222222222222222222',
         decimals: 18,
         name: 'Token2',
       }
 
       const result = await determineIntermediateToken(
-        SupportedChainId.MAINNET,
+        SupportedEvmChainId.MAINNET,
         cowMainnet.address,
         [token1, token2],
         undefined,
@@ -291,7 +291,7 @@ describe('determineIntermediateToken', () => {
   describe('allowIntermediateEqSellToken flag', () => {
     it('should filter out sell token when allowIntermediateEqSellToken is false', async () => {
       const result = await determineIntermediateToken(
-        SupportedChainId.MAINNET,
+        SupportedEvmChainId.MAINNET,
         cowMainnet.address,
         [cowMainnet, usdcMainnet, randomToken],
         undefined,
@@ -304,7 +304,7 @@ describe('determineIntermediateToken', () => {
 
     it('should keep sell token when allowIntermediateEqSellToken is true', async () => {
       const result = await determineIntermediateToken(
-        SupportedChainId.MAINNET,
+        SupportedEvmChainId.MAINNET,
         cowMainnet.address,
         [cowMainnet, usdcMainnet, randomToken],
         undefined,

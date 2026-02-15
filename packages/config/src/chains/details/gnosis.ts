@@ -1,4 +1,4 @@
-import { ChainInfo, SupportedChainId } from '../types'
+import { ChainInfo, SupportedEvmChainId } from '../types'
 import { NATIVE_CURRENCY_ADDRESS, nativeCurrencyTemplate, TOKEN_LIST_IMAGES_PATH } from '../../constants/tokens'
 import { RAW_CHAINS_FILES_PATH } from '../../constants/paths'
 
@@ -10,12 +10,12 @@ const gnosisChainLogo = `${RAW_CHAINS_FILES_PATH}/images/gnosis-logo.svg`
  * See also https://github.com/wevm/viem/blob/main/src/chains/definitions/gnosis.ts
  */
 export const gnosisChain: ChainInfo = {
-  id: SupportedChainId.GNOSIS_CHAIN,
+  id: SupportedEvmChainId.GNOSIS_CHAIN,
   label: 'Gnosis',
   eip155Label: 'Gnosis',
   nativeCurrency: {
     ...nativeCurrencyTemplate,
-    chainId: SupportedChainId.GNOSIS_CHAIN,
+    chainId: SupportedEvmChainId.GNOSIS_CHAIN,
     name: 'xDAI',
     symbol: 'xDAI',
     logoUrl: `${TOKEN_LIST_IMAGES_PATH}/100/${NATIVE_CURRENCY_ADDRESS.toLowerCase()}/logo.png`,

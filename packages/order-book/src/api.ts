@@ -7,7 +7,7 @@ import {
   DEFAULT_COW_API_CONTEXT,
   ENVS_LIST,
   PartialApiContext,
-  SupportedChainId,
+  SupportedEvmChainId,
 } from '@cowprotocol/sdk-config'
 import { CowError, jsonWithBigintReplacer, log } from '@cowprotocol/sdk-common'
 import {
@@ -39,36 +39,36 @@ const STAGING_BASE_URL = 'https://barn.api.cow.fi'
  * @see {@link https://api.cow.fi/docs/#/}
  */
 export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
-  [SupportedChainId.MAINNET]: `${PROD_BASE_URL}/mainnet`,
-  [SupportedChainId.GNOSIS_CHAIN]: `${PROD_BASE_URL}/xdai`,
-  [SupportedChainId.ARBITRUM_ONE]: `${PROD_BASE_URL}/arbitrum_one`,
-  [SupportedChainId.BASE]: `${PROD_BASE_URL}/base`,
-  [SupportedChainId.SEPOLIA]: `${PROD_BASE_URL}/sepolia`,
-  [SupportedChainId.POLYGON]: `${PROD_BASE_URL}/polygon`,
-  [SupportedChainId.AVALANCHE]: `${PROD_BASE_URL}/avalanche`,
-  [SupportedChainId.LENS]: `${PROD_BASE_URL}/lens`,
-  [SupportedChainId.BNB]: `${PROD_BASE_URL}/bnb`,
-  [SupportedChainId.LINEA]: `${PROD_BASE_URL}/linea`,
-  [SupportedChainId.PLASMA]: `${PROD_BASE_URL}/plasma`,
-  [SupportedChainId.INK]: `${PROD_BASE_URL}/ink`,
+  [SupportedEvmChainId.MAINNET]: `${PROD_BASE_URL}/mainnet`,
+  [SupportedEvmChainId.GNOSIS_CHAIN]: `${PROD_BASE_URL}/xdai`,
+  [SupportedEvmChainId.ARBITRUM_ONE]: `${PROD_BASE_URL}/arbitrum_one`,
+  [SupportedEvmChainId.BASE]: `${PROD_BASE_URL}/base`,
+  [SupportedEvmChainId.SEPOLIA]: `${PROD_BASE_URL}/sepolia`,
+  [SupportedEvmChainId.POLYGON]: `${PROD_BASE_URL}/polygon`,
+  [SupportedEvmChainId.AVALANCHE]: `${PROD_BASE_URL}/avalanche`,
+  [SupportedEvmChainId.LENS]: `${PROD_BASE_URL}/lens`,
+  [SupportedEvmChainId.BNB]: `${PROD_BASE_URL}/bnb`,
+  [SupportedEvmChainId.LINEA]: `${PROD_BASE_URL}/linea`,
+  [SupportedEvmChainId.PLASMA]: `${PROD_BASE_URL}/plasma`,
+  [SupportedEvmChainId.INK]: `${PROD_BASE_URL}/ink`,
 }
 
 /**
  * An object containing *staging* environment base URLs for each supported `chainId`.
  */
 export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
-  [SupportedChainId.MAINNET]: `${STAGING_BASE_URL}/mainnet`,
-  [SupportedChainId.GNOSIS_CHAIN]: `${STAGING_BASE_URL}/xdai`,
-  [SupportedChainId.ARBITRUM_ONE]: `${STAGING_BASE_URL}/arbitrum_one`,
-  [SupportedChainId.BASE]: `${STAGING_BASE_URL}/base`,
-  [SupportedChainId.SEPOLIA]: `${STAGING_BASE_URL}/sepolia`,
-  [SupportedChainId.POLYGON]: `${STAGING_BASE_URL}/polygon`,
-  [SupportedChainId.AVALANCHE]: `${STAGING_BASE_URL}/avalanche`,
-  [SupportedChainId.LENS]: `${STAGING_BASE_URL}/lens`,
-  [SupportedChainId.BNB]: `${STAGING_BASE_URL}/bnb`,
-  [SupportedChainId.LINEA]: `${STAGING_BASE_URL}/linea`,
-  [SupportedChainId.PLASMA]: `${STAGING_BASE_URL}/plasma`,
-  [SupportedChainId.INK]: `${STAGING_BASE_URL}/ink`,
+  [SupportedEvmChainId.MAINNET]: `${STAGING_BASE_URL}/mainnet`,
+  [SupportedEvmChainId.GNOSIS_CHAIN]: `${STAGING_BASE_URL}/xdai`,
+  [SupportedEvmChainId.ARBITRUM_ONE]: `${STAGING_BASE_URL}/arbitrum_one`,
+  [SupportedEvmChainId.BASE]: `${STAGING_BASE_URL}/base`,
+  [SupportedEvmChainId.SEPOLIA]: `${STAGING_BASE_URL}/sepolia`,
+  [SupportedEvmChainId.POLYGON]: `${STAGING_BASE_URL}/polygon`,
+  [SupportedEvmChainId.AVALANCHE]: `${STAGING_BASE_URL}/avalanche`,
+  [SupportedEvmChainId.LENS]: `${STAGING_BASE_URL}/lens`,
+  [SupportedEvmChainId.BNB]: `${STAGING_BASE_URL}/bnb`,
+  [SupportedEvmChainId.LINEA]: `${STAGING_BASE_URL}/linea`,
+  [SupportedEvmChainId.PLASMA]: `${STAGING_BASE_URL}/plasma`,
+  [SupportedEvmChainId.INK]: `${STAGING_BASE_URL}/ink`,
 }
 
 function cleanObjectFromUndefinedValues(obj: Record<string, string>): typeof obj {

@@ -1,4 +1,4 @@
-import type { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
+import type { SupportedEvmChainId, TargetEvmChainId } from '@cowprotocol/sdk-config'
 
 export type SupportedBridge = 'across' | 'cctp' | 'gnosis-native-bridge'
 
@@ -316,8 +316,8 @@ export interface BungeeApiOptions extends Partial<BungeeApiUrlOptions> {
 }
 
 export interface IntermediateTokensParams {
-  fromChainId: SupportedChainId
-  toChainId: TargetChainId
+  fromChainId: SupportedEvmChainId
+  toChainId: TargetEvmChainId
   toTokenAddress: string
   includeBridges?: SupportedBridge[]
 }

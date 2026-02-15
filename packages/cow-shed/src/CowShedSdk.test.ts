@@ -1,5 +1,5 @@
 import { CowShedSdk } from './CowShedSdk'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { ICoWShedCall } from './types'
 import { AdaptersTestSetup, createAdapters } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
@@ -41,7 +41,7 @@ describe('CowShedSdk', () => {
         const call = await sdk.signCalls({
           calls: CALLS_MOCK,
           signer: adapters[adapterName].signer,
-          chainId: SupportedChainId.SEPOLIA,
+          chainId: SupportedEvmChainId.SEPOLIA,
           defaultGasLimit: 1000000n,
           deadline: getOrderDeadlineFromNow(DEFAULT_QUOTE_VALIDITY),
         })
@@ -82,7 +82,7 @@ describe('CowShedSdk', () => {
         const call = await sdk.signCalls({
           calls: CALLS_MOCK,
           signer: adapters[adapterName].signer,
-          chainId: SupportedChainId.SEPOLIA,
+          chainId: SupportedEvmChainId.SEPOLIA,
           deadline: getOrderDeadlineFromNow(DEFAULT_QUOTE_VALIDITY),
         })
 
@@ -105,7 +105,7 @@ describe('CowShedSdk', () => {
         const call = await sdk.signCalls({
           calls: CALLS_MOCK,
           signer: adapters[adapterName].signer,
-          chainId: SupportedChainId.MAINNET,
+          chainId: SupportedEvmChainId.MAINNET,
           defaultGasLimit: 1000000n,
           deadline: getOrderDeadlineFromNow(DEFAULT_QUOTE_VALIDITY),
         })
@@ -133,7 +133,7 @@ describe('CowShedSdk', () => {
         const call = await sdk.signCalls({
           calls: CALLS_MOCK,
           signer: adapters[adapterName].signer,
-          chainId: SupportedChainId.MAINNET,
+          chainId: SupportedEvmChainId.MAINNET,
           defaultGasLimit: 1000000n,
           nonce,
           deadline,

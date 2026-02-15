@@ -1,4 +1,4 @@
-import { SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { isEvmChain, isSupportedChain, SupportedEvmChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import { Address, areAddressesEqual, isNativeToken, isWrappedNativeToken } from '@cowprotocol/sdk-common'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../errors'
 import { isStablecoinPriorityToken, isCorrelatedToken } from './tokenPriority'
@@ -29,10 +29,10 @@ enum TokenPriority {
  * @throws {BridgeProviderQuoteError} If `intermediateTokens` is empty or undefined
  */
 export async function determineIntermediateToken(
-  sourceChainId: SupportedChainId,
+  sourceChainId: SupportedEvmChainId,
   sourceTokenAddress: Address,
   intermediateTokens: TokenInfo[],
-  getCorrelatedTokens?: (chainId: SupportedChainId) => Promise<string[]>,
+  getCorrelatedTokens?: (chainId: SupportedEvmChainId) => Promise<string[]>,
   allowIntermediateEqSellToken?: boolean,
 ): Promise<TokenInfo> {
   const firstToken = intermediateTokens[0]
@@ -65,7 +65,7 @@ export async function determineIntermediateToken(
         return { token, priority: TokenPriority.HIGHEST }
       }
     }
-    if (isStablecoinPriorityToken(token.chainId, token.address)) {
+    if (isEvmChain(token.chainId) && isSupportedChain(token.chainId) && isStablecoinPriorityToken(token.chainId, token.address)) {
       return { token, priority: TokenPriority.HIGH }
     }
     if (isCorrelatedToken(token.address, correlatedTokens)) {
@@ -98,8 +98,8 @@ export async function determineIntermediateToken(
 }
 
 async function resolveCorrelatedTokens(
-  sourceChainId: SupportedChainId,
-  getCorrelatedTokens: ((chainId: SupportedChainId) => Promise<string[]>) | undefined,
+  sourceChainId: SupportedEvmChainId,
+  getCorrelatedTokens: ((chainId: SupportedEvmChainId) => Promise<string[]>) | undefined,
 ): Promise<Set<string>> {
   if (getCorrelatedTokens) {
     try {

@@ -42,7 +42,7 @@ import {
   HASH_ZERO,
   PERCENT_SCALE,
 } from './const'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { aaveAdapterFactoryAbi } from './abi/AaveAdapterFactory'
 import { collateralSwapAdapterHookAbi } from './abi/CollateralSwapAdapterHook'
 import { debtSwapAdapterAbi } from './abi/DebtSwapAdapter'
@@ -50,13 +50,13 @@ import { repayWithCollateralAdapterAbi } from './abi/RepayWithCollateralAdapter'
 
 /**
  * Configuration options for the AaveCollateralSwapSdk.
- * @param {Record<AaveFlashLoanType, Record<SupportedChainId, string>>} hookAdapterPerType -
+ * @param {Record<AaveFlashLoanType, Record<SupportedEvmChainId, string>>} hookAdapterPerType -
  *        Mapping of flash loan types to chain-specific hook adapter addresses.
  *        Defaults to the predefined addresses from the constants.
- * @param {Record<SupportedChainId, string>} aaveAdapterFactory -
+ * @param {Record<SupportedEvmChainId, string>} aaveAdapterFactory -
  *        Mapping of chain IDs to Aave adapter factory addresses.
  *        Defaults to the predefined addresses from the constants.
- * @param {Record<SupportedChainId, string>} aavePoolAddress -
+ * @param {Record<SupportedEvmChainId, string>} aavePoolAddress -
  *        Mapping of chain IDs to Aave pool addresses.
  *        Defaults to the predefined addresses from the constants.
  * @example
@@ -77,9 +77,9 @@ import { repayWithCollateralAdapterAbi } from './abi/RepayWithCollateralAdapter'
  * ```
  */
 export type AaveCollateralSwapSdkConfig = {
-  hookAdapterPerType?: Record<AaveFlashLoanType, Record<SupportedChainId, string>>
-  aaveAdapterFactory?: Record<SupportedChainId, string>
-  aavePoolAddress?: Record<SupportedChainId, string>
+  hookAdapterPerType?: Record<AaveFlashLoanType, Record<SupportedEvmChainId, string>>
+  aaveAdapterFactory?: Record<SupportedEvmChainId, string>
+  aavePoolAddress?: Record<SupportedEvmChainId, string>
   hooksGasLimit?: { pre: bigint; post: bigint }
 }
 
@@ -94,22 +94,22 @@ export type AaveCollateralSwapSdkConfig = {
  * @see https://docs.cow.fi/
  */
 export class AaveCollateralSwapSdk {
-  private readonly hookAdapterPerType: Record<AaveFlashLoanType, Record<SupportedChainId, string>>
-  private readonly aaveAdapterFactory: Record<SupportedChainId, string>
-  private readonly aavePoolAddress: Record<SupportedChainId, string>
+  private readonly hookAdapterPerType: Record<AaveFlashLoanType, Record<SupportedEvmChainId, string>>
+  private readonly aaveAdapterFactory: Record<SupportedEvmChainId, string>
+  private readonly aavePoolAddress: Record<SupportedEvmChainId, string>
   private readonly hooksGasLimit: { pre: bigint; post: bigint }
 
   /**
    * Creates an instance of AaveCollateralSwapSdk.
    *
    * @param {Object} config - Configuration options for the SDK.
-   * @param {Record<AaveFlashLoanType, Record<SupportedChainId, string>>} config.hookAdapterPerType -
+   * @param {Record<AaveFlashLoanType, Record<SupportedEvmChainId, string>>} config.hookAdapterPerType -
    *        Mapping of flash loan types to chain-specific hook adapter addresses.
    *        Defaults to the predefined addresses from the constants.
-   * @param {Record<SupportedChainId, string>} config.aaveAdapterFactory -
+   * @param {Record<SupportedEvmChainId, string>} config.aaveAdapterFactory -
    *        Mapping of chain IDs to Aave adapter factory addresses.
    *        Defaults to the predefined addresses from the constants.
-   * @param {Record<SupportedChainId, string>} config.aavePoolAddress -
+   * @param {Record<SupportedEvmChainId, string>} config.aavePoolAddress -
    *        Mapping of chain IDs to Aave pool addresses.
    *        Defaults to the predefined addresses from the constants.
    */
@@ -407,7 +407,7 @@ export class AaveCollateralSwapSdk {
 
   async getExpectedInstanceAddress(
     flashLoanType: AaveFlashLoanType,
-    chainId: SupportedChainId,
+    chainId: SupportedEvmChainId,
     trader: AccountAddress,
     hookAmounts: FlashLoanHookAmounts,
     order: EncodedOrder,
@@ -460,7 +460,7 @@ export class AaveCollateralSwapSdk {
 
   getPreHookCallData(
     flashLoanType: AaveFlashLoanType,
-    chainId: SupportedChainId,
+    chainId: SupportedEvmChainId,
     trader: AccountAddress,
     hookAmounts: FlashLoanHookAmounts,
     order: EncodedOrder,
@@ -529,7 +529,7 @@ export class AaveCollateralSwapSdk {
 
   async getOrderHooks(
     flashLoanType: AaveFlashLoanType,
-    chainId: SupportedChainId,
+    chainId: SupportedEvmChainId,
     trader: AccountAddress,
     expectedInstanceAddress: AccountAddress,
     hookAmounts: FlashLoanHookAmounts,
@@ -569,7 +569,7 @@ export class AaveCollateralSwapSdk {
   }
 
   private async adapterEIP1271Signature(
-    chainId: SupportedChainId,
+    chainId: SupportedEvmChainId,
     instanceAddress: AccountAddress,
     orderToSign: UnsignedOrder,
     signer: AbstractSigner<Provider>,

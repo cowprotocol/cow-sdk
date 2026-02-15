@@ -4,7 +4,7 @@ import { gnosis } from 'viem/chains'
 
 import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
 import { getOrderToSign, LimitTradeParameters, TradingSdk } from '@cowprotocol/sdk-trading'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 
 import { AaveCollateralSwapSdk } from './AaveCollateralSwapSdk'
@@ -18,7 +18,7 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY
 
 describe('AaveFlashLoanIntegration.debtSwap', () => {
   it.skip('Test AaveFlashLoanSdk debtSwap on Gnosis Chain with limit order', async () => {
-    const chainId = SupportedChainId.GNOSIS_CHAIN
+    const chainId = SupportedEvmChainId.GNOSIS_CHAIN
 
     if (!PRIVATE_KEY) {
       throw new Error('Set PRIVATE_KEY to run this example')

@@ -1,5 +1,5 @@
 import { getQuoteWithSigner } from './getQuote'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { postSwapOrderFromQuote } from './postSwapOrder'
 import { SwapParameters } from './types'
@@ -34,7 +34,7 @@ const SELL_ORDER_QUOTE_MOCK = {
 }
 
 const SELL_ORDER_PARAMS: Omit<SwapParameters, 'amount'> = {
-  chainId: SupportedChainId.SEPOLIA,
+  chainId: SupportedEvmChainId.SEPOLIA,
   appCode: 'test',
   signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
   kind: OrderKind.SELL,
@@ -97,7 +97,7 @@ describe('postSwapOrder', () => {
 
   it('Buy order amounts should take fees and slippage into account', async () => {
     const parameters: Omit<SwapParameters, 'amount'> = {
-      chainId: SupportedChainId.SEPOLIA,
+      chainId: SupportedEvmChainId.SEPOLIA,
       appCode: 'test',
       signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
       kind: OrderKind.BUY,

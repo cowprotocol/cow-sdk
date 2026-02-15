@@ -13,7 +13,7 @@ import {
 } from '../mock/bridgeRequestMocks'
 import { QuoteResultsWithSigner, TradingSdk } from '@cowprotocol/sdk-trading'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
-import { mainnet, optimism, sepolia, SupportedChainId } from '@cowprotocol/sdk-config'
+import { mainnet, optimism, sepolia, SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { createAdapters } from '../../../tests/setup'
 import { MultiQuoteContext } from '../../types'
@@ -46,7 +46,7 @@ adapterNames.forEach((adapterName) => {
 
       orderBookApi = {
         context: {
-          chainId: SupportedChainId.GNOSIS_CHAIN,
+          chainId: SupportedEvmChainId.GNOSIS_CHAIN,
         },
         getQuote: jest.fn().mockResolvedValue(orderQuoteResponse),
         sendOrder: jest.fn().mockResolvedValue('0x01'),
@@ -99,7 +99,7 @@ adapterNames.forEach((adapterName) => {
 
       it('should fetch quote when provider supports the requested buyTokenChainId', async () => {
         // Mock getNetworks to include BASE
-        const baseNetwork = { id: SupportedChainId.BASE, name: 'Base', shortName: 'base' }
+        const baseNetwork = { id: SupportedEvmChainId.BASE, name: 'Base', shortName: 'base' }
         mockProvider.getNetworks = jest.fn().mockResolvedValue([mainnet, optimism, sepolia, baseNetwork])
 
         const context: MultiQuoteContext = {

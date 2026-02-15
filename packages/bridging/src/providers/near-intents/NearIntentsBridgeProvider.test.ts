@@ -1,5 +1,5 @@
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { GetExecutionStatusResponse, QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 
 import { createAdapters } from '../../../tests/setup'
@@ -9,7 +9,7 @@ import type { NearIntentsBridgeProviderOptions } from './NearIntentsBridgeProvid
 import { NEAR_INTENTS_HOOK_DAPP_ID, NearIntentsBridgeProvider } from './NearIntentsBridgeProvider'
 import { NEAR_INTENTS_SUPPORTED_NETWORKS } from './const'
 
-import type { TargetChainId } from '@cowprotocol/sdk-config'
+import type { TargetEvmChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import type { QuoteResponse } from '@defuse-protocol/one-click-sdk-typescript'
 
@@ -82,7 +82,7 @@ adapterNames.forEach((adapterName) => {
 
       it('should return empty array for unsupported chain', async () => {
         mockApi([])
-        const result = await provider.getBuyTokens({ buyChainId: 12345 as TargetChainId })
+        const result = await provider.getBuyTokens({ buyChainId: 12345 as TargetEvmChainId })
         expect(result.tokens).toEqual([])
         expect(result.isRouteAvailable).toEqual(false)
         expect(api.getTokens).toHaveBeenCalledTimes(1)
@@ -100,13 +100,13 @@ adapterNames.forEach((adapterName) => {
           },
         ])
         const result = await provider.getBuyTokens({
-          buyChainId: SupportedChainId.MAINNET,
+          buyChainId: SupportedEvmChainId.MAINNET,
         })
         expect(result.tokens.length).toBeGreaterThan(0)
         expect(result.tokens).toEqual(
           expect.arrayContaining([
             expect.objectContaining({
-              chainId: SupportedChainId.MAINNET,
+              chainId: SupportedEvmChainId.MAINNET,
               address: expect.any(String),
               decimals: expect.any(Number),
             }),
@@ -201,7 +201,7 @@ adapterNames.forEach((adapterName) => {
 
       it('should return executed status when the order is filled on near', async () => {
         mockApi(mockStatus)
-        const status = await provider.getStatus('depositAddress', SupportedChainId.BASE)
+        const status = await provider.getStatus('depositAddress', SupportedEvmChainId.BASE)
         expect(status).toEqual({
           status: BridgeStatus.EXECUTED,
           depositTxHash: 'originChainTxHash1',
@@ -213,7 +213,7 @@ adapterNames.forEach((adapterName) => {
         const api = new NearIntentsApi()
         jest.spyOn(api, 'getStatus').mockResolvedValue({} as any)
         provider.setApi(api)
-        const status = await provider.getStatus('depositAddress2', SupportedChainId.BASE)
+        const status = await provider.getStatus('depositAddress2', SupportedEvmChainId.BASE)
         expect(status).toEqual({
           status: BridgeStatus.UNKNOWN,
         })

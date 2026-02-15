@@ -1,6 +1,6 @@
 import { BackoffOptions } from 'exponential-backoff'
 import { RateLimiterOpts } from 'limiter'
-import { SupportedChainId } from '../chains'
+import { SupportedEvmChainId } from '../chains'
 
 /**
  * IPFS configuration.
@@ -46,7 +46,7 @@ export type PartialApiContext = Partial<ApiContext>
  * @property {string} [8453] The base URL for the Base API.
  * @property {string} [11155111] The base URL for the Sepolia testnet API.
  */
-export type ApiBaseUrls = Record<SupportedChainId, string>
+export type ApiBaseUrls = Record<SupportedEvmChainId, string>
 
 /**
  * Define the context to use for the CoW Protocol API.
@@ -63,12 +63,12 @@ export type ApiBaseUrls = Record<SupportedChainId, string>
  *
  * Options may be selectively overridden by passing a {@link PartialApiContext} to the constructor.
  * @see {@link https://api.cow.fi/docs/#/}
- * @property {SupportedChainId} chainId The `chainId`` corresponding to this CoW Protocol API instance.
+ * @property {SupportedEvmChainId} chainId The `chainId`` corresponding to this CoW Protocol API instance.
  * @property {CowEnv} env The environment that this context corresponds to.
  * @property {ApiBaseUrls} [baseUrls] URls that may be used to connect to this context.
  */
 export interface ApiContext {
-  chainId: SupportedChainId
+  chainId: SupportedEvmChainId
   env: CowEnv
   baseUrls?: ApiBaseUrls
   limiterOpts?: RateLimiterOpts
@@ -85,5 +85,5 @@ export const ENVS_LIST: CowEnv[] = ['prod', 'staging']
  */
 export const DEFAULT_COW_API_CONTEXT: ApiContext = {
   env: 'prod',
-  chainId: SupportedChainId.MAINNET,
+  chainId: SupportedEvmChainId.MAINNET,
 }

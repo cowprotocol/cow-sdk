@@ -1,4 +1,4 @@
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
 
 import { BridgeCallDetails, BridgeQuoteResult, BuyTokensParams, QuoteBridgeRequest } from '../../types'
 import { ContractsOrderKind as OrderKind } from '@cowprotocol/sdk-contracts-ts'
@@ -17,7 +17,7 @@ import { AbstractProviderAdapter } from '@cowprotocol/sdk-common'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from '../../const'
 
 // Sell token: USDC (mainnet)
-const sellTokenChainId = SupportedChainId.MAINNET
+const sellTokenChainId = SupportedEvmChainId.MAINNET
 const sellTokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
 const sellTokenDecimals = 6
 
@@ -26,7 +26,7 @@ export const intermediateToken = '0xDEf1CA1fb7FBcDC777520aa7f396b4E015F497aB' //
 export const intermediateTokenDecimals = 18
 
 // Buy token: WETH (base)
-const buyTokenChainId = SupportedChainId.BASE
+const buyTokenChainId = SupportedEvmChainId.BASE
 const buyTokenAddress = '0x4200000000000000000000000000000000000006'
 const buyTokenDecimals = 18
 
@@ -243,6 +243,6 @@ export const orderTypedData: OrderTypedData = {
 }
 
 export const buyTokensParams: BuyTokensParams = {
-  sellChainId: SupportedChainId.MAINNET,
-  buyChainId: SupportedChainId.GNOSIS_CHAIN,
+  sellChainId: SupportedEvmChainId.MAINNET,
+  buyChainId: SupportedEvmChainId.GNOSIS_CHAIN,
 }

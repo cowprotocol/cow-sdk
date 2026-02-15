@@ -4,7 +4,7 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { sepolia } from 'viem/chains'
 import {
   setGlobalAdapter,
-  SupportedChainId,
+  SupportedEvmChainId,
   TradingSdk,
   OrderKind,
   WRAPPED_NATIVE_CURRENCIES,
@@ -18,7 +18,7 @@ const DEFAULT_SELL_AMOUNT = 0.1 // WETH amount
 // ===============================================================
 
 async function main() {
-  const chainId = SupportedChainId.SEPOLIA
+  const chainId = SupportedEvmChainId.SEPOLIA
 
   if (!PRIVATE_KEY) {
     console.log('Set PRIVATE_KEY to run this example')

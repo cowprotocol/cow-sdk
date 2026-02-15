@@ -1,7 +1,7 @@
 import { ETH_FLOW_DEFAULT_SLIPPAGE_BPS } from './consts'
 import { getQuoteWithSigner } from './getQuote'
 import { SwapParameters } from './types'
-import { ETH_ADDRESS, WRAPPED_NATIVE_CURRENCIES, SupportedChainId } from '@cowprotocol/sdk-config'
+import { ETH_ADDRESS, WRAPPED_NATIVE_CURRENCIES, SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { OrderBookApi, OrderKind, OrderQuoteResponse } from '@cowprotocol/sdk-order-book'
 import { AdaptersTestSetup, createAdapters } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
@@ -41,7 +41,7 @@ const quoteResponseMock = {
 } as OrderQuoteResponse
 
 const defaultOrderParams: SwapParameters = {
-  chainId: SupportedChainId.GNOSIS_CHAIN,
+  chainId: SupportedEvmChainId.GNOSIS_CHAIN,
   signer: '1bb337bafb276f779c3035874b8914e4b851bb989dbb34e776397076576f3804',
   appCode: '0x007',
   sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',

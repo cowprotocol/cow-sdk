@@ -2,13 +2,13 @@ import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { CowError } from '@cowprotocol/sdk-common'
 import { OrderBookApi } from './api'
 import { BuyTokenDestination, EcdsaSigningScheme, OrderKind, SellTokenSource, SigningScheme } from './generated'
-import { SupportedChainId, ETH_ADDRESS } from '@cowprotocol/sdk-config'
+import { SupportedEvmChainId, ETH_ADDRESS } from '@cowprotocol/sdk-config'
 import { AUCTION } from './mock'
 
 enableFetchMocks()
 
 const orderBookApi = new OrderBookApi({
-  chainId: SupportedChainId.GNOSIS_CHAIN,
+  chainId: SupportedEvmChainId.GNOSIS_CHAIN,
   backoffOpts: {
     numOfAttempts: 1,
     maxDelay: Infinity,
@@ -153,7 +153,7 @@ describe('CoW Api', () => {
     })
 
     // when
-    const order = await orderBookApi.getOrder(ORDER_RESPONSE.uid, { chainId: SupportedChainId.MAINNET })
+    const order = await orderBookApi.getOrder(ORDER_RESPONSE.uid, { chainId: SupportedEvmChainId.MAINNET })
 
     // then
     expect(fetchMock).toHaveBeenCalledTimes(1)

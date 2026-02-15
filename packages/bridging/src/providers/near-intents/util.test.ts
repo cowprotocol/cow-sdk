@@ -1,4 +1,4 @@
-import { ETH_ADDRESS, NATIVE_CURRENCY_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
+import { ETH_ADDRESS, NATIVE_CURRENCY_ADDRESS, SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 
 import { adaptToken, getTokenByAddressAndChainId } from './util'
@@ -16,7 +16,7 @@ describe('Near Intents Utils', () => {
       }
 
       expect(adaptToken(tokenResponse)).toStrictEqual({
-        chainId: SupportedChainId.MAINNET,
+        chainId: SupportedEvmChainId.MAINNET,
         decimals: 18,
         address: NATIVE_CURRENCY_ADDRESS,
         name: 'ETH',
@@ -36,7 +36,7 @@ describe('Near Intents Utils', () => {
       }
 
       expect(adaptToken(tokenResponse)).toStrictEqual({
-        chainId: SupportedChainId.MAINNET,
+        chainId: SupportedEvmChainId.MAINNET,
         decimals: 6,
         address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
         name: 'USDC',
@@ -81,7 +81,7 @@ describe('Near Intents Utils', () => {
         },
       ]
 
-      expect(getTokenByAddressAndChainId(tokens, ETH_ADDRESS, SupportedChainId.MAINNET)).toStrictEqual(token)
+      expect(getTokenByAddressAndChainId(tokens, ETH_ADDRESS, SupportedEvmChainId.MAINNET)).toStrictEqual(token)
     })
 
     it('should get token by address and chain id using a contract address', () => {
@@ -107,7 +107,7 @@ describe('Near Intents Utils', () => {
       ]
 
       expect(
-        getTokenByAddressAndChainId(tokens, '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', SupportedChainId.MAINNET),
+        getTokenByAddressAndChainId(tokens, '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', SupportedEvmChainId.MAINNET),
       ).toStrictEqual(token)
     })
 
@@ -136,7 +136,7 @@ describe('Near Intents Utils', () => {
         getTokenByAddressAndChainId(
           tokens,
           '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-          SupportedChainId.ARBITRUM_ONE,
+          SupportedEvmChainId.ARBITRUM_ONE,
         ),
       ).toStrictEqual(undefined)
     })

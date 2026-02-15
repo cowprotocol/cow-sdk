@@ -5,7 +5,7 @@ import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { ACROSS_DEPOSIT_EVENT_INTERFACE, COW_TRADE_EVENT_INTERFACE } from './const/interfaces'
 import { ACROSS_TOKEN_MAPPING, AcrossChainConfig } from './const/tokens'
 import { ACROSS_SPOOK_CONTRACT_ADDRESSES } from './const/contracts'
-import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
+import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedEvmChainId, TargetEvmChainId } from '@cowprotocol/sdk-config'
 import { getBigNumber, OrderKind } from '@cowprotocol/sdk-order-book'
 import { getGlobalAdapter, Log } from '@cowprotocol/sdk-common'
 import stringify from 'json-stable-stringify'
@@ -18,8 +18,8 @@ const PCT_100_PERCENT = 10n ** 18n
  * This is a temporary implementation. We should use the Across API to get the intermediate tokens (see this.getAvailableRoutes())
  */
 export function getChainConfigs(
-  sourceChainId: TargetChainId,
-  targetChainId: TargetChainId,
+  sourceChainId: TargetEvmChainId,
+  targetChainId: TargetEvmChainId,
 ): { sourceChainConfig: AcrossChainConfig; targetChainConfig: AcrossChainConfig } | undefined {
   const sourceChainConfig = getChainConfig(sourceChainId)
   const targetChainConfig = getChainConfig(targetChainId)
@@ -30,7 +30,7 @@ export function getChainConfigs(
 }
 
 function getChainConfig(chainId: number): AcrossChainConfig | undefined {
-  return ACROSS_TOKEN_MAPPING[chainId as unknown as TargetChainId]
+  return ACROSS_TOKEN_MAPPING[chainId as unknown as TargetEvmChainId]
 }
 
 export function getTokenSymbol(tokenAddress: string, chainConfig: AcrossChainConfig): string | undefined {
@@ -179,7 +179,7 @@ export function mapAcrossStatusToBridgeStatus(status: DepositStatusResponse['sta
   return AcrossStatusToBridgeStatus[status]
 }
 
-export function getAcrossDepositEvents(chainId: SupportedChainId, logs: Log[]): AcrossDepositEvent[] {
+export function getAcrossDepositEvents(chainId: SupportedEvmChainId, logs: Log[]): AcrossDepositEvent[] {
   const spookContractAddress = ACROSS_SPOOK_CONTRACT_ADDRESSES[chainId]?.toLowerCase()
 
   if (!spookContractAddress) {
@@ -236,7 +236,7 @@ export function getAcrossDepositEvents(chainId: SupportedChainId, logs: Log[]): 
   })
 }
 
-export function getCowTradeEvents(chainId: SupportedChainId, logs: Log[]): CowTradeEvent[] {
+export function getCowTradeEvents(chainId: SupportedEvmChainId, logs: Log[]): CowTradeEvent[] {
   const COW_TRADE_EVENT_TOPIC = COW_TRADE_EVENT_INTERFACE().getEventTopic('Trade')
 
   const cowTradeEvents = logs.filter((log) => {

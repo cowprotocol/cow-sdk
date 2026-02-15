@@ -18,12 +18,12 @@ import { AdaptersTestSetup, createAdapters, TEST_ADDRESS } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 import { TradingAppDataInfo, LimitOrderParameters } from './types'
-import { ETH_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
+import { ETH_ADDRESS, SupportedEvmChainId } from '@cowprotocol/sdk-config'
 import { OrderBookApi, OrderKind } from '@cowprotocol/sdk-order-book'
 import { OrderSigningUtils as OrderSigningUtilsMock } from '@cowprotocol/sdk-order-signing'
 
 const defaultOrderParams: LimitOrderParameters = {
-  chainId: SupportedChainId.GNOSIS_CHAIN,
+  chainId: SupportedEvmChainId.GNOSIS_CHAIN,
   signer: '0x006',
   appCode: '0x007',
   sellToken: '0xaaa',
