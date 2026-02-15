@@ -5,23 +5,25 @@
 const EVM_ADDRESS_PATTERN = /^0x[a-fA-F0-9]{40}$/
 
 /**
- * Regular expression pattern for validating Bitcoin legacy addresses (P2PKH/P2SH).
+ * Pattern for validating Bitcoin legacy addresses (P2PKH/P2SH).
  * Matches addresses that start with 1 or 3, followed by 24-33 base58 encoded characters.
  * Total address length: 25-34 characters (including the prefix).
  */
 const BTC_LEGACY_ADDRESS_PATTERN = /^[13][a-km-zA-HJ-NP-Z1-9]{24,33}$/
 
 /**
- * Regular expression pattern for validating Bitcoin Bech32 mainnet addresses (P2WPKH/P2WSH).
- * Matches addresses that start with bc1, followed by 39-59 alphanumeric characters (case-insensitive).
+ * Pattern for validating Bitcoin Bech32 mainnet addresses (P2WPKH/P2WSH).
+ * Per BIP-173, addresses must be either entirely uppercase or entirely lowercase (never mixed case).
+ * Matches addresses that start with bc1 (lowercase) or BC1 (uppercase), followed by 39-59 alphanumeric characters.
  */
-const BTC_BECH32_MAINNET_PATTERN = /^bc1[a-z0-9]{39,59}$/i
+const BTC_BECH32_MAINNET_PATTERN = /^(bc1[a-z0-9]{39,59}|BC1[A-Z0-9]{39,59})$/
 
 /**
- * Regular expression pattern for validating Bitcoin Bech32 testnet addresses (P2WPKH/P2WSH).
- * Matches addresses that start with tb1, followed by 39-59 alphanumeric characters (case-insensitive).
+ * Pattern for validating Bitcoin Bech32 testnet addresses (P2WPKH/P2WSH).
+ * Per BIP-173, addresses must be either entirely uppercase or entirely lowercase (never mixed case).
+ * Matches addresses that start with tb1 (lowercase) or TB1 (uppercase), followed by 39-59 alphanumeric characters.
  */
-const BTC_BECH32_TESTNET_PATTERN = /^tb1[a-z0-9]{39,59}$/i
+const BTC_BECH32_TESTNET_PATTERN = /^(tb1[a-z0-9]{39,59}|TB1[A-Z0-9]{39,59})$/
 
 export type EvmAddressKey = `0x${string}`
 export type BtcAddressKey = string
