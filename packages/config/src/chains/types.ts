@@ -31,7 +31,7 @@ export enum SupportedBitcoinChainId {
 }
 
 /**
- * Chains where you can buy tokens using the bridge functionality. This enum contains chains that are not already included in the SupportedChainId enum.
+ * Chains where you can buy tokens using the bridge functionality. This enum contains chains that are not already included in the SupportedEvmChainId enum.
  */
 export enum AdditionalEvmTargetChainId {
   OPTIMISM = 10,
