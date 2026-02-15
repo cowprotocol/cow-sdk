@@ -21,7 +21,7 @@ export function getChainInfo(chainId: ChainId): ChainInfo | undefined {
     return ALL_SUPPORTED_CHAINS_MAP[chainId]
   }
 
-  if (isAdditionalTargetChain(chainId)) {
+  if (isAdditionalTargetEvmChain(chainId)) {
     return ADDITIONAL_TARGET_CHAINS_MAP[chainId]
   }
 
@@ -41,7 +41,7 @@ export function isSupportedChain(chainId: ChainId): chainId is SupportedEvmChain
  * Check if the chain is supported by the bridge providers.
  * Only works for EVM chains (numeric chain IDs).
  */
-export function isAdditionalTargetChain(chainId: ChainId): chainId is AdditionalEvmTargetChainId {
+export function isAdditionalTargetEvmChain(chainId: ChainId): chainId is AdditionalEvmTargetChainId {
   return isEvmChain(chainId) && chainId in ADDITIONAL_TARGET_CHAINS_MAP
 }
 
@@ -49,7 +49,7 @@ export function isAdditionalTargetChain(chainId: ChainId): chainId is Additional
  * Check if the chain is supported by CoW Swap or the bridge providers.
  */
 export function isTargetEvmChainId(chainId: ChainId): chainId is TargetEvmChainId {
-  return isSupportedChain(chainId) || isAdditionalTargetChain(chainId)
+  return isSupportedChain(chainId) || isAdditionalTargetEvmChain(chainId)
 }
 
 export function isZkSyncChain(chainId: ChainId): boolean {
