@@ -1,4 +1,3 @@
-import { nativeCurrencyTemplate } from '../../constants/tokens'
 import { ChainInfo, SupportedBitcoinChainId } from '../types'
 import { RAW_CHAINS_FILES_PATH } from '../../constants/paths'
 
@@ -11,11 +10,12 @@ export const bitcoin: ChainInfo = {
   eip155Label: 'Bitcoin',
   logo: { light: bitcoinLogo, dark: bitcoinLogo },
   nativeCurrency: {
-    ...nativeCurrencyTemplate,
     chainId: SupportedBitcoinChainId.MAINNET,
     name: 'Bitcoin',
     symbol: 'BTC',
     decimals: 8,
+    address: '', // there is no such a thing as an address for bitcoin
+    logoUrl: bitcoinLogo,
   },
   addressPrefix: 'btc',
   isTestnet: false,
