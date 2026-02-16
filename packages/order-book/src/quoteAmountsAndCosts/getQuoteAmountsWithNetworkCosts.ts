@@ -7,7 +7,7 @@ export function getQuoteAmountsWithNetworkCosts(params: QuoteParameters): QuoteA
 
   const isSell = orderParams.kind === OrderKind.SELL
 
-  const protocolFeeAmount = getProtocolFeeAmount({ orderParams, isSell, protocolFeeBps })
+  const protocolFeeAmount = getProtocolFeeAmount({ orderParams, protocolFeeBps })
 
   const networkCostAmount = BigInt(orderParams.feeAmount)
   const sellAmountBeforeNetworkCosts = BigInt(orderParams.sellAmount)

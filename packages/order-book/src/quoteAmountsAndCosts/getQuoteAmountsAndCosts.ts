@@ -15,7 +15,6 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
   // for market orders: reconstruct protocolFee from quote amounts that already have it deducted
   const protocolFeeAmount = getProtocolFeeAmount({
     orderParams,
-    isSell,
     protocolFeeBps,
   })
 

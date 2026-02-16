@@ -1,4 +1,4 @@
-import { OrderParameters } from '../generated'
+import { OrderKind, OrderParameters } from '../generated'
 import { HUNDRED_THOUSANDS, ONE_HUNDRED_BPS } from './quoteAmountsAndCosts.const'
 
 /**
@@ -23,12 +23,11 @@ import { HUNDRED_THOUSANDS, ONE_HUNDRED_BPS } from './quoteAmountsAndCosts.const
  *
  * @param params
  */
-export function getProtocolFeeAmount(params: {
-  orderParams: OrderParameters
-  isSell: boolean
-  protocolFeeBps: number
-}): bigint {
-  const { orderParams, protocolFeeBps, isSell } = params
+export function getProtocolFeeAmount(params: { orderParams: OrderParameters; protocolFeeBps: number }): bigint {
+  const { orderParams, protocolFeeBps } = params
+
+  const isSell = orderParams.kind === OrderKind.SELL
+
   if (protocolFeeBps <= 0) {
     return 0n
   }
