@@ -3,7 +3,7 @@ import { BungeeQuote, BungeeQuoteWithBuildTx } from './types'
 import { BungeeTxDataBytesIndices } from './const/misc'
 import { BungeeBridge, BungeeBridgeNames } from './types'
 import { BridgeQuoteAmountsAndCosts, QuoteBridgeRequest } from '../../types'
-import { getBigNumber, OrderKind } from '@cowprotocol/sdk-order-book'
+import { OrderKind } from '@cowprotocol/sdk-order-book'
 import stringify from 'json-stable-stringify'
 
 /**
@@ -50,13 +50,12 @@ function toAmountsAndCosts(
   slippageBps: number,
   bungeeQuote: BungeeQuote,
 ): BridgeQuoteAmountsAndCosts {
-  const { amount, sellTokenDecimals, buyTokenDecimals } = request
+  const { amount } = request
 
   // Get the amounts before fees
-  const sellAmountBeforeFeeBig = getBigNumber(amount, sellTokenDecimals)
-  const sellAmountBeforeFee = sellAmountBeforeFeeBig.big
+  const sellAmountBeforeFee = BigInt(amount)
   const buyAmountFromBungeeQuote = bungeeQuote.route.output.amount
-  const buyAmountBeforeFee = getBigNumber(buyAmountFromBungeeQuote, buyTokenDecimals).big
+  const buyAmountBeforeFee = BigInt(buyAmountFromBungeeQuote)
   // @note buyAmountAfterFee does not change, since routeFee is taken in the src chain intermediate token
   const buyAmountAfterFee = buyAmountBeforeFee
 

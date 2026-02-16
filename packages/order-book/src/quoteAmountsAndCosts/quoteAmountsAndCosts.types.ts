@@ -2,11 +2,6 @@ import type { OrderParameters } from '../generated'
 
 export type OrderAmountsBig = { sellAmount: bigint; buyAmount: bigint }
 
-export type BigNumber = {
-  big: bigint
-  num: number
-}
-
 export interface QuoteParameters {
   sellDecimals: number
   buyDecimals: number
@@ -19,12 +14,17 @@ export interface QuoteAmountsAndCostsParams extends QuoteParameters {
   partnerFeeBps: number | undefined
 }
 
+export interface QuotePriceParams {
+  numerator: bigint
+  denominator: bigint
+}
+
 export interface QuoteAmountsWithNetworkCosts {
   isSell: boolean
-  quotePrice: number
-  networkCostAmount: BigNumber
-  sellAmountBeforeNetworkCosts: BigNumber
-  buyAmountAfterNetworkCosts: BigNumber
-  sellAmountAfterNetworkCosts: BigNumber
-  buyAmountBeforeNetworkCosts: BigNumber
+  quotePriceParams: QuotePriceParams
+  networkCostAmount: bigint
+  sellAmountBeforeNetworkCosts: bigint
+  buyAmountAfterNetworkCosts: bigint
+  sellAmountAfterNetworkCosts: bigint
+  buyAmountBeforeNetworkCosts: bigint
 }

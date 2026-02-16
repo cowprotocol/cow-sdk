@@ -37,8 +37,8 @@ export function suggestSlippageBps(params: SuggestSlippageBps): number {
   const isSell = quote.quote.kind === OrderKind.SELL
   // Calculate the amount of the sell token before and after network costs
   const {
-    sellAmountBeforeNetworkCosts: { big: sellAmountBeforeNetworkCosts },
-    sellAmountAfterNetworkCosts: { big: sellAmountAfterNetworkCosts },
+    sellAmountBeforeNetworkCosts,
+    sellAmountAfterNetworkCosts,
   } = getQuoteAmountsWithNetworkCosts({
     sellDecimals: sellTokenDecimals,
     buyDecimals: buyTokenDecimals,

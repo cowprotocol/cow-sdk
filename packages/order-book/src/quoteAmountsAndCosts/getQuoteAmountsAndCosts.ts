@@ -2,7 +2,6 @@ import { getProtocolFeeAmount } from './getProtocolFeeAmount'
 import { OrderKind } from '../generated'
 import { QuoteAmountsAndCostsParams } from './quoteAmountsAndCosts.types'
 import { QuoteAmountsAndCosts } from '../types'
-import { getBigNumber } from './quoteAmountsAndCosts.utils'
 import { getQuoteAmountsWithNetworkCosts } from './getQuoteAmountsWithNetworkCosts'
 import { getQuoteAmountsAfterPartnerFee } from './getQuoteAmountsAfterPartnerFee'
 import { getQuoteAmountsAfterSlippage } from './getQuoteAmountsAfterSlippage'
@@ -27,7 +26,7 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
     buyAmountAfterNetworkCosts,
     sellAmountAfterNetworkCosts,
     buyAmountBeforeNetworkCosts,
-    quotePrice,
+    quotePriceParams,
   } = getQuoteAmountsWithNetworkCosts({
     sellDecimals,
     buyDecimals,
@@ -42,19 +41,19 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
   // if protocolFeeBps is 0, use buyAmountBeforeNetworkCosts (calculated from quotePrice)
   const buyAmountBeforeProtocolFee = isSell
     ? protocolFeeBps > 0
-      ? buyAmountAfterNetworkCosts.big + protocolFeeAmount
-      : buyAmountBeforeNetworkCosts.big
-    : buyAmountAfterNetworkCosts.big
+      ? buyAmountAfterNetworkCosts + protocolFeeAmount
+      : buyAmountBeforeNetworkCosts
+    : buyAmountAfterNetworkCosts
   const sellAmountBeforeProtocolFee = isSell
-    ? sellAmountAfterNetworkCosts.big
+    ? sellAmountAfterNetworkCosts
     : protocolFeeBps > 0
-      ? sellAmountAfterNetworkCosts.big - protocolFeeAmount
-      : sellAmountBeforeNetworkCosts.big
+      ? sellAmountAfterNetworkCosts - protocolFeeAmount
+      : sellAmountBeforeNetworkCosts
 
   // get amounts including partner fees
   const { afterPartnerFees, partnerFeeAmount } = getQuoteAmountsAfterPartnerFee({
-    sellAmountAfterNetworkCosts: sellAmountAfterNetworkCosts.big,
-    buyAmountAfterNetworkCosts: buyAmountAfterNetworkCosts.big,
+    sellAmountAfterNetworkCosts,
+    buyAmountAfterNetworkCosts,
     buyAmountBeforeProtocolFee,
     sellAmountBeforeProtocolFee,
     isSell,
@@ -73,30 +72,30 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
   // for buy orders: sellAmount needs protocolFee subtracted (use sellAmountBeforeProtocolFee)
   const beforeNetworkCosts = isSell
     ? {
-        sellAmount: sellAmountBeforeNetworkCosts.big,
+        sellAmount: sellAmountBeforeNetworkCosts,
         buyAmount: buyAmountBeforeProtocolFee,
       }
     : {
         sellAmount: sellAmountBeforeProtocolFee,
-        buyAmount: buyAmountBeforeNetworkCosts.big,
+        buyAmount: buyAmountBeforeNetworkCosts,
       }
 
   const beforeAllFees = isSell
     ? {
-        sellAmount: sellAmountBeforeNetworkCosts.big,
-        buyAmount: buyAmountBeforeNetworkCosts.big,
+        sellAmount: sellAmountBeforeNetworkCosts,
+        buyAmount: buyAmountBeforeNetworkCosts,
       }
     : {
-        sellAmount: sellAmountBeforeNetworkCosts.big - protocolFeeAmount,
-        buyAmount: buyAmountBeforeNetworkCosts.big,
+        sellAmount: sellAmountBeforeNetworkCosts - protocolFeeAmount,
+        buyAmount: buyAmountBeforeNetworkCosts,
       }
 
   return {
     isSell,
     costs: {
       networkFee: {
-        amountInSellCurrency: networkCostAmount.big,
-        amountInBuyCurrency: getBigNumber(quotePrice * networkCostAmount.num, buyDecimals).big,
+        amountInSellCurrency: networkCostAmount,
+        amountInBuyCurrency: (quotePriceParams.numerator * networkCostAmount) / quotePriceParams.denominator,
       },
       partnerFee: {
         amount: partnerFeeAmount,
@@ -110,8 +109,8 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
     beforeNetworkCosts,
     beforeAllFees,
     afterNetworkCosts: {
-      sellAmount: sellAmountAfterNetworkCosts.big,
-      buyAmount: buyAmountAfterNetworkCosts.big,
+      sellAmount: sellAmountAfterNetworkCosts,
+      buyAmount: buyAmountAfterNetworkCosts,
     },
     afterPartnerFees,
     afterSlippage,
