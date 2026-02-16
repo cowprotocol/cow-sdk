@@ -56,7 +56,7 @@ export function getProtocolFeeAmount(params: {
      * the sellAmountAfterNetworkCosts already includes the protocol fee (it was added to sellAmount by the API).
      */
     const denominator = ONE_HUNDRED_BPS * protocolFeeScale + protocolFeeBpsBig
-    // sellAmountAfterNetworkCosts is already sellAmount + networkCosts (check _getQuoteAmountsWithCosts)
+    // sellAmountAfterNetworkCosts is already sellAmount + networkCosts (check getQuoteAmountsWithNetworkCosts)
     return ((sellAmount + feeAmount) * protocolFeeBpsBig) / denominator
   }
 }
