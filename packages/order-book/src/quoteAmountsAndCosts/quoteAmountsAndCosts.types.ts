@@ -8,19 +8,14 @@ export type BigNumber = {
 }
 
 export interface QuoteParameters {
-  isSell: boolean
   sellDecimals: number
   buyDecimals: number
   orderParams: OrderParameters
-  protocolFeeAmount: BigNumber
+  protocolFeeBps: number | undefined
 }
 
-export interface QuoteAmountsAndCostsParams {
-  sellDecimals: number
-  buyDecimals: number
-  orderParams: OrderParameters
+export interface QuoteAmountsAndCostsParams extends QuoteParameters {
   slippagePercentBps: number
-  protocolFeeBps: number | undefined
   partnerFeeBps: number | undefined
 }
 

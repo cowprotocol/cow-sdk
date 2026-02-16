@@ -1,8 +1,17 @@
 import { QuoteAmountsWithNetworkCosts, QuoteParameters } from './quoteAmountsAndCosts.types'
 import { getBigNumber } from './quoteAmountsAndCosts.utils'
+import { OrderKind } from '../generated'
+import { getProtocolFeeAmount } from './getProtocolFeeAmount'
 
 export function getQuoteAmountsWithNetworkCosts(params: QuoteParameters): QuoteAmountsWithNetworkCosts {
-  const { sellDecimals, buyDecimals, orderParams, isSell, protocolFeeAmount } = params
+  const { sellDecimals, buyDecimals, orderParams, protocolFeeBps = 0 } = params
+
+  const isSell = orderParams.kind === OrderKind.SELL
+
+  const protocolFeeAmount = getProtocolFeeAmount({ orderParams, isSell, protocolFeeBps })
+  const protocolFeeAmountDecimals = isSell ? buyDecimals : sellDecimals
+  const { num: protocolFeeAmountNum } = getBigNumber(protocolFeeAmount, protocolFeeAmountDecimals)
+
   /**
    * Wrap raw values into bigNumbers
    * We also make amounts names more specific with "beforeNetworkCosts" and "afterNetworkCosts" suffixes
@@ -17,9 +26,9 @@ export function getQuoteAmountsWithNetworkCosts(params: QuoteParameters): QuoteA
    */
   const quotePrice = isSell
     ? // For SELL order is already deducting protocol fees from buyAmount, so we need to add it back to get the actual price
-      (buyAmountAfterNetworkCosts.num + protocolFeeAmount.num) / sellAmountBeforeNetworkCosts.num
+      (buyAmountAfterNetworkCosts.num + protocolFeeAmountNum) / sellAmountBeforeNetworkCosts.num
     : // For BUY order is already adding protocol fees to sellAmount, so we need to subtract it to get the actual price
-      buyAmountAfterNetworkCosts.num / (sellAmountBeforeNetworkCosts.num - protocolFeeAmount.num)
+      buyAmountAfterNetworkCosts.num / (sellAmountBeforeNetworkCosts.num - protocolFeeAmountNum)
 
   /**
    * Before amount + networkCosts = After networkCosts :)

@@ -19,7 +19,6 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
     isSell,
     protocolFeeBps,
   })
-  const protocolFeeAmountDecimals = isSell ? buyDecimals : sellDecimals
 
   // Get amounts from quote (for market orders, these already include protocolFee deducted)
   const {
@@ -33,8 +32,7 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
     sellDecimals,
     buyDecimals,
     orderParams,
-    isSell,
-    protocolFeeAmount: getBigNumber(protocolFeeAmount, protocolFeeAmountDecimals),
+    protocolFeeBps,
   })
 
   // restore amounts before protocolFee (but after network costs)

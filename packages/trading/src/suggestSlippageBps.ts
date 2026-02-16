@@ -1,5 +1,5 @@
 import { percentageToBps } from '@cowprotocol/sdk-common'
-import { getQuoteAmountsWithCosts, OrderQuoteResponse } from '@cowprotocol/sdk-order-book'
+import { getQuoteAmountsWithNetworkCosts, OrderKind, OrderQuoteResponse } from '@cowprotocol/sdk-order-book'
 
 import { getSlippagePercent } from './utils/slippage'
 import { suggestSlippageFromFee } from './suggestSlippageFromFee'
@@ -34,12 +34,18 @@ export function suggestSlippageBps(params: SuggestSlippageBps): number {
   } = params
   const { sellTokenDecimals, buyTokenDecimals } = tradeParameters
 
+  const isSell = quote.quote.kind === OrderKind.SELL
   // Calculate the amount of the sell token before and after network costs
-  const { isSell, sellAmountBeforeNetworkCosts, sellAmountAfterNetworkCosts } = getQuoteAmountsWithCosts({
+  const {
+    sellAmountBeforeNetworkCosts: { big: sellAmountBeforeNetworkCosts },
+    sellAmountAfterNetworkCosts: { big: sellAmountAfterNetworkCosts },
+  } = getQuoteAmountsWithNetworkCosts({
     sellDecimals: sellTokenDecimals,
     buyDecimals: buyTokenDecimals,
     orderParams: quote.quote,
+    protocolFeeBps: quote.protocolFeeBps ? Number(quote.protocolFeeBps) : 0,
   })
+
   const { feeAmount: feeAmountString } = quote.quote
   const feeAmount = BigInt(feeAmountString)
 
