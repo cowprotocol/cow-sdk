@@ -5,12 +5,12 @@ const bitcoinLogo = `${RAW_CHAINS_FILES_PATH}/images/bitcoin-logo.svg`
 
 // Bitcoin doesn't have a numeric chain ID like EVM chains
 export const bitcoin: ChainInfo = {
-  id: SupportedBitcoinChainId.MAINNET,
+  id: SupportedBitcoinChainId.BITCOIN_MAINNET,
   label: 'Bitcoin',
   eip155Label: 'Bitcoin',
   logo: { light: bitcoinLogo, dark: bitcoinLogo },
   nativeCurrency: {
-    chainId: SupportedBitcoinChainId.MAINNET,
+    chainId: SupportedBitcoinChainId.BITCOIN_MAINNET,
     name: 'Bitcoin',
     symbol: 'BTC',
     decimals: 8,

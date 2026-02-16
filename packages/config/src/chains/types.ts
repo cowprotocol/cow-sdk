@@ -23,11 +23,11 @@ export enum SupportedEvmChainId {
 }
 
 export enum SupportedSolanaChainId {
-  MAINNET = 'solana'
+  SOLANA_MAINNET = 'solana'
 }
 
 export enum SupportedBitcoinChainId {
-  MAINNET = 'bitcoin'
+  BITCOIN_MAINNET = 'bitcoin'
 }
 
 /**
