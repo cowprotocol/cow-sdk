@@ -21,15 +21,15 @@ export const NEAR_INTENTS_SUPPORTED_NETWORKS = [
 export type NearBlockchainKey = 'arb' | 'avax' | 'base' | 'bsc' | 'eth' | 'gnosis' | 'op' | 'pol' | 'plasma'
 
 export const NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS = {
-  arb: arbitrumOne.id as number,
-  avax: avalanche.id as number,
-  base: base.id as number,
-  bsc: bnb.id as number,
-  eth: mainnet.id as number,
-  gnosis: gnosisChain.id as number,
-  op: optimism.id as number,
-  pol: polygon.id as number,
-  plasma: plasma.id as number,
+  arb: arbitrumOne.id,
+  avax: avalanche.id,
+  base: base.id,
+  bsc: bnb.id,
+  eth: mainnet.id,
+  gnosis: gnosisChain.id,
+  op: optimism.id,
+  pol: polygon.id,
+  plasma: plasma.id,
 } as const satisfies Record<NearBlockchainKey, number>
 
 export const NEAR_INTENTS_STATUS_TO_COW_STATUS: Record<string, BridgeStatus> = {
