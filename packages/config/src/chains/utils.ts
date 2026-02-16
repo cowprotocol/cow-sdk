@@ -1,5 +1,5 @@
 import { ADDITIONAL_TARGET_CHAINS_MAP, ALL_SUPPORTED_CHAINS_MAP } from './const'
-import { AdditionalTargetChainId, ChainId, ChainInfo, SupportedChainId, TargetChainId } from './types'
+import { AdditionalTargetChainId, ChainId, ChainInfo, EvmChains, SupportedChainId, TargetChainId } from './types'
 
 /**
  * Type guard to check if a chain ID represents an EVM chain.
@@ -9,7 +9,7 @@ import { AdditionalTargetChainId, ChainId, ChainInfo, SupportedChainId, TargetCh
  * @returns True if the chain ID is a number (EVM chain), false otherwise
  */
 export function isEvmChain(chainId: ChainId): chainId is number {
-  return typeof chainId === 'number'
+  return typeof chainId in EvmChains;
 }
 
 /**
@@ -21,7 +21,7 @@ export function getChainInfo(chainId: ChainId): ChainInfo | undefined {
     return ALL_SUPPORTED_CHAINS_MAP[chainId]
   }
 
-  if (isAdditionalTargetEvmChain(chainId)) {
+  if (isAdditionalTargetChain(chainId)) {
     return ADDITIONAL_TARGET_CHAINS_MAP[chainId]
   }
 
@@ -31,7 +31,6 @@ export function getChainInfo(chainId: ChainId): ChainInfo | undefined {
 
 /**
  * Check if the chain is supported by CoW Protocol.
- * Only works for EVM chains (numeric chain IDs).
  */
 export function isSupportedChain(chainId: ChainId): chainId is SupportedChainId {
   return isEvmChain(chainId) && chainId in ALL_SUPPORTED_CHAINS_MAP
@@ -39,17 +38,16 @@ export function isSupportedChain(chainId: ChainId): chainId is SupportedChainId 
 
 /**
  * Check if the chain is supported by the bridge providers.
- * Only works for EVM chains (numeric chain IDs).
  */
-export function isAdditionalTargetEvmChain(chainId: ChainId): chainId is AdditionalTargetChainId {
+export function isAdditionalTargetChain(chainId: ChainId): chainId is AdditionalTargetChainId {
   return isEvmChain(chainId) && chainId in ADDITIONAL_TARGET_CHAINS_MAP
 }
 
 /**
  * Check if the chain is supported by CoW Swap or the bridge providers.
  */
-export function isTargetEvmChainId(chainId: ChainId): chainId is TargetChainId {
-  return isSupportedChain(chainId) || isAdditionalTargetEvmChain(chainId)
+export function isTargetChainId(chainId: ChainId): chainId is TargetChainId {
+  return isSupportedChain(chainId) || isAdditionalTargetChain(chainId)
 }
 
 export function isZkSyncChain(chainId: ChainId): boolean {
