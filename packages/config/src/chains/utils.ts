@@ -9,7 +9,7 @@ import { AdditionalTargetChainId, ChainId, ChainInfo, EvmChains, SupportedChainI
  * @returns True if the chain ID is a number (EVM chain), false otherwise
  */
 export function isEvmChain(chainId: ChainId): chainId is number {
-  return typeof chainId in EvmChains;
+  return chainId in EvmChains;
 }
 
 /**
