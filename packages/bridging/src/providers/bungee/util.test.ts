@@ -10,7 +10,7 @@ import {
 } from './util'
 import { BungeeBridge, BungeeQuoteWithBuildTx } from './types'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
-import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 
 describe('Bungee Utils', () => {
   describe('toBridgeQuoteResult', () => {
@@ -123,10 +123,10 @@ describe('Bungee Utils', () => {
     it('should convert to bridge quote result correctly', () => {
       const request: QuoteBridgeRequest = {
         kind: OrderKind.SELL,
-        sellTokenChainId: SupportedEvmChainId.MAINNET,
+        sellTokenChainId: SupportedChainId.MAINNET,
         sellTokenAddress: '0x1234567890123456789012345678901234567890',
         sellTokenDecimals: 18,
-        buyTokenChainId: SupportedEvmChainId.POLYGON,
+        buyTokenChainId: SupportedChainId.POLYGON,
         buyTokenAddress: '0x1234567890123456789012345678901234567890',
         buyTokenDecimals: 6,
         amount: mockAmount,
@@ -153,10 +153,10 @@ describe('Bungee Utils', () => {
     it('should include quote id from bungee response', () => {
       const request: QuoteBridgeRequest = {
         kind: OrderKind.SELL,
-        sellTokenChainId: SupportedEvmChainId.MAINNET,
+        sellTokenChainId: SupportedChainId.MAINNET,
         sellTokenAddress: '0x1234567890123456789012345678901234567890',
         sellTokenDecimals: 18,
-        buyTokenChainId: SupportedEvmChainId.POLYGON,
+        buyTokenChainId: SupportedChainId.POLYGON,
         buyTokenAddress: '0x1234567890123456789012345678901234567890',
         buyTokenDecimals: 6,
         amount: mockAmount,
@@ -276,10 +276,10 @@ describe('Bungee Utils', () => {
     it('should correctly calculate feeBuyToken based on price ratio (18 decimals sell -> 6 decimals buy)', () => {
       const request: QuoteBridgeRequest = {
         kind: OrderKind.SELL,
-        sellTokenChainId: SupportedEvmChainId.MAINNET,
+        sellTokenChainId: SupportedChainId.MAINNET,
         sellTokenAddress: '0x1234567890123456789012345678901234567890',
         sellTokenDecimals: 18,
-        buyTokenChainId: SupportedEvmChainId.POLYGON,
+        buyTokenChainId: SupportedChainId.POLYGON,
         buyTokenAddress: '0x1234567890123456789012345678901234567890',
         buyTokenDecimals: 6,
         amount: 1000000000000000000n, // 1 ETH
@@ -406,10 +406,10 @@ describe('Bungee Utils', () => {
     it('should correctly calculate feeBuyToken for same decimals (18 decimals both)', () => {
       const request: QuoteBridgeRequest = {
         kind: OrderKind.SELL,
-        sellTokenChainId: SupportedEvmChainId.MAINNET,
+        sellTokenChainId: SupportedChainId.MAINNET,
         sellTokenAddress: '0x1234567890123456789012345678901234567890',
         sellTokenDecimals: 18,
-        buyTokenChainId: SupportedEvmChainId.POLYGON,
+        buyTokenChainId: SupportedChainId.POLYGON,
         buyTokenAddress: '0x1234567890123456789012345678901234567890',
         buyTokenDecimals: 18,
         amount: 1000000000000000000n, // 1 token

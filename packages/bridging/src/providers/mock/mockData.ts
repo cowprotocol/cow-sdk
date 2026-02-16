@@ -1,4 +1,4 @@
-import { AdditionalEvmTargetChainId, EvmCall, SupportedEvmChainId, TargetEvmChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { AdditionalTargetChainId, EvmCall, SupportedChainId, TargetChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import { BridgeQuoteResult, BridgeStatus, BridgeStatusResult, BridgingDepositParams } from '../../types'
 
 export const BRIDGING_PARAMS: BridgingDepositParams = {
@@ -23,7 +23,7 @@ export const MOCK_CALL: EvmCall = {
 
 export const BUY_TOKENS = [
   {
-    chainId: SupportedEvmChainId.MAINNET,
+    chainId: SupportedChainId.MAINNET,
     address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
     logoUrl: 'https://swap.cow.fi/assets/network-mainnet-logo-BJe1wK_m.svg',
     name: 'USD Coin',
@@ -31,7 +31,7 @@ export const BUY_TOKENS = [
     decimals: 6,
   },
   {
-    chainId: SupportedEvmChainId.MAINNET,
+    chainId: SupportedChainId.MAINNET,
     address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
     logoUrl: 'https://swap.cow.fi/assets/network-gnosis-chain-logo-Do_DEWQv.svg',
     name: 'Wrapped Ether',
@@ -39,7 +39,7 @@ export const BUY_TOKENS = [
     decimals: 18,
   },
   {
-    chainId: SupportedEvmChainId.SEPOLIA,
+    chainId: SupportedChainId.SEPOLIA,
     address: '0x0625aFB445C3B6B7B929342a04A22599fd5dBB59',
     logoUrl: 'https://swap.cow.fi/assets/network-mainnet-logo-BJe1wK_m.svg',
     name: 'CoW Protocol Token',
@@ -47,7 +47,7 @@ export const BUY_TOKENS = [
     decimals: 18,
   },
   {
-    chainId: AdditionalEvmTargetChainId.OPTIMISM,
+    chainId: AdditionalTargetChainId.OPTIMISM,
     address: '0x4200000000000000000000000000000000000006',
     logoUrl: 'https://swap.cow.fi/assets/network-mainnet-logo-BJe1wK_m.svg',
     name: 'Wrapped Ether',
@@ -56,29 +56,29 @@ export const BUY_TOKENS = [
   },
 ]
 
-export const INTERMEDIATE_TOKENS: Partial<Record<TargetEvmChainId, TokenInfo[]>> = {
-  [SupportedEvmChainId.MAINNET]: [
+export const INTERMEDIATE_TOKENS: Partial<Record<TargetChainId, TokenInfo[]>> = {
+  [SupportedChainId.MAINNET]: [
     {
       address: '0xDEf1CA1fb7FBcDC777520aa7f396b4E015F497aB',
-      chainId: SupportedEvmChainId.MAINNET,
+      chainId: SupportedChainId.MAINNET,
       name: 'COW',
       symbol: 'COW',
       decimals: 18,
     },
   ],
-  [AdditionalEvmTargetChainId.OPTIMISM]: [
+  [AdditionalTargetChainId.OPTIMISM]: [
     {
       address: '0x68f180fcCe6836688e9084f035309E29Bf0A2095',
-      chainId: AdditionalEvmTargetChainId.OPTIMISM,
+      chainId: AdditionalTargetChainId.OPTIMISM,
       name: 'Wrapped BTC ',
       symbol: 'WBTC',
       decimals: 8,
     },
   ],
-  [SupportedEvmChainId.SEPOLIA]: [
+  [SupportedChainId.SEPOLIA]: [
     {
       address: '0xB4F1737Af37711e9A5890D9510c9bB60e170CB0D',
-      chainId: SupportedEvmChainId.SEPOLIA,
+      chainId: SupportedChainId.SEPOLIA,
       name: 'DAI (test)',
       symbol: 'DAI',
       decimals: 18,

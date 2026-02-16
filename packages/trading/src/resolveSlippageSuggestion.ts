@@ -1,4 +1,4 @@
-import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { bpsToPercentage, log } from '@cowprotocol/sdk-common'
 import { getQuoteAmountsAndCosts, OrderQuoteResponse, PriceQuality } from '@cowprotocol/sdk-order-book'
 
@@ -7,7 +7,7 @@ import { suggestSlippageBps, SuggestSlippageBps } from './suggestSlippageBps'
 import { getPartnerFeeBps } from './utils/getPartnerFeeBps'
 
 export async function resolveSlippageSuggestion(
-  chainId: SupportedEvmChainId,
+  chainId: SupportedChainId,
   tradeParameters: TradeParameters,
   trader: QuoterParameters,
   quote: OrderQuoteResponse,

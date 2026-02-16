@@ -1,4 +1,4 @@
-import type { SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import type { SupportedChainId } from '@cowprotocol/sdk-config'
 import type { TradeParameters, SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
 import type { AccountAddress } from '@cowprotocol/sdk-common'
 import type { Address } from '@cowprotocol/sdk-order-book'
@@ -44,7 +44,7 @@ export interface CollateralSwapHooksGasLimit {
  */
 export interface CollateralSwapParams {
   /** The blockchain network to execute the swap on. */
-  chainId: SupportedEvmChainId
+  chainId: SupportedChainId
   /** Trade parameters including tokens, amounts, and validity period. */
   tradeParameters: TradeParameters
   /** The address of the collateral token to be approved for the flash loan adapter. */
@@ -62,7 +62,7 @@ export interface CollateralSwapParams {
 }
 
 export interface CollateralSwapTradeParams {
-  chainId: SupportedEvmChainId
+  chainId: SupportedChainId
   validTo: number
   owner: AccountAddress
   flashLoanFeeAmount: bigint

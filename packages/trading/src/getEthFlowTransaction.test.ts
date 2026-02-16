@@ -20,7 +20,7 @@ jest.mock('@cowprotocol/sdk-common', () => {
 })
 
 import { getEthFlowTransaction } from './getEthFlowTransaction'
-import { SupportedEvmChainId, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
+import { SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
 import { LimitTradeParametersFromQuote } from './types'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { AdaptersTestSetup, createAdapters } from '../tests/setup'
@@ -40,7 +40,7 @@ const params: LimitTradeParametersFromQuote = {
 }
 
 describe('getEthFlowTransaction', () => {
-  const chainId = SupportedEvmChainId.GNOSIS_CHAIN
+  const chainId = SupportedChainId.GNOSIS_CHAIN
   let adapters: AdaptersTestSetup
   let mockContract: any
 
@@ -75,7 +75,7 @@ describe('getEthFlowTransaction', () => {
       results.push(result)
     }
 
-    const wrappedToken = WRAPPED_NATIVE_CURRENCIES[SupportedEvmChainId.GNOSIS_CHAIN].address
+    const wrappedToken = WRAPPED_NATIVE_CURRENCIES[SupportedChainId.GNOSIS_CHAIN].address
 
     results.forEach((result) => {
       expect(result.transaction.data.includes(params.sellToken.slice(2))).toBe(false)
@@ -93,7 +93,7 @@ describe('getEthFlowTransaction', () => {
       results.push(result)
     }
 
-    const wrappedToken = WRAPPED_NATIVE_CURRENCIES[SupportedEvmChainId.GNOSIS_CHAIN].address
+    const wrappedToken = WRAPPED_NATIVE_CURRENCIES[SupportedChainId.GNOSIS_CHAIN].address
 
     results.forEach((result) => {
       expect(result.transaction.data.includes(params.sellToken.slice(2))).toBe(false)

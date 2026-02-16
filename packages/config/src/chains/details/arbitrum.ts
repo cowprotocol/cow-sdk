@@ -1,4 +1,4 @@
-import { ChainInfo, SupportedEvmChainId } from '../types'
+import { ChainInfo, SupportedChainId } from '../types'
 import { nativeCurrencyTemplate } from '../../constants/tokens'
 import { RAW_CHAINS_FILES_PATH } from '../../constants/paths'
 
@@ -10,12 +10,12 @@ const arbitrumLogo = `${RAW_CHAINS_FILES_PATH}/images/arbitrum-logo.svg`
  * See also https://github.com/wevm/viem/blob/main/src/chains/definitions/arbitrum.ts
  */
 export const arbitrumOne: ChainInfo = {
-  id: SupportedEvmChainId.ARBITRUM_ONE,
+  id: SupportedChainId.ARBITRUM_ONE,
   label: 'Arbitrum',
   eip155Label: 'Arbitrum One',
   nativeCurrency: {
     ...nativeCurrencyTemplate,
-    chainId: SupportedEvmChainId.ARBITRUM_ONE,
+    chainId: SupportedChainId.ARBITRUM_ONE,
   },
   addressPrefix: 'arb1',
   isTestnet: false,

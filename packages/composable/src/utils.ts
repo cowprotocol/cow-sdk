@@ -3,7 +3,7 @@ import { ContractsOrder as Order, OrderBalance, ContractsOrderKind as OrderKind 
 import {
   COMPOSABLE_COW_CONTRACT_ADDRESS,
   EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS,
-  SupportedEvmChainId,
+  SupportedChainId,
 } from '@cowprotocol/sdk-config'
 import { getGlobalAdapter, Provider } from '@cowprotocol/sdk-common'
 import { ExtensibleFallbackHandlerFactoryAbi } from './abis/ExtensibleFallbackHandlerFactoryAbi'
@@ -28,18 +28,18 @@ export const CONDITIONAL_ORDER_PARAMS_ABI = [
 
 export const DEFAULT_TOKEN_FORMATTER = (address: string, amount: bigint) => `${amount}@${address}`
 
-export function isExtensibleFallbackHandler(handler: string, chainId: SupportedEvmChainId): boolean {
+export function isExtensibleFallbackHandler(handler: string, chainId: SupportedChainId): boolean {
   return handler === EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS[chainId]
 }
 
-export function isComposableCow(handler: string, chainId: SupportedEvmChainId): boolean {
+export function isComposableCow(handler: string, chainId: SupportedChainId): boolean {
   return handler === COMPOSABLE_COW_CONTRACT_ADDRESS[chainId]
 }
 
 export async function getDomainVerifier(
   safe: string,
   domain: string,
-  chainId: SupportedEvmChainId,
+  chainId: SupportedChainId,
   provider: Provider,
 ): Promise<string> {
   return (await getGlobalAdapter().readContract({

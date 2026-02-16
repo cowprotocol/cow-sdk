@@ -1,10 +1,10 @@
 import { getAcrossDepositEvents, getCowTradeEvents } from './util'
 import { BridgingDepositParams } from '../../types'
-import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { log, TransactionReceipt } from '@cowprotocol/sdk-common'
 
 export async function getDepositParams(
-  chainId: SupportedEvmChainId,
+  chainId: SupportedChainId,
   orderId: string,
   txReceipt: TransactionReceipt,
 ): Promise<BridgingDepositParams | null> {

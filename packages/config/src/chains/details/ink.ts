@@ -1,4 +1,4 @@
-import { ChainInfo, SupportedEvmChainId } from '../types'
+import { ChainInfo, SupportedChainId } from '../types'
 import { nativeCurrencyTemplate } from '../../constants/tokens'
 import { RAW_CHAINS_FILES_PATH } from '../../constants/paths'
 
@@ -7,13 +7,13 @@ const inkLogo = `${RAW_CHAINS_FILES_PATH}/images/ink-logo.svg`
 // See https://github.com/wevm/viem/blob/main/src/chains/definitions/ink.ts
 // and https://github.com/ethereum-lists/chains/blob/master/_data/chains/eip155-57073.json
 export const ink: ChainInfo = {
-  id: SupportedEvmChainId.INK,
+  id: SupportedChainId.INK,
   label: 'Ink',
   eip155Label: 'Ink Chain Mainnet',
   logo: { light: inkLogo, dark: inkLogo },
   nativeCurrency: {
     ...nativeCurrencyTemplate,
-    chainId: SupportedEvmChainId.INK,
+    chainId: SupportedChainId.INK,
   },
   addressPrefix: 'ink',
   isTestnet: false,

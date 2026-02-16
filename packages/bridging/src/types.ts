@@ -1,6 +1,6 @@
 import type { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
 import type { Address, Amounts, EnrichedOrder, OrderKind } from '@cowprotocol/sdk-order-book'
-import type { EvmCall, TokenInfo, ChainInfo, SupportedEvmChainId, TargetEvmChainId, ChainId } from '@cowprotocol/sdk-config'
+import type { EvmCall, TokenInfo, ChainInfo, SupportedChainId, TargetChainId, ChainId } from '@cowprotocol/sdk-config'
 import type {
   OrderPostingResult,
   QuoteAndPost,
@@ -24,13 +24,13 @@ export interface BridgeProviderInfo {
 }
 
 interface WithSellToken {
-  sellTokenChainId: SupportedEvmChainId
+  sellTokenChainId: SupportedChainId
   sellTokenAddress: Address
   sellTokenDecimals: number
 }
 
 interface WithBuyToken {
-  buyTokenChainId: TargetEvmChainId
+  buyTokenChainId: TargetChainId
   buyTokenAddress: Address
   buyTokenDecimals: number
 }
@@ -154,8 +154,8 @@ export interface BridgeStatusResult {
  * then the buy tokens list will be additionally filtered
  */
 export interface BuyTokensParams {
-  buyChainId: TargetEvmChainId
-  sellChainId?: SupportedEvmChainId
+  buyChainId: TargetChainId
+  sellChainId?: SupportedChainId
   sellTokenAddress?: string
 }
 
@@ -238,7 +238,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    * @param bridgingId - The bridging id
    * @param originChainId - id of network where funds were deposited
    */
-  getStatus(bridgingId: string, originChainId: SupportedEvmChainId): Promise<BridgeStatusResult>
+  getStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult>
 
   // Get a transaction to cancel a bridging transaction.
   // TODO: Review if we support cancelling bridging
@@ -314,7 +314,7 @@ export interface HookBridgeProvider<Q extends BridgeQuoteResult> extends BridgeP
    * This hook will include the pre-authorization (signature) of the owner of the cow-shed account (the trader).
    */
   getSignedHook(
-    chainId: SupportedEvmChainId,
+    chainId: SupportedChainId,
     unsignedCall: EvmCall,
     bridgeHookNonce: string,
     deadline: bigint,
@@ -460,7 +460,7 @@ export interface BridgingDepositParams {
 
 export interface CrossChainOrder {
   provider: BridgeProvider<BridgeQuoteResult>
-  chainId: SupportedEvmChainId
+  chainId: SupportedChainId
   order: EnrichedOrder
   statusResult: BridgeStatusResult
   bridgingParams: BridgingDepositParams

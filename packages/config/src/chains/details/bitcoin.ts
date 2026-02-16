@@ -1,16 +1,16 @@
-import { ChainInfo, SupportedBitcoinChainId } from '../types'
+import { ChainInfo, NonEvmChains } from '../types'
 import { RAW_CHAINS_FILES_PATH } from '../../constants/paths'
 
 const bitcoinLogo = `${RAW_CHAINS_FILES_PATH}/images/bitcoin-logo.svg`
 
 // Bitcoin doesn't have a numeric chain ID like EVM chains
 export const bitcoin: ChainInfo = {
-  id: SupportedBitcoinChainId.BITCOIN_MAINNET,
+  id: NonEvmChains.BITCOIN,
   label: 'Bitcoin',
   eip155Label: 'Bitcoin',
   logo: { light: bitcoinLogo, dark: bitcoinLogo },
   nativeCurrency: {
-    chainId: SupportedBitcoinChainId.BITCOIN_MAINNET,
+    chainId: NonEvmChains.BITCOIN,
     name: 'Bitcoin',
     symbol: 'BTC',
     decimals: 8,

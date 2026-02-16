@@ -1,4 +1,4 @@
-import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderKind, OrderQuoteResponse, PriceQuality } from '@cowprotocol/sdk-order-book'
 import { resolveSlippageSuggestion } from './resolveSlippageSuggestion'
 import { QuoterParameters, SwapAdvancedSettings, TradeParameters } from './types'
@@ -47,7 +47,7 @@ const mockTradeParameters: TradeParameters = {
 }
 
 const mockTrader: QuoterParameters = {
-  chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+  chainId: SupportedChainId.GNOSIS_CHAIN,
   appCode: '0x007',
   account: '0xfb3c7eb936caa12b5a884d612393969a557d4307',
 }
@@ -66,7 +66,7 @@ describe('resolveSlippageSuggestion', () => {
       }
 
       await resolveSlippageSuggestion(
-        SupportedEvmChainId.GNOSIS_CHAIN,
+        SupportedChainId.GNOSIS_CHAIN,
         mockTradeParameters,
         mockTrader,
         mockQuoteResponse,
@@ -95,7 +95,7 @@ describe('resolveSlippageSuggestion', () => {
       }
 
       const result = await resolveSlippageSuggestion(
-        SupportedEvmChainId.GNOSIS_CHAIN,
+        SupportedChainId.GNOSIS_CHAIN,
         mockTradeParameters,
         mockTrader,
         mockQuoteResponse,
@@ -118,7 +118,7 @@ describe('resolveSlippageSuggestion', () => {
   describe('When getSlippageSuggestion is not provided', () => {
     it('Should return default suggestion', async () => {
       const result = await resolveSlippageSuggestion(
-        SupportedEvmChainId.GNOSIS_CHAIN,
+        SupportedChainId.GNOSIS_CHAIN,
         mockTradeParameters,
         mockTrader,
         mockQuoteResponse,
@@ -139,7 +139,7 @@ describe('resolveSlippageSuggestion', () => {
       }
 
       await resolveSlippageSuggestion(
-        SupportedEvmChainId.GNOSIS_CHAIN,
+        SupportedChainId.GNOSIS_CHAIN,
         mockTradeParameters,
         mockTrader,
         mockQuoteResponse,
@@ -148,7 +148,7 @@ describe('resolveSlippageSuggestion', () => {
       )
 
       expect(mockGetSlippageSuggestion).toHaveBeenCalledWith({
-        chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+        chainId: SupportedChainId.GNOSIS_CHAIN,
         sellToken: mockTradeParameters.sellToken,
         buyToken: mockTradeParameters.buyToken,
         sellAmount: expect.any(BigInt),
@@ -179,7 +179,7 @@ describe('resolveSlippageSuggestion', () => {
       }
 
       await resolveSlippageSuggestion(
-        SupportedEvmChainId.GNOSIS_CHAIN,
+        SupportedChainId.GNOSIS_CHAIN,
         tradeParamsWithPartnerFee,
         mockTrader,
         mockQuoteResponse,
@@ -203,7 +203,7 @@ describe('resolveSlippageSuggestion', () => {
       }
 
       const result = await resolveSlippageSuggestion(
-        SupportedEvmChainId.GNOSIS_CHAIN,
+        SupportedChainId.GNOSIS_CHAIN,
         mockTradeParameters,
         mockTrader,
         mockQuoteResponse,
@@ -226,7 +226,7 @@ describe('resolveSlippageSuggestion', () => {
   describe('EthFlow orders', () => {
     it('Should pass isEthFlow flag to suggestSlippageBps', async () => {
       await resolveSlippageSuggestion(
-        SupportedEvmChainId.GNOSIS_CHAIN,
+        SupportedChainId.GNOSIS_CHAIN,
         mockTradeParameters,
         mockTrader,
         mockQuoteResponse,

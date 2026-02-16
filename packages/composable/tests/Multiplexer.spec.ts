@@ -2,7 +2,7 @@ import { Multiplexer, Orders } from '../src/Multiplexer'
 import { ProofLocation } from '../src/types'
 import { Twap } from '../src/orderTypes/Twap'
 import { TWAP_PARAMS_TEST } from './Twap.spec'
-import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { getGlobalAdapter, setGlobalAdapter, ZERO_ADDRESS } from '@cowprotocol/sdk-common'
 import { ComposableCowFactoryAbi } from '../src/abis/ComposableCowFactoryAbi'
 import { createAdapters } from './setup'
@@ -55,7 +55,7 @@ describe('Multiplexer (ComposableCoW) - Multi-Adapter Tests', () => {
 
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
-        const m = new Multiplexer(SupportedEvmChainId.GNOSIS_CHAIN)
+        const m = new Multiplexer(SupportedChainId.GNOSIS_CHAIN)
         multiplexers.push(m)
       }
 
@@ -71,7 +71,7 @@ describe('Multiplexer (ComposableCoW) - Multi-Adapter Tests', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
         expect(() => {
-          new Multiplexer(SupportedEvmChainId.GNOSIS_CHAIN, {} as Orders)
+          new Multiplexer(SupportedChainId.GNOSIS_CHAIN, {} as Orders)
         }).toThrow('orders must have non-zero length')
       }
     })
@@ -84,7 +84,7 @@ describe('Multiplexer (ComposableCoW) - Multi-Adapter Tests', () => {
         const twap = Twap.fromData(generateRandomTWAPData(adapterName))
 
         expect(() => {
-          new Multiplexer(SupportedEvmChainId.GNOSIS_CHAIN, { [twap.id]: twap })
+          new Multiplexer(SupportedChainId.GNOSIS_CHAIN, { [twap.id]: twap })
         }).toThrow('orders cannot have undefined root')
       }
     })
@@ -98,7 +98,7 @@ describe('Multiplexer (ComposableCoW) - Multi-Adapter Tests', () => {
 
         const twap = Twap.fromData(generateRandomTWAPData(adapterName))
         expect(() => {
-          new Multiplexer(SupportedEvmChainId.GNOSIS_CHAIN, { [twap.id]: twap }, '0x1234')
+          new Multiplexer(SupportedChainId.GNOSIS_CHAIN, { [twap.id]: twap }, '0x1234')
         }).toThrow(`Unknown order type: ${twap.orderType}`)
 
         // Re-register for next iteration
@@ -114,7 +114,7 @@ describe('Multiplexer (ComposableCoW) - Multi-Adapter Tests', () => {
         const twap = Twap.fromData(generateRandomTWAPData(adapterName))
 
         expect(() => {
-          new Multiplexer(SupportedEvmChainId.GNOSIS_CHAIN, { [twap.id]: twap }, '0x1234')
+          new Multiplexer(SupportedChainId.GNOSIS_CHAIN, { [twap.id]: twap }, '0x1234')
         }).toThrow('root mismatch')
       }
     })
@@ -128,7 +128,7 @@ describe('Multiplexer (ComposableCoW) - Multi-Adapter Tests', () => {
         setGlobalAdapter(adapters[adapterName])
 
         // Create a new multiplexer, add a TWAP order
-        const m = new Multiplexer(SupportedEvmChainId.GNOSIS_CHAIN)
+        const m = new Multiplexer(SupportedChainId.GNOSIS_CHAIN)
         const twap = Twap.fromData(generateRandomTWAPData(adapterName))
         m.add(twap)
 
@@ -180,7 +180,7 @@ describe('Multiplexer (ComposableCoW) - Multi-Adapter Tests', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
 
-        const m = new Multiplexer(SupportedEvmChainId.GNOSIS_CHAIN)
+        const m = new Multiplexer(SupportedChainId.GNOSIS_CHAIN)
         const invalidTwap = Twap.fromData({
           ...generateRandomTWAPData(adapterName),
           timeBetweenParts: BigInt(-1),
@@ -199,7 +199,7 @@ describe('Multiplexer (ComposableCoW) - Multi-Adapter Tests', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
 
-        const m = new Multiplexer(SupportedEvmChainId.GNOSIS_CHAIN)
+        const m = new Multiplexer(SupportedChainId.GNOSIS_CHAIN)
         const twap = Twap.fromData(generateRandomTWAPData(adapterName))
         m.add(twap)
 
@@ -229,7 +229,7 @@ describe('Multiplexer (ComposableCoW) - Multi-Adapter Tests', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
 
-        const m = new Multiplexer(SupportedEvmChainId.GNOSIS_CHAIN)
+        const m = new Multiplexer(SupportedChainId.GNOSIS_CHAIN)
         const twap = Twap.fromData(generateRandomTWAPData(adapterName))
         m.add(twap)
 
@@ -255,7 +255,7 @@ describe('Multiplexer (ComposableCoW) - Multi-Adapter Tests', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
 
-        const m = new Multiplexer(SupportedEvmChainId.GNOSIS_CHAIN)
+        const m = new Multiplexer(SupportedChainId.GNOSIS_CHAIN)
 
         // Generate 10 random TWAP orders
         const orders: Twap[] = []
@@ -294,7 +294,7 @@ describe('Multiplexer (ComposableCoW) - Multi-Adapter Tests', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
 
-        const m = new Multiplexer(SupportedEvmChainId.GNOSIS_CHAIN)
+        const m = new Multiplexer(SupportedChainId.GNOSIS_CHAIN)
 
         // Generate 10 random TWAP orders
         for (let i = 0; i < 10; i++) {
@@ -336,7 +336,7 @@ describe('Multiplexer (ComposableCoW) - Multi-Adapter Tests', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
 
-        const m = new Multiplexer(SupportedEvmChainId.GNOSIS_CHAIN)
+        const m = new Multiplexer(SupportedChainId.GNOSIS_CHAIN)
 
         // Generate 10 random TWAP orders
         for (let i = 0; i < 10; i++) {
@@ -358,7 +358,7 @@ describe('Multiplexer (ComposableCoW) - Multi-Adapter Tests', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
 
-        const m = new Multiplexer(SupportedEvmChainId.GNOSIS_CHAIN)
+        const m = new Multiplexer(SupportedChainId.GNOSIS_CHAIN)
         const twap = Twap.fromData(TWAP_PARAMS_TEST)
         m.add(twap)
 
@@ -377,7 +377,7 @@ describe('Multiplexer (ComposableCoW) - Multi-Adapter Tests', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
 
-        const m = new Multiplexer(SupportedEvmChainId.GNOSIS_CHAIN)
+        const m = new Multiplexer(SupportedChainId.GNOSIS_CHAIN)
         const twap = Twap.fromData(TWAP_PARAMS_TEST)
         m.add(twap)
 
@@ -391,7 +391,7 @@ describe('Multiplexer (ComposableCoW) - Multi-Adapter Tests', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
 
-        const m = new Multiplexer(SupportedEvmChainId.GNOSIS_CHAIN)
+        const m = new Multiplexer(SupportedChainId.GNOSIS_CHAIN)
         const twap = Twap.fromData(TWAP_PARAMS_TEST)
         m.add(twap)
 

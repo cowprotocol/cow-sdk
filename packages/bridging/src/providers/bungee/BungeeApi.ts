@@ -23,7 +23,7 @@ import { BridgeProviderError, BridgeProviderQuoteError, BridgeQuoteErrors } from
 import { SocketVerifierAddresses } from './const/contracts'
 import { SOCKET_VERIFIER_ABI } from './abi'
 import { BuyTokensParams } from '../../types'
-import { SupportedEvmChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import { getGlobalAdapter, log } from '@cowprotocol/sdk-common'
 import {
   BUNGEE_API_FALLBACK_TIMEOUT,
@@ -274,7 +274,7 @@ export class BungeeApi {
    * @returns True if the bungee tx data is valid, false otherwise
    */
   async verifyBungeeBuildTxData(
-    originChainId: SupportedEvmChainId,
+    originChainId: SupportedChainId,
     txData: string,
     routeId: string,
     expectedSocketRequest: SocketRequest,

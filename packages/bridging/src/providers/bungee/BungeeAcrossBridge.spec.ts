@@ -8,7 +8,7 @@ import { toBridgeQuoteResult } from './util'
 import { BungeeQuoteAPIRequest, BungeeQuoteWithBuildTx } from './types'
 import { BungeeApi } from './BungeeApi'
 import { createBungeeDepositCall } from './createBungeeDepositCall'
-import { EvmCall, SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { EvmCall, SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { AccountAddress, getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { getWallet } from '../../test'
@@ -29,7 +29,7 @@ describe.skip('BungeeAcrossBridge full transaction', () => {
   })
 
   it('builds the tx data for the quote', async () => {
-    const wallet = await getWallet(SupportedEvmChainId.MAINNET)
+    const wallet = await getWallet(SupportedChainId.MAINNET)
     if (!wallet) {
       console.warn('Wallet not found, skipping test')
       return
@@ -42,8 +42,8 @@ describe.skip('BungeeAcrossBridge full transaction', () => {
 
     quote = {
       userAddress: `${wallet.address}`,
-      originChainId: SupportedEvmChainId.ARBITRUM_ONE.toString(),
-      destinationChainId: SupportedEvmChainId.BASE.toString(),
+      originChainId: SupportedChainId.ARBITRUM_ONE.toString(),
+      destinationChainId: SupportedChainId.BASE.toString(),
       inputToken: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', // Arbitrum USDC
       inputAmount: '1000000', // 1 USDC
       receiverAddress: `${wallet.address}`,
@@ -59,8 +59,8 @@ describe.skip('BungeeAcrossBridge full transaction', () => {
     expect(txData).toBeDefined()
 
     expect(txData.bungeeQuote).toBeDefined()
-    expect(txData.bungeeQuote.originChainId).toBe(SupportedEvmChainId.ARBITRUM_ONE)
-    expect(txData.bungeeQuote.destinationChainId).toBe(SupportedEvmChainId.BASE)
+    expect(txData.bungeeQuote.originChainId).toBe(SupportedChainId.ARBITRUM_ONE)
+    expect(txData.bungeeQuote.destinationChainId).toBe(SupportedChainId.BASE)
     expect(txData.bungeeQuote.route).toBeDefined()
     expect(txData.bungeeQuote.routeBridge).toBe('across')
 
@@ -78,7 +78,7 @@ describe.skip('BungeeAcrossBridge full transaction', () => {
   })
 
   it('creates the deposit call', async () => {
-    const wallet = await getWallet(SupportedEvmChainId.MAINNET)
+    const wallet = await getWallet(SupportedChainId.MAINNET)
     if (!wallet) {
       console.warn('Wallet not found, skipping test')
       return
@@ -88,10 +88,10 @@ describe.skip('BungeeAcrossBridge full transaction', () => {
       kind: OrderKind.SELL,
       amount: BigInt(1000000),
       owner: wallet.address as AccountAddress,
-      sellTokenChainId: SupportedEvmChainId.ARBITRUM_ONE,
+      sellTokenChainId: SupportedChainId.ARBITRUM_ONE,
       sellTokenAddress: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
       sellTokenDecimals: 6,
-      buyTokenChainId: SupportedEvmChainId.BASE,
+      buyTokenChainId: SupportedChainId.BASE,
       buyTokenAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
       buyTokenDecimals: 6,
       appCode: 'bungee',

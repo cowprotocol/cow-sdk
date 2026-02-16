@@ -27,7 +27,7 @@ import {
   WithPartialTraderParams,
 } from '@cowprotocol/sdk-trading'
 import { OrderBookApi, SigningScheme } from '@cowprotocol/sdk-order-book'
-import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { BridgingSdkConfig } from '../types'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { createAdapters } from '../../../tests/setup'
@@ -61,7 +61,7 @@ adapterNames.forEach((adapterName) => {
 
       orderBookApi = {
         context: {
-          chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+          chainId: SupportedChainId.GNOSIS_CHAIN,
         },
         getQuote: jest.fn().mockResolvedValue(orderQuoteResponse),
         sendOrder: jest.fn().mockResolvedValue('0x01'),
@@ -156,7 +156,7 @@ adapterNames.forEach((adapterName) => {
 
         const singleChainRequest: QuoteBridgeRequest = {
           ...quoteBridgeRequest,
-          buyTokenChainId: SupportedEvmChainId.MAINNET,
+          buyTokenChainId: SupportedChainId.MAINNET,
           buyTokenAddress: mainnetDai,
           buyTokenDecimals: mainnetDaiDecimals,
         }
@@ -168,7 +168,7 @@ adapterNames.forEach((adapterName) => {
           sellToken: sellTokenAddress,
           buyToken: buyTokenAddress,
           amount: amount.toString(),
-          chainId: SupportedEvmChainId.MAINNET,
+          chainId: SupportedChainId.MAINNET,
         }
 
         const singleChainQuoteResult: QuoteAndPost = {

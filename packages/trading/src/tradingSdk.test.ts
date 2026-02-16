@@ -1,5 +1,5 @@
 import { TradingSdk } from './tradingSdk'
-import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { TradeBaseParameters } from './types'
 import {
   BuyTokenDestination,
@@ -96,7 +96,7 @@ describe('TradingSdk', () => {
     beforeEach(() => {
       orderBookApi = {
         context: {
-          chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+          chainId: SupportedChainId.GNOSIS_CHAIN,
         },
         getQuote: jest.fn().mockResolvedValue(quoteResponseMock),
         sendOrder: jest.fn().mockResolvedValue('0x01'),
@@ -113,7 +113,7 @@ describe('TradingSdk', () => {
       for (const adapterName of adapterNames) {
         const sdk = new TradingSdk(
           {
-            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             appCode: 'test',
             signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
           },
@@ -133,7 +133,7 @@ describe('TradingSdk', () => {
       for (const adapterName of adapterNames) {
         const sdk = new TradingSdk(
           {
-            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             appCode: 'test',
             signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
           },
@@ -156,7 +156,7 @@ describe('TradingSdk', () => {
       getOrderSpy = jest.fn().mockResolvedValue(mockOrder)
       orderBookApi = {
         context: {
-          chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+          chainId: SupportedChainId.GNOSIS_CHAIN,
         },
         getOrder: getOrderSpy,
       } as unknown as OrderBookApi
@@ -172,7 +172,7 @@ describe('TradingSdk', () => {
       for (const adapterName of adapterNames) {
         const sdk = new TradingSdk(
           {
-            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             appCode: 'test',
             signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
           },
@@ -200,7 +200,7 @@ describe('TradingSdk', () => {
 
         const result = await sdk.getOrder({
           orderUid,
-          chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+          chainId: SupportedChainId.GNOSIS_CHAIN,
         })
 
         expect(result).toEqual(mockOrder)
@@ -240,7 +240,7 @@ describe('TradingSdk', () => {
       sendSignedOrderCancellationsSpy = jest.fn().mockResolvedValue(undefined)
       orderBookApi = {
         context: {
-          chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+          chainId: SupportedChainId.GNOSIS_CHAIN,
         },
         sendSignedOrderCancellations: sendSignedOrderCancellationsSpy,
       } as unknown as OrderBookApi
@@ -257,7 +257,7 @@ describe('TradingSdk', () => {
       for (const adapterName of adapterNames) {
         const sdk = new TradingSdk(
           {
-            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             appCode: 'test',
             signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
           },
@@ -288,7 +288,7 @@ describe('TradingSdk', () => {
 
         const result = await sdk.offChainCancelOrder({
           orderUid,
-          chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+          chainId: SupportedChainId.GNOSIS_CHAIN,
         })
 
         expect(result).toBe(true)
@@ -313,7 +313,7 @@ describe('TradingSdk', () => {
   })
 
   describe('getCowProtocolAllowance', () => {
-    const chainId = SupportedEvmChainId.MAINNET
+    const chainId = SupportedChainId.MAINNET
     let mockSigner: any
     let tradingSdk: TradingSdk
     let ethersV5Adapter: any
@@ -396,7 +396,7 @@ describe('TradingSdk', () => {
   })
 
   describe('approveCowProtocol', () => {
-    const chainId = SupportedEvmChainId.MAINNET
+    const chainId = SupportedChainId.MAINNET
     let mockSigner: any
     let tradingSdk: TradingSdk
     let ethersV5Adapter: any
@@ -533,7 +533,7 @@ describe('TradingSdk', () => {
       getOrderSpy = jest.fn().mockResolvedValue(mockOrder)
       orderBookApi = {
         context: {
-          chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+          chainId: SupportedChainId.GNOSIS_CHAIN,
         },
         getOrder: getOrderSpy,
       } as unknown as OrderBookApi
@@ -557,7 +557,7 @@ describe('TradingSdk', () => {
 
         const sdk = new TradingSdk(
           {
-            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             appCode: 'test',
             signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
           },
@@ -583,7 +583,7 @@ describe('TradingSdk', () => {
 
         const sdk = new TradingSdk(
           {
-            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
             appCode: 'test',
             signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
           },
@@ -618,7 +618,7 @@ describe('TradingSdk', () => {
 
         const result = await sdk.onChainCancelOrder({
           orderUid,
-          chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+          chainId: SupportedChainId.GNOSIS_CHAIN,
           signer: mockSigner,
         })
 

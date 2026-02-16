@@ -1,9 +1,9 @@
-import { setGlobalAdapter, SupportedEvmChainId, TradingSdk } from '@cowprotocol/cow-sdk'
+import { setGlobalAdapter, SupportedChainId, TradingSdk } from '@cowprotocol/cow-sdk'
 import { createPublicClient, http } from 'viem'
 import { sepolia } from 'viem/chains'
 import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
 
-export const chainId = SupportedEvmChainId.SEPOLIA
+export const chainId = SupportedChainId.SEPOLIA
 
 export const publicClient = createPublicClient({
   chain: sepolia,

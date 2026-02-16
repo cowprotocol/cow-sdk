@@ -16,7 +16,7 @@ import {
 } from '../mock/bridgeRequestMocks'
 import { QuoteResultsWithSigner, SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
-import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { BridgingSdkConfig } from '../types'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { createAdapters } from '../../../tests/setup'
@@ -68,7 +68,7 @@ adapterNames.forEach((adapterName) => {
 
       orderBookApi = {
         context: {
-          chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+          chainId: SupportedChainId.GNOSIS_CHAIN,
         },
         getQuote: jest.fn().mockResolvedValue(orderQuoteResponse),
         sendOrder: jest.fn().mockResolvedValue('0x01'),

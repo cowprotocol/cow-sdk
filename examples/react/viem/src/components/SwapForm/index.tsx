@@ -2,7 +2,7 @@ import {
   type AccountAddress,
   OrderKind,
   type QuoteAndPost,
-  SupportedEvmChainId,
+  SupportedChainId,
   type TokenInfo,
   WRAPPED_NATIVE_CURRENCIES,
 } from '@cowprotocol/cow-sdk'
@@ -18,7 +18,7 @@ const WETH_SEPOLIA = WRAPPED_NATIVE_CURRENCIES[chainId]
 const USDC_SEPOLIA: TokenInfo = {
   logoUrl:
     'https://files.cow.fi/token-lists/images/1/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48/logo.png',
-  chainId: SupportedEvmChainId.SEPOLIA,
+  chainId: SupportedChainId.SEPOLIA,
   address: '0xbe72E441BF55620febc26715db68d3494213D8Cb',
   decimals: 18,
   symbol: 'USDC',

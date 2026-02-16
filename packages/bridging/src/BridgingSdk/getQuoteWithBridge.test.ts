@@ -13,7 +13,7 @@ import {
   quoteBridgeRequest,
 } from './mock/bridgeRequestMocks'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
-import { NATIVE_CURRENCY_ADDRESS, SupportedEvmChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { NATIVE_CURRENCY_ADDRESS, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import { getHookMockForCostEstimation } from '../hooks/utils'
 import { createAdapters } from '../../tests/setup'
 import { AbstractSigner, setGlobalAdapter, Provider, TTLCache } from '@cowprotocol/sdk-common'
@@ -71,7 +71,7 @@ adapterNames.forEach((adapterName) => {
       sendOrderMock = jest.fn().mockResolvedValue('0x01')
       orderBookApi = {
         context: {
-          chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+          chainId: SupportedChainId.GNOSIS_CHAIN,
         },
         getQuote: jest.fn().mockResolvedValue(orderQuoteResponse),
         uploadAppData: jest.fn().mockResolvedValue(''),
@@ -138,7 +138,7 @@ adapterNames.forEach((adapterName) => {
 
       await postSwapOrderFromQuote()
 
-      const ethFlowContract = getEthFlowContract(signerMock, SupportedEvmChainId.GNOSIS_CHAIN)
+      const ethFlowContract = getEthFlowContract(signerMock, SupportedChainId.GNOSIS_CHAIN)
       const sendTxCall = (signerMock.sendTransaction as unknown as jest.Mock).mock.calls[0][0]
       const data = ethFlowContract.interface.decodeFunctionData('createOrder', sendTxCall.data)
       const orderParams = data[0] as { buyToken: string; receiver: string }
@@ -329,7 +329,7 @@ describe('createPostSwapOrderFromQuote with ReceiverAccountBridgeProvider', () =
         uploadAppDataMock = jest.fn().mockResolvedValue('0xappDataHash123')
         orderBookApi = {
           context: {
-            chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+            chainId: SupportedChainId.GNOSIS_CHAIN,
           },
           getQuote: jest.fn().mockResolvedValue(orderQuoteResponse),
           uploadAppData: uploadAppDataMock,

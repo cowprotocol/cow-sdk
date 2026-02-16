@@ -9,7 +9,7 @@ import {
   BungeeQuoteResult,
 } from './BungeeBridgeProvider'
 import { BungeeBridge, BungeeBridgeName, BungeeBuildTx, BungeeEvent, BungeeEventStatus, BungeeQuote } from './types'
-import { SupportedEvmChainId, TargetEvmChainId } from '@cowprotocol/sdk-config'
+import { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { createAdapters } from '../../../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
@@ -82,12 +82,12 @@ adapterNames.forEach((adapterName) => {
         mockBungeeApi = new BungeeApi()
         // Mock the getBuyTokens method
         jest.spyOn(mockBungeeApi, 'getBuyTokens').mockImplementation(async (params) => {
-          if (params.buyChainId === (12345 as TargetEvmChainId)) {
+          if (params.buyChainId === (12345 as TargetChainId)) {
             return []
-          } else if (params.buyChainId === (137 as TargetEvmChainId)) {
+          } else if (params.buyChainId === (137 as TargetChainId)) {
             return [
               {
-                chainId: SupportedEvmChainId.POLYGON,
+                chainId: SupportedChainId.POLYGON,
                 address: '0x123',
                 decimals: 18,
                 name: 'Test Token',
@@ -102,26 +102,26 @@ adapterNames.forEach((adapterName) => {
       })
 
       it('should return empty array for unsupported chain', async () => {
-        const result = await provider.getBuyTokens({ buyChainId: 12345 as TargetEvmChainId })
+        const result = await provider.getBuyTokens({ buyChainId: 12345 as TargetChainId })
 
         expect(result.tokens).toEqual([])
         expect(result.isRouteAvailable).toEqual(false)
 
-        expect(mockBungeeApi.getBuyTokens).toHaveBeenCalledWith({ buyChainId: 12345 as TargetEvmChainId })
+        expect(mockBungeeApi.getBuyTokens).toHaveBeenCalledWith({ buyChainId: 12345 as TargetChainId })
         expect(mockBungeeApi.getBuyTokens).toHaveBeenCalledTimes(1)
       })
 
       it('should return tokens for supported chain', async () => {
         const result = await provider.getBuyTokens({
-          sellChainId: SupportedEvmChainId.MAINNET,
-          buyChainId: SupportedEvmChainId.POLYGON,
+          sellChainId: SupportedChainId.MAINNET,
+          buyChainId: SupportedChainId.POLYGON,
         })
 
         expect(result.tokens.length).toBeGreaterThan(0)
         expect(result.tokens).toEqual(
           expect.arrayContaining([
             expect.objectContaining({
-              chainId: SupportedEvmChainId.POLYGON,
+              chainId: SupportedChainId.POLYGON,
               address: expect.any(String),
               decimals: expect.any(Number),
             }),
@@ -129,8 +129,8 @@ adapterNames.forEach((adapterName) => {
         )
         expect(result.isRouteAvailable).toEqual(true)
         expect(mockBungeeApi.getBuyTokens).toHaveBeenCalledWith({
-          buyChainId: SupportedEvmChainId.POLYGON,
-          sellChainId: SupportedEvmChainId.MAINNET,
+          buyChainId: SupportedChainId.POLYGON,
+          sellChainId: SupportedChainId.MAINNET,
         })
         expect(mockBungeeApi.getBuyTokens).toHaveBeenCalledTimes(1)
       })
@@ -255,8 +255,8 @@ adapterNames.forEach((adapterName) => {
         const request: QuoteBridgeRequest = {
           kind: OrderKind.SELL,
           sellTokenAddress: '0x123',
-          sellTokenChainId: SupportedEvmChainId.MAINNET,
-          buyTokenChainId: SupportedEvmChainId.POLYGON,
+          sellTokenChainId: SupportedChainId.MAINNET,
+          buyTokenChainId: SupportedChainId.POLYGON,
           amount: 1000000000000000000n,
           receiver: '0x789',
           account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
@@ -419,8 +419,8 @@ adapterNames.forEach((adapterName) => {
         const request: QuoteBridgeRequest = {
           kind: OrderKind.SELL,
           sellTokenAddress: '0x123',
-          sellTokenChainId: SupportedEvmChainId.MAINNET,
-          buyTokenChainId: SupportedEvmChainId.POLYGON,
+          sellTokenChainId: SupportedChainId.MAINNET,
+          buyTokenChainId: SupportedChainId.POLYGON,
           amount: 1000000000000000000n,
           receiver: '0x789',
           account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
@@ -442,8 +442,8 @@ adapterNames.forEach((adapterName) => {
         const request: QuoteBridgeRequest = {
           kind: OrderKind.SELL,
           sellTokenAddress: '0x123',
-          sellTokenChainId: SupportedEvmChainId.MAINNET,
-          buyTokenChainId: SupportedEvmChainId.POLYGON,
+          sellTokenChainId: SupportedChainId.MAINNET,
+          buyTokenChainId: SupportedChainId.POLYGON,
           amount: 1000000000000000000n,
           receiver: '0x789',
           account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
@@ -465,8 +465,8 @@ adapterNames.forEach((adapterName) => {
         const request: QuoteBridgeRequest = {
           kind: OrderKind.SELL,
           sellTokenAddress: '0x123',
-          sellTokenChainId: SupportedEvmChainId.MAINNET,
-          buyTokenChainId: SupportedEvmChainId.GNOSIS_CHAIN,
+          sellTokenChainId: SupportedChainId.MAINNET,
+          buyTokenChainId: SupportedChainId.GNOSIS_CHAIN,
           amount: 1000000000000000000n,
           receiver: '0x789',
           account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
@@ -488,8 +488,8 @@ adapterNames.forEach((adapterName) => {
         const request: QuoteBridgeRequest = {
           kind: OrderKind.SELL,
           sellTokenAddress: '0x123',
-          sellTokenChainId: SupportedEvmChainId.MAINNET,
-          buyTokenChainId: SupportedEvmChainId.GNOSIS_CHAIN,
+          sellTokenChainId: SupportedChainId.MAINNET,
+          buyTokenChainId: SupportedChainId.GNOSIS_CHAIN,
           amount: 1000000000000000000n,
           receiver: '0x789',
           account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address

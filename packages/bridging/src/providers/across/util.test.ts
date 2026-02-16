@@ -11,7 +11,7 @@ import {
 } from './util'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { SuggestedFeesResponse } from './types'
-import { AdditionalEvmTargetChainId, SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { AdditionalTargetChainId, SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { createAdapters } from '../../../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
@@ -19,7 +19,7 @@ import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 describe('Across Utils', () => {
   describe('getChainConfigs', () => {
     it('should return chain configs for supported chains', () => {
-      const result = getChainConfigs(SupportedEvmChainId.MAINNET, AdditionalEvmTargetChainId.OPTIMISM)
+      const result = getChainConfigs(SupportedChainId.MAINNET, AdditionalTargetChainId.OPTIMISM)
       expect(result?.sourceChainConfig).toHaveProperty('tokens')
       expect(result?.sourceChainConfig).toHaveProperty('chainId')
       expect(result?.targetChainConfig).toHaveProperty('tokens')
@@ -27,20 +27,20 @@ describe('Across Utils', () => {
     })
 
     it('should return undefined for unknown chains', () => {
-      const result = getChainConfigs(999999 as SupportedEvmChainId, SupportedEvmChainId.SEPOLIA)
+      const result = getChainConfigs(999999 as SupportedChainId, SupportedChainId.SEPOLIA)
       expect(result).toBeUndefined()
     })
 
     it('should return undefined for sepolia', () => {
       // Sepolia is not supported by Across
-      const result = getChainConfigs(SupportedEvmChainId.MAINNET, SupportedEvmChainId.SEPOLIA)
+      const result = getChainConfigs(SupportedChainId.MAINNET, SupportedChainId.SEPOLIA)
       expect(result).toBeUndefined()
     })
   })
 
   describe('getTokenSymbol and getTokenAddress', () => {
     const mockChainConfig = {
-      chainId: SupportedEvmChainId.MAINNET,
+      chainId: SupportedChainId.MAINNET,
       tokens: {
         'TEST-TOKEN': '0x1234567890123456789012345678901234567890',
       },
@@ -106,10 +106,10 @@ describe('Across Utils', () => {
     it('should convert to bridge quote result correctly', () => {
       const request: QuoteBridgeRequest = {
         kind: OrderKind.SELL,
-        sellTokenChainId: SupportedEvmChainId.MAINNET,
+        sellTokenChainId: SupportedChainId.MAINNET,
         sellTokenAddress: '0x1234567890123456789012345678901234567890',
         sellTokenDecimals: 18,
-        buyTokenChainId: SupportedEvmChainId.POLYGON,
+        buyTokenChainId: SupportedChainId.POLYGON,
         buyTokenAddress: '0x1234567890123456789012345678901234567890',
         buyTokenDecimals: 6,
         amount: mockAmount,
@@ -199,7 +199,7 @@ describe('Across Utils', () => {
       })
 
       it('should return empty array if passing nothing', () => {
-        const result = getAcrossDepositEvents(SupportedEvmChainId.MAINNET, [])
+        const result = getAcrossDepositEvents(SupportedChainId.MAINNET, [])
         expect(result).toEqual([])
       })
     })

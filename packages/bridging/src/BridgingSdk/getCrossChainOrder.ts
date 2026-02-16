@@ -2,11 +2,11 @@ import { BridgeQuoteResult, BridgeStatus, CrossChainOrder, BridgeProvider } from
 
 import { BridgeOrderParsingError } from '../errors'
 import { findBridgeProviderFromHook } from './findBridgeProviderFromHook'
-import { CowEnv, SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 
 interface GetCrossChainOrderParams {
-  chainId: SupportedEvmChainId
+  chainId: SupportedChainId
   orderId: string
   orderBookApi: OrderBookApi
   providers: BridgeProvider<BridgeQuoteResult>[]

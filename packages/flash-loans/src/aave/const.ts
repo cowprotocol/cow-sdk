@@ -1,4 +1,4 @@
-import { mapAddressToSupportedNetworks, SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { mapAddressToSupportedNetworks, SupportedChainId } from '@cowprotocol/sdk-config'
 import { CollateralPermitData } from './types'
 
 export const HASH_ZERO = '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -10,36 +10,36 @@ export enum AaveFlashLoanType {
 }
 
 // See https://aave.com/docs/resources/addresses
-export const AAVE_POOL_ADDRESS: Record<SupportedEvmChainId, string> = {
-  [SupportedEvmChainId.SEPOLIA]: '',
-  [SupportedEvmChainId.LENS]: '',
-  [SupportedEvmChainId.GNOSIS_CHAIN]: '0xb50201558B00496A145fE76f7424749556E326D8',
-  [SupportedEvmChainId.MAINNET]: '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2',
-  [SupportedEvmChainId.BASE]: '0xA238Dd80C259a72e81d7e4664a9801593F98d1c5',
-  [SupportedEvmChainId.ARBITRUM_ONE]: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
-  [SupportedEvmChainId.AVALANCHE]: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
-  [SupportedEvmChainId.BNB]: '0x6807dc923806fE8Fd134338EABCA509979a7e0cB',
-  [SupportedEvmChainId.POLYGON]: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
-  [SupportedEvmChainId.LINEA]: '0xc47b8C00b0f69a36fa203Ffeac0334874574a8Ac',
-  [SupportedEvmChainId.PLASMA]: '0x925a2A7214Ed92428B5b1B090F80b25700095e12',
-  [SupportedEvmChainId.INK]: '0x2816cf15F6d2A220E789aA011D5EE4eB6c47FEbA',
+export const AAVE_POOL_ADDRESS: Record<SupportedChainId, string> = {
+  [SupportedChainId.SEPOLIA]: '',
+  [SupportedChainId.LENS]: '',
+  [SupportedChainId.GNOSIS_CHAIN]: '0xb50201558B00496A145fE76f7424749556E326D8',
+  [SupportedChainId.MAINNET]: '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2',
+  [SupportedChainId.BASE]: '0xA238Dd80C259a72e81d7e4664a9801593F98d1c5',
+  [SupportedChainId.ARBITRUM_ONE]: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
+  [SupportedChainId.AVALANCHE]: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
+  [SupportedChainId.BNB]: '0x6807dc923806fE8Fd134338EABCA509979a7e0cB',
+  [SupportedChainId.POLYGON]: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
+  [SupportedChainId.LINEA]: '0xc47b8C00b0f69a36fa203Ffeac0334874574a8Ac',
+  [SupportedChainId.PLASMA]: '0x925a2A7214Ed92428B5b1B090F80b25700095e12',
+  [SupportedChainId.INK]: '0x2816cf15F6d2A220E789aA011D5EE4eB6c47FEbA',
 }
 
-export const AAVE_ADAPTER_FACTORY: Record<SupportedEvmChainId, string> = mapAddressToSupportedNetworks(
+export const AAVE_ADAPTER_FACTORY: Record<SupportedChainId, string> = mapAddressToSupportedNetworks(
   '0x43c658Ea38bBfD897706fDb35e2468ef5D8F6927',
 )
 
-const AAVE_COLLATERAL_SWAP_ADAPTER_HOOK: Record<SupportedEvmChainId, string> = mapAddressToSupportedNetworks(
+const AAVE_COLLATERAL_SWAP_ADAPTER_HOOK: Record<SupportedChainId, string> = mapAddressToSupportedNetworks(
   '0x29A9b0a13c81d59f13BA0f39DBDCAA1AB2adc95F',
 )
-const AAVE_DEBT_SWAP_ADAPTER_HOOK: Record<SupportedEvmChainId, string> = mapAddressToSupportedNetworks(
+const AAVE_DEBT_SWAP_ADAPTER_HOOK: Record<SupportedChainId, string> = mapAddressToSupportedNetworks(
   '0xbE9A121bb958BBBb027dA728DEC0D5496811b7d1',
 )
-const AAVE_REPAY_COLLATERAL_ADAPTER_HOOK: Record<SupportedEvmChainId, string> = mapAddressToSupportedNetworks(
+const AAVE_REPAY_COLLATERAL_ADAPTER_HOOK: Record<SupportedChainId, string> = mapAddressToSupportedNetworks(
   '0x8e25d1210FabB0fcAdE92a82C4a89568B4b10E0F',
 )
 
-export const AAVE_HOOK_ADAPTER_PER_TYPE: Record<AaveFlashLoanType, Record<SupportedEvmChainId, string>> = {
+export const AAVE_HOOK_ADAPTER_PER_TYPE: Record<AaveFlashLoanType, Record<SupportedChainId, string>> = {
   [AaveFlashLoanType.CollateralSwap]: AAVE_COLLATERAL_SWAP_ADAPTER_HOOK,
   [AaveFlashLoanType.DebtSwap]: AAVE_DEBT_SWAP_ADAPTER_HOOK,
   [AaveFlashLoanType.RepayCollateral]: AAVE_REPAY_COLLATERAL_ADAPTER_HOOK,

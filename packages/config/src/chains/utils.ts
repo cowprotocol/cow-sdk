@@ -1,5 +1,5 @@
 import { ADDITIONAL_TARGET_CHAINS_MAP, ALL_SUPPORTED_CHAINS_MAP } from './const'
-import { AdditionalEvmTargetChainId, ChainId, ChainInfo, SupportedEvmChainId, TargetEvmChainId } from './types'
+import { AdditionalTargetChainId, ChainId, ChainInfo, SupportedChainId, TargetChainId } from './types'
 
 /**
  * Type guard to check if a chain ID represents an EVM chain.
@@ -33,7 +33,7 @@ export function getChainInfo(chainId: ChainId): ChainInfo | undefined {
  * Check if the chain is supported by CoW Protocol.
  * Only works for EVM chains (numeric chain IDs).
  */
-export function isSupportedChain(chainId: ChainId): chainId is SupportedEvmChainId {
+export function isSupportedChain(chainId: ChainId): chainId is SupportedChainId {
   return isEvmChain(chainId) && chainId in ALL_SUPPORTED_CHAINS_MAP
 }
 
@@ -41,14 +41,14 @@ export function isSupportedChain(chainId: ChainId): chainId is SupportedEvmChain
  * Check if the chain is supported by the bridge providers.
  * Only works for EVM chains (numeric chain IDs).
  */
-export function isAdditionalTargetEvmChain(chainId: ChainId): chainId is AdditionalEvmTargetChainId {
+export function isAdditionalTargetEvmChain(chainId: ChainId): chainId is AdditionalTargetChainId {
   return isEvmChain(chainId) && chainId in ADDITIONAL_TARGET_CHAINS_MAP
 }
 
 /**
  * Check if the chain is supported by CoW Swap or the bridge providers.
  */
-export function isTargetEvmChainId(chainId: ChainId): chainId is TargetEvmChainId {
+export function isTargetEvmChainId(chainId: ChainId): chainId is TargetChainId {
   return isSupportedChain(chainId) || isAdditionalTargetEvmChain(chainId)
 }
 

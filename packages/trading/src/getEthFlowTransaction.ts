@@ -5,7 +5,7 @@ import {
 } from './types'
 import { calculateUniqueOrderId } from './calculateUniqueOrderId'
 import { getOrderToSign } from './getOrderToSign'
-import { SupportedEvmChainId, CowEnv, BARN_ETH_FLOW_ADDRESSES, ETH_FLOW_ADDRESSES } from '@cowprotocol/sdk-config'
+import { SupportedChainId, CowEnv, BARN_ETH_FLOW_ADDRESSES, ETH_FLOW_ADDRESSES } from '@cowprotocol/sdk-config'
 import { GAS_LIMIT_DEFAULT } from './consts'
 import { adjustEthFlowOrderParams, calculateGasMargin } from './utils/misc'
 import {
@@ -22,7 +22,7 @@ import { getDefaultSlippageBps } from './utils/slippage'
 export async function getEthFlowTransaction(
   appDataKeccak256: string,
   _params: LimitTradeParametersFromQuote,
-  chainId: SupportedEvmChainId,
+  chainId: SupportedChainId,
   additionalParams: PostTradeAdditionalParams = {},
   paramSigner?: SignerLike,
 ): Promise<{ orderId: string; transaction: TransactionParams; orderToSign: UnsignedOrder }> {
@@ -92,7 +92,7 @@ export async function getEthFlowTransaction(
   }
 }
 
-export function getEthFlowContract(signer: Signer, chainId: SupportedEvmChainId, env?: CowEnv): EthFlowContract {
+export function getEthFlowContract(signer: Signer, chainId: SupportedChainId, env?: CowEnv): EthFlowContract {
   const address = env === 'staging' ? BARN_ETH_FLOW_ADDRESSES[chainId] : ETH_FLOW_ADDRESSES[chainId]
 
   return ContractFactory.createEthFlowContract(address, signer)

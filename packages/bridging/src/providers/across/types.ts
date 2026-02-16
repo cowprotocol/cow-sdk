@@ -1,4 +1,4 @@
-import { TargetEvmChainId } from '@cowprotocol/sdk-config'
+import { TargetChainId } from '@cowprotocol/sdk-config'
 
 export interface AvailableRoutesRequest {
   originChainId: string
@@ -20,8 +20,8 @@ export interface SuggestedFeesRequest {
   token: string
   // inputToken: string
   // outputToken: string
-  originChainId: TargetEvmChainId
-  destinationChainId: TargetEvmChainId
+  originChainId: TargetChainId
+  destinationChainId: TargetChainId
 
   /**
    * Amount of the token to transfer.

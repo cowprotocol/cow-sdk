@@ -1,4 +1,4 @@
-import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { getPreSignTransaction } from './getPreSignTransaction'
 import { createAdapters } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
@@ -24,7 +24,7 @@ jest.mock('@cowprotocol/sdk-common', () => {
   }
 })
 
-const chainId = SupportedEvmChainId.GNOSIS_CHAIN
+const chainId = SupportedChainId.GNOSIS_CHAIN
 const orderId =
   '0xd64389693b6cf89ad6c140a113b10df08073e5ef3063d05a02f3f42e1a42f0ad0b7795e18767259cc253a2af471dbc4c72b49516ffffffff'
 

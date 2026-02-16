@@ -2,7 +2,7 @@ import { SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { SignerLike, TTLCache } from '@cowprotocol/sdk-common'
 import { TokenInfo } from '@cowprotocol/sdk-config'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
-import { CowEnv, SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
 import { BridgeQuoteResult, QuoteBridgeRequest, BridgeProvider } from '../types'
 
 export type GetQuoteWithBridgeParams = {
@@ -92,7 +92,7 @@ export interface GetOrderParams {
   /**
    * Id of a network where order was settled
    */
-  chainId: SupportedEvmChainId
+  chainId: SupportedChainId
   /**
    * The unique identifier of the order.
    */

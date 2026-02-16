@@ -21,8 +21,8 @@ import {
   mainnet,
   optimism,
   sepolia,
-  SupportedEvmChainId,
-  TargetEvmChainId,
+  SupportedChainId,
+  TargetChainId,
 } from '@cowprotocol/sdk-config'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { createAdapters } from '../../tests/setup'
@@ -61,7 +61,7 @@ adapterNames.forEach((adapterName) => {
 
       orderBookApi = {
         context: {
-          chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+          chainId: SupportedChainId.GNOSIS_CHAIN,
         },
         getQuote: jest.fn().mockResolvedValue(orderQuoteResponse),
         sendOrder: jest.fn().mockResolvedValue('0x01'),
@@ -170,8 +170,8 @@ adapterNames.forEach((adapterName) => {
         // Mock the provider's getBuyTokens method
         mockProvider.getBuyTokens = jest.fn().mockResolvedValue(mockBuyTokens)
 
-        const params1 = { buyChainId: 137 as TargetEvmChainId }
-        const params2 = { buyChainId: 137 as TargetEvmChainId, sellChainId: SupportedEvmChainId.MAINNET }
+        const params1 = { buyChainId: 137 as TargetChainId }
+        const params2 = { buyChainId: 137 as TargetChainId, sellChainId: SupportedChainId.MAINNET }
 
         // First call with params1
         const result1 = await bridgingSdk.getBuyTokens(params1)
@@ -214,7 +214,7 @@ adapterNames.forEach((adapterName) => {
         ]
         mockProvider.getBuyTokens = jest.fn().mockResolvedValue(mockIntermediateTokens)
 
-        const params = { buyChainId: 137 as TargetEvmChainId, sellChainId: SupportedEvmChainId.MAINNET }
+        const params = { buyChainId: 137 as TargetChainId, sellChainId: SupportedChainId.MAINNET }
 
         // First call
         await shortTtlSdk.getBuyTokens(params)
@@ -251,7 +251,7 @@ adapterNames.forEach((adapterName) => {
         const mockBuyTokens = { tokens: [], isRouteAvailable: false }
         mockProvider.getBuyTokens = jest.fn().mockResolvedValue(mockBuyTokens)
 
-        const params = { buyChainId: 137 as TargetEvmChainId, sellChainId: SupportedEvmChainId.MAINNET }
+        const params = { buyChainId: 137 as TargetChainId, sellChainId: SupportedChainId.MAINNET }
 
         // Multiple calls should all hit the provider
         await noCacheSdk.getBuyTokens(params)
@@ -268,7 +268,7 @@ adapterNames.forEach((adapterName) => {
         mockProvider.getBuyTokens = jest.fn().mockResolvedValue(mockBuyTokens)
 
         // Populate caches
-        await bridgingSdk.getBuyTokens({ buyChainId: 137 as TargetEvmChainId })
+        await bridgingSdk.getBuyTokens({ buyChainId: 137 as TargetChainId })
 
         // Verify cache has entries (exact count may vary in test environment)
         expect(bridgingSdk.getCacheStats().buyTokens).toBeGreaterThanOrEqual(0)
@@ -279,7 +279,7 @@ adapterNames.forEach((adapterName) => {
         expect(bridgingSdk.getCacheStats().buyTokens).toBe(0)
 
         // Next calls should hit provider again (since cache was cleared)
-        await bridgingSdk.getBuyTokens({ buyChainId: 137 as TargetEvmChainId })
+        await bridgingSdk.getBuyTokens({ buyChainId: 137 as TargetChainId })
 
         // The exact number of calls may vary depending on whether cache persistence is working in test environment
         expect(mockProvider.getBuyTokens).toHaveBeenCalledWith({ buyChainId: 137 })
@@ -295,8 +295,8 @@ adapterNames.forEach((adapterName) => {
         mockProvider.getBuyTokens = jest.fn().mockResolvedValue(mockBuyTokens)
 
         // Should cache by default
-        await defaultSdk.getBuyTokens({ buyChainId: 137 as TargetEvmChainId })
-        await defaultSdk.getBuyTokens({ buyChainId: 137 as TargetEvmChainId })
+        await defaultSdk.getBuyTokens({ buyChainId: 137 as TargetChainId })
+        await defaultSdk.getBuyTokens({ buyChainId: 137 as TargetChainId })
 
         expect(mockProvider.getBuyTokens).toHaveBeenCalledTimes(1)
         // Verify cache is working (exact count may vary in test environment)
@@ -324,7 +324,7 @@ adapterNames.forEach((adapterName) => {
         mockProvider.getBuyTokens = jest.fn().mockResolvedValue(mockBuyTokens)
 
         // Add entries to cache
-        await shortTtlSdk.getBuyTokens({ buyChainId: 137 as TargetEvmChainId })
+        await shortTtlSdk.getBuyTokens({ buyChainId: 137 as TargetChainId })
 
         // Verify cache has entries (exact count may vary in test environment)
         expect(shortTtlSdk.getCacheStats().buyTokens).toBeGreaterThanOrEqual(0)
@@ -336,7 +336,7 @@ adapterNames.forEach((adapterName) => {
         shortTtlSdk.cleanupExpiredCache()
 
         // Next call should miss cache and hit provider again +
-        await shortTtlSdk.getBuyTokens({ buyChainId: 137 as TargetEvmChainId })
+        await shortTtlSdk.getBuyTokens({ buyChainId: 137 as TargetChainId })
         expect(mockProvider.getBuyTokens).toHaveBeenCalledTimes(2)
       })
 
@@ -348,12 +348,12 @@ adapterNames.forEach((adapterName) => {
 
         // First SDK instance
         const sdk1 = new BridgingSdk({ providers: [mockProvider] }, adapter)
-        await sdk1.getBuyTokens({ buyChainId: 137 as TargetEvmChainId })
+        await sdk1.getBuyTokens({ buyChainId: 137 as TargetChainId })
         expect(mockProvider.getBuyTokens).toHaveBeenCalledTimes(1)
 
         // Second SDK instance - may or may not use persisted cache depending on test environment
         const sdk2 = new BridgingSdk({ providers: [mockProvider] }, adapter)
-        await sdk2.getBuyTokens({ buyChainId: 137 as TargetEvmChainId })
+        await sdk2.getBuyTokens({ buyChainId: 137 as TargetChainId })
 
         // In test environment, localStorage persistence behavior may vary
         // The important thing is that the cache mechanism is working

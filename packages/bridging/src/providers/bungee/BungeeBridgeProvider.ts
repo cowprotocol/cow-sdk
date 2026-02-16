@@ -37,7 +37,7 @@ import {
   mainnet,
   optimism,
   polygon,
-  SupportedEvmChainId,
+  SupportedChainId,
   TokenInfo,
 } from '@cowprotocol/sdk-config'
 import { CowShedSdk, CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
@@ -176,7 +176,7 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
   }
 
   async getSignedHook(
-    chainId: SupportedEvmChainId,
+    chainId: SupportedChainId,
     unsignedCall: EvmCall,
     bridgeHookNonce: string,
     deadline: bigint,
@@ -280,6 +280,6 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
     const { sellTokenChainId, buyTokenChainId } = request
 
     // Bungee requires extra gas for bridging from Mainnet to Gnosis
-    return sellTokenChainId === SupportedEvmChainId.MAINNET && buyTokenChainId === SupportedEvmChainId.GNOSIS_CHAIN
+    return sellTokenChainId === SupportedChainId.MAINNET && buyTokenChainId === SupportedChainId.GNOSIS_CHAIN
   }
 }

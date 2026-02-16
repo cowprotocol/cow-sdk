@@ -19,7 +19,7 @@ import { adaptToken, adaptTokens, calculateDeadline, getTokenByAddressAndChainId
 
 import type { AbstractProviderAdapter } from '@cowprotocol/sdk-common'
 import { isEvmChain } from '@cowprotocol/sdk-config'
-import type { ChainId, ChainInfo, EvmCall, SupportedEvmChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import type { ChainId, ChainInfo, EvmCall, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import type { CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
 import type { QuoteResponse } from '@defuse-protocol/one-click-sdk-typescript'
 import type { Address, Hex } from 'viem'
@@ -285,7 +285,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     return `https://explorer.near-intents.org/transactions/${bridgingId}`
   }
 
-  async getStatus(bridgingId: string, _originChainId: SupportedEvmChainId): Promise<BridgeStatusResult> {
+  async getStatus(bridgingId: string, _originChainId: SupportedChainId): Promise<BridgeStatusResult> {
     // bridingId must be the deposit address
     try {
       const statusResponse = await this.api.getStatus(bridgingId)

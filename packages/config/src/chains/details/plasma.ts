@@ -1,4 +1,4 @@
-import { ChainInfo, SupportedEvmChainId } from '../types'
+import { ChainInfo, SupportedChainId } from '../types'
 import { nativeCurrencyTemplate, RAW_CHAINS_FILES_PATH } from '../../constants'
 
 const light = `${RAW_CHAINS_FILES_PATH}/images/plasma-logo.svg`
@@ -7,13 +7,13 @@ const dark = light
 // See https://github.com/wevm/viem/blob/main/src/chains/definitions/plasma.ts
 // and https://github.com/ethereum-lists/chains/blob/master/_data/chains/eip155-9745.json
 export const plasma: ChainInfo = {
-  id: SupportedEvmChainId.PLASMA,
+  id: SupportedChainId.PLASMA,
   label: 'Plasma',
   eip155Label: 'Plasma Mainnet',
   logo: { light, dark },
   nativeCurrency: {
     ...nativeCurrencyTemplate,
-    chainId: SupportedEvmChainId.PLASMA,
+    chainId: SupportedChainId.PLASMA,
     name: 'Plasma',
     symbol: 'XPL',
     logoUrl: light,

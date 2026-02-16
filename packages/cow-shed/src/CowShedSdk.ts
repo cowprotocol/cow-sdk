@@ -1,4 +1,4 @@
-import { EvmCall, SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { EvmCall, SupportedChainId } from '@cowprotocol/sdk-config'
 import { CowShedHooks } from './contracts/CoWShedHooks'
 import {
   ContractsEcdsaSigningScheme as EcdsaSigningScheme,
@@ -34,7 +34,7 @@ export interface SignAndEncodeTxArgs {
   /**
    * Chain ID to use for the transaction.
    */
-  chainId: SupportedEvmChainId
+  chainId: SupportedChainId
 
   /**
    * Nonce to use for the transaction. If not provided, the current timestamp will be used.
@@ -81,7 +81,7 @@ export interface CowShedSdkOptions {
 }
 
 export class CowShedSdk {
-  protected hooksCache = new Map<SupportedEvmChainId, CowShedHooks>()
+  protected hooksCache = new Map<SupportedChainId, CowShedHooks>()
 
   constructor(
     adapter?: AbstractProviderAdapter,
@@ -93,7 +93,7 @@ export class CowShedSdk {
     }
   }
 
-  getCowShedAccount(chainId: SupportedEvmChainId, ownerAddress: string): string {
+  getCowShedAccount(chainId: SupportedChainId, ownerAddress: string): string {
     const cowShedHooks = this.getCowShedHooks(chainId, this.factoryOptions)
     return cowShedHooks.proxyOf(ownerAddress)
   }
@@ -159,7 +159,7 @@ export class CowShedSdk {
     }
   }
 
-  protected getCowShedHooks(chainId: SupportedEvmChainId, customOptions?: ICoWShedOptions) {
+  protected getCowShedHooks(chainId: SupportedChainId, customOptions?: ICoWShedOptions) {
     let cowShedHooks = this.hooksCache.get(chainId)
 
     if (cowShedHooks) {

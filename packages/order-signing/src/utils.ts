@@ -21,7 +21,7 @@ import type { SigningResult, SignOrderParams, SignOrderCancellationParams, Unsig
 
 import { EcdsaSigningScheme } from '@cowprotocol/sdk-order-book'
 import { SignOrderCancellationsParams } from './types'
-import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
 
 // For error codes, see:
 // - https://eth.wiki/json-rpc/json-rpc-error-codes-improvement-proposal
@@ -169,13 +169,13 @@ async function _signPayload(
  * Returns the signature for the specified order with the signing scheme encoded
  * into the signature.
  * @param {UnsignedOrder} order The order to sign.
- * @param {SupportedEvmChainId} chainId The chain Id
+ * @param {SupportedChainId} chainId The chain Id
  * @param {Signer} signer The owner for the order used to sign.
  * @return {*} Encoded signature including signing scheme for the order.
  */
 export async function signOrder(
   order: UnsignedOrder,
-  chainId: SupportedEvmChainId,
+  chainId: SupportedChainId,
   signer: Signer,
 ): Promise<SigningResult> {
   return _signPayload({ order, chainId }, _signOrder, signer)
@@ -185,13 +185,13 @@ export async function signOrder(
  * Returns the signature for the Order Cancellation with the signing scheme encoded
  * into the signature.
  * @param {string} orderUid The unique identifier of the order being cancelled.
- * @param {SupportedEvmChainId} chainId The chain Id
+ * @param {SupportedChainId} chainId The chain Id
  * @param {Signer} signer The owner for the order used to sign.
  * @return {*} Encoded signature including signing scheme for the order.
  */
 export async function signOrderCancellation(
   orderUid: string,
-  chainId: SupportedEvmChainId,
+  chainId: SupportedChainId,
   signer: Signer,
 ): Promise<SigningResult> {
   return _signPayload({ orderUid, chainId }, _signOrderCancellation, signer)
@@ -202,13 +202,13 @@ export async function signOrderCancellation(
  * into the signature.
  *
  * @param {string[]} orderUids The unique identifiers of the orders being cancelled.
- * @param {SupportedEvmChainId} chainId The CoW Protocol protocol `chainId` context that's being used.
+ * @param {SupportedChainId} chainId The CoW Protocol protocol `chainId` context that's being used.
  * @param {Signer} signer The owner that had placed the orders used to sign.
  * @returns {*} Encoded signature including signing scheme for the order.
  */
 export async function signOrderCancellations(
   orderUids: string[],
-  chainId: SupportedEvmChainId,
+  chainId: SupportedChainId,
   signer: Signer,
 ): Promise<SigningResult> {
   return _signPayload({ orderUids, chainId }, _signOrderCancellations, signer)
@@ -216,11 +216,11 @@ export async function signOrderCancellations(
 
 /**
  * Returns the TypedDataDomain used for signing for the specified chainId.
- * @param {SupportedEvmChainId} chainId The chain Id
+ * @param {SupportedChainId} chainId The chain Id
  * @return {*} The TypedDataDomain for the specified chainId.
  * @throws {CowError} If the chainId is not supported.
  */
-export function getDomain(chainId: SupportedEvmChainId): TypedDataDomain {
+export function getDomain(chainId: SupportedChainId): TypedDataDomain {
   // Get settlement contract address
   const settlementContract = COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[chainId]
 
@@ -233,12 +233,12 @@ export function getDomain(chainId: SupportedEvmChainId): TypedDataDomain {
 
 /**
  * Generate a deterministic order ID for the specified order.
- * @param {SupportedEvmChainId} chainId The chain Id
+ * @param {SupportedChainId} chainId The chain Id
  * @param {Order} order order to sign
  * @param {Pick<OrderUidParams, 'owner'>} params order unique identifier parameters.
  */
 export async function generateOrderId(
-  chainId: SupportedEvmChainId,
+  chainId: SupportedChainId,
   order: Order,
   params: Pick<OrderUidParams, 'owner'>,
 ): Promise<{ orderId: string; orderDigest: string }> {

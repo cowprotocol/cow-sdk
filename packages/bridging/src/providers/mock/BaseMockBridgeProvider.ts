@@ -14,7 +14,7 @@ import {
   mainnet,
   optimism,
   sepolia,
-  SupportedEvmChainId,
+  SupportedChainId,
   TokenInfo,
 } from '@cowprotocol/sdk-config'
 import { BRIDGING_PARAMS, BUY_TOKENS, INTERMEDIATE_TOKENS, MOCK_CALL, QUOTE, STATUS } from './mockData'
@@ -61,7 +61,7 @@ export abstract class BaseMockBridgeProvider implements BridgeProvider<BridgeQuo
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult }> {
     return {
       params: BRIDGING_PARAMS,
-      status: await this.getStatus(BRIDGING_PARAMS.bridgingId, BRIDGING_PARAMS.sourceChainId as SupportedEvmChainId),
+      status: await this.getStatus(BRIDGING_PARAMS.bridgingId, BRIDGING_PARAMS.sourceChainId as SupportedChainId),
     }
   }
 
@@ -69,7 +69,7 @@ export abstract class BaseMockBridgeProvider implements BridgeProvider<BridgeQuo
     return 'https://www.google.com/search?q=' + bridgingId
   }
 
-  async getStatus(_bridgingId: string, _originChainId: SupportedEvmChainId): Promise<BridgeStatusResult> {
+  async getStatus(_bridgingId: string, _originChainId: SupportedChainId): Promise<BridgeStatusResult> {
     return STATUS
   }
 

@@ -1,11 +1,11 @@
 import { EcdsaSigningScheme, SigningScheme } from '@cowprotocol/sdk-order-book'
-import { mapSupportedNetworks, SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { mapSupportedNetworks, SupportedChainId } from '@cowprotocol/sdk-config'
 
 export const DEFAULT_QUOTE_VALIDITY = 60 * 30 // 30 min
 
 export const DEFAULT_SLIPPAGE_BPS = 50 // 0.5%
 
-export const ETH_FLOW_DEFAULT_SLIPPAGE_BPS: Record<SupportedEvmChainId, number> =
+export const ETH_FLOW_DEFAULT_SLIPPAGE_BPS: Record<SupportedChainId, number> =
   mapSupportedNetworks(DEFAULT_SLIPPAGE_BPS) // 0.5%
 
 export const SIGN_SCHEME_MAP: Record<EcdsaSigningScheme, SigningScheme> = {

@@ -1,7 +1,7 @@
 import { AcrossApi } from './AcrossApi'
 import { DepositStatusRequest, DepositStatusResponse, SuggestedFeesRequest, SuggestedFeesResponse } from './types'
 import { BridgeQuoteErrors } from '../../errors'
-import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 
 // Mock fetch globally
 const mockFetch = jest.fn()
@@ -102,8 +102,8 @@ describe('AcrossApi', () => {
     it('should fetch suggested fees with required parameters', async () => {
       const request: SuggestedFeesRequest = {
         token: '0x0000000000000000000000000000000000000001',
-        originChainId: SupportedEvmChainId.MAINNET,
-        destinationChainId: SupportedEvmChainId.POLYGON,
+        originChainId: SupportedChainId.MAINNET,
+        destinationChainId: SupportedChainId.POLYGON,
         amount: 1000000000000000000n,
       }
 
@@ -119,8 +119,8 @@ describe('AcrossApi', () => {
     it('should include recipient when provided', async () => {
       const request: SuggestedFeesRequest = {
         token: '0x0000000000000000000000000000000000000001',
-        originChainId: SupportedEvmChainId.MAINNET,
-        destinationChainId: SupportedEvmChainId.POLYGON,
+        originChainId: SupportedChainId.MAINNET,
+        destinationChainId: SupportedChainId.POLYGON,
         amount: 1000000000000000000n,
         recipient: '0x9876',
       }
@@ -143,8 +143,8 @@ describe('AcrossApi', () => {
       await expect(
         api.getSuggestedFees({
           token: '0x0000000000000000000000000000000000000001',
-          originChainId: SupportedEvmChainId.MAINNET,
-          destinationChainId: SupportedEvmChainId.POLYGON,
+          originChainId: SupportedChainId.MAINNET,
+          destinationChainId: SupportedChainId.POLYGON,
           amount: 1000000000000000000n,
         }),
       ).rejects.toThrow(BridgeQuoteErrors.API_ERROR)

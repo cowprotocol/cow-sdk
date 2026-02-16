@@ -8,12 +8,12 @@ import { UnsignedOrder } from '@cowprotocol/sdk-order-signing'
 import { DEFAULT_QUOTE_VALIDITY } from './consts'
 import { LimitTradeParameters } from './types'
 import { getPartnerFeeBps } from './utils/getPartnerFeeBps'
-import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { getDefaultSlippageBps } from './utils/slippage'
 import { getOrderDeadlineFromNow } from './utils/order'
 
 interface OrderToSignParams {
-  chainId: SupportedEvmChainId
+  chainId: SupportedChainId
   isEthFlow: boolean
   from: string
   networkCostsAmount?: string

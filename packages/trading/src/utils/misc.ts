@@ -1,7 +1,7 @@
 import { LimitTradeParametersFromQuote, TradeParameters } from '../types'
 import { OrderQuoteResponse, QuoteAmountsAndCosts } from '@cowprotocol/sdk-order-book'
 import { ETH_ADDRESS, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
-import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 
 export function swapParamsToLimitOrderParams(
   params: TradeParameters,
@@ -87,15 +87,15 @@ export function getTradeParametersAfterQuote({
  * ETH-flow orders are special and need to be adjusted
  * 1. Sell token should be the wrapped native currency
  */
-export function adjustEthFlowOrderParams(chainId: SupportedEvmChainId, params: TradeParameters): TradeParameters
+export function adjustEthFlowOrderParams(chainId: SupportedChainId, params: TradeParameters): TradeParameters
 
 export function adjustEthFlowOrderParams(
-  chainId: SupportedEvmChainId,
+  chainId: SupportedChainId,
   params: LimitTradeParametersFromQuote,
 ): LimitTradeParametersFromQuote
 
 export function adjustEthFlowOrderParams(
-  chainId: SupportedEvmChainId,
+  chainId: SupportedChainId,
   params: TradeParameters | LimitTradeParametersFromQuote,
 ): typeof params {
   return {

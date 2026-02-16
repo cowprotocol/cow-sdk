@@ -1,4 +1,4 @@
-import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderQuoteResponse } from '@cowprotocol/sdk-order-book'
 
 import { suggestSlippageBps, SuggestSlippageBps } from './suggestSlippageBps'
@@ -60,7 +60,7 @@ const mockTradeParameters: Pick<TradeParameters, 'sellTokenDecimals' | 'buyToken
 }
 
 const mockTrader: QuoterParameters = {
-  chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+  chainId: SupportedChainId.GNOSIS_CHAIN,
   appCode: '0x007',
   account: '0xfb3c7eb936caa12b5a884d612393969a557d4307',
 }
@@ -107,7 +107,7 @@ describe('suggestSlippageBps', () => {
 
       const result = suggestSlippageBps(params)
 
-      expect(result).toBe(ETH_FLOW_DEFAULT_SLIPPAGE_BPS[SupportedEvmChainId.GNOSIS_CHAIN])
+      expect(result).toBe(ETH_FLOW_DEFAULT_SLIPPAGE_BPS[SupportedChainId.GNOSIS_CHAIN])
     })
 
     it('Should not clamp for non-EthFlow orders when calculated slippage is above 0', () => {

@@ -4,7 +4,7 @@ import { gnosis } from 'viem/chains'
 
 import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
 import { getOrderToSign, LimitTradeParameters, TradingSdk } from '@cowprotocol/sdk-trading'
-import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 
 import { AaveCollateralSwapSdk } from './AaveCollateralSwapSdk'
@@ -18,7 +18,7 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY
 
 describe('AaveFlashLoanIntegration.collateralSwap', () => {
   it.skip('Test AaveFlashLoanSdk collateralSwap on Gnosis Chain with swap', async () => {
-    const chainId = SupportedEvmChainId.GNOSIS_CHAIN
+    const chainId = SupportedChainId.GNOSIS_CHAIN
 
     if (!PRIVATE_KEY) {
       throw new Error('Set PRIVATE_KEY to run this example')
@@ -46,7 +46,7 @@ describe('AaveFlashLoanIntegration.collateralSwap', () => {
     try {
       const result = await flashLoanSdk.collateralSwap(
         {
-          chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+          chainId: SupportedChainId.GNOSIS_CHAIN,
           collateralToken: '0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533', // aGnoWXDAI
           tradeParameters: {
             sellToken: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d', // WXDAI
@@ -70,7 +70,7 @@ describe('AaveFlashLoanIntegration.collateralSwap', () => {
   }, 120_000)
 
   it.skip('Test AaveFlashLoanSdk collateralSwap on Gnosis Chain with limit order', async () => {
-    const chainId = SupportedEvmChainId.GNOSIS_CHAIN
+    const chainId = SupportedChainId.GNOSIS_CHAIN
 
     if (!PRIVATE_KEY) {
       throw new Error('Set PRIVATE_KEY to run this example')

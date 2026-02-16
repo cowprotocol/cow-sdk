@@ -16,12 +16,12 @@ import { createAdapters } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 import { TradingAppDataInfo, LimitOrderParameters } from './types'
-import { SupportedEvmChainId } from '@cowprotocol/sdk-config'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderBookApi, OrderKind } from '@cowprotocol/sdk-order-book'
 import { postLimitOrder } from './postLimitOrder'
 
 const defaultOrderParams: Omit<LimitOrderParameters, 'signer'> = {
-  chainId: SupportedEvmChainId.GNOSIS_CHAIN,
+  chainId: SupportedChainId.GNOSIS_CHAIN,
   appCode: '0x007',
   sellToken: '0xaaa',
   sellTokenDecimals: 18,
