@@ -1,5 +1,5 @@
-import { OrderParameters, OrderKind, SigningScheme, BuyTokenDestination, SellTokenSource } from './generated'
-import { getQuoteAmountsAndCosts } from './quoteAmountsAndCostsUtils'
+import { OrderParameters, OrderKind, SigningScheme, BuyTokenDestination, SellTokenSource } from '../generated'
+import { getQuoteAmountsAndCosts } from './getQuoteAmountsAndCosts'
 
 const otherFields = {
   buyToken: '0xdef1ca1fb7fbcdc777520aa7f396b4e015f497ab',
