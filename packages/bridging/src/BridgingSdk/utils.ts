@@ -14,7 +14,6 @@ import { OrderBookApiError } from '@cowprotocol/sdk-order-book'
  * Validates that the request is for cross-chain bridging
  */
 export function validateCrossChainRequest(sellTokenChainId: SupportedChainId, buyTokenChainId: TargetChainId): void {
-
   if (sellTokenChainId === buyTokenChainId) {
     throw new BridgeProviderError(
       'getMultiQuotes() and getBestQuote() are only for cross-chain bridging. For single-chain swaps, use getQuote() instead.',

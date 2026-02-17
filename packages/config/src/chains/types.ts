@@ -50,12 +50,10 @@ export const SupportedChainId = {
  *
  * A supported chain, is a chain where CoW Protocol is deployed, so you can sell tokens from there.
  *
- * @enum
  */
 export type SupportedChainId = (typeof SupportedChainId)[keyof typeof SupportedChainId]
 
 /**
- * Object for enum-like access to additional target chain IDs.
  * Chains where you can buy tokens using the bridge functionality. This enum contains chains that are not already included in the SupportedEvmChainId enum.
  */
 export const AdditionalTargetChainId = {
@@ -69,12 +67,12 @@ export const AdditionalTargetChainId = {
 export type AdditionalTargetChainId = (typeof AdditionalTargetChainId)[keyof typeof AdditionalTargetChainId]
 
 /**
- *
+ * This enum contains all the supported chains and some additional ones supported by the different bridges.
  */
 export type TargetChainId = SupportedChainId | AdditionalTargetChainId
 /**
  * The chain id of the chain.
- * Can be a number for EVM chains or a string for non-EVM chains (e.g., Bitcoin, Solana).
+ * Can be a number for EVM chains or a string for non-EVM chains (e.g., Bitcoin, Solana) in future.
  */
 export type ChainId = number
 
