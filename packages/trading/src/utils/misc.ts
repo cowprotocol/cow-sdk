@@ -69,6 +69,7 @@ export function mapQuoteAmountsAndCosts<T, R>(
     afterNetworkCosts: serializeAmounts(value.afterNetworkCosts),
     afterPartnerFees: serializeAmounts(value.afterPartnerFees),
     afterSlippage: serializeAmounts(value.afterSlippage),
+    amountsToSign: serializeAmounts(value.amountsToSign),
   }
 }
 

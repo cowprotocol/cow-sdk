@@ -82,6 +82,25 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
     slippagePercentBps,
   })
 
+  /**
+   * For SELL order:
+   *  - sellAmount is before all the fees, because settlement contract will subtract network costs from it
+   *  - buyAmount is after slippage (and all the fees), because it's the minimum amount we expect to receive
+   *
+   * For BUY order:
+   *  - sellAmount is after slippage (and all the fees), because we increase the amount to cover the fees and potential slippage
+   *  - buyAmount is before all the fees, because this is what we expect to receive exactly
+   */
+  const amountsToSign = isSell
+    ? {
+        sellAmount: beforeAllFees.sellAmount,
+        buyAmount: afterSlippage.buyAmount,
+      }
+    : {
+        sellAmount: afterSlippage.sellAmount,
+        buyAmount: beforeAllFees.buyAmount,
+      }
+
   return {
     isSell,
     costs: {
@@ -104,5 +123,6 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
     afterNetworkCosts,
     afterPartnerFees,
     afterSlippage,
+    amountsToSign,
   }
 }

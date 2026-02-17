@@ -97,4 +97,9 @@ export interface QuoteAmountsAndCosts<T = bigint> {
    * event of the buy token appreciating.
    */
   afterSlippage: Amounts<T>
+
+  /**
+   * Amounts that supposed to be signed as part of order
+   */
+  amountsToSign: Amounts<T>
 }
