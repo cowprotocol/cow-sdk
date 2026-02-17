@@ -43,6 +43,8 @@ export function mapQuoteAmountsAndCosts<T, R>(
     }
   }
 
+  const beforeNetworkCosts = serializeAmounts(value.beforeNetworkCosts)
+
   return {
     ...value,
     costs: {
@@ -62,7 +64,8 @@ export function mapQuoteAmountsAndCosts<T, R>(
       },
     },
     beforeAllFees: serializeAmounts(value.beforeAllFees),
-    beforeNetworkCosts: serializeAmounts(value.beforeNetworkCosts),
+    beforeNetworkCosts,
+    afterProtocolFees: beforeNetworkCosts,
     afterNetworkCosts: serializeAmounts(value.afterNetworkCosts),
     afterPartnerFees: serializeAmounts(value.afterPartnerFees),
     afterSlippage: serializeAmounts(value.afterSlippage),
