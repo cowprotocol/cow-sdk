@@ -1,4 +1,4 @@
-import { isEvmChain, isSupportedChain, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { isEvmChain, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import { Address, areAddressesEqual, isNativeToken, isWrappedNativeToken } from '@cowprotocol/sdk-common'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../errors'
 import { isStablecoinPriorityToken, isCorrelatedToken } from './tokenPriority'
@@ -65,7 +65,7 @@ export async function determineIntermediateToken(
         return { token, priority: TokenPriority.HIGHEST }
       }
     }
-    if (isEvmChain(token.chainId) && isSupportedChain(token.chainId) && isStablecoinPriorityToken(token.chainId, token.address)) {
+    if (isEvmChain(token.chainId) && isStablecoinPriorityToken(token.chainId, token.address)) {
       return { token, priority: TokenPriority.HIGH }
     }
     if (isCorrelatedToken(token.address, correlatedTokens)) {
