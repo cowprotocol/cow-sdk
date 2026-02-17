@@ -168,4 +168,10 @@ export interface ChainInfo {
    * related services running, contracts deployed, etc).
    */
   readonly isUnderDevelopment?: boolean
+
+  /**
+   * Whether the chain is deprecated (no new trading).
+   * The chain remains in the SDK regardless for history and Explorer.
+   */
+  readonly isDeprecated?: boolean
 }
