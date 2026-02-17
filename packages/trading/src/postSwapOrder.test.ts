@@ -86,8 +86,9 @@ describe('postSwapOrder', () => {
       const call = orderBookApi.sendOrder.mock.calls[0][0]
 
       expect(orderId).toEqual('0x01')
-      // For SELL orders, sellAmount is the API's raw sellAmount (network costs are not added back)
-      expect(call.sellAmount).toBe('98646335338956442')
+      // quoteResponseMock.sellAmount + quoteResponseMock.feeAmount
+      // 98646335338956442 + 1353664661043558 = 100000000000000000
+      expect(call.sellAmount).toBe('100000000000000000')
       // quoteResponseMock.buyAmount - 0.5%
       // BigInt('30000000000000000000') - ((BigInt('30000000000000000000') * BigInt(50)) / 10000n) = 29850000000000000000
       expect(call.buyAmount).toBe('29850000000000000000')
