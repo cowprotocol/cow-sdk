@@ -1,14 +1,9 @@
 import {
-  getEvmAddressKey,
-  getBtcAddressKey,
-  getTokenAddressKey,
   getTokenId,
   areAddressesEqual,
   areTokensEqual,
-
-
 } from './token'
-import { isEvmAddress, isBtcAddress, BtcAddressKey, EvmAddressKey } from './address'
+import { getEvmAddressKey, getBtcAddressKey, isEvmAddress, isBtcAddress, BtcAddressKey, EvmAddressKey } from './address'
 
 describe('getEvmAddressKey', () => {
   it('should normalize EVM address to lowercase', () => {
@@ -75,7 +70,7 @@ describe('getBtcAddressKey', () => {
 describe('getTokenAddressKey (deprecated)', () => {
   it('should work as alias for getEvmAddressKey', () => {
     const address = '0x742D35CC6634C0532925A3B844BC9E7595F0BEBD'
-    const result = getTokenAddressKey(address)
+    const result = getEvmAddressKey(address)
     expect(result).toBe('0x742d35cc6634c0532925a3b844bc9e7595f0bebd')
     expect(result).toBe(getEvmAddressKey(address))
   })

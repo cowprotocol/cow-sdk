@@ -56,3 +56,27 @@ export function isBtcAddress(address: string | null | undefined): address is Btc
 
   return false
 }
+
+/**
+ * Gets an EVM address key for a given address.
+ * Normalizes the address to lowercase with 0x prefix.
+ */
+export function getEvmAddressKey(address: string): EvmAddressKey {
+  return `${address.toLowerCase()}` as EvmAddressKey
+}
+
+/**
+ * Gets a Bitcoin address key for a given address.
+ * Returns the address as-is (Bitcoin addresses are case-sensitive).
+ */
+export function getBtcAddressKey(address: string): BtcAddressKey {
+  return address
+}
+
+/**
+ * Gets an address key for a given address.
+ * Returns the address key based on the address type.
+ */
+export function getAddressKey(address: string): AddressKey {
+  return isEvmAddress(address) ? getEvmAddressKey(address) : getBtcAddressKey(address)
+}
