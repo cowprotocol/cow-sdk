@@ -19,10 +19,10 @@ export const bitcoin: ChainInfo = {
   },
   addressPrefix: 'btc',
   isTestnet: false,
-  contracts: {}, // think how to replace it
+  contracts: {},
   rpcUrls: {
     default: {
-      http: [], // think how to replace it
+      http: [],
     },
   },
   color: '#f7931a',
