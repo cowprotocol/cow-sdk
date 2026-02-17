@@ -9,9 +9,11 @@ export interface QuoteParameters {
   protocolFeeBps: number | undefined
 }
 
-export interface QuoteAmountsAndCostsParams extends QuoteParameters {
-  slippagePercentBps: number
+export interface QuoteAmountsAndCostsParams {
+  orderParams: OrderParameters
+  protocolFeeBps: number | undefined
   partnerFeeBps: number | undefined
+  slippagePercentBps: number
 }
 
 export interface QuotePriceParams {

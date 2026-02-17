@@ -2,33 +2,21 @@ import { getProtocolFeeAmount } from './getProtocolFeeAmount'
 import { OrderKind } from '../generated'
 import { QuoteAmountsAndCostsParams } from './quoteAmountsAndCosts.types'
 import { QuoteAmountsAndCosts } from '../types'
-import { getQuoteAmountsWithNetworkCosts } from './getQuoteAmountsWithNetworkCosts'
 import { getQuoteAmountsAfterPartnerFee } from './getQuoteAmountsAfterPartnerFee'
 import { getQuoteAmountsAfterSlippage } from './getQuoteAmountsAfterSlippage'
 
 export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): QuoteAmountsAndCosts {
-  const { orderParams, sellDecimals, buyDecimals, slippagePercentBps } = params
+  const { orderParams, slippagePercentBps } = params
   const partnerFeeBps = params.partnerFeeBps ?? 0
   const protocolFeeBps = params.protocolFeeBps ?? 0
   const isSell = orderParams.kind === OrderKind.SELL
 
+  const sellAmount = BigInt(orderParams.sellAmount)
+  const buyAmount = BigInt(orderParams.buyAmount)
+  const networkCostAmount = BigInt(orderParams.feeAmount)
+
   // for market orders: reconstruct protocolFee from quote amounts that already have it deducted
   const protocolFeeAmount = getProtocolFeeAmount({
-    orderParams,
-    protocolFeeBps,
-  })
-
-  // Get amounts from quote (for market orders, these already include protocolFee deducted)
-  const {
-    networkCostAmount,
-    sellAmountBeforeNetworkCosts,
-    buyAmountAfterNetworkCosts,
-    sellAmountAfterNetworkCosts,
-    buyAmountBeforeNetworkCosts,
-    quotePriceParams,
-  } = getQuoteAmountsWithNetworkCosts({
-    sellDecimals,
-    buyDecimals,
     orderParams,
     protocolFeeBps,
   })
@@ -37,16 +25,13 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
    * Adding protocolFeeAmount back because API returns amounts baked with the protocol fee
    */
   const beforeAllFees = isSell
-    ? /**
-       * Protocol fee is always applied to the surplus token
-       */
-      {
-        sellAmount: sellAmountBeforeNetworkCosts,
-        buyAmount: buyAmountBeforeNetworkCosts + protocolFeeAmount,
+    ? {
+        sellAmount: sellAmount + networkCostAmount,
+        buyAmount: buyAmount + protocolFeeAmount,
       }
     : {
-        sellAmount: sellAmountBeforeNetworkCosts - protocolFeeAmount,
-        buyAmount: buyAmountBeforeNetworkCosts,
+        sellAmount: sellAmount - networkCostAmount - protocolFeeAmount,
+        buyAmount: buyAmount,
       }
 
   /**
@@ -54,17 +39,17 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
    */
   const afterProtocolFees = isSell
     ? {
-        sellAmount: sellAmountBeforeNetworkCosts,
-        buyAmount: buyAmountBeforeNetworkCosts,
+        sellAmount: sellAmount + networkCostAmount,
+        buyAmount: buyAmount,
       }
     : {
-        sellAmount: sellAmountBeforeNetworkCosts,
-        buyAmount: buyAmountBeforeNetworkCosts,
+        sellAmount: sellAmount - networkCostAmount,
+        buyAmount: buyAmount,
       }
 
   const afterNetworkCosts = {
-    sellAmount: sellAmountAfterNetworkCosts,
-    buyAmount: buyAmountAfterNetworkCosts,
+    sellAmount: sellAmount,
+    buyAmount: buyAmount,
   }
 
   // get amounts including partner fees
@@ -106,7 +91,7 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
     costs: {
       networkFee: {
         amountInSellCurrency: networkCostAmount,
-        amountInBuyCurrency: (quotePriceParams.numerator * networkCostAmount) / quotePriceParams.denominator,
+        amountInBuyCurrency: (buyAmount * networkCostAmount) / sellAmount,
       },
       partnerFee: {
         amount: partnerFeeAmount,

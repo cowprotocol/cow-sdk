@@ -14,9 +14,6 @@ const otherFields = {
   appDataHash: '0x0',
 }
 
-const sellDecimals = 18
-const buyDecimals = 6
-
 /**
  * The API returns amounts with network costs already baked in:
  * - sellAmount is the amount after network costs
@@ -52,8 +49,6 @@ describe('Calculation of before/after fees amounts', () => {
       it('afterNetworkCosts.sellAmount should equal the API sellAmount', () => {
         const result = getQuoteAmountsAndCosts({
           orderParams,
-          sellDecimals,
-          buyDecimals,
           slippagePercentBps: 0,
           partnerFeeBps: undefined,
           protocolFeeBps: undefined,
@@ -65,8 +60,6 @@ describe('Calculation of before/after fees amounts', () => {
       it('beforeNetworkCosts.sellAmount should be sellAmount + feeAmount for SELL orders', () => {
         const result = getQuoteAmountsAndCosts({
           orderParams,
-          sellDecimals,
-          buyDecimals,
           slippagePercentBps: 0,
           partnerFeeBps: undefined,
           protocolFeeBps: undefined,
@@ -84,8 +77,6 @@ describe('Calculation of before/after fees amounts', () => {
       it('afterNetworkCosts.sellAmount should equal the API sellAmount', () => {
         const result = getQuoteAmountsAndCosts({
           orderParams,
-          sellDecimals,
-          buyDecimals,
           slippagePercentBps: 0,
           partnerFeeBps: undefined,
           protocolFeeBps: undefined,
@@ -97,8 +88,6 @@ describe('Calculation of before/after fees amounts', () => {
       it('beforeNetworkCosts.sellAmount should be sellAmount - feeAmount for BUY orders', () => {
         const result = getQuoteAmountsAndCosts({
           orderParams,
-          sellDecimals,
-          buyDecimals,
           slippagePercentBps: 0,
           partnerFeeBps: undefined,
           protocolFeeBps: undefined,
@@ -116,8 +105,6 @@ describe('Calculation of before/after fees amounts', () => {
       it('buyAmount should not change with network costs (network costs only apply to sell)', () => {
         const result = getQuoteAmountsAndCosts({
           orderParams,
-          sellDecimals,
-          buyDecimals,
           slippagePercentBps: 0,
           partnerFeeBps: undefined,
           protocolFeeBps: undefined,
@@ -136,8 +123,6 @@ describe('Calculation of before/after fees amounts', () => {
         const orderParams = SELL_ORDER
         const result = getQuoteAmountsAndCosts({
           orderParams,
-          sellDecimals,
-          buyDecimals,
           partnerFeeBps,
           slippagePercentBps: 0,
           protocolFeeBps: undefined,
@@ -156,8 +141,6 @@ describe('Calculation of before/after fees amounts', () => {
         const orderParams = BUY_ORDER
         const result = getQuoteAmountsAndCosts({
           orderParams,
-          sellDecimals,
-          buyDecimals,
           partnerFeeBps,
           slippagePercentBps: 0,
           protocolFeeBps: undefined,
@@ -180,8 +163,6 @@ describe('Calculation of before/after fees amounts', () => {
         const orderParams = SELL_ORDER
         const result = getQuoteAmountsAndCosts({
           orderParams,
-          sellDecimals,
-          buyDecimals,
           partnerFeeBps: undefined,
           slippagePercentBps,
           protocolFeeBps: undefined,
@@ -199,8 +180,6 @@ describe('Calculation of before/after fees amounts', () => {
         const orderParams = BUY_ORDER
         const result = getQuoteAmountsAndCosts({
           orderParams,
-          sellDecimals,
-          buyDecimals,
           partnerFeeBps: undefined,
           slippagePercentBps,
           protocolFeeBps: undefined,
@@ -222,8 +201,6 @@ describe('Calculation of before/after fees amounts', () => {
         const orderParams = SELL_ORDER
         const result = getQuoteAmountsAndCosts({
           orderParams,
-          sellDecimals,
-          buyDecimals,
           slippagePercentBps: 0,
           partnerFeeBps: undefined,
           protocolFeeBps,
@@ -245,8 +222,6 @@ describe('Calculation of before/after fees amounts', () => {
 
         const result = getQuoteAmountsAndCosts({
           orderParams,
-          sellDecimals,
-          buyDecimals,
           slippagePercentBps: 0,
           partnerFeeBps,
           protocolFeeBps,
@@ -274,8 +249,6 @@ describe('Calculation of before/after fees amounts', () => {
 
         const result = getQuoteAmountsAndCosts({
           orderParams,
-          sellDecimals,
-          buyDecimals,
           slippagePercentBps: 0,
           partnerFeeBps: undefined,
           protocolFeeBps,
@@ -293,8 +266,6 @@ describe('Calculation of before/after fees amounts', () => {
 
         const result = getQuoteAmountsAndCosts({
           orderParams,
-          sellDecimals,
-          buyDecimals,
           slippagePercentBps: 0,
           partnerFeeBps: undefined,
           protocolFeeBps,
@@ -321,8 +292,6 @@ describe('Calculation of before/after fees amounts', () => {
         const orderParams = BUY_ORDER
         const result = getQuoteAmountsAndCosts({
           orderParams,
-          sellDecimals,
-          buyDecimals,
           slippagePercentBps: 0,
           partnerFeeBps: undefined,
           protocolFeeBps,
@@ -352,8 +321,6 @@ describe('Calculation of before/after fees amounts', () => {
 
         const result = getQuoteAmountsAndCosts({
           orderParams,
-          sellDecimals,
-          buyDecimals,
           slippagePercentBps: 0,
           partnerFeeBps,
           protocolFeeBps,
@@ -383,8 +350,6 @@ describe('Calculation of before/after fees amounts', () => {
 
         const result = getQuoteAmountsAndCosts({
           orderParams,
-          sellDecimals,
-          buyDecimals,
           slippagePercentBps: 0,
           partnerFeeBps: undefined,
           protocolFeeBps,
@@ -403,8 +368,6 @@ describe('Calculation of before/after fees amounts', () => {
       const orderParams = BUY_ORDER
       const result = getQuoteAmountsAndCosts({
         orderParams,
-        sellDecimals,
-        buyDecimals,
         slippagePercentBps: 0,
         partnerFeeBps: undefined,
         protocolFeeBps,

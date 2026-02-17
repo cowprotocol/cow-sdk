@@ -37,9 +37,7 @@ export function getOrderToSign(
     sellAmount,
     buyAmount,
     sellToken,
-    sellTokenDecimals,
     buyToken,
-    buyTokenDecimals,
     kind,
     partiallyFillable = false,
     slippageBps = getDefaultSlippageBps(chainId, isEthFlow),
@@ -72,8 +70,6 @@ export function getOrderToSign(
       slippagePercentBps: slippageBps,
       partnerFeeBps: getPartnerFeeBps(partnerFee),
       protocolFeeBps,
-      sellDecimals: sellTokenDecimals,
-      buyDecimals: buyTokenDecimals,
     })
     sellAmountToUse = isSell ? beforeAllFees.sellAmount.toString() : afterSlippage.sellAmount.toString()
     buyAmountToUse = isSell ? afterSlippage.buyAmount.toString() : beforeAllFees.buyAmount.toString()
