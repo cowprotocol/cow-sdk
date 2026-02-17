@@ -18,13 +18,6 @@ const BTC_LEGACY_ADDRESS_PATTERN = /^[13][a-km-zA-HJ-NP-Z1-9]{24,33}$/
  */
 const BTC_BECH32_MAINNET_PATTERN = /^(bc1[a-z0-9]{39,59}|BC1[A-Z0-9]{39,59})$/
 
-/**
- * Pattern for validating Bitcoin Bech32 testnet addresses (P2WPKH/P2WSH).
- * Per BIP-173, addresses must be either entirely uppercase or entirely lowercase (never mixed case).
- * Matches addresses that start with tb1 (lowercase) or TB1 (uppercase), followed by 39-59 alphanumeric characters.
- */
-const BTC_BECH32_TESTNET_PATTERN = /^(tb1[a-z0-9]{39,59}|TB1[A-Z0-9]{39,59})$/
-
 export type EvmAddressKey = `0x${string}`
 export type BtcAddressKey = string
 export type AddressKey = EvmAddressKey | BtcAddressKey
@@ -58,10 +51,6 @@ export function isBtcAddress(address: string | null | undefined): address is Btc
   }
 
   if (BTC_BECH32_MAINNET_PATTERN.test(address)) {
-    return true
-  }
-
-  if (BTC_BECH32_TESTNET_PATTERN.test(address)) {
     return true
   }
 
