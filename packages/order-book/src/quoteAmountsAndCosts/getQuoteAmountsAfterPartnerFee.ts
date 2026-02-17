@@ -1,39 +1,36 @@
 import { ONE_HUNDRED_BPS } from './quoteAmountsAndCosts.const'
 import { OrderAmountsBig } from './quoteAmountsAndCosts.types'
+import { Amounts } from '../types'
 
 export function getQuoteAmountsAfterPartnerFee(params: {
-  sellAmountAfterNetworkCosts: bigint
-  buyAmountAfterNetworkCosts: bigint
-  buyAmountBeforeProtocolFee: bigint
-  sellAmountBeforeProtocolFee: bigint
+  afterNetworkCosts: Amounts<bigint>
+  beforeAllFees: Amounts<bigint>
   isSell: boolean
   partnerFeeBps: number
 }): {
   partnerFeeAmount: bigint
   afterPartnerFees: OrderAmountsBig
 } {
-  const {
-    sellAmountAfterNetworkCosts,
-    buyAmountAfterNetworkCosts,
-    buyAmountBeforeProtocolFee,
-    sellAmountBeforeProtocolFee,
-    isSell,
-    partnerFeeBps,
-  } = params
+  const { afterNetworkCosts, beforeAllFees, isSell, partnerFeeBps } = params
 
-  const surplusAmountForPartnerFee = isSell ? buyAmountBeforeProtocolFee : sellAmountBeforeProtocolFee
+  /**
+   * Important! Partner fee is calculated relatively to the spot price, which has amounts before all fees
+   */
+  const surplusAmountForPartnerFee = isSell ? beforeAllFees.buyAmount : beforeAllFees.sellAmount
   const partnerFeeAmount =
     partnerFeeBps > 0 ? (surplusAmountForPartnerFee * BigInt(partnerFeeBps)) / ONE_HUNDRED_BPS : BigInt(0)
 
-  // calculate amounts after partner fees
+  /**
+   * Partner fee applies only to the surplus token
+   */
   const afterPartnerFees = isSell
     ? {
-        sellAmount: sellAmountAfterNetworkCosts,
-        buyAmount: buyAmountAfterNetworkCosts - partnerFeeAmount,
+        sellAmount: afterNetworkCosts.sellAmount,
+        buyAmount: afterNetworkCosts.buyAmount - partnerFeeAmount,
       }
     : {
-        sellAmount: sellAmountAfterNetworkCosts + partnerFeeAmount,
-        buyAmount: buyAmountAfterNetworkCosts,
+        sellAmount: afterNetworkCosts.sellAmount + partnerFeeAmount,
+        buyAmount: afterNetworkCosts.buyAmount,
       }
 
   return {
