@@ -28,19 +28,24 @@ export interface Costs<T> {
 }
 
 /**
- * The most important thing with the quote amounts is the order of applying fees and costs:
- * 1. Protocol fee
- * 2. Network costs
- * 3. Partner fee
- * 4. Slippage
+ * Details about costs and amounts, costs and fees of a quote.
  *
- * This order implies another important thing, what is "before" and "after"?
- * For SELL orders:
- *  - original spot price SELL AMOUNT is the highest value which reduces after adding network costs
- *  - original spot price BUY AMOUNT is the highest value which reduces after adding all the fees
- * For BUY orders:
- *  - original spot price SELL AMOUNT is the lowest value which increases after adding network costs and fees
- *  - original spot price BUY AMOUNT is constant, it doesn't change
+ * CoW Protocol quote has amounts (sell/buy), network fee, and protocol fee.
+ * On the client side (after /quote response) we add partner fee and slippage.
+ * CoW Protocol supports both sell and buy orders and the fees and costs are calculated differently.
+ *
+ * The order of adding fees and costs is as follows:
+ * 1. Protocol fee is already baked into the quoted amounts:
+ *    - for SELL orders it has been deducted from the buy amount
+ *    - for BUY orders it has been added on top of the sell amount
+ * 2. Network fee:
+ *    - for SELL orders it has been deducted from the sell amount
+ *    - for BUY orders it's not added to any amount, and provided separately as `feeAmount`
+ * 3. Partner fee is added to the surplus amount (sell amount for sell-orders, buy amount for buy-orders)
+ * 4. Slippage is added to the surplus amount (sell amount for sell-orders, buy amount for buy-orders)
+ *
+ * For sell-orders the partner fee and slippage are subtracted from the buy amount after network costs.
+ * For buy-orders the partner fee and slippage are added on top of the sell amount after network costs.
  */
 export interface QuoteAmountsAndCosts<T = bigint> {
   /**
