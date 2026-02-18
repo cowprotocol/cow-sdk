@@ -59,6 +59,14 @@ export const AdditionalTargetChainId = {
   BITCOIN: NonEvmChains.BITCOIN,
 } as const
 
+// This type is needed to make all chains that are defined in SupportedChainId and AdditionalTargetChainId
+// will be required in ALL_CHAINS_SET
+type AllChainsSetType = {
+  [K in keyof typeof SupportedChainId]: (typeof SupportedChainId)[K]
+} & {
+  [K in keyof typeof AdditionalTargetChainId]: (typeof AdditionalTargetChainId)[K]
+}
+
 /**
  * All chains map (enum like) supported by CoW Protocol or available for bridging.
  */
@@ -77,7 +85,7 @@ export const ALL_CHAINS_SET = {
   SEPOLIA: SupportedChainId.SEPOLIA,
   OPTIMISM: AdditionalTargetChainId.OPTIMISM,
   BITCOIN: AdditionalTargetChainId.BITCOIN,
-} as const
+} as const satisfies AllChainsSetType
 
 /**
  * Chains where you can buy tokens using the bridge functionality. This enum contains chains that are not already included in the SupportedEvmChainId enum.
