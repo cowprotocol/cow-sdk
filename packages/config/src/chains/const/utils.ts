@@ -31,7 +31,7 @@ export function mapSupportedNetworks<T, ChainIds extends TargetChainId[] | undef
       {},
     ) as MapNetworksReturnType<T, ChainIds>
   } else {
-    return ALL_ADDITIONAL_TARGET_CHAIN_IDS.reduce<Record<number | string, T>>(
+    return ALL_ADDITIONAL_TARGET_CHAIN_IDS.reduce<Record<number, T>>(
       (acc, chainId) => ({
         ...acc,
         [chainId]: typeof value === 'function' ? (value as (chainId: AdditionalTargetChainId) => T)(chainId) : value,
