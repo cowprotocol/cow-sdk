@@ -19,7 +19,7 @@ export function mapAllNetworks<T>(value: T | ((chainId: TargetChainId) => T)): R
   return ALL_CHAINS_IDS.reduce<Record<number, T>>(
     (acc, chainId) => ({
       ...acc,
-      [chainId]: typeof value === 'function' ? (value as (chainId: SupportedChainId) => T)(chainId) : value,
+      [chainId]: typeof value === 'function' ? (value as (chainId: TargetChainId) => T)(chainId) : value,
     }),
     {},
   )
