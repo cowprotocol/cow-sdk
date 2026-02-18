@@ -74,7 +74,7 @@ describe('Calculation of before/after fees amounts', () => {
     describe('buy order', () => {
       const orderParams = BUY_ORDER
 
-      it('afterNetworkCosts.sellAmount should equal the API sellAmount', () => {
+      it('afterNetworkCosts.sellAmount should equal sellAmount + feeAmount', () => {
         const result = getQuoteAmountsAndCosts({
           orderParams,
           slippagePercentBps: 0,
@@ -82,10 +82,10 @@ describe('Calculation of before/after fees amounts', () => {
           protocolFeeBps: undefined,
         })
 
-        expect(result.afterNetworkCosts.sellAmount).toBe(BigInt(orderParams.sellAmount))
+        expect(result.afterNetworkCosts.sellAmount).toBe(BigInt(orderParams.sellAmount) + BigInt(orderParams.feeAmount))
       })
 
-      it('beforeNetworkCosts.sellAmount should be sellAmount - feeAmount for BUY orders', () => {
+      it('beforeNetworkCosts.sellAmount should be sellAmount for BUY orders', () => {
         const result = getQuoteAmountsAndCosts({
           orderParams,
           slippagePercentBps: 0,
@@ -93,9 +93,7 @@ describe('Calculation of before/after fees amounts', () => {
           protocolFeeBps: undefined,
         })
 
-        expect(result.beforeNetworkCosts.sellAmount).toBe(
-          BigInt(orderParams.sellAmount) - BigInt(orderParams.feeAmount),
-        )
+        expect(result.beforeNetworkCosts.sellAmount).toBe(BigInt(orderParams.sellAmount))
       })
     })
 
@@ -128,7 +126,7 @@ describe('Calculation of before/after fees amounts', () => {
           protocolFeeBps: undefined,
         })
 
-        // No protocol fee: partner fee is based on beforeAllFees.buyAmount
+        // No protocol fee: beforeAllFees.buyAmount = buyAmount + 0 = buyAmount
         const buyAmount = BigInt(orderParams.buyAmount)
         const expectedPartnerFeeAmount = (buyAmount * BigInt(partnerFeeBps)) / 10_000n
 
@@ -146,9 +144,9 @@ describe('Calculation of before/after fees amounts', () => {
           protocolFeeBps: undefined,
         })
 
-        // No protocol fee: partner fee is based on beforeAllFees.sellAmount
-        const sellBeforeNetworkCosts = BigInt(orderParams.sellAmount) - BigInt(orderParams.feeAmount)
-        const expectedPartnerFeeAmount = (sellBeforeNetworkCosts * BigInt(partnerFeeBps)) / 10_000n
+        // No protocol fee: beforeAllFees.sellAmount = sellAmount - 0 = sellAmount
+        const sellAmount = BigInt(orderParams.sellAmount)
+        const expectedPartnerFeeAmount = (sellAmount * BigInt(partnerFeeBps)) / 10_000n
 
         expect(result.costs.partnerFee.amount).toBe(expectedPartnerFeeAmount)
       })
@@ -185,7 +183,8 @@ describe('Calculation of before/after fees amounts', () => {
           protocolFeeBps: undefined,
         })
 
-        const sellAmountAfterNetworkCosts = BigInt(orderParams.sellAmount)
+        // afterNetworkCosts.sellAmount = sellAmount + networkCostAmount
+        const sellAmountAfterNetworkCosts = BigInt(orderParams.sellAmount) + BigInt(orderParams.feeAmount)
         const slippageAmount = (sellAmountAfterNetworkCosts * BigInt(slippagePercentBps)) / 10_000n
 
         expect(result.afterSlippage.sellAmount).toBe(sellAmountAfterNetworkCosts + slippageAmount)
@@ -210,10 +209,10 @@ describe('Calculation of before/after fees amounts', () => {
         const bps = BigInt(protocolFeeBps)
         const denominator = 10_000n - bps
         const expectedProtocolFeeAmount = (buyAfter * bps) / denominator
-        const expectedBuyBeforeProtocol = buyAfter + expectedProtocolFeeAmount
 
         expect(result.costs.protocolFee.amount).toBe(expectedProtocolFeeAmount)
-        expect(result.beforeNetworkCosts.buyAmount).toBe(expectedBuyBeforeProtocol)
+        // beforeNetworkCosts.buyAmount for SELL = afterProtocolFees.buyAmount = buyAmount (raw API value)
+        expect(result.beforeNetworkCosts.buyAmount).toBe(buyAfter)
       })
 
       it('calculates partner fee on top of amounts before protocol fee', () => {
@@ -231,17 +230,16 @@ describe('Calculation of before/after fees amounts', () => {
         const protocolBps = BigInt(protocolFeeBps)
         const protocolDenominator = 10_000n - protocolBps
         const expectedProtocolFeeAmount = (buyAfter * protocolBps) / protocolDenominator
-        const buyBeforeProtocol = buyAfter + expectedProtocolFeeAmount
 
-        // Partner fee is based on beforeAllFees.buyAmount = buyBeforeProtocol + protocolFeeAmount
-        const buyBeforeAllFees = buyBeforeProtocol + expectedProtocolFeeAmount
+        // Partner fee is based on beforeAllFees.buyAmount = buyAmount + protocolFeeAmount
+        const buyBeforeAllFees = buyAfter + expectedProtocolFeeAmount
         const partnerBps = BigInt(partnerFeeBps)
         const expectedPartnerFeeAmount = (buyBeforeAllFees * partnerBps) / 10_000n
 
         expect(result.costs.partnerFee.amount).toBe(expectedPartnerFeeAmount)
-        // afterPartnerFees.buyAmount = buyAmountAfterNetworkCosts - partnerFeeAmount
-        // buyAmountAfterNetworkCosts = buyAmount + protocolFeeAmount (for SELL)
-        expect(result.afterPartnerFees.buyAmount).toBe(buyAfter + expectedProtocolFeeAmount - expectedPartnerFeeAmount)
+        // afterPartnerFees.buyAmount = afterNetworkCosts.buyAmount - partnerFeeAmount
+        // afterNetworkCosts.buyAmount = afterProtocolFees.buyAmount = buyAmount (raw API value)
+        expect(result.afterPartnerFees.buyAmount).toBe(buyAfter - expectedPartnerFeeAmount)
       })
 
       it('SELL beforeAllFees includes protocol fee once', () => {
@@ -254,7 +252,8 @@ describe('Calculation of before/after fees amounts', () => {
           protocolFeeBps,
         })
 
-        // beforeAllFees.buyAmount = beforeNetworkCosts.buyAmount + protocolFeeAmount
+        // beforeAllFees.buyAmount = buyAmount + protocolFeeAmount
+        // beforeNetworkCosts.buyAmount = buyAmount
         expect(result.beforeAllFees.buyAmount).toBe(
           result.beforeNetworkCosts.buyAmount + result.costs.protocolFee.amount,
         )
@@ -275,10 +274,10 @@ describe('Calculation of before/after fees amounts', () => {
         const bps = BigInt(protocolFeeBps * 100_000)
         const denominator = 10_000n * 100_000n - bps
         const expectedProtocolFeeAmount = (buyAfter * bps) / denominator
-        const expectedBuyBeforeProtocol = buyAfter + expectedProtocolFeeAmount
 
         expect(result.costs.protocolFee.amount).toBe(expectedProtocolFeeAmount)
-        expect(result.beforeNetworkCosts.buyAmount).toBe(expectedBuyBeforeProtocol)
+        // beforeNetworkCosts.buyAmount = buyAmount (raw API value)
+        expect(result.beforeNetworkCosts.buyAmount).toBe(buyAfter)
 
         expect(result.costs.protocolFee).toEqual({
           amount: 5589n,
@@ -306,13 +305,8 @@ describe('Calculation of before/after fees amounts', () => {
         const expectedProtocolFeeAmount = (sellAfterNetwork * bps) / denominator
 
         expect(result.costs.protocolFee.amount).toBe(expectedProtocolFeeAmount)
-        // beforeNetworkCosts.sellAmount for BUY = sellAmount - feeAmount, but with protocolFee this changes
-        // afterNetworkCosts.sellAmount = sellAmount (API value, includes protocol fee)
-        // beforeNetworkCosts.sellAmount = afterNetworkCosts - feeAmount... no
-        // Actually: beforeNetworkCosts = afterProtocolFees, which is sellAmountBeforeNetworkCosts
-        // sellAmountBeforeNetworkCosts = sellAmount - feeAmount (for BUY)
-        // But with protocol fee, we need to check what the code actually returns
-        expect(result.beforeNetworkCosts.sellAmount).toBe(sellAmount - feeAmount)
+        // beforeNetworkCosts.sellAmount for BUY = afterProtocolFees.sellAmount = sellAmount (raw API value)
+        expect(result.beforeNetworkCosts.sellAmount).toBe(sellAmount)
       })
 
       it('calculates partner fee on top of amounts before protocol fee', () => {
@@ -334,15 +328,16 @@ describe('Calculation of before/after fees amounts', () => {
         const protocolDenominator = 10_000n + protocolBps
         const expectedProtocolFeeAmount = (sellAfterNetwork * protocolBps) / protocolDenominator
 
-        // beforeAllFees.sellAmount = sellAmountBeforeNetworkCosts - protocolFeeAmount
-        const sellBeforeNetworkCosts = sellAmount - feeAmount
-        const sellBeforeAllFees = sellBeforeNetworkCosts - expectedProtocolFeeAmount
+        // beforeAllFees.sellAmount = sellAmount - protocolFeeAmount
+        const sellBeforeAllFees = sellAmount - expectedProtocolFeeAmount
 
         const partnerBps = BigInt(partnerFeeBps)
         const expectedPartnerFeeAmount = (sellBeforeAllFees * partnerBps) / 10_000n
 
         expect(result.costs.partnerFee.amount).toBe(expectedPartnerFeeAmount)
-        expect(result.afterPartnerFees.sellAmount).toBe(sellAmount + expectedPartnerFeeAmount)
+        // afterPartnerFees.sellAmount = afterNetworkCosts.sellAmount + partnerFeeAmount
+        // afterNetworkCosts.sellAmount = sellAmount + feeAmount
+        expect(result.afterPartnerFees.sellAmount).toBe(sellAfterNetwork + expectedPartnerFeeAmount)
       })
 
       it('restores beforeAllFees.sellAmount with a single protocol fee deduction', () => {
@@ -355,7 +350,8 @@ describe('Calculation of before/after fees amounts', () => {
           protocolFeeBps,
         })
 
-        // beforeAllFees.sellAmount = beforeNetworkCosts.sellAmount - protocolFeeAmount
+        // beforeAllFees.sellAmount = sellAmount - protocolFeeAmount
+        // beforeNetworkCosts.sellAmount = sellAmount
         expect(result.beforeAllFees.sellAmount).toBe(
           result.beforeNetworkCosts.sellAmount - result.costs.protocolFee.amount,
         )
@@ -382,7 +378,8 @@ describe('Calculation of before/after fees amounts', () => {
       const expectedProtocolFeeAmount = (sellAfterNetwork * bps) / denominator
 
       expect(result.costs.protocolFee.amount).toBe(expectedProtocolFeeAmount)
-      expect(result.beforeNetworkCosts.sellAmount).toBe(sellAmount - feeAmount)
+      // beforeNetworkCosts.sellAmount for BUY = sellAmount (raw API value)
+      expect(result.beforeNetworkCosts.sellAmount).toBe(sellAmount)
 
       expect(result.costs.protocolFee).toEqual({
         amount: 12206189769n,

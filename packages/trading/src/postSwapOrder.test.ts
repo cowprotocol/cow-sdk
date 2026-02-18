@@ -154,10 +154,11 @@ describe('postSwapOrder', () => {
       const call = orderBookApi.sendOrder.mock.calls[0][0]
 
       expect(orderId).toEqual('0x01')
-      // For BUY orders, sellAmountAfterNetworkCosts = API sellAmount = 1005456782512030400n
-      // sellAmount + 0.5% slippage
-      // 1005456782512030400n + ((1005456782512030400n * 50n) / 10000n) = 1010484066424590552n
-      expect(call.sellAmount).toBe('1010484066424590552')
+      // quoteResponseMock.sellAmount + quoteResponseMock.feeAmount
+      // 1005456782512030400 + 1112955650440102 = 1006569738162470566
+      // + slippage 50 BPS
+      // 1006569738162470566 + 5032848690812352 = 1011602586853282854
+      expect(call.sellAmount).toBe('1011602586853282854')
       // quoteResponseMock.buyAmount
       expect(call.buyAmount).toBe('400000000000000000000')
     }

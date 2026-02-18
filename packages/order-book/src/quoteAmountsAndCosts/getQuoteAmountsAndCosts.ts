@@ -26,11 +26,12 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
    */
   const beforeAllFees = isSell
     ? {
+        // Only in case of SELL order, network costs are already added to sellAmount which comes from /quote API
         sellAmount: sellAmount + networkCostAmount,
         buyAmount: buyAmount + protocolFeeAmount,
       }
     : {
-        sellAmount: sellAmount - networkCostAmount - protocolFeeAmount,
+        sellAmount: sellAmount - protocolFeeAmount,
         buyAmount: buyAmount,
       }
 
@@ -39,18 +40,25 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
    */
   const afterProtocolFees = isSell
     ? {
-        sellAmount: sellAmount + networkCostAmount,
+        sellAmount: beforeAllFees.sellAmount,
         buyAmount: buyAmount,
       }
     : {
-        sellAmount: sellAmount - networkCostAmount,
-        buyAmount: buyAmount,
+        sellAmount: sellAmount,
+        buyAmount: beforeAllFees.buyAmount,
       }
 
-  const afterNetworkCosts = {
-    sellAmount: sellAmount,
-    buyAmount: buyAmount,
-  }
+  const afterNetworkCosts = isSell
+    ? {
+        // For SELL order, the /quote API response sellAmount is already after network costs
+        sellAmount: sellAmount,
+        buyAmount: afterProtocolFees.buyAmount,
+      }
+    : {
+        // For BUY order, the /quote API response sellAmount is only after protocolFee, so we need to add networks costs to the amount
+        sellAmount: sellAmount + networkCostAmount,
+        buyAmount: afterProtocolFees.buyAmount,
+      }
 
   // get amounts including partner fees
   const { afterPartnerFees, partnerFeeAmount } = getQuoteAmountsAfterPartnerFee({
