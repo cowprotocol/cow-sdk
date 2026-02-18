@@ -1,4 +1,4 @@
-import { AdditionalTargetChainId, ChainInfo, SupportedChainId } from '../types'
+import { AdditionalTargetChainId, ALL_CHAINS_SET, ChainInfo, SupportedChainId } from '../types'
 import { mainnet } from '../details/mainnet'
 import { gnosisChain } from '../details/gnosis'
 import { arbitrumOne } from '../details/arbitrum'
@@ -69,9 +69,9 @@ export const ALL_ADDITIONAL_TARGET_CHAIN_IDS: AdditionalTargetChainId[] = ALL_AD
 /**
  * All chains (both supported by CoW Protocol, or chains where you can bridge to)
  */
-export const ALL_CHAINS = ALL_SUPPORTED_CHAINS.concat(Object.values(ADDITIONAL_TARGET_CHAINS_MAP))
+export const ALL_CHAINS = Object.values(ALL_CHAINS_SET)
 
 /**
  * All chain ids (both supported by CoW Protocol, or chains where you can bridge to)
  */
-export const ALL_CHAINS_IDS = ALL_CHAINS.map((chain) => chain.id)
+export const ALL_CHAINS_IDS = ALL_CHAINS.map((chain) => chain)

@@ -61,6 +61,11 @@ export const AdditionalTargetChainId = {
   BITCOIN: NonEvmChains.BITCOIN,
 } as const
 
+export const ALL_CHAINS_SET = {
+  ...SupportedChainId,
+  ...AdditionalTargetChainId,
+} as const
+
 /**
  * Chains where you can buy tokens using the bridge functionality. This enum contains chains that are not already included in the SupportedEvmChainId enum.
  */
@@ -69,7 +74,7 @@ export type AdditionalTargetChainId = (typeof AdditionalTargetChainId)[keyof typ
 /**
  * This enum contains all the supported chains and some additional ones supported by the different bridges.
  */
-export type TargetChainId = SupportedChainId | AdditionalTargetChainId
+export type TargetChainId = (typeof ALL_CHAINS_SET)[keyof typeof ALL_CHAINS_SET]
 /**
  * The chain id of the chain.
  * Can be a number for EVM chains or a string for non-EVM chains (e.g., Bitcoin, Solana) in future.
