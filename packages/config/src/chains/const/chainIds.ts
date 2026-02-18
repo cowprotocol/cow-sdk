@@ -53,6 +53,20 @@ export const ADDITIONAL_TARGET_CHAINS_MAP: Record<AdditionalTargetChainId, Chain
 }
 
 /**
+ * All chains where you can bridge to, but not sell tokens from (not supported by CoW Protocol).
+ */
+export const ALL_ADDITIONAL_TARGET_CHAINS = Object.values(ADDITIONAL_TARGET_CHAINS_MAP)
+
+
+/**
+ * The list of chains where you can bridge to, but not sell tokens from (not supported by CoW Protocol).
+ */
+export const ALL_ADDITIONAL_TARGET_CHAIN_IDS: AdditionalTargetChainId[] = ALL_ADDITIONAL_TARGET_CHAINS.map(
+  (chain) => chain.id,
+) as AdditionalTargetChainId[]
+
+
+/**
  * All chains (both supported by CoW Protocol, or chains where you can bridge to)
  */
 export const ALL_CHAINS = ALL_SUPPORTED_CHAINS.concat(Object.values(ADDITIONAL_TARGET_CHAINS_MAP))
