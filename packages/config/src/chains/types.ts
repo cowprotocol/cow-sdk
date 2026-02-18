@@ -27,7 +27,6 @@ export enum NonEvmChains {
 }
 
 /**
- * Object for enum-like access to supported chain IDs.
  * Use this when you need to reference chain IDs like SupportedChainId.MAINNET
  */
 export const SupportedChainId = {
@@ -47,7 +46,6 @@ export const SupportedChainId = {
 
 /**
  * Supported chains and their `chainId` for the SDK.
- *
  * A supported chain, is a chain where CoW Protocol is deployed, so you can sell tokens from there.
  *
  */
@@ -61,9 +59,24 @@ export const AdditionalTargetChainId = {
   BITCOIN: NonEvmChains.BITCOIN,
 } as const
 
+/**
+ * All chains map (enum like) supported by CoW Protocol or available for bridging.
+ */
 export const ALL_CHAINS_SET = {
-  ...SupportedChainId,
-  ...AdditionalTargetChainId,
+  MAINNET: SupportedChainId.MAINNET,
+  BNB: SupportedChainId.BNB,
+  GNOSIS_CHAIN: SupportedChainId.GNOSIS_CHAIN,
+  POLYGON: SupportedChainId.POLYGON,
+  LENS: SupportedChainId.LENS,
+  BASE: SupportedChainId.BASE,
+  PLASMA: SupportedChainId.PLASMA,
+  ARBITRUM_ONE: SupportedChainId.ARBITRUM_ONE,
+  AVALANCHE: SupportedChainId.AVALANCHE,
+  INK: SupportedChainId.INK,
+  LINEA: SupportedChainId.LINEA,
+  SEPOLIA: SupportedChainId.SEPOLIA,
+  OPTIMISM: AdditionalTargetChainId.OPTIMISM,
+  BITCOIN: AdditionalTargetChainId.BITCOIN,
 } as const
 
 /**
