@@ -50,3 +50,11 @@ export function isZkSyncChain(chainId: ChainId): boolean {
 export function isChainUnderDevelopment(chainId: ChainId): boolean {
   return Boolean(getChainInfo(chainId)?.isUnderDevelopment)
 }
+
+/**
+ * Check if the chain is deprecated (no new trading; chain remains for history/Explorer).
+ * @param chainId
+ */
+export function isChainDeprecated(chainId: ChainId): boolean {
+  return Boolean(getChainInfo(chainId)?.isDeprecated)
+}
