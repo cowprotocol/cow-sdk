@@ -18,7 +18,7 @@ const otherFields = {
  * The API returns amounts with network costs already baked in:
  * - sellAmount is the amount after network costs
  * - feeAmount is the network cost amount (stored separately for reference)
- * - buyAmount is unaffected by network costs (network costs only apply to sell token)
+ * - buyAmount is correlated to the reduced sellAmount (also reflects network costs)
  *
  * In this order we are selling 0.16 WETH for ~18632 COW
  */
@@ -97,8 +97,28 @@ describe('Calculation of before/after fees amounts', () => {
       })
     })
 
-    describe.each(['sell', 'buy'])('%s order', (type: string) => {
-      const orderParams = type === 'sell' ? SELL_ORDER : BUY_ORDER
+    describe('sell order buyAmount', () => {
+      const orderParams = SELL_ORDER
+
+      it('beforeNetworkCosts.buyAmount should include network cost in buy currency', () => {
+        const result = getQuoteAmountsAndCosts({
+          orderParams,
+          slippagePercentBps: 0,
+          partnerFeeBps: undefined,
+          protocolFeeBps: undefined,
+        })
+
+        const buyAmount = BigInt(orderParams.buyAmount)
+        const networkCostAmountInBuyCurrency =
+          (BigInt(orderParams.buyAmount) * BigInt(orderParams.feeAmount)) / BigInt(orderParams.sellAmount)
+
+        expect(result.beforeNetworkCosts.buyAmount).toBe(buyAmount + networkCostAmountInBuyCurrency)
+        expect(result.afterNetworkCosts.buyAmount).toBe(buyAmount)
+      })
+    })
+
+    describe('buy order buyAmount', () => {
+      const orderParams = BUY_ORDER
 
       it('buyAmount should not change with network costs (network costs only apply to sell)', () => {
         const result = getQuoteAmountsAndCosts({
@@ -126,9 +146,12 @@ describe('Calculation of before/after fees amounts', () => {
           protocolFeeBps: undefined,
         })
 
-        // No protocol fee: beforeAllFees.buyAmount = buyAmount + 0 = buyAmount
+        // No protocol fee: beforeAllFees.buyAmount = buyAmount + networkCostInBuyCurrency
         const buyAmount = BigInt(orderParams.buyAmount)
-        const expectedPartnerFeeAmount = (buyAmount * BigInt(partnerFeeBps)) / 10_000n
+        const networkCostInBuyCurrency =
+          (BigInt(orderParams.buyAmount) * BigInt(orderParams.feeAmount)) / BigInt(orderParams.sellAmount)
+        const buyBeforeAllFees = buyAmount + networkCostInBuyCurrency
+        const expectedPartnerFeeAmount = (buyBeforeAllFees * BigInt(partnerFeeBps)) / 10_000n
 
         expect(result.costs.partnerFee.amount).toBe(expectedPartnerFeeAmount)
       })
@@ -211,8 +234,10 @@ describe('Calculation of before/after fees amounts', () => {
         const expectedProtocolFeeAmount = (buyAfter * bps) / denominator
 
         expect(result.costs.protocolFee.amount).toBe(expectedProtocolFeeAmount)
-        // beforeNetworkCosts.buyAmount for SELL = afterProtocolFees.buyAmount = buyAmount (raw API value)
-        expect(result.beforeNetworkCosts.buyAmount).toBe(buyAfter)
+        // beforeNetworkCosts.buyAmount for SELL = afterProtocolFees.buyAmount = buyAmount + networkCostInBuyCurrency
+        const networkCostInBuyCurrency =
+          (buyAfter * BigInt(orderParams.feeAmount)) / BigInt(orderParams.sellAmount)
+        expect(result.beforeNetworkCosts.buyAmount).toBe(buyAfter + networkCostInBuyCurrency)
       })
 
       it('calculates partner fee on top of amounts before protocol fee', () => {
@@ -231,14 +256,16 @@ describe('Calculation of before/after fees amounts', () => {
         const protocolDenominator = 10_000n - protocolBps
         const expectedProtocolFeeAmount = (buyAfter * protocolBps) / protocolDenominator
 
-        // Partner fee is based on beforeAllFees.buyAmount = buyAmount + protocolFeeAmount
-        const buyBeforeAllFees = buyAfter + expectedProtocolFeeAmount
+        // Partner fee is based on beforeAllFees.buyAmount = buyAmount + networkCostInBuyCurrency + protocolFeeAmount
+        const networkCostInBuyCurrency =
+          (buyAfter * BigInt(orderParams.feeAmount)) / BigInt(orderParams.sellAmount)
+        const buyBeforeAllFees = buyAfter + networkCostInBuyCurrency + expectedProtocolFeeAmount
         const partnerBps = BigInt(partnerFeeBps)
         const expectedPartnerFeeAmount = (buyBeforeAllFees * partnerBps) / 10_000n
 
         expect(result.costs.partnerFee.amount).toBe(expectedPartnerFeeAmount)
         // afterPartnerFees.buyAmount = afterNetworkCosts.buyAmount - partnerFeeAmount
-        // afterNetworkCosts.buyAmount = afterProtocolFees.buyAmount = buyAmount (raw API value)
+        // afterNetworkCosts.buyAmount = buyAmount (raw API value)
         expect(result.afterPartnerFees.buyAmount).toBe(buyAfter - expectedPartnerFeeAmount)
       })
 
@@ -252,8 +279,8 @@ describe('Calculation of before/after fees amounts', () => {
           protocolFeeBps,
         })
 
-        // beforeAllFees.buyAmount = buyAmount + protocolFeeAmount
-        // beforeNetworkCosts.buyAmount = buyAmount
+        // beforeAllFees.buyAmount = buyAmount + networkCostInBuyCurrency + protocolFeeAmount
+        // beforeNetworkCosts.buyAmount = buyAmount + networkCostInBuyCurrency
         expect(result.beforeAllFees.buyAmount).toBe(
           result.beforeNetworkCosts.buyAmount + result.costs.protocolFee.amount,
         )
@@ -276,8 +303,10 @@ describe('Calculation of before/after fees amounts', () => {
         const expectedProtocolFeeAmount = (buyAfter * bps) / denominator
 
         expect(result.costs.protocolFee.amount).toBe(expectedProtocolFeeAmount)
-        // beforeNetworkCosts.buyAmount = buyAmount (raw API value)
-        expect(result.beforeNetworkCosts.buyAmount).toBe(buyAfter)
+        // beforeNetworkCosts.buyAmount = buyAmount + networkCostInBuyCurrency
+        const networkCostInBuyCurrency =
+          (buyAfter * BigInt(orderParams.feeAmount)) / BigInt(orderParams.sellAmount)
+        expect(result.beforeNetworkCosts.buyAmount).toBe(buyAfter + networkCostInBuyCurrency)
 
         expect(result.costs.protocolFee).toEqual({
           amount: 5589n,

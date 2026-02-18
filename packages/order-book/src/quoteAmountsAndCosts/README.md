@@ -91,7 +91,7 @@ Starting from the raw quote, costs are applied in this order:
                          │                                     │
                    ┌─────┴──────┐                        ┌─────┴──────┐
                    │Network fee │                        │Network fee │
-                   │ -sell      │                        │ +sell      │
+                   │ -sell -buy │                        │ +sell      │
                    └─────┬──────┘                        └─────┬──────┘
                          │                                     │
                ┌─────────┴───────────┐               ┌────────┴────────────┐
@@ -130,9 +130,10 @@ Starting from the raw quote, costs are applied in this order:
 
 **Network fee asymmetry:**
 - For **SELL** orders, the API already subtracted `feeAmount` from `sellAmount`, so
-  going from `beforeNetworkCosts` to `afterNetworkCosts` is a **decrease** in sellAmount.
+  going from `beforeNetworkCosts` to `afterNetworkCosts` is a **decrease** in both
+  sellAmount and buyAmount (buyAmount is reduced by the network cost converted to buy currency).
 - For **BUY** orders, `feeAmount` is separate, so going from `beforeNetworkCosts` to
-  `afterNetworkCosts` is an **increase** in sellAmount.
+  `afterNetworkCosts` is an **increase** in sellAmount. `buyAmount` is unaffected.
 
 ## 3. BPS (Basis Points)
 
@@ -212,12 +213,16 @@ sellAmountBeforeProtocolFee = sellAfterNetwork - protocolFeeAmount
 The network fee (`feeAmount`) represents the estimated gas cost in sell token.
 The way it affects amounts differs between order kinds:
 
-**SELL orders:** The API already subtracted `feeAmount` from `sellAmount`. So the SDK
-reconstructs the original amount:
+**SELL orders:** The API already subtracted `feeAmount` from `sellAmount`, and `buyAmount`
+is correlated to this reduced `sellAmount`. The SDK reconstructs both original amounts:
 
 ```
-beforeNetworkCosts.sellAmount = sellAmount + feeAmount    (restore the user's total)
-afterNetworkCosts.sellAmount  = sellAmount                (what the API returned)
+networkCostAmountInBuyCurrency = buyAmount * feeAmount / sellAmount
+
+beforeNetworkCosts.sellAmount  = sellAmount + feeAmount                   (restore the user's total)
+beforeNetworkCosts.buyAmount   = buyAmount + networkCostAmountInBuyCurrency (restore buy side too)
+afterNetworkCosts.sellAmount   = sellAmount                                (what the API returned)
+afterNetworkCosts.buyAmount    = buyAmount                                 (what the API returned)
 ```
 
 **BUY orders:** The API's `sellAmount` does not include `feeAmount`. The SDK adds it:
@@ -227,9 +232,9 @@ beforeNetworkCosts.sellAmount = sellAmount                (what the API returned
 afterNetworkCosts.sellAmount  = sellAmount + feeAmount    (total user will pay)
 ```
 
-In both cases, `buyAmount` is unaffected by network costs — they only apply to the sell side.
+For BUY orders, `buyAmount` is unaffected by network costs.
 
-The network fee in buy currency is computed via cross-multiplication for display purposes:
+The network fee in buy currency is computed via cross-multiplication:
 
 ```
 costs.networkFee.amountInBuyCurrency = buyAmount * feeAmount / sellAmount
@@ -337,21 +342,25 @@ protocolFeeAmount = buyAmount * protocolFeeBps / (10000 - protocolFeeBps)
 
 ### Step 2 — Compute all amount stages
 
-For SELL orders, `sellAmount` from the API is already after network costs.
-We restore the original by adding `feeAmount` back:
+For SELL orders, `sellAmount` from the API is already after network costs, and `buyAmount`
+is correlated to that reduced `sellAmount`. We restore both originals:
 
 ```
+networkCostAmountInBuyCurrency = buyAmount * feeAmount / sellAmount
+                               = 18632013982 * 3855544038281082 / 156144455961718918
+                               = 460064688
+
 beforeAllFees:
-  sellAmount = sellAmount + feeAmount          = 156144455961718918 + 3855544038281082 = 160000000000000000
-  buyAmount  = buyAmount + protocolFeeAmount   = 18632013982 + 37338705               = 18669352687
+  sellAmount = sellAmount + feeAmount                                          = 160000000000000000
+  buyAmount  = buyAmount + networkCostAmountInBuyCurrency + protocolFeeAmount  = 18632013982 + 460064688 + 37338705 = 19129417375
 
 beforeNetworkCosts (= afterProtocolFees):
-  sellAmount = beforeAllFees.sellAmount        = 160000000000000000
-  buyAmount  = buyAmount                       = 18632013982  (raw API value)
+  sellAmount = beforeAllFees.sellAmount                    = 160000000000000000
+  buyAmount  = beforeAllFees.buyAmount - protocolFeeAmount = 19129417375 - 37338705 = 19092078670
 
 afterNetworkCosts:
-  sellAmount = sellAmount                      = 156144455961718918  (raw API value)
-  buyAmount  = buyAmount                       = 18632013982  (raw API value)
+  sellAmount = sellAmount                                  = 156144455961718918  (raw API value)
+  buyAmount  = buyAmount                                   = 18632013982  (raw API value)
 ```
 
 ### Step 3 — Partner fee (50 BPS = 0.5%)
@@ -359,9 +368,9 @@ afterNetworkCosts:
 Partner fee is calculated from `beforeAllFees.buyAmount` (the full trade volume):
 
 ```
-partnerFeeAmount            = 18669352687 * 50 / 10000 = 93346763
+partnerFeeAmount            = 19129417375 * 50 / 10000 = 95647086
 afterPartnerFees.sellAmount = 156144455961718918        (unchanged for SELL)
-afterPartnerFees.buyAmount  = 18632013982 - 93346763   = 18538667219
+afterPartnerFees.buyAmount  = 18632013982 - 95647086   = 18536366896
 ```
 
 ### Step 4 — Slippage (100 BPS = 1%)
@@ -369,16 +378,16 @@ afterPartnerFees.buyAmount  = 18632013982 - 93346763   = 18538667219
 Slippage is applied to the buy amount after all fees:
 
 ```
-slippageAmount             = 18538667219 * 100 / 10000 = 185386672
+slippageAmount             = 18536366896 * 100 / 10000 = 185363668
 afterSlippage.sellAmount   = 156144455961718918         (unchanged for SELL)
-afterSlippage.buyAmount    = 18538667219 - 185386672   = 18353280547
+afterSlippage.buyAmount    = 18536366896 - 185363668   = 18351003228
 ```
 
 ### Signed order
 
 ```
 amountsToSign.sellAmount = 160000000000000000  (beforeAllFees.sellAmount)
-amountsToSign.buyAmount  = 18353280547         (afterSlippage.buyAmount — minimum user will accept)
+amountsToSign.buyAmount  = 18351003228         (afterSlippage.buyAmount — minimum user will accept)
 feeAmount                = 0                   (always zero in the signed order)
 kind                     = sell
 ```

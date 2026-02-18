@@ -32,7 +32,7 @@ True spot price amounts — what the trade would look like with zero fees.
 | | main | current |
 |---|---|---|
 | `sellAmount` | `BigInt(orderParams.sellAmount)` = **0.99 ETH** | `sellAmount + networkCostAmount` = **1.0 ETH** |
-| `buyAmount` | float-derived via `quotePrice * sellAfterNetwork` | `buyAmount + protocolFeeAmount` = **2000 USDC** |
+| `buyAmount` | float-derived via `quotePrice * sellAfterNetwork` | `buyAmount + networkCostAmountInBuyCurrency + protocolFeeAmount` |
 
 ### BUY order
 
@@ -43,7 +43,8 @@ True spot price amounts — what the trade would look like with zero fees.
 
 **What changed:** For SELL, main used the raw API `sellAmount` (which is already after network
 costs). Current correctly restores `sellAmount + feeAmount` so `beforeAllFees` truly means
-before ALL fees. For BUY, the formula is the same but no longer uses float-derived values.
+before ALL fees. `buyAmount` now also includes `networkCostAmountInBuyCurrency` (`buyAmount * feeAmount / sellAmount`)
+so both sides reflect the true spot price. For BUY, the formula is the same but no longer uses float-derived values.
 
 ---
 
@@ -57,7 +58,7 @@ Represents amounts after protocol fee is deducted but before network costs are a
 | | main | current |
 |---|---|---|
 | `sellAmount` | **0.99 ETH** (raw API `sellAmount` — mislabeled!) | **1.0 ETH** (`sellAmount + networkCostAmount`) |
-| `buyAmount` | conditional: float-derived OR `buy + protocolFee` | `buyAmount` (raw API value) |
+| `buyAmount` | conditional: float-derived OR `buy + protocolFee` | `beforeAllFees.buyAmount - protocolFeeAmount` = `buyAmount + networkCostAmountInBuyCurrency` |
 
 ### BUY order
 
@@ -69,8 +70,10 @@ Represents amounts after protocol fee is deducted but before network costs are a
 **What changed:** Main had a **naming bug** for SELL — it called `orderParams.sellAmount`
 `sellAmountBeforeNetworkCosts`, but the API value is already AFTER network costs. Current fixes
 this: `beforeNetworkCosts.sellAmount` for SELL = `sellAmount + feeAmount` (the true before-costs
-amount). For BUY, `beforeNetworkCosts.sellAmount` = `sellAmount` (which for BUY is truly before
-network costs since the API doesn't bake network costs into BUY sellAmount).
+amount). `beforeNetworkCosts.buyAmount` for SELL now includes network cost in buy currency
+(`buyAmount + networkCostAmountInBuyCurrency`), since the API's `buyAmount` is correlated to the
+reduced `sellAmount`. For BUY, `beforeNetworkCosts.sellAmount` = `sellAmount` (which for BUY is
+truly before network costs since the API doesn't bake network costs into BUY sellAmount).
 
 ---
 
@@ -111,7 +114,7 @@ Both branches use `beforeAllFees` for the fee base:
 
 | | main | current |
 |---|---|---|
-| SELL base | conditional: float-derived OR `buy + protocolFee` | `beforeAllFees.buyAmount` = `buyAmount + protocolFeeAmount` |
+| SELL base | conditional: float-derived OR `buy + protocolFee` | `beforeAllFees.buyAmount` = `buyAmount + networkCostAmountInBuyCurrency + protocolFeeAmount` |
 | BUY base | conditional: float-derived OR `sell - protocolFee` | `beforeAllFees.sellAmount` = `sellAmount - protocolFeeAmount` |
 
 ### Subtraction/addition target
@@ -194,7 +197,7 @@ Pure bigint cross-multiplication using the raw API amounts.
 |---|--------|--------|
 | 1 | **Precision**: All `number`-based math (`getBigNumber`, `quotePrice`) replaced with pure `bigint` | Eliminates floating-point precision loss on large token amounts |
 | 2 | **SELL `afterNetworkCosts.sellAmount`**: Now the raw API value, not `sell + fee` | Correct semantic: API already subtracted network costs for SELL |
-| 3 | **SELL `beforeAllFees.sellAmount`**: Now `sellAmount + feeAmount`, not raw API value | Correct semantic: truly before ALL fees |
+| 3 | **SELL `beforeAllFees`**: `sellAmount` is now `sellAmount + feeAmount`; `buyAmount` now includes `networkCostAmountInBuyCurrency + protocolFeeAmount` | Correct semantic: truly before ALL fees on both sides |
 | 4 | **BUY `afterNetworkCosts`**: Unchanged (`sell + fee`) | API doesn't bake network costs into BUY sellAmount |
 | 5 | **`amountsToSign`**: New field with the correct amounts for the signed order | Consumers no longer need to figure out the correct combination |
 | 6 | **`afterProtocolFees`**: New explicit field (alias for `beforeNetworkCosts`) | Makes the fee application chain more readable |

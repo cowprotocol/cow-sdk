@@ -29,6 +29,7 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
   const sellAmount = BigInt(orderParams.sellAmount)
   const buyAmount = BigInt(orderParams.buyAmount)
   const networkCostAmount = BigInt(orderParams.feeAmount)
+  const networkCostAmountInBuyCurrency = (buyAmount * networkCostAmount) / sellAmount
 
   // for market orders: reconstruct protocolFee from quote amounts that already have it deducted
   const protocolFeeAmount = getProtocolFeeAmount({
@@ -43,7 +44,13 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
     ? {
         // Only in case of SELL order, network costs are already added to sellAmount which comes from /quote API
         sellAmount: sellAmount + networkCostAmount,
-        buyAmount: buyAmount + protocolFeeAmount,
+        /**
+         * Important!
+         * For SELL orders, /quote API returns sellAmount AFTER network costs
+         * buyAmount is correlated to that sellAmount, hence, it doesn't include network costs as well
+         * Because of that, we add network costs here as well to have both amounts consistent
+         */
+        buyAmount: buyAmount + networkCostAmountInBuyCurrency + protocolFeeAmount,
       }
     : {
         sellAmount: sellAmount - protocolFeeAmount,
@@ -56,7 +63,7 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
   const afterProtocolFees = isSell
     ? {
         sellAmount: beforeAllFees.sellAmount,
-        buyAmount: buyAmount,
+        buyAmount: beforeAllFees.buyAmount - protocolFeeAmount,
       }
     : {
         sellAmount: sellAmount,
@@ -66,8 +73,9 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
   const afterNetworkCosts = isSell
     ? {
         // For SELL order, the /quote API response sellAmount is already after network costs
+        // buyAmount is relative to sellAmount, hence it's also after network costs
         sellAmount: sellAmount,
-        buyAmount: afterProtocolFees.buyAmount,
+        buyAmount: buyAmount,
       }
     : {
         // For BUY order, the /quote API response sellAmount is only after protocolFee, so we need to add networks costs to the amount
@@ -114,7 +122,7 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
     costs: {
       networkFee: {
         amountInSellCurrency: networkCostAmount,
-        amountInBuyCurrency: (buyAmount * networkCostAmount) / sellAmount,
+        amountInBuyCurrency: networkCostAmountInBuyCurrency,
       },
       partnerFee: {
         amount: partnerFeeAmount,
