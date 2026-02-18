@@ -5,6 +5,21 @@ import { QuoteAmountsAndCosts } from '../types'
 import { getQuoteAmountsAfterPartnerFee } from './getQuoteAmountsAfterPartnerFee'
 import { getQuoteAmountsAfterSlippage } from './getQuoteAmountsAfterSlippage'
 
+/**
+ * Calculates all quote amount stages and costs from a `/quote` API response.
+ *
+ * Takes the raw order parameters (where protocol fee and network costs are already baked in)
+ * and reconstructs every intermediate amount stage: before all fees, after protocol fees,
+ * after network costs, after partner fees, and after slippage.
+ *
+ * The returned {@link QuoteAmountsAndCosts} includes `amountsToSign` — the final sell/buy
+ * amounts that should be used when signing the order.
+ *
+ * @see {@link ./README.md} for a detailed explanation of the fee application order.
+ *
+ * @param params - Quote parameters including order params, fee BPS values, and slippage.
+ * @returns All amount stages, cost breakdowns, and the amounts to sign.
+ */
 export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): QuoteAmountsAndCosts {
   const { orderParams, slippagePercentBps } = params
   const partnerFeeBps = params.partnerFeeBps ?? 0
@@ -72,7 +87,7 @@ export function getQuoteAmountsAndCosts(params: QuoteAmountsAndCostsParams): Quo
   const { afterSlippage } = getQuoteAmountsAfterSlippage({
     afterPartnerFees,
     isSell,
-    slippagePercentBps,
+    slippageBps: slippagePercentBps,
   })
 
   /**

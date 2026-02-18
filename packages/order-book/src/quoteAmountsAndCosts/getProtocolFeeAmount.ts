@@ -1,6 +1,11 @@
 import { OrderKind, OrderParameters } from '../generated'
 import { HUNDRED_THOUSANDS, ONE_HUNDRED_BPS } from './quoteAmountsAndCosts.const'
 
+export interface ProtocolFeeAmountParams {
+  orderParams: OrderParameters
+  protocolFeeBps: number
+}
+
 /**
  * /quote API returns `OrderParameters` where protocol fee is already included in the amounts
  * From the quote response we only know:
@@ -23,7 +28,7 @@ import { HUNDRED_THOUSANDS, ONE_HUNDRED_BPS } from './quoteAmountsAndCosts.const
  *
  * @param params
  */
-export function getProtocolFeeAmount(params: { orderParams: OrderParameters; protocolFeeBps: number }): bigint {
+export function getProtocolFeeAmount(params: ProtocolFeeAmountParams): bigint {
   const { orderParams, protocolFeeBps } = params
 
   const isSell = orderParams.kind === OrderKind.SELL

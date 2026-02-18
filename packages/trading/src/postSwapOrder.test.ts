@@ -155,9 +155,9 @@ describe('postSwapOrder', () => {
 
       expect(orderId).toEqual('0x01')
       // quoteResponseMock.sellAmount + quoteResponseMock.feeAmount
-      // 1005456782512030400 + 1112955650440102 = 1006569738162470566
+      // 005456782512030400 + 1112955650440102 = 1006569738162470502
       // + slippage 50 BPS
-      // 1006569738162470566 + 5032848690812352 = 1011602586853282854
+      // 1006569738162470502 + 5032848690812352 = 1011602586853282854
       expect(call.sellAmount).toBe('1011602586853282854')
       // quoteResponseMock.buyAmount
       expect(call.buyAmount).toBe('400000000000000000000')
