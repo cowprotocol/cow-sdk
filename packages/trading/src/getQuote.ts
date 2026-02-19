@@ -213,7 +213,7 @@ export async function getQuote(
   const { quote, orderBookApi, tradeParameters, slippageBps, suggestedSlippageBps, appDataInfo, isEthFlow } =
     await getQuoteRaw(_tradeParameters, trader, advancedSettings, _orderBookApi)
 
-  const { partnerFee, sellTokenDecimals, buyTokenDecimals } = tradeParameters
+  const { partnerFee } = tradeParameters
   const { chainId, account: from } = trader
 
   const amountsAndCosts = getQuoteAmountsAndCosts({
@@ -221,8 +221,6 @@ export async function getQuote(
     slippagePercentBps: slippageBps,
     partnerFeeBps: getPartnerFeeBps(partnerFee),
     protocolFeeBps: quote.protocolFeeBps ? Number(quote.protocolFeeBps) : undefined,
-    sellDecimals: sellTokenDecimals,
-    buyDecimals: buyTokenDecimals,
   })
 
   const orderToSign = getOrderToSign(

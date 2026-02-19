@@ -37,17 +37,16 @@ export async function resolveSlippageSuggestion(
     slippagePercentBps: 0,
     partnerFeeBps: getPartnerFeeBps(tradeParameters.partnerFee),
     protocolFeeBps: quote.protocolFeeBps ? Number(quote.protocolFeeBps) : undefined,
-    sellDecimals: tradeParameters.sellTokenDecimals,
-    buyDecimals: tradeParameters.buyTokenDecimals,
   })
+  const { isSell, beforeAllFees, afterSlippage } = amountsAndCosts
 
   try {
     const suggestedSlippage = await getSlippageSuggestion({
       chainId,
       sellToken: tradeParameters.sellToken,
       buyToken: tradeParameters.buyToken,
-      sellAmount: amountsAndCosts.afterSlippage.sellAmount,
-      buyAmount: amountsAndCosts.afterSlippage.buyAmount,
+      sellAmount: isSell ? beforeAllFees.sellAmount : afterSlippage.sellAmount,
+      buyAmount: isSell ? afterSlippage.buyAmount : beforeAllFees.buyAmount,
     })
 
     const suggestedSlippageBps = suggestedSlippage.slippageBps

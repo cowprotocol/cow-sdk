@@ -30,18 +30,22 @@ export interface Costs<T> {
 /**
  * Details about costs and amounts, costs and fees of a quote.
  *
- * CoW Protocol quote has amounts (sell/buy) and costs (network fee), there is also partner fees.
- * Besides that, CoW Protocol supports both sell and buy orders and the fees and costs are calculated differently.
+ * CoW Protocol quote has amounts (sell/buy), network fee, and protocol fee.
+ * On the client side (after /quote response) we add partner fee and slippage.
+ * CoW Protocol supports both sell and buy orders and the fees and costs are calculated differently.
  *
  * The order of adding fees and costs is as follows:
- * 1. Network fee is always added to the sell amount
- * 2. Partner fee is added to the surplus amount (sell amount for sell-orders, buy amount for buy-orders)
- * 3. Protocol fee is already baked into the quoted amounts:
+ * 1. Protocol fee is already baked into the quoted amounts:
  *    - for SELL orders it has been deducted from the buy amount
- *    - for BUY orders it has been added on top of the sell amount.
+ *    - for BUY orders it has been added on top of the sell amount
+ * 2. Network fee:
+ *    - for SELL orders it has been deducted from the sell amount
+ *    - for BUY orders it's not added to any amount, and provided separately as `feeAmount`
+ * 3. Partner fee is added to the surplus amount (sell amount for sell-orders, buy amount for buy-orders)
+ * 4. Slippage is added to the surplus amount (sell amount for sell-orders, buy amount for buy-orders)
  *
- * For sell-orders the partner fee is subtracted from the buy amount after network costs.
- * For buy-orders the partner fee is added on top of the sell amount after network costs.
+ * For sell-orders the partner fee and slippage are subtracted from the buy amount after network costs.
+ * For buy-orders the partner fee and slippage are added on top of the sell amount after network costs.
  */
 export interface QuoteAmountsAndCosts<T = bigint> {
   /**
@@ -60,6 +64,9 @@ export interface QuoteAmountsAndCosts<T = bigint> {
    */
   costs: Costs<T>
 
+  /**
+   * Before all the fees and costs. Spot price amounts
+   */
   beforeAllFees: Amounts<T>
 
   /**
@@ -69,19 +76,25 @@ export interface QuoteAmountsAndCosts<T = bigint> {
   beforeNetworkCosts: Amounts<T>
 
   /**
-   * Amounts after including network costs.
+   * 1. Same with beforeNetworkCosts.
+   * `beforeNetworkCosts` was here even before protocol fee existed, and we keep it for backward compatibility
+   */
+  afterProtocolFees: Amounts<T>
+
+  /**
+   * 2. Amounts after including network costs.
    */
   afterNetworkCosts: Amounts<T>
 
   /**
-   * Amounts after including partner fees (if any).
+   * 3. Amounts after including partner fees (if any).
    *
    * This amount could be shown to the user, as the expected to receive amount already including any fees or costs.
    */
   afterPartnerFees: Amounts<T>
 
   /**
-   * Amounts after including the slippage tolerance.
+   * 4. Amounts after including the slippage tolerance.
    *
    * This is the minimum that the user will receive and the amount they will sign.
    *
@@ -89,4 +102,9 @@ export interface QuoteAmountsAndCosts<T = bigint> {
    * event of the buy token appreciating.
    */
   afterSlippage: Amounts<T>
+
+  /**
+   * Amounts that supposed to be signed as part of order
+   */
+  amountsToSign: Amounts<T>
 }

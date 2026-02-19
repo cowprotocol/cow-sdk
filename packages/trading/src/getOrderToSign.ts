@@ -22,7 +22,14 @@ interface OrderToSignParams {
 }
 
 export function getOrderToSign(
-  { chainId, from, networkCostsAmount = '0', isEthFlow, applyCostsSlippageAndFees = true, protocolFeeBps }: OrderToSignParams,
+  {
+    chainId,
+    from,
+    networkCostsAmount = '0',
+    isEthFlow,
+    applyCostsSlippageAndFees = true,
+    protocolFeeBps,
+  }: OrderToSignParams,
   limitOrderParams: LimitTradeParameters,
   appDataKeccak256: string,
 ): UnsignedOrder {
@@ -30,9 +37,7 @@ export function getOrderToSign(
     sellAmount,
     buyAmount,
     sellToken,
-    sellTokenDecimals,
     buyToken,
-    buyTokenDecimals,
     kind,
     partiallyFillable = false,
     slippageBps = getDefaultSlippageBps(chainId, isEthFlow),
@@ -60,16 +65,14 @@ export function getOrderToSign(
   let buyAmountToUse = buyAmount
 
   if (applyCostsSlippageAndFees) {
-    const { afterSlippage } = getQuoteAmountsAndCosts({
+    const { isSell, beforeAllFees, afterSlippage } = getQuoteAmountsAndCosts({
       orderParams,
       slippagePercentBps: slippageBps,
       partnerFeeBps: getPartnerFeeBps(partnerFee),
       protocolFeeBps,
-      sellDecimals: sellTokenDecimals,
-      buyDecimals: buyTokenDecimals,
     })
-    sellAmountToUse = afterSlippage.sellAmount.toString()
-    buyAmountToUse = afterSlippage.buyAmount.toString()
+    sellAmountToUse = isSell ? beforeAllFees.sellAmount.toString() : afterSlippage.sellAmount.toString()
+    buyAmountToUse = isSell ? afterSlippage.buyAmount.toString() : beforeAllFees.buyAmount.toString()
   }
 
   return {
