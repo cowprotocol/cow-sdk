@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.7.3...sdk-config-v0.8.0) (2026-02-18)
+
+
+### ✨ Features
+
+* **deprecated-chains:** add isDeprecated flag and mark Lens as such ([#801](https://github.com/cowprotocol/cow-sdk/issues/801)) ([e0663c6](https://github.com/cowprotocol/cow-sdk/commit/e0663c69c0b5d92bae45570f27105d6cfd04b96a))
+
 ## [0.7.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.7.2...sdk-config-v0.7.3) (2026-02-02)
 
 
