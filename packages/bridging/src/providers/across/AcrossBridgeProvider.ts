@@ -28,13 +28,13 @@ import {
   base,
   ChainId,
   ChainInfo,
-  isEvmChain,
   EvmCall,
   mainnet,
   optimism,
   polygon,
   SupportedChainId,
   TokenInfo,
+  isSupportedChain,
 } from '@cowprotocol/sdk-config'
 import { CowShedSdk, CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
 import { EnrichedOrder, OrderKind } from '@cowprotocol/sdk-order-book'
@@ -205,7 +205,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     order: EnrichedOrder,
     txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
-    if (!isEvmChain(chainId)) {
+    if (!isSupportedChain(chainId)) {
       return null
     }
 
