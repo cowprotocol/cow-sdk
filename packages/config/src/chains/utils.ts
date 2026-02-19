@@ -11,7 +11,6 @@ import {
 
 /**
  * Type guard to check if a chain ID represents an EVM chain.
- * EVM chains use numeric chain IDs, while non-EVM chains (Bitcoin, Solana) use string identifiers.
  *
  * @param chainId - The chain ID to check
  * @returns True if the chain ID is a number (EVM chain), false otherwise
@@ -20,10 +19,22 @@ export function isEvmChain(chainId: ChainId): chainId is EvmChains {
   return chainId in EvmChains;
 }
 
+/**
+ * Type guard to check if a chain ID represents an Non EVM chain
+ *
+ * @param chainId - The chain ID to check
+ * @returns True if the chain ID is chainId is Non EVM chain (EVM chain), false otherwise
+ */
 export function isNonEvmChain(chainId : ChainId): chainId is NonEvmChains {
   return chainId in NonEvmChains;
 }
 
+/**
+ * Type guard to check if a chain ID represents an BTC chain
+ *
+ * @param chainId - The chain ID to check
+ * @returns True if the chain ID is chainId is BTC, false otherwise
+ */
 export function isBtcChain(chainId: ChainId): chainId is NonEvmChains.BITCOIN {
   return chainId === NonEvmChains.BITCOIN;
 }
