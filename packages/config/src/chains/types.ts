@@ -28,6 +28,7 @@ export enum NonEvmChains {
 
 /**
  * Use this when you need to reference chain IDs like SupportedChainId.MAINNET
+ * it's a union of all the EvmChains that supported directly by CoW Protocol.
  */
 export const SupportedChainId = {
   MAINNET: EvmChains.MAINNET,
@@ -52,40 +53,12 @@ export const SupportedChainId = {
 export type SupportedChainId = (typeof SupportedChainId)[keyof typeof SupportedChainId]
 
 /**
- * Chains where you can buy tokens using the bridge functionality. This enum contains chains that are not already included in the SupportedEvmChainId enum.
+ * Chains where you can buy tokens using the bridge functionality. These chains are not supported by CoW Protocol
  */
 export const AdditionalTargetChainId = {
   OPTIMISM: EvmChains.OPTIMISM,
   BITCOIN: NonEvmChains.BITCOIN,
 } as const
-
-// This type is needed to make all chains that are defined in SupportedChainId and AdditionalTargetChainId
-// will be required in ALL_CHAINS_SET
-type AllChainsSetType = {
-  [K in keyof typeof SupportedChainId]: (typeof SupportedChainId)[K]
-} & {
-  [K in keyof typeof AdditionalTargetChainId]: (typeof AdditionalTargetChainId)[K]
-}
-
-/**
- * All chains map (enum like) supported by CoW Protocol or available for bridging.
- */
-export const ALL_CHAINS_SET = {
-  MAINNET: SupportedChainId.MAINNET,
-  BNB: SupportedChainId.BNB,
-  GNOSIS_CHAIN: SupportedChainId.GNOSIS_CHAIN,
-  POLYGON: SupportedChainId.POLYGON,
-  LENS: SupportedChainId.LENS,
-  BASE: SupportedChainId.BASE,
-  PLASMA: SupportedChainId.PLASMA,
-  ARBITRUM_ONE: SupportedChainId.ARBITRUM_ONE,
-  AVALANCHE: SupportedChainId.AVALANCHE,
-  INK: SupportedChainId.INK,
-  LINEA: SupportedChainId.LINEA,
-  SEPOLIA: SupportedChainId.SEPOLIA,
-  OPTIMISM: AdditionalTargetChainId.OPTIMISM,
-  BITCOIN: AdditionalTargetChainId.BITCOIN,
-} as const satisfies AllChainsSetType
 
 /**
  * Chains where you can buy tokens using the bridge functionality. This enum contains chains that are not already included in the SupportedEvmChainId enum.
@@ -95,11 +68,7 @@ export type AdditionalTargetChainId = (typeof AdditionalTargetChainId)[keyof typ
 /**
  * This enum contains all the supported chains and some additional ones supported by the different bridges.
  */
-export type TargetChainId = (typeof ALL_CHAINS_SET)[keyof typeof ALL_CHAINS_SET] extends infer T
-  ? T extends number | string
-    ? T
-    : never
-  : never
+export type TargetChainId = EvmChains | NonEvmChains;
 
 /**
  * The chain id of the chain.

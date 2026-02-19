@@ -1,5 +1,13 @@
 import { ADDITIONAL_TARGET_CHAINS_MAP, ALL_SUPPORTED_CHAINS_MAP } from './const'
-import { AdditionalTargetChainId, ChainId, ChainInfo, EvmChains, SupportedChainId, TargetChainId } from './types'
+import {
+  AdditionalTargetChainId,
+  ChainId,
+  ChainInfo,
+  EvmChains,
+  NonEvmChains,
+  SupportedChainId,
+  TargetChainId,
+} from './types'
 
 /**
  * Type guard to check if a chain ID represents an EVM chain.
@@ -8,8 +16,16 @@ import { AdditionalTargetChainId, ChainId, ChainInfo, EvmChains, SupportedChainI
  * @param chainId - The chain ID to check
  * @returns True if the chain ID is a number (EVM chain), false otherwise
  */
-export function isEvmChain(chainId: ChainId): chainId is number {
+export function isEvmChain(chainId: ChainId): chainId is EvmChains {
   return chainId in EvmChains;
+}
+
+export function isNonEvmChain(chainId : ChainId): chainId is NonEvmChains {
+  return chainId in NonEvmChains;
+}
+
+export function isBtcChain(chainId: ChainId): chainId is NonEvmChains.BITCOIN {
+  return chainId === NonEvmChains.BITCOIN;
 }
 
 /**
