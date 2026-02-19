@@ -353,6 +353,32 @@ describe('getQuote', () => {
         )
       })
     })
+
+    it('Should handle decimal protocolFeeBps from quote response', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+      const quoteWithProtocolFee = {
+        ...quoteResponseMock,
+        protocolFeeBps: '0.3',
+      } as OrderQuoteResponse
+      getQuoteMock.mockResolvedValue(quoteWithProtocolFee)
+
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        const { result } = await getQuoteWithSigner(
+          { ...defaultOrderParams, signer: adapters[adapterName].signer },
+          {},
+          orderBookApiMock,
+        )
+
+        const buyAfter = BigInt(quoteResponseMock.quote.buyAmount)
+        const protocolFeeBpsBig = BigInt(Math.round(0.3 * 100_000))
+        const denominator = 10_000n * 100_000n - protocolFeeBpsBig
+        const expectedProtocolFeeAmount = (buyAfter * protocolFeeBpsBig) / denominator
+
+        expect(result.amountsAndCosts.costs.protocolFee.amount.toString()).toBe(expectedProtocolFeeAmount.toString())
+        expect(result.amountsAndCosts.costs.protocolFee.bps).toBe(0.3)
+      }
+    })
   })
 
   describe('Order to sign', () => {

@@ -275,6 +275,29 @@ describe('Calculation of before/after fees amounts', () => {
           bps: protocolFeeBps,
         })
       })
+
+      it('handles protocolFeeBps=0.3 without BigInt conversion errors', () => {
+        const protocolFeeBps = 0.3
+        const orderParams = SELL_ORDER
+
+        const result = getQuoteAmountsAndCosts({
+          orderParams,
+          sellDecimals,
+          buyDecimals,
+          slippagePercentBps: 0,
+          partnerFeeBps: undefined,
+          protocolFeeBps,
+        })
+
+        const buyAfter = BigInt(orderParams.buyAmount)
+        const bps = BigInt(Math.round(protocolFeeBps * 100_000))
+        const denominator = 10_000n * 100_000n - bps
+        const expectedProtocolFeeAmount = (buyAfter * bps) / denominator
+        const expectedBuyBeforeProtocol = buyAfter + expectedProtocolFeeAmount
+
+        expect(result.costs.protocolFee.amount.toString()).toBe(expectedProtocolFeeAmount.toString())
+        expect(result.beforeNetworkCosts.buyAmount.toString()).toBe(expectedBuyBeforeProtocol.toString())
+      })
     })
 
     describe('Buy order', () => {
