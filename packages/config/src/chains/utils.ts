@@ -1,5 +1,43 @@
 import { ADDITIONAL_TARGET_CHAINS_MAP, ALL_SUPPORTED_CHAINS_MAP } from './const'
-import { AdditionalTargetChainId, ChainId, ChainInfo, SupportedChainId, TargetChainId } from './types'
+import {
+  AdditionalTargetChainId,
+  ChainId,
+  ChainInfo,
+  EvmChains,
+  NonEvmChains,
+  SupportedChainId,
+  TargetChainId,
+} from './types'
+
+/**
+ * Type guard to check if a chain ID represents an EVM chain.
+ *
+ * @param chainId - The chain ID to check
+ * @returns True if the chain ID is in the EvmChains enum, false otherwise
+ */
+export function isEvmChain(chainId: ChainId): chainId is EvmChains {
+  return typeof chainId === 'number' && chainId in EvmChains;
+}
+
+/**
+ * Type guard to check if a chain ID represents an Non EVM chain
+ *
+ * @param chainId - The chain ID to check
+ * @returns True if the chain ID is chainId is Non EVM chain (EVM chain), false otherwise
+ */
+export function isNonEvmChain(chainId : ChainId): chainId is NonEvmChains {
+  return typeof chainId === 'string' && chainId in NonEvmChains;
+}
+
+/**
+ * Type guard to check if a chain ID represents an BTC chain
+ *
+ * @param chainId - The chain ID to check
+ * @returns True if the chain ID is chainId is BTC, false otherwise
+ */
+export function isBtcChain(chainId: ChainId): chainId is NonEvmChains.BITCOIN {
+  return chainId === NonEvmChains.BITCOIN;
+}
 
 /**
  * Return the chain info for a given chain id or undefined if the chain is not known (not supported by CoW Protocol or the bridge providers).
@@ -22,14 +60,14 @@ export function getChainInfo(chainId: ChainId): ChainInfo | undefined {
  * Check if the chain is supported by CoW Protocol.
  */
 export function isSupportedChain(chainId: ChainId): chainId is SupportedChainId {
-  return chainId in ALL_SUPPORTED_CHAINS_MAP
+  return isEvmChain(chainId) && chainId in ALL_SUPPORTED_CHAINS_MAP
 }
 
 /**
  * Check if the chain is supported by the bridge providers.
  */
 export function isAdditionalTargetChain(chainId: ChainId): chainId is AdditionalTargetChainId {
-  return chainId in ADDITIONAL_TARGET_CHAINS_MAP
+  return isEvmChain(chainId) && chainId in ADDITIONAL_TARGET_CHAINS_MAP
 }
 
 /**

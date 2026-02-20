@@ -1,21 +1,22 @@
 import { Nullish } from '../types'
-import { getChainInfo, isSupportedChain, SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
-import { AddressKey, getAddressKey } from './address'
+import { ChainId, getChainInfo, isEvmChain, isSupportedChain, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
+import { AddressKey, getAddressKey, getEvmAddressKey, isBtcAddress, isEvmAddress } from './address'
 
 interface TokenLike {
-  chainId: number
+  chainId: ChainId
   address: string
 }
 
 export interface TokenIdentifier {
   address: string
-  chainId: number
+  chainId: ChainId
 }
 
-export type TokenId = `${number}:${AddressKey}`
+export type TokenId = `${ChainId}:${AddressKey}`
 
 export function getTokenId(token: TokenIdentifier): TokenId {
-  return `${token.chainId}:${getAddressKey(token.address)}`
+  const addressKey = getAddressKey(token.address)
+  return `${token.chainId}:${addressKey}` as TokenId
 }
 
 export function areTokensEqual(a: TokenLike | undefined | null, b: TokenLike | undefined | null): boolean {
@@ -25,8 +26,20 @@ export function areTokensEqual(a: TokenLike | undefined | null, b: TokenLike | u
 }
 
 export function areAddressesEqual(a: Nullish<string>, b: Nullish<string>): boolean {
-  if (a && b) {
-    return getAddressKey(a) === getAddressKey(b)
+  if (!a || !b) return false
+
+  const aIsEvm = isEvmAddress(a)
+  const bIsEvm = isEvmAddress(b)
+
+  if (aIsEvm && bIsEvm) {
+    return getEvmAddressKey(a) === getEvmAddressKey(b)
+  }
+
+  const aIsBtc = isBtcAddress(a)
+  const bIsBtc = isBtcAddress(b)
+
+  if (aIsBtc && bIsBtc) {
+    return a === b
   }
 
   return false
@@ -41,5 +54,8 @@ export function isNativeToken(token: TokenLike): boolean {
 }
 
 export function isWrappedNativeToken(token: TokenLike): boolean {
-  return areAddressesEqual(WRAPPED_NATIVE_CURRENCIES[token.chainId as SupportedChainId]?.address, token.address)
+  if (!isEvmChain(token.chainId) || !isSupportedChain(token.chainId)) {
+    return false
+  }
+  return areAddressesEqual(WRAPPED_NATIVE_CURRENCIES[token.chainId]?.address, token.address)
 }

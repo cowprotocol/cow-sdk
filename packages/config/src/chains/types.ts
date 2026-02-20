@@ -1,13 +1,9 @@
 import { TokenInfo } from '../types/tokens'
 
 /**
- * Supported chains and their `chainId` for the SDK.
- *
- * A supported chain, is a chain where CoW Protocol is deployed, so you can sell tokens from there.
- *
- * @enum
- */
-export enum SupportedChainId {
+ * All EVM chains supported by CoW Protocol or available for bridging
+ * */
+export enum EvmChains {
   MAINNET = 1,
   BNB = 56,
   GNOSIS_CHAIN = 100,
@@ -20,28 +16,65 @@ export enum SupportedChainId {
   INK = 57073,
   LINEA = 59144,
   SEPOLIA = 11155111,
-}
-
-/**
- * Chains where you can buy tokens using the bridge functionality. This enum contains chains that are not already included in the SupportedChainId enum.
- */
-export enum AdditionalTargetChainId {
   OPTIMISM = 10,
 }
 
 /**
- * Chains where you can buy tokens using the bridge functionality.
+* All non-EVM available chains that are available for bridging only
+* */
+export enum NonEvmChains {
+  BITCOIN = 'bitcoin',
+}
+
+/**
+ * Use this when you need to reference chain IDs like SupportedChainId.MAINNET
+ * it's a union of all the EvmChains that supported directly by CoW Protocol.
+ */
+export const SupportedChainId = {
+  MAINNET: EvmChains.MAINNET,
+  BNB: EvmChains.BNB,
+  GNOSIS_CHAIN: EvmChains.GNOSIS_CHAIN,
+  POLYGON: EvmChains.POLYGON,
+  LENS: EvmChains.LENS,
+  BASE: EvmChains.BASE,
+  PLASMA: EvmChains.PLASMA,
+  ARBITRUM_ONE: EvmChains.ARBITRUM_ONE,
+  AVALANCHE: EvmChains.AVALANCHE,
+  INK: EvmChains.INK,
+  LINEA: EvmChains.LINEA,
+  SEPOLIA: EvmChains.SEPOLIA,
+} as const
+
+/**
+ * Supported chains and their `chainId` for the SDK.
+ * A supported chain, is a chain where CoW Protocol is deployed, so you can sell tokens from there.
  *
+ */
+export type SupportedChainId = (typeof SupportedChainId)[keyof typeof SupportedChainId]
+
+/**
+ * Chains where you can buy tokens using the bridge functionality. These chains are not supported by CoW Protocol
+ */
+export const AdditionalTargetChainId = {
+  OPTIMISM: EvmChains.OPTIMISM,
+  BITCOIN: NonEvmChains.BITCOIN,
+} as const
+
+/**
+ * Chains where you can buy tokens using the bridge functionality. This enum contains chains that are not already included in the SupportedEvmChainId enum.
+ */
+export type AdditionalTargetChainId = (typeof AdditionalTargetChainId)[keyof typeof AdditionalTargetChainId]
+
+/**
  * This enum contains all the supported chains and some additional ones supported by the different bridges.
  */
-export type TargetChainId = SupportedChainId | AdditionalTargetChainId
+export type TargetChainId = EvmChains | NonEvmChains;
 
 /**
  * The chain id of the chain.
- *
- * TODO: Should we generalize it even more to allow non-EVM chains? We should probably revisit also the chain interface, and some other types.
+ * Can be a number for EVM chains or a string for non-EVM chains (e.g., Bitcoin, Solana) in future.
  */
-export type ChainId = number
+export type ChainId = number | string
 
 export type HttpsString = `https://${string}`
 export type WssString = `wss://${string}`
