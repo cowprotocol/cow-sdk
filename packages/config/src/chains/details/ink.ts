@@ -49,5 +49,4 @@ export const ink: ChainInfo = {
       url: 'https://inkonchain.com/bridge',
     },
   ],
-  isUnderDevelopment: true,
 }
