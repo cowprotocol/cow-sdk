@@ -23,7 +23,7 @@ export enum EvmChains {
 * All non-EVM available chains that are available for bridging only
 * */
 export enum NonEvmChains {
-  BITCOIN = 0,
+  BITCOIN = 'bitcoin',
 }
 
 /**
@@ -74,7 +74,7 @@ export type TargetChainId = EvmChains | NonEvmChains;
  * The chain id of the chain.
  * Can be a number for EVM chains or a string for non-EVM chains (e.g., Bitcoin, Solana) in future.
  */
-export type ChainId = number
+export type ChainId = number | string
 
 export type HttpsString = `https://${string}`
 export type WssString = `wss://${string}`

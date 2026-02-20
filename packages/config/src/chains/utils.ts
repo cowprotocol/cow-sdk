@@ -13,10 +13,10 @@ import {
  * Type guard to check if a chain ID represents an EVM chain.
  *
  * @param chainId - The chain ID to check
- * @returns True if the chain ID is a number (EVM chain), false otherwise
+ * @returns True if the chain ID is in the EvmChains enum, false otherwise
  */
 export function isEvmChain(chainId: ChainId): chainId is EvmChains {
-  return chainId in EvmChains;
+  return typeof chainId === 'number' && chainId in EvmChains;
 }
 
 /**
@@ -26,7 +26,7 @@ export function isEvmChain(chainId: ChainId): chainId is EvmChains {
  * @returns True if the chain ID is chainId is Non EVM chain (EVM chain), false otherwise
  */
 export function isNonEvmChain(chainId : ChainId): chainId is NonEvmChains {
-  return chainId in NonEvmChains;
+  return typeof chainId === 'string' && chainId in NonEvmChains;
 }
 
 /**

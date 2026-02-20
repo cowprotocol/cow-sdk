@@ -5,7 +5,7 @@ import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { ACROSS_DEPOSIT_EVENT_INTERFACE, COW_TRADE_EVENT_INTERFACE } from './const/interfaces'
 import { ACROSS_TOKEN_MAPPING, AcrossChainConfig } from './const/tokens'
 import { ACROSS_SPOOK_CONTRACT_ADDRESSES } from './const/contracts'
-import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
+import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId, TargetChainId, isEvmChain } from '@cowprotocol/sdk-config'
 import { getBigNumber, OrderKind } from '@cowprotocol/sdk-order-book'
 import { getGlobalAdapter, Log } from '@cowprotocol/sdk-common'
 import stringify from 'json-stable-stringify'
@@ -29,8 +29,11 @@ export function getChainConfigs(
   return { sourceChainConfig, targetChainConfig }
 }
 
-function getChainConfig(chainId: number): AcrossChainConfig | undefined {
-  return ACROSS_TOKEN_MAPPING[chainId as unknown as TargetChainId]
+function getChainConfig(chainId: TargetChainId): AcrossChainConfig | undefined {
+  if (!isEvmChain(chainId)) {
+    return undefined
+  }
+  return ACROSS_TOKEN_MAPPING[chainId]
 }
 
 export function getTokenSymbol(tokenAddress: string, chainConfig: AcrossChainConfig): string | undefined {
