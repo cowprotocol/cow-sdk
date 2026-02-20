@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.6.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.6.0...sdk-contracts-ts-v1.6.1) (2026-02-20)
+
+
+### 🐛 Bug Fixes
+
+* **networks:** remove deprecated network check/error from trading sdk ([#804](https://github.com/cowprotocol/cow-sdk/issues/804)) ([210d26e](https://github.com/cowprotocol/cow-sdk/commit/210d26e556fd79c8a3ac7b8f45f33e766ade4e18))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.6.2
+    * @cowprotocol/sdk-config bumped to 0.8.1
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.8
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.8
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.8
+
 ## [1.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.5.0...sdk-contracts-ts-v1.6.0) (2026-02-18)
 
 
