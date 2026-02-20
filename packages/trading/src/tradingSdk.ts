@@ -28,7 +28,7 @@ import { getEthFlowContract } from './getEthFlowTransaction'
 import { getEthFlowCancellation, getSettlementCancellation } from './onChainCancellation'
 import { resolveOrderBookApi } from './utils/resolveOrderBookApi'
 import { getSettlementContract } from './getSettlementContract'
-import { COW_PROTOCOL_VAULT_RELAYER_ADDRESS, isChainDeprecated } from '@cowprotocol/sdk-config'
+import { COW_PROTOCOL_VAULT_RELAYER_ADDRESS } from '@cowprotocol/sdk-config'
 import { resolveSigner } from './utils/resolveSigner'
 
 export type WithPartialTraderParams<T> = T & Partial<TraderParameters>
@@ -331,13 +331,8 @@ export class TradingSdk {
       appCode: appCode || this.traderParams.appCode,
       env: env || this.traderParams.env,
     }
-    assertTraderParams(traderParams)
 
-    if (isChainDeprecated(traderParams.chainId)) {
-      throw new Error(
-        `Trading is not supported on deprecated chain ${traderParams.chainId}.`,
-      )
-    }
+    assertTraderParams(traderParams)
 
     return {
       ...params,
