@@ -331,6 +331,7 @@ export class TradingSdk {
       appCode: appCode || this.traderParams.appCode,
       env: env || this.traderParams.env,
     }
+
     assertTraderParams(traderParams)
 
     return {
