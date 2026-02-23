@@ -44,6 +44,20 @@ export const ALL_SUPPORTED_CHAIN_IDS: SupportedChainId[] = ALL_SUPPORTED_CHAINS.
 ) as SupportedChainId[]
 
 /**
+ * Chains where new trading is allowed (excludes deprecated chains).
+ */
+export const TRADABLE_SUPPORTED_CHAINS: ChainInfo[] = Object.values(ALL_SUPPORTED_CHAINS_MAP).filter(
+  (chain) => !chain.isDeprecated,
+)
+
+/**
+ * Chain ids where new trading is allowed (excludes deprecated chains).
+ */
+export const TRADABLE_SUPPORTED_CHAIN_IDS: SupportedChainId[] = TRADABLE_SUPPORTED_CHAINS.map(
+  (chain) => chain.id,
+) as SupportedChainId[]
+
+/**
  * Maps a chain where you can bridge to, but not sell tokens from (not supported by CoW Protocol)
  */
 export const ADDITIONAL_TARGET_CHAINS_MAP: Record<AdditionalTargetChainId, ChainInfo> = {
