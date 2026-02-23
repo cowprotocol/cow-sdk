@@ -84,11 +84,10 @@ Starting from the raw quote, costs are applied in this order:
                    └─────┬──────┘                        └─────┬──────┘
                          │                                     │
                ┌─────────┴───────────┐               ┌────────┴────────────┐
-               │ beforeNetworkCosts  │               │ beforeNetworkCosts  │
-               │ (= afterProtocol)   │               │ (= afterProtocol)   │
+               │ beforeNetworkCosts  │  What the API │ beforeNetworkCosts  │
+               │ (= afterProtocol)   │  returns      │ (= afterProtocol)   │
                │ sell · buy          │               │ sell · buy          │
-               └─────────┬───────────┘               └────────┬────────────┘
-                         │                                     │
+               └─────────┬───────────┘               └────────┬────────────┘                         │                                     │
                    ┌─────┴──────┐                        ┌─────┴──────┐
                    │Network fee │                        │Network fee │
                    │ -sell -buy │                        │ +sell      │
@@ -96,8 +95,8 @@ Starting from the raw quote, costs are applied in this order:
                          │                                     │
                ┌─────────┴───────────┐               ┌────────┴────────────┐
                │ afterNetworkCosts   │               │ afterNetworkCosts   │
-  What the API │ sell · buy          │  What the API │ sell · buy          │
-  returns      └─────────┬───────────┘  returns      └────────┬────────────┘
+  What the API │ sell · buy          │               │ sell · buy          │
+  returns      └─────────┬───────────┘               └────────┬────────────┘
                          │                                     │
                    ┌─────┴──────┐                        ┌─────┴──────┐
                    │Partner fee │                        │Partner fee │
@@ -276,8 +275,8 @@ It is applied to the non-fixed side after all other fees:
 ```
 slippageAmount(amount) = amount * slippageBps / 10000
 
-SELL: afterSlippage.buyAmount  = afterPartnerFees.buyAmount  - slippageAmount(buyAmount)
-BUY:  afterSlippage.sellAmount = afterPartnerFees.sellAmount + slippageAmount(sellAmount)
+SELL: afterSlippage.buyAmount  = afterPartnerFees.buyAmount  - slippageAmount(afterPartnerFees.buyAmount)
+BUY:  afterSlippage.sellAmount = afterPartnerFees.sellAmount + slippageAmount(afterPartnerFees.sellAmount)
 ```
 
 For example, with 200 BPS (2%) slippage on a sell order receiving 1000 COW:
