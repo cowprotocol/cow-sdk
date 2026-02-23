@@ -19,6 +19,7 @@ import {
   DEFAULT_EXTRA_GAS_PROXY_CREATION,
   DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION,
 } from '../../const'
+import stringify from 'json-stable-stringify'
 
 // Mock BungeeApi
 jest.mock('./BungeeApi')
@@ -270,6 +271,7 @@ adapterNames.forEach((adapterName) => {
 
         const expectedQuote: BungeeQuoteResult = {
           isSell: true,
+          quoteBody: stringify(mockBungeeQuote),
           amountsAndCosts: {
             beforeFee: { sellAmount: 1000000000000000000n, buyAmount: 1000000n },
             afterFee: { sellAmount: 1000000000000000000n, buyAmount: 1000000n },

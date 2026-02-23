@@ -47,6 +47,9 @@ export async function postCoWProtocolTrade(
     appData.appDataKeccak256,
   )
 
+  log('Uploading app-data')
+  await orderBookApi.uploadAppData(appDataKeccak256, fullAppData)
+
   log('Signing order...')
 
   const { signature, signingScheme } = await (async () => {

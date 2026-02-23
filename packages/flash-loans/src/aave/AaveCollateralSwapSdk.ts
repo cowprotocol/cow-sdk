@@ -17,6 +17,7 @@ import {
   CollateralOrderData,
   CollateralParameters,
   CollateralPermitData,
+  CollateralSwapHooksGasLimit,
   CollateralSwapOrder,
   CollateralSwapParams,
   CollateralSwapPostParams,
@@ -219,6 +220,7 @@ export class AaveCollateralSwapSdk {
       owner: trader,
       amount: sellAmountToSign.toString(),
       validTo,
+      hooksGasLimit: params.settings?.hooksGasLimit,
     }
   }
 
@@ -299,6 +301,7 @@ export class AaveCollateralSwapSdk {
         receiver: instanceAddress,
       },
       collateralPermit,
+      params.hooksGasLimit,
     )
 
     const swapSettings: SwapAdvancedSettings = {
@@ -532,6 +535,7 @@ export class AaveCollateralSwapSdk {
     hookAmounts: FlashLoanHookAmounts,
     order: EncodedOrder,
     collateralPermit?: CollateralPermitData,
+    hooksGasLimit?: CollateralSwapHooksGasLimit,
   ): Promise<LatestAppDataDocVersion['metadata']['hooks']> {
     const preHookCallData = this.getPreHookCallData(
       flashLoanType,
@@ -549,7 +553,7 @@ export class AaveCollateralSwapSdk {
         {
           target: this.aaveAdapterFactory[chainId],
           callData: preHookCallData,
-          gasLimit: this.hooksGasLimit.pre.toString(),
+          gasLimit: (hooksGasLimit?.preHookGasLimit ?? this.hooksGasLimit.pre).toString(),
           dappId,
         },
       ],
@@ -557,7 +561,7 @@ export class AaveCollateralSwapSdk {
         {
           target: expectedInstanceAddress,
           callData: postHookCallData,
-          gasLimit: this.hooksGasLimit.post.toString(),
+          gasLimit: (hooksGasLimit?.postHookGasLimit ?? this.hooksGasLimit.post).toString(),
           dappId,
         },
       ],

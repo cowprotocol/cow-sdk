@@ -17,6 +17,7 @@ export enum SupportedChainId {
   PLASMA = 9745,
   ARBITRUM_ONE = 42161,
   AVALANCHE = 43114,
+  INK = 57073,
   LINEA = 59144,
   SEPOLIA = 11155111,
 }
@@ -42,23 +43,27 @@ export type TargetChainId = SupportedChainId | AdditionalTargetChainId
  */
 export type ChainId = number
 
+export type HttpsString = `https://${string}`
+export type WssString = `wss://${string}`
+export type Address = `0x${string}`;
+
 export interface ThemedImage {
   light: string
   dark: string
 }
 
 export interface WebUrl {
-  url: string
+  url: HttpsString
   name: string
 }
 
 export type ChainRpcUrls = {
-  http: readonly string[]
-  webSocket?: readonly string[]
+  http: readonly HttpsString[]
+  webSocket?: readonly WssString[]
 }
 
 export type ChainContract = {
-  address: string
+  address: Address
   blockCreated?: number | undefined
 }
 
@@ -163,4 +168,10 @@ export interface ChainInfo {
    * related services running, contracts deployed, etc).
    */
   readonly isUnderDevelopment?: boolean
+
+  /**
+   * Whether the chain is deprecated (no new trading).
+   * The chain remains in the SDK regardless for history and Explorer.
+   */
+  readonly isDeprecated?: boolean
 }

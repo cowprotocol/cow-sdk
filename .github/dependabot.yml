@@ -3,7 +3,9 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "monthly"
+    # Disable all pull requests
+    open-pull-requests-limit: 0
     reviewers:
       - "cowprotocol/frontend"
     commit-message:

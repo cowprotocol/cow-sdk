@@ -3,16 +3,16 @@ import { TokenInfo } from '@cowprotocol/sdk-config'
 import { MultiQuoteResult, BestQuoteProviderContext, DefaultBridgeProvider } from '../../types'
 import { TradingSdk } from '@cowprotocol/sdk-trading'
 import {
-  createBridgeRequestTimeoutPromise,
   executeProviderQuotes,
+  isBetterError,
   isBetterQuote,
   resolveProvidersToQuery,
   safeCallBestQuoteCallback,
   validateCrossChainRequest,
 } from '../utils'
-import { getQuoteWithBridge } from '../getQuoteWithBridge'
 import { BaseBestQuoteStrategy, MultiQuoteRequest } from './QuoteStrategy'
 import { BridgeProviderError } from '../../errors'
+import { fetchMultiQuote } from './utils'
 
 const DEFAULT_TOTAL_TIMEOUT_MS = 40_000 // 40 seconds
 const DEFAULT_PROVIDER_TIMEOUT_MS = 20_000 // 20 seconds
@@ -48,9 +48,9 @@ export class BestQuoteStrategy extends BaseBestQuoteStrategy {
       providerTimeout = DEFAULT_PROVIDER_TIMEOUT_MS,
     } = options || {}
 
-    // Keep track of the current best result and first error using mutable containers
+    // Keep track of the current best result and best error using mutable containers
     const bestResult = { current: null as MultiQuoteResult | null }
-    const firstError = { current: null as MultiQuoteResult | null }
+    const bestError = { current: null as MultiQuoteResult | null }
     const promises: Promise<void>[] = []
 
     // Create a promise for each provider that handles both progressive callbacks and best result tracking
@@ -62,7 +62,7 @@ export class BestQuoteStrategy extends BaseBestQuoteStrategy {
         providerTimeout,
         onQuoteResult,
         bestResult,
-        firstError,
+        bestError,
       }
 
       const promise = this.createBestQuoteProviderPromise(context, tradingSdk)
@@ -72,42 +72,18 @@ export class BestQuoteStrategy extends BaseBestQuoteStrategy {
     // Execute all provider quotes with timeout handling
     await executeProviderQuotes(promises, totalTimeout, providers)
 
-    // Return best result if available, otherwise return first error
-    return bestResult.current || firstError.current
+    // Return best result if available, otherwise return best error (highest priority)
+    return bestResult.current || bestError.current
   }
 
   private createBestQuoteProviderPromise(context: BestQuoteProviderContext, tradingSdk: TradingSdk): Promise<void> {
-    const { provider, quoteBridgeRequest, advancedSettings, providerTimeout, onQuoteResult, bestResult, firstError } =
-      context
+    const { provider, onQuoteResult, bestResult, bestError } = context
 
     return (async (): Promise<void> => {
       try {
-        const baseParams = {
-          swapAndBridgeRequest: quoteBridgeRequest,
-          advancedSettings,
-          tradingSdk,
-          provider,
-          quoteSigner: advancedSettings?.quoteSigner,
-        } as const
+        const result = await fetchMultiQuote(context, tradingSdk, this.intermediateTokensCache)
 
-        const request = this.intermediateTokensCache
-          ? {
-              ...baseParams,
-              intermediateTokensCache: this.intermediateTokensCache,
-            }
-          : baseParams
-
-        // Race between the actual quote request and the provider timeout
-        const quote = await Promise.race([
-          getQuoteWithBridge(provider, request),
-          createBridgeRequestTimeoutPromise(providerTimeout, `Provider ${provider.info.dappId}`),
-        ])
-
-        const result: MultiQuoteResult = {
-          providerDappId: provider.info.dappId,
-          quote,
-          error: undefined,
-        }
+        if (!result) return
 
         // Check if this quote is better than the current best
         if (isBetterQuote(result, bestResult.current)) {
@@ -122,9 +98,9 @@ export class BestQuoteStrategy extends BaseBestQuoteStrategy {
           error: error instanceof Error ? error : new BridgeProviderError(String(error), {}),
         }
 
-        // Store the first error if we don't have one yet
-        if (!firstError.current) {
-          firstError.current = errorResult
+        // Store the best error (highest priority) instead of just the first one
+        if (isBetterError(errorResult, bestError.current)) {
+          bestError.current = errorResult
         }
       }
     })()

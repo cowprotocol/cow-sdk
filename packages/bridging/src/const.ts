@@ -1,6 +1,6 @@
 import { RAW_FILES_PATH } from '@cowprotocol/sdk-config'
 
-export const RAW_PROVIDERS_FILES_PATH = `${RAW_FILES_PATH}/src/bridging/providers`
+export const RAW_PROVIDERS_FILES_PATH = `${RAW_FILES_PATH}/bridging/providers`
 // Based on https://dashboard.tenderly.co/shoom/project/simulator/a5e29dac-d0f2-407f-9e3d-d1b916da595b
 export const DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION = 240_000
 export const DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION = 200_000
@@ -8,3 +8,5 @@ export const DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION = 200_000
 export const COW_SHED_PROXY_CREATION_GAS = 360_000
 export const DEFAULT_EXTRA_GAS_PROXY_CREATION = 400_000
 export const HOOK_DAPP_BRIDGE_PROVIDER_PREFIX = 'cow-sdk://bridging/providers'
+
+export const DEFAULT_BRIDGE_SLIPPAGE_BPS = 50 // 0.5%

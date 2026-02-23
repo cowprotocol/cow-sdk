@@ -57,4 +57,5 @@ export const lens: ChainInfo = {
     },
   ],
   isZkSync: true,
+  isDeprecated: true,
 }

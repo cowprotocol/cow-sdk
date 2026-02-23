@@ -13,6 +13,7 @@ import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../errors'
 import { GetQuoteWithBridgeParams } from './types'
 import { getCacheKey } from './helpers'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
+import { determineIntermediateToken } from './determineIntermediateToken'
 
 export interface GetIntermediateSwapResultParams<T extends BridgeQuoteResult> {
   provider: BridgeProvider<T>
@@ -37,7 +38,7 @@ export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
   params,
   getBridgeHook,
 }: GetIntermediateSwapResultParams<T>): Promise<GetIntermediateSwapResultResult> {
-  const { swapAndBridgeRequest, advancedSettings, tradingSdk } = params
+  const { swapAndBridgeRequest, advancedSettings, tradingSdk, allowIntermediateEqSellToken } = params
   const {
     kind,
     sellTokenChainId,
@@ -62,14 +63,16 @@ export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
     intermediateTokensCache: params.intermediateTokensCache,
   })
 
-  // We just pick the first intermediate token for now
-  const intermediateToken = intermediateTokens[0]
+  // Determine the best intermediate token based on priority (USDC/USDT > CMS correlated > others)
+  const intermediateToken = await determineIntermediateToken(
+    sellTokenChainId,
+    sellTokenAddress,
+    intermediateTokens,
+    params.advancedSettings?.getCorrelatedTokens,
+    allowIntermediateEqSellToken,
+  )
 
   log(`Using ${intermediateToken?.name ?? intermediateToken?.address} as intermediate tokens`)
-
-  if (!intermediateToken) {
-    throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_INTERMEDIATE_TOKENS, { intermediateTokens })
-  }
 
   const bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount = {
     ...swapAndBridgeRequest,
@@ -162,7 +165,7 @@ async function getIntermediateTokens<T extends BridgeQuoteResult>(params: {
   return intermediateTokens
 }
 
-async function getSwapQuote(params: {
+export async function getSwapQuote(params: {
   swapAndBridgeRequest: QuoteBridgeRequest
   bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount
   tradingSdk: TradingSdk
@@ -176,7 +179,9 @@ async function getSwapQuote(params: {
     sellTokenAddress,
     buyTokenChainId: _buyTokenChainId,
     buyTokenAddress: _buyTokenAddress,
+    bridgeSlippageBps: _bridgeSlippageBps,
     amount,
+    swapSlippageBps,
     ...rest
   } = swapAndBridgeRequest
 
@@ -192,6 +197,7 @@ async function getSwapQuote(params: {
     buyToken: intermediateToken,
     buyTokenDecimals: intermediaryTokenDecimals,
     amount: amount.toString(),
+    slippageBps: swapSlippageBps,
     signer,
   }
   const { signer: _, ...swapParamsToLog } = swapParams

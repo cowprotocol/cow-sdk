@@ -11,6 +11,7 @@ import { bnb } from '../details/bnb'
 import { optimism } from '../details/optimism'
 import { linea } from '../details/linea'
 import { plasma } from '../details/plasma'
+import { ink } from '../details/ink'
 
 /**
  * Details of all supported chains.
@@ -26,6 +27,7 @@ export const ALL_SUPPORTED_CHAINS_MAP: Record<SupportedChainId, ChainInfo> = {
   [SupportedChainId.LENS]: lens,
   [SupportedChainId.PLASMA]: plasma,
   [SupportedChainId.LINEA]: linea,
+  [SupportedChainId.INK]: ink,
   [SupportedChainId.SEPOLIA]: sepolia,
 }
 
@@ -38,6 +40,20 @@ export const ALL_SUPPORTED_CHAINS = Object.values(ALL_SUPPORTED_CHAINS_MAP)
  * The list of supported chains.
  */
 export const ALL_SUPPORTED_CHAIN_IDS: SupportedChainId[] = ALL_SUPPORTED_CHAINS.map(
+  (chain) => chain.id,
+) as SupportedChainId[]
+
+/**
+ * Chains where new trading is allowed (excludes deprecated chains).
+ */
+export const TRADABLE_SUPPORTED_CHAINS: ChainInfo[] = Object.values(ALL_SUPPORTED_CHAINS_MAP).filter(
+  (chain) => !chain.isDeprecated,
+)
+
+/**
+ * Chain ids where new trading is allowed (excludes deprecated chains).
+ */
+export const TRADABLE_SUPPORTED_CHAIN_IDS: SupportedChainId[] = TRADABLE_SUPPORTED_CHAINS.map(
   (chain) => chain.id,
 ) as SupportedChainId[]
 

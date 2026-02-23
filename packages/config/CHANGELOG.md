@@ -1,5 +1,95 @@
 # Changelog
 
+## [0.8.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.8.0...sdk-config-v0.8.1) (2026-02-20)
+
+
+### 🐛 Bug Fixes
+
+* **networks:** remove isUnderDevelopment flag from Ink ([#803](https://github.com/cowprotocol/cow-sdk/issues/803)) ([8baeaa6](https://github.com/cowprotocol/cow-sdk/commit/8baeaa657f0f7760ea26917b68cbf0ab70ac4905))
+* **networks:** remove isUnderDevelopment flag from Ink ([#803](https://github.com/cowprotocol/cow-sdk/issues/803)) ([8baeaa6](https://github.com/cowprotocol/cow-sdk/commit/8baeaa657f0f7760ea26917b68cbf0ab70ac4905))
+
+## [0.8.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.7.3...sdk-config-v0.8.0) (2026-02-18)
+
+
+### ✨ Features
+
+* **deprecated-chains:** add isDeprecated flag and mark Lens as such ([#801](https://github.com/cowprotocol/cow-sdk/issues/801)) ([e0663c6](https://github.com/cowprotocol/cow-sdk/commit/e0663c69c0b5d92bae45570f27105d6cfd04b96a))
+
+## [0.7.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.7.2...sdk-config-v0.7.3) (2026-02-02)
+
+
+### 🔧 Miscellaneous
+
+* revert revert Ink network ([#789](https://github.com/cowprotocol/cow-sdk/issues/789)) ([a00dbbd](https://github.com/cowprotocol/cow-sdk/commit/a00dbbd6a26238bcee2d4452487d16551560c59f))
+
+## [0.7.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.7.1...sdk-config-v0.7.2) (2026-02-02)
+
+
+### 🐛 Bug Fixes
+
+* support decimals in protocolFeeBps ([#787](https://github.com/cowprotocol/cow-sdk/issues/787)) ([f53ae65](https://github.com/cowprotocol/cow-sdk/commit/f53ae65931d85e354779767ed67e0e4df944a2bc))
+
+## [0.7.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.7.0...sdk-config-v0.7.1) (2026-01-28)
+
+
+### 🐛 Bug Fixes
+
+* **ink:** swap Ink logo with filled version ([#783](https://github.com/cowprotocol/cow-sdk/issues/783)) ([bfc0ba7](https://github.com/cowprotocol/cow-sdk/commit/bfc0ba72108bf376bdcdd2194ba312c6b8a50e3a))
+
+## [0.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.6.3...sdk-config-v0.7.0) (2026-01-28)
+
+
+### ✨ Features
+
+* **ink:** reapply "feat/COW-163: Add Ink network ([#781](https://github.com/cowprotocol/cow-sdk/issues/781))" ([7c23332](https://github.com/cowprotocol/cow-sdk/commit/7c23332dac4f8c91d5f75ae68297906e20f20362))
+
+## [0.6.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.6.2...sdk-config-v0.6.3) (2026-01-19)
+
+
+### 🐛 Bug Fixes
+
+* unify spelling for chain explorers ([#773](https://github.com/cowprotocol/cow-sdk/issues/773)) ([e89c4ba](https://github.com/cowprotocol/cow-sdk/commit/e89c4baa769b9f14982e8f4c7d19fdb8a6e2e5f6))
+
+## [0.6.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.6.1...sdk-config-v0.6.2) (2025-12-11)
+
+
+### 🐛 Bug Fixes
+
+* remove isUnderDevelopment flag from plasma ([#739](https://github.com/cowprotocol/cow-sdk/issues/739)) ([b9cf7b7](https://github.com/cowprotocol/cow-sdk/commit/b9cf7b7a6405d27b11719128a7680a771bc3e602))
+
+## [0.6.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.6.0...sdk-config-v0.6.1) (2025-12-05)
+
+
+### 🐛 Bug Fixes
+
+* linea no longer under dev ([#734](https://github.com/cowprotocol/cow-sdk/issues/734)) ([548bf29](https://github.com/cowprotocol/cow-sdk/commit/548bf2917a71117bf981b254d0211baacdbc9fff))
+
+## [0.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.5.0...sdk-config-v0.6.0) (2025-12-04)
+
+
+### ✨ Features
+
+* use aws for token and chain images ([#724](https://github.com/cowprotocol/cow-sdk/issues/724)) ([1b23c5e](https://github.com/cowprotocol/cow-sdk/commit/1b23c5e5f7e1763b710b95f444ad052395808277))
+
+
+### 🔧 Miscellaneous
+
+* revert use aws for token and chain images ([#724](https://github.com/cowprotocol/cow-sdk/issues/724)) ([f73bc96](https://github.com/cowprotocol/cow-sdk/commit/f73bc96156796ce4928f64f963295501dfc69a5c))
+
+## [0.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.4.1...sdk-config-v0.5.0) (2025-12-03)
+
+
+### ✨ Features
+
+* use aws for token and chain images ([#724](https://github.com/cowprotocol/cow-sdk/issues/724)) ([2a8e220](https://github.com/cowprotocol/cow-sdk/commit/2a8e2205acc5143efecbc9caee89d01f32570e0d))
+
+## [0.4.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.4.0...sdk-config-v0.4.1) (2025-11-27)
+
+
+### 🐛 Bug Fixes
+
+* use the blue linea logo instead of the yellow one ([#717](https://github.com/cowprotocol/cow-sdk/issues/717)) ([e044446](https://github.com/cowprotocol/cow-sdk/commit/e0444463b7097b8ebc0134aeacfdf460e4b51684))
+
 ## [0.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.3.0...sdk-config-v0.4.0) (2025-11-24)
 
 

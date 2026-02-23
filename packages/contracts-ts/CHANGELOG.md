@@ -1,5 +1,239 @@
 # Changelog
 
+## [1.6.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.6.0...sdk-contracts-ts-v1.6.1) (2026-02-20)
+
+
+### 🐛 Bug Fixes
+
+* **networks:** remove deprecated network check/error from trading sdk ([#804](https://github.com/cowprotocol/cow-sdk/issues/804)) ([210d26e](https://github.com/cowprotocol/cow-sdk/commit/210d26e556fd79c8a3ac7b8f45f33e766ade4e18))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.6.2
+    * @cowprotocol/sdk-config bumped to 0.8.1
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.8
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.8
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.8
+
+## [1.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.5.0...sdk-contracts-ts-v1.6.0) (2026-02-18)
+
+
+### ✨ Features
+
+* **deprecated-chains:** add isDeprecated flag and mark Lens as such ([#801](https://github.com/cowprotocol/cow-sdk/issues/801)) ([e0663c6](https://github.com/cowprotocol/cow-sdk/commit/e0663c69c0b5d92bae45570f27105d6cfd04b96a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.6.1
+    * @cowprotocol/sdk-config bumped to 0.8.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.7
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.7
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.7
+
+## [1.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.4.2...sdk-contracts-ts-v1.5.0) (2026-02-05)
+
+
+### ✨ Features
+
+* move address utils ([#795](https://github.com/cowprotocol/cow-sdk/issues/795)) ([d18212c](https://github.com/cowprotocol/cow-sdk/commit/d18212c868ca2c16525a530f7914c9440f147414))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.6.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.6
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.6
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.6
+
+## [1.4.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.4.1...sdk-contracts-ts-v1.4.2) (2026-02-02)
+
+
+### 🔧 Miscellaneous
+
+* revert revert Ink network ([#789](https://github.com/cowprotocol/cow-sdk/issues/789)) ([a00dbbd](https://github.com/cowprotocol/cow-sdk/commit/a00dbbd6a26238bcee2d4452487d16551560c59f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.4
+    * @cowprotocol/sdk-config bumped to 0.7.3
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.5
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.5
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.5
+
+## [1.4.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.4.0...sdk-contracts-ts-v1.4.1) (2026-02-02)
+
+
+### 🐛 Bug Fixes
+
+* support decimals in protocolFeeBps ([#787](https://github.com/cowprotocol/cow-sdk/issues/787)) ([f53ae65](https://github.com/cowprotocol/cow-sdk/commit/f53ae65931d85e354779767ed67e0e4df944a2bc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.3
+    * @cowprotocol/sdk-config bumped to 0.7.2
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.4
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.4
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.4
+
+## [1.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.3.0...sdk-contracts-ts-v1.4.0) (2026-01-28)
+
+
+### ✨ Features
+
+* allow new code property in referrer schema ([#774](https://github.com/cowprotocol/cow-sdk/issues/774)) ([2b648b6](https://github.com/cowprotocol/cow-sdk/commit/2b648b6a1db03fd34002c49572d8e8e556d03593))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.2
+    * @cowprotocol/sdk-config bumped to 0.7.1
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.3
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.3
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.3
+
+## [1.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.2.0...sdk-contracts-ts-v1.3.0) (2026-01-28)
+
+
+### ✨ Features
+
+* **ink:** reapply "feat/COW-163: Add Ink network ([#781](https://github.com/cowprotocol/cow-sdk/issues/781))" ([7c23332](https://github.com/cowprotocol/cow-sdk/commit/7c23332dac4f8c91d5f75ae68297906e20f20362))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.1
+    * @cowprotocol/sdk-config bumped to 0.7.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.2
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.2
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.2
+
+## [1.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.1.1...sdk-contracts-ts-v1.2.0) (2026-01-22)
+
+
+### ✨ Features
+
+* **bridge:** add a flag to control intermediate=sell token ([#777](https://github.com/cowprotocol/cow-sdk/issues/777)) ([588dffa](https://github.com/cowprotocol/cow-sdk/commit/588dffaf418b8220293fe803186e3801597282d0))
+
+## [1.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.1.0...sdk-contracts-ts-v1.1.1) (2026-01-21)
+
+
+### 🐛 Bug Fixes
+
+* add optional apiKey for NearIntentsBridgeProvider ([#775](https://github.com/cowprotocol/cow-sdk/issues/775)) ([7546a4c](https://github.com/cowprotocol/cow-sdk/commit/7546a4c75fe43b5ee8381a45eb6608d5e8593436))
+
+## [1.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.0.0...sdk-contracts-ts-v1.1.0) (2026-01-19)
+
+
+### ✨ Features
+
+* **bridge:** allow sell token as intermediate token ([#768](https://github.com/cowprotocol/cow-sdk/issues/768)) ([8c367ac](https://github.com/cowprotocol/cow-sdk/commit/8c367ac704ad10003618c8916e32529c5c9eb815))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.0
+    * @cowprotocol/sdk-config bumped to 0.6.3
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.1
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.1
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.1
+
+## [1.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.8.1...sdk-contracts-ts-v1.0.0) (2025-12-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* **bridge:** split swap and bridge slippages ([#750](https://github.com/cowprotocol/cow-sdk/issues/750))
+
+### ✨ Features
+
+* **bridge:** split swap and bridge slippages ([#750](https://github.com/cowprotocol/cow-sdk/issues/750)) ([3ae7b57](https://github.com/cowprotocol/cow-sdk/commit/3ae7b574d1215ae598ec0a519ec003a9f21b7a7f))
+
+## [0.8.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.8.0...sdk-contracts-ts-v0.8.1) (2025-12-11)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.6.2
+
+## [0.8.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.7.4...sdk-contracts-ts-v0.8.0) (2025-12-10)
+
+
+### ✨ Features
+
+* **bridge:** determine intermediate token ([#738](https://github.com/cowprotocol/cow-sdk/issues/738)) ([381e885](https://github.com/cowprotocol/cow-sdk/commit/381e885d398623cfd731b439e7e62e8b863736c8))
+
+
+### 🔧 Miscellaneous
+
+* release main ([#741](https://github.com/cowprotocol/cow-sdk/issues/741)) ([32fb8bb](https://github.com/cowprotocol/cow-sdk/commit/32fb8bbe6b1172c2666f330d0d50cdc2f7c2554f))
+* revert not published release ([5facf05](https://github.com/cowprotocol/cow-sdk/commit/5facf05c67121404b7b5aa1e77950961b06eca81))
+
+## [0.7.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.7.3...sdk-contracts-ts-v0.7.4) (2025-12-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.6.1
+
+## [0.7.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.7.2...sdk-contracts-ts-v0.7.3) (2025-12-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.6.0
+
+## [0.7.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.7.1...sdk-contracts-ts-v0.7.2) (2025-12-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.5.0
+
+## [0.7.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.7.0...sdk-contracts-ts-v0.7.1) (2025-11-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.4.1
+
 ## [0.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v0.6.0...sdk-contracts-ts-v0.7.0) (2025-11-24)
 
 

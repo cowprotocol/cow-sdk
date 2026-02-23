@@ -36,6 +36,7 @@ export class SingleQuoteStrategy extends BaseSingleQuoteStrategy {
         advancedSettings,
         tradingSdk,
         quoteSigner: advancedSettings?.quoteSigner,
+        allowIntermediateEqSellToken: advancedSettings?.allowIntermediateEqSellToken,
       } as const
 
       const request = this.intermediateTokensCache

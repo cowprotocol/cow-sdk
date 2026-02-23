@@ -1,7 +1,7 @@
 import { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
 import { BridgeDeposit, BridgeHook, HookBridgeProvider, BridgeQuoteResult, QuoteBridgeRequest } from '../../types'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
-import { EvmCall, SupportedChainId } from '@cowprotocol/sdk-config'
+import { ALL_SUPPORTED_CHAINS, EvmCall, SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { MOCK_CALL } from './mockData'
 import { BaseMockBridgeProvider } from './BaseMockBridgeProvider'
@@ -14,7 +14,7 @@ export class MockHookBridgeProvider extends BaseMockBridgeProvider implements Ho
 
   info = {
     name,
-    logoUrl: `${RAW_PROVIDERS_FILES_PATH}/mock/mock-logo.png`,
+    logoUrl: `${RAW_PROVIDERS_FILES_PATH}/mock/mock-logo.webp`,
     dappId: 'dapp-id-' + name,
     website: `https://mock.com/${name}`,
     type: providerType,
@@ -60,5 +60,9 @@ export class MockHookBridgeProvider extends BaseMockBridgeProvider implements Ho
       signer: '',
       appCode: 'MOCK',
     }
+  }
+
+  async getNetworks() {
+    return ALL_SUPPORTED_CHAINS
   }
 }

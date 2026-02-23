@@ -352,6 +352,64 @@ const result = await flashLoanSdk.collateralSwap(
 )
 ```
 
+## Custom Hook Gas Limits
+
+The SDK uses default gas limits for pre and post-execution hooks (300,000 and 600,000 respectively). You can customize these limits per operation if needed.
+
+### Default Gas Limits
+
+- **Pre-hook**: 300,000 gas (deploys adapter and sets up flash loan)
+- **Post-hook**: 600,000 gas (executes swap and repays flash loan)
+
+### Customizing Gas Limits
+
+You can override gas limits in two ways:
+
+#### 1. Per-Operation Override
+
+Pass `hooksGasLimit` in the trade parameters:
+
+```typescript
+const result = await flashLoanSdk.collateralSwap(
+  {
+    chainId: SupportedChainId.GNOSIS_CHAIN,
+    tradeParameters: {
+      sellToken: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',
+      sellTokenDecimals: 18,
+      buyToken: '0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0',
+      buyTokenDecimals: 6,
+      amount: '20000000000000000000',
+      kind: OrderKind.SELL,
+      validFor: 600,
+      slippageBps: 50,
+    },
+    settings: {
+      hooksGasLimit: {
+        preHookGasLimit: 500000n,  // Custom pre-hook gas limit
+        postHookGasLimit: 800000n, // Custom post-hook gas limit
+      },
+    },
+    collateralToken: '0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533',
+  },
+  tradingSdk
+)
+```
+
+#### 2. SDK-Wide Default Override
+
+Set custom defaults when initializing the SDK:
+
+```typescript
+const flashLoanSdk = new AaveCollateralSwapSdk({
+  hooksGasLimit: {
+    pre: 500000n,  // Custom default pre-hook gas limit
+    post: 800000n, // Custom default post-hook gas limit
+  },
+})
+
+// All operations will now use these defaults unless overridden per-operation
+```
+
 ## How Hooks Work
 
 The SDK uses CoW Protocol hooks to orchestrate the flash loan:

@@ -50,6 +50,7 @@ export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.BNB]: `${PROD_BASE_URL}/bnb`,
   [SupportedChainId.LINEA]: `${PROD_BASE_URL}/linea`,
   [SupportedChainId.PLASMA]: `${PROD_BASE_URL}/plasma`,
+  [SupportedChainId.INK]: `${PROD_BASE_URL}/ink`,
 }
 
 /**
@@ -67,6 +68,7 @@ export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.BNB]: `${STAGING_BASE_URL}/bnb`,
   [SupportedChainId.LINEA]: `${STAGING_BASE_URL}/linea`,
   [SupportedChainId.PLASMA]: `${STAGING_BASE_URL}/plasma`,
+  [SupportedChainId.INK]: `${STAGING_BASE_URL}/ink`,
 }
 
 function cleanObjectFromUndefinedValues(obj: Record<string, string>): typeof obj {
@@ -85,6 +87,16 @@ function cleanObjectFromUndefinedValues(obj: Record<string, string>): typeof obj
  */
 export type GetOrdersRequest = {
   owner: Address
+  offset?: number
+  limit?: number
+}
+
+/**
+ * The parameters for the `getTrades` request.
+ */
+export type GetTradesRequest = {
+  owner?: Address
+  orderUid?: UID
   offset?: number
   limit?: number
 }
@@ -181,19 +193,20 @@ export class OrderBookApi {
    * @param contextOverride Optional context override for this request.
    * @returns A list of trades matching the request.
    */
-  getTrades(
-    request: { owner?: Address; orderUid?: UID },
-    contextOverride: PartialApiContext = {},
-  ): Promise<Array<Trade>> {
+  getTrades(request: GetTradesRequest, contextOverride: PartialApiContext = {}): Promise<Array<Trade>> {
     if (request.owner && request.orderUid) {
       return Promise.reject(new CowError('Cannot specify both owner and orderId'))
     } else if (!request.owner && !request.orderUid) {
       return Promise.reject(new CowError('Must specify either owner or orderId'))
     }
 
-    const query = new URLSearchParams(cleanObjectFromUndefinedValues(request))
+    const { offset = 0, limit = 10, ...rest } = request
 
-    return this.fetch({ path: '/api/v1/trades', method: 'GET', query }, contextOverride)
+    const params: Record<string, string> = { ...rest, offset: offset.toString(), limit: limit.toString() }
+
+    const query = new URLSearchParams(cleanObjectFromUndefinedValues(params))
+
+    return this.fetch({ path: '/api/v2/trades', method: 'GET', query }, contextOverride)
   }
 
   /**

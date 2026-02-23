@@ -123,6 +123,8 @@ describe('Across Utils', () => {
 
       const expected: AcrossQuoteResult = {
         isSell: true,
+        quoteBody:
+          '{"estimatedFillTimeSec":"1742111892","exclusiveRelayer":"0x1234567890123456789012345678901234567890","exclusivityDeadline":"1742114891","fillDeadline":"1742122091","isAmountTooLow":false,"limits":{"maxDeposit":"50000000000000000000","maxDepositInstant":"30000000000000000000","maxDepositShortDelay":"40000000000000000000","minDeposit":"10000000000000000000","recommendedDepositInstant":"35000000000000000000"},"lpFee":{"pct":"250000000000000000","total":"250000000000000000"},"quoteBlock":"1715808000","relayerCapitalFee":{"pct":"150000000000000000","total":"150000000000000000"},"relayerGasFee":{"pct":"200000000000000000","total":"200000000000000000"},"spokePoolAddress":"0x1234567890123456789012345678901234567890","timestamp":"1742111291","totalRelayFee":{"pct":"100000000000000000","total":"100000000000000000"}}',
         amountsAndCosts: {
           beforeFee: { sellAmount: 1000000000000000000n, buyAmount: 1000000n }, // 1:1 (different decimals)
           afterFee: { sellAmount: 1000000000000000000n, buyAmount: 900000n }, // 1:0.9 (10% fee applied)

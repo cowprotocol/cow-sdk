@@ -1,5 +1,5 @@
 import { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
-import { BridgeProviderError } from '../errors'
+import { BridgeProviderError, BridgeProviderQuoteError, BridgeQuoteErrorPriorities } from '../errors'
 import {
   BridgeQuoteResult,
   MultiQuoteProgressCallback,
@@ -8,6 +8,7 @@ import {
   BridgeProvider,
   DefaultBridgeProvider,
 } from '../types'
+import { OrderBookApiError } from '@cowprotocol/sdk-order-book'
 
 /**
  * Validates that the request is for cross-chain bridging
@@ -145,4 +146,33 @@ export function resolveProvidersToQuery(
     }
     return provider
   })
+}
+
+function getErrorPriority(error: Error | undefined): number {
+  if (!error) return 0
+
+  if (error instanceof OrderBookApiError) {
+    return 10
+  }
+
+  if (error instanceof BridgeProviderQuoteError) {
+    return BridgeQuoteErrorPriorities[error.message as keyof typeof BridgeQuoteErrorPriorities] ?? 0
+  }
+
+  return 0
+}
+
+export function isBetterError(error1: MultiQuoteResult | null, error2: MultiQuoteResult | null): boolean {
+  if (!error2 || !error2.error) {
+    return !!error1?.error
+  }
+
+  if (!error1?.error) {
+    return false
+  }
+
+  const priority1 = getErrorPriority(error1.error)
+  const priority2 = getErrorPriority(error2.error)
+
+  return priority1 > priority2
 }

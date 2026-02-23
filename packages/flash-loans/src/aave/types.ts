@@ -35,6 +35,10 @@ export interface CollateralOrderData {
 
 export type EncodedOrder = Record<string, string | number>
 
+export interface CollateralSwapHooksGasLimit {
+  preHookGasLimit?: bigint
+  postHookGasLimit?: bigint
+}
 /**
  * Parameters for executing a collateral swap using Aave flash loans.
  */
@@ -53,6 +57,7 @@ export interface CollateralSwapParams {
     preventApproval?: boolean
     /** EIP-2612 permit data for gasless approval. If provided, uses permit instead of approve. */
     collateralPermit?: CollateralPermitData
+    hooksGasLimit?: CollateralSwapHooksGasLimit
   }
 }
 
@@ -61,6 +66,7 @@ export interface CollateralSwapTradeParams {
   validTo: number
   owner: AccountAddress
   flashLoanFeeAmount: bigint
+  hooksGasLimit?: CollateralSwapHooksGasLimit
 }
 
 export interface CollateralSwapOrder {

@@ -1,5 +1,81 @@
 # Changelog
 
+## [0.6.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.6.1...sdk-common-v0.6.2) (2026-02-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.8.1
+
+## [0.6.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.6.0...sdk-common-v0.6.1) (2026-02-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.8.0
+
+## [0.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.5.4...sdk-common-v0.6.0) (2026-02-05)
+
+
+### ✨ Features
+
+* move address utils ([#795](https://github.com/cowprotocol/cow-sdk/issues/795)) ([d18212c](https://github.com/cowprotocol/cow-sdk/commit/d18212c868ca2c16525a530f7914c9440f147414))
+* rename getTokenAddressKey to getAddressKey ([#793](https://github.com/cowprotocol/cow-sdk/issues/793)) ([7fbb9ae](https://github.com/cowprotocol/cow-sdk/commit/7fbb9ae54fb8ce6df78126d2e6c3ac3495a5ded7))
+
+## [0.5.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.5.3...sdk-common-v0.5.4) (2026-02-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.7.3
+
+## [0.5.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.5.2...sdk-common-v0.5.3) (2026-02-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.7.2
+
+## [0.5.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.5.1...sdk-common-v0.5.2) (2026-01-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.7.1
+
+## [0.5.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.5.0...sdk-common-v0.5.1) (2026-01-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.7.0
+
+## [0.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.4.0...sdk-common-v0.5.0) (2026-01-19)
+
+
+### ✨ Features
+
+* **bridge:** allow sell token as intermediate token ([#768](https://github.com/cowprotocol/cow-sdk/issues/768)) ([8c367ac](https://github.com/cowprotocol/cow-sdk/commit/8c367ac704ad10003618c8916e32529c5c9eb815))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.6.3
+
 ## [0.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.3.0...sdk-common-v0.4.0) (2025-11-24)
 
 

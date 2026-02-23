@@ -2,7 +2,7 @@ import { SupportedChainId } from '../chains'
 import { TokenInfo } from '../types/tokens'
 
 export const NATIVE_CURRENCY_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
-export const TOKEN_LIST_IMAGES_PATH = 'https://raw.githubusercontent.com/cowprotocol/token-lists/main/src/public/images'
+export const TOKEN_LIST_IMAGES_PATH = 'https://files.cow.fi/token-lists/images'
 
 const wrappedNativeCurrencyEth = {
   decimals: 18,
@@ -85,6 +85,11 @@ export const WRAPPED_NATIVE_CURRENCIES: Record<SupportedChainId, TokenInfo> = {
   [SupportedChainId.LINEA]: getWrappedTokenForChain(
     SupportedChainId.LINEA,
     '0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f',
+    wrappedNativeCurrencyEth,
+  ),
+  [SupportedChainId.INK]: getWrappedTokenForChain(
+    SupportedChainId.INK,
+    '0x4200000000000000000000000000000000000006',
     wrappedNativeCurrencyEth,
   ),
 }

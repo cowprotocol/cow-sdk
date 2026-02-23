@@ -1,6 +1,17 @@
 # Contributing
 
+## Prerequisites
+
+- Node.js 22+
+- pnpm 10.8+
+
+```sh
+npm i -g pnpm
+```
+
 ## Pull Request Guidelines
+
+Before getting started read [CoW Protocol Front-End • Contribution Guide](https://github.com/cowprotocol/cowswap/blob/develop/CONTRIBUTING.md).
 
 ### 📏 **Keep PRs Small and Focused**
 
@@ -26,6 +37,16 @@
 - **Remove dead code** - Delete unused functions, variables, and imports
 - **No debugging code** - Remove console.log, debugger statements, and temporary code
 - **Professional appearance** - Code should be clean, readable, and production-ready
+
+## Releasing
+
+This happens automatically using release-please and GitHub Actions.
+
+When you merge a PR into `main`, release-please will create a new release PR if there are changes that warrant a new release (based on conventional commits).
+
+You must then merge that PR to create a new release.
+
+Note: *DO NOT* forget to unlock the conversation after merging, otherwise the GH Action will fail.
 
 ## Publishing to npm
 
@@ -59,4 +80,13 @@ npx release-please release-pr \
 
 ```shell
 pnpm --filter @cowprotocol/sdk-subgraph exec npm publish --tag rc
+```
+
+## Know how
+
+### Reset pnpm store
+
+```sh
+pnpm store prune
+rm -rf "$(pnpm store path)"
 ```

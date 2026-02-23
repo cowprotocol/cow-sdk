@@ -1,0 +1,27 @@
+{
+  "$id": "#userConsents/v0.1.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "User Consents",
+  "description": "Array of user consents for terms acceptance",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["terms", "acceptedDate"],
+    "additionalProperties": false,
+    "properties": {
+      "terms": {
+        "$id": "#/properties/terms",
+        "type": "string",
+        "description": "IPFS hash of the accepted terms",
+        "examples": ["QmYwAPJzv5CZsnAzt8auVZRn5DfvPYg8X7yGvkb5sNqBmV"]
+      },
+      "acceptedDate": {
+        "$id": "#/properties/acceptedDate",
+        "type": "string",
+        "description": "ISO 8601 date-time when user accepted the terms in the UI",
+        "examples": ["2025-11-11T23:00:00Z"]
+      }
+    }
+  }
+}
+
