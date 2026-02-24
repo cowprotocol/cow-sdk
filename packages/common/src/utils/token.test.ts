@@ -2,6 +2,7 @@ import {
   getTokenId,
   areAddressesEqual,
   areTokensEqual,
+  isNativeToken,
 } from './token'
 import { getEvmAddressKey, getBtcAddressKey, isEvmAddress, isBtcAddress, BtcAddressKey, EvmAddressKey } from './address'
 
@@ -325,5 +326,101 @@ describe('type guards integration', () => {
       const result = getBtcAddressKey(btcKey)
       expect(result).toBe('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa')
     }
+  })
+})
+
+describe('isNativeToken', () => {
+  describe('EVM native tokens', () => {
+    it('should return true for EVM native token on mainnet', () => {
+      const token = {
+        chainId: 1,
+        address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', // NATIVE_CURRENCY_ADDRESS
+      }
+      expect(isNativeToken(token)).toBe(true)
+    })
+
+    it('should return true for EVM native token with case-insensitive address', () => {
+      const token = {
+        chainId: 1,
+        address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', // lowercase NATIVE_CURRENCY_ADDRESS
+      }
+      expect(isNativeToken(token)).toBe(true)
+    })
+
+    it('should return true for EVM native token on other EVM chains', () => {
+      const token = {
+        chainId: 137, // Polygon
+        address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+      }
+      expect(isNativeToken(token)).toBe(true)
+    })
+
+    it('should return false for non-native token on EVM chain', () => {
+      const token = {
+        chainId: 1,
+        address: '0x742d35cc6634c0532925a3b844bc9e7595f0bebd', // Some ERC20 token
+      }
+      expect(isNativeToken(token)).toBe(false)
+    })
+
+    it('should return false for wrapped native token on EVM chain', () => {
+      const token = {
+        chainId: 1,
+        address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', // WETH
+      }
+      expect(isNativeToken(token)).toBe(false)
+    })
+  })
+
+  describe('non-EVM native tokens (BTC)', () => {
+    it('should return true for BTC native token with empty address', () => {
+      const token = {
+        chainId: 'bitcoin' as const,
+        address: '', // Empty address for native BTC
+      }
+      expect(isNativeToken(token)).toBe(true)
+    })
+
+    it('should return false for BTC token with non-empty address', () => {
+      const token = {
+        chainId: 'bitcoin' as const,
+        address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', // BTC address
+      }
+      expect(isNativeToken(token)).toBe(false)
+    })
+
+    it('should return false for BTC token with any address value', () => {
+      const token = {
+        chainId: 'bitcoin' as const,
+        address: 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4', // Bech32 BTC address
+      }
+      expect(isNativeToken(token)).toBe(false)
+    })
+  })
+
+  describe('edge cases', () => {
+    it('should return false for unknown chain ID', () => {
+      const token = {
+        chainId: 99999, // Unknown chain
+        address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+      }
+      expect(isNativeToken(token)).toBe(false)
+    })
+
+    it('should return false for invalid chain ID', () => {
+      const token = {
+        chainId: 'unknown-chain' as any,
+        address: '',
+      }
+      expect(isNativeToken(token)).toBe(false)
+    })
+
+    it('should handle EVM chain with missing chain info gracefully', () => {
+      const token = {
+        chainId: 99999, // Non-existent EVM chain
+        address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+      }
+      expect(isNativeToken(token)).toBe(false)
+    })
   })
 })

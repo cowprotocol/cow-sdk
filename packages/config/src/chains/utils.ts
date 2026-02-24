@@ -26,7 +26,8 @@ export function isEvmChain(chainId: ChainId): chainId is EvmChains {
  * @returns True if the chain ID is chainId is Non EVM chain (EVM chain), false otherwise
  */
 export function isNonEvmChain(chainId : ChainId): chainId is NonEvmChains {
-  return typeof chainId === 'string' && chainId in NonEvmChains;
+  // todo need to adjust due to ts handling string literals in enums
+  return typeof chainId === 'string' && Object.values(NonEvmChains).includes(chainId as NonEvmChains)
 }
 
 /**
@@ -67,7 +68,7 @@ export function isSupportedChain(chainId: ChainId): chainId is SupportedChainId 
  * Check if the chain is supported by the bridge providers.
  */
 export function isAdditionalTargetChain(chainId: ChainId): chainId is AdditionalTargetChainId {
-  return isEvmChain(chainId) && chainId in ADDITIONAL_TARGET_CHAINS_MAP
+  return Object.hasOwn(ADDITIONAL_TARGET_CHAINS_MAP, chainId)
 }
 
 /**

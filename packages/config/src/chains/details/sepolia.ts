@@ -1,6 +1,6 @@
-import { ChainInfo, SupportedChainId } from '../types'
-import { nativeCurrencyTemplate } from '../../constants/tokens'
-import { RAW_CHAINS_FILES_PATH } from '../../constants/paths'
+import { EvmChainInfo, SupportedChainId } from '../types'
+import { nativeCurrencyTemplate } from '../../constants'
+import { RAW_CHAINS_FILES_PATH } from '../../constants'
 
 const sepoliaLogo = `${RAW_CHAINS_FILES_PATH}/images/sepolia-logo.svg`
 
@@ -9,7 +9,7 @@ const sepoliaLogo = `${RAW_CHAINS_FILES_PATH}/images/sepolia-logo.svg`
  *
  * See also https://github.com/wevm/viem/blob/main/src/chains/definitions/sepolia.ts
  */
-export const sepolia: ChainInfo = {
+export const sepolia: EvmChainInfo = {
   id: SupportedChainId.SEPOLIA,
   label: 'Sepolia',
   eip155Label: 'Ethereum Sepolia',

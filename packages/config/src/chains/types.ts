@@ -108,32 +108,13 @@ export type ChainContracts = {
 }
 
 /**
- * A chain on the network.
- *
- * Probably we could use the viem chain definition, I think multicall3, and ensRegistry and the types defined there can be handy. But for now we are using a simplified version.
- *
- * For a list of chains, see: https://github.com/wevm/viem/tree/main/src/chains/definitions
+ * Base properties shared by all chain types.
  */
-export interface ChainInfo {
-  /**
-   * The chain id.
-   */
-  readonly id: ChainId
-
+type BaseChainInfo = {
   /**
    * Label of the chain. Field used for display purposes.
    */
   readonly label: string
-
-  /**
-   * EIP155 label of the chain. Field used for connecting to MetaMask.
-   */
-  readonly eip155Label: string
-
-  /**
-   * Native currency of the chain.
-   */
-  readonly nativeCurrency: TokenInfo
 
   /**
    * ERC-3770 address prefix
@@ -146,11 +127,6 @@ export interface ChainInfo {
    * Whether the chain is a testnet.
    */
   readonly isTestnet: boolean
-
-  /**
-   * Contracts of the chain.
-   */
-  readonly contracts: ChainContracts
 
   /**
    * Main color of the chain, used for presentation purposes.
@@ -183,19 +159,6 @@ export interface ChainInfo {
   readonly bridges?: WebUrl[]
 
   /**
-   * RPC URLs of the chain.
-   */
-  readonly rpcUrls: {
-    [key: string]: ChainRpcUrls
-    default: ChainRpcUrls
-  }
-
-  /**
-   * Whether the chain is zkSync based.
-   */
-  readonly isZkSync?: boolean
-
-  /**
    * Whether the chain is under development.
    * A chain might show up already as a supported chain, but still be under development (not all features are ready,
    * related services running, contracts deployed, etc).
@@ -208,3 +171,88 @@ export interface ChainInfo {
    */
   readonly isDeprecated?: boolean
 }
+
+/**
+ * Chain info for EVM chains.
+ * EVM chains have native currency with an address and RPC URLs.
+ */
+export interface EvmChainInfo extends BaseChainInfo {
+  /**
+   * The chain id (must be a number for EVM chains).
+   */
+  readonly id: EvmChains
+
+  /**
+   * EIP155 label of the chain. Field used for connecting to MetaMask.
+   */
+  readonly eip155Label: string
+
+  /**
+   * Native currency of the chain (must have a non-empty address).
+   */
+  readonly nativeCurrency: TokenInfo & { address: string }
+
+  /**
+   * Contracts of the chain.
+   */
+  readonly contracts: ChainContracts
+
+  /**
+   * RPC URLs of the chain (must have actual URLs).
+   */
+  readonly rpcUrls: {
+    [key: string]: ChainRpcUrls
+    default: ChainRpcUrls
+  }
+
+  /**
+   * Whether the chain is zkSync based.
+   */
+  readonly isZkSync?: boolean
+}
+
+/**
+ * Chain info for non-EVM chains.
+ * Non-EVM chains don't have native currency addresses or RPC URLs.
+ */
+export interface NonEvmChainInfo extends BaseChainInfo {
+  /**
+   * The chain id (must be a string for non-EVM chains).
+   */
+  readonly id: NonEvmChains
+
+  /**
+   * Native currency of the chain (address is empty string for non-EVM chains).
+   */
+  readonly nativeCurrency: Omit<TokenInfo, 'address'>
+
+  /**
+   * Contracts of the chain (empty for non-EVM chains).
+   */
+  readonly contracts: ChainContracts
+
+  /**
+   * RPC URLs of the chain (optional for non-EVM chains, or can have empty arrays).
+   */
+  readonly rpcUrls?: {
+    [key: string]: ChainRpcUrls
+    default: ChainRpcUrls
+  }
+
+  /**
+   * Non-EVM chains are never zkSync based.
+   */
+  readonly isZkSync?: never
+}
+
+/**
+ * A chain on the network.
+ *
+ * This is a union type that can be either an EVM chain or a non-EVM chain.
+ * Use type guards like `isEvmChain()` to narrow the type.
+ *
+ * Probably we could use the viem chain definition, I think multicall3, and ensRegistry and the types defined there can be handy. But for now we are using a simplified version.
+ *
+ * For a list of chains, see: https://github.com/wevm/viem/tree/main/src/chains/definitions
+ */
+export type ChainInfo = EvmChainInfo | NonEvmChainInfo
