@@ -1,4 +1,14 @@
-import { isEvmChain, isNonEvmChain, isBtcChain, EvmChains, NonEvmChains } from '@cowprotocol/sdk-config'
+import {
+  isEvmChain,
+  isNonEvmChain,
+  isBtcChain,
+  isEvmChainInfo,
+  isNonEvmChainInfo,
+  EvmChains,
+  NonEvmChains,
+  mainnet,
+  bitcoin,
+} from '@cowprotocol/sdk-config'
 
 describe('isEvmChain', () => {
   describe('valid EVM chains', () => {
@@ -69,6 +79,42 @@ describe('isNonEvmChain', () => {
     it('should return false for invalid string', () => {
       expect(isNonEvmChain('invalid-chain')).toBe(false)
     })
+  })
+})
+
+describe('isEvmChainInfo', () => {
+  it('should return true for an EVM chain info (Mainnet)', () => {
+    expect(isEvmChainInfo(mainnet)).toBe(true)
+  })
+
+  it('should return false for a non-EVM chain info (Bitcoin)', () => {
+    expect(isEvmChainInfo(bitcoin)).toBe(false)
+  })
+
+  it('should narrow the type to EvmChainInfo', () => {
+    if (isEvmChainInfo(mainnet)) {
+      // These properties only exist on EvmChainInfo
+      expect(mainnet.rpcUrls).toBeDefined()
+      expect(mainnet.contracts).toBeDefined()
+      expect(mainnet.nativeCurrency.address).toBeDefined()
+    }
+  })
+})
+
+describe('isNonEvmChainInfo', () => {
+  it('should return true for a non-EVM chain info (Bitcoin)', () => {
+    expect(isNonEvmChainInfo(bitcoin)).toBe(true)
+  })
+
+  it('should return false for an EVM chain info (Mainnet)', () => {
+    expect(isNonEvmChainInfo(mainnet)).toBe(false)
+  })
+
+  it('should narrow the type to NonEvmChainInfo', () => {
+    if (isNonEvmChainInfo(bitcoin)) {
+      // id should be a NonEvmChains string value
+      expect(bitcoin.id).toBe(NonEvmChains.BITCOIN)
+    }
   })
 })
 

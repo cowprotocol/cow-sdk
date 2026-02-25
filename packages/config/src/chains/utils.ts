@@ -5,6 +5,7 @@ import {
   ChainInfo,
   EvmChainInfo,
   EvmChains,
+  NonEvmChainInfo,
   NonEvmChains,
   SupportedChainId,
   TargetChainId,
@@ -39,6 +40,26 @@ export function isNonEvmChain(chainId : ChainId): chainId is NonEvmChains {
  */
 export function isBtcChain(chainId: ChainId): chainId is NonEvmChains.BITCOIN {
   return chainId === NonEvmChains.BITCOIN;
+}
+
+/**
+ * Type guard to check if a ChainInfo object represents an EVM chain.
+ *
+ * @param chainInfo - The chain info to check
+ * @returns True if the chain info is for an EVM chain, false otherwise
+ */
+export function isEvmChainInfo(chainInfo: ChainInfo): chainInfo is EvmChainInfo {
+  return isEvmChain(chainInfo.id)
+}
+
+/**
+ * Type guard to check if a ChainInfo object represents a non-EVM chain.
+ *
+ * @param chainInfo - The chain info to check
+ * @returns True if the chain info is for a non-EVM chain, false otherwise
+ */
+export function isNonEvmChainInfo(chainInfo: ChainInfo): chainInfo is NonEvmChainInfo {
+  return isNonEvmChain(chainInfo.id)
 }
 
 /**
