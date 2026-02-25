@@ -16,7 +16,6 @@ export const bitcoin: NonEvmChainInfo = {
   },
   addressPrefix: 'btc',
   isTestnet: false,
-  contracts: {},
   color: '#f7931a',
   website: {
     name: 'Bitcoin',

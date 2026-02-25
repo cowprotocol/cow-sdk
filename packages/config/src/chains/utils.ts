@@ -3,6 +3,7 @@ import {
   AdditionalTargetChainId,
   ChainId,
   ChainInfo,
+  EvmChainInfo,
   EvmChains,
   NonEvmChains,
   SupportedChainId,
@@ -79,7 +80,8 @@ export function isTargetChainId(chainId: ChainId): chainId is TargetChainId {
 }
 
 export function isZkSyncChain(chainId: ChainId): boolean {
-  return Boolean(getChainInfo(chainId)?.isZkSync)
+  if (!isEvmChain(chainId)) return false
+  return Boolean((getChainInfo(chainId) as EvmChainInfo | undefined)?.isZkSync)
 }
 
 /**

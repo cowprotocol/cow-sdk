@@ -225,24 +225,6 @@ export interface NonEvmChainInfo extends BaseChainInfo {
    * Native currency of the chain (address is empty string for non-EVM chains).
    */
   readonly nativeCurrency: Omit<TokenInfo, 'address'>
-
-  /**
-   * Contracts of the chain (empty for non-EVM chains).
-   */
-  readonly contracts: ChainContracts
-
-  /**
-   * RPC URLs of the chain (optional for non-EVM chains, or can have empty arrays).
-   */
-  readonly rpcUrls?: {
-    [key: string]: ChainRpcUrls
-    default: ChainRpcUrls
-  }
-
-  /**
-   * Non-EVM chains are never zkSync based.
-   */
-  readonly isZkSync?: never
 }
 
 /**
