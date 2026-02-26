@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.11.1...sdk-trading-v1.0.0) (2026-02-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* update quote amounts and costs structure ([#800](https://github.com/cowprotocol/cow-sdk/issues/800))
+
+### ✨ Features
+
+* **trading:** allow quoting without signer ([#799](https://github.com/cowprotocol/cow-sdk/issues/799)) ([6db2612](https://github.com/cowprotocol/cow-sdk/commit/6db2612da19635c579ec10f4ac0304c0efa76005))
+
+
+### 🐛 Bug Fixes
+
+* update quote amounts and costs structure ([#800](https://github.com/cowprotocol/cow-sdk/issues/800)) ([ea96f67](https://github.com/cowprotocol/cow-sdk/commit/ea96f67a6ff44b7cc9226dc8ab7991896ced3ca7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-order-book bumped to 1.0.0
+    * @cowprotocol/sdk-order-signing bumped to 0.1.34
+
 ## [0.11.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v0.11.0...sdk-trading-v0.11.1) (2026-02-20)
 
 

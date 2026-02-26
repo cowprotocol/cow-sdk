@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.6.6...sdk-order-book-v1.0.0) (2026-02-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* update quote amounts and costs structure ([#800](https://github.com/cowprotocol/cow-sdk/issues/800))
+
+### 🐛 Bug Fixes
+
+* update quote amounts and costs structure ([#800](https://github.com/cowprotocol/cow-sdk/issues/800)) ([ea96f67](https://github.com/cowprotocol/cow-sdk/commit/ea96f67a6ff44b7cc9226dc8ab7991896ced3ca7))
+
 ## [0.6.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.6.5...sdk-order-book-v0.6.6) (2026-02-20)
 
 
