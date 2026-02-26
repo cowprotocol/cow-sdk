@@ -130,6 +130,14 @@ export const amountsAndCosts: QuoteAmountsAndCosts = {
     sellAmount: BigInt('100000000'),
     buyAmount: BigInt('100000000000000000000'),
   },
+  afterProtocolFees: {
+    sellAmount: BigInt('100000000'),
+    buyAmount: BigInt('100000000000000000000'),
+  },
+  amountsToSign: {
+    sellAmount: BigInt('100000000'),
+    buyAmount: BigInt('100000000000000000000'),
+  },
 }
 
 export const bridgeQuoteResult: BridgeQuoteResult = {
