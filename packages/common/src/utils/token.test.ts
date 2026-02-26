@@ -5,6 +5,7 @@ import {
   isNativeToken,
 } from './token'
 import { getEvmAddressKey, getBtcAddressKey, isEvmAddress, isBtcAddress, BtcAddressKey, EvmAddressKey } from './address'
+import { NonEvmChains } from '@cowprotocol/sdk-config'
 
 describe('getEvmAddressKey', () => {
   it('should normalize EVM address to lowercase', () => {
@@ -375,24 +376,24 @@ describe('isNativeToken', () => {
   describe('non-EVM native tokens (BTC)', () => {
     it('should return true for BTC native token with empty address', () => {
       const token = {
-        chainId: 'bitcoin' as const,
-        address: '', // Empty address for native BTC
+        chainId: NonEvmChains.BITCOIN,
+        address: '',
       }
       expect(isNativeToken(token)).toBe(true)
     })
 
     it('should return false for BTC token with non-empty address', () => {
       const token = {
-        chainId: 'bitcoin' as const,
-        address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', // BTC address
+        chainId: NonEvmChains.BITCOIN,
+        address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
       }
       expect(isNativeToken(token)).toBe(false)
     })
 
     it('should return false for BTC token with any address value', () => {
       const token = {
-        chainId: 'bitcoin' as const,
-        address: 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4', // Bech32 BTC address
+        chainId: NonEvmChains.BITCOIN,
+        address: 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4',
       }
       expect(isNativeToken(token)).toBe(false)
     })

@@ -23,7 +23,8 @@ export enum EvmChains {
 * All non-EVM available chains that are available for bridging only
 * */
 export enum NonEvmChains {
-  BITCOIN = 'bitcoin',
+  BITCOIN = 1000000000,
+  SOLANA = 501,
 }
 
 /**
@@ -58,6 +59,7 @@ export type SupportedChainId = (typeof SupportedChainId)[keyof typeof SupportedC
 export const AdditionalTargetChainId = {
   OPTIMISM: EvmChains.OPTIMISM,
   BITCOIN: NonEvmChains.BITCOIN,
+  SOLANA: NonEvmChains.SOLANA,
 } as const
 
 /**
@@ -72,9 +74,8 @@ export type TargetChainId = EvmChains | NonEvmChains;
 
 /**
  * The chain id of the chain.
- * Can be a number for EVM chains or a string for non-EVM chains (e.g., Bitcoin, Solana) in future.
  */
-export type ChainId = number | string
+export type ChainId = number
 
 export type HttpsString = `https://${string}`
 export type WssString = `wss://${string}`
@@ -217,14 +218,14 @@ export interface EvmChainInfo extends BaseChainInfo {
  */
 export interface NonEvmChainInfo extends BaseChainInfo {
   /**
-   * The chain id (must be a string for non-EVM chains).
+   * The chain id for non-EVM chains.
    */
   readonly id: NonEvmChains
 
   /**
    * Native currency of the chain (address is empty string for non-EVM chains).
    */
-  readonly nativeCurrency: Omit<TokenInfo, 'address'>
+  readonly nativeCurrency: TokenInfo
 }
 
 /**
