@@ -181,7 +181,7 @@ export interface EvmChainInfo extends BaseChainInfo {
   /**
    * The chain id (must be a number for EVM chains).
    */
-  readonly id: EvmChains
+  readonly id: ChainId
 
   /**
    * EIP155 label of the chain. Field used for connecting to MetaMask.
@@ -220,7 +220,7 @@ export interface NonEvmChainInfo extends BaseChainInfo {
   /**
    * The chain id for non-EVM chains.
    */
-  readonly id: NonEvmChains
+  readonly id: ChainId
 
   /**
    * Native currency of the chain (address is empty string for non-EVM chains).

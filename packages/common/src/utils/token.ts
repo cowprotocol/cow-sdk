@@ -1,5 +1,5 @@
 import { Nullish } from '../types'
-import { ChainId, getChainInfo, isEvmChain, isEvmChainInfo, isSupportedChain, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
+import { ChainId, getChainInfo, isEvmChain, isSupportedChain, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
 import { AddressKey, getAddressKey, getEvmAddressKey, isBtcAddress, isEvmAddress } from './address'
 
 interface TokenLike {
