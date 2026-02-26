@@ -139,6 +139,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     } = request
 
     const tokens = await this.api.getTokens()
+
     const sellToken = getTokenByAddressAndChainId(tokens, sellTokenAddress, sellTokenChainId)
     const buyToken = getTokenByAddressAndChainId(tokens, buyTokenAddress, buyTokenChainId)
     if (!sellToken || !buyToken) throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES)

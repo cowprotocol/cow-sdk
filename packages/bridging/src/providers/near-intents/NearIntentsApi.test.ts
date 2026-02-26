@@ -42,7 +42,6 @@ describe('NearIntentsApi', () => {
   })
 
   it("doesn't add Authorization header when api key is not set", async () => {
-
     const api = new NearIntentsApi()
 
     mockFetch.mockResolvedValue({
@@ -70,4 +69,3 @@ describe('NearIntentsApi', () => {
     )
   })
 })
-
