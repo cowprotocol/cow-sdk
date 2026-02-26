@@ -20,8 +20,8 @@ export enum EvmChains {
 }
 
 /**
-* All non-EVM available chains that are available for bridging only
-* */
+ * All non-EVM available chains that are available for bridging only
+ * */
 export enum NonEvmChains {
   BITCOIN = 1000000000,
   SOLANA = 501,
@@ -70,7 +70,7 @@ export type AdditionalTargetChainId = (typeof AdditionalTargetChainId)[keyof typ
 /**
  * This enum contains all the supported chains and some additional ones supported by the different bridges.
  */
-export type TargetChainId = EvmChains | NonEvmChains;
+export type TargetChainId = EvmChains | NonEvmChains
 
 /**
  * The chain id of the chain.
@@ -79,7 +79,7 @@ export type ChainId = number
 
 export type HttpsString = `https://${string}`
 export type WssString = `wss://${string}`
-export type Address = `0x${string}`;
+export type Address = `0x${string}`
 
 export interface ThemedImage {
   light: string

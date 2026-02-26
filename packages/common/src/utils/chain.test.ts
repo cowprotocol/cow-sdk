@@ -61,7 +61,7 @@ describe('isNonEvmChain', () => {
     it('should return true for Solana', () => {
       expect(isNonEvmChain(NonEvmChains.SOLANA)).toBe(true)
       const chainId: NonEvmChains = NonEvmChains.SOLANA
-      expect(chainId).toBe(1000000001)
+      expect(chainId).toBe(501)
     })
 
     it('should return true for any valid non-EVM chain ID', () => {
