@@ -6,7 +6,7 @@ export const EVM_NATIVE_CURRENCY_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeee
 /**
  * There is no standard address for SOL, so we use a default program address
  */
-export const SOL_NATIVE_CURRENCY_ADDRESS = 'NativeLoader1111111111111111111111111111111'
+export const SOL_NATIVE_CURRENCY_ADDRESS = '11111111111111111111111111111111'
 
 /**
  * There is no standard address for BTC, so we use the Genesis address as a token address
