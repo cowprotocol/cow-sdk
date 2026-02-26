@@ -41,7 +41,7 @@ export function areAddressesEqual(a: Nullish<string>, b: Nullish<string>): boole
 
 export function isNativeToken(token: TokenLike): boolean {
   const chainInfo = getChainInfo(token.chainId)
-  return !!chainInfo
+  return areAddressesEqual(chainInfo?.nativeCurrency.address, token.address)
 }
 
 export function isWrappedNativeToken(token: TokenLike): boolean {

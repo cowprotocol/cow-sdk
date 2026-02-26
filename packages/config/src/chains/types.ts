@@ -125,6 +125,11 @@ type BaseChainInfo = {
   readonly addressPrefix: string
 
   /**
+   * Native currency of the chain (must have a non-empty address).
+   */
+  readonly nativeCurrency: TokenInfo
+
+  /**
    * Whether the chain is a testnet.
    */
   readonly isTestnet: boolean
@@ -187,11 +192,6 @@ export interface EvmChainInfo extends BaseChainInfo {
    * EIP155 label of the chain. Field used for connecting to MetaMask.
    */
   readonly eip155Label: string
-
-  /**
-   * Native currency of the chain (must have a non-empty address).
-   */
-  readonly nativeCurrency: TokenInfo & { address: string }
 
   /**
    * Contracts of the chain.
