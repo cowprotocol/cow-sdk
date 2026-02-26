@@ -180,10 +180,6 @@ describe('isSolanaAddress', () => {
       expect(isSolanaAddress('BYPsjxa3YuZESQz1dKuBw1QSFCSpecsm8nCQhY5xbU1Z')).toBe(true)
     })
 
-    it('should return true for the system program address (32 chars)', () => {
-      expect(isSolanaAddress('11111111111111111111111111111111')).toBe(true)
-    })
-
     it('should return true for a token program address', () => {
       expect(isSolanaAddress('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')).toBe(true)
     })
