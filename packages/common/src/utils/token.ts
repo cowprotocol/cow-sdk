@@ -1,6 +1,6 @@
 import { Nullish } from '../types'
 import { ChainId, getChainInfo, isEvmChain, isSupportedChain, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
-import { AddressKey, getAddressKey, getEvmAddressKey, isBtcAddress, isEvmAddress } from './address'
+import { AddressKey, getAddressKey, getEvmAddressKey, isEvmAddress } from './address'
 
 interface TokenLike {
   chainId: ChainId
@@ -35,14 +35,8 @@ export function areAddressesEqual(a: Nullish<string>, b: Nullish<string>): boole
     return getEvmAddressKey(a) === getEvmAddressKey(b)
   }
 
-  const aIsBtc = isBtcAddress(a)
-  const bIsBtc = isBtcAddress(b)
-
-  if (aIsBtc && bIsBtc) {
-    return a === b
-  }
-
-  return false
+  // sol and btc addresses are already in the correct format
+  return a === b
 }
 
 export function isNativeToken(token: TokenLike): boolean {
