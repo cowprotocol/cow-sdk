@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v1.7.6...sdk-bridging-v2.0.0) (2026-02-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* update quote amounts and costs structure ([#800](https://github.com/cowprotocol/cow-sdk/issues/800))
+
+### 🐛 Bug Fixes
+
+* update quote amounts and costs structure ([#800](https://github.com/cowprotocol/cow-sdk/issues/800)) ([ea96f67](https://github.com/cowprotocol/cow-sdk/commit/ea96f67a6ff44b7cc9226dc8ab7991896ced3ca7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-order-book bumped to 1.0.0
+    * @cowprotocol/sdk-trading bumped to 1.0.0
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 0.1.34
+
 ## [1.7.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v1.7.5...sdk-bridging-v1.7.6) (2026-02-20)
 
 
