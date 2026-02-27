@@ -1,12 +1,499 @@
-export const ACROSS_MATH_ABI = [
+// Math ABI with decimal conversion support
+export const ACROSS_SPOKE_POOL_PERIPHERY_ABI = [
+  {
+    inputs: [{ internalType: 'contract IPermit2', name: '_permit2', type: 'address' }],
+    stateMutability: 'nonpayable',
+    type: 'constructor',
+  },
+  { inputs: [], name: 'InvalidMinExpectedInputAmount', type: 'error' },
+  { inputs: [], name: 'InvalidMsgValue', type: 'error' },
+  { inputs: [], name: 'InvalidNonce', type: 'error' },
+  { inputs: [], name: 'InvalidShortString', type: 'error' },
+  { inputs: [], name: 'InvalidSignature', type: 'error' },
+  { inputs: [], name: 'InvalidSignature', type: 'error' },
+  { inputs: [], name: 'MinimumExpectedInputAmount', type: 'error' },
+  { inputs: [{ internalType: 'string', name: 'str', type: 'string' }], name: 'StringTooLong', type: 'error' },
+  { anonymous: false, inputs: [], name: 'EIP712DomainChanged', type: 'event' },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: false, internalType: 'address', name: 'exchange', type: 'address' },
+      { indexed: false, internalType: 'bytes', name: 'exchangeCalldata', type: 'bytes' },
+      { indexed: true, internalType: 'address', name: 'swapToken', type: 'address' },
+      { indexed: true, internalType: 'address', name: 'acrossInputToken', type: 'address' },
+      { indexed: false, internalType: 'uint256', name: 'swapTokenAmount', type: 'uint256' },
+      { indexed: false, internalType: 'uint256', name: 'acrossInputAmount', type: 'uint256' },
+      { indexed: true, internalType: 'bytes32', name: 'acrossOutputToken', type: 'bytes32' },
+      { indexed: false, internalType: 'uint256', name: 'acrossOutputAmount', type: 'uint256' },
+    ],
+    name: 'SwapBeforeBridge',
+    type: 'event',
+  },
   {
     inputs: [
-      { internalType: 'uint256', name: '_a', type: 'uint256' },
-      { internalType: 'uint256', name: '_b', type: 'uint256' },
+      { internalType: 'address', name: 'spokePool', type: 'address' },
+      { internalType: 'bytes32', name: 'recipient', type: 'bytes32' },
+      { internalType: 'address', name: 'inputToken', type: 'address' },
+      { internalType: 'uint256', name: 'inputAmount', type: 'uint256' },
+      { internalType: 'bytes32', name: 'outputToken', type: 'bytes32' },
+      { internalType: 'uint256', name: 'outputAmount', type: 'uint256' },
+      { internalType: 'uint256', name: 'destinationChainId', type: 'uint256' },
+      { internalType: 'bytes32', name: 'exclusiveRelayer', type: 'bytes32' },
+      { internalType: 'uint32', name: 'quoteTimestamp', type: 'uint32' },
+      { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
+      { internalType: 'uint32', name: 'exclusivityParameter', type: 'uint32' },
+      { internalType: 'bytes', name: 'message', type: 'bytes' },
     ],
-    name: 'multiplyAndSubtract',
-    outputs: [{ internalType: 'uint256', name: 'result', type: 'uint256' }],
-    stateMutability: 'pure',
+    name: 'depositNative',
+    outputs: [],
+    stateMutability: 'payable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: 'signatureOwner', type: 'address' },
+      {
+        components: [
+          {
+            components: [
+              { internalType: 'uint256', name: 'amount', type: 'uint256' },
+              { internalType: 'address', name: 'recipient', type: 'address' },
+            ],
+            internalType: 'struct SpokePoolPeripheryInterface.Fees',
+            name: 'submissionFees',
+            type: 'tuple',
+          },
+          {
+            components: [
+              { internalType: 'address', name: 'inputToken', type: 'address' },
+              { internalType: 'bytes32', name: 'outputToken', type: 'bytes32' },
+              { internalType: 'uint256', name: 'outputAmount', type: 'uint256' },
+              { internalType: 'address', name: 'depositor', type: 'address' },
+              { internalType: 'bytes32', name: 'recipient', type: 'bytes32' },
+              { internalType: 'uint256', name: 'destinationChainId', type: 'uint256' },
+              { internalType: 'bytes32', name: 'exclusiveRelayer', type: 'bytes32' },
+              { internalType: 'uint32', name: 'quoteTimestamp', type: 'uint32' },
+              { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
+              { internalType: 'uint32', name: 'exclusivityParameter', type: 'uint32' },
+              { internalType: 'bytes', name: 'message', type: 'bytes' },
+            ],
+            internalType: 'struct SpokePoolPeripheryInterface.BaseDepositData',
+            name: 'baseDepositData',
+            type: 'tuple',
+          },
+          { internalType: 'uint256', name: 'inputAmount', type: 'uint256' },
+          { internalType: 'address', name: 'spokePool', type: 'address' },
+          { internalType: 'uint256', name: 'nonce', type: 'uint256' },
+        ],
+        internalType: 'struct SpokePoolPeripheryInterface.DepositData',
+        name: 'depositData',
+        type: 'tuple',
+      },
+      { internalType: 'uint256', name: 'validAfter', type: 'uint256' },
+      { internalType: 'uint256', name: 'validBefore', type: 'uint256' },
+      { internalType: 'bytes', name: 'receiveWithAuthSignature', type: 'bytes' },
+      { internalType: 'bytes', name: 'depositDataSignature', type: 'bytes' },
+    ],
+    name: 'depositWithAuthorization',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: 'signatureOwner', type: 'address' },
+      {
+        components: [
+          {
+            components: [
+              { internalType: 'uint256', name: 'amount', type: 'uint256' },
+              { internalType: 'address', name: 'recipient', type: 'address' },
+            ],
+            internalType: 'struct SpokePoolPeripheryInterface.Fees',
+            name: 'submissionFees',
+            type: 'tuple',
+          },
+          {
+            components: [
+              { internalType: 'address', name: 'inputToken', type: 'address' },
+              { internalType: 'bytes32', name: 'outputToken', type: 'bytes32' },
+              { internalType: 'uint256', name: 'outputAmount', type: 'uint256' },
+              { internalType: 'address', name: 'depositor', type: 'address' },
+              { internalType: 'bytes32', name: 'recipient', type: 'bytes32' },
+              { internalType: 'uint256', name: 'destinationChainId', type: 'uint256' },
+              { internalType: 'bytes32', name: 'exclusiveRelayer', type: 'bytes32' },
+              { internalType: 'uint32', name: 'quoteTimestamp', type: 'uint32' },
+              { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
+              { internalType: 'uint32', name: 'exclusivityParameter', type: 'uint32' },
+              { internalType: 'bytes', name: 'message', type: 'bytes' },
+            ],
+            internalType: 'struct SpokePoolPeripheryInterface.BaseDepositData',
+            name: 'baseDepositData',
+            type: 'tuple',
+          },
+          { internalType: 'uint256', name: 'inputAmount', type: 'uint256' },
+          { internalType: 'address', name: 'spokePool', type: 'address' },
+          { internalType: 'uint256', name: 'nonce', type: 'uint256' },
+        ],
+        internalType: 'struct SpokePoolPeripheryInterface.DepositData',
+        name: 'depositData',
+        type: 'tuple',
+      },
+      { internalType: 'uint256', name: 'deadline', type: 'uint256' },
+      { internalType: 'bytes', name: 'permitSignature', type: 'bytes' },
+      { internalType: 'bytes', name: 'depositDataSignature', type: 'bytes' },
+    ],
+    name: 'depositWithPermit',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: 'signatureOwner', type: 'address' },
+      {
+        components: [
+          {
+            components: [
+              { internalType: 'uint256', name: 'amount', type: 'uint256' },
+              { internalType: 'address', name: 'recipient', type: 'address' },
+            ],
+            internalType: 'struct SpokePoolPeripheryInterface.Fees',
+            name: 'submissionFees',
+            type: 'tuple',
+          },
+          {
+            components: [
+              { internalType: 'address', name: 'inputToken', type: 'address' },
+              { internalType: 'bytes32', name: 'outputToken', type: 'bytes32' },
+              { internalType: 'uint256', name: 'outputAmount', type: 'uint256' },
+              { internalType: 'address', name: 'depositor', type: 'address' },
+              { internalType: 'bytes32', name: 'recipient', type: 'bytes32' },
+              { internalType: 'uint256', name: 'destinationChainId', type: 'uint256' },
+              { internalType: 'bytes32', name: 'exclusiveRelayer', type: 'bytes32' },
+              { internalType: 'uint32', name: 'quoteTimestamp', type: 'uint32' },
+              { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
+              { internalType: 'uint32', name: 'exclusivityParameter', type: 'uint32' },
+              { internalType: 'bytes', name: 'message', type: 'bytes' },
+            ],
+            internalType: 'struct SpokePoolPeripheryInterface.BaseDepositData',
+            name: 'baseDepositData',
+            type: 'tuple',
+          },
+          { internalType: 'uint256', name: 'inputAmount', type: 'uint256' },
+          { internalType: 'address', name: 'spokePool', type: 'address' },
+          { internalType: 'uint256', name: 'nonce', type: 'uint256' },
+        ],
+        internalType: 'struct SpokePoolPeripheryInterface.DepositData',
+        name: 'depositData',
+        type: 'tuple',
+      },
+      {
+        components: [
+          {
+            components: [
+              { internalType: 'address', name: 'token', type: 'address' },
+              { internalType: 'uint256', name: 'amount', type: 'uint256' },
+            ],
+            internalType: 'struct IPermit2.TokenPermissions',
+            name: 'permitted',
+            type: 'tuple',
+          },
+          { internalType: 'uint256', name: 'nonce', type: 'uint256' },
+          { internalType: 'uint256', name: 'deadline', type: 'uint256' },
+        ],
+        internalType: 'struct IPermit2.PermitTransferFrom',
+        name: 'permit',
+        type: 'tuple',
+      },
+      { internalType: 'bytes', name: 'signature', type: 'bytes' },
+    ],
+    name: 'depositWithPermit2',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'domainSeparator',
+    outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'eip712Domain',
+    outputs: [
+      { internalType: 'bytes1', name: 'fields', type: 'bytes1' },
+      { internalType: 'string', name: 'name', type: 'string' },
+      { internalType: 'string', name: 'version', type: 'string' },
+      { internalType: 'uint256', name: 'chainId', type: 'uint256' },
+      { internalType: 'address', name: 'verifyingContract', type: 'address' },
+      { internalType: 'bytes32', name: 'salt', type: 'bytes32' },
+      { internalType: 'uint256[]', name: 'extensions', type: 'uint256[]' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'bytes[]', name: 'data', type: 'bytes[]' }],
+    name: 'multicall',
+    outputs: [{ internalType: 'bytes[]', name: 'results', type: 'bytes[]' }],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'permit2',
+    outputs: [{ internalType: 'contract IPermit2', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'address', name: '', type: 'address' }],
+    name: 'permitNonces',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        components: [
+          {
+            components: [
+              { internalType: 'uint256', name: 'amount', type: 'uint256' },
+              { internalType: 'address', name: 'recipient', type: 'address' },
+            ],
+            internalType: 'struct SpokePoolPeripheryInterface.Fees',
+            name: 'submissionFees',
+            type: 'tuple',
+          },
+          {
+            components: [
+              { internalType: 'address', name: 'inputToken', type: 'address' },
+              { internalType: 'bytes32', name: 'outputToken', type: 'bytes32' },
+              { internalType: 'uint256', name: 'outputAmount', type: 'uint256' },
+              { internalType: 'address', name: 'depositor', type: 'address' },
+              { internalType: 'bytes32', name: 'recipient', type: 'bytes32' },
+              { internalType: 'uint256', name: 'destinationChainId', type: 'uint256' },
+              { internalType: 'bytes32', name: 'exclusiveRelayer', type: 'bytes32' },
+              { internalType: 'uint32', name: 'quoteTimestamp', type: 'uint32' },
+              { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
+              { internalType: 'uint32', name: 'exclusivityParameter', type: 'uint32' },
+              { internalType: 'bytes', name: 'message', type: 'bytes' },
+            ],
+            internalType: 'struct SpokePoolPeripheryInterface.BaseDepositData',
+            name: 'depositData',
+            type: 'tuple',
+          },
+          { internalType: 'address', name: 'swapToken', type: 'address' },
+          { internalType: 'address', name: 'exchange', type: 'address' },
+          { internalType: 'enum SpokePoolPeripheryInterface.TransferType', name: 'transferType', type: 'uint8' },
+          { internalType: 'uint256', name: 'swapTokenAmount', type: 'uint256' },
+          { internalType: 'uint256', name: 'minExpectedInputTokenAmount', type: 'uint256' },
+          { internalType: 'bytes', name: 'routerCalldata', type: 'bytes' },
+          { internalType: 'bool', name: 'enableProportionalAdjustment', type: 'bool' },
+          { internalType: 'address', name: 'spokePool', type: 'address' },
+          { internalType: 'uint256', name: 'nonce', type: 'uint256' },
+        ],
+        internalType: 'struct SpokePoolPeripheryInterface.SwapAndDepositData',
+        name: 'swapAndDepositData',
+        type: 'tuple',
+      },
+    ],
+    name: 'swapAndBridge',
+    outputs: [],
+    stateMutability: 'payable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: 'signatureOwner', type: 'address' },
+      {
+        components: [
+          {
+            components: [
+              { internalType: 'uint256', name: 'amount', type: 'uint256' },
+              { internalType: 'address', name: 'recipient', type: 'address' },
+            ],
+            internalType: 'struct SpokePoolPeripheryInterface.Fees',
+            name: 'submissionFees',
+            type: 'tuple',
+          },
+          {
+            components: [
+              { internalType: 'address', name: 'inputToken', type: 'address' },
+              { internalType: 'bytes32', name: 'outputToken', type: 'bytes32' },
+              { internalType: 'uint256', name: 'outputAmount', type: 'uint256' },
+              { internalType: 'address', name: 'depositor', type: 'address' },
+              { internalType: 'bytes32', name: 'recipient', type: 'bytes32' },
+              { internalType: 'uint256', name: 'destinationChainId', type: 'uint256' },
+              { internalType: 'bytes32', name: 'exclusiveRelayer', type: 'bytes32' },
+              { internalType: 'uint32', name: 'quoteTimestamp', type: 'uint32' },
+              { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
+              { internalType: 'uint32', name: 'exclusivityParameter', type: 'uint32' },
+              { internalType: 'bytes', name: 'message', type: 'bytes' },
+            ],
+            internalType: 'struct SpokePoolPeripheryInterface.BaseDepositData',
+            name: 'depositData',
+            type: 'tuple',
+          },
+          { internalType: 'address', name: 'swapToken', type: 'address' },
+          { internalType: 'address', name: 'exchange', type: 'address' },
+          { internalType: 'enum SpokePoolPeripheryInterface.TransferType', name: 'transferType', type: 'uint8' },
+          { internalType: 'uint256', name: 'swapTokenAmount', type: 'uint256' },
+          { internalType: 'uint256', name: 'minExpectedInputTokenAmount', type: 'uint256' },
+          { internalType: 'bytes', name: 'routerCalldata', type: 'bytes' },
+          { internalType: 'bool', name: 'enableProportionalAdjustment', type: 'bool' },
+          { internalType: 'address', name: 'spokePool', type: 'address' },
+          { internalType: 'uint256', name: 'nonce', type: 'uint256' },
+        ],
+        internalType: 'struct SpokePoolPeripheryInterface.SwapAndDepositData',
+        name: 'swapAndDepositData',
+        type: 'tuple',
+      },
+      { internalType: 'uint256', name: 'validAfter', type: 'uint256' },
+      { internalType: 'uint256', name: 'validBefore', type: 'uint256' },
+      { internalType: 'bytes', name: 'receiveWithAuthSignature', type: 'bytes' },
+      { internalType: 'bytes', name: 'swapAndDepositDataSignature', type: 'bytes' },
+    ],
+    name: 'swapAndBridgeWithAuthorization',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: 'signatureOwner', type: 'address' },
+      {
+        components: [
+          {
+            components: [
+              { internalType: 'uint256', name: 'amount', type: 'uint256' },
+              { internalType: 'address', name: 'recipient', type: 'address' },
+            ],
+            internalType: 'struct SpokePoolPeripheryInterface.Fees',
+            name: 'submissionFees',
+            type: 'tuple',
+          },
+          {
+            components: [
+              { internalType: 'address', name: 'inputToken', type: 'address' },
+              { internalType: 'bytes32', name: 'outputToken', type: 'bytes32' },
+              { internalType: 'uint256', name: 'outputAmount', type: 'uint256' },
+              { internalType: 'address', name: 'depositor', type: 'address' },
+              { internalType: 'bytes32', name: 'recipient', type: 'bytes32' },
+              { internalType: 'uint256', name: 'destinationChainId', type: 'uint256' },
+              { internalType: 'bytes32', name: 'exclusiveRelayer', type: 'bytes32' },
+              { internalType: 'uint32', name: 'quoteTimestamp', type: 'uint32' },
+              { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
+              { internalType: 'uint32', name: 'exclusivityParameter', type: 'uint32' },
+              { internalType: 'bytes', name: 'message', type: 'bytes' },
+            ],
+            internalType: 'struct SpokePoolPeripheryInterface.BaseDepositData',
+            name: 'depositData',
+            type: 'tuple',
+          },
+          { internalType: 'address', name: 'swapToken', type: 'address' },
+          { internalType: 'address', name: 'exchange', type: 'address' },
+          { internalType: 'enum SpokePoolPeripheryInterface.TransferType', name: 'transferType', type: 'uint8' },
+          { internalType: 'uint256', name: 'swapTokenAmount', type: 'uint256' },
+          { internalType: 'uint256', name: 'minExpectedInputTokenAmount', type: 'uint256' },
+          { internalType: 'bytes', name: 'routerCalldata', type: 'bytes' },
+          { internalType: 'bool', name: 'enableProportionalAdjustment', type: 'bool' },
+          { internalType: 'address', name: 'spokePool', type: 'address' },
+          { internalType: 'uint256', name: 'nonce', type: 'uint256' },
+        ],
+        internalType: 'struct SpokePoolPeripheryInterface.SwapAndDepositData',
+        name: 'swapAndDepositData',
+        type: 'tuple',
+      },
+      { internalType: 'uint256', name: 'deadline', type: 'uint256' },
+      { internalType: 'bytes', name: 'permitSignature', type: 'bytes' },
+      { internalType: 'bytes', name: 'swapAndDepositDataSignature', type: 'bytes' },
+    ],
+    name: 'swapAndBridgeWithPermit',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: 'signatureOwner', type: 'address' },
+      {
+        components: [
+          {
+            components: [
+              { internalType: 'uint256', name: 'amount', type: 'uint256' },
+              { internalType: 'address', name: 'recipient', type: 'address' },
+            ],
+            internalType: 'struct SpokePoolPeripheryInterface.Fees',
+            name: 'submissionFees',
+            type: 'tuple',
+          },
+          {
+            components: [
+              { internalType: 'address', name: 'inputToken', type: 'address' },
+              { internalType: 'bytes32', name: 'outputToken', type: 'bytes32' },
+              { internalType: 'uint256', name: 'outputAmount', type: 'uint256' },
+              { internalType: 'address', name: 'depositor', type: 'address' },
+              { internalType: 'bytes32', name: 'recipient', type: 'bytes32' },
+              { internalType: 'uint256', name: 'destinationChainId', type: 'uint256' },
+              { internalType: 'bytes32', name: 'exclusiveRelayer', type: 'bytes32' },
+              { internalType: 'uint32', name: 'quoteTimestamp', type: 'uint32' },
+              { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
+              { internalType: 'uint32', name: 'exclusivityParameter', type: 'uint32' },
+              { internalType: 'bytes', name: 'message', type: 'bytes' },
+            ],
+            internalType: 'struct SpokePoolPeripheryInterface.BaseDepositData',
+            name: 'depositData',
+            type: 'tuple',
+          },
+          { internalType: 'address', name: 'swapToken', type: 'address' },
+          { internalType: 'address', name: 'exchange', type: 'address' },
+          { internalType: 'enum SpokePoolPeripheryInterface.TransferType', name: 'transferType', type: 'uint8' },
+          { internalType: 'uint256', name: 'swapTokenAmount', type: 'uint256' },
+          { internalType: 'uint256', name: 'minExpectedInputTokenAmount', type: 'uint256' },
+          { internalType: 'bytes', name: 'routerCalldata', type: 'bytes' },
+          { internalType: 'bool', name: 'enableProportionalAdjustment', type: 'bool' },
+          { internalType: 'address', name: 'spokePool', type: 'address' },
+          { internalType: 'uint256', name: 'nonce', type: 'uint256' },
+        ],
+        internalType: 'struct SpokePoolPeripheryInterface.SwapAndDepositData',
+        name: 'swapAndDepositData',
+        type: 'tuple',
+      },
+      {
+        components: [
+          {
+            components: [
+              { internalType: 'address', name: 'token', type: 'address' },
+              { internalType: 'uint256', name: 'amount', type: 'uint256' },
+            ],
+            internalType: 'struct IPermit2.TokenPermissions',
+            name: 'permitted',
+            type: 'tuple',
+          },
+          { internalType: 'uint256', name: 'nonce', type: 'uint256' },
+          { internalType: 'uint256', name: 'deadline', type: 'uint256' },
+        ],
+        internalType: 'struct IPermit2.PermitTransferFrom',
+        name: 'permit',
+        type: 'tuple',
+      },
+      { internalType: 'bytes', name: 'signature', type: 'bytes' },
+    ],
+    name: 'swapAndBridgeWithPermit2',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'swapProxy',
+    outputs: [{ internalType: 'contract SwapProxy', name: '', type: 'address' }],
+    stateMutability: 'view',
     type: 'function',
   },
 ]
@@ -24,47 +511,216 @@ export const ACROSS_SPOKE_POOL_ABI = [
         name: '_depositQuoteTimeBuffer',
         type: 'uint32',
       },
-      { internalType: 'uint32', name: '_fillDeadlineBuffer', type: 'uint32' },
+      {
+        internalType: 'uint32',
+        name: '_fillDeadlineBuffer',
+        type: 'uint32',
+      },
+      {
+        internalType: 'contract IERC20',
+        name: '_l2Usdc',
+        type: 'address',
+      },
+      {
+        internalType: 'contract ITokenMessenger',
+        name: '_cctpTokenMessenger',
+        type: 'address',
+      },
+      {
+        internalType: 'uint32',
+        name: '_oftDstEid',
+        type: 'uint32',
+      },
+      {
+        internalType: 'uint256',
+        name: '_oftFeeCap',
+        type: 'uint256',
+      },
     ],
     stateMutability: 'nonpayable',
     type: 'constructor',
   },
-  { inputs: [], name: 'ClaimedMerkleLeaf', type: 'error' },
-  { inputs: [], name: 'DepositsArePaused', type: 'error' },
-  { inputs: [], name: 'DisabledRoute', type: 'error' },
-  { inputs: [], name: 'ExpiredFillDeadline', type: 'error' },
-  { inputs: [], name: 'FillsArePaused', type: 'error' },
+  {
+    inputs: [],
+    name: 'ClaimedMerkleLeaf',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'DepositsArePaused',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'DisabledRoute',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'ExpiredFillDeadline',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'FillsArePaused',
+    type: 'error',
+  },
   {
     inputs: [],
     name: 'InsufficientSpokePoolBalanceToExecuteLeaf',
     type: 'error',
   },
-  { inputs: [], name: 'InvalidBytes32', type: 'error' },
-  { inputs: [], name: 'InvalidChainId', type: 'error' },
-  { inputs: [], name: 'InvalidCrossDomainAdmin', type: 'error' },
-  { inputs: [], name: 'InvalidDepositorSignature', type: 'error' },
-  { inputs: [], name: 'InvalidExclusiveRelayer', type: 'error' },
-  { inputs: [], name: 'InvalidFillDeadline', type: 'error' },
-  { inputs: [], name: 'InvalidMerkleLeaf', type: 'error' },
-  { inputs: [], name: 'InvalidMerkleProof', type: 'error' },
-  { inputs: [], name: 'InvalidPayoutAdjustmentPct', type: 'error' },
-  { inputs: [], name: 'InvalidQuoteTimestamp', type: 'error' },
-  { inputs: [], name: 'InvalidRelayerFeePct', type: 'error' },
-  { inputs: [], name: 'InvalidSlowFillRequest', type: 'error' },
-  { inputs: [], name: 'InvalidWithdrawalRecipient', type: 'error' },
   {
-    inputs: [{ internalType: 'bytes', name: 'data', type: 'bytes' }],
+    inputs: [],
+    name: 'InvalidBytes32',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidChainId',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidCrossDomainAdmin',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidDepositorSignature',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidExclusiveRelayer',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidFillDeadline',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidMerkleLeaf',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidMerkleProof',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidPayoutAdjustmentPct',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidQuoteTimestamp',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidRelayerFeePct',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidSlowFillRequest',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InvalidWithdrawalRecipient',
+    type: 'error',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'bytes',
+        name: 'data',
+        type: 'bytes',
+      },
+    ],
     name: 'LowLevelCallFailed',
     type: 'error',
   },
-  { inputs: [], name: 'MaxTransferSizeExceeded', type: 'error' },
-  { inputs: [], name: 'MsgValueDoesNotMatchInputAmount', type: 'error' },
-  { inputs: [], name: 'NoRelayerRefundToClaim', type: 'error' },
-  { inputs: [], name: 'NoSlowFillsInExclusivityWindow', type: 'error' },
-  { inputs: [], name: 'NotEOA', type: 'error' },
-  { inputs: [], name: 'NotExclusiveRelayer', type: 'error' },
-  { inputs: [], name: 'RelayFilled', type: 'error' },
-  { inputs: [], name: 'WrongERC7683OrderId', type: 'error' },
+  {
+    inputs: [],
+    name: 'MaxTransferSizeExceeded',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'MsgValueDoesNotMatchInputAmount',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'NoRelayerRefundToClaim',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'NoSlowFillsInExclusivityWindow',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'NotEOA',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'NotExclusiveRelayer',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'OFTFeeUnderpaid',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'OFTTokenMismatch',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'OftFeeCapExceeded',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'OftIncorrectAmountReceivedLD',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'OftIncorrectAmountSentLD',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'OftInsufficientBalanceForFee',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'OftLzFeeNotZero',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'RelayFilled',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'WrongERC7683OrderId',
+    type: 'error',
+  },
   {
     anonymous: false,
     inputs: [
@@ -156,7 +812,12 @@ export const ACROSS_SPOKE_POOL_ABI = [
         name: 'destinationChainId',
         type: 'uint256',
       },
-      { indexed: false, internalType: 'bool', name: 'enabled', type: 'bool' },
+      {
+        indexed: false,
+        internalType: 'bool',
+        name: 'enabled',
+        type: 'bool',
+      },
     ],
     name: 'EnabledDepositRoute',
     type: 'event',
@@ -188,7 +849,12 @@ export const ACROSS_SPOKE_POOL_ABI = [
         name: 'rootBundleId',
         type: 'uint32',
       },
-      { indexed: true, internalType: 'uint32', name: 'leafId', type: 'uint32' },
+      {
+        indexed: true,
+        internalType: 'uint32',
+        name: 'leafId',
+        type: 'uint32',
+      },
       {
         indexed: false,
         internalType: 'address',
@@ -417,7 +1083,12 @@ export const ACROSS_SPOKE_POOL_ABI = [
         name: 'recipient',
         type: 'address',
       },
-      { indexed: false, internalType: 'bytes', name: 'message', type: 'bytes' },
+      {
+        indexed: false,
+        internalType: 'bytes',
+        name: 'message',
+        type: 'bytes',
+      },
       {
         components: [
           {
@@ -425,7 +1096,11 @@ export const ACROSS_SPOKE_POOL_ABI = [
             name: 'updatedRecipient',
             type: 'address',
           },
-          { internalType: 'bytes', name: 'updatedMessage', type: 'bytes' },
+          {
+            internalType: 'bytes',
+            name: 'updatedMessage',
+            type: 'bytes',
+          },
           {
             internalType: 'uint256',
             name: 'updatedOutputAmount',
@@ -521,14 +1196,26 @@ export const ACROSS_SPOKE_POOL_ABI = [
         name: 'exclusiveRelayer',
         type: 'bytes32',
       },
-      { indexed: false, internalType: 'bytes', name: 'message', type: 'bytes' },
+      {
+        indexed: false,
+        internalType: 'bytes',
+        name: 'message',
+        type: 'bytes',
+      },
     ],
     name: 'FundsDeposited',
     type: 'event',
   },
   {
     anonymous: false,
-    inputs: [{ indexed: false, internalType: 'uint8', name: 'version', type: 'uint8' }],
+    inputs: [
+      {
+        indexed: false,
+        internalType: 'uint8',
+        name: 'version',
+        type: 'uint8',
+      },
+    ],
     name: 'Initialized',
     type: 'event',
   },
@@ -536,30 +1223,25 @@ export const ACROSS_SPOKE_POOL_ABI = [
     anonymous: false,
     inputs: [
       {
-        indexed: true,
-        internalType: 'address',
-        name: 'previousOwner',
-        type: 'address',
-      },
-      {
-        indexed: true,
-        internalType: 'address',
-        name: 'newOwner',
-        type: 'address',
+        indexed: false,
+        internalType: 'bool',
+        name: 'isPaused',
+        type: 'bool',
       },
     ],
-    name: 'OwnershipTransferred',
-    type: 'event',
-  },
-  {
-    anonymous: false,
-    inputs: [{ indexed: false, internalType: 'bool', name: 'isPaused', type: 'bool' }],
     name: 'PausedDeposits',
     type: 'event',
   },
   {
     anonymous: false,
-    inputs: [{ indexed: false, internalType: 'bool', name: 'isPaused', type: 'bool' }],
+    inputs: [
+      {
+        indexed: false,
+        internalType: 'bool',
+        name: 'isPaused',
+        type: 'bool',
+      },
+    ],
     name: 'PausedFills',
     type: 'event',
   },
@@ -822,9 +1504,46 @@ export const ACROSS_SPOKE_POOL_ABI = [
         name: 'recipient',
         type: 'address',
       },
-      { indexed: false, internalType: 'bytes', name: 'message', type: 'bytes' },
+      {
+        indexed: false,
+        internalType: 'bytes',
+        name: 'message',
+        type: 'bytes',
+      },
     ],
     name: 'RequestedV3SlowFill',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'newL2GatewayRouter',
+        type: 'address',
+      },
+    ],
+    name: 'SetL2GatewayRouter',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'token',
+        type: 'address',
+      },
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'messenger',
+        type: 'address',
+      },
+    ],
+    name: 'SetOFTMessenger',
     type: 'event',
   },
   {
@@ -868,7 +1587,12 @@ export const ACROSS_SPOKE_POOL_ABI = [
         name: 'chainId',
         type: 'uint256',
       },
-      { indexed: true, internalType: 'uint32', name: 'leafId', type: 'uint32' },
+      {
+        indexed: true,
+        internalType: 'uint32',
+        name: 'leafId',
+        type: 'uint32',
+      },
       {
         indexed: true,
         internalType: 'bytes32',
@@ -973,64 +1697,164 @@ export const ACROSS_SPOKE_POOL_ABI = [
         name: 'exclusiveRelayer',
         type: 'address',
       },
-      { indexed: false, internalType: 'bytes', name: 'message', type: 'bytes' },
+      {
+        indexed: false,
+        internalType: 'bytes',
+        name: 'message',
+        type: 'bytes',
+      },
     ],
     name: 'V3FundsDeposited',
     type: 'event',
   },
   {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'l2Token',
+        type: 'address',
+      },
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'l1Token',
+        type: 'address',
+      },
+    ],
+    name: 'WhitelistedTokens',
+    type: 'event',
+  },
+  {
+    inputs: [],
+    name: 'EMPTY_MSG_BYTES',
+    outputs: [
+      {
+        internalType: 'bytes',
+        name: '',
+        type: 'bytes',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
     inputs: [],
     name: 'EMPTY_RELAYER',
-    outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+    outputs: [
+      {
+        internalType: 'bytes32',
+        name: '',
+        type: 'bytes32',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [],
     name: 'EMPTY_REPAYMENT_CHAIN_ID',
-    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [],
     name: 'INFINITE_FILL_DEADLINE',
-    outputs: [{ internalType: 'uint32', name: '', type: 'uint32' }],
+    outputs: [
+      {
+        internalType: 'uint32',
+        name: '',
+        type: 'uint32',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [],
     name: 'MAX_EXCLUSIVITY_PERIOD_SECONDS',
-    outputs: [{ internalType: 'uint32', name: '', type: 'uint32' }],
+    outputs: [
+      {
+        internalType: 'uint32',
+        name: '',
+        type: 'uint32',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [],
     name: 'MAX_TRANSFER_SIZE',
-    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [],
-    name: 'UPDATE_ADDRESS_DEPOSIT_DETAILS_HASH',
-    outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+    name: 'OFT_DST_EID',
+    outputs: [
+      {
+        internalType: 'uint32',
+        name: '',
+        type: 'uint32',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'OFT_FEE_CAP',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [],
     name: 'UPDATE_BYTES32_DEPOSIT_DETAILS_HASH',
-    outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+    outputs: [
+      {
+        internalType: 'bytes32',
+        name: '',
+        type: 'bytes32',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [
-      { internalType: 'uint32', name: '_initialDepositId', type: 'uint32' },
-      { internalType: 'address', name: '_crossDomainAdmin', type: 'address' },
+      {
+        internalType: 'uint32',
+        name: '_initialDepositId',
+        type: 'uint32',
+      },
+      {
+        internalType: 'address',
+        name: '_crossDomainAdmin',
+        type: 'address',
+      },
       {
         internalType: 'address',
         name: '_withdrawalRecipient',
@@ -1044,15 +1868,55 @@ export const ACROSS_SPOKE_POOL_ABI = [
   },
   {
     inputs: [],
+    name: 'cctpTokenMessenger',
+    outputs: [
+      {
+        internalType: 'contract ITokenMessenger',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'cctpV2',
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
     name: 'chainId',
-    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [
-      { internalType: 'bytes32', name: 'l2TokenAddress', type: 'bytes32' },
-      { internalType: 'bytes32', name: 'refundAddress', type: 'bytes32' },
+      {
+        internalType: 'bytes32',
+        name: 'l2TokenAddress',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'refundAddress',
+        type: 'bytes32',
+      },
     ],
     name: 'claimRelayerRefund',
     outputs: [],
@@ -1062,24 +1926,78 @@ export const ACROSS_SPOKE_POOL_ABI = [
   {
     inputs: [],
     name: 'crossDomainAdmin',
-    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    outputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [
-      { internalType: 'bytes32', name: 'depositor', type: 'bytes32' },
-      { internalType: 'bytes32', name: 'recipient', type: 'bytes32' },
-      { internalType: 'bytes32', name: 'inputToken', type: 'bytes32' },
-      { internalType: 'bytes32', name: 'outputToken', type: 'bytes32' },
-      { internalType: 'uint256', name: 'inputAmount', type: 'uint256' },
-      { internalType: 'uint256', name: 'outputAmount', type: 'uint256' },
-      { internalType: 'uint256', name: 'destinationChainId', type: 'uint256' },
-      { internalType: 'bytes32', name: 'exclusiveRelayer', type: 'bytes32' },
-      { internalType: 'uint32', name: 'quoteTimestamp', type: 'uint32' },
-      { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
-      { internalType: 'uint32', name: 'exclusivityParameter', type: 'uint32' },
-      { internalType: 'bytes', name: 'message', type: 'bytes' },
+      {
+        internalType: 'bytes32',
+        name: 'depositor',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'recipient',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'inputToken',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'outputToken',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'uint256',
+        name: 'inputAmount',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'outputAmount',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'destinationChainId',
+        type: 'uint256',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'exclusiveRelayer',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'uint32',
+        name: 'quoteTimestamp',
+        type: 'uint32',
+      },
+      {
+        internalType: 'uint32',
+        name: 'fillDeadline',
+        type: 'uint32',
+      },
+      {
+        internalType: 'uint32',
+        name: 'exclusivityParameter',
+        type: 'uint32',
+      },
+      {
+        internalType: 'bytes',
+        name: 'message',
+        type: 'bytes',
+      },
     ],
     name: 'deposit',
     outputs: [],
@@ -1088,14 +2006,46 @@ export const ACROSS_SPOKE_POOL_ABI = [
   },
   {
     inputs: [
-      { internalType: 'address', name: 'recipient', type: 'address' },
-      { internalType: 'address', name: 'originToken', type: 'address' },
-      { internalType: 'uint256', name: 'amount', type: 'uint256' },
-      { internalType: 'uint256', name: 'destinationChainId', type: 'uint256' },
-      { internalType: 'int64', name: 'relayerFeePct', type: 'int64' },
-      { internalType: 'uint32', name: 'quoteTimestamp', type: 'uint32' },
-      { internalType: 'bytes', name: 'message', type: 'bytes' },
-      { internalType: 'uint256', name: '', type: 'uint256' },
+      {
+        internalType: 'address',
+        name: 'recipient',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: 'originToken',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: 'amount',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'destinationChainId',
+        type: 'uint256',
+      },
+      {
+        internalType: 'int64',
+        name: 'relayerFeePct',
+        type: 'int64',
+      },
+      {
+        internalType: 'uint32',
+        name: 'quoteTimestamp',
+        type: 'uint32',
+      },
+      {
+        internalType: 'bytes',
+        name: 'message',
+        type: 'bytes',
+      },
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
     ],
     name: 'depositDeprecated_5947912356',
     outputs: [],
@@ -1104,15 +2054,51 @@ export const ACROSS_SPOKE_POOL_ABI = [
   },
   {
     inputs: [
-      { internalType: 'address', name: 'depositor', type: 'address' },
-      { internalType: 'address', name: 'recipient', type: 'address' },
-      { internalType: 'address', name: 'originToken', type: 'address' },
-      { internalType: 'uint256', name: 'amount', type: 'uint256' },
-      { internalType: 'uint256', name: 'destinationChainId', type: 'uint256' },
-      { internalType: 'int64', name: 'relayerFeePct', type: 'int64' },
-      { internalType: 'uint32', name: 'quoteTimestamp', type: 'uint32' },
-      { internalType: 'bytes', name: 'message', type: 'bytes' },
-      { internalType: 'uint256', name: '', type: 'uint256' },
+      {
+        internalType: 'address',
+        name: 'depositor',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: 'recipient',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: 'originToken',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: 'amount',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'destinationChainId',
+        type: 'uint256',
+      },
+      {
+        internalType: 'int64',
+        name: 'relayerFeePct',
+        type: 'int64',
+      },
+      {
+        internalType: 'uint32',
+        name: 'quoteTimestamp',
+        type: 'uint32',
+      },
+      {
+        internalType: 'bytes',
+        name: 'message',
+        type: 'bytes',
+      },
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
     ],
     name: 'depositFor',
     outputs: [],
@@ -1121,17 +2107,61 @@ export const ACROSS_SPOKE_POOL_ABI = [
   },
   {
     inputs: [
-      { internalType: 'bytes32', name: 'depositor', type: 'bytes32' },
-      { internalType: 'bytes32', name: 'recipient', type: 'bytes32' },
-      { internalType: 'bytes32', name: 'inputToken', type: 'bytes32' },
-      { internalType: 'bytes32', name: 'outputToken', type: 'bytes32' },
-      { internalType: 'uint256', name: 'inputAmount', type: 'uint256' },
-      { internalType: 'uint256', name: 'outputAmount', type: 'uint256' },
-      { internalType: 'uint256', name: 'destinationChainId', type: 'uint256' },
-      { internalType: 'bytes32', name: 'exclusiveRelayer', type: 'bytes32' },
-      { internalType: 'uint32', name: 'fillDeadlineOffset', type: 'uint32' },
-      { internalType: 'uint32', name: 'exclusivityParameter', type: 'uint32' },
-      { internalType: 'bytes', name: 'message', type: 'bytes' },
+      {
+        internalType: 'bytes32',
+        name: 'depositor',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'recipient',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'inputToken',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'outputToken',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'uint256',
+        name: 'inputAmount',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'outputAmount',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'destinationChainId',
+        type: 'uint256',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'exclusiveRelayer',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'uint32',
+        name: 'fillDeadlineOffset',
+        type: 'uint32',
+      },
+      {
+        internalType: 'uint32',
+        name: 'exclusivityParameter',
+        type: 'uint32',
+      },
+      {
+        internalType: 'bytes',
+        name: 'message',
+        type: 'bytes',
+      },
     ],
     name: 'depositNow',
     outputs: [],
@@ -1141,24 +2171,78 @@ export const ACROSS_SPOKE_POOL_ABI = [
   {
     inputs: [],
     name: 'depositQuoteTimeBuffer',
-    outputs: [{ internalType: 'uint32', name: '', type: 'uint32' }],
+    outputs: [
+      {
+        internalType: 'uint32',
+        name: '',
+        type: 'uint32',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [
-      { internalType: 'address', name: 'depositor', type: 'address' },
-      { internalType: 'address', name: 'recipient', type: 'address' },
-      { internalType: 'address', name: 'inputToken', type: 'address' },
-      { internalType: 'address', name: 'outputToken', type: 'address' },
-      { internalType: 'uint256', name: 'inputAmount', type: 'uint256' },
-      { internalType: 'uint256', name: 'outputAmount', type: 'uint256' },
-      { internalType: 'uint256', name: 'destinationChainId', type: 'uint256' },
-      { internalType: 'address', name: 'exclusiveRelayer', type: 'address' },
-      { internalType: 'uint32', name: 'quoteTimestamp', type: 'uint32' },
-      { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
-      { internalType: 'uint32', name: 'exclusivityParameter', type: 'uint32' },
-      { internalType: 'bytes', name: 'message', type: 'bytes' },
+      {
+        internalType: 'address',
+        name: 'depositor',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: 'recipient',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: 'inputToken',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: 'outputToken',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: 'inputAmount',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'outputAmount',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'destinationChainId',
+        type: 'uint256',
+      },
+      {
+        internalType: 'address',
+        name: 'exclusiveRelayer',
+        type: 'address',
+      },
+      {
+        internalType: 'uint32',
+        name: 'quoteTimestamp',
+        type: 'uint32',
+      },
+      {
+        internalType: 'uint32',
+        name: 'fillDeadline',
+        type: 'uint32',
+      },
+      {
+        internalType: 'uint32',
+        name: 'exclusivityParameter',
+        type: 'uint32',
+      },
+      {
+        internalType: 'bytes',
+        name: 'message',
+        type: 'bytes',
+      },
     ],
     name: 'depositV3',
     outputs: [],
@@ -1167,17 +2251,61 @@ export const ACROSS_SPOKE_POOL_ABI = [
   },
   {
     inputs: [
-      { internalType: 'address', name: 'depositor', type: 'address' },
-      { internalType: 'address', name: 'recipient', type: 'address' },
-      { internalType: 'address', name: 'inputToken', type: 'address' },
-      { internalType: 'address', name: 'outputToken', type: 'address' },
-      { internalType: 'uint256', name: 'inputAmount', type: 'uint256' },
-      { internalType: 'uint256', name: 'outputAmount', type: 'uint256' },
-      { internalType: 'uint256', name: 'destinationChainId', type: 'uint256' },
-      { internalType: 'address', name: 'exclusiveRelayer', type: 'address' },
-      { internalType: 'uint32', name: 'fillDeadlineOffset', type: 'uint32' },
-      { internalType: 'uint32', name: 'exclusivityParameter', type: 'uint32' },
-      { internalType: 'bytes', name: 'message', type: 'bytes' },
+      {
+        internalType: 'address',
+        name: 'depositor',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: 'recipient',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: 'inputToken',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: 'outputToken',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: 'inputAmount',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'outputAmount',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'destinationChainId',
+        type: 'uint256',
+      },
+      {
+        internalType: 'address',
+        name: 'exclusiveRelayer',
+        type: 'address',
+      },
+      {
+        internalType: 'uint32',
+        name: 'fillDeadlineOffset',
+        type: 'uint32',
+      },
+      {
+        internalType: 'uint32',
+        name: 'exclusivityParameter',
+        type: 'uint32',
+      },
+      {
+        internalType: 'bytes',
+        name: 'message',
+        type: 'bytes',
+      },
     ],
     name: 'depositV3Now',
     outputs: [],
@@ -1185,7 +2313,13 @@ export const ACROSS_SPOKE_POOL_ABI = [
     type: 'function',
   },
   {
-    inputs: [{ internalType: 'uint256', name: 'rootBundleId', type: 'uint256' }],
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'rootBundleId',
+        type: 'uint256',
+      },
+    ],
     name: 'emergencyDeleteRootBundle',
     outputs: [],
     stateMutability: 'nonpayable',
@@ -1193,28 +2327,38 @@ export const ACROSS_SPOKE_POOL_ABI = [
   },
   {
     inputs: [
-      { internalType: 'address', name: '', type: 'address' },
-      { internalType: 'uint256', name: '', type: 'uint256' },
-    ],
-    name: 'enabledDepositRoutes',
-    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      { internalType: 'uint32', name: 'rootBundleId', type: 'uint32' },
+      {
+        internalType: 'uint32',
+        name: 'rootBundleId',
+        type: 'uint32',
+      },
       {
         components: [
-          { internalType: 'uint256', name: 'amountToReturn', type: 'uint256' },
-          { internalType: 'uint256', name: 'chainId', type: 'uint256' },
+          {
+            internalType: 'uint256',
+            name: 'amountToReturn',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'chainId',
+            type: 'uint256',
+          },
           {
             internalType: 'uint256[]',
             name: 'refundAmounts',
             type: 'uint256[]',
           },
-          { internalType: 'uint32', name: 'leafId', type: 'uint32' },
-          { internalType: 'address', name: 'l2TokenAddress', type: 'address' },
+          {
+            internalType: 'uint32',
+            name: 'leafId',
+            type: 'uint32',
+          },
+          {
+            internalType: 'address',
+            name: 'l2TokenAddress',
+            type: 'address',
+          },
           {
             internalType: 'address[]',
             name: 'refundAddresses',
@@ -1225,7 +2369,11 @@ export const ACROSS_SPOKE_POOL_ABI = [
         name: 'relayerRefundLeaf',
         type: 'tuple',
       },
-      { internalType: 'bytes32[]', name: 'proof', type: 'bytes32[]' },
+      {
+        internalType: 'bytes32[]',
+        name: 'proof',
+        type: 'bytes32[]',
+      },
     ],
     name: 'executeRelayerRefundLeaf',
     outputs: [],
@@ -1238,16 +2386,36 @@ export const ACROSS_SPOKE_POOL_ABI = [
         components: [
           {
             components: [
-              { internalType: 'bytes32', name: 'depositor', type: 'bytes32' },
-              { internalType: 'bytes32', name: 'recipient', type: 'bytes32' },
+              {
+                internalType: 'bytes32',
+                name: 'depositor',
+                type: 'bytes32',
+              },
+              {
+                internalType: 'bytes32',
+                name: 'recipient',
+                type: 'bytes32',
+              },
               {
                 internalType: 'bytes32',
                 name: 'exclusiveRelayer',
                 type: 'bytes32',
               },
-              { internalType: 'bytes32', name: 'inputToken', type: 'bytes32' },
-              { internalType: 'bytes32', name: 'outputToken', type: 'bytes32' },
-              { internalType: 'uint256', name: 'inputAmount', type: 'uint256' },
+              {
+                internalType: 'bytes32',
+                name: 'inputToken',
+                type: 'bytes32',
+              },
+              {
+                internalType: 'bytes32',
+                name: 'outputToken',
+                type: 'bytes32',
+              },
+              {
+                internalType: 'uint256',
+                name: 'inputAmount',
+                type: 'uint256',
+              },
               {
                 internalType: 'uint256',
                 name: 'outputAmount',
@@ -1258,20 +2426,36 @@ export const ACROSS_SPOKE_POOL_ABI = [
                 name: 'originChainId',
                 type: 'uint256',
               },
-              { internalType: 'uint256', name: 'depositId', type: 'uint256' },
-              { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
+              {
+                internalType: 'uint256',
+                name: 'depositId',
+                type: 'uint256',
+              },
+              {
+                internalType: 'uint32',
+                name: 'fillDeadline',
+                type: 'uint32',
+              },
               {
                 internalType: 'uint32',
                 name: 'exclusivityDeadline',
                 type: 'uint32',
               },
-              { internalType: 'bytes', name: 'message', type: 'bytes' },
+              {
+                internalType: 'bytes',
+                name: 'message',
+                type: 'bytes',
+              },
             ],
             internalType: 'struct V3SpokePoolInterface.V3RelayData',
             name: 'relayData',
             type: 'tuple',
           },
-          { internalType: 'uint256', name: 'chainId', type: 'uint256' },
+          {
+            internalType: 'uint256',
+            name: 'chainId',
+            type: 'uint256',
+          },
           {
             internalType: 'uint256',
             name: 'updatedOutputAmount',
@@ -1282,8 +2466,16 @@ export const ACROSS_SPOKE_POOL_ABI = [
         name: 'slowFillLeaf',
         type: 'tuple',
       },
-      { internalType: 'uint32', name: 'rootBundleId', type: 'uint32' },
-      { internalType: 'bytes32[]', name: 'proof', type: 'bytes32[]' },
+      {
+        internalType: 'uint32',
+        name: 'rootBundleId',
+        type: 'uint32',
+      },
+      {
+        internalType: 'bytes32[]',
+        name: 'proof',
+        type: 'bytes32[]',
+      },
     ],
     name: 'executeSlowRelayLeaf',
     outputs: [],
@@ -1292,9 +2484,21 @@ export const ACROSS_SPOKE_POOL_ABI = [
   },
   {
     inputs: [
-      { internalType: 'bytes32', name: 'orderId', type: 'bytes32' },
-      { internalType: 'bytes', name: 'originData', type: 'bytes' },
-      { internalType: 'bytes', name: 'fillerData', type: 'bytes' },
+      {
+        internalType: 'bytes32',
+        name: 'orderId',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'bytes',
+        name: 'originData',
+        type: 'bytes',
+      },
+      {
+        internalType: 'bytes',
+        name: 'fillerData',
+        type: 'bytes',
+      },
     ],
     name: 'fill',
     outputs: [],
@@ -1304,7 +2508,13 @@ export const ACROSS_SPOKE_POOL_ABI = [
   {
     inputs: [],
     name: 'fillDeadlineBuffer',
-    outputs: [{ internalType: 'uint32', name: '', type: 'uint32' }],
+    outputs: [
+      {
+        internalType: 'uint32',
+        name: '',
+        type: 'uint32',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
@@ -1312,33 +2522,81 @@ export const ACROSS_SPOKE_POOL_ABI = [
     inputs: [
       {
         components: [
-          { internalType: 'bytes32', name: 'depositor', type: 'bytes32' },
-          { internalType: 'bytes32', name: 'recipient', type: 'bytes32' },
+          {
+            internalType: 'bytes32',
+            name: 'depositor',
+            type: 'bytes32',
+          },
+          {
+            internalType: 'bytes32',
+            name: 'recipient',
+            type: 'bytes32',
+          },
           {
             internalType: 'bytes32',
             name: 'exclusiveRelayer',
             type: 'bytes32',
           },
-          { internalType: 'bytes32', name: 'inputToken', type: 'bytes32' },
-          { internalType: 'bytes32', name: 'outputToken', type: 'bytes32' },
-          { internalType: 'uint256', name: 'inputAmount', type: 'uint256' },
-          { internalType: 'uint256', name: 'outputAmount', type: 'uint256' },
-          { internalType: 'uint256', name: 'originChainId', type: 'uint256' },
-          { internalType: 'uint256', name: 'depositId', type: 'uint256' },
-          { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
+          {
+            internalType: 'bytes32',
+            name: 'inputToken',
+            type: 'bytes32',
+          },
+          {
+            internalType: 'bytes32',
+            name: 'outputToken',
+            type: 'bytes32',
+          },
+          {
+            internalType: 'uint256',
+            name: 'inputAmount',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'outputAmount',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'originChainId',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'depositId',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint32',
+            name: 'fillDeadline',
+            type: 'uint32',
+          },
           {
             internalType: 'uint32',
             name: 'exclusivityDeadline',
             type: 'uint32',
           },
-          { internalType: 'bytes', name: 'message', type: 'bytes' },
+          {
+            internalType: 'bytes',
+            name: 'message',
+            type: 'bytes',
+          },
         ],
         internalType: 'struct V3SpokePoolInterface.V3RelayData',
         name: 'relayData',
         type: 'tuple',
       },
-      { internalType: 'uint256', name: 'repaymentChainId', type: 'uint256' },
-      { internalType: 'bytes32', name: 'repaymentAddress', type: 'bytes32' },
+      {
+        internalType: 'uint256',
+        name: 'repaymentChainId',
+        type: 'uint256',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'repaymentAddress',
+        type: 'bytes32',
+      },
     ],
     name: 'fillRelay',
     outputs: [],
@@ -1349,37 +2607,101 @@ export const ACROSS_SPOKE_POOL_ABI = [
     inputs: [
       {
         components: [
-          { internalType: 'bytes32', name: 'depositor', type: 'bytes32' },
-          { internalType: 'bytes32', name: 'recipient', type: 'bytes32' },
+          {
+            internalType: 'bytes32',
+            name: 'depositor',
+            type: 'bytes32',
+          },
+          {
+            internalType: 'bytes32',
+            name: 'recipient',
+            type: 'bytes32',
+          },
           {
             internalType: 'bytes32',
             name: 'exclusiveRelayer',
             type: 'bytes32',
           },
-          { internalType: 'bytes32', name: 'inputToken', type: 'bytes32' },
-          { internalType: 'bytes32', name: 'outputToken', type: 'bytes32' },
-          { internalType: 'uint256', name: 'inputAmount', type: 'uint256' },
-          { internalType: 'uint256', name: 'outputAmount', type: 'uint256' },
-          { internalType: 'uint256', name: 'originChainId', type: 'uint256' },
-          { internalType: 'uint256', name: 'depositId', type: 'uint256' },
-          { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
+          {
+            internalType: 'bytes32',
+            name: 'inputToken',
+            type: 'bytes32',
+          },
+          {
+            internalType: 'bytes32',
+            name: 'outputToken',
+            type: 'bytes32',
+          },
+          {
+            internalType: 'uint256',
+            name: 'inputAmount',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'outputAmount',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'originChainId',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'depositId',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint32',
+            name: 'fillDeadline',
+            type: 'uint32',
+          },
           {
             internalType: 'uint32',
             name: 'exclusivityDeadline',
             type: 'uint32',
           },
-          { internalType: 'bytes', name: 'message', type: 'bytes' },
+          {
+            internalType: 'bytes',
+            name: 'message',
+            type: 'bytes',
+          },
         ],
         internalType: 'struct V3SpokePoolInterface.V3RelayData',
         name: 'relayData',
         type: 'tuple',
       },
-      { internalType: 'uint256', name: 'repaymentChainId', type: 'uint256' },
-      { internalType: 'bytes32', name: 'repaymentAddress', type: 'bytes32' },
-      { internalType: 'uint256', name: 'updatedOutputAmount', type: 'uint256' },
-      { internalType: 'bytes32', name: 'updatedRecipient', type: 'bytes32' },
-      { internalType: 'bytes', name: 'updatedMessage', type: 'bytes' },
-      { internalType: 'bytes', name: 'depositorSignature', type: 'bytes' },
+      {
+        internalType: 'uint256',
+        name: 'repaymentChainId',
+        type: 'uint256',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'repaymentAddress',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'uint256',
+        name: 'updatedOutputAmount',
+        type: 'uint256',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'updatedRecipient',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'bytes',
+        name: 'updatedMessage',
+        type: 'bytes',
+      },
+      {
+        internalType: 'bytes',
+        name: 'depositorSignature',
+        type: 'bytes',
+      },
     ],
     name: 'fillRelayWithUpdatedDeposit',
     outputs: [],
@@ -1387,9 +2709,21 @@ export const ACROSS_SPOKE_POOL_ABI = [
     type: 'function',
   },
   {
-    inputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+    inputs: [
+      {
+        internalType: 'bytes32',
+        name: '',
+        type: 'bytes32',
+      },
+    ],
     name: 'fillStatuses',
-    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
@@ -1397,32 +2731,76 @@ export const ACROSS_SPOKE_POOL_ABI = [
     inputs: [
       {
         components: [
-          { internalType: 'address', name: 'depositor', type: 'address' },
-          { internalType: 'address', name: 'recipient', type: 'address' },
+          {
+            internalType: 'address',
+            name: 'depositor',
+            type: 'address',
+          },
+          {
+            internalType: 'address',
+            name: 'recipient',
+            type: 'address',
+          },
           {
             internalType: 'address',
             name: 'exclusiveRelayer',
             type: 'address',
           },
-          { internalType: 'address', name: 'inputToken', type: 'address' },
-          { internalType: 'address', name: 'outputToken', type: 'address' },
-          { internalType: 'uint256', name: 'inputAmount', type: 'uint256' },
-          { internalType: 'uint256', name: 'outputAmount', type: 'uint256' },
-          { internalType: 'uint256', name: 'originChainId', type: 'uint256' },
-          { internalType: 'uint32', name: 'depositId', type: 'uint32' },
-          { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
+          {
+            internalType: 'address',
+            name: 'inputToken',
+            type: 'address',
+          },
+          {
+            internalType: 'address',
+            name: 'outputToken',
+            type: 'address',
+          },
+          {
+            internalType: 'uint256',
+            name: 'inputAmount',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'outputAmount',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'originChainId',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint32',
+            name: 'depositId',
+            type: 'uint32',
+          },
+          {
+            internalType: 'uint32',
+            name: 'fillDeadline',
+            type: 'uint32',
+          },
           {
             internalType: 'uint32',
             name: 'exclusivityDeadline',
             type: 'uint32',
           },
-          { internalType: 'bytes', name: 'message', type: 'bytes' },
+          {
+            internalType: 'bytes',
+            name: 'message',
+            type: 'bytes',
+          },
         ],
         internalType: 'struct V3SpokePoolInterface.V3RelayDataLegacy',
         name: 'relayData',
         type: 'tuple',
       },
-      { internalType: 'uint256', name: 'repaymentChainId', type: 'uint256' },
+      {
+        internalType: 'uint256',
+        name: 'repaymentChainId',
+        type: 'uint256',
+      },
     ],
     name: 'fillV3Relay',
     outputs: [],
@@ -1432,28 +2810,66 @@ export const ACROSS_SPOKE_POOL_ABI = [
   {
     inputs: [],
     name: 'getCurrentTime',
-    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [
-      { internalType: 'address', name: 'l2TokenAddress', type: 'address' },
-      { internalType: 'address', name: 'refundAddress', type: 'address' },
+      {
+        internalType: 'address',
+        name: 'l2TokenAddress',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: 'refundAddress',
+        type: 'address',
+      },
     ],
     name: 'getRelayerRefund',
-    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [
-      { internalType: 'address', name: 'msgSender', type: 'address' },
-      { internalType: 'bytes32', name: 'depositor', type: 'bytes32' },
-      { internalType: 'uint256', name: 'depositNonce', type: 'uint256' },
+      {
+        internalType: 'address',
+        name: 'msgSender',
+        type: 'address',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'depositor',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'uint256',
+        name: 'depositNonce',
+        type: 'uint256',
+      },
     ],
     name: 'getUnsafeDepositId',
-    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
     stateMutability: 'pure',
     type: 'function',
   },
@@ -1461,26 +2877,66 @@ export const ACROSS_SPOKE_POOL_ABI = [
     inputs: [
       {
         components: [
-          { internalType: 'bytes32', name: 'depositor', type: 'bytes32' },
-          { internalType: 'bytes32', name: 'recipient', type: 'bytes32' },
+          {
+            internalType: 'bytes32',
+            name: 'depositor',
+            type: 'bytes32',
+          },
+          {
+            internalType: 'bytes32',
+            name: 'recipient',
+            type: 'bytes32',
+          },
           {
             internalType: 'bytes32',
             name: 'exclusiveRelayer',
             type: 'bytes32',
           },
-          { internalType: 'bytes32', name: 'inputToken', type: 'bytes32' },
-          { internalType: 'bytes32', name: 'outputToken', type: 'bytes32' },
-          { internalType: 'uint256', name: 'inputAmount', type: 'uint256' },
-          { internalType: 'uint256', name: 'outputAmount', type: 'uint256' },
-          { internalType: 'uint256', name: 'originChainId', type: 'uint256' },
-          { internalType: 'uint256', name: 'depositId', type: 'uint256' },
-          { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
+          {
+            internalType: 'bytes32',
+            name: 'inputToken',
+            type: 'bytes32',
+          },
+          {
+            internalType: 'bytes32',
+            name: 'outputToken',
+            type: 'bytes32',
+          },
+          {
+            internalType: 'uint256',
+            name: 'inputAmount',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'outputAmount',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'originChainId',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'depositId',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint32',
+            name: 'fillDeadline',
+            type: 'uint32',
+          },
           {
             internalType: 'uint32',
             name: 'exclusivityDeadline',
             type: 'uint32',
           },
-          { internalType: 'bytes', name: 'message', type: 'bytes' },
+          {
+            internalType: 'bytes',
+            name: 'message',
+            type: 'bytes',
+          },
         ],
         internalType: 'struct V3SpokePoolInterface.V3RelayData',
         name: 'relayData',
@@ -1488,13 +2944,33 @@ export const ACROSS_SPOKE_POOL_ABI = [
       },
     ],
     name: 'getV3RelayHash',
-    outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+    outputs: [
+      {
+        internalType: 'bytes32',
+        name: '',
+        type: 'bytes32',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [
-      { internalType: 'uint32', name: '_initialDepositId', type: 'uint32' },
+      {
+        internalType: 'uint32',
+        name: '_initialDepositId',
+        type: 'uint32',
+      },
+      {
+        internalType: 'address',
+        name: '_l2GatewayRouter',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: '_crossDomainAdmin',
+        type: 'address',
+      },
       {
         internalType: 'address',
         name: '_withdrawalRecipient',
@@ -1507,35 +2983,90 @@ export const ACROSS_SPOKE_POOL_ABI = [
     type: 'function',
   },
   {
-    inputs: [{ internalType: 'bytes[]', name: 'data', type: 'bytes[]' }],
+    inputs: [],
+    name: 'l2GatewayRouter',
+    outputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'bytes[]',
+        name: 'data',
+        type: 'bytes[]',
+      },
+    ],
     name: 'multicall',
-    outputs: [{ internalType: 'bytes[]', name: 'results', type: 'bytes[]' }],
+    outputs: [
+      {
+        internalType: 'bytes[]',
+        name: 'results',
+        type: 'bytes[]',
+      },
+    ],
     stateMutability: 'nonpayable',
     type: 'function',
   },
   {
     inputs: [],
     name: 'numberOfDeposits',
-    outputs: [{ internalType: 'uint32', name: '', type: 'uint32' }],
+    outputs: [
+      {
+        internalType: 'uint32',
+        name: '',
+        type: 'uint32',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
   {
-    inputs: [],
-    name: 'owner',
-    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'l2TokenAddress',
+        type: 'address',
+      },
+    ],
+    name: 'oftMessengers',
+    outputs: [
+      {
+        internalType: 'address',
+        name: 'l2OftMessenger',
+        type: 'address',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
   {
-    inputs: [{ internalType: 'bool', name: 'pause', type: 'bool' }],
+    inputs: [
+      {
+        internalType: 'bool',
+        name: 'pause',
+        type: 'bool',
+      },
+    ],
     name: 'pauseDeposits',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',
   },
   {
-    inputs: [{ internalType: 'bool', name: 'pause', type: 'bool' }],
+    inputs: [
+      {
+        internalType: 'bool',
+        name: 'pause',
+        type: 'bool',
+      },
+    ],
     name: 'pauseFills',
     outputs: [],
     stateMutability: 'nonpayable',
@@ -1544,28 +3075,67 @@ export const ACROSS_SPOKE_POOL_ABI = [
   {
     inputs: [],
     name: 'pausedDeposits',
-    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [],
     name: 'pausedFills',
-    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [],
     name: 'proxiableUUID',
-    outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+    outputs: [
+      {
+        internalType: 'bytes32',
+        name: '',
+        type: 'bytes32',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'recipientCircleDomainId',
+    outputs: [
+      {
+        internalType: 'uint32',
+        name: '',
+        type: 'uint32',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [
-      { internalType: 'bytes32', name: 'relayerRefundRoot', type: 'bytes32' },
-      { internalType: 'bytes32', name: 'slowRelayRoot', type: 'bytes32' },
+      {
+        internalType: 'bytes32',
+        name: 'relayerRefundRoot',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'slowRelayRoot',
+        type: 'bytes32',
+      },
     ],
     name: 'relayRootBundle',
     outputs: [],
@@ -1574,45 +3144,92 @@ export const ACROSS_SPOKE_POOL_ABI = [
   },
   {
     inputs: [
-      { internalType: 'address', name: '', type: 'address' },
-      { internalType: 'address', name: '', type: 'address' },
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
     ],
     name: 'relayerRefund',
-    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
     stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'renounceOwnership',
-    outputs: [],
-    stateMutability: 'nonpayable',
     type: 'function',
   },
   {
     inputs: [
       {
         components: [
-          { internalType: 'bytes32', name: 'depositor', type: 'bytes32' },
-          { internalType: 'bytes32', name: 'recipient', type: 'bytes32' },
+          {
+            internalType: 'bytes32',
+            name: 'depositor',
+            type: 'bytes32',
+          },
+          {
+            internalType: 'bytes32',
+            name: 'recipient',
+            type: 'bytes32',
+          },
           {
             internalType: 'bytes32',
             name: 'exclusiveRelayer',
             type: 'bytes32',
           },
-          { internalType: 'bytes32', name: 'inputToken', type: 'bytes32' },
-          { internalType: 'bytes32', name: 'outputToken', type: 'bytes32' },
-          { internalType: 'uint256', name: 'inputAmount', type: 'uint256' },
-          { internalType: 'uint256', name: 'outputAmount', type: 'uint256' },
-          { internalType: 'uint256', name: 'originChainId', type: 'uint256' },
-          { internalType: 'uint256', name: 'depositId', type: 'uint256' },
-          { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
+          {
+            internalType: 'bytes32',
+            name: 'inputToken',
+            type: 'bytes32',
+          },
+          {
+            internalType: 'bytes32',
+            name: 'outputToken',
+            type: 'bytes32',
+          },
+          {
+            internalType: 'uint256',
+            name: 'inputAmount',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'outputAmount',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'originChainId',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'depositId',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint32',
+            name: 'fillDeadline',
+            type: 'uint32',
+          },
           {
             internalType: 'uint32',
             name: 'exclusivityDeadline',
             type: 'uint32',
           },
-          { internalType: 'bytes', name: 'message', type: 'bytes' },
+          {
+            internalType: 'bytes',
+            name: 'message',
+            type: 'bytes',
+          },
         ],
         internalType: 'struct V3SpokePoolInterface.V3RelayData',
         name: 'relayData',
@@ -1625,17 +3242,37 @@ export const ACROSS_SPOKE_POOL_ABI = [
     type: 'function',
   },
   {
-    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
     name: 'rootBundles',
     outputs: [
-      { internalType: 'bytes32', name: 'slowRelayRoot', type: 'bytes32' },
-      { internalType: 'bytes32', name: 'relayerRefundRoot', type: 'bytes32' },
+      {
+        internalType: 'bytes32',
+        name: 'slowRelayRoot',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'relayerRefundRoot',
+        type: 'bytes32',
+      },
     ],
     stateMutability: 'view',
     type: 'function',
   },
   {
-    inputs: [{ internalType: 'address', name: 'newCrossDomainAdmin', type: 'address' }],
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'newCrossDomainAdmin',
+        type: 'address',
+      },
+    ],
     name: 'setCrossDomainAdmin',
     outputs: [],
     stateMutability: 'nonpayable',
@@ -1643,11 +3280,31 @@ export const ACROSS_SPOKE_POOL_ABI = [
   },
   {
     inputs: [
-      { internalType: 'address', name: 'originToken', type: 'address' },
-      { internalType: 'uint256', name: 'destinationChainId', type: 'uint256' },
-      { internalType: 'bool', name: 'enabled', type: 'bool' },
+      {
+        internalType: 'address',
+        name: 'newL2GatewayRouter',
+        type: 'address',
+      },
     ],
-    name: 'setEnableRoute',
+    name: 'setL2GatewayRouter',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'token',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: 'messenger',
+        type: 'address',
+      },
+    ],
+    name: 'setOftMessenger',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',
@@ -1667,12 +3324,36 @@ export const ACROSS_SPOKE_POOL_ABI = [
   },
   {
     inputs: [
-      { internalType: 'bytes32', name: 'depositor', type: 'bytes32' },
-      { internalType: 'uint256', name: 'depositId', type: 'uint256' },
-      { internalType: 'uint256', name: 'updatedOutputAmount', type: 'uint256' },
-      { internalType: 'bytes32', name: 'updatedRecipient', type: 'bytes32' },
-      { internalType: 'bytes', name: 'updatedMessage', type: 'bytes' },
-      { internalType: 'bytes', name: 'depositorSignature', type: 'bytes' },
+      {
+        internalType: 'bytes32',
+        name: 'depositor',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'uint256',
+        name: 'depositId',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'updatedOutputAmount',
+        type: 'uint256',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'updatedRecipient',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'bytes',
+        name: 'updatedMessage',
+        type: 'bytes',
+      },
+      {
+        internalType: 'bytes',
+        name: 'depositorSignature',
+        type: 'bytes',
+      },
     ],
     name: 'speedUpDeposit',
     outputs: [],
@@ -1681,12 +3362,36 @@ export const ACROSS_SPOKE_POOL_ABI = [
   },
   {
     inputs: [
-      { internalType: 'address', name: 'depositor', type: 'address' },
-      { internalType: 'uint256', name: 'depositId', type: 'uint256' },
-      { internalType: 'uint256', name: 'updatedOutputAmount', type: 'uint256' },
-      { internalType: 'address', name: 'updatedRecipient', type: 'address' },
-      { internalType: 'bytes', name: 'updatedMessage', type: 'bytes' },
-      { internalType: 'bytes', name: 'depositorSignature', type: 'bytes' },
+      {
+        internalType: 'address',
+        name: 'depositor',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: 'depositId',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'updatedOutputAmount',
+        type: 'uint256',
+      },
+      {
+        internalType: 'address',
+        name: 'updatedRecipient',
+        type: 'address',
+      },
+      {
+        internalType: 'bytes',
+        name: 'updatedMessage',
+        type: 'bytes',
+      },
+      {
+        internalType: 'bytes',
+        name: 'depositorSignature',
+        type: 'bytes',
+      },
     ],
     name: 'speedUpV3Deposit',
     outputs: [],
@@ -1694,20 +3399,27 @@ export const ACROSS_SPOKE_POOL_ABI = [
     type: 'function',
   },
   {
-    inputs: [{ internalType: 'address', name: 'newOwner', type: 'address' }],
-    name: 'transferOwnership',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [{ internalType: 'bytes[]', name: 'data', type: 'bytes[]' }],
+    inputs: [
+      {
+        internalType: 'bytes[]',
+        name: 'data',
+        type: 'bytes[]',
+      },
+    ],
     name: 'tryMulticall',
     outputs: [
       {
         components: [
-          { internalType: 'bool', name: 'success', type: 'bool' },
-          { internalType: 'bytes', name: 'returnData', type: 'bytes' },
+          {
+            internalType: 'bool',
+            name: 'success',
+            type: 'bool',
+          },
+          {
+            internalType: 'bytes',
+            name: 'returnData',
+            type: 'bytes',
+          },
         ],
         internalType: 'struct MultiCallerUpgradeable.Result[]',
         name: 'results',
@@ -1719,19 +3431,71 @@ export const ACROSS_SPOKE_POOL_ABI = [
   },
   {
     inputs: [
-      { internalType: 'bytes32', name: 'depositor', type: 'bytes32' },
-      { internalType: 'bytes32', name: 'recipient', type: 'bytes32' },
-      { internalType: 'bytes32', name: 'inputToken', type: 'bytes32' },
-      { internalType: 'bytes32', name: 'outputToken', type: 'bytes32' },
-      { internalType: 'uint256', name: 'inputAmount', type: 'uint256' },
-      { internalType: 'uint256', name: 'outputAmount', type: 'uint256' },
-      { internalType: 'uint256', name: 'destinationChainId', type: 'uint256' },
-      { internalType: 'bytes32', name: 'exclusiveRelayer', type: 'bytes32' },
-      { internalType: 'uint256', name: 'depositNonce', type: 'uint256' },
-      { internalType: 'uint32', name: 'quoteTimestamp', type: 'uint32' },
-      { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
-      { internalType: 'uint32', name: 'exclusivityParameter', type: 'uint32' },
-      { internalType: 'bytes', name: 'message', type: 'bytes' },
+      {
+        internalType: 'bytes32',
+        name: 'depositor',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'recipient',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'inputToken',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'outputToken',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'uint256',
+        name: 'inputAmount',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'outputAmount',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'destinationChainId',
+        type: 'uint256',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'exclusiveRelayer',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'uint256',
+        name: 'depositNonce',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint32',
+        name: 'quoteTimestamp',
+        type: 'uint32',
+      },
+      {
+        internalType: 'uint32',
+        name: 'fillDeadline',
+        type: 'uint32',
+      },
+      {
+        internalType: 'uint32',
+        name: 'exclusivityParameter',
+        type: 'uint32',
+      },
+      {
+        internalType: 'bytes',
+        name: 'message',
+        type: 'bytes',
+      },
     ],
     name: 'unsafeDeposit',
     outputs: [],
@@ -1739,7 +3503,13 @@ export const ACROSS_SPOKE_POOL_ABI = [
     type: 'function',
   },
   {
-    inputs: [{ internalType: 'address', name: 'newImplementation', type: 'address' }],
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'newImplementation',
+        type: 'address',
+      },
+    ],
     name: 'upgradeTo',
     outputs: [],
     stateMutability: 'nonpayable',
@@ -1747,8 +3517,16 @@ export const ACROSS_SPOKE_POOL_ABI = [
   },
   {
     inputs: [
-      { internalType: 'address', name: 'newImplementation', type: 'address' },
-      { internalType: 'bytes', name: 'data', type: 'bytes' },
+      {
+        internalType: 'address',
+        name: 'newImplementation',
+        type: 'address',
+      },
+      {
+        internalType: 'bytes',
+        name: 'data',
+        type: 'bytes',
+      },
     ],
     name: 'upgradeToAndCall',
     outputs: [],
@@ -1757,17 +3535,82 @@ export const ACROSS_SPOKE_POOL_ABI = [
   },
   {
     inputs: [],
+    name: 'usdcToken',
+    outputs: [
+      {
+        internalType: 'contract IERC20',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'l2Token',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: 'l1Token',
+        type: 'address',
+      },
+    ],
+    name: 'whitelistToken',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
+    name: 'whitelistedTokens',
+    outputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
     name: 'withdrawalRecipient',
-    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    outputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [],
     name: 'wrappedNativeToken',
-    outputs: [{ internalType: 'contract WETH9Interface', name: '', type: 'address' }],
+    outputs: [
+      {
+        internalType: 'contract WETH9Interface',
+        name: '',
+        type: 'address',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
-  { stateMutability: 'payable', type: 'receive' },
+  {
+    stateMutability: 'payable',
+    type: 'receive',
+  },
 ]

@@ -17,9 +17,8 @@ export interface Route {
 }
 
 export interface SuggestedFeesRequest {
-  token: string
-  // inputToken: string
-  // outputToken: string
+  inputToken: string
+  outputToken: string
   originChainId: TargetChainId
   destinationChainId: TargetChainId
 

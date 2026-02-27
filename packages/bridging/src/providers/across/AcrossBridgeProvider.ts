@@ -13,7 +13,7 @@ import {
   QuoteBridgeRequest,
 } from '../../types'
 
-import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
+import { DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION, HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
 
 import { AcrossApi, AcrossApiOptions } from './AcrossApi'
 import { mapAcrossStatusToBridgeStatus, toBridgeQuoteResult } from './util'
@@ -26,6 +26,7 @@ import { AbstractProviderAdapter, getGlobalAdapter, setGlobalAdapter, SignerLike
 import {
   arbitrumOne,
   base,
+  bnb,
   ChainId,
   ChainInfo,
   EvmCall,
@@ -41,7 +42,7 @@ import { EnrichedOrder, OrderKind } from '@cowprotocol/sdk-order-book'
 type SupportedTokensState = Record<ChainId, Record<string, TokenInfo>>
 
 export const ACROSS_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/across`
-export const ACROSS_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
+export const ACROSS_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism, bnb]
 
 // We need to review if we should set an additional slippage tolerance, for now assuming the quote gives you the exact price of bridging and no further slippage is needed
 const SLIPPAGE_TOLERANCE_BPS = 0
@@ -115,17 +116,30 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     const targetTokenSymbol = targetTokens && targetTokens[buyTokenAddressLower]?.symbol?.toLowerCase()
     if (!targetTokenSymbol) return []
 
+    // Normalize token symbols by removing chain suffixes (e.g., "USDT-BNB" -> "USDT")
+    // This is needed because Across uses chain-specific suffixes for assets with different decimals between chains
+    const normalizedTargetSymbol = this.normalizeTokenSymbol(targetTokenSymbol)
+
     // Use the tokenSymbol to find the outputToken in the target chain
-    return Object.values(sourceTokens || {}).filter((token) => token.symbol?.toLowerCase() === targetTokenSymbol)
+    return Object.values(sourceTokens || {}).filter((token) => {
+      const tokenSymbol = token.symbol?.toLowerCase()
+      if (!tokenSymbol) return false
+      return this.normalizeTokenSymbol(tokenSymbol) === normalizedTargetSymbol
+    })
+  }
+
+  private normalizeTokenSymbol(symbol: string): string {
+    // Remove chain-specific suffixes like "-BNB", "-ETH", etc.
+    // Pattern: "-" followed by capital letters at the end
+    return symbol.replace(/-[A-Z]+$/i, '')
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<AcrossQuoteResult> {
-    const { sellTokenAddress, sellTokenChainId, buyTokenChainId, amount, receiver } = request
+    const { sellTokenAddress, sellTokenChainId, buyTokenAddress, buyTokenChainId, amount, receiver } = request
 
     const suggestedFees = await this.api.getSuggestedFees({
-      token: sellTokenAddress,
-      // inputToken: sellTokenAddress,
-      // outputToken: buyTokenAddress,
+      inputToken: sellTokenAddress,
+      outputToken: buyTokenAddress,
       originChainId: sellTokenChainId,
       destinationChainId: buyTokenChainId,
       amount,
@@ -142,18 +156,36 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     return toBridgeQuoteResult(request, SLIPPAGE_TOLERANCE_BPS, suggestedFees)
   }
 
+  // Keyed by the EvmCall object reference returned from getUnsignedBridgeCall.
+  // getBridgeSignedHook always passes that exact object into getSignedHook, so the reference
+  // is a guaranteed-unique, collision-free correlator between the two calls — unlike calldata,
+  // which can be identical for concurrent requests with the same parameters.
+  // WeakMap allows GC to reclaim entries if getSignedHook is never called.
+  private _pendingBridgeCalls = new WeakMap<EvmCall, EvmCall[]>()
+
   async getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: AcrossQuoteResult): Promise<EvmCall> {
-    return createAcrossDepositCall({
+    const calls = createAcrossDepositCall({
       request,
       quote,
       cowShedSdk: this.cowShedSdk,
     })
+
+    const lastCall = calls[calls.length - 1]
+    if (!lastCall) throw new Error('No bridge calls generated')
+
+    this._pendingBridgeCalls.set(lastCall, calls)
+
+    return lastCall
   }
 
   async getGasLimitEstimationForHook(request: QuoteBridgeRequest): Promise<number> {
+    // The Across swapAndBridge flow involves three USDC proxy calls (approve + 2x transferFrom),
+    // each hitting a reentrancy sentry SSTORE (~20k gas) in the implementation. On chains like
+    // Arbitrum with native USDC (proxy pattern), this exhausts the base 240k gas estimate.
     return getGasLimitEstimationForHook({
       cowShedSdk: this.cowShedSdk,
       request,
+      extraGas: DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION,
     })
   }
 
@@ -165,17 +197,24 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     hookGasLimit: number,
     signer?: SignerLike,
   ): Promise<BridgeHook> {
-    // Sign the multicall
+    // Retrieve the full set of calls (approve + swapAndBridge) stored for this exact unsignedCall
+    // object. The reference is unique even when two concurrent requests have identical calldata.
+    // Fall back to the single call so getSignedHook remains usable if called in isolation.
+    const pendingCalls = this._pendingBridgeCalls.get(unsignedCall) ?? [unsignedCall]
+    this._pendingBridgeCalls.delete(unsignedCall)
+
+    // These are regular calls (not delegate calls) since the periphery expects to pull tokens
+    // from cow-shed via transferFrom.
+    const calls = pendingCalls.map((call) => ({
+      target: call.to,
+      value: call.value,
+      callData: call.data,
+      allowFailure: false,
+      isDelegateCall: false,
+    }))
+
     const { signedMulticall, cowShedAccount, gasLimit } = await this.cowShedSdk.signCalls({
-      calls: [
-        {
-          target: unsignedCall.to,
-          value: unsignedCall.value,
-          callData: unsignedCall.data,
-          allowFailure: false,
-          isDelegateCall: true,
-        },
-      ],
+      calls,
       chainId,
       signer,
       gasLimit: BigInt(hookGasLimit),
@@ -189,7 +228,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
         target: to,
         callData: data,
         gasLimit: gasLimit.toString(),
-        dappId: ACROSS_HOOK_DAPP_ID, // TODO: I think we should have some additional parameter to type the hook (using dappId for now)
+        dappId: ACROSS_HOOK_DAPP_ID,
       },
       recipient: cowShedAccount,
     }

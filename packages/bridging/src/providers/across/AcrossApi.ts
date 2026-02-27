@@ -54,21 +54,17 @@ export class AcrossApi {
    */
   async getSuggestedFees(request: SuggestedFeesRequest): Promise<SuggestedFeesResponse> {
     const params: Record<string, string> = {
-      token: request.token,
+      inputToken: request.inputToken,
+      outputToken: request.outputToken,
       originChainId: request.originChainId.toString(),
       destinationChainId: request.destinationChainId.toString(),
       amount: request.amount.toString(),
+      allowUnmatchedDecimals: 'true', // Always set to true since we adjust for destination token decimals
     }
 
     if (request.recipient) {
       params.recipient = request.recipient
     }
-
-    // Get the quote from the Across API (see https://docs.across.to/reference/api-reference#suggested-fees)
-    // Example: https://app.across.to/api/suggested-fees?token=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&originChainId=8453&destinationChainId=137&amount=100000000
-    //
-    // TODO: The API documented params don't match with the example above. Ideally I would use 'inputToken' and 'outputToken', but the example above uses 'token'. This will work for current implementation, since we bridge the canonical token, but this will need to be reviewed
-    //       https://app.across.to/api/suggested-fees?inputToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&originChainId=8453&destinationChainId=137&outputToken=0xc2132D05D31c914a87C6611C10748AEb04B58e8F&amount=100000000
     return this.fetchApi('/suggested-fees', params, isValidSuggestedFeesResponse)
   }
 
