@@ -64,7 +64,7 @@ export async function postCoWProtocolTrade(
         }
       }
 
-      const signingResult = await OrderSigningUtils.signOrder(orderToSign, chainId, signer)
+      const signingResult = await OrderSigningUtils.signOrder(orderToSign, chainId, signer, params.env)
 
       if (isEip1271) {
         return {

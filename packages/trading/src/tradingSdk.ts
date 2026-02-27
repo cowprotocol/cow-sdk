@@ -257,13 +257,14 @@ export class TradingSdk {
     const orderBookApi = this.resolveOrderBookApi(params)
     const signer = resolveSigner(params.signer)
     const { orderUid } = params
+    const env = params.env || this.traderParams.env
     const chainId = params.chainId || this.traderParams.chainId
 
     if (!chainId) {
       throw new Error('Chain ID is missing in offChainCancelOrder() call')
     }
 
-    const orderCancellationSigning = await OrderSigningUtils.signOrderCancellations([orderUid], chainId, signer)
+    const orderCancellationSigning = await OrderSigningUtils.signOrderCancellations([orderUid], chainId, signer, env)
 
     await orderBookApi.sendSignedOrderCancellations({
       ...orderCancellationSigning,

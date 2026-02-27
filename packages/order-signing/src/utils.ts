@@ -53,9 +53,9 @@ interface ProviderRpcError extends Error {
 }
 
 type PayloadParams =
-  | Pick<SignOrderParams, 'order' & 'chainId'>
-  | Pick<SignOrderCancellationParams, 'chainId' & 'orderId'>
-  | Pick<SignOrderCancellationsParams, 'chainId' & 'orderUids'>
+  | Pick<SignOrderParams, 'order' & 'chainId' & 'env'>
+  | Pick<SignOrderCancellationParams, 'chainId' & 'orderId' & 'env'>
+  | Pick<SignOrderCancellationsParams, 'chainId' & 'orderUids' & 'env'>
 
 function isProviderRpcError(error: unknown): error is ProviderRpcError {
   return (error as ProviderRpcError).code !== undefined || (error as ProviderRpcError).message !== undefined
@@ -182,8 +182,9 @@ export async function signOrder(
   order: UnsignedOrder,
   chainId: SupportedChainId,
   signer: Signer,
+  env?: CowEnv,
 ): Promise<SigningResult> {
-  return _signPayload({ order, chainId }, _signOrder, signer)
+  return _signPayload({ order, chainId, env }, _signOrder, signer)
 }
 
 /**
@@ -198,8 +199,9 @@ export async function signOrderCancellation(
   orderUid: string,
   chainId: SupportedChainId,
   signer: Signer,
+  env?: CowEnv,
 ): Promise<SigningResult> {
-  return _signPayload({ orderUid, chainId }, _signOrderCancellation, signer)
+  return _signPayload({ orderUid, chainId, env }, _signOrderCancellation, signer)
 }
 
 /**
@@ -215,8 +217,9 @@ export async function signOrderCancellations(
   orderUids: string[],
   chainId: SupportedChainId,
   signer: Signer,
+  env?: CowEnv,
 ): Promise<SigningResult> {
-  return _signPayload({ orderUids, chainId }, _signOrderCancellations, signer)
+  return _signPayload({ orderUids, chainId, env }, _signOrderCancellations, signer)
 }
 
 /**

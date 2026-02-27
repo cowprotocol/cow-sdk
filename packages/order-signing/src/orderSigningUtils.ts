@@ -78,8 +78,13 @@ export class OrderSigningUtils {
    * @param {Signer} signer The signer who is placing the order intent.
    * @returns {Promise<SigningResult>} Encoded signature including signing scheme for the order.
    */
-  static async signOrder(order: UnsignedOrder, chainId: SupportedChainId, signer: Signer): Promise<SigningResult> {
-    return signOrder(order, chainId, signer)
+  static async signOrder(
+    order: UnsignedOrder,
+    chainId: SupportedChainId,
+    signer: Signer,
+    env?: CowEnv,
+  ): Promise<SigningResult> {
+    return signOrder(order, chainId, signer, env)
   }
 
   /**
@@ -93,8 +98,9 @@ export class OrderSigningUtils {
     orderUid: string,
     chainId: SupportedChainId,
     signer: Signer,
+    env?: CowEnv,
   ): Promise<SigningResult> {
-    return signOrderCancellation(orderUid, chainId, signer)
+    return signOrderCancellation(orderUid, chainId, signer, env)
   }
 
   /**
@@ -108,8 +114,9 @@ export class OrderSigningUtils {
     orderUids: string[],
     chainId: SupportedChainId,
     signer: Signer,
+    env?: CowEnv,
   ): Promise<SigningResult> {
-    return signOrderCancellations(orderUids, chainId, signer)
+    return signOrderCancellations(orderUids, chainId, signer, env)
   }
 
   /**
