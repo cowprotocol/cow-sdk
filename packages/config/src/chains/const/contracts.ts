@@ -28,7 +28,7 @@ export const EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS = mapAddressToSupporte
  */
 export const COMPOSABLE_COW_CONTRACT_ADDRESS = mapAddressToSupportedNetworks(COMPOSABLE_COW)
 
-const ETH_FLOW_ADDRESS = '0xba3cb449bd2b4adddbc894d8697f5170800eadec'
+const ETH_FLOW_ADDRESS = '0xb37aDD6AC288BD3825a901Cba6ec65A89f31B8CC'
 const BARN_ETH_FLOW_ADDRESS = '0x04501b9b1d52e67f6862d157e00d13419d2d6e95'
 // Lens does not uses the same deterministic address for the EthFlow contract as other chains.
 const ETH_FLOW_ADDRESS_LENS = '0x5A5b8aE7a0b4C0EAf453d10DCcfbA413f07ebdC2'
