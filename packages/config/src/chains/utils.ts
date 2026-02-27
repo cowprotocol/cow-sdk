@@ -82,14 +82,14 @@ export function getChainInfo(chainId: ChainId): ChainInfo | undefined {
  * Check if the chain is supported by CoW Protocol.
  */
 export function isSupportedChain(chainId: ChainId): chainId is SupportedChainId {
-  return chainId in ALL_SUPPORTED_CHAINS_MAP
+  return chainId in SupportedChainId
 }
 
 /**
  * Check if the chain is supported by the bridge providers.
  */
 export function isAdditionalTargetChain(chainId: ChainId): chainId is AdditionalTargetChainId {
-  return chainId in ADDITIONAL_TARGET_CHAINS_MAP
+  return chainId in AdditionalTargetChainId
 }
 
 /**
