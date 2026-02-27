@@ -4,6 +4,7 @@ import * as ethersV6 from 'ethers-v6'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { CONTRACT_NAMES, SALT, deterministicDeploymentAddress, implementationAddress, ownerAddress } from '../src'
 import { concat, getCreate2Address, Hex, keccak256 } from 'viem'
+import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
 
 describe('Deployment and Proxy', () => {
   let adapters: ReturnType<typeof createAdapters>
@@ -33,7 +34,7 @@ describe('Deployment and Proxy', () => {
 
       // Deploy arguments for the settlement contract
       const deployArgs = [
-        '0x9008D19f58AAbD9eD0D60971565AA8510560ab41', // authenticator
+        COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET], // authenticator
         '0x1234567890123456789012345678901234567890', // allowListConfig
       ] as [string, string]
 
@@ -92,7 +93,7 @@ describe('Deployment and Proxy', () => {
 
       // Deploy args for second artifact
       const deployArgs = [
-        '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+        COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET],
         '0x1234567890123456789012345678901234567890',
       ] as [string, string]
 

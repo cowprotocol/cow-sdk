@@ -13,12 +13,13 @@ import {
   InteractionStage,
   OrderBalance,
 } from '../src'
+import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
 
 describe('Reader Classes and Storage Functions', () => {
   let adapters: ReturnType<typeof createAdapters>
 
   // Mock contract addresses and ABIs
-  const mockAllowListAddress = '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'
+  const mockAllowListAddress = COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET]
   const mockSettlementAddress = '0x9008D19f58AAbD9eD0D60971565AA8510560ab42'
   const mockReaderAddress = '0x9008D19f58AAbD9eD0D60971565AA8510560ab43'
   const mockSimulatorAddress = '0x9008D19f58AAbD9eD0D60971565AA8510560ab44'

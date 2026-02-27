@@ -1,5 +1,5 @@
 import { TradingSdk } from './tradingSdk'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
 import { TradeBaseParameters, QuoteResults } from './types'
 import {
   BuyTokenDestination,
@@ -516,7 +516,7 @@ describe('TradingSdk', () => {
       transaction: {
         data: '0x00abcdef',
         gasLimit: '0x1e848',
-        to: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41', // Valid address format
+        to: COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET], // Valid address format
         value: '0x0',
       },
     }
@@ -729,10 +729,7 @@ describe('TradingSdk', () => {
     })
 
     it('should throw if chainId is missing', async () => {
-      const sdk = new TradingSdk(
-        { appCode: 'test' },
-        { enableLogging: false, orderBookApi },
-      )
+      const sdk = new TradingSdk({ appCode: 'test' }, { enableLogging: false, orderBookApi })
 
       await expect(
         sdk.getQuoteOnly({
@@ -743,10 +740,7 @@ describe('TradingSdk', () => {
     })
 
     it('should throw if appCode is missing', async () => {
-      const sdk = new TradingSdk(
-        { chainId: SupportedChainId.GNOSIS_CHAIN },
-        { enableLogging: false, orderBookApi },
-      )
+      const sdk = new TradingSdk({ chainId: SupportedChainId.GNOSIS_CHAIN }, { enableLogging: false, orderBookApi })
 
       await expect(
         sdk.getQuoteOnly({
