@@ -10,19 +10,27 @@ export enum Environment {
 
 export const LIMIT_CONCURRENT_REQUESTS = 5
 
-export function apiUrl(environment: Environment, network: string): string {
+const PARTNER_PROD_BASE_URL = 'https://partners.cow.fi'
+const PARTNER_DEV_BASE_URL = 'https://partners.barn.cow.fi'
+
+export function apiUrl(environment: Environment, network: string, apiKey?: string): string {
+  let baseUrl: string
   switch (environment) {
     case Environment.Dev:
-      return `https://barn.api.cow.fi/${network}`
+      baseUrl = apiKey ? PARTNER_DEV_BASE_URL : 'https://barn.api.cow.fi'
+      break
     case Environment.Prod:
-      return `https://api.cow.fi/${network}`
+      baseUrl = apiKey ? PARTNER_PROD_BASE_URL : 'https://api.cow.fi'
+      break
     default:
       throw new Error('Invalid environment')
   }
+  return `${baseUrl}/${network}`
 }
 
 export interface ApiCall {
   baseUrl: string
+  apiKey?: string
 }
 
 export interface EstimateTradeAmountQuery {
@@ -126,9 +134,24 @@ function apiSigningScheme(scheme: SigningScheme): string {
   }
 }
 
-async function call<T>(route: string, baseUrl: string, init?: RequestInit): Promise<T> {
+async function call<T>(
+  route: string,
+  baseUrl: string,
+  init?: RequestInit,
+  apiKey?: string,
+): Promise<T> {
   const url = `${baseUrl}/api/v1/${route}`
-  const response = await fetch(url, init)
+  const headers: Record<string, string> = apiKey ? { 'X-API-Key': apiKey } : {}
+  if (init?.headers) {
+    if (init.headers instanceof Headers) {
+      ;(init.headers as Headers).forEach((v, k) => {
+        headers[k] = v
+      })
+    } else {
+      Object.assign(headers, init.headers as Record<string, string>)
+    }
+  }
+  const response = await fetch(url, { ...init, headers })
   const body = await response.text()
   if (!response.ok) {
     const error: CallError = new Error(
@@ -150,6 +173,7 @@ async function estimateTradeAmount({
   kind,
   amount,
   baseUrl,
+  apiKey,
 }: EstimateTradeAmountQuery & ApiCall): Promise<BigIntish> {
   const side: BuyAmountAfterFee | SellAmountAfterFee =
     kind == OrderKind.SELL
@@ -162,7 +186,7 @@ async function estimateTradeAmount({
           buyAmountAfterFee: amount,
         }
   const { quote } = await getQuote(
-    { baseUrl },
+    { baseUrl, apiKey },
     {
       from: '0x0000000000000000000000000000000000000000',
       sellToken,
@@ -182,10 +206,19 @@ async function estimateTradeAmount({
   return getGlobalAdapter().utils.toBigIntish(estimatedAmount)
 }
 
-async function placeOrder({ order, signature, baseUrl, from }: PlaceOrderQuery & ApiCall): Promise<string> {
+async function placeOrder({
+  order,
+  signature,
+  baseUrl,
+  from,
+  apiKey,
+}: PlaceOrderQuery & ApiCall): Promise<string> {
   const normalizedOrder = normalizeOrder(order)
   const adapter = getGlobalAdapter()
-  return await call('orders', baseUrl, {
+  return await call(
+    'orders',
+    baseUrl,
+    {
     method: 'post',
     body: JSON.stringify({
       sellToken: normalizedOrder.sellToken,
@@ -203,15 +236,24 @@ async function placeOrder({ order, signature, baseUrl, from }: PlaceOrderQuery &
       from,
     }),
     headers: { 'Content-Type': 'application/json' },
-  })
+  },
+    apiKey,
+  )
 }
 
-async function getExecutedSellAmount({ uid, baseUrl }: GetExecutedSellAmountQuery & ApiCall): Promise<BigIntish> {
-  const response: OrderDetailResponse = await call(`orders/${uid}`, baseUrl)
+async function getExecutedSellAmount({
+  uid,
+  baseUrl,
+  apiKey,
+}: GetExecutedSellAmountQuery & ApiCall): Promise<BigIntish> {
+  const response: OrderDetailResponse = await call(`orders/${uid}`, baseUrl, undefined, apiKey)
   return getGlobalAdapter().utils.toBigIntish(response.executedSellAmount)
 }
 
-async function getQuote({ baseUrl }: ApiCall, quote: QuoteQuery): Promise<GetQuoteResponse> {
+async function getQuote(
+  { baseUrl, apiKey }: ApiCall,
+  quote: QuoteQuery,
+): Promise<GetQuoteResponse> {
   // Convert BigNumber into JSON strings (native serialisation is a hex object)
   if ((<SellAmountBeforeFee>quote).sellAmountBeforeFee) {
     ;(<SellAmountBeforeFee>quote).sellAmountBeforeFee = String((<SellAmountBeforeFee>quote).sellAmountBeforeFee)
@@ -222,30 +264,35 @@ async function getQuote({ baseUrl }: ApiCall, quote: QuoteQuery): Promise<GetQuo
   if ((<BuyAmountAfterFee>quote).buyAmountAfterFee) {
     ;(<BuyAmountAfterFee>quote).buyAmountAfterFee = String((<BuyAmountAfterFee>quote).buyAmountAfterFee)
   }
-  return call('quote', baseUrl, {
-    method: 'post',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(quote),
-  })
+  return call(
+    'quote',
+    baseUrl,
+    {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(quote),
+    },
+    apiKey,
+  )
 }
 
 export class Api {
   network: string
   baseUrl: string
+  apiKey?: string
 
-  constructor(network: string, baseUrlOrEnv: string | Environment) {
+  constructor(network: string, baseUrlOrEnv: string | Environment, apiKey?: string) {
     this.network = network
-    let baseUrl
+    this.apiKey = apiKey
     if (typeof baseUrlOrEnv === 'string') {
-      baseUrl = baseUrlOrEnv
+      this.baseUrl = baseUrlOrEnv
     } else {
-      baseUrl = apiUrl(baseUrlOrEnv, network)
+      this.baseUrl = apiUrl(baseUrlOrEnv, network, apiKey)
     }
-    this.baseUrl = baseUrl
   }
 
   private apiCallParams() {
-    return { network: this.network, baseUrl: this.baseUrl }
+    return { network: this.network, baseUrl: this.baseUrl, apiKey: this.apiKey }
   }
 
   async estimateTradeAmount(query: EstimateTradeAmountQuery): Promise<BigIntish> {
