@@ -5,9 +5,9 @@ import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { ACROSS_DEPOSIT_EVENT_INTERFACE, COW_TRADE_EVENT_INTERFACE } from './const/interfaces'
 import { ACROSS_TOKEN_MAPPING, AcrossChainConfig } from './const/tokens'
 import { ACROSS_SPOOK_CONTRACT_ADDRESSES } from './const/contracts'
-import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
+import { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
-import { getGlobalAdapter, Log } from '@cowprotocol/sdk-common'
+import { getGlobalAdapter, isCoWSettlementContract, Log } from '@cowprotocol/sdk-common'
 import stringify from 'json-stable-stringify'
 
 const PCT_100_PERCENT = 10n ** 18n
@@ -240,10 +240,7 @@ export function getCowTradeEvents(chainId: SupportedChainId, logs: Log[]): CowTr
   const COW_TRADE_EVENT_TOPIC = COW_TRADE_EVENT_INTERFACE().getEventTopic('Trade')
 
   const cowTradeEvents = logs.filter((log) => {
-    return (
-      log.address.toLowerCase() === COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[chainId].toLowerCase() &&
-      log.topics[0] === COW_TRADE_EVENT_TOPIC
-    )
+    return isCoWSettlementContract(log.address, chainId) && log.topics[0] === COW_TRADE_EVENT_TOPIC
   })
 
   return cowTradeEvents.map((event) => {

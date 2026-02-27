@@ -1,4 +1,4 @@
-import type { SupportedChainId } from '@cowprotocol/sdk-config'
+import { CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
 import type { ContractsOrder as Order, OrderUidParams } from '@cowprotocol/sdk-contracts-ts'
 import type { SigningResult, UnsignedOrder } from './types'
 import { getGlobalAdapter, Signer, TypedDataDomain } from '@cowprotocol/sdk-common'
@@ -118,8 +118,8 @@ export class OrderSigningUtils {
    * @return The EIP-712 typed domain data.
    * @see https://eips.ethereum.org/EIPS/eip-712
    */
-  static async getDomain(chainId: SupportedChainId): Promise<TypedDataDomain> {
-    return getDomain(chainId)
+  static async getDomain(chainId: SupportedChainId, env?: CowEnv): Promise<TypedDataDomain> {
+    return getDomain(chainId, env)
   }
 
   /**
@@ -132,8 +132,9 @@ export class OrderSigningUtils {
     chainId: SupportedChainId,
     order: Order,
     params: Pick<OrderUidParams, 'owner'>,
+    env?: CowEnv,
   ): Promise<{ orderId: string; orderDigest: string }> {
-    return generateOrderId(chainId, order, params)
+    return generateOrderId(chainId, order, params, env)
   }
 
   /**
@@ -141,7 +142,7 @@ export class OrderSigningUtils {
    * @param chainId {SupportedChainId} chainId The CoW Protocol protocol `chainId` context that's being used.
    * @returns A string representation of the EIP-712 typed domain data hash.
    */
-  static async getDomainSeparator(chainId: SupportedChainId): Promise<string> {
+  static async getDomainSeparator(chainId: SupportedChainId, env?: CowEnv): Promise<string> {
     const adapter = getGlobalAdapter()
     const types = [
       { name: 'name', type: 'string' },
@@ -150,7 +151,7 @@ export class OrderSigningUtils {
       { name: 'verifyingContract', type: 'address' },
     ]
 
-    return adapter.utils.hashDomain(getDomain(chainId), types)
+    return adapter.utils.hashDomain(getDomain(chainId, env), types)
   }
 
   static getEIP712Types(): typeof COW_EIP712_TYPES {

@@ -31,7 +31,12 @@ import { getEthFlowContract } from './getEthFlowTransaction'
 import { getEthFlowCancellation, getSettlementCancellation } from './onChainCancellation'
 import { resolveOrderBookApi } from './utils/resolveOrderBookApi'
 import { getSettlementContract } from './getSettlementContract'
-import { COW_PROTOCOL_VAULT_RELAYER_ADDRESS, SupportedChainId, CowEnv } from '@cowprotocol/sdk-config'
+import {
+  COW_PROTOCOL_VAULT_RELAYER_ADDRESS,
+  SupportedChainId,
+  CowEnv,
+  COW_PROTOCOL_VAULT_RELAYER_ADDRESS_STAGING,
+} from '@cowprotocol/sdk-config'
 import { resolveSigner } from './utils/resolveSigner'
 
 export type WithPartialTraderParams<T> = T & Partial<TraderParameters>
@@ -41,8 +46,7 @@ export type WithPartialTraderParams<T> = T & Partial<TraderParameters>
  * Requires `owner` (the account address) instead of a signer,
  * since quoting only needs an address to estimate costs.
  */
-export type QuoteOnlyParams<T> = T &
-  Partial<Omit<TraderParameters, 'signer'>> & { owner: AccountAddress }
+export type QuoteOnlyParams<T> = T & Partial<Omit<TraderParameters, 'signer'>> & { owner: AccountAddress }
 
 export type OrderTraderParams = WithPartialTraderParams<{ orderUid: string }>
 
@@ -240,7 +244,7 @@ export class TradingSdk {
     const traderParams = this.mergeParams(params)
     const signer = resolveSigner(traderParams.signer)
 
-    return getPreSignTransaction(signer, traderParams.chainId, params.orderUid)
+    return getPreSignTransaction(signer, traderParams.chainId, params.orderUid, params.env ?? this.traderParams.env)
   }
 
   async getOrder(params: OrderTraderParams): Promise<EnrichedOrder> {
@@ -281,9 +285,10 @@ export class TradingSdk {
 
     const signer = params.signer ? getGlobalAdapter().createSigner(params.signer) : getGlobalAdapter().signer
 
+    const env = params.env ?? this.traderParams.env
     const { transaction } = await (isEthFlowOrder
-      ? getEthFlowCancellation(getEthFlowContract(signer, chainId, params.env ?? this.traderParams.env), order)
-      : getSettlementCancellation(getSettlementContract(chainId, signer), order))
+      ? getEthFlowCancellation(getEthFlowContract(signer, chainId, env), order)
+      : getSettlementCancellation(getSettlementContract(chainId, signer, env), order))
 
     const txReceipt = await signer.sendTransaction(transaction)
 
@@ -311,6 +316,7 @@ export class TradingSdk {
   async getCowProtocolAllowance(
     params: WithPartialTraderParams<{ tokenAddress: string; owner: string }>,
   ): Promise<bigint> {
+    const env = params.env || this.traderParams.env
     const chainId = params.chainId || this.traderParams.chainId
 
     if (!chainId) {
@@ -318,7 +324,10 @@ export class TradingSdk {
     }
 
     const adapter = getGlobalAdapter()
-    const vaultRelayerAddress = COW_PROTOCOL_VAULT_RELAYER_ADDRESS[chainId]
+    const vaultRelayerAddress =
+      env === 'staging'
+        ? COW_PROTOCOL_VAULT_RELAYER_ADDRESS_STAGING[chainId]
+        : COW_PROTOCOL_VAULT_RELAYER_ADDRESS[chainId]
 
     return (await adapter.readContract({
       address: params.tokenAddress,
@@ -349,6 +358,7 @@ export class TradingSdk {
    */
   async approveCowProtocol(params: WithPartialTraderParams<{ tokenAddress: string; amount: bigint }>): Promise<string> {
     const chainId = params.chainId || this.traderParams.chainId
+    const env = params.env || this.traderParams.env
 
     if (!chainId) {
       throw new Error('Chain ID is missing in approveCowProtocol() call')
@@ -357,7 +367,10 @@ export class TradingSdk {
     const adapter = getGlobalAdapter()
     const signer = resolveSigner(params.signer)
 
-    const vaultRelayerAddress = COW_PROTOCOL_VAULT_RELAYER_ADDRESS[chainId]
+    const vaultRelayerAddress =
+      env === 'staging'
+        ? COW_PROTOCOL_VAULT_RELAYER_ADDRESS_STAGING[chainId]
+        : COW_PROTOCOL_VAULT_RELAYER_ADDRESS[chainId]
 
     const txParams = {
       to: params.tokenAddress,
