@@ -252,7 +252,7 @@ export function getCowTradeEvents(chainId: SupportedChainId, logs: Log[]): CowTr
     const result = parsedLog.args as CowTradeEvent
 
     const { owner, sellToken, buyToken, sellAmount, buyAmount, feeAmount } = result
-    // TODO: idk, ethers cannot parse orderUid because it's bytes and ethers tries to cast it as a number
+    // Ethers cannot parse orderUid because it's bytes and ethers tries to cast it as a number
     const orderUid = '0x' + event.data.slice(450, 450 + 112)
 
     return {

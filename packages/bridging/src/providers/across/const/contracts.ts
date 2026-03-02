@@ -27,7 +27,6 @@ export const ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES: Record<TargetChainId, string 
   [AdditionalTargetChainId.OPTIMISM]: '0x6f26Bf09B1C792e3228e5467807a900A503c0281',
 
   // Not supported chains
-  // TODO: This first integration is a draft, some of this chains might be supported, so we will need to update here as we iterate on the provider
   [SupportedChainId.GNOSIS_CHAIN]: undefined,
   [SupportedChainId.AVALANCHE]: undefined,
 }
