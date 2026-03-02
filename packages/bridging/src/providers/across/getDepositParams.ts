@@ -1,6 +1,7 @@
 import { EnrichedOrder } from '@cowprotocol/sdk-order-book'
 import { log, TransactionReceipt, getGlobalAdapter } from '@cowprotocol/sdk-common'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { cowAppDataLatestScheme } from '@cowprotocol/sdk-app-data'
 
 import { getAcrossDepositEvents } from './util'
 import { BridgingDepositParams } from '../../types'
