@@ -1,8 +1,9 @@
+import { EnrichedOrder } from '@cowprotocol/sdk-order-book'
+import { log, TransactionReceipt, getGlobalAdapter } from '@cowprotocol/sdk-common'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
+
 import { getAcrossDepositEvents } from './util'
 import { BridgingDepositParams } from '../../types'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
-import { log, TransactionReceipt } from '@cowprotocol/sdk-common'
-import { EnrichedOrder } from '@cowprotocol/sdk-order-book'
 
 export async function getDepositParams(
   chainId: SupportedChainId,
@@ -20,12 +21,13 @@ export async function getDepositParams(
 
   if (!bridgeQuoteId) return null
 
-  console.log('CCCCC', {
-    depositEvents,
-    bridgeQuoteId,
-  })
+  const adapter = getGlobalAdapter()
+
   const depositEvent = depositEvents.find((i) => {
-    return i.message.toLowerCase() === bridgeQuoteId.toLowerCase()
+    // The quoteId is encoded into the deposit call in createAcrossDepositCall()
+    const message = adapter.utils.decodeAbi(['string'], i.message)
+
+    return message === bridgeQuoteId
   })
 
   if (!depositEvent) {
