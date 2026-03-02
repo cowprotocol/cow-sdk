@@ -20,6 +20,10 @@ export async function getDepositParams(
 
   if (!bridgeQuoteId) return null
 
+  console.log('CCCCC', {
+    depositEvents,
+    bridgeQuoteId,
+  })
   const depositEvent = depositEvents.find((i) => {
     return i.message.toLowerCase() === bridgeQuoteId.toLowerCase()
   })
