@@ -1,11 +1,12 @@
+import { EnrichedOrder } from '@cowprotocol/sdk-order-book'
+import { log, TransactionReceipt } from '@cowprotocol/sdk-common'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { getAcrossDepositEvents, getCowTradeEvents } from './util'
 import { BridgingDepositParams } from '../../types'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
-import { log, TransactionReceipt } from '@cowprotocol/sdk-common'
 
 export async function getDepositParams(
   chainId: SupportedChainId,
-  orderId: string,
+  order: EnrichedOrder,
   txReceipt: TransactionReceipt,
 ): Promise<BridgingDepositParams | null> {
   const depositEvents = getAcrossDepositEvents(chainId, txReceipt.logs)
@@ -14,6 +15,7 @@ export async function getDepositParams(
     return null
   }
 
+  const orderId = order.uid
   const cowTradeEvents = getCowTradeEvents(chainId, txReceipt.logs)
 
   // Find relative position for the orderId in the settlement tx

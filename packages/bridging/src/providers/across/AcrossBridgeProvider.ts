@@ -240,14 +240,13 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     order: EnrichedOrder,
     txHash: string,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
-    const orderUid = order.uid
     const adapter = getGlobalAdapter()
 
     const txReceipt = await adapter.getTransactionReceipt(txHash)
 
     if (!txReceipt) return null
 
-    const params = await getDepositParams(chainId, orderUid, txReceipt)
+    const params = await getDepositParams(chainId, order, txReceipt)
 
     if (!params) return null
 

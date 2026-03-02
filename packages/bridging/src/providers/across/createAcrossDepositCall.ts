@@ -107,7 +107,7 @@ export function createAcrossDepositCall(params: {
       quoteTimestamp: Number(suggestedFees.timestamp),
       fillDeadline: Number(suggestedFees.fillDeadline),
       exclusivityParameter: Number(suggestedFees.exclusivityDeadline),
-      message: '0x',
+      message: quote.suggestedFees.id,
     },
     swapToken: sellTokenAddress,
     exchange: sellTokenAddress,
