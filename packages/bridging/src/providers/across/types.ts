@@ -1,4 +1,4 @@
-import { TargetChainId } from '@cowprotocol/sdk-config'
+import { TargetChainId, TokenInfo } from '@cowprotocol/sdk-config'
 
 export interface AvailableRoutesRequest {
   originChainId: string
@@ -110,6 +110,10 @@ export interface SuggestedFeesLimits {
 }
 
 export interface SuggestedFeesResponse {
+  id: string
+  outputAmount: string
+  inputToken: TokenInfo
+  outputToken: TokenInfo
   /**
    * Percentage of the transfer amount that should go to the relayer as a fee in total. The value is inclusive of lpFee.pct.
    *

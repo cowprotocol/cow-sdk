@@ -6,7 +6,7 @@ import { ACROSS_DEPOSIT_EVENT_INTERFACE, COW_TRADE_EVENT_INTERFACE } from './con
 import { ACROSS_TOKEN_MAPPING, AcrossChainConfig } from './const/tokens'
 import { ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES } from './const/contracts'
 import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
-import { getBigNumber, OrderKind } from '@cowprotocol/sdk-order-book'
+import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { getGlobalAdapter, Log } from '@cowprotocol/sdk-common'
 import stringify from 'json-stable-stringify'
 
@@ -49,6 +49,7 @@ export function toBridgeQuoteResult(
   const { kind } = request
 
   return {
+    id: suggestedFees.id,
     isSell: kind === OrderKind.SELL,
     amountsAndCosts: toAmountsAndCosts(request, slippageBps, suggestedFees),
     quoteTimestamp: Number(suggestedFees.timestamp),
@@ -71,12 +72,11 @@ function toAmountsAndCosts(
   slippageBps: number,
   suggestedFees: SuggestedFeesResponse,
 ): BridgeQuoteAmountsAndCosts {
-  const { amount, sellTokenDecimals, buyTokenDecimals } = request
+  const { amount } = request
 
-  // Get the amounts before fees
-  const sellAmountBeforeFeeBig = getBigNumber(amount, sellTokenDecimals)
-  const sellAmountBeforeFee = sellAmountBeforeFeeBig.big
-  const buyAmountBeforeFee = getBigNumber(sellAmountBeforeFeeBig.num, buyTokenDecimals).big // Sell and buy token should be the same asset for current implementation, but technically they can have different decimals
+  const sellAmountBeforeFee = amount
+  // Sell and buy token should be the same asset for current implementation, but technically they can have different decimals
+  const buyAmountBeforeFee = BigInt(suggestedFees.outputAmount)
 
   // Apply the fee to the buy amount (sell amount doesn't change)
   const totalRelayerFeePct = BigInt(suggestedFees.totalRelayFee.pct)
@@ -92,7 +92,7 @@ function toAmountsAndCosts(
   return {
     beforeFee: {
       sellAmount: sellAmountBeforeFee,
-      buyAmount: buyAmountBeforeFee, // Assuming the price is 1:1 (before fee). This is because we are exchanging the same asset
+      buyAmount: buyAmountBeforeFee,
     },
     afterFee: {
       sellAmount: sellAmountBeforeFee, // Sell amount does't change (fee is applied to the buy amount)

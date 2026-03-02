@@ -370,11 +370,6 @@ export interface BridgeCosts<T = bigint> {
     amountInSellCurrency: T
     amountInBuyCurrency: T
   }
-
-  // TODO: I could see here some additional flags that might be useful in the UI, but as this is a prototype. Leaving it until we get some experience with bridging. Leaving it as comments for future consideration.
-  // needToClaimInDestinationChain: boolean
-  // automaticRefundOnExpiration: boolean
-  // automaticRefundOnFailure: boolean
 }
 
 export interface BridgeQuoteAmountsAndCosts<T = bigint> {

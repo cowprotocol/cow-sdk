@@ -13,7 +13,11 @@ import {
   QuoteBridgeRequest,
 } from '../../types'
 
-import { DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION, HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
+import {
+  DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION,
+  HOOK_DAPP_BRIDGE_PROVIDER_PREFIX,
+  RAW_PROVIDERS_FILES_PATH,
+} from '../../const'
 
 import { AcrossApi, AcrossApiOptions } from './AcrossApi'
 import { mapAcrossStatusToBridgeStatus, toBridgeQuoteResult } from './util'
@@ -145,13 +149,6 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
       amount,
       recipient: receiver ?? undefined,
     })
-
-    // TODO: The suggested fees contain way more information. As we review more bridge providers we should revisit the
-    // facade of the quote result.
-    //
-    // For example, this contains also information on the limits, so you don't need to quote again for the same pair.
-    // potentially, this could be cached for a short period of time in the SDK so we can resolve quotes with less
-    // requests.
 
     return toBridgeQuoteResult(request, SLIPPAGE_TOLERANCE_BPS, suggestedFees)
   }
