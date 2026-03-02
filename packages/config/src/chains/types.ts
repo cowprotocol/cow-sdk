@@ -1,5 +1,28 @@
 import { TokenInfo } from '../types/tokens'
 
+
+// list of networks ids, it's necessary to define fields for a few different enums
+// ts doesn't allow narrowing types for enums:
+// export enum SupportedChainId {
+//   MAINNET = EvmChains.MAINNET,
+// }
+//
+// we can't use an object as const due to different behavior for:
+// export const SupportedChainId = {
+//   MAINNET: EvmChains.MAINNET,
+//   ... etc
+// } as const
+// and
+// export enum SupportedChainId {
+//   MAINNET = MAINNET_ID,
+//   ... etc
+// }
+// example:
+// let chainId = 1
+// chainId in SupportedChainId - will work differently for both
+// chainId in SupportedChainId (SupportedChainId as enum) - true
+// chainId in SupportedChainId (SupportedChainId as const) - false, due to there is no 1 as a key in the object
+//
 const MAINNET_ID = 1
 const BNB_ID = 56
 const GNOSIS_CHAIN_ID = 100
@@ -13,6 +36,7 @@ const INK_ID = 57073
 const LINEA_ID = 59144
 const SEPOLIA_ID = 11155111
 const OPTIMISM_ID = 10
+// it's not a standard solution, we set up our specific id as an our internal convention
 const BITCOIN_ID = 1000000000
 const SOLANA_ID = 1000000001
 
