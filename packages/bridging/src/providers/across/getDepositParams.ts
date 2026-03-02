@@ -27,7 +27,7 @@ export async function getDepositParams(
     // The quoteId is encoded into the deposit call in createAcrossDepositCall()
     const message = adapter.utils.decodeAbi(['string'], i.message)
 
-    return message === bridgeQuoteId
+    return message[0] === bridgeQuoteId
   })
 
   if (!depositEvent) {
