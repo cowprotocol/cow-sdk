@@ -34,6 +34,7 @@ import {
   ChainId,
   ChainInfo,
   EvmCall,
+  ink,
   mainnet,
   optimism,
   polygon,
@@ -46,7 +47,7 @@ import { EnrichedOrder, OrderKind } from '@cowprotocol/sdk-order-book'
 type SupportedTokensState = Record<ChainId, Record<string, TokenInfo>>
 
 export const ACROSS_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/across`
-export const ACROSS_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism, bnb]
+export const ACROSS_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism, bnb, ink]
 
 // We need to review if we should set an additional slippage tolerance, for now assuming the quote gives you the exact price of bridging and no further slippage is needed
 const SLIPPAGE_TOLERANCE_BPS = 0
