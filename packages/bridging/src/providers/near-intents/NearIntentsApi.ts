@@ -23,6 +23,7 @@ interface GetAttestationResponse {
 
 export class NearIntentsApi {
   private cachedTokens: TokenResponse[] = []
+  private tokensRequestPromise: Promise<TokenResponse[]> | null = null
 
   constructor(apiKey?: string) {
     if (apiKey) {
@@ -31,11 +32,17 @@ export class NearIntentsApi {
   }
 
   async getTokens(): Promise<TokenResponse[]> {
-    if (this.cachedTokens.length === 0) {
-      const response = await OneClickService.getTokens()
-      this.cachedTokens = response
+    if (this.cachedTokens) return this.cachedTokens
+
+    if (!this.tokensRequestPromise) {
+      this.tokensRequestPromise = OneClickService.getTokens().then((response) => {
+        this.cachedTokens = response
+
+        return response
+      })
     }
-    return this.cachedTokens
+
+    return this.tokensRequestPromise
   }
 
   async getQuote(request: QuoteRequest): Promise<QuoteResponse> {
