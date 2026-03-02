@@ -107,7 +107,7 @@ export function createAcrossDepositCall(params: {
       quoteTimestamp: Number(suggestedFees.timestamp),
       fillDeadline: Number(suggestedFees.fillDeadline),
       exclusivityParameter: Number(suggestedFees.exclusivityDeadline),
-      message: quote.suggestedFees.id,
+      message: getGlobalAdapter().utils.encodeAbi(['string'], [quote.suggestedFees.id]),
     },
     swapToken: sellTokenAddress,
     exchange: sellTokenAddress,
