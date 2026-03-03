@@ -4,6 +4,8 @@ import {
   AdditionalTargetChainId,
   getChainInfo,
   SupportedChainId,
+  TargetChainId,
+  TokenInfo,
   WRAPPED_NATIVE_CURRENCIES,
 } from '@cowprotocol/sdk-config'
 import { AddressKey, getAddressKey } from './address'
@@ -42,12 +44,17 @@ export function isNativeToken(token: TokenLike): boolean {
   return areAddressesEqual(getChainInfo(token.chainId)?.nativeCurrency.address, token.address)
 }
 
-export function isWrappedNativeToken(token: TokenLike): boolean {
+export function getWrappedNativeToken(chainId: TargetChainId): TokenInfo | undefined {
   return (
-    areAddressesEqual(WRAPPED_NATIVE_CURRENCIES[token.chainId as SupportedChainId]?.address, token.address) ||
-    areAddressesEqual(
-      ADDITIONAL_WRAPPED_NATIVE_CURRENCIES[token.chainId as AdditionalTargetChainId]?.address,
-      token.address,
-    )
+    WRAPPED_NATIVE_CURRENCIES[chainId as SupportedChainId] ||
+    ADDITIONAL_WRAPPED_NATIVE_CURRENCIES[chainId as AdditionalTargetChainId]
   )
+}
+
+export function isWrappedNativeToken(token: TokenLike): boolean {
+  const wrappedNativeToken = getWrappedNativeToken(token.chainId)
+
+  if (!wrappedNativeToken) return false
+
+  return areAddressesEqual(wrappedNativeToken.address, token.address)
 }

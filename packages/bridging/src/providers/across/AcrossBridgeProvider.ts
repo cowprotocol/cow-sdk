@@ -30,6 +30,7 @@ import {
   AbstractProviderAdapter,
   getAddressKey,
   getGlobalAdapter,
+  getWrappedNativeToken,
   isNativeToken,
   isWrappedNativeToken,
   setGlobalAdapter,
@@ -129,15 +130,17 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
       throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES, { sellTokenChainId })
     }
 
-    const routes = await this.api.getAvailableRoutes({
-      originChainId: sellTokenChainId,
-      destinationChainId: buyTokenChainId,
-      destinationToken: buyTokenAddress,
-    })
-
     const buyToken = { address: buyTokenAddress, chainId: buyTokenChainId }
     const isBuyTokenNative = isNativeToken(buyToken)
     const isBuyTokenWrappedNative = isWrappedNativeToken(buyToken)
+
+    const destinationToken = isBuyTokenNative ? getWrappedNativeToken(buyTokenChainId)?.address : buyTokenAddress
+    const routes = await this.api.getAvailableRoutes({
+      originChainId: sellTokenChainId,
+      destinationChainId: buyTokenChainId,
+      // Across uses wrapped native token address for both native and wrapped tokens
+      ...(destinationToken ? { destinationToken: destinationToken } : null),
+    })
 
     return routes.reduce<TokenInfo[]>((acc, route) => {
       const intermediateToken = sourceTokens[getAddressKey(route.originToken)]
