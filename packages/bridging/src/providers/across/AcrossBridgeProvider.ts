@@ -31,7 +31,6 @@ import {
   getAddressKey,
   getGlobalAdapter,
   isNativeToken,
-  isWrappedNativeToken,
   setGlobalAdapter,
   SignerLike,
 } from '@cowprotocol/sdk-common'
@@ -134,10 +133,8 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     }
 
     const buyToken = { address: buyTokenAddress, chainId: buyTokenChainId }
-    const isBuyTokenNative = isNativeToken(buyToken)
-    const isBuyTokenWrappedNative = isWrappedNativeToken(buyToken)
-
     const destinationToken = mapNativeOrWrappedTokenAddress(buyToken)
+
     const routes = await this.api.getAvailableRoutes({
       originChainId: sellTokenChainId,
       destinationChainId: buyTokenChainId,
@@ -145,6 +142,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
       ...(destinationToken ? { destinationToken: destinationToken } : null),
     })
 
+    // https://docs.across.to/introduction/technical-faq#what-is-the-behavior-of-eth-weth-in-transfers
     return routes.reduce<TokenInfo[]>((acc, route) => {
       // Across uses wrapped native token address for both native and wrapped tokens
       const intermediateToken = route.isNative
@@ -154,19 +152,10 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
       if (!intermediateToken) return acc
 
       const isTokenNative = isNativeToken(intermediateToken)
-      const isTokenWrappedNative = isWrappedNativeToken(intermediateToken)
 
       // https://docs.across.to/introduction/technical-faq#what-is-the-behavior-of-eth-weth-in-transfers
-      if (isTraderEOA && isTokenWrappedNative) return acc
-      if (!isTraderEOA && isTokenNative) return acc
-      /**
-       * It's not possible to mix NATIVE and WRAPPED tokens in a single deposit (e.g. ETH and WETH)
-       * Input and output must be the same type (ETH/ETH or WETH/WETH)
-       */
-      // No ETH->WETH
-      if (isBuyTokenNative && isTokenWrappedNative) return acc
-      // No WETH->ETH
-      if (isBuyTokenWrappedNative && isTokenNative) return acc
+      // For EOA's, only WETH is supported as intermediate
+      if (isTraderEOA && isTokenNative) return acc
 
       acc.push(intermediateToken)
 
