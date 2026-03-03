@@ -120,13 +120,13 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
 
     const supportedTokensState = await this.getSupportedTokensState()
-    const destinationTokens = supportedTokensState[buyTokenChainId]
+    const sourceTokens = supportedTokensState[sellTokenChainId]
 
     /**
      * It should not be possible, just a technical check
      */
-    if (!destinationTokens) {
-      throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES, { buyTokenChainId })
+    if (!sourceTokens) {
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES, { sellTokenChainId })
     }
 
     const routes = await this.api.getAvailableRoutes({
@@ -140,7 +140,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     const isBuyTokenWrappedNative = isWrappedNativeToken(buyToken)
 
     return routes.reduce<TokenInfo[]>((acc, route) => {
-      const token = destinationTokens[getAddressKey(route.destinationToken)]
+      const token = sourceTokens[getAddressKey(route.originToken)]
 
       if (!token) return acc
 
