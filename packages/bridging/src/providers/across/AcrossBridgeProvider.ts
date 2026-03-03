@@ -28,6 +28,7 @@ import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 import {
   AbstractProviderAdapter,
+  getAddressKey,
   getGlobalAdapter,
   isNativeToken,
   isWrappedNativeToken,
@@ -119,28 +120,46 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
 
     const supportedTokensState = await this.getSupportedTokensState()
+    const destinationTokens = supportedTokensState[buyTokenChainId]
 
-    const sourceTokens = supportedTokensState[sellTokenChainId]
+    /**
+     * It should not be possible, just a technical check
+     */
+    if (!destinationTokens) {
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES, { buyTokenChainId })
+    }
+
+    const routes = await this.api.getAvailableRoutes({
+      originChainId: sellTokenChainId,
+      destinationChainId: buyTokenChainId,
+      destinationToken: buyTokenAddress,
+    })
 
     const buyToken = { address: buyTokenAddress, chainId: buyTokenChainId }
     const isBuyTokenNative = isNativeToken(buyToken)
     const isBuyTokenWrappedNative = isWrappedNativeToken(buyToken)
 
-    /**
-     * It's not possible to mix NATIVE and WRAPPED tokens in a single deposit (e.g. ETH and WETH)
-     * Input and output must be the same type (ETH/ETH or WETH/WETH)
-     */
-    return Object.values(sourceTokens || {}).filter((token) => {
+    return routes.reduce<TokenInfo[]>((acc, route) => {
+      const token = destinationTokens[getAddressKey(route.destinationToken)]
+
+      if (!token) return acc
+
       const isTokenNative = isNativeToken(token)
       const isTokenWrappedNative = isWrappedNativeToken(token)
 
+      /**
+       * It's not possible to mix NATIVE and WRAPPED tokens in a single deposit (e.g. ETH and WETH)
+       * Input and output must be the same type (ETH/ETH or WETH/WETH)
+       */
       // No ETH->WETH
-      if (isBuyTokenNative && isTokenWrappedNative) return false
+      if (isBuyTokenNative && isTokenWrappedNative) return acc
       // No WETH->ETH
-      if (isBuyTokenWrappedNative && isTokenNative) return false
+      if (isBuyTokenWrappedNative && isTokenNative) return acc
 
-      return true
-    })
+      acc.push(token)
+
+      return acc
+    }, [])
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<AcrossQuoteResult> {
@@ -291,7 +310,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
       const supportedTokens = (await this.api.getSupportedTokens()).reduce((acc, val) => {
         const data = acc[val.chainId] || {}
 
-        data[val.address.toLowerCase()] = val
+        data[getAddressKey(val.address)] = val
 
         acc[val.chainId] = data
 

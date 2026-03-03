@@ -1,19 +1,20 @@
-import { TargetChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { type SupportedChainId, TargetChainId, TokenInfo } from '@cowprotocol/sdk-config'
 
 export interface AvailableRoutesRequest {
-  originChainId: string
-  originToken: string
-  destinationChainId: string
-  destinationToken: string
+  originChainId: number
+  originToken?: string
+  destinationChainId: number
+  destinationToken?: string
 }
 
 export interface Route {
-  originChainId: string
+  originChainId: number
   originToken: string
-  destinationChainId: string
+  destinationChainId: number
   destinationToken: string
   originTokenSymbol: string
   destinationTokenSymbol: string
+  isNative?: boolean
 }
 
 export interface SuggestedFeesRequest {
@@ -282,4 +283,10 @@ export interface CowTradeEvent {
   buyAmount: string
   feeAmount: string
   orderUid: string
+}
+
+export interface IntermediateTokensParams {
+  originChainId: SupportedChainId
+  destinationChainId: TargetChainId
+  destinationToken: string
 }

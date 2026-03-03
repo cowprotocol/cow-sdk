@@ -34,19 +34,8 @@ export class AcrossApi {
    *
    * See https://docs.across.to/reference/api-reference#available-routes
    */
-  async getAvailableRoutes({
-    originChainId,
-    originToken,
-    destinationChainId,
-    destinationToken,
-  }: AvailableRoutesRequest): Promise<Route[]> {
-    const params: Record<string, string> = {}
-    if (originChainId) params.originChainId = originChainId
-    if (originToken) params.originToken = originToken
-    if (destinationChainId) params.destinationChainId = destinationChainId
-    if (destinationToken) params.destinationToken = destinationToken
-
-    return this.fetchApi('/available-routes', params, isValidRoutes)
+  async getAvailableRoutes(params: AvailableRoutesRequest): Promise<Route[]> {
+    return this.fetchApi('/available-routes', params as never as Record<string | number, string>, isValidRoutes)
   }
 
   /**
@@ -100,7 +89,7 @@ export class AcrossApi {
 
   protected async fetchApi<T>(
     path: string,
-    params: Record<string, string>,
+    params: Record<string | number, string>,
     isValidResponse?: (response: unknown) => response is T,
   ): Promise<T> {
     const baseUrl = this.options.apiBaseUrl || ACROSS_API_URL
