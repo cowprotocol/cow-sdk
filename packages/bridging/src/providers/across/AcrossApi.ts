@@ -1,5 +1,5 @@
 import { log } from '@cowprotocol/sdk-common'
-import { TokenInfo } from '@cowprotocol/sdk-config'
+import { ALL_SUPPORTED_CHAINS_MAP, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 
 import {
   AvailableRoutesRequest,
@@ -14,6 +14,8 @@ import {
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 
 const ACROSS_API_URL = 'https://app.across.to/api'
+
+type AcrossApiToken = TokenInfo & { logoURI?: string; isNative: boolean }
 
 export interface AcrossApiOptions {
   apiBaseUrl?: string
@@ -73,8 +75,14 @@ export class AcrossApi {
 
   async getSupportedTokens(): Promise<TokenInfo[]> {
     if (this.cachedTokens.length === 0) {
-      const response = await this.fetchApi<(TokenInfo & { logoURI?: string })[]>('/token-list', {}).then((tokens) =>
-        tokens.map((token) => ({ ...token, logoUrl: token.logoURI })),
+      const response = await this.fetchApi<AcrossApiToken[]>('/token-list', {}).then((tokens) =>
+        tokens.map((token) => ({
+          ...token,
+          logoUrl: token.logoURI,
+          address: token.isNative
+            ? (ALL_SUPPORTED_CHAINS_MAP[token.chainId as SupportedChainId]?.nativeCurrency.address ?? token.address)
+            : token.address,
+        })),
       )
       this.cachedTokens = response
     }
