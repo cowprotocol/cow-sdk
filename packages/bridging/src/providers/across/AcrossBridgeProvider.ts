@@ -140,12 +140,12 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     const isBuyTokenWrappedNative = isWrappedNativeToken(buyToken)
 
     return routes.reduce<TokenInfo[]>((acc, route) => {
-      const token = sourceTokens[getAddressKey(route.originToken)]
+      const intermediateToken = sourceTokens[getAddressKey(route.originToken)]
 
-      if (!token) return acc
+      if (!intermediateToken) return acc
 
-      const isTokenNative = isNativeToken(token)
-      const isTokenWrappedNative = isWrappedNativeToken(token)
+      const isTokenNative = isNativeToken(intermediateToken)
+      const isTokenWrappedNative = isWrappedNativeToken(intermediateToken)
 
       /**
        * It's not possible to mix NATIVE and WRAPPED tokens in a single deposit (e.g. ETH and WETH)
@@ -156,7 +156,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
       // No WETH->ETH
       if (isBuyTokenWrappedNative && isTokenNative) return acc
 
-      acc.push(token)
+      acc.push(intermediateToken)
 
       return acc
     }, [])
