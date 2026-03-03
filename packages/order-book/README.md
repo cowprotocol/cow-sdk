@@ -121,6 +121,41 @@ const orderBookApi = new OrderBookApi({
 })
 ```
 
+### Partner API (Authenticated Access)
+
+Partners can use the Partner API for authenticated, rate-limited access with higher request quotas. Provide your API key and the SDK will automatically route requests through the partner gateway and attach the `X-API-Key` header.
+
+| Environment | Partner API Base URL |
+|-------------|---------------------|
+| Production  | `https://partners.cow.fi` |
+| Staging     | `https://partners.barn.cow.fi` |
+
+```typescript
+const orderBookApi = new OrderBookApi({
+  chainId: SupportedChainId.MAINNET,
+  apiKey: 'your-partner-api-key',
+})
+```
+
+To use the Partner API with the Trading SDK, pass a configured `OrderBookApi` instance:
+
+```typescript
+import { TradingSdk } from '@cowprotocol/sdk-trading'
+
+const orderBookApi = new OrderBookApi({
+  chainId: SupportedChainId.MAINNET,
+  apiKey: 'your-partner-api-key',
+})
+
+const sdk = new TradingSdk(
+  { chainId: SupportedChainId.MAINNET, appCode: 'YOUR_APP_CODE' },
+  { orderBookApi },
+  adapter,
+)
+```
+
+> **Note:** The `/api/v1/auction` endpoint is not available via the Partner API (returns 403). Handle `429` responses with retry/backoff when rate limits are exceeded.
+
 ### Rate Limiting Configuration
 
 ```typescript
