@@ -67,7 +67,7 @@ export async function getCrossChainOrder(params: GetCrossChainOrderParams): Prom
     }
 
     try {
-      const explorerUrl = provider.getExplorerUrl(bridgingParams.bridgingId)
+      const explorerUrl = provider.getExplorerUrl(bridgingParams.bridgingId, tradeTxHash)
 
       return {
         ...state,

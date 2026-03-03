@@ -229,8 +229,9 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    * Get the explorer url for a bridging id.
    *
    * @param bridgingId - The bridging id
+   * @param tradeTxHash - On-chain transaction id of swap settlement
    */
-  getExplorerUrl(bridgingId: string): string
+  getExplorerUrl(bridgingId: string, tradeTxHash: string): string
 
   /**
    * Get the status of a bridging transaction.

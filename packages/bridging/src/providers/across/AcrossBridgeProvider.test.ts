@@ -18,10 +18,9 @@ import stringify from 'json-stable-stringify'
 // Mock AcrossApi
 jest.mock('./AcrossApi')
 
-const mockTokens = [
-  { chainId: SupportedChainId.POLYGON, address: '0x123', decimals: 18, symbol: 'TOKEN1', name: 'Token 1' },
-  { chainId: SupportedChainId.POLYGON, address: '0x456', decimals: 6, symbol: 'TOKEN2', name: 'Token 2' },
-]
+const TOKEN_A = { chainId: SupportedChainId.POLYGON, address: '0x123', decimals: 18, symbol: 'TOKEN1', name: 'Token 1' }
+const TOKEN_B = { chainId: SupportedChainId.POLYGON, address: '0x456', decimals: 6, symbol: 'TOKEN2', name: 'Token 2' }
+const mockTokens = [TOKEN_A, TOKEN_B]
 
 class AcrossBridgeProviderTest extends AcrossBridgeProvider {
   constructor(options: AcrossBridgeProviderOptions) {
@@ -98,6 +97,10 @@ adapterNames.forEach((adapterName) => {
 
     describe('getQuote', () => {
       const mockSuggestedFees: SuggestedFeesResponse = {
+        id: '1',
+        inputToken: TOKEN_A,
+        outputToken: TOKEN_B,
+        outputAmount: '20000',
         totalRelayFee: { pct: '100000000000000', total: '100000' },
         relayerCapitalFee: { pct: '50000000000000', total: '50000' },
         relayerGasFee: { pct: '50000000000000', total: '50000' },
@@ -200,7 +203,7 @@ adapterNames.forEach((adapterName) => {
 
     describe('getExplorerUrl', () => {
       it('should return explorer url', () => {
-        expect(provider.getExplorerUrl('123')).toEqual('https://app.across.to/transactions')
+        expect(provider.getExplorerUrl('123', '0xaaa')).toEqual('https://app.across.to/transactions/0xaaa')
       })
     })
 

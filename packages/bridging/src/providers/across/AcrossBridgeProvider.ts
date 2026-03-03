@@ -257,8 +257,8 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     }
   }
 
-  getExplorerUrl(_: string): string {
-    return `https://app.across.to/transactions`
+  getExplorerUrl(_: string, tradeTxHash: string): string {
+    return `https://app.across.to/transaction/${tradeTxHash}`
   }
 
   async getStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult> {

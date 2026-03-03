@@ -275,7 +275,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     }
   }
 
-  getExplorerUrl(bridgingId: string): string {
+  getExplorerUrl(bridgingId: string, _: string): string {
     return `https://explorer.near-intents.org/transactions/${bridgingId}`
   }
 
