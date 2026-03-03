@@ -7,7 +7,7 @@ import { ACROSS_TOKEN_MAPPING, AcrossChainConfig } from './const/tokens'
 import { ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES } from './const/contracts'
 import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
-import { getGlobalAdapter, Log } from '@cowprotocol/sdk-common'
+import { getGlobalAdapter, getWrappedNativeToken, isNativeToken, Log } from '@cowprotocol/sdk-common'
 import stringify from 'json-stable-stringify'
 
 const PCT_100_PERCENT = 10n ** 18n
@@ -39,6 +39,25 @@ export function getTokenSymbol(tokenAddress: string, chainConfig: AcrossChainCon
 
 export function getTokenAddress(tokenSymbol: string, chainConfig: AcrossChainConfig): string | undefined {
   return chainConfig.tokens[tokenSymbol]
+}
+
+/**
+ * Across uses wrapped native token address for both native and wrapped tokens
+ * In CoW we use 0xeeee...eeeee for native token, which is not supported by Across
+ * Because of that, we have to map the address
+ */
+export function mapNativeOrWrappedTokenAddress(token: { chainId: TargetChainId; address: string }): string {
+  if (isNativeToken(token)) {
+    const wrapped = getWrappedNativeToken(token.chainId)
+
+    if (!wrapped) {
+      throw new Error('Specified token.chainId does not belong to TargetChainId!')
+    }
+
+    return wrapped.address
+  }
+
+  return token.address
 }
 
 export function toBridgeQuoteResult(

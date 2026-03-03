@@ -20,7 +20,7 @@ import {
 } from '../../const'
 
 import { AcrossApi, AcrossApiOptions } from './AcrossApi'
-import { mapAcrossStatusToBridgeStatus, toBridgeQuoteResult } from './util'
+import { mapAcrossStatusToBridgeStatus, mapNativeOrWrappedTokenAddress, toBridgeQuoteResult } from './util'
 import { createAcrossDepositCall } from './createAcrossDepositCall'
 import { SuggestedFeesResponse } from './types'
 import { getDepositParams } from './getDepositParams'
@@ -30,7 +30,6 @@ import {
   AbstractProviderAdapter,
   getAddressKey,
   getGlobalAdapter,
-  getWrappedNativeToken,
   isNativeToken,
   isWrappedNativeToken,
   setGlobalAdapter,
@@ -138,7 +137,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     const isBuyTokenNative = isNativeToken(buyToken)
     const isBuyTokenWrappedNative = isWrappedNativeToken(buyToken)
 
-    const destinationToken = isBuyTokenNative ? getWrappedNativeToken(buyTokenChainId)?.address : buyTokenAddress
+    const destinationToken = mapNativeOrWrappedTokenAddress(buyToken)
     const routes = await this.api.getAvailableRoutes({
       originChainId: sellTokenChainId,
       destinationChainId: buyTokenChainId,
@@ -179,8 +178,8 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     const { sellTokenAddress, sellTokenChainId, buyTokenAddress, buyTokenChainId, amount, receiver } = request
 
     const suggestedFees = await this.api.getSuggestedFees({
-      inputToken: sellTokenAddress,
-      outputToken: buyTokenAddress,
+      inputToken: mapNativeOrWrappedTokenAddress({ chainId: sellTokenChainId, address: sellTokenAddress }),
+      outputToken: mapNativeOrWrappedTokenAddress({ chainId: buyTokenChainId, address: buyTokenAddress }),
       originChainId: sellTokenChainId,
       destinationChainId: buyTokenChainId,
       amount,
