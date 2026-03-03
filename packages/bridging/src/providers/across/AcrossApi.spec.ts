@@ -45,10 +45,10 @@ describe('AcrossApi: Shape of API response', () => {
   it('getAvailableRoutes from ARBITRUM_ONE to BASE', async () => {
     // Attempt to make a REAL API call. The API implementation will assert the result shape matches the expected object
     const result = await api.getAvailableRoutes({
-      originChainId: SupportedChainId.ARBITRUM_ONE.toString(),
+      originChainId: SupportedChainId.ARBITRUM_ONE,
       originToken: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', // weth
 
-      destinationChainId: SupportedChainId.BASE.toString(),
+      destinationChainId: SupportedChainId.BASE,
       destinationToken: '0x4200000000000000000000000000000000000006', // weth
     })
 
@@ -58,10 +58,10 @@ describe('AcrossApi: Shape of API response', () => {
   it('getAvailableRoutes from POLYGON to ARBITRUM_ONE', async () => {
     // Attempt to make a REAL API call. The API implementation will assert the result shape matches the expected object
     const result = await api.getAvailableRoutes({
-      originChainId: SupportedChainId.POLYGON.toString(),
+      originChainId: SupportedChainId.POLYGON,
       originToken: '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270', // wpol
 
-      destinationChainId: SupportedChainId.ARBITRUM_ONE.toString(),
+      destinationChainId: SupportedChainId.ARBITRUM_ONE,
       destinationToken: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', // weth
     })
 

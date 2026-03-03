@@ -150,17 +150,18 @@ adapterNames.forEach((adapterName) => {
         expect(suggestedFees).toEqual(mockSuggestedFees)
 
         const expectedQuote: BridgeQuoteResult = {
+          id: '1',
           isSell: true,
           quoteBody: stringify(mockSuggestedFees),
           amountsAndCosts: {
-            beforeFee: { sellAmount: 1000000000000000000n, buyAmount: 1000000n },
-            afterFee: { sellAmount: 1000000000000000000n, buyAmount: 999900n },
-            afterSlippage: { sellAmount: 1000000000000000000n, buyAmount: 999900n },
+            beforeFee: { sellAmount: 1000000000000000000n, buyAmount: 20000n },
+            afterFee: { sellAmount: 1000000000000000000n, buyAmount: 19998n },
+            afterSlippage: { sellAmount: 1000000000000000000n, buyAmount: 19998n },
             costs: {
               bridgingFee: {
                 feeBps: 1,
                 amountInSellCurrency: 100000000000000n,
-                amountInBuyCurrency: 100n,
+                amountInBuyCurrency: 2n,
               },
             },
             slippageBps: 0,
@@ -203,7 +204,7 @@ adapterNames.forEach((adapterName) => {
 
     describe('getExplorerUrl', () => {
       it('should return explorer url', () => {
-        expect(provider.getExplorerUrl('123', '0xaaa')).toEqual('https://app.across.to/transactions/0xaaa')
+        expect(provider.getExplorerUrl('123', '0xaaa')).toEqual('https://app.across.to/transaction/0xaaa')
       })
     })
 

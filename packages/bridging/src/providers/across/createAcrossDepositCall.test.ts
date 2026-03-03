@@ -7,10 +7,7 @@ import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { createAdapters } from '../../../tests/setup'
-import {
-  ACROSS_SPOKE_POOL_PERIPHERY_CONTRACT_ADDRESSES,
-  ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES,
-} from './const/contracts'
+import { ACROSS_SPOKE_POOL_PERIPHERY_CONTRACT_ADDRESSES, ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES } from './const/contracts'
 
 jest.mock('@cowprotocol/sdk-cow-shed', () => ({
   CowShedSdk: jest.fn().mockImplementation(() => ({
@@ -19,6 +16,10 @@ jest.mock('@cowprotocol/sdk-cow-shed', () => ({
 }))
 
 const mockSuggestedFees: SuggestedFeesResponse = {
+  id: 'test-quote-id',
+  outputAmount: '1000000000',
+  inputToken: { chainId: 1, address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', decimals: 6 },
+  outputToken: { chainId: 56, address: '0x55d398326f99059fF775485246999027B3197955', decimals: 18 },
   totalRelayFee: { pct: '100000000000000000', total: '100000000000000000' },
   relayerCapitalFee: { pct: '50000000000000000', total: '50000000000000000' },
   relayerGasFee: { pct: '50000000000000000', total: '50000000000000000' },
@@ -54,6 +55,7 @@ adapterNames.forEach((adapterName) => {
 
       mockEncodeFunction = jest.fn().mockReturnValue('0xmockEncoded')
       adapter.utils.encodeFunction = mockEncodeFunction as any
+      adapter.utils.encodeAbi = jest.fn().mockReturnValue('0xmockEncodedMessage') as any
 
       setGlobalAdapter(adapter)
       cowShedSdk = new CowShedSdk()
@@ -116,13 +118,13 @@ adapterNames.forEach((adapterName) => {
       expect(result).toHaveLength(2)
 
       // Call 1: approve targets the sell token
-      expect(result[0].to).toBe(request.sellTokenAddress)
-      expect(result[0].value).toBe(0n)
+      expect(result[0]?.to).toBe(request.sellTokenAddress)
+      expect(result[0]?.value).toBe(0n)
 
       // Call 2: swapAndBridge targets the periphery
       const expectedPeriphery = ACROSS_SPOKE_POOL_PERIPHERY_CONTRACT_ADDRESSES[request.sellTokenChainId]
-      expect(result[1].to).toBe(expectedPeriphery)
-      expect(result[1].value).toBe(0n)
+      expect(result[1]?.to).toBe(expectedPeriphery)
+      expect(result[1]?.value).toBe(0n)
     })
 
     it('should encode the approve call with the periphery as spender and input amount', () => {
@@ -173,15 +175,13 @@ adapterNames.forEach((adapterName) => {
       expect(depositData.outputToken).toBe(addressToBytes32(request.buyTokenAddress))
       expect(depositData.outputAmount).toBe(quote.amountsAndCosts.afterFee.buyAmount)
       expect(depositData.depositor).toBe('0xCowShedAccount')
-      expect(depositData.recipient).toBe(addressToBytes32(request.receiver!))
+      expect(depositData.recipient).toBe(addressToBytes32('0x9876543210987654321098765432109876543210'))
       expect(depositData.destinationChainId).toBe(BigInt(request.buyTokenChainId))
-      expect(depositData.exclusiveRelayer).toBe(
-        addressToBytes32(mockSuggestedFees.exclusiveRelayer),
-      )
+      expect(depositData.exclusiveRelayer).toBe(addressToBytes32(mockSuggestedFees.exclusiveRelayer))
       expect(depositData.quoteTimestamp).toBe(Number(mockSuggestedFees.timestamp))
       expect(depositData.fillDeadline).toBe(Number(mockSuggestedFees.fillDeadline))
       expect(depositData.exclusivityParameter).toBe(Number(mockSuggestedFees.exclusivityDeadline))
-      expect(depositData.message).toBe('0x')
+      expect(depositData.message).toBe('0xmockEncodedMessage')
     })
 
     it('should use account as recipient when receiver is not provided', () => {
