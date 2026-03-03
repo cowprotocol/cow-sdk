@@ -1,3 +1,6 @@
+import { log } from '@cowprotocol/sdk-common'
+import { TokenInfo } from '@cowprotocol/sdk-config'
+
 import {
   AvailableRoutesRequest,
   DepositStatusRequest,
@@ -9,8 +12,6 @@ import {
   SuggestedFeesResponse,
 } from './types'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
-import { TokenInfo } from '@cowprotocol/sdk-config'
-import { log } from '@cowprotocol/sdk-common'
 
 const ACROSS_API_URL = 'https://app.across.to/api'
 
@@ -19,6 +20,8 @@ export interface AcrossApiOptions {
 }
 
 export class AcrossApi {
+  private cachedTokens: TokenInfo[] = []
+
   constructor(private readonly options: AcrossApiOptions = {}) {}
 
   /**
@@ -69,9 +72,13 @@ export class AcrossApi {
   }
 
   async getSupportedTokens(): Promise<TokenInfo[]> {
-    return this.fetchApi<(TokenInfo & { logoURI?: string })[]>('/token-list', {}).then((tokens) =>
-      tokens.map((token) => ({ ...token, logoUrl: token.logoURI })),
-    )
+    if (this.cachedTokens.length === 0) {
+      const response = await this.fetchApi<(TokenInfo & { logoURI?: string })[]>('/token-list', {}).then((tokens) =>
+        tokens.map((token) => ({ ...token, logoUrl: token.logoURI })),
+      )
+      this.cachedTokens = response
+    }
+    return this.cachedTokens
   }
 
   async getDepositStatus(request: DepositStatusRequest): Promise<DepositStatusResponse> {
