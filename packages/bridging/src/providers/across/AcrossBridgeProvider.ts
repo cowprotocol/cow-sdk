@@ -172,9 +172,16 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
 
   async getQuote(request: QuoteBridgeRequest): Promise<AcrossQuoteResult> {
     const { sellTokenAddress, sellTokenChainId, buyTokenAddress, buyTokenChainId, amount, receiver } = request
+    const sellTokenLike = { chainId: sellTokenChainId, address: sellTokenAddress }
+
+    if (isTraderEOA && isNativeToken(sellTokenLike)) {
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES, {
+        info: 'Across does not support native token deposit for EOA',
+      })
+    }
 
     const suggestedFees = await this.api.getSuggestedFees({
-      inputToken: mapNativeOrWrappedTokenAddress({ chainId: sellTokenChainId, address: sellTokenAddress }),
+      inputToken: mapNativeOrWrappedTokenAddress(sellTokenLike),
       outputToken: mapNativeOrWrappedTokenAddress({ chainId: buyTokenChainId, address: buyTokenAddress }),
       originChainId: sellTokenChainId,
       destinationChainId: buyTokenChainId,
