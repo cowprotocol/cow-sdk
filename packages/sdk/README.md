@@ -291,7 +291,7 @@ const orderBookApi = new OrderBookApi({
 })
 ```
 
-The SDK will automatically route requests through `partners.cow.fi` (prod) or `partners.barn.cow.fi` (staging) and include the `X-API-Key` header.
+By default, the SDK routes requests through `partners.cow.fi` (prod) or `partners.barn.cow.fi` (staging) and includes the `X-API-Key` header. If you provide custom `baseUrls`, those take precedence over the default partner hosts, but the `X-API-Key` header is still sent with every request.
 
 See the [OrderBookApi documentation](https://github.com/cowprotocol/cow-sdk/tree/main/packages/order-book/README.md#partner-api-authenticated-access) for more details, including usage with the Trading SDK.
 
