@@ -43,6 +43,7 @@ import {
   ChainId,
   ChainInfo,
   EvmCall,
+  getChainInfo,
   ink,
   mainnet,
   optimism,
@@ -118,15 +119,18 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
       throw new BridgeProviderQuoteError(BridgeQuoteErrors.ONLY_SELL_ORDER_SUPPORTED, { kind: request.kind })
     }
 
+    // Currently, Across provider is only involved to cross-chains swaps via EOA
+    const isTraderEOA = true
     const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
 
     const supportedTokensState = await this.getSupportedTokensState()
     const sourceTokens = supportedTokensState[sellTokenChainId]
+    const sourceNativeToken = getChainInfo(sellTokenChainId)?.nativeCurrency
 
     /**
      * It should not be possible, just a technical check
      */
-    if (!sourceTokens) {
+    if (!sourceTokens || !sourceNativeToken) {
       throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES, { sellTokenChainId })
     }
 
@@ -143,13 +147,19 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     })
 
     return routes.reduce<TokenInfo[]>((acc, route) => {
-      const intermediateToken = sourceTokens[getAddressKey(route.originToken)]
+      // Across uses wrapped native token address for both native and wrapped tokens
+      const intermediateToken = route.isNative
+        ? sourceTokens[getAddressKey(sourceNativeToken.address)]
+        : sourceTokens[getAddressKey(route.originToken)]
 
       if (!intermediateToken) return acc
 
       const isTokenNative = isNativeToken(intermediateToken)
       const isTokenWrappedNative = isWrappedNativeToken(intermediateToken)
 
+      // https://docs.across.to/introduction/technical-faq#what-is-the-behavior-of-eth-weth-in-transfers
+      if (isTraderEOA && isTokenWrappedNative) return acc
+      if (!isTraderEOA && isTokenNative) return acc
       /**
        * It's not possible to mix NATIVE and WRAPPED tokens in a single deposit (e.g. ETH and WETH)
        * Input and output must be the same type (ETH/ETH or WETH/WETH)
