@@ -154,8 +154,6 @@ const sdk = new TradingSdk(
 )
 ```
 
-> **Note:** The `/api/v1/auction` endpoint is not available via the Partner API (returns 403). Handle `429` responses with retry/backoff when rate limits are exceeded.
-
 ### Rate Limiting Configuration
 
 ```typescript
