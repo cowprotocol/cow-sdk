@@ -15,6 +15,10 @@ import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 
 const ACROSS_API_URL = 'https://app.across.to/api'
 
+enum AcrossApiErrors {
+  AMOUNT_TOO_LOW = 'AMOUNT_TOO_LOW',
+}
+
 type AcrossApiToken = TokenInfo & { logoURI?: string; isNative: boolean }
 
 export interface AcrossApiOptions {
@@ -103,6 +107,11 @@ export class AcrossApi {
 
     if (!response.ok) {
       const errorBody = await response.json()
+
+      if (errorBody.code === AcrossApiErrors.AMOUNT_TOO_LOW) {
+        throw new BridgeProviderQuoteError(BridgeQuoteErrors.SELL_AMOUNT_TOO_SMALL, errorBody)
+      }
+
       throw new BridgeProviderQuoteError(BridgeQuoteErrors.API_ERROR, errorBody)
     }
 

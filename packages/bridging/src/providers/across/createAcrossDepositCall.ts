@@ -1,6 +1,6 @@
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { EvmCall, TargetChainId } from '@cowprotocol/sdk-config'
-import { getGlobalAdapter, isNativeToken } from '@cowprotocol/sdk-common'
+import { getGlobalAdapter } from '@cowprotocol/sdk-common'
 
 import { ACROSS_SPOKE_POOL_PERIPHERY_CONTRACT_ADDRESSES, ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES } from './const/contracts'
 import { ACROSS_SPOKE_POOL_PERIPHERY_ABI } from './abi'
@@ -79,7 +79,6 @@ export function createAcrossDepositCall(params: {
   const { sellTokenChainId, sellTokenAddress, buyTokenChainId, buyTokenAddress, account, receiver } = request
 
   const sellTokenLike = { address: sellTokenAddress, chainId: sellTokenChainId }
-  const isSellTokenNative = isNativeToken(sellTokenLike)
   const sellToken = mapNativeOrWrappedTokenAddress(sellTokenLike)
   const buyToken = mapNativeOrWrappedTokenAddress({ address: buyTokenAddress, chainId: buyTokenChainId })
 
@@ -150,5 +149,5 @@ export function createAcrossDepositCall(params: {
     value: 0n,
   }
 
-  return isSellTokenNative ? [swapAndBridgeCall] : [approveCall, swapAndBridgeCall]
+  return [approveCall, swapAndBridgeCall]
 }

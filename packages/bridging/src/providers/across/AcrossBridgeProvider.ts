@@ -31,6 +31,7 @@ import {
   getAddressKey,
   getGlobalAdapter,
   isNativeToken,
+  isWrappedNativeToken,
   setGlobalAdapter,
   SignerLike,
 } from '@cowprotocol/sdk-common'
@@ -59,6 +60,9 @@ export const ACROSS_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, o
 
 // We need to review if we should set an additional slippage tolerance, for now assuming the quote gives you the exact price of bridging and no further slippage is needed
 const SLIPPAGE_TOLERANCE_BPS = 0
+
+// Currently, Across provider is only involved to cross-chains swaps via EOA
+const isTraderEOA = true
 
 export interface AcrossBridgeProviderOptions {
   // API options
@@ -103,7 +107,13 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
   }
 
   async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
-    const tokens = Object.values((await this.getSupportedTokensState())[params.buyChainId] || {})
+    const tokens = Object.values((await this.getSupportedTokensState())[params.buyChainId] || {}).filter((token) => {
+      // WETH is not supported as destination token
+      // See https://docs.across.to/introduction/technical-faq#what-is-the-behavior-of-eth-weth-in-transfers
+      if (isTraderEOA && isWrappedNativeToken(token)) return false
+
+      return true
+    })
     const isRouteAvailable = tokens.length > 0
 
     return {
@@ -117,8 +127,6 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
       throw new BridgeProviderQuoteError(BridgeQuoteErrors.ONLY_SELL_ORDER_SUPPORTED, { kind: request.kind })
     }
 
-    // Currently, Across provider is only involved to cross-chains swaps via EOA
-    const isTraderEOA = true
     const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
 
     const supportedTokensState = await this.getSupportedTokensState()
@@ -142,7 +150,6 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
       ...(destinationToken ? { destinationToken: destinationToken } : null),
     })
 
-    // https://docs.across.to/introduction/technical-faq#what-is-the-behavior-of-eth-weth-in-transfers
     return routes.reduce<TokenInfo[]>((acc, route) => {
       // Across uses wrapped native token address for both native and wrapped tokens
       const intermediateToken = route.isNative
