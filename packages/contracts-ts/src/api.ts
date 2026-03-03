@@ -141,15 +141,9 @@ async function call<T>(
   apiKey?: string,
 ): Promise<T> {
   const url = `${baseUrl}/api/v1/${route}`
-  const headers: Record<string, string> = apiKey ? { 'X-API-Key': apiKey } : {}
-  if (init?.headers) {
-    if (init.headers instanceof Headers) {
-      ;(init.headers as Headers).forEach((v, k) => {
-        headers[k] = v
-      })
-    } else {
-      Object.assign(headers, init.headers as Record<string, string>)
-    }
+  const headers: Record<string, string> = {
+    ...((init?.headers as Record<string, string>) ?? {}),
+    ...(apiKey ? { 'X-API-Key': apiKey } : {}),
   }
   const response = await fetch(url, { ...init, headers })
   const body = await response.text()
