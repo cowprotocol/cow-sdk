@@ -1,11 +1,12 @@
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { EvmCall, TargetChainId } from '@cowprotocol/sdk-config'
-import { getGlobalAdapter } from '@cowprotocol/sdk-common'
+import { getGlobalAdapter, isNativeToken } from '@cowprotocol/sdk-common'
 
 import { ACROSS_SPOKE_POOL_PERIPHERY_CONTRACT_ADDRESSES, ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES } from './const/contracts'
 import { ACROSS_SPOKE_POOL_PERIPHERY_ABI } from './abi'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { QuoteBridgeRequest } from '../../types'
+import { mapNativeOrWrappedTokenAddress } from './util'
 
 const ERC20_APPROVE_ABI = [
   {
@@ -77,6 +78,11 @@ export function createAcrossDepositCall(params: {
   const { request, quote, cowShedSdk } = params
   const { sellTokenChainId, sellTokenAddress, buyTokenChainId, buyTokenAddress, account, receiver } = request
 
+  const sellTokenLike = { address: sellTokenAddress, chainId: sellTokenChainId }
+  const isSellTokenNative = isNativeToken(sellTokenLike)
+  const sellToken = mapNativeOrWrappedTokenAddress(sellTokenLike)
+  const buyToken = mapNativeOrWrappedTokenAddress({ address: buyTokenAddress, chainId: buyTokenChainId })
+
   const adapter = getGlobalAdapter()
 
   const spokePoolPeripheryAddress = getSpokePoolPeripheryAddress(sellTokenChainId)
@@ -98,8 +104,8 @@ export function createAcrossDepositCall(params: {
       recipient: ZERO_ADDRESS,
     },
     depositData: {
-      inputToken: sellTokenAddress,
-      outputToken: addressToBytes32(buyTokenAddress),
+      inputToken: sellToken,
+      outputToken: addressToBytes32(buyToken),
       outputAmount,
       depositor: cowShedAccount,
       recipient: addressToBytes32(receiver || account),
@@ -110,8 +116,8 @@ export function createAcrossDepositCall(params: {
       exclusivityParameter: Number(suggestedFees.exclusivityDeadline),
       message: getGlobalAdapter().utils.encodeAbi(['string'], [quote.suggestedFees.id]),
     },
-    swapToken: sellTokenAddress,
-    exchange: sellTokenAddress,
+    swapToken: sellToken,
+    exchange: sellToken,
     transferType: TRANSFER_TYPE_APPROVAL,
     swapTokenAmount: inputAmount,
     minExpectedInputTokenAmount: inputAmount,
@@ -128,7 +134,7 @@ export function createAcrossDepositCall(params: {
   ]) as string
 
   const approveCall: EvmCall = {
-    to: sellTokenAddress,
+    to: sellToken,
     data: approveCallData,
     value: 0n,
   }
@@ -144,5 +150,5 @@ export function createAcrossDepositCall(params: {
     value: 0n,
   }
 
-  return [approveCall, swapAndBridgeCall]
+  return isSellTokenNative ? [swapAndBridgeCall] : [approveCall, swapAndBridgeCall]
 }
