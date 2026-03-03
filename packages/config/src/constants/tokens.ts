@@ -1,4 +1,4 @@
-import { SupportedChainId } from '../chains'
+import { AdditionalTargetChainId, SupportedChainId, TargetChainId } from '../chains'
 import { TokenInfo } from '../types/tokens'
 
 export const NATIVE_CURRENCY_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
@@ -94,8 +94,16 @@ export const WRAPPED_NATIVE_CURRENCIES: Record<SupportedChainId, TokenInfo> = {
   ),
 }
 
+export const ADDITIONAL_WRAPPED_NATIVE_CURRENCIES: Record<AdditionalTargetChainId, TokenInfo> = {
+  [AdditionalTargetChainId.OPTIMISM]: getWrappedTokenForChain(
+    AdditionalTargetChainId.OPTIMISM,
+    '0x4200000000000000000000000000000000000006',
+    wrappedNativeCurrencyEth,
+  ),
+}
+
 function getWrappedTokenForChain(
-  chainId: SupportedChainId,
+  chainId: TargetChainId,
   address: string,
   info: Pick<TokenInfo, 'decimals' | 'name' | 'symbol' | 'logoUrl'>,
 ): TokenInfo {

@@ -1,5 +1,11 @@
 import { Nullish } from '../types'
-import { getChainInfo, isSupportedChain, SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
+import {
+  ADDITIONAL_WRAPPED_NATIVE_CURRENCIES,
+  AdditionalTargetChainId,
+  getChainInfo,
+  SupportedChainId,
+  WRAPPED_NATIVE_CURRENCIES,
+} from '@cowprotocol/sdk-config'
 import { AddressKey, getAddressKey } from './address'
 
 interface TokenLike {
@@ -33,13 +39,15 @@ export function areAddressesEqual(a: Nullish<string>, b: Nullish<string>): boole
 }
 
 export function isNativeToken(token: TokenLike): boolean {
-  if (isSupportedChain(token.chainId)) {
-    return areAddressesEqual(getChainInfo(token.chainId)?.nativeCurrency.address, token.address)
-  }
-
-  return false
+  return areAddressesEqual(getChainInfo(token.chainId)?.nativeCurrency.address, token.address)
 }
 
 export function isWrappedNativeToken(token: TokenLike): boolean {
-  return areAddressesEqual(WRAPPED_NATIVE_CURRENCIES[token.chainId as SupportedChainId]?.address, token.address)
+  return (
+    areAddressesEqual(WRAPPED_NATIVE_CURRENCIES[token.chainId as SupportedChainId]?.address, token.address) ||
+    areAddressesEqual(
+      ADDITIONAL_WRAPPED_NATIVE_CURRENCIES[token.chainId as AdditionalTargetChainId]?.address,
+      token.address,
+    )
+  )
 }

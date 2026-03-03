@@ -26,7 +26,14 @@ import { SuggestedFeesResponse } from './types'
 import { getDepositParams } from './getDepositParams'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
-import { AbstractProviderAdapter, getGlobalAdapter, setGlobalAdapter, SignerLike } from '@cowprotocol/sdk-common'
+import {
+  AbstractProviderAdapter,
+  getGlobalAdapter,
+  isNativeToken,
+  isWrappedNativeToken,
+  setGlobalAdapter,
+  SignerLike,
+} from '@cowprotocol/sdk-common'
 import {
   arbitrumOne,
   base,
@@ -112,31 +119,28 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
 
     const supportedTokensState = await this.getSupportedTokensState()
-    const buyTokenAddressLower = buyTokenAddress.toLowerCase()
 
     const sourceTokens = supportedTokensState[sellTokenChainId]
-    const targetTokens = supportedTokensState[buyTokenChainId]
 
-    // Find the token symbol for the target token
-    const targetTokenSymbol = targetTokens && targetTokens[buyTokenAddressLower]?.symbol?.toLowerCase()
-    if (!targetTokenSymbol) return []
+    const buyToken = { address: buyTokenAddress, chainId: buyTokenChainId }
+    const isBuyTokenNative = isNativeToken(buyToken)
+    const isBuyTokenWrappedNative = isWrappedNativeToken(buyToken)
 
-    // Normalize token symbols by removing chain suffixes (e.g., "USDT-BNB" -> "USDT")
-    // This is needed because Across uses chain-specific suffixes for assets with different decimals between chains
-    const normalizedTargetSymbol = this.normalizeTokenSymbol(targetTokenSymbol)
-
-    // Use the tokenSymbol to find the outputToken in the target chain
+    /**
+     * It's not possible to mix NATIVE and WRAPPED tokens in a single deposit (e.g. ETH and WETH)
+     * Input and output must be the same type (ETH/ETH or WETH/WETH)
+     */
     return Object.values(sourceTokens || {}).filter((token) => {
-      const tokenSymbol = token.symbol?.toLowerCase()
-      if (!tokenSymbol) return false
-      return this.normalizeTokenSymbol(tokenSymbol) === normalizedTargetSymbol
-    })
-  }
+      const isTokenNative = isNativeToken(token)
+      const isTokenWrappedNative = isWrappedNativeToken(token)
 
-  private normalizeTokenSymbol(symbol: string): string {
-    // Remove chain-specific suffixes like "-BNB", "-ETH", etc.
-    // Pattern: "-" followed by capital letters at the end
-    return symbol.replace(/-[A-Z]+$/i, '')
+      // No ETH->WETH
+      if (isBuyTokenNative && isTokenWrappedNative) return false
+      // No WETH->ETH
+      if (isBuyTokenWrappedNative && isTokenNative) return false
+
+      return true
+    })
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<AcrossQuoteResult> {
