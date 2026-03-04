@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.9.0...sdk-config-v0.10.0) (2026-03-04)
+
+
+### ✨ Features
+
+* Add non-evm chains types & guards & address validators  ([#792](https://github.com/cowprotocol/cow-sdk/issues/792)) ([b4b6047](https://github.com/cowprotocol/cow-sdk/commit/b4b6047889190f668f6409aeee7079ba6095f9ae))
+
 ## [0.9.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.8.1...sdk-config-v0.9.0) (2026-03-04)
 
 
