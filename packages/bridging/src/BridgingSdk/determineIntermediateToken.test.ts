@@ -1,4 +1,4 @@
-import { NATIVE_CURRENCY_ADDRESS, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { EVM_NATIVE_CURRENCY_ADDRESS, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import { determineIntermediateToken } from './determineIntermediateToken'
 import { BridgeProviderQuoteError } from '../errors'
 
@@ -39,7 +39,7 @@ describe('determineIntermediateToken', () => {
 
   const nativeEth: TokenInfo = {
     chainId: SupportedChainId.MAINNET,
-    address: NATIVE_CURRENCY_ADDRESS,
+    address: EVM_NATIVE_CURRENCY_ADDRESS,
     decimals: 18,
     name: 'Ether',
     symbol: 'ETH',

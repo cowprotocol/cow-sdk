@@ -1,6 +1,7 @@
-import { ChainInfo, SupportedChainId } from '../types'
-import { NATIVE_CURRENCY_ADDRESS, nativeCurrencyTemplate, TOKEN_LIST_IMAGES_PATH } from '../../constants/tokens'
-import { RAW_CHAINS_FILES_PATH } from '../../constants/paths'
+import { EvmChainInfo, SupportedChainId } from '../types'
+import { nativeCurrencyTemplate } from '../../constants/nativeCurrencyTemplate'
+import { TOKEN_LIST_IMAGES_PATH, RAW_CHAINS_FILES_PATH } from '../../constants/paths'
+import { EVM_NATIVE_CURRENCY_ADDRESS } from '../../constants/addresses'
 
 const gnosisChainLogo = `${RAW_CHAINS_FILES_PATH}/images/gnosis-logo.svg`
 
@@ -9,7 +10,7 @@ const gnosisChainLogo = `${RAW_CHAINS_FILES_PATH}/images/gnosis-logo.svg`
  *
  * See also https://github.com/wevm/viem/blob/main/src/chains/definitions/gnosis.ts
  */
-export const gnosisChain: ChainInfo = {
+export const gnosisChain: EvmChainInfo = {
   id: SupportedChainId.GNOSIS_CHAIN,
   label: 'Gnosis',
   eip155Label: 'Gnosis',
@@ -18,7 +19,7 @@ export const gnosisChain: ChainInfo = {
     chainId: SupportedChainId.GNOSIS_CHAIN,
     name: 'xDAI',
     symbol: 'xDAI',
-    logoUrl: `${TOKEN_LIST_IMAGES_PATH}/100/${NATIVE_CURRENCY_ADDRESS.toLowerCase()}/logo.png`,
+    logoUrl: `${TOKEN_LIST_IMAGES_PATH}/100/${EVM_NATIVE_CURRENCY_ADDRESS.toLowerCase()}/logo.png`,
   },
   addressPrefix: 'gno',
   isTestnet: false,
