@@ -1,5 +1,5 @@
 import { NonEvmChainInfo, NonEvmChains } from '../types'
-import { RAW_CHAINS_FILES_PATH } from '../../constants'
+import { BTC_CURRENCY_ADDRESS, RAW_CHAINS_FILES_PATH } from '../../constants'
 
 const bitcoinLogo = `${RAW_CHAINS_FILES_PATH}/images/bitcoin-logo.svg`
 
@@ -9,6 +9,7 @@ export const bitcoin: NonEvmChainInfo = {
   logo: { light: bitcoinLogo, dark: bitcoinLogo },
   nativeCurrency: {
     chainId: NonEvmChains.BITCOIN,
+    address: BTC_CURRENCY_ADDRESS,
     name: 'Bitcoin',
     symbol: 'BTC',
     decimals: 8,

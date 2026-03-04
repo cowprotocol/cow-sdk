@@ -1,7 +1,7 @@
 import { EvmChainInfo, SupportedChainId } from '../types'
 import { nativeCurrencyTemplate } from '../../constants/nativeCurrencyTemplate'
 import { TOKEN_LIST_IMAGES_PATH, RAW_CHAINS_FILES_PATH } from '../../constants/paths'
-import { NATIVE_CURRENCY_ADDRESS } from '../../constants/addresses'
+import { EVM_NATIVE_CURRENCY_ADDRESS } from '../../constants/addresses'
 
 const gnosisChainLogo = `${RAW_CHAINS_FILES_PATH}/images/gnosis-logo.svg`
 
@@ -19,7 +19,7 @@ export const gnosisChain: EvmChainInfo = {
     chainId: SupportedChainId.GNOSIS_CHAIN,
     name: 'xDAI',
     symbol: 'xDAI',
-    logoUrl: `${TOKEN_LIST_IMAGES_PATH}/100/${NATIVE_CURRENCY_ADDRESS.toLowerCase()}/logo.png`,
+    logoUrl: `${TOKEN_LIST_IMAGES_PATH}/100/${EVM_NATIVE_CURRENCY_ADDRESS.toLowerCase()}/logo.png`,
   },
   addressPrefix: 'gno',
   isTestnet: false,

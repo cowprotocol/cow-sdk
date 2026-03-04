@@ -1,69 +1,100 @@
 import { TokenInfo } from '../types/tokens'
 
+
+// list of networks ids, it's necessary to define fields for a few different enums
+// ts doesn't allow narrowing types for enums:
+// export enum SupportedChainId {
+//   MAINNET = EvmChains.MAINNET,
+// }
+//
+// we can't use an object as const due to different behavior for:
+// export const SupportedChainId = {
+//   MAINNET: EvmChains.MAINNET,
+//   ... etc
+// } as const
+// and
+// export enum SupportedChainId {
+//   MAINNET = MAINNET_ID,
+//   ... etc
+// }
+// example:
+// let chainId = 1
+// chainId in SupportedChainId - will work differently for both
+// chainId in SupportedChainId (SupportedChainId as enum) - true
+// chainId in SupportedChainId (SupportedChainId as const) - false, due to there is no 1 as a key in the object
+//
+const MAINNET_ID = 1
+const BNB_ID = 56
+const GNOSIS_CHAIN_ID = 100
+const POLYGON_ID = 137
+const LENS_ID = 232
+const BASE_ID = 8453
+const PLASMA_ID = 9745
+const ARBITRUM_ONE_ID = 42161
+const AVALANCHE_ID = 43114
+const INK_ID = 57073
+const LINEA_ID = 59144
+const SEPOLIA_ID = 11155111
+const OPTIMISM_ID = 10
+// it's not a standard solution, we set up our specific id as an our internal convention
+const BITCOIN_ID = 1000000000
+const SOLANA_ID = 1000000001
+
 /**
  * All EVM chains supported by CoW Protocol or available for bridging
  * */
 export enum EvmChains {
-  MAINNET = 1,
-  BNB = 56,
-  GNOSIS_CHAIN = 100,
-  POLYGON = 137,
-  LENS = 232,
-  BASE = 8453,
-  PLASMA = 9745,
-  ARBITRUM_ONE = 42161,
-  AVALANCHE = 43114,
-  INK = 57073,
-  LINEA = 59144,
-  SEPOLIA = 11155111,
-  OPTIMISM = 10,
+  MAINNET = MAINNET_ID,
+  BNB = BNB_ID,
+  GNOSIS_CHAIN = GNOSIS_CHAIN_ID,
+  POLYGON = POLYGON_ID,
+  LENS = LENS_ID,
+  BASE = BASE_ID,
+  PLASMA = PLASMA_ID,
+  ARBITRUM_ONE = ARBITRUM_ONE_ID,
+  AVALANCHE = AVALANCHE_ID,
+  INK = INK_ID,
+  LINEA = LINEA_ID,
+  SEPOLIA = SEPOLIA_ID,
+  OPTIMISM = OPTIMISM_ID,
 }
 
 /**
-* All non-EVM available chains that are available for bridging only
-* */
+ * All non-EVM available chains that are available for bridging only
+ * */
 export enum NonEvmChains {
-  BITCOIN = 'bitcoin',
+  BITCOIN = BITCOIN_ID,
+  SOLANA = SOLANA_ID,
 }
 
 /**
- * Use this when you need to reference chain IDs like SupportedChainId.MAINNET
- * it's a union of all the EvmChains that supported directly by CoW Protocol.
+ * All EVM chains supported directly by CoW Protocol (where you can sell tokens from).
+ * Subset of EvmChains — excludes bridge-only chains like OPTIMISM.
  */
-export const SupportedChainId = {
-  MAINNET: EvmChains.MAINNET,
-  BNB: EvmChains.BNB,
-  GNOSIS_CHAIN: EvmChains.GNOSIS_CHAIN,
-  POLYGON: EvmChains.POLYGON,
-  LENS: EvmChains.LENS,
-  BASE: EvmChains.BASE,
-  PLASMA: EvmChains.PLASMA,
-  ARBITRUM_ONE: EvmChains.ARBITRUM_ONE,
-  AVALANCHE: EvmChains.AVALANCHE,
-  INK: EvmChains.INK,
-  LINEA: EvmChains.LINEA,
-  SEPOLIA: EvmChains.SEPOLIA,
-} as const
+export enum SupportedChainId {
+  MAINNET = MAINNET_ID,
+  BNB = BNB_ID,
+  GNOSIS_CHAIN = GNOSIS_CHAIN_ID,
+  POLYGON = POLYGON_ID,
+  LENS = LENS_ID,
+  BASE = BASE_ID,
+  PLASMA = PLASMA_ID,
+  ARBITRUM_ONE = ARBITRUM_ONE_ID,
+  AVALANCHE = AVALANCHE_ID,
+  INK = INK_ID,
+  LINEA = LINEA_ID,
+  SEPOLIA = SEPOLIA_ID,
+}
 
 /**
- * Supported chains and their `chainId` for the SDK.
- * A supported chain, is a chain where CoW Protocol is deployed, so you can sell tokens from there.
- *
+ * Chains where you can buy tokens using the bridge functionality.
+ * These chains are not supported by CoW Protocol directly.
  */
-export type SupportedChainId = (typeof SupportedChainId)[keyof typeof SupportedChainId]
-
-/**
- * Chains where you can buy tokens using the bridge functionality. These chains are not supported by CoW Protocol
- */
-export const AdditionalTargetChainId = {
-  OPTIMISM: EvmChains.OPTIMISM,
-  BITCOIN: NonEvmChains.BITCOIN,
-} as const
-
-/**
- * Chains where you can buy tokens using the bridge functionality. This enum contains chains that are not already included in the SupportedEvmChainId enum.
- */
-export type AdditionalTargetChainId = (typeof AdditionalTargetChainId)[keyof typeof AdditionalTargetChainId]
+export enum AdditionalTargetChainId {
+  OPTIMISM = OPTIMISM_ID,
+  BITCOIN = BITCOIN_ID,
+  SOLANA = SOLANA_ID,
+}
 
 /**
  * This enum contains all the supported chains and some additional ones supported by the different bridges.
@@ -72,13 +103,12 @@ export type TargetChainId = EvmChains | NonEvmChains;
 
 /**
  * The chain id of the chain.
- * Can be a number for EVM chains or a string for non-EVM chains (e.g., Bitcoin, Solana) in future.
  */
 export type ChainId = number | string
 
 export type HttpsString = `https://${string}`
 export type WssString = `wss://${string}`
-export type Address = `0x${string}`;
+export type Address = `0x${string}`
 
 export interface ThemedImage {
   light: string
@@ -122,6 +152,11 @@ type BaseChainInfo = {
    * See https://eips.ethereum.org/EIPS/eip-3770
    */
   readonly addressPrefix: string
+
+  /**
+   * Native currency of the chain (must have a non-empty address).
+   */
+  readonly nativeCurrency: TokenInfo
 
   /**
    * Whether the chain is a testnet.
@@ -180,17 +215,12 @@ export interface EvmChainInfo extends BaseChainInfo {
   /**
    * The chain id (must be a number for EVM chains).
    */
-  readonly id: EvmChains
+  readonly id: ChainId
 
   /**
    * EIP155 label of the chain. Field used for connecting to MetaMask.
    */
   readonly eip155Label: string
-
-  /**
-   * Native currency of the chain (must have a non-empty address).
-   */
-  readonly nativeCurrency: TokenInfo & { address: string }
 
   /**
    * Contracts of the chain.
@@ -217,14 +247,14 @@ export interface EvmChainInfo extends BaseChainInfo {
  */
 export interface NonEvmChainInfo extends BaseChainInfo {
   /**
-   * The chain id (must be a string for non-EVM chains).
+   * The chain id for non-EVM chains.
    */
-  readonly id: NonEvmChains
+  readonly id: ChainId
 
   /**
    * Native currency of the chain (address is empty string for non-EVM chains).
    */
-  readonly nativeCurrency: Omit<TokenInfo, 'address'>
+  readonly nativeCurrency: TokenInfo
 }
 
 /**

@@ -1,5 +1,43 @@
 # Changelog
 
+## [1.8.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.7.0...sdk-contracts-ts-v1.8.0) (2026-03-04)
+
+
+### ✨ Features
+
+* Add non-evm chains types & guards & address validators  ([#792](https://github.com/cowprotocol/cow-sdk/issues/792)) ([b4b6047](https://github.com/cowprotocol/cow-sdk/commit/b4b6047889190f668f6409aeee7079ba6095f9ae))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.7.0
+    * @cowprotocol/sdk-config bumped to 0.10.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.10
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.10
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.10
+
+## [1.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.6.1...sdk-contracts-ts-v1.7.0) (2026-03-04)
+
+
+### ✨ Features
+
+* add API endpoints for partners ([#809](https://github.com/cowprotocol/cow-sdk/issues/809)) ([59900e8](https://github.com/cowprotocol/cow-sdk/commit/59900e854a336e294ec881bd70bb13e579ff48ec))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.6.3
+    * @cowprotocol/sdk-config bumped to 0.9.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.9
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.9
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.9
+
 ## [1.6.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.6.0...sdk-contracts-ts-v1.6.1) (2026-02-20)
 
 

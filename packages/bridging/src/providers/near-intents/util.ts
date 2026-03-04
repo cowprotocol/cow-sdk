@@ -45,6 +45,10 @@ export const getTokenByAddressAndChainId = (
   targetTokenAddress: string,
   targetTokenChainId: ChainId,
 ): TokenResponse | undefined => {
+  // will handle non-EVM chains in the future
+  if (!isEvmChain(targetTokenChainId)) {
+    return undefined
+  }
   return tokens.find((token) => {
     const chainId = NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS[token.blockchain as NearBlockchainKey]
     if (!chainId) return false

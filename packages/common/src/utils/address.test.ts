@@ -1,4 +1,5 @@
-import { isEvmAddress, isBtcAddress, BtcAddressKey, EvmAddressKey } from './address'
+import { isEvmAddress, isBtcAddress, isSolanaAddress, BtcAddressKey, EvmAddressKey, SolAddressKey } from './address'
+import { SOL_NATIVE_CURRENCY_ADDRESS, BTC_CURRENCY_ADDRESS } from '@cowprotocol/sdk-config'
 
 describe('isEvmAddress', () => {
   describe('valid EVM addresses', () => {
@@ -163,6 +164,64 @@ describe('isBtcAddress', () => {
       // They should be considered different addresses
       expect(lower).not.toBe(upper)
       expect(lower).not.toBe(mixed)
+    })
+  })
+})
+
+describe('isSolanaAddress', () => {
+  describe('valid Solana addresses', () => {
+    it('should return true for SOL_NATIVE_CURRENCY_ADDRESS', () => {
+      expect(isSolanaAddress(SOL_NATIVE_CURRENCY_ADDRESS)).toBe(true)
+      const solKey: SolAddressKey = SOL_NATIVE_CURRENCY_ADDRESS
+      expect(solKey).toBe(SOL_NATIVE_CURRENCY_ADDRESS)
+    })
+
+    it('should return true for a standard 44-char wallet address', () => {
+      expect(isSolanaAddress('BYPsjxa3YuZESQz1dKuBw1QSFCSpecsm8nCQhY5xbU1Z')).toBe(true)
+    })
+
+    it('should return true for a token program address', () => {
+      expect(isSolanaAddress('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')).toBe(true)
+    })
+  })
+
+  describe('invalid Solana addresses', () => {
+    it('should return false for BTC_CURRENCY_ADDRESS', () => {
+      expect(isSolanaAddress(BTC_CURRENCY_ADDRESS)).toBe(false)
+    })
+
+    it('should return false for EVM address', () => {
+      expect(isSolanaAddress('0x742d35cc6634c0532925a3b844bc9e7595f0bebd')).toBe(false)
+    })
+
+    it('should return false for address that is too short', () => {
+      expect(isSolanaAddress('11111111111111111111111111111')).toBe(false) // 29 chars
+    })
+
+    it('should return false for address that is too long', () => {
+      expect(isSolanaAddress('BYPsjxa3YuZESQz1dKuBw1QSFCSpecsm8nCQhY5xbU1Za')).toBe(false) // 45 chars
+    })
+
+    it('should return false for address containing invalid Base58 chars (0, O, I, l)', () => {
+      expect(isSolanaAddress('0YPsjxa3YuZESQz1dKuBw1QSFCSpecsm8nCQhY5xbU1Z')).toBe(false) // contains 0
+      expect(isSolanaAddress('OYPsjxa3YuZESQz1dKuBw1QSFCSpecsm8nCQhY5xbU1Z')).toBe(false) // contains O
+      expect(isSolanaAddress('IYPsjxa3YuZESQz1dKuBw1QSFCSpecsm8nCQhY5xbU1Z')).toBe(false) // contains I
+      expect(isSolanaAddress('lYPsjxa3YuZESQz1dKuBw1QSFCSpecsm8nCQhY5xbU1Z')).toBe(false) // contains l
+    })
+
+    it('should return false for empty string', () => {
+      expect(isSolanaAddress('')).toBe(false)
+    })
+
+    it('should return false for non-string values', () => {
+      expect(isSolanaAddress(null as any)).toBe(false)
+      expect(isSolanaAddress(undefined as any)).toBe(false)
+      expect(isSolanaAddress(123 as any)).toBe(false)
+      expect(isSolanaAddress({} as any)).toBe(false)
+    })
+
+    it('should return false for BTC Bech32 address', () => {
+      expect(isSolanaAddress('bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4')).toBe(false)
     })
   })
 })

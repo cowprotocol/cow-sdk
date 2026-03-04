@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.6.3...sdk-common-v0.7.0) (2026-03-04)
+
+
+### ✨ Features
+
+* Add non-evm chains types & guards & address validators  ([#792](https://github.com/cowprotocol/cow-sdk/issues/792)) ([b4b6047](https://github.com/cowprotocol/cow-sdk/commit/b4b6047889190f668f6409aeee7079ba6095f9ae))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.10.0
+
+## [0.6.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.6.2...sdk-common-v0.6.3) (2026-03-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.9.0
+
 ## [0.6.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.6.1...sdk-common-v0.6.2) (2026-02-20)
 
 

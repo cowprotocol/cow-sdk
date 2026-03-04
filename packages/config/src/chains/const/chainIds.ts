@@ -13,6 +13,7 @@ import { linea } from '../details/linea'
 import { plasma } from '../details/plasma'
 import { ink } from '../details/ink'
 import { bitcoin } from '../details/bitcoin'
+import { solana } from '../details/solana'
 
 /**
  * Details of all supported chains.
@@ -64,6 +65,7 @@ export const TRADABLE_SUPPORTED_CHAIN_IDS: SupportedChainId[] = TRADABLE_SUPPORT
 export const ADDITIONAL_TARGET_CHAINS_MAP: Record<AdditionalTargetChainId, ChainInfo> = {
   [AdditionalTargetChainId.OPTIMISM]: optimism,
   [AdditionalTargetChainId.BITCOIN]: bitcoin,
+  [AdditionalTargetChainId.SOLANA]: solana,
 }
 
 /**

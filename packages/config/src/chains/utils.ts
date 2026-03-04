@@ -18,7 +18,7 @@ import {
  * @returns True if the chain ID is in the EvmChains enum, false otherwise
  */
 export function isEvmChain(chainId: ChainId): chainId is EvmChains {
-  return typeof chainId === 'number' && chainId in EvmChains;
+  return chainId in EvmChains;
 }
 
 /**
@@ -27,9 +27,8 @@ export function isEvmChain(chainId: ChainId): chainId is EvmChains {
  * @param chainId - The chain ID to check
  * @returns True if the chain ID is chainId is Non EVM chain (EVM chain), false otherwise
  */
-export function isNonEvmChain(chainId : ChainId): chainId is NonEvmChains {
-  // todo need to adjust due to ts handling string literals in enums
-  return typeof chainId === 'string' && Object.values(NonEvmChains).includes(chainId as NonEvmChains)
+export function isNonEvmChain(chainId: ChainId): chainId is NonEvmChains {
+  return chainId in NonEvmChains
 }
 
 /**
@@ -83,14 +82,14 @@ export function getChainInfo(chainId: ChainId): ChainInfo | undefined {
  * Check if the chain is supported by CoW Protocol.
  */
 export function isSupportedChain(chainId: ChainId): chainId is SupportedChainId {
-  return isEvmChain(chainId) && chainId in ALL_SUPPORTED_CHAINS_MAP
+  return chainId in SupportedChainId
 }
 
 /**
  * Check if the chain is supported by the bridge providers.
  */
 export function isAdditionalTargetChain(chainId: ChainId): chainId is AdditionalTargetChainId {
-  return Object.hasOwn(ADDITIONAL_TARGET_CHAINS_MAP, chainId)
+  return chainId in AdditionalTargetChainId
 }
 
 /**
