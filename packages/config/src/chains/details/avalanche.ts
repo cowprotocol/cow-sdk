@@ -1,12 +1,12 @@
-import { nativeCurrencyTemplate } from '../../constants/tokens'
-import { ChainInfo, SupportedChainId } from '../types'
+import { nativeCurrencyTemplate } from '../../constants/nativeCurrencyTemplate'
+import { EvmChainInfo, SupportedChainId } from '../types'
 import { RAW_CHAINS_FILES_PATH } from '../../constants/paths'
 
 // TODO: this is the AVAX token logo, we should add Avalanche symbol logo as well
 const avaxLogo = `${RAW_CHAINS_FILES_PATH}/images/avax-logo.svg`
 
 // See https://github.com/wevm/viem/blob/main/src/chains/definitions/avalanche.ts
-export const avalanche: ChainInfo = {
+export const avalanche: EvmChainInfo = {
   id: SupportedChainId.AVALANCHE,
   label: 'Avalanche',
   eip155Label: 'Avalanche C-Chain',

@@ -30,6 +30,8 @@ export const ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES: Record<TargetChainId, string 
   // TODO: This first integration is a draft, some of this chains might be supported, so we will need to update here as we iterate on the provider
   [SupportedChainId.GNOSIS_CHAIN]: undefined,
   [SupportedChainId.AVALANCHE]: undefined,
+  [AdditionalTargetChainId.BITCOIN]: undefined,
+  [AdditionalTargetChainId.SOLANA]: undefined,
 }
 
 export const ACROSS_SPOKE_POOL_PERIPHERY_CONTRACT_ADDRESSES: Record<TargetChainId, string | undefined> = {
