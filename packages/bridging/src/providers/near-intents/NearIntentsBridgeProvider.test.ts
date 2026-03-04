@@ -1,5 +1,10 @@
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import {
+  BTC_CURRENCY_ADDRESS,
+  NonEvmChains,
+  SOL_NATIVE_CURRENCY_ADDRESS,
+  SupportedChainId,
+} from '@cowprotocol/sdk-config'
 import { GetExecutionStatusResponse, QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 
 import { createAdapters } from '../../../tests/setup'
@@ -385,6 +390,194 @@ adapterNames.forEach((adapterName) => {
         expect(result?.quoteHash.length).toBeGreaterThan(0)
         expect(result?.address).toBeDefined()
         expect(result?.address.length).toBeGreaterThan(0)
+      })
+
+      it('should return quote when destination asset is bitcoin', async () => {
+        const api = new NearIntentsApi()
+        const sellTokenAddress = '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'
+        const buyTokenAddress = BTC_CURRENCY_ADDRESS
+        const testQuoteHash = '0xtestBtcQuoteHash123'
+
+        const mockQuoteResponse: QuoteResponse = {
+          quote: {
+            amountIn: '1000000',
+            amountInFormatted: '1.0',
+            amountInUsd: '1.0',
+            minAmountIn: '1000000',
+            amountOut: '10000',
+            amountOutFormatted: '0.0001',
+            amountOutUsd: '1.0',
+            minAmountOut: '9900',
+            timeEstimate: 600,
+            deadline: '2025-09-05T12:10:38.605Z',
+            timeWhenInactive: '2025-09-05T12:10:38.605Z',
+            depositAddress: '0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e',
+          },
+          quoteRequest: {
+            dry: false,
+            swapType: QuoteRequest.swapType.EXACT_INPUT,
+            depositMode: QuoteRequest.depositMode.SIMPLE,
+            slippageTolerance: 100,
+            originAsset: 'nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near',
+            depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
+            destinationAsset: 'nep141:btc.omft.near',
+            amount: '1000000',
+            refundTo: '0x0000000000000000000000000000000000000000',
+            refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
+            recipient: 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4',
+            recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
+            deadline: '2025-09-05T12:10:38.605Z',
+          },
+          signature: 'ed25519:testBtcSignature',
+          timestamp: '2025-09-05T12:00:38.695Z',
+        }
+
+        jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
+        jest.spyOn(api, 'getTokens').mockResolvedValue([
+          {
+            assetId: 'nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near',
+            decimals: 6,
+            blockchain: TokenResponse.blockchain.BASE,
+            symbol: 'USDC',
+            price: 1,
+            priceUpdatedAt: '2025-09-05T12:00:38.695Z',
+            contractAddress: sellTokenAddress,
+          },
+          {
+            assetId: 'nep141:btc.omft.near',
+            decimals: 8,
+            blockchain: TokenResponse.blockchain.BTC,
+            symbol: 'BTC',
+            price: 60000,
+            priceUpdatedAt: '2025-09-05T12:00:38.695Z',
+          },
+        ])
+        jest.spyOn(api, 'getAttestation').mockResolvedValue({
+          version: 1,
+          signature:
+            '0x66edc32e2ab001213321ab7d959a2207fcef5190cc9abb6da5b0d2a8a9af2d4d2b0700e2c317c4106f337fd934fbbb0bf62efc8811a78603b33a8265d3b8f8cb1c',
+        })
+        provider.setApi(api)
+
+        jest.spyOn(provider, 'recoverDepositAddress').mockResolvedValue({
+          address: ATTESTATOR_ADDRESS,
+          quoteHash: testQuoteHash,
+          stringifiedQuote: '',
+          attestationSignature: '',
+        })
+
+        const quote = await provider.getQuote({
+          kind: OrderKind.SELL,
+          sellTokenChainId: SupportedChainId.BASE,
+          sellTokenAddress,
+          sellTokenDecimals: 6,
+          buyTokenChainId: NonEvmChains.BITCOIN as number,
+          buyTokenAddress,
+          buyTokenDecimals: 8,
+          amount: 1000000n,
+          account: '0x0000000000000000000000000000000000000000',
+          appCode: 'test',
+          signer: '0x0000000000000000000000000000000000000000',
+        })
+
+        expect(quote.id).toBe(testQuoteHash)
+        expect(quote.signature).toBe('ed25519:testBtcSignature')
+        expect(quote.depositAddress).toBe('0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e')
+        expect(quote.amountsAndCosts.beforeFee.buyAmount).toBe(10000n)
+      })
+
+      it('should return quote when destination asset is solana', async () => {
+        const api = new NearIntentsApi()
+        const sellTokenAddress = '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'
+        const buyTokenAddress = SOL_NATIVE_CURRENCY_ADDRESS
+        const testQuoteHash = '0xtestSolQuoteHash123'
+
+        const mockQuoteResponse: QuoteResponse = {
+          quote: {
+            amountIn: '1000000',
+            amountInFormatted: '1.0',
+            amountInUsd: '1.0',
+            minAmountIn: '1000000',
+            amountOut: '100000000',
+            amountOutFormatted: '1.0',
+            amountOutUsd: '1.0',
+            minAmountOut: '99000000',
+            timeEstimate: 60,
+            deadline: '2025-09-05T12:10:38.605Z',
+            timeWhenInactive: '2025-09-05T12:10:38.605Z',
+            depositAddress: '0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e',
+          },
+          quoteRequest: {
+            dry: false,
+            swapType: QuoteRequest.swapType.EXACT_INPUT,
+            depositMode: QuoteRequest.depositMode.SIMPLE,
+            slippageTolerance: 100,
+            originAsset: 'nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near',
+            depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
+            destinationAsset: 'nep141:sol.omft.near',
+            amount: '1000000',
+            refundTo: '0x0000000000000000000000000000000000000000',
+            refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
+            recipient: 'So11111111111111111111111111111111111111112',
+            recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
+            deadline: '2025-09-05T12:10:38.605Z',
+          },
+          signature: 'ed25519:testSolSignature',
+          timestamp: '2025-09-05T12:00:38.695Z',
+        }
+
+        jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
+        jest.spyOn(api, 'getTokens').mockResolvedValue([
+          {
+            assetId: 'nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near',
+            decimals: 6,
+            blockchain: TokenResponse.blockchain.BASE,
+            symbol: 'USDC',
+            price: 1,
+            priceUpdatedAt: '2025-09-05T12:00:38.695Z',
+            contractAddress: sellTokenAddress,
+          },
+          {
+            assetId: 'nep141:sol.omft.near',
+            decimals: 9,
+            blockchain: TokenResponse.blockchain.SOL,
+            symbol: 'SOL',
+            price: 150,
+            priceUpdatedAt: '2025-09-05T12:00:38.695Z',
+          },
+        ])
+        jest.spyOn(api, 'getAttestation').mockResolvedValue({
+          version: 1,
+          signature:
+            '0x66edc32e2ab001213321ab7d959a2207fcef5190cc9abb6da5b0d2a8a9af2d4d2b0700e2c317c4106f337fd934fbbb0bf62efc8811a78603b33a8265d3b8f8cb1c',
+        })
+        provider.setApi(api)
+
+        jest.spyOn(provider, 'recoverDepositAddress').mockResolvedValue({
+          address: ATTESTATOR_ADDRESS,
+          quoteHash: testQuoteHash,
+          stringifiedQuote: '',
+          attestationSignature: '',
+        })
+
+        const quote = await provider.getQuote({
+          kind: OrderKind.SELL,
+          sellTokenChainId: SupportedChainId.BASE,
+          sellTokenAddress,
+          sellTokenDecimals: 6,
+          buyTokenChainId: NonEvmChains.SOLANA as number,
+          buyTokenAddress,
+          buyTokenDecimals: 9,
+          amount: 1000000n,
+          account: '0x0000000000000000000000000000000000000000',
+          appCode: 'test',
+          signer: '0x0000000000000000000000000000000000000000',
+        })
+
+        expect(quote.id).toBe(testQuoteHash)
+        expect(quote.signature).toBe('ed25519:testSolSignature')
+        expect(quote.depositAddress).toBe('0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e')
+        expect(quote.amountsAndCosts.beforeFee.buyAmount).toBe(100000000n)
       })
     })
   })

@@ -1,7 +1,14 @@
 import stringify from 'json-stable-stringify'
 import type { Quote, QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 import { getGlobalAdapter } from '@cowprotocol/sdk-common'
-import { ETH_ADDRESS, TokenInfo, ChainId, isEvmChain } from '@cowprotocol/sdk-config'
+import {
+  BTC_CURRENCY_ADDRESS,
+  ETH_ADDRESS,
+  SOL_NATIVE_CURRENCY_ADDRESS,
+  TokenInfo,
+  ChainId,
+  isEvmChain,
+} from '@cowprotocol/sdk-config'
 import type { Hex } from 'viem'
 
 import { NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS } from './const'
@@ -45,18 +52,27 @@ export const getTokenByAddressAndChainId = (
   targetTokenAddress: string,
   targetTokenChainId: ChainId,
 ): TokenResponse | undefined => {
-  // will handle non-EVM chains in the future
-  if (!isEvmChain(targetTokenChainId)) {
-    return undefined
-  }
   return tokens.find((token) => {
     const chainId = NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS[token.blockchain as NearBlockchainKey]
     if (!chainId) return false
-    if (targetTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase()) {
-      return chainId === targetTokenChainId && !token.contractAddress
+    if (chainId !== targetTokenChainId) return false
+
+    // For non-EVM chains, match native tokens (no contractAddress) against known native sentinels,
+    // or match SPL/other tokens by contractAddress directly
+    if (!isEvmChain(targetTokenChainId)) {
+      if (!token.contractAddress) {
+        return targetTokenAddress === BTC_CURRENCY_ADDRESS || targetTokenAddress === SOL_NATIVE_CURRENCY_ADDRESS
+      }
+      return token.contractAddress.toLowerCase() === targetTokenAddress.toLowerCase()
     }
+
+    // Match native/unwrapped EVM tokens (no contractAddress) via ETH_ADDRESS sentinel
+    if (targetTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase()) {
+      return !token.contractAddress
+    }
+
     const tokenAddress = token.contractAddress || ETH_ADDRESS
-    return tokenAddress?.toLowerCase() === targetTokenAddress.toLowerCase() && chainId === targetTokenChainId
+    return tokenAddress?.toLowerCase() === targetTokenAddress.toLowerCase()
   })
 }
 
