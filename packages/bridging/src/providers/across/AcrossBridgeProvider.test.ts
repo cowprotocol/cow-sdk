@@ -12,7 +12,7 @@ import { SuggestedFeesResponse } from './types'
 import { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { createAdapters } from '../../../tests/setup'
-import { DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION } from '../../const'
+import { DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION, DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION } from '../../const'
 import stringify from 'json-stable-stringify'
 
 // Mock AcrossApi
@@ -262,7 +262,7 @@ adapterNames.forEach((adapterName) => {
 
         const gasLimit = await provider.getGasLimitEstimationForHook(request)
 
-        expect(gasLimit).toEqual(DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION)
+        expect(gasLimit).toEqual(DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION + DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION)
       })
     })
   })

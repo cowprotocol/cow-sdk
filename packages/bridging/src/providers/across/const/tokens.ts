@@ -45,6 +45,7 @@ const ACROSS_CHAIN_CONFIGS: AcrossChainConfig[] = [
       usdc: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
       weth: '0x4200000000000000000000000000000000000006',
       dai: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb',
+      usdt: '0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2',
     },
   },
   {
@@ -57,6 +58,21 @@ const ACROSS_CHAIN_CONFIGS: AcrossChainConfig[] = [
       usdt: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
     },
   },
+  {
+    chainId: SupportedChainId.BNB,
+    tokens: {
+      usdt: '0x55d398326f99059fF775485246999027B3197955',
+      usdc: '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
+      weth: '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
+    },
+  },
+  {
+    chainId: SupportedChainId.LENS,
+    tokens: {
+      usdc: '0x88F08E304EC4f90D644Cec3Fb69b8aD414acf884',
+      weth: '0xE5ecd226b3032910CEaa43ba92EE8232f8237553',
+    },
+  },
 ]
 
 export const ACROSS_TOKEN_MAPPING: Partial<Record<TargetChainId, AcrossChainConfig>> = ACROSS_CHAIN_CONFIGS.reduce(
@@ -64,5 +80,5 @@ export const ACROSS_TOKEN_MAPPING: Partial<Record<TargetChainId, AcrossChainConf
     acc[config.chainId] = config
     return acc
   },
-  {} as Partial<Record<TargetChainId, AcrossChainConfig>>,
+  {} as Record<number, AcrossChainConfig>,
 )
