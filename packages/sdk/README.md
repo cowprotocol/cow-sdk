@@ -278,6 +278,23 @@ await sdk.getQuote(parameters, {
 > **Tip:** Use `utmContent` for graffiti without affecting your `appCode`. The `appCode` parameter tracks your integration on [CoW Protocol's Dune dashboards](https://dune.com/cowprotocol/cowswap), while `utmContent` is available for custom identifiers or experimentation - all while attributing your volume to SDK integrators' collective impact.
 
 
+## Partner API
+
+Partners can use authenticated API access with higher rate limits via the Partner API gateway. Pass your API key when creating an `OrderBookApi` instance:
+
+```typescript
+import { OrderBookApi, SupportedChainId } from '@cowprotocol/cow-sdk'
+
+const orderBookApi = new OrderBookApi({
+  chainId: SupportedChainId.MAINNET,
+  apiKey: 'your-partner-api-key',
+})
+```
+
+By default, the SDK routes requests through `partners.cow.fi` (prod) or `partners.barn.cow.fi` (staging) and includes the `X-API-Key` header. If you provide custom `baseUrls`, those take precedence over the default partner hosts, but the `X-API-Key` header is still sent with every request.
+
+See the [OrderBookApi documentation](https://github.com/cowprotocol/cow-sdk/tree/main/packages/order-book/README.md#partner-api-authenticated-access) for more details, including usage with the Trading SDK.
+
 ## Adapters
 
 The CoW SDK supports multiple blockchain adapters to work with different Web3 libraries. You need to install and configure one of the following adapters:
