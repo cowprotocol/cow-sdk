@@ -579,6 +579,42 @@ adapterNames.forEach((adapterName) => {
         expect(quote.depositAddress).toBe('0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e')
         expect(quote.amountsAndCosts.beforeFee.buyAmount).toBe(100000000n)
       })
+
+      it('should throw NO_ROUTES when sellTokenAddress is BTC_CURRENCY_ADDRESS', async () => {
+        await expect(
+          provider.getQuote({
+            kind: OrderKind.SELL,
+            sellTokenChainId: SupportedChainId.BASE,
+            sellTokenAddress: BTC_CURRENCY_ADDRESS,
+            sellTokenDecimals: 8,
+            buyTokenChainId: SupportedChainId.BASE,
+            buyTokenAddress: '0x4200000000000000000000000000000000000006',
+            buyTokenDecimals: 18,
+            amount: 1000000n,
+            account: '0x0000000000000000000000000000000000000000',
+            appCode: 'test',
+            signer: '0x0000000000000000000000000000000000000000',
+          }),
+        ).rejects.toThrow('NO_ROUTES')
+      })
+
+      it('should throw NO_ROUTES when sellTokenAddress is SOL_NATIVE_CURRENCY_ADDRESS', async () => {
+        await expect(
+          provider.getQuote({
+            kind: OrderKind.SELL,
+            sellTokenChainId: SupportedChainId.BASE,
+            sellTokenAddress: SOL_NATIVE_CURRENCY_ADDRESS,
+            sellTokenDecimals: 9,
+            buyTokenChainId: SupportedChainId.BASE,
+            buyTokenAddress: '0x4200000000000000000000000000000000000006',
+            buyTokenDecimals: 18,
+            amount: 1000000n,
+            account: '0x0000000000000000000000000000000000000000',
+            appCode: 'test',
+            signer: '0x0000000000000000000000000000000000000000',
+          }),
+        ).rejects.toThrow('NO_ROUTES')
+      })
     })
   })
 })
