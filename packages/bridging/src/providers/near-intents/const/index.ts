@@ -9,7 +9,8 @@ import {
   polygon,
   plasma,
   bitcoin,
-  type TargetChainId,
+  solana,
+  ChainId,
 } from '@cowprotocol/sdk-config'
 
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from '../../../const'
@@ -29,9 +30,21 @@ export const NEAR_INTENTS_SUPPORTED_NETWORKS = [
   polygon,
   plasma,
   bitcoin,
+  solana,
 ]
 
-export type NearBlockchainKey = 'arb' | 'avax' | 'base' | 'bsc' | 'eth' | 'gnosis' | 'op' | 'pol' | 'plasma' | 'btc'
+export type NearBlockchainKey =
+  | 'arb'
+  | 'avax'
+  | 'base'
+  | 'bsc'
+  | 'eth'
+  | 'gnosis'
+  | 'op'
+  | 'pol'
+  | 'plasma'
+  | 'btc'
+  | 'sol'
 
 export const NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS = {
   arb: arbitrumOne.id,
@@ -44,7 +57,8 @@ export const NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS = {
   pol: polygon.id,
   plasma: plasma.id,
   btc: bitcoin.id,
-} as const satisfies Record<NearBlockchainKey, TargetChainId>
+  sol: solana.id,
+} as const satisfies Record<NearBlockchainKey, ChainId>
 
 export const NEAR_INTENTS_STATUS_TO_COW_STATUS: Record<string, BridgeStatus> = {
   KNOWN_DEPOSIT_TX: BridgeStatus.IN_PROGRESS,
