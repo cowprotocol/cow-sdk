@@ -74,9 +74,10 @@ function toAmountsAndCosts(
   const { amount, sellTokenDecimals, buyTokenDecimals } = request
 
   // Get the amounts before fees
-  const sellAmountBeforeFeeBig = getBigNumber(amount, sellTokenDecimals)
-  const sellAmountBeforeFee = sellAmountBeforeFeeBig.big
-  const buyAmountBeforeFee = getBigNumber(sellAmountBeforeFeeBig.num, buyTokenDecimals).big // Sell and buy token should be the same asset for current implementation, but technically they can have different decimals
+  const sellAmountBeforeFee = BigInt(amount)
+  // Sell and buy token should be the same asset for current implementation, but technically they can have different decimals
+  const buyAmountBeforeFee = (sellAmountBeforeFee * 10n ** BigInt(buyTokenDecimals)) / 10n ** BigInt(sellTokenDecimals)
+
 
   // Apply the fee to the buy amount (sell amount doesn't change)
   const totalRelayerFeePct = BigInt(suggestedFees.totalRelayFee.pct)
