@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.8.1...sdk-config-v0.9.0) (2026-03-04)
+
+
+### ✨ Features
+
+* add API endpoints for partners ([#809](https://github.com/cowprotocol/cow-sdk/issues/809)) ([59900e8](https://github.com/cowprotocol/cow-sdk/commit/59900e854a336e294ec881bd70bb13e579ff48ec))
+
 ## [0.8.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.8.0...sdk-config-v0.8.1) (2026-02-20)
 
 
