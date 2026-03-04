@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.7](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v0.3.6...sdk-subgraph-v0.3.7) (2026-03-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.6.3
+    * @cowprotocol/sdk-config bumped to 0.9.0
+
 ## [0.3.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v0.3.5...sdk-subgraph-v0.3.6) (2026-02-20)
 
 
