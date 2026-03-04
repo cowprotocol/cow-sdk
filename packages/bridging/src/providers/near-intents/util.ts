@@ -27,7 +27,13 @@ export const calculateDeadline = (seconds: number) => {
 export const adaptToken = (token: TokenResponse): TokenInfo | null => {
   const chainId = NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS[token.blockchain as NearBlockchainKey]
   if (!chainId) return null
-  const tokenAddress = token.contractAddress || ETH_ADDRESS
+  const tokenAddress =
+    token.contractAddress ??
+    (chainId === NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS.btc
+      ? BTC_CURRENCY_ADDRESS
+      : chainId === NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS.sol
+        ? SOL_NATIVE_CURRENCY_ADDRESS
+        : ETH_ADDRESS)
   if (!tokenAddress) return null
 
   return {
