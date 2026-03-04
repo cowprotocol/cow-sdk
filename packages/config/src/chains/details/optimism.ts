@@ -1,11 +1,11 @@
-import { nativeCurrencyTemplate } from '../../constants/tokens'
-import { ChainInfo } from '../types'
+import { nativeCurrencyTemplate } from '../../constants/nativeCurrencyTemplate'
+import { EvmChainInfo } from '../types'
 import { RAW_CHAINS_FILES_PATH } from '../../constants/paths'
 
 const optimismLogo = `${RAW_CHAINS_FILES_PATH}/images/optimism-logo.svg`
 
 // See https://github.com/wevm/viem/blob/main/src/chains/definitions/optimism.ts
-export const optimism: ChainInfo = {
+export const optimism: EvmChainInfo = {
   id: 10,
   label: 'Optimism',
   eip155Label: 'OP Mainnet',

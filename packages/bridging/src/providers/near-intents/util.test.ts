@@ -1,4 +1,4 @@
-import { ETH_ADDRESS, NATIVE_CURRENCY_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
+import { ETH_ADDRESS, EVM_NATIVE_CURRENCY_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
 import { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 
 import { adaptToken, getTokenByAddressAndChainId } from './util'
@@ -18,7 +18,7 @@ describe('Near Intents Utils', () => {
       expect(adaptToken(tokenResponse)).toStrictEqual({
         chainId: SupportedChainId.MAINNET,
         decimals: 18,
-        address: NATIVE_CURRENCY_ADDRESS,
+        address: EVM_NATIVE_CURRENCY_ADDRESS,
         name: 'ETH',
         symbol: 'ETH',
       })

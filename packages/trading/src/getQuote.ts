@@ -213,7 +213,7 @@ export async function getQuote(
   const { quote, orderBookApi, tradeParameters, slippageBps, suggestedSlippageBps, appDataInfo, isEthFlow } =
     await getQuoteRaw(_tradeParameters, trader, advancedSettings, _orderBookApi)
 
-  const { partnerFee, sellTokenDecimals, buyTokenDecimals } = tradeParameters
+  const { partnerFee } = tradeParameters
   const { chainId, account: from } = trader
 
   const amountsAndCosts = getQuoteAmountsAndCosts({
@@ -221,8 +221,6 @@ export async function getQuote(
     slippagePercentBps: slippageBps,
     partnerFeeBps: getPartnerFeeBps(partnerFee),
     protocolFeeBps: quote.protocolFeeBps ? Number(quote.protocolFeeBps) : undefined,
-    sellDecimals: sellTokenDecimals,
-    buyDecimals: buyTokenDecimals,
   })
 
   const orderToSign = getOrderToSign(
@@ -263,6 +261,12 @@ export async function getTrader(swapParameters: SwapParameters): Promise<QuoterP
     account,
   }
 }
+
+/**
+ * Gets a quote without requiring a signer.
+ * Alias for {@link getQuote} — provided for discoverability alongside `getQuoteWithSigner`.
+ */
+export { getQuote as getQuoteWithoutSigner }
 
 export async function getQuoteWithSigner(
   swapParameters: SwapParameters,
