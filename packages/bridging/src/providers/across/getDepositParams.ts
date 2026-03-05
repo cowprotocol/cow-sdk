@@ -3,7 +3,7 @@ import { log, TransactionReceipt, getGlobalAdapter } from '@cowprotocol/sdk-comm
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { cowAppDataLatestScheme } from '@cowprotocol/sdk-app-data'
 
-import { getAcrossDepositEvents } from './util'
+import { getAcrossDepositEvents, mapNativeOrWrappedTokenAddress } from './util'
 import { BridgingDepositParams } from '../../types'
 
 export async function getDepositParams(
@@ -38,9 +38,14 @@ export async function getDepositParams(
     return null
   }
 
+  const destinationChainId = parseInt(depositEvent.destinationChainId.toString())
+
   return {
     inputTokenAddress: depositEvent.inputToken,
-    outputTokenAddress: depositEvent.outputToken,
+    outputTokenAddress: mapNativeOrWrappedTokenAddress({
+      address: depositEvent.outputToken,
+      chainId: destinationChainId,
+    }),
     inputAmount: BigInt(depositEvent.inputAmount.toString()),
     outputAmount: BigInt(depositEvent.outputAmount.toString()),
     owner: depositEvent.depositor,
@@ -48,7 +53,7 @@ export async function getDepositParams(
     fillDeadline: parseInt(depositEvent.fillDeadline.toString()),
     recipient: depositEvent.recipient,
     sourceChainId: chainId,
-    destinationChainId: parseInt(depositEvent.destinationChainId.toString()),
+    destinationChainId,
     bridgingId: depositEvent.depositId.toString(),
   }
 }
