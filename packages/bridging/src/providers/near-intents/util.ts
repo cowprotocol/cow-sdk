@@ -1,6 +1,6 @@
 import stringify from 'json-stable-stringify'
 import type { Quote, QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
-import { getGlobalAdapter } from '@cowprotocol/sdk-common'
+import { areAddressesEqual, getGlobalAdapter } from '@cowprotocol/sdk-common'
 import {
   BTC_CURRENCY_ADDRESS,
   ETH_ADDRESS,
@@ -67,18 +67,21 @@ export const getTokenByAddressAndChainId = (
     // or match SPL/other tokens by contractAddress directly
     if (!isEvmChain(targetTokenChainId)) {
       if (!token.contractAddress) {
-        return targetTokenAddress === BTC_CURRENCY_ADDRESS || targetTokenAddress === SOL_NATIVE_CURRENCY_ADDRESS
+        return (
+          areAddressesEqual(targetTokenAddress, BTC_CURRENCY_ADDRESS) ||
+          areAddressesEqual(targetTokenAddress, SOL_NATIVE_CURRENCY_ADDRESS)
+        )
       }
-      return token.contractAddress.toLowerCase() === targetTokenAddress.toLowerCase()
+      return areAddressesEqual(token.contractAddress, targetTokenAddress)
     }
 
     // Match native/unwrapped EVM tokens (no contractAddress) via ETH_ADDRESS sentinel
-    if (targetTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase()) {
+    if (areAddressesEqual(targetTokenAddress, ETH_ADDRESS)) {
       return !token.contractAddress
     }
 
     const tokenAddress = token.contractAddress || ETH_ADDRESS
-    return tokenAddress?.toLowerCase() === targetTokenAddress.toLowerCase()
+    return areAddressesEqual(tokenAddress, targetTokenAddress)
   })
 }
 

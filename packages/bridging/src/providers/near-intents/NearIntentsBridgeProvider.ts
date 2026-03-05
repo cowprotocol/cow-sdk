@@ -1,4 +1,4 @@
-import { getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { areAddressesEqual, getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { BTC_CURRENCY_ADDRESS, ETH_ADDRESS, SOL_NATIVE_CURRENCY_ADDRESS } from '@cowprotocol/sdk-config'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { EnrichedOrder, OrderKind } from '@cowprotocol/sdk-order-book'
@@ -138,7 +138,10 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       owner,
     } = request
 
-    if (sellTokenAddress === BTC_CURRENCY_ADDRESS || sellTokenAddress === SOL_NATIVE_CURRENCY_ADDRESS) {
+    if (
+      areAddressesEqual(sellTokenAddress, BTC_CURRENCY_ADDRESS) ||
+      areAddressesEqual(sellTokenAddress, SOL_NATIVE_CURRENCY_ADDRESS)
+    ) {
       throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES)
     }
 
