@@ -1,9 +1,9 @@
 import { EnrichedOrder } from '@cowprotocol/sdk-order-book'
-import { log, TransactionReceipt, getGlobalAdapter } from '@cowprotocol/sdk-common'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { log, TransactionReceipt, getGlobalAdapter, isWrappedNativeToken } from '@cowprotocol/sdk-common'
+import { getChainInfo, SupportedChainId } from '@cowprotocol/sdk-config'
 import { cowAppDataLatestScheme } from '@cowprotocol/sdk-app-data'
 
-import { getAcrossDepositEvents, mapNativeOrWrappedTokenAddress } from './util'
+import { getAcrossDepositEvents } from './util'
 import { BridgingDepositParams } from '../../types'
 
 export async function getDepositParams(
@@ -38,14 +38,19 @@ export async function getDepositParams(
     return null
   }
 
+  const outputTokenAddress = depositEvent.outputToken
   const destinationChainId = parseInt(depositEvent.destinationChainId.toString())
+  const destinationNativeToken = getChainInfo(destinationChainId)?.nativeCurrency
 
   return {
     inputTokenAddress: depositEvent.inputToken,
-    outputTokenAddress: mapNativeOrWrappedTokenAddress({
-      address: depositEvent.outputToken,
+    // Across uses wrapped native token address for both native and wrapped tokens
+    outputTokenAddress: isWrappedNativeToken({
+      address: outputTokenAddress,
       chainId: destinationChainId,
-    }),
+    })
+      ? (destinationNativeToken?.address ?? outputTokenAddress)
+      : outputTokenAddress,
     inputAmount: BigInt(depositEvent.inputAmount.toString()),
     outputAmount: BigInt(depositEvent.outputAmount.toString()),
     owner: depositEvent.depositor,
