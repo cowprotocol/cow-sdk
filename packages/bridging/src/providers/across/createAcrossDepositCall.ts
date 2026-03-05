@@ -90,7 +90,7 @@ export function createAcrossDepositCall(params: {
 
   const { suggestedFees } = quote
   const inputAmount = request.amount
-  const outputAmount = quote.amountsAndCosts.afterFee.buyAmount
+  const outputAmount = quote.amountsAndCosts.afterSlippage.buyAmount
 
   // The "swap" is a pass-through: the SwapProxy receives tokens and returns them unchanged.
   // We use TransferType.Approval so tokens stay in the SwapProxy, and the routerCalldata

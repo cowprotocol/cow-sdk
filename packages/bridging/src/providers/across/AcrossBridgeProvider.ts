@@ -14,6 +14,7 @@ import {
 } from '../../types'
 
 import {
+  DEFAULT_BRIDGE_SLIPPAGE_BPS,
   DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION,
   HOOK_DAPP_BRIDGE_PROVIDER_PREFIX,
   RAW_PROVIDERS_FILES_PATH,
@@ -58,9 +59,6 @@ type SupportedTokensState = Record<ChainId, Record<string, TokenInfo>>
 
 export const ACROSS_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/across`
 export const ACROSS_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism, bnb, ink]
-
-// We need to review if we should set an additional slippage tolerance, for now assuming the quote gives you the exact price of bridging and no further slippage is needed
-const SLIPPAGE_TOLERANCE_BPS = 0
 
 // Currently, Across provider is only involved to cross-chains swaps via EOA
 const isTraderEOA = true
@@ -190,7 +188,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
       recipient: receiver ?? undefined,
     })
 
-    return toBridgeQuoteResult(request, SLIPPAGE_TOLERANCE_BPS, suggestedFees)
+    return toBridgeQuoteResult(request, DEFAULT_BRIDGE_SLIPPAGE_BPS, suggestedFees)
   }
 
   // Keyed by the EvmCall object reference returned from getUnsignedBridgeCall.

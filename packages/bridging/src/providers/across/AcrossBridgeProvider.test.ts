@@ -156,7 +156,7 @@ adapterNames.forEach((adapterName) => {
           amountsAndCosts: {
             beforeFee: { sellAmount: 1000000000000000000n, buyAmount: 20000n },
             afterFee: { sellAmount: 1000000000000000000n, buyAmount: 19998n },
-            afterSlippage: { sellAmount: 1000000000000000000n, buyAmount: 19998n },
+            afterSlippage: { sellAmount: 1000000000000000000n, buyAmount: 19898n },
             costs: {
               bridgingFee: {
                 feeBps: 1,
@@ -164,7 +164,7 @@ adapterNames.forEach((adapterName) => {
                 amountInBuyCurrency: 2n,
               },
             },
-            slippageBps: 0,
+            slippageBps: 50,
           },
           quoteTimestamp: 1234567890,
           expectedFillTimeSeconds: 300,
