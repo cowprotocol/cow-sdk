@@ -80,5 +80,5 @@ export const ACROSS_TOKEN_MAPPING: Partial<Record<TargetChainId, AcrossChainConf
     acc[config.chainId] = config
     return acc
   },
-  {} as Record<number, AcrossChainConfig>,
+  {} as Partial<Record<TargetChainId, AcrossChainConfig>>,
 )

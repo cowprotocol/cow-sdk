@@ -1,11 +1,11 @@
-import { nativeCurrencyTemplate } from '../../constants/tokens'
-import { ChainInfo, SupportedChainId } from '../types'
-import { RAW_CHAINS_FILES_PATH } from '../../constants/paths'
+import { nativeCurrencyTemplate } from '../../constants'
+import { EvmChainInfo, SupportedChainId } from '../types'
+import { RAW_CHAINS_FILES_PATH } from '../../constants'
 
 const polygonLogo = `${RAW_CHAINS_FILES_PATH}/images/polygon-logo.svg`
 
 // See https://github.com/wevm/viem/blob/main/src/chains/definitions/polygon.ts
-export const polygon: ChainInfo = {
+export const polygon: EvmChainInfo = {
   id: SupportedChainId.POLYGON,
   label: 'Polygon',
   eip155Label: 'Polygon Mainnet',

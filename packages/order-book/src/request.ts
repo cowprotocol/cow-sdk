@@ -101,6 +101,7 @@ const getResponseBody = async (response: Response): Promise<unknown> => {
  * @param body The body of the request.
  * @param rateLimiter The rate limiter to use.
  * @param backoffOpts The backoff options to use.
+ * @param additionalHeaders Optional additional headers (e.g. X-API-Key for Partner API).
  * @returns The response of the request.
  * @throws If the API returns an error or if the request fails.
  */
@@ -109,11 +110,13 @@ export async function request<T>(
   { path, query, method, body }: FetchParams,
   rateLimiter: RateLimiter,
   backoffOpts: BackoffOptions,
+  additionalHeaders?: Record<string, string>,
 ): Promise<T> {
   const queryString = query ? '?' + query : ''
   const headers = {
     Accept: 'application/json',
     'Content-Type': 'application/json',
+    ...additionalHeaders,
   }
   const url = `${baseUrl}${path}${queryString}`
   const bodyContent = (() => {

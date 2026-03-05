@@ -2,28 +2,31 @@ import { Nullish } from '../types'
 import {
   ADDITIONAL_WRAPPED_NATIVE_CURRENCIES,
   AdditionalTargetChainId,
+  ChainId,
   getChainInfo,
+  isSupportedChain,
   SupportedChainId,
   TargetChainId,
   TokenInfo,
   WRAPPED_NATIVE_CURRENCIES,
 } from '@cowprotocol/sdk-config'
-import { AddressKey, getAddressKey } from './address'
+import { AddressKey, getAddressKey, getEvmAddressKey, isEvmAddress } from './address'
 
 interface TokenLike {
-  chainId: number
+  chainId: ChainId
   address: string
 }
 
 export interface TokenIdentifier {
   address: string
-  chainId: number
+  chainId: ChainId
 }
 
-export type TokenId = `${number}:${AddressKey}`
+export type TokenId = `${ChainId}:${AddressKey}`
 
 export function getTokenId(token: TokenIdentifier): TokenId {
-  return `${token.chainId}:${getAddressKey(token.address)}`
+  const addressKey = getAddressKey(token.address)
+  return `${token.chainId}:${addressKey}` as TokenId
 }
 
 export function areTokensEqual(a: TokenLike | undefined | null, b: TokenLike | undefined | null): boolean {
@@ -33,15 +36,22 @@ export function areTokensEqual(a: TokenLike | undefined | null, b: TokenLike | u
 }
 
 export function areAddressesEqual(a: Nullish<string>, b: Nullish<string>): boolean {
-  if (a && b) {
-    return getAddressKey(a) === getAddressKey(b)
+  if (!a || !b) return false
+
+  const aIsEvm = isEvmAddress(a)
+  const bIsEvm = isEvmAddress(b)
+
+  if (aIsEvm && bIsEvm) {
+    return getEvmAddressKey(a) === getEvmAddressKey(b)
   }
 
-  return false
+  // sol and btc addresses are already in the correct format
+  return a === b
 }
 
 export function isNativeToken(token: TokenLike): boolean {
-  return areAddressesEqual(getChainInfo(token.chainId)?.nativeCurrency.address, token.address)
+  const chainInfo = getChainInfo(token.chainId)
+  return areAddressesEqual(chainInfo?.nativeCurrency.address, token.address)
 }
 
 export function getWrappedNativeToken(chainId: TargetChainId): TokenInfo | undefined {
@@ -52,6 +62,10 @@ export function getWrappedNativeToken(chainId: TargetChainId): TokenInfo | undef
 }
 
 export function isWrappedNativeToken(token: TokenLike): boolean {
+  if (!isSupportedChain(token.chainId)) {
+    return false
+  }
+
   const wrappedNativeToken = getWrappedNativeToken(token.chainId)
 
   if (!wrappedNativeToken) return false

@@ -3,7 +3,6 @@ import { RateLimiter } from 'limiter'
 import {
   ApiBaseUrls,
   ApiContext,
-  CowEnv,
   DEFAULT_COW_API_CONTEXT,
   ENVS_LIST,
   PartialApiContext,
@@ -33,6 +32,8 @@ import { EnrichedOrder } from './types'
 
 const PROD_BASE_URL = 'https://api.cow.fi'
 const STAGING_BASE_URL = 'https://barn.api.cow.fi'
+const PARTNER_PROD_BASE_URL = 'https://partners.cow.fi'
+const PARTNER_STAGING_BASE_URL = 'https://partners.barn.cow.fi'
 
 /**
  * An object containing *production* environment base URLs for each supported `chainId`.
@@ -69,6 +70,46 @@ export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.LINEA]: `${STAGING_BASE_URL}/linea`,
   [SupportedChainId.PLASMA]: `${STAGING_BASE_URL}/plasma`,
   [SupportedChainId.INK]: `${STAGING_BASE_URL}/ink`,
+}
+
+/**
+ * An object containing *partner production* environment base URLs for each supported `chainId`.
+ * Used when apiKey is set; requests include X-API-Key header.
+ * @see {@link https://partners.cow.fi}
+ */
+export const ORDER_BOOK_PARTNER_PROD_CONFIG: ApiBaseUrls = {
+  [SupportedChainId.MAINNET]: `${PARTNER_PROD_BASE_URL}/mainnet`,
+  [SupportedChainId.GNOSIS_CHAIN]: `${PARTNER_PROD_BASE_URL}/xdai`,
+  [SupportedChainId.ARBITRUM_ONE]: `${PARTNER_PROD_BASE_URL}/arbitrum_one`,
+  [SupportedChainId.BASE]: `${PARTNER_PROD_BASE_URL}/base`,
+  [SupportedChainId.SEPOLIA]: `${PARTNER_PROD_BASE_URL}/sepolia`,
+  [SupportedChainId.POLYGON]: `${PARTNER_PROD_BASE_URL}/polygon`,
+  [SupportedChainId.AVALANCHE]: `${PARTNER_PROD_BASE_URL}/avalanche`,
+  [SupportedChainId.LENS]: `${PARTNER_PROD_BASE_URL}/lens`,
+  [SupportedChainId.BNB]: `${PARTNER_PROD_BASE_URL}/bnb`,
+  [SupportedChainId.LINEA]: `${PARTNER_PROD_BASE_URL}/linea`,
+  [SupportedChainId.PLASMA]: `${PARTNER_PROD_BASE_URL}/plasma`,
+  [SupportedChainId.INK]: `${PARTNER_PROD_BASE_URL}/ink`,
+}
+
+/**
+ * An object containing *partner staging* environment base URLs for each supported `chainId`.
+ * Used when apiKey is set and env is staging; requests include X-API-Key header.
+ * @see {@link https://partners.barn.cow.fi}
+ */
+export const ORDER_BOOK_PARTNER_STAGING_CONFIG: ApiBaseUrls = {
+  [SupportedChainId.MAINNET]: `${PARTNER_STAGING_BASE_URL}/mainnet`,
+  [SupportedChainId.GNOSIS_CHAIN]: `${PARTNER_STAGING_BASE_URL}/xdai`,
+  [SupportedChainId.ARBITRUM_ONE]: `${PARTNER_STAGING_BASE_URL}/arbitrum_one`,
+  [SupportedChainId.BASE]: `${PARTNER_STAGING_BASE_URL}/base`,
+  [SupportedChainId.SEPOLIA]: `${PARTNER_STAGING_BASE_URL}/sepolia`,
+  [SupportedChainId.POLYGON]: `${PARTNER_STAGING_BASE_URL}/polygon`,
+  [SupportedChainId.AVALANCHE]: `${PARTNER_STAGING_BASE_URL}/avalanche`,
+  [SupportedChainId.LENS]: `${PARTNER_STAGING_BASE_URL}/lens`,
+  [SupportedChainId.BNB]: `${PARTNER_STAGING_BASE_URL}/bnb`,
+  [SupportedChainId.LINEA]: `${PARTNER_STAGING_BASE_URL}/linea`,
+  [SupportedChainId.PLASMA]: `${PARTNER_STAGING_BASE_URL}/plasma`,
+  [SupportedChainId.INK]: `${PARTNER_STAGING_BASE_URL}/ink`,
 }
 
 function cleanObjectFromUndefinedValues(obj: Record<string, string>): typeof obj {
@@ -419,8 +460,8 @@ export class OrderBookApi {
    * @returns The API endpoint to get the order.
    */
   getOrderLink(orderUid: UID, contextOverride?: PartialApiContext): string {
-    const { chainId, env } = this.getContextWithOverride(contextOverride)
-    return this.getApiBaseUrls(env)[chainId] + `/api/v1/orders/${orderUid}`
+    const context = this.getContextWithOverride(contextOverride ?? {})
+    return this.getApiBaseUrls(context)[context.chainId] + `/api/v1/orders/${orderUid}`
   }
 
   /**
@@ -433,14 +474,17 @@ export class OrderBookApi {
   }
 
   /**
-   * Get the base URLs for the API endpoints given the environment.
-   * @param env The environment to get the base URLs for.
+   * Get the base URLs for the API endpoints given the context.
+   * Uses partner URLs when apiKey is set (and no custom baseUrls override).
+   * @param context The merged API context for the request.
    * @returns The base URLs for the API endpoints.
    */
-  private getApiBaseUrls(env: CowEnv): ApiBaseUrls {
-    if (this.context.baseUrls) return this.context.baseUrls
-
-    return env === 'prod' ? ORDER_BOOK_PROD_CONFIG : ORDER_BOOK_STAGING_CONFIG
+  private getApiBaseUrls(context: ApiContext): ApiBaseUrls {
+    if (context.baseUrls) return context.baseUrls
+    if (context.apiKey) {
+      return context.env === 'prod' ? ORDER_BOOK_PARTNER_PROD_CONFIG : ORDER_BOOK_PARTNER_STAGING_CONFIG
+    }
+    return context.env === 'prod' ? ORDER_BOOK_PROD_CONFIG : ORDER_BOOK_STAGING_CONFIG
   }
 
   /**
@@ -450,13 +494,15 @@ export class OrderBookApi {
    * @returns The response from the API.
    */
   private fetch<T>(params: FetchParams, contextOverride: PartialApiContext = {}): Promise<T> {
-    const { chainId, env, backoffOpts: _backoffOpts } = this.getContextWithOverride(contextOverride)
-    const baseUrl = this.getApiBaseUrls(env)[chainId]
+    const context = this.getContextWithOverride(contextOverride)
+    const { chainId, backoffOpts: _backoffOpts, apiKey } = context
+    const baseUrl = this.getApiBaseUrls(context)[chainId]
     const backoffOpts = _backoffOpts || DEFAULT_BACKOFF_OPTIONS
     const rateLimiter = contextOverride.limiterOpts ? new RateLimiter(contextOverride.limiterOpts) : this.rateLimiter
+    const additionalHeaders = apiKey ? { 'X-API-Key': apiKey } : undefined
 
     log(`Fetching OrderBook API: ${baseUrl}${params.path}. Params: ${JSON.stringify(params, jsonWithBigintReplacer)}`)
 
-    return request(baseUrl, params, rateLimiter, backoffOpts)
+    return request(baseUrl, params, rateLimiter, backoffOpts, additionalHeaders)
   }
 }

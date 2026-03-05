@@ -18,6 +18,7 @@ import {
 import { adaptToken, adaptTokens, calculateDeadline, getTokenByAddressAndChainId, hashQuote } from './util'
 
 import type { AbstractProviderAdapter } from '@cowprotocol/sdk-common'
+import { isEvmChain } from '@cowprotocol/sdk-config'
 import type { ChainId, ChainInfo, EvmCall, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import type { CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
 import type { QuoteResponse } from '@defuse-protocol/one-click-sdk-typescript'
@@ -250,6 +251,11 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     const adaptedOutput = adaptToken(outputToken)
     if (!adaptedInput?.chainId || !adaptedOutput?.chainId) {
       throw new Error('Token not supported')
+    }
+
+    // Ensure chain IDs are supported for BridgingDepositParams
+    if (!isEvmChain(adaptedInput.chainId) || !isEvmChain(adaptedOutput.chainId)) {
+      throw new Error('Non-EVM chains are not supported for BridgingDepositParams')
     }
 
     // Build response

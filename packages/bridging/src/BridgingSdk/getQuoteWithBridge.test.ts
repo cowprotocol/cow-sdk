@@ -13,7 +13,7 @@ import {
   quoteBridgeRequest,
 } from './mock/bridgeRequestMocks'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
-import { NATIVE_CURRENCY_ADDRESS, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { EVM_NATIVE_CURRENCY_ADDRESS, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import { getHookMockForCostEstimation } from '../hooks/utils'
 import { createAdapters } from '../../tests/setup'
 import { AbstractSigner, setGlobalAdapter, Provider, TTLCache } from '@cowprotocol/sdk-common'
@@ -133,7 +133,7 @@ adapterNames.forEach((adapterName) => {
     it('When selling ETH, then should make createOrder transaction', async () => {
       const { postSwapOrderFromQuote } = await postOrder({
         ...quoteBridgeRequest,
-        sellTokenAddress: NATIVE_CURRENCY_ADDRESS,
+        sellTokenAddress: EVM_NATIVE_CURRENCY_ADDRESS,
       })
 
       await postSwapOrderFromQuote()
