@@ -46,11 +46,11 @@ describe('Near Intents Utils', () => {
 
     it('should return null for a non supported chain', () => {
       const tokenResponse: TokenResponse = {
-        assetId: 'nep141:sol.omft.near',
+        assetId: 'nep141:ton.omft.near',
         decimals: 9,
-        blockchain: TokenResponse.blockchain.SOL,
-        symbol: 'SOL',
-        price: 234.78,
+        blockchain: TokenResponse.blockchain.TON,
+        symbol: 'TON',
+        price: 5.0,
         priceUpdatedAt: '2025-09-12T04:08:30.252Z',
       }
 
