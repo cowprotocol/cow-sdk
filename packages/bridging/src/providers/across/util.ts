@@ -4,10 +4,10 @@ import { AcrossDepositEvent, CowTradeEvent, DepositStatusResponse, SuggestedFees
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { ACROSS_DEPOSIT_EVENT_INTERFACE, COW_TRADE_EVENT_INTERFACE } from './const/interfaces'
 import { ACROSS_TOKEN_MAPPING, AcrossChainConfig } from './const/tokens'
-import { ACROSS_SPOOK_CONTRACT_ADDRESSES } from './const/contracts'
+import { ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES } from './const/contracts'
 import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
-import { getGlobalAdapter, Log } from '@cowprotocol/sdk-common'
+import { getGlobalAdapter, getWrappedNativeToken, isNativeToken, Log } from '@cowprotocol/sdk-common'
 import stringify from 'json-stable-stringify'
 
 const PCT_100_PERCENT = 10n ** 18n
@@ -41,6 +41,25 @@ export function getTokenAddress(tokenSymbol: string, chainConfig: AcrossChainCon
   return chainConfig.tokens[tokenSymbol]
 }
 
+/**
+ * Across uses wrapped native token address for both native and wrapped tokens
+ * In CoW we use 0xeeee...eeeee for native token, which is not supported by Across
+ * Because of that, we have to map the address
+ */
+export function mapNativeOrWrappedTokenAddress(token: { chainId: TargetChainId; address: string }): string {
+  if (isNativeToken(token)) {
+    const wrapped = getWrappedNativeToken(token.chainId)
+
+    if (!wrapped) {
+      throw new Error('Specified token.chainId does not belong to TargetChainId!')
+    }
+
+    return wrapped.address
+  }
+
+  return token.address
+}
+
 export function toBridgeQuoteResult(
   request: QuoteBridgeRequest,
   slippageBps: number,
@@ -49,6 +68,7 @@ export function toBridgeQuoteResult(
   const { kind } = request
 
   return {
+    id: suggestedFees.id,
     isSell: kind === OrderKind.SELL,
     amountsAndCosts: toAmountsAndCosts(request, slippageBps, suggestedFees),
     quoteTimestamp: Number(suggestedFees.timestamp),
@@ -71,12 +91,11 @@ function toAmountsAndCosts(
   slippageBps: number,
   suggestedFees: SuggestedFeesResponse,
 ): BridgeQuoteAmountsAndCosts {
-  const { amount, sellTokenDecimals, buyTokenDecimals } = request
+  const { amount } = request
 
-  // Get the amounts before fees
-  const sellAmountBeforeFee = BigInt(amount)
+  const sellAmountBeforeFee = amount
   // Sell and buy token should be the same asset for current implementation, but technically they can have different decimals
-  const buyAmountBeforeFee = (sellAmountBeforeFee * 10n ** BigInt(buyTokenDecimals)) / 10n ** BigInt(sellTokenDecimals)
+  const buyAmountBeforeFee = BigInt(suggestedFees.outputAmount)
 
   // Apply the fee to the buy amount (sell amount doesn't change)
   const totalRelayerFeePct = BigInt(suggestedFees.totalRelayFee.pct)
@@ -85,10 +104,6 @@ function toAmountsAndCosts(
   // Calculate the fee
   const feeSellToken = sellAmountBeforeFee - applyPctFee(sellAmountBeforeFee, totalRelayerFeePct)
   const feeBuyToken = buyAmountBeforeFee - buyAmountAfterFee
-  // TODO: Do we need to use any of the other fees, or they are included in totalRelayFee? I know 'lpFee' fee is, as stated in the docs, but not sure about the others.
-  // const relayerCapitalFee = suggestedFees.relayerCapitalFee
-  // const relayerGasFee = suggestedFees.relayerGasFee
-  // const lpFee = suggestedFees.lpFee
 
   // Apply slippage
   const buyAmountAfterSlippage = applyBps(buyAmountAfterFee, slippageBps)
@@ -96,7 +111,7 @@ function toAmountsAndCosts(
   return {
     beforeFee: {
       sellAmount: sellAmountBeforeFee,
-      buyAmount: buyAmountBeforeFee, // Assuming the price is 1:1 (before fee). This is because we are exchanging the same asset
+      buyAmount: buyAmountBeforeFee,
     },
     afterFee: {
       sellAmount: sellAmountBeforeFee, // Sell amount does't change (fee is applied to the buy amount)
@@ -180,9 +195,9 @@ export function mapAcrossStatusToBridgeStatus(status: DepositStatusResponse['sta
 }
 
 export function getAcrossDepositEvents(chainId: SupportedChainId, logs: Log[]): AcrossDepositEvent[] {
-  const spookContractAddress = ACROSS_SPOOK_CONTRACT_ADDRESSES[chainId]?.toLowerCase()
+  const spokePoolContractAddress = ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES[chainId]?.toLowerCase()
 
-  if (!spookContractAddress) {
+  if (!spokePoolContractAddress) {
     return []
   }
 
@@ -191,7 +206,7 @@ export function getAcrossDepositEvents(chainId: SupportedChainId, logs: Log[]): 
 
   // Get accross deposit events
   const depositEvents = logs.filter((log) => {
-    return log.address.toLocaleLowerCase() === spookContractAddress && log.topics[0] === ACROSS_DEPOSIT_EVENT_TOPIC
+    return log.address.toLocaleLowerCase() === spokePoolContractAddress && log.topics[0] === ACROSS_DEPOSIT_EVENT_TOPIC
   })
 
   // Parse logs
@@ -256,7 +271,7 @@ export function getCowTradeEvents(chainId: SupportedChainId, logs: Log[]): CowTr
     const result = parsedLog.args as CowTradeEvent
 
     const { owner, sellToken, buyToken, sellAmount, buyAmount, feeAmount } = result
-    // TODO: idk, ethers cannot parse orderUid because it's bytes and ethers tries to cast it as a number
+    // Ethers cannot parse orderUid because it's bytes and ethers tries to cast it as a number
     const orderUid = '0x' + event.data.slice(450, 450 + 112)
 
     return {

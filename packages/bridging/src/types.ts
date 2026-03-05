@@ -229,8 +229,9 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    * Get the explorer url for a bridging id.
    *
    * @param bridgingId - The bridging id
+   * @param tradeTxHash - On-chain transaction id of swap settlement
    */
-  getExplorerUrl(bridgingId: string): string
+  getExplorerUrl(bridgingId: string, tradeTxHash: string): string
 
   /**
    * Get the status of a bridging transaction.
@@ -370,11 +371,6 @@ export interface BridgeCosts<T = bigint> {
     amountInSellCurrency: T
     amountInBuyCurrency: T
   }
-
-  // TODO: I could see here some additional flags that might be useful in the UI, but as this is a prototype. Leaving it until we get some experience with bridging. Leaving it as comments for future consideration.
-  // needToClaimInDestinationChain: boolean
-  // automaticRefundOnExpiration: boolean
-  // automaticRefundOnFailure: boolean
 }
 
 export interface BridgeQuoteAmountsAndCosts<T = bigint> {

@@ -1,4 +1,4 @@
-import { SupportedChainId } from '../chains/types'
+import { AdditionalTargetChainId, SupportedChainId, TargetChainId } from '../chains/types'
 import { TokenInfo } from '../types/tokens'
 import { TOKEN_LIST_IMAGES_PATH } from './paths'
 
@@ -66,11 +66,15 @@ export const WRAPPED_NATIVE_CURRENCIES: Record<SupportedChainId, TokenInfo> = {
       symbol: 'WGHO',
     },
   ),
-  [SupportedChainId.BNB]: createWrappedTokenForChain(SupportedChainId.BNB, '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c', {
-    decimals: 18,
-    name: 'Wrapped BNB',
-    symbol: 'WBNB',
-  }),
+  [SupportedChainId.BNB]: createWrappedTokenForChain(
+    SupportedChainId.BNB,
+    '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+    {
+      decimals: 18,
+      name: 'Wrapped BNB',
+      symbol: 'WBNB',
+    },
+  ),
   [SupportedChainId.PLASMA]: createWrappedTokenForChain(
     SupportedChainId.PLASMA,
     '0x6100e367285b01f48d07953803a2d8dca5d19873',
@@ -92,8 +96,16 @@ export const WRAPPED_NATIVE_CURRENCIES: Record<SupportedChainId, TokenInfo> = {
   ),
 }
 
+export const ADDITIONAL_WRAPPED_NATIVE_CURRENCIES: Partial<Record<AdditionalTargetChainId, TokenInfo>> = {
+  [AdditionalTargetChainId.OPTIMISM]: createWrappedTokenForChain(
+    AdditionalTargetChainId.OPTIMISM,
+    '0x4200000000000000000000000000000000000006',
+    wrappedNativeCurrencyEth,
+  ),
+}
+
 function createWrappedTokenForChain(
-  chainId: SupportedChainId,
+  chainId: TargetChainId,
   address: string,
   info: Pick<TokenInfo, 'decimals' | 'name' | 'symbol' | 'logoUrl'>,
 ): TokenInfo {

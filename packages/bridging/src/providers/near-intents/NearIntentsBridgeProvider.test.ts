@@ -131,7 +131,7 @@ adapterNames.forEach((adapterName) => {
 
     describe('getExplorerUrl', () => {
       it('should return explorer url', () => {
-        expect(provider.getExplorerUrl('123')).toEqual('https://explorer.near-intents.org/transactions/123')
+        expect(provider.getExplorerUrl('123', '')).toEqual('https://explorer.near-intents.org/transactions/123')
       })
     })
 

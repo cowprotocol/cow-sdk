@@ -1,25 +1,25 @@
-import { TargetChainId } from '@cowprotocol/sdk-config'
+import { type SupportedChainId, TargetChainId, TokenInfo } from '@cowprotocol/sdk-config'
 
 export interface AvailableRoutesRequest {
-  originChainId: string
-  originToken: string
-  destinationChainId: string
-  destinationToken: string
+  originChainId: number
+  originToken?: string
+  destinationChainId: number
+  destinationToken?: string
 }
 
 export interface Route {
-  originChainId: string
+  originChainId: number
   originToken: string
-  destinationChainId: string
+  destinationChainId: number
   destinationToken: string
   originTokenSymbol: string
   destinationTokenSymbol: string
+  isNative?: boolean
 }
 
 export interface SuggestedFeesRequest {
-  token: string
-  // inputToken: string
-  // outputToken: string
+  inputToken: string
+  outputToken: string
   originChainId: TargetChainId
   destinationChainId: TargetChainId
 
@@ -111,6 +111,10 @@ export interface SuggestedFeesLimits {
 }
 
 export interface SuggestedFeesResponse {
+  id: string
+  outputAmount: string
+  inputToken: TokenInfo
+  outputToken: TokenInfo
   /**
    * Percentage of the transfer amount that should go to the relayer as a fee in total. The value is inclusive of lpFee.pct.
    *
@@ -279,4 +283,10 @@ export interface CowTradeEvent {
   buyAmount: string
   feeAmount: string
   orderUid: string
+}
+
+export interface IntermediateTokensParams {
+  originChainId: SupportedChainId
+  destinationChainId: TargetChainId
+  destinationToken: string
 }

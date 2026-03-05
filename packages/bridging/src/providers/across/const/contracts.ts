@@ -2,7 +2,7 @@ import { AdditionalTargetChainId, SupportedChainId, TargetChainId } from '@cowpr
 
 // See https://docs.across.to/reference/contract-addresses
 
-export const ACROSS_SPOOK_CONTRACT_ADDRESSES: Record<TargetChainId, string | undefined> = {
+export const ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES: Record<TargetChainId, string | undefined> = {
   // https://docs.across.to/reference/contract-addresses/mainnet-chain-id-1
   [SupportedChainId.MAINNET]: '0x5c7BCd6E7De5423a257D81B442095A1a6ced35C5',
   // https://docs.across.to/reference/contract-addresses/arbitrum-chain-id-42161-1
@@ -27,30 +27,28 @@ export const ACROSS_SPOOK_CONTRACT_ADDRESSES: Record<TargetChainId, string | und
   [AdditionalTargetChainId.OPTIMISM]: '0x6f26Bf09B1C792e3228e5467807a900A503c0281',
 
   // Not supported chains
-  // TODO: This first integration is a draft, some of this chains might be supported, so we will need to update here as we iterate on the provider
   [SupportedChainId.GNOSIS_CHAIN]: undefined,
   [SupportedChainId.AVALANCHE]: undefined,
   [AdditionalTargetChainId.BITCOIN]: undefined,
   [AdditionalTargetChainId.SOLANA]: undefined,
 }
 
-export const ACROSS_MATH_CONTRACT_ADDRESSES: Record<TargetChainId, string | undefined> = {
-  [SupportedChainId.MAINNET]: '0xf2ae6728b6f146556977Af0A68bFbf5bADA22863',
-  [SupportedChainId.ARBITRUM_ONE]: '0x5771A4b4029832e79a75De7B485E5fBbec28848f',
-  [SupportedChainId.BASE]: '0xd4e943dc6ddc885f6229ce33c2e3dfe402a12c81',
+export const ACROSS_SPOKE_POOL_PERIPHERY_CONTRACT_ADDRESSES: Record<TargetChainId, string | undefined> = {
+  [SupportedChainId.MAINNET]: '0x89415a82d909a7238d69094C3Dd1dCC1aCbDa85C',
+  [SupportedChainId.ARBITRUM_ONE]: '0x89415a82d909a7238d69094C3Dd1dCC1aCbDa85C',
+  [SupportedChainId.BASE]: '0x89415a82d909a7238d69094C3Dd1dCC1aCbDa85C',
+  [SupportedChainId.BNB]: '0x89415a82d909a7238d69094C3Dd1dCC1aCbDa85C',
+  [SupportedChainId.POLYGON]: '0x89415a82d909a7238d69094C3Dd1dCC1aCbDa85C',
+  [SupportedChainId.LENS]: '0x8A8cA9c4112c67b7Dae7dF7E89EA45D592362107',
+  [AdditionalTargetChainId.OPTIMISM]: '0x89415a82d909a7238d69094C3Dd1dCC1aCbDa85C',
+  [SupportedChainId.LINEA]: '0xE0BCff426509723B18D6b2f0D8F4602d143bE3e0',
+  [SupportedChainId.PLASMA]: '0xF1BF00D947267Da5cC63f8c8A60568c59FA31bCb',
+  [SupportedChainId.INK]: '0x89415a82d909a7238d69094C3Dd1dCC1aCbDa85C',
 
   // Not supported chains
-  // TODO: This first integration is a draft, some of this chains might be supported, so we will need to update here as we iterate on the provider
   [SupportedChainId.GNOSIS_CHAIN]: undefined,
   [SupportedChainId.SEPOLIA]: undefined,
-  [SupportedChainId.POLYGON]: undefined,
   [SupportedChainId.AVALANCHE]: undefined,
-  [SupportedChainId.LENS]: undefined, // TODO: confirm
-  [SupportedChainId.BNB]: undefined, // TODO: confirm
-  [SupportedChainId.LINEA]: undefined, // TODO: confirm
-  [SupportedChainId.PLASMA]: undefined, // TODO: confirm
-  [SupportedChainId.INK]: undefined, // TODO: confirm
-  [AdditionalTargetChainId.OPTIMISM]: undefined,
   [AdditionalTargetChainId.BITCOIN]: undefined,
   [AdditionalTargetChainId.SOLANA]: undefined,
 }

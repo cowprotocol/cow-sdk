@@ -250,7 +250,7 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
     throw new Error('Not implemented')
   }
 
-  getExplorerUrl(bridgingId: string): string {
+  getExplorerUrl(bridgingId: string, _: string): string {
     return `https://socketscan.io/tx/${bridgingId}`
   }
 
