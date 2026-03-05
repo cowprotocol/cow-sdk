@@ -9,6 +9,7 @@ import {
   decodeEip1271SignatureData,
   EIP1271_MAGICVALUE,
 } from '../src'
+import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
 
 describe('Interactions and EIP-1271 Signatures', () => {
   let adapters: ReturnType<typeof createAdapters>
@@ -24,18 +25,18 @@ describe('Interactions and EIP-1271 Signatures', () => {
       // Test cases
       const testCases: InteractionLike[] = [
         {
-          target: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+          target: COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET],
         },
         {
-          target: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+          target: COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET],
           callData: '0x12345678',
         },
         {
-          target: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+          target: COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET],
           value: '1000000000000000000',
         },
         {
-          target: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+          target: COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET],
           callData: '0x12345678',
           value: '1000000000000000000',
         },
@@ -72,7 +73,7 @@ describe('Interactions and EIP-1271 Signatures', () => {
       // Test batch of interactions
       const interactions: InteractionLike[] = [
         {
-          target: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+          target: COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET],
         },
         {
           target: '0x1234567890123456789012345678901234567890',
@@ -116,7 +117,7 @@ describe('Interactions and EIP-1271 Signatures', () => {
 
       // Test signature data
       const signatureData: Eip1271SignatureData = {
-        verifier: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+        verifier: COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET],
         signature:
           '0x29a674dfc87f8c78fc2bfbcbe8ffdd435091a6a84bc7761db72a45da453d73ac41c5ce28eceb34be73fddc12a5d04af6e736405e41b613aeefeed3db8122420c1b',
       }
@@ -158,7 +159,7 @@ describe('Interactions and EIP-1271 Signatures', () => {
 
       for (const signature of signatures) {
         const testData: Eip1271SignatureData = {
-          verifier: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+          verifier: COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET],
           signature,
         }
 
@@ -193,9 +194,9 @@ describe('Interactions and EIP-1271 Signatures', () => {
 
       // Test with addresses in different formats (lowercase, uppercase, mixed)
       const verifiers = [
-        '0x9008d19f58aabd9ed0d60971565aa8510560ab41', // lowercase
-        '0x9008D19F58AABD9ED0D60971565AA8510560AB41', // uppercase
-        '0x9008D19f58AAbD9eD0D60971565AA8510560ab41', // mixed
+        COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET], // lowercase
+        COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET], // uppercase
+        COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET], // mixed
       ]
 
       for (const verifier of verifiers) {

@@ -21,7 +21,12 @@ import type { SigningResult, SignOrderParams, SignOrderCancellationParams, Unsig
 
 import { EcdsaSigningScheme } from '@cowprotocol/sdk-order-book'
 import { SignOrderCancellationsParams } from './types'
-import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
+import {
+  COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS,
+  COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS_STAGING,
+  CowEnv,
+  SupportedChainId,
+} from '@cowprotocol/sdk-config'
 
 // For error codes, see:
 // - https://eth.wiki/json-rpc/json-rpc-error-codes-improvement-proposal
@@ -48,34 +53,34 @@ interface ProviderRpcError extends Error {
 }
 
 type PayloadParams =
-  | Pick<SignOrderParams, 'order' & 'chainId'>
-  | Pick<SignOrderCancellationParams, 'chainId' & 'orderId'>
-  | Pick<SignOrderCancellationsParams, 'chainId' & 'orderUids'>
+  | Pick<SignOrderParams, 'order' & 'chainId' & 'env'>
+  | Pick<SignOrderCancellationParams, 'chainId' & 'orderId' & 'env'>
+  | Pick<SignOrderCancellationsParams, 'chainId' & 'orderUids' & 'env'>
 
 function isProviderRpcError(error: unknown): error is ProviderRpcError {
   return (error as ProviderRpcError).code !== undefined || (error as ProviderRpcError).message !== undefined
 }
 
 async function _signOrder(params: SignOrderParams): Promise<Signature> {
-  const { chainId, signer, order, signingScheme } = params
+  const { chainId, signer, order, signingScheme, env } = params
 
-  const domain = getDomain(chainId)
+  const domain = getDomain(chainId, env)
 
   return signOrderGp(domain, order as unknown as OrderFromContract, mapSigningSchema[signingScheme], signer)
 }
 
 async function _signOrderCancellation(params: SignOrderCancellationParams): Promise<Signature> {
-  const { chainId, signer, signingScheme, orderUid } = params
+  const { chainId, signer, signingScheme, orderUid, env } = params
 
-  const domain = getDomain(chainId)
+  const domain = getDomain(chainId, env)
 
   return signOrderCancellationGp(domain, orderUid, mapSigningSchema[signingScheme], signer)
 }
 
 async function _signOrderCancellations(params: SignOrderCancellationsParams): Promise<Signature> {
-  const { chainId, signer, signingScheme, orderUids } = params
+  const { chainId, signer, signingScheme, orderUids, env } = params
 
-  const domain = getDomain(chainId)
+  const domain = getDomain(chainId, env)
 
   return signOrderCancellationsGp(domain, orderUids, mapSigningSchema[signingScheme], signer)
 }
@@ -177,8 +182,9 @@ export async function signOrder(
   order: UnsignedOrder,
   chainId: SupportedChainId,
   signer: Signer,
+  env?: CowEnv,
 ): Promise<SigningResult> {
-  return _signPayload({ order, chainId }, _signOrder, signer)
+  return _signPayload({ order, chainId, env }, _signOrder, signer)
 }
 
 /**
@@ -193,8 +199,9 @@ export async function signOrderCancellation(
   orderUid: string,
   chainId: SupportedChainId,
   signer: Signer,
+  env?: CowEnv,
 ): Promise<SigningResult> {
-  return _signPayload({ orderUid, chainId }, _signOrderCancellation, signer)
+  return _signPayload({ orderUid, chainId, env }, _signOrderCancellation, signer)
 }
 
 /**
@@ -210,19 +217,24 @@ export async function signOrderCancellations(
   orderUids: string[],
   chainId: SupportedChainId,
   signer: Signer,
+  env?: CowEnv,
 ): Promise<SigningResult> {
-  return _signPayload({ orderUids, chainId }, _signOrderCancellations, signer)
+  return _signPayload({ orderUids, chainId, env }, _signOrderCancellations, signer)
 }
 
 /**
  * Returns the TypedDataDomain used for signing for the specified chainId.
  * @param {SupportedChainId} chainId The chain Id
+ * @param {CowEnv} env (Optional) CoW Protocol environment
  * @return {*} The TypedDataDomain for the specified chainId.
  * @throws {CowError} If the chainId is not supported.
  */
-export function getDomain(chainId: SupportedChainId): TypedDataDomain {
+export function getDomain(chainId: SupportedChainId, env?: CowEnv): TypedDataDomain {
   // Get settlement contract address
-  const settlementContract = COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[chainId]
+  const settlementContract =
+    env === 'staging'
+      ? COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS_STAGING[chainId]
+      : COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[chainId]
 
   if (!settlementContract) {
     throw new CowError('Unsupported network. Settlement contract is not deployed')
@@ -241,8 +253,9 @@ export async function generateOrderId(
   chainId: SupportedChainId,
   order: Order,
   params: Pick<OrderUidParams, 'owner'>,
+  env?: CowEnv,
 ): Promise<{ orderId: string; orderDigest: string }> {
-  const domain = await getDomain(chainId)
+  const domain = await getDomain(chainId, env)
   const orderDigest = hashOrder(domain, order)
   // Generate the orderId from owner, orderDigest, and max validTo
   const orderId = packOrderUidParams({

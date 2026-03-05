@@ -12,6 +12,7 @@ import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { createAdapters } from './setup'
 
 import { computeOrderUid } from '@cowprotocol/sdk-contracts-ts'
+import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
 
 jest.mock('@cowprotocol/sdk-contracts-ts', () => ({
   ...jest.requireActual('@cowprotocol/sdk-contracts-ts'),
@@ -148,7 +149,9 @@ describe('ConditionalOrder - Multi-Adapter Tests', () => {
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
         expect(() =>
-          Twap.deserialize(TWAP_SERIALIZED(undefined, '0x9008D19f58AAbD9eD0D60971565AA8510560ab41')),
+          Twap.deserialize(
+            TWAP_SERIALIZED(undefined, COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET]),
+          ),
         ).toThrow('HandlerMismatch')
       }
     })

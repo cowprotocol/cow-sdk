@@ -38,6 +38,7 @@ export async function postCoWProtocolTrade(
   const { quoteId = null, owner } = params
   const { appDataKeccak256, fullAppData } = appData
 
+  const env = params.env ?? orderBookApi.context.env
   const chainId = orderBookApi.context.chainId
   const from = owner || (await signer.getAddress())
 
@@ -64,7 +65,7 @@ export async function postCoWProtocolTrade(
         }
       }
 
-      const signingResult = await OrderSigningUtils.signOrder(orderToSign, chainId, signer)
+      const signingResult = await OrderSigningUtils.signOrder(orderToSign, chainId, signer, env)
 
       if (isEip1271) {
         return {
