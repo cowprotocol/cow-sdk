@@ -49,7 +49,6 @@ export const ACROSS_SPOKE_POOL_PERIPHERY_CONTRACT_ADDRESSES: Record<TargetChainI
   [SupportedChainId.GNOSIS_CHAIN]: undefined,
   [SupportedChainId.SEPOLIA]: undefined,
   [SupportedChainId.AVALANCHE]: undefined,
-  [AdditionalTargetChainId.OPTIMISM]: undefined,
   [AdditionalTargetChainId.BITCOIN]: undefined,
   [AdditionalTargetChainId.SOLANA]: undefined,
 }
