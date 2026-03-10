@@ -1,4 +1,4 @@
-import { AdditionalTargetChainId, ChainInfo, SupportedChainId } from '../types'
+import { AdditionalTargetChainId, ChainInfo, SupportedChainId, TargetChainId } from '../types'
 import { mainnet } from '../details/mainnet'
 import { gnosisChain } from '../details/gnosis'
 import { arbitrumOne } from '../details/arbitrum'
@@ -12,6 +12,8 @@ import { optimism } from '../details/optimism'
 import { linea } from '../details/linea'
 import { plasma } from '../details/plasma'
 import { ink } from '../details/ink'
+import { bitcoin } from '../details/bitcoin'
+import { solana } from '../details/solana'
 
 /**
  * Details of all supported chains.
@@ -44,18 +46,47 @@ export const ALL_SUPPORTED_CHAIN_IDS: SupportedChainId[] = ALL_SUPPORTED_CHAINS.
 ) as SupportedChainId[]
 
 /**
+ * Chains where new trading is allowed (excludes deprecated chains).
+ */
+export const TRADABLE_SUPPORTED_CHAINS: ChainInfo[] = Object.values(ALL_SUPPORTED_CHAINS_MAP).filter(
+  (chain) => !chain.isDeprecated,
+)
+
+/**
+ * Chain ids where new trading is allowed (excludes deprecated chains).
+ */
+export const TRADABLE_SUPPORTED_CHAIN_IDS: SupportedChainId[] = TRADABLE_SUPPORTED_CHAINS.map(
+  (chain) => chain.id,
+) as SupportedChainId[]
+
+/**
  * Maps a chain where you can bridge to, but not sell tokens from (not supported by CoW Protocol)
  */
 export const ADDITIONAL_TARGET_CHAINS_MAP: Record<AdditionalTargetChainId, ChainInfo> = {
   [AdditionalTargetChainId.OPTIMISM]: optimism,
+  [AdditionalTargetChainId.BITCOIN]: bitcoin,
+  [AdditionalTargetChainId.SOLANA]: solana,
 }
+
+/**
+ * All chains where you can bridge to, but not sell tokens from (not supported by CoW Protocol).
+ */
+export const ALL_ADDITIONAL_TARGET_CHAINS = Object.values(ADDITIONAL_TARGET_CHAINS_MAP)
+
+/**
+ * The list of chains where you can bridge to, but not sell tokens from (not supported by CoW Protocol).
+ */
+export const ALL_ADDITIONAL_TARGET_CHAIN_IDS: AdditionalTargetChainId[] = ALL_ADDITIONAL_TARGET_CHAINS.map(
+  (chain) => chain.id,
+) as AdditionalTargetChainId[]
+
 
 /**
  * All chains (both supported by CoW Protocol, or chains where you can bridge to)
  */
-export const ALL_CHAINS = ALL_SUPPORTED_CHAINS.concat(Object.values(ADDITIONAL_TARGET_CHAINS_MAP))
+export const ALL_CHAINS = ALL_SUPPORTED_CHAINS.concat(ALL_ADDITIONAL_TARGET_CHAINS)
 
 /**
  * All chain ids (both supported by CoW Protocol, or chains where you can bridge to)
  */
-export const ALL_CHAINS_IDS = ALL_CHAINS.map((chain) => chain.id)
+export const ALL_CHAINS_IDS: TargetChainId[] = ALL_CHAINS.map((chain) => chain.id) as TargetChainId[]

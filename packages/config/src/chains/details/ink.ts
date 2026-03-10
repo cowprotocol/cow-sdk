@@ -1,12 +1,12 @@
-import { ChainInfo, SupportedChainId } from '../types'
-import { nativeCurrencyTemplate } from '../../constants/tokens'
+import { EvmChainInfo, SupportedChainId } from '../types'
+import { nativeCurrencyTemplate } from '../../constants/nativeCurrencyTemplate'
 import { RAW_CHAINS_FILES_PATH } from '../../constants/paths'
 
 const inkLogo = `${RAW_CHAINS_FILES_PATH}/images/ink-logo.svg`
 
 // See https://github.com/wevm/viem/blob/main/src/chains/definitions/ink.ts
 // and https://github.com/ethereum-lists/chains/blob/master/_data/chains/eip155-57073.json
-export const ink: ChainInfo = {
+export const ink: EvmChainInfo = {
   id: SupportedChainId.INK,
   label: 'Ink',
   eip155Label: 'Ink Chain Mainnet',
@@ -49,5 +49,4 @@ export const ink: ChainInfo = {
       url: 'https://inkonchain.com/bridge',
     },
   ],
-  isUnderDevelopment: true,
 }

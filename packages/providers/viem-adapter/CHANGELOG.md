@@ -1,5 +1,41 @@
 # Changelog
 
+## [0.3.10](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.3.9...sdk-viem-adapter-v0.3.10) (2026-03-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.7.0
+
+## [0.3.9](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.3.8...sdk-viem-adapter-v0.3.9) (2026-03-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.6.3
+
+## [0.3.8](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.3.7...sdk-viem-adapter-v0.3.8) (2026-02-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.6.2
+
+## [0.3.7](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.3.6...sdk-viem-adapter-v0.3.7) (2026-02-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.6.1
+
 ## [0.3.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.3.5...sdk-viem-adapter-v0.3.6) (2026-02-05)
 
 

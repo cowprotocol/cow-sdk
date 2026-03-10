@@ -1,5 +1,5 @@
 import { percentageToBps } from '@cowprotocol/sdk-common'
-import { getQuoteAmountsWithCosts, OrderQuoteResponse } from '@cowprotocol/sdk-order-book'
+import { getQuoteAmountsAndCosts, OrderKind, OrderQuoteResponse } from '@cowprotocol/sdk-order-book'
 
 import { getSlippagePercent } from './utils/slippage'
 import { suggestSlippageFromFee } from './suggestSlippageFromFee'
@@ -25,21 +25,20 @@ export interface SuggestSlippageBps {
  * Return the slippage in BPS that would allow the fee to increase by the multiplying factor percent.
  */
 export function suggestSlippageBps(params: SuggestSlippageBps): number {
-  const {
-    quote,
-    tradeParameters,
-    trader,
-    isEthFlow,
-    volumeMultiplierPercent = SLIPPAGE_VOLUME_MULTIPLIER_PERCENT,
-  } = params
-  const { sellTokenDecimals, buyTokenDecimals } = tradeParameters
+  const { quote, trader, isEthFlow, volumeMultiplierPercent = SLIPPAGE_VOLUME_MULTIPLIER_PERCENT } = params
 
+  const isSell = quote.quote.kind === OrderKind.SELL
   // Calculate the amount of the sell token before and after network costs
-  const { isSell, sellAmountBeforeNetworkCosts, sellAmountAfterNetworkCosts } = getQuoteAmountsWithCosts({
-    sellDecimals: sellTokenDecimals,
-    buyDecimals: buyTokenDecimals,
+  const {
+    beforeNetworkCosts: { sellAmount: sellAmountBeforeNetworkCosts },
+    afterNetworkCosts: { sellAmount: sellAmountAfterNetworkCosts },
+  } = getQuoteAmountsAndCosts({
     orderParams: quote.quote,
+    protocolFeeBps: quote.protocolFeeBps ? Number(quote.protocolFeeBps) : 0,
+    partnerFeeBps: undefined,
+    slippagePercentBps: 0,
   })
+
   const { feeAmount: feeAmountString } = quote.quote
   const feeAmount = BigInt(feeAmountString)
 

@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.10.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.9.0...sdk-config-v0.10.0) (2026-03-04)
+
+
+### ✨ Features
+
+* Add non-evm chains types & guards & address validators  ([#792](https://github.com/cowprotocol/cow-sdk/issues/792)) ([b4b6047](https://github.com/cowprotocol/cow-sdk/commit/b4b6047889190f668f6409aeee7079ba6095f9ae))
+
+## [0.9.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.8.1...sdk-config-v0.9.0) (2026-03-04)
+
+
+### ✨ Features
+
+* add API endpoints for partners ([#809](https://github.com/cowprotocol/cow-sdk/issues/809)) ([59900e8](https://github.com/cowprotocol/cow-sdk/commit/59900e854a336e294ec881bd70bb13e579ff48ec))
+
+## [0.8.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.8.0...sdk-config-v0.8.1) (2026-02-20)
+
+
+### 🐛 Bug Fixes
+
+* **networks:** remove isUnderDevelopment flag from Ink ([#803](https://github.com/cowprotocol/cow-sdk/issues/803)) ([8baeaa6](https://github.com/cowprotocol/cow-sdk/commit/8baeaa657f0f7760ea26917b68cbf0ab70ac4905))
+* **networks:** remove isUnderDevelopment flag from Ink ([#803](https://github.com/cowprotocol/cow-sdk/issues/803)) ([8baeaa6](https://github.com/cowprotocol/cow-sdk/commit/8baeaa657f0f7760ea26917b68cbf0ab70ac4905))
+
+## [0.8.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.7.3...sdk-config-v0.8.0) (2026-02-18)
+
+
+### ✨ Features
+
+* **deprecated-chains:** add isDeprecated flag and mark Lens as such ([#801](https://github.com/cowprotocol/cow-sdk/issues/801)) ([e0663c6](https://github.com/cowprotocol/cow-sdk/commit/e0663c69c0b5d92bae45570f27105d6cfd04b96a))
+
 ## [0.7.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.7.2...sdk-config-v0.7.3) (2026-02-02)
 
 

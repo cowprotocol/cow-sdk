@@ -1,5 +1,6 @@
-import { ChainInfo, SupportedChainId } from '../types'
-import { nativeCurrencyTemplate, TOKEN_LIST_IMAGES_PATH } from '../../constants/tokens'
+import { EvmChainInfo, SupportedChainId } from '../types'
+import { nativeCurrencyTemplate } from '../../constants/nativeCurrencyTemplate'
+import { TOKEN_LIST_IMAGES_PATH } from '../../constants/paths'
 import { RAW_CHAINS_FILES_PATH } from '../../constants/paths'
 
 const lensLogoLight = `${RAW_CHAINS_FILES_PATH}/images/lens-logo-light.svg`
@@ -10,7 +11,7 @@ const GHO_MAINNET_LOGO_URL = `${TOKEN_LIST_IMAGES_PATH}/1/${GHO_MAINNET_ADDRESS}
 
 // See https://github.com/wevm/viem/blob/main/src/chains/definitions/lens.ts
 // and https://github.com/ethereum-lists/chains/blob/master/_data/chains/eip155-232.json
-export const lens: ChainInfo = {
+export const lens: EvmChainInfo = {
   id: SupportedChainId.LENS,
   label: 'Lens',
   eip155Label: 'Lens Chain Mainnet',
@@ -57,4 +58,5 @@ export const lens: ChainInfo = {
     },
   ],
   isZkSync: true,
+  isDeprecated: true,
 }
