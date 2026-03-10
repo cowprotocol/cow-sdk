@@ -66,11 +66,13 @@ export type ApiBaseUrls = Record<SupportedChainId, string>
  * @property {SupportedChainId} chainId The `chainId`` corresponding to this CoW Protocol API instance.
  * @property {CowEnv} env The environment that this context corresponds to.
  * @property {ApiBaseUrls} [baseUrls] URls that may be used to connect to this context.
+ * @property {string} [apiKey] API key for Partner API (partners.cow.fi). When set, requests use the partner gateway and include X-API-Key header.
  */
 export interface ApiContext {
   chainId: SupportedChainId
   env: CowEnv
   baseUrls?: ApiBaseUrls
+  apiKey?: string
   limiterOpts?: RateLimiterOpts
   backoffOpts?: BackoffOptions
 }

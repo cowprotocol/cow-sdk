@@ -1,5 +1,48 @@
 # Changelog
 
+## [1.1.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v1.1.1...sdk-order-book-v1.1.2) (2026-03-10)
+
+
+### 🐛 Bug Fixes
+
+* **order-book:** handle decimal protocolFeeBps BigInt conversion ([#798](https://github.com/cowprotocol/cow-sdk/issues/798)) ([ad7d323](https://github.com/cowprotocol/cow-sdk/commit/ad7d32370c8bb1a414cf1e23a2f2f89e1f9e0b96))
+
+## [1.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v1.1.0...sdk-order-book-v1.1.1) (2026-03-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.10.0
+    * @cowprotocol/sdk-common bumped to 0.7.0
+
+## [1.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v1.0.0...sdk-order-book-v1.1.0) (2026-03-04)
+
+
+### ✨ Features
+
+* add API endpoints for partners ([#809](https://github.com/cowprotocol/cow-sdk/issues/809)) ([59900e8](https://github.com/cowprotocol/cow-sdk/commit/59900e854a336e294ec881bd70bb13e579ff48ec))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.9.0
+    * @cowprotocol/sdk-common bumped to 0.6.3
+
+## [1.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.6.6...sdk-order-book-v1.0.0) (2026-02-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* update quote amounts and costs structure ([#800](https://github.com/cowprotocol/cow-sdk/issues/800))
+
+### 🐛 Bug Fixes
+
+* update quote amounts and costs structure ([#800](https://github.com/cowprotocol/cow-sdk/issues/800)) ([ea96f67](https://github.com/cowprotocol/cow-sdk/commit/ea96f67a6ff44b7cc9226dc8ab7991896ced3ca7))
+
 ## [0.6.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.6.5...sdk-order-book-v0.6.6) (2026-02-20)
 
 

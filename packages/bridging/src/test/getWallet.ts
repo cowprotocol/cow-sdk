@@ -5,7 +5,6 @@ import {
   base,
   bnb,
   gnosisChain,
-  lens,
   linea,
   mainnet,
   plasma,

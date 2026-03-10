@@ -28,6 +28,8 @@ export const ACROSS_SPOOK_CONTRACT_ADDRESSES: Record<TargetChainId, string | und
   // TODO: This first integration is a draft, some of this chains might be supported, so we will need to update here as we iterate on the provider
   [SupportedChainId.GNOSIS_CHAIN]: undefined,
   [SupportedChainId.AVALANCHE]: undefined,
+  [AdditionalTargetChainId.BITCOIN]: undefined,
+  [AdditionalTargetChainId.SOLANA]: undefined,
 }
 
 export const ACROSS_MATH_CONTRACT_ADDRESSES: Record<TargetChainId, string | undefined> = {
@@ -40,10 +42,12 @@ export const ACROSS_MATH_CONTRACT_ADDRESSES: Record<TargetChainId, string | unde
   [SupportedChainId.GNOSIS_CHAIN]: undefined,
   [SupportedChainId.SEPOLIA]: undefined,
   [SupportedChainId.POLYGON]: undefined,
-  [AdditionalTargetChainId.OPTIMISM]: undefined,
   [SupportedChainId.AVALANCHE]: undefined,
   [SupportedChainId.BNB]: undefined, // TODO: confirm
   [SupportedChainId.LINEA]: undefined, // TODO: confirm
   [SupportedChainId.PLASMA]: undefined, // TODO: confirm
   [SupportedChainId.INK]: undefined, // TODO: confirm
+  [AdditionalTargetChainId.OPTIMISM]: undefined,
+  [AdditionalTargetChainId.BITCOIN]: undefined,
+  [AdditionalTargetChainId.SOLANA]: undefined,
 }
