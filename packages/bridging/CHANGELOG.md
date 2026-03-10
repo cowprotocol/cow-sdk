@@ -1,5 +1,35 @@
 # Changelog
 
+## [3.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v2.1.1...sdk-bridging-v3.0.0) (2026-03-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **chains:** Remove support for Lens.
+
+### ✨ Features
+
+* **chains:** Remove Lens ([#818](https://github.com/cowprotocol/cow-sdk/issues/818)) ([e8c74a0](https://github.com/cowprotocol/cow-sdk/commit/e8c74a078e5940901591652164af7b2ffb7b1fa6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.6.8
+    * @cowprotocol/sdk-common bumped to 0.7.1
+    * @cowprotocol/sdk-config bumped to 1.0.0
+    * @cowprotocol/sdk-contracts-ts bumped to 2.0.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.2.22
+    * @cowprotocol/sdk-order-book bumped to 2.0.0
+    * @cowprotocol/sdk-trading bumped to 1.0.4
+    * @cowprotocol/sdk-weiroll bumped to 0.1.22
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.11
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.11
+    * @cowprotocol/sdk-order-signing bumped to 0.1.38
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.11
+
 ## [2.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v2.1.0...sdk-bridging-v2.1.1) (2026-03-10)
 
 
