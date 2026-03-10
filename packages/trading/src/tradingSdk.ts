@@ -19,6 +19,7 @@ import { getPreSignTransaction } from './getPreSignTransaction'
 import {
   AbstractProviderAdapter,
   AccountAddress,
+  Address,
   enableLogging,
   ERC20_ALLOWANCE_ABI,
   ERC20_APPROVE_ABI,
@@ -36,6 +37,7 @@ import {
   SupportedChainId,
   CowEnv,
   COW_PROTOCOL_VAULT_RELAYER_ADDRESS_STAGING,
+  AddressPerChain,
 } from '@cowprotocol/sdk-config'
 import { resolveSigner } from './utils/resolveSigner'
 
@@ -171,6 +173,7 @@ export class TradingSdk {
       appCode: quoterParams.appCode,
       env: quoterParams.env,
       account: quoterParams.owner,
+      settlementContractOverride: quoterParams.settlementContractOverride,
     }
     const result = await getQuote(quoterParams, trader, advancedSettings, this.options.orderBookApi)
 
@@ -244,7 +247,13 @@ export class TradingSdk {
     const traderParams = this.mergeParams(params)
     const signer = resolveSigner(traderParams.signer)
 
-    return getPreSignTransaction(signer, traderParams.chainId, params.orderUid, params.env ?? this.traderParams.env)
+    return getPreSignTransaction(
+      signer,
+      traderParams.chainId,
+      params.orderUid,
+      params.env ?? this.traderParams.env,
+      params.settlementContractOverride ?? traderParams.settlementContractOverride,
+    )
   }
 
   async getOrder(params: OrderTraderParams): Promise<EnrichedOrder> {
@@ -259,12 +268,19 @@ export class TradingSdk {
     const { orderUid } = params
     const env = params.env || this.traderParams.env
     const chainId = params.chainId || this.traderParams.chainId
+    const settlementContractOverride = params.settlementContractOverride ?? this.traderParams.settlementContractOverride
 
     if (!chainId) {
       throw new Error('Chain ID is missing in offChainCancelOrder() call')
     }
 
-    const orderCancellationSigning = await OrderSigningUtils.signOrderCancellations([orderUid], chainId, signer, env)
+    const orderCancellationSigning = await OrderSigningUtils.signOrderCancellations(
+      [orderUid],
+      chainId,
+      signer,
+      env,
+      settlementContractOverride,
+    )
 
     await orderBookApi.sendSignedOrderCancellations({
       ...orderCancellationSigning,
@@ -287,9 +303,10 @@ export class TradingSdk {
     const signer = params.signer ? getGlobalAdapter().createSigner(params.signer) : getGlobalAdapter().signer
 
     const env = params.env ?? this.traderParams.env
+    const settlementContractOverride = params.settlementContractOverride ?? this.traderParams.settlementContractOverride
     const { transaction } = await (isEthFlowOrder
       ? getEthFlowCancellation(getEthFlowContract(signer, chainId, env), order)
-      : getSettlementCancellation(getSettlementContract(chainId, signer, env), order))
+      : getSettlementCancellation(getSettlementContract(chainId, signer, env, settlementContractOverride), order))
 
     const txReceipt = await signer.sendTransaction(transaction)
 
@@ -315,7 +332,7 @@ export class TradingSdk {
    * ```
    */
   async getCowProtocolAllowance(
-    params: WithPartialTraderParams<{ tokenAddress: string; owner: string }>,
+    params: WithPartialTraderParams<{ tokenAddress: string; owner: string; vaultRelayerAddress?: Address }>,
   ): Promise<bigint> {
     const env = params.env || this.traderParams.env
     const chainId = params.chainId || this.traderParams.chainId
@@ -326,9 +343,10 @@ export class TradingSdk {
 
     const adapter = getGlobalAdapter()
     const vaultRelayerAddress =
-      env === 'staging'
+      params.vaultRelayerAddress ??
+      (env === 'staging'
         ? COW_PROTOCOL_VAULT_RELAYER_ADDRESS_STAGING[chainId]
-        : COW_PROTOCOL_VAULT_RELAYER_ADDRESS[chainId]
+        : COW_PROTOCOL_VAULT_RELAYER_ADDRESS[chainId])
 
     return (await adapter.readContract({
       address: params.tokenAddress,
@@ -357,7 +375,9 @@ export class TradingSdk {
    * console.log('Approval transaction:', txHash)
    * ```
    */
-  async approveCowProtocol(params: WithPartialTraderParams<{ tokenAddress: string; amount: bigint }>): Promise<string> {
+  async approveCowProtocol(
+    params: WithPartialTraderParams<{ tokenAddress: string; amount: bigint; vaultRelayerAddress?: Address }>,
+  ): Promise<string> {
     const chainId = params.chainId || this.traderParams.chainId
     const env = params.env || this.traderParams.env
 
@@ -369,9 +389,10 @@ export class TradingSdk {
     const signer = resolveSigner(params.signer)
 
     const vaultRelayerAddress =
-      env === 'staging'
+      params.vaultRelayerAddress ??
+      (env === 'staging'
         ? COW_PROTOCOL_VAULT_RELAYER_ADDRESS_STAGING[chainId]
-        : COW_PROTOCOL_VAULT_RELAYER_ADDRESS[chainId]
+        : COW_PROTOCOL_VAULT_RELAYER_ADDRESS[chainId])
 
     const txParams = {
       to: params.tokenAddress,
@@ -398,12 +419,13 @@ export class TradingSdk {
   }
 
   private mergeParams<T>(params: T & Partial<TraderParameters>): T & TraderParameters {
-    const { chainId, signer, appCode, env } = params
+    const { chainId, signer, appCode, env, settlementContractOverride } = params
     const traderParams: Partial<TraderParameters> = {
       chainId: chainId || this.traderParams.chainId,
       signer: signer || this.traderParams.signer || getGlobalAdapter().signer,
       appCode: appCode || this.traderParams.appCode,
       env: env || this.traderParams.env,
+      settlementContractOverride: settlementContractOverride ?? this.traderParams.settlementContractOverride,
     }
 
     assertTraderParams(traderParams)
@@ -420,10 +442,11 @@ export class TradingSdk {
    */
   private mergeQuoterParams<T extends { owner: AccountAddress }>(
     params: T & Partial<Omit<TraderParameters, 'signer'>>,
-  ): T & { chainId: SupportedChainId; appCode: string; env: CowEnv } {
+  ): T & { chainId: SupportedChainId; appCode: string; env: CowEnv; settlementContractOverride?: AddressPerChain } {
     const chainId = params.chainId || this.traderParams.chainId
     const appCode = params.appCode || this.traderParams.appCode
     const env = params.env || this.traderParams.env || 'prod'
+    const settlementContractOverride = params.settlementContractOverride || this.traderParams.settlementContractOverride
 
     if (!chainId) {
       throw new Error('Missing quoter parameters: chainId')
@@ -437,6 +460,7 @@ export class TradingSdk {
       chainId,
       appCode,
       env,
+      settlementContractOverride,
     }
   }
 }

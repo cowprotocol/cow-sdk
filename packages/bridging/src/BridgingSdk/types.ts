@@ -1,6 +1,6 @@
 import { SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { SignerLike, TTLCache } from '@cowprotocol/sdk-common'
-import { TokenInfo } from '@cowprotocol/sdk-config'
+import { AddressPerChain, TokenInfo } from '@cowprotocol/sdk-config'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
 import { BridgeQuoteResult, QuoteBridgeRequest, BridgeProvider } from '../types'
@@ -102,4 +102,8 @@ export interface GetOrderParams {
    * The environment of the order
    */
   env?: CowEnv
+  /**
+   * Custom settlement contract address
+   */
+  settlementContractOverride?: AddressPerChain
 }

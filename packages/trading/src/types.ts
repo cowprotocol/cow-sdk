@@ -17,7 +17,7 @@ import {
 } from '@cowprotocol/sdk-order-book'
 import type { AbstractSigner, AccountAddress, Provider, SignerLike } from '@cowprotocol/sdk-common'
 import type { ORDER_PRIMARY_TYPE, UnsignedOrder } from '@cowprotocol/sdk-order-signing'
-import type { SupportedChainId, CowEnv } from '@cowprotocol/sdk-config'
+import type { SupportedChainId, CowEnv, AddressPerChain } from '@cowprotocol/sdk-config'
 
 /**
  * EIP-712 typed data domain.
@@ -65,6 +65,10 @@ export interface TradeBaseParameters {
  */
 export interface TradeOptionalParameters {
   env?: CowEnv
+  /**
+   * Custom address of settlement contract
+   */
+  settlementContractOverride?: AddressPerChain
   partiallyFillable?: OrderParameters['partiallyFillable']
 
   /**
@@ -90,6 +94,7 @@ export interface TraderParameters {
   appCode: latest.AppCode
   signer?: SignerLike
   env?: CowEnv
+  settlementContractOverride?: AddressPerChain
 }
 
 export type QuoterParameters = Omit<TraderParameters, 'signer'> & { account: AccountAddress }

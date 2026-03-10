@@ -1,6 +1,14 @@
 import type { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
 import type { Address, Amounts, EnrichedOrder, OrderKind } from '@cowprotocol/sdk-order-book'
-import type { EvmCall, TokenInfo, ChainInfo, SupportedChainId, TargetChainId, ChainId } from '@cowprotocol/sdk-config'
+import {
+  EvmCall,
+  TokenInfo,
+  ChainInfo,
+  SupportedChainId,
+  TargetChainId,
+  ChainId,
+  AddressPerChain,
+} from '@cowprotocol/sdk-config'
 import type {
   OrderPostingResult,
   QuoteAndPost,
@@ -218,11 +226,13 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    * @param chainId
    * @param order - CoW Protocol order
    * @param txHash - The hash of the settlement transaction in which the bridging post-hook was executed
+   * @param settlementContractOverride - Custom settlement contract address
    */
   getBridgingParams(
     chainId: ChainId,
     order: EnrichedOrder,
     txHash: string,
+    settlementContractOverride?: AddressPerChain,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null>
 
   /**

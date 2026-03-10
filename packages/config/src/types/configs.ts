@@ -1,6 +1,6 @@
 import { BackoffOptions } from 'exponential-backoff'
 import { RateLimiterOpts } from 'limiter'
-import { SupportedChainId } from '../chains'
+import { Address, SupportedChainId } from '../chains'
 
 /**
  * IPFS configuration.
@@ -33,6 +33,8 @@ export interface RequestOptions {
  * The environment to use for the Cow API.
  */
 export type CowEnv = 'prod' | 'staging'
+
+export type AddressPerChain = Record<SupportedChainId, Address>
 
 /**
  * Override some properties of the {@link ApiContext}.

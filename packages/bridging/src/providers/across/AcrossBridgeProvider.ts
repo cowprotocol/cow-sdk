@@ -35,6 +35,7 @@ import {
   SupportedChainId,
   TokenInfo,
   isSupportedChain,
+  AddressPerChain,
 } from '@cowprotocol/sdk-config'
 import { CowShedSdk, CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
 import { EnrichedOrder, OrderKind } from '@cowprotocol/sdk-order-book'
@@ -204,6 +205,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     chainId: ChainId,
     order: EnrichedOrder,
     txHash: string,
+    settlementContractOverride?: AddressPerChain,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
     if (!isSupportedChain(chainId)) {
       return null
@@ -216,7 +218,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
 
     if (!txReceipt) return null
 
-    const params = await getDepositParams(chainId, orderUid, txReceipt)
+    const params = await getDepositParams(chainId, orderUid, txReceipt, settlementContractOverride)
 
     if (!params) return null
 

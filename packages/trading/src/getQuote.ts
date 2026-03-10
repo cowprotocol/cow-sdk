@@ -215,6 +215,8 @@ export async function getQuote(
 
   const { partnerFee } = tradeParameters
   const { chainId, account: from } = trader
+  const env = _tradeParameters.env ?? trader.env
+  const settlementContractOverride = _tradeParameters.settlementContractOverride ?? trader.settlementContractOverride
 
   const amountsAndCosts = getQuoteAmountsAndCosts({
     orderParams: quote.quote,
@@ -235,7 +237,7 @@ export async function getQuote(
     appDataInfo.appDataKeccak256,
   )
 
-  const orderTypedData = await getOrderTypedData(chainId, orderToSign)
+  const orderTypedData = await getOrderTypedData(chainId, orderToSign, env, settlementContractOverride)
 
   return {
     result: {
@@ -259,6 +261,7 @@ export async function getTrader(swapParameters: SwapParameters): Promise<QuoterP
     chainId: swapParameters.chainId,
     appCode: swapParameters.appCode,
     account,
+    settlementContractOverride: swapParameters.settlementContractOverride,
   }
 }
 

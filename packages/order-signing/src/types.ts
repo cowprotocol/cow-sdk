@@ -1,5 +1,5 @@
 import type { SignerLike } from '@cowprotocol/sdk-common'
-import { CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
+import { AddressPerChain, CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
 import type { OrderParameters, EcdsaSigningScheme } from '@cowprotocol/sdk-order-book'
 
 /**
@@ -25,6 +25,7 @@ export interface SignOrderParams {
   order: UnsignedOrder
   signingScheme: EcdsaSigningScheme
   env?: CowEnv
+  settlementContractOverride?: AddressPerChain
 }
 
 /**
@@ -40,6 +41,7 @@ export interface SignOrderCancellationParams {
   orderUid: string
   signingScheme: EcdsaSigningScheme
   env?: CowEnv
+  settlementContractOverride?: AddressPerChain
 }
 
 /**
@@ -55,4 +57,5 @@ export interface SignOrderCancellationsParams {
   orderUids: string[]
   signingScheme: EcdsaSigningScheme
   env?: CowEnv
+  settlementContractOverride?: AddressPerChain
 }
