@@ -91,7 +91,11 @@ export class TradingSdk {
     params: WithPartialTraderParams<TradeParameters>,
     advancedSettings?: SwapAdvancedSettings,
   ): Promise<QuoteAndPost> {
-    const quoteResults = await getQuoteWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
+    const quoteResults = await getQuoteWithSigner(
+      this.mergeParams(params),
+      advancedSettings,
+      this.resolveOrderBookApi(params),
+    )
 
     return {
       quoteResults: quoteResults.result,
@@ -175,7 +179,7 @@ export class TradingSdk {
       account: quoterParams.owner,
       settlementContractOverride: quoterParams.settlementContractOverride,
     }
-    const result = await getQuote(quoterParams, trader, advancedSettings, this.options.orderBookApi)
+    const result = await getQuote(quoterParams, trader, advancedSettings, this.resolveOrderBookApi(params))
 
     return result.result
   }
@@ -184,21 +188,21 @@ export class TradingSdk {
     params: WithPartialTraderParams<TradeParameters>,
     advancedSettings?: SwapAdvancedSettings,
   ): Promise<QuoteResultsWithSigner> {
-    return getQuoteWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
+    return getQuoteWithSigner(this.mergeParams(params), advancedSettings, this.resolveOrderBookApi(params))
   }
 
   async postSwapOrder(
     params: WithPartialTraderParams<TradeParameters>,
     advancedSettings?: SwapAdvancedSettings,
   ): Promise<OrderPostingResult> {
-    return postSwapOrder(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
+    return postSwapOrder(this.mergeParams(params), advancedSettings, this.resolveOrderBookApi(params))
   }
 
   async postLimitOrder(
     params: WithPartialTraderParams<LimitTradeParameters>,
     advancedSettings?: LimitOrderAdvancedSettings,
   ): Promise<OrderPostingResult> {
-    return postLimitOrder(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
+    return postLimitOrder(this.mergeParams(params), advancedSettings, this.resolveOrderBookApi(params))
   }
 
   /**
@@ -227,7 +231,11 @@ export class TradingSdk {
     params: WithPartialTraderParams<TradeParameters>,
     advancedSettings?: SwapAdvancedSettings,
   ): Promise<ReturnType<typeof postSellNativeCurrencyOrder>> {
-    const quoteResults = await getQuoteWithSigner(this.mergeParams(params), advancedSettings, this.options.orderBookApi)
+    const quoteResults = await getQuoteWithSigner(
+      this.mergeParams(params),
+      advancedSettings,
+      this.resolveOrderBookApi(params),
+    )
 
     const { tradeParameters, quoteResponse } = quoteResults.result
     return postSellNativeCurrencyOrder(
@@ -415,7 +423,7 @@ export class TradingSdk {
       throw new Error('Chain ID is missing in getOrder() call')
     }
 
-    return resolveOrderBookApi(chainId, env)
+    return resolveOrderBookApi(chainId, env, this.options.orderBookApi)
   }
 
   private mergeParams<T>(params: T & Partial<TraderParameters>): T & TraderParameters {
