@@ -101,7 +101,8 @@ describe('AcrossApi', () => {
 
     it('should fetch suggested fees with required parameters', async () => {
       const request: SuggestedFeesRequest = {
-        token: '0x0000000000000000000000000000000000000001',
+        inputToken: '0x0000000000000000000000000000000000000001',
+        outputToken: '0x0000000000000000000000000000000000000002',
         originChainId: SupportedChainId.MAINNET,
         destinationChainId: SupportedChainId.POLYGON,
         amount: 1000000000000000000n,
@@ -111,14 +112,15 @@ describe('AcrossApi', () => {
 
       expect(fees).toEqual(mockResponse)
       expect(mockFetch).toHaveBeenCalledWith(
-        `https://app.across.to/api/suggested-fees?token=${request.token}&originChainId=${request.originChainId}&destinationChainId=${request.destinationChainId}&amount=${request.amount}`,
+        `https://app.across.to/api/suggested-fees?inputToken=${request.inputToken}&outputToken=${request.outputToken}&originChainId=${request.originChainId}&destinationChainId=${request.destinationChainId}&amount=${request.amount}&allowUnmatchedDecimals=true`,
         expect.any(Object),
       )
     })
 
     it('should include recipient when provided', async () => {
       const request: SuggestedFeesRequest = {
-        token: '0x0000000000000000000000000000000000000001',
+        inputToken: '0x0000000000000000000000000000000000000001',
+        outputToken: '0x0000000000000000000000000000000000000002',
         originChainId: SupportedChainId.MAINNET,
         destinationChainId: SupportedChainId.POLYGON,
         amount: 1000000000000000000n,
@@ -142,7 +144,8 @@ describe('AcrossApi', () => {
 
       await expect(
         api.getSuggestedFees({
-          token: '0x0000000000000000000000000000000000000001',
+          inputToken: '0x0000000000000000000000000000000000000001',
+          outputToken: '0x0000000000000000000000000000000000000002',
           originChainId: SupportedChainId.MAINNET,
           destinationChainId: SupportedChainId.POLYGON,
           amount: 1000000000000000000n,
