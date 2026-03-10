@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.10.0...sdk-config-v1.0.0) (2026-03-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **chains:** Remove support for Lens.
+
+### ✨ Features
+
+* **chains:** Remove Lens ([#818](https://github.com/cowprotocol/cow-sdk/issues/818)) ([e8c74a0](https://github.com/cowprotocol/cow-sdk/commit/e8c74a078e5940901591652164af7b2ffb7b1fa6))
+
 ## [0.10.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.9.0...sdk-config-v0.10.0) (2026-03-04)
 
 
