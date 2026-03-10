@@ -1,5 +1,51 @@
 # Changelog
 
+## [7.4.2](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.4.1...cow-sdk-v7.4.2) (2026-03-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-order-book bumped to 1.1.2
+    * @cowprotocol/sdk-order-signing bumped to 0.1.37
+    * @cowprotocol/sdk-trading bumped to 1.0.3
+
+## [7.4.1](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.4.0...cow-sdk-v7.4.1) (2026-03-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.6.7
+    * @cowprotocol/sdk-common bumped to 0.7.0
+    * @cowprotocol/sdk-config bumped to 0.10.0
+    * @cowprotocol/sdk-contracts-ts bumped to 1.8.0
+    * @cowprotocol/sdk-order-book bumped to 1.1.1
+    * @cowprotocol/sdk-order-signing bumped to 0.1.36
+    * @cowprotocol/sdk-trading bumped to 1.0.2
+
+## [7.4.0](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.3.8...cow-sdk-v7.4.0) (2026-03-04)
+
+
+### ✨ Features
+
+* add API endpoints for partners ([#809](https://github.com/cowprotocol/cow-sdk/issues/809)) ([59900e8](https://github.com/cowprotocol/cow-sdk/commit/59900e854a336e294ec881bd70bb13e579ff48ec))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.6.6
+    * @cowprotocol/sdk-common bumped to 0.6.3
+    * @cowprotocol/sdk-config bumped to 0.9.0
+    * @cowprotocol/sdk-contracts-ts bumped to 1.7.0
+    * @cowprotocol/sdk-order-book bumped to 1.1.0
+    * @cowprotocol/sdk-order-signing bumped to 0.1.35
+    * @cowprotocol/sdk-trading bumped to 1.0.1
+
 ## [7.3.8](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v7.3.7...cow-sdk-v7.3.8) (2026-02-26)
 
 

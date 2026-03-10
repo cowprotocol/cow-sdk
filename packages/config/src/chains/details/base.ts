@@ -1,5 +1,5 @@
-import { ChainInfo, SupportedChainId } from '../types'
-import { nativeCurrencyTemplate } from '../../constants/tokens'
+import { EvmChainInfo, SupportedChainId } from '../types'
+import { nativeCurrencyTemplate } from '../../constants/nativeCurrencyTemplate'
 import { RAW_CHAINS_FILES_PATH } from '../../constants/paths'
 
 const baseLogo = `${RAW_CHAINS_FILES_PATH}/images/base-logo.svg`
@@ -9,7 +9,7 @@ const baseLogo = `${RAW_CHAINS_FILES_PATH}/images/base-logo.svg`
  *
  * See also https://github.com/wevm/viem/blob/main/src/chains/definitions/base.ts
  */
-export const base: ChainInfo = {
+export const base: EvmChainInfo = {
   id: SupportedChainId.BASE,
   label: 'Base',
   eip155Label: 'Base',

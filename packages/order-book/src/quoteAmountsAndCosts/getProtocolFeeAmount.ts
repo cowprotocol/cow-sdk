@@ -1,6 +1,8 @@
 import { OrderKind, OrderParameters } from '../generated'
 import { HUNDRED_THOUSANDS, ONE_HUNDRED_BPS } from './quoteAmountsAndCosts.const'
 
+const PROTOCOL_FEE_BPS_SCALE = BigInt(HUNDRED_THOUSANDS)
+
 export interface ProtocolFeeAmountParams {
   orderParams: OrderParameters
   protocolFeeBps: number
@@ -42,8 +44,13 @@ export function getProtocolFeeAmount(params: ProtocolFeeAmountParams): bigint {
   const buyAmount = BigInt(buyAmountStr)
   const feeAmount = BigInt(feeAmountStr)
 
-  const protocolFeeScale = BigInt(HUNDRED_THOUSANDS)
-  const protocolFeeBpsBig = BigInt(protocolFeeBps * HUNDRED_THOUSANDS)
+  const protocolFeeScale = PROTOCOL_FEE_BPS_SCALE
+  // Keep 5 decimal places of bps precision while avoiding BigInt conversion from non-integer floats.
+  const protocolFeeBpsBig = BigInt(Math.round(protocolFeeBps * HUNDRED_THOUSANDS))
+
+  if (protocolFeeBpsBig <= 0n) {
+    return 0n
+  }
 
   if (isSell) {
     /**

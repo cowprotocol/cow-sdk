@@ -1,6 +1,6 @@
 import {
   isSupportedChain,
-  NATIVE_CURRENCY_ADDRESS,
+  EVM_NATIVE_CURRENCY_ADDRESS,
   OrderKind,
   type QuoteAndPost,
   WRAPPED_NATIVE_CURRENCIES,
@@ -38,9 +38,9 @@ export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
   const WETH = chainId && isSupportedChain(chainId) ? WRAPPED_NATIVE_CURRENCIES[chainId] : null
   const USDC = chainId && isSupportedChain(chainId) ? USDC_TOKENS[chainId] : null
   const sellToken =
-    WETH && sellTokenType === 'ETH' ? { ...WETH, symbol: 'ETH' as const, address: NATIVE_CURRENCY_ADDRESS } : WETH
+    WETH && sellTokenType === 'ETH' ? { ...WETH, symbol: 'ETH' as const, address: EVM_NATIVE_CURRENCY_ADDRESS } : WETH
 
-  const isNativeToken = sellToken?.address.toLowerCase() === NATIVE_CURRENCY_ADDRESS.toLowerCase()
+  const isNativeToken = sellToken?.address.toLowerCase() === EVM_NATIVE_CURRENCY_ADDRESS.toLowerCase()
   const sellAmountBigInt = sellToken ? parseUnits(sellAmount, sellToken.decimals) : BigInt(0)
   const hasInsufficientAllowance = currentAllowance !== null && currentAllowance < sellAmountBigInt
   const needsApproval = !isNativeToken && (currentAllowance === null || hasInsufficientAllowance)
