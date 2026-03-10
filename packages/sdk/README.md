@@ -23,7 +23,6 @@ The SDK supports all CoW Protocol enabled networks:
 - **Base** (8453) - `SupportedChainId.BASE`
 - **Polygon** (137) - `SupportedChainId.POLYGON`
 - **Avalanche** (43114) - `SupportedChainId.AVALANCHE`
-- **Lens** (232) - `SupportedChainId.LENS`
 - **BNB** (56) - `SupportedChainId.BNB`
 - **Linea** (59144) - `SupportedChainId.LINEA`
 - **Plasma** (9745) - `SupportedChainId.PLASMA`

@@ -59,15 +59,6 @@ export const WRAPPED_NATIVE_CURRENCIES: Record<SupportedChainId, TokenInfo> = {
       symbol: 'WAVAX',
     },
   ),
-  [SupportedChainId.LENS]: getWrappedTokenForChain(
-    SupportedChainId.LENS,
-    '0x6bdc36e20d267ff0dd6097799f82e78907105e2f',
-    {
-      decimals: 18,
-      name: 'Wrapped GHO',
-      symbol: 'WGHO',
-    },
-  ),
   [SupportedChainId.BNB]: getWrappedTokenForChain(SupportedChainId.BNB, '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c', {
     decimals: 18,
     name: 'Wrapped BNB',

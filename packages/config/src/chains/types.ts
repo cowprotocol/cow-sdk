@@ -12,7 +12,6 @@ export enum SupportedChainId {
   BNB = 56,
   GNOSIS_CHAIN = 100,
   POLYGON = 137,
-  LENS = 232,
   BASE = 8453,
   PLASMA = 9745,
   ARBITRUM_ONE = 42161,
