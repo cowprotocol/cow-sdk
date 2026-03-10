@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v1.1.1...sdk-order-book-v1.1.2) (2026-03-10)
+
+
+### 🐛 Bug Fixes
+
+* **order-book:** handle decimal protocolFeeBps BigInt conversion ([#798](https://github.com/cowprotocol/cow-sdk/issues/798)) ([ad7d323](https://github.com/cowprotocol/cow-sdk/commit/ad7d32370c8bb1a414cf1e23a2f2f89e1f9e0b96))
+
 ## [1.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v1.1.0...sdk-order-book-v1.1.1) (2026-03-04)
 
 

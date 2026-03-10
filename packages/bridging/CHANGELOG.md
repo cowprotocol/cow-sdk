@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v2.1.0...sdk-bridging-v2.1.1) (2026-03-10)
+
+
+### 🐛 Bug Fixes
+
+* **bridge:** increase extra gas for post hook ([#815](https://github.com/cowprotocol/cow-sdk/issues/815)) ([4e2330f](https://github.com/cowprotocol/cow-sdk/commit/4e2330f5af0613081b2be9a9c7c6ff0e93035f46))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-order-book bumped to 1.1.2
+    * @cowprotocol/sdk-trading bumped to 1.0.3
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 0.1.37
+
 ## [2.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v2.0.1...sdk-bridging-v2.1.0) (2026-03-04)
 
 
