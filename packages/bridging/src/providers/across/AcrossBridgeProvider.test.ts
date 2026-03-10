@@ -12,16 +12,15 @@ import { SuggestedFeesResponse } from './types'
 import { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { createAdapters } from '../../../tests/setup'
-import { DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION } from '../../const'
+import { DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION, DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION } from '../../const'
 import stringify from 'json-stable-stringify'
 
 // Mock AcrossApi
 jest.mock('./AcrossApi')
 
-const mockTokens = [
-  { chainId: SupportedChainId.POLYGON, address: '0x123', decimals: 18, symbol: 'TOKEN1', name: 'Token 1' },
-  { chainId: SupportedChainId.POLYGON, address: '0x456', decimals: 6, symbol: 'TOKEN2', name: 'Token 2' },
-]
+const TOKEN_A = { chainId: SupportedChainId.POLYGON, address: '0x123', decimals: 18, symbol: 'TOKEN1', name: 'Token 1' }
+const TOKEN_B = { chainId: SupportedChainId.POLYGON, address: '0x456', decimals: 6, symbol: 'TOKEN2', name: 'Token 2' }
+const mockTokens = [TOKEN_A, TOKEN_B]
 
 class AcrossBridgeProviderTest extends AcrossBridgeProvider {
   constructor(options: AcrossBridgeProviderOptions) {
@@ -98,6 +97,10 @@ adapterNames.forEach((adapterName) => {
 
     describe('getQuote', () => {
       const mockSuggestedFees: SuggestedFeesResponse = {
+        id: '1',
+        inputToken: TOKEN_A,
+        outputToken: TOKEN_B,
+        outputAmount: '20000',
         totalRelayFee: { pct: '100000000000000', total: '100000' },
         relayerCapitalFee: { pct: '50000000000000', total: '50000' },
         relayerGasFee: { pct: '50000000000000', total: '50000' },
@@ -147,20 +150,21 @@ adapterNames.forEach((adapterName) => {
         expect(suggestedFees).toEqual(mockSuggestedFees)
 
         const expectedQuote: BridgeQuoteResult = {
+          id: '1',
           isSell: true,
           quoteBody: stringify(mockSuggestedFees),
           amountsAndCosts: {
-            beforeFee: { sellAmount: 1000000000000000000n, buyAmount: 1000000n },
-            afterFee: { sellAmount: 1000000000000000000n, buyAmount: 999900n },
-            afterSlippage: { sellAmount: 1000000000000000000n, buyAmount: 999900n },
+            beforeFee: { sellAmount: 1000000000000000000n, buyAmount: 20000n },
+            afterFee: { sellAmount: 1000000000000000000n, buyAmount: 19998n },
+            afterSlippage: { sellAmount: 1000000000000000000n, buyAmount: 19898n },
             costs: {
               bridgingFee: {
                 feeBps: 1,
                 amountInSellCurrency: 100000000000000n,
-                amountInBuyCurrency: 100n,
+                amountInBuyCurrency: 2n,
               },
             },
-            slippageBps: 0,
+            slippageBps: 50,
           },
           quoteTimestamp: 1234567890,
           expectedFillTimeSeconds: 300,
@@ -200,7 +204,7 @@ adapterNames.forEach((adapterName) => {
 
     describe('getExplorerUrl', () => {
       it('should return explorer url', () => {
-        expect(provider.getExplorerUrl('123')).toEqual('https://app.across.to/transactions')
+        expect(provider.getExplorerUrl('123', '0xaaa')).toEqual('https://app.across.to/transaction/0xaaa')
       })
     })
 
@@ -262,7 +266,7 @@ adapterNames.forEach((adapterName) => {
 
         const gasLimit = await provider.getGasLimitEstimationForHook(request)
 
-        expect(gasLimit).toEqual(DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION)
+        expect(gasLimit).toEqual(DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION + DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION)
       })
     })
   })

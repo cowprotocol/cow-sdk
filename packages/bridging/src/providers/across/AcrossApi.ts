@@ -1,3 +1,6 @@
+import { log } from '@cowprotocol/sdk-common'
+import { ALL_SUPPORTED_CHAINS_MAP, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
+
 import {
   AvailableRoutesRequest,
   DepositStatusRequest,
@@ -9,16 +12,22 @@ import {
   SuggestedFeesResponse,
 } from './types'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
-import { TokenInfo } from '@cowprotocol/sdk-config'
-import { log } from '@cowprotocol/sdk-common'
 
 const ACROSS_API_URL = 'https://app.across.to/api'
+
+enum AcrossApiErrors {
+  AMOUNT_TOO_LOW = 'AMOUNT_TOO_LOW',
+}
+
+type AcrossApiToken = TokenInfo & { logoURI?: string; isNative: boolean }
 
 export interface AcrossApiOptions {
   apiBaseUrl?: string
 }
 
 export class AcrossApi {
+  private cachedTokens: TokenInfo[] = []
+
   constructor(private readonly options: AcrossApiOptions = {}) {}
 
   /**
@@ -29,19 +38,8 @@ export class AcrossApi {
    *
    * See https://docs.across.to/reference/api-reference#available-routes
    */
-  async getAvailableRoutes({
-    originChainId,
-    originToken,
-    destinationChainId,
-    destinationToken,
-  }: AvailableRoutesRequest): Promise<Route[]> {
-    const params: Record<string, string> = {}
-    if (originChainId) params.originChainId = originChainId
-    if (originToken) params.originToken = originToken
-    if (destinationChainId) params.destinationChainId = destinationChainId
-    if (destinationToken) params.destinationToken = destinationToken
-
-    return this.fetchApi('/available-routes', params, isValidRoutes)
+  async getAvailableRoutes(params: AvailableRoutesRequest): Promise<Route[]> {
+    return this.fetchApi('/available-routes', params as never as Record<string | number, string>, isValidRoutes)
   }
 
   /**
@@ -54,28 +52,34 @@ export class AcrossApi {
    */
   async getSuggestedFees(request: SuggestedFeesRequest): Promise<SuggestedFeesResponse> {
     const params: Record<string, string> = {
-      token: request.token,
+      inputToken: request.inputToken,
+      outputToken: request.outputToken,
       originChainId: request.originChainId.toString(),
       destinationChainId: request.destinationChainId.toString(),
       amount: request.amount.toString(),
+      allowUnmatchedDecimals: 'true', // Always set to true since we adjust for destination token decimals
     }
 
     if (request.recipient) {
       params.recipient = request.recipient
     }
-
-    // Get the quote from the Across API (see https://docs.across.to/reference/api-reference#suggested-fees)
-    // Example: https://app.across.to/api/suggested-fees?token=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&originChainId=8453&destinationChainId=137&amount=100000000
-    //
-    // TODO: The API documented params don't match with the example above. Ideally I would use 'inputToken' and 'outputToken', but the example above uses 'token'. This will work for current implementation, since we bridge the canonical token, but this will need to be reviewed
-    //       https://app.across.to/api/suggested-fees?inputToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&originChainId=8453&destinationChainId=137&outputToken=0xc2132D05D31c914a87C6611C10748AEb04B58e8F&amount=100000000
     return this.fetchApi('/suggested-fees', params, isValidSuggestedFeesResponse)
   }
 
   async getSupportedTokens(): Promise<TokenInfo[]> {
-    return this.fetchApi<(TokenInfo & { logoURI?: string })[]>('/token-list', {}).then((tokens) =>
-      tokens.map((token) => ({ ...token, logoUrl: token.logoURI })),
-    )
+    if (this.cachedTokens.length === 0) {
+      const response = await this.fetchApi<AcrossApiToken[]>('/token-list', {}).then((tokens) =>
+        tokens.map((token) => ({
+          ...token,
+          logoUrl: token.logoURI,
+          address: token.isNative
+            ? (ALL_SUPPORTED_CHAINS_MAP[token.chainId as SupportedChainId]?.nativeCurrency.address ?? token.address)
+            : token.address,
+        })),
+      )
+      this.cachedTokens = response
+    }
+    return this.cachedTokens
   }
 
   async getDepositStatus(request: DepositStatusRequest): Promise<DepositStatusResponse> {
@@ -89,7 +93,7 @@ export class AcrossApi {
 
   protected async fetchApi<T>(
     path: string,
-    params: Record<string, string>,
+    params: Record<string | number, string>,
     isValidResponse?: (response: unknown) => response is T,
   ): Promise<T> {
     const baseUrl = this.options.apiBaseUrl || ACROSS_API_URL
@@ -103,6 +107,11 @@ export class AcrossApi {
 
     if (!response.ok) {
       const errorBody = await response.json()
+
+      if (errorBody.code === AcrossApiErrors.AMOUNT_TOO_LOW) {
+        throw new BridgeProviderQuoteError(BridgeQuoteErrors.SELL_AMOUNT_TOO_SMALL, errorBody)
+      }
+
       throw new BridgeProviderQuoteError(BridgeQuoteErrors.API_ERROR, errorBody)
     }
 

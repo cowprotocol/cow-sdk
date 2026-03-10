@@ -7,6 +7,9 @@ import { SupportedChainId } from '@cowprotocol/sdk-config'
 const mockFetch = jest.fn()
 global.fetch = mockFetch
 
+const TOKEN_A = { chainId: SupportedChainId.POLYGON, address: '0x123', decimals: 18, symbol: 'TOKEN1', name: 'Token 1' }
+const TOKEN_B = { chainId: SupportedChainId.POLYGON, address: '0x456', decimals: 6, symbol: 'TOKEN2', name: 'Token 2' }
+
 describe('AcrossApi', () => {
   let api: AcrossApi
 
@@ -36,9 +39,9 @@ describe('AcrossApi', () => {
 
     it('should fetch available routes with all parameters', async () => {
       const params = {
-        originChainId: '1',
+        originChainId: 1,
         originToken: '0x0000000000000000000000000000000000000001',
-        destinationChainId: '137',
+        destinationChainId: 137,
         destinationToken: '0x0000000000000000000000000000000000000002',
       }
 
@@ -60,9 +63,9 @@ describe('AcrossApi', () => {
 
       await expect(
         api.getAvailableRoutes({
-          originChainId: '1',
+          originChainId: 1,
           originToken: '0x0000000000000000000000000000000000000001',
-          destinationChainId: '137',
+          destinationChainId: 137,
           destinationToken: '0x0000000000000000000000000000000000000002',
         }),
       ).rejects.toThrow(BridgeQuoteErrors.API_ERROR)
@@ -71,6 +74,10 @@ describe('AcrossApi', () => {
 
   describe('getSuggestedFees', () => {
     const mockResponse: SuggestedFeesResponse = {
+      id: '1',
+      inputToken: TOKEN_A,
+      outputToken: TOKEN_B,
+      outputAmount: '300010000000',
       totalRelayFee: { pct: '100000000000000', total: '100000' },
       relayerCapitalFee: { pct: '50000000000000', total: '50000' },
       relayerGasFee: { pct: '50000000000000', total: '50000' },
@@ -101,7 +108,8 @@ describe('AcrossApi', () => {
 
     it('should fetch suggested fees with required parameters', async () => {
       const request: SuggestedFeesRequest = {
-        token: '0x0000000000000000000000000000000000000001',
+        inputToken: '0x0000000000000000000000000000000000000001',
+        outputToken: '0x0000000000000000000000000000000000000002',
         originChainId: SupportedChainId.MAINNET,
         destinationChainId: SupportedChainId.POLYGON,
         amount: 1000000000000000000n,
@@ -111,14 +119,15 @@ describe('AcrossApi', () => {
 
       expect(fees).toEqual(mockResponse)
       expect(mockFetch).toHaveBeenCalledWith(
-        `https://app.across.to/api/suggested-fees?token=${request.token}&originChainId=${request.originChainId}&destinationChainId=${request.destinationChainId}&amount=${request.amount}`,
+        `https://app.across.to/api/suggested-fees?inputToken=${request.inputToken}&outputToken=${request.outputToken}&originChainId=${request.originChainId}&destinationChainId=${request.destinationChainId}&amount=${request.amount}&allowUnmatchedDecimals=true`,
         expect.any(Object),
       )
     })
 
     it('should include recipient when provided', async () => {
       const request: SuggestedFeesRequest = {
-        token: '0x0000000000000000000000000000000000000001',
+        inputToken: '0x0000000000000000000000000000000000000001',
+        outputToken: '0x0000000000000000000000000000000000000002',
         originChainId: SupportedChainId.MAINNET,
         destinationChainId: SupportedChainId.POLYGON,
         amount: 1000000000000000000n,
@@ -142,7 +151,8 @@ describe('AcrossApi', () => {
 
       await expect(
         api.getSuggestedFees({
-          token: '0x0000000000000000000000000000000000000001',
+          inputToken: '0x0000000000000000000000000000000000000001',
+          outputToken: '0x0000000000000000000000000000000000000002',
           originChainId: SupportedChainId.MAINNET,
           destinationChainId: SupportedChainId.POLYGON,
           amount: 1000000000000000000n,
@@ -162,9 +172,9 @@ describe('AcrossApi', () => {
       })
 
       await customApi.getAvailableRoutes({
-        originChainId: '1',
+        originChainId: 1,
         originToken: '0x0000000000000000000000000000000000000001',
-        destinationChainId: '137',
+        destinationChainId: 137,
         destinationToken: '0x0000000000000000000000000000000000000002',
       })
 

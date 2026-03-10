@@ -1,113 +1,153 @@
-import { WeirollContract } from '@cowprotocol/sdk-weiroll'
-import { ACROSS_MATH_CONTRACT_ADDRESSES, ACROSS_SPOOK_CONTRACT_ADDRESSES } from './const/contracts'
-import { WeirollCommandFlags, createWeirollContract, createWeirollDelegateCall } from '@cowprotocol/sdk-weiroll'
-import { ACROSS_MATH_ABI, ACROSS_SPOKE_POOL_ABI } from './abi'
-import { EvmCall, TargetChainId } from '@cowprotocol/sdk-config'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
-import { AcrossQuoteResult } from './AcrossBridgeProvider'
-import { QuoteBridgeRequest } from '../../types'
+import { EvmCall, TargetChainId } from '@cowprotocol/sdk-config'
 import { getGlobalAdapter } from '@cowprotocol/sdk-common'
 
-const ERC20_BALANCE_OF_ABI = ['function balanceOf(address account) external view returns (uint256)'] as const
-const ERC20_APPROVE_OF_ABI = ['function approve(address spender, uint256 amount) external returns (bool)'] as const
+import { ACROSS_SPOKE_POOL_PERIPHERY_CONTRACT_ADDRESSES, ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES } from './const/contracts'
+import { ACROSS_SPOKE_POOL_PERIPHERY_ABI } from './abi'
+import { AcrossQuoteResult } from './AcrossBridgeProvider'
+import { QuoteBridgeRequest } from '../../types'
+import { mapNativeOrWrappedTokenAddress } from './util'
 
-function getSpookPoolContract(sellTokenChainId: TargetChainId): WeirollContract {
-  const adapter = getGlobalAdapter()
-  const spokePoolAddress = ACROSS_SPOOK_CONTRACT_ADDRESSES[sellTokenChainId]
-  if (!spokePoolAddress) {
-    throw new Error('Spoke pool address not found for chain: ' + sellTokenChainId)
+const ERC20_APPROVE_ABI = [
+  {
+    inputs: [
+      { name: 'spender', type: 'address' },
+      { name: 'amount', type: 'uint256' },
+    ],
+    name: 'approve',
+    outputs: [{ name: '', type: 'bool' }],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+]
+
+const ERC20_BALANCE_OF_ABI = [
+  {
+    inputs: [{ name: 'account', type: 'address' }],
+    name: 'balanceOf',
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+]
+
+const TRANSFER_TYPE_APPROVAL = 0
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+
+/**
+ * Converts an Ethereum address (20 bytes) to bytes32 by left-padding with zeros.
+ * Matches Solidity: bytes32(uint256(uint160(address)))
+ */
+export function addressToBytes32(address: string): string {
+  return '0x' + address.slice(2).toLowerCase().padStart(64, '0')
+}
+
+function getSpokePoolPeripheryAddress(chainId: TargetChainId): string {
+  const address = ACROSS_SPOKE_POOL_PERIPHERY_CONTRACT_ADDRESSES[chainId]
+  if (!address) {
+    throw new Error('Spoke pool periphery address not found for chain: ' + chainId)
   }
-  return createWeirollContract(
-    adapter.getContract(spokePoolAddress, ACROSS_SPOKE_POOL_ABI) as any,
-    WeirollCommandFlags.CALL,
-  )
+  return address
 }
 
-function getMathContract(sellTokenChainId: TargetChainId): WeirollContract {
-  const adapter = getGlobalAdapter()
-  const mathContractAddress = ACROSS_MATH_CONTRACT_ADDRESSES[sellTokenChainId]
-  if (!mathContractAddress) {
-    throw new Error('Math contract address not found for chain: ' + sellTokenChainId)
+function getSpokePoolAddress(chainId: TargetChainId): string {
+  const address = ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES[chainId]
+  if (!address) {
+    throw new Error('Spoke pool address not found for chain: ' + chainId)
   }
-
-  return createWeirollContract(
-    adapter.getContract(mathContractAddress, ACROSS_MATH_ABI) as any,
-    WeirollCommandFlags.CALL,
-  )
+  return address
 }
 
-function getBalanceOfSellTokenContract(sellTokenAddress: string): WeirollContract {
-  const adapter = getGlobalAdapter()
-  return createWeirollContract(
-    adapter.getContract(sellTokenAddress, ERC20_BALANCE_OF_ABI),
-    WeirollCommandFlags.STATICCALL,
-  )
-}
-
-function getApproveSellTokenContract(sellTokenAddress: string): WeirollContract {
-  const adapter = getGlobalAdapter()
-  return createWeirollContract(adapter.getContract(sellTokenAddress, ERC20_APPROVE_OF_ABI), WeirollCommandFlags.CALL)
-}
-
+/**
+ * Creates the EVM calls needed to bridge tokens via Across using the SpokePoolPeriphery contract.
+ *
+ * The flow:
+ * 1. Approve the SpokePoolPeriphery to pull tokens from cow-shed
+ * 2. Call swapAndBridge on the periphery with a pass-through "swap" (no actual token swap)
+ *    - The periphery pulls tokens from cow-shed, passes them through the SwapProxy (identity swap),
+ *      and deposits them into the SpokePool
+ *    - enableProportionalAdjustment=true ensures the output amount scales if the actual input differs
+ *
+ * @returns An array of EvmCalls: [approve, swapAndBridge]
+ */
 export function createAcrossDepositCall(params: {
   request: QuoteBridgeRequest
   quote: AcrossQuoteResult
   cowShedSdk: CowShedSdk
-}): EvmCall {
+}): EvmCall[] {
   const { request, quote, cowShedSdk } = params
   const { sellTokenChainId, sellTokenAddress, buyTokenChainId, buyTokenAddress, account, receiver } = request
 
-  // Create the relevant weiroll contracts
-  const spokePoolContract = getSpookPoolContract(sellTokenChainId)
-  const mathContract = getMathContract(sellTokenChainId)
-  const balanceOfSellTokenContract = getBalanceOfSellTokenContract(sellTokenAddress)
-  const approveSellTokenContract = getApproveSellTokenContract(sellTokenAddress)
+  const sellTokenLike = { address: sellTokenAddress, chainId: sellTokenChainId }
+  const sellToken = mapNativeOrWrappedTokenAddress(sellTokenLike)
+  const buyToken = mapNativeOrWrappedTokenAddress({ address: buyTokenAddress, chainId: buyTokenChainId })
 
-  // Get the cow shed account
+  const adapter = getGlobalAdapter()
+
+  const spokePoolPeripheryAddress = getSpokePoolPeripheryAddress(sellTokenChainId)
+  const spokePoolAddress = getSpokePoolAddress(sellTokenChainId)
   const cowShedAccount = cowShedSdk.getCowShedAccount(sellTokenChainId, account)
 
   const { suggestedFees } = quote
+  const inputAmount = request.amount
+  const outputAmount = quote.amountsAndCosts.afterSlippage.buyAmount
 
-  // Get the weiroll call of the deposit into spoke pool
-  const depositCall = createWeirollDelegateCall((planner) => {
-    // Get bridged amount (balance of the intermediate token at swap time)
-    const sourceAmountIncludingSurplus = planner.add(balanceOfSellTokenContract.balanceOf(cowShedAccount))
+  // The "swap" is a pass-through: the SwapProxy receives tokens and returns them unchanged.
+  // We use TransferType.Approval so tokens stay in the SwapProxy, and the routerCalldata
+  // is a harmless read-only call (balanceOf) on the token contract used as the "exchange".
+  const noOpSwapCalldata = adapter.utils.encodeFunction(ERC20_BALANCE_OF_ABI, 'balanceOf', [ZERO_ADDRESS]) as string
 
-    // Calculate the new output amount using the actual received intermediate tokens (uses the original quoted fee)
-    const relayFeePercentage = BigInt(suggestedFees.totalRelayFee.pct)
-    const outputAmountIncludingSurplus = planner.add(
-      mathContract.multiplyAndSubtract(sourceAmountIncludingSurplus, relayFeePercentage),
-    )
+  const swapAndDepositData = {
+    submissionFees: {
+      amount: 0n,
+      recipient: ZERO_ADDRESS,
+    },
+    depositData: {
+      inputToken: sellToken,
+      outputToken: addressToBytes32(buyToken),
+      outputAmount,
+      depositor: cowShedAccount,
+      recipient: addressToBytes32(receiver || account),
+      destinationChainId: BigInt(buyTokenChainId),
+      exclusiveRelayer: addressToBytes32(suggestedFees.exclusiveRelayer),
+      quoteTimestamp: Number(suggestedFees.timestamp),
+      fillDeadline: Number(suggestedFees.fillDeadline),
+      exclusivityParameter: Number(suggestedFees.exclusivityDeadline),
+      message: getGlobalAdapter().utils.encodeAbi(['string'], [quote.suggestedFees.id]),
+    },
+    swapToken: sellToken,
+    exchange: sellToken,
+    transferType: TRANSFER_TYPE_APPROVAL,
+    swapTokenAmount: inputAmount,
+    minExpectedInputTokenAmount: inputAmount,
+    routerCalldata: noOpSwapCalldata,
+    enableProportionalAdjustment: true,
+    spokePool: spokePoolAddress,
+    nonce: 0n,
+  }
 
-    // Set allowance for SpokePool to transfer bridged tokens
-    planner.add(approveSellTokenContract.approve(spokePoolContract.address, sourceAmountIncludingSurplus))
+  // Call 1: Approve the SpokePoolPeriphery to pull tokens from cow-shed
+  const approveCallData = adapter.utils.encodeFunction(ERC20_APPROVE_ABI, 'approve', [
+    spokePoolPeripheryAddress,
+    inputAmount,
+  ]) as string
 
-    // Prepare deposit params
-    const quoteTimestamp = BigInt(suggestedFees.timestamp)
-    const fillDeadline = suggestedFees.fillDeadline
-    const exclusivityDeadline = suggestedFees.exclusivityDeadline
-    const exclusiveRelayer = suggestedFees.exclusiveRelayer
-    const message = '0x'
+  const approveCall: EvmCall = {
+    to: sellToken,
+    data: approveCallData,
+    value: 0n,
+  }
 
-    // Deposit into spoke pool
-    planner.add(
-      spokePoolContract.depositV3(
-        cowShedAccount,
-        receiver || account,
-        sellTokenAddress,
-        buyTokenAddress,
-        sourceAmountIncludingSurplus,
-        outputAmountIncludingSurplus,
-        buyTokenChainId,
-        exclusiveRelayer,
-        quoteTimestamp,
-        fillDeadline,
-        exclusivityDeadline,
-        message,
-      ),
-    )
-  })
+  // Call 2: Execute swapAndBridge on the SpokePoolPeriphery
+  const swapAndBridgeCallData = adapter.utils.encodeFunction(ACROSS_SPOKE_POOL_PERIPHERY_ABI, 'swapAndBridge', [
+    swapAndDepositData,
+  ]) as string
 
-  // Return the deposit into spoke pool call
-  return depositCall
+  const swapAndBridgeCall: EvmCall = {
+    to: spokePoolPeripheryAddress,
+    data: swapAndBridgeCallData,
+    value: 0n,
+  }
+
+  return [approveCall, swapAndBridgeCall]
 }

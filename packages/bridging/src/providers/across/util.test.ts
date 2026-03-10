@@ -15,6 +15,7 @@ import { AdditionalTargetChainId, SupportedChainId } from '@cowprotocol/sdk-conf
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { createAdapters } from '../../../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import stringify from 'json-stable-stringify'
 
 describe('Across Utils', () => {
   describe('getChainConfigs', () => {
@@ -70,6 +71,10 @@ describe('Across Utils', () => {
   describe('toBridgeQuoteResult', () => {
     const mockAmount = 1000000000000000000n // 1 ETH
     const mockSuggestedFees: SuggestedFeesResponse = {
+      id: '1',
+      outputAmount: '1000000', // equals decimal-adjusted sell amount (18→6 decimals)
+      inputToken: { chainId: SupportedChainId.MAINNET, address: '0x1234567890123456789012345678901234567890', decimals: 18 },
+      outputToken: { chainId: SupportedChainId.POLYGON, address: '0x1234567890123456789012345678901234567890', decimals: 6 },
       totalRelayFee: {
         pct: '100000000000000000', // 0.1 or 10% in contract format
         total: '100000000000000000',
@@ -122,9 +127,9 @@ describe('Across Utils', () => {
       const result = toBridgeQuoteResult(request as unknown as QuoteBridgeRequest, slippageBps, mockSuggestedFees)
 
       const expected: AcrossQuoteResult = {
+        id: '1',
         isSell: true,
-        quoteBody:
-          '{"estimatedFillTimeSec":"1742111892","exclusiveRelayer":"0x1234567890123456789012345678901234567890","exclusivityDeadline":"1742114891","fillDeadline":"1742122091","isAmountTooLow":false,"limits":{"maxDeposit":"50000000000000000000","maxDepositInstant":"30000000000000000000","maxDepositShortDelay":"40000000000000000000","minDeposit":"10000000000000000000","recommendedDepositInstant":"35000000000000000000"},"lpFee":{"pct":"250000000000000000","total":"250000000000000000"},"quoteBlock":"1715808000","relayerCapitalFee":{"pct":"150000000000000000","total":"150000000000000000"},"relayerGasFee":{"pct":"200000000000000000","total":"200000000000000000"},"spokePoolAddress":"0x1234567890123456789012345678901234567890","timestamp":"1742111291","totalRelayFee":{"pct":"100000000000000000","total":"100000000000000000"}}',
+        quoteBody: stringify(mockSuggestedFees),
         amountsAndCosts: {
           beforeFee: { sellAmount: 1000000000000000000n, buyAmount: 1000000n }, // 1:1 (different decimals)
           afterFee: { sellAmount: 1000000000000000000n, buyAmount: 900000n }, // 1:0.9 (10% fee applied)

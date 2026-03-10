@@ -1,42 +1,56 @@
-import { getAcrossDepositEvents, getCowTradeEvents } from './util'
+import { EnrichedOrder } from '@cowprotocol/sdk-order-book'
+import { log, TransactionReceipt, getGlobalAdapter, isWrappedNativeToken } from '@cowprotocol/sdk-common'
+import { getChainInfo, SupportedChainId } from '@cowprotocol/sdk-config'
+import { cowAppDataLatestScheme } from '@cowprotocol/sdk-app-data'
+
+import { getAcrossDepositEvents } from './util'
 import { BridgingDepositParams } from '../../types'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
-import { log, TransactionReceipt } from '@cowprotocol/sdk-common'
 
 export async function getDepositParams(
   chainId: SupportedChainId,
-  orderId: string,
+  order: EnrichedOrder,
   txReceipt: TransactionReceipt,
 ): Promise<BridgingDepositParams | null> {
   const depositEvents = getAcrossDepositEvents(chainId, txReceipt.logs)
 
-  if (depositEvents.length === 0) {
+  if (depositEvents.length === 0 || !order.fullAppData) {
     return null
   }
 
-  const cowTradeEvents = getCowTradeEvents(chainId, txReceipt.logs)
+  const appDataObj = JSON.parse(order.fullAppData)
+  const bridgeQuoteId = (appDataObj as cowAppDataLatestScheme.AppDataRootSchema)?.metadata?.bridging?.quoteId
 
-  // Find relative position for the orderId in the settlement tx
-  const orderTradeIndex = cowTradeEvents.findIndex((event) => event.orderUid === orderId)
+  if (!bridgeQuoteId) return null
 
-  if (orderTradeIndex < 0) return null
+  const adapter = getGlobalAdapter()
 
-  /**
-   * FIXME
-   * TODO: this is a wrong logic! There might be different count of cowTradeEvents and depositEvents
-   * TODO: because of that, this function might not find a depositEvent
-   * TODO: example https://arbiscan.io/tx/0x0ebd35b986bac6f4d54409e42a9ec2c0713414992e06ad29537c12679149611a#eventlog
-   */
-  const depositEvent = depositEvents[orderTradeIndex]
+  const depositEvent = depositEvents.find((i) => {
+    // The quoteId is encoded into the deposit call in createAcrossDepositCall()
+    const message = adapter.utils.decodeAbi(['string'], i.message)
+
+    return message[0] === bridgeQuoteId
+  })
 
   if (!depositEvent) {
-    log(`Trade event found at index ${orderTradeIndex} but only ${depositEvents.length} deposit events available`)
+    log(
+      `Trade event found for bridge with quoteId=${bridgeQuoteId} but only ${depositEvents.length} deposit events available`,
+    )
     return null
   }
+
+  const outputTokenAddress = depositEvent.outputToken
+  const destinationChainId = parseInt(depositEvent.destinationChainId.toString())
+  const destinationNativeToken = getChainInfo(destinationChainId)?.nativeCurrency
 
   return {
     inputTokenAddress: depositEvent.inputToken,
-    outputTokenAddress: depositEvent.outputToken,
+    // Across uses wrapped native token address for both native and wrapped tokens
+    outputTokenAddress: isWrappedNativeToken({
+      address: outputTokenAddress,
+      chainId: destinationChainId,
+    })
+      ? (destinationNativeToken?.address ?? outputTokenAddress)
+      : outputTokenAddress,
     inputAmount: BigInt(depositEvent.inputAmount.toString()),
     outputAmount: BigInt(depositEvent.outputAmount.toString()),
     owner: depositEvent.depositor,
@@ -44,7 +58,7 @@ export async function getDepositParams(
     fillDeadline: parseInt(depositEvent.fillDeadline.toString()),
     recipient: depositEvent.recipient,
     sourceChainId: chainId,
-    destinationChainId: parseInt(depositEvent.destinationChainId.toString()),
+    destinationChainId,
     bridgingId: depositEvent.depositId.toString(),
   }
 }
