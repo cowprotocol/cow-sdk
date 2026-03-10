@@ -12,7 +12,6 @@ export enum AaveFlashLoanType {
 // See https://aave.com/docs/resources/addresses
 export const AAVE_POOL_ADDRESS: Record<SupportedChainId, string> = {
   [SupportedChainId.SEPOLIA]: '',
-  [SupportedChainId.LENS]: '',
   [SupportedChainId.GNOSIS_CHAIN]: '0xb50201558B00496A145fE76f7424749556E326D8',
   [SupportedChainId.MAINNET]: '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2',
   [SupportedChainId.BASE]: '0xA238Dd80C259a72e81d7e4664a9801593F98d1c5',
