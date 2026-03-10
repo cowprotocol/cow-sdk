@@ -35,24 +35,15 @@ export const COMPOSABLE_COW_CONTRACT_ADDRESS = mapAddressToSupportedNetworks(COM
 
 const ETH_FLOW_ADDRESS = '0xba3cb449bd2b4adddbc894d8697f5170800eadec'
 const BARN_ETH_FLOW_ADDRESS = '0xb37aDD6AC288BD3825a901Cba6ec65A89f31B8CC'
-// Lens does not uses the same deterministic address for the EthFlow contract as other chains.
-const ETH_FLOW_ADDRESS_LENS = '0x5A5b8aE7a0b4C0EAf453d10DCcfbA413f07ebdC2'
-const BARN_ETH_FLOW_ADDRESS_LENS = '0xFb337f8a725A142f65fb9ff4902d41cc901de222'
 
 /**
  * An object containing the addresses of ETH flow contracts for each supported chain for production.
  */
-export const ETH_FLOW_ADDRESSES: Record<SupportedChainId, string> = {
-  ...mapAddressToSupportedNetworks(ETH_FLOW_ADDRESS),
-  [SupportedChainId.LENS]: ETH_FLOW_ADDRESS_LENS,
-}
+export const ETH_FLOW_ADDRESSES: Record<SupportedChainId, string> = mapAddressToSupportedNetworks(ETH_FLOW_ADDRESS)
 
 /**
  * An object containing the addresses of ETH flow contracts for each supported chain for barn.
  */
-export const BARN_ETH_FLOW_ADDRESSES: Record<SupportedChainId, string> = {
-  ...mapAddressToSupportedNetworks(BARN_ETH_FLOW_ADDRESS),
-  [SupportedChainId.LENS]: BARN_ETH_FLOW_ADDRESS_LENS,
-}
+export const BARN_ETH_FLOW_ADDRESSES: Record<SupportedChainId, string> = mapAddressToSupportedNetworks(BARN_ETH_FLOW_ADDRESS)
 
 export const MAX_VALID_TO_EPOCH = 4294967295 // Max uint32 (Feb 07 2106 07:28:15 GMT+0100)
