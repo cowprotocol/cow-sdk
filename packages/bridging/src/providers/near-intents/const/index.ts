@@ -1,4 +1,4 @@
-import { arbitrumOne, avalanche, base, bnb, gnosisChain, mainnet, optimism, polygon, plasma } from '@cowprotocol/sdk-config'
+import { arbitrumOne, avalanche, base, bnb, gnosisChain, mainnet, optimism, polygon, plasma, solana } from '@cowprotocol/sdk-config'
 
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from '../../../const'
 
@@ -18,7 +18,7 @@ export const NEAR_INTENTS_SUPPORTED_NETWORKS = [
   plasma,
 ]
 
-export type NearBlockchainKey = 'arb' | 'avax' | 'base' | 'bsc' | 'eth' | 'gnosis' | 'op' | 'pol' | 'plasma'
+export type NearBlockchainKey = 'arb' | 'avax' | 'base' | 'bsc' | 'eth' | 'gnosis' | 'op' | 'pol' | 'plasma' | 'sol'
 
 export const NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS = {
   arb: arbitrumOne.id,
@@ -30,6 +30,7 @@ export const NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS = {
   op: optimism.id,
   pol: polygon.id,
   plasma: plasma.id,
+  sol: solana.id,
 } as const satisfies Record<NearBlockchainKey, number>
 
 export const NEAR_INTENTS_STATUS_TO_COW_STATUS: Record<string, BridgeStatus> = {
