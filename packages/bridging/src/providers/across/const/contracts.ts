@@ -13,8 +13,6 @@ export const ACROSS_SPOOK_CONTRACT_ADDRESSES: Record<TargetChainId, string | und
   [SupportedChainId.SEPOLIA]: '0x5ef6C01E11889d86803e0B23e3cB3F9E9d97B662',
   // https://docs.across.to/reference/contract-addresses/polygon-chain-id-137
   [SupportedChainId.POLYGON]: '0x9295ee1d8C5b022Be115A2AD3c30C72E34e7F096',
-  // https://docs.across.to/reference/contract-addresses/lens-chain
-  [SupportedChainId.LENS]: '0xb234cA484866c811d0e6D3318866F583781ED045',
   // https://docs.across.to/reference/contract-addresses/bnb-smart-chain
   [SupportedChainId.BNB]: '0x4e8E101924eDE233C13e2D8622DC8aED2872d505',
   // https://docs.across.to/reference/contract-addresses/linea-chain-id-59144
@@ -45,7 +43,6 @@ export const ACROSS_MATH_CONTRACT_ADDRESSES: Record<TargetChainId, string | unde
   [SupportedChainId.SEPOLIA]: undefined,
   [SupportedChainId.POLYGON]: undefined,
   [SupportedChainId.AVALANCHE]: undefined,
-  [SupportedChainId.LENS]: undefined, // TODO: confirm
   [SupportedChainId.BNB]: undefined, // TODO: confirm
   [SupportedChainId.LINEA]: undefined, // TODO: confirm
   [SupportedChainId.PLASMA]: undefined, // TODO: confirm

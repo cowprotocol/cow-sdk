@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.0.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v1.0.3...sdk-trading-v1.0.4) (2026-03-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.7.1
+    * @cowprotocol/sdk-config bumped to 1.0.0
+    * @cowprotocol/sdk-app-data bumped to 4.6.8
+    * @cowprotocol/sdk-order-book bumped to 2.0.0
+    * @cowprotocol/sdk-order-signing bumped to 0.1.38
+    * @cowprotocol/sdk-contracts-ts bumped to 2.0.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.11
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.11
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.11
+
+## [1.0.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v1.0.2...sdk-trading-v1.0.3) (2026-03-10)
+
+
+### 🐛 Bug Fixes
+
+* **order-book:** handle decimal protocolFeeBps BigInt conversion ([#798](https://github.com/cowprotocol/cow-sdk/issues/798)) ([ad7d323](https://github.com/cowprotocol/cow-sdk/commit/ad7d32370c8bb1a414cf1e23a2f2f89e1f9e0b96))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-order-book bumped to 1.1.2
+    * @cowprotocol/sdk-order-signing bumped to 0.1.37
+
 ## [1.0.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v1.0.1...sdk-trading-v1.0.2) (2026-03-04)
 
 
