@@ -857,7 +857,7 @@ For advanced use cases such as testing, custom deployments, or chains where CoW 
 
 Both parameters accept an `AddressPerChain` object (`Record<SupportedChainId, Address>`), so they apply per-chain and persist across all operations when set in `traderParams`.
 
-### settlementContractOverride
+### settlementContractOverride / ethFlowContractOverride
 
 Overrides the address of the CoW Protocol Settlement contract. This affects:
 - Order domain signing (EIP-712 `verifyingContract`)
@@ -865,27 +865,50 @@ Overrides the address of the CoW Protocol Settlement contract. This affects:
 - Pre-sign transactions via `getPreSignTransaction`
 
 ```typescript
-import { SupportedChainId, TradingSdk } from '@cowprotocol/sdk-trading'
-import { AddressPerChain } from '@cowprotocol/sdk-config'
+import { SupportedChainId, OrderKind, TradeParameters, TradingSdk, COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
 
-const sdk = new TradingSdk(
-  {
-    chainId: SupportedChainId.MAINNET,
-    appCode: '<YOUR_APP_CODE>',
-    // Override the settlement contract address for the chains you use
-    settlementContractOverride: {
-      [SupportedChainId.MAINNET]: '0x<custom_settlement_contract>',
-    } as AddressPerChain,
-  },
-  {},
-  adapter,
-)
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
 
-// All signing and on-chain operations will use the custom contract address
-const { orderId } = await sdk.postSwapOrder(parameters)
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  appCode: '<YOUR_APP_CODE>',
+  // Override the settlement contract address for MAINNET
+  settlementContractOverride: {
+    ...COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS,
+    [SupportedChainId.MAINNET]: '0x<custom_settlement_contract>',
+  } as AddressPerChain,
+  // Override the settlement contract address for GNOSIS_CHAIN
+  ethFlowContractOverride: {
+    ...ETH_FLOW_ADDRESSES,
+    [SupportedChainId.GNOSIS_CHAIN]: '0x<custom_eth_flow_contract>',
+  } as AddressPerChain,
+}, {}, adapter)
+
+const parameters: TradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000',
+}
+
+const { quoteResults, postSwapOrderFromQuote } = await sdk.getQuote(parameters)
+const orderId = await postSwapOrderFromQuote()
+
+console.log('Order created, id: ', orderId)
 ```
 
-You can also pass `settlementContractOverride` per-call to override only for that operation:
+You can also pass `settlementContractOverride` / `ethFlowContractOverride` per-call to override only for that operation:
 
 ```typescript
 const { orderId } = await sdk.postSwapOrder({
@@ -894,38 +917,6 @@ const { orderId } = await sdk.postSwapOrder({
     [SupportedChainId.MAINNET]: '0x<custom_settlement_contract>',
   } as AddressPerChain,
 })
-```
-
-### ethFlowContractOverride
-
-Overrides the address of the EthFlow contract used for selling native tokens (ETH). This affects `postSellNativeCurrencyOrder` and on-chain cancellation of EthFlow orders.
-
-```typescript
-import { SupportedChainId, TradingSdk } from '@cowprotocol/sdk-trading'
-import { AddressPerChain } from '@cowprotocol/sdk-config'
-
-const sdk = new TradingSdk(
-  {
-    chainId: SupportedChainId.MAINNET,
-    appCode: '<YOUR_APP_CODE>',
-    ethFlowContractOverride: {
-      [SupportedChainId.MAINNET]: '0x<custom_eth_flow_contract>',
-    } as AddressPerChain,
-  },
-  {},
-  adapter,
-)
-
-const parameters: TradeParameters = {
-  kind: OrderKind.SELL,
-  sellToken: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', // Native ETH
-  sellTokenDecimals: 18,
-  buyToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-  buyTokenDecimals: 6,
-  amount: '100000000000000000', // 0.1 ETH
-}
-
-const { orderId } = await sdk.postSellNativeCurrencyOrder(parameters)
 ```
 
 ## Custom Order-Book API Endpoint
@@ -964,10 +955,6 @@ const sdk = new TradingSdk(
   {
     chainId: SupportedChainId.MAINNET,
     appCode: '<YOUR_APP_CODE>',
-    // Optionally override contracts to match your custom deployment
-    settlementContractOverride: {
-      [SupportedChainId.MAINNET]: '0x<custom_settlement_contract>',
-    } as AddressPerChain,
   },
   {
     orderBookApi, // All order-book requests will go to your custom endpoint
