@@ -178,6 +178,7 @@ export class TradingSdk {
       env: quoterParams.env,
       account: quoterParams.owner,
       settlementContractOverride: quoterParams.settlementContractOverride,
+      ethFlowContractOverride: quoterParams.ethFlowContractOverride,
     }
     const result = await getQuote(quoterParams, trader, advancedSettings, this.resolveOrderBookApi(params))
 
@@ -312,8 +313,10 @@ export class TradingSdk {
 
     const env = params.env ?? this.traderParams.env
     const settlementContractOverride = params.settlementContractOverride ?? this.traderParams.settlementContractOverride
+    const ethFlowContractOverride = params.ethFlowContractOverride ?? this.traderParams.ethFlowContractOverride
+
     const { transaction } = await (isEthFlowOrder
-      ? getEthFlowCancellation(getEthFlowContract(signer, chainId, env), order)
+      ? getEthFlowCancellation(getEthFlowContract(signer, chainId, env, ethFlowContractOverride), order)
       : getSettlementCancellation(getSettlementContract(chainId, signer, env, settlementContractOverride), order))
 
     const txReceipt = await signer.sendTransaction(transaction)
@@ -427,13 +430,14 @@ export class TradingSdk {
   }
 
   private mergeParams<T>(params: T & Partial<TraderParameters>): T & TraderParameters {
-    const { chainId, signer, appCode, env, settlementContractOverride } = params
+    const { chainId, signer, appCode, env, settlementContractOverride, ethFlowContractOverride } = params
     const traderParams: Partial<TraderParameters> = {
       chainId: chainId || this.traderParams.chainId,
       signer: signer || this.traderParams.signer || getGlobalAdapter().signer,
       appCode: appCode || this.traderParams.appCode,
       env: env || this.traderParams.env,
       settlementContractOverride: settlementContractOverride ?? this.traderParams.settlementContractOverride,
+      ethFlowContractOverride: ethFlowContractOverride ?? this.traderParams.ethFlowContractOverride,
     }
 
     assertTraderParams(traderParams)
@@ -455,6 +459,7 @@ export class TradingSdk {
     const appCode = params.appCode || this.traderParams.appCode
     const env = params.env || this.traderParams.env || 'prod'
     const settlementContractOverride = params.settlementContractOverride || this.traderParams.settlementContractOverride
+    const ethFlowContractOverride = params.ethFlowContractOverride || this.traderParams.ethFlowContractOverride
 
     if (!chainId) {
       throw new Error('Missing quoter parameters: chainId')
@@ -469,6 +474,7 @@ export class TradingSdk {
       appCode,
       env,
       settlementContractOverride,
+      ethFlowContractOverride,
     }
   }
 }

@@ -99,6 +99,7 @@ export interface TraderParameters {
   signer?: SignerLike
   env?: CowEnv
   settlementContractOverride?: AddressPerChain
+  ethFlowContractOverride?: AddressPerChain
 }
 
 export type QuoterParameters = Omit<TraderParameters, 'signer'> & { account: AccountAddress }

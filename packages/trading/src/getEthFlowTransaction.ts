@@ -5,7 +5,13 @@ import {
 } from './types'
 import { calculateUniqueOrderId } from './calculateUniqueOrderId'
 import { getOrderToSign } from './getOrderToSign'
-import { SupportedChainId, CowEnv, BARN_ETH_FLOW_ADDRESSES, ETH_FLOW_ADDRESSES } from '@cowprotocol/sdk-config'
+import {
+  SupportedChainId,
+  CowEnv,
+  BARN_ETH_FLOW_ADDRESSES,
+  ETH_FLOW_ADDRESSES,
+  AddressPerChain,
+} from '@cowprotocol/sdk-config'
 import { GAS_LIMIT_DEFAULT } from './consts'
 import { adjustEthFlowOrderParams, calculateGasMargin } from './utils/misc'
 import {
@@ -39,7 +45,7 @@ export async function getEthFlowTransaction(
 
   const { quoteId } = params
 
-  const contract = getEthFlowContract(signer, chainId, params.env)
+  const contract = getEthFlowContract(signer, chainId, params.env, params.ethFlowContractOverride)
   const orderToSign = getOrderToSign(
     {
       chainId,
@@ -98,8 +104,15 @@ export async function getEthFlowTransaction(
   }
 }
 
-export function getEthFlowContract(signer: Signer, chainId: SupportedChainId, env?: CowEnv): EthFlowContract {
-  const address = env === 'staging' ? BARN_ETH_FLOW_ADDRESSES[chainId] : ETH_FLOW_ADDRESSES[chainId]
+export function getEthFlowContract(
+  signer: Signer,
+  chainId: SupportedChainId,
+  env?: CowEnv,
+  ethFlowContractOverride?: AddressPerChain,
+): EthFlowContract {
+  const address =
+    ethFlowContractOverride?.[chainId] ??
+    (env === 'staging' ? BARN_ETH_FLOW_ADDRESSES[chainId] : ETH_FLOW_ADDRESSES[chainId])
 
   return ContractFactory.createEthFlowContract(address, signer)
 }
