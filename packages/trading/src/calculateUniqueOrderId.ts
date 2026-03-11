@@ -17,7 +17,7 @@ export async function calculateUniqueOrderId(
   order: UnsignedOrder,
   checkEthFlowOrderExists?: EthFlowOrderExistsCallback,
   env?: CowEnv,
-  ethFlowContractOverride?: AddressPerChain,
+  settlementContractOverride?: AddressPerChain,
 ): Promise<string> {
   const { orderDigest, orderId } = await OrderSigningUtils.generateOrderId(
     chainId,
@@ -28,11 +28,11 @@ export async function calculateUniqueOrderId(
     } as Order,
     {
       owner:
-        ethFlowContractOverride?.[chainId] ??
+        settlementContractOverride?.[chainId] ??
         (env === 'staging' ? BARN_ETH_FLOW_ADDRESSES[chainId] : ETH_FLOW_ADDRESSES[chainId]),
     },
     env,
-    ethFlowContractOverride,
+    settlementContractOverride,
   )
 
   if (checkEthFlowOrderExists && (await checkEthFlowOrderExists(orderId, orderDigest))) {
@@ -42,7 +42,13 @@ export async function calculateUniqueOrderId(
     })
 
     // Recursive call, increment one fee until we get an unique order Id
-    return calculateUniqueOrderId(chainId, adjustAmounts(order), checkEthFlowOrderExists, env, ethFlowContractOverride)
+    return calculateUniqueOrderId(
+      chainId,
+      adjustAmounts(order),
+      checkEthFlowOrderExists,
+      env,
+      settlementContractOverride,
+    )
   }
 
   return orderId
