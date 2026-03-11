@@ -24,7 +24,11 @@ export async function postSellNativeCurrencyOrder(
 
   const { orderId, transaction, orderToSign } = await getEthFlowTransaction(
     appDataKeccak256,
-    { ..._params, env: _params.env ?? orderBookApi.context.env },
+    {
+      ..._params,
+      env: _params.env ?? orderBookApi.context.env,
+      ethFlowContractOverride: _params.ethFlowContractOverride,
+    },
     orderBookApi.context.chainId,
     additionalParams,
     signer,

@@ -50,7 +50,13 @@ export async function getEthFlowTransaction(
     params,
     appDataKeccak256,
   )
-  const orderId = await calculateUniqueOrderId(chainId, orderToSign, checkEthFlowOrderExists, params.env)
+  const orderId = await calculateUniqueOrderId(
+    chainId,
+    orderToSign,
+    checkEthFlowOrderExists,
+    params.env,
+    params.ethFlowContractOverride,
+  )
 
   const ethOrderParams: EthFlowOrderData = {
     buyToken: orderToSign.buyToken,

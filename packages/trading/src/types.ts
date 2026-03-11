@@ -69,6 +69,10 @@ export interface TradeOptionalParameters {
    * Custom address of settlement contract
    */
   settlementContractOverride?: AddressPerChain
+  /**
+   * Custom address of sell native token contract
+   */
+  ethFlowContractOverride?: AddressPerChain
   partiallyFillable?: OrderParameters['partiallyFillable']
 
   /**

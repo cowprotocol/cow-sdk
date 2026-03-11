@@ -1,5 +1,6 @@
 import { OrderSigningUtils, UnsignedOrder } from '@cowprotocol/sdk-order-signing'
 import {
+  type AddressPerChain,
   BARN_ETH_FLOW_ADDRESSES,
   CowEnv,
   ETH_FLOW_ADDRESSES,
@@ -16,6 +17,7 @@ export async function calculateUniqueOrderId(
   order: UnsignedOrder,
   checkEthFlowOrderExists?: EthFlowOrderExistsCallback,
   env?: CowEnv,
+  ethFlowContractOverride?: AddressPerChain,
 ): Promise<string> {
   const { orderDigest, orderId } = await OrderSigningUtils.generateOrderId(
     chainId,
@@ -25,7 +27,9 @@ export async function calculateUniqueOrderId(
       sellToken: WRAPPED_NATIVE_CURRENCIES[chainId].address,
     } as Order,
     {
-      owner: env === 'staging' ? BARN_ETH_FLOW_ADDRESSES[chainId] : ETH_FLOW_ADDRESSES[chainId],
+      owner:
+        ethFlowContractOverride?.[chainId] ??
+        (env === 'staging' ? BARN_ETH_FLOW_ADDRESSES[chainId] : ETH_FLOW_ADDRESSES[chainId]),
     },
   )
 
@@ -36,7 +40,7 @@ export async function calculateUniqueOrderId(
     })
 
     // Recursive call, increment one fee until we get an unique order Id
-    return calculateUniqueOrderId(chainId, adjustAmounts(order), checkEthFlowOrderExists)
+    return calculateUniqueOrderId(chainId, adjustAmounts(order), checkEthFlowOrderExists, env, ethFlowContractOverride)
   }
 
   return orderId
