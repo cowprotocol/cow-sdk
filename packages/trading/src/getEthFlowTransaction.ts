@@ -61,8 +61,8 @@ export async function getEthFlowTransaction(
     orderToSign,
     checkEthFlowOrderExists,
     params.env,
-    params.ethFlowContractOverride,
     params.settlementContractOverride,
+    params.ethFlowContractOverride,
   )
 
   const ethOrderParams: EthFlowOrderData = {
