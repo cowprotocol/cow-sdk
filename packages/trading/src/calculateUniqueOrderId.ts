@@ -31,6 +31,8 @@ export async function calculateUniqueOrderId(
         ethFlowContractOverride?.[chainId] ??
         (env === 'staging' ? BARN_ETH_FLOW_ADDRESSES[chainId] : ETH_FLOW_ADDRESSES[chainId]),
     },
+    env,
+    ethFlowContractOverride,
   )
 
   if (checkEthFlowOrderExists && (await checkEthFlowOrderExists(orderId, orderDigest))) {
