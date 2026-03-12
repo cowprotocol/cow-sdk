@@ -37,6 +37,16 @@ export type CowEnv = 'prod' | 'staging'
 export type AddressPerChain = Record<SupportedChainId, Address>
 
 /**
+ * Protocol-level options for overriding CoW Protocol contract addresses and environment.
+ * Used by signing, trading, and cancellation functions.
+ */
+export interface ProtocolOptions {
+  env?: CowEnv
+  settlementContractOverride?: Partial<AddressPerChain>
+  ethFlowContractOverride?: Partial<AddressPerChain>
+}
+
+/**
  * Override some properties of the {@link ApiContext}.
  */
 export type PartialApiContext = Partial<ApiContext>

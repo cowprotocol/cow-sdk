@@ -237,7 +237,7 @@ export async function getQuote(
     appDataInfo.appDataKeccak256,
   )
 
-  const orderTypedData = await getOrderTypedData(chainId, orderToSign, env, settlementContractOverride)
+  const orderTypedData = await getOrderTypedData(chainId, orderToSign, { env, settlementContractOverride })
 
   return {
     result: {

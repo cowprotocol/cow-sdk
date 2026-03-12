@@ -25,7 +25,7 @@ export interface SignOrderParams {
   order: UnsignedOrder
   signingScheme: EcdsaSigningScheme
   env?: CowEnv
-  settlementContractOverride?: AddressPerChain
+  settlementContractOverride?: Partial<AddressPerChain>
 }
 
 /**
@@ -41,7 +41,7 @@ export interface SignOrderCancellationParams {
   orderUid: string
   signingScheme: EcdsaSigningScheme
   env?: CowEnv
-  settlementContractOverride?: AddressPerChain
+  settlementContractOverride?: Partial<AddressPerChain>
 }
 
 /**
@@ -57,5 +57,5 @@ export interface SignOrderCancellationsParams {
   orderUids: string[]
   signingScheme: EcdsaSigningScheme
   env?: CowEnv
-  settlementContractOverride?: AddressPerChain
+  settlementContractOverride?: Partial<AddressPerChain>
 }

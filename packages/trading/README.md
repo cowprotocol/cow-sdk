@@ -911,6 +911,15 @@ console.log('Order created, id: ', orderId)
 You can also pass `settlementContractOverride` / `ethFlowContractOverride` per-call to override only for that operation:
 
 ```typescript
+const { quoteResults, postSwapOrderFromQuote } = await sdk.getQuote({
+  ...parameters,
+  settlementContractOverride: {
+    [SupportedChainId.MAINNET]: '0x<custom_settlement_contract>',
+  } as AddressPerChain,
+})
+
+// or
+
 const { orderId } = await sdk.postSwapOrder({
   ...parameters,
   settlementContractOverride: {

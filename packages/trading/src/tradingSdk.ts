@@ -256,13 +256,10 @@ export class TradingSdk {
     const traderParams = this.mergeParams(params)
     const signer = resolveSigner(traderParams.signer)
 
-    return getPreSignTransaction(
-      signer,
-      traderParams.chainId,
-      params.orderUid,
-      params.env ?? this.traderParams.env,
-      params.settlementContractOverride ?? traderParams.settlementContractOverride,
-    )
+    return getPreSignTransaction(signer, traderParams.chainId, params.orderUid, {
+      env: params.env ?? this.traderParams.env,
+      settlementContractOverride: params.settlementContractOverride ?? traderParams.settlementContractOverride,
+    })
   }
 
   async getOrder(params: OrderTraderParams): Promise<EnrichedOrder> {
@@ -287,8 +284,7 @@ export class TradingSdk {
       [orderUid],
       chainId,
       signer,
-      env,
-      settlementContractOverride,
+      { env, settlementContractOverride },
     )
 
     await orderBookApi.sendSignedOrderCancellations({
@@ -316,8 +312,8 @@ export class TradingSdk {
     const ethFlowContractOverride = params.ethFlowContractOverride ?? this.traderParams.ethFlowContractOverride
 
     const { transaction } = await (isEthFlowOrder
-      ? getEthFlowCancellation(getEthFlowContract(signer, chainId, env, ethFlowContractOverride), order)
-      : getSettlementCancellation(getSettlementContract(chainId, signer, env, settlementContractOverride), order))
+      ? getEthFlowCancellation(getEthFlowContract(signer, chainId, { env, ethFlowContractOverride }), order)
+      : getSettlementCancellation(getSettlementContract(chainId, signer, { env, settlementContractOverride }), order))
 
     const txReceipt = await signer.sendTransaction(transaction)
 
@@ -454,7 +450,7 @@ export class TradingSdk {
    */
   private mergeQuoterParams<T extends { owner: AccountAddress }>(
     params: T & Partial<Omit<TraderParameters, 'signer'>>,
-  ): T & { chainId: SupportedChainId; appCode: string; env: CowEnv; settlementContractOverride?: AddressPerChain } {
+  ): T & { chainId: SupportedChainId; appCode: string; env: CowEnv; settlementContractOverride?: Partial<AddressPerChain> } {
     const chainId = params.chainId || this.traderParams.chainId
     const appCode = params.appCode || this.traderParams.appCode
     const env = params.env || this.traderParams.env || 'prod'

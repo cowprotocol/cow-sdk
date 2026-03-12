@@ -1,4 +1,4 @@
-import { AddressPerChain, CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
+import { ProtocolOptions, SupportedChainId } from '@cowprotocol/sdk-config'
 import type { ContractsOrder as Order, OrderUidParams } from '@cowprotocol/sdk-contracts-ts'
 import type { SigningResult, UnsignedOrder } from './types'
 import { getGlobalAdapter, Signer, TypedDataDomain } from '@cowprotocol/sdk-common'
@@ -82,10 +82,9 @@ export class OrderSigningUtils {
     order: UnsignedOrder,
     chainId: SupportedChainId,
     signer: Signer,
-    env?: CowEnv,
-    settlementContractOverride?: AddressPerChain,
+    options?: ProtocolOptions,
   ): Promise<SigningResult> {
-    return signOrder(order, chainId, signer, env, settlementContractOverride)
+    return signOrder(order, chainId, signer, options)
   }
 
   /**
@@ -99,10 +98,9 @@ export class OrderSigningUtils {
     orderUid: string,
     chainId: SupportedChainId,
     signer: Signer,
-    env?: CowEnv,
-    settlementContractOverride?: AddressPerChain,
+    options?: ProtocolOptions,
   ): Promise<SigningResult> {
-    return signOrderCancellation(orderUid, chainId, signer, env, settlementContractOverride)
+    return signOrderCancellation(orderUid, chainId, signer, options)
   }
 
   /**
@@ -116,10 +114,9 @@ export class OrderSigningUtils {
     orderUids: string[],
     chainId: SupportedChainId,
     signer: Signer,
-    env?: CowEnv,
-    settlementContractOverride?: AddressPerChain,
+    options?: ProtocolOptions,
   ): Promise<SigningResult> {
-    return signOrderCancellations(orderUids, chainId, signer, env, settlementContractOverride)
+    return signOrderCancellations(orderUids, chainId, signer, options)
   }
 
   /**
@@ -128,12 +125,8 @@ export class OrderSigningUtils {
    * @return The EIP-712 typed domain data.
    * @see https://eips.ethereum.org/EIPS/eip-712
    */
-  static async getDomain(
-    chainId: SupportedChainId,
-    env?: CowEnv,
-    settlementContractOverride?: AddressPerChain,
-  ): Promise<TypedDataDomain> {
-    return getDomain(chainId, env, settlementContractOverride)
+  static async getDomain(chainId: SupportedChainId, options?: ProtocolOptions): Promise<TypedDataDomain> {
+    return getDomain(chainId, options)
   }
 
   /**
@@ -146,10 +139,9 @@ export class OrderSigningUtils {
     chainId: SupportedChainId,
     order: Order,
     params: Pick<OrderUidParams, 'owner'>,
-    env?: CowEnv,
-    settlementContractOverride?: AddressPerChain,
+    options?: ProtocolOptions,
   ): Promise<{ orderId: string; orderDigest: string }> {
-    return generateOrderId(chainId, order, params, env, settlementContractOverride)
+    return generateOrderId(chainId, order, params, options)
   }
 
   /**
@@ -157,11 +149,7 @@ export class OrderSigningUtils {
    * @param chainId {SupportedChainId} chainId The CoW Protocol protocol `chainId` context that's being used.
    * @returns A string representation of the EIP-712 typed domain data hash.
    */
-  static async getDomainSeparator(
-    chainId: SupportedChainId,
-    env?: CowEnv,
-    settlementContractOverride?: AddressPerChain,
-  ): Promise<string> {
+  static async getDomainSeparator(chainId: SupportedChainId, options?: ProtocolOptions): Promise<string> {
     const adapter = getGlobalAdapter()
     const types = [
       { name: 'name', type: 'string' },
@@ -170,7 +158,7 @@ export class OrderSigningUtils {
       { name: 'verifyingContract', type: 'address' },
     ]
 
-    return adapter.utils.hashDomain(getDomain(chainId, env, settlementContractOverride), types)
+    return adapter.utils.hashDomain(getDomain(chainId, options), types)
   }
 
   static getEIP712Types(): typeof COW_EIP712_TYPES {

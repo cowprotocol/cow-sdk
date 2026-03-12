@@ -7,10 +7,9 @@ import { calculateUniqueOrderId } from './calculateUniqueOrderId'
 import { getOrderToSign } from './getOrderToSign'
 import {
   SupportedChainId,
-  CowEnv,
   BARN_ETH_FLOW_ADDRESSES,
   ETH_FLOW_ADDRESSES,
-  AddressPerChain,
+  ProtocolOptions,
 } from '@cowprotocol/sdk-config'
 import { GAS_LIMIT_DEFAULT } from './consts'
 import { adjustEthFlowOrderParams, calculateGasMargin } from './utils/misc'
@@ -45,7 +44,13 @@ export async function getEthFlowTransaction(
 
   const { quoteId } = params
 
-  const contract = getEthFlowContract(signer, chainId, params.env, params.ethFlowContractOverride)
+  const protocolOptions: ProtocolOptions = {
+    env: params.env,
+    settlementContractOverride: params.settlementContractOverride,
+    ethFlowContractOverride: params.ethFlowContractOverride,
+  }
+
+  const contract = getEthFlowContract(signer, chainId, protocolOptions)
   const orderToSign = getOrderToSign(
     {
       chainId,
@@ -56,14 +61,7 @@ export async function getEthFlowTransaction(
     params,
     appDataKeccak256,
   )
-  const orderId = await calculateUniqueOrderId(
-    chainId,
-    orderToSign,
-    checkEthFlowOrderExists,
-    params.env,
-    params.settlementContractOverride,
-    params.ethFlowContractOverride,
-  )
+  const orderId = await calculateUniqueOrderId(chainId, orderToSign, checkEthFlowOrderExists, protocolOptions)
 
   const ethOrderParams: EthFlowOrderData = {
     buyToken: orderToSign.buyToken,
@@ -108,9 +106,9 @@ export async function getEthFlowTransaction(
 export function getEthFlowContract(
   signer: Signer,
   chainId: SupportedChainId,
-  env?: CowEnv,
-  ethFlowContractOverride?: AddressPerChain,
+  options?: ProtocolOptions,
 ): EthFlowContract {
+  const { env, ethFlowContractOverride } = options ?? {}
   const address =
     ethFlowContractOverride?.[chainId] ??
     (env === 'staging' ? BARN_ETH_FLOW_ADDRESSES[chainId] : ETH_FLOW_ADDRESSES[chainId])

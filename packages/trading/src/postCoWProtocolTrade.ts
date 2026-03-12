@@ -70,8 +70,7 @@ export async function postCoWProtocolTrade(
         orderToSign,
         chainId,
         signer,
-        env,
-        settlementContractOverride,
+        { env, settlementContractOverride },
       )
 
       if (isEip1271) {

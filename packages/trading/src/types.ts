@@ -68,11 +68,11 @@ export interface TradeOptionalParameters {
   /**
    * Custom address of settlement contract
    */
-  settlementContractOverride?: AddressPerChain
+  settlementContractOverride?: Partial<AddressPerChain>
   /**
    * Custom address of sell native token contract
    */
-  ethFlowContractOverride?: AddressPerChain
+  ethFlowContractOverride?: Partial<AddressPerChain>
   partiallyFillable?: OrderParameters['partiallyFillable']
 
   /**
@@ -98,8 +98,8 @@ export interface TraderParameters {
   appCode: latest.AppCode
   signer?: SignerLike
   env?: CowEnv
-  settlementContractOverride?: AddressPerChain
-  ethFlowContractOverride?: AddressPerChain
+  settlementContractOverride?: Partial<AddressPerChain>
+  ethFlowContractOverride?: Partial<AddressPerChain>
 }
 
 export type QuoterParameters = Omit<TraderParameters, 'signer'> & { account: AccountAddress }
