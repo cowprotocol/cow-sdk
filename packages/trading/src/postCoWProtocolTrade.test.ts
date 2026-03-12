@@ -20,7 +20,7 @@ import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { TradingAppDataInfo, LimitOrderParameters } from './types'
 import { ETH_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderBookApi, OrderKind } from '@cowprotocol/sdk-order-book'
-import { OrderSigningUtils as OrderSigningUtilsMock } from '@cowprotocol/sdk-order-signing'
+import { OrderSigningUtils as OrderSigningUtilsMock, UnsignedOrder } from '@cowprotocol/sdk-order-signing'
 
 const defaultOrderParams: LimitOrderParameters = {
   chainId: SupportedChainId.GNOSIS_CHAIN,
@@ -214,5 +214,46 @@ describe('postCoWProtocolTrade', () => {
       )
       sendOrderMock.mockReset()
     }
+  })
+
+  describe('settlementContractOverride', () => {
+    it('should pass settlementContractOverride to signOrder', async () => {
+      const customAddress = '0x1111111111111111111111111111111111111111'
+      const chainId = defaultOrderParams.chainId
+
+      setGlobalAdapter(adapters.ethersV5Adapter)
+      const order: LimitOrderParameters = {
+        ...defaultOrderParams,
+        settlementContractOverride: { [chainId]: customAddress },
+      }
+
+      await postCoWProtocolTrade(orderBookApiMock, appDataMock, order, {}, adapters.ethersV5Adapter.signer)
+
+      const [, , , options] = (signOrderMock as jest.Mock).mock.calls[0] as [
+        UnsignedOrder,
+        number,
+        unknown,
+        { settlementContractOverride?: Record<number, string> },
+      ]
+      expect(options.settlementContractOverride).toEqual({ [chainId]: customAddress })
+    })
+
+    it('should pass env to signOrder options', async () => {
+      setGlobalAdapter(adapters.ethersV5Adapter)
+      const order: LimitOrderParameters = {
+        ...defaultOrderParams,
+        env: 'staging',
+      }
+
+      await postCoWProtocolTrade(orderBookApiMock, appDataMock, order, {}, adapters.ethersV5Adapter.signer)
+
+      const [, , , options] = (signOrderMock as jest.Mock).mock.calls[0] as [
+        UnsignedOrder,
+        number,
+        unknown,
+        { env?: string },
+      ]
+      expect(options.env).toBe('staging')
+    })
   })
 })
