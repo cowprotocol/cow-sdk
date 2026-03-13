@@ -11,6 +11,8 @@ import {
 import { BungeeBridge, BungeeQuoteWithBuildTx } from './types'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { decodeAmountsBungeeTxData } from './util'
+import { CCTP_V2_TX_DATA } from './createBungeeDepositCall.test'
 
 describe('Bungee Utils', () => {
   describe('toBridgeQuoteResult', () => {
@@ -271,6 +273,17 @@ describe('Bungee Utils', () => {
     it('should get display name from bridge', () => {
       expect(getDisplayNameFromBungeeBridge(BungeeBridge.Across)).toBe('Across')
       expect(getDisplayNameFromBungeeBridge('Invalid' as BungeeBridge)).toBeUndefined()
+    })
+  })
+
+  describe('decodeAmountsBungeeTxData', () => {
+    it('should decode the cctp-v2 input amount and feeAmount from txData', () => {
+      const result = decodeAmountsBungeeTxData(CCTP_V2_TX_DATA, BungeeBridge.CircleCCTPV2)
+
+      expect(result.inputAmountBytes).toBe('0x0000000000000000000000000000000000000000000000000000000005f5e100')
+      expect(result.inputAmountBigNumber).toBe(100000000n)
+      expect(result.outputAmountBytes).toBe('0x00000000000000000000000000000000000000000000000000000000001e8480')
+      expect(result.outputAmountBigNumber).toBe(2000000n)
     })
   })
 

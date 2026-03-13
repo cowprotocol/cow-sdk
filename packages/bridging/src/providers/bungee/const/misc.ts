@@ -37,6 +37,12 @@ export const BungeeTxDataBytesIndices: BungeeTxDataBytesIndicesType = {
         bytesString_startIndex: 2 + 8 * 2, // first two characters are 0x and 8 bytes = 16 chars for the amount
         bytesString_length: 32 * 2, // 32 bytes = 64 chars for the amount
       },
+      outputAmount: {
+        bytes_startIndex: 200, // feeAmount is the 7th parameter -> 8 + 6*32 = 200
+        bytes_length: 32,
+        bytesString_startIndex: 2 + 200 * 2,
+        bytesString_length: 32 * 2,
+      },
     },
   },
   'gnosis-native-bridge': {

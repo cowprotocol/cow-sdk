@@ -1,6 +1,7 @@
 import { BungeeQuoteResult } from './BungeeBridgeProvider'
 import { QuoteBridgeRequest } from '../../types'
 import { BungeeTxDataBytesIndices } from './const/misc'
+import { InputOutputAmountTxDataBytesIndices } from './types'
 import { BUNGEE_APPROVE_AND_BRIDGE_V1_ABI } from './abi'
 import { BungeeApproveAndBridgeV1Addresses } from './const/contracts'
 import { decodeBungeeBridgeTxData } from './util'
@@ -29,9 +30,15 @@ export async function createBungeeDepositCall(params: {
   }
 
   const inputAmountStartIndex = functionParams.inputAmount.bytes_startIndex
-  const modifyOutputAmount = false
-  const outputAmountStartIndex = 0
+  let modifyOutputAmount = false
+  let outputAmountStartIndex = 0
   const nativeTokenExtraFee = 0n // neither across nor cctp-v2 requires additional native token transfer for now
+
+  // Some bridges encode a second proportional uint256 that must be updated alongside input amount.
+  if ('outputAmount' in functionParams) {
+    modifyOutputAmount = true
+    outputAmountStartIndex = (functionParams as InputOutputAmountTxDataBytesIndices).outputAmount.bytes_startIndex
+  }
 
   // Encode extra data as bytes
   const modifyCalldataParams = adapter.utils.encodeAbi(

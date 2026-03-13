@@ -187,7 +187,15 @@ export const getDisplayNameFromBungeeBridge = (bridge: BungeeBridge): string | u
   return Object.entries(BungeeBridge).find(([_, value]) => value === bridge)?.[0]
 }
 
-export const decodeAmountsBungeeTxData = (txData: string, bridge: BungeeBridge) => {
+export const decodeAmountsBungeeTxData = (
+  txData: string,
+  bridge: BungeeBridge,
+): {
+  inputAmountBytes: string
+  inputAmountBigNumber: bigint
+  outputAmountBytes?: string
+  outputAmountBigNumber?: bigint
+} => {
   if (!txData || !txData.startsWith('0x')) {
     throw new Error('Invalid txData format')
   }
@@ -211,6 +219,21 @@ export const decodeAmountsBungeeTxData = (txData: string, bridge: BungeeBridge) 
     functionParams.inputAmount.bytesString_startIndex + functionParams.inputAmount.bytesString_length,
   )}`
   const inputAmountBigNumber = BigInt(inputAmountBytes)
+
+  if ('outputAmount' in functionParams) {
+    const outputAmountBytes = `0x${txData.slice(
+      functionParams.outputAmount.bytesString_startIndex,
+      functionParams.outputAmount.bytesString_startIndex + functionParams.outputAmount.bytesString_length,
+    )}`
+    const outputAmountBigNumber = BigInt(outputAmountBytes)
+
+    return {
+      inputAmountBytes,
+      inputAmountBigNumber,
+      outputAmountBytes,
+      outputAmountBigNumber,
+    }
+  }
 
   return {
     inputAmountBytes,
