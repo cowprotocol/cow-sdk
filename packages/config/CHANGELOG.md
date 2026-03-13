@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v1.0.0...sdk-config-v1.0.1) (2026-03-13)
+
+
+### 🔧 Miscellaneous
+
+* remove unused lens assets ([#823](https://github.com/cowprotocol/cow-sdk/issues/823)) ([9cb9513](https://github.com/cowprotocol/cow-sdk/commit/9cb9513e49aa22a3a0f33546184b17f89d3d9c76))
+
 ## [1.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.10.0...sdk-config-v1.0.0) (2026-03-10)
 
 
