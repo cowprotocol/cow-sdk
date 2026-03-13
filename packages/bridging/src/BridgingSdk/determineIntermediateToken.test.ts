@@ -1,8 +1,17 @@
-import { NATIVE_CURRENCY_ADDRESS, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { EVM_NATIVE_CURRENCY_ADDRESS, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import { determineIntermediateToken } from './determineIntermediateToken'
 import { BridgeProviderQuoteError } from '../errors'
 
 describe('determineIntermediateToken', () => {
+  // Sample tokens for testing
+  const cowMainnet: TokenInfo = {
+    chainId: SupportedChainId.MAINNET,
+    address: '0xDEf1CA1fb7FBcDC777520aa7f396b4E015F497aB', // COW on Mainnet
+    decimals: 18,
+    name: 'COW',
+    symbol: 'COW',
+  }
+
   // Sample tokens for testing
   const usdcMainnet: TokenInfo = {
     chainId: SupportedChainId.MAINNET,
@@ -30,7 +39,7 @@ describe('determineIntermediateToken', () => {
 
   const nativeEth: TokenInfo = {
     chainId: SupportedChainId.MAINNET,
-    address: NATIVE_CURRENCY_ADDRESS,
+    address: EVM_NATIVE_CURRENCY_ADDRESS,
     decimals: 18,
     name: 'Ether',
     symbol: 'ETH',
@@ -54,53 +63,103 @@ describe('determineIntermediateToken', () => {
 
   describe('error handling', () => {
     it('should throw error when no intermediate tokens provided', async () => {
-      await expect(determineIntermediateToken(SupportedChainId.MAINNET, [])).rejects.toThrow(BridgeProviderQuoteError)
+      await expect(
+        determineIntermediateToken(SupportedChainId.MAINNET, cowMainnet.address, [], undefined, true),
+      ).rejects.toThrow(BridgeProviderQuoteError)
     })
 
     it('should throw error when intermediateTokens is empty array', async () => {
-      await expect(determineIntermediateToken(SupportedChainId.MAINNET, [])).rejects.toThrow(BridgeProviderQuoteError)
+      await expect(
+        determineIntermediateToken(SupportedChainId.MAINNET, cowMainnet.address, [], undefined, true),
+      ).rejects.toThrow(BridgeProviderQuoteError)
     })
   })
 
-  describe('priority level: HIGHEST (stablecoins)', () => {
+  describe('priority level: HIGHEST (same as sell token)', () => {
+    it('should prioritize sell token over others', async () => {
+      const result = await determineIntermediateToken(
+        SupportedChainId.MAINNET,
+        cowMainnet.address,
+        [cowMainnet, randomToken, wethMainnet, usdcMainnet],
+        undefined,
+        true,
+      )
+
+      expect(result).toBe(cowMainnet)
+    })
+  })
+
+  describe('priority level: HIGH (stablecoins)', () => {
     it('should prioritize USDC over other tokens', async () => {
-      const result = await determineIntermediateToken(SupportedChainId.MAINNET, [randomToken, wethMainnet, usdcMainnet])
+      const result = await determineIntermediateToken(
+        SupportedChainId.MAINNET,
+        cowMainnet.address,
+        [randomToken, wethMainnet, usdcMainnet],
+        undefined,
+        true,
+      )
 
       expect(result).toBe(usdcMainnet)
     })
 
     it('should prioritize USDT over other tokens', async () => {
-      const result = await determineIntermediateToken(SupportedChainId.MAINNET, [randomToken, wethMainnet, usdtMainnet])
+      const result = await determineIntermediateToken(
+        SupportedChainId.MAINNET,
+        cowMainnet.address,
+        [randomToken, wethMainnet, usdtMainnet],
+        undefined,
+        true,
+      )
 
       expect(result).toBe(usdtMainnet)
     })
 
     it('should prioritize first stablecoin when both USDC and USDT present', async () => {
-      const result = await determineIntermediateToken(SupportedChainId.MAINNET, [usdcMainnet, usdtMainnet])
+      const result = await determineIntermediateToken(
+        SupportedChainId.MAINNET,
+        cowMainnet.address,
+        [usdcMainnet, usdtMainnet],
+        undefined,
+        true,
+      )
 
       expect(result).toBe(usdcMainnet)
 
       // Order matters - maintain stable sort
-      const result2 = await determineIntermediateToken(SupportedChainId.MAINNET, [usdtMainnet, usdcMainnet])
+      const result2 = await determineIntermediateToken(
+        SupportedChainId.MAINNET,
+        cowMainnet.address,
+        [usdtMainnet, usdcMainnet],
+        undefined,
+        true,
+      )
 
       expect(result2).toBe(usdtMainnet)
     })
 
     it('should prioritize stablecoins on different chains', async () => {
-      const result = await determineIntermediateToken(SupportedChainId.ARBITRUM_ONE, [randomToken, usdcArbitrum])
+      const result = await determineIntermediateToken(
+        SupportedChainId.ARBITRUM_ONE,
+        cowMainnet.address,
+        [randomToken, usdcArbitrum],
+        undefined,
+        true,
+      )
 
       expect(result).toBe(usdcArbitrum)
     })
   })
 
-  describe('priority level: HIGH (correlated tokens)', () => {
+  describe('priority level: MEDIUM (correlated tokens)', () => {
     it('should prioritize correlated tokens over non-correlated', async () => {
       const getCorrelatedTokens = async () => [wethMainnet.address]
 
       const result = await determineIntermediateToken(
         SupportedChainId.MAINNET,
+        cowMainnet.address,
         [randomToken, wethMainnet],
         getCorrelatedTokens,
+        true,
       )
 
       expect(result).toBe(wethMainnet)
@@ -111,8 +170,10 @@ describe('determineIntermediateToken', () => {
 
       const result = await determineIntermediateToken(
         SupportedChainId.MAINNET,
+        cowMainnet.address,
         [wethMainnet, usdcMainnet],
         getCorrelatedTokens,
+        true,
       )
 
       expect(result).toBe(usdcMainnet)
@@ -131,8 +192,10 @@ describe('determineIntermediateToken', () => {
 
       const result = await determineIntermediateToken(
         SupportedChainId.MAINNET,
+        cowMainnet.address,
         [randomToken, wethMainnet, daiToken],
         getCorrelatedTokens,
+        true,
       )
 
       // Should return first correlated token in original order
@@ -146,8 +209,10 @@ describe('determineIntermediateToken', () => {
 
       const result = await determineIntermediateToken(
         SupportedChainId.MAINNET,
+        cowMainnet.address,
         [randomToken, wethMainnet],
         getCorrelatedTokens,
+        true,
       )
 
       // Should fallback and still work
@@ -155,15 +220,27 @@ describe('determineIntermediateToken', () => {
     })
   })
 
-  describe('priority level: MEDIUM (native tokens)', () => {
+  describe('priority level: LOW (native tokens)', () => {
     it('should prioritize native token over random tokens', async () => {
-      const result = await determineIntermediateToken(SupportedChainId.MAINNET, [randomToken, nativeEth])
+      const result = await determineIntermediateToken(
+        SupportedChainId.MAINNET,
+        cowMainnet.address,
+        [randomToken, nativeEth],
+        undefined,
+        true,
+      )
 
       expect(result).toBe(nativeEth)
     })
 
     it('should prioritize stablecoins over native token', async () => {
-      const result = await determineIntermediateToken(SupportedChainId.MAINNET, [nativeEth, usdcMainnet])
+      const result = await determineIntermediateToken(
+        SupportedChainId.MAINNET,
+        cowMainnet.address,
+        [nativeEth, usdcMainnet],
+        undefined,
+        true,
+      )
 
       expect(result).toBe(usdcMainnet)
     })
@@ -173,15 +250,17 @@ describe('determineIntermediateToken', () => {
 
       const result = await determineIntermediateToken(
         SupportedChainId.MAINNET,
+        cowMainnet.address,
         [nativeEth, wethMainnet],
         getCorrelatedTokens,
+        true,
       )
 
       expect(result).toBe(wethMainnet)
     })
   })
 
-  describe('priority level: LOW (other tokens)', () => {
+  describe('priority level: LOWEST (other tokens)', () => {
     it('should return first token when all have low priority', async () => {
       const token1: TokenInfo = {
         chainId: SupportedChainId.MAINNET,
@@ -197,9 +276,43 @@ describe('determineIntermediateToken', () => {
         name: 'Token2',
       }
 
-      const result = await determineIntermediateToken(SupportedChainId.MAINNET, [token1, token2])
+      const result = await determineIntermediateToken(
+        SupportedChainId.MAINNET,
+        cowMainnet.address,
+        [token1, token2],
+        undefined,
+        true,
+      )
 
       expect(result).toBe(token1)
+    })
+  })
+
+  describe('allowIntermediateEqSellToken flag', () => {
+    it('should filter out sell token when allowIntermediateEqSellToken is false', async () => {
+      const result = await determineIntermediateToken(
+        SupportedChainId.MAINNET,
+        cowMainnet.address,
+        [cowMainnet, usdcMainnet, randomToken],
+        undefined,
+        false,
+      )
+
+      // cowMainnet should be filtered out, USDC should be selected (HIGH priority)
+      expect(result).toBe(usdcMainnet)
+    })
+
+    it('should keep sell token when allowIntermediateEqSellToken is true', async () => {
+      const result = await determineIntermediateToken(
+        SupportedChainId.MAINNET,
+        cowMainnet.address,
+        [cowMainnet, usdcMainnet, randomToken],
+        undefined,
+        true,
+      )
+
+      // cowMainnet should be kept and get HIGHEST priority
+      expect(result).toBe(cowMainnet)
     })
   })
 })

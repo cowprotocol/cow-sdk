@@ -29,13 +29,6 @@ export const USDC_TOKENS: Record<SupportedChainId, TokenInfo> = {
     name: 'USD Coin',
     symbol: 'USDC',
   },
-  [SupportedChainId.LENS]: {
-    chainId: SupportedChainId.LENS,
-    address: '0x88F08E304EC4f90D644Cec3Fb69b8aD414acf884', // USDC (Native on Lens)
-    decimals: 6,
-    name: 'USD Coin',
-    symbol: 'USDC',
-  },
   [SupportedChainId.BASE]: {
     chainId: SupportedChainId.BASE,
     address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bDa02913', // USDC (Native on Base)
@@ -71,6 +64,13 @@ export const USDC_TOKENS: Record<SupportedChainId, TokenInfo> = {
     decimals: 6,
     name: 'USDT',
     symbol: 'USDT',
+  },
+  [SupportedChainId.INK]: {
+    chainId: SupportedChainId.INK,
+    address: '0x2D270e6886d130D724215A266106e6832161EAEd', // USDC (Native Ink)
+    decimals: 6,
+    name: 'USDC',
+    symbol: 'USDC',
   },
   [SupportedChainId.SEPOLIA]: {
     chainId: SupportedChainId.SEPOLIA,

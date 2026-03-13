@@ -3,7 +3,6 @@ import { TokenInfo } from '@cowprotocol/sdk-config'
 import { DefaultBridgeProvider, MultiQuoteResult, ProviderQuoteContext } from '../../types'
 import { TradingSdk } from '@cowprotocol/sdk-trading'
 import {
-  createBridgeRequestTimeoutPromise,
   executeProviderQuotes,
   fillTimeoutResults,
   isBetterQuote,
@@ -11,9 +10,9 @@ import {
   safeCallProgressiveCallback,
   validateCrossChainRequest,
 } from '../utils'
-import { getQuoteWithBridge } from '../getQuoteWithBridge'
 import { BridgeProviderError } from '../../errors'
 import { BaseMultiQuoteStrategy, MultiQuoteRequest } from './QuoteStrategy'
+import { fetchMultiQuote } from './utils'
 
 const DEFAULT_TOTAL_TIMEOUT_MS = 40_000 // 40 seconds
 const DEFAULT_PROVIDER_TIMEOUT_MS = 20_000 // 20 seconds
@@ -92,35 +91,13 @@ export class MultiQuoteStrategy extends BaseMultiQuoteStrategy {
   }
 
   private createProviderQuotePromise(context: ProviderQuoteContext, tradingSdk: TradingSdk): Promise<void> {
-    const { provider, quoteBridgeRequest, advancedSettings, providerTimeout, onQuoteResult, results, index } = context
+    const { provider, onQuoteResult, results, index } = context
 
     return (async (): Promise<void> => {
       try {
-        const baseParams = {
-          swapAndBridgeRequest: quoteBridgeRequest,
-          advancedSettings,
-          tradingSdk,
-          quoteSigner: advancedSettings?.quoteSigner,
-        } as const
+        const result = await fetchMultiQuote(context, tradingSdk, this.intermediateTokensCache)
 
-        const request = this.intermediateTokensCache
-          ? {
-              ...baseParams,
-              intermediateTokensCache: this.intermediateTokensCache,
-            }
-          : baseParams
-
-        // Race between the actual quote request and the provider timeout
-        const quote = await Promise.race([
-          getQuoteWithBridge(provider, request),
-          createBridgeRequestTimeoutPromise(providerTimeout, `Provider ${provider.info.dappId}`),
-        ])
-
-        const result: MultiQuoteResult = {
-          providerDappId: provider.info.dappId,
-          quote,
-          error: undefined,
-        }
+        if (!result) return
 
         // Store result for final return
         results[index] = result

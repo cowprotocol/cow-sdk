@@ -1,11 +1,11 @@
 import { getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { ETH_ADDRESS } from '@cowprotocol/sdk-config'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
-import { OrderKind, EnrichedOrder } from '@cowprotocol/sdk-order-book'
+import { EnrichedOrder, OrderKind } from '@cowprotocol/sdk-order-book'
 import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
 import { BridgeStatus } from '../../types'
 
-import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
+import { DEFAULT_BRIDGE_SLIPPAGE_BPS, HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { NearIntentsApi } from './NearIntentsApi'
 import {
@@ -17,10 +17,11 @@ import {
 } from './const'
 import { adaptToken, adaptTokens, calculateDeadline, getTokenByAddressAndChainId, hashQuote } from './util'
 
-import type { QuoteResponse } from '@defuse-protocol/one-click-sdk-typescript'
 import type { AbstractProviderAdapter } from '@cowprotocol/sdk-common'
+import { isEvmChain } from '@cowprotocol/sdk-config'
 import type { ChainId, ChainInfo, EvmCall, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import type { CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
+import type { QuoteResponse } from '@defuse-protocol/one-click-sdk-typescript'
 import type { Address, Hex } from 'viem'
 import type {
   BridgeProviderInfo,
@@ -36,12 +37,22 @@ import type {
 export const NEAR_INTENTS_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/near-intents`
 export const REFERRAL = 'cow'
 
+interface DepositAddressContext {
+  address: Address
+  quoteHash: string
+  stringifiedQuote: string
+  attestationSignature: string
+}
+
 export interface NearIntentsQuoteResult extends BridgeQuoteResult {
   depositAddress: Hex
+  attestationSignature: string
+  quoteBody: string
 }
 
 export interface NearIntentsBridgeProviderOptions {
   cowShedOptions?: CowShedSdkOptions
+  apiKey?: string
 }
 
 const providerType = 'ReceiverAccountBridgeProvider' as const
@@ -65,7 +76,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     if (adapter) {
       setGlobalAdapter(adapter)
     }
-    this.api = new NearIntentsApi()
+    this.api = new NearIntentsApi(options?.apiKey)
     this.cowShedSdk = new CowShedSdk(adapter, options?.cowShedOptions?.factoryOptions)
   }
 
@@ -88,7 +99,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       throw new BridgeProviderQuoteError(BridgeQuoteErrors.ONLY_SELL_ORDER_SUPPORTED, { kind: request.kind })
     }
 
-    const { sellTokenChainId, buyTokenChainId, buyTokenAddress, sellTokenAddress } = request
+    const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
 
     const tokens = adaptTokens(await this.api.getTokens())
     const { sourceTokens, targetTokens } = tokens.reduce(
@@ -111,16 +122,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
 
     if (!targetToken) return []
 
-    /**
-     * Example: trade USDT (bnb) -> POL (polygon)
-     * sellTokenAddress - address of USDT on bnb
-     * We have to exclude USDT from sourceTokens
-     * Otherwise, the result of getIntermediateTokens() will include USDT
-     * * And CoW Swap will try to swap USDT (bnb) -> USDT (bnb) which is not allowed
-     */
-    return Array.from(sourceTokens.values()).filter((token) => {
-      return token.address?.toLowerCase() !== sellTokenAddress.toLowerCase()
-    })
+    return Array.from(sourceTokens.values())
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<NearIntentsQuoteResult> {
@@ -144,7 +146,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     const quoteResponse = await this.api.getQuote({
       dry: false,
       swapType: QuoteRequest.swapType.FLEX_INPUT,
-      slippageTolerance: request.slippageBps ?? 100,
+      slippageTolerance: request.bridgeSlippageBps ?? DEFAULT_BRIDGE_SLIPPAGE_BPS,
       originAsset: sellToken.assetId,
       depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
       destinationAsset: buyToken.assetId,
@@ -175,6 +177,8 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     return {
       id: recoveredDepositAddress.quoteHash,
       signature: quoteResponse.signature,
+      attestationSignature: recoveredDepositAddress.attestationSignature,
+      quoteBody: recoveredDepositAddress.stringifiedQuote,
       isSell: request.kind === OrderKind.SELL,
       depositAddress: quote.depositAddress as Hex,
       quoteTimestamp: new Date(isoDate).getTime(),
@@ -249,6 +253,11 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       throw new Error('Token not supported')
     }
 
+    // Ensure chain IDs are supported for BridgingDepositParams
+    if (!isEvmChain(adaptedInput.chainId) || !isEvmChain(adaptedOutput.chainId)) {
+      throw new Error('Non-EVM chains are not supported for BridgingDepositParams')
+    }
+
     // Build response
     return {
       status: {
@@ -300,16 +309,19 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     throw new Error('Not implemented')
   }
 
+  /**
+   * A script to verify depositAddress from appData: https://codesandbox.io/p/sandbox/h7tngy
+   */
   async recoverDepositAddress({
     quote,
     quoteRequest,
     timestamp,
-  }: QuoteResponse): Promise<{ address: Address; quoteHash: string } | null> {
+  }: QuoteResponse): Promise<DepositAddressContext | null> {
     try {
       if (!quote?.depositAddress) return null
 
       const utils = getGlobalAdapter().utils
-      const quoteHash = hashQuote({ quote, quoteRequest, timestamp })
+      const { hash: quoteHash, stringifiedQuote } = hashQuote({ quote, quoteRequest, timestamp })
 
       const depositAddr = utils.getChecksumAddress(quote.depositAddress as Address)
       const { signature } = await this.api.getAttestation({
@@ -327,6 +339,8 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       return {
         address: await utils.recoverAddress(hash, signature),
         quoteHash,
+        stringifiedQuote,
+        attestationSignature: signature,
       }
     } catch {
       return null

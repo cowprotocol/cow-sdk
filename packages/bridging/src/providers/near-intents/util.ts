@@ -1,7 +1,7 @@
 import stringify from 'json-stable-stringify'
 import type { Quote, QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 import { getGlobalAdapter } from '@cowprotocol/sdk-common'
-import { ETH_ADDRESS, TokenInfo } from '@cowprotocol/sdk-config'
+import { ETH_ADDRESS, TokenInfo, ChainId, isEvmChain } from '@cowprotocol/sdk-config'
 import type { Hex } from 'viem'
 
 import { NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS } from './const'
@@ -43,8 +43,12 @@ export const adaptTokens = (tokens: TokenResponse[]): TokenInfo[] =>
 export const getTokenByAddressAndChainId = (
   tokens: TokenResponse[],
   targetTokenAddress: string,
-  targetTokenChainId: number,
+  targetTokenChainId: ChainId,
 ): TokenResponse | undefined => {
+  // will handle non-EVM chains in the future
+  if (!isEvmChain(targetTokenChainId)) {
+    return undefined
+  }
   return tokens.find((token) => {
     const chainId = NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS[token.blockchain as NearBlockchainKey]
     if (!chainId) return false
@@ -64,9 +68,9 @@ export const hashQuote = ({
   quote: Quote
   quoteRequest: QuoteRequest
   timestamp: any
-}): Hex => {
+}): { hash: Hex; stringifiedQuote: string } => {
   const adapter = getGlobalAdapter()
-  const data = stringify({
+  const stringifiedQuote = stringify({
     dry: false,
     swapType: quoteRequest.swapType,
     slippageTolerance: quoteRequest.slippageTolerance,
@@ -79,10 +83,10 @@ export const hashQuote = ({
     recipient: quoteRequest.recipient,
     recipientType: quoteRequest.recipientType,
     deadline: quoteRequest.deadline,
-    quoteWaitingTimeMs: !!quoteRequest.quoteWaitingTimeMs ? quoteRequest.quoteWaitingTimeMs : undefined,
-    referral: !!quoteRequest.referral ? quoteRequest.referral : undefined,
-    virtualChainRecipient: !!quoteRequest.virtualChainRecipient ? quoteRequest.virtualChainRecipient : undefined,
-    virtualChainRefundRecipient: !!quoteRequest.virtualChainRefundRecipient
+    quoteWaitingTimeMs: quoteRequest.quoteWaitingTimeMs ? quoteRequest.quoteWaitingTimeMs : undefined,
+    referral: quoteRequest.referral ? quoteRequest.referral : undefined,
+    virtualChainRecipient: quoteRequest.virtualChainRecipient ? quoteRequest.virtualChainRecipient : undefined,
+    virtualChainRefundRecipient: quoteRequest.virtualChainRefundRecipient
       ? quoteRequest.virtualChainRefundRecipient
       : undefined,
     customRecipientMsg: undefined,
@@ -99,8 +103,9 @@ export const hashQuote = ({
     minAmountOut: quote.minAmountOut,
     timestamp,
   })
-  if (!data) {
+  if (!stringifiedQuote) {
     throw new Error('Failed to serialize quote data: quote or quoteRequest may be undefined or invalid')
   }
-  return adapter.utils.sha256(adapter.utils.toUtf8Bytes(data))
+  const hash = adapter.utils.sha256(adapter.utils.toUtf8Bytes(stringifiedQuote))
+  return { hash, stringifiedQuote }
 }

@@ -13,7 +13,7 @@ import {
   quoteBridgeRequest,
 } from './mock/bridgeRequestMocks'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
-import { NATIVE_CURRENCY_ADDRESS, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { EVM_NATIVE_CURRENCY_ADDRESS, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import { getHookMockForCostEstimation } from '../hooks/utils'
 import { createAdapters } from '../../tests/setup'
 import { AbstractSigner, setGlobalAdapter, Provider, TTLCache } from '@cowprotocol/sdk-common'
@@ -133,7 +133,7 @@ adapterNames.forEach((adapterName) => {
     it('When selling ETH, then should make createOrder transaction', async () => {
       const { postSwapOrderFromQuote } = await postOrder({
         ...quoteBridgeRequest,
-        sellTokenAddress: NATIVE_CURRENCY_ADDRESS,
+        sellTokenAddress: EVM_NATIVE_CURRENCY_ADDRESS,
       })
 
       await postSwapOrderFromQuote()
@@ -429,6 +429,28 @@ describe('createPostSwapOrderFromQuote with ReceiverAccountBridgeProvider', () =
         expect(appData.metadata.bridging?.quoteSignature).toBe('0xsignature-only')
       })
 
+      it('should update app-data with attestationSignature and quoteBody for ReceiverAccountBridgeProvider', async () => {
+        const quoteWithAllFields = {
+          ...bridgeQuoteResult,
+          id: 'test-quote-id-789',
+          signature: '0xsignature789',
+          attestationSignature: '0xattestation-signature-abc',
+          quoteBody: '{"test":"quote-body"}',
+        }
+        mockProvider.getQuote = jest.fn().mockResolvedValue(quoteWithAllFields)
+
+        const result = await getQuoteWithBridge(mockProvider, {
+          swapAndBridgeRequest: quoteBridgeRequest,
+          tradingSdk,
+        })
+
+        const appData = result.swap.appDataInfo.doc
+        expect(appData.metadata.bridging?.quoteId).toBe('test-quote-id-789')
+        expect(appData.metadata.bridging?.quoteSignature).toBe('0xsignature789')
+        expect(appData.metadata.bridging?.attestationSignature).toBe('0xattestation-signature-abc')
+        expect(appData.metadata.bridging?.quoteBody).toBe('{"test":"quote-body"}')
+      })
+
       it('should override appDataInfo with advancedSettings.appData when provided', async () => {
         const { postSwapOrderFromQuote } = await getQuoteWithBridge(mockProvider, {
           swapAndBridgeRequest: quoteBridgeRequest,
@@ -441,7 +463,7 @@ describe('createPostSwapOrderFromQuote with ReceiverAccountBridgeProvider', () =
               slippageBips: 100,
             },
             referrer: {
-              address: '0x1234567890123456789012345678901234567890',
+              code: 'COWREF1',
             },
           },
         }
@@ -459,7 +481,7 @@ describe('createPostSwapOrderFromQuote with ReceiverAccountBridgeProvider', () =
 
         // Should have the custom metadata merged
         expect(orderAppData.metadata.quote.slippageBips).toBe(100)
-        expect(orderAppData.metadata.referrer.address).toBe('0x1234567890123456789012345678901234567890')
+        expect(orderAppData.metadata.referrer.code).toBe('COWREF1')
 
         // Verify that getQuote was NOT called again (skipQuoteRefetch = true for ReceiverAccountBridgeProvider)
         expect(getQuoteMock).toHaveBeenCalledTimes(1) // Only the initial call

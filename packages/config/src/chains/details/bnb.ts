@@ -1,12 +1,12 @@
-import { ChainInfo, SupportedChainId } from '../types'
-import { nativeCurrencyTemplate } from '../../constants/tokens'
+import { EvmChainInfo, SupportedChainId } from '../types'
+import { nativeCurrencyTemplate } from '../../constants/nativeCurrencyTemplate'
 import { RAW_CHAINS_FILES_PATH } from '../../constants/paths'
 
 const bnbLogo = `${RAW_CHAINS_FILES_PATH}/images/bnb-logo.svg`
 
 // See https://github.com/wevm/viem/blob/main/src/chains/definitions/bsc.ts
 // and https://github.com/ethereum-lists/chains/blob/master/_data/chains/eip155-56.json
-export const bnb: ChainInfo = {
+export const bnb: EvmChainInfo = {
   id: SupportedChainId.BNB,
   label: 'BNB',
   eip155Label: 'BNB Chain Mainnet',
@@ -41,7 +41,7 @@ export const bnb: ChainInfo = {
     url: 'https://docs.bnbchain.org',
   },
   blockExplorer: {
-    name: 'BscScan',
+    name: 'Bscscan',
     url: 'https://bscscan.com',
   },
   bridges: [

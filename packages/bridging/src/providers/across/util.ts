@@ -6,8 +6,9 @@ import { ACROSS_DEPOSIT_EVENT_INTERFACE, COW_TRADE_EVENT_INTERFACE } from './con
 import { ACROSS_TOKEN_MAPPING, AcrossChainConfig } from './const/tokens'
 import { ACROSS_SPOOK_CONTRACT_ADDRESSES } from './const/contracts'
 import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
-import { getBigNumber, OrderKind } from '@cowprotocol/sdk-order-book'
+import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { getGlobalAdapter, Log } from '@cowprotocol/sdk-common'
+import stringify from 'json-stable-stringify'
 
 const PCT_100_PERCENT = 10n ** 18n
 
@@ -28,8 +29,8 @@ export function getChainConfigs(
   return { sourceChainConfig, targetChainConfig }
 }
 
-function getChainConfig(chainId: number): AcrossChainConfig | undefined {
-  return ACROSS_TOKEN_MAPPING[chainId as unknown as TargetChainId]
+function getChainConfig(chainId: TargetChainId): AcrossChainConfig | undefined {
+  return ACROSS_TOKEN_MAPPING[chainId]
 }
 
 export function getTokenSymbol(tokenAddress: string, chainConfig: AcrossChainConfig): string | undefined {
@@ -51,6 +52,7 @@ export function toBridgeQuoteResult(
     isSell: kind === OrderKind.SELL,
     amountsAndCosts: toAmountsAndCosts(request, slippageBps, suggestedFees),
     quoteTimestamp: Number(suggestedFees.timestamp),
+    quoteBody: stringify(suggestedFees),
     expectedFillTimeSeconds: Number(suggestedFees.estimatedFillTimeSec),
     fees: {
       bridgeFee: BigInt(suggestedFees.relayerCapitalFee.total),
@@ -72,9 +74,9 @@ function toAmountsAndCosts(
   const { amount, sellTokenDecimals, buyTokenDecimals } = request
 
   // Get the amounts before fees
-  const sellAmountBeforeFeeBig = getBigNumber(amount, sellTokenDecimals)
-  const sellAmountBeforeFee = sellAmountBeforeFeeBig.big
-  const buyAmountBeforeFee = getBigNumber(sellAmountBeforeFeeBig.num, buyTokenDecimals).big // Sell and buy token should be the same asset for current implementation, but technically they can have different decimals
+  const sellAmountBeforeFee = BigInt(amount)
+  // Sell and buy token should be the same asset for current implementation, but technically they can have different decimals
+  const buyAmountBeforeFee = (sellAmountBeforeFee * 10n ** BigInt(buyTokenDecimals)) / 10n ** BigInt(sellTokenDecimals)
 
   // Apply the fee to the buy amount (sell amount doesn't change)
   const totalRelayerFeePct = BigInt(suggestedFees.totalRelayFee.pct)

@@ -5,12 +5,12 @@ import {
   base,
   bnb,
   gnosisChain,
-  lens,
   linea,
   mainnet,
   plasma,
   polygon,
   sepolia,
+  ink,
   SupportedChainId,
 } from '@cowprotocol/sdk-config'
 
@@ -22,10 +22,10 @@ const DEFAULT_RPC_URL: Record<SupportedChainId, string | undefined> = {
   [SupportedChainId.SEPOLIA]: sepolia.rpcUrls.default.http[0],
   [SupportedChainId.POLYGON]: polygon.rpcUrls.default.http[0],
   [SupportedChainId.AVALANCHE]: avalanche.rpcUrls.default.http[0],
-  [SupportedChainId.LENS]: lens.rpcUrls.default.http[0],
   [SupportedChainId.BNB]: bnb.rpcUrls.default.http[0],
   [SupportedChainId.LINEA]: linea.rpcUrls.default.http[0],
   [SupportedChainId.PLASMA]: plasma.rpcUrls.default.http[0],
+  [SupportedChainId.INK]: ink.rpcUrls.default.http[0],
 }
 
 export async function getRpcProvider(chainId: SupportedChainId) {

@@ -14,9 +14,10 @@ export function getQuoteWithoutBridge(params: {
   tradingSdk: TradingSdk
 }): Promise<QuoteAndPost> {
   const { quoteBridgeRequest, advancedSettings, tradingSdk } = params
-  const { sellTokenAddress, buyTokenAddress, amount, ...rest } = quoteBridgeRequest
+  const { sellTokenAddress, buyTokenAddress, amount, swapSlippageBps, ...rest } = quoteBridgeRequest
   const swapParams: WithPartialTraderParams<TradeParameters> = {
     ...rest,
+    slippageBps: swapSlippageBps,
     chainId: quoteBridgeRequest.sellTokenChainId,
     sellToken: sellTokenAddress,
     buyToken: buyTokenAddress,

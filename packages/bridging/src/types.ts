@@ -37,6 +37,10 @@ interface WithBuyToken {
 
 type WithQuoter = Omit<QuoterParameters, 'chainId'>
 type WithTrader = Pick<TraderParameters, 'signer'>
+type WithSwapAndBrideSlippage = Partial<{
+  swapSlippageBps: latestAppData.SlippageBips
+  bridgeSlippageBps: latestAppData.SlippageBips
+}>
 
 /**
  * Parameters for getting a bridge quote
@@ -49,7 +53,8 @@ export type QuoteBridgeRequest = {
   WithBuyToken &
   WithQuoter &
   WithTrader &
-  TradeOptionalParameters
+  Omit<TradeOptionalParameters, 'slippageBps'> &
+  WithSwapAndBrideSlippage
 
 export type QuoteBridgeRequestWithoutAmount = Omit<QuoteBridgeRequest, 'amount'>
 
@@ -62,6 +67,14 @@ export interface BridgeQuoteResult {
    * Provider who implement ReceiverAccountBridgeProvider must return a signature of a quote than will be used to verify the quote deposit address validity
    */
   signature?: string
+  /**
+   * For ReceiverAccountBridgeProvider, this is the attestation signature from the bridge provider that validates the deposit address. Empty for other provider types.
+   */
+  attestationSignature?: string
+  /**
+   * A stringified JSON of quote which is associated with the order.
+   */
+  quoteBody?: string
   /**
    * Whether the quote is a sell or buy order.
    */
@@ -505,7 +518,7 @@ export interface MultiQuoteRequest {
   options?: MultiQuoteOptions
 }
 
-interface MultiQuoteContext {
+export interface MultiQuoteContext {
   provider: BridgeProvider<BridgeQuoteResult>
   quoteBridgeRequest: QuoteBridgeRequest
   advancedSettings: SwapAdvancedSettings | undefined

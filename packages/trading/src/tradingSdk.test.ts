@@ -1,6 +1,6 @@
 import { TradingSdk } from './tradingSdk'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
-import { TradeBaseParameters } from './types'
+import { TradeBaseParameters, QuoteResults } from './types'
 import {
   BuyTokenDestination,
   EcdsaSigningScheme,
@@ -13,6 +13,7 @@ import {
   SigningScheme,
 } from '@cowprotocol/sdk-order-book'
 import { AdaptersTestSetup, createAdapters } from '../tests/setup'
+import { AccountAddress } from '@cowprotocol/sdk-common'
 import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
 import * as onChainCancellationModule from './onChainCancellation'
 import * as getEthFlowTransactionModule from './getEthFlowTransaction'
@@ -643,6 +644,135 @@ describe('TradingSdk', () => {
 
         await expect(sdk.onChainCancelOrder({ orderUid })).rejects.toThrow('Chain ID is missing')
       }
+    })
+  })
+
+  describe('getQuoteOnly', () => {
+    const ownerAddress = '0xfb3c7eb936caa12b5a884d612393969a557d4307' as AccountAddress
+
+    beforeEach(() => {
+      orderBookApi = {
+        context: {
+          chainId: SupportedChainId.GNOSIS_CHAIN,
+        },
+        getQuote: jest.fn().mockResolvedValue(quoteResponseMock),
+        sendOrder: jest.fn().mockResolvedValue('0x01'),
+      } as unknown as OrderBookApi
+    })
+
+    afterEach(() => {
+      jest.resetAllMocks()
+    })
+
+    it('should get a quote without a signer when owner is provided', async () => {
+      // Initialize SDK without a signer - only chainId and appCode
+      const sdk = new TradingSdk(
+        {
+          chainId: SupportedChainId.GNOSIS_CHAIN,
+          appCode: 'test',
+        },
+        { enableLogging: false, orderBookApi },
+      )
+
+      const result: QuoteResults = await sdk.getQuoteOnly({
+        ...defaultOrderParams,
+        owner: ownerAddress,
+      })
+
+      expect(result).toBeDefined()
+      expect(result.quoteResponse).toEqual(quoteResponseMock)
+      expect(result.amountsAndCosts).toBeDefined()
+      expect(result.orderToSign).toBeDefined()
+      expect(result.orderTypedData).toBeDefined()
+      expect(result.appDataInfo).toBeDefined()
+    })
+
+    it('should use the owner address as the quote "from" address', async () => {
+      const sdk = new TradingSdk(
+        {
+          chainId: SupportedChainId.GNOSIS_CHAIN,
+          appCode: 'test',
+        },
+        { enableLogging: false, orderBookApi },
+      )
+
+      await sdk.getQuoteOnly({
+        ...defaultOrderParams,
+        owner: ownerAddress,
+      })
+
+      expect(orderBookApi.getQuote).toHaveBeenCalledWith(
+        expect.objectContaining({
+          from: ownerAddress,
+        }),
+      )
+    })
+
+    it('should allow overriding chainId and appCode in params', async () => {
+      const sdk = new TradingSdk(
+        {
+          chainId: SupportedChainId.GNOSIS_CHAIN,
+          appCode: 'default-app',
+        },
+        { enableLogging: false, orderBookApi },
+      )
+
+      const result = await sdk.getQuoteOnly({
+        ...defaultOrderParams,
+        owner: ownerAddress,
+        appCode: 'custom-app',
+      })
+
+      expect(result).toBeDefined()
+      const appData = JSON.parse(result.appDataInfo.fullAppData)
+      expect(appData.appCode).toBe('custom-app')
+    })
+
+    it('should throw if chainId is missing', async () => {
+      const sdk = new TradingSdk(
+        { appCode: 'test' },
+        { enableLogging: false, orderBookApi },
+      )
+
+      await expect(
+        sdk.getQuoteOnly({
+          ...defaultOrderParams,
+          owner: ownerAddress,
+        }),
+      ).rejects.toThrow('Missing quoter parameters: chainId')
+    })
+
+    it('should throw if appCode is missing', async () => {
+      const sdk = new TradingSdk(
+        { chainId: SupportedChainId.GNOSIS_CHAIN },
+        { enableLogging: false, orderBookApi },
+      )
+
+      await expect(
+        sdk.getQuoteOnly({
+          ...defaultOrderParams,
+          owner: ownerAddress,
+        }),
+      ).rejects.toThrow('Missing quoter parameters: appCode')
+    })
+
+    it('should not require a global adapter with a signer', async () => {
+      // This test verifies that getQuoteOnly works even when no adapter/signer is configured
+      const sdk = new TradingSdk(
+        {
+          chainId: SupportedChainId.GNOSIS_CHAIN,
+          appCode: 'test',
+        },
+        { enableLogging: false, orderBookApi },
+      )
+
+      // Should not throw "No signer provided" or "Missing trader parameters: signer"
+      const result = await sdk.getQuoteOnly({
+        ...defaultOrderParams,
+        owner: ownerAddress,
+      })
+
+      expect(result.quoteResponse).toEqual(quoteResponseMock)
     })
   })
 })

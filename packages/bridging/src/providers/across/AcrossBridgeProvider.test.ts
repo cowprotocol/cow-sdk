@@ -13,6 +13,7 @@ import { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { createAdapters } from '../../../tests/setup'
 import { DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION } from '../../const'
+import stringify from 'json-stable-stringify'
 
 // Mock AcrossApi
 jest.mock('./AcrossApi')
@@ -147,6 +148,7 @@ adapterNames.forEach((adapterName) => {
 
         const expectedQuote: BridgeQuoteResult = {
           isSell: true,
+          quoteBody: stringify(mockSuggestedFees),
           amountsAndCosts: {
             beforeFee: { sellAmount: 1000000000000000000n, buyAmount: 1000000n },
             afterFee: { sellAmount: 1000000000000000000n, buyAmount: 999900n },

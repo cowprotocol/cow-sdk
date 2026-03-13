@@ -1,5 +1,184 @@
 # Changelog
 
+## [4.6.8](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.6.7...sdk-app-data-v4.6.8) (2026-03-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.7.1
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 1.0.0
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.11
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.11
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.11
+
+## [4.6.7](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.6.6...sdk-app-data-v4.6.7) (2026-03-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.7.0
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 0.10.0
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.10
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.10
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.10
+
+## [4.6.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.6.5...sdk-app-data-v4.6.6) (2026-03-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.6.3
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 0.9.0
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.9
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.9
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.9
+
+## [4.6.5](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.6.4...sdk-app-data-v4.6.5) (2026-02-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.6.2
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 0.8.1
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.8
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.8
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.8
+
+## [4.6.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.6.3...sdk-app-data-v4.6.4) (2026-02-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.6.1
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 0.8.0
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.7
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.7
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.7
+
+## [4.6.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.6.2...sdk-app-data-v4.6.3) (2026-02-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.6.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.6
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.6
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.6
+
+## [4.6.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.6.1...sdk-app-data-v4.6.2) (2026-02-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.4
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 0.7.3
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.5
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.5
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.5
+
+## [4.6.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.6.0...sdk-app-data-v4.6.1) (2026-02-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.3
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 0.7.2
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.4
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.4
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.4
+
+## [4.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.5.2...sdk-app-data-v4.6.0) (2026-01-28)
+
+
+### ✨ Features
+
+* allow new code property in referrer schema ([#774](https://github.com/cowprotocol/cow-sdk/issues/774)) ([2b648b6](https://github.com/cowprotocol/cow-sdk/commit/2b648b6a1db03fd34002c49572d8e8e556d03593))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.2
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 0.7.1
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.3
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.3
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.3
+
+## [4.5.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.5.1...sdk-app-data-v4.5.2) (2026-01-28)
+
+
+### 🐛 Bug Fixes
+
+* **app-data:** rename `is_omittable` property as camelCase in appData ([6b16d0d](https://github.com/cowprotocol/cow-sdk/commit/6b16d0dab7831035651529169c572df79e79640d))
+* **app-data:** rename `is_omittable` property in wrappers app data ([bb5c637](https://github.com/cowprotocol/cow-sdk/commit/bb5c6375135937389974916267fee850666fa2dd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.1
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 0.7.0
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.2
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.2
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.2
+
+## [4.5.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.5.0...sdk-app-data-v4.5.1) (2026-01-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.0
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 0.6.3
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.1
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.1
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.1
+
+## [4.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.4.0...sdk-app-data-v4.5.0) (2025-12-25)
+
+
+### ✨ Features
+
+* **app-data:** add user terms consents ([#763](https://github.com/cowprotocol/cow-sdk/issues/763)) ([1fc0b26](https://github.com/cowprotocol/cow-sdk/commit/1fc0b26ba250505db19c9189dd52a5e021c9616e))
+* **bridge:** extend bridging appData with attestation data ([#756](https://github.com/cowprotocol/cow-sdk/issues/756)) ([ff04417](https://github.com/cowprotocol/cow-sdk/commit/ff044172bdfa2997393e2bf9a331119815d2fc12))
+
+## [4.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.3.6...sdk-app-data-v4.4.0) (2025-12-22)
+
+
+### ✨ Features
+
+* **app-data:** add `wrappers` to app-data ([#746](https://github.com/cowprotocol/cow-sdk/issues/746)) ([6d1868a](https://github.com/cowprotocol/cow-sdk/commit/6d1868a7430a33caa46caa7bf41465e42ecd5a8f))
+
 ## [4.3.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.3.5...sdk-app-data-v4.3.6) (2025-12-11)
 
 

@@ -1,5 +1,318 @@
 # Changelog
 
+## [2.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.7.11...sdk-flash-loans-v2.0.0) (2026-03-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **chains:** Remove support for Lens.
+
+### ✨ Features
+
+* **chains:** Remove Lens ([#818](https://github.com/cowprotocol/cow-sdk/issues/818)) ([e8c74a0](https://github.com/cowprotocol/cow-sdk/commit/e8c74a078e5940901591652164af7b2ffb7b1fa6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.7.1
+    * @cowprotocol/sdk-app-data bumped to 4.6.8
+    * @cowprotocol/sdk-trading bumped to 1.0.4
+    * @cowprotocol/sdk-order-signing bumped to 0.1.38
+    * @cowprotocol/sdk-order-book bumped to 2.0.0
+    * @cowprotocol/sdk-config bumped to 1.0.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.11
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.11
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.11
+
+## [1.7.11](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.7.10...sdk-flash-loans-v1.7.11) (2026-03-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-trading bumped to 1.0.3
+    * @cowprotocol/sdk-order-signing bumped to 0.1.37
+    * @cowprotocol/sdk-order-book bumped to 1.1.2
+
+## [1.7.10](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.7.9...sdk-flash-loans-v1.7.10) (2026-03-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.7.0
+    * @cowprotocol/sdk-app-data bumped to 4.6.7
+    * @cowprotocol/sdk-trading bumped to 1.0.2
+    * @cowprotocol/sdk-order-signing bumped to 0.1.36
+    * @cowprotocol/sdk-order-book bumped to 1.1.1
+    * @cowprotocol/sdk-config bumped to 0.10.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.10
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.10
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.10
+
+## [1.7.9](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.7.8...sdk-flash-loans-v1.7.9) (2026-03-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.6.3
+    * @cowprotocol/sdk-app-data bumped to 4.6.6
+    * @cowprotocol/sdk-trading bumped to 1.0.1
+    * @cowprotocol/sdk-order-signing bumped to 0.1.35
+    * @cowprotocol/sdk-order-book bumped to 1.1.0
+    * @cowprotocol/sdk-config bumped to 0.9.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.9
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.9
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.9
+
+## [1.7.8](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.7.7...sdk-flash-loans-v1.7.8) (2026-02-26)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-trading bumped to 1.0.0
+    * @cowprotocol/sdk-order-signing bumped to 0.1.34
+    * @cowprotocol/sdk-order-book bumped to 1.0.0
+
+## [1.7.7](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.7.6...sdk-flash-loans-v1.7.7) (2026-02-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.6.2
+    * @cowprotocol/sdk-app-data bumped to 4.6.5
+    * @cowprotocol/sdk-trading bumped to 0.11.1
+    * @cowprotocol/sdk-order-signing bumped to 0.1.33
+    * @cowprotocol/sdk-order-book bumped to 0.6.6
+    * @cowprotocol/sdk-config bumped to 0.8.1
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.8
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.8
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.8
+
+## [1.7.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.7.5...sdk-flash-loans-v1.7.6) (2026-02-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.6.1
+    * @cowprotocol/sdk-app-data bumped to 4.6.4
+    * @cowprotocol/sdk-trading bumped to 0.11.0
+    * @cowprotocol/sdk-order-signing bumped to 0.1.32
+    * @cowprotocol/sdk-order-book bumped to 0.6.5
+    * @cowprotocol/sdk-config bumped to 0.8.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.7
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.7
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.7
+
+## [1.7.5](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.7.4...sdk-flash-loans-v1.7.5) (2026-02-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.6.0
+    * @cowprotocol/sdk-app-data bumped to 4.6.3
+    * @cowprotocol/sdk-trading bumped to 0.10.1
+    * @cowprotocol/sdk-order-signing bumped to 0.1.31
+    * @cowprotocol/sdk-order-book bumped to 0.6.4
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.6
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.6
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.6
+
+## [1.7.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.7.3...sdk-flash-loans-v1.7.4) (2026-02-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-trading bumped to 0.10.0
+
+## [1.7.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.7.2...sdk-flash-loans-v1.7.3) (2026-02-02)
+
+
+### 🔧 Miscellaneous
+
+* revert revert Ink network ([#789](https://github.com/cowprotocol/cow-sdk/issues/789)) ([a00dbbd](https://github.com/cowprotocol/cow-sdk/commit/a00dbbd6a26238bcee2d4452487d16551560c59f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.4
+    * @cowprotocol/sdk-app-data bumped to 4.6.2
+    * @cowprotocol/sdk-trading bumped to 0.9.4
+    * @cowprotocol/sdk-order-signing bumped to 0.1.30
+    * @cowprotocol/sdk-order-book bumped to 0.6.3
+    * @cowprotocol/sdk-config bumped to 0.7.3
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.5
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.5
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.5
+
+## [1.7.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.7.1...sdk-flash-loans-v1.7.2) (2026-02-02)
+
+
+### 🐛 Bug Fixes
+
+* support decimals in protocolFeeBps ([#787](https://github.com/cowprotocol/cow-sdk/issues/787)) ([f53ae65](https://github.com/cowprotocol/cow-sdk/commit/f53ae65931d85e354779767ed67e0e4df944a2bc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.3
+    * @cowprotocol/sdk-app-data bumped to 4.6.1
+    * @cowprotocol/sdk-trading bumped to 0.9.3
+    * @cowprotocol/sdk-order-signing bumped to 0.1.29
+    * @cowprotocol/sdk-order-book bumped to 0.6.2
+    * @cowprotocol/sdk-config bumped to 0.7.2
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.4
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.4
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.4
+
+## [1.7.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.7.0...sdk-flash-loans-v1.7.1) (2026-01-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.2
+    * @cowprotocol/sdk-app-data bumped to 4.6.0
+    * @cowprotocol/sdk-trading bumped to 0.9.2
+    * @cowprotocol/sdk-order-signing bumped to 0.1.28
+    * @cowprotocol/sdk-order-book bumped to 0.6.1
+    * @cowprotocol/sdk-config bumped to 0.7.1
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.3
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.3
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.3
+
+## [1.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.6.8...sdk-flash-loans-v1.7.0) (2026-01-28)
+
+
+### ✨ Features
+
+* **ink:** reapply "feat/COW-163: Add Ink network ([#781](https://github.com/cowprotocol/cow-sdk/issues/781))" ([7c23332](https://github.com/cowprotocol/cow-sdk/commit/7c23332dac4f8c91d5f75ae68297906e20f20362))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.1
+    * @cowprotocol/sdk-app-data bumped to 4.5.2
+    * @cowprotocol/sdk-trading bumped to 0.9.1
+    * @cowprotocol/sdk-order-signing bumped to 0.1.27
+    * @cowprotocol/sdk-order-book bumped to 0.6.0
+    * @cowprotocol/sdk-config bumped to 0.7.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.2
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.2
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.2
+
+## [1.6.8](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.6.7...sdk-flash-loans-v1.6.8) (2026-01-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-trading bumped to 0.9.0
+    * @cowprotocol/sdk-order-signing bumped to 0.1.26
+
+## [1.6.7](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.6.6...sdk-flash-loans-v1.6.7) (2026-01-21)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-trading bumped to 0.8.2
+    * @cowprotocol/sdk-order-signing bumped to 0.1.25
+
+## [1.6.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.6.5...sdk-flash-loans-v1.6.6) (2026-01-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.5.0
+    * @cowprotocol/sdk-app-data bumped to 4.5.1
+    * @cowprotocol/sdk-trading bumped to 0.8.1
+    * @cowprotocol/sdk-order-signing bumped to 0.1.24
+    * @cowprotocol/sdk-order-book bumped to 0.5.1
+    * @cowprotocol/sdk-config bumped to 0.6.3
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.1
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.1
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.1
+
+## [1.6.5](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.6.4...sdk-flash-loans-v1.6.5) (2025-12-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.5.0
+    * @cowprotocol/sdk-trading bumped to 0.8.0
+
+## [1.6.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.6.3...sdk-flash-loans-v1.6.4) (2025-12-24)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-trading bumped to 0.7.4
+
+## [1.6.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.6.2...sdk-flash-loans-v1.6.3) (2025-12-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.4.0
+    * @cowprotocol/sdk-trading bumped to 0.7.3
+    * @cowprotocol/sdk-order-signing bumped to 0.1.23
+    * @cowprotocol/sdk-order-book bumped to 0.5.0
+
+## [1.6.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.6.1...sdk-flash-loans-v1.6.2) (2025-12-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-trading bumped to 0.7.2
+    * @cowprotocol/sdk-order-signing bumped to 0.1.22
+
 ## [1.6.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v1.6.0...sdk-flash-loans-v1.6.1) (2025-12-11)
 
 

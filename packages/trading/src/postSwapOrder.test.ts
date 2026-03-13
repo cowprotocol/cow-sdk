@@ -70,6 +70,7 @@ describe('postSwapOrder', () => {
       },
       getQuote: jest.fn().mockResolvedValue(SELL_ORDER_QUOTE_MOCK),
       sendOrder: jest.fn().mockResolvedValue('0x01'),
+      uploadAppData: jest.fn().mockResolvedValue(null),
     }
 
     for (const adapterName of Object.keys(adapters) as Array<keyof AdaptersTestSetup>) {
@@ -137,6 +138,7 @@ describe('postSwapOrder', () => {
       },
       getQuote: jest.fn().mockResolvedValue(quoteResponseMock),
       sendOrder: jest.fn().mockResolvedValue('0x01'),
+      uploadAppData: jest.fn().mockResolvedValue(null),
     }
 
     for (const adapterName of Object.keys(adapters) as Array<keyof AdaptersTestSetup>) {
@@ -152,11 +154,10 @@ describe('postSwapOrder', () => {
       const call = orderBookApi.sendOrder.mock.calls[0][0]
 
       expect(orderId).toEqual('0x01')
-      // sellAmountAfterNetworkCosts = quoteResponseMock.sellAmount + quoteResponseMock.feeAmount
-      // sellAmountAfterNetworkCosts = BigInt('1005456782512030400') + BigInt('1112955650440102') = 1006569738162470502n
-
-      // sellAmountAfterNetworkCosts + 0.5%
-      // 1006569738162470502n + ((1006569738162470502n * BigInt(50)) / 10000n) = 1011602586853282854n
+      // quoteResponseMock.sellAmount + quoteResponseMock.feeAmount
+      // 005456782512030400 + 1112955650440102 = 1006569738162470502
+      // + slippage 50 BPS
+      // 1006569738162470502 + 5032848690812352 = 1011602586853282854
       expect(call.sellAmount).toBe('1011602586853282854')
       // quoteResponseMock.buyAmount
       expect(call.buyAmount).toBe('400000000000000000000')
@@ -170,6 +171,7 @@ describe('postSwapOrder', () => {
       },
       getQuote: jest.fn().mockResolvedValue(SELL_ORDER_QUOTE_MOCK),
       sendOrder: jest.fn().mockResolvedValue('0x01'),
+      uploadAppData: jest.fn().mockResolvedValue(null),
     }
 
     const orderParams = {
@@ -203,6 +205,7 @@ describe('postSwapOrder', () => {
       },
       getQuote: jest.fn().mockResolvedValue(SELL_ORDER_QUOTE_MOCK),
       sendOrder: jest.fn().mockResolvedValue('0x01'),
+      uploadAppData: jest.fn().mockResolvedValue(null),
     }
     const slippageBips = 800
 
@@ -240,6 +243,7 @@ describe('postSwapOrder', () => {
       },
       getQuote: jest.fn().mockResolvedValue(SELL_ORDER_QUOTE_MOCK),
       sendOrder: jest.fn().mockResolvedValue('0x01'),
+      uploadAppData: jest.fn().mockResolvedValue(null),
     }
     const validTo = 5600000
     const receiver = '0x974caa59e49682cda0ad2bbe82983419a2ecc400'

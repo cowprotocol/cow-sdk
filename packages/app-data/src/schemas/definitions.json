@@ -18,6 +18,13 @@
       "examples": ["0xb6BAd41ae76A11D10f7b0E664C5007b908bC77C9"],
       "type": "string"
     },
+    "hexData": {
+      "$id": "#/definitions/hexData",
+      "pattern": "^0x[a-f0-9]*$",
+      "title": "Hex encoded data",
+      "examples": ["0x", "0x1", "0xfac282674bbdb"],
+      "type": "string"
+    },
     "bigNumber": {
       "$id": "#/definitions/bigNumber",
       "pattern": "^\\d+$",

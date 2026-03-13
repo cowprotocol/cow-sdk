@@ -1,0 +1,16 @@
+{
+  "$id": "#referrer/v1.0.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "Referrer",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["code"],
+  "properties": {
+    "code": {
+      "type": "string",
+      "title": "Referrer code",
+      "description": "Affiliate/referral code (case-insensitive, stored uppercase).",
+      "pattern": "^[A-Z0-9_-]{5,20}$"
+    }
+  }
+}

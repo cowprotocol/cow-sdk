@@ -1,5 +1,80 @@
 # Changelog
 
+## [1.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.10.0...sdk-config-v1.0.0) (2026-03-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **chains:** Remove support for Lens.
+
+### ✨ Features
+
+* **chains:** Remove Lens ([#818](https://github.com/cowprotocol/cow-sdk/issues/818)) ([e8c74a0](https://github.com/cowprotocol/cow-sdk/commit/e8c74a078e5940901591652164af7b2ffb7b1fa6))
+
+## [0.10.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.9.0...sdk-config-v0.10.0) (2026-03-04)
+
+
+### ✨ Features
+
+* Add non-evm chains types & guards & address validators  ([#792](https://github.com/cowprotocol/cow-sdk/issues/792)) ([b4b6047](https://github.com/cowprotocol/cow-sdk/commit/b4b6047889190f668f6409aeee7079ba6095f9ae))
+
+## [0.9.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.8.1...sdk-config-v0.9.0) (2026-03-04)
+
+
+### ✨ Features
+
+* add API endpoints for partners ([#809](https://github.com/cowprotocol/cow-sdk/issues/809)) ([59900e8](https://github.com/cowprotocol/cow-sdk/commit/59900e854a336e294ec881bd70bb13e579ff48ec))
+
+## [0.8.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.8.0...sdk-config-v0.8.1) (2026-02-20)
+
+
+### 🐛 Bug Fixes
+
+* **networks:** remove isUnderDevelopment flag from Ink ([#803](https://github.com/cowprotocol/cow-sdk/issues/803)) ([8baeaa6](https://github.com/cowprotocol/cow-sdk/commit/8baeaa657f0f7760ea26917b68cbf0ab70ac4905))
+* **networks:** remove isUnderDevelopment flag from Ink ([#803](https://github.com/cowprotocol/cow-sdk/issues/803)) ([8baeaa6](https://github.com/cowprotocol/cow-sdk/commit/8baeaa657f0f7760ea26917b68cbf0ab70ac4905))
+
+## [0.8.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.7.3...sdk-config-v0.8.0) (2026-02-18)
+
+
+### ✨ Features
+
+* **deprecated-chains:** add isDeprecated flag and mark Lens as such ([#801](https://github.com/cowprotocol/cow-sdk/issues/801)) ([e0663c6](https://github.com/cowprotocol/cow-sdk/commit/e0663c69c0b5d92bae45570f27105d6cfd04b96a))
+
+## [0.7.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.7.2...sdk-config-v0.7.3) (2026-02-02)
+
+
+### 🔧 Miscellaneous
+
+* revert revert Ink network ([#789](https://github.com/cowprotocol/cow-sdk/issues/789)) ([a00dbbd](https://github.com/cowprotocol/cow-sdk/commit/a00dbbd6a26238bcee2d4452487d16551560c59f))
+
+## [0.7.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.7.1...sdk-config-v0.7.2) (2026-02-02)
+
+
+### 🐛 Bug Fixes
+
+* support decimals in protocolFeeBps ([#787](https://github.com/cowprotocol/cow-sdk/issues/787)) ([f53ae65](https://github.com/cowprotocol/cow-sdk/commit/f53ae65931d85e354779767ed67e0e4df944a2bc))
+
+## [0.7.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.7.0...sdk-config-v0.7.1) (2026-01-28)
+
+
+### 🐛 Bug Fixes
+
+* **ink:** swap Ink logo with filled version ([#783](https://github.com/cowprotocol/cow-sdk/issues/783)) ([bfc0ba7](https://github.com/cowprotocol/cow-sdk/commit/bfc0ba72108bf376bdcdd2194ba312c6b8a50e3a))
+
+## [0.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.6.3...sdk-config-v0.7.0) (2026-01-28)
+
+
+### ✨ Features
+
+* **ink:** reapply "feat/COW-163: Add Ink network ([#781](https://github.com/cowprotocol/cow-sdk/issues/781))" ([7c23332](https://github.com/cowprotocol/cow-sdk/commit/7c23332dac4f8c91d5f75ae68297906e20f20362))
+
+## [0.6.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.6.2...sdk-config-v0.6.3) (2026-01-19)
+
+
+### 🐛 Bug Fixes
+
+* unify spelling for chain explorers ([#773](https://github.com/cowprotocol/cow-sdk/issues/773)) ([e89c4ba](https://github.com/cowprotocol/cow-sdk/commit/e89c4baa769b9f14982e8f4c7d19fdb8a6e2e5f6))
+
 ## [0.6.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v0.6.1...sdk-config-v0.6.2) (2025-12-11)
 
 

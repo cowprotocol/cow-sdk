@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-bridging",
-  "version": "0.12.0",
+  "version": "3.0.0",
   "description": "Bridging for CoW Protocol",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -20,7 +20,8 @@
     "test": "jest",
     "test:coverage": "jest --coverage --json --outputFile=jest.results.json && npx coveralls < ./coverage/lcov.info",
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
-    "test:bungeeGnosisBridge": "yarn test --testPathPattern=BungeeGnosisBridge",
+    "test:bungeeGnosisBridge": "jest --testPathPattern=BungeeGnosisBridge",
+    "test:bungeeAcrossBridge": "jest --testPathPattern=BungeeAcrossBridge",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },

@@ -150,6 +150,11 @@ export interface SwapAdvancedSettings extends LimitOrderAdvancedSettings {
   getSlippageSuggestion?(request: SlippageToleranceRequest): Promise<SlippageToleranceResponse>
 
   getCorrelatedTokens?(chainId: SupportedChainId): Promise<string[]>
+
+  /**
+   * Allows bridging trades like (USDC (mainnet) -> USDC (mainnet) -> DAI (base)
+   */
+  allowIntermediateEqSellToken?: boolean
 }
 
 export interface LimitOrderAdvancedSettings {

@@ -1,16 +1,15 @@
-import { ChainInfo, SupportedChainId } from '../types'
-import { nativeCurrencyTemplate } from '../../constants/tokens'
+import { EvmChainInfo, SupportedChainId } from '../types'
+import { nativeCurrencyTemplate } from '../../constants/nativeCurrencyTemplate'
 import { RAW_CHAINS_FILES_PATH } from '../../constants/paths'
 
-const arbitrumOneLogoLight = `${RAW_CHAINS_FILES_PATH}/images/arbitrum-logo-light.svg`
-const arbitrumOneLogoDark = `${RAW_CHAINS_FILES_PATH}/images/arbitrum-logo-dark.svg`
+const arbitrumLogo = `${RAW_CHAINS_FILES_PATH}/images/arbitrum-logo.svg`
 
 /**
  * Arbitrum chain info.
  *
  * See also https://github.com/wevm/viem/blob/main/src/chains/definitions/arbitrum.ts
  */
-export const arbitrumOne: ChainInfo = {
+export const arbitrumOne: EvmChainInfo = {
   id: SupportedChainId.ARBITRUM_ONE,
   label: 'Arbitrum',
   eip155Label: 'Arbitrum One',
@@ -32,7 +31,7 @@ export const arbitrumOne: ChainInfo = {
     },
   },
   color: '#1B4ADD',
-  logo: { light: arbitrumOneLogoLight, dark: arbitrumOneLogoDark },
+  logo: { light: arbitrumLogo, dark: arbitrumLogo },
 
   website: {
     name: 'Arbitrum',

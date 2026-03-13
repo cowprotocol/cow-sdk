@@ -620,5 +620,51 @@ adapterNames.forEach((adapterName) => {
         ).rejects.toThrow(error)
       })
     })
+
+    describe('getSwapQuote', () => {
+      it('should pass swapSlippageBps correctly to tradingSdk.getQuoteResults when provided', async () => {
+        const customSwapSlippageBps = 100
+
+        const params: GetQuoteWithBridgeParams = {
+          swapAndBridgeRequest: {
+            ...quoteBridgeRequest,
+            swapSlippageBps: customSwapSlippageBps,
+          },
+          tradingSdk,
+        }
+
+        await getIntermediateSwapResult({
+          provider: mockProvider,
+          params,
+        })
+
+        expect(getQuoteResultsMock).toHaveBeenCalledTimes(1)
+        const [swapParams] = getQuoteResultsMock.mock.calls[0] as any[]
+
+        expect(swapParams.slippageBps).toBe(customSwapSlippageBps)
+      })
+
+      it('should not include bridgeSlippageBps in swap params passed to tradingSdk.getQuoteResults', async () => {
+        const params: GetQuoteWithBridgeParams = {
+          swapAndBridgeRequest: {
+            ...quoteBridgeRequest,
+            swapSlippageBps: 100,
+            bridgeSlippageBps: 200,
+          },
+          tradingSdk,
+        }
+
+        await getIntermediateSwapResult({
+          provider: mockProvider,
+          params,
+        })
+
+        expect(getQuoteResultsMock).toHaveBeenCalledTimes(1)
+        const [swapParams] = getQuoteResultsMock.mock.calls[0] as any[]
+
+        expect(swapParams.slippageBps).toBe(100)
+        expect(swapParams.bridgeSlippageBps).toBeUndefined()
+      })
+    })
   })
 })

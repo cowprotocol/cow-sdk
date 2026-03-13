@@ -3,7 +3,8 @@ import { BungeeQuote, BungeeQuoteWithBuildTx } from './types'
 import { BungeeTxDataBytesIndices } from './const/misc'
 import { BungeeBridge, BungeeBridgeNames } from './types'
 import { BridgeQuoteAmountsAndCosts, QuoteBridgeRequest } from '../../types'
-import { getBigNumber, OrderKind } from '@cowprotocol/sdk-order-book'
+import { OrderKind } from '@cowprotocol/sdk-order-book'
+import stringify from 'json-stable-stringify'
 
 /**
  * Convert a QuoteBridgeRequest to a BungeeQuoteResult
@@ -26,6 +27,7 @@ export function toBridgeQuoteResult(
     amountsAndCosts: toAmountsAndCosts(request, slippageBps, bungeeQuote),
     quoteTimestamp: Number(bungeeQuote.quoteTimestamp),
     expectedFillTimeSeconds: Number(bungeeQuote.route.estimatedTime),
+    quoteBody: stringify(bungeeQuote),
     fees: {
       // @note routeFee is taken in the src chain intermediate token
       bridgeFee: BigInt(bungeeQuote.route.routeDetails.routeFee.amount),
@@ -48,13 +50,12 @@ function toAmountsAndCosts(
   slippageBps: number,
   bungeeQuote: BungeeQuote,
 ): BridgeQuoteAmountsAndCosts {
-  const { amount, sellTokenDecimals, buyTokenDecimals } = request
+  const { amount } = request
 
   // Get the amounts before fees
-  const sellAmountBeforeFeeBig = getBigNumber(amount, sellTokenDecimals)
-  const sellAmountBeforeFee = sellAmountBeforeFeeBig.big
+  const sellAmountBeforeFee = BigInt(amount)
   const buyAmountFromBungeeQuote = bungeeQuote.route.output.amount
-  const buyAmountBeforeFee = getBigNumber(buyAmountFromBungeeQuote, buyTokenDecimals).big
+  const buyAmountBeforeFee = BigInt(buyAmountFromBungeeQuote)
   // @note buyAmountAfterFee does not change, since routeFee is taken in the src chain intermediate token
   const buyAmountAfterFee = buyAmountBeforeFee
 
@@ -211,26 +212,6 @@ export const decodeAmountsBungeeTxData = (txData: string, bridge: BungeeBridge) 
   )}`
   const inputAmountBigNumber = BigInt(inputAmountBytes)
 
-  // decode output amount if available
-  // check if output amount is available
-  if (bridge === BungeeBridge.Across) {
-    const acrossBridgeIndices = BungeeTxDataBytesIndices[bridge][functionSelector]
-    if (!acrossBridgeIndices) {
-      throw new Error(`Unsupported bridge type: ${bridge}`)
-    }
-
-    const outputAmountBytes = `0x${txData.slice(
-      acrossBridgeIndices.outputAmount.bytesString_startIndex,
-      acrossBridgeIndices.outputAmount.bytesString_startIndex + acrossBridgeIndices.outputAmount.bytesString_length,
-    )}`
-    const outputAmountBigNumber = BigInt(outputAmountBytes)
-    return {
-      inputAmountBytes,
-      inputAmountBigNumber,
-      outputAmountBytes,
-      outputAmountBigNumber,
-    }
-  }
   return {
     inputAmountBytes,
     inputAmountBigNumber,

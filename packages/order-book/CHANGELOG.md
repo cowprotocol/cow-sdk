@@ -1,5 +1,168 @@
 # Changelog
 
+## [2.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v1.1.2...sdk-order-book-v2.0.0) (2026-03-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **chains:** Remove support for Lens.
+
+### ✨ Features
+
+* **chains:** Remove Lens ([#818](https://github.com/cowprotocol/cow-sdk/issues/818)) ([e8c74a0](https://github.com/cowprotocol/cow-sdk/commit/e8c74a078e5940901591652164af7b2ffb7b1fa6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 1.0.0
+    * @cowprotocol/sdk-common bumped to 0.7.1
+
+## [1.1.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v1.1.1...sdk-order-book-v1.1.2) (2026-03-10)
+
+
+### 🐛 Bug Fixes
+
+* **order-book:** handle decimal protocolFeeBps BigInt conversion ([#798](https://github.com/cowprotocol/cow-sdk/issues/798)) ([ad7d323](https://github.com/cowprotocol/cow-sdk/commit/ad7d32370c8bb1a414cf1e23a2f2f89e1f9e0b96))
+
+## [1.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v1.1.0...sdk-order-book-v1.1.1) (2026-03-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.10.0
+    * @cowprotocol/sdk-common bumped to 0.7.0
+
+## [1.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v1.0.0...sdk-order-book-v1.1.0) (2026-03-04)
+
+
+### ✨ Features
+
+* add API endpoints for partners ([#809](https://github.com/cowprotocol/cow-sdk/issues/809)) ([59900e8](https://github.com/cowprotocol/cow-sdk/commit/59900e854a336e294ec881bd70bb13e579ff48ec))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.9.0
+    * @cowprotocol/sdk-common bumped to 0.6.3
+
+## [1.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.6.6...sdk-order-book-v1.0.0) (2026-02-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* update quote amounts and costs structure ([#800](https://github.com/cowprotocol/cow-sdk/issues/800))
+
+### 🐛 Bug Fixes
+
+* update quote amounts and costs structure ([#800](https://github.com/cowprotocol/cow-sdk/issues/800)) ([ea96f67](https://github.com/cowprotocol/cow-sdk/commit/ea96f67a6ff44b7cc9226dc8ab7991896ced3ca7))
+
+## [0.6.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.6.5...sdk-order-book-v0.6.6) (2026-02-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.8.1
+    * @cowprotocol/sdk-common bumped to 0.6.2
+
+## [0.6.5](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.6.4...sdk-order-book-v0.6.5) (2026-02-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.8.0
+    * @cowprotocol/sdk-common bumped to 0.6.1
+
+## [0.6.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.6.3...sdk-order-book-v0.6.4) (2026-02-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.6.0
+
+## [0.6.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.6.2...sdk-order-book-v0.6.3) (2026-02-02)
+
+
+### 🔧 Miscellaneous
+
+* revert revert Ink network ([#789](https://github.com/cowprotocol/cow-sdk/issues/789)) ([a00dbbd](https://github.com/cowprotocol/cow-sdk/commit/a00dbbd6a26238bcee2d4452487d16551560c59f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.7.3
+    * @cowprotocol/sdk-common bumped to 0.5.4
+
+## [0.6.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.6.1...sdk-order-book-v0.6.2) (2026-02-02)
+
+
+### 🐛 Bug Fixes
+
+* support decimals in protocolFeeBps ([#787](https://github.com/cowprotocol/cow-sdk/issues/787)) ([f53ae65](https://github.com/cowprotocol/cow-sdk/commit/f53ae65931d85e354779767ed67e0e4df944a2bc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.7.2
+    * @cowprotocol/sdk-common bumped to 0.5.3
+
+## [0.6.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.6.0...sdk-order-book-v0.6.1) (2026-01-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.7.1
+    * @cowprotocol/sdk-common bumped to 0.5.2
+
+## [0.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.5.1...sdk-order-book-v0.6.0) (2026-01-28)
+
+
+### ✨ Features
+
+* **ink:** reapply "feat/COW-163: Add Ink network ([#781](https://github.com/cowprotocol/cow-sdk/issues/781))" ([7c23332](https://github.com/cowprotocol/cow-sdk/commit/7c23332dac4f8c91d5f75ae68297906e20f20362))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.7.0
+    * @cowprotocol/sdk-common bumped to 0.5.1
+
+## [0.5.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.5.0...sdk-order-book-v0.5.1) (2026-01-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 0.6.3
+    * @cowprotocol/sdk-common bumped to 0.5.0
+
+## [0.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.4.4...sdk-order-book-v0.5.0) (2025-12-22)
+
+
+### ✨ Features
+
+* use trades v2 for pagination support ([#752](https://github.com/cowprotocol/cow-sdk/issues/752)) ([282169c](https://github.com/cowprotocol/cow-sdk/commit/282169c8cd9886f4488c30ddcc2f149b23e2e9ce))
+
 ## [0.4.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v0.4.3...sdk-order-book-v0.4.4) (2025-12-11)
 
 

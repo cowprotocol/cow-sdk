@@ -72,17 +72,16 @@ export async function mergeAppDataDoc(
   _doc: LatestAppDataDocVersion,
   appDataOverride: AppDataParams,
 ): Promise<TradingAppDataInfo> {
-  // Do not merge hooks if there are overrides
-  // Otherwise we will just append hooks instead of overriding
-  const doc = appDataOverride.metadata?.hooks
-    ? {
-        ..._doc,
-        metadata: {
-          ..._doc.metadata,
-          hooks: {},
-        },
-      }
-    : { ..._doc }
+  // Clear arrays that would be duplicated by deepmerge
+  // deepmerge concatenates arrays by default, so we need to clear them first
+  const doc = {
+    ..._doc,
+    metadata: {
+      ..._doc.metadata,
+      ...(appDataOverride.metadata?.hooks ? { hooks: {} } : {}),
+      ...(appDataOverride.metadata?.userConsents ? { userConsents: [] } : {}),
+    },
+  }
 
   const appData = (appDataOverride ? deepmerge(doc, appDataOverride) : doc) as LatestAppDataDocVersion
   const { fullAppData, appDataKeccak256 } = await generateAppDataFromDoc(appData)

@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-common",
-  "version": "0.4.0",
+  "version": "0.7.1",
   "description": "Common utilities and types for CoW Protocol SDK",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -19,6 +19,9 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
     "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@cowprotocol/sdk-config": "workspace:*"
   },
   "devDependencies": {
     "@cow-sdk/typescript-config": "workspace:*",

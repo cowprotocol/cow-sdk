@@ -184,7 +184,7 @@ export interface InputOutputAmountTxDataBytesIndices
 export type BungeeTxDataBytesIndicesType = {
   [K in BungeeBridge]: {
     [functionSelector: string]: K extends BungeeBridge.Across
-      ? InputOutputAmountTxDataBytesIndices
+      ? InputAmountTxDataBytesIndices
       : InputAmountTxDataBytesIndices
   }
 }

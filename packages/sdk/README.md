@@ -23,10 +23,10 @@ The SDK supports all CoW Protocol enabled networks:
 - **Base** (8453) - `SupportedChainId.BASE`
 - **Polygon** (137) - `SupportedChainId.POLYGON`
 - **Avalanche** (43114) - `SupportedChainId.AVALANCHE`
-- **Lens** (232) - `SupportedChainId.LENS`
 - **BNB** (56) - `SupportedChainId.BNB`
-- **Linea** (59144) - `SupportedChainId.LINEA` (Under development)
-- **Plasma** (9745) - `SupportedChainId.PLASMA` (Under development)
+- **Linea** (59144) - `SupportedChainId.LINEA`
+- **Plasma** (9745) - `SupportedChainId.PLASMA`
+- **Ink** (57073) - `SupportedChainId.INK`
 - **Sepolia** (11155111) - `SupportedChainId.SEPOLIA` (Testnet)
 
 ## 🔗 **Related Resources**
@@ -277,6 +277,23 @@ await sdk.getQuote(parameters, {
 > **Tip:** Use `utmContent` for graffiti without affecting your `appCode`. The `appCode` parameter tracks your integration on [CoW Protocol's Dune dashboards](https://dune.com/cowprotocol/cowswap), while `utmContent` is available for custom identifiers or experimentation - all while attributing your volume to SDK integrators' collective impact.
 
 
+## Partner API
+
+Partners can use authenticated API access with higher rate limits via the Partner API gateway. Pass your API key when creating an `OrderBookApi` instance:
+
+```typescript
+import { OrderBookApi, SupportedChainId } from '@cowprotocol/cow-sdk'
+
+const orderBookApi = new OrderBookApi({
+  chainId: SupportedChainId.MAINNET,
+  apiKey: 'your-partner-api-key',
+})
+```
+
+By default, the SDK routes requests through `partners.cow.fi` (prod) or `partners.barn.cow.fi` (staging) and includes the `X-API-Key` header. If you provide custom `baseUrls`, those take precedence over the default partner hosts, but the `X-API-Key` header is still sent with every request.
+
+See the [OrderBookApi documentation](https://github.com/cowprotocol/cow-sdk/tree/main/packages/order-book/README.md#partner-api-authenticated-access) for more details, including usage with the Trading SDK.
+
 ## Adapters
 
 The CoW SDK supports multiple blockchain adapters to work with different Web3 libraries. You need to install and configure one of the following adapters:
@@ -353,8 +370,10 @@ We will perform the following operations:
 5. Get trades for the order
 6. Cancel the order (signing + sending)
 
+> Try it live: https://codesandbox.io/p/devbox/cow-sdk-example-forked-x63k52
+
 ```typescript
-import { OrderBookApi, OrderSigningUtils, SupportedChainId, OrderKind } from '@cowprotocol/cow-sdk'
+import { OrderBookApi, OrderSigningUtils, SupportedChainId, OrderQuoteSideKindSell, SigningScheme, setGlobalAdapter } from '@cowprotocol/cow-sdk'
 import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
 import { JsonRpcProvider, Wallet } from 'ethers'
 
@@ -364,13 +383,17 @@ const provider = new JsonRpcProvider('YOUR_RPC_URL')
 const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
 const adapter = new EthersV6Adapter({ provider, signer: wallet })
 
+setGlobalAdapter(adapter)
+
+const receiver = account
+
 const quoteRequest = {
   sellToken: '0x6a023ccd1ff6f2045c3309768ead9e68f978f6e1', // WETH on Gnosis Chain
   buyToken: '0x9c58bacc331c9aa871afd802db6379a98e80cedb', // GNO on Gnosis Chain
   from: account,
-  receiver: account,
+  receiver,
   sellAmountBeforeFee: (0.4 * 10 ** 18).toString(), // 0.4 WETH
-  kind: OrderKind.SELL,
+  kind: OrderQuoteSideKindSell.SELL,
 }
 
 const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.GNOSIS_CHAIN })
@@ -378,15 +401,27 @@ const orderBookApi = new OrderBookApi({ chainId: SupportedChainId.GNOSIS_CHAIN }
 async function main() {
   const { quote } = await orderBookApi.getQuote(quoteRequest)
 
-  const orderSigningResult = await OrderSigningUtils.signOrder(quote, chainId, adapter)
+  const orderData = {
+    ...quote,
+    // Add fee to sellAmount for sell orders
+    sellAmount: (BigInt(quote.sellAmount) + BigInt(quote.feeAmount)).toString(),
+    receiver,
+    feeAmount: "0",
+  };
 
-  const orderId = await orderBookApi.sendOrder({ ...quote, ...orderSigningResult })
+  const orderSigningResult = await OrderSigningUtils.signOrder(orderData, chainId, adapter.signer)
+
+  const orderId = await orderBookApi.sendOrder({
+    ...orderData,
+    ...orderSigningResult,
+    signingScheme: SigningScheme.EIP712,
+  })
 
   const order = await orderBookApi.getOrder(orderId)
 
   const trades = await orderBookApi.getTrades({ orderId })
 
-  const orderCancellationSigningResult = await OrderSigningUtils.signOrderCancellations([orderId], chainId, adapter)
+  const orderCancellationSigningResult = await OrderSigningUtils.signOrderCancellations([orderId], chainId, adapter.signer)
 
   const cancellationResult = await orderBookApi.sendSignedOrderCancellations({
     ...orderCancellationSigningResult,
