@@ -1,7 +1,11 @@
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import {
+  COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS,
+  COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS_STAGING,
+  SupportedChainId,
+} from '@cowprotocol/sdk-config'
 import { getPreSignTransaction } from './getPreSignTransaction'
 import { createAdapters } from '../tests/setup'
-import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { setGlobalAdapter, ContractFactory } from '@cowprotocol/sdk-common'
 
 const GAS = '0x1e848' // 125000
 
@@ -64,6 +68,53 @@ describe('getPreSignTransaction', () => {
 
     results.forEach((result) => {
       expect(result.value).toBe('0')
+    })
+  })
+
+  describe('settlementContractOverride', () => {
+    it('should use default production settlement contract address when no options provided', async () => {
+      setGlobalAdapter(adapters.ethersV5Adapter)
+
+      await getPreSignTransaction(adapters.ethersV5Adapter, chainId, orderId)
+
+      expect(ContractFactory.createSettlementContract).toHaveBeenCalledWith(
+        COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[chainId],
+        expect.any(Object),
+      )
+    })
+
+    it('should use staging settlement contract address when env is "staging"', async () => {
+      setGlobalAdapter(adapters.ethersV5Adapter)
+
+      await getPreSignTransaction(adapters.ethersV5Adapter, chainId, orderId, { env: 'staging' })
+
+      expect(ContractFactory.createSettlementContract).toHaveBeenCalledWith(
+        COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS_STAGING[chainId],
+        expect.any(Object),
+      )
+    })
+
+    it('should use custom settlement contract address when settlementContractOverride is provided', async () => {
+      const customAddress = '0x1111111111111111111111111111111111111111'
+      setGlobalAdapter(adapters.ethersV5Adapter)
+
+      await getPreSignTransaction(adapters.ethersV5Adapter, chainId, orderId, {
+        settlementContractOverride: { [chainId]: customAddress },
+      })
+
+      expect(ContractFactory.createSettlementContract).toHaveBeenCalledWith(customAddress, expect.any(Object))
+    })
+
+    it('should prioritize settlementContractOverride over staging env', async () => {
+      const customAddress = '0x1111111111111111111111111111111111111111'
+      setGlobalAdapter(adapters.ethersV5Adapter)
+
+      await getPreSignTransaction(adapters.ethersV5Adapter, chainId, orderId, {
+        env: 'staging',
+        settlementContractOverride: { [chainId]: customAddress },
+      })
+
+      expect(ContractFactory.createSettlementContract).toHaveBeenCalledWith(customAddress, expect.any(Object))
     })
   })
 })

@@ -850,3 +850,136 @@ if (currentAllowance < requiredAmount) {
   console.log('Sufficient allowance already exists')
 }
 ```
+
+## Custom Contract Addresses
+
+For advanced use cases such as testing, custom deployments, or chains where CoW Protocol contracts are deployed at non-standard addresses, you can override the contract addresses used by the SDK.
+
+Both parameters accept an `AddressPerChain` object (`Record<SupportedChainId, Address>`), so they apply per-chain and persist across all operations when set in `traderParams`.
+
+### settlementContractOverride / ethFlowContractOverride
+
+Overrides the address of the CoW Protocol Settlement contract. This affects:
+- Order domain signing (EIP-712 `verifyingContract`)
+- On-chain order cancellation via `onChainCancelOrder`
+- Pre-sign transactions via `getPreSignTransaction`
+
+```typescript
+import { SupportedChainId, OrderKind, TradeParameters, TradingSdk, COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS } from '@cowprotocol/cow-sdk'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { sepolia } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({
+    chain: sepolia,
+    transport: http('YOUR_RPC_URL')
+  }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
+})
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  appCode: '<YOUR_APP_CODE>',
+  // Override the settlement contract address for MAINNET
+  settlementContractOverride: {
+    ...COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS,
+    [SupportedChainId.MAINNET]: '0x<custom_settlement_contract>',
+  } as AddressPerChain,
+  // Override the settlement contract address for GNOSIS_CHAIN
+  ethFlowContractOverride: {
+    ...ETH_FLOW_ADDRESSES,
+    [SupportedChainId.GNOSIS_CHAIN]: '0x<custom_eth_flow_contract>',
+  } as AddressPerChain,
+}, {}, adapter)
+
+const parameters: TradeParameters = {
+  kind: OrderKind.BUY,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000',
+}
+
+const { quoteResults, postSwapOrderFromQuote } = await sdk.getQuote(parameters)
+const orderId = await postSwapOrderFromQuote()
+
+console.log('Order created, id: ', orderId)
+```
+
+You can also pass `settlementContractOverride` / `ethFlowContractOverride` per-call to override only for that operation:
+
+```typescript
+const { quoteResults, postSwapOrderFromQuote } = await sdk.getQuote({
+  ...parameters,
+  settlementContractOverride: {
+    [SupportedChainId.MAINNET]: '0x<custom_settlement_contract>',
+  } as AddressPerChain,
+})
+
+// or
+
+const { orderId } = await sdk.postSwapOrder({
+  ...parameters,
+  settlementContractOverride: {
+    [SupportedChainId.MAINNET]: '0x<custom_settlement_contract>',
+  } as AddressPerChain,
+})
+```
+
+## Custom Order-Book API Endpoint
+
+By default the SDK uses the public CoW Protocol API endpoints. You can point the SDK at a custom or self-hosted order-book by creating an `OrderBookApi` instance with custom `baseUrls` and passing it as the `orderBookApi` option.
+
+This is useful for:
+- Running a local order-book node during development
+- Using a private/dedicated API deployment
+- Connecting to a forked or testnet environment with a custom backend
+
+```typescript
+import { SupportedChainId, TradingSdk, OrderKind, TradeParameters } from '@cowprotocol/sdk-trading'
+import { OrderBookApi } from '@cowprotocol/sdk-order-book'
+import { AddressPerChain } from '@cowprotocol/sdk-config'
+import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
+import { createPublicClient, http, privateKeyToAccount } from 'viem'
+import { mainnet } from 'viem/chains'
+
+const adapter = new ViemAdapter({
+  provider: createPublicClient({ chain: mainnet, transport: http('YOUR_RPC_URL') }),
+  signer: privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`),
+})
+
+// 1. Create an OrderBookApi instance with custom base URLs
+const orderBookApi = new OrderBookApi({
+  chainId: SupportedChainId.MAINNET,
+  // Provide a base URL for each chain you intend to use
+  baseUrls: {
+    [SupportedChainId.MAINNET]: 'https://your-custom-orderbook.example.com/mainnet',
+  } as Record<SupportedChainId, string>,
+})
+
+// 2. Pass it to TradingSdk via the options object
+const sdk = new TradingSdk(
+  {
+    chainId: SupportedChainId.MAINNET,
+    appCode: '<YOUR_APP_CODE>',
+  },
+  {
+    orderBookApi, // All order-book requests will go to your custom endpoint
+  },
+  adapter,
+)
+
+const parameters: TradeParameters = {
+  kind: OrderKind.SELL,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '100000000000000000',
+}
+
+const { orderId } = await sdk.postSwapOrder(parameters)
+console.log('Order created via custom endpoint, id:', orderId)
+```

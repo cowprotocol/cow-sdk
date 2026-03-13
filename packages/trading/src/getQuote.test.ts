@@ -547,6 +547,25 @@ describe('getQuote', () => {
       }
     })
   })
+
+  describe('settlementContractOverride', () => {
+    it('should use custom settlement address in orderTypedData domain when settlementContractOverride is set', async () => {
+      const customAddress = '0x1111111111111111111111111111111111111111'
+      setGlobalAdapter(adapters.ethersV5Adapter)
+
+      const { result } = await getQuoteWithSigner(
+        {
+          ...defaultOrderParams,
+          signer: adapters.ethersV5Adapter.signer,
+          settlementContractOverride: { [defaultOrderParams.chainId]: customAddress },
+        },
+        {},
+        orderBookApiMock,
+      )
+
+      expect(result.orderTypedData.domain.verifyingContract).toBe(customAddress)
+    })
+  })
 })
 
 describe('getQuoteWithoutSigner', () => {

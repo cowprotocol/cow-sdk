@@ -1,7 +1,11 @@
 import { AdaptersTestSetup, createAdapters, TEST_ADDRESS } from './setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { OrderSigningUtils } from '../src/orderSigningUtils'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import {
+  COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS,
+  COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS_STAGING,
+  SupportedChainId,
+} from '@cowprotocol/sdk-config'
 import { UnsignedOrder } from '../src/types'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 
@@ -126,6 +130,43 @@ describe('OrderSigningUtils', () => {
       expect(domainValues[0]).toHaveProperty('name')
       expect(domainValues[0]).toHaveProperty('verifyingContract')
       expect(domainValues[0]).toHaveProperty('version')
+    })
+
+    test('should use default settlement contract address when no options provided', async () => {
+      setGlobalAdapter(adapters.viemAdapter)
+      const domain = await OrderSigningUtils.getDomain(SupportedChainId.MAINNET)
+
+      expect(domain.verifyingContract).toBe(COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET])
+    })
+
+    test('should use staging settlement contract address when env is "staging"', async () => {
+      setGlobalAdapter(adapters.viemAdapter)
+      const domain = await OrderSigningUtils.getDomain(SupportedChainId.MAINNET, { env: 'staging' })
+
+      expect(domain.verifyingContract).toBe(COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS_STAGING[SupportedChainId.MAINNET])
+    })
+
+    test('should use custom settlement contract address when settlementContractOverride is provided', async () => {
+      const customAddress = '0x1111111111111111111111111111111111111111'
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const domain = await OrderSigningUtils.getDomain(SupportedChainId.MAINNET, {
+        settlementContractOverride: { [SupportedChainId.MAINNET]: customAddress },
+      })
+
+      expect(domain.verifyingContract).toBe(customAddress)
+    })
+
+    test('should prioritize settlementContractOverride over staging env', async () => {
+      const customAddress = '0x1111111111111111111111111111111111111111'
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const domain = await OrderSigningUtils.getDomain(SupportedChainId.MAINNET, {
+        env: 'staging',
+        settlementContractOverride: { [SupportedChainId.MAINNET]: customAddress },
+      })
+
+      expect(domain.verifyingContract).toBe(customAddress)
     })
   })
 

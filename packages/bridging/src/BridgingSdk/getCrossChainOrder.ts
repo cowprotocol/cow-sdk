@@ -2,7 +2,7 @@ import { BridgeQuoteResult, BridgeStatus, CrossChainOrder, BridgeProvider } from
 
 import { BridgeOrderParsingError } from '../errors'
 import { findBridgeProviderFromHook } from './findBridgeProviderFromHook'
-import { CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
+import { AddressPerChain, CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 
 interface GetCrossChainOrderParams {
@@ -11,13 +11,14 @@ interface GetCrossChainOrderParams {
   orderBookApi: OrderBookApi
   providers: BridgeProvider<BridgeQuoteResult>[]
   env: CowEnv
+  settlementContractOverride?: AddressPerChain
 }
 
 /**
  * Fetch a cross-chain order and its status.
  */
 export async function getCrossChainOrder(params: GetCrossChainOrderParams): Promise<CrossChainOrder | null> {
-  const { chainId, orderId, orderBookApi, providers, env } = params
+  const { chainId, orderId, orderBookApi, providers, env, settlementContractOverride } = params
 
   const chainContext = { chainId, env }
   const order = await orderBookApi.getOrder(orderId, chainContext)
@@ -49,7 +50,7 @@ export async function getCrossChainOrder(params: GetCrossChainOrderParams): Prom
 
     // Get bridging id for this order
     const { params: bridgingParams, status: statusResult } =
-      (await provider.getBridgingParams(chainId, order, tradeTxHash)) || {}
+      (await provider.getBridgingParams(chainId, order, tradeTxHash, settlementContractOverride)) || {}
 
     if (!bridgingParams || !statusResult) {
       throw new BridgeOrderParsingError(`Bridging params cannot be derived from transaction: ${tradeTxHash}`)
