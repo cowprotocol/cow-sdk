@@ -208,6 +208,7 @@ export enum BungeeEventStatus {
 export enum BungeeBridgeName {
   ACROSS = 'across',
   CCTP_V2 = 'cctp-v2',
+  GNOSIS_NATIVE = 'gnosis-native-bridge',
 }
 
 export type BungeeEvent = {
