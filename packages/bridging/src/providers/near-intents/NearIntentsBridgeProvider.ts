@@ -1,5 +1,5 @@
-import { getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
-import { ETH_ADDRESS } from '@cowprotocol/sdk-config'
+import { areAddressesEqual, getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { BTC_CURRENCY_ADDRESS, ETH_ADDRESS, SOL_NATIVE_CURRENCY_ADDRESS } from '@cowprotocol/sdk-config'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { EnrichedOrder, OrderKind } from '@cowprotocol/sdk-order-book'
 import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
@@ -18,7 +18,6 @@ import {
 import { adaptToken, adaptTokens, calculateDeadline, getTokenByAddressAndChainId, hashQuote } from './util'
 
 import type { AbstractProviderAdapter } from '@cowprotocol/sdk-common'
-import { isEvmChain } from '@cowprotocol/sdk-config'
 import type { ChainId, ChainInfo, EvmCall, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
 import type { CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
 import type { QuoteResponse } from '@defuse-protocol/one-click-sdk-typescript'
@@ -138,6 +137,13 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       owner,
     } = request
 
+    if (
+      areAddressesEqual(sellTokenAddress, BTC_CURRENCY_ADDRESS) ||
+      areAddressesEqual(sellTokenAddress, SOL_NATIVE_CURRENCY_ADDRESS)
+    ) {
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES)
+    }
+
     const tokens = await this.api.getTokens()
     const sellToken = getTokenByAddressAndChainId(tokens, sellTokenAddress, sellTokenChainId)
     const buyToken = getTokenByAddressAndChainId(tokens, buyTokenAddress, buyTokenChainId)
@@ -254,9 +260,9 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     }
 
     // Ensure chain IDs are supported for BridgingDepositParams
-    if (!isEvmChain(adaptedInput.chainId) || !isEvmChain(adaptedOutput.chainId)) {
-      throw new Error('Non-EVM chains are not supported for BridgingDepositParams')
-    }
+    // if (!isEvmChain(adaptedInput.chainId) || !isEvmChain(adaptedOutput.chainId)) {
+    //   throw new Error('Non-EVM chains are not supported for BridgingDepositParams')
+    // }
 
     // Build response
     return {

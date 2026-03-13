@@ -249,7 +249,7 @@ export interface NonEvmChainInfo extends BaseChainInfo {
   readonly id: ChainId
 
   /**
-   * Native currency of the chain (address is empty string for non-EVM chains).
+   * Native currency of the chain
    */
   readonly nativeCurrency: TokenInfo
 }
