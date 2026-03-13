@@ -263,14 +263,14 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
 
   async getCancelBridgingTx(_bridgingId: string): Promise<EvmCall> {
     // Support for cancellation will depend on the actual bridge an order went through.
-    // Across & CCTP doesn't support cancellation.
+    // Across & CCTP V2 don't support cancellation.
     // Therefore, not implementing cancellation
     throw new Error('Not implemented')
   }
 
   async getRefundBridgingTx(_bridgingId: string): Promise<EvmCall> {
     // Support for refund will depend on the actual bridge an order went through.
-    // CCTP doesn't support refund.
+    // CCTP V2 doesn't support refund.
     // Across auto-relays refund txns some time after the order expires. No user action needed.
     // Therefore, not implementing refund
     throw new Error('Not implemented')

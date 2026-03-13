@@ -158,10 +158,10 @@ export function calculateFeeBps(feeAmountBig: bigint, amountBig: bigint): number
  * @example
  * const params = {
  *   userAddress: '0x123',
- *   includeBridges: ['across', 'cctp']
+ *   includeBridges: ['across', 'cctp-v2']
  * }
  * const searchParams = objectToSearchParams(params)
- * Results in: ?userAddress=0x123&includeBridges=across,cctp
+ * Results in: ?userAddress=0x123&includeBridges=across,cctp-v2
  */
 export function objectToSearchParams(params: object): URLSearchParams {
   const searchParams = new URLSearchParams()

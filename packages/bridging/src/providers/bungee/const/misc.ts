@@ -28,9 +28,9 @@ export const BungeeTxDataBytesIndices: BungeeTxDataBytesIndicesType = {
       },
     },
   },
-  cctp: {
+  'cctp-v2': {
     // bridgeERC20To
-    ['0xb7dfe9d0'.toLowerCase()]: {
+    ['0x3ca7f5bc'.toLowerCase()]: {
       inputAmount: {
         bytes_startIndex: 8, // first 8 bytes are the routeId, followed by the function selector
         bytes_length: 32, // first 32 bytes of the params are the amount

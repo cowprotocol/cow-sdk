@@ -249,13 +249,13 @@ describe('Bungee Utils', () => {
     it('should convert object to URLSearchParams correctly', () => {
       const params = {
         userAddress: '0x123',
-        includeBridges: ['across', 'cctp'],
+        includeBridges: ['across', 'cctp-v2'],
         amount: '1000',
       }
 
       const result = objectToSearchParams(params)
       expect(result.get('userAddress')).toBe('0x123')
-      expect(result.get('includeBridges')).toBe('across,cctp')
+      expect(result.get('includeBridges')).toBe('across,cctp-v2')
       expect(result.get('amount')).toBe('1000')
     })
   })
@@ -263,6 +263,8 @@ describe('Bungee Utils', () => {
   describe('BungeeBridge helpers', () => {
     it('should get bridge from display name', () => {
       expect(getBungeeBridgeFromDisplayName('Across')).toBe(BungeeBridge.Across)
+      expect(getBungeeBridgeFromDisplayName('Circle CCTP V2')).toBe(BungeeBridge.CircleCCTPV2)
+      expect(getBungeeBridgeFromDisplayName('Gnosis Native')).toBe(BungeeBridge.GnosisNative)
       expect(getBungeeBridgeFromDisplayName('Invalid')).toBeUndefined()
     })
 

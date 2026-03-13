@@ -31,7 +31,7 @@ export async function createBungeeDepositCall(params: {
   const inputAmountStartIndex = functionParams.inputAmount.bytes_startIndex
   const modifyOutputAmount = false
   const outputAmountStartIndex = 0
-  const nativeTokenExtraFee = 0n // neither across nor cctp requires additional native token transfer for now
+  const nativeTokenExtraFee = 0n // neither across nor cctp-v2 requires additional native token transfer for now
 
   // Encode extra data as bytes
   const modifyCalldataParams = adapter.utils.encodeAbi(
