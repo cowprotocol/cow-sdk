@@ -1,4 +1,5 @@
 import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { getAddressKey } from '@cowprotocol/sdk-common'
 
 /**
  * High-priority stablecoins registry (USDC and USDT)
@@ -50,12 +51,12 @@ export function isStablecoinPriorityToken(chainId: SupportedChainId, tokenAddres
   const chainTokens = PRIORITY_STABLECOIN_TOKENS[chainId]
   if (!chainTokens) return false
 
-  return chainTokens.has(tokenAddress.toLowerCase())
+  return chainTokens.has(getAddressKey(tokenAddress))
 }
 
 /**
  * Checks if a token is in the CMS correlated tokens list
  */
 export function isCorrelatedToken(tokenAddress: string, correlatedTokens: Set<string>): boolean {
-  return correlatedTokens.has(tokenAddress.toLowerCase())
+  return correlatedTokens.has(getAddressKey(tokenAddress))
 }

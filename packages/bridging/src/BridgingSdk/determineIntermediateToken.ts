@@ -1,5 +1,5 @@
 import { SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
-import { Address, areAddressesEqual, isNativeToken, isWrappedNativeToken } from '@cowprotocol/sdk-common'
+import { Address, areAddressesEqual, getAddressKey, isNativeToken, isWrappedNativeToken } from '@cowprotocol/sdk-common'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../errors'
 import { isStablecoinPriorityToken, isCorrelatedToken } from './tokenPriority'
 
@@ -104,7 +104,7 @@ async function resolveCorrelatedTokens(
   if (getCorrelatedTokens) {
     try {
       const tokens = await getCorrelatedTokens(sourceChainId)
-      return new Set<string>(tokens.map((t) => t.toLowerCase()))
+      return new Set<string>(tokens.map((t) => getAddressKey(t)))
     } catch (error) {
       console.warn(
         '[determineIntermediateToken] Failed to fetch correlated tokens, falling back to basic priority',
