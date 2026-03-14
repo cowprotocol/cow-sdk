@@ -1,5 +1,5 @@
 import { Signer, BigNumber, TypedDataDomain, TypedDataField, ethers } from 'ethers'
-import { AbstractSigner, CowError, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
+import { AbstractSigner, CowError, getAddressKey, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
 import { TypedDataSigner } from '@ethersproject/abstract-signer'
 import { _TypedDataEncoder } from 'ethers/lib/utils'
 
@@ -145,7 +145,7 @@ export class TypedDataVersionedSigner extends EthersV5SignerAdapter {
       throw new CowError('Signer does not have a provider set')
     }
 
-    return await this._provider.send(this._signMethod, [address.toLowerCase(), msg])
+    return await this._provider.send(this._signMethod, [getAddressKey(address), msg])
   }
 
   private async resolveName(name: string): Promise<string> {
@@ -210,7 +210,7 @@ export class IntChainIdTypedDataV4Signer extends EthersV5SignerAdapter {
       throw new CowError('Signer does not have a provider set')
     }
 
-    return await this._provider.send('eth_signTypedData_v4', [address.toLowerCase(), msg])
+    return await this._provider.send('eth_signTypedData_v4', [getAddressKey(address), msg])
   }
 
   private async resolveName(name: string): Promise<string> {

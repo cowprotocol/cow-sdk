@@ -1,4 +1,4 @@
-import { getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { areAddressesEqual, getAddressKey, getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { ETH_ADDRESS } from '@cowprotocol/sdk-config'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { EnrichedOrder, OrderKind } from '@cowprotocol/sdk-order-book'
@@ -105,10 +105,10 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     const { sourceTokens, targetTokens } = tokens.reduce(
       (acc, token) => {
         if (token.chainId === sellTokenChainId) {
-          acc.sourceTokens.set(token.address.toLowerCase() as Address, token)
+          acc.sourceTokens.set(getAddressKey(token.address) as Address, token)
         }
         if (token.chainId === buyTokenChainId) {
-          acc.targetTokens.set(token.address.toLowerCase() as Address, token)
+          acc.targetTokens.set(getAddressKey(token.address) as Address, token)
         }
         return acc
       },
@@ -118,7 +118,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       },
     )
 
-    const targetToken = targetTokens.get(buyTokenAddress.toLowerCase() as Address)
+    const targetToken = targetTokens.get(getAddressKey(buyTokenAddress) as Address)
 
     if (!targetToken) return []
 
@@ -161,7 +161,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
 
     const recoveredDepositAddress = await this.recoverDepositAddress(quoteResponse)
 
-    if (recoveredDepositAddress?.address.toLowerCase() !== ATTESTATOR_ADDRESS.toLowerCase()) {
+    if (!recoveredDepositAddress || !areAddressesEqual(recoveredDepositAddress.address, ATTESTATOR_ADDRESS)) {
       throw new BridgeProviderQuoteError(BridgeQuoteErrors.QUOTE_DOES_NOT_MATCH_DEPOSIT_ADDRESS)
     }
 
