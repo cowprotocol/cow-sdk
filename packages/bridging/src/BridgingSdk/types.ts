@@ -105,5 +105,5 @@ export interface GetOrderParams {
   /**
    * Custom settlement contract address
    */
-  settlementContractOverride?: AddressPerChain
+  settlementContractOverride?: Partial<AddressPerChain>
 }

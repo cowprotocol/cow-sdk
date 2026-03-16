@@ -239,7 +239,7 @@ export function getAcrossDepositEvents(chainId: SupportedChainId, logs: Log[]): 
 export function getCowTradeEvents(
   chainId: SupportedChainId,
   logs: Log[],
-  settlementContractOverride?: AddressPerChain,
+  settlementContractOverride?: Partial<AddressPerChain>,
 ): CowTradeEvent[] {
   const COW_TRADE_EVENT_TOPIC = COW_TRADE_EVENT_INTERFACE().getEventTopic('Trade')
 

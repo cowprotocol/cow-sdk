@@ -11,7 +11,7 @@ interface GetCrossChainOrderParams {
   orderBookApi: OrderBookApi
   providers: BridgeProvider<BridgeQuoteResult>[]
   env: CowEnv
-  settlementContractOverride?: AddressPerChain
+  settlementContractOverride?: Partial<AddressPerChain>
 }
 
 /**

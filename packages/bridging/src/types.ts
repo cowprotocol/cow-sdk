@@ -232,7 +232,7 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
     chainId: ChainId,
     order: EnrichedOrder,
     txHash: string,
-    settlementContractOverride?: AddressPerChain,
+    settlementContractOverride?: Partial<AddressPerChain>,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null>
 
   /**

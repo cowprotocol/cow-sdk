@@ -205,7 +205,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     chainId: ChainId,
     order: EnrichedOrder,
     txHash: string,
-    settlementContractOverride?: AddressPerChain,
+    settlementContractOverride?: Partial<AddressPerChain>,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
     if (!isSupportedChain(chainId)) {
       return null

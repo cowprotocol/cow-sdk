@@ -7,7 +7,7 @@ export async function getDepositParams(
   chainId: SupportedChainId,
   orderId: string,
   txReceipt: TransactionReceipt,
-  settlementContractOverride?: AddressPerChain,
+  settlementContractOverride?: Partial<AddressPerChain>,
 ): Promise<BridgingDepositParams | null> {
   const depositEvents = getAcrossDepositEvents(chainId, txReceipt.logs)
 
