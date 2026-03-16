@@ -2,6 +2,11 @@
   "name": "@cowprotocol/sdk-trading",
   "version": "1.0.4",
   "description": "CowProtocol trading",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cowprotocol/cow-sdk.git",
+    "directory": "packages/trading"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",

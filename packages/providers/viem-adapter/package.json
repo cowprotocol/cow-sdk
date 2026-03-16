@@ -2,6 +2,11 @@
   "name": "@cowprotocol/sdk-viem-adapter",
   "version": "0.3.11",
   "description": "Viem adapter for CoW Protocol SDK",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cowprotocol/cow-sdk.git",
+    "directory": "packages/providers/viem-adapter"
+  },
   "main": "dist/index.js",
   "module": "./dist/index.mjs",
   "types": "dist/index.d.ts",

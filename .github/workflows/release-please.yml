@@ -12,6 +12,7 @@ env:
 permissions:
   contents: write
   pull-requests: write
+  id-token: write
 
 jobs:
   release-please:
@@ -48,13 +49,7 @@ jobs:
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
 
-      # 7️⃣ Setup npm auth
-      - name: Setup npm auth
-        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      # 8️⃣ Publish changed packages
+      # 7️⃣ Publish changed packages
       - name: Publish changed packages
         if: steps.release.outputs.releases_created == 'true'
         run: pnpm publish -r --filter="./packages/**" --tag latest --no-git-checks

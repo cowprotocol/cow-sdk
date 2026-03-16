@@ -2,6 +2,11 @@
   "name": "@cowprotocol/sdk-bridging",
   "version": "3.0.0",
   "description": "Bridging for CoW Protocol",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cowprotocol/cow-sdk.git",
+    "directory": "packages/bridging"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",

@@ -2,6 +2,11 @@
   "name": "@cowprotocol/sdk-order-book",
   "version": "2.0.0",
   "description": "CowProtocol Order Book package",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cowprotocol/cow-sdk.git",
+    "directory": "packages/order-book"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
