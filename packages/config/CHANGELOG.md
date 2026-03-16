@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v1.1.0...sdk-config-v1.1.1) (2026-03-16)
+
+
+### 🐛 Bug Fixes
+
+* use standard npm publishing ([#839](https://github.com/cowprotocol/cow-sdk/issues/839)) ([b2e2966](https://github.com/cowprotocol/cow-sdk/commit/b2e2966dbe96b7e20880af966e6e6024055d2845))
+
 ## [1.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v1.0.0...sdk-config-v1.1.0) (2026-03-16)
 
 
