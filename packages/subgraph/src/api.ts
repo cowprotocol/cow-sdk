@@ -45,7 +45,6 @@ export class SubgraphApi {
       [SupportedChainId.SEPOLIA]: baseUrl + '/31isonmztVX9ejBneP6SaVDQwEtyKCGBb3RTafB9Uf2y',
       [SupportedChainId.POLYGON]: null,
       [SupportedChainId.AVALANCHE]: null,
-      [SupportedChainId.LENS]: null,
       [SupportedChainId.BNB]: null,
       [SupportedChainId.LINEA]: null,
       [SupportedChainId.PLASMA]: null,

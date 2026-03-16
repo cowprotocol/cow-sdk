@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.1.38](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v0.1.37...sdk-composable-v0.1.38) (2026-03-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.7.1
+    * @cowprotocol/sdk-config bumped to 1.0.0
+    * @cowprotocol/sdk-contracts-ts bumped to 2.0.0
+    * @cowprotocol/sdk-order-book bumped to 2.0.0
+    * @cowprotocol/sdk-order-signing bumped to 0.1.38
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.11
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.11
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.11
+
+## [0.1.37](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v0.1.36...sdk-composable-v0.1.37) (2026-03-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-order-book bumped to 1.1.2
+    * @cowprotocol/sdk-order-signing bumped to 0.1.37
+
 ## [0.1.36](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v0.1.35...sdk-composable-v0.1.36) (2026-03-04)
 
 
