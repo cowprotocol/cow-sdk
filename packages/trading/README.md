@@ -886,7 +886,7 @@ const sdk = new TradingSdk({
     ...COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS,
     [SupportedChainId.MAINNET]: '0x<custom_settlement_contract>',
   } as AddressPerChain,
-  // Override the settlement contract address for GNOSIS_CHAIN
+  // Override the eth-flow contract address for GNOSIS_CHAIN
   ethFlowContractOverride: {
     ...ETH_FLOW_ADDRESSES,
     [SupportedChainId.GNOSIS_CHAIN]: '0x<custom_eth_flow_contract>',
@@ -955,8 +955,9 @@ const orderBookApi = new OrderBookApi({
   chainId: SupportedChainId.MAINNET,
   // Provide a base URL for each chain you intend to use
   baseUrls: {
+    // ...
     [SupportedChainId.MAINNET]: 'https://your-custom-orderbook.example.com/mainnet',
-  } as Record<SupportedChainId, string>,
+  },
 })
 
 // 2. Pass it to TradingSdk via the options object
