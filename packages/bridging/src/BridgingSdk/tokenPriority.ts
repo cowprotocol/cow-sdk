@@ -4,6 +4,7 @@ import { getAddressKey } from '@cowprotocol/sdk-common'
 /**
  * High-priority stablecoins registry (USDC and USDT)
  * These tokens get the highest priority when selecting intermediate tokens
+ * Should be defined in lowercase for evm chains
  */
 export const PRIORITY_STABLECOIN_TOKENS: Partial<Record<SupportedChainId, Set<string>>> = {
   [SupportedChainId.MAINNET]: new Set([
