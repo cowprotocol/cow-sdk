@@ -2,8 +2,8 @@ name: Publish to GitHub Packages
 
 on:
   # Trigger on pull requests (for testing/validation) - only from same repo
-  pull_request:
-    types: [opened, synchronize, reopened]
+  pull_request_target:
+    types: [opened, synchronize, reopened, labeled]
   # Trigger on pushes to main branch
   push:
     branches:
@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
 
     # Security: Only run on internal PRs, main branch pushes, external PRs with explicit approval, or manual triggers
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && (github.event.pull_request.head.repo.full_name == github.repository || contains(github.event.pull_request.labels.*.name, 'allow-publish')))
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request_target' && (github.event.pull_request.head.repo.full_name == github.repository || contains(github.event.pull_request.labels.*.name, 'allow-publish')))
 
     steps:
       - name: Security Check
