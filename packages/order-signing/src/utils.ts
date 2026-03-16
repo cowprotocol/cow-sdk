@@ -228,8 +228,7 @@ export async function signOrderCancellations(
 /**
  * Returns the TypedDataDomain used for signing for the specified chainId.
  * @param {SupportedChainId} chainId The chain Id
- * @param {CowEnv} env (Optional) CoW Protocol environment
- * @param {Address} settlementContractOverride (Optional) Custom address of settlement contract
+ * @param {ProtocolOptions} options (Optional) CoW Protocol environment, URLs, smart-contracts
  * @return {*} The TypedDataDomain for the specified chainId.
  * @throws {CowError} If the chainId is not supported.
  */
