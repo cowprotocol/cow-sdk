@@ -272,20 +272,18 @@ export class TradingSdk {
     const orderBookApi = this.resolveOrderBookApi(params)
     const signer = resolveSigner(params.signer)
     const { orderUid } = params
-    const env = params.env || this.traderParams.env
-    const chainId = params.chainId || this.traderParams.chainId
+    const env = params.env ?? this.traderParams.env
+    const chainId = params.chainId ?? this.traderParams.chainId
     const settlementContractOverride = params.settlementContractOverride ?? this.traderParams.settlementContractOverride
 
     if (!chainId) {
       throw new Error('Chain ID is missing in offChainCancelOrder() call')
     }
 
-    const orderCancellationSigning = await OrderSigningUtils.signOrderCancellations(
-      [orderUid],
-      chainId,
-      signer,
-      { env, settlementContractOverride },
-    )
+    const orderCancellationSigning = await OrderSigningUtils.signOrderCancellations([orderUid], chainId, signer, {
+      env,
+      settlementContractOverride,
+    })
 
     await orderBookApi.sendSignedOrderCancellations({
       ...orderCancellationSigning,
@@ -296,7 +294,7 @@ export class TradingSdk {
   }
 
   async onChainCancelOrder(params: OrderTraderParams, _order?: EnrichedOrder): Promise<string> {
-    const chainId = params.chainId || this.traderParams.chainId
+    const chainId = params.chainId ?? this.traderParams.chainId
 
     if (!chainId) {
       throw new Error('Chain ID is missing in offChainCancelOrder() call')
@@ -341,8 +339,8 @@ export class TradingSdk {
   async getCowProtocolAllowance(
     params: WithPartialTraderParams<{ tokenAddress: string; owner: string; vaultRelayerAddress?: Address }>,
   ): Promise<bigint> {
-    const env = params.env || this.traderParams.env
-    const chainId = params.chainId || this.traderParams.chainId
+    const env = params.env ?? this.traderParams.env
+    const chainId = params.chainId ?? this.traderParams.chainId
 
     if (!chainId) {
       throw new Error('Chain ID is missing in getCowProtocolAllowance() call')
@@ -385,8 +383,8 @@ export class TradingSdk {
   async approveCowProtocol(
     params: WithPartialTraderParams<{ tokenAddress: string; amount: bigint; vaultRelayerAddress?: Address }>,
   ): Promise<string> {
-    const chainId = params.chainId || this.traderParams.chainId
-    const env = params.env || this.traderParams.env
+    const chainId = params.chainId ?? this.traderParams.chainId
+    const env = params.env ?? this.traderParams.env
 
     if (!chainId) {
       throw new Error('Chain ID is missing in approveCowProtocol() call')
@@ -428,10 +426,10 @@ export class TradingSdk {
   private mergeParams<T>(params: T & Partial<TraderParameters>): T & TraderParameters {
     const { chainId, signer, appCode, env, settlementContractOverride, ethFlowContractOverride } = params
     const traderParams: Partial<TraderParameters> = {
-      chainId: chainId || this.traderParams.chainId,
-      signer: signer || this.traderParams.signer || getGlobalAdapter().signer,
-      appCode: appCode || this.traderParams.appCode,
-      env: env || this.traderParams.env,
+      chainId: chainId ?? this.traderParams.chainId,
+      signer: signer ?? this.traderParams.signer ?? getGlobalAdapter().signer,
+      appCode: appCode ?? this.traderParams.appCode,
+      env: env ?? this.traderParams.env,
       settlementContractOverride: settlementContractOverride ?? this.traderParams.settlementContractOverride,
       ethFlowContractOverride: ethFlowContractOverride ?? this.traderParams.ethFlowContractOverride,
     }
@@ -450,12 +448,17 @@ export class TradingSdk {
    */
   private mergeQuoterParams<T extends { owner: AccountAddress }>(
     params: T & Partial<Omit<TraderParameters, 'signer'>>,
-  ): T & { chainId: SupportedChainId; appCode: string; env: CowEnv; settlementContractOverride?: Partial<AddressPerChain> } {
-    const chainId = params.chainId || this.traderParams.chainId
-    const appCode = params.appCode || this.traderParams.appCode
-    const env = params.env || this.traderParams.env || 'prod'
-    const settlementContractOverride = params.settlementContractOverride || this.traderParams.settlementContractOverride
-    const ethFlowContractOverride = params.ethFlowContractOverride || this.traderParams.ethFlowContractOverride
+  ): T & {
+    chainId: SupportedChainId
+    appCode: string
+    env: CowEnv
+    settlementContractOverride?: Partial<AddressPerChain>
+  } {
+    const chainId = params.chainId ?? this.traderParams.chainId
+    const appCode = params.appCode ?? this.traderParams.appCode
+    const env = params.env ?? this.traderParams.env ?? 'prod'
+    const settlementContractOverride = params.settlementContractOverride ?? this.traderParams.settlementContractOverride
+    const ethFlowContractOverride = params.ethFlowContractOverride ?? this.traderParams.ethFlowContractOverride
 
     if (!chainId) {
       throw new Error('Missing quoter parameters: chainId')
