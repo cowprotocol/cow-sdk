@@ -2,6 +2,11 @@
   "name": "@cowprotocol/sdk-ethers-v5-adapter",
   "version": "0.3.11",
   "description": "Ethers v5 adapter for CoW Protocol SDK",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cowprotocol/cow-sdk.git",
+    "directory": "packages/providers/ethers-v5-adapter"
+  },
   "main": "dist/index.js",
   "module": "./dist/index.mjs",
   "types": "dist/index.d.ts",

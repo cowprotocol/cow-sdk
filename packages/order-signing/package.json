@@ -2,6 +2,11 @@
   "name": "@cowprotocol/sdk-order-signing",
   "version": "0.1.38",
   "description": "TypeScript order signing for CoW Protocol SDK",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cowprotocol/cow-sdk.git",
+    "directory": "packages/order-signing"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",

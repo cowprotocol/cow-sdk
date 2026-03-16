@@ -2,6 +2,11 @@
   "name": "@cowprotocol/sdk-composable",
   "version": "0.1.38",
   "description": "TypeScript composable features for CoW Protocol SDK",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cowprotocol/cow-sdk.git",
+    "directory": "packages/composable"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
