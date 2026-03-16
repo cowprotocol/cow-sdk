@@ -405,7 +405,8 @@ export class TradingSdk {
   }
 
   private resolveOrderBookApi(params: Partial<TraderParameters>): OrderBookApi {
-    const { env = 'prod', chainId } = this.mergeParams(params)
+    const chainId = params.chainId ?? this.traderParams.chainId
+    const env = params.env ?? this.traderParams.env ?? this.options.orderBookApi?.context?.env ?? 'prod'
 
     if (!chainId) {
       throw new Error('Chain ID is missing in getOrder() call')
