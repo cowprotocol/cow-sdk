@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v2.1.0...sdk-contracts-ts-v2.1.1) (2026-03-16)
+
+
+### 🐛 Bug Fixes
+
+* use standard npm publishing ([#839](https://github.com/cowprotocol/cow-sdk/issues/839)) ([b2e2966](https://github.com/cowprotocol/cow-sdk/commit/b2e2966dbe96b7e20880af966e6e6024055d2845))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.8.1
+    * @cowprotocol/sdk-config bumped to 1.1.1
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.13
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.13
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.13
+
 ## [2.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v2.0.0...sdk-contracts-ts-v2.1.0) (2026-03-16)
 
 

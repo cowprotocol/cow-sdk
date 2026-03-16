@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-order-book",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "CowProtocol Order Book package",
   "repository": {
     "type": "git",
