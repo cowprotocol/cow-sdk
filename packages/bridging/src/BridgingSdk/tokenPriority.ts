@@ -37,7 +37,7 @@ export const PRIORITY_STABLECOIN_TOKENS: Partial<Record<SupportedChainId, Set<st
   ]),
   [SupportedChainId.LINEA]: new Set([
     '0x176211869ca2b568f2a7d4ee941e073a821ee1ff', // USDC
-    '0xA219439258ca9da29E9Cc4cE5596924745e12B93', // USDT
+    '0xa219439258ca9da29e9cc4ce5596924745e12b93', // USDT
   ]),
   [SupportedChainId.SEPOLIA]: new Set([
     '0x1c7d4b196cb0c7b01d743fbc6116a902379c7238', // USDC
