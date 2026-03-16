@@ -53,9 +53,9 @@ interface ProviderRpcError extends Error {
 }
 
 type PayloadParams =
-  | Pick<SignOrderParams, 'order' & 'chainId' & 'env'>
-  | Pick<SignOrderCancellationParams, 'chainId' & 'orderId' & 'env'>
-  | Pick<SignOrderCancellationsParams, 'chainId' & 'orderUids' & 'env'>
+  | Pick<SignOrderParams, 'order' | 'chainId' | 'env' | 'settlementContractOverride'>
+  | Pick<SignOrderCancellationParams, 'chainId' | 'orderUid' | 'env' | 'settlementContractOverride'>
+  | Pick<SignOrderCancellationsParams, 'chainId' | 'orderUids' | 'env' | 'settlementContractOverride'>
 
 function isProviderRpcError(error: unknown): error is ProviderRpcError {
   return (error as ProviderRpcError).code !== undefined || (error as ProviderRpcError).message !== undefined

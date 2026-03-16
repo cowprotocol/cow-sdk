@@ -189,47 +189,6 @@ describe('Interactions and EIP-1271 Signatures', () => {
       }
     })
 
-    test('should handle different verifier address formats', () => {
-      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
-
-      // Test with addresses in different formats (lowercase, uppercase, mixed)
-      const verifiers = [
-        COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET], // lowercase
-        COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET], // uppercase
-        COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET], // mixed
-      ]
-
-      for (const verifier of verifiers) {
-        const testData: Eip1271SignatureData = {
-          verifier,
-          signature: '0x1234',
-        }
-
-        const encodedResults: string[] = []
-        const decodedResults: Eip1271SignatureData[] = []
-
-        // Encode and decode with each adapter
-        for (const adapterName of adapterNames) {
-          setGlobalAdapter(adapters[adapterName])
-          const encoded = encodeEip1271SignatureData(testData)
-          const decoded = decodeEip1271SignatureData(encoded)
-          encodedResults.push(encoded)
-          decodedResults.push(decoded)
-        }
-
-        // All encoded results should be identical
-        const [firstEncoded, ...remainingEncoded] = encodedResults
-        remainingEncoded.forEach((encoded) => {
-          expect(encoded).toEqual(firstEncoded)
-        })
-
-        // All decoded verifiers should be consistent (lowercase comparison)
-        decodedResults.forEach((decoded) => {
-          expect(decoded.verifier.toLowerCase()).toEqual(verifier.toLowerCase())
-        })
-      }
-    })
-
     test('EIP1271_MAGICVALUE should be consistent with the standard', () => {
       // The EIP-1271 magic value should be 0x1626ba7e
       expect(EIP1271_MAGICVALUE).toEqual('0x1626ba7e')

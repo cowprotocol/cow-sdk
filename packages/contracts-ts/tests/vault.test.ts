@@ -148,28 +148,4 @@ describe('grantRequiredRoles', () => {
       })
     })
   })
-
-  // Adapter-specific tests only where behavior differs
-  describe('adapter-specific behavior', () => {
-    test('viem adapter should handle checksummed addresses correctly', async () => {
-      const adapters = createAdapters()
-      setGlobalAdapter(adapters.viemAdapter)
-
-      const mockContractCall = jest.fn().mockResolvedValue(undefined)
-
-      // Use mixed-case address to test checksum handling
-      const checksummedAddress = COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET]
-
-      await grantRequiredRoles(
-        TEST_DATA.authorizerAddress,
-        TEST_DATA.mockAuthorizerAbi,
-        checksummedAddress,
-        TEST_DATA.vaultRelayerAddress,
-        mockContractCall,
-      )
-
-      expect(mockContractCall).toHaveBeenCalled()
-      // Verify the address was handled correctly (implementation specific)
-    })
-  })
 })

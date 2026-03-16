@@ -44,7 +44,7 @@ describe('CowShedSdk', () => {
           calls: CALLS_MOCK,
           signer: adapter.signer,
           chainId: SupportedChainId.SEPOLIA,
-          gasLimit: 1000000n,
+          defaultGasLimit: 1000000n,
           deadline: getOrderDeadlineFromNow(DEFAULT_QUOTE_VALIDITY),
         })
 
