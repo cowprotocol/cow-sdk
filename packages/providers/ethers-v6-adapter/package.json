@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-ethers-v6-adapter",
-  "version": "0.3.12",
+  "version": "0.3.11",
   "description": "Ethers v6 adapter for CoW Protocol SDK",
   "repository": {
     "type": "git",
