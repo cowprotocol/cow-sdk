@@ -122,6 +122,138 @@ adapterNames.forEach((adapterName) => {
       })
     })
 
+    describe('getIntermediateTokens', () => {
+      let api: NearIntentsApi
+
+      const mockApi = (tokens: TokenResponse[]) => {
+        api = new NearIntentsApi()
+        jest.spyOn(api, 'getTokens').mockResolvedValue(tokens)
+        provider.setApi(api)
+      }
+
+      const baseRequest = {
+        kind: OrderKind.SELL,
+        sellTokenChainId: SupportedChainId.MAINNET,
+        sellTokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        sellTokenDecimals: 6,
+        buyTokenChainId: NonEvmChains.BITCOIN as number,
+        buyTokenAddress: BTC_CURRENCY_ADDRESS,
+        buyTokenDecimals: 8,
+        amount: 1000000n,
+        account: '0x0000000000000000000000000000000000000000',
+        appCode: 'test',
+        signer: '0x0000000000000000000000000000000000000000',
+      } as const
+
+      const mockTokens: TokenResponse[] = [
+        {
+          assetId: 'nep141:usdc.omft.near',
+          decimals: 6,
+          blockchain: TokenResponse.blockchain.ETH,
+          symbol: 'USDC',
+          price: 1,
+          priceUpdatedAt: '2025-09-05T12:00:38.695Z',
+          contractAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        },
+        {
+          assetId: 'nep141:eth.omft.near',
+          decimals: 18,
+          blockchain: TokenResponse.blockchain.ETH,
+          symbol: 'ETH',
+          price: 4000,
+          priceUpdatedAt: '2025-09-05T12:00:38.695Z',
+        },
+        {
+          assetId: 'nep141:wbtc.omft.near',
+          decimals: 8,
+          blockchain: TokenResponse.blockchain.ETH,
+          symbol: 'WBTC',
+          price: 60000,
+          priceUpdatedAt: '2025-09-05T12:00:38.695Z',
+          contractAddress: BTC_CURRENCY_ADDRESS,
+        },
+        {
+          assetId: 'nep141:wsol.omft.near',
+          decimals: 9,
+          blockchain: TokenResponse.blockchain.ETH,
+          symbol: 'WSOL',
+          price: 150,
+          priceUpdatedAt: '2025-09-05T12:00:38.695Z',
+          contractAddress: SOL_NATIVE_CURRENCY_ADDRESS,
+        },
+        {
+          assetId: 'nep141:btc.omft.near',
+          decimals: 8,
+          blockchain: TokenResponse.blockchain.BTC,
+          symbol: 'BTC',
+          price: 60000,
+          priceUpdatedAt: '2025-09-05T12:00:38.695Z',
+        },
+        {
+          assetId: 'nep141:sol.omft.near',
+          decimals: 9,
+          blockchain: TokenResponse.blockchain.SOL,
+          symbol: 'SOL',
+          price: 150,
+          priceUpdatedAt: '2025-09-05T12:00:38.695Z',
+        },
+      ]
+
+      it('should return source tokens excluding BTC and SOL', async () => {
+        mockApi(mockTokens)
+        const result = await provider.getIntermediateTokens(baseRequest)
+
+        expect(result.length).toBeGreaterThan(0)
+        expect(result.every((t) => t.chainId === SupportedChainId.MAINNET)).toBe(true)
+        expect(result.some((t) => t.address.toLowerCase() === BTC_CURRENCY_ADDRESS.toLowerCase())).toBe(false)
+        expect(result.some((t) => t.address.toLowerCase() === SOL_NATIVE_CURRENCY_ADDRESS.toLowerCase())).toBe(false)
+      })
+
+      it('should not include BTC as an intermediate token', async () => {
+        mockApi(mockTokens)
+        const result = await provider.getIntermediateTokens(baseRequest)
+
+        for (const token of result) {
+          expect(token.address.toLowerCase()).not.toBe(BTC_CURRENCY_ADDRESS.toLowerCase())
+        }
+      })
+
+      it('should not include SOL as an intermediate token', async () => {
+        mockApi(mockTokens)
+        const result = await provider.getIntermediateTokens({
+          ...baseRequest,
+          buyTokenChainId: NonEvmChains.SOLANA as number,
+          buyTokenAddress: SOL_NATIVE_CURRENCY_ADDRESS,
+          buyTokenDecimals: 9,
+        })
+
+        for (const token of result) {
+          expect(token.address.toLowerCase()).not.toBe(SOL_NATIVE_CURRENCY_ADDRESS.toLowerCase())
+        }
+      })
+
+      it('should return empty array when buyToken is not found', async () => {
+        mockApi(mockTokens)
+        const result = await provider.getIntermediateTokens({
+          ...baseRequest,
+          buyTokenChainId: 12345 as any,
+          buyTokenAddress: '0x0000000000000000000000000000000000000001',
+        })
+
+        expect(result).toEqual([])
+      })
+
+      it('should throw ONLY_SELL_ORDER_SUPPORTED for buy orders', async () => {
+        mockApi(mockTokens)
+        await expect(
+          provider.getIntermediateTokens({
+            ...baseRequest,
+            kind: OrderKind.BUY,
+          }),
+        ).rejects.toThrow('ONLY_SELL_ORDER_SUPPORTED')
+      })
+    })
+
     describe('info', () => {
       it('should return provider info', () => {
         expect(provider.info).toEqual({

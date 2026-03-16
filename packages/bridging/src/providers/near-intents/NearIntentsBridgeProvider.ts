@@ -122,7 +122,11 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
 
     if (!targetToken) return []
 
-    return Array.from(sourceTokens.values())
+    return Array.from(sourceTokens.values()).filter(
+      (token) =>
+        !areAddressesEqual(token.address, BTC_CURRENCY_ADDRESS) &&
+        !areAddressesEqual(token.address, SOL_NATIVE_CURRENCY_ADDRESS),
+    )
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<NearIntentsQuoteResult> {
