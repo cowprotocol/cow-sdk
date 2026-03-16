@@ -27,7 +27,7 @@ const DEFAULT_CACHE_CONFIG: BridgingSdkCacheConfig = {
   buyTokensTtl: 2 * 60 * 1000, // 2 minutes
 }
 
-const DEFAULT_MULTI_PROVIDER_REQUEST_TIMEOUT = 10 * 1000 // 10 seconds
+const DEFAULT_MULTI_PROVIDER_REQUEST_TIMEOUT = 100 * 1000 // 10 seconds
 
 /**
  * SDK for bridging for swapping tokens between different chains.
