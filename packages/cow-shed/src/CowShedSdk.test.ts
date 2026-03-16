@@ -35,12 +35,14 @@ describe('CowShedSdk', () => {
       const signedCalls: any[] = []
 
       for (const adapterName of adapterNames) {
-        setGlobalAdapter(adapters[adapterName])
+        const adapter = adapters[adapterName]
+        jest.spyOn(adapter, 'getCode').mockResolvedValue('0x')
+        setGlobalAdapter(adapter)
         const sdk = new CowShedSdk()
 
         const call = await sdk.signCalls({
           calls: CALLS_MOCK,
-          signer: adapters[adapterName].signer,
+          signer: adapter.signer,
           chainId: SupportedChainId.SEPOLIA,
           defaultGasLimit: 1000000n,
           deadline: getOrderDeadlineFromNow(DEFAULT_QUOTE_VALIDITY),

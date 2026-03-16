@@ -14,6 +14,7 @@ import {
   decodeTradeFlags,
   encodeTradeFlags,
 } from '../src'
+import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
 
 describe('Order Hashing and Signing', () => {
   let adapters: ReturnType<typeof createAdapters>
@@ -23,7 +24,7 @@ describe('Order Hashing and Signing', () => {
     name: 'Cow Protocol',
     version: '1',
     chainId: 1,
-    verifyingContract: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+    verifyingContract: COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET],
   }
 
   const testOrder: Order = {

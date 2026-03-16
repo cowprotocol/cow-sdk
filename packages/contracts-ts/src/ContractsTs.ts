@@ -94,7 +94,6 @@ export class ContractsTs {
   SettlementEncoder = SettlementEncoder
   InteractionStage = InteractionStage
   FLAG_MASKS = FLAG_MASKS
-
   //swap
   encodeSwapStep = encodeSwapStep
   SwapEncoder = SwapEncoder

@@ -10,6 +10,7 @@ import {
   ContractsSigningScheme as SigningScheme,
   EncodedSwap,
 } from '../src'
+import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
 
 describe('SwapEncoder', () => {
   let adapters: ReturnType<typeof createAdapters>
@@ -50,7 +51,7 @@ describe('SwapEncoder', () => {
       // EthersV5 order
       setGlobalAdapter(adapters.ethersV5Adapter)
       encodedSwaps.ethersV5 = await SwapEncoder.encodeSwap(
-        ContractsTs.domain(sepolia.id, '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'),
+        ContractsTs.domain(sepolia.id, COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET]),
         [testSwap],
         testOrder,
         adapters.ethersV5Adapter.signer,
@@ -60,7 +61,7 @@ describe('SwapEncoder', () => {
       // EthersV6 order
       setGlobalAdapter(adapters.ethersV6Adapter)
       encodedSwaps.ethersV6 = await SwapEncoder.encodeSwap(
-        ContractsTs.domain(sepolia.id, '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'),
+        ContractsTs.domain(sepolia.id, COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET]),
         [testSwap],
         testOrder,
         adapters.ethersV6Adapter.signer,
@@ -70,7 +71,7 @@ describe('SwapEncoder', () => {
       // Viem order
       setGlobalAdapter(adapters.viemAdapter)
       encodedSwaps.viem = await SwapEncoder.encodeSwap(
-        ContractsTs.domain(sepolia.id, '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'),
+        ContractsTs.domain(sepolia.id, COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET]),
         [testSwap],
         testOrder,
         adapters.viemAdapter.signer,

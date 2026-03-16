@@ -15,6 +15,7 @@ import {
   ContractsTrade as Trade,
 } from '../src'
 import { getAddress } from 'viem'
+import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
 
 describe('Order Processing Functions', () => {
   let adapters: AdaptersTestSetup
@@ -190,7 +191,7 @@ describe('Order Processing Functions', () => {
     test('should pack and extract order UIDs consistently', () => {
       const params = {
         orderDigest: '0x1234567890123456789012345678901234567890123456789012345678901234',
-        owner: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+        owner: COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET],
         validTo: 1609459200, // Unix timestamp
       }
 

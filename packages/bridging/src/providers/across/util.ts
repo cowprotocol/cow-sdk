@@ -5,9 +5,9 @@ import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { ACROSS_DEPOSIT_EVENT_INTERFACE, COW_TRADE_EVENT_INTERFACE } from './const/interfaces'
 import { ACROSS_TOKEN_MAPPING, AcrossChainConfig } from './const/tokens'
 import { ACROSS_SPOOK_CONTRACT_ADDRESSES } from './const/contracts'
-import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
+import { AddressPerChain, SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
-import { areAddressesEqual, getAddressKey, getGlobalAdapter, Log } from '@cowprotocol/sdk-common'
+import { areAddressesEqual, getAddressKey, getGlobalAdapter, isCoWSettlementContract, Log } from '@cowprotocol/sdk-common'
 import stringify from 'json-stable-stringify'
 
 const PCT_100_PERCENT = 10n ** 18n
@@ -237,12 +237,17 @@ export function getAcrossDepositEvents(chainId: SupportedChainId, logs: Log[]): 
   })
 }
 
-export function getCowTradeEvents(chainId: SupportedChainId, logs: Log[]): CowTradeEvent[] {
+export function getCowTradeEvents(
+  chainId: SupportedChainId,
+  logs: Log[],
+  settlementContractOverride?: Partial<AddressPerChain>,
+): CowTradeEvent[] {
   const COW_TRADE_EVENT_TOPIC = COW_TRADE_EVENT_INTERFACE().getEventTopic('Trade')
 
   const cowTradeEvents = logs.filter((log) => {
     return (
-      areAddressesEqual(log.address, COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[chainId]) &&
+      (isCoWSettlementContract(log.address, chainId) ||
+        areAddressesEqual(settlementContractOverride?.[chainId], log.address)) &&
       log.topics[0] === COW_TRADE_EVENT_TOPIC
     )
   })

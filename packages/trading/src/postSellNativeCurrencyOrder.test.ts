@@ -1,5 +1,5 @@
 import { TradingAppDataInfo, LimitOrderParameters } from './types'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { ETH_FLOW_ADDRESSES, SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderBookApi, OrderKind } from '@cowprotocol/sdk-order-book'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getEthFlowTransaction } from './getEthFlowTransaction'
@@ -96,7 +96,7 @@ describe('postSellNativeCurrencyTrade', () => {
       transaction: {
         data: '0x123456',
         gasLimit: '0x1e848', // 125000 em hex
-        to: '0xbA3cB449bD2B4ADddBc894D8697F5170800EAdeC',
+        to: ETH_FLOW_ADDRESSES[SupportedChainId.MAINNET],
         value: '0x0de0b6b3a7640000', // 1 ETH em hex
       },
       orderToSign: mockOrderToSign,
@@ -124,7 +124,7 @@ describe('postSellNativeCurrencyTrade', () => {
           transaction: {
             data: '0x123456',
             gasLimit: '0x1e848',
-            to: '0xbA3cB449bD2B4ADddBc894D8697F5170800EAdeC',
+            to: ETH_FLOW_ADDRESSES[SupportedChainId.MAINNET],
             value: '0x0de0b6b3a7640000',
           },
           orderToSign: mockOrderToSign,
@@ -202,7 +202,7 @@ describe('postSellNativeCurrencyTrade', () => {
       transaction: {
         data: '0x123456',
         gasLimit: '0x2bf20', // 180000 em hex (150000 + 20%)
-        to: '0xbA3cB449bD2B4ADddBc894D8697F5170800EAdeC',
+        to: ETH_FLOW_ADDRESSES[SupportedChainId.MAINNET],
         value: '0x0de0b6b3a7640000',
       },
       orderToSign: mockOrderToSign,
@@ -260,7 +260,7 @@ describe('postSellNativeCurrencyTrade', () => {
         expect(mockedSigner.mockSendTransaction).toHaveBeenCalledTimes(1)
 
         const txParams = mockedSigner.mockSendTransaction.mock.calls[0][0]
-        expect(txParams.to).toBe('0xbA3cB449bD2B4ADddBc894D8697F5170800EAdeC')
+        expect(txParams.to).toBe(ETH_FLOW_ADDRESSES[SupportedChainId.MAINNET])
         expect(txParams.data).toBe('0x123456')
         expect(txParams.value).toBe('0x0de0b6b3a7640000')
       } finally {
