@@ -61,7 +61,7 @@ jobs:
             pkg_dir=$(dirname "$pkg_json")
             private=$(node -e "const p = require('./${pkg_json}'); process.stdout.write(String(p.private || false))")
             if [ "$private" != "true" ]; then
-              (cd "$pkg_dir" && npm publish --provenance --tag latest --access public)
+              (cd "$pkg_dir" && npm publish --provenance --tag latest --access public --ignore-scripts)
             fi
           done
 
