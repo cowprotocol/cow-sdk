@@ -1,21 +1,5 @@
 # Changelog
 
-## [2.0.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v2.0.0...sdk-order-book-v2.0.1) (2026-03-16)
-
-
-### 🔧 Miscellaneous
-
-* release main ([#826](https://github.com/cowprotocol/cow-sdk/issues/826)) ([baaa708](https://github.com/cowprotocol/cow-sdk/commit/baaa7088ac15b89fb83310e54aa52f09d19132ff))
-* revert release ([#833](https://github.com/cowprotocol/cow-sdk/issues/833)) ([0c40a9b](https://github.com/cowprotocol/cow-sdk/commit/0c40a9b3ee828c7ede66576f02e1b571e96140cd))
-
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @cowprotocol/sdk-config bumped to 1.1.0
-    * @cowprotocol/sdk-common bumped to 0.8.0
-
 ## [2.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v1.1.2...sdk-order-book-v2.0.0) (2026-03-10)
 
 
