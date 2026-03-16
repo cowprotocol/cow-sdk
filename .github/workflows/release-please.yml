@@ -12,7 +12,6 @@ env:
 permissions:
   contents: write
   pull-requests: write
-  id-token: write
 
 jobs:
   release-please:
@@ -32,11 +31,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/jod
-          registry-url: "https://registry.npmjs.org"
           cache: "pnpm"
-
-      # 3.5️⃣ Upgrade npm for trusted publishing (requires npm >= 11.5.1)
-      - run: npm install -g npm@latest
 
       # 4️⃣ Install dependencies
       - run: pnpm install --frozen-lockfile
@@ -53,17 +48,16 @@ jobs:
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
 
-      # 7️⃣ Publish changed packages
+      # 7️⃣ Setup npm auth
+      - name: Setup npm auth
+        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # 8️⃣ Publish changed packages
       - name: Publish changed packages
         if: steps.release.outputs.releases_created == 'true'
-        run: |
-          find packages -name "package.json" -not -path "*/node_modules/*" | while read pkg_json; do
-            pkg_dir=$(dirname "$pkg_json")
-            private=$(node -e "const p = require('./${pkg_json}'); process.stdout.write(String(p.private || false))")
-            if [ "$private" != "true" ]; then
-              (cd "$pkg_dir" && npm publish --provenance --tag latest --access public --ignore-scripts)
-            fi
-          done
+        run: pnpm publish -r --filter="./packages/**" --tag latest --no-git-checks
 
   deploy-to-s3:
     needs: release-please
