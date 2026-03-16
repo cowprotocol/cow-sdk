@@ -20,6 +20,7 @@ import {
   Eip1271Signature,
   Eip1271SignatureData,
 } from '../src'
+import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
 
 // Mock fetch for testing
 global.fetch = jest.fn()
@@ -330,7 +331,7 @@ describe('API Functions and Classes', () => {
       const eip1271Signature: Eip1271Signature = {
         scheme: SigningScheme.EIP1271,
         data: {
-          verifier: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+          verifier: COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET],
           signature: '0x1234567890abcdef',
         } as Eip1271SignatureData,
       }

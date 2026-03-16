@@ -62,7 +62,7 @@ export class BridgingSdk {
       enableLogging(options.enableLogging)
     }
 
-    const tradingSdk = options.tradingSdk ?? new TradingSdk()
+    const tradingSdk = options.tradingSdk ?? new TradingSdk({}, { enableLogging: options.enableLogging })
     const orderBookApi = tradingSdk?.options.orderBookApi ?? new OrderBookApi()
 
     this.config = {
@@ -254,7 +254,7 @@ export class BridgingSdk {
   async getOrder(params: GetOrderParams): Promise<CrossChainOrder | null> {
     const { orderBookApi } = this.config
 
-    const { chainId, orderId, env = orderBookApi.context.env } = params
+    const { chainId, orderId, env = orderBookApi.context.env, settlementContractOverride } = params
 
     return getCrossChainOrder({
       chainId,
@@ -262,6 +262,7 @@ export class BridgingSdk {
       orderBookApi,
       env,
       providers: this.getAvailableProviders(),
+      settlementContractOverride,
     })
   }
 

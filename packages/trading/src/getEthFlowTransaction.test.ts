@@ -20,7 +20,12 @@ jest.mock('@cowprotocol/sdk-common', () => {
 })
 
 import { getEthFlowTransaction } from './getEthFlowTransaction'
-import { SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
+import {
+  BARN_ETH_FLOW_ADDRESSES,
+  ETH_FLOW_ADDRESSES,
+  SupportedChainId,
+  WRAPPED_NATIVE_CURRENCIES,
+} from '@cowprotocol/sdk-config'
 import { LimitTradeParametersFromQuote } from './types'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { AdaptersTestSetup, createAdapters } from '../tests/setup'
@@ -142,5 +147,65 @@ describe('getEthFlowTransaction', () => {
       expect.stringContaining('0x'),
       expect.any(Object),
     )
+  })
+
+  describe('ethFlowContractOverride', () => {
+    it('should use default ETH flow contract address when no override provided', async () => {
+      setGlobalAdapter(adapters.ethersV5Adapter)
+
+      await getEthFlowTransaction(appDataKeccak256, params, chainId, {}, adapters.ethersV5Adapter.signer)
+
+      expect(ContractFactory.createEthFlowContract).toHaveBeenCalledWith(
+        ETH_FLOW_ADDRESSES[chainId],
+        expect.any(Object),
+      )
+    })
+
+    it('should use BARN ETH flow contract address when env is "staging"', async () => {
+      setGlobalAdapter(adapters.ethersV5Adapter)
+
+      await getEthFlowTransaction(
+        appDataKeccak256,
+        { ...params, env: 'staging' },
+        chainId,
+        {},
+        adapters.ethersV5Adapter.signer,
+      )
+
+      expect(ContractFactory.createEthFlowContract).toHaveBeenCalledWith(
+        BARN_ETH_FLOW_ADDRESSES[chainId],
+        expect.any(Object),
+      )
+    })
+
+    it('should use custom ETH flow contract address when ethFlowContractOverride is provided', async () => {
+      const customAddress = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+      setGlobalAdapter(adapters.ethersV5Adapter)
+
+      await getEthFlowTransaction(
+        appDataKeccak256,
+        { ...params, ethFlowContractOverride: { [chainId]: customAddress } },
+        chainId,
+        {},
+        adapters.ethersV5Adapter.signer,
+      )
+
+      expect(ContractFactory.createEthFlowContract).toHaveBeenCalledWith(customAddress, expect.any(Object))
+    })
+
+    it('should prioritize ethFlowContractOverride over staging env', async () => {
+      const customAddress = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+      setGlobalAdapter(adapters.ethersV5Adapter)
+
+      await getEthFlowTransaction(
+        appDataKeccak256,
+        { ...params, env: 'staging', ethFlowContractOverride: { [chainId]: customAddress } },
+        chainId,
+        {},
+        adapters.ethersV5Adapter.signer,
+      )
+
+      expect(ContractFactory.createEthFlowContract).toHaveBeenCalledWith(customAddress, expect.any(Object))
+    })
   })
 })
