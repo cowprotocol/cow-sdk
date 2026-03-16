@@ -865,7 +865,7 @@ Overrides the address of the CoW Protocol Settlement contract. This affects:
 - Pre-sign transactions via `getPreSignTransaction`
 
 ```typescript
-import { SupportedChainId, OrderKind, TradeParameters, TradingSdk, COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS } from '@cowprotocol/cow-sdk'
+import { SupportedChainId, OrderKind, TradeParameters, TradingSdk, COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, ETH_FLOW_ADDRESSES } from '@cowprotocol/cow-sdk'
 import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
 import { createPublicClient, http, privateKeyToAccount } from 'viem'
 import { sepolia } from 'viem/chains'
