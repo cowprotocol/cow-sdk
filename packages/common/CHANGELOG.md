@@ -1,25 +1,5 @@
 # Changelog
 
-## [0.8.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.7.1...sdk-common-v0.8.0) (2026-03-16)
-
-
-### ✨ Features
-
-* update settlement and vault relayer contracts on staging ([#807](https://github.com/cowprotocol/cow-sdk/issues/807)) ([0f9a03e](https://github.com/cowprotocol/cow-sdk/commit/0f9a03e6bfa3468630e46735f7583618ae711b73))
-
-
-### 🔧 Miscellaneous
-
-* release main ([#826](https://github.com/cowprotocol/cow-sdk/issues/826)) ([baaa708](https://github.com/cowprotocol/cow-sdk/commit/baaa7088ac15b89fb83310e54aa52f09d19132ff))
-* revert release ([#833](https://github.com/cowprotocol/cow-sdk/issues/833)) ([0c40a9b](https://github.com/cowprotocol/cow-sdk/commit/0c40a9b3ee828c7ede66576f02e1b571e96140cd))
-
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @cowprotocol/sdk-config bumped to 1.1.0
-
 ## [0.7.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.7.0...sdk-common-v0.7.1) (2026-03-10)
 
 

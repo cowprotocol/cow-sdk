@@ -1,35 +1,5 @@
 # Changelog
 
-## [2.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v2.0.0...sdk-contracts-ts-v2.1.0) (2026-03-16)
-
-
-### ✨ Features
-
-* update settlement and vault relayer contracts on staging ([#807](https://github.com/cowprotocol/cow-sdk/issues/807)) ([0f9a03e](https://github.com/cowprotocol/cow-sdk/commit/0f9a03e6bfa3468630e46735f7583618ae711b73))
-
-
-### 🐛 Bug Fixes
-
-* update contracts pck version ([#831](https://github.com/cowprotocol/cow-sdk/issues/831)) ([79e0904](https://github.com/cowprotocol/cow-sdk/commit/79e0904e65f0e019f478f1b46e094637f7a763d9))
-
-
-### 🔧 Miscellaneous
-
-* release main ([#826](https://github.com/cowprotocol/cow-sdk/issues/826)) ([baaa708](https://github.com/cowprotocol/cow-sdk/commit/baaa7088ac15b89fb83310e54aa52f09d19132ff))
-* revert release ([#833](https://github.com/cowprotocol/cow-sdk/issues/833)) ([0c40a9b](https://github.com/cowprotocol/cow-sdk/commit/0c40a9b3ee828c7ede66576f02e1b571e96140cd))
-
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @cowprotocol/sdk-common bumped to 0.8.0
-    * @cowprotocol/sdk-config bumped to 1.1.0
-  * devDependencies
-    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.12
-    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.12
-    * @cowprotocol/sdk-viem-adapter bumped to 0.3.12
-
 ## [2.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v1.8.0...sdk-contracts-ts-v2.0.0) (2026-03-10)
 
 
