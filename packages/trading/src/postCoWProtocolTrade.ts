@@ -38,6 +38,8 @@ export async function postCoWProtocolTrade(
   const { quoteId = null, owner } = params
   const { appDataKeccak256, fullAppData } = appData
 
+  const env = params.env ?? orderBookApi.context.env
+  const settlementContractOverride = params.settlementContractOverride
   const chainId = orderBookApi.context.chainId
   const from = owner || (await signer.getAddress())
 
@@ -64,7 +66,12 @@ export async function postCoWProtocolTrade(
         }
       }
 
-      const signingResult = await OrderSigningUtils.signOrder(orderToSign, chainId, signer)
+      const signingResult = await OrderSigningUtils.signOrder(
+        orderToSign,
+        chainId,
+        signer,
+        { env, settlementContractOverride },
+      )
 
       if (isEip1271) {
         return {

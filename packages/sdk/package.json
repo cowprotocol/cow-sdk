@@ -1,8 +1,13 @@
 {
   "name": "@cowprotocol/cow-sdk",
-  "version": "8.0.0",
+  "version": "8.0.2",
   "license": "(MIT OR Apache-2.0)",
   "description": "CoW Protocol SDK - get quote, configure your order, and trade",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cowprotocol/cow-sdk.git",
+    "directory": "packages/sdk"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -76,11 +81,6 @@
     "typescript",
     "subgraph"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/cowprotocol/cow-sdk.git",
-    "directory": "packages/sdk"
-  },
   "bugs": {
     "url": "https://github.com/cowprotocol/cow-sdk/issues"
   },

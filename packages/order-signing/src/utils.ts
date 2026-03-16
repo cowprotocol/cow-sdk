@@ -21,7 +21,12 @@ import type { SigningResult, SignOrderParams, SignOrderCancellationParams, Unsig
 
 import { EcdsaSigningScheme } from '@cowprotocol/sdk-order-book'
 import { SignOrderCancellationsParams } from './types'
-import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
+import {
+  COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS,
+  COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS_STAGING,
+  ProtocolOptions,
+  SupportedChainId,
+} from '@cowprotocol/sdk-config'
 
 // For error codes, see:
 // - https://eth.wiki/json-rpc/json-rpc-error-codes-improvement-proposal
@@ -48,34 +53,34 @@ interface ProviderRpcError extends Error {
 }
 
 type PayloadParams =
-  | Pick<SignOrderParams, 'order' & 'chainId'>
-  | Pick<SignOrderCancellationParams, 'chainId' & 'orderId'>
-  | Pick<SignOrderCancellationsParams, 'chainId' & 'orderUids'>
+  | Pick<SignOrderParams, 'order' | 'chainId' | 'env' | 'settlementContractOverride'>
+  | Pick<SignOrderCancellationParams, 'chainId' | 'orderUid' | 'env' | 'settlementContractOverride'>
+  | Pick<SignOrderCancellationsParams, 'chainId' | 'orderUids' | 'env' | 'settlementContractOverride'>
 
 function isProviderRpcError(error: unknown): error is ProviderRpcError {
   return (error as ProviderRpcError).code !== undefined || (error as ProviderRpcError).message !== undefined
 }
 
 async function _signOrder(params: SignOrderParams): Promise<Signature> {
-  const { chainId, signer, order, signingScheme } = params
+  const { chainId, signer, order, signingScheme, env, settlementContractOverride } = params
 
-  const domain = getDomain(chainId)
+  const domain = getDomain(chainId, { env, settlementContractOverride })
 
   return signOrderGp(domain, order as unknown as OrderFromContract, mapSigningSchema[signingScheme], signer)
 }
 
 async function _signOrderCancellation(params: SignOrderCancellationParams): Promise<Signature> {
-  const { chainId, signer, signingScheme, orderUid } = params
+  const { chainId, signer, signingScheme, orderUid, env, settlementContractOverride } = params
 
-  const domain = getDomain(chainId)
+  const domain = getDomain(chainId, { env, settlementContractOverride })
 
   return signOrderCancellationGp(domain, orderUid, mapSigningSchema[signingScheme], signer)
 }
 
 async function _signOrderCancellations(params: SignOrderCancellationsParams): Promise<Signature> {
-  const { chainId, signer, signingScheme, orderUids } = params
+  const { chainId, signer, signingScheme, orderUids, env, settlementContractOverride } = params
 
-  const domain = getDomain(chainId)
+  const domain = getDomain(chainId, { env, settlementContractOverride })
 
   return signOrderCancellationsGp(domain, orderUids, mapSigningSchema[signingScheme], signer)
 }
@@ -177,8 +182,10 @@ export async function signOrder(
   order: UnsignedOrder,
   chainId: SupportedChainId,
   signer: Signer,
+  options?: ProtocolOptions,
 ): Promise<SigningResult> {
-  return _signPayload({ order, chainId }, _signOrder, signer)
+  const { env, settlementContractOverride } = options ?? {}
+  return _signPayload({ order, chainId, env, settlementContractOverride }, _signOrder, signer)
 }
 
 /**
@@ -193,8 +200,10 @@ export async function signOrderCancellation(
   orderUid: string,
   chainId: SupportedChainId,
   signer: Signer,
+  options?: ProtocolOptions,
 ): Promise<SigningResult> {
-  return _signPayload({ orderUid, chainId }, _signOrderCancellation, signer)
+  const { env, settlementContractOverride } = options ?? {}
+  return _signPayload({ orderUid, chainId, env, settlementContractOverride }, _signOrderCancellation, signer)
 }
 
 /**
@@ -210,19 +219,28 @@ export async function signOrderCancellations(
   orderUids: string[],
   chainId: SupportedChainId,
   signer: Signer,
+  options?: ProtocolOptions,
 ): Promise<SigningResult> {
-  return _signPayload({ orderUids, chainId }, _signOrderCancellations, signer)
+  const { env, settlementContractOverride } = options ?? {}
+  return _signPayload({ orderUids, chainId, env, settlementContractOverride }, _signOrderCancellations, signer)
 }
 
 /**
  * Returns the TypedDataDomain used for signing for the specified chainId.
  * @param {SupportedChainId} chainId The chain Id
+ * @param {ProtocolOptions} options (Optional) CoW Protocol environment, URLs, smart-contracts
  * @return {*} The TypedDataDomain for the specified chainId.
  * @throws {CowError} If the chainId is not supported.
  */
-export function getDomain(chainId: SupportedChainId): TypedDataDomain {
+export function getDomain(chainId: SupportedChainId, options?: ProtocolOptions): TypedDataDomain {
+  const { env, settlementContractOverride } = options ?? {}
+
   // Get settlement contract address
-  const settlementContract = COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[chainId]
+  const settlementContract =
+    settlementContractOverride?.[chainId] ??
+    (env === 'staging'
+      ? COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS_STAGING[chainId]
+      : COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[chainId])
 
   if (!settlementContract) {
     throw new CowError('Unsupported network. Settlement contract is not deployed')
@@ -241,8 +259,9 @@ export async function generateOrderId(
   chainId: SupportedChainId,
   order: Order,
   params: Pick<OrderUidParams, 'owner'>,
+  options?: ProtocolOptions,
 ): Promise<{ orderId: string; orderDigest: string }> {
-  const domain = await getDomain(chainId)
+  const domain = await getDomain(chainId, options)
   const orderDigest = hashOrder(domain, order)
   // Generate the orderId from owner, orderDigest, and max validTo
   const orderId = packOrderUidParams({

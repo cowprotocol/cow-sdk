@@ -5,7 +5,12 @@ import {
 } from './types'
 import { calculateUniqueOrderId } from './calculateUniqueOrderId'
 import { getOrderToSign } from './getOrderToSign'
-import { SupportedChainId, CowEnv, BARN_ETH_FLOW_ADDRESSES, ETH_FLOW_ADDRESSES } from '@cowprotocol/sdk-config'
+import {
+  SupportedChainId,
+  BARN_ETH_FLOW_ADDRESSES,
+  ETH_FLOW_ADDRESSES,
+  ProtocolOptions,
+} from '@cowprotocol/sdk-config'
 import { GAS_LIMIT_DEFAULT } from './consts'
 import { adjustEthFlowOrderParams, calculateGasMargin } from './utils/misc'
 import {
@@ -39,7 +44,13 @@ export async function getEthFlowTransaction(
 
   const { quoteId } = params
 
-  const contract = getEthFlowContract(signer, chainId, params.env)
+  const protocolOptions: ProtocolOptions = {
+    env: params.env,
+    settlementContractOverride: params.settlementContractOverride,
+    ethFlowContractOverride: params.ethFlowContractOverride,
+  }
+
+  const contract = getEthFlowContract(signer, chainId, protocolOptions)
   const orderToSign = getOrderToSign(
     {
       chainId,
@@ -50,7 +61,7 @@ export async function getEthFlowTransaction(
     params,
     appDataKeccak256,
   )
-  const orderId = await calculateUniqueOrderId(chainId, orderToSign, checkEthFlowOrderExists, params.env)
+  const orderId = await calculateUniqueOrderId(chainId, orderToSign, checkEthFlowOrderExists, protocolOptions)
 
   const ethOrderParams: EthFlowOrderData = {
     buyToken: orderToSign.buyToken,
@@ -92,8 +103,15 @@ export async function getEthFlowTransaction(
   }
 }
 
-export function getEthFlowContract(signer: Signer, chainId: SupportedChainId, env?: CowEnv): EthFlowContract {
-  const address = env === 'staging' ? BARN_ETH_FLOW_ADDRESSES[chainId] : ETH_FLOW_ADDRESSES[chainId]
+export function getEthFlowContract(
+  signer: Signer,
+  chainId: SupportedChainId,
+  options?: ProtocolOptions,
+): EthFlowContract {
+  const { env, ethFlowContractOverride } = options ?? {}
+  const address =
+    ethFlowContractOverride?.[chainId] ??
+    (env === 'staging' ? BARN_ETH_FLOW_ADDRESSES[chainId] : ETH_FLOW_ADDRESSES[chainId])
 
   return ContractFactory.createEthFlowContract(address, signer)
 }
