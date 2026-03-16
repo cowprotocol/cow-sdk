@@ -253,12 +253,12 @@ export class TradingSdk {
   }
 
   async getPreSignTransaction(params: OrderTraderParams): ReturnType<typeof getPreSignTransaction> {
-    const traderParams = this.mergeParams(params)
-    const signer = resolveSigner(traderParams.signer)
+    const { chainId, env, settlementContractOverride, orderUid, signer: signerLike } = this.mergeParams(params)
+    const signer = resolveSigner(signerLike)
 
-    return getPreSignTransaction(signer, traderParams.chainId, params.orderUid, {
-      env: traderParams.env,
-      settlementContractOverride: traderParams.settlementContractOverride,
+    return getPreSignTransaction(signer, chainId, orderUid, {
+      env,
+      settlementContractOverride,
     })
   }
 
@@ -270,13 +270,9 @@ export class TradingSdk {
 
   async offChainCancelOrder(params: OrderTraderParams): Promise<boolean> {
     const orderBookApi = this.resolveOrderBookApi(params)
-    const signer = resolveSigner(params.signer)
-    const { env, chainId, settlementContractOverride } = this.mergeParams(params)
+    const { env, chainId, settlementContractOverride, signer: signerLike } = this.mergeParams(params)
+    const signer = resolveSigner(signerLike)
     const { orderUid } = params
-
-    if (!chainId) {
-      throw new Error('Chain ID is missing in offChainCancelOrder() call')
-    }
 
     const orderCancellationSigning = await OrderSigningUtils.signOrderCancellations([orderUid], chainId, signer, {
       env,
@@ -293,10 +289,6 @@ export class TradingSdk {
 
   async onChainCancelOrder(params: OrderTraderParams, _order?: EnrichedOrder): Promise<string> {
     const { env, chainId, settlementContractOverride, ethFlowContractOverride } = this.mergeParams(params)
-
-    if (!chainId) {
-      throw new Error('Chain ID is missing in offChainCancelOrder() call')
-    }
 
     const order = _order ?? (await this.getOrder(params))
     const isEthFlowOrder = !!order.onchainOrderData
@@ -335,10 +327,6 @@ export class TradingSdk {
   ): Promise<bigint> {
     const { env, chainId } = this.mergeParams(params)
 
-    if (!chainId) {
-      throw new Error('Chain ID is missing in getCowProtocolAllowance() call')
-    }
-
     const adapter = getGlobalAdapter()
     const vaultRelayerAddress =
       params.vaultRelayerAddress ??
@@ -376,14 +364,10 @@ export class TradingSdk {
   async approveCowProtocol(
     params: WithPartialTraderParams<{ tokenAddress: string; amount: bigint; vaultRelayerAddress?: Address }>,
   ): Promise<string> {
-    const { env, chainId } = this.mergeParams(params)
-
-    if (!chainId) {
-      throw new Error('Chain ID is missing in approveCowProtocol() call')
-    }
+    const { env, chainId, signer: signerLike } = this.mergeParams(params)
 
     const adapter = getGlobalAdapter()
-    const signer = resolveSigner(params.signer)
+    const signer = resolveSigner(signerLike)
 
     const vaultRelayerAddress =
       params.vaultRelayerAddress ??

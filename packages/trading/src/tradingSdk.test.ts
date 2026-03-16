@@ -393,7 +393,7 @@ describe('TradingSdk', () => {
           tokenAddress,
           owner,
         }),
-      ).rejects.toThrow('Chain ID is missing in getCowProtocolAllowance() call')
+      ).rejects.toThrow('Missing trader parameters: chainId, appCode')
     })
   })
 
@@ -408,6 +408,9 @@ describe('TradingSdk', () => {
         getAddress: jest.fn().mockResolvedValue('0x21c3de23d98caddc406e3d31b25e807addf33333'),
         sendTransaction: jest.fn().mockResolvedValue({ hash: '0xapprove123' }),
         estimateGas: jest.fn().mockResolvedValue(BigInt(50000)),
+        connect() {
+          return mockSigner
+        },
       }
 
       ethersV5Adapter = adapters.ethersV5Adapter
@@ -475,7 +478,7 @@ describe('TradingSdk', () => {
           tokenAddress,
           amount,
         }),
-      ).rejects.toThrow('Chain ID is missing in approveCowProtocol() call')
+      ).rejects.toThrow('Missing trader parameters: chainId, appCode')
     })
 
     it('should use provided signer if specified', async () => {
