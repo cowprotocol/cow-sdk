@@ -1,5 +1,31 @@
 # Changelog
 
+## [3.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v3.0.0...sdk-bridging-v3.1.0) (2026-03-16)
+
+
+### ✨ Features
+
+* update settlement and vault relayer contracts on staging ([#807](https://github.com/cowprotocol/cow-sdk/issues/807)) ([0f9a03e](https://github.com/cowprotocol/cow-sdk/commit/0f9a03e6bfa3468630e46735f7583618ae711b73))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.6.9
+    * @cowprotocol/sdk-common bumped to 0.8.0
+    * @cowprotocol/sdk-config bumped to 1.1.0
+    * @cowprotocol/sdk-contracts-ts bumped to 2.1.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.3.0
+    * @cowprotocol/sdk-order-book bumped to 2.0.1
+    * @cowprotocol/sdk-trading bumped to 1.1.0
+    * @cowprotocol/sdk-weiroll bumped to 0.1.23
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.12
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.12
+    * @cowprotocol/sdk-order-signing bumped to 0.2.0
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.12
+
 ## [3.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v2.1.1...sdk-bridging-v3.0.0) (2026-03-10)
 
 
