@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.26](https://github.com/cowprotocol/cow-sdk/compare/sdk-weiroll-v0.1.25...sdk-weiroll-v0.1.26) (2026-03-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.0
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.0
+
 ## [0.1.25](https://github.com/cowprotocol/cow-sdk/compare/sdk-weiroll-v0.1.24...sdk-weiroll-v0.1.25) (2026-03-17)
 
 

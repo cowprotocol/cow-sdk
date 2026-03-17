@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v1.1.2...sdk-trading-v1.2.0) (2026-03-17)
+
+
+### ✨ Features
+
+* use address utils to compare addresses ([#827](https://github.com/cowprotocol/cow-sdk/issues/827)) ([50a66ff](https://github.com/cowprotocol/cow-sdk/commit/50a66ff044f98ce0313c6213e31c83c9028836a1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.6.12
+    * @cowprotocol/sdk-order-signing bumped to 0.2.3
+    * @cowprotocol/sdk-contracts-ts bumped to 2.2.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.0
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.0
+
 ## [1.1.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v1.1.1...sdk-trading-v1.1.2) (2026-03-17)
 
 
