@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.14](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v6-adapter-v0.3.13...sdk-ethers-v6-adapter-v0.3.14) (2026-03-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.8.2
+
 ## [0.3.13](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v6-adapter-v0.3.12...sdk-ethers-v6-adapter-v0.3.13) (2026-03-16)
 
 
