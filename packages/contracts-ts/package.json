@@ -1,7 +1,12 @@
 {
   "name": "@cowprotocol/sdk-contracts-ts",
-  "version": "2.0.0",
+  "version": "2.1.2",
   "description": "TypeScript contract bindings for CoW Protocol SDK",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cowprotocol/cow-sdk.git",
+    "directory": "packages/contracts-ts"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",

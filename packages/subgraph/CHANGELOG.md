@@ -1,5 +1,42 @@
 # Changelog
 
+## [1.0.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.0.2...sdk-subgraph-v1.0.3) (2026-03-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.8.2
+    * @cowprotocol/sdk-config bumped to 1.1.2
+
+## [1.0.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.0.1...sdk-subgraph-v1.0.2) (2026-03-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.8.1
+    * @cowprotocol/sdk-config bumped to 1.1.1
+
+## [1.0.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.0.0...sdk-subgraph-v1.0.1) (2026-03-16)
+
+
+### 🔧 Miscellaneous
+
+* release main ([#826](https://github.com/cowprotocol/cow-sdk/issues/826)) ([baaa708](https://github.com/cowprotocol/cow-sdk/commit/baaa7088ac15b89fb83310e54aa52f09d19132ff))
+* release main ([#832](https://github.com/cowprotocol/cow-sdk/issues/832)) ([5dafcb8](https://github.com/cowprotocol/cow-sdk/commit/5dafcb8ec5593250dba1ff6e9fdbf8eb11d974cf))
+* revert release ([#833](https://github.com/cowprotocol/cow-sdk/issues/833)) ([0c40a9b](https://github.com/cowprotocol/cow-sdk/commit/0c40a9b3ee828c7ede66576f02e1b571e96140cd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.8.0
+    * @cowprotocol/sdk-config bumped to 1.1.0
+
 ## [1.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v0.3.8...sdk-subgraph-v1.0.0) (2026-03-10)
 
 

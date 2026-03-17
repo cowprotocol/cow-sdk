@@ -1,7 +1,12 @@
 {
   "name": "@cowprotocol/sdk-ethers-v6-adapter",
-  "version": "0.3.11",
+  "version": "0.3.14",
   "description": "Ethers v6 adapter for CoW Protocol SDK",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cowprotocol/cow-sdk.git",
+    "directory": "packages/providers/ethers-v6-adapter"
+  },
   "main": "dist/index.js",
   "module": "./dist/index.mjs",
   "types": "dist/index.d.ts",

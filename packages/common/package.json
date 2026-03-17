@@ -1,7 +1,12 @@
 {
   "name": "@cowprotocol/sdk-common",
-  "version": "0.7.1",
+  "version": "0.8.2",
   "description": "Common utilities and types for CoW Protocol SDK",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cowprotocol/cow-sdk.git",
+    "directory": "packages/common"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",

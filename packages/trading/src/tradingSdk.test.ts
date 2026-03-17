@@ -1,5 +1,5 @@
 import { TradingSdk } from './tradingSdk'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
 import { TradeBaseParameters, QuoteResults } from './types'
 import {
   BuyTokenDestination,
@@ -17,6 +17,7 @@ import { AccountAddress } from '@cowprotocol/sdk-common'
 import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
 import * as onChainCancellationModule from './onChainCancellation'
 import * as getEthFlowTransactionModule from './getEthFlowTransaction'
+import * as getSettlementContractModule from './getSettlementContract'
 import * as resolveOrderBookApiModule from './utils/resolveOrderBookApi'
 
 const defaultOrderParams: TradeBaseParameters = {
@@ -392,7 +393,7 @@ describe('TradingSdk', () => {
           tokenAddress,
           owner,
         }),
-      ).rejects.toThrow('Chain ID is missing in getCowProtocolAllowance() call')
+      ).rejects.toThrow('Missing trader parameters: chainId, appCode')
     })
   })
 
@@ -407,6 +408,9 @@ describe('TradingSdk', () => {
         getAddress: jest.fn().mockResolvedValue('0x21c3de23d98caddc406e3d31b25e807addf33333'),
         sendTransaction: jest.fn().mockResolvedValue({ hash: '0xapprove123' }),
         estimateGas: jest.fn().mockResolvedValue(BigInt(50000)),
+        connect() {
+          return mockSigner
+        },
       }
 
       ethersV5Adapter = adapters.ethersV5Adapter
@@ -474,7 +478,7 @@ describe('TradingSdk', () => {
           tokenAddress,
           amount,
         }),
-      ).rejects.toThrow('Chain ID is missing in approveCowProtocol() call')
+      ).rejects.toThrow('Missing trader parameters: chainId, appCode')
     })
 
     it('should use provided signer if specified', async () => {
@@ -516,7 +520,7 @@ describe('TradingSdk', () => {
       transaction: {
         data: '0x00abcdef',
         gasLimit: '0x1e848',
-        to: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41', // Valid address format
+        to: COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[SupportedChainId.MAINNET], // Valid address format
         value: '0x0',
       },
     }
@@ -729,10 +733,7 @@ describe('TradingSdk', () => {
     })
 
     it('should throw if chainId is missing', async () => {
-      const sdk = new TradingSdk(
-        { appCode: 'test' },
-        { enableLogging: false, orderBookApi },
-      )
+      const sdk = new TradingSdk({ appCode: 'test' }, { enableLogging: false, orderBookApi })
 
       await expect(
         sdk.getQuoteOnly({
@@ -743,10 +744,7 @@ describe('TradingSdk', () => {
     })
 
     it('should throw if appCode is missing', async () => {
-      const sdk = new TradingSdk(
-        { chainId: SupportedChainId.GNOSIS_CHAIN },
-        { enableLogging: false, orderBookApi },
-      )
+      const sdk = new TradingSdk({ chainId: SupportedChainId.GNOSIS_CHAIN }, { enableLogging: false, orderBookApi })
 
       await expect(
         sdk.getQuoteOnly({
@@ -773,6 +771,197 @@ describe('TradingSdk', () => {
       })
 
       expect(result.quoteResponse).toEqual(quoteResponseMock)
+    })
+  })
+
+  describe('settlementContractOverride and ethFlowContractOverride', () => {
+    const chainId = SupportedChainId.GNOSIS_CHAIN
+    const customSettlementAddress = '0x1111111111111111111111111111111111111111'
+    const customEthFlowAddress = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+    const mockSignOrderCancellationsResult = {
+      signature:
+        '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12',
+      signingScheme: EcdsaSigningScheme.EIP712,
+      signer: '0x21c3de23d98caddc406e3d31b25e807addf33333',
+    }
+
+    let mockSigner: any
+
+    beforeEach(() => {
+      mockSigner = {
+        getAddress: jest.fn().mockResolvedValue('0x21c3de23d98caddc406e3d31b25e807addf33333'),
+        sendTransaction: jest.fn().mockResolvedValue({ hash: '0xtxhash' }),
+      }
+
+      orderBookApi = {
+        context: { chainId },
+        getOrder: jest.fn().mockResolvedValue(mockOrder),
+        sendSignedOrderCancellations: jest.fn().mockResolvedValue(undefined),
+      } as unknown as OrderBookApi
+
+      jest.spyOn(resolveOrderBookApiModule, 'resolveOrderBookApi').mockReturnValue(orderBookApi)
+    })
+
+    afterEach(() => {
+      jest.restoreAllMocks()
+    })
+
+    describe('offChainCancelOrder', () => {
+      it('should pass settlementContractOverride from traderParams to signOrderCancellations', async () => {
+        jest.spyOn(OrderSigningUtils, 'signOrderCancellations').mockResolvedValue(mockSignOrderCancellationsResult)
+
+        const sdk = new TradingSdk(
+          {
+            chainId,
+            appCode: 'test',
+            signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+            settlementContractOverride: { [chainId]: customSettlementAddress },
+          },
+          { orderBookApi },
+          adapters.ethersV5Adapter,
+        )
+
+        await sdk.offChainCancelOrder({ orderUid })
+
+        expect(OrderSigningUtils.signOrderCancellations).toHaveBeenCalledWith(
+          [orderUid],
+          chainId,
+          expect.any(Object),
+          expect.objectContaining({
+            settlementContractOverride: expect.objectContaining({ [chainId]: customSettlementAddress }),
+          }),
+        )
+      })
+
+      it('should pass settlementContractOverride from call params (overrides traderParams)', async () => {
+        jest.spyOn(OrderSigningUtils, 'signOrderCancellations').mockResolvedValue(mockSignOrderCancellationsResult)
+
+        const callLevelAddress = '0x2222222222222222222222222222222222222222'
+
+        const sdk = new TradingSdk(
+          {
+            chainId,
+            appCode: 'test',
+            signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+            settlementContractOverride: { [chainId]: customSettlementAddress },
+          },
+          { orderBookApi },
+          adapters.ethersV5Adapter,
+        )
+
+        await sdk.offChainCancelOrder({
+          orderUid,
+          settlementContractOverride: { [chainId]: callLevelAddress },
+        })
+
+        expect(OrderSigningUtils.signOrderCancellations).toHaveBeenCalledWith(
+          [orderUid],
+          chainId,
+          expect.any(Object),
+          expect.objectContaining({
+            settlementContractOverride: expect.objectContaining({ [chainId]: callLevelAddress }),
+          }),
+        )
+      })
+    })
+
+    describe('onChainCancelOrder', () => {
+      const mockCancellationResult = {
+        estimatedGas: BigInt(125000),
+        transaction: { data: '0x', gasLimit: '0x', to: '0x', value: '0x0' },
+      }
+
+      beforeEach(() => {
+        jest.spyOn(onChainCancellationModule, 'getSettlementCancellation').mockResolvedValue(mockCancellationResult)
+        jest.spyOn(onChainCancellationModule, 'getEthFlowCancellation').mockResolvedValue(mockCancellationResult)
+        jest.spyOn(getEthFlowTransactionModule, 'getEthFlowContract').mockReturnValue({} as any)
+        jest.spyOn(getSettlementContractModule, 'getSettlementContract').mockReturnValue({} as any)
+      })
+
+      it('should pass settlementContractOverride to getSettlementContract when cancelling regular order', async () => {
+        jest.spyOn(adapters.ethersV5Adapter, 'createSigner').mockReturnValue(mockSigner)
+
+        const sdk = new TradingSdk(
+          {
+            chainId,
+            appCode: 'test',
+            signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+            settlementContractOverride: { [chainId]: customSettlementAddress },
+          },
+          { orderBookApi },
+          adapters.ethersV5Adapter,
+        )
+
+        await sdk.onChainCancelOrder({ orderUid, signer: mockSigner })
+
+        expect(getSettlementContractModule.getSettlementContract).toHaveBeenCalledWith(
+          chainId,
+          expect.any(Object),
+          expect.objectContaining({
+            settlementContractOverride: expect.objectContaining({ [chainId]: customSettlementAddress }),
+          }),
+        )
+      })
+
+      it('should pass ethFlowContractOverride to getEthFlowContract when cancelling ETH flow order', async () => {
+        jest.spyOn(adapters.ethersV5Adapter, 'createSigner').mockReturnValue(mockSigner)
+        ;(orderBookApi.getOrder as jest.Mock).mockResolvedValue({ ...mockOrder, onchainOrderData: { sender: '0x1' } })
+
+        const sdk = new TradingSdk(
+          {
+            chainId,
+            appCode: 'test',
+            signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+            ethFlowContractOverride: { [chainId]: customEthFlowAddress },
+          },
+          { orderBookApi },
+          adapters.ethersV5Adapter,
+        )
+
+        await sdk.onChainCancelOrder({ orderUid, signer: mockSigner })
+
+        expect(getEthFlowTransactionModule.getEthFlowContract).toHaveBeenCalledWith(
+          expect.any(Object),
+          chainId,
+          expect.objectContaining({
+            ethFlowContractOverride: expect.objectContaining({ [chainId]: customEthFlowAddress }),
+          }),
+        )
+      })
+    })
+
+    describe('getPreSignTransaction', () => {
+      it('should pass settlementContractOverride to getPreSignTransaction', async () => {
+        const getPreSignTransactionSpy = jest
+          .spyOn(getSettlementContractModule, 'getSettlementContract')
+          .mockReturnValue({
+            address: '0x1',
+            estimateGas: { setPreSignature: jest.fn().mockResolvedValue(BigInt(125000)) },
+            interface: { encodeFunctionData: jest.fn().mockReturnValue('0x') },
+          } as any)
+
+        const sdk = new TradingSdk(
+          {
+            chainId,
+            appCode: 'test',
+            signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+            settlementContractOverride: { [chainId]: customSettlementAddress },
+          },
+          { orderBookApi },
+          adapters.ethersV5Adapter,
+        )
+
+        await sdk.getPreSignTransaction({ orderUid })
+
+        expect(getPreSignTransactionSpy).toHaveBeenCalledWith(
+          chainId,
+          expect.any(Object),
+          expect.objectContaining({
+            settlementContractOverride: expect.objectContaining({ [chainId]: customSettlementAddress }),
+          }),
+        )
+      })
     })
   })
 })
