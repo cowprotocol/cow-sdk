@@ -12,6 +12,7 @@ env:
 permissions:
   contents: write
   pull-requests: write
+  id-token: write
 
 jobs:
   release-please:
@@ -31,15 +32,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/jod
+          registry-url: "https://registry.npmjs.org"
           cache: "pnpm"
 
-      # 4️⃣ Install dependencies
+      # 4️⃣ Upgrade npm for trusted publishing (requires npm >= 11.5.1)
+      - run: npm install -g npm@latest
+
+      # 5️⃣ Install dependencies
       - run: pnpm install --frozen-lockfile
 
-      # 5️⃣ Build all packages (using turbo)
+      # 6️⃣ Build all packages (using turbo)
       - run: pnpm turbo run build --filter=./packages/**
 
-      # 6️⃣ Run release-please
+      # 7️⃣ Run release-please
       - uses: googleapis/release-please-action@v4
         id: release
         with:
@@ -48,16 +53,10 @@ jobs:
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
 
-      # 7️⃣ Setup npm auth
-      - name: Setup npm auth
-        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       # 8️⃣ Publish changed packages
       - name: Publish changed packages
         if: steps.release.outputs.releases_created == 'true'
-        run: pnpm publish -r --filter="./packages/**" --tag latest --no-git-checks
+        run: pnpm publish -r --filter="./packages/**" --tag latest --no-git-checks --provenance
 
   deploy-to-s3:
     needs: release-please
