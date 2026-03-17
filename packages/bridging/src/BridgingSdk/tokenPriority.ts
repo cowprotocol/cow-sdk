@@ -1,8 +1,10 @@
 import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { getAddressKey } from '@cowprotocol/sdk-common'
 
 /**
  * High-priority stablecoins registry (USDC and USDT)
  * These tokens get the highest priority when selecting intermediate tokens
+ * Should be defined in lowercase for evm chains
  */
 export const PRIORITY_STABLECOIN_TOKENS: Partial<Record<SupportedChainId, Set<string>>> = {
   [SupportedChainId.MAINNET]: new Set([
@@ -36,7 +38,7 @@ export const PRIORITY_STABLECOIN_TOKENS: Partial<Record<SupportedChainId, Set<st
   ]),
   [SupportedChainId.LINEA]: new Set([
     '0x176211869ca2b568f2a7d4ee941e073a821ee1ff', // USDC
-    '0xA219439258ca9da29E9Cc4cE5596924745e12B93', // USDT
+    '0xa219439258ca9da29e9cc4ce5596924745e12b93', // USDT
   ]),
   [SupportedChainId.SEPOLIA]: new Set([
     '0x1c7d4b196cb0c7b01d743fbc6116a902379c7238', // USDC
@@ -50,12 +52,12 @@ export function isStablecoinPriorityToken(chainId: SupportedChainId, tokenAddres
   const chainTokens = PRIORITY_STABLECOIN_TOKENS[chainId]
   if (!chainTokens) return false
 
-  return chainTokens.has(tokenAddress.toLowerCase())
+  return chainTokens.has(getAddressKey(tokenAddress))
 }
 
 /**
  * Checks if a token is in the CMS correlated tokens list
  */
 export function isCorrelatedToken(tokenAddress: string, correlatedTokens: Set<string>): boolean {
-  return correlatedTokens.has(tokenAddress.toLowerCase())
+  return correlatedTokens.has(getAddressKey(tokenAddress))
 }

@@ -1,5 +1,5 @@
 import { Signer, TypedDataDomain, TypedDataField, TypedDataEncoder, JsonRpcProvider, toBeHex, Provider } from 'ethers'
-import { AbstractSigner, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
+import { AbstractSigner, getAddressKey, TransactionParams, TransactionResponse } from '@cowprotocol/sdk-common'
 
 export class EthersV6SignerAdapter extends AbstractSigner<Provider> {
   private _signer: Signer
@@ -121,7 +121,7 @@ export class TypedDataVersionedSigner extends EthersV6SignerAdapter {
       throw new Error('Provider is not set')
     }
 
-    return await this.provider.send(this._signMethod, [address.toLowerCase(), msg])
+    return await this.provider.send(this._signMethod, [getAddressKey(address), msg])
   }
 
   private async resolveName(name: string): Promise<string> {
@@ -181,7 +181,7 @@ export class IntChainIdTypedDataV4Signer extends EthersV6SignerAdapter {
       throw new Error('Provider is not set')
     }
 
-    return await this.provider.send('eth_signTypedData_v4', [address.toLowerCase(), msg])
+    return await this.provider.send('eth_signTypedData_v4', [getAddressKey(address), msg])
   }
 
   private async resolveName(name: string): Promise<string> {

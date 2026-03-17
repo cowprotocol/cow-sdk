@@ -5,7 +5,7 @@ import { BUNGEE_APPROVE_AND_BRIDGE_V1_ABI } from './abi'
 import { BungeeApproveAndBridgeV1Addresses } from './const/contracts'
 import { decodeBungeeBridgeTxData } from './util'
 import { ETH_ADDRESS, EvmCall } from '@cowprotocol/sdk-config'
-import { getGlobalAdapter } from '@cowprotocol/sdk-common'
+import { areAddressesEqual, getGlobalAdapter } from '@cowprotocol/sdk-common'
 
 export async function createBungeeDepositCall(params: {
   request: QuoteBridgeRequest
@@ -63,7 +63,7 @@ export async function createBungeeDepositCall(params: {
   // If native token, set value; otherwise, value is 0
   // use the output amount from the quote
   // but will later be modified by BungeeApproveAndBridge
-  const value = request.sellTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase() ? BigInt(bridgeInputAmount) : 0n
+  const value = areAddressesEqual(request.sellTokenAddress, ETH_ADDRESS) ? BigInt(bridgeInputAmount) : 0n
   const finalValue = value + nativeTokenExtraFee
   // @note sellTokenChainId here will be the intermediate token chainId. the naming might be a bit misleading
   //       see getQuoteWithBridge.ts::getBaseBridgeQuoteRequest()
