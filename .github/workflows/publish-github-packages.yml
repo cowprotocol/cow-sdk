@@ -27,13 +27,19 @@ jobs:
     name: Publish to GitHub Packages
     runs-on: ubuntu-latest
 
-    # Security: Only run on internal PRs, main branch pushes, external PRs with explicit approval, or manual triggers
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request_target' && (github.event.pull_request.head.repo.full_name == github.repository || contains(github.event.pull_request.labels.*.name, 'allow-publish')))
+    # Security: Internal PRs run on every push. External PRs only run when 'allow-publish' label is added (maintainer must re-label after each new commit).
+    if: >-
+      github.event_name == 'push' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request_target' && (
+        github.event.pull_request.head.repo.full_name == github.repository ||
+        (github.event.action == 'labeled' && github.event.label.name == 'allow-publish')
+      ))
 
     steps:
       - name: Security Check
         run: |
-          if [ "$EVENT_NAME" = "pull_request" ]; then
+          if [ "$EVENT_NAME" = "pull_request_target" ]; then
             echo "🔒 Checking PR security..."
             echo "PR from: $REPO_NAME"
             echo "Target repo: $REPOSITORY"
@@ -72,6 +78,8 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -119,7 +127,7 @@ jobs:
         id: version
         run: |
           COMMIT_HASH=$(echo "$SHA" | cut -c1-8)
-          if [ "$EVENT_NAME" = "pull_request" ]; then
+          if [ "$EVENT_NAME" = "pull_request_target" ]; then
             # For PRs, use PR number + commit hash for uniqueness
             VERSION_SUFFIX="pr-$PR_NUMBER-$COMMIT_HASH"
             echo "version_suffix=$VERSION_SUFFIX" >> $GITHUB_OUTPUT
@@ -134,7 +142,7 @@ jobs:
             echo "is_pr=false" >> $GITHUB_OUTPUT
           fi
         env:
-          SHA: ${{ github.sha }}
+          SHA: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
           EVENT_NAME: ${{ github.event_name }}
           PR_NUMBER: ${{ github.event.number }}
           BRANCH_NAME: ${{ github.ref }}
