@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v2.1.2...sdk-contracts-ts-v2.2.0) (2026-03-17)
+
+
+### ✨ Features
+
+* use address utils to compare addresses ([#827](https://github.com/cowprotocol/cow-sdk/issues/827)) ([50a66ff](https://github.com/cowprotocol/cow-sdk/commit/50a66ff044f98ce0313c6213e31c83c9028836a1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.0
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.0
+
 ## [2.1.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v2.1.1...sdk-contracts-ts-v2.1.2) (2026-03-17)
 
 
