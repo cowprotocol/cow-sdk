@@ -12,7 +12,7 @@ import { BungeeBridge, BungeeQuoteWithBuildTx } from './types'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { decodeAmountsBungeeTxData } from './util'
-import { CCTP_V2_TX_DATA } from './createBungeeDepositCall.test'
+import { CCTP_V2_TX_DATA } from './testData'
 
 describe('Bungee Utils', () => {
   describe('toBridgeQuoteResult', () => {
