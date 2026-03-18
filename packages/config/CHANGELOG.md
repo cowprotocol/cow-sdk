@@ -1,5 +1,72 @@
 # Changelog
 
+## [2.3.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.3.0...sdk-config-v2.3.1) (2026-06-15)
+
+
+### ♻️ Refactoring
+
+* rename util function ([#899](https://github.com/cowprotocol/cow-sdk/issues/899)) ([095e280](https://github.com/cowprotocol/cow-sdk/commit/095e280ce0fa99f6fc71efd61ea146c70f061684))
+
+## [2.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.2.1...sdk-config-v2.3.0) (2026-06-08)
+
+
+### ✨ Features
+
+* internal ids for evm chains ([#891](https://github.com/cowprotocol/cow-sdk/issues/891)) ([1c3c961](https://github.com/cowprotocol/cow-sdk/commit/1c3c9619c3d0ee832ce43a2d695ad650c2ec7a18))
+
+## [2.2.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.2.0...sdk-config-v2.2.1) (2026-06-02)
+
+
+### 🐛 Bug Fixes
+
+* trigger release please ([#890](https://github.com/cowprotocol/cow-sdk/issues/890)) ([cc11990](https://github.com/cowprotocol/cow-sdk/commit/cc11990047e4d77a450582a84a07a453f4a7ccc8))
+
+## [2.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.1.0...sdk-config-v2.2.0) (2026-05-27)
+
+
+### ✨ Features
+
+* move solana to supported chain id ([#873](https://github.com/cowprotocol/cow-sdk/issues/873)) ([da8a7c2](https://github.com/cowprotocol/cow-sdk/commit/da8a7c24cd07afcd465199844c480ebe3e81383d))
+
+## [2.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.0.0...sdk-config-v2.1.0) (2026-05-22)
+
+
+### ✨ Features
+
+* **order-book:** add bearer token support in ApiContext ([#825](https://github.com/cowprotocol/cow-sdk/issues/825)) ([d605ba4](https://github.com/cowprotocol/cow-sdk/commit/d605ba4579d3fe12b043ecb22d2608018e0962ba))
+
+## [2.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v1.2.0...sdk-config-v2.0.0) (2026-04-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* bring cow.fi back ([#863](https://github.com/cowprotocol/cow-sdk/issues/863))
+
+### ✨ Features
+
+* bring cow.fi back ([#863](https://github.com/cowprotocol/cow-sdk/issues/863)) ([d607fd2](https://github.com/cowprotocol/cow-sdk/commit/d607fd2cfbc93ace39de04f3a7870f723fdd9b21))
+
+## [1.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v1.1.3...sdk-config-v1.2.0) (2026-04-14)
+
+
+### ✨ Features
+
+* migrate to cow.finance domain ([#860](https://github.com/cowprotocol/cow-sdk/issues/860)) ([a4e7633](https://github.com/cowprotocol/cow-sdk/commit/a4e76333b7a276baec5c977f44b15498550d8e50))
+
+## [1.1.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v1.1.2...sdk-config-v1.1.3) (2026-04-08)
+
+
+### 🐛 Bug Fixes
+
+* use adaptToken if contract address is empty ([#850](https://github.com/cowprotocol/cow-sdk/issues/850)) ([d57c397](https://github.com/cowprotocol/cow-sdk/commit/d57c3972d9104fbf846e15a831d004d4e20b961f))
+
+## [1.1.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v1.1.1...sdk-config-v1.1.2) (2026-03-17)
+
+
+### 🐛 Bug Fixes
+
+* use pnpm trusted publishing ([#841](https://github.com/cowprotocol/cow-sdk/issues/841)) ([1885b6f](https://github.com/cowprotocol/cow-sdk/commit/1885b6fa2a006670e3bb51a2ac8b60ed9c157eba))
+
 ## [1.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v1.1.0...sdk-config-v1.1.1) (2026-03-16)
 
 

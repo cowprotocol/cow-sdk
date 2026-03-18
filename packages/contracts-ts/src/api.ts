@@ -1,6 +1,6 @@
 import { normalizeOrder, Timestamp, HashLike, OrderBalance } from './order'
 import { encodeSignatureData } from './settlement'
-import { BigIntish, getGlobalAdapter } from '@cowprotocol/sdk-common'
+import { BigIntish, areAddressesEqual, getGlobalAdapter } from '@cowprotocol/sdk-common'
 import { Order, OrderKind, Signature, SigningScheme } from './types'
 
 export enum Environment {
@@ -191,9 +191,9 @@ async function estimateTradeAmount({
   )
   // The services return the quote token used for the price. The quote token
   // is checked to make sure that the returned price meets our expectations.
-  if (quote.buyToken.toLowerCase() !== buyToken.toLowerCase()) {
+  if (!areAddressesEqual(quote.buyToken, buyToken)) {
     throw new Error(
-      `Price returned for sell token ${sellToken} uses an incorrect quote token (${quote.buyToken.toLowerCase()} instead of ${buyToken.toLowerCase()})`,
+      `Price returned for sell token ${sellToken} uses an incorrect quote token (${quote.buyToken} instead of ${buyToken})`,
     )
   }
   const estimatedAmount = kind == OrderKind.SELL ? quote.buyAmount : quote.sellAmount

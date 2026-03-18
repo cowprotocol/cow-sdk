@@ -1,14 +1,14 @@
-import { NonEvmChainInfo, NonEvmChains } from '../types'
+import { NonEvmChainInfo, SupportedChainId } from '../types'
 import { RAW_CHAINS_FILES_PATH, SOL_NATIVE_CURRENCY_ADDRESS } from '../../constants'
 
-const solanaLogo = `${RAW_CHAINS_FILES_PATH}/images/solana-logo.svg`
+export const solanaLogo = `${RAW_CHAINS_FILES_PATH}/images/solana-logo.svg`
 
 export const solana: NonEvmChainInfo = {
-  id: NonEvmChains.SOLANA,
+  id: SupportedChainId.SOLANA,
   label: 'Solana',
   logo: { light: solanaLogo, dark: solanaLogo },
   nativeCurrency: {
-    chainId: NonEvmChains.SOLANA,
+    chainId: SupportedChainId.SOLANA,
     address: SOL_NATIVE_CURRENCY_ADDRESS,
     name: 'Solana',
     symbol: 'SOL',
@@ -30,4 +30,5 @@ export const solana: NonEvmChainInfo = {
     name: 'Solana Explorer',
     url: 'https://explorer.solana.com',
   },
+  isUnderDevelopment: true,
 }

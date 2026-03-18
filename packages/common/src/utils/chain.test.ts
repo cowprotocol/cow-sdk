@@ -6,6 +6,7 @@ import {
   isNonEvmChainInfo,
   EvmChains,
   NonEvmChains,
+  SupportedChainId,
   mainnet,
   bitcoin,
   solana,
@@ -41,7 +42,7 @@ describe('isEvmChain', () => {
     })
 
     it('should return false for non-EVM chain (Solana)', () => {
-      expect(isEvmChain(NonEvmChains.SOLANA)).toBe(false)
+      expect(isEvmChain(SupportedChainId.SOLANA)).toBe(false)
     })
 
     it('should return false for invalid number', () => {
@@ -59,9 +60,7 @@ describe('isNonEvmChain', () => {
     })
 
     it('should return true for Solana', () => {
-      expect(isNonEvmChain(NonEvmChains.SOLANA)).toBe(true)
-      const chainId: NonEvmChains = NonEvmChains.SOLANA
-      expect(chainId).toBe(501)
+      expect(isNonEvmChain(SupportedChainId.SOLANA)).toBe(true)
     })
 
     it('should return true for any valid non-EVM chain ID', () => {
@@ -135,7 +134,7 @@ describe('isBtcChain', () => {
   })
 
   it('should return false for Solana', () => {
-    expect(isBtcChain(NonEvmChains.SOLANA)).toBe(false)
+    expect(isBtcChain(SupportedChainId.SOLANA)).toBe(false)
   })
 
   it('should return false for invalid chain', () => {

@@ -57,6 +57,9 @@ export type QuoteBridgeRequest = {
   kind: OrderKind
   amount: bigint
   owner?: AccountAddress
+  /** Final recipient on destination chain. Can be non-EVM (Solana/BTC).
+   *  Used by bridge providers. Falls back to `receiver` then `account`. */
+  bridgeRecipient?: string
 } & WithSellToken &
   WithBuyToken &
   WithQuoter &

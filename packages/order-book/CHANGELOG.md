@@ -1,5 +1,148 @@
 # Changelog
 
+## [4.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v3.2.2...sdk-order-book-v4.0.0) (2026-06-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* migrate to API v2 for /solver_competition ([#904](https://github.com/cowprotocol/cow-sdk/issues/904))
+
+### ✨ Features
+
+* migrate to API v2 for /solver_competition ([#904](https://github.com/cowprotocol/cow-sdk/issues/904)) ([803e62d](https://github.com/cowprotocol/cow-sdk/commit/803e62d91ff0a6460da153cbdddb1df409e354f0))
+* per-package test coverage badges, updated in CI ([#895](https://github.com/cowprotocol/cow-sdk/issues/895)) ([c73246c](https://github.com/cowprotocol/cow-sdk/commit/c73246cc52c4fc79b2628b7c5f580695fd3dc1e2))
+
+
+### 🐛 Bug Fixes
+
+* make EcdsaSigningScheme assignable to SigningScheme ([#876](https://github.com/cowprotocol/cow-sdk/issues/876)) ([47066a6](https://github.com/cowprotocol/cow-sdk/commit/47066a6b2805d27bf96cb0edeb509dd84708d300))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.3.1
+    * @cowprotocol/sdk-common bumped to 0.12.0
+
+## [3.2.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v3.2.1...sdk-order-book-v3.2.2) (2026-06-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.3.0
+    * @cowprotocol/sdk-common bumped to 0.11.2
+
+## [3.2.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v3.2.0...sdk-order-book-v3.2.1) (2026-06-02)
+
+
+### 🔧 Miscellaneous
+
+* Update openapi.yml version ([#888](https://github.com/cowprotocol/cow-sdk/issues/888)) ([b8a3726](https://github.com/cowprotocol/cow-sdk/commit/b8a37263195afba0a12a42c879eb13c1a2cc2e8b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.2.1
+    * @cowprotocol/sdk-common bumped to 0.11.1
+
+## [3.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v3.1.0...sdk-order-book-v3.2.0) (2026-05-27)
+
+
+### ✨ Features
+
+* move solana to supported chain id ([#873](https://github.com/cowprotocol/cow-sdk/issues/873)) ([da8a7c2](https://github.com/cowprotocol/cow-sdk/commit/da8a7c24cd07afcd465199844c480ebe3e81383d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.2.0
+    * @cowprotocol/sdk-common bumped to 0.11.0
+
+## [3.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v3.0.0...sdk-order-book-v3.1.0) (2026-05-22)
+
+
+### ✨ Features
+
+* **order-book:** add bearer token support in ApiContext ([#825](https://github.com/cowprotocol/cow-sdk/issues/825)) ([d605ba4](https://github.com/cowprotocol/cow-sdk/commit/d605ba4579d3fe12b043ecb22d2608018e0962ba))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.1.0
+    * @cowprotocol/sdk-common bumped to 0.10.3
+
+## [3.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v2.1.0...sdk-order-book-v3.0.0) (2026-04-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* bring cow.fi back ([#863](https://github.com/cowprotocol/cow-sdk/issues/863))
+
+### ✨ Features
+
+* bring cow.fi back ([#863](https://github.com/cowprotocol/cow-sdk/issues/863)) ([d607fd2](https://github.com/cowprotocol/cow-sdk/commit/d607fd2cfbc93ace39de04f3a7870f723fdd9b21))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.0.0
+    * @cowprotocol/sdk-common bumped to 0.10.2
+
+## [2.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v2.0.5...sdk-order-book-v2.1.0) (2026-04-14)
+
+
+### ✨ Features
+
+* migrate to cow.finance domain ([#860](https://github.com/cowprotocol/cow-sdk/issues/860)) ([a4e7633](https://github.com/cowprotocol/cow-sdk/commit/a4e76333b7a276baec5c977f44b15498550d8e50))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 1.2.0
+    * @cowprotocol/sdk-common bumped to 0.10.1
+
+## [2.0.5](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v2.0.4...sdk-order-book-v2.0.5) (2026-04-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 1.1.3
+    * @cowprotocol/sdk-common bumped to 0.10.0
+
+## [2.0.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v2.0.3...sdk-order-book-v2.0.4) (2026-04-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.9.0
+
+## [2.0.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v2.0.2...sdk-order-book-v2.0.3) (2026-03-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 1.1.2
+    * @cowprotocol/sdk-common bumped to 0.8.2
+
 ## [2.0.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v2.0.1...sdk-order-book-v2.0.2) (2026-03-16)
 
 

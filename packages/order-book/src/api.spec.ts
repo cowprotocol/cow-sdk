@@ -1,7 +1,8 @@
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { CowError } from '@cowprotocol/sdk-common'
 import { OrderBookApi } from './api'
-import { BuyTokenDestination, EcdsaSigningScheme, OrderKind, SellTokenSource, SigningScheme } from './generated'
+import { BuyTokenDestination, OrderKind, SellTokenSource, SigningScheme } from './generated'
+import { EcdsaSigningScheme } from './signingSchemes'
 import { SupportedChainId, ETH_ADDRESS } from '@cowprotocol/sdk-config'
 import { AUCTION } from './mock'
 
@@ -699,7 +700,7 @@ describe('CoW Api', () => {
     // then
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      `https://api.cow.fi/xdai/api/v1/solver_competition/${auctionId}`,
+      `https://api.cow.fi/xdai/api/v2/solver_competition/${auctionId}`,
       FETCH_RESPONSE_PARAMETERS,
     )
     expect(competition).toEqual(AUCTION)
@@ -719,7 +720,7 @@ describe('CoW Api', () => {
     // then
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      `https://api.cow.fi/xdai/api/v1/solver_competition/by_tx_hash/${txHash}`,
+      `https://api.cow.fi/xdai/api/v2/solver_competition/by_tx_hash/${txHash}`,
       FETCH_RESPONSE_PARAMETERS,
     )
     expect(competition).toEqual(AUCTION)

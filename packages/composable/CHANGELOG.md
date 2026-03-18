@@ -1,5 +1,235 @@
 # Changelog
 
+## [1.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.0.6...sdk-composable-v1.1.0) (2026-06-15)
+
+
+### ✨ Features
+
+* per-package test coverage badges, updated in CI ([#895](https://github.com/cowprotocol/cow-sdk/issues/895)) ([c73246c](https://github.com/cowprotocol/cow-sdk/commit/c73246cc52c4fc79b2628b7c5f580695fd3dc1e2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.12.0
+    * @cowprotocol/sdk-config bumped to 2.3.1
+    * @cowprotocol/sdk-contracts-ts bumped to 3.2.0
+    * @cowprotocol/sdk-order-book bumped to 4.0.0
+    * @cowprotocol/sdk-order-signing bumped to 1.1.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.10
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.10
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.24
+
+## [1.0.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.0.5...sdk-composable-v1.0.6) (2026-06-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.11.2
+    * @cowprotocol/sdk-config bumped to 2.3.0
+    * @cowprotocol/sdk-contracts-ts bumped to 3.1.2
+    * @cowprotocol/sdk-order-book bumped to 3.2.2
+    * @cowprotocol/sdk-order-signing bumped to 1.0.6
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.9
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.9
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.23
+
+## [1.0.5](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.0.4...sdk-composable-v1.0.5) (2026-06-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.11.1
+    * @cowprotocol/sdk-config bumped to 2.2.1
+    * @cowprotocol/sdk-contracts-ts bumped to 3.1.1
+    * @cowprotocol/sdk-order-book bumped to 3.2.1
+    * @cowprotocol/sdk-order-signing bumped to 1.0.5
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.8
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.8
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.22
+
+## [1.0.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.0.3...sdk-composable-v1.0.4) (2026-05-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.11.0
+    * @cowprotocol/sdk-config bumped to 2.2.0
+    * @cowprotocol/sdk-contracts-ts bumped to 3.1.0
+    * @cowprotocol/sdk-order-book bumped to 3.2.0
+    * @cowprotocol/sdk-order-signing bumped to 1.0.4
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.7
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.7
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.21
+
+## [1.0.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.0.2...sdk-composable-v1.0.3) (2026-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.3
+    * @cowprotocol/sdk-config bumped to 2.1.0
+    * @cowprotocol/sdk-contracts-ts bumped to 3.0.3
+    * @cowprotocol/sdk-order-book bumped to 3.1.0
+    * @cowprotocol/sdk-order-signing bumped to 1.0.3
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.6
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.6
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.20
+
+## [1.0.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.0.1...sdk-composable-v1.0.2) (2026-05-20)
+
+
+### 📚 Documentation
+
+* remove info about umbrella sdk ([#874](https://github.com/cowprotocol/cow-sdk/issues/874)) ([bb0280e](https://github.com/cowprotocol/cow-sdk/commit/bb0280e7bfcdd6c2d7b122baf43910d9e4e4299f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-contracts-ts bumped to 3.0.2
+    * @cowprotocol/sdk-order-signing bumped to 1.0.2
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.5
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.5
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.19
+
+## [1.0.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.0.0...sdk-composable-v1.0.1) (2026-04-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-contracts-ts bumped to 3.0.1
+    * @cowprotocol/sdk-order-signing bumped to 1.0.1
+
+## [1.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v0.3.0...sdk-composable-v1.0.0) (2026-04-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* bring cow.fi back ([#863](https://github.com/cowprotocol/cow-sdk/issues/863))
+
+### ✨ Features
+
+* bring cow.fi back ([#863](https://github.com/cowprotocol/cow-sdk/issues/863)) ([d607fd2](https://github.com/cowprotocol/cow-sdk/commit/d607fd2cfbc93ace39de04f3a7870f723fdd9b21))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.2
+    * @cowprotocol/sdk-config bumped to 2.0.0
+    * @cowprotocol/sdk-contracts-ts bumped to 3.0.0
+    * @cowprotocol/sdk-order-book bumped to 3.0.0
+    * @cowprotocol/sdk-order-signing bumped to 1.0.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.4
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.4
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.18
+
+## [0.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v0.2.5...sdk-composable-v0.3.0) (2026-04-14)
+
+
+### ✨ Features
+
+* migrate to cow.finance domain ([#860](https://github.com/cowprotocol/cow-sdk/issues/860)) ([a4e7633](https://github.com/cowprotocol/cow-sdk/commit/a4e76333b7a276baec5c977f44b15498550d8e50))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.1
+    * @cowprotocol/sdk-config bumped to 1.2.0
+    * @cowprotocol/sdk-contracts-ts bumped to 2.5.0
+    * @cowprotocol/sdk-order-book bumped to 2.1.0
+    * @cowprotocol/sdk-order-signing bumped to 0.3.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.3
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.3
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.17
+
+## [0.2.5](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v0.2.4...sdk-composable-v0.2.5) (2026-04-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.0
+    * @cowprotocol/sdk-config bumped to 1.1.3
+    * @cowprotocol/sdk-contracts-ts bumped to 2.4.0
+    * @cowprotocol/sdk-order-book bumped to 2.0.5
+    * @cowprotocol/sdk-order-signing bumped to 0.2.5
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.2
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.2
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.16
+
+## [0.2.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v0.2.3...sdk-composable-v0.2.4) (2026-04-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.9.0
+    * @cowprotocol/sdk-contracts-ts bumped to 2.3.0
+    * @cowprotocol/sdk-order-book bumped to 2.0.4
+    * @cowprotocol/sdk-order-signing bumped to 0.2.4
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.1
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.1
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.15
+
+## [0.2.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v0.2.2...sdk-composable-v0.2.3) (2026-03-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-contracts-ts bumped to 2.2.0
+    * @cowprotocol/sdk-order-signing bumped to 0.2.3
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.0
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.0
+
+## [0.2.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v0.2.1...sdk-composable-v0.2.2) (2026-03-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.8.2
+    * @cowprotocol/sdk-config bumped to 1.1.2
+    * @cowprotocol/sdk-contracts-ts bumped to 2.1.2
+    * @cowprotocol/sdk-order-book bumped to 2.0.3
+    * @cowprotocol/sdk-order-signing bumped to 0.2.2
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.14
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.14
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.14
+
 ## [0.2.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v0.2.0...sdk-composable-v0.2.1) (2026-03-16)
 
 

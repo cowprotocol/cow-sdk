@@ -1,5 +1,114 @@
 # Changelog
 
+## [1.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.1.2...sdk-subgraph-v1.2.0) (2026-06-15)
+
+
+### ✨ Features
+
+* per-package test coverage badges, updated in CI ([#895](https://github.com/cowprotocol/cow-sdk/issues/895)) ([c73246c](https://github.com/cowprotocol/cow-sdk/commit/c73246cc52c4fc79b2628b7c5f580695fd3dc1e2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.12.0
+    * @cowprotocol/sdk-config bumped to 2.3.1
+
+## [1.1.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.1.1...sdk-subgraph-v1.1.2) (2026-06-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.11.2
+    * @cowprotocol/sdk-config bumped to 2.3.0
+
+## [1.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.1.0...sdk-subgraph-v1.1.1) (2026-06-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.11.1
+    * @cowprotocol/sdk-config bumped to 2.2.1
+
+## [1.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.0.8...sdk-subgraph-v1.1.0) (2026-05-27)
+
+
+### ✨ Features
+
+* move solana to supported chain id ([#873](https://github.com/cowprotocol/cow-sdk/issues/873)) ([da8a7c2](https://github.com/cowprotocol/cow-sdk/commit/da8a7c24cd07afcd465199844c480ebe3e81383d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.11.0
+    * @cowprotocol/sdk-config bumped to 2.2.0
+
+## [1.0.8](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.0.7...sdk-subgraph-v1.0.8) (2026-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.3
+    * @cowprotocol/sdk-config bumped to 2.1.0
+
+## [1.0.7](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.0.6...sdk-subgraph-v1.0.7) (2026-04-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.2
+    * @cowprotocol/sdk-config bumped to 2.0.0
+
+## [1.0.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.0.5...sdk-subgraph-v1.0.6) (2026-04-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.1
+    * @cowprotocol/sdk-config bumped to 1.2.0
+
+## [1.0.5](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.0.4...sdk-subgraph-v1.0.5) (2026-04-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.0
+    * @cowprotocol/sdk-config bumped to 1.1.3
+
+## [1.0.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.0.3...sdk-subgraph-v1.0.4) (2026-04-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.9.0
+
+## [1.0.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.0.2...sdk-subgraph-v1.0.3) (2026-03-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.8.2
+    * @cowprotocol/sdk-config bumped to 1.1.2
+
 ## [1.0.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.0.1...sdk-subgraph-v1.0.2) (2026-03-16)
 
 

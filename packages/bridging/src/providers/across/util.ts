@@ -7,7 +7,7 @@ import { ACROSS_TOKEN_MAPPING, AcrossChainConfig } from './const/tokens'
 import { ACROSS_SPOOK_CONTRACT_ADDRESSES } from './const/contracts'
 import { AddressPerChain, SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
-import { areAddressesEqual, getGlobalAdapter, isCoWSettlementContract, Log } from '@cowprotocol/sdk-common'
+import { areAddressesEqual, getAddressKey, getGlobalAdapter, isCoWSettlementContract, Log } from '@cowprotocol/sdk-common'
 import stringify from 'json-stable-stringify'
 
 const PCT_100_PERCENT = 10n ** 18n
@@ -180,7 +180,8 @@ export function mapAcrossStatusToBridgeStatus(status: DepositStatusResponse['sta
 }
 
 export function getAcrossDepositEvents(chainId: SupportedChainId, logs: Log[]): AcrossDepositEvent[] {
-  const spookContractAddress = ACROSS_SPOOK_CONTRACT_ADDRESSES[chainId]?.toLowerCase()
+  const addr = ACROSS_SPOOK_CONTRACT_ADDRESSES[chainId]
+  const spookContractAddress = addr ? getAddressKey(addr) : undefined
 
   if (!spookContractAddress) {
     return []
@@ -191,7 +192,7 @@ export function getAcrossDepositEvents(chainId: SupportedChainId, logs: Log[]): 
 
   // Get accross deposit events
   const depositEvents = logs.filter((log) => {
-    return log.address.toLocaleLowerCase() === spookContractAddress && log.topics[0] === ACROSS_DEPOSIT_EVENT_TOPIC
+    return getAddressKey(log.address) === spookContractAddress && log.topics[0] === ACROSS_DEPOSIT_EVENT_TOPIC
   })
 
   // Parse logs

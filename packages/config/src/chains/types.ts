@@ -66,8 +66,8 @@ export enum NonEvmChains {
 }
 
 /**
- * All EVM chains supported directly by CoW Protocol (where you can sell tokens from).
- * Subset of EvmChains — excludes bridge-only chains like OPTIMISM.
+ * All chains supported directly by CoW Protocol (where you can sell tokens from).
+ * Includes both EVM and non-EVM chains.
  */
 export enum SupportedChainId {
   MAINNET = MAINNET_ID,
@@ -81,6 +81,7 @@ export enum SupportedChainId {
   INK = INK_ID,
   LINEA = LINEA_ID,
   SEPOLIA = SEPOLIA_ID,
+  SOLANA = SOLANA_ID,
 }
 
 /**
@@ -90,7 +91,6 @@ export enum SupportedChainId {
 export enum AdditionalTargetChainId {
   OPTIMISM = OPTIMISM_ID,
   BITCOIN = BITCOIN_ID,
-  SOLANA = SOLANA_ID,
 }
 
 /**
@@ -215,6 +215,14 @@ export interface EvmChainInfo extends BaseChainInfo {
   readonly id: ChainId
 
   /**
+   * Internal CoW Protocol identifier.
+   *
+   * Used by internal services, metrics labels, and database names. This can differ
+   * from display labels, ERC-3770 prefixes, and API URL path segments.
+   */
+  readonly internalId?: string
+
+  /**
    * EIP155 label of the chain. Field used for connecting to MetaMask.
    */
   readonly eip155Label: string
@@ -247,6 +255,14 @@ export interface NonEvmChainInfo extends BaseChainInfo {
    * The chain id for non-EVM chains.
    */
   readonly id: ChainId
+
+  /**
+   * Internal CoW Protocol identifier.
+   *
+   * Used by internal services, metrics labels, and database names. This can differ
+   * from display labels, ERC-3770 prefixes, and API URL path segments.
+   */
+  readonly internalId?: string
 
   /**
    * Native currency of the chain (address is empty string for non-EVM chains).

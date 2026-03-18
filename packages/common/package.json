@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-common",
-  "version": "0.8.1",
+  "version": "0.12.0",
   "description": "Common utilities and types for CoW Protocol SDK",
   "repository": {
     "type": "git",
@@ -22,6 +22,9 @@
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "lint": "eslint src/**/*.ts",
     "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "coverage:badges": "istanbul-badges-readme --exitCode=1",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
     "prepublishOnly": "npm run build"
   },

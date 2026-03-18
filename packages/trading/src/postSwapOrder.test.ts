@@ -1,6 +1,6 @@
 import { getQuoteWithSigner } from './getQuote'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
-import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { getQuoteAmountsAndCosts, OrderKind } from '@cowprotocol/sdk-order-book'
 import { postSwapOrderFromQuote } from './postSwapOrder'
 import { SwapParameters } from './types'
 import { AdaptersTestSetup, createAdapters } from '../tests/setup'
@@ -234,6 +234,67 @@ describe('postSwapOrder', () => {
       // 30000000000000000000 - (30000000000000000000 * 8 / 100) = 27600000000000000000
       expect(call.buyAmount).toBe('27600000000000000000')
     }
+  })
+
+  it('When protocolFeeBps is in quote response with partnerFee, then buyAmount should be lower than without protocolFeeBps', async () => {
+    const partnerFee = { volumeBps: 50, recipient: '0x444cc' }
+    const protocolFeeBps = 5
+
+    const orderBookApiNoPf = {
+      context: { chainId: SELL_ORDER_PARAMS.chainId },
+      getQuote: jest.fn().mockResolvedValue(SELL_ORDER_QUOTE_MOCK),
+      sendOrder: jest.fn().mockResolvedValue('0x01'),
+      uploadAppData: jest.fn().mockResolvedValue(null),
+    }
+    const orderBookApiWithPf = {
+      context: { chainId: SELL_ORDER_PARAMS.chainId },
+      getQuote: jest.fn().mockResolvedValue({ ...SELL_ORDER_QUOTE_MOCK, protocolFeeBps }),
+      sendOrder: jest.fn().mockResolvedValue('0x01'),
+      uploadAppData: jest.fn().mockResolvedValue(null),
+    }
+
+    const orderParams = { ...SELL_ORDER_PARAMS, partnerFee }
+
+    // Compute expected buyAmount with protocolFeeBps using the same function used internally
+    const { afterSlippage: expectedWithPf } = getQuoteAmountsAndCosts({
+      orderParams: SELL_ORDER_QUOTE_MOCK.quote as any,
+      slippagePercentBps: SELL_ORDER_PARAMS.slippageBps ?? 50,
+      partnerFeeBps: partnerFee.volumeBps,
+      protocolFeeBps,
+    })
+    const { afterSlippage: expectedNoPf } = getQuoteAmountsAndCosts({
+      orderParams: SELL_ORDER_QUOTE_MOCK.quote as any,
+      slippagePercentBps: SELL_ORDER_PARAMS.slippageBps ?? 50,
+      partnerFeeBps: partnerFee.volumeBps,
+      protocolFeeBps: 0,
+    })
+
+    const adapterName = Object.keys(adapters)[0] as keyof AdaptersTestSetup
+    setGlobalAdapter(adapters[adapterName])
+
+    await postSwapOrderFromQuote(
+      await getQuoteWithSigner(
+        { ...orderParams, amount: adapters[adapterName].utils.parseUnits('0.1', 18).toString() },
+        undefined,
+        orderBookApiNoPf as any,
+      ),
+    )
+    const buyAmountNoPf = orderBookApiNoPf.sendOrder.mock.calls[0][0].buyAmount
+
+    await postSwapOrderFromQuote(
+      await getQuoteWithSigner(
+        { ...orderParams, amount: adapters[adapterName].utils.parseUnits('0.1', 18).toString() },
+        undefined,
+        orderBookApiWithPf as any,
+      ),
+    )
+    const buyAmountWithPf = orderBookApiWithPf.sendOrder.mock.calls[0][0].buyAmount
+
+    // With protocolFeeBps, partner fee base (beforeAllFees.buyAmount) is larger,
+    // so partner fee amount is larger and buyAmount is lower
+    expect(BigInt(buyAmountWithPf)).toBeLessThan(BigInt(buyAmountNoPf))
+    expect(buyAmountWithPf).toBe(expectedWithPf.buyAmount.toString())
+    expect(buyAmountNoPf).toBe(expectedNoPf.buyAmount.toString())
   })
 
   it('When receiver/validTo is present in advancedSettings quoteRequest, then it should end up in the order', async () => {

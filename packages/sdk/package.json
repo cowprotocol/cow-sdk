@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/cow-sdk",
-  "version": "8.0.2",
+  "version": "9.2.0",
   "license": "(MIT OR Apache-2.0)",
   "description": "CoW Protocol SDK - get quote, configure your order, and trade",
   "repository": {
@@ -56,15 +56,11 @@
   "peerDependencies": {
     "@openzeppelin/merkle-tree": "^1.x",
     "cross-fetch": "^3.x",
-    "ipfs-only-hash": "^4.x",
     "multiformats": "^9.x"
   },
   "peerDependenciesMeta": {
     "cross-fetch": {
       "optional": false
-    },
-    "ipfs-only-hash": {
-      "optional": true
     },
     "multiformats": {
       "optional": true

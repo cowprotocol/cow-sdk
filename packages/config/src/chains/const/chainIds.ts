@@ -29,6 +29,7 @@ export const ALL_SUPPORTED_CHAINS_MAP: Record<SupportedChainId, ChainInfo> = {
   [SupportedChainId.LINEA]: linea,
   [SupportedChainId.INK]: ink,
   [SupportedChainId.SEPOLIA]: sepolia,
+  [SupportedChainId.SOLANA]: solana,
 }
 
 /**
@@ -63,7 +64,6 @@ export const TRADABLE_SUPPORTED_CHAIN_IDS: SupportedChainId[] = TRADABLE_SUPPORT
 export const ADDITIONAL_TARGET_CHAINS_MAP: Record<AdditionalTargetChainId, ChainInfo> = {
   [AdditionalTargetChainId.OPTIMISM]: optimism,
   [AdditionalTargetChainId.BITCOIN]: bitcoin,
-  [AdditionalTargetChainId.SOLANA]: solana,
 }
 
 /**
@@ -88,3 +88,11 @@ export const ALL_CHAINS = ALL_SUPPORTED_CHAINS.concat(ALL_ADDITIONAL_TARGET_CHAI
  * All chain ids (both supported by CoW Protocol, or chains where you can bridge to)
  */
 export const ALL_CHAINS_IDS: TargetChainId[] = ALL_CHAINS.map((chain) => chain.id) as TargetChainId[]
+
+/**
+ * Map of all chains keyed by chain id (both supported by CoW Protocol, or chains where you can bridge to).
+ */
+export const ALL_CHAINS_MAP: Record<TargetChainId, ChainInfo> = ALL_CHAINS.reduce(
+  (acc, chain) => ({ ...acc, [chain.id]: chain }),
+  {} as Record<TargetChainId, ChainInfo>,
+)

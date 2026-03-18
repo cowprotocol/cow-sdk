@@ -1,5 +1,109 @@
 # Changelog
 
+## [0.4.10](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v5-adapter-v0.4.9...sdk-ethers-v5-adapter-v0.4.10) (2026-06-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.12.0
+
+## [0.4.9](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v5-adapter-v0.4.8...sdk-ethers-v5-adapter-v0.4.9) (2026-06-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.11.2
+
+## [0.4.8](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v5-adapter-v0.4.7...sdk-ethers-v5-adapter-v0.4.8) (2026-06-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.11.1
+
+## [0.4.7](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v5-adapter-v0.4.6...sdk-ethers-v5-adapter-v0.4.7) (2026-05-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.11.0
+
+## [0.4.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v5-adapter-v0.4.5...sdk-ethers-v5-adapter-v0.4.6) (2026-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.3
+
+## [0.4.5](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v5-adapter-v0.4.4...sdk-ethers-v5-adapter-v0.4.5) (2026-05-20)
+
+
+### 📚 Documentation
+
+* remove info about umbrella sdk ([#874](https://github.com/cowprotocol/cow-sdk/issues/874)) ([bb0280e](https://github.com/cowprotocol/cow-sdk/commit/bb0280e7bfcdd6c2d7b122baf43910d9e4e4299f))
+
+## [0.4.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v5-adapter-v0.4.3...sdk-ethers-v5-adapter-v0.4.4) (2026-04-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.2
+
+## [0.4.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v5-adapter-v0.4.2...sdk-ethers-v5-adapter-v0.4.3) (2026-04-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.1
+
+## [0.4.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v5-adapter-v0.4.1...sdk-ethers-v5-adapter-v0.4.2) (2026-04-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.0
+
+## [0.4.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v5-adapter-v0.4.0...sdk-ethers-v5-adapter-v0.4.1) (2026-04-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.9.0
+
+## [0.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v5-adapter-v0.3.14...sdk-ethers-v5-adapter-v0.4.0) (2026-03-17)
+
+
+### ✨ Features
+
+* use address utils to compare addresses ([#827](https://github.com/cowprotocol/cow-sdk/issues/827)) ([50a66ff](https://github.com/cowprotocol/cow-sdk/commit/50a66ff044f98ce0313c6213e31c83c9028836a1))
+
+## [0.3.14](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v5-adapter-v0.3.13...sdk-ethers-v5-adapter-v0.3.14) (2026-03-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.8.2
+
 ## [0.3.13](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v5-adapter-v0.3.12...sdk-ethers-v5-adapter-v0.3.13) (2026-03-16)
 
 

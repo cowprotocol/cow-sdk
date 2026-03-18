@@ -64,13 +64,15 @@ export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
   })
 
   // Determine the best intermediate token based on priority (USDC/USDT > CMS correlated > others)
-  const intermediateToken = await determineIntermediateToken(
-    sellTokenChainId,
-    sellTokenAddress,
+  const intermediateToken = await determineIntermediateToken({
+    sourceChainId: sellTokenChainId,
+    sourceTokenAddress: sellTokenAddress,
+    destinationChainId: buyTokenChainId,
+    destinationTokenAddress: buyTokenAddress,
     intermediateTokens,
-    params.advancedSettings?.getCorrelatedTokens,
+    getCorrelatedTokens: params.advancedSettings?.getCorrelatedTokens,
     allowIntermediateEqSellToken,
-  )
+  })
 
   log(`Using ${intermediateToken?.name ?? intermediateToken?.address} as intermediate tokens`)
 
@@ -98,6 +100,7 @@ export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
     appData: {
       ...advancedSettings?.appData,
       metadata: {
+        ...advancedSettings?.appData?.metadata,
         hooks,
         bridging: {
           providerId: provider.info.dappId,
@@ -182,6 +185,8 @@ export async function getSwapQuote(params: {
     bridgeSlippageBps: _bridgeSlippageBps,
     amount,
     swapSlippageBps,
+    receiver: _receiver, // Strip receiver from CoW API params — bridge providers override it after the quote
+    bridgeRecipient: _bridgeRecipient, // Not relevant for CoW API
     ...rest
   } = swapAndBridgeRequest
 

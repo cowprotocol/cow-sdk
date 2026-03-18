@@ -5,12 +5,7 @@ import {
 } from './types'
 import { calculateUniqueOrderId } from './calculateUniqueOrderId'
 import { getOrderToSign } from './getOrderToSign'
-import {
-  SupportedChainId,
-  BARN_ETH_FLOW_ADDRESSES,
-  ETH_FLOW_ADDRESSES,
-  ProtocolOptions,
-} from '@cowprotocol/sdk-config'
+import { SupportedChainId, BARN_ETH_FLOW_ADDRESSES, ETH_FLOW_ADDRESSES, ProtocolOptions } from '@cowprotocol/sdk-config'
 import { GAS_LIMIT_DEFAULT } from './consts'
 import { adjustEthFlowOrderParams, calculateGasMargin } from './utils/misc'
 import {
@@ -33,7 +28,7 @@ export async function getEthFlowTransaction(
 ): Promise<{ orderId: string; transaction: TransactionParams; orderToSign: UnsignedOrder }> {
   const signer = paramSigner ? getGlobalAdapter().createSigner(paramSigner) : getGlobalAdapter().signer
 
-  const { networkCostsAmount = '0', checkEthFlowOrderExists } = additionalParams
+  const { networkCostsAmount = '0', checkEthFlowOrderExists, protocolFeeBps } = additionalParams
   const from = await signer.getAddress()
   const slippageBps = _params.slippageBps ?? getDefaultSlippageBps(chainId, true)
 
@@ -57,6 +52,7 @@ export async function getEthFlowTransaction(
       isEthFlow: true,
       from,
       networkCostsAmount,
+      protocolFeeBps,
     },
     params,
     appDataKeccak256,

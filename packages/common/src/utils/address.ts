@@ -1,29 +1,9 @@
-/**
- * Regular expression pattern for validating EVM addresses.
- * Matches addresses that start with 0x followed by exactly 40 hexadecimal characters.
- */
-const EVM_ADDRESS_PATTERN = /^0x[a-fA-F0-9]{40}$/
-
-/**
- * Pattern for validating Bitcoin legacy addresses (P2PKH/P2SH).
- * Matches addresses that start with 1 or 3, followed by 24-33 base58 encoded characters.
- * Total address length: 25-34 characters (including the prefix).
- */
-const BTC_LEGACY_ADDRESS_PATTERN = /^[13][a-km-zA-HJ-NP-Z1-9]{24,33}$/
-
-/**
- * Pattern for validating Bitcoin Bech32 mainnet addresses (P2WPKH/P2WSH).
- * Per BIP-173, addresses must be either entirely uppercase or entirely lowercase (never mixed case).
- * Matches addresses that start with bc1 (lowercase) or BC1 (uppercase), followed by 39-59 alphanumeric characters.
- */
-const BTC_BECH32_MAINNET_PATTERN = /^(bc1[a-z0-9]{39,59}|BC1[A-Z0-9]{39,59})$/
-
-/**
- * Pattern for validating Solana addresses.
- * Solana addresses are Base58-encoded Ed25519 public keys (32 bytes), typically 32-44 characters.
- * Base58 alphabet excludes: 0 (zero), O (capital o), I (capital i), l (lowercase L).
- */
-const SOL_ADDRESS_PATTERN = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/
+import {
+  BTC_BECH32_ADDRESS_PATTERN,
+  BTC_LEGACY_ADDRESS_PATTERN,
+  EVM_ADDRESS_PATTERN,
+  SOL_ADDRESS_PATTERN,
+} from './addressPatterns'
 
 export type EvmAddressKey = `0x${string}`
 export type BtcAddressKey = string
@@ -54,15 +34,8 @@ export function isBtcAddress(address: string | null | undefined): address is Btc
   if (typeof address !== 'string') return false
   if (address.length < 25 || address.length > 62) return false
 
-  if (BTC_LEGACY_ADDRESS_PATTERN.test(address)) {
-    return true
-  }
-
-  if (BTC_BECH32_MAINNET_PATTERN.test(address)) {
-    return true
-  }
-
-  return false
+  // Legacy P2PKH/P2SH is case-sensitive base58; Bech32 P2WPKH/P2WSH is permissive on case.
+  return BTC_LEGACY_ADDRESS_PATTERN.test(address) || BTC_BECH32_ADDRESS_PATTERN.test(address)
 }
 
 /**
@@ -110,4 +83,8 @@ export function getAddressKey(address: string): AddressKey {
   if (isEvmAddress(address)) return getEvmAddressKey(address)
   // sol and btc addresses are already in the correct format
   return address as AddressKey
+}
+
+export function isSupportedAddress(address: string | null | undefined): boolean {
+  return isEvmAddress(address) || isBtcAddress(address) || isSolanaAddress(address)
 }

@@ -1,5 +1,211 @@
 # Changelog
 
+## [5.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v5.2.0...sdk-app-data-v5.3.0) (2026-06-15)
+
+
+### ✨ Features
+
+* per-package test coverage badges, updated in CI ([#895](https://github.com/cowprotocol/cow-sdk/issues/895)) ([c73246c](https://github.com/cowprotocol/cow-sdk/commit/c73246cc52c4fc79b2628b7c5f580695fd3dc1e2))
+
+
+### 🔧 Miscellaneous
+
+* update coverage badges ([#903](https://github.com/cowprotocol/cow-sdk/issues/903)) ([c9e4b94](https://github.com/cowprotocol/cow-sdk/commit/c9e4b94fa77c364dfd1df5c61b67326c023e4731))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.12.0
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 2.3.1
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.10
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.10
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.24
+
+## [5.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v5.1.4...sdk-app-data-v5.2.0) (2026-06-08)
+
+
+### ✨ Features
+
+* **app-data:** rename MetadataApi to AppDataSdk ([#893](https://github.com/cowprotocol/cow-sdk/issues/893)) ([9c4567f](https://github.com/cowprotocol/cow-sdk/commit/9c4567fc8d46baec47101afd540dee7d635d6237))
+
+
+### 🐛 Bug Fixes
+
+* **app-data:** bump maxVolumeBps cap ([#896](https://github.com/cowprotocol/cow-sdk/issues/896)) ([1e98a71](https://github.com/cowprotocol/cow-sdk/commit/1e98a71dbccc75c13dd185bb8d75b8f92f6ecc8f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.11.2
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 2.3.0
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.9
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.9
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.23
+
+## [5.1.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v5.1.3...sdk-app-data-v5.1.4) (2026-06-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.11.1
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 2.2.1
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.8
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.8
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.22
+
+## [5.1.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v5.1.2...sdk-app-data-v5.1.3) (2026-05-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.11.0
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 2.2.0
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.7
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.7
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.21
+
+## [5.1.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v5.1.1...sdk-app-data-v5.1.2) (2026-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.3
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 2.1.0
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.6
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.6
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.20
+
+## [5.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v5.1.0...sdk-app-data-v5.1.1) (2026-05-20)
+
+
+### 🐛 Bug Fixes
+
+* app data cid lazy import ([#883](https://github.com/cowprotocol/cow-sdk/issues/883)) ([fd0235b](https://github.com/cowprotocol/cow-sdk/commit/fd0235b63e957ce268ce0c93626e45a396cea06e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.5
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.5
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.19
+
+## [5.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v5.0.0...sdk-app-data-v5.1.0) (2026-04-28)
+
+
+### ✨ Features
+
+* update ipfsOnlyHash deps ([#869](https://github.com/cowprotocol/cow-sdk/issues/869)) ([d6b30cf](https://github.com/cowprotocol/cow-sdk/commit/d6b30cfc248cb7d93f9b00113da7412b45b58194))
+
+## [5.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.7.0...sdk-app-data-v5.0.0) (2026-04-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* bring cow.fi back ([#863](https://github.com/cowprotocol/cow-sdk/issues/863))
+
+### ✨ Features
+
+* bring cow.fi back ([#863](https://github.com/cowprotocol/cow-sdk/issues/863)) ([d607fd2](https://github.com/cowprotocol/cow-sdk/commit/d607fd2cfbc93ace39de04f3a7870f723fdd9b21))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.2
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 2.0.0
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.4
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.4
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.18
+
+## [4.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.6.14...sdk-app-data-v4.7.0) (2026-04-14)
+
+
+### ✨ Features
+
+* migrate to cow.finance domain ([#860](https://github.com/cowprotocol/cow-sdk/issues/860)) ([a4e7633](https://github.com/cowprotocol/cow-sdk/commit/a4e76333b7a276baec5c977f44b15498550d8e50))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.1
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 1.2.0
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.3
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.3
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.17
+
+## [4.6.14](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.6.13...sdk-app-data-v4.6.14) (2026-04-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.0
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 1.1.3
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.2
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.2
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.16
+
+## [4.6.13](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.6.12...sdk-app-data-v4.6.13) (2026-04-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.9.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.1
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.1
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.15
+
+## [4.6.12](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.6.11...sdk-app-data-v4.6.12) (2026-03-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.0
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.0
+
+## [4.6.11](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.6.10...sdk-app-data-v4.6.11) (2026-03-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.8.2
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 1.1.2
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.14
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.14
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.14
+
 ## [4.6.10](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.6.9...sdk-app-data-v4.6.10) (2026-03-16)
 
 

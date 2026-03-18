@@ -1,5 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "concurrency": "20",
   "globalDependencies": ["**/.env.*local"],
   "tasks": {
     "build": {
@@ -14,7 +15,7 @@
       "outputs": []
     },
     "test:coverage": {
-      "outputs": ["coverage/lcov.info", "coverage/index.html", "jest.results.json"],
+      "outputs": ["coverage/**"],
       "dependsOn": ["build"],
       "cache": true
     },
@@ -22,6 +23,11 @@
       "outputs": ["coverage/**"],
       "dependsOn": ["build"],
       "cache": true
+    },
+    "coverage:badges": {
+      "dependsOn": ["test:coverage"],
+      "outputs": ["README.md"],
+      "cache": false
     },
     "dev": {
       "cache": false,

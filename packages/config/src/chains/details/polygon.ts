@@ -7,6 +7,7 @@ const polygonLogo = `${RAW_CHAINS_FILES_PATH}/images/polygon-logo.svg`
 // See https://github.com/wevm/viem/blob/main/src/chains/definitions/polygon.ts
 export const polygon: EvmChainInfo = {
   id: SupportedChainId.POLYGON,
+  internalId: 'polygon',
   label: 'Polygon',
   eip155Label: 'Polygon Mainnet',
   logo: { light: polygonLogo, dark: polygonLogo },

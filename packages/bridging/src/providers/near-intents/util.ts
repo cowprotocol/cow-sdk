@@ -1,7 +1,14 @@
 import stringify from 'json-stable-stringify'
 import type { Quote, QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
-import { getGlobalAdapter } from '@cowprotocol/sdk-common'
-import { ETH_ADDRESS, TokenInfo, ChainId, isEvmChain } from '@cowprotocol/sdk-config'
+import { areAddressesEqual, getGlobalAdapter } from '@cowprotocol/sdk-common'
+import {
+  BTC_CURRENCY_ADDRESS,
+  ETH_ADDRESS,
+  SOL_NATIVE_CURRENCY_ADDRESS,
+  TokenInfo,
+  ChainId,
+  isEvmChain,
+} from '@cowprotocol/sdk-config'
 import type { Hex } from 'viem'
 
 import { NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS } from './const'
@@ -17,10 +24,25 @@ export const calculateDeadline = (seconds: number) => {
   return d.toISOString().replace(/\.\d{3}Z$/, 'Z')
 }
 
+/**
+ * One-Click returns natives as either `contractAddress = undefined` (EVM, SOL)
+ * or the literal string `'coin'` (BTC's `1cs_v1:btc:native:coin` shape).
+ * Normalize both forms to the cow-sdk native sentinel for the given chain.
+ */
+const resolveTokenAddress = (chainId: ChainId, contractAddress: string | undefined): string | null => {
+  const isBtcNative =
+    chainId === NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS.btc && (!contractAddress || contractAddress === 'coin')
+  if (isBtcNative) return BTC_CURRENCY_ADDRESS
+  if (contractAddress) return contractAddress
+  if (chainId === NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS.sol) return SOL_NATIVE_CURRENCY_ADDRESS
+  if (isEvmChain(chainId)) return ETH_ADDRESS
+  return null
+}
+
 export const adaptToken = (token: TokenResponse): TokenInfo | null => {
   const chainId = NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS[token.blockchain as NearBlockchainKey]
   if (!chainId) return null
-  const tokenAddress = token.contractAddress || ETH_ADDRESS
+  const tokenAddress = resolveTokenAddress(chainId, token.contractAddress)
   if (!tokenAddress) return null
 
   return {
@@ -45,18 +67,11 @@ export const getTokenByAddressAndChainId = (
   targetTokenAddress: string,
   targetTokenChainId: ChainId,
 ): TokenResponse | undefined => {
-  // will handle non-EVM chains in the future
-  if (!isEvmChain(targetTokenChainId)) {
-    return undefined
-  }
   return tokens.find((token) => {
     const chainId = NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS[token.blockchain as NearBlockchainKey]
-    if (!chainId) return false
-    if (targetTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase()) {
-      return chainId === targetTokenChainId && !token.contractAddress
-    }
-    const tokenAddress = token.contractAddress || ETH_ADDRESS
-    return tokenAddress?.toLowerCase() === targetTokenAddress.toLowerCase() && chainId === targetTokenChainId
+    if (!chainId || chainId !== targetTokenChainId) return false
+    const tokenAddress = resolveTokenAddress(chainId, token.contractAddress)
+    return tokenAddress ? areAddressesEqual(tokenAddress, targetTokenAddress) : false
   })
 }
 

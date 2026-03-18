@@ -1,5 +1,113 @@
 # Changelog
 
+## [0.12.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.11.2...sdk-common-v0.12.0) (2026-06-15)
+
+
+### ✨ Features
+
+* per-package test coverage badges, updated in CI ([#895](https://github.com/cowprotocol/cow-sdk/issues/895)) ([c73246c](https://github.com/cowprotocol/cow-sdk/commit/c73246cc52c4fc79b2628b7c5f580695fd3dc1e2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.3.1
+
+## [0.11.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.11.1...sdk-common-v0.11.2) (2026-06-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.3.0
+
+## [0.11.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.11.0...sdk-common-v0.11.1) (2026-06-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.2.1
+
+## [0.11.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.10.3...sdk-common-v0.11.0) (2026-05-27)
+
+
+### ✨ Features
+
+* move solana to supported chain id ([#873](https://github.com/cowprotocol/cow-sdk/issues/873)) ([da8a7c2](https://github.com/cowprotocol/cow-sdk/commit/da8a7c24cd07afcd465199844c480ebe3e81383d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.2.0
+
+## [0.10.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.10.2...sdk-common-v0.10.3) (2026-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.1.0
+
+## [0.10.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.10.1...sdk-common-v0.10.2) (2026-04-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.0.0
+
+## [0.10.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.10.0...sdk-common-v0.10.1) (2026-04-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 1.2.0
+
+## [0.10.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.9.0...sdk-common-v0.10.0) (2026-04-08)
+
+
+### ✨ Features
+
+* expose address regular expressions ([#858](https://github.com/cowprotocol/cow-sdk/issues/858)) ([1747364](https://github.com/cowprotocol/cow-sdk/commit/17473645636178cb876402d893d6d18a08b477c3))
+
+
+### 🐛 Bug Fixes
+
+* use adaptToken if contract address is empty ([#850](https://github.com/cowprotocol/cow-sdk/issues/850)) ([d57c397](https://github.com/cowprotocol/cow-sdk/commit/d57c3972d9104fbf846e15a831d004d4e20b961f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 1.1.3
+
+## [0.9.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.8.2...sdk-common-v0.9.0) (2026-04-01)
+
+
+### ✨ Features
+
+* add sol/btc supports for NEAR ([#844](https://github.com/cowprotocol/cow-sdk/issues/844)) ([9c4ea35](https://github.com/cowprotocol/cow-sdk/commit/9c4ea35eed827bb36eee216fa0a53ed8b44f1756))
+
+## [0.8.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.8.1...sdk-common-v0.8.2) (2026-03-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 1.1.2
+
 ## [0.8.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.8.0...sdk-common-v0.8.1) (2026-03-16)
 
 

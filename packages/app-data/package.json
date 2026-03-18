@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-app-data",
-  "version": "4.6.10",
+  "version": "5.3.0",
   "description": "CoW Protocol AppData schema definitions",
   "repository": {
     "type": "git",
@@ -35,7 +35,8 @@
     "dev": "pnpm run compile && tsup src/index.ts --format cjs,esm --watch --dts --external multiformats",
     "lint": "eslint src/**/*.ts",
     "test": "jest",
-    "test:coverage": "jest --coverage --json --outputFile=jest.results.json && npx coveralls < ./coverage/lcov.info",
+    "test:coverage": "jest --coverage",
+    "coverage:badges": "istanbul-badges-readme --exitCode=1",
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
     "typecheck": "tsc --noEmit",
     "validate-schemas": "node scripts/validate-schemas.js",
@@ -54,7 +55,6 @@
     "@types/jest": "^29.5.14",
     "@types/node": "^20.17.31",
     "@types/semver-sort": "^0.0.1",
-    "coveralls": "^3.1.1",
     "jest": "^29.7.0",
     "jest-fetch-mock": "^3.0.3",
     "json-schema-ref-parser": "^9.0.9",
@@ -69,14 +69,13 @@
     "@cowprotocol/sdk-common": "workspace:*",
     "ajv": "^8.11.0",
     "cross-fetch": "^3.1.5",
-    "ipfs-only-hash": "^4.0.0",
+    "ipfs-unixfs-importer": "^16.1.5",
     "json-stringify-deterministic": "^1.0.8",
     "multiformats": "^9.6.4"
   },
   "peerDependencies": {
     "ajv": "^8.x",
     "cross-fetch": "^3.x",
-    "ipfs-only-hash": "^4.x",
     "multiformats": "^9.x"
   }
 }

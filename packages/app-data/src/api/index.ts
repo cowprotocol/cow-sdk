@@ -11,10 +11,10 @@ import { uploadMetadataDocToIpfsLegacy } from './uploadMetadataDocToIpfsLegacy'
 import { validateAppDataDoc } from './validateAppDataDoc'
 
 /**
- * MetadataApi provides a convenient interface for interacting with CoW Protocol's
+ * AppDataSdk provides a convenient interface for interacting with CoW Protocol's
  * app-data functionality. It supports both direct method calls and object-oriented usage.
  */
-export class MetadataApi {
+export class AppDataSdk {
   /**
    * Creates a new MetadataApi instance
    *
@@ -51,3 +51,9 @@ export class MetadataApi {
     fetchDocFromAppDataHex: fetchDocFromAppDataHexLegacy, // appDataHex --> appData
   }
 }
+
+/**
+ * @deprecated use AppDataSdk instead
+ * The class exists for backward compatibility only and should be deleted in the future
+ */
+export class MetadataApi extends AppDataSdk {}

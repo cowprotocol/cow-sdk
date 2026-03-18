@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-weiroll",
-  "version": "0.1.24",
+  "version": "0.2.0",
   "description": "CowProtocol Weiroll package",
   "repository": {
     "type": "git",
@@ -22,6 +22,8 @@
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "lint": "eslint src/**/*.ts --quiet",
     "test": "jest",
+    "test:coverage": "jest --coverage",
+    "coverage:badges": "istanbul-badges-readme --exitCode=1",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
     "prepublishOnly": "npm run build"

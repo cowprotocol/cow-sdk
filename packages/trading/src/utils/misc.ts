@@ -2,6 +2,7 @@ import { LimitTradeParametersFromQuote, TradeParameters } from '../types'
 import { OrderQuoteResponse, QuoteAmountsAndCosts } from '@cowprotocol/sdk-order-book'
 import { ETH_ADDRESS, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { areAddressesEqual } from '@cowprotocol/sdk-common'
 
 export function swapParamsToLimitOrderParams(
   params: TradeParameters,
@@ -17,7 +18,7 @@ export function swapParamsToLimitOrderParams(
 }
 
 export function getIsEthFlowOrder(params: { sellToken: string }): boolean {
-  return params.sellToken.toLowerCase() === ETH_ADDRESS.toLowerCase()
+  return areAddressesEqual(params.sellToken, ETH_ADDRESS)
 }
 
 /**

@@ -4,8 +4,14 @@ import type { OrderParameters, EcdsaSigningScheme } from '@cowprotocol/sdk-order
 
 /**
  * Unsigned order intent to be placed.
+ *
+ * The `gasAmount`, `gasPrice` and `sellTokenPrice` fields are quote-response-only
+ * metadata (see `OrderParameters`); they are not part of the signed order struct,
+ * so they are omitted here.
  */
-export type UnsignedOrder = Omit<OrderParameters, 'receiver'> & { receiver: string }
+export type UnsignedOrder = Omit<OrderParameters, 'receiver' | 'gasAmount' | 'gasPrice' | 'sellTokenPrice'> & {
+  receiver: string
+}
 
 /**
  * Encoded signature including signing scheme for the order.

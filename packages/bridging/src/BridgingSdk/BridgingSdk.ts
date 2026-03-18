@@ -13,7 +13,7 @@ import { findBridgeProviderFromHook } from './findBridgeProviderFromHook'
 import { SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { ALL_SUPPORTED_CHAINS, ChainInfo, TokenInfo } from '@cowprotocol/sdk-config'
-import { AbstractProviderAdapter, enableLogging, setGlobalAdapter, TTLCache } from '@cowprotocol/sdk-common'
+import { AbstractProviderAdapter, enableLogging, getAddressKey, setGlobalAdapter, TTLCache } from '@cowprotocol/sdk-common'
 import { BridgingSdkCacheConfig, BridgingSdkConfig, BridgingSdkOptions, GetOrderParams } from './types'
 import { getCacheKey } from './helpers'
 import { SingleQuoteStrategy, MultiQuoteStrategy, BestQuoteStrategy } from './strategies'
@@ -170,10 +170,10 @@ export class BridgingSdk {
     const tokens = results.reduce((tokens, result) => {
       if (result.status === 'fulfilled' && result.value.tokens) {
         result.value.tokens.forEach((token) => {
-          const addressLower = token.address.toLowerCase()
+          const addressKey = getAddressKey(token.address)
 
-          if (!tokens.get(addressLower)) {
-            tokens.set(addressLower, token)
+          if (!tokens.get(addressKey)) {
+            tokens.set(addressKey, token)
           }
         })
       }

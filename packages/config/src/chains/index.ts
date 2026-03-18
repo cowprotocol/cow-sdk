@@ -1,7 +1,6 @@
 export * from './types'
 export * from './const'
 export * from './utils'
-
 export * from './details/arbitrum'
 export * from './details/avalanche'
 export * from './details/base'
