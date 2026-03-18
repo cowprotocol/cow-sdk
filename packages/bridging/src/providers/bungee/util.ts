@@ -214,16 +214,26 @@ export const decodeAmountsBungeeTxData = (
   }
 
   // decode input amount
+  const inputAmountEndIndex = functionParams.inputAmount.bytesString_startIndex + functionParams.inputAmount.bytesString_length
+  if (txData.length < inputAmountEndIndex) {
+    throw new Error(`Invalid txData: insufficient data for inputAmount. Expected at least ${inputAmountEndIndex} characters, got ${txData.length}`)
+  }
+
   const inputAmountBytes = `0x${txData.slice(
     functionParams.inputAmount.bytesString_startIndex,
-    functionParams.inputAmount.bytesString_startIndex + functionParams.inputAmount.bytesString_length,
+    inputAmountEndIndex,
   )}`
   const inputAmountBigNumber = BigInt(inputAmountBytes)
 
   if ('outputAmount' in functionParams) {
+    const outputAmountEndIndex = functionParams.outputAmount.bytesString_startIndex + functionParams.outputAmount.bytesString_length
+    if (txData.length < outputAmountEndIndex) {
+      throw new Error(`Invalid txData: insufficient data for outputAmount. Expected at least ${outputAmountEndIndex} characters, got ${txData.length}`)
+    }
+
     const outputAmountBytes = `0x${txData.slice(
       functionParams.outputAmount.bytesString_startIndex,
-      functionParams.outputAmount.bytesString_startIndex + functionParams.outputAmount.bytesString_length,
+      outputAmountEndIndex,
     )}`
     const outputAmountBigNumber = BigInt(outputAmountBytes)
 
