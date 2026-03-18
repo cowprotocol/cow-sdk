@@ -1,6 +1,6 @@
 import type { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 
-export type SupportedBridge = 'across' | 'cctp-v2' | 'gnosis-native-bridge'
+export type SupportedBridge = 'across' | 'cctp-v2' | 'cctp' | 'gnosis-native-bridge'
 
 export interface BungeeQuoteAPIRequest {
   userAddress: string
