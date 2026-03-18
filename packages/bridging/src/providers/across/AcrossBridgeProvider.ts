@@ -22,7 +22,7 @@ import { SuggestedFeesResponse } from './types'
 import { getDepositParams } from './getDepositParams'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
-import { AbstractProviderAdapter, getGlobalAdapter, setGlobalAdapter, SignerLike } from '@cowprotocol/sdk-common'
+import { AbstractProviderAdapter, getAddressKey, getGlobalAdapter, setGlobalAdapter, SignerLike } from '@cowprotocol/sdk-common'
 import {
   arbitrumOne,
   base,
@@ -108,7 +108,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
 
     const supportedTokensState = await this.getSupportedTokensState()
-    const buyTokenAddressLower = buyTokenAddress.toLowerCase()
+    const buyTokenAddressLower = getAddressKey(buyTokenAddress)
 
     const sourceTokens = supportedTokensState[sellTokenChainId]
     const targetTokens = supportedTokensState[buyTokenChainId]
@@ -258,7 +258,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
       const supportedTokens = (await this.api.getSupportedTokens()).reduce((acc, val) => {
         const data = acc[val.chainId] || {}
 
-        data[val.address.toLowerCase()] = val
+        data[getAddressKey(val.address)] = val
 
         acc[val.chainId] = data
 

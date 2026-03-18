@@ -1,6 +1,6 @@
 import stringify from 'json-stable-stringify'
 import type { Quote, QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
-import { getGlobalAdapter } from '@cowprotocol/sdk-common'
+import { areAddressesEqual, getGlobalAdapter } from '@cowprotocol/sdk-common'
 import { ETH_ADDRESS, TokenInfo, ChainId, isEvmChain } from '@cowprotocol/sdk-config'
 import type { Hex } from 'viem'
 
@@ -52,11 +52,11 @@ export const getTokenByAddressAndChainId = (
   return tokens.find((token) => {
     const chainId = NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS[token.blockchain as NearBlockchainKey]
     if (!chainId) return false
-    if (targetTokenAddress.toLowerCase() === ETH_ADDRESS.toLowerCase()) {
+    if (areAddressesEqual(targetTokenAddress, ETH_ADDRESS)) {
       return chainId === targetTokenChainId && !token.contractAddress
     }
     const tokenAddress = token.contractAddress || ETH_ADDRESS
-    return tokenAddress?.toLowerCase() === targetTokenAddress.toLowerCase() && chainId === targetTokenChainId
+    return areAddressesEqual(tokenAddress, targetTokenAddress) && chainId === targetTokenChainId
   })
 }
 
