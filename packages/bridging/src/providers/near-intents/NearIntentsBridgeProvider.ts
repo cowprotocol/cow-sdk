@@ -134,6 +134,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       account,
       amount,
       receiver,
+      bridgeRecipient,
       validFor,
       owner,
     } = request
@@ -160,7 +161,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       amount: amount.toString(),
       refundTo: owner || account,
       refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
-      recipient: receiver || account,
+      recipient: bridgeRecipient || receiver || account,
       recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
       deadline: calculateDeadline(validFor || 3600),
       referral: REFERRAL,
