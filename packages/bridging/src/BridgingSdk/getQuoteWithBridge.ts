@@ -16,6 +16,8 @@ import {
   BridgeQuoteAndPost,
   BridgeQuoteResult,
   BridgeQuoteResults,
+  BridgeThenSwapProvider,
+  BridgeThenSwapQuoteAndPost,
   QuoteBridgeRequest,
   QuoteBridgeRequestWithoutAmount,
   BridgeProvider,
@@ -28,18 +30,29 @@ import { GetQuoteWithBridgeParams } from './types'
 import { getBridgeSignedHook } from './getBridgeSignedHook'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from '../const'
 import { getHookMockForCostEstimation } from '../hooks/utils'
-import { isHookBridgeProvider, isReceiverAccountBridgeProvider } from '../utils'
+import { isHookBridgeProvider, isReceiverAccountBridgeProvider, isBridgeThenSwapProvider } from '../utils'
 import { getIntermediateSwapResult } from './getIntermediateSwapResult'
+import { getQuoteWithBridgeThenSwap } from './getQuoteWithBridgeThenSwap'
 
 export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   provider: BridgeProvider<T>,
   params: GetQuoteWithBridgeParams,
-): Promise<BridgeQuoteAndPost> {
+): Promise<BridgeQuoteAndPost | BridgeThenSwapQuoteAndPost> {
   const { kind } = params.swapAndBridgeRequest
 
   // Ensure the quote request is for a sell order (only type supported for now)
   if (kind !== OrderKind.SELL) {
     throw new Error('Bridging only support SELL orders')
+  }
+
+  // If the provider uses bridge-then-swap (reverse flow)
+  if (isBridgeThenSwapProvider(provider)) {
+    return getQuoteWithBridgeThenSwap(provider, {
+      swapAndBridgeRequest: params.swapAndBridgeRequest,
+      advancedSettings: params.advancedSettings,
+      tradingSdk: params.tradingSdk,
+      intermediateTokensCache: params.intermediateTokensCache,
+    })
   }
 
   // If the provider relies on hooks
