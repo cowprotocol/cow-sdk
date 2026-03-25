@@ -1,6 +1,8 @@
 import { RelayApi } from './RelayApi'
 
-describe('RelayApi: Shape of API response', () => {
+const describeIntegration = process.env.RELAY_INTEGRATION_TESTS ? describe : describe.skip
+
+describeIntegration('RelayApi: Shape of API response', () => {
   let api: RelayApi
 
   beforeEach(() => {

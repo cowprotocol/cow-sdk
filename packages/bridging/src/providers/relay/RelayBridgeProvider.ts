@@ -97,6 +97,10 @@ export class RelayBridgeProvider implements ReceiverAccountBridgeProvider<RelayQ
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<RelayQuoteResult> {
+    if (request.kind !== OrderKind.SELL) {
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.ONLY_SELL_ORDER_SUPPORTED, { kind: request.kind })
+    }
+
     const { sellTokenAddress, sellTokenChainId, buyTokenAddress, buyTokenChainId, amount, owner, account, receiver } =
       request
 

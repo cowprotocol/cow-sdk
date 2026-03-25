@@ -141,6 +141,11 @@ describe('fromRelayAddress', () => {
     expect(fromRelayAddress('0x0000000000000000000000000000000000000000')).toBe(ETH_ADDRESS)
   })
 
+  it('converts mixed-case Relay native address to ETH_ADDRESS', () => {
+    expect(fromRelayAddress('0x0000000000000000000000000000000000000000')).toBe(ETH_ADDRESS)
+    expect(fromRelayAddress('0X0000000000000000000000000000000000000000')).toBe(ETH_ADDRESS)
+  })
+
   it('passes through ERC-20 addresses unchanged', () => {
     const addr = '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'
     expect(fromRelayAddress(addr)).toBe(addr)

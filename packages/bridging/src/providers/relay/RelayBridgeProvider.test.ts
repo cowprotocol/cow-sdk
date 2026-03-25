@@ -91,14 +91,16 @@ describe('RelayBridgeProvider', () => {
     const originalFetch = global.fetch
     global.fetch = mockFetch
 
-    const providerWithKey = new TestRelayBridgeProvider({ baseUrl: 'https://test.relay.link', apiKey: 'test-api-key' })
-    await providerWithKey.testApi.getCurrencies({ chainIds: [1] })
+    try {
+      const providerWithKey = new TestRelayBridgeProvider({ baseUrl: 'https://test.relay.link', apiKey: 'test-api-key' })
+      await providerWithKey.testApi.getCurrencies({ chainIds: [1] })
 
-    const [, options] = mockFetch.mock.calls[0] as [RequestInfo, RequestInit]
-    const headers = new Headers(options.headers)
-    expect(headers.get('x-api-key')).toBe('test-api-key')
-
-    global.fetch = originalFetch
+      const [, options] = mockFetch.mock.calls[0] as [RequestInfo, RequestInit]
+      const headers = new Headers(options.headers)
+      expect(headers.get('x-api-key')).toBe('test-api-key')
+    } finally {
+      global.fetch = originalFetch
+    }
   })
 
   describe('info', () => {

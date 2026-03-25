@@ -131,7 +131,7 @@ export interface RelayStatusResponse {
 
 export interface RelayRequestsResponse {
   requests: RelayRequest[]
-  continuation?: string
+  continuation?: string | null
 }
 
 export interface RelayRequest {
