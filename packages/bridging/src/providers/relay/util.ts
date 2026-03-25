@@ -62,5 +62,5 @@ export function toRelayAddress(address: string): string {
  * Convert Relay native address to CoW SDK ETH_ADDRESS format.
  */
 export function fromRelayAddress(address: string): string {
-  return address === RELAY_NATIVE_ADDRESS ? ETH_ADDRESS : address
+  return address.toLowerCase() === RELAY_NATIVE_ADDRESS ? ETH_ADDRESS : address
 }
