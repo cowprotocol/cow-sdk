@@ -129,7 +129,7 @@ describe('RelayBridgeProvider', () => {
       const result = await provider.getBuyTokens({ buyChainId: 8453 })
       expect(result.isRouteAvailable).toBe(true)
       expect(result.tokens).toHaveLength(1)
-      expect(result.tokens[0]!.symbol).toBe('USDC')
+      expect(result.tokens[0]?.symbol).toBe('USDC')
     })
 
     it('returns empty for unsupported chain', async () => {
@@ -195,7 +195,7 @@ describe('RelayBridgeProvider', () => {
 
     it('throws NO_ROUTES when no deposit address', async () => {
       const response = mockQuoteResponse()
-      response.steps[0]!.depositAddress = undefined
+      response.steps[0].depositAddress = undefined
       jest.spyOn(provider.testApi, 'getQuote').mockResolvedValue(response)
 
       await expect(
@@ -258,14 +258,15 @@ describe('RelayBridgeProvider', () => {
       const result = await provider.getBridgingParams(8453 as any, order, '0xtx')
 
       expect(result).not.toBeNull()
-      expect(result!.params.bridgingId).toBe('0xreq1')
-      expect(result!.params.inputTokenAddress).toBe('0xusdc-base')
-      expect(result!.params.outputTokenAddress).toBe('0xusdc-eth')
-      expect(result!.params.inputAmount).toBe(BigInt(1000000))
-      expect(result!.params.outputAmount).toBe(BigInt(990000))
-      expect(result!.params.sourceChainId).toBe(8453)
-      expect(result!.params.destinationChainId).toBe(1)
-      expect(result!.status.status).toBe(BridgeStatus.EXECUTED)
+      if (!result) return
+      expect(result.params.bridgingId).toBe('0xreq1')
+      expect(result.params.inputTokenAddress).toBe('0xusdc-base')
+      expect(result.params.outputTokenAddress).toBe('0xusdc-eth')
+      expect(result.params.inputAmount).toBe(BigInt(1000000))
+      expect(result.params.outputAmount).toBe(BigInt(990000))
+      expect(result.params.sourceChainId).toBe(8453)
+      expect(result.params.destinationChainId).toBe(1)
+      expect(result.status.status).toBe(BridgeStatus.EXECUTED)
     })
 
     it('maps native address in getBridgingParams', async () => {
@@ -283,7 +284,8 @@ describe('RelayBridgeProvider', () => {
       const result = await provider.getBridgingParams(8453 as any, order, '0xtx')
 
       expect(result).not.toBeNull()
-      expect(result!.params.inputTokenAddress).toBe('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
+      if (!result) return
+      expect(result.params.inputTokenAddress).toBe('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE')
     })
   })
 

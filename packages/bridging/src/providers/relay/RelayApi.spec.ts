@@ -51,7 +51,7 @@ describeIntegration('RelayApi: Shape of API response', () => {
     expect(result).toBeDefined()
     expect(result.steps).toBeDefined()
     expect(result.steps.length).toBeGreaterThan(0)
-    expect(result.steps[0]!.depositAddress).toBeDefined()
+    expect(result.steps[0]?.depositAddress).toBeDefined()
     expect(result.fees).toBeDefined()
     expect(result.details).toBeDefined()
     expect(result.details.currencyIn).toBeDefined()
