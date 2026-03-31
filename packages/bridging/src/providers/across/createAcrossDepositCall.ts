@@ -126,7 +126,7 @@ export function createAcrossDepositCall(params: {
    * `minExpectedInputTokenAmount` (Across reverts otherwise with `MinimumExpectedInputAmount`).
    */
   prefundFromShedAmount?: bigint
-}): EvmCall[] {
+}): [EvmCall, EvmCall] {
   const { request, quote, cowShedSdk, swapProxyAddress } = params
 
   // Amount user committed for quoting / min bound — same number must hit `getSuggestedFees` and `minExpectedInputTokenAmount`.
