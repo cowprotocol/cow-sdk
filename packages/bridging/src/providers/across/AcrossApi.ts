@@ -141,6 +141,15 @@ function isValidSuggestedFeesResponse(response: unknown): response is SuggestedF
   return (
     typeof response === 'object' &&
     response !== null &&
+    'id' in response &&
+    typeof response.id === 'string' &&
+    'inputToken' in response &&
+    isValidTokenInfo(response.inputToken) &&
+    'outputToken' in response &&
+    isValidTokenInfo(response.outputToken) &&
+    'outputAmount' in response &&
+    typeof response.outputAmount === 'string' &&
+    isValidNumericString(response.outputAmount) &&
     'totalRelayFee' in response &&
     isValidPctFee(response.totalRelayFee) &&
     'relayerCapitalFee' in response &&
@@ -159,6 +168,23 @@ function isValidSuggestedFeesResponse(response: unknown): response is SuggestedF
     'fillDeadline' in response &&
     'limits' in response &&
     isValidSuggestedFeeLimits(response.limits)
+  )
+}
+
+function isValidNumericString(value: unknown): value is string {
+  return typeof value === 'string' && /^\d+$/.test(value)
+}
+
+function isValidTokenInfo(token: unknown): token is TokenInfo {
+  return (
+    typeof token === 'object' &&
+    token !== null &&
+    'chainId' in token &&
+    typeof token.chainId === 'number' &&
+    'address' in token &&
+    typeof token.address === 'string' &&
+    'decimals' in token &&
+    typeof token.decimals === 'number'
   )
 }
 
