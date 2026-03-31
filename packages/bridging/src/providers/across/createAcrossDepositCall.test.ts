@@ -213,7 +213,7 @@ adapterNames.forEach((adapterName) => {
     })
 
     it('should throw error when periphery address is not found for chain', () => {
-      const request = makeRequest({ sellTokenChainId: SupportedChainId.SEPOLIA })
+      const request = makeRequest({ sellTokenChainId: SupportedChainId.GNOSIS_CHAIN })
       const quote = makeQuote()
 
       expect(() =>
