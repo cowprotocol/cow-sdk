@@ -4,7 +4,6 @@ import {
   AdditionalTargetChainId,
   ChainId,
   getChainInfo,
-  isSupportedChain,
   SupportedChainId,
   TargetChainId,
   TokenInfo,
@@ -62,11 +61,7 @@ export function getWrappedNativeToken(chainId: TargetChainId): TokenInfo | undef
 }
 
 export function isWrappedNativeToken(token: TokenLike): boolean {
-  if (!isSupportedChain(token.chainId)) {
-    return false
-  }
-
-  const wrappedNativeToken = getWrappedNativeToken(token.chainId)
+  const wrappedNativeToken = getWrappedNativeToken(token.chainId as TargetChainId)
 
   if (!wrappedNativeToken) return false
 
