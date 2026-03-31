@@ -26,9 +26,18 @@ export async function getDepositParams(
 
   const depositEvent = depositEvents.find((i) => {
     // The quoteId is encoded into the deposit call in createAcrossDepositCall()
-    const message = adapter.utils.decodeAbi(['string'], i.message)
-
-    return message[0] === bridgeQuoteId
+    const rawMessage = i.message
+    if (typeof rawMessage !== 'string' || rawMessage.length < 2) {
+      return false
+    }
+    let decoded: string | undefined
+    try {
+      const tuple = adapter.utils.decodeAbi(['string'], rawMessage) as [string]
+      decoded = tuple[0]
+    } catch {
+      return false
+    }
+    return decoded === bridgeQuoteId
   })
 
   if (!depositEvent) {
