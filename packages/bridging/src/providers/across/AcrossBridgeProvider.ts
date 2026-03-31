@@ -51,6 +51,7 @@ import {
   SupportedChainId,
   TokenInfo,
   isSupportedChain,
+  AddressPerChain,
 } from '@cowprotocol/sdk-config'
 import { CowShedSdk, CowShedSdkOptions } from '@cowprotocol/sdk-cow-shed'
 import { EnrichedOrder, OrderKind } from '@cowprotocol/sdk-order-book'
@@ -142,6 +143,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
 
     const supportedTokensState = await this.getSupportedTokensState()
+
     const sourceTokens = supportedTokensState[sellTokenChainId]
     const sourceNativeToken = getChainInfo(sellTokenChainId)?.nativeCurrency
 
@@ -305,6 +307,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     chainId: ChainId,
     order: EnrichedOrder,
     txHash: string,
+    settlementContractOverride?: Partial<AddressPerChain>,
   ): Promise<{ params: BridgingDepositParams; status: BridgeStatusResult } | null> {
     if (!isSupportedChain(chainId)) {
       return null

@@ -5,9 +5,9 @@ import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { ACROSS_DEPOSIT_EVENT_INTERFACE, COW_TRADE_EVENT_INTERFACE } from './const/interfaces'
 import { ACROSS_TOKEN_MAPPING, AcrossChainConfig } from './const/tokens'
 import { ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES } from './const/contracts'
-import { COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS, SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
+import { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
-import { getGlobalAdapter, getWrappedNativeToken, isNativeToken, Log } from '@cowprotocol/sdk-common'
+import { getAddressKey, getGlobalAdapter, getWrappedNativeToken, isNativeToken, Log } from '@cowprotocol/sdk-common'
 import stringify from 'json-stable-stringify'
 
 const PCT_100_PERCENT = 10n ** 18n
@@ -195,18 +195,19 @@ export function mapAcrossStatusToBridgeStatus(status: DepositStatusResponse['sta
 }
 
 export function getAcrossDepositEvents(chainId: SupportedChainId, logs: Log[]): AcrossDepositEvent[] {
-  const spokePoolContractAddress = ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES[chainId]?.toLowerCase()
+  const spokePoolContractAddress = ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES[chainId]
+  const spokePoolContractAddressKey = spokePoolContractAddress ? getAddressKey(spokePoolContractAddress) : undefined
 
-  if (!spokePoolContractAddress) {
+  if (!spokePoolContractAddressKey) {
     return []
   }
 
   const acrossDepositInterface = ACROSS_DEPOSIT_EVENT_INTERFACE()
   const ACROSS_DEPOSIT_EVENT_TOPIC = acrossDepositInterface.getEventTopic('FundsDeposited')
 
-  // Get accross deposit events
+  // Get Across deposit events
   const depositEvents = logs.filter((log) => {
-    return log.address.toLocaleLowerCase() === spokePoolContractAddress && log.topics[0] === ACROSS_DEPOSIT_EVENT_TOPIC
+    return getAddressKey(log.address) === spokePoolContractAddressKey && log.topics[0] === ACROSS_DEPOSIT_EVENT_TOPIC
   })
 
   // Parse logs
@@ -247,41 +248,6 @@ export function getAcrossDepositEvents(chainId: SupportedChainId, logs: Log[]): 
       recipient: bytes32ToAddress(recipient),
       exclusiveRelayer,
       message,
-    }
-  })
-}
-
-export function getCowTradeEvents(chainId: SupportedChainId, logs: Log[]): CowTradeEvent[] {
-  const COW_TRADE_EVENT_TOPIC = COW_TRADE_EVENT_INTERFACE().getEventTopic('Trade')
-
-  const cowTradeEvents = logs.filter((log) => {
-    return (
-      log.address.toLowerCase() === COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[chainId].toLowerCase() &&
-      log.topics[0] === COW_TRADE_EVENT_TOPIC
-    )
-  })
-
-  return cowTradeEvents.map((event) => {
-    const parsedLog = COW_TRADE_EVENT_INTERFACE().parseLog(event)
-
-    if (!parsedLog) {
-      throw new Error('Could not parse log of CowTradeEvents')
-    }
-
-    const result = parsedLog.args as CowTradeEvent
-
-    const { owner, sellToken, buyToken, sellAmount, buyAmount, feeAmount } = result
-    // Ethers cannot parse orderUid because it's bytes and ethers tries to cast it as a number
-    const orderUid = '0x' + event.data.slice(450, 450 + 112)
-
-    return {
-      owner,
-      sellToken,
-      buyToken,
-      sellAmount,
-      buyAmount,
-      feeAmount,
-      orderUid,
     }
   })
 }

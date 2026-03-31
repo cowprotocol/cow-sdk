@@ -13,7 +13,7 @@ import { findBridgeProviderFromHook } from './findBridgeProviderFromHook'
 import { SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { ALL_SUPPORTED_CHAINS, ChainInfo, TokenInfo } from '@cowprotocol/sdk-config'
-import { AbstractProviderAdapter, enableLogging, setGlobalAdapter, TTLCache } from '@cowprotocol/sdk-common'
+import { AbstractProviderAdapter, enableLogging, getAddressKey, setGlobalAdapter, TTLCache } from '@cowprotocol/sdk-common'
 import { BridgingSdkCacheConfig, BridgingSdkConfig, BridgingSdkOptions, GetOrderParams } from './types'
 import { getCacheKey } from './helpers'
 import { SingleQuoteStrategy, MultiQuoteStrategy, BestQuoteStrategy } from './strategies'
@@ -62,7 +62,7 @@ export class BridgingSdk {
       enableLogging(options.enableLogging)
     }
 
-    const tradingSdk = options.tradingSdk ?? new TradingSdk()
+    const tradingSdk = options.tradingSdk ?? new TradingSdk({}, { enableLogging: options.enableLogging })
     const orderBookApi = tradingSdk?.options.orderBookApi ?? new OrderBookApi()
 
     this.config = {
@@ -170,10 +170,10 @@ export class BridgingSdk {
     const tokens = results.reduce((tokens, result) => {
       if (result.status === 'fulfilled' && result.value.tokens) {
         result.value.tokens.forEach((token) => {
-          const addressLower = token.address.toLowerCase()
+          const addressKey = getAddressKey(token.address)
 
-          if (!tokens.get(addressLower)) {
-            tokens.set(addressLower, token)
+          if (!tokens.get(addressKey)) {
+            tokens.set(addressKey, token)
           }
         })
       }
@@ -254,7 +254,7 @@ export class BridgingSdk {
   async getOrder(params: GetOrderParams): Promise<CrossChainOrder | null> {
     const { orderBookApi } = this.config
 
-    const { chainId, orderId, env = orderBookApi.context.env } = params
+    const { chainId, orderId, env = orderBookApi.context.env, settlementContractOverride } = params
 
     return getCrossChainOrder({
       chainId,
@@ -262,6 +262,7 @@ export class BridgingSdk {
       orderBookApi,
       env,
       providers: this.getAvailableProviders(),
+      settlementContractOverride,
     })
   }
 

@@ -1,7 +1,12 @@
 {
   "name": "@cowprotocol/sdk-app-data",
-  "version": "4.6.7",
+  "version": "4.6.12",
   "description": "CoW Protocol AppData schema definitions",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cowprotocol/cow-sdk.git",
+    "directory": "packages/app-data"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

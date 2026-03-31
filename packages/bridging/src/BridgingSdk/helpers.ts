@@ -1,3 +1,5 @@
+import { getAddressKey } from '@cowprotocol/sdk-common'
+
 export const getCacheKey = ({
   id,
   buyChainId,
@@ -9,5 +11,5 @@ export const getCacheKey = ({
   sellChainId?: string
   tokenAddress?: string
 }) => {
-  return `${id}-${buyChainId}-${sellChainId}-${tokenAddress.toLowerCase()}`
+  return `${id}-${buyChainId}-${sellChainId}-${getAddressKey(tokenAddress)}`
 }

@@ -1,5 +1,149 @@
 # Changelog
 
+## [3.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v3.1.2...sdk-bridging-v3.2.0) (2026-03-17)
+
+
+### ✨ Features
+
+* use address utils to compare addresses ([#827](https://github.com/cowprotocol/cow-sdk/issues/827)) ([50a66ff](https://github.com/cowprotocol/cow-sdk/commit/50a66ff044f98ce0313c6213e31c83c9028836a1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.6.12
+    * @cowprotocol/sdk-contracts-ts bumped to 2.2.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.3.3
+    * @cowprotocol/sdk-trading bumped to 1.2.0
+    * @cowprotocol/sdk-weiroll bumped to 0.1.26
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.0
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.0
+    * @cowprotocol/sdk-order-signing bumped to 0.2.3
+
+## [3.1.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v3.1.1...sdk-bridging-v3.1.2) (2026-03-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.6.11
+    * @cowprotocol/sdk-common bumped to 0.8.2
+    * @cowprotocol/sdk-config bumped to 1.1.2
+    * @cowprotocol/sdk-contracts-ts bumped to 2.1.2
+    * @cowprotocol/sdk-cow-shed bumped to 0.3.2
+    * @cowprotocol/sdk-order-book bumped to 2.0.3
+    * @cowprotocol/sdk-trading bumped to 1.1.2
+    * @cowprotocol/sdk-weiroll bumped to 0.1.25
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.14
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.14
+    * @cowprotocol/sdk-order-signing bumped to 0.2.2
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.14
+
+## [3.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v3.1.0...sdk-bridging-v3.1.1) (2026-03-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.6.10
+    * @cowprotocol/sdk-common bumped to 0.8.1
+    * @cowprotocol/sdk-config bumped to 1.1.1
+    * @cowprotocol/sdk-contracts-ts bumped to 2.1.1
+    * @cowprotocol/sdk-cow-shed bumped to 0.3.1
+    * @cowprotocol/sdk-order-book bumped to 2.0.2
+    * @cowprotocol/sdk-trading bumped to 1.1.1
+    * @cowprotocol/sdk-weiroll bumped to 0.1.24
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.13
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.13
+    * @cowprotocol/sdk-order-signing bumped to 0.2.1
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.13
+
+## [3.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v3.0.0...sdk-bridging-v3.1.0) (2026-03-16)
+
+
+### ✨ Features
+
+* update settlement and vault relayer contracts on staging ([#807](https://github.com/cowprotocol/cow-sdk/issues/807)) ([0f9a03e](https://github.com/cowprotocol/cow-sdk/commit/0f9a03e6bfa3468630e46735f7583618ae711b73))
+
+
+### 🔧 Miscellaneous
+
+* release main ([#826](https://github.com/cowprotocol/cow-sdk/issues/826)) ([baaa708](https://github.com/cowprotocol/cow-sdk/commit/baaa7088ac15b89fb83310e54aa52f09d19132ff))
+* release main ([#832](https://github.com/cowprotocol/cow-sdk/issues/832)) ([5dafcb8](https://github.com/cowprotocol/cow-sdk/commit/5dafcb8ec5593250dba1ff6e9fdbf8eb11d974cf))
+* revert release ([#833](https://github.com/cowprotocol/cow-sdk/issues/833)) ([0c40a9b](https://github.com/cowprotocol/cow-sdk/commit/0c40a9b3ee828c7ede66576f02e1b571e96140cd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.6.9
+    * @cowprotocol/sdk-common bumped to 0.8.0
+    * @cowprotocol/sdk-config bumped to 1.1.0
+    * @cowprotocol/sdk-contracts-ts bumped to 2.1.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.3.0
+    * @cowprotocol/sdk-order-book bumped to 2.0.1
+    * @cowprotocol/sdk-trading bumped to 1.1.0
+    * @cowprotocol/sdk-weiroll bumped to 0.1.23
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.12
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.12
+    * @cowprotocol/sdk-order-signing bumped to 0.2.0
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.12
+
+## [3.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v2.1.1...sdk-bridging-v3.0.0) (2026-03-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **chains:** Remove support for Lens.
+
+### ✨ Features
+
+* **chains:** Remove Lens ([#818](https://github.com/cowprotocol/cow-sdk/issues/818)) ([e8c74a0](https://github.com/cowprotocol/cow-sdk/commit/e8c74a078e5940901591652164af7b2ffb7b1fa6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.6.8
+    * @cowprotocol/sdk-common bumped to 0.7.1
+    * @cowprotocol/sdk-config bumped to 1.0.0
+    * @cowprotocol/sdk-contracts-ts bumped to 2.0.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.2.22
+    * @cowprotocol/sdk-order-book bumped to 2.0.0
+    * @cowprotocol/sdk-trading bumped to 1.0.4
+    * @cowprotocol/sdk-weiroll bumped to 0.1.22
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.3.11
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.3.11
+    * @cowprotocol/sdk-order-signing bumped to 0.1.38
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.11
+
+## [2.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v2.1.0...sdk-bridging-v2.1.1) (2026-03-10)
+
+
+### 🐛 Bug Fixes
+
+* **bridge:** increase extra gas for post hook ([#815](https://github.com/cowprotocol/cow-sdk/issues/815)) ([4e2330f](https://github.com/cowprotocol/cow-sdk/commit/4e2330f5af0613081b2be9a9c7c6ff0e93035f46))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-order-book bumped to 1.1.2
+    * @cowprotocol/sdk-trading bumped to 1.0.3
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 0.1.37
+
 ## [2.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v2.0.1...sdk-bridging-v2.1.0) (2026-03-04)
 
 

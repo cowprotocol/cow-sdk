@@ -90,7 +90,6 @@ describe('getWallet utilities', () => {
         SupportedChainId.SEPOLIA,
         SupportedChainId.POLYGON,
         SupportedChainId.AVALANCHE,
-        SupportedChainId.LENS,
         SupportedChainId.BNB,
         SupportedChainId.LINEA,
         SupportedChainId.PLASMA,
