@@ -1,5 +1,5 @@
 import { log } from '@cowprotocol/sdk-common'
-import { ALL_SUPPORTED_CHAINS_MAP, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { getChainInfo, TokenInfo } from '@cowprotocol/sdk-config'
 
 import {
   AvailableRoutesRequest,
@@ -75,7 +75,7 @@ export class AcrossApi {
           ...token,
           logoUrl: token.logoURI,
           address: token.isNative
-            ? (ALL_SUPPORTED_CHAINS_MAP[token.chainId as SupportedChainId]?.nativeCurrency.address ?? token.address)
+            ? (getChainInfo(token.chainId)?.nativeCurrency.address ?? token.address)
             : token.address,
         })),
       )
