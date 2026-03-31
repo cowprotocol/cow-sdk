@@ -57,7 +57,7 @@ adapterNames.forEach((adapterName) => {
           },
         },
       })
-      mockProvider.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+      mockProvider.getUnsignedBridgeCalls = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCalls)
       mockProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
       mockProvider2 = new MockHookBridgeProvider()
@@ -73,7 +73,7 @@ adapterNames.forEach((adapterName) => {
           },
         },
       })
-      mockProvider2.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+      mockProvider2.getUnsignedBridgeCalls = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCalls)
       mockProvider2.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
       mockProvider3 = new MockHookBridgeProvider()
@@ -89,7 +89,7 @@ adapterNames.forEach((adapterName) => {
           },
         },
       })
-      mockProvider3.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+      mockProvider3.getUnsignedBridgeCalls = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCalls)
       mockProvider3.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
       orderBookApi = {

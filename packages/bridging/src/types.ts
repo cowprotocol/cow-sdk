@@ -285,15 +285,21 @@ export interface HookBridgeProvider<Q extends BridgeQuoteResult> extends BridgeP
   type: 'HookBridgeProvider'
 
   /**
-   * Get an unsigned bridge call for a quote.
+   * How many `EvmCall`s this provider returns from `getUnsignedBridgeCalls` and requires in `getSignedHook`.
+   * Implementations must keep this aligned with those methods.
+   */
+  readonly unsignedBridgeHookCallsCount: number
+
+  /**
+   * Get unsigned bridge calls for a quote.
    *
-   * The transaction details should be executed in the context of cow-shed account.
+   * The calls should be executed in the context of cow-shed account, in order.
    *
    * @param request - The quote request
    * @param quote - The quote
    * @returns The unsigned transaction details that cow-shed needs to sign
    */
-  getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: Q): Promise<EvmCall>
+  getUnsignedBridgeCalls(request: QuoteBridgeRequest, quote: Q): Promise<EvmCall[]>
 
   /**
    * Returns the estimated gas cost for executing the bridge hook.
@@ -326,7 +332,7 @@ export interface HookBridgeProvider<Q extends BridgeQuoteResult> extends BridgeP
    */
   getSignedHook(
     chainId: SupportedChainId,
-    unsignedCall: EvmCall,
+    unsignedCalls: EvmCall[],
     bridgeHookNonce: string,
     deadline: bigint,
     hookGasLimit: number,
@@ -417,9 +423,9 @@ export interface BridgeQuoteAmountsAndCosts<T = bigint> {
  */
 export interface BridgeCallDetails {
   /**
-   * Unsigned call to initiate the bridge. This call should be executed in the context of user's cow-shed account.
+   * Unsigned calls to initiate the bridge, in execution order. They should be executed in the context of the user's cow-shed account.
    */
-  unsignedBridgeCall: EvmCall
+  unsignedBridgeCalls: EvmCall[]
 
   /**
    * Pre-authorized hook to initiate the bridge. This hook has been signed, and is ready to be executed by the

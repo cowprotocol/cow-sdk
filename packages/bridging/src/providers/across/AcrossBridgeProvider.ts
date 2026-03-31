@@ -26,6 +26,7 @@ import { createAcrossDepositCall, fetchAcrossSwapProxyAddress } from './createAc
 import { SuggestedFeesResponse } from './types'
 import { getDepositParams } from './getDepositParams'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
+import { assertUnsignedBridgeCallsLength } from '../../utils/assertUnsignedBridgeCallsLength'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 import {
   AbstractProviderAdapter,
@@ -89,6 +90,9 @@ export interface AcrossQuoteResult extends BridgeQuoteResult {
 const providerType = 'HookBridgeProvider' as const
 
 export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResult> {
+  /** Prefund SwapProxy, then `swapAndBridge` on periphery. */
+  readonly unsignedBridgeHookCallsCount = 2
+
   type = providerType
   protected api: AcrossApi
   protected cowShedSdk: CowShedSdk
@@ -206,15 +210,8 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     return toBridgeQuoteResult(request, DEFAULT_BRIDGE_SLIPPAGE_BPS, suggestedFees)
   }
 
-  // Keyed by the EvmCall object reference returned from getUnsignedBridgeCall.
-  // getBridgeSignedHook always passes that exact object into getSignedHook, so the reference
-  // is a guaranteed-unique, collision-free correlator between the two calls — unlike calldata,
-  // which can be identical for concurrent requests with the same parameters.
-  // WeakMap allows GC to reclaim entries if getSignedHook is never called.
-  private _pendingBridgeCalls = new WeakMap<EvmCall, EvmCall[]>()
-
-  async getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: AcrossQuoteResult): Promise<EvmCall> {
-    // Periphery stores SwapProxy address for ERC20.transfer:
+  async getUnsignedBridgeCalls(request: QuoteBridgeRequest, quote: AcrossQuoteResult): Promise<[EvmCall, EvmCall]> {
+    // Periphery hosts SwapProxy address for ERC20.transfer:
     const swapProxyAddress = await fetchAcrossSwapProxyAddress(request.sellTokenChainId)
 
     const prefundFromShedAmount =
@@ -236,12 +233,9 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
       prefundFromShedAmount,
     })
 
-    const lastCall = calls[calls.length - 1]
-    if (!lastCall) throw new Error('No bridge calls generated')
+    assertUnsignedBridgeCallsLength(calls, this.unsignedBridgeHookCallsCount, 'AcrossBridgeProvider.getUnsignedBridgeCalls')
 
-    this._pendingBridgeCalls.set(lastCall, calls)
-
-    return lastCall
+    return calls
   }
 
   async getGasLimitEstimationForHook(request: QuoteBridgeRequest): Promise<number> {
@@ -257,20 +251,19 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
 
   async getSignedHook(
     chainId: SupportedChainId,
-    unsignedCall: EvmCall,
+    unsignedCalls: EvmCall[],
     bridgeHookNonce: string,
     deadline: bigint,
     hookGasLimit: number,
     signer?: SignerLike,
   ): Promise<BridgeHook> {
-    // Retrieve the full set of calls (transfer to SwapProxy + swapAndBridge) for this unsignedCall object.
-    // The reference is unique even when two concurrent requests have identical calldata.
-    // Fall back to the single call so getSignedHook remains usable if called in isolation.
-    const pendingCalls = this._pendingBridgeCalls.get(unsignedCall) ?? [unsignedCall]
-    this._pendingBridgeCalls.delete(unsignedCall)
+    assertUnsignedBridgeCallsLength(unsignedCalls, this.unsignedBridgeHookCallsCount, 'AcrossBridgeProvider.getSignedHook')
 
-    // These are regular calls (not delegate calls) from cow-shed: first prefunds Across SwapProxy, second calls the periphery.
-    const calls = pendingCalls.map((call) => ({
+    // These are regular calls (not delegate calls) from cow-shed:
+    // - First prefunds Across `SwapProxy`
+    // - Second calls the periphery.
+
+    const calls = unsignedCalls.map((call) => ({
       target: call.to,
       value: call.value,
       callData: call.data,

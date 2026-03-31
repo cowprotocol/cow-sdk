@@ -62,3 +62,5 @@ export function isReceiverAccountBridgeProvider<Q extends BridgeQuoteResult>(
 ): provider is ReceiverAccountBridgeProvider<Q> {
   return provider.type === 'ReceiverAccountBridgeProvider'
 }
+
+export { assertUnsignedBridgeCallsLength } from './utils/assertUnsignedBridgeCallsLength'

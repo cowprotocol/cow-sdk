@@ -1,8 +1,8 @@
 import { BridgeQuoteAmountsAndCosts, BridgeStatus, QuoteBridgeRequest } from '../../types'
 
-import { AcrossDepositEvent, CowTradeEvent, DepositStatusResponse, SuggestedFeesResponse } from './types'
+import { AcrossDepositEvent, DepositStatusResponse, SuggestedFeesResponse } from './types'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
-import { ACROSS_DEPOSIT_EVENT_INTERFACE, COW_TRADE_EVENT_INTERFACE } from './const/interfaces'
+import { ACROSS_DEPOSIT_EVENT_INTERFACE } from './const/interfaces'
 import { ACROSS_TOKEN_MAPPING, AcrossChainConfig } from './const/tokens'
 import { ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES } from './const/contracts'
 import { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'

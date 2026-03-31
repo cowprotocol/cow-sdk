@@ -39,7 +39,7 @@ adapterNames.forEach((adapterName) => {
 
     const mockProvider = new MockHookBridgeProvider()
     mockProvider.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
-    mockProvider.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+    mockProvider.getUnsignedBridgeCalls = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCalls)
     mockProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
     beforeEach(() => {
@@ -372,14 +372,14 @@ adapterNames.forEach((adapterName) => {
         mockProvider2.info.dappId = 'cow-sdk://bridging/providers/mock2'
         mockProvider2.info.name = 'Mock Bridge Provider 2'
         mockProvider2.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
-        mockProvider2.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+        mockProvider2.getUnsignedBridgeCalls = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCalls)
         mockProvider2.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
         mockProvider3 = new MockHookBridgeProvider()
         mockProvider3.info.dappId = 'cow-sdk://bridging/providers/mock3'
         mockProvider3.info.name = 'Mock Bridge Provider 3'
         mockProvider3.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
-        mockProvider3.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+        mockProvider3.getUnsignedBridgeCalls = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCalls)
         mockProvider3.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
         // Create SDK with multiple providers
@@ -471,7 +471,7 @@ adapterNames.forEach((adapterName) => {
             },
           },
         })
-        mockProvider2.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+        mockProvider2.getUnsignedBridgeCalls = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCalls)
         mockProvider2.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
         mockProvider3 = new MockHookBridgeProvider()
@@ -487,7 +487,7 @@ adapterNames.forEach((adapterName) => {
             },
           },
         })
-        mockProvider3.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+        mockProvider3.getUnsignedBridgeCalls = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCalls)
         mockProvider3.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
         bridgingSdk = new BridgingSdk({
@@ -548,7 +548,7 @@ adapterNames.forEach((adapterName) => {
       beforeEach(async () => {
         hookProvider = new MockHookBridgeProvider()
         hookProvider.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
-        hookProvider.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+        hookProvider.getUnsignedBridgeCalls = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCalls)
         hookProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
         receiverAccountProvider = new MockReceiverAccountBridgeProvider()

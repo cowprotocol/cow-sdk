@@ -30,7 +30,7 @@ adapterNames.forEach((adapterName) => {
     let mockProvider: MockHookBridgeProvider
 
     let getQuoteMock: jest.Mock
-    let getUnsignedBridgeCallMock: jest.Mock
+    let getUnsignedBridgeCallsMock: jest.Mock
     let sendOrderMock: jest.Mock
     let signerMock: AbstractSigner<Provider>
 
@@ -63,9 +63,9 @@ adapterNames.forEach((adapterName) => {
 
       mockProvider = new MockHookBridgeProvider()
       mockProvider.getQuote = getQuoteMock = jest.fn().mockResolvedValue(bridgeQuoteResult)
-      mockProvider.getUnsignedBridgeCall = getUnsignedBridgeCallMock = jest
+      mockProvider.getUnsignedBridgeCalls = getUnsignedBridgeCallsMock = jest
         .fn()
-        .mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+        .mockResolvedValue(bridgeCallDetails.unsignedBridgeCalls)
       mockProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
       sendOrderMock = jest.fn().mockResolvedValue('0x01')
@@ -117,9 +117,9 @@ adapterNames.forEach((adapterName) => {
       // Second time quote is called for custom receiver
       expect(getQuoteMock.mock.calls[1][0].receiver).toBe(customReceiver)
 
-      expect(getUnsignedBridgeCallMock).toHaveBeenCalledTimes(2)
-      expect(getUnsignedBridgeCallMock.mock.calls[0][0].receiver).toBe(quoteBridgeRequest.receiver)
-      expect(getUnsignedBridgeCallMock.mock.calls[1][0].receiver).toBe(customReceiver)
+      expect(getUnsignedBridgeCallsMock).toHaveBeenCalledTimes(2)
+      expect(getUnsignedBridgeCallsMock.mock.calls[0][0].receiver).toBe(quoteBridgeRequest.receiver)
+      expect(getUnsignedBridgeCallsMock.mock.calls[1][0].receiver).toBe(customReceiver)
     })
 
     it('When receiver is present in advanced settings, then should set proxy account as order receiver', async () => {
@@ -214,7 +214,7 @@ adapterNames.forEach((adapterName) => {
 
       expect(getQuoteMock).toHaveBeenCalledTimes(2)
       // Verify the validTo is passed correctly to the bridge request
-      expect(getUnsignedBridgeCallMock.mock.calls[1]).toBeDefined()
+      expect(getUnsignedBridgeCallsMock.mock.calls[1]).toBeDefined()
     })
 
     it('should cache intermediate tokens if intermediateTokensCache is provided', async () => {

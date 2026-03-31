@@ -90,7 +90,7 @@ interface BridgeProvider<Q extends BridgeQuoteResult> {
 | `getBuyTokens()`                 | Get supported tokens for a chain      | ✅         |
 | `getIntermediateTokens()`        | Get bridgeable tokens on source chain | ✅         |
 | `getQuote()`                     | Generate bridge quote                 | ✅         |
-| `getUnsignedBridgeCall()`        | Create unsigned bridge transaction    | ✅         |
+| `getUnsignedBridgeCalls()`       | Create unsigned bridge transaction    | ✅         |
 | `getGasLimitEstimationForHook()` | Estimate gas for hook execution       | ✅         |
 | `getSignedHook()`                | Generate pre-authorized hook          | ✅         |
 | `getStatus()`                    | Check bridge transaction status       | ✅         |
@@ -132,6 +132,9 @@ export interface YourBridgeQuoteResult extends BridgeQuoteResult {
 
 export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult> {
   type = 'HookBridgeProvider' // 'ReceiverAccountBridgeProvider' | 'HookBridgeProvider'
+
+  /** Must match `getUnsignedBridgeCalls` / `getSignedHook` (see `HookBridgeProvider`). */
+  readonly unsignedBridgeHookCallsCount = 1
 
   protected api: YourBridgeApi
   protected cowShedSdk: CowShedSdk
@@ -310,7 +313,7 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
 
 ```typescript
 export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult> {
-  async getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: YourBridgeQuoteResult): Promise<EvmCall> {
+  async getUnsignedBridgeCalls(request: QuoteBridgeRequest, quote: YourBridgeQuoteResult): Promise<EvmCall> {
     // Create the bridge transaction that will be executed by CoW Shed
     return createYourBridgeCall({
       request,
