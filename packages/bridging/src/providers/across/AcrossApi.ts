@@ -48,7 +48,9 @@ export class AcrossApi {
    * Returns suggested fees based inputToken+outputToken, originChainId, destinationChainId, and amount.
    * Also includes data used to compute the fees.
    *
-   * * See https://docs.across.to/reference/api-reference#suggested-fees
+   * @see https://docs.across.to/reference/api-reference#suggested-fees
+   *
+   * @deprecated Use `GET /swap/approval` instead: https://docs.across.to/api-reference/swap/approval/get
    */
   async getSuggestedFees(request: SuggestedFeesRequest): Promise<SuggestedFeesResponse> {
     const params: Record<string, string> = {
