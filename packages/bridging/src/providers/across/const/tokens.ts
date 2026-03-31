@@ -66,13 +66,6 @@ const ACROSS_CHAIN_CONFIGS: AcrossChainConfig[] = [
       weth: '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
     },
   },
-  {
-    chainId: SupportedChainId.LENS,
-    tokens: {
-      usdc: '0x88F08E304EC4f90D644Cec3Fb69b8aD414acf884',
-      weth: '0xE5ecd226b3032910CEaa43ba92EE8232f8237553',
-    },
-  },
 ]
 
 export const ACROSS_TOKEN_MAPPING: Partial<Record<TargetChainId, AcrossChainConfig>> = ACROSS_CHAIN_CONFIGS.reduce(
