@@ -77,51 +77,40 @@ function getSpokePoolPeripheryAddress(chainId: TargetChainId): string {
 }
 
 /**
- * Builds the two EVM calls needed to bride tokens view Across using the SpokePoolPeriphery contract.
+ * Builds the two EVM calls needed to bridge tokens via Across using `SpokePoolPeriphery`.
  *
- * 1. Prefund Across SwapProxy (`ERC20.transfer(swapProxy, prefundFromShedAmount)`).
+ * This provider uses Across' `swapAndBridge` entrypoint, with a no-op swap:
  *
- *    Note: The old flow assumed the amount to bridge is known up front and equals the quoted amount
- *    (request.amount), but that's not true because the swap executes later during settlement and
- *    can produce surplus. So instead of approving the `SpokePoolPeriphery` to pull tokens from cow-shed,
- *    we prefund `SwapProxy`.
+ * 1) Prefund Across `SwapProxy`: We transfer the intermediate token from the user's CoW Shed to
+ *    Across' SwapProxy: `ERC20.transfer(swapProxy, prefundFromShedAmount)`.
+ *
+ *    Note: The old flow assumed the amount to bridge is known up front and equals the quoted amount,
+ *    so we set `swapTokenAmount = request.amount` and approved the periphery to pull only that much.
+ *    But that was and still is not true because the swap executes later during settlement and can produce surplus.
  *
  * 2. Call `SpokePoolPeriphery.swapAndBridge` with a pass-through "swap"
- *    (no actual token swap), using Across-recommended parameters for surplus.
+ *    (no actual token swap), using Across-recommended parameters for surplus:
  *
- *    Then the periphery pulls tokens from cow-shed, passes them through the SwapProxy (identity swap),
- *    and deposits them into the SpokePool.
+ *    - `swapTokenAmount = 0`, so periphery pulls 0 from the cow-shed via.
+ *    - a no-op `exchange` call.
+ *    - `minExpectedInputTokenAmount = request.amount` must be the same amount used in Across quote (the `/suggested-fees` `amount`).
+ *    - `enableProportionalAdjustment = true` ensures the output amount scales if the actual input differs.
  *
- *    `enableProportionalAdjustment=true` ensures the output amount scales if the actual input differs.
+ * This works because Across' periphery calls `swapProxy.performSwap(...)` and uses the returned output amount
+ * (`returnAmount`) as the bridge input. `SwapProxy` computes that by checking its own
+ * `balanceOf(outputToken)` after the no-op swap call, and then transfers the full balance back.
  *
- * Implementation limitations notes:
+ * Because we previously prefunded `SwapProxy`, `returnAmount` reflects what we transferred in, even though
+ * the periphery pulled 0 tokens from cow-shed.
  *
- * The periphery first pulls `swapTokenAmount` from `msg.sender` (the Shed) into itself, then
- * forwards that same `swapTokenAmount` into SwapProxy and runs `performSwap`. The swap proxy
- * measures **output** as the **full ERC20 balance** of the bridge input token sitting on SwapProxy
- * *after* the (possibly no-op) `exchange` call, and returns that balance to the periphery as
- * `returnAmount`. The periphery then requires `returnAmount >= minExpectedInputTokenAmount` and,
- * if `enableProportionalAdjustment` is true, scales `depositData.outputAmount` by
- * `returnAmount / minExpectedInputTokenAmount`.
+ * Note that `prefundFromShedAmount` must be >= `minExpectedInputTokenAmount`, otherwise the periphery reverts.
  *
- * **Old CoW bug:** we set `swapTokenAmount == request.amount` and approved the periphery to pull
- * only that much. CoW swap surplus stayed on the Shed because it was never pulled.
+ * Also, if `enableProportionalAdjustment` is true and `prefundFromShedAmount` is higher than the minimum, Across
+ * proportionally scales the destination output amount up (by `returnAmount / minExpectedInputTokenAmount`).
  *
- * **Fix:** set `swapTokenAmount` to **0** so the periphery pulls nothing from the Shed in the
- * initial `transferFrom`. Instead we **already** moved tokens onto SwapProxy in step (1). Any
- * positive balance there (including amounts **above** the quoted leg) becomes `returnAmount`.
- *
- * **Critical:** `minExpectedInputTokenAmount` must equal the **`amount` passed to Across
- * `/suggested-fees`** (here: `request.amount`) — the conservative “worst case” intermediate size.
- * Then any *actual* balance on SwapProxy **strictly greater** than that minimum increases the
- * bridged output proportionally instead of being stranded on the Shed.
- *
- * Important Note: Full CoW surplus and calldata limits:
- *
- * Hook calldata is fixed when the user signs. This SDK therefore defaults `prefundFromShedAmount`
- * to `request.amount`. To bridge **every wei** of post-settlement surplus, the integrator must
- * supply a larger `prefundFromShedAmount` when it learns the executed intermediate balance (e.g.
- * via a small helper contract that transfers `balanceOf(address(this))`, or by regenerating hooks).
+* `prefundFromShedAmount` defaults to `request.amount` (the quoted minimum) because hook calldata is typically fixed
+ * when the user signs. If you want to prefund the full post-settlement balance (including surplus), you need a way
+ * to determine that balance at execution time (e.g. a small helper contract that transfers `balanceOf(address(this))`).
  *
  * @returns An array of EvmCalls: `[transferToSwapProxy, swapAndBridge]` (swap is no-op)
  */
