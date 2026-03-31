@@ -21,9 +21,9 @@ const mockSuggestedFees: SuggestedFeesResponse = {
   inputToken: { chainId: 1, address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', decimals: 6 },
   outputToken: { chainId: 56, address: '0x55d398326f99059fF775485246999027B3197955', decimals: 18 },
   totalRelayFee: { pct: '100000000000000000', total: '100000000000000000' },
-  relayerCapitalFee: { pct: '50000000000000000', total: '50000000000000000' },
-  relayerGasFee: { pct: '50000000000000000', total: '50000000000000000' },
-  lpFee: { pct: '30000000000000000', total: '30000000000000000' },
+  relayerCapitalFee: { pct: '500000000000000000', total: '500000000000000000' },
+  relayerGasFee: { pct: '500000000000000000', total: '500000000000000000' },
+  lpFee: { pct: '300000000000000000', total: '300000000000000000' },
   timestamp: '1234567890',
   isAmountTooLow: false,
   quoteBlock: '12345',
@@ -40,6 +40,9 @@ const mockSuggestedFees: SuggestedFeesResponse = {
     recommendedDepositInstant: '50000000',
   },
 }
+
+/** Fixture Across SwapProxy — real tests use on-chain `swapProxy()` via the provider. */
+const TEST_SWAP_PROXY = '0x1111111111111111111111111111111111111111'
 
 const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
@@ -110,40 +113,48 @@ adapterNames.forEach((adapterName) => {
       }
     }
 
-    it('should return two EvmCalls: approve + swapAndBridge', () => {
+    it('should return two EvmCalls: transfer to SwapProxy + swapAndBridge', () => {
       const request = makeRequest()
       const quote = makeQuote()
-      const result = createAcrossDepositCall({ request, quote, cowShedSdk })
+      const result = createAcrossDepositCall({
+        request,
+        quote,
+        cowShedSdk,
+        swapProxyAddress: TEST_SWAP_PROXY,
+      })
 
       expect(result).toHaveLength(2)
 
-      // Call 1: approve targets the sell token
+      // Call 1: ERC20.transfer from cow-shed to SwapProxy:
       expect(result[0]?.to).toBe(request.sellTokenAddress)
       expect(result[0]?.value).toBe(0n)
 
-      // Call 2: swapAndBridge targets the periphery
+      // Call 2: swapAndBridge targets the periphery:
       const expectedPeriphery = ACROSS_SPOKE_POOL_PERIPHERY_CONTRACT_ADDRESSES[request.sellTokenChainId]
       expect(result[1]?.to).toBe(expectedPeriphery)
       expect(result[1]?.value).toBe(0n)
     })
 
-    it('should encode the approve call with the periphery as spender and input amount', () => {
+    it('should encode transfer(swapProxy, prefund) then swapAndBridge', () => {
       const request = makeRequest()
       const quote = makeQuote()
-      createAcrossDepositCall({ request, quote, cowShedSdk })
+      createAcrossDepositCall({ request, quote, cowShedSdk, swapProxyAddress: TEST_SWAP_PROXY })
 
-      const expectedPeriphery = ACROSS_SPOKE_POOL_PERIPHERY_CONTRACT_ADDRESSES[request.sellTokenChainId]
+      // encodeFunction call order: balanceOf (no-op swap calldata), transfer, swapAndBridge
+      const [balanceOfCall, transferCall, swapAndBridgeCall] = mockEncodeFunction.mock.calls;
 
-      // Second call to encodeFunction is the approve (first is balanceOf for noOp swap)
-      const approveCall = mockEncodeFunction.mock.calls[1]
-      expect(approveCall[1]).toBe('approve')
-      expect(approveCall[2]).toEqual([expectedPeriphery, request.amount])
+      expect(balanceOfCall?.[1]).toBe('balanceOf')
+
+      expect(transferCall?.[1]).toBe('transfer')
+      expect(transferCall?.[2]).toEqual([TEST_SWAP_PROXY, request.amount])
+
+      expect(swapAndBridgeCall?.[1]).toBe('swapAndBridge')
     })
 
     it('should encode swapAndBridge with correct SwapAndDepositData struct', () => {
       const request = makeRequest()
       const quote = makeQuote()
-      createAcrossDepositCall({ request, quote, cowShedSdk })
+      createAcrossDepositCall({ request, quote, cowShedSdk, swapProxyAddress: TEST_SWAP_PROXY })
 
       // Third call to encodeFunction is swapAndBridge
       const swapAndBridgeCall = mockEncodeFunction.mock.calls[2]
@@ -152,28 +163,34 @@ adapterNames.forEach((adapterName) => {
       const [swapAndDepositData] = swapAndBridgeCall[2]
 
       expect(swapAndDepositData.swapToken).toBe(request.sellTokenAddress)
-      expect(swapAndDepositData.swapTokenAmount).toBe(request.amount)
+
+      // Periphery must not transferFrom cow-shed, we already prefunded `SwapProxy`:
+      expect(swapAndDepositData.swapTokenAmount).toBe(0n)
+
+      // Same value as getSuggestedFees `amount`, surplus increases output proportionally:
       expect(swapAndDepositData.minExpectedInputTokenAmount).toBe(request.amount)
+
       expect(swapAndDepositData.enableProportionalAdjustment).toBe(true)
       expect(swapAndDepositData.nonce).toBe(0n)
       expect(swapAndDepositData.exchange).toBe(request.sellTokenAddress)
-      expect(swapAndDepositData.transferType).toBe(0) // APPROVAL
+      expect(swapAndDepositData.transferType).toBe(0) // APPROVAL (no-op swap path inside SwapProxy)
 
       const spokePoolAddress = ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES[request.sellTokenChainId]
       expect(swapAndDepositData.spokePool).toBe(spokePoolAddress)
     })
 
-    it('should encode BaseDepositData with correct bytes32 conversions', () => {
+    it('should encode BaseDepositData with correct bytes32 conversions and afterSlippage outputAmount', () => {
       const request = makeRequest()
       const quote = makeQuote()
-      createAcrossDepositCall({ request, quote, cowShedSdk })
+      createAcrossDepositCall({ request, quote, cowShedSdk, swapProxyAddress: TEST_SWAP_PROXY })
 
       const swapAndBridgeCall = mockEncodeFunction.mock.calls[2]
       const { depositData } = swapAndBridgeCall[2][0]
 
       expect(depositData.inputToken).toBe(request.sellTokenAddress)
       expect(depositData.outputToken).toBe(addressToBytes32(request.buyTokenAddress))
-      expect(depositData.outputAmount).toBe(quote.amountsAndCosts.afterFee.buyAmount)
+      // Must match quote.amountsAndCosts.afterSlippage.buyAmount:
+      expect(depositData.outputAmount).toBe(quote.amountsAndCosts.afterSlippage.buyAmount)
       expect(depositData.depositor).toBe('0xCowShedAccount')
       expect(depositData.recipient).toBe(addressToBytes32('0x9876543210987654321098765432109876543210'))
       expect(depositData.destinationChainId).toBe(BigInt(request.buyTokenChainId))
@@ -187,7 +204,7 @@ adapterNames.forEach((adapterName) => {
     it('should use account as recipient when receiver is not provided', () => {
       const request = makeRequest({ receiver: undefined })
       const quote = makeQuote()
-      createAcrossDepositCall({ request, quote, cowShedSdk })
+      createAcrossDepositCall({ request, quote, cowShedSdk, swapProxyAddress: TEST_SWAP_PROXY })
 
       const swapAndBridgeCall = mockEncodeFunction.mock.calls[2]
       const { depositData } = swapAndBridgeCall[2][0]
@@ -199,9 +216,9 @@ adapterNames.forEach((adapterName) => {
       const request = makeRequest({ sellTokenChainId: SupportedChainId.SEPOLIA })
       const quote = makeQuote()
 
-      expect(() => createAcrossDepositCall({ request, quote, cowShedSdk })).toThrow(
-        'Spoke pool periphery address not found for chain',
-      )
+      expect(() =>
+        createAcrossDepositCall({ request, quote, cowShedSdk, swapProxyAddress: TEST_SWAP_PROXY }),
+      ).toThrow('Spoke pool periphery address not found for chain')
     })
 
     it('should throw error when spoke pool address is not found for chain', () => {
@@ -209,7 +226,7 @@ adapterNames.forEach((adapterName) => {
       const quote = makeQuote()
 
       // AVALANCHE has neither periphery nor spoke pool, so periphery check fails first
-      expect(() => createAcrossDepositCall({ request, quote, cowShedSdk })).toThrow(
+      expect(() => createAcrossDepositCall({ request, quote, cowShedSdk, swapProxyAddress: TEST_SWAP_PROXY })).toThrow(
         'Spoke pool periphery address not found for chain',
       )
     })
@@ -217,13 +234,44 @@ adapterNames.forEach((adapterName) => {
     it('should set zero submission fees', () => {
       const request = makeRequest()
       const quote = makeQuote()
-      createAcrossDepositCall({ request, quote, cowShedSdk })
+      createAcrossDepositCall({ request, quote, cowShedSdk, swapProxyAddress: TEST_SWAP_PROXY })
 
       const swapAndBridgeCall = mockEncodeFunction.mock.calls[2]
       const { submissionFees } = swapAndBridgeCall[2][0]
 
       expect(submissionFees.amount).toBe(0n)
       expect(submissionFees.recipient).toBe('0x0000000000000000000000000000000000000000')
+    })
+
+    it('should reject prefund below quoted amount (Across would revert on min check)', () => {
+      const request = makeRequest()
+      const quote = makeQuote()
+
+      expect(() =>
+        createAcrossDepositCall({
+          request,
+          quote,
+          cowShedSdk,
+          swapProxyAddress: TEST_SWAP_PROXY,
+          prefundFromShedAmount: request.amount - 1n,
+        }),
+      ).toThrow('prefundFromShedAmount must be >= request.amount')
+    })
+
+    it('should encode larger prefund for integrator-provided surplus capture', () => {
+      const request = makeRequest()
+      const quote = makeQuote()
+      const surplusPrefund = request.amount + 100333n
+      createAcrossDepositCall({
+        request,
+        quote,
+        cowShedSdk,
+        swapProxyAddress: TEST_SWAP_PROXY,
+        prefundFromShedAmount: surplusPrefund,
+      })
+
+      const transferCall = mockEncodeFunction.mock.calls[1]
+      expect(transferCall[2]).toEqual([TEST_SWAP_PROXY, surplusPrefund])
     })
 
     it('should work with different decimal configurations (18→6)', () => {
@@ -252,7 +300,12 @@ adapterNames.forEach((adapterName) => {
         },
       })
 
-      const result = createAcrossDepositCall({ request, quote, cowShedSdk })
+      const result = createAcrossDepositCall({
+        request,
+        quote,
+        cowShedSdk,
+        swapProxyAddress: TEST_SWAP_PROXY,
+      })
 
       expect(result).toHaveLength(2)
 
@@ -260,7 +313,8 @@ adapterNames.forEach((adapterName) => {
       const { depositData } = swapAndBridgeCall[2][0]
 
       expect(depositData.outputAmount).toBe(900000000n)
-      expect(swapAndBridgeCall[2][0].swapTokenAmount).toBe(1000000000000000000000n)
+      expect(swapAndBridgeCall[2][0].swapTokenAmount).toBe(0n)
+      expect(swapAndBridgeCall[2][0].minExpectedInputTokenAmount).toBe(1000000000000000000000n)
     })
   })
 })

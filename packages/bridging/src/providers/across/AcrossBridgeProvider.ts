@@ -22,7 +22,7 @@ import {
 
 import { AcrossApi, AcrossApiOptions } from './AcrossApi'
 import { mapAcrossStatusToBridgeStatus, mapNativeOrWrappedTokenAddress, toBridgeQuoteResult } from './util'
-import { createAcrossDepositCall } from './createAcrossDepositCall'
+import { createAcrossDepositCall, fetchAcrossSwapProxyAddress } from './createAcrossDepositCall'
 import { SuggestedFeesResponse } from './types'
 import { getDepositParams } from './getDepositParams'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
@@ -69,6 +69,16 @@ export interface AcrossBridgeProviderOptions {
 
   // Cow-shed options
   cowShedOptions?: CowShedSdkOptions
+
+  /**
+   * Return how much intermediate token to move from the CoW Shed to Across SwapProxy before
+   * `swapAndBridge`. Must be >= `request.amount` (the amount used for `/suggested-fees`).
+   *
+   * Use this when the trading layer knows the executed intermediate balance (surplus) and can
+   * pass it into hook calldata. If omitted, we prefund exactly `request.amount`, so the surplus
+   * will not be bridged.
+   */
+  getPrefundFromShedIntermediateTokenAmount?: (request: QuoteBridgeRequest) => bigint
 }
 
 export interface AcrossQuoteResult extends BridgeQuoteResult {
@@ -84,6 +94,8 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
 
   private supportedTokens: SupportedTokensState | null = null
 
+  private readonly getPrefundFromShedIntermediateTokenAmount?: (request: QuoteBridgeRequest) => bigint
+
   constructor(options: AcrossBridgeProviderOptions = {}, _adapter?: AbstractProviderAdapter) {
     const adapter = _adapter || options.cowShedOptions?.adapter
     if (adapter) {
@@ -91,6 +103,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     }
     this.api = new AcrossApi(options.apiOptions)
     this.cowShedSdk = new CowShedSdk(adapter, options.cowShedOptions?.factoryOptions)
+    this.getPrefundFromShedIntermediateTokenAmount = options.getPrefundFromShedIntermediateTokenAmount
   }
 
   info: BridgeProviderInfo = {
@@ -199,10 +212,26 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
   private _pendingBridgeCalls = new WeakMap<EvmCall, EvmCall[]>()
 
   async getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: AcrossQuoteResult): Promise<EvmCall> {
+    // Periphery stores SwapProxy address for ERC20.transfer:
+    const swapProxyAddress = await fetchAcrossSwapProxyAddress(request.sellTokenChainId)
+
+    const prefundFromShedAmount =
+      this.getPrefundFromShedIntermediateTokenAmount?.(request) ?? undefined
+
+    // This same validation happens inside createAcrossDepositCall in case no custom `prefundFromShedAmount`
+    // was used here:
+    if (prefundFromShedAmount !== undefined && prefundFromShedAmount < request.amount) {
+      throw new Error(
+        'getPrefundFromShedIntermediateTokenAmount must return a value >= request.amount (Across min input)',
+      )
+    }
+
     const calls = createAcrossDepositCall({
       request,
       quote,
       cowShedSdk: this.cowShedSdk,
+      swapProxyAddress,
+      prefundFromShedAmount,
     })
 
     const lastCall = calls[calls.length - 1]
@@ -214,7 +243,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
   }
 
   async getGasLimitEstimationForHook(request: QuoteBridgeRequest): Promise<number> {
-    // The Across swapAndBridge flow involves three USDC proxy calls (approve + 2x transferFrom),
+    // The Across swapAndBridge flow involves three USDC proxy calls (cow-shed ERC20.transfer to SwapProxy + 2x transferFrom),
     // each hitting a reentrancy sentry SSTORE (~20k gas) in the implementation. On chains like
     // Arbitrum with native USDC (proxy pattern), this exhausts the base 240k gas estimate.
     return getGasLimitEstimationForHook({
@@ -232,14 +261,13 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     hookGasLimit: number,
     signer?: SignerLike,
   ): Promise<BridgeHook> {
-    // Retrieve the full set of calls (approve + swapAndBridge) stored for this exact unsignedCall
-    // object. The reference is unique even when two concurrent requests have identical calldata.
+    // Retrieve the full set of calls (transfer to SwapProxy + swapAndBridge) for this unsignedCall object.
+    // The reference is unique even when two concurrent requests have identical calldata.
     // Fall back to the single call so getSignedHook remains usable if called in isolation.
     const pendingCalls = this._pendingBridgeCalls.get(unsignedCall) ?? [unsignedCall]
     this._pendingBridgeCalls.delete(unsignedCall)
 
-    // These are regular calls (not delegate calls) since the periphery expects to pull tokens
-    // from cow-shed via transferFrom.
+    // These are regular calls (not delegate calls) from cow-shed: first prefunds Across SwapProxy, second calls the periphery.
     const calls = pendingCalls.map((call) => ({
       target: call.to,
       value: call.value,

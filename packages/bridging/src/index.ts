@@ -10,6 +10,7 @@ export { getCrossChainOrder } from './BridgingSdk/getCrossChainOrder'
 // Providers
 export { AcrossBridgeProvider } from './providers/across/AcrossBridgeProvider'
 export type { AcrossQuoteResult, AcrossBridgeProviderOptions } from './providers/across/AcrossBridgeProvider'
+export { fetchAcrossSwapProxyAddress } from './providers/across/createAcrossDepositCall'
 
 export { BungeeBridgeProvider } from './providers/bungee/BungeeBridgeProvider'
 export type { BungeeQuoteResult, BungeeBridgeProviderOptions } from './providers/bungee/BungeeBridgeProvider'
