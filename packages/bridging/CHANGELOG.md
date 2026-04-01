@@ -1,5 +1,30 @@
 # Changelog
 
+## [3.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v3.2.0...sdk-bridging-v3.3.0) (2026-04-01)
+
+
+### ✨ Features
+
+* add sol/btc supports for NEAR ([#844](https://github.com/cowprotocol/cow-sdk/issues/844)) ([9c4ea35](https://github.com/cowprotocol/cow-sdk/commit/9c4ea35eed827bb36eee216fa0a53ed8b44f1756))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.6.13
+    * @cowprotocol/sdk-common bumped to 0.9.0
+    * @cowprotocol/sdk-contracts-ts bumped to 2.3.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.3.4
+    * @cowprotocol/sdk-order-book bumped to 2.0.4
+    * @cowprotocol/sdk-trading bumped to 1.2.1
+    * @cowprotocol/sdk-weiroll bumped to 0.1.27
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.1
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.1
+    * @cowprotocol/sdk-order-signing bumped to 0.2.4
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.15
+
 ## [3.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v3.1.2...sdk-bridging-v3.2.0) (2026-03-17)
 
 

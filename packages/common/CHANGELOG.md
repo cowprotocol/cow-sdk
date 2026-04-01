@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.8.2...sdk-common-v0.9.0) (2026-04-01)
+
+
+### ✨ Features
+
+* add sol/btc supports for NEAR ([#844](https://github.com/cowprotocol/cow-sdk/issues/844)) ([9c4ea35](https://github.com/cowprotocol/cow-sdk/commit/9c4ea35eed827bb36eee216fa0a53ed8b44f1756))
+
 ## [0.8.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.8.1...sdk-common-v0.8.2) (2026-03-17)
 
 
