@@ -159,7 +159,7 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
     return toBridgeQuoteResult(request, SLIPPAGE_TOLERANCE_BPS, quoteWithBuildTx)
   }
 
-  async getUnsignedBridgeCalls(request: QuoteBridgeRequest, quote: BungeeQuoteResult): Promise<EvmCall[]> {
+  async getUnsignedBridgeCalls(request: QuoteBridgeRequest, quote: BungeeQuoteResult): Promise<readonly EvmCall[]> {
     const calls = [
       await createBungeeDepositCall({
         request,
@@ -185,7 +185,7 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
 
   async getSignedHook(
     chainId: SupportedChainId,
-    unsignedCalls: EvmCall[],
+    unsignedCalls: readonly EvmCall[],
     bridgeHookNonce: string,
     deadline: bigint,
     hookGasLimit: number,

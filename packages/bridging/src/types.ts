@@ -299,7 +299,7 @@ export interface HookBridgeProvider<Q extends BridgeQuoteResult> extends BridgeP
    * @param quote - The quote
    * @returns The unsigned transaction details that cow-shed needs to sign
    */
-  getUnsignedBridgeCalls(request: QuoteBridgeRequest, quote: Q): Promise<EvmCall[]>
+  getUnsignedBridgeCalls(request: QuoteBridgeRequest, quote: Q): Promise<readonly EvmCall[]>
 
   /**
    * Returns the estimated gas cost for executing the bridge hook.
@@ -332,7 +332,7 @@ export interface HookBridgeProvider<Q extends BridgeQuoteResult> extends BridgeP
    */
   getSignedHook(
     chainId: SupportedChainId,
-    unsignedCalls: EvmCall[],
+    unsignedCalls: readonly EvmCall[],
     bridgeHookNonce: string,
     deadline: bigint,
     hookGasLimit: number,
@@ -425,7 +425,7 @@ export interface BridgeCallDetails {
   /**
    * Unsigned calls to initiate the bridge, in execution order. They should be executed in the context of the user's cow-shed account.
    */
-  unsignedBridgeCalls: EvmCall[]
+  unsignedBridgeCalls: readonly EvmCall[]
 
   /**
    * Pre-authorized hook to initiate the bridge. This hook has been signed, and is ready to be executed by the

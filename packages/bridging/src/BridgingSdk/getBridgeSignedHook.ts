@@ -6,7 +6,7 @@ import { assertUnsignedBridgeCallsLength } from '../utils/assertUnsignedBridgeCa
 import { HookBridgeResultContext } from './getQuoteWithBridge'
 
 function encodeUnsignedBridgeCallsForHookNonce(
-  unsignedBridgeCalls: EvmCall[],
+  unsignedBridgeCalls: readonly EvmCall[],
   expectedCalls: number,
   adapter: AbstractProviderAdapter,
 ): string {
@@ -26,7 +26,7 @@ function encodeUnsignedBridgeCallsForHookNonce(
 
 interface GetBridgeSignedHookResult {
   hook: BridgeHook
-  unsignedBridgeCalls: EvmCall[]
+  unsignedBridgeCalls: readonly EvmCall[]
   bridgingQuote: BridgeQuoteResult
 }
 
@@ -61,7 +61,7 @@ export async function getBridgeSignedHook(
 
   return {
     hook,
-    unsignedBridgeCalls,
+    unsignedBridgeCalls: Object.freeze([...unsignedBridgeCalls]),
     bridgingQuote,
   }
 }

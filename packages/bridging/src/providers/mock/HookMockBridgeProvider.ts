@@ -27,13 +27,13 @@ export class MockHookBridgeProvider extends BaseMockBridgeProvider implements Ho
     return 110_000
   }
 
-  async getUnsignedBridgeCalls(_request: QuoteBridgeRequest, _quote: BridgeQuoteResult): Promise<EvmCall[]> {
+  async getUnsignedBridgeCalls(_request: QuoteBridgeRequest, _quote: BridgeQuoteResult): Promise<readonly EvmCall[]> {
     return [MOCK_CALL]
   }
 
   async getSignedHook(
     _chainId: SupportedChainId,
-    _unsignedCalls: EvmCall[],
+    _unsignedCalls: readonly EvmCall[],
     _bridgeHookNonce: string,
     _deadline: bigint,
     _hookGasLimit: number,

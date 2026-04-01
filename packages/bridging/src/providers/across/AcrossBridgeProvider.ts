@@ -210,7 +210,10 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     return toBridgeQuoteResult(request, DEFAULT_BRIDGE_SLIPPAGE_BPS, suggestedFees)
   }
 
-  async getUnsignedBridgeCalls(request: QuoteBridgeRequest, quote: AcrossQuoteResult): Promise<[EvmCall, EvmCall]> {
+  async getUnsignedBridgeCalls(
+    request: QuoteBridgeRequest,
+    quote: AcrossQuoteResult,
+  ): Promise<readonly [EvmCall, EvmCall]> {
     // Periphery hosts SwapProxy address for ERC20.transfer:
     const swapProxyAddress = await fetchAcrossSwapProxyAddress(request.sellTokenChainId)
 
@@ -251,7 +254,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
 
   async getSignedHook(
     chainId: SupportedChainId,
-    unsignedCalls: EvmCall[],
+    unsignedCalls: readonly EvmCall[],
     bridgeHookNonce: string,
     deadline: bigint,
     hookGasLimit: number,

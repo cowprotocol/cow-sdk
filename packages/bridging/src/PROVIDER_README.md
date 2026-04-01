@@ -313,7 +313,7 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
 
 ```typescript
 export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult> {
-  async getUnsignedBridgeCalls(request: QuoteBridgeRequest, quote: YourBridgeQuoteResult): Promise<EvmCall> {
+  async getUnsignedBridgeCalls(request: QuoteBridgeRequest, quote: YourBridgeQuoteResult): Promise<EvmCall[]> {
     // Create the bridge transaction that will be executed by CoW Shed
     return createYourBridgeCall({
       request,
