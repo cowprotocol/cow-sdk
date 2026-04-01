@@ -255,6 +255,7 @@ export async function getQuoteWithHookBridge<T extends BridgeQuoteResult>(
       bridgeRequestWithoutAmount: {
         ...bridgeRequestWithoutAmount,
         receiver: receiverOverride || bridgeRequestWithoutAmount.receiver,
+        ...(validToOverride !== undefined ? { validTo: validToOverride } : {}),
       },
       intermediateTokenAmount,
       signer,

@@ -213,8 +213,11 @@ adapterNames.forEach((adapterName) => {
       })
 
       expect(getQuoteMock).toHaveBeenCalledTimes(2)
-      // Verify the validTo is passed correctly to the bridge request
-      expect(getUnsignedBridgeCallsMock.mock.calls[1]).toBeDefined()
+      // Verify validTo override is propagated to signed hook deadline
+      expect(getUnsignedBridgeCallsMock).toHaveBeenCalledTimes(2)
+      const secondBridgeRequest = getUnsignedBridgeCallsMock.mock.calls[1][0] as QuoteBridgeRequest
+      expect(secondBridgeRequest.validTo).toBe(customValidTo)
+      expect((mockProvider.getSignedHook as jest.Mock).mock.calls[1][3]).toBe(BigInt(customValidTo))
     })
 
     it('should cache intermediate tokens if intermediateTokensCache is provided', async () => {
