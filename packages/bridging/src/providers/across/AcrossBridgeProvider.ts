@@ -198,6 +198,13 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
       })
     }
 
+    const buyTokenLike = { chainId: buyTokenChainId, address: buyTokenAddress }
+    if (isTraderEOA && isWrappedNativeToken(buyTokenLike)) {
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES, {
+        info: 'Across does not support wrapped-native token destination',
+      })
+    }
+
     const suggestedFees = await this.api.getSuggestedFees({
       inputToken: mapNativeOrWrappedTokenAddress(sellTokenLike),
       outputToken: mapNativeOrWrappedTokenAddress({ chainId: buyTokenChainId, address: buyTokenAddress }),

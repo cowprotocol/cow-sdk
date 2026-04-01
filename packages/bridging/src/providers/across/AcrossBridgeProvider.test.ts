@@ -9,8 +9,9 @@ import {
   AcrossBridgeProviderOptions,
 } from './AcrossBridgeProvider'
 import { SuggestedFeesResponse } from './types'
-import { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
-import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { EVM_NATIVE_CURRENCY_ADDRESS, SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
+import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
+import { getWrappedNativeToken, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { createAdapters } from '../../../tests/setup'
 import { DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION, DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION } from '../../const'
 import stringify from 'json-stable-stringify'
@@ -179,6 +180,61 @@ adapterNames.forEach((adapterName) => {
         }
 
         expect(quote).toEqual(expectedQuote)
+      })
+
+      it('should reject getQuote when sell token is native for EOA', async () => {
+        const request: QuoteBridgeRequest = {
+          kind: OrderKind.SELL,
+          sellTokenAddress: EVM_NATIVE_CURRENCY_ADDRESS,
+          sellTokenChainId: SupportedChainId.MAINNET,
+          buyTokenChainId: SupportedChainId.POLYGON,
+          buyTokenAddress: '0x456',
+          amount: 1000000000000000000n,
+          receiver: '0x789',
+          account: '0x123',
+          sellTokenDecimals: 18,
+          buyTokenDecimals: 6,
+          appCode: '0x123',
+          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+        }
+
+        const getSuggestedFeesSpy = jest.spyOn(provider.getApi(), 'getSuggestedFees')
+
+        await expect(provider.getQuote(request)).rejects.toMatchObject({
+          message: BridgeQuoteErrors.NO_ROUTES,
+          context: { info: 'Across does not support native token deposit for EOA' },
+        })
+
+        expect(getSuggestedFeesSpy).not.toHaveBeenCalled()
+      })
+
+      it('should reject getQuote when destination is wrapped native for EOA (matches getBuyTokens filter)', async () => {
+        const wrapped = getWrappedNativeToken(SupportedChainId.MAINNET)
+        if (!wrapped) {
+          throw new Error('expected WETH on mainnet for test')
+        }
+
+        const request: QuoteBridgeRequest = {
+          kind: OrderKind.SELL,
+          sellTokenAddress: '0x123',
+          sellTokenChainId: SupportedChainId.POLYGON,
+          buyTokenChainId: SupportedChainId.MAINNET,
+          buyTokenAddress: wrapped.address,
+          amount: 1000000000000000000n,
+          receiver: '0x789',
+          account: '0x123',
+          sellTokenDecimals: 18,
+          buyTokenDecimals: 18,
+          appCode: '0x123',
+          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+        }
+
+        const getSuggestedFeesSpy = jest.spyOn(provider.getApi(), 'getSuggestedFees')
+
+        await expect(provider.getQuote(request)).rejects.toThrow(BridgeProviderQuoteError)
+        await expect(provider.getQuote(request)).rejects.toThrow(BridgeQuoteErrors.NO_ROUTES)
+
+        expect(getSuggestedFeesSpy).not.toHaveBeenCalled()
       })
     })
 
