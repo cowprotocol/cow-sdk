@@ -112,6 +112,6 @@ export function getAddressKey(address: string): AddressKey {
   return address as AddressKey
 }
 
-export function isSupportedAddress(address: string | null | undefined): address is AddressKey {
+export function isSupportedAddress(address: string | null | undefined): boolean {
   return isEvmAddress(address) || isBtcAddress(address) || isSolanaAddress(address)
 }
