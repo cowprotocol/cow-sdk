@@ -23,7 +23,7 @@ import {
 import { AcrossApi, AcrossApiOptions } from './AcrossApi'
 import { mapAcrossStatusToBridgeStatus, mapNativeOrWrappedTokenAddress, toBridgeQuoteResult } from './util'
 import { createAcrossDepositCall, fetchAcrossSwapProxyAddress } from './createAcrossDepositCall'
-import { SuggestedFeesResponse } from './types'
+import type { SwapApprovalApiResponse } from './swapApprovalMapper'
 import { getDepositParams } from './getDepositParams'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { assertUnsignedBridgeCallsLength } from '../../utils/assertUnsignedBridgeCallsLength'
@@ -74,7 +74,7 @@ export interface AcrossBridgeProviderOptions {
 
   /**
    * Return how much intermediate token to move from the CoW Shed to Across SwapProxy before
-   * `swapAndBridge`. Must be >= `request.amount` (the amount used for `/suggested-fees`).
+   * `swapAndBridge`. Must be >= `request.amount` (the amount used for the Across quote).
    *
    * Use this when the trading layer knows the executed intermediate balance (surplus) and can
    * pass it into hook calldata. If omitted, we prefund exactly `request.amount`, so the surplus
@@ -84,7 +84,7 @@ export interface AcrossBridgeProviderOptions {
 }
 
 export interface AcrossQuoteResult extends BridgeQuoteResult {
-  suggestedFees: SuggestedFeesResponse
+  swapApproval: SwapApprovalApiResponse
 }
 
 const providerType = 'HookBridgeProvider' as const
@@ -189,7 +189,16 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<AcrossQuoteResult> {
-    const { sellTokenAddress, sellTokenChainId, buyTokenAddress, buyTokenChainId, amount, receiver, account } = request
+    const {
+      sellTokenAddress,
+      sellTokenChainId,
+      buyTokenAddress,
+      buyTokenChainId,
+      amount,
+      receiver,
+      account,
+      owner,
+    } = request
     const sellTokenLike = { chainId: sellTokenChainId, address: sellTokenAddress }
 
     if (isTraderEOA && isNativeToken(sellTokenLike)) {
@@ -205,17 +214,20 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
       })
     }
 
-    // TODO: This is deprecated, use getSwapApproval instead:
-    const suggestedFees = await this.api.getSuggestedFees({
+    const ownerAddress = owner ?? account
+    const depositor = this.cowShedSdk.getCowShedAccount(sellTokenChainId, ownerAddress)
+
+    const swapApproval = await this.api.getSwapApproval({
       inputToken: mapNativeOrWrappedTokenAddress(sellTokenLike),
       outputToken: mapNativeOrWrappedTokenAddress({ chainId: buyTokenChainId, address: buyTokenAddress }),
       originChainId: sellTokenChainId,
       destinationChainId: buyTokenChainId,
       amount,
+      depositor,
       recipient: receiver || account,
     })
 
-    return toBridgeQuoteResult(request, DEFAULT_BRIDGE_SLIPPAGE_BPS, suggestedFees)
+    return toBridgeQuoteResult(request, DEFAULT_BRIDGE_SLIPPAGE_BPS, swapApproval)
   }
 
   async getUnsignedBridgeCalls(

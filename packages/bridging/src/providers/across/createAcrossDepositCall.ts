@@ -6,6 +6,7 @@ import { ACROSS_SPOKE_POOL_PERIPHERY_ABI } from './abi'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { QuoteBridgeRequest } from '../../types'
 import { mapNativeOrWrappedTokenAddress } from './util'
+import { parseDepositTimingFromSwapTxData } from './swapApprovalMapper'
 
 /**
  * Minimal ABI to read `SpokePoolPeriphery.swapProxy()`, which runs Across swap
@@ -93,7 +94,7 @@ export function getSpokePoolPeripheryAddress(chainId: TargetChainId): string {
  *
  *    - `swapTokenAmount = 0`, so periphery pulls 0 from the cow-shed via.
  *    - a no-op `exchange` call.
- *    - `minExpectedInputTokenAmount = request.amount` must be the same amount used in Across quote (the `/suggested-fees` `amount`).
+ *    - `minExpectedInputTokenAmount = request.amount` must be the same amount used in Across quote (`GET /swap/approval` `amount`).
  *    - `enableProportionalAdjustment = true` ensures the output amount scales if the actual input differs.
  *
  * This works because Across' periphery calls `swapProxy.performSwap(...)` and uses the returned output amount
@@ -129,7 +130,7 @@ export function createAcrossDepositCall(params: {
 }): [EvmCall, EvmCall] {
   const { request, quote, cowShedSdk, swapProxyAddress } = params
 
-  // Amount user committed for quoting / min bound — same number must hit `getSuggestedFees` and `minExpectedInputTokenAmount`.
+  // Amount user committed for quoting / min bound. Same number must hit the Across quote and `minExpectedInputTokenAmount`.
   const quotedIntermediateAmount = request.amount
 
   // Optional override when upstream knows the real post-settlement balance (surplus capture).
@@ -156,7 +157,11 @@ export function createAcrossDepositCall(params: {
   const ownerAddress = owner || account
   const cowShedAccount = cowShedSdk.getCowShedAccount(sellTokenChainId, ownerAddress)
 
-  const { suggestedFees } = quote
+  const { swapApproval } = quote
+  const timing = parseDepositTimingFromSwapTxData(swapApproval.swapTx.data)
+  if (!timing) {
+    throw new Error('swapTx.data missing deposit timing words')
+  }
 
   // Min. output on the destination chain (after bridge slippage):
   const outputAmount = quote.amountsAndCosts.afterSlippage.buyAmount
@@ -179,11 +184,11 @@ export function createAcrossDepositCall(params: {
       depositor: cowShedAccount,
       recipient: addressToBytes32(receiver || account),
       destinationChainId: BigInt(buyTokenChainId),
-      exclusiveRelayer: addressToBytes32(suggestedFees.exclusiveRelayer),
-      quoteTimestamp: Number(suggestedFees.timestamp),
-      fillDeadline: Number(suggestedFees.fillDeadline),
-      exclusivityParameter: Number(suggestedFees.exclusivityDeadline),
-      message: getGlobalAdapter().utils.encodeAbi(['string'], [quote.suggestedFees.id]),
+      exclusiveRelayer: addressToBytes32(timing.exclusiveRelayer),
+      quoteTimestamp: Number(timing.quoteTimestamp),
+      fillDeadline: Number(timing.fillDeadline),
+      exclusivityParameter: Number(timing.exclusivityDeadline),
+      message: getGlobalAdapter().utils.encodeAbi(['string'], [swapApproval.id]),
     },
     swapToken: sellToken,
     exchange: sellToken,

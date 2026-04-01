@@ -10,7 +10,9 @@ import {
   SuggestedFeesLimits,
   SuggestedFeesRequest,
   SuggestedFeesResponse,
+  SwapApprovalRequest,
 } from './types'
+import { isValidSwapApprovalResponse, type SwapApprovalApiResponse } from './swapApprovalMapper'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 
 const ACROSS_API_URL = 'https://app.across.to/api'
@@ -50,7 +52,7 @@ export class AcrossApi {
    *
    * @see https://docs.across.to/reference/api-reference#suggested-fees
    *
-   * @deprecated Use `GET /swap/approval` instead: https://docs.across.to/api-reference/swap/approval/get
+   * @deprecated Use `getSwapApproval` (`GET /swap/approval`) instead.
    */
   async getSuggestedFees(request: SuggestedFeesRequest): Promise<SuggestedFeesResponse> {
     const params: Record<string, string> = {
@@ -66,6 +68,29 @@ export class AcrossApi {
       params.recipient = request.recipient
     }
     return this.fetchApi('/suggested-fees', params, isValidSuggestedFeesResponse)
+  }
+
+  /**
+   * Swap / bridge quote from Across Swap API `GET /swap/approval`.
+   *
+   * @see https://docs.across.to/api-reference/swap/approval/get
+   */
+  async getSwapApproval(request: SwapApprovalRequest): Promise<SwapApprovalApiResponse> {
+    const params: Record<string, string> = {
+      tradeType: 'exactInput',
+      amount: request.amount.toString(),
+      inputToken: request.inputToken,
+      outputToken: request.outputToken,
+      originChainId: request.originChainId.toString(),
+      destinationChainId: request.destinationChainId.toString(),
+      depositor: request.depositor,
+      slippage: 'auto',
+    }
+
+    if (request.recipient) {
+      params.recipient = request.recipient
+    }
+    return this.fetchApi('/swap/approval', params, isValidSwapApprovalResponse)
   }
 
   async getSupportedTokens(): Promise<TokenInfo[]> {

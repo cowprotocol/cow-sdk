@@ -57,13 +57,25 @@ export interface SuggestedFeesRequest {
 
   /**
    * Optionally override the relayer address used to simulate the fillRelay() call that estimates the gas costs
-   * needed to fill a deposit. This simulation result impacts the returned suggested-fees. The reason to customize the
+   * needed to fill a deposit. This simulation result impacts the returned quote. The reason to customize the
    * EOA would be primarily if the recipientAddress is a contract and requires a certain relayer to submit the fill,
    * or if one specific relayer has the necessary token balance to make the fill.
    *
    * Example: 0x428AB2BA90Eba0a4Be7aF34C9Ac451ab061AC010
    */
   relayer?: string
+}
+
+/** Request for Across Swap API `GET /swap/approval`. */
+export interface SwapApprovalRequest {
+  inputToken: string
+  outputToken: string
+  originChainId: TargetChainId
+  destinationChainId: TargetChainId
+  amount: bigint
+  /** Origin-chain address initiating the swap (CoW Hook: typically the CoW Shed on the sell chain). */
+  depositor: string
+  recipient?: string
 }
 
 export interface SuggestedFeesLimits {

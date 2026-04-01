@@ -6,7 +6,7 @@ import {
 } from './createAcrossDepositCall'
 import { QuoteBridgeRequest } from '../../types'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
-import { SuggestedFeesResponse } from './types'
+import type { SwapApprovalApiResponse } from './swapApprovalMapper'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
@@ -20,31 +20,61 @@ jest.mock('@cowprotocol/sdk-cow-shed', () => ({
   })),
 }))
 
-const mockSuggestedFees: SuggestedFeesResponse = {
-  id: 'test-quote-id',
-  outputAmount: '1000000000',
-  inputToken: { chainId: 1, address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', decimals: 6 },
-  outputToken: { chainId: 56, address: '0x55d398326f99059fF775485246999027B3197955', decimals: 18 },
-  totalRelayFee: { pct: '100000000000000000', total: '100000000000000000' },
-  relayerCapitalFee: { pct: '500000000000000000', total: '500000000000000000' },
-  relayerGasFee: { pct: '500000000000000000', total: '500000000000000000' },
-  lpFee: { pct: '300000000000000000', total: '300000000000000000' },
-  timestamp: '1234567890',
-  isAmountTooLow: false,
-  quoteBlock: '12345',
-  spokePoolAddress: '0xSpokePool',
-  exclusiveRelayer: '0x0000000000000000000000000000000000000000',
-  exclusivityDeadline: '1234567900',
-  estimatedFillTimeSec: '300',
-  fillDeadline: '1234568000',
-  limits: {
-    minDeposit: '1000000',
-    maxDeposit: '1000000000000',
-    maxDepositInstant: '100000000',
-    maxDepositShortDelay: '500000000',
-    recommendedDepositInstant: '50000000',
-  },
+function padWordDeposit(n: bigint): string {
+  return n.toString(16).padStart(64, '0')
 }
+
+function buildMockSwapApprovalForDepositCall(): SwapApprovalApiResponse {
+  const quoteTs = 1234567890n
+  const fillDl = 1234568000n
+  const excl = 1234567900n
+  const w7 = '0'.repeat(64)
+  const body =
+    [1n, 2n, 3n, 4n, 5n, 6n, 7n].map(padWordDeposit).join('') +
+    w7 +
+    padWordDeposit(quoteTs) +
+    padWordDeposit(fillDl) +
+    padWordDeposit(excl)
+
+  return {
+    id: 'test-quote-id',
+    inputAmount: '1000000',
+    expectedOutputAmount: '1000000000',
+    inputToken: {
+      chainId: 1,
+      address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+      decimals: 6,
+      symbol: 'USDC',
+      name: 'USD Coin',
+    },
+    outputToken: {
+      chainId: 56,
+      address: '0x55d398326f99059fF775485246999027B3197955',
+      decimals: 18,
+      symbol: 'BUSD',
+      name: 'BUSD',
+    },
+    expectedFillTime: 300,
+    swapTx: { data: `0x110560ad${body}`, to: '0xSpokePool' },
+    steps: {
+      bridge: {
+        outputAmount: '1000000000',
+        fees: {
+          pct: '100000000000000000',
+          amount: '100000000000000000',
+          details: {
+            type: 'across',
+            relayerCapital: { pct: '500000000000000000', amount: '500000000000000000' },
+            destinationGas: { pct: '500000000000000000', amount: '500000000000000000' },
+            lp: { pct: '300000000000000000', amount: '300000000000000000' },
+          },
+        },
+      },
+    },
+  }
+}
+
+const mockSwapApproval = buildMockSwapApprovalForDepositCall()
 
 /** Fixture Across SwapProxy — real tests use on-chain `swapProxy()` via the provider. */
 const TEST_SWAP_PROXY = '0x1111111111111111111111111111111111111111'
@@ -90,6 +120,7 @@ adapterNames.forEach((adapterName) => {
 
     function makeQuote(overrides: Partial<AcrossQuoteResult> = {}): AcrossQuoteResult {
       return {
+        id: 'test-quote-id',
         isSell: true,
         amountsAndCosts: {
           beforeFee: { sellAmount: 1000000000n, buyAmount: 1000000000000000000000n },
@@ -114,7 +145,7 @@ adapterNames.forEach((adapterName) => {
           minDeposit: 1000000n,
           maxDeposit: 1000000000000n,
         },
-        suggestedFees: mockSuggestedFees,
+        swapApproval: mockSwapApproval,
         ...overrides,
       }
     }
@@ -173,7 +204,7 @@ adapterNames.forEach((adapterName) => {
       // Periphery must not transferFrom cow-shed, we already prefunded `SwapProxy`:
       expect(swapAndDepositData.swapTokenAmount).toBe(0n)
 
-      // Same value as getSuggestedFees `amount`, surplus increases output proportionally:
+      // Same value as Across quote `amount`, surplus increases output proportionally:
       expect(swapAndDepositData.minExpectedInputTokenAmount).toBe(request.amount)
 
       expect(swapAndDepositData.enableProportionalAdjustment).toBe(true)
@@ -200,10 +231,12 @@ adapterNames.forEach((adapterName) => {
       expect(depositData.depositor).toBe('0xCowShedAccount')
       expect(depositData.recipient).toBe(addressToBytes32('0x9876543210987654321098765432109876543210'))
       expect(depositData.destinationChainId).toBe(BigInt(request.buyTokenChainId))
-      expect(depositData.exclusiveRelayer).toBe(addressToBytes32(mockSuggestedFees.exclusiveRelayer))
-      expect(depositData.quoteTimestamp).toBe(Number(mockSuggestedFees.timestamp))
-      expect(depositData.fillDeadline).toBe(Number(mockSuggestedFees.fillDeadline))
-      expect(depositData.exclusivityParameter).toBe(Number(mockSuggestedFees.exclusivityDeadline))
+      expect(depositData.exclusiveRelayer).toBe(
+        addressToBytes32('0x0000000000000000000000000000000000000000'),
+      )
+      expect(depositData.quoteTimestamp).toBe(1234567890)
+      expect(depositData.fillDeadline).toBe(1234568000)
+      expect(depositData.exclusivityParameter).toBe(1234567900)
       expect(depositData.message).toBe('0xmockEncodedMessage')
     })
 

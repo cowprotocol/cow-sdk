@@ -1,5 +1,12 @@
 import { AcrossApi } from './AcrossApi'
-import { DepositStatusRequest, DepositStatusResponse, SuggestedFeesRequest, SuggestedFeesResponse } from './types'
+import { type SwapApprovalApiResponse } from './swapApprovalMapper'
+import {
+  DepositStatusRequest,
+  DepositStatusResponse,
+  SuggestedFeesRequest,
+  SuggestedFeesResponse,
+  SwapApprovalRequest,
+} from './types'
 import { BridgeQuoteErrors } from '../../errors'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 
@@ -9,6 +16,54 @@ global.fetch = mockFetch
 
 const TOKEN_A = { chainId: SupportedChainId.POLYGON, address: '0x123', decimals: 18, symbol: 'TOKEN1', name: 'Token 1' }
 const TOKEN_B = { chainId: SupportedChainId.POLYGON, address: '0x456', decimals: 6, symbol: 'TOKEN2', name: 'Token 2' }
+
+function padWord(n: bigint): string {
+  return n.toString(16).padStart(64, '0')
+}
+
+function buildSwapApprovalFixture(): SwapApprovalApiResponse {
+  const quoteTs = 1700000000
+  const fillDl = quoteTs + 100
+  const relAddr = '1111111111111111111111111111111111111111'
+  const w7 = `${'0'.repeat(24)}${relAddr}`
+  const body =
+    [1n, 2n, 3n, 4n, 5n, 6n, 7n].map(padWord).join('') +
+    w7 +
+    padWord(BigInt(quoteTs)) +
+    padWord(BigInt(fillDl)) +
+    padWord(0n)
+  const data = `0x110560ad${body}`
+
+  return {
+    id: 'test-quote-id',
+    inputAmount: '1000000000000000000',
+    expectedOutputAmount: '300010000000',
+    inputToken: TOKEN_A,
+    outputToken: TOKEN_B,
+    expectedFillTime: 300,
+    quoteExpiryTimestamp: fillDl,
+    swapTx: {
+      data,
+      to: '0xabcd1234abcd1234abcd1234abcd1234abcd1234',
+      chainId: SupportedChainId.MAINNET,
+    },
+    steps: {
+      bridge: {
+        outputAmount: '300010000000',
+        fees: {
+          pct: '100000000000000',
+          amount: '100000',
+          details: {
+            type: 'across',
+            relayerCapital: { pct: '50000000000000', amount: '50000' },
+            destinationGas: { pct: '50000000000000', amount: '50000' },
+            lp: { pct: '30000000000000', amount: '30000' },
+          },
+        },
+      },
+    },
+  }
+}
 
 describe('AcrossApi', () => {
   let api: AcrossApi
@@ -156,6 +211,75 @@ describe('AcrossApi', () => {
           originChainId: SupportedChainId.MAINNET,
           destinationChainId: SupportedChainId.POLYGON,
           amount: 1000000000000000000n,
+        }),
+      ).rejects.toThrow(BridgeQuoteErrors.API_ERROR)
+    })
+  })
+
+  describe('getSwapApproval', () => {
+    const swapFixture = buildSwapApprovalFixture()
+
+    beforeEach(() => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(swapFixture),
+      })
+    })
+
+    it('should fetch swap approval JSON', async () => {
+      const depositor = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+      const request: SwapApprovalRequest = {
+        inputToken: '0x0000000000000000000000000000000000000001',
+        outputToken: '0x0000000000000000000000000000000000000002',
+        originChainId: SupportedChainId.MAINNET,
+        destinationChainId: SupportedChainId.POLYGON,
+        amount: 1000000000000000000n,
+        depositor,
+      }
+
+      const result = await api.getSwapApproval(request)
+
+      expect(result).toEqual(swapFixture)
+      const calledUrl = mockFetch.mock.calls[0][0] as string
+      const parsed = new URL(calledUrl)
+      expect(parsed.pathname).toBe('/api/swap/approval')
+      expect(parsed.searchParams.get('tradeType')).toBe('exactInput')
+      expect(parsed.searchParams.get('depositor')).toBe(depositor)
+      expect(parsed.searchParams.get('slippage')).toBe('auto')
+    })
+
+    it('should include recipient when provided', async () => {
+      const request: SwapApprovalRequest = {
+        inputToken: '0x0000000000000000000000000000000000000001',
+        outputToken: '0x0000000000000000000000000000000000000002',
+        originChainId: SupportedChainId.MAINNET,
+        destinationChainId: SupportedChainId.POLYGON,
+        amount: 1000000000000000000n,
+        depositor: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+        recipient: '0x9876',
+      }
+
+      await api.getSwapApproval(request)
+
+      const calledUrl = mockFetch.mock.calls[0][0] as string
+      expect(calledUrl).toContain(`recipient=${request.recipient}`)
+    })
+
+    it('should handle API errors', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve({ text: 'Internal Server Error' }),
+      })
+
+      await expect(
+        api.getSwapApproval({
+          inputToken: '0x0000000000000000000000000000000000000001',
+          outputToken: '0x0000000000000000000000000000000000000002',
+          originChainId: SupportedChainId.MAINNET,
+          destinationChainId: SupportedChainId.POLYGON,
+          amount: 1000000000000000000n,
+          depositor: '0xcccccccccccccccccccccccccccccccccccccccc',
         }),
       ).rejects.toThrow(BridgeQuoteErrors.API_ERROR)
     })

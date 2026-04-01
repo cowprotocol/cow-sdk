@@ -8,10 +8,11 @@ import {
   AcrossBridgeProvider,
   AcrossBridgeProviderOptions,
 } from './AcrossBridgeProvider'
-import { SuggestedFeesResponse } from './types'
+import { ACROSS_SWAP_APPROVAL_MAX_DEPOSIT_LIMIT, type SwapApprovalApiResponse } from './swapApprovalMapper'
 import { EVM_NATIVE_CURRENCY_ADDRESS, SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
-import { getWrappedNativeToken, setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { AbstractProviderAdapter, getWrappedNativeToken, setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { createAdapters } from '../../../tests/setup'
 import { DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION, DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION } from '../../const'
 import stringify from 'json-stable-stringify'
@@ -21,6 +22,53 @@ jest.mock('./AcrossApi')
 
 const TOKEN_A = { chainId: SupportedChainId.POLYGON, address: '0x123', decimals: 18, symbol: 'TOKEN1', name: 'Token 1' }
 const TOKEN_B = { chainId: SupportedChainId.POLYGON, address: '0x456', decimals: 6, symbol: 'TOKEN2', name: 'Token 2' }
+
+function padWordAcross(n: bigint): string {
+  return n.toString(16).padStart(64, '0')
+}
+
+/** Matches fee math and timing used in getQuote expectations below. */
+function mockSwapApprovalFixture(): SwapApprovalApiResponse {
+  const quoteTs = 1234567890
+  const fillDl = 1234567890
+  const w7 = '0'.repeat(64)
+  const body =
+    [1n, 2n, 3n, 4n, 5n, 6n, 7n].map(padWordAcross).join('') +
+    w7 +
+    padWordAcross(BigInt(quoteTs)) +
+    padWordAcross(BigInt(fillDl)) +
+    padWordAcross(0n)
+  const data = `0x110560ad${body}`
+
+  return {
+    id: '1',
+    inputAmount: '1000000',
+    expectedOutputAmount: '20000',
+    inputToken: TOKEN_A,
+    outputToken: TOKEN_B,
+    expectedFillTime: 300,
+    swapTx: {
+      data,
+      to: '0xabcd1234abcd1234abcd1234abcd1234abcd1234',
+      chainId: SupportedChainId.MAINNET,
+    },
+    steps: {
+      bridge: {
+        outputAmount: '20000',
+        fees: {
+          pct: '100000000000000',
+          amount: '100000',
+          details: {
+            type: 'across',
+            relayerCapital: { pct: '50000000000000', amount: '50000' },
+            destinationGas: { pct: '50000000000000', amount: '50000' },
+            lp: { pct: '30000000000000', amount: '30000' },
+          },
+        },
+      },
+    },
+  }
+}
 const mockTokens = [TOKEN_A, TOKEN_B]
 
 /** Defaults for `QuoteBridgeRequest` in Across provider tests; spread overrides per case. */
@@ -30,8 +78,8 @@ const baseAcrossQuoteRequest: QuoteBridgeRequest = {
   sellTokenChainId: SupportedChainId.MAINNET,
   buyTokenChainId: SupportedChainId.POLYGON,
   amount: 1000000000000000000n,
-  receiver: '0x789',
-  account: '0x123',
+  receiver: '0x2000000000000000000000000000000000000002',
+  account: '0x1000000000000000000000000000000000000001',
   sellTokenDecimals: 18,
   buyTokenAddress: '0x456',
   buyTokenDecimals: 6,
@@ -61,9 +109,10 @@ const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 adapterNames.forEach((adapterName) => {
   describe(`AcrossBridgeProvider with ${adapterName}`, () => {
     let provider: AcrossBridgeProviderTest
+    let adapter: AbstractProviderAdapter
 
     beforeEach(() => {
-      const adapter = adapters[adapterName]
+      adapter = adapters[adapterName] as AbstractProviderAdapter
 
       adapter.getCode = jest.fn().mockResolvedValue('0x1234567890')
 
@@ -113,50 +162,25 @@ adapterNames.forEach((adapterName) => {
     })
 
     describe('getQuote', () => {
-      const mockSuggestedFees: SuggestedFeesResponse = {
-        id: '1',
-        inputToken: TOKEN_A,
-        outputToken: TOKEN_B,
-        outputAmount: '20000',
-        totalRelayFee: { pct: '100000000000000', total: '100000' },
-        relayerCapitalFee: { pct: '50000000000000', total: '50000' },
-        relayerGasFee: { pct: '50000000000000', total: '50000' },
-        lpFee: { pct: '30000000000000', total: '30000' },
-        timestamp: '1234567890',
-        isAmountTooLow: false,
-        quoteBlock: '12345',
-        spokePoolAddress: '0xabcd',
-        exclusiveRelayer: '0x0000000000000000000000000000000000000000',
-        exclusivityDeadline: '0',
-        estimatedFillTimeSec: '300',
-        fillDeadline: '1234567890',
-        limits: {
-          minDeposit: '1000000',
-          maxDeposit: '1000000000000',
-          maxDepositInstant: '100000000',
-          maxDepositShortDelay: '500000000',
-          recommendedDepositInstant: '50000000',
-        },
-      }
+      const mockSwapApproval = mockSwapApprovalFixture()
 
       beforeEach(() => {
         const mockAcrossApi = new AcrossApi()
-        jest.spyOn(mockAcrossApi, 'getSuggestedFees').mockResolvedValue(mockSuggestedFees)
+        jest.spyOn(mockAcrossApi, 'getSwapApproval').mockResolvedValue(mockSwapApproval)
         provider.setApi(mockAcrossApi)
       })
 
-      it('should return quote with suggested fees', async () => {
+      it('should return quote with swap approval payload', async () => {
         const request = { ...baseAcrossQuoteRequest }
 
-        const { suggestedFees, ...quote } = await provider.getQuote(request)
+        const { swapApproval, ...quote } = await provider.getQuote(request)
 
-        // The quote contains the suggested fees returned by the API
-        expect(suggestedFees).toEqual(mockSuggestedFees)
+        expect(swapApproval).toEqual(mockSwapApproval)
 
         const expectedQuote: BridgeQuoteResult = {
           id: '1',
           isSell: true,
-          quoteBody: stringify(mockSuggestedFees),
+          quoteBody: stringify(mockSwapApproval),
           amountsAndCosts: {
             beforeFee: { sellAmount: 1000000000000000000n, buyAmount: 20000n },
             afterFee: { sellAmount: 1000000000000000000n, buyAmount: 19998n },
@@ -178,7 +202,7 @@ adapterNames.forEach((adapterName) => {
           },
           limits: {
             minDeposit: 1000000n,
-            maxDeposit: 1000000000000n,
+            maxDeposit: BigInt(ACROSS_SWAP_APPROVAL_MAX_DEPOSIT_LIMIT),
           },
         }
 
@@ -191,14 +215,14 @@ adapterNames.forEach((adapterName) => {
           sellTokenAddress: EVM_NATIVE_CURRENCY_ADDRESS,
         }
 
-        const getSuggestedFeesSpy = jest.spyOn(provider.getApi(), 'getSuggestedFees')
+        const getSwapApprovalSpy = jest.spyOn(provider.getApi(), 'getSwapApproval')
 
         await expect(provider.getQuote(request)).rejects.toMatchObject({
           message: BridgeQuoteErrors.NO_ROUTES,
           context: { info: 'Across does not support native token deposit for EOA' },
         })
 
-        expect(getSuggestedFeesSpy).not.toHaveBeenCalled()
+        expect(getSwapApprovalSpy).not.toHaveBeenCalled()
       })
 
       it('should reject getQuote when destination is wrapped native for EOA (matches getBuyTokens filter)', async () => {
@@ -215,17 +239,17 @@ adapterNames.forEach((adapterName) => {
           buyTokenDecimals: 18,
         }
 
-        const getSuggestedFeesSpy = jest.spyOn(provider.getApi(), 'getSuggestedFees')
+        const getSwapApprovalSpy = jest.spyOn(provider.getApi(), 'getSwapApproval')
 
         await expect(provider.getQuote(request)).rejects.toThrow(BridgeProviderQuoteError)
         await expect(provider.getQuote(request)).rejects.toThrow(BridgeQuoteErrors.NO_ROUTES)
 
-        expect(getSuggestedFeesSpy).not.toHaveBeenCalled()
+        expect(getSwapApprovalSpy).not.toHaveBeenCalled()
       })
 
-      it('should pass account as suggested-fees recipient when receiver is undefined', async () => {
+      it('should pass account as swap-approval recipient when receiver is undefined', async () => {
         const mockAcrossApi = new AcrossApi()
-        const getSuggestedFeesSpy = jest.spyOn(mockAcrossApi, 'getSuggestedFees').mockResolvedValue(mockSuggestedFees)
+        const getSwapApprovalSpy = jest.spyOn(mockAcrossApi, 'getSwapApproval').mockResolvedValue(mockSwapApproval)
         provider.setApi(mockAcrossApi)
 
         const account = '0x1111111111111111111111111111111111111111'
@@ -237,16 +261,18 @@ adapterNames.forEach((adapterName) => {
 
         await provider.getQuote(request)
 
-        expect(getSuggestedFeesSpy).toHaveBeenCalledWith(
+        const expectedDepositor = new CowShedSdk(adapter).getCowShedAccount(request.sellTokenChainId, account)
+        expect(getSwapApprovalSpy).toHaveBeenCalledWith(
           expect.objectContaining({
             recipient: account,
+            depositor: expectedDepositor,
           }),
         )
       })
 
-      it('should pass account as suggested-fees recipient when receiver is empty string', async () => {
+      it('should pass account as swap-approval recipient when receiver is empty string', async () => {
         const mockAcrossApi = new AcrossApi()
-        const getSuggestedFeesSpy = jest.spyOn(mockAcrossApi, 'getSuggestedFees').mockResolvedValue(mockSuggestedFees)
+        const getSwapApprovalSpy = jest.spyOn(mockAcrossApi, 'getSwapApproval').mockResolvedValue(mockSwapApproval)
         provider.setApi(mockAcrossApi)
 
         const account = '0x2222222222222222222222222222222222222222'
@@ -258,16 +284,18 @@ adapterNames.forEach((adapterName) => {
 
         await provider.getQuote(request)
 
-        expect(getSuggestedFeesSpy).toHaveBeenCalledWith(
+        const expectedDepositor = new CowShedSdk(adapter).getCowShedAccount(request.sellTokenChainId, account)
+        expect(getSwapApprovalSpy).toHaveBeenCalledWith(
           expect.objectContaining({
             recipient: account,
+            depositor: expectedDepositor,
           }),
         )
       })
 
-      it('should pass receiver to suggested-fees when set', async () => {
+      it('should pass receiver to swap approval when set', async () => {
         const mockAcrossApi = new AcrossApi()
-        const getSuggestedFeesSpy = jest.spyOn(mockAcrossApi, 'getSuggestedFees').mockResolvedValue(mockSuggestedFees)
+        const getSwapApprovalSpy = jest.spyOn(mockAcrossApi, 'getSwapApproval').mockResolvedValue(mockSwapApproval)
         provider.setApi(mockAcrossApi)
 
         const receiver = '0x3333333333333333333333333333333333333333'
@@ -278,9 +306,14 @@ adapterNames.forEach((adapterName) => {
 
         await provider.getQuote(request)
 
-        expect(getSuggestedFeesSpy).toHaveBeenCalledWith(
+        const expectedDepositor = new CowShedSdk(adapter).getCowShedAccount(
+          request.sellTokenChainId,
+          request.owner ?? request.account,
+        )
+        expect(getSwapApprovalSpy).toHaveBeenCalledWith(
           expect.objectContaining({
             recipient: receiver,
+            depositor: expectedDepositor,
           }),
         )
       })

@@ -1,7 +1,13 @@
 import { BridgeQuoteAmountsAndCosts, BridgeStatus, QuoteBridgeRequest } from '../../types'
 
-import { AcrossDepositEvent, DepositStatusResponse, SuggestedFeesResponse } from './types'
+import { AcrossDepositEvent, DepositStatusResponse } from './types'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
+import {
+  ACROSS_SWAP_APPROVAL_MAX_DEPOSIT_LIMIT,
+  parseDepositTimingFromSwapTxData,
+  type SwapApprovalApiResponse,
+} from './swapApprovalMapper'
+import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { ACROSS_DEPOSIT_EVENT_INTERFACE } from './const/interfaces'
 import { ACROSS_TOKEN_MAPPING, AcrossChainConfig } from './const/tokens'
 import { ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES } from './const/contracts'
@@ -63,42 +69,65 @@ export function mapNativeOrWrappedTokenAddress(token: { chainId: TargetChainId; 
 export function toBridgeQuoteResult(
   request: QuoteBridgeRequest,
   slippageBps: number,
-  suggestedFees: SuggestedFeesResponse,
+  swapApproval: SwapApprovalApiResponse,
 ): AcrossQuoteResult {
   const { kind } = request
 
+  const timing = parseDepositTimingFromSwapTxData(swapApproval.swapTx.data)
+  if (!timing) {
+    throw new BridgeProviderQuoteError(BridgeQuoteErrors.INVALID_API_JSON_RESPONSE, {
+      reason: 'swapTx.data missing deposit timing words',
+    })
+  }
+
   return {
-    id: suggestedFees.id,
+    id: swapApproval.id,
     isSell: kind === OrderKind.SELL,
-    amountsAndCosts: toAmountsAndCosts(request, slippageBps, suggestedFees),
-    quoteTimestamp: Number(suggestedFees.timestamp),
-    quoteBody: stringify(suggestedFees),
-    expectedFillTimeSeconds: Number(suggestedFees.estimatedFillTimeSec),
-    fees: {
-      bridgeFee: BigInt(suggestedFees.relayerCapitalFee.total),
-      destinationGasFee: BigInt(suggestedFees.relayerGasFee.total),
-    },
+    amountsAndCosts: toAmountsAndCosts(request, slippageBps, swapApproval),
+    quoteTimestamp: Number(timing.quoteTimestamp),
+    quoteBody: stringify(swapApproval),
+    expectedFillTimeSeconds: swapApproval.expectedFillTime,
+    fees: bridgeFeesFromSwapApproval(swapApproval),
+    // `BridgeQuoteResult.limits` is kept for callers that expect bounds. Swap approval gives
+    // `inputAmount` (quoted size) but not suggested-fees-style max/instant limits; see
+    // `ACROSS_SWAP_APPROVAL_MAX_DEPOSIT_LIMIT` for why max uses uint256 max as a fallback.
     limits: {
-      minDeposit: BigInt(suggestedFees.limits.minDeposit),
-      maxDeposit: BigInt(suggestedFees.limits.maxDeposit),
+      minDeposit: BigInt(swapApproval.inputAmount),
+      maxDeposit: BigInt(ACROSS_SWAP_APPROVAL_MAX_DEPOSIT_LIMIT),
     },
-    suggestedFees,
+    swapApproval,
+  }
+}
+
+function bridgeFeesFromSwapApproval(swapApproval: SwapApprovalApiResponse): {
+  bridgeFee: bigint
+  destinationGasFee: bigint
+} {
+  const details = swapApproval.steps.bridge?.fees?.details
+  const relayerCapital = details?.relayerCapital ?? { amount: '0' }
+  const destinationGas = details?.destinationGas ?? { amount: '0' }
+  return {
+    bridgeFee: BigInt(relayerCapital.amount),
+    destinationGasFee: BigInt(destinationGas.amount),
   }
 }
 
 function toAmountsAndCosts(
   request: QuoteBridgeRequest,
   slippageBps: number,
-  suggestedFees: SuggestedFeesResponse,
+  swapApproval: SwapApprovalApiResponse,
 ): BridgeQuoteAmountsAndCosts {
   const { amount } = request
 
   const sellAmountBeforeFee = amount
   // Sell and buy token should be the same asset for current implementation, but technically they can have different decimals
-  const buyAmountBeforeFee = BigInt(suggestedFees.outputAmount)
+  const bridge = swapApproval.steps.bridge
+  const outputAmountStr = bridge?.outputAmount ?? swapApproval.expectedOutputAmount
+  const buyAmountBeforeFee = BigInt(outputAmountStr)
 
   // Apply the fee to the buy amount (sell amount doesn't change)
-  const totalRelayerFeePct = BigInt(suggestedFees.totalRelayFee.pct)
+  const feeRoot = bridge?.fees
+  const totalRelayerFeePct = BigInt(feeRoot?.pct ?? '0')
   const buyAmountAfterFee = applyPctFee(buyAmountBeforeFee, totalRelayerFeePct)
 
   // Calculate the fee

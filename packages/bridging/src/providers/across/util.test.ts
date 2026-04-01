@@ -10,7 +10,7 @@ import {
   getAcrossDepositEvents,
 } from './util'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
-import { SuggestedFeesResponse } from './types'
+import { ACROSS_SWAP_APPROVAL_MAX_DEPOSIT_LIMIT, type SwapApprovalApiResponse } from './swapApprovalMapper'
 import { AdditionalTargetChainId, SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { createAdapters } from '../../../tests/setup'
@@ -70,41 +70,71 @@ describe('Across Utils', () => {
 
   describe('toBridgeQuoteResult', () => {
     const mockAmount = 1000000000000000000n // 1 ETH
-    const mockSuggestedFees: SuggestedFeesResponse = {
+
+    function padUtil(n: bigint): string {
+      return n.toString(16).padStart(64, '0')
+    }
+
+    const quoteTs = 1742111291n
+    const fillDl = 1742122091n
+    const excl = 1742114891n
+    const timingBody =
+      [1n, 2n, 3n, 4n, 5n, 6n, 7n].map(padUtil).join('') +
+      '0'.repeat(64) +
+      padUtil(quoteTs) +
+      padUtil(fillDl) +
+      padUtil(excl)
+
+    const mockSwapApproval: SwapApprovalApiResponse = {
       id: '1',
-      outputAmount: '1000000', // equals decimal-adjusted sell amount (18→6 decimals)
-      inputToken: { chainId: SupportedChainId.MAINNET, address: '0x1234567890123456789012345678901234567890', decimals: 18 },
-      outputToken: { chainId: SupportedChainId.POLYGON, address: '0x1234567890123456789012345678901234567890', decimals: 6 },
-      totalRelayFee: {
-        pct: '100000000000000000', // 0.1 or 10% in contract format
-        total: '100000000000000000',
+      // Quoted input size (wei / token atoms); becomes `limits.minDeposit` on the bridge quote.
+      inputAmount: '10000000000000000000',
+      // equals decimal-adjusted sell amount (18→6 decimals) for this scenario
+      expectedOutputAmount: '1000000',
+      inputToken: {
+        chainId: SupportedChainId.MAINNET,
+        address: '0x1234567890123456789012345678901234567890',
+        decimals: 18,
+        symbol: 'TK',
+        name: 'Token',
       },
-      relayerCapitalFee: {
-        pct: '150000000000000000', // 0.1 or 15% in contract format
-        total: '150000000000000000',
+      outputToken: {
+        chainId: SupportedChainId.POLYGON,
+        address: '0x1234567890123456789012345678901234567890',
+        decimals: 6,
+        symbol: 'TK',
+        name: 'Token',
       },
-      relayerGasFee: {
-        pct: '200000000000000000', // 0.1 or 20% in contract format
-        total: '200000000000000000',
+      // From API `expectedFillTime` (here matches legacy test fixture semantics)
+      expectedFillTime: 1742111892,
+      swapTx: {
+        data: `0x110560ad${timingBody}`,
+        to: '0x1234567890123456789012345678901234567890',
       },
-      lpFee: {
-        pct: '250000000000000000', // 0.1 or 25% in contract format
-        total: '250000000000000000',
-      },
-      timestamp: '1742111291',
-      exclusiveRelayer: '0x1234567890123456789012345678901234567890',
-      isAmountTooLow: false,
-      quoteBlock: '1715808000',
-      spokePoolAddress: '0x1234567890123456789012345678901234567890',
-      exclusivityDeadline: '1742114891',
-      estimatedFillTimeSec: '1742111892',
-      fillDeadline: '1742122091',
-      limits: {
-        maxDeposit: '50000000000000000000',
-        maxDepositShortDelay: '40000000000000000000',
-        maxDepositInstant: '30000000000000000000',
-        recommendedDepositInstant: '35000000000000000000',
-        minDeposit: '10000000000000000000',
+      steps: {
+        bridge: {
+          outputAmount: '1000000',
+          fees: {
+            // PctFee: 1% = 1e16, 100% = 1e18, etc. (same as contract / `SuggestedFeesResponse` docs)
+            pct: '100000000000000000', // 10% → 1e17
+            amount: '100000000000000000',
+            details: {
+              type: 'across',
+              relayerCapital: {
+                pct: '150000000000000000', // 15% in contract format
+                amount: '150000000000000000',
+              },
+              destinationGas: {
+                pct: '200000000000000000', // 20% in contract format
+                amount: '200000000000000000',
+              },
+              lp: {
+                pct: '250000000000000000', // 25% in contract format
+                amount: '250000000000000000',
+              },
+            },
+          },
+        },
       },
     }
 
@@ -124,12 +154,12 @@ describe('Across Utils', () => {
       }
 
       const slippageBps = 30
-      const result = toBridgeQuoteResult(request as unknown as QuoteBridgeRequest, slippageBps, mockSuggestedFees)
+      const result = toBridgeQuoteResult(request as unknown as QuoteBridgeRequest, slippageBps, mockSwapApproval)
 
       const expected: AcrossQuoteResult = {
         id: '1',
         isSell: true,
-        quoteBody: stringify(mockSuggestedFees),
+        quoteBody: stringify(mockSwapApproval),
         amountsAndCosts: {
           beforeFee: { sellAmount: 1000000000000000000n, buyAmount: 1000000n }, // 1:1 (different decimals)
           afterFee: { sellAmount: 1000000000000000000n, buyAmount: 900000n }, // 1:0.9 (10% fee applied)
@@ -150,10 +180,11 @@ describe('Across Utils', () => {
           destinationGasFee: 200000000000000000n,
         },
         limits: {
-          minDeposit: 10000000000000000000n,
-          maxDeposit: 50000000000000000000n,
+          minDeposit: 10000000000000000000n, // from `swapApproval.inputAmount`
+          // Swap API has no `limits.maxDeposit`; implementation uses max uint256 (see constant JSDoc)
+          maxDeposit: BigInt(ACROSS_SWAP_APPROVAL_MAX_DEPOSIT_LIMIT),
         },
-        suggestedFees: mockSuggestedFees, // Returns the original suggested fees
+        swapApproval: mockSwapApproval,
       }
 
       expect(result).toEqual(expected)
