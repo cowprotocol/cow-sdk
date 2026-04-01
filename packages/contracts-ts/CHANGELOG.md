@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v2.2.0...sdk-contracts-ts-v2.3.0) (2026-04-01)
+
+
+### ✨ Features
+
+* add sol/btc supports for NEAR ([#844](https://github.com/cowprotocol/cow-sdk/issues/844)) ([9c4ea35](https://github.com/cowprotocol/cow-sdk/commit/9c4ea35eed827bb36eee216fa0a53ed8b44f1756))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.9.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.1
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.1
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.15
+
 ## [2.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v2.1.2...sdk-contracts-ts-v2.2.0) (2026-03-17)
 
 
