@@ -189,7 +189,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<AcrossQuoteResult> {
-    const { sellTokenAddress, sellTokenChainId, buyTokenAddress, buyTokenChainId, amount, receiver } = request
+    const { sellTokenAddress, sellTokenChainId, buyTokenAddress, buyTokenChainId, amount, receiver, account } = request
     const sellTokenLike = { chainId: sellTokenChainId, address: sellTokenAddress }
 
     if (isTraderEOA && isNativeToken(sellTokenLike)) {
@@ -205,13 +205,14 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
       })
     }
 
+    // TODO: This is deprecated, use getSwapApproval instead:
     const suggestedFees = await this.api.getSuggestedFees({
       inputToken: mapNativeOrWrappedTokenAddress(sellTokenLike),
       outputToken: mapNativeOrWrappedTokenAddress({ chainId: buyTokenChainId, address: buyTokenAddress }),
       originChainId: sellTokenChainId,
       destinationChainId: buyTokenChainId,
       amount,
-      recipient: receiver ?? undefined,
+      recipient: receiver || account,
     })
 
     return toBridgeQuoteResult(request, DEFAULT_BRIDGE_SLIPPAGE_BPS, suggestedFees)

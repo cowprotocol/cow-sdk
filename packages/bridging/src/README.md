@@ -181,11 +181,12 @@ async function performCrossChainSwap(wallet: Wallet, bridgingSdk: BridgingSdk): 
     appCode: '<BRIDGING_APP_CODE>', // This value will be used to calculate volume of trade for your app
     account: wallet.address as AccountAddress, // Your wallet address
     signer: wallet, // ethers.js Wallet instance
+    // owner: '0x...', // Optional: CoW Shed owner on source chain; built-in providers use `owner || account`
 
     // Order details
     kind: OrderKind.SELL,
     amount: parseEther('1').toBigInt(), // 1 WETH
-    receiver: '0x...', // Optional: recipient address on destination chain
+    // receiver: '0x...', // Optional: recipient address on destination chain; defaults to `receiver || account` in built-in providers
   }
 
   try {
@@ -600,14 +601,18 @@ interface QuoteBridgeRequest {
   // Trader info
   appCode: string // This value will be used to calculate volume of trade for your app
   account: string // Trader account address
+  owner?: string // Optional: CoW Shed owner on source chain; built-in
+  // providers use `owner || account`
   signer: Signer // ethers.js Signer instance
 
   // Order details
   kind: OrderKind.SELL // Should always be SELL, BUY orders are not supported yet
   amount: bigint // Amount to sell (in sell token atoms)
-  receiver?: string // Recipient address (defaults to account)
+  receiver?: string // Optional: recipient address on destination chain; defaults to `receiver || account` in built-in providers
 }
 ```
+
+Built-in bridge providers combine `owner` and `receiver` with **`||`** (logical OR), not `??`, so that empty strings also fall back to `account` the same way as `undefined`.
 
 > Since `BridgingSDK.getQuote()` is compatible with `TradingSDK`, it has the same [optional parameters](https://github.com/cowprotocol/cow-sdk/tree/main/packages/trading/README.md#optional-parameters).
 

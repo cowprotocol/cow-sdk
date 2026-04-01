@@ -129,7 +129,7 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
 
     // @note bungee api requires the sender address. sender address would be the cowshed account
     // fetch the cowshed account
-    const ownerAddress = owner ?? account
+    const ownerAddress = owner || account
     const cowshedAccount = this.cowShedSdk.getCowShedAccount(sellTokenChainId, ownerAddress)
 
     // fetch quote from bungee api
@@ -139,7 +139,7 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
       destinationChainId: buyTokenChainId.toString(),
       inputToken: sellTokenAddress, // use intermediate token for the bridging quote
       inputAmount: amount.toString(),
-      receiverAddress: receiver ?? account, // receiver is required on bungee api
+      receiverAddress: receiver || account, // receiver is required on bungee api
       outputToken: buyTokenAddress,
       includeBridges: this.options.apiOptions?.includeBridges,
       enableManual: true,

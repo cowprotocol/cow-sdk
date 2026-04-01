@@ -141,7 +141,7 @@ export function createAcrossDepositCall(params: {
     )
   }
 
-  const { sellTokenChainId, sellTokenAddress, buyTokenChainId, buyTokenAddress, account, receiver } = request
+  const { sellTokenChainId, sellTokenAddress, buyTokenChainId, buyTokenAddress, account, receiver, owner } = request
 
   // Across always uses wrapped native if the native token is selected:
   const sellTokenLike = { address: sellTokenAddress, chainId: sellTokenChainId }
@@ -152,7 +152,9 @@ export function createAcrossDepositCall(params: {
 
   const spokePoolPeripheryAddress = getSpokePoolPeripheryAddress(sellTokenChainId)
   const spokePoolAddress = getSpokePoolAddress(sellTokenChainId)
-  const cowShedAccount = cowShedSdk.getCowShedAccount(sellTokenChainId, account)
+
+  const ownerAddress = owner || account
+  const cowShedAccount = cowShedSdk.getCowShedAccount(sellTokenChainId, ownerAddress)
 
   const { suggestedFees } = quote
 
