@@ -182,6 +182,8 @@ export async function getSwapQuote(params: {
     bridgeSlippageBps: _bridgeSlippageBps,
     amount,
     swapSlippageBps,
+    receiver: _receiver, // Strip receiver from CoW API params — bridge providers override it after the quote
+    bridgeRecipient: _bridgeRecipient, // Not relevant for CoW API
     ...rest
   } = swapAndBridgeRequest
 

@@ -111,3 +111,7 @@ export function getAddressKey(address: string): AddressKey {
   // sol and btc addresses are already in the correct format
   return address as AddressKey
 }
+
+export function isSupportedAddress(address: string | null | undefined): address is AddressKey {
+  return isEvmAddress(address) || isBtcAddress(address) || isSolanaAddress(address)
+}
