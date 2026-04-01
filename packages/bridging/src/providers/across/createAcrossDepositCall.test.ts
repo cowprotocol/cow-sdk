@@ -1,4 +1,9 @@
-import { createAcrossDepositCall, addressToBytes32 } from './createAcrossDepositCall'
+import {
+  addressToBytes32,
+  createAcrossDepositCall,
+  getSpokePoolAddress,
+  getSpokePoolPeripheryAddress,
+} from './createAcrossDepositCall'
 import { QuoteBridgeRequest } from '../../types'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { SuggestedFeesResponse } from './types'
@@ -316,6 +321,32 @@ adapterNames.forEach((adapterName) => {
       expect(swapAndBridgeCall[2][0].swapTokenAmount).toBe(0n)
       expect(swapAndBridgeCall[2][0].minExpectedInputTokenAmount).toBe(1000000000000000000000n)
     })
+  })
+})
+
+describe('getSpokePoolPeripheryAddress', () => {
+  it('throws when no periphery is configured for the chain', () => {
+    expect(() => getSpokePoolPeripheryAddress(SupportedChainId.GNOSIS_CHAIN)).toThrow(
+      'Spoke pool periphery address not found for chain',
+    )
+  })
+
+  it('returns the configured periphery address for a supported chain', () => {
+    expect(getSpokePoolPeripheryAddress(SupportedChainId.MAINNET)).toBe(
+      ACROSS_SPOKE_POOL_PERIPHERY_CONTRACT_ADDRESSES[SupportedChainId.MAINNET],
+    )
+  })
+})
+
+describe('getSpokePoolAddress', () => {
+  it('throws when no spoke pool is configured for the chain', () => {
+    expect(() => getSpokePoolAddress(SupportedChainId.GNOSIS_CHAIN)).toThrow('Spoke pool address not found for chain')
+  })
+
+  it('returns the configured spoke pool address for a supported chain', () => {
+    expect(getSpokePoolAddress(SupportedChainId.MAINNET)).toBe(
+      ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES[SupportedChainId.MAINNET],
+    )
   })
 })
 

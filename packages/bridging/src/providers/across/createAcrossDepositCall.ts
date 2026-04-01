@@ -60,7 +60,7 @@ export function addressToBytes32(address: string): string {
   return '0x' + address.slice(2).toLowerCase().padStart(64, '0')
 }
 
-function getSpokePoolAddress(chainId: TargetChainId): string {
+export function getSpokePoolAddress(chainId: TargetChainId): string {
   const address = ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES[chainId]
   if (!address) {
     throw new Error(`Spoke pool address not found for chain ${chainId}`)
@@ -68,7 +68,7 @@ function getSpokePoolAddress(chainId: TargetChainId): string {
   return address
 }
 
-function getSpokePoolPeripheryAddress(chainId: TargetChainId): string {
+export function getSpokePoolPeripheryAddress(chainId: TargetChainId): string {
   const address = ACROSS_SPOKE_POOL_PERIPHERY_CONTRACT_ADDRESSES[chainId]
   if (!address) {
     throw new Error(`Spoke pool periphery address not found for chain ${chainId}`)
