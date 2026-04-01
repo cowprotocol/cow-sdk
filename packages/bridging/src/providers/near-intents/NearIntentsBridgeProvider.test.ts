@@ -3,7 +3,7 @@ import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { GetExecutionStatusResponse, QuoteRequest, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 
 import { createAdapters } from '../../../tests/setup'
-import { BridgeStatus } from '../../types'
+import { BridgeStatus, QuoteBridgeRequest } from '../../types'
 import { NearIntentsApi } from './NearIntentsApi'
 import type { NearIntentsBridgeProviderOptions } from './NearIntentsBridgeProvider'
 import { NEAR_INTENTS_HOOK_DAPP_ID, NearIntentsBridgeProvider } from './NearIntentsBridgeProvider'
@@ -235,48 +235,63 @@ adapterNames.forEach((adapterName) => {
     describe('getQuote', () => {
       const ATTESTATOR_ADDRESS = '0x0073DD100b51C555E41B2a452E5933ef76F42790'
 
-      it('should return quote with id and signature', async () => {
-        const api = new NearIntentsApi()
-        const sellTokenAddress = '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'
-        const buyTokenAddress = '0x4200000000000000000000000000000000000006'
-        const testQuoteHash = '0xtestQuoteHash123'
+      const NEAR_INTENTS_SELL_TOKEN = '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'
+      const NEAR_INTENTS_BUY_TOKEN = '0x4200000000000000000000000000000000000006'
+      const NEAR_INTENTS_ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-        const mockQuoteResponse: QuoteResponse = {
-          quote: {
-            amountIn: '1000000',
-            amountInFormatted: '1.0',
-            amountInUsd: '1.0',
-            minAmountIn: '1000000',
-            amountOut: '1000000',
-            amountOutFormatted: '1.0',
-            amountOutUsd: '1.0',
-            minAmountOut: '990000',
-            timeEstimate: 60,
-            deadline: '2025-09-05T12:10:38.605Z',
-            timeWhenInactive: '2025-09-05T12:10:38.605Z',
-            depositAddress: '0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e',
-          },
-          quoteRequest: {
-            dry: false,
-            swapType: QuoteRequest.swapType.EXACT_INPUT,
-            depositMode: QuoteRequest.depositMode.SIMPLE,
-            slippageTolerance: 100,
-            originAsset: 'nep141:usdc.omft.near',
-            depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
-            destinationAsset: 'nep141:base.omft.near',
-            amount: '1000000',
-            refundTo: '0x0000000000000000000000000000000000000000',
-            refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
-            recipient: '0x0000000000000000000000000000000000000000',
-            recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
-            deadline: '2025-09-05T12:10:38.605Z',
-          },
-          signature: 'ed25519:testSignature',
-          timestamp: '2025-09-05T12:00:38.695Z',
-        }
+      const baseNearIntentsQuoteRequest: QuoteBridgeRequest = {
+        kind: OrderKind.SELL,
+        sellTokenChainId: 8453,
+        sellTokenAddress: NEAR_INTENTS_SELL_TOKEN,
+        sellTokenDecimals: 6,
+        buyTokenChainId: 8453,
+        buyTokenAddress: NEAR_INTENTS_BUY_TOKEN,
+        buyTokenDecimals: 18,
+        amount: 1000000n,
+        account: NEAR_INTENTS_ZERO_ADDR,
+        appCode: 'test',
+        signer: NEAR_INTENTS_ZERO_ADDR as QuoteBridgeRequest['signer'],
+      }
 
-        jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
-        jest.spyOn(api, 'getTokens').mockResolvedValue([
+      const nearIntentsMockQuoteResponse: QuoteResponse = {
+        quote: {
+          amountIn: '1000000',
+          amountInFormatted: '1.0',
+          amountInUsd: '1.0',
+          minAmountIn: '1000000',
+          amountOut: '1000000',
+          amountOutFormatted: '1.0',
+          amountOutUsd: '1.0',
+          minAmountOut: '990000',
+          timeEstimate: 60,
+          deadline: '2025-09-05T12:10:38.605Z',
+          timeWhenInactive: '2025-09-05T12:10:38.605Z',
+          depositAddress: '0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e',
+        },
+        quoteRequest: {
+          dry: false,
+          swapType: QuoteRequest.swapType.EXACT_INPUT,
+          depositMode: QuoteRequest.depositMode.SIMPLE,
+          slippageTolerance: 100,
+          originAsset: 'nep141:usdc.omft.near',
+          depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
+          destinationAsset: 'nep141:base.omft.near',
+          amount: '1000000',
+          refundTo: '0x0000000000000000000000000000000000000000',
+          refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
+          recipient: '0x0000000000000000000000000000000000000000',
+          recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
+          deadline: '2025-09-05T12:10:38.605Z',
+        },
+        signature: 'ed25519:testSignature',
+        timestamp: '2025-09-05T12:00:38.695Z',
+      }
+
+      const nearIntentsAttestationSignature =
+        '0x66edc32e2ab001213321ab7d959a2207fcef5190cc9abb6da5b0d2a8a9af2d4d2b0700e2c317c4106f337fd934fbbb0bf62efc8811a78603b33a8265d3b8f8cb1c'
+
+      function nearIntentsQuoteTokens(sellToken: string, buyToken: string): TokenResponse[] {
+        return [
           {
             assetId: 'nep141:usdc.omft.near',
             decimals: 6,
@@ -284,7 +299,7 @@ adapterNames.forEach((adapterName) => {
             symbol: 'USDC',
             price: 1,
             priceUpdatedAt: '2025-09-05T12:00:38.695Z',
-            contractAddress: sellTokenAddress,
+            contractAddress: sellToken,
           },
           {
             assetId: 'nep141:base.omft.near',
@@ -293,17 +308,25 @@ adapterNames.forEach((adapterName) => {
             symbol: 'ETH',
             price: 1,
             priceUpdatedAt: '2025-09-05T12:00:38.695Z',
-            contractAddress: buyTokenAddress,
+            contractAddress: buyToken,
           },
-        ])
+        ]
+      }
+
+      it('should return quote with id and signature', async () => {
+        const api = new NearIntentsApi()
+        const testQuoteHash = '0xtestQuoteHash123'
+
+        jest.spyOn(api, 'getQuote').mockResolvedValue(nearIntentsMockQuoteResponse)
+        jest.spyOn(api, 'getTokens').mockResolvedValue(
+          nearIntentsQuoteTokens(NEAR_INTENTS_SELL_TOKEN, NEAR_INTENTS_BUY_TOKEN),
+        )
         jest.spyOn(api, 'getAttestation').mockResolvedValue({
           version: 1,
-          signature:
-            '0x66edc32e2ab001213321ab7d959a2207fcef5190cc9abb6da5b0d2a8a9af2d4d2b0700e2c317c4106f337fd934fbbb0bf62efc8811a78603b33a8265d3b8f8cb1c',
+          signature: nearIntentsAttestationSignature,
         })
         provider.setApi(api)
 
-        // Mock recoverDepositAddress to return the attestator address
         jest.spyOn(provider, 'recoverDepositAddress').mockResolvedValue({
           address: ATTESTATOR_ADDRESS,
           quoteHash: testQuoteHash,
@@ -311,74 +334,104 @@ adapterNames.forEach((adapterName) => {
           attestationSignature: '',
         })
 
-        const quote = await provider.getQuote({
-          kind: OrderKind.SELL,
-          sellTokenChainId: 8453,
-          sellTokenAddress,
-          sellTokenDecimals: 6,
-          buyTokenChainId: 8453,
-          buyTokenAddress,
-          buyTokenDecimals: 18,
-          amount: 1000000n,
-          account: '0x0000000000000000000000000000000000000000',
-          appCode: 'test',
-          signer: '0x0000000000000000000000000000000000000000',
-        })
+        const quote = await provider.getQuote({ ...baseNearIntentsQuoteRequest })
 
         expect(quote.id).toBe(testQuoteHash)
         expect(quote.signature).toBe('ed25519:testSignature')
       })
 
-      it('should return stringifiedQuote and attestationSignature', async () => {
+      it('should pass owner and receiver into API getQuote when set', async () => {
         const api = new NearIntentsApi()
+        const testQuoteHash = '0xtestQuoteHash456'
 
-        const mockQuoteResponse: QuoteResponse = {
-          quote: {
-            amountIn: '1000000',
-            amountInFormatted: '1.0',
-            amountInUsd: '1.0',
-            minAmountIn: '1000000',
-            amountOut: '1000000',
-            amountOutFormatted: '1.0',
-            amountOutUsd: '1.0',
-            minAmountOut: '990000',
-            timeEstimate: 60,
-            deadline: '2025-09-05T12:10:38.605Z',
-            timeWhenInactive: '2025-09-05T12:10:38.605Z',
-            depositAddress: '0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e',
-          },
-          quoteRequest: {
-            dry: false,
-            swapType: QuoteRequest.swapType.EXACT_INPUT,
-            depositMode: QuoteRequest.depositMode.SIMPLE,
-            slippageTolerance: 100,
-            originAsset: 'nep141:usdc.omft.near',
-            depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
-            destinationAsset: 'nep141:base.omft.near',
-            amount: '1000000',
-            refundTo: '0x0000000000000000000000000000000000000000',
-            refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
-            recipient: '0x0000000000000000000000000000000000000000',
-            recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
-            deadline: '2025-09-05T12:10:38.605Z',
-          },
-          signature: 'ed25519:testSignature',
-          timestamp: '2025-09-05T12:00:38.695Z',
-        }
-
-        const mockAttestationSignature =
-          '0x66edc32e2ab001213321ab7d959a2207fcef5190cc9abb6da5b0d2a8a9af2d4d2b0700e2c317c4106f337fd934fbbb0bf62efc8811a78603b33a8265d3b8f8cb1c'
-
+        const getQuoteSpy = jest.spyOn(api, 'getQuote').mockResolvedValue(nearIntentsMockQuoteResponse)
+        jest.spyOn(api, 'getTokens').mockResolvedValue(
+          nearIntentsQuoteTokens(NEAR_INTENTS_SELL_TOKEN, NEAR_INTENTS_BUY_TOKEN),
+        )
         jest.spyOn(api, 'getAttestation').mockResolvedValue({
           version: 1,
-          signature: mockAttestationSignature,
+          signature: nearIntentsAttestationSignature,
         })
         provider.setApi(api)
 
-        const result = await provider.recoverDepositAddress(mockQuoteResponse)
+        jest.spyOn(provider, 'recoverDepositAddress').mockResolvedValue({
+          address: ATTESTATOR_ADDRESS,
+          quoteHash: testQuoteHash,
+          stringifiedQuote: '',
+          attestationSignature: '',
+        })
+
+        const account = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        const owner = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+        const receiver = '0xcccccccccccccccccccccccccccccccccccccccc'
+
+        await provider.getQuote({
+          ...baseNearIntentsQuoteRequest,
+          account,
+          owner,
+          receiver,
+        })
+
+        expect(getQuoteSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            refundTo: owner,
+            recipient: receiver,
+            amount: '1000000',
+          }),
+        )
+      })
+
+      it('should use account for refundTo and recipient when owner and receiver are empty string', async () => {
+        const api = new NearIntentsApi()
+        const testQuoteHash = '0xtestQuoteHash789'
+
+        const getQuoteSpy = jest.spyOn(api, 'getQuote').mockResolvedValue(nearIntentsMockQuoteResponse)
+        jest.spyOn(api, 'getTokens').mockResolvedValue(
+          nearIntentsQuoteTokens(NEAR_INTENTS_SELL_TOKEN, NEAR_INTENTS_BUY_TOKEN),
+        )
+        jest.spyOn(api, 'getAttestation').mockResolvedValue({
+          version: 1,
+          signature: nearIntentsAttestationSignature,
+        })
+        provider.setApi(api)
+
+        jest.spyOn(provider, 'recoverDepositAddress').mockResolvedValue({
+          address: ATTESTATOR_ADDRESS,
+          quoteHash: testQuoteHash,
+          stringifiedQuote: '',
+          attestationSignature: '',
+        })
+
+        const account = '0xdddddddddddddddddddddddddddddddddddddddd'
+
+        await provider.getQuote({
+          ...baseNearIntentsQuoteRequest,
+          account,
+          owner: '' as QuoteBridgeRequest['owner'],
+          receiver: '' as QuoteBridgeRequest['receiver'],
+        })
+
+        expect(getQuoteSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            refundTo: account,
+            recipient: account,
+          }),
+        )
+      })
+
+      it('should return stringifiedQuote and attestationSignature', async () => {
+        const api = new NearIntentsApi()
+
+        jest.spyOn(api, 'getAttestation').mockResolvedValue({
+          version: 1,
+          signature: nearIntentsAttestationSignature,
+        })
+        provider.setApi(api)
+
+        const result = await provider.recoverDepositAddress(nearIntentsMockQuoteResponse)
 
         expect(result).not.toBeNull()
-        expect(result?.attestationSignature).toBe(mockAttestationSignature)
+        expect(result?.attestationSignature).toBe(nearIntentsAttestationSignature)
         expect(result?.stringifiedQuote).toBeDefined()
         expect(result?.stringifiedQuote.length).toBeGreaterThan(0)
         expect(result?.quoteHash).toBeDefined()

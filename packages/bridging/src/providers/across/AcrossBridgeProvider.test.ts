@@ -23,6 +23,22 @@ const TOKEN_A = { chainId: SupportedChainId.POLYGON, address: '0x123', decimals:
 const TOKEN_B = { chainId: SupportedChainId.POLYGON, address: '0x456', decimals: 6, symbol: 'TOKEN2', name: 'Token 2' }
 const mockTokens = [TOKEN_A, TOKEN_B]
 
+/** Defaults for `QuoteBridgeRequest` in Across provider tests; spread overrides per case. */
+const baseAcrossQuoteRequest: QuoteBridgeRequest = {
+  kind: OrderKind.SELL,
+  sellTokenAddress: '0x123',
+  sellTokenChainId: SupportedChainId.MAINNET,
+  buyTokenChainId: SupportedChainId.POLYGON,
+  amount: 1000000000000000000n,
+  receiver: '0x789',
+  account: '0x123',
+  sellTokenDecimals: 18,
+  buyTokenAddress: '0x456',
+  buyTokenDecimals: 6,
+  appCode: '0x123',
+  signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+}
+
 class AcrossBridgeProviderTest extends AcrossBridgeProvider {
   constructor(options: AcrossBridgeProviderOptions) {
     super(options)
@@ -130,20 +146,7 @@ adapterNames.forEach((adapterName) => {
       })
 
       it('should return quote with suggested fees', async () => {
-        const request: QuoteBridgeRequest = {
-          kind: OrderKind.SELL,
-          sellTokenAddress: '0x123',
-          sellTokenChainId: SupportedChainId.MAINNET,
-          buyTokenChainId: SupportedChainId.POLYGON,
-          amount: 1000000000000000000n,
-          receiver: '0x789',
-          account: '0x123',
-          sellTokenDecimals: 18,
-          buyTokenAddress: '0x456',
-          buyTokenDecimals: 6,
-          appCode: '0x123',
-          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
-        }
+        const request = { ...baseAcrossQuoteRequest }
 
         const { suggestedFees, ...quote } = await provider.getQuote(request)
 
@@ -184,18 +187,8 @@ adapterNames.forEach((adapterName) => {
 
       it('should reject getQuote when sell token is native for EOA', async () => {
         const request: QuoteBridgeRequest = {
-          kind: OrderKind.SELL,
+          ...baseAcrossQuoteRequest,
           sellTokenAddress: EVM_NATIVE_CURRENCY_ADDRESS,
-          sellTokenChainId: SupportedChainId.MAINNET,
-          buyTokenChainId: SupportedChainId.POLYGON,
-          buyTokenAddress: '0x456',
-          amount: 1000000000000000000n,
-          receiver: '0x789',
-          account: '0x123',
-          sellTokenDecimals: 18,
-          buyTokenDecimals: 6,
-          appCode: '0x123',
-          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
         }
 
         const getSuggestedFeesSpy = jest.spyOn(provider.getApi(), 'getSuggestedFees')
@@ -215,18 +208,11 @@ adapterNames.forEach((adapterName) => {
         }
 
         const request: QuoteBridgeRequest = {
-          kind: OrderKind.SELL,
-          sellTokenAddress: '0x123',
+          ...baseAcrossQuoteRequest,
           sellTokenChainId: SupportedChainId.POLYGON,
           buyTokenChainId: SupportedChainId.MAINNET,
           buyTokenAddress: wrapped.address,
-          amount: 1000000000000000000n,
-          receiver: '0x789',
-          account: '0x123',
-          sellTokenDecimals: 18,
           buyTokenDecimals: 18,
-          appCode: '0x123',
-          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
         }
 
         const getSuggestedFeesSpy = jest.spyOn(provider.getApi(), 'getSuggestedFees')
@@ -235,6 +221,68 @@ adapterNames.forEach((adapterName) => {
         await expect(provider.getQuote(request)).rejects.toThrow(BridgeQuoteErrors.NO_ROUTES)
 
         expect(getSuggestedFeesSpy).not.toHaveBeenCalled()
+      })
+
+      it('should pass account as suggested-fees recipient when receiver is undefined', async () => {
+        const mockAcrossApi = new AcrossApi()
+        const getSuggestedFeesSpy = jest.spyOn(mockAcrossApi, 'getSuggestedFees').mockResolvedValue(mockSuggestedFees)
+        provider.setApi(mockAcrossApi)
+
+        const account = '0x1111111111111111111111111111111111111111'
+        const request: QuoteBridgeRequest = {
+          ...baseAcrossQuoteRequest,
+          account,
+          receiver: undefined,
+        }
+
+        await provider.getQuote(request)
+
+        expect(getSuggestedFeesSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            recipient: account,
+          }),
+        )
+      })
+
+      it('should pass account as suggested-fees recipient when receiver is empty string', async () => {
+        const mockAcrossApi = new AcrossApi()
+        const getSuggestedFeesSpy = jest.spyOn(mockAcrossApi, 'getSuggestedFees').mockResolvedValue(mockSuggestedFees)
+        provider.setApi(mockAcrossApi)
+
+        const account = '0x2222222222222222222222222222222222222222'
+        const request: QuoteBridgeRequest = {
+          ...baseAcrossQuoteRequest,
+          account,
+          receiver: '' as QuoteBridgeRequest['receiver'],
+        }
+
+        await provider.getQuote(request)
+
+        expect(getSuggestedFeesSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            recipient: account,
+          }),
+        )
+      })
+
+      it('should pass receiver to suggested-fees when set', async () => {
+        const mockAcrossApi = new AcrossApi()
+        const getSuggestedFeesSpy = jest.spyOn(mockAcrossApi, 'getSuggestedFees').mockResolvedValue(mockSuggestedFees)
+        provider.setApi(mockAcrossApi)
+
+        const receiver = '0x3333333333333333333333333333333333333333'
+        const request: QuoteBridgeRequest = {
+          ...baseAcrossQuoteRequest,
+          receiver,
+        }
+
+        await provider.getQuote(request)
+
+        expect(getSuggestedFeesSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            recipient: receiver,
+          }),
+        )
       })
     })
 
@@ -306,18 +354,9 @@ adapterNames.forEach((adapterName) => {
     describe('getGasLimitEstimationForHook', () => {
       it('should return default gas limit estimation for non-Mainnet to Gnosis', async () => {
         const request: QuoteBridgeRequest = {
-          kind: OrderKind.SELL,
-          sellTokenAddress: '0x123',
-          sellTokenChainId: SupportedChainId.MAINNET,
+          ...baseAcrossQuoteRequest,
           buyTokenChainId: SupportedChainId.ARBITRUM_ONE,
-          amount: 1000000000000000000n,
-          receiver: '0x789',
-          account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
-          sellTokenDecimals: 18,
-          buyTokenAddress: '0x456',
-          buyTokenDecimals: 6,
-          appCode: '0x123',
-          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+          account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
         }
 
         const gasLimit = await provider.getGasLimitEstimationForHook(request)

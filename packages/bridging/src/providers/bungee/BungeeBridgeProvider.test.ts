@@ -45,6 +45,21 @@ const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
 const mockGetCode = jest.fn()
 
+const baseBungeeQuoteRequest: QuoteBridgeRequest = {
+  kind: OrderKind.SELL,
+  sellTokenAddress: '0x123',
+  sellTokenChainId: SupportedChainId.MAINNET,
+  buyTokenChainId: SupportedChainId.POLYGON,
+  amount: 1000000000000000000n,
+  receiver: '0x789',
+  account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
+  sellTokenDecimals: 18,
+  buyTokenAddress: '0x456',
+  buyTokenDecimals: 6,
+  appCode: '0x123',
+  signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+}
+
 adapterNames.forEach((adapterName) => {
   describe(`BungeeBridgeProvider for ${adapterName}`, () => {
     let provider: BungeeBridgeProviderTest
@@ -252,20 +267,7 @@ adapterNames.forEach((adapterName) => {
       })
 
       it('should return quote with bungee quote data', async () => {
-        const request: QuoteBridgeRequest = {
-          kind: OrderKind.SELL,
-          sellTokenAddress: '0x123',
-          sellTokenChainId: SupportedChainId.MAINNET,
-          buyTokenChainId: SupportedChainId.POLYGON,
-          amount: 1000000000000000000n,
-          receiver: '0x789',
-          account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
-          sellTokenDecimals: 18,
-          buyTokenAddress: '0x456',
-          buyTokenDecimals: 6,
-          appCode: '0x123',
-          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
-        }
+        const request: QuoteBridgeRequest = { ...baseBungeeQuoteRequest }
 
         const quote = await provider.getQuote(request)
 
@@ -301,6 +303,88 @@ adapterNames.forEach((adapterName) => {
         }
 
         expect(quote).toEqual(expectedQuote)
+      })
+
+      it('should pass account as Bungee receiverAddress when receiver is undefined', async () => {
+        const account = '0x1111111111111111111111111111111111111111'
+        const api = provider.getApi()
+        const spy = jest.spyOn(api, 'getBungeeQuoteWithBuildTx')
+
+        const request: QuoteBridgeRequest = {
+          ...baseBungeeQuoteRequest,
+          account,
+          receiver: undefined,
+        }
+
+        await provider.getQuote(request)
+
+        expect(spy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            receiverAddress: account,
+          }),
+        )
+      })
+
+      it('should pass account as Bungee receiverAddress when receiver is empty string', async () => {
+        const account = '0x2222222222222222222222222222222222222222'
+        const api = provider.getApi()
+        const spy = jest.spyOn(api, 'getBungeeQuoteWithBuildTx')
+
+        const request: QuoteBridgeRequest = {
+          ...baseBungeeQuoteRequest,
+          account,
+          receiver: '' as QuoteBridgeRequest['receiver'],
+        }
+
+        await provider.getQuote(request)
+
+        expect(spy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            receiverAddress: account,
+          }),
+        )
+      })
+
+      it('should call getCowShedAccount with owner when owner differs from account', async () => {
+        const cowShedSdk = (provider as unknown as { cowShedSdk: { getCowShedAccount: jest.Mock } }).cowShedSdk
+        const shedSpy = jest.spyOn(cowShedSdk, 'getCowShedAccount').mockReturnValue('0xCoWShedProxy')
+
+        const owner = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        const account = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+
+        const request: QuoteBridgeRequest = {
+          ...baseBungeeQuoteRequest,
+          owner,
+          account,
+        }
+
+        await provider.getQuote(request)
+
+        expect(shedSpy).toHaveBeenCalledWith(SupportedChainId.MAINNET, owner)
+
+        const api = provider.getApi()
+        expect(api.getBungeeQuoteWithBuildTx).toHaveBeenCalledWith(
+          expect.objectContaining({
+            userAddress: '0xCoWShedProxy',
+          }),
+        )
+      })
+
+      it('should call getCowShedAccount with account when owner is empty string', async () => {
+        const cowShedSdk = (provider as unknown as { cowShedSdk: { getCowShedAccount: jest.Mock } }).cowShedSdk
+        const shedSpy = jest.spyOn(cowShedSdk, 'getCowShedAccount').mockReturnValue('0xCoWShedProxy')
+
+        const account = '0xcccccccccccccccccccccccccccccccccccccccc'
+
+        const request: QuoteBridgeRequest = {
+          ...baseBungeeQuoteRequest,
+          owner: '' as QuoteBridgeRequest['owner'],
+          account,
+        }
+
+        await provider.getQuote(request)
+
+        expect(shedSpy).toHaveBeenCalledWith(SupportedChainId.MAINNET, account)
       })
     })
 
@@ -416,20 +500,7 @@ adapterNames.forEach((adapterName) => {
       it('should return default gas limit estimation for non-Mainnet to Gnosis', async () => {
         mockGetCode.mockResolvedValue('0x1234567890')
 
-        const request: QuoteBridgeRequest = {
-          kind: OrderKind.SELL,
-          sellTokenAddress: '0x123',
-          sellTokenChainId: SupportedChainId.MAINNET,
-          buyTokenChainId: SupportedChainId.POLYGON,
-          amount: 1000000000000000000n,
-          receiver: '0x789',
-          account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
-          sellTokenDecimals: 18,
-          buyTokenAddress: '0x456',
-          buyTokenDecimals: 6,
-          appCode: '0x123',
-          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
-        }
+        const request: QuoteBridgeRequest = { ...baseBungeeQuoteRequest }
 
         const gasLimit = await provider.getGasLimitEstimationForHook(request)
 
@@ -439,20 +510,7 @@ adapterNames.forEach((adapterName) => {
       it('should return default gas limit estimation for Mainnet to Polygon and deploy proxy account', async () => {
         mockGetCode.mockResolvedValue(undefined)
 
-        const request: QuoteBridgeRequest = {
-          kind: OrderKind.SELL,
-          sellTokenAddress: '0x123',
-          sellTokenChainId: SupportedChainId.MAINNET,
-          buyTokenChainId: SupportedChainId.POLYGON,
-          amount: 1000000000000000000n,
-          receiver: '0x789',
-          account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
-          sellTokenDecimals: 18,
-          buyTokenAddress: '0x456',
-          buyTokenDecimals: 6,
-          appCode: '0x123',
-          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
-        }
+        const request: QuoteBridgeRequest = { ...baseBungeeQuoteRequest }
 
         const gasLimit = await provider.getGasLimitEstimationForHook(request)
 
@@ -463,18 +521,8 @@ adapterNames.forEach((adapterName) => {
         mockGetCode.mockResolvedValue('0x1234567890')
 
         const request: QuoteBridgeRequest = {
-          kind: OrderKind.SELL,
-          sellTokenAddress: '0x123',
-          sellTokenChainId: SupportedChainId.MAINNET,
+          ...baseBungeeQuoteRequest,
           buyTokenChainId: SupportedChainId.GNOSIS_CHAIN,
-          amount: 1000000000000000000n,
-          receiver: '0x789',
-          account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
-          sellTokenDecimals: 18,
-          buyTokenAddress: '0x456',
-          buyTokenDecimals: 6,
-          appCode: '0x123',
-          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
         }
 
         const gasLimit = await provider.getGasLimitEstimationForHook(request)
@@ -486,18 +534,8 @@ adapterNames.forEach((adapterName) => {
         mockGetCode.mockResolvedValue('0x')
 
         const request: QuoteBridgeRequest = {
-          kind: OrderKind.SELL,
-          sellTokenAddress: '0x123',
-          sellTokenChainId: SupportedChainId.MAINNET,
+          ...baseBungeeQuoteRequest,
           buyTokenChainId: SupportedChainId.GNOSIS_CHAIN,
-          amount: 1000000000000000000n,
-          receiver: '0x789',
-          account: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', // need to find cowshed account address
-          sellTokenDecimals: 18,
-          buyTokenAddress: '0x456',
-          buyTokenDecimals: 6,
-          appCode: '0x123',
-          signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
         }
 
         const gasLimit = await provider.getGasLimitEstimationForHook(request)

@@ -49,6 +49,21 @@ const mockSuggestedFees: SuggestedFeesResponse = {
 /** Fixture Across SwapProxy — real tests use on-chain `swapProxy()` via the provider. */
 const TEST_SWAP_PROXY = '0x1111111111111111111111111111111111111111'
 
+const baseAcrossDepositRequest: QuoteBridgeRequest = {
+  kind: OrderKind.SELL,
+  sellTokenChainId: SupportedChainId.MAINNET,
+  sellTokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+  sellTokenDecimals: 6,
+  buyTokenChainId: SupportedChainId.BNB,
+  buyTokenAddress: '0x55d398326f99059fF775485246999027B3197955',
+  buyTokenDecimals: 18,
+  amount: 1000000000n,
+  account: '0x1234567890123456789012345678901234567890',
+  receiver: '0x9876543210987654321098765432109876543210',
+  appCode: 'test',
+  signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
+}
+
 const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
@@ -70,21 +85,7 @@ adapterNames.forEach((adapterName) => {
     })
 
     function makeRequest(overrides: Partial<QuoteBridgeRequest> = {}): QuoteBridgeRequest {
-      return {
-        kind: OrderKind.SELL,
-        sellTokenChainId: SupportedChainId.MAINNET,
-        sellTokenAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-        sellTokenDecimals: 6,
-        buyTokenChainId: SupportedChainId.BNB,
-        buyTokenAddress: '0x55d398326f99059fF775485246999027B3197955',
-        buyTokenDecimals: 18,
-        amount: 1000000000n,
-        account: '0x1234567890123456789012345678901234567890',
-        receiver: '0x9876543210987654321098765432109876543210',
-        appCode: 'test',
-        signer: '0xa43ccc40ff785560dab6cb0f13b399d050073e8a54114621362f69444e1421ca',
-        ...overrides,
-      }
+      return { ...baseAcrossDepositRequest, ...overrides }
     }
 
     function makeQuote(overrides: Partial<AcrossQuoteResult> = {}): AcrossQuoteResult {
@@ -215,6 +216,45 @@ adapterNames.forEach((adapterName) => {
       const { depositData } = swapAndBridgeCall[2][0]
 
       expect(depositData.recipient).toBe(addressToBytes32(request.account))
+    })
+
+    it('should use account as recipient when receiver is empty string (|| fallback)', () => {
+      const request = makeRequest({ receiver: '' as unknown as QuoteBridgeRequest['receiver'] })
+      const quote = makeQuote()
+      createAcrossDepositCall({ request, quote, cowShedSdk, swapProxyAddress: TEST_SWAP_PROXY })
+
+      const swapAndBridgeCall = mockEncodeFunction.mock.calls[2]
+      const { depositData } = swapAndBridgeCall[2][0]
+
+      expect(depositData.recipient).toBe(addressToBytes32(request.account))
+    })
+
+    it('should call getCowShedAccount with owner when owner is set', () => {
+      const getShed = jest.spyOn(cowShedSdk, 'getCowShedAccount')
+      const owner = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+      const request = makeRequest({ owner })
+      const quote = makeQuote()
+      createAcrossDepositCall({ request, quote, cowShedSdk, swapProxyAddress: TEST_SWAP_PROXY })
+
+      expect(getShed).toHaveBeenCalledWith(request.sellTokenChainId, owner)
+    })
+
+    it('should call getCowShedAccount with account when owner is omitted', () => {
+      const getShed = jest.spyOn(cowShedSdk, 'getCowShedAccount')
+      const request = makeRequest({ owner: undefined })
+      const quote = makeQuote()
+      createAcrossDepositCall({ request, quote, cowShedSdk, swapProxyAddress: TEST_SWAP_PROXY })
+
+      expect(getShed).toHaveBeenCalledWith(request.sellTokenChainId, request.account)
+    })
+
+    it('should call getCowShedAccount with account when owner is empty string (|| fallback)', () => {
+      const getShed = jest.spyOn(cowShedSdk, 'getCowShedAccount')
+      const request = makeRequest({ owner: '' as QuoteBridgeRequest['owner'] })
+      const quote = makeQuote()
+      createAcrossDepositCall({ request, quote, cowShedSdk, swapProxyAddress: TEST_SWAP_PROXY })
+
+      expect(getShed).toHaveBeenCalledWith(request.sellTokenChainId, request.account)
     })
 
     it('should throw error when periphery address is not found for chain', () => {
