@@ -17,8 +17,13 @@ export async function getDepositParams(
     return null
   }
 
-  const appDataObj = JSON.parse(order.fullAppData)
-  const bridgeQuoteId = (appDataObj as cowAppDataLatestScheme.AppDataRootSchema)?.metadata?.bridging?.quoteId
+  let appDataObj: cowAppDataLatestScheme.AppDataRootSchema | undefined
+  try {
+    appDataObj = JSON.parse(order.fullAppData) as cowAppDataLatestScheme.AppDataRootSchema
+  } catch {
+    appDataObj = undefined
+  }
+  const bridgeQuoteId = appDataObj?.metadata?.bridging?.quoteId
 
   if (!bridgeQuoteId) return null
 
