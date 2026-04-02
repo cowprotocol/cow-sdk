@@ -3,6 +3,7 @@ import { type SwapApprovalApiResponse } from './swapApprovalMapper'
 import {
   DepositStatusRequest,
   DepositStatusResponse,
+  Route,
   SuggestedFeesRequest,
   SuggestedFeesResponse,
   SwapApprovalRequest,
@@ -76,14 +77,14 @@ describe('AcrossApi', () => {
   describe('getAvailableRoutes', () => {
     const mockRoutes = [
       {
-        originChainId: '1',
+        originChainId: 1,
         originToken: '0x0000000000000000000000000000000000000001',
-        destinationChainId: '137',
+        destinationChainId: 137,
         destinationToken: '0x0000000000000000000000000000000000000002',
         originTokenSymbol: 'USDC',
         destinationTokenSymbol: 'USDC',
       },
-    ]
+    ] satisfies Route[]
 
     beforeEach(() => {
       mockFetch.mockResolvedValue({

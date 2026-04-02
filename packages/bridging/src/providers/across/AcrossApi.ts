@@ -38,7 +38,9 @@ export class AcrossApi {
    * Returns available routes based on specified parameters. If no parameters are provided, available routes on all
    * chains are returned.
    *
-   * See https://docs.across.to/reference/api-reference#available-routes
+   * See https://docs.across.to/api-reference/available-routes/get
+   *
+   * @deprecated Use `getSwapApproval` (`GET /swap/approval`) instead.
    */
   async getAvailableRoutes(params: AvailableRoutesRequest): Promise<Route[]> {
     return this.fetchApi('/available-routes', params as never as Record<string | number, string>, isValidRoutes)
@@ -50,7 +52,7 @@ export class AcrossApi {
    * Returns suggested fees based inputToken+outputToken, originChainId, destinationChainId, and amount.
    * Also includes data used to compute the fees.
    *
-   * @see https://docs.across.to/reference/api-reference#suggested-fees
+   * @see https://docs.across.to/api-reference/suggested-fees/get
    *
    * @deprecated Use `getSwapApproval` (`GET /swap/approval`) instead.
    */
@@ -245,15 +247,22 @@ function isValidRoutes(response: unknown): response is Route[] {
   return response.every((item) => isValidRoute(item))
 }
 
+function isValidChainId(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value > 0
+}
+
 function isValidRoute(item: unknown): item is Route {
+  if (typeof item !== 'object' || item === null) {
+    return false
+  }
+  const r = item as Record<string, unknown>
   return (
-    typeof item === 'object' &&
-    item !== null &&
-    'originChainId' in item &&
-    'originToken' in item &&
-    'destinationChainId' in item &&
-    'destinationToken' in item &&
-    'originTokenSymbol' in item &&
-    'destinationTokenSymbol' in item
+    isValidChainId(r.originChainId) &&
+    typeof r.originToken === 'string' &&
+    isValidChainId(r.destinationChainId) &&
+    typeof r.destinationToken === 'string' &&
+    typeof r.originTokenSymbol === 'string' &&
+    typeof r.destinationTokenSymbol === 'string' &&
+    (r.isNative === undefined || typeof r.isNative === 'boolean')
   )
 }
