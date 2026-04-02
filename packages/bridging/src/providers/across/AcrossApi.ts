@@ -40,7 +40,7 @@ export class AcrossApi {
    *
    * See https://docs.across.to/api-reference/available-routes/get
    *
-   * @deprecated Use `getSwapApproval` (`GET /swap/approval`) instead.
+   * @deprecated Use `getSupportedTokens` (`GET /swap/tokens/get`) instead.
    */
   async getAvailableRoutes(params: AvailableRoutesRequest): Promise<Route[]> {
     return this.fetchApi('/available-routes', params as never as Record<string | number, string>, isValidRoutes)

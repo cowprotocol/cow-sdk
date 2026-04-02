@@ -607,7 +607,7 @@ interface QuoteBridgeRequest {
 
   // Order details
   kind: OrderKind.SELL // Should always be SELL, BUY orders are not supported yet
-  amount: bigint // Amount to sell (in sell token atoms)
+  amount: bigint // Amount to sell (in sell token units)
   receiver?: string // Optional: recipient address on destination chain; defaults to `receiver || account` in built-in providers
 }
 ```
@@ -636,6 +636,19 @@ interface BridgeQuoteResult {
   }
 }
 ```
+
+#### `amountsAndCosts.costs.bridgingFee` (sell vs buy)
+
+`BridgeQuoteAmountsAndCosts.costs.bridgingFee` uses the same **sell / buy** meaning as `beforeFee`:
+
+| Field | Token side | Same units as |
+| ----- | ---------- | ------------- |
+| `amountInSellCurrency` | Bridge **input** on the source chain (intermediate token) | `beforeFee.sellAmount` |
+| `amountInBuyCurrency` | Bridge **output** on the destination chain | `beforeFee.buyAmount` |
+
+Map each bigint to a `CurrencyAmount` (or display string) only with the matching chain’s token metadata. Swapping these fields when intermediate and destination decimals differ (e.g. 18 vs 6) produces wildly wrong fees and “receive” amounts.
+
+See the `BridgeCosts` JSDoc in [`types.ts`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts).
 
 ### [`BridgeStatus`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L110)
 
@@ -801,6 +814,6 @@ This section provides links to all important TypeScript types and interfaces use
 ### Utility Types
 
 - [`BridgeProvider`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L155): Generic bridge provider interface
-- [`BridgeQuoteAmountsAndCosts`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L321): Cost breakdown for bridge operations
+- [`BridgeQuoteAmountsAndCosts`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L416): Cost breakdown for bridge operations
 - [`BridgeHook`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L105): Post-hook configuration for bridging
 - [`isBridgeQuoteAndPost`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/utils.ts#L5): Type guard for cross-chain quotes

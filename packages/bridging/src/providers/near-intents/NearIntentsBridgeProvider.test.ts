@@ -340,6 +340,49 @@ adapterNames.forEach((adapterName) => {
         expect(quote.signature).toBe('ed25519:testSignature')
       })
 
+      it('maps bridgingFee sell/buy to bridge input/output units (BridgeCosts contract)', async () => {
+        const api = new NearIntentsApi()
+        const testQuoteHash = '0xbridgeCostsQuoteHash'
+
+        const quoteWithSpread: QuoteResponse = {
+          ...nearIntentsMockQuoteResponse,
+          quote: {
+            ...nearIntentsMockQuoteResponse.quote,
+            amountIn: '1000000000000000000',
+            amountInUsd: '100',
+            minAmountIn: '1000000000000000000',
+            amountOut: '100000000',
+            amountOutUsd: '99.7',
+            minAmountOut: '99700000',
+            amountInFormatted: '1',
+            amountOutFormatted: '100',
+          },
+        }
+
+        jest.spyOn(api, 'getQuote').mockResolvedValue(quoteWithSpread)
+        jest.spyOn(api, 'getTokens').mockResolvedValue(
+          nearIntentsQuoteTokens(NEAR_INTENTS_SELL_TOKEN, NEAR_INTENTS_BUY_TOKEN),
+        )
+        jest.spyOn(api, 'getAttestation').mockResolvedValue({
+          version: 1,
+          signature: nearIntentsAttestationSignature,
+        })
+        provider.setApi(api)
+
+        jest.spyOn(provider, 'recoverDepositAddress').mockResolvedValue({
+          address: ATTESTATOR_ADDRESS,
+          quoteHash: testQuoteHash,
+          stringifiedQuote: '',
+          attestationSignature: '',
+        })
+
+        const quote = await provider.getQuote({ ...baseNearIntentsQuoteRequest })
+
+        // slippage = 1 - 99.7/100 = 0.003 → fee in input units 1e18 * 0.003, output units 1e8 * 0.003
+        expect(quote.amountsAndCosts.costs.bridgingFee.amountInSellCurrency).toBe(3_000_000_000_000_000n)
+        expect(quote.amountsAndCosts.costs.bridgingFee.amountInBuyCurrency).toBe(300_000n)
+      })
+
       it('should pass owner and receiver into API getQuote when set', async () => {
         const api = new NearIntentsApi()
         const testQuoteHash = '0xtestQuoteHash456'

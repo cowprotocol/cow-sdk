@@ -34,7 +34,7 @@ describe('Across Utils', () => {
 
     const mockSwapApproval: SwapApprovalApiResponse = {
       id: '1',
-      // Quoted input size (wei / token atoms); becomes `limits.minDeposit` on the bridge quote.
+      // Quoted input size (wei / token units); becomes `limits.minDeposit` on the bridge quote.
       inputAmount: '10000000000000000000',
       // equals decimal-adjusted sell amount (18→6 decimals) for this scenario
       expectedOutputAmount: '1000000',

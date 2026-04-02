@@ -281,6 +281,9 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
       isSell: true,
       amountsAndCosts: {
         costs: {
+          // bridgingFee:
+          // - amountInSellCurrency = fee in bridge INPUT (source / intermediate) token units;
+          // - amountInBuyCurrency = fee in bridge OUTPUT (destination) token units — same pairing as beforeFee.sellAmount / buyAmount.
           bridgingFee: {
             feeBps: externalQuote.feeBps,
             amountInSellCurrency: BigInt(externalQuote.bridgeFee),

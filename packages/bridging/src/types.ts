@@ -106,12 +106,12 @@ export interface BridgeQuoteResult {
   fees: {
     /**
      * The amount that should go to the relayer as a fee to cover relayer capital costs.
-     * In token atoms.
+     * In token units.
      */
     bridgeFee: bigint
     /**
      * The amount that should go to the relayer as a fee to cover relayer gas costs.
-     * In token atoms.
+     * In token units.
      */
     destinationGasFee: bigint
   }
@@ -119,12 +119,12 @@ export interface BridgeQuoteResult {
   limits: {
     /**
      * The minimum amount that should be deposited in the source chain.
-     * In token atoms.
+     * In token units.
      */
     minDeposit: bigint
     /**
      * The maximum amount that can be deposited in the source chain.
-     * In token atoms.
+     * In token units.
      */
     maxDeposit: bigint
   }
@@ -383,8 +383,17 @@ export interface BridgeQuoteAndPost {
 
 export interface BridgeCosts<T = bigint> {
   bridgingFee: {
+    /** Basis points for the bridging fee (exact meaning depends on the provider implementation). */
     feeBps: number
+    /**
+     * Fee in **bridge input** token units (same denomination as `beforeFee.sellAmount`).
+     * Token deposited into the bridge on the source chain.
+     */
     amountInSellCurrency: T
+    /**
+     * Fee in **bridge output** token units (same denomination as `beforeFee.buyAmount`).
+     * Token credited on the destination chain.
+     */
     amountInBuyCurrency: T
   }
 }
