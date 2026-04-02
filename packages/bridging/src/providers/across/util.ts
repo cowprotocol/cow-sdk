@@ -9,7 +9,6 @@ import {
 } from './swapApprovalMapper'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 import { ACROSS_DEPOSIT_EVENT_INTERFACE } from './const/interfaces'
-import { ACROSS_TOKEN_MAPPING, AcrossChainConfig } from './const/tokens'
 import { ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES } from './const/contracts'
 import { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
@@ -17,35 +16,6 @@ import { getAddressKey, getGlobalAdapter, getWrappedNativeToken, isNativeToken, 
 import stringify from 'json-stable-stringify'
 
 const PCT_100_PERCENT = 10n ** 18n
-
-/**
- * Return the chain configs
- *
- * This is a temporary implementation. We should use the Across API to get the intermediate tokens (see this.getAvailableRoutes())
- */
-export function getChainConfigs(
-  sourceChainId: TargetChainId,
-  targetChainId: TargetChainId,
-): { sourceChainConfig: AcrossChainConfig; targetChainConfig: AcrossChainConfig } | undefined {
-  const sourceChainConfig = getChainConfig(sourceChainId)
-  const targetChainConfig = getChainConfig(targetChainId)
-
-  if (!sourceChainConfig || !targetChainConfig) return undefined
-
-  return { sourceChainConfig, targetChainConfig }
-}
-
-function getChainConfig(chainId: TargetChainId): AcrossChainConfig | undefined {
-  return ACROSS_TOKEN_MAPPING[chainId]
-}
-
-export function getTokenSymbol(tokenAddress: string, chainConfig: AcrossChainConfig): string | undefined {
-  return Object.keys(chainConfig.tokens).find((key) => chainConfig.tokens[key] === tokenAddress)
-}
-
-export function getTokenAddress(tokenSymbol: string, chainConfig: AcrossChainConfig): string | undefined {
-  return chainConfig.tokens[tokenSymbol]
-}
 
 /**
  * Across uses wrapped native token address for both native and wrapped tokens

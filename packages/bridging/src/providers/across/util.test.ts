@@ -1,8 +1,5 @@
 import { QuoteBridgeRequest, BridgeStatus } from '../../types'
 import {
-  getChainConfigs,
-  getTokenSymbol,
-  getTokenAddress,
   toBridgeQuoteResult,
   pctToBps,
   applyPctFee,
@@ -11,63 +8,13 @@ import {
 } from './util'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { ACROSS_SWAP_APPROVAL_MAX_DEPOSIT_LIMIT, type SwapApprovalApiResponse } from './swapApprovalMapper'
-import { AdditionalTargetChainId, SupportedChainId } from '@cowprotocol/sdk-config'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { createAdapters } from '../../../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import stringify from 'json-stable-stringify'
 
 describe('Across Utils', () => {
-  describe('getChainConfigs', () => {
-    it('should return chain configs for supported chains', () => {
-      const result = getChainConfigs(SupportedChainId.MAINNET, AdditionalTargetChainId.OPTIMISM)
-      expect(result?.sourceChainConfig).toHaveProperty('tokens')
-      expect(result?.sourceChainConfig).toHaveProperty('chainId')
-      expect(result?.targetChainConfig).toHaveProperty('tokens')
-      expect(result?.targetChainConfig).toHaveProperty('chainId')
-    })
-
-    it('should return undefined for unknown chains', () => {
-      const result = getChainConfigs(999999 as SupportedChainId, SupportedChainId.SEPOLIA)
-      expect(result).toBeUndefined()
-    })
-
-    it('should return undefined for sepolia', () => {
-      // Sepolia is not supported by Across
-      const result = getChainConfigs(SupportedChainId.MAINNET, SupportedChainId.SEPOLIA)
-      expect(result).toBeUndefined()
-    })
-  })
-
-  describe('getTokenSymbol and getTokenAddress', () => {
-    const mockChainConfig = {
-      chainId: SupportedChainId.MAINNET,
-      tokens: {
-        'TEST-TOKEN': '0x1234567890123456789012345678901234567890',
-      },
-    }
-
-    it('should return token symbol for valid address', () => {
-      const symbol = getTokenSymbol('0x1234567890123456789012345678901234567890', mockChainConfig)
-      expect(symbol).toBe('TEST-TOKEN')
-    })
-
-    it('should return undefined for invalid address', () => {
-      const symbol = getTokenSymbol('0x0000000000000000000000000000000000000000', mockChainConfig)
-      expect(symbol).toBeUndefined()
-    })
-
-    it('should return token address for valid symbol', () => {
-      const address = getTokenAddress('TEST-TOKEN', mockChainConfig)
-      expect(address).toBe('0x1234567890123456789012345678901234567890')
-    })
-
-    it('should return undefined for invalid symbol', () => {
-      const address = getTokenAddress('INVALID-TOKEN', mockChainConfig)
-      expect(address).toBeUndefined()
-    })
-  })
-
   describe('toBridgeQuoteResult', () => {
     const mockAmount = 1000000000000000000n // 1 ETH
 
