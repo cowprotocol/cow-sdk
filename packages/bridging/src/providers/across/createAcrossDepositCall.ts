@@ -28,6 +28,81 @@ const ACROSS_SPOKE_POOL_PERIPHERY_SWAP_PROXY_GETTER_ABI = [
 const TRANSFER_TYPE_APPROVAL = 0
 
 /**
+ * Minimal ABI for the reference wrapper contract:
+ * `AcrossApproveAndBridgeReference.approveAndBridge(...)`.
+ */
+const ACROSS_APPROVE_AND_BRIDGE_REFERENCE_ABI = [
+  {
+    type: 'function',
+    name: 'approveAndBridge',
+    inputs: [
+      { name: 'token', type: 'address' },
+      { name: 'minAmount', type: 'uint256' },
+      { name: 'nativeTokenExtraFee', type: 'uint256' },
+      { name: 'data', type: 'bytes' },
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+] as const
+
+/**
+ * Detect the exact byte offset of `swapTokenAmount` in encoded
+ * `SpokePoolPeriphery.swapAndBridge(...)` calldata.
+ *
+ * We intentionally avoid hardcoding offsets so this remains robust to ABI/layout
+ * shifts while still using an offset-based patching approach on-chain.
+ *
+ * Returns:
+ * - byte offset from calldata start (including 4-byte selector prefix)
+ * - points to a full 32-byte ABI word
+ */
+function getSwapTokenAmountOffsetInSwapAndBridgeCalldata__wip(
+  swapAndDepositDataWithoutSwapTokenAmount: Omit<Record<string, unknown>, 'swapTokenAmount'>,
+): number {
+  const adapter = getGlobalAdapter()
+
+  const calldataWithZero = adapter.utils.encodeFunction(ACROSS_SPOKE_POOL_PERIPHERY_ABI, 'swapAndBridge', [
+    {
+      ...swapAndDepositDataWithoutSwapTokenAmount,
+      swapTokenAmount: 0n,
+    },
+  ]) as string
+
+  const calldataWithOne = adapter.utils.encodeFunction(ACROSS_SPOKE_POOL_PERIPHERY_ABI, 'swapAndBridge', [
+    {
+      ...swapAndDepositDataWithoutSwapTokenAmount,
+      swapTokenAmount: 1n,
+    },
+  ]) as string
+
+  if (calldataWithZero.length !== calldataWithOne.length) {
+    throw new Error('swapAndBridge calldata length mismatch while locating swapTokenAmount offset')
+  }
+
+  const differingOffsets: number[] = []
+  const totalBytes = (calldataWithZero.length - 2) / 2
+
+  for (let offsetBytes = 4; offsetBytes + 32 <= totalBytes; offsetBytes += 32) {
+    const start = 2 + offsetBytes * 2
+    const end = start + 64
+    const wordZero = calldataWithZero.slice(start, end)
+    const wordOne = calldataWithOne.slice(start, end)
+    if (wordZero !== wordOne) {
+      differingOffsets.push(offsetBytes)
+    }
+  }
+
+  if (differingOffsets.length !== 1) {
+    throw new Error(
+      `Expected exactly 1 differing word while locating swapTokenAmount offset, got ${differingOffsets.length}`,
+    )
+  }
+
+  return differingOffsets[0] as number
+}
+
+/**
  * Reads the SwapProxy address from the deployed SpokePoolPeriphery on this chain.
  *
  * We read this from chain (via the global adapter) so the periphery remains the single
@@ -232,4 +307,130 @@ export function createAcrossDepositCall(params: {
   }
 
   return [transferCall, swapAndBridgeCall]
+}
+
+/**
+ * WIP/reference implementation for the SC flow.
+ *
+ * This builds a single call into the reference SC:
+ * `approveAndBridge(token, minAmount, nativeTokenExtraFee, runtimeData)`.
+ *
+ * Runtime behavior is delegated to the SC (called as delegatecall by CoWShed):
+ * - read full runtime token balance from CoWShed
+ * - enforce `balance >= minAmount`
+ * - patch `swapTokenAmount` at known ABI word offset to runtime balance
+ * - approve periphery for runtime balance pull
+ * - call periphery `swapAndBridge` with pre-encoded calldata
+ */
+export function createAcrossDepositCallViaWrapper__wip(params: {
+  request: QuoteBridgeRequest
+  quote: AcrossQuoteResult
+  cowShedSdk: CowShedSdk
+  wrapperAddress: string
+}): [EvmCall] {
+  const { request, quote, cowShedSdk, wrapperAddress } = params
+  const { sellTokenChainId, sellTokenAddress, buyTokenChainId, buyTokenAddress, account, receiver, owner } = request
+
+  // STEP 1: this is the quoted minimum intermediate amount.
+  // The wrapper enforces runtime balance >= this value before bridging.
+  const quotedIntermediateAmount = request.amount
+
+  // STEP 2: normalize native/wrapped token mapping exactly as Across expects.
+  const sellToken = mapNativeOrWrappedTokenAddress({ address: sellTokenAddress, chainId: sellTokenChainId })
+  const buyToken = mapNativeOrWrappedTokenAddress({ address: buyTokenAddress, chainId: buyTokenChainId })
+  const adapter = getGlobalAdapter()
+
+  // STEP 3: resolve contracts used by runtime wrapper logic.
+  const spokePoolPeripheryAddress = getSpokePoolPeripheryAddress(sellTokenChainId)
+  const spokePoolAddress = getSpokePoolAddress(sellTokenChainId)
+  const ownerAddress = owner || account
+
+  // STEP 4: depositor is still the CoWShed account (same as current flow).
+  const cowShedAccount = cowShedSdk.getCowShedAccount(sellTokenChainId, ownerAddress)
+
+  // STEP 5: reuse quote timing fields produced by Across swap approval API.
+  const { swapApproval } = quote
+  const timing = parseDepositTimingFromSwapTxData(swapApproval.swapTx.data)
+  if (!timing) {
+    throw new Error('swapTx.data missing deposit timing words')
+  }
+
+  // STEP 6: destination chain minimum output remains quote-derived as today.
+  const outputAmount = quote.amountsAndCosts.afterSlippage.buyAmount
+
+  // STEP 7: keep no-op swap route (balanceOf call) so periphery computes returnAmount
+  // from SwapProxy balance and can proportionally adjust output.
+  const noOpSwapCalldata = adapter.utils.encodeFunction(ERC20_BALANCE_OF_ABI, 'balanceOf', [ZERO_ADDRESS]) as string
+
+  // STEP 8: build periphery payload base (without swapTokenAmount for now).
+  const swapAndDepositDataBase = {
+    submissionFees: {
+      amount: 0n,
+      recipient: ZERO_ADDRESS,
+    },
+    depositData: {
+      inputToken: sellToken,
+      outputToken: addressToBytes32(buyToken),
+      outputAmount,
+      depositor: cowShedAccount,
+      recipient: addressToBytes32(receiver || account),
+      destinationChainId: BigInt(buyTokenChainId),
+      exclusiveRelayer: addressToBytes32(timing.exclusiveRelayer),
+      quoteTimestamp: Number(timing.quoteTimestamp),
+      fillDeadline: Number(timing.fillDeadline),
+      exclusivityParameter: Number(timing.exclusivityDeadline),
+      message: getGlobalAdapter().utils.encodeAbi(['string'], [swapApproval.id]),
+    },
+    swapToken: sellToken,
+    exchange: sellToken,
+    transferType: TRANSFER_TYPE_APPROVAL,
+    routerCalldata: noOpSwapCalldata,
+    enableProportionalAdjustment: true,
+    spokePool: spokePoolAddress,
+    nonce: 0n,
+    // Must equal Across quote amount (/swap/approval) for correct min-check and scaling:
+    minExpectedInputTokenAmount: quotedIntermediateAmount,
+  }
+
+  // STEP 9: compute exact ABI offset of `swapTokenAmount` using a two-encoding diff.
+  const swapTokenAmountOffset = getSwapTokenAmountOffsetInSwapAndBridgeCalldata__wip(swapAndDepositDataBase)
+
+  // STEP 10: pre-encode periphery.swapAndBridge call with a non-zero visible value.
+  // Wrapper will overwrite this field with runtime exact balance at `swapTokenAmountOffset`.
+  const swapAndDepositData = {
+    ...swapAndDepositDataBase,
+    swapTokenAmount: quotedIntermediateAmount,
+  }
+
+  const swapAndBridgeCallData = adapter.utils.encodeFunction(ACROSS_SPOKE_POOL_PERIPHERY_ABI, 'swapAndBridge', [
+    swapAndDepositData,
+  ]) as string
+
+  // STEP 11: runtimeData consumed by SC:
+  // [periphery, swapAndBridge calldata, swapTokenAmount offset].
+  const runtimeData = adapter.utils.encodeAbi(
+    ['address', 'bytes', 'uint256'],
+    [spokePoolPeripheryAddress, swapAndBridgeCallData, BigInt(swapTokenAmountOffset)],
+  ) as string
+
+  // STEP 12: build wrapper call.
+  //
+  // IMPORTANT:
+  // - wrapper reads FULL runtime CoWShed balance via balanceOf(address(this))
+  // - wrapper patches swapTokenAmount at `swapTokenAmountOffset` to runtime balance
+  // - wrapper approves periphery and executes swapAndBridge
+  // This fixes surplus and keeps explorer input amount non-zero/accurate.
+  const wrapperCallData = adapter.utils.encodeFunction(
+    ACROSS_APPROVE_AND_BRIDGE_REFERENCE_ABI,
+    'approveAndBridge',
+    [sellToken, quotedIntermediateAmount, 0n, runtimeData],
+  ) as string
+
+  return [
+    {
+      to: wrapperAddress,
+      data: wrapperCallData,
+      value: 0n,
+    },
+  ]
 }

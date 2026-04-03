@@ -22,7 +22,11 @@ import {
 
 import { AcrossApi, AcrossApiOptions } from './AcrossApi'
 import { mapAcrossStatusToBridgeStatus, mapNativeOrWrappedTokenAddress, toBridgeQuoteResult } from './util'
-import { createAcrossDepositCall, fetchAcrossSwapProxyAddress } from './createAcrossDepositCall'
+import {
+  createAcrossDepositCall,
+  createAcrossDepositCallViaWrapper__wip,
+  fetchAcrossSwapProxyAddress,
+} from './createAcrossDepositCall'
 import type { SwapApprovalApiResponse } from './swapApprovalMapper'
 import { getDepositParams } from './getDepositParams'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
@@ -81,6 +85,14 @@ export interface AcrossBridgeProviderOptions {
    * will not be bridged.
    */
   getPrefundFromShedIntermediateTokenAmount?: (request: QuoteBridgeRequest) => bigint
+
+  /**
+   * WIP/reference config for the sc-based flow.
+   * If set, use `getUnsignedBridgeCalls__withsc` + `getSignedHook__withsc`.
+   *
+   * SC example: `packages/bridging/src/providers/across/reference/AcrossApproveAndBridgeReference.sol`
+   */
+  acrossApproveAndBridgeWrapperAddressPerChain__wip?: Partial<AddressPerChain>
 }
 
 export interface AcrossQuoteResult extends BridgeQuoteResult {
@@ -93,6 +105,12 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
   /** Prefund SwapProxy, then `swapAndBridge` on periphery. */
   readonly unsignedBridgeHookCallsCount = 2
 
+  /**
+   * WIP/reference: single delegatecall into wrapper contract.
+   * TODO: Consider reverting the previous change to allow multiple calls.
+   */
+  readonly unsignedBridgeHookCallsCount__withsc = 1
+
   type = providerType
   protected api: AcrossApi
   protected cowShedSdk: CowShedSdk
@@ -100,6 +118,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
   private supportedTokens: SupportedTokensState | null = null
 
   private readonly getPrefundFromShedIntermediateTokenAmount?: (request: QuoteBridgeRequest) => bigint
+  private readonly acrossApproveAndBridgeWrapperAddressPerChain__wip?: Partial<AddressPerChain>
 
   constructor(options: AcrossBridgeProviderOptions = {}, _adapter?: AbstractProviderAdapter) {
     const adapter = _adapter || options.cowShedOptions?.adapter
@@ -109,6 +128,7 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     this.api = new AcrossApi(options.apiOptions)
     this.cowShedSdk = new CowShedSdk(adapter, options.cowShedOptions?.factoryOptions)
     this.getPrefundFromShedIntermediateTokenAmount = options.getPrefundFromShedIntermediateTokenAmount
+    this.acrossApproveAndBridgeWrapperAddressPerChain__wip = options.acrossApproveAndBridgeWrapperAddressPerChain__wip
   }
 
   info: BridgeProviderInfo = {
@@ -261,6 +281,35 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     return calls
   }
 
+  /**
+   * WIP/reference version of `getUnsignedBridgeCalls` for SC flow.
+   *
+   * Returns a single call:
+   * wrapper.approveAndBridge(token, minAmount, 0, runtimeData)
+   */
+  async getUnsignedBridgeCalls__withsc(
+    request: QuoteBridgeRequest,
+    quote: AcrossQuoteResult,
+  ): Promise<readonly [EvmCall]> {
+    // First, resolve deployed wrapper for the source chain (or simply map from const)
+    const wrapperAddress = this.acrossApproveAndBridgeWrapperAddressPerChain__wip?.[request.sellTokenChainId]
+    if (!wrapperAddress) {
+      throw new Error(`Across wrapper address is not configured for chain ${request.sellTokenChainId}`)
+    }
+
+    // Then, build single wrapper call that embeds runtime data for across periphery.
+    const calls = createAcrossDepositCallViaWrapper__wip({
+      request,
+      quote,
+      cowShedSdk: this.cowShedSdk,
+      wrapperAddress,
+    })
+
+    assertUnsignedBridgeCallsLength(calls, this.unsignedBridgeHookCallsCount__withsc, 'AcrossBridgeProvider.getUnsignedBridgeCalls')
+
+    return calls
+  }
+
   async getGasLimitEstimationForHook(request: QuoteBridgeRequest): Promise<number> {
     // The Across swapAndBridge flow involves three USDC proxy calls (cow-shed ERC20.transfer to SwapProxy + 2x transferFrom),
     // each hitting a reentrancy sentry SSTORE (~20k gas) in the implementation. On chains like
@@ -310,6 +359,62 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
         callData: data,
         gasLimit: gasLimit.toString(),
         dappId: ACROSS_HOOK_DAPP_ID,
+      },
+      recipient: cowShedAccount,
+    }
+  }
+
+  /**
+   * WIP/reference version of getSignedHook for wrapper SC flow.
+   *
+   * Differences from current implementation:
+   * - Expects exactly one unsigned call
+   * - Uses delegatecall=true so wrapper executes in CoWShed context
+   *   and can read full runtime token balance from `address(this)`.
+   */
+  async getSignedHook__withsc(
+    chainId: SupportedChainId,
+    unsignedCalls: readonly EvmCall[],
+    bridgeHookNonce: string,
+    deadline: bigint,
+    hookGasLimit: number,
+    signer?: SignerLike,
+  ): Promise<BridgeHook> {
+    assertUnsignedBridgeCallsLength(unsignedCalls, this.unsignedBridgeHookCallsCount__withsc, 'AcrossBridgeProvider.getSignedHook')
+
+    const unsignedCall = unsignedCalls[0]
+
+    // First, sign a CoWShed multicall with delegatecall=true.
+    //
+    // CRITICAL FOR SURPLUS FIX:
+    // delegatecall executes wrapper code in CoWShed storage/balance context, so
+    // wrapper can read `balanceOf(address(this))` for the actual runtime amount.
+    const { signedMulticall, cowShedAccount, gasLimit } = await this.cowShedSdk.signCalls({
+      calls: [
+        {
+          target: unsignedCall.to,
+          value: unsignedCall.value,
+          callData: unsignedCall.data,
+          allowFailure: false,
+          // CRITICAL FOR SURPLUS FIX: this must stay true for runtime balance logic.
+          isDelegateCall: true,
+        },
+      ],
+      chainId,
+      signer,
+      gasLimit: BigInt(hookGasLimit),
+      deadline,
+      nonce: bridgeHookNonce,
+    })
+
+    // Then, return post-hook with distinct dappId suffix for WIP path.
+    const { to, data } = signedMulticall
+    return {
+      postHook: {
+        target: to,
+        callData: data,
+        gasLimit: gasLimit.toString(),
+        dappId: `${ACROSS_HOOK_DAPP_ID}__withsc`,
       },
       recipient: cowShedAccount,
     }
