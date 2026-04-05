@@ -45,12 +45,12 @@ const parameters: QuoteBridgeRequest = {
 
   // Sell token (and source chain)
   sellTokenChainId: SupportedChainId.ARBITRUM_ONE,
-  sellTokenAddress: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenAddress: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
   sellTokenDecimals: 18,
 
   // Buy token (and target chain)
   buyTokenChainId: SupportedChainId.BASE,
-  buyTokenAddress: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenAddress: '0x4200000000000000000000000000000000000006',
   buyTokenDecimals: 18,
 
   // Amount to sell
@@ -115,12 +115,12 @@ const parameters: QuoteBridgeRequest = {
 
   // Sell token (and source chain)
   sellTokenChainId: SupportedChainId.ARBITRUM_ONE,
-  sellTokenAddress: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenAddress: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
   sellTokenDecimals: 18,
 
   // Buy token (and target chain)
   buyTokenChainId: SupportedChainId.BASE,
-  buyTokenAddress: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenAddress: '0x4200000000000000000000000000000000000006',
   buyTokenDecimals: 18,
 
   // Amount to sell
