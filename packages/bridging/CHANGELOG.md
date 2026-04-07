@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.3.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v3.3.0...sdk-bridging-v3.3.1) (2026-04-07)
+
+
+### 🐛 Bug Fixes
+
+* **bridging:** retain metadata in appData for intermediate swap results ([#852](https://github.com/cowprotocol/cow-sdk/issues/852)) ([b72b656](https://github.com/cowprotocol/cow-sdk/commit/b72b6565640774b5eb6957dcbe08029331582e2f))
+
 ## [3.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v3.2.0...sdk-bridging-v3.3.0) (2026-04-01)
 
 
