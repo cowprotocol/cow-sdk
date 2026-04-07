@@ -1,5 +1,5 @@
 import { areAddressesEqual, getAddressKey, getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
-import { BTC_CURRENCY_ADDRESS, ETH_ADDRESS, SOL_NATIVE_CURRENCY_ADDRESS } from '@cowprotocol/sdk-config'
+import { BTC_CURRENCY_ADDRESS, SOL_NATIVE_CURRENCY_ADDRESS } from '@cowprotocol/sdk-config'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { EnrichedOrder, OrderKind } from '@cowprotocol/sdk-order-book'
 import { QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript'
@@ -268,8 +268,8 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
         fillTxHash: status.swapDetails?.destinationChainTxHashes?.[0]?.hash,
       },
       params: {
-        inputTokenAddress: inputToken.contractAddress ?? ETH_ADDRESS,
-        outputTokenAddress: outputToken.contractAddress ?? ETH_ADDRESS,
+        inputTokenAddress: inputToken.contractAddress ?? adaptedInput.address,
+        outputTokenAddress: outputToken.contractAddress ?? adaptedOutput.address,
         inputAmount: BigInt(quote.amountIn),
         outputAmount: swapDetails.amountOut ? BigInt(swapDetails.amountOut) : BigInt(quote.amountOut),
         owner: order.owner,

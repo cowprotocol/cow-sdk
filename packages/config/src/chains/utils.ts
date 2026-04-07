@@ -32,13 +32,23 @@ export function isNonEvmChain(chainId: ChainId): chainId is NonEvmChains {
 }
 
 /**
- * Type guard to check if a chain ID represents an BTC chain
+ * Type guard to check if a chain ID represents BTC chain
  *
  * @param chainId - The chain ID to check
- * @returns True if the chain ID is chainId is BTC, false otherwise
+ * @returns True if the chain ID is BTC, false otherwise
  */
 export function isBtcChain(chainId: ChainId): chainId is NonEvmChains.BITCOIN {
   return chainId === NonEvmChains.BITCOIN;
+}
+
+/**
+ * Type guard to check if a chain ID represents Solana chain
+ *
+ * @param chainId - The chain ID to check
+ * @returns True if the chain ID is Solana, false otherwise
+ */
+export function isSolanaChain(chainId: ChainId): chainId is NonEvmChains.SOLANA {
+  return chainId === NonEvmChains.SOLANA;
 }
 
 /**
