@@ -98,6 +98,7 @@ export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
     appData: {
       ...advancedSettings?.appData,
       metadata: {
+        ...advancedSettings?.appData?.metadata,
         hooks,
         bridging: {
           providerId: provider.info.dappId,
