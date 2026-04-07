@@ -11,10 +11,10 @@ export const EVM_ADDRESS_PATTERN = /^0x[a-fA-F0-9]{40}$/
  *
  * Bech32 (P2WPKH/P2WSH): per BIP-173, addresses must be either entirely uppercase or entirely
  * lowercase (never mixed case). Starts with bc1 (lowercase) or BC1 (uppercase), followed by
- * 39-59 alphanumeric characters.
+ * 39-59 Bech32 characters (alphanumeric excluding 1, b/B, i/I, o/O to avoid visual ambiguity).
  */
 export const BTC_ADDRESS_PATTERN =
-  /^([13][a-km-zA-HJ-NP-Z1-9]{24,33}|bc1[a-z0-9]{39,59}|BC1[A-Z0-9]{39,59})$/
+  /^([13][a-km-zA-HJ-NP-Z1-9]{24,33}|bc1[023456789ac-hj-np-z]{39,59}|BC1[023456789AC-HJ-NP-Z]{39,59})$/
 
 /**
  * Pattern for validating Solana addresses.
