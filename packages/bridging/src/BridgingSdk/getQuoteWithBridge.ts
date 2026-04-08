@@ -255,6 +255,7 @@ export async function getQuoteWithHookBridge<T extends BridgeQuoteResult>(
       bridgeRequestWithoutAmount: {
         ...bridgeRequestWithoutAmount,
         receiver: receiverOverride || bridgeRequestWithoutAmount.receiver,
+        ...(validToOverride !== undefined ? { validTo: validToOverride } : {}),
       },
       intermediateTokenAmount,
       signer,
@@ -383,7 +384,7 @@ async function getHookBridgeResult<T extends BridgeQuoteResult>(
   // Get the pre-authorized hook
   const {
     hook: bridgeHook,
-    unsignedBridgeCall,
+    unsignedBridgeCalls,
     bridgingQuote,
   } = await getBridgeSignedHook(provider, bridgeRequest, context)
 
@@ -415,7 +416,7 @@ async function getHookBridgeResult<T extends BridgeQuoteResult>(
     quoteBody: bridgingQuote.quoteBody,
     tradeParameters: bridgeRequest, // Just the bridge (not the swap & bridge)
     bridgeCallDetails: {
-      unsignedBridgeCall: unsignedBridgeCall,
+      unsignedBridgeCalls,
       preAuthorizedBridgingHook: bridgeHook,
     },
     isSell: bridgingQuote.isSell,

@@ -13,22 +13,43 @@ import {
   QuoteBridgeRequest,
 } from '../../types'
 
-import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
+import {
+  DEFAULT_BRIDGE_SLIPPAGE_BPS,
+  DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION,
+  HOOK_DAPP_BRIDGE_PROVIDER_PREFIX,
+  RAW_PROVIDERS_FILES_PATH,
+} from '../../const'
 
 import { AcrossApi, AcrossApiOptions } from './AcrossApi'
-import { mapAcrossStatusToBridgeStatus, toBridgeQuoteResult } from './util'
-import { createAcrossDepositCall } from './createAcrossDepositCall'
-import { SuggestedFeesResponse } from './types'
+import { mapAcrossStatusToBridgeStatus, mapNativeOrWrappedTokenAddress, toBridgeQuoteResult } from './util'
+import {
+  createAcrossDepositCall,
+  createAcrossDepositCallViaWrapper__wip,
+  fetchAcrossSwapProxyAddress,
+} from './createAcrossDepositCall'
+import type { SwapApprovalApiResponse } from './swapApprovalMapper'
 import { getDepositParams } from './getDepositParams'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
+import { assertUnsignedBridgeCallsLength } from '../../utils/assertUnsignedBridgeCallsLength'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
-import { AbstractProviderAdapter, getAddressKey, getGlobalAdapter, setGlobalAdapter, SignerLike } from '@cowprotocol/sdk-common'
+import {
+  AbstractProviderAdapter,
+  getAddressKey,
+  getGlobalAdapter,
+  isNativeToken,
+  isWrappedNativeToken,
+  setGlobalAdapter,
+  SignerLike,
+} from '@cowprotocol/sdk-common'
 import {
   arbitrumOne,
   base,
+  bnb,
   ChainId,
   ChainInfo,
   EvmCall,
+  getChainInfo,
+  ink,
   mainnet,
   optimism,
   polygon,
@@ -43,10 +64,10 @@ import { EnrichedOrder, OrderKind } from '@cowprotocol/sdk-order-book'
 type SupportedTokensState = Record<ChainId, Record<string, TokenInfo>>
 
 export const ACROSS_HOOK_DAPP_ID = `${HOOK_DAPP_BRIDGE_PROVIDER_PREFIX}/across`
-export const ACROSS_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism]
+export const ACROSS_SUPPORTED_NETWORKS = [mainnet, polygon, arbitrumOne, base, optimism, bnb, ink]
 
-// We need to review if we should set an additional slippage tolerance, for now assuming the quote gives you the exact price of bridging and no further slippage is needed
-const SLIPPAGE_TOLERANCE_BPS = 0
+// Currently, Across provider is only involved to cross-chains swaps via EOA
+const isTraderEOA = true
 
 export interface AcrossBridgeProviderOptions {
   // API options
@@ -54,20 +75,50 @@ export interface AcrossBridgeProviderOptions {
 
   // Cow-shed options
   cowShedOptions?: CowShedSdkOptions
+
+  /**
+   * Return how much intermediate token to move from the CoW Shed to Across SwapProxy before
+   * `swapAndBridge`. Must be >= `request.amount` (the amount used for the Across quote).
+   *
+   * Use this when the trading layer knows the executed intermediate balance (surplus) and can
+   * pass it into hook calldata. If omitted, we prefund exactly `request.amount`, so the surplus
+   * will not be bridged.
+   */
+  getPrefundFromShedIntermediateTokenAmount?: (request: QuoteBridgeRequest) => bigint
+
+  /**
+   * WIP/reference config for the sc-based flow.
+   * If set, use `getUnsignedBridgeCalls__withsc` + `getSignedHook__withsc`.
+   *
+   * SC example: `packages/bridging/src/providers/across/reference/AcrossApproveAndBridgeReference.sol`
+   */
+  acrossApproveAndBridgeWrapperAddressPerChain__wip?: Partial<AddressPerChain>
 }
 
 export interface AcrossQuoteResult extends BridgeQuoteResult {
-  suggestedFees: SuggestedFeesResponse
+  swapApproval: SwapApprovalApiResponse
 }
 
 const providerType = 'HookBridgeProvider' as const
 
 export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResult> {
+  /** Prefund SwapProxy, then `swapAndBridge` on periphery. */
+  readonly unsignedBridgeHookCallsCount = 2
+
+  /**
+   * WIP/reference: single delegatecall into wrapper contract.
+   * TODO: Consider reverting the previous change to allow multiple calls.
+   */
+  readonly unsignedBridgeHookCallsCount__withsc = 1
+
   type = providerType
   protected api: AcrossApi
   protected cowShedSdk: CowShedSdk
 
   private supportedTokens: SupportedTokensState | null = null
+
+  private readonly getPrefundFromShedIntermediateTokenAmount?: (request: QuoteBridgeRequest) => bigint
+  private readonly acrossApproveAndBridgeWrapperAddressPerChain__wip?: Partial<AddressPerChain>
 
   constructor(options: AcrossBridgeProviderOptions = {}, _adapter?: AbstractProviderAdapter) {
     const adapter = _adapter || options.cowShedOptions?.adapter
@@ -76,6 +127,8 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     }
     this.api = new AcrossApi(options.apiOptions)
     this.cowShedSdk = new CowShedSdk(adapter, options.cowShedOptions?.factoryOptions)
+    this.getPrefundFromShedIntermediateTokenAmount = options.getPrefundFromShedIntermediateTokenAmount
+    this.acrossApproveAndBridgeWrapperAddressPerChain__wip = options.acrossApproveAndBridgeWrapperAddressPerChain__wip
   }
 
   info: BridgeProviderInfo = {
@@ -91,7 +144,13 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
   }
 
   async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
-    const tokens = Object.values((await this.getSupportedTokensState())[params.buyChainId] || {})
+    const tokens = Object.values((await this.getSupportedTokensState())[params.buyChainId] || {}).filter((token) => {
+      // WETH is not supported as destination token
+      // See https://docs.across.to/introduction/technical-faq#what-is-the-behavior-of-eth-weth-in-transfers
+      if (isTraderEOA && isWrappedNativeToken(token)) return false
+
+      return true
+    })
     const isRouteAvailable = tokens.length > 0
 
     return {
@@ -108,76 +167,184 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
 
     const supportedTokensState = await this.getSupportedTokensState()
-    const buyTokenAddressLower = getAddressKey(buyTokenAddress)
 
     const sourceTokens = supportedTokensState[sellTokenChainId]
-    const targetTokens = supportedTokensState[buyTokenChainId]
+    const sourceNativeToken = getChainInfo(sellTokenChainId)?.nativeCurrency
 
-    // Find the token symbol for the target token
-    const targetTokenSymbol = targetTokens && targetTokens[buyTokenAddressLower]?.symbol?.toLowerCase()
-    if (!targetTokenSymbol) return []
+    /**
+     * It should not be possible, just a technical check
+     */
+    if (!sourceTokens || !sourceNativeToken) {
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES, { sellTokenChainId })
+    }
 
-    // Use the tokenSymbol to find the outputToken in the target chain
-    return Object.values(sourceTokens || {}).filter((token) => token.symbol?.toLowerCase() === targetTokenSymbol)
+    const buyToken = { address: buyTokenAddress, chainId: buyTokenChainId }
+    const destinationToken = mapNativeOrWrappedTokenAddress(buyToken)
+
+    const routes = await this.api.getAvailableRoutes({
+      originChainId: sellTokenChainId,
+      destinationChainId: buyTokenChainId,
+      // Across uses wrapped native token address for both native and wrapped tokens
+      ...(destinationToken ? { destinationToken: destinationToken } : null),
+    })
+
+    return routes.reduce<TokenInfo[]>((acc, route) => {
+      // Across uses wrapped native token address for both native and wrapped tokens
+      const intermediateToken = route.isNative
+        ? sourceTokens[getAddressKey(sourceNativeToken.address)]
+        : sourceTokens[getAddressKey(route.originToken)]
+
+      if (!intermediateToken) return acc
+
+      const isTokenNative = isNativeToken(intermediateToken)
+
+      // https://docs.across.to/introduction/technical-faq#what-is-the-behavior-of-eth-weth-in-transfers
+      // For EOA's, only WETH is supported as intermediate
+      if (isTraderEOA && isTokenNative) return acc
+
+      acc.push(intermediateToken)
+
+      return acc
+    }, [])
   }
 
   async getQuote(request: QuoteBridgeRequest): Promise<AcrossQuoteResult> {
-    const { sellTokenAddress, sellTokenChainId, buyTokenChainId, amount, receiver } = request
+    const {
+      sellTokenAddress,
+      sellTokenChainId,
+      buyTokenAddress,
+      buyTokenChainId,
+      amount,
+      receiver,
+      account,
+      owner,
+    } = request
+    const sellTokenLike = { chainId: sellTokenChainId, address: sellTokenAddress }
 
-    const suggestedFees = await this.api.getSuggestedFees({
-      token: sellTokenAddress,
-      // inputToken: sellTokenAddress,
-      // outputToken: buyTokenAddress,
+    if (isTraderEOA && isNativeToken(sellTokenLike)) {
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES, {
+        info: 'Across does not support native token deposit for EOA',
+      })
+    }
+
+    const buyTokenLike = { chainId: buyTokenChainId, address: buyTokenAddress }
+    if (isTraderEOA && isWrappedNativeToken(buyTokenLike)) {
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES, {
+        info: 'Across does not support wrapped-native token destination',
+      })
+    }
+
+    const ownerAddress = owner ?? account
+    const depositor = this.cowShedSdk.getCowShedAccount(sellTokenChainId, ownerAddress)
+
+    const swapApproval = await this.api.getSwapApproval({
+      inputToken: mapNativeOrWrappedTokenAddress(sellTokenLike),
+      outputToken: mapNativeOrWrappedTokenAddress({ chainId: buyTokenChainId, address: buyTokenAddress }),
       originChainId: sellTokenChainId,
       destinationChainId: buyTokenChainId,
       amount,
-      recipient: receiver ?? undefined,
+      depositor,
+      recipient: receiver || account,
     })
 
-    // TODO: The suggested fees contain way more information. As we review more bridge providers we should revisit the
-    // facade of the quote result.
-    //
-    // For example, this contains also information on the limits, so you don't need to quote again for the same pair.
-    // potentially, this could be cached for a short period of time in the SDK so we can resolve quotes with less
-    // requests.
-
-    return toBridgeQuoteResult(request, SLIPPAGE_TOLERANCE_BPS, suggestedFees)
+    return toBridgeQuoteResult(request, DEFAULT_BRIDGE_SLIPPAGE_BPS, swapApproval)
   }
 
-  async getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: AcrossQuoteResult): Promise<EvmCall> {
-    return createAcrossDepositCall({
+  async getUnsignedBridgeCalls(
+    request: QuoteBridgeRequest,
+    quote: AcrossQuoteResult,
+  ): Promise<readonly [EvmCall, EvmCall]> {
+    // Periphery hosts SwapProxy address for ERC20.transfer:
+    const swapProxyAddress = await fetchAcrossSwapProxyAddress(request.sellTokenChainId)
+
+    const prefundFromShedAmount =
+      this.getPrefundFromShedIntermediateTokenAmount?.(request) ?? undefined
+
+    // This same validation happens inside createAcrossDepositCall in case no custom `prefundFromShedAmount`
+    // was used here:
+    if (prefundFromShedAmount !== undefined && prefundFromShedAmount < request.amount) {
+      throw new Error(
+        'getPrefundFromShedIntermediateTokenAmount must return a value >= request.amount (Across min input)',
+      )
+    }
+
+    const calls = createAcrossDepositCall({
       request,
       quote,
       cowShedSdk: this.cowShedSdk,
+      swapProxyAddress,
+      prefundFromShedAmount,
     })
+
+    assertUnsignedBridgeCallsLength(calls, this.unsignedBridgeHookCallsCount, 'AcrossBridgeProvider.getUnsignedBridgeCalls')
+
+    return calls
+  }
+
+  /**
+   * WIP/reference version of `getUnsignedBridgeCalls` for SC flow.
+   *
+   * Returns a single call:
+   * wrapper.approveAndBridge(token, minAmount, 0, runtimeData)
+   */
+  async getUnsignedBridgeCalls__withsc(
+    request: QuoteBridgeRequest,
+    quote: AcrossQuoteResult,
+  ): Promise<readonly [EvmCall]> {
+    // First, resolve deployed wrapper for the source chain (or simply map from const)
+    const wrapperAddress = this.acrossApproveAndBridgeWrapperAddressPerChain__wip?.[request.sellTokenChainId]
+    if (!wrapperAddress) {
+      throw new Error(`Across wrapper address is not configured for chain ${request.sellTokenChainId}`)
+    }
+
+    // Then, build single wrapper call that embeds runtime data for across periphery.
+    const calls = createAcrossDepositCallViaWrapper__wip({
+      request,
+      quote,
+      cowShedSdk: this.cowShedSdk,
+      wrapperAddress,
+    })
+
+    assertUnsignedBridgeCallsLength(calls, this.unsignedBridgeHookCallsCount__withsc, 'AcrossBridgeProvider.getUnsignedBridgeCalls')
+
+    return calls
   }
 
   async getGasLimitEstimationForHook(request: QuoteBridgeRequest): Promise<number> {
+    // The Across swapAndBridge flow involves three USDC proxy calls (cow-shed ERC20.transfer to SwapProxy + 2x transferFrom),
+    // each hitting a reentrancy sentry SSTORE (~20k gas) in the implementation. On chains like
+    // Arbitrum with native USDC (proxy pattern), this exhausts the base 240k gas estimate.
     return getGasLimitEstimationForHook({
       cowShedSdk: this.cowShedSdk,
       request,
+      extraGas: DEFAULT_EXTRA_GAS_FOR_HOOK_ESTIMATION,
     })
   }
 
   async getSignedHook(
     chainId: SupportedChainId,
-    unsignedCall: EvmCall,
+    unsignedCalls: readonly EvmCall[],
     bridgeHookNonce: string,
     deadline: bigint,
     hookGasLimit: number,
     signer?: SignerLike,
   ): Promise<BridgeHook> {
-    // Sign the multicall
+    assertUnsignedBridgeCallsLength(unsignedCalls, this.unsignedBridgeHookCallsCount, 'AcrossBridgeProvider.getSignedHook')
+
+    // These are regular calls (not delegate calls) from cow-shed:
+    // - First prefunds Across `SwapProxy`
+    // - Second calls the periphery.
+
+    const calls = unsignedCalls.map((call) => ({
+      target: call.to,
+      value: call.value,
+      callData: call.data,
+      allowFailure: false,
+      isDelegateCall: false,
+    }))
+
     const { signedMulticall, cowShedAccount, gasLimit } = await this.cowShedSdk.signCalls({
-      calls: [
-        {
-          target: unsignedCall.to,
-          value: unsignedCall.value,
-          callData: unsignedCall.data,
-          allowFailure: false,
-          isDelegateCall: true,
-        },
-      ],
+      calls,
       chainId,
       signer,
       gasLimit: BigInt(hookGasLimit),
@@ -191,7 +358,63 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
         target: to,
         callData: data,
         gasLimit: gasLimit.toString(),
-        dappId: ACROSS_HOOK_DAPP_ID, // TODO: I think we should have some additional parameter to type the hook (using dappId for now)
+        dappId: ACROSS_HOOK_DAPP_ID,
+      },
+      recipient: cowShedAccount,
+    }
+  }
+
+  /**
+   * WIP/reference version of getSignedHook for wrapper SC flow.
+   *
+   * Differences from current implementation:
+   * - Expects exactly one unsigned call
+   * - Uses delegatecall=true so wrapper executes in CoWShed context
+   *   and can read full runtime token balance from `address(this)`.
+   */
+  async getSignedHook__withsc(
+    chainId: SupportedChainId,
+    unsignedCalls: readonly EvmCall[],
+    bridgeHookNonce: string,
+    deadline: bigint,
+    hookGasLimit: number,
+    signer?: SignerLike,
+  ): Promise<BridgeHook> {
+    assertUnsignedBridgeCallsLength(unsignedCalls, this.unsignedBridgeHookCallsCount__withsc, 'AcrossBridgeProvider.getSignedHook')
+
+    const unsignedCall = unsignedCalls[0]
+
+    // First, sign a CoWShed multicall with delegatecall=true.
+    //
+    // CRITICAL FOR SURPLUS FIX:
+    // delegatecall executes wrapper code in CoWShed storage/balance context, so
+    // wrapper can read `balanceOf(address(this))` for the actual runtime amount.
+    const { signedMulticall, cowShedAccount, gasLimit } = await this.cowShedSdk.signCalls({
+      calls: [
+        {
+          target: unsignedCall.to,
+          value: unsignedCall.value,
+          callData: unsignedCall.data,
+          allowFailure: false,
+          // CRITICAL FOR SURPLUS FIX: this must stay true for runtime balance logic.
+          isDelegateCall: true,
+        },
+      ],
+      chainId,
+      signer,
+      gasLimit: BigInt(hookGasLimit),
+      deadline,
+      nonce: bridgeHookNonce,
+    })
+
+    // Then, return post-hook with distinct dappId suffix for WIP path.
+    const { to, data } = signedMulticall
+    return {
+      postHook: {
+        target: to,
+        callData: data,
+        gasLimit: gasLimit.toString(),
+        dappId: `${ACROSS_HOOK_DAPP_ID}__withsc`,
       },
       recipient: cowShedAccount,
     }
@@ -211,14 +434,13 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
       return null
     }
 
-    const orderUid = order.uid
     const adapter = getGlobalAdapter()
 
     const txReceipt = await adapter.getTransactionReceipt(txHash)
 
     if (!txReceipt) return null
 
-    const params = await getDepositParams(chainId, orderUid, txReceipt, settlementContractOverride)
+    const params = await getDepositParams(chainId, order, txReceipt)
 
     if (!params) return null
 
@@ -228,8 +450,8 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     }
   }
 
-  getExplorerUrl(_: string): string {
-    return `https://app.across.to/transactions`
+  getExplorerUrl(_: string, tradeTxHash: string): string {
+    return `https://app.across.to/transaction/${tradeTxHash}`
   }
 
   async getStatus(bridgingId: string, originChainId: SupportedChainId): Promise<BridgeStatusResult> {

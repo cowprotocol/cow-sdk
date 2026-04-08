@@ -109,12 +109,12 @@ export interface BridgeQuoteResult {
   fees: {
     /**
      * The amount that should go to the relayer as a fee to cover relayer capital costs.
-     * In token atoms.
+     * In token units.
      */
     bridgeFee: bigint
     /**
      * The amount that should go to the relayer as a fee to cover relayer gas costs.
-     * In token atoms.
+     * In token units.
      */
     destinationGasFee: bigint
   }
@@ -122,12 +122,12 @@ export interface BridgeQuoteResult {
   limits: {
     /**
      * The minimum amount that should be deposited in the source chain.
-     * In token atoms.
+     * In token units.
      */
     minDeposit: bigint
     /**
      * The maximum amount that can be deposited in the source chain.
-     * In token atoms.
+     * In token units.
      */
     maxDeposit: bigint
   }
@@ -242,8 +242,9 @@ export interface BridgeProvider<Q extends BridgeQuoteResult> {
    * Get the explorer url for a bridging id.
    *
    * @param bridgingId - The bridging id
+   * @param tradeTxHash - On-chain transaction id of swap settlement
    */
-  getExplorerUrl(bridgingId: string): string
+  getExplorerUrl(bridgingId: string, tradeTxHash: string): string
 
   /**
    * Get the status of a bridging transaction.
@@ -287,15 +288,21 @@ export interface HookBridgeProvider<Q extends BridgeQuoteResult> extends BridgeP
   type: 'HookBridgeProvider'
 
   /**
-   * Get an unsigned bridge call for a quote.
+   * How many `EvmCall`s this provider returns from `getUnsignedBridgeCalls` and requires in `getSignedHook`.
+   * Implementations must keep this aligned with those methods.
+   */
+  readonly unsignedBridgeHookCallsCount: number
+
+  /**
+   * Get unsigned bridge calls for a quote.
    *
-   * The transaction details should be executed in the context of cow-shed account.
+   * The calls should be executed in the context of cow-shed account, in order.
    *
    * @param request - The quote request
    * @param quote - The quote
    * @returns The unsigned transaction details that cow-shed needs to sign
    */
-  getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: Q): Promise<EvmCall>
+  getUnsignedBridgeCalls(request: QuoteBridgeRequest, quote: Q): Promise<readonly EvmCall[]>
 
   /**
    * Returns the estimated gas cost for executing the bridge hook.
@@ -328,7 +335,7 @@ export interface HookBridgeProvider<Q extends BridgeQuoteResult> extends BridgeP
    */
   getSignedHook(
     chainId: SupportedChainId,
-    unsignedCall: EvmCall,
+    unsignedCalls: readonly EvmCall[],
     bridgeHookNonce: string,
     deadline: bigint,
     hookGasLimit: number,
@@ -379,15 +386,19 @@ export interface BridgeQuoteAndPost {
 
 export interface BridgeCosts<T = bigint> {
   bridgingFee: {
+    /** Basis points for the bridging fee (exact meaning depends on the provider implementation). */
     feeBps: number
+    /**
+     * Fee in **bridge input** token units (same denomination as `beforeFee.sellAmount`).
+     * Token deposited into the bridge on the source chain.
+     */
     amountInSellCurrency: T
+    /**
+     * Fee in **bridge output** token units (same denomination as `beforeFee.buyAmount`).
+     * Token credited on the destination chain.
+     */
     amountInBuyCurrency: T
   }
-
-  // TODO: I could see here some additional flags that might be useful in the UI, but as this is a prototype. Leaving it until we get some experience with bridging. Leaving it as comments for future consideration.
-  // needToClaimInDestinationChain: boolean
-  // automaticRefundOnExpiration: boolean
-  // automaticRefundOnFailure: boolean
 }
 
 export interface BridgeQuoteAmountsAndCosts<T = bigint> {
@@ -424,9 +435,9 @@ export interface BridgeQuoteAmountsAndCosts<T = bigint> {
  */
 export interface BridgeCallDetails {
   /**
-   * Unsigned call to initiate the bridge. This call should be executed in the context of user's cow-shed account.
+   * Unsigned calls to initiate the bridge, in execution order. They should be executed in the context of the user's cow-shed account.
    */
-  unsignedBridgeCall: EvmCall
+  unsignedBridgeCalls: readonly EvmCall[]
 
   /**
    * Pre-authorized hook to initiate the bridge. This hook has been signed, and is ready to be executed by the

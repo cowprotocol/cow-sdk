@@ -1,7 +1,7 @@
 import { getEthFlowContract, TradingSdk } from '@cowprotocol/sdk-trading'
 import { MockHookBridgeProvider } from '../providers/mock/HookMockBridgeProvider'
 import { MockReceiverAccountBridgeProvider } from '../providers/mock/ReceiverAccountMockBridgeProvider'
-import { QuoteBridgeRequest } from '../types'
+import { BridgeQuoteResult, QuoteBridgeRequest } from '../types'
 import { getQuoteWithBridge } from './getQuoteWithBridge'
 import {
   bridgeCallDetails,
@@ -14,6 +14,7 @@ import {
 } from './mock/bridgeRequestMocks'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { EVM_NATIVE_CURRENCY_ADDRESS, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from '../const'
 import { getHookMockForCostEstimation } from '../hooks/utils'
 import { createAdapters } from '../../tests/setup'
 import { AbstractSigner, setGlobalAdapter, Provider, TTLCache } from '@cowprotocol/sdk-common'
@@ -30,7 +31,7 @@ adapterNames.forEach((adapterName) => {
     let mockProvider: MockHookBridgeProvider
 
     let getQuoteMock: jest.Mock
-    let getUnsignedBridgeCallMock: jest.Mock
+    let getUnsignedBridgeCallsMock: jest.Mock
     let sendOrderMock: jest.Mock
     let signerMock: AbstractSigner<Provider>
 
@@ -63,9 +64,9 @@ adapterNames.forEach((adapterName) => {
 
       mockProvider = new MockHookBridgeProvider()
       mockProvider.getQuote = getQuoteMock = jest.fn().mockResolvedValue(bridgeQuoteResult)
-      mockProvider.getUnsignedBridgeCall = getUnsignedBridgeCallMock = jest
+      mockProvider.getUnsignedBridgeCalls = getUnsignedBridgeCallsMock = jest
         .fn()
-        .mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+        .mockResolvedValue(bridgeCallDetails.unsignedBridgeCalls)
       mockProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
       sendOrderMock = jest.fn().mockResolvedValue('0x01')
@@ -106,20 +107,38 @@ adapterNames.forEach((adapterName) => {
       })
     }
 
-    it('When receiver is present in advanced settings, then should add it to the hook', async () => {
+    it('When receiver is present in advanced settings, bridge flows use it and the bridging post hook is on the order app-data', async () => {
       const customReceiver = '0xmyCustomReceiver'
 
       await postOrderWithCustomReceiver(customReceiver)
 
+      // Bridge provider is re-quoted when posting the swap (second pass uses advanced settings).
       expect(getQuoteMock).toHaveBeenCalledTimes(2)
-      // First time quote is called for original receiver
+      // First time: original receiver from the initial swap-and-bridge request.
       expect(getQuoteMock.mock.calls[0][0].receiver).toBe(quoteBridgeRequest.receiver)
-      // Second time quote is called for custom receiver
+      // Second time: receiver from postSwapOrderFromQuote advanced settings.
       expect(getQuoteMock.mock.calls[1][0].receiver).toBe(customReceiver)
 
-      expect(getUnsignedBridgeCallMock).toHaveBeenCalledTimes(2)
-      expect(getUnsignedBridgeCallMock.mock.calls[0][0].receiver).toBe(quoteBridgeRequest.receiver)
-      expect(getUnsignedBridgeCallMock.mock.calls[1][0].receiver).toBe(customReceiver)
+      expect(getUnsignedBridgeCallsMock).toHaveBeenCalledTimes(2)
+      expect(getUnsignedBridgeCallsMock.mock.calls[0][0].receiver).toBe(quoteBridgeRequest.receiver)
+      expect(getUnsignedBridgeCallsMock.mock.calls[1][0].receiver).toBe(customReceiver)
+
+      // Each bridge pass signs a hook (initial quote + refetch with custom receiver).
+      expect(mockProvider.getSignedHook).toHaveBeenCalledTimes(2)
+
+      // Final order app-data must include the pre-authorized bridging post hook from the mock.
+      expect(sendOrderMock).toHaveBeenCalledTimes(1)
+      const orderAppData = JSON.parse(sendOrderMock.mock.calls[0][0].appData as string)
+      expect(orderAppData.metadata?.hooks?.post).toEqual(
+        expect.arrayContaining([bridgeCallDetails.preAuthorizedBridgingHook.postHook]),
+      )
+      // Exactly one hook from our bridging SDK prefix (mirrors production: strip duplicates, keep one bridge hook).
+      const postHooks = orderAppData.metadata?.hooks?.post ?? []
+      const bridgingPostHooks = postHooks.filter((h: { dappId?: string }) =>
+        h.dappId?.startsWith(HOOK_DAPP_BRIDGE_PROVIDER_PREFIX),
+      )
+      expect(bridgingPostHooks).toHaveLength(1)
+      expect(bridgingPostHooks[0]).toEqual(bridgeCallDetails.preAuthorizedBridgingHook.postHook)
     })
 
     it('When receiver is present in advanced settings, then should set proxy account as order receiver', async () => {
@@ -213,8 +232,12 @@ adapterNames.forEach((adapterName) => {
       })
 
       expect(getQuoteMock).toHaveBeenCalledTimes(2)
-      // Verify the validTo is passed correctly to the bridge request
-      expect(getUnsignedBridgeCallMock.mock.calls[1]).toBeDefined()
+      expect(getUnsignedBridgeCallsMock).toHaveBeenCalledTimes(2)
+      // Second bridge request should carry validTo (merged in getQuoteWithHookBridge from advanced settings).
+      const secondBridgeRequest = getUnsignedBridgeCallsMock.mock.calls[1][0] as QuoteBridgeRequest
+      expect(secondBridgeRequest.validTo).toBe(customValidTo)
+      // getSignedHook(..., deadline, ...): fourth argument is the hook signing deadline (bigint validTo).
+      expect((mockProvider.getSignedHook as jest.Mock).mock.calls[1][3]).toBe(BigInt(customValidTo))
     })
 
     it('should cache intermediate tokens if intermediateTokensCache is provided', async () => {
@@ -262,14 +285,36 @@ adapterNames.forEach((adapterName) => {
         ...bridgeQuoteResult,
         id: 'hook-quote-id-789',
         signature: '0xhook-signature-789',
-      }
+      } satisfies BridgeQuoteResult
       mockProvider.getQuote = jest.fn().mockResolvedValue(quoteWithIdAndSignature)
 
       const result = await postOrder(quoteBridgeRequest)
 
+      // After the hook bridge quote, swap app-data metadata.bridging should list id + signature from the provider.
       const appData = result.swap.appDataInfo.doc
       expect(appData.metadata.bridging?.quoteId).toBe('hook-quote-id-789')
       expect(appData.metadata.bridging?.quoteSignature).toBe('0xhook-signature-789')
+    })
+
+    // Bridge quotes can include attestationSignature and quoteBody; getHookBridgeResult merges them into
+    // swap app-data via overrideAppDataWithBridgingQuoteDetails (same helper as the receiver-account flow).
+    it('should update app-data with attestationSignature and quoteBody for HookBridgeProvider', async () => {
+      const quoteWithAllFields = {
+        ...bridgeQuoteResult,
+        id: 'hook-quote-attest-id',
+        signature: '0xhook-signature-attest',
+        attestationSignature: '0xhook-attestation-signature',
+        quoteBody: '{"hookProvider":"attest-body"}',
+      } satisfies BridgeQuoteResult
+      mockProvider.getQuote = jest.fn().mockResolvedValue(quoteWithAllFields)
+
+      const result = await postOrder(quoteBridgeRequest)
+
+      const bridging = result.swap.appDataInfo.doc.metadata.bridging
+      expect(bridging?.quoteId).toBe('hook-quote-attest-id')
+      expect(bridging?.quoteSignature).toBe('0xhook-signature-attest')
+      expect(bridging?.attestationSignature).toBe('0xhook-attestation-signature')
+      expect(bridging?.quoteBody).toBe('{"hookProvider":"attest-body"}')
     })
 
     it('should preserve existing bridging metadata when updating with quote details', async () => {
@@ -277,17 +322,19 @@ adapterNames.forEach((adapterName) => {
         ...bridgeQuoteResult,
         id: 'preserve-test-id',
         signature: '0xpreserve-signature',
-      }
+      } satisfies BridgeQuoteResult
       mockProvider.getQuote = jest.fn().mockResolvedValue(quoteWithIdAndSignature)
 
       const result = await postOrder(quoteBridgeRequest)
 
-      const appData = result.swap.appDataInfo.doc
-      // Should have the new quote details
-      expect(appData.metadata.bridging?.quoteId).toBe('preserve-test-id')
-      expect(appData.metadata.bridging?.quoteSignature).toBe('0xpreserve-signature')
-      // Should preserve existing bridging metadata structure
-      expect(appData.metadata.bridging).toBeDefined()
+      const bridging = result.swap.appDataInfo.doc.metadata.bridging
+      // New fields from the bridge quote merge (overrideAppDataWithBridgingQuoteDetails).
+      expect(bridging?.quoteId).toBe('preserve-test-id')
+      expect(bridging?.quoteSignature).toBe('0xpreserve-signature')
+      // Fields seeded in getIntermediateSwapResult (provider + destination) must survive the merge.
+      expect(bridging?.providerId).toBe(mockProvider.info.dappId)
+      expect(bridging?.destinationChainId).toBe(String(quoteBridgeRequest.buyTokenChainId))
+      expect(bridging?.destinationTokenAddress).toBe(quoteBridgeRequest.buyTokenAddress)
     })
   })
 })
@@ -344,7 +391,7 @@ describe('createPostSwapOrderFromQuote with ReceiverAccountBridgeProvider', () =
           ...bridgeQuoteResult,
           id: 'test-quote-id-123',
           signature: '0xsignature123',
-        }
+        } satisfies BridgeQuoteResult
         mockProvider.getQuote = jest.fn().mockResolvedValue(quoteWithIdAndSignature)
 
         const result = await getQuoteWithBridge(mockProvider, {
@@ -361,7 +408,7 @@ describe('createPostSwapOrderFromQuote with ReceiverAccountBridgeProvider', () =
           ...bridgeQuoteResult,
           id: 'test-quote-id-456',
           signature: '0xsignature456',
-        }
+        } satisfies BridgeQuoteResult
         mockProvider.getQuote = jest.fn().mockResolvedValue(quoteWithIdAndSignature)
 
         const result = await getQuoteWithBridge(mockProvider, {
@@ -379,7 +426,7 @@ describe('createPostSwapOrderFromQuote with ReceiverAccountBridgeProvider', () =
           ...bridgeQuoteResult,
           id: undefined,
           signature: undefined,
-        }
+        } satisfies BridgeQuoteResult
         mockProvider.getQuote = jest.fn().mockResolvedValue(quoteWithoutIdAndSignature)
 
         const result = await getQuoteWithBridge(mockProvider, {
@@ -398,7 +445,7 @@ describe('createPostSwapOrderFromQuote with ReceiverAccountBridgeProvider', () =
           ...bridgeQuoteResult,
           id: 'test-quote-id-only',
           signature: undefined,
-        }
+        } satisfies BridgeQuoteResult
         mockProvider.getQuote = jest.fn().mockResolvedValue(quoteWithIdOnly)
 
         const result = await getQuoteWithBridge(mockProvider, {
@@ -416,7 +463,7 @@ describe('createPostSwapOrderFromQuote with ReceiverAccountBridgeProvider', () =
           ...bridgeQuoteResult,
           id: undefined,
           signature: '0xsignature-only',
-        }
+        } satisfies BridgeQuoteResult
         mockProvider.getQuote = jest.fn().mockResolvedValue(quoteWithSignatureOnly)
 
         const result = await getQuoteWithBridge(mockProvider, {
@@ -436,7 +483,7 @@ describe('createPostSwapOrderFromQuote with ReceiverAccountBridgeProvider', () =
           signature: '0xsignature789',
           attestationSignature: '0xattestation-signature-abc',
           quoteBody: '{"test":"quote-body"}',
-        }
+        } satisfies BridgeQuoteResult
         mockProvider.getQuote = jest.fn().mockResolvedValue(quoteWithAllFields)
 
         const result = await getQuoteWithBridge(mockProvider, {

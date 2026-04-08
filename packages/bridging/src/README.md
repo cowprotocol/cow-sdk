@@ -181,11 +181,12 @@ async function performCrossChainSwap(wallet: Wallet, bridgingSdk: BridgingSdk): 
     appCode: '<BRIDGING_APP_CODE>', // This value will be used to calculate volume of trade for your app
     account: wallet.address as AccountAddress, // Your wallet address
     signer: wallet, // ethers.js Wallet instance
+    // owner: '0x...', // Optional: CoW Shed owner on source chain; built-in providers use `owner || account`
 
     // Order details
     kind: OrderKind.SELL,
     amount: parseEther('1').toBigInt(), // 1 WETH
-    receiver: '0x...', // Optional: recipient address on destination chain
+    // receiver: '0x...', // Optional: recipient address on destination chain; defaults to `receiver || account` in built-in providers
   }
 
   try {
@@ -600,14 +601,18 @@ interface QuoteBridgeRequest {
   // Trader info
   appCode: string // This value will be used to calculate volume of trade for your app
   account: string // Trader account address
+  owner?: string // Optional: CoW Shed owner on source chain; built-in
+  // providers use `owner || account`
   signer: Signer // ethers.js Signer instance
 
   // Order details
   kind: OrderKind.SELL // Should always be SELL, BUY orders are not supported yet
-  amount: bigint // Amount to sell (in sell token atoms)
-  receiver?: string // Recipient address (defaults to account)
+  amount: bigint // Amount to sell (in sell token units)
+  receiver?: string // Optional: recipient address on destination chain; defaults to `receiver || account` in built-in providers
 }
 ```
+
+Built-in bridge providers combine `owner` and `receiver` with **`||`** (logical OR), not `??`, so that empty strings also fall back to `account` the same way as `undefined`.
 
 > Since `BridgingSDK.getQuote()` is compatible with `TradingSDK`, it has the same [optional parameters](https://github.com/cowprotocol/cow-sdk/tree/main/packages/trading/README.md#optional-parameters).
 
@@ -631,6 +636,19 @@ interface BridgeQuoteResult {
   }
 }
 ```
+
+#### `amountsAndCosts.costs.bridgingFee` (sell vs buy)
+
+`BridgeQuoteAmountsAndCosts.costs.bridgingFee` uses the same **sell / buy** meaning as `beforeFee`:
+
+| Field | Token side | Same units as |
+| ----- | ---------- | ------------- |
+| `amountInSellCurrency` | Bridge **input** on the source chain (intermediate token) | `beforeFee.sellAmount` |
+| `amountInBuyCurrency` | Bridge **output** on the destination chain | `beforeFee.buyAmount` |
+
+Map each bigint to a `CurrencyAmount` (or display string) only with the matching chain’s token metadata. Swapping these fields when intermediate and destination decimals differ (e.g. 18 vs 6) produces wildly wrong fees and “receive” amounts.
+
+See the `BridgeCosts` JSDoc in [`types.ts`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts).
 
 ### [`BridgeStatus`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L110)
 
@@ -796,6 +814,6 @@ This section provides links to all important TypeScript types and interfaces use
 ### Utility Types
 
 - [`BridgeProvider`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L155): Generic bridge provider interface
-- [`BridgeQuoteAmountsAndCosts`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L321): Cost breakdown for bridge operations
+- [`BridgeQuoteAmountsAndCosts`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L416): Cost breakdown for bridge operations
 - [`BridgeHook`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/types.ts#L105): Post-hook configuration for bridging
 - [`isBridgeQuoteAndPost`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/bridging/src/utils.ts#L5): Type guard for cross-chain quotes

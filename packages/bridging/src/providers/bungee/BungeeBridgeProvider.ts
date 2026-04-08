@@ -24,6 +24,7 @@ import { createBungeeDepositCall } from './createBungeeDepositCall'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from './const/misc'
 import { BungeeApiOptions, BungeeBuildTx, BungeeQuote, BungeeQuoteAPIRequest } from './types'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
+import { assertUnsignedBridgeCallsLength } from '../../utils/assertUnsignedBridgeCallsLength'
 import { getGasLimitEstimationForHook } from '../utils/getGasLimitEstimationForHook'
 import { getBridgingStatusFromEvents } from './getBridgingStatusFromEvents'
 import {
@@ -65,6 +66,9 @@ export interface BungeeQuoteResult extends BridgeQuoteResult {
 const providerType = 'HookBridgeProvider' as const
 
 export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResult> {
+  /** Single delegatecall from cow-shed into Bungee’s build-tx target. */
+  readonly unsignedBridgeHookCallsCount = 1
+
   type = providerType
 
   protected api: BungeeApi
@@ -125,7 +129,7 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
 
     // @note bungee api requires the sender address. sender address would be the cowshed account
     // fetch the cowshed account
-    const ownerAddress = owner ?? account
+    const ownerAddress = owner || account
     const cowshedAccount = this.cowShedSdk.getCowShedAccount(sellTokenChainId, ownerAddress)
 
     // fetch quote from bungee api
@@ -135,7 +139,7 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
       destinationChainId: buyTokenChainId.toString(),
       inputToken: sellTokenAddress, // use intermediate token for the bridging quote
       inputAmount: amount.toString(),
-      receiverAddress: receiver ?? account, // receiver is required on bungee api
+      receiverAddress: receiver || account, // receiver is required on bungee api
       outputToken: buyTokenAddress,
       includeBridges: this.options.apiOptions?.includeBridges,
       enableManual: true,
@@ -155,11 +159,15 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
     return toBridgeQuoteResult(request, SLIPPAGE_TOLERANCE_BPS, quoteWithBuildTx)
   }
 
-  async getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: BungeeQuoteResult): Promise<EvmCall> {
-    return createBungeeDepositCall({
-      request,
-      quote,
-    })
+  async getUnsignedBridgeCalls(request: QuoteBridgeRequest, quote: BungeeQuoteResult): Promise<readonly EvmCall[]> {
+    const calls = [
+      await createBungeeDepositCall({
+        request,
+        quote,
+      }),
+    ]
+    assertUnsignedBridgeCallsLength(calls, this.unsignedBridgeHookCallsCount, 'BungeeBridgeProvider.getUnsignedBridgeCalls')
+    return calls
   }
 
   async getGasLimitEstimationForHook(request: QuoteBridgeRequest): Promise<number> {
@@ -177,12 +185,16 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
 
   async getSignedHook(
     chainId: SupportedChainId,
-    unsignedCall: EvmCall,
+    unsignedCalls: readonly EvmCall[],
     bridgeHookNonce: string,
     deadline: bigint,
     hookGasLimit: number,
     signer?: SignerLike,
   ): Promise<BridgeHook> {
+    assertUnsignedBridgeCallsLength(unsignedCalls, this.unsignedBridgeHookCallsCount, 'BungeeBridgeProvider.getSignedHook')
+
+    const unsignedCall = unsignedCalls[0]
+
     // Sign the multicall
     const { signedMulticall, cowShedAccount, gasLimit } = await this.cowShedSdk.signCalls({
       calls: [
@@ -250,7 +262,7 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
     throw new Error('Not implemented')
   }
 
-  getExplorerUrl(bridgingId: string): string {
+  getExplorerUrl(bridgingId: string, _: string): string {
     return `https://socketscan.io/tx/${bridgingId}`
   }
 

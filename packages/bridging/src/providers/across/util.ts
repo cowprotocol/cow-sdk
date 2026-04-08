@@ -1,94 +1,108 @@
 import { BridgeQuoteAmountsAndCosts, BridgeStatus, QuoteBridgeRequest } from '../../types'
 
-import { AcrossDepositEvent, CowTradeEvent, DepositStatusResponse, SuggestedFeesResponse } from './types'
+import { AcrossDepositEvent, DepositStatusResponse } from './types'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
-import { ACROSS_DEPOSIT_EVENT_INTERFACE, COW_TRADE_EVENT_INTERFACE } from './const/interfaces'
-import { ACROSS_TOKEN_MAPPING, AcrossChainConfig } from './const/tokens'
-import { ACROSS_SPOOK_CONTRACT_ADDRESSES } from './const/contracts'
-import { AddressPerChain, SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
+import {
+  ACROSS_SWAP_APPROVAL_MAX_DEPOSIT_LIMIT,
+  parseDepositTimingFromSwapTxData,
+  type SwapApprovalApiResponse,
+} from './swapApprovalMapper'
+import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
+import { ACROSS_DEPOSIT_EVENT_INTERFACE } from './const/interfaces'
+import { ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES } from './const/contracts'
+import { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
-import { areAddressesEqual, getAddressKey, getGlobalAdapter, isCoWSettlementContract, Log } from '@cowprotocol/sdk-common'
+import { getAddressKey, getGlobalAdapter, getWrappedNativeToken, isNativeToken, Log } from '@cowprotocol/sdk-common'
 import stringify from 'json-stable-stringify'
 
 const PCT_100_PERCENT = 10n ** 18n
 
 /**
- * Return the chain configs
- *
- * This is a temporary implementation. We should use the Across API to get the intermediate tokens (see this.getAvailableRoutes())
+ * Across uses wrapped native token address for both native and wrapped tokens
+ * In CoW we use 0xeeee...eeeee for native token, which is not supported by Across
+ * Because of that, we have to map the address
  */
-export function getChainConfigs(
-  sourceChainId: TargetChainId,
-  targetChainId: TargetChainId,
-): { sourceChainConfig: AcrossChainConfig; targetChainConfig: AcrossChainConfig } | undefined {
-  const sourceChainConfig = getChainConfig(sourceChainId)
-  const targetChainConfig = getChainConfig(targetChainId)
+export function mapNativeOrWrappedTokenAddress(token: { chainId: TargetChainId; address: string }): string {
+  if (isNativeToken(token)) {
+    const wrapped = getWrappedNativeToken(token.chainId)
 
-  if (!sourceChainConfig || !targetChainConfig) return undefined
+    if (!wrapped) {
+      throw new Error('Specified token.chainId does not belong to TargetChainId!')
+    }
 
-  return { sourceChainConfig, targetChainConfig }
-}
+    return wrapped.address
+  }
 
-function getChainConfig(chainId: TargetChainId): AcrossChainConfig | undefined {
-  return ACROSS_TOKEN_MAPPING[chainId]
-}
-
-export function getTokenSymbol(tokenAddress: string, chainConfig: AcrossChainConfig): string | undefined {
-  return Object.keys(chainConfig.tokens).find((key) => chainConfig.tokens[key] === tokenAddress)
-}
-
-export function getTokenAddress(tokenSymbol: string, chainConfig: AcrossChainConfig): string | undefined {
-  return chainConfig.tokens[tokenSymbol]
+  return token.address
 }
 
 export function toBridgeQuoteResult(
   request: QuoteBridgeRequest,
   slippageBps: number,
-  suggestedFees: SuggestedFeesResponse,
+  swapApproval: SwapApprovalApiResponse,
 ): AcrossQuoteResult {
   const { kind } = request
 
+  const timing = parseDepositTimingFromSwapTxData(swapApproval.swapTx.data)
+  if (!timing) {
+    throw new BridgeProviderQuoteError(BridgeQuoteErrors.INVALID_API_JSON_RESPONSE, {
+      reason: 'swapTx.data missing deposit timing words',
+    })
+  }
+
   return {
+    id: swapApproval.id,
     isSell: kind === OrderKind.SELL,
-    amountsAndCosts: toAmountsAndCosts(request, slippageBps, suggestedFees),
-    quoteTimestamp: Number(suggestedFees.timestamp),
-    quoteBody: stringify(suggestedFees),
-    expectedFillTimeSeconds: Number(suggestedFees.estimatedFillTimeSec),
-    fees: {
-      bridgeFee: BigInt(suggestedFees.relayerCapitalFee.total),
-      destinationGasFee: BigInt(suggestedFees.relayerGasFee.total),
-    },
+    amountsAndCosts: toAmountsAndCosts(request, slippageBps, swapApproval),
+    quoteTimestamp: Number(timing.quoteTimestamp),
+    quoteBody: stringify(swapApproval),
+    expectedFillTimeSeconds: swapApproval.expectedFillTime,
+    fees: bridgeFeesFromSwapApproval(swapApproval),
+    // `BridgeQuoteResult.limits` is kept for callers that expect bounds. Swap approval gives
+    // `inputAmount` (quoted size) but not suggested-fees-style max/instant limits; see
+    // `ACROSS_SWAP_APPROVAL_MAX_DEPOSIT_LIMIT` for why max uses uint256 max as a fallback.
     limits: {
-      minDeposit: BigInt(suggestedFees.limits.minDeposit),
-      maxDeposit: BigInt(suggestedFees.limits.maxDeposit),
+      minDeposit: BigInt(swapApproval.inputAmount),
+      maxDeposit: BigInt(ACROSS_SWAP_APPROVAL_MAX_DEPOSIT_LIMIT),
     },
-    suggestedFees,
+    swapApproval,
+  }
+}
+
+function bridgeFeesFromSwapApproval(swapApproval: SwapApprovalApiResponse): {
+  bridgeFee: bigint
+  destinationGasFee: bigint
+} {
+  const details = swapApproval.steps.bridge?.fees?.details
+  const relayerCapital = details?.relayerCapital ?? { amount: '0' }
+  const destinationGas = details?.destinationGas ?? { amount: '0' }
+  return {
+    bridgeFee: BigInt(relayerCapital.amount),
+    destinationGasFee: BigInt(destinationGas.amount),
   }
 }
 
 function toAmountsAndCosts(
   request: QuoteBridgeRequest,
   slippageBps: number,
-  suggestedFees: SuggestedFeesResponse,
+  swapApproval: SwapApprovalApiResponse,
 ): BridgeQuoteAmountsAndCosts {
-  const { amount, sellTokenDecimals, buyTokenDecimals } = request
+  const { amount } = request
 
-  // Get the amounts before fees
-  const sellAmountBeforeFee = BigInt(amount)
+  const sellAmountBeforeFee = amount
   // Sell and buy token should be the same asset for current implementation, but technically they can have different decimals
-  const buyAmountBeforeFee = (sellAmountBeforeFee * 10n ** BigInt(buyTokenDecimals)) / 10n ** BigInt(sellTokenDecimals)
+  const bridge = swapApproval.steps.bridge
+  const outputAmountStr = bridge?.outputAmount ?? swapApproval.expectedOutputAmount
+  const buyAmountBeforeFee = BigInt(outputAmountStr)
 
   // Apply the fee to the buy amount (sell amount doesn't change)
-  const totalRelayerFeePct = BigInt(suggestedFees.totalRelayFee.pct)
+  const feeRoot = bridge?.fees
+  const totalRelayerFeePct = BigInt(feeRoot?.pct ?? '0')
   const buyAmountAfterFee = applyPctFee(buyAmountBeforeFee, totalRelayerFeePct)
 
   // Calculate the fee
   const feeSellToken = sellAmountBeforeFee - applyPctFee(sellAmountBeforeFee, totalRelayerFeePct)
   const feeBuyToken = buyAmountBeforeFee - buyAmountAfterFee
-  // TODO: Do we need to use any of the other fees, or they are included in totalRelayFee? I know 'lpFee' fee is, as stated in the docs, but not sure about the others.
-  // const relayerCapitalFee = suggestedFees.relayerCapitalFee
-  // const relayerGasFee = suggestedFees.relayerGasFee
-  // const lpFee = suggestedFees.lpFee
 
   // Apply slippage
   const buyAmountAfterSlippage = applyBps(buyAmountAfterFee, slippageBps)
@@ -96,7 +110,7 @@ function toAmountsAndCosts(
   return {
     beforeFee: {
       sellAmount: sellAmountBeforeFee,
-      buyAmount: buyAmountBeforeFee, // Assuming the price is 1:1 (before fee). This is because we are exchanging the same asset
+      buyAmount: buyAmountBeforeFee,
     },
     afterFee: {
       sellAmount: sellAmountBeforeFee, // Sell amount does't change (fee is applied to the buy amount)
@@ -180,19 +194,19 @@ export function mapAcrossStatusToBridgeStatus(status: DepositStatusResponse['sta
 }
 
 export function getAcrossDepositEvents(chainId: SupportedChainId, logs: Log[]): AcrossDepositEvent[] {
-  const addr = ACROSS_SPOOK_CONTRACT_ADDRESSES[chainId]
-  const spookContractAddress = addr ? getAddressKey(addr) : undefined
+  const spokePoolContractAddress = ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES[chainId]
+  const spokePoolContractAddressKey = spokePoolContractAddress ? getAddressKey(spokePoolContractAddress) : undefined
 
-  if (!spookContractAddress) {
+  if (!spokePoolContractAddressKey) {
     return []
   }
 
   const acrossDepositInterface = ACROSS_DEPOSIT_EVENT_INTERFACE()
   const ACROSS_DEPOSIT_EVENT_TOPIC = acrossDepositInterface.getEventTopic('FundsDeposited')
 
-  // Get accross deposit events
+  // Get Across deposit events
   const depositEvents = logs.filter((log) => {
-    return getAddressKey(log.address) === spookContractAddress && log.topics[0] === ACROSS_DEPOSIT_EVENT_TOPIC
+    return getAddressKey(log.address) === spokePoolContractAddressKey && log.topics[0] === ACROSS_DEPOSIT_EVENT_TOPIC
   })
 
   // Parse logs
@@ -233,46 +247,6 @@ export function getAcrossDepositEvents(chainId: SupportedChainId, logs: Log[]): 
       recipient: bytes32ToAddress(recipient),
       exclusiveRelayer,
       message,
-    }
-  })
-}
-
-export function getCowTradeEvents(
-  chainId: SupportedChainId,
-  logs: Log[],
-  settlementContractOverride?: Partial<AddressPerChain>,
-): CowTradeEvent[] {
-  const COW_TRADE_EVENT_TOPIC = COW_TRADE_EVENT_INTERFACE().getEventTopic('Trade')
-
-  const cowTradeEvents = logs.filter((log) => {
-    return (
-      (isCoWSettlementContract(log.address, chainId) ||
-        areAddressesEqual(settlementContractOverride?.[chainId], log.address)) &&
-      log.topics[0] === COW_TRADE_EVENT_TOPIC
-    )
-  })
-
-  return cowTradeEvents.map((event) => {
-    const parsedLog = COW_TRADE_EVENT_INTERFACE().parseLog(event)
-
-    if (!parsedLog) {
-      throw new Error('Could not parse log of CowTradeEvents')
-    }
-
-    const result = parsedLog.args as CowTradeEvent
-
-    const { owner, sellToken, buyToken, sellAmount, buyAmount, feeAmount } = result
-    // TODO: idk, ethers cannot parse orderUid because it's bytes and ethers tries to cast it as a number
-    const orderUid = '0x' + event.data.slice(450, 450 + 112)
-
-    return {
-      owner,
-      sellToken,
-      buyToken,
-      sellAmount,
-      buyAmount,
-      feeAmount,
-      orderUid,
     }
   })
 }

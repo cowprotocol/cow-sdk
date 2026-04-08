@@ -190,7 +190,7 @@ const postHook: latestAppData.CoWHook = {
 }
 
 export const bridgeCallDetails: BridgeCallDetails = {
-  unsignedBridgeCall,
+  unsignedBridgeCalls: [unsignedBridgeCall],
   preAuthorizedBridgingHook: {
     postHook: postHook,
     recipient: cowShedForAccount,

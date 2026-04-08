@@ -46,7 +46,7 @@ adapterNames.forEach((adapterName) => {
 
     const mockProvider = new MockHookBridgeProvider()
     mockProvider.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
-    mockProvider.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+    mockProvider.getUnsignedBridgeCalls = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCalls)
     mockProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
     beforeEach(() => {
@@ -144,7 +144,7 @@ adapterNames.forEach((adapterName) => {
         // Verify bridge call details
         if (bridge.bridgeCallDetails) {
           expectToEqual(bridge.bridgeCallDetails.preAuthorizedBridgingHook, bridgeCallDetails.preAuthorizedBridgingHook)
-          expectToEqual(bridge.bridgeCallDetails.unsignedBridgeCall, bridgeCallDetails.unsignedBridgeCall)
+          expectToEqual(bridge.bridgeCallDetails.unsignedBridgeCalls, bridgeCallDetails.unsignedBridgeCalls)
         } else {
           fail('bridgeCallDetails should be defined (bridge provider uses hooks)')
         }

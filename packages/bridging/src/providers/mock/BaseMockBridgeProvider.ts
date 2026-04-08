@@ -65,7 +65,7 @@ export abstract class BaseMockBridgeProvider implements BridgeProvider<BridgeQuo
     }
   }
 
-  getExplorerUrl(bridgingId: string): string {
+  getExplorerUrl(bridgingId: string, _: string): string {
     return 'https://www.google.com/search?q=' + bridgingId
   }
 

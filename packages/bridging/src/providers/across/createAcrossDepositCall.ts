@@ -1,113 +1,436 @@
-import { WeirollContract } from '@cowprotocol/sdk-weiroll'
-import { ACROSS_MATH_CONTRACT_ADDRESSES, ACROSS_SPOOK_CONTRACT_ADDRESSES } from './const/contracts'
-import { WeirollCommandFlags, createWeirollContract, createWeirollDelegateCall } from '@cowprotocol/sdk-weiroll'
-import { ACROSS_MATH_ABI, ACROSS_SPOKE_POOL_ABI } from './abi'
-import { EvmCall, TargetChainId } from '@cowprotocol/sdk-config'
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
+import { EvmCall, SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
+import { getGlobalAdapter, ZERO_ADDRESS, ERC20_BALANCE_OF_ABI, ERC20_TRANSFER_ABI } from '@cowprotocol/sdk-common'
+import { ACROSS_SPOKE_POOL_PERIPHERY_CONTRACT_ADDRESSES, ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES } from './const/contracts'
+import { ACROSS_SPOKE_POOL_PERIPHERY_ABI } from './abi'
 import { AcrossQuoteResult } from './AcrossBridgeProvider'
 import { QuoteBridgeRequest } from '../../types'
-import { getGlobalAdapter } from '@cowprotocol/sdk-common'
+import { mapNativeOrWrappedTokenAddress } from './util'
+import { parseDepositTimingFromSwapTxData } from './swapApprovalMapper'
 
-const ERC20_BALANCE_OF_ABI = ['function balanceOf(address account) external view returns (uint256)'] as const
-const ERC20_APPROVE_OF_ABI = ['function approve(address spender, uint256 amount) external returns (bool)'] as const
+/**
+ * Minimal ABI to read `SpokePoolPeriphery.swapProxy()`, which runs Across swap
+ * logic (unused in our case). CoWShed `ERC20.transfer`s intermediate tokens
+ * into SwapProxy before calling `swapAndBridge`.
+ *
+ * @see https://etherscan.io/address/0x10D8b8DaA26d307489803e10477De69C0492B610#code
+ */
+const ACROSS_SPOKE_POOL_PERIPHERY_SWAP_PROXY_GETTER_ABI = [
+  {
+    inputs: [],
+    name: 'swapProxy',
+    outputs: [{ internalType: 'contract SwapProxy', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+] as const
 
-function getSpookPoolContract(sellTokenChainId: TargetChainId): WeirollContract {
+const TRANSFER_TYPE_APPROVAL = 0
+
+/**
+ * Minimal ABI for the reference wrapper contract:
+ * `AcrossApproveAndBridgeReference.approveAndBridge(...)`.
+ */
+const ACROSS_APPROVE_AND_BRIDGE_REFERENCE_ABI = [
+  {
+    type: 'function',
+    name: 'approveAndBridge',
+    inputs: [
+      { name: 'token', type: 'address' },
+      { name: 'minAmount', type: 'uint256' },
+      { name: 'nativeTokenExtraFee', type: 'uint256' },
+      { name: 'data', type: 'bytes' },
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+] as const
+
+/**
+ * Detect the exact byte offset of `swapTokenAmount` in encoded
+ * `SpokePoolPeriphery.swapAndBridge(...)` calldata.
+ *
+ * We intentionally avoid hardcoding offsets so this remains robust to ABI/layout
+ * shifts while still using an offset-based patching approach on-chain.
+ *
+ * Returns:
+ * - byte offset from calldata start (including 4-byte selector prefix)
+ * - points to a full 32-byte ABI word
+ */
+function getSwapTokenAmountOffsetInSwapAndBridgeCalldata__wip(
+  swapAndDepositDataWithoutSwapTokenAmount: Omit<Record<string, unknown>, 'swapTokenAmount'>,
+): number {
   const adapter = getGlobalAdapter()
-  const spokePoolAddress = ACROSS_SPOOK_CONTRACT_ADDRESSES[sellTokenChainId]
-  if (!spokePoolAddress) {
-    throw new Error('Spoke pool address not found for chain: ' + sellTokenChainId)
+
+  const calldataWithZero = adapter.utils.encodeFunction(ACROSS_SPOKE_POOL_PERIPHERY_ABI, 'swapAndBridge', [
+    {
+      ...swapAndDepositDataWithoutSwapTokenAmount,
+      swapTokenAmount: 0n,
+    },
+  ]) as string
+
+  const calldataWithOne = adapter.utils.encodeFunction(ACROSS_SPOKE_POOL_PERIPHERY_ABI, 'swapAndBridge', [
+    {
+      ...swapAndDepositDataWithoutSwapTokenAmount,
+      swapTokenAmount: 1n,
+    },
+  ]) as string
+
+  if (calldataWithZero.length !== calldataWithOne.length) {
+    throw new Error('swapAndBridge calldata length mismatch while locating swapTokenAmount offset')
   }
-  return createWeirollContract(
-    adapter.getContract(spokePoolAddress, ACROSS_SPOKE_POOL_ABI) as any,
-    WeirollCommandFlags.CALL,
-  )
-}
 
-function getMathContract(sellTokenChainId: TargetChainId): WeirollContract {
-  const adapter = getGlobalAdapter()
-  const mathContractAddress = ACROSS_MATH_CONTRACT_ADDRESSES[sellTokenChainId]
-  if (!mathContractAddress) {
-    throw new Error('Math contract address not found for chain: ' + sellTokenChainId)
+  const differingOffsets: number[] = []
+  const totalBytes = (calldataWithZero.length - 2) / 2
+
+  for (let offsetBytes = 4; offsetBytes + 32 <= totalBytes; offsetBytes += 32) {
+    const start = 2 + offsetBytes * 2
+    const end = start + 64
+    const wordZero = calldataWithZero.slice(start, end)
+    const wordOne = calldataWithOne.slice(start, end)
+    if (wordZero !== wordOne) {
+      differingOffsets.push(offsetBytes)
+    }
   }
 
-  return createWeirollContract(
-    adapter.getContract(mathContractAddress, ACROSS_MATH_ABI) as any,
-    WeirollCommandFlags.CALL,
-  )
+  if (differingOffsets.length !== 1) {
+    throw new Error(
+      `Expected exactly 1 differing word while locating swapTokenAmount offset, got ${differingOffsets.length}`,
+    )
+  }
+
+  return differingOffsets[0] as number
 }
 
-function getBalanceOfSellTokenContract(sellTokenAddress: string): WeirollContract {
+/**
+ * Reads the SwapProxy address from the deployed SpokePoolPeriphery on this chain.
+ *
+ * We read this from chain (via the global adapter) so the periphery remains the single
+ * source of truth for its SwapProxy wiring. This avoids maintaining a second static
+ * `ACROSS_SWAP_PROXY_ADDRESSES` registry that must be kept in sync with periphery deployments.
+ */
+export async function fetchAcrossSwapProxyAddress(chainId: SupportedChainId): Promise<string> {
+  const peripheryAddress = getSpokePoolPeripheryAddress(chainId)
   const adapter = getGlobalAdapter()
-  return createWeirollContract(
-    adapter.getContract(sellTokenAddress, ERC20_BALANCE_OF_ABI),
-    WeirollCommandFlags.STATICCALL,
-  )
+  const raw = await adapter.readContract({
+    address: peripheryAddress,
+    abi: ACROSS_SPOKE_POOL_PERIPHERY_SWAP_PROXY_GETTER_ABI,
+    functionName: 'swapProxy',
+    args: [],
+  })
+
+  const swapProxy = typeof raw === 'string' ? raw : String(raw)
+
+  if (!swapProxy || swapProxy === ZERO_ADDRESS) {
+    throw new Error(`Across swapProxy() returned empty address for chain ${chainId}`)
+  }
+
+  return swapProxy
 }
 
-function getApproveSellTokenContract(sellTokenAddress: string): WeirollContract {
-  const adapter = getGlobalAdapter()
-  return createWeirollContract(adapter.getContract(sellTokenAddress, ERC20_APPROVE_OF_ABI), WeirollCommandFlags.CALL)
+/**
+ * Converts an Ethereum address (20 bytes) to bytes32 by left-padding with zeros.
+ * Matches Solidity: bytes32(uint256(uint160(address)))
+ */
+export function addressToBytes32(address: string): string {
+  return '0x' + address.slice(2).toLowerCase().padStart(64, '0')
 }
 
+export function getSpokePoolAddress(chainId: TargetChainId): string {
+  const address = ACROSS_SPOKE_POOL_CONTRACT_ADDRESSES[chainId]
+  if (!address) {
+    throw new Error(`Spoke pool address not found for chain ${chainId}`)
+  }
+  return address
+}
+
+export function getSpokePoolPeripheryAddress(chainId: TargetChainId): string {
+  const address = ACROSS_SPOKE_POOL_PERIPHERY_CONTRACT_ADDRESSES[chainId]
+  if (!address) {
+    throw new Error(`Spoke pool periphery address not found for chain ${chainId}`)
+  }
+  return address
+}
+
+/**
+ * Builds the two EVM calls needed to bridge tokens via Across using `SpokePoolPeriphery`.
+ *
+ * This provider uses Across' `swapAndBridge` entrypoint, with a no-op swap:
+ *
+ * 1) Prefund Across `SwapProxy`: We transfer the intermediate token from the user's CoW Shed to
+ *    Across' SwapProxy: `ERC20.transfer(swapProxy, prefundFromShedAmount)`.
+ *
+ *    Note: The old flow assumed the amount to bridge is known up front and equals the quoted amount,
+ *    so we set `swapTokenAmount = request.amount` and approved the periphery to pull only that much.
+ *    But that was and still is not true because the swap executes later during settlement and can produce surplus.
+ *
+ * 2. Call `SpokePoolPeriphery.swapAndBridge` with a pass-through "swap"
+ *    (no actual token swap), using Across-recommended parameters for surplus:
+ *
+ *    - `swapTokenAmount = 0`, so periphery pulls 0 from the cow-shed via.
+ *    - a no-op `exchange` call.
+ *    - `minExpectedInputTokenAmount = request.amount` must be the same amount used in Across quote (`GET /swap/approval` `amount`).
+ *    - `enableProportionalAdjustment = true` ensures the output amount scales if the actual input differs.
+ *
+ * This works because Across' periphery calls `swapProxy.performSwap(...)` and uses the returned output amount
+ * (`returnAmount`) as the bridge input. `SwapProxy` computes that by checking its own
+ * `balanceOf(outputToken)` after the no-op swap call, and then transfers the full balance back.
+ *
+ * Because we previously prefunded `SwapProxy`, `returnAmount` reflects what we transferred in, even though
+ * the periphery pulled 0 tokens from cow-shed.
+ *
+ * Note that `prefundFromShedAmount` must be >= `minExpectedInputTokenAmount`, otherwise the periphery reverts.
+ *
+ * Also, if `enableProportionalAdjustment` is true and `prefundFromShedAmount` is higher than the minimum, Across
+ * proportionally scales the destination output amount up (by `returnAmount / minExpectedInputTokenAmount`).
+ *
+* `prefundFromShedAmount` defaults to `request.amount` (the quoted minimum) because hook calldata is typically fixed
+ * when the user signs. If you want to prefund the full post-settlement balance (including surplus), you need a way
+ * to determine that balance at execution time (e.g. a small helper contract that transfers `balanceOf(address(this))`).
+ *
+ * @returns An array of EvmCalls: `[transferToSwapProxy, swapAndBridge]` (swap is no-op)
+ */
 export function createAcrossDepositCall(params: {
   request: QuoteBridgeRequest
   quote: AcrossQuoteResult
   cowShedSdk: CowShedSdk
-}): EvmCall {
-  const { request, quote, cowShedSdk } = params
-  const { sellTokenChainId, sellTokenAddress, buyTokenChainId, buyTokenAddress, account, receiver } = request
+  swapProxyAddress: string
 
-  // Create the relevant weiroll contracts
-  const spokePoolContract = getSpookPoolContract(sellTokenChainId)
-  const mathContract = getMathContract(sellTokenChainId)
-  const balanceOfSellTokenContract = getBalanceOfSellTokenContract(sellTokenAddress)
-  const approveSellTokenContract = getApproveSellTokenContract(sellTokenAddress)
+  /**
+   * How much of `sellToken` the Shed sends to SwapProxy before `swapAndBridge`.
+   * Defaults to `request.amount`. Must be `>= request.amount` so `returnAmount` still clears
+   * `minExpectedInputTokenAmount` (Across reverts otherwise with `MinimumExpectedInputAmount`).
+   */
+  prefundFromShedAmount?: bigint
+}): [EvmCall, EvmCall] {
+  const { request, quote, cowShedSdk, swapProxyAddress } = params
 
-  // Get the cow shed account
-  const cowShedAccount = cowShedSdk.getCowShedAccount(sellTokenChainId, account)
+  // Amount user committed for quoting / min bound. Same number must hit the Across quote and `minExpectedInputTokenAmount`.
+  const quotedIntermediateAmount = request.amount
 
-  const { suggestedFees } = quote
+  // Optional override when upstream knows the real post-settlement balance (surplus capture).
+  const prefundFromShedAmount = params.prefundFromShedAmount ?? quotedIntermediateAmount
 
-  // Get the weiroll call of the deposit into spoke pool
-  const depositCall = createWeirollDelegateCall((planner) => {
-    // Get bridged amount (balance of the intermediate token at swap time)
-    const sourceAmountIncludingSurplus = planner.add(balanceOfSellTokenContract.balanceOf(cowShedAccount))
-
-    // Calculate the new output amount using the actual received intermediate tokens (uses the original quoted fee)
-    const relayFeePercentage = BigInt(suggestedFees.totalRelayFee.pct)
-    const outputAmountIncludingSurplus = planner.add(
-      mathContract.multiplyAndSubtract(sourceAmountIncludingSurplus, relayFeePercentage),
+  if (prefundFromShedAmount < quotedIntermediateAmount) {
+    throw new Error(
+      'prefundFromShedAmount must be >= request.amount (Across min input) to avoid MinimumExpectedInputAmount revert',
     )
+  }
 
-    // Set allowance for SpokePool to transfer bridged tokens
-    planner.add(approveSellTokenContract.approve(spokePoolContract.address, sourceAmountIncludingSurplus))
+  const { sellTokenChainId, sellTokenAddress, buyTokenChainId, buyTokenAddress, account, receiver, owner } = request
 
-    // Prepare deposit params
-    const quoteTimestamp = BigInt(suggestedFees.timestamp)
-    const fillDeadline = suggestedFees.fillDeadline
-    const exclusivityDeadline = suggestedFees.exclusivityDeadline
-    const exclusiveRelayer = suggestedFees.exclusiveRelayer
-    const message = '0x'
+  // Across always uses wrapped native if the native token is selected:
+  const sellTokenLike = { address: sellTokenAddress, chainId: sellTokenChainId }
+  const sellToken = mapNativeOrWrappedTokenAddress(sellTokenLike)
+  const buyToken = mapNativeOrWrappedTokenAddress({ address: buyTokenAddress, chainId: buyTokenChainId })
 
-    // Deposit into spoke pool
-    planner.add(
-      spokePoolContract.depositV3(
-        cowShedAccount,
-        receiver || account,
-        sellTokenAddress,
-        buyTokenAddress,
-        sourceAmountIncludingSurplus,
-        outputAmountIncludingSurplus,
-        buyTokenChainId,
-        exclusiveRelayer,
-        quoteTimestamp,
-        fillDeadline,
-        exclusivityDeadline,
-        message,
-      ),
-    )
-  })
+  const adapter = getGlobalAdapter()
 
-  // Return the deposit into spoke pool call
-  return depositCall
+  const spokePoolPeripheryAddress = getSpokePoolPeripheryAddress(sellTokenChainId)
+  const spokePoolAddress = getSpokePoolAddress(sellTokenChainId)
+
+  const ownerAddress = owner || account
+  const cowShedAccount = cowShedSdk.getCowShedAccount(sellTokenChainId, ownerAddress)
+
+  const { swapApproval } = quote
+  const timing = parseDepositTimingFromSwapTxData(swapApproval.swapTx.data)
+  if (!timing) {
+    throw new Error('swapTx.data missing deposit timing words')
+  }
+
+  // Min. output on the destination chain (after bridge slippage):
+  const outputAmount = quote.amountsAndCosts.afterSlippage.buyAmount
+
+  // The "swap" is a pass-through: the SwapProxy receives tokens and returns them unchanged.
+  // We use TransferType.Approval so tokens stay in the SwapProxy, and the routerCalldata
+  // is a harmless read-only call (balanceOf) on the token contract used as the "exchange".
+
+  const noOpSwapCalldata = adapter.utils.encodeFunction(ERC20_BALANCE_OF_ABI, 'balanceOf', [ZERO_ADDRESS]) as string
+
+  const swapAndDepositData = {
+    submissionFees: {
+      amount: 0n,
+      recipient: ZERO_ADDRESS,
+    },
+    depositData: {
+      inputToken: sellToken,
+      outputToken: addressToBytes32(buyToken),
+      outputAmount,
+      depositor: cowShedAccount,
+      recipient: addressToBytes32(receiver || account),
+      destinationChainId: BigInt(buyTokenChainId),
+      exclusiveRelayer: addressToBytes32(timing.exclusiveRelayer),
+      quoteTimestamp: Number(timing.quoteTimestamp),
+      fillDeadline: Number(timing.fillDeadline),
+      exclusivityParameter: Number(timing.exclusivityDeadline),
+      message: getGlobalAdapter().utils.encodeAbi(['string'], [swapApproval.id]),
+    },
+    swapToken: sellToken,
+    exchange: sellToken,
+    transferType: TRANSFER_TYPE_APPROVAL,
+    routerCalldata: noOpSwapCalldata,
+    enableProportionalAdjustment: true,
+    spokePool: spokePoolAddress,
+    nonce: 0n,
+
+    // `swapTokenAmount: 0` means that the `SpokePoolPeriphery` won't try to pull anything from CowShed,
+    // as we prefunded `SwapProxy`. Other than telling it how much to transfer around, this value doesn't matter.
+    swapTokenAmount: 0n,
+
+    // This should be the min. swap output (i.e. max slippage), which should
+    // also be the value we pass to the across API:
+    minExpectedInputTokenAmount: quotedIntermediateAmount,
+  }
+
+  // Call 1: Prefund SwapProxy from the cow-shed,
+  // instead of approving `SpokePoolPeriphery` to pull tokens from cow-shed:
+  const transferCallData = adapter.utils.encodeFunction(ERC20_TRANSFER_ABI, 'transfer', [
+    swapProxyAddress,
+    prefundFromShedAmount,
+  ]) as string
+
+  const transferCall: EvmCall = {
+    to: sellToken,
+    data: transferCallData,
+    value: 0n,
+  }
+
+  // Call 2: Execute swapAndBridge on the SpokePoolPeriphery:
+  const swapAndBridgeCallData = adapter.utils.encodeFunction(ACROSS_SPOKE_POOL_PERIPHERY_ABI, 'swapAndBridge', [
+    swapAndDepositData,
+  ]) as string
+
+  const swapAndBridgeCall: EvmCall = {
+    to: spokePoolPeripheryAddress,
+    data: swapAndBridgeCallData,
+    value: 0n,
+  }
+
+  return [transferCall, swapAndBridgeCall]
+}
+
+/**
+ * WIP/reference implementation for the SC flow.
+ *
+ * This builds a single call into the reference SC:
+ * `approveAndBridge(token, minAmount, nativeTokenExtraFee, runtimeData)`.
+ *
+ * Runtime behavior is delegated to the SC (called as delegatecall by CoWShed):
+ * - read full runtime token balance from CoWShed
+ * - enforce `balance >= minAmount`
+ * - patch `swapTokenAmount` at known ABI word offset to runtime balance
+ * - approve periphery for runtime balance pull
+ * - call periphery `swapAndBridge` with pre-encoded calldata
+ */
+export function createAcrossDepositCallViaWrapper__wip(params: {
+  request: QuoteBridgeRequest
+  quote: AcrossQuoteResult
+  cowShedSdk: CowShedSdk
+  wrapperAddress: string
+}): [EvmCall] {
+  const { request, quote, cowShedSdk, wrapperAddress } = params
+  const { sellTokenChainId, sellTokenAddress, buyTokenChainId, buyTokenAddress, account, receiver, owner } = request
+
+  // STEP 1: this is the quoted minimum intermediate amount.
+  // The wrapper enforces runtime balance >= this value before bridging.
+  const quotedIntermediateAmount = request.amount
+
+  // STEP 2: normalize native/wrapped token mapping exactly as Across expects.
+  const sellToken = mapNativeOrWrappedTokenAddress({ address: sellTokenAddress, chainId: sellTokenChainId })
+  const buyToken = mapNativeOrWrappedTokenAddress({ address: buyTokenAddress, chainId: buyTokenChainId })
+  const adapter = getGlobalAdapter()
+
+  // STEP 3: resolve contracts used by runtime wrapper logic.
+  const spokePoolPeripheryAddress = getSpokePoolPeripheryAddress(sellTokenChainId)
+  const spokePoolAddress = getSpokePoolAddress(sellTokenChainId)
+  const ownerAddress = owner || account
+
+  // STEP 4: depositor is still the CoWShed account (same as current flow).
+  const cowShedAccount = cowShedSdk.getCowShedAccount(sellTokenChainId, ownerAddress)
+
+  // STEP 5: reuse quote timing fields produced by Across swap approval API.
+  const { swapApproval } = quote
+  const timing = parseDepositTimingFromSwapTxData(swapApproval.swapTx.data)
+  if (!timing) {
+    throw new Error('swapTx.data missing deposit timing words')
+  }
+
+  // STEP 6: destination chain minimum output remains quote-derived as today.
+  const outputAmount = quote.amountsAndCosts.afterSlippage.buyAmount
+
+  // STEP 7: keep no-op swap route (balanceOf call) so periphery computes returnAmount
+  // from SwapProxy balance and can proportionally adjust output.
+  const noOpSwapCalldata = adapter.utils.encodeFunction(ERC20_BALANCE_OF_ABI, 'balanceOf', [ZERO_ADDRESS]) as string
+
+  // STEP 8: build periphery payload base (without swapTokenAmount for now).
+  const swapAndDepositDataBase = {
+    submissionFees: {
+      amount: 0n,
+      recipient: ZERO_ADDRESS,
+    },
+    depositData: {
+      inputToken: sellToken,
+      outputToken: addressToBytes32(buyToken),
+      outputAmount,
+      depositor: cowShedAccount,
+      recipient: addressToBytes32(receiver || account),
+      destinationChainId: BigInt(buyTokenChainId),
+      exclusiveRelayer: addressToBytes32(timing.exclusiveRelayer),
+      quoteTimestamp: Number(timing.quoteTimestamp),
+      fillDeadline: Number(timing.fillDeadline),
+      exclusivityParameter: Number(timing.exclusivityDeadline),
+      message: getGlobalAdapter().utils.encodeAbi(['string'], [swapApproval.id]),
+    },
+    swapToken: sellToken,
+    exchange: sellToken,
+    transferType: TRANSFER_TYPE_APPROVAL,
+    routerCalldata: noOpSwapCalldata,
+    enableProportionalAdjustment: true,
+    spokePool: spokePoolAddress,
+    nonce: 0n,
+    // Must equal Across quote amount (/swap/approval) for correct min-check and scaling:
+    minExpectedInputTokenAmount: quotedIntermediateAmount,
+  }
+
+  // STEP 9: compute exact ABI offset of `swapTokenAmount` using a two-encoding diff.
+  const swapTokenAmountOffset = getSwapTokenAmountOffsetInSwapAndBridgeCalldata__wip(swapAndDepositDataBase)
+
+  // STEP 10: pre-encode periphery.swapAndBridge call with a non-zero visible value.
+  // Wrapper will overwrite this field with runtime exact balance at `swapTokenAmountOffset`.
+  const swapAndDepositData = {
+    ...swapAndDepositDataBase,
+    swapTokenAmount: quotedIntermediateAmount,
+  }
+
+  const swapAndBridgeCallData = adapter.utils.encodeFunction(ACROSS_SPOKE_POOL_PERIPHERY_ABI, 'swapAndBridge', [
+    swapAndDepositData,
+  ]) as string
+
+  // STEP 11: runtimeData consumed by SC:
+  // [periphery, swapAndBridge calldata, swapTokenAmount offset].
+  const runtimeData = adapter.utils.encodeAbi(
+    ['address', 'bytes', 'uint256'],
+    [spokePoolPeripheryAddress, swapAndBridgeCallData, BigInt(swapTokenAmountOffset)],
+  ) as string
+
+  // STEP 12: build wrapper call.
+  //
+  // IMPORTANT:
+  // - wrapper reads FULL runtime CoWShed balance via balanceOf(address(this))
+  // - wrapper patches swapTokenAmount at `swapTokenAmountOffset` to runtime balance
+  // - wrapper approves periphery and executes swapAndBridge
+  // This fixes surplus and keeps explorer input amount non-zero/accurate.
+  const wrapperCallData = adapter.utils.encodeFunction(
+    ACROSS_APPROVE_AND_BRIDGE_REFERENCE_ABI,
+    'approveAndBridge',
+    [sellToken, quotedIntermediateAmount, 0n, runtimeData],
+  ) as string
+
+  return [
+    {
+      to: wrapperAddress,
+      data: wrapperCallData,
+      value: 0n,
+    },
+  ]
 }

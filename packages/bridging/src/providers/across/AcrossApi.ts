@@ -1,3 +1,6 @@
+import { log } from '@cowprotocol/sdk-common'
+import { getChainInfo, TokenInfo } from '@cowprotocol/sdk-config'
+
 import {
   AvailableRoutesRequest,
   DepositStatusRequest,
@@ -7,18 +10,26 @@ import {
   SuggestedFeesLimits,
   SuggestedFeesRequest,
   SuggestedFeesResponse,
+  SwapApprovalRequest,
 } from './types'
+import { isValidSwapApprovalResponse, type SwapApprovalApiResponse } from './swapApprovalMapper'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
-import { TokenInfo } from '@cowprotocol/sdk-config'
-import { log } from '@cowprotocol/sdk-common'
 
 const ACROSS_API_URL = 'https://app.across.to/api'
+
+enum AcrossApiErrors {
+  AMOUNT_TOO_LOW = 'AMOUNT_TOO_LOW',
+}
+
+type AcrossApiToken = TokenInfo & { logoURI?: string; isNative: boolean }
 
 export interface AcrossApiOptions {
   apiBaseUrl?: string
 }
 
 export class AcrossApi {
+  private cachedTokens: TokenInfo[] = []
+
   constructor(private readonly options: AcrossApiOptions = {}) {}
 
   /**
@@ -27,21 +38,12 @@ export class AcrossApi {
    * Returns available routes based on specified parameters. If no parameters are provided, available routes on all
    * chains are returned.
    *
-   * See https://docs.across.to/reference/api-reference#available-routes
+   * See https://docs.across.to/api-reference/available-routes/get
+   *
+   * @deprecated Use `getSupportedTokens` (`GET /swap/tokens/get`) instead.
    */
-  async getAvailableRoutes({
-    originChainId,
-    originToken,
-    destinationChainId,
-    destinationToken,
-  }: AvailableRoutesRequest): Promise<Route[]> {
-    const params: Record<string, string> = {}
-    if (originChainId) params.originChainId = originChainId
-    if (originToken) params.originToken = originToken
-    if (destinationChainId) params.destinationChainId = destinationChainId
-    if (destinationToken) params.destinationToken = destinationToken
-
-    return this.fetchApi('/available-routes', params, isValidRoutes)
+  async getAvailableRoutes(params: AvailableRoutesRequest): Promise<Route[]> {
+    return this.fetchApi('/available-routes', params as never as Record<string | number, string>, isValidRoutes)
   }
 
   /**
@@ -50,32 +52,63 @@ export class AcrossApi {
    * Returns suggested fees based inputToken+outputToken, originChainId, destinationChainId, and amount.
    * Also includes data used to compute the fees.
    *
-   * * See https://docs.across.to/reference/api-reference#suggested-fees
+   * @see https://docs.across.to/api-reference/suggested-fees/get
+   *
+   * @deprecated Use `getSwapApproval` (`GET /swap/approval`) instead.
    */
   async getSuggestedFees(request: SuggestedFeesRequest): Promise<SuggestedFeesResponse> {
     const params: Record<string, string> = {
-      token: request.token,
+      inputToken: request.inputToken,
+      outputToken: request.outputToken,
       originChainId: request.originChainId.toString(),
       destinationChainId: request.destinationChainId.toString(),
       amount: request.amount.toString(),
+      allowUnmatchedDecimals: 'true', // Always set to true since we adjust for destination token decimals
     }
 
     if (request.recipient) {
       params.recipient = request.recipient
     }
-
-    // Get the quote from the Across API (see https://docs.across.to/reference/api-reference#suggested-fees)
-    // Example: https://app.across.to/api/suggested-fees?token=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&originChainId=8453&destinationChainId=137&amount=100000000
-    //
-    // TODO: The API documented params don't match with the example above. Ideally I would use 'inputToken' and 'outputToken', but the example above uses 'token'. This will work for current implementation, since we bridge the canonical token, but this will need to be reviewed
-    //       https://app.across.to/api/suggested-fees?inputToken=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&originChainId=8453&destinationChainId=137&outputToken=0xc2132D05D31c914a87C6611C10748AEb04B58e8F&amount=100000000
     return this.fetchApi('/suggested-fees', params, isValidSuggestedFeesResponse)
   }
 
+  /**
+   * Swap / bridge quote from Across Swap API `GET /swap/approval`.
+   *
+   * @see https://docs.across.to/api-reference/swap/approval/get
+   */
+  async getSwapApproval(request: SwapApprovalRequest): Promise<SwapApprovalApiResponse> {
+    const params: Record<string, string> = {
+      tradeType: 'exactInput',
+      amount: request.amount.toString(),
+      inputToken: request.inputToken,
+      outputToken: request.outputToken,
+      originChainId: request.originChainId.toString(),
+      destinationChainId: request.destinationChainId.toString(),
+      depositor: request.depositor,
+      slippage: 'auto',
+    }
+
+    if (request.recipient) {
+      params.recipient = request.recipient
+    }
+    return this.fetchApi('/swap/approval', params, isValidSwapApprovalResponse)
+  }
+
   async getSupportedTokens(): Promise<TokenInfo[]> {
-    return this.fetchApi<(TokenInfo & { logoURI?: string })[]>('/token-list', {}).then((tokens) =>
-      tokens.map((token) => ({ ...token, logoUrl: token.logoURI })),
-    )
+    if (this.cachedTokens.length === 0) {
+      const response = await this.fetchApi<AcrossApiToken[]>('/token-list', {}).then((tokens) =>
+        tokens.map((token) => ({
+          ...token,
+          logoUrl: token.logoURI,
+          address: token.isNative
+            ? (getChainInfo(token.chainId)?.nativeCurrency.address ?? token.address)
+            : token.address,
+        })),
+      )
+      this.cachedTokens = response
+    }
+    return this.cachedTokens
   }
 
   async getDepositStatus(request: DepositStatusRequest): Promise<DepositStatusResponse> {
@@ -89,7 +122,7 @@ export class AcrossApi {
 
   protected async fetchApi<T>(
     path: string,
-    params: Record<string, string>,
+    params: Record<string | number, string>,
     isValidResponse?: (response: unknown) => response is T,
   ): Promise<T> {
     const baseUrl = this.options.apiBaseUrl || ACROSS_API_URL
@@ -103,6 +136,11 @@ export class AcrossApi {
 
     if (!response.ok) {
       const errorBody = await response.json()
+
+      if (errorBody.code === AcrossApiErrors.AMOUNT_TOO_LOW) {
+        throw new BridgeProviderQuoteError(BridgeQuoteErrors.SELL_AMOUNT_TOO_SMALL, errorBody)
+      }
+
       throw new BridgeProviderQuoteError(BridgeQuoteErrors.API_ERROR, errorBody)
     }
 
@@ -130,6 +168,15 @@ function isValidSuggestedFeesResponse(response: unknown): response is SuggestedF
   return (
     typeof response === 'object' &&
     response !== null &&
+    'id' in response &&
+    typeof response.id === 'string' &&
+    'inputToken' in response &&
+    isValidTokenInfo(response.inputToken) &&
+    'outputToken' in response &&
+    isValidTokenInfo(response.outputToken) &&
+    'outputAmount' in response &&
+    typeof response.outputAmount === 'string' &&
+    isValidNumericString(response.outputAmount) &&
     'totalRelayFee' in response &&
     isValidPctFee(response.totalRelayFee) &&
     'relayerCapitalFee' in response &&
@@ -148,6 +195,23 @@ function isValidSuggestedFeesResponse(response: unknown): response is SuggestedF
     'fillDeadline' in response &&
     'limits' in response &&
     isValidSuggestedFeeLimits(response.limits)
+  )
+}
+
+function isValidNumericString(value: unknown): value is string {
+  return typeof value === 'string' && /^\d+$/.test(value)
+}
+
+function isValidTokenInfo(token: unknown): token is TokenInfo {
+  return (
+    typeof token === 'object' &&
+    token !== null &&
+    'chainId' in token &&
+    typeof token.chainId === 'number' &&
+    'address' in token &&
+    typeof token.address === 'string' &&
+    'decimals' in token &&
+    typeof token.decimals === 'number'
   )
 }
 
@@ -183,15 +247,22 @@ function isValidRoutes(response: unknown): response is Route[] {
   return response.every((item) => isValidRoute(item))
 }
 
+function isValidChainId(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value > 0
+}
+
 function isValidRoute(item: unknown): item is Route {
+  if (typeof item !== 'object' || item === null) {
+    return false
+  }
+  const r = item as Record<string, unknown>
   return (
-    typeof item === 'object' &&
-    item !== null &&
-    'originChainId' in item &&
-    'originToken' in item &&
-    'destinationChainId' in item &&
-    'destinationToken' in item &&
-    'originTokenSymbol' in item &&
-    'destinationTokenSymbol' in item
+    isValidChainId(r.originChainId) &&
+    typeof r.originToken === 'string' &&
+    isValidChainId(r.destinationChainId) &&
+    typeof r.destinationToken === 'string' &&
+    typeof r.originTokenSymbol === 'string' &&
+    typeof r.destinationTokenSymbol === 'string' &&
+    (r.isNative === undefined || typeof r.isNative === 'boolean')
   )
 }

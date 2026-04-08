@@ -1,6 +1,7 @@
 import { cowAppDataLatestScheme as latestAppData } from '@cowprotocol/sdk-app-data'
 import { BridgeDeposit, BridgeHook, HookBridgeProvider, BridgeQuoteResult, QuoteBridgeRequest } from '../../types'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX, RAW_PROVIDERS_FILES_PATH } from '../../const'
+import { SignerLike } from '@cowprotocol/sdk-common'
 import { ALL_SUPPORTED_CHAINS, EvmCall, SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { MOCK_CALL } from './mockData'
@@ -11,6 +12,8 @@ const providerType = 'HookBridgeProvider' as const
 
 export class MockHookBridgeProvider extends BaseMockBridgeProvider implements HookBridgeProvider<BridgeQuoteResult> {
   type = providerType
+
+  readonly unsignedBridgeHookCallsCount = 1
 
   info = {
     name,
@@ -24,11 +27,18 @@ export class MockHookBridgeProvider extends BaseMockBridgeProvider implements Ho
     return 110_000
   }
 
-  async getUnsignedBridgeCall(_request: QuoteBridgeRequest, _quote: BridgeQuoteResult): Promise<EvmCall> {
-    return MOCK_CALL
+  async getUnsignedBridgeCalls(_request: QuoteBridgeRequest, _quote: BridgeQuoteResult): Promise<readonly EvmCall[]> {
+    return [MOCK_CALL]
   }
 
-  async getSignedHook(_chainId: SupportedChainId, _unsignedCall: EvmCall): Promise<BridgeHook> {
+  async getSignedHook(
+    _chainId: SupportedChainId,
+    _unsignedCalls: readonly EvmCall[],
+    _bridgeHookNonce: string,
+    _deadline: bigint,
+    _hookGasLimit: number,
+    _signer?: SignerLike,
+  ): Promise<BridgeHook> {
     return {
       recipient: '0x0000000000000000000000000000000000000001',
       postHook: {

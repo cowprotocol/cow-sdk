@@ -33,6 +33,21 @@ A bridge provider acts as an adapter between the BridgingSdk and external bridgi
 - **Post Hooks**: Smart contract calls executed after order settlement to initiate bridging
 - **Bridge Quotes**: Price and timing estimates for cross-chain transfers
 
+### Trader and recipient addresses
+
+[`QuoteBridgeRequest`](types.ts) carries three related addresses:
+
+- **`account`**: The trader address from the CoW / trading flow (the primary wallet context).
+- **`owner`** (optional): Address that **owns** the CoW Shed proxy on the source chain. When you need the shed derived for a different key than `account` (for example smart-wallet flows), set `owner`. If omitted, built-in providers treat the owner as `account`.
+- **`receiver`** (optional): Where bridged funds should be delivered on the **destination** chain. If omitted, built-in providers use `account`.
+
+Built-in providers resolve these with **logical OR**, not nullish coalescing:
+
+- CoW Shed / signing context: `owner || account`
+- Bridge recipient / refund targets: `receiver || account`
+
+Using `||` keeps behavior consistent when a caller passes an empty string or another falsy placeholder: it still falls back to `account`. Prefer the same pattern in custom providers unless you have a deliberate reason to distinguish `''` from "unset" (and  document it).
+
 ## Getting Started
 
 ### 1. Create Provider Structure
@@ -90,7 +105,7 @@ interface BridgeProvider<Q extends BridgeQuoteResult> {
 | `getBuyTokens()`                 | Get supported tokens for a chain      | ✅         |
 | `getIntermediateTokens()`        | Get bridgeable tokens on source chain | ✅         |
 | `getQuote()`                     | Generate bridge quote                 | ✅         |
-| `getUnsignedBridgeCall()`        | Create unsigned bridge transaction    | ✅         |
+| `getUnsignedBridgeCalls()`       | Create unsigned bridge transaction    | ✅         |
 | `getGasLimitEstimationForHook()` | Estimate gas for hook execution       | ✅         |
 | `getSignedHook()`                | Generate pre-authorized hook          | ✅         |
 | `getStatus()`                    | Check bridge transaction status       | ✅         |
@@ -103,6 +118,8 @@ interface BridgeProvider<Q extends BridgeQuoteResult> {
 \*Can throw "Not implemented" error if unsupported
 
 ## Implementation Guide
+
+When implementing `getQuote`, deposit builders, and hook signing, use the same **`owner || account`** and **`receiver || account`** rules as in [Trader and recipient addresses](#trader-and-recipient-addresses) unless your protocol needs different semantics.
 
 ### Step 1: Basic Provider Class
 
@@ -132,6 +149,9 @@ export interface YourBridgeQuoteResult extends BridgeQuoteResult {
 
 export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult> {
   type = 'HookBridgeProvider' // 'ReceiverAccountBridgeProvider' | 'HookBridgeProvider'
+
+  /** Must match `getUnsignedBridgeCalls` / `getSignedHook` (see `HookBridgeProvider`). */
+  readonly unsignedBridgeHookCallsCount = 1
 
   protected api: YourBridgeApi
   protected cowShedSdk: CowShedSdk
@@ -228,7 +248,7 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
     } = request
 
     // Get CoW Shed account for the owner
-    const ownerAddress = owner ?? account
+    const ownerAddress = owner || account
     const cowShedAccount = this.cowShedSdk.getCowShedAccount(sellTokenChainId, ownerAddress)
 
     // Request quote from external bridge
@@ -239,7 +259,7 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
       toTokenAddress: buyTokenAddress,
       amount: amount.toString(),
       fromAddress: cowShedAccount,
-      toAddress: receiver ?? account,
+      toAddress: receiver || account,
     })
 
     // Validate quote
@@ -261,6 +281,9 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
       isSell: true,
       amountsAndCosts: {
         costs: {
+          // bridgingFee:
+          // - amountInSellCurrency = fee in bridge INPUT (source / intermediate) token units;
+          // - amountInBuyCurrency = fee in bridge OUTPUT (destination) token units — same pairing as beforeFee.sellAmount / buyAmount.
           bridgingFee: {
             feeBps: externalQuote.feeBps,
             amountInSellCurrency: BigInt(externalQuote.bridgeFee),
@@ -310,7 +333,7 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
 
 ```typescript
 export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult> {
-  async getUnsignedBridgeCall(request: QuoteBridgeRequest, quote: YourBridgeQuoteResult): Promise<EvmCall> {
+  async getUnsignedBridgeCalls(request: QuoteBridgeRequest, quote: YourBridgeQuoteResult): Promise<EvmCall[]> {
     // Create the bridge transaction that will be executed by CoW Shed
     return createYourBridgeCall({
       request,

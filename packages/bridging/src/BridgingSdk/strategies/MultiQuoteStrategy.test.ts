@@ -48,7 +48,7 @@ adapterNames.forEach((adapterName) => {
 
       // Setup main mock provider
       mockProvider.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
-      mockProvider.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+      mockProvider.getUnsignedBridgeCalls = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCalls)
       mockProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
       // Setup additional mock providers
@@ -56,14 +56,14 @@ adapterNames.forEach((adapterName) => {
       mockProvider2.info.dappId = 'cow-sdk://bridging/providers/mock2'
       mockProvider2.info.name = 'Mock Bridge Provider 2'
       mockProvider2.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
-      mockProvider2.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+      mockProvider2.getUnsignedBridgeCalls = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCalls)
       mockProvider2.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
       mockProvider3 = new MockHookBridgeProvider()
       mockProvider3.info.dappId = 'cow-sdk://bridging/providers/mock3'
       mockProvider3.info.name = 'Mock Bridge Provider 3'
       mockProvider3.getQuote = jest.fn().mockResolvedValue(bridgeQuoteResult)
-      mockProvider3.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+      mockProvider3.getUnsignedBridgeCalls = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCalls)
       mockProvider3.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
       orderBookApi = {
@@ -585,7 +585,7 @@ adapterNames.forEach((adapterName) => {
         fastProvider.getQuote = jest
           .fn()
           .mockImplementation(() => new Promise((resolve) => setTimeout(() => resolve(bridgeQuoteResult), 10)))
-        fastProvider.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+        fastProvider.getUnsignedBridgeCalls = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCalls)
         fastProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
         const slowProvider = new MockHookBridgeProvider()
@@ -593,7 +593,7 @@ adapterNames.forEach((adapterName) => {
         slowProvider.getQuote = jest
           .fn()
           .mockImplementation(() => new Promise((resolve) => setTimeout(() => resolve(bridgeQuoteResult), 200)))
-        slowProvider.getUnsignedBridgeCall = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
+        slowProvider.getUnsignedBridgeCalls = jest.fn().mockResolvedValue(bridgeCallDetails.unsignedBridgeCalls)
         slowProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
         const testConfig: BridgingSdkConfig = {

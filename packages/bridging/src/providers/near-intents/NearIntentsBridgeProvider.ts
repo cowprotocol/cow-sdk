@@ -174,12 +174,27 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
 
     const { quote, timestamp: isoDate } = quoteResponse
 
-    const payoutRatio = Number(quote.amountOutUsd) / Number(quote.amountInUsd)
-    const slippage = 1 - payoutRatio
-    const slippageBps = Math.trunc(slippage * 10_000)
-    const feeAmountInBuyCurrency = Math.trunc(Number(quote.amountIn) * slippage)
-    const feeAmountInSellCurrency = Math.trunc(Number(quote.amountOut) * slippage)
-    const bridgeFee = Math.trunc(Number(quote.amountIn) * slippage)
+    const amountInBn = BigInt(quote.amountIn)
+    const amountOutBn = BigInt(quote.amountOut)
+    const amountInUsd = Number(quote.amountInUsd)
+    const amountOutUsd = Number(quote.amountOutUsd)
+    if (!Number.isFinite(amountInUsd) || amountInUsd <= 0 || !Number.isFinite(amountOutUsd)) {
+      throw new BridgeProviderQuoteError(BridgeQuoteErrors.INVALID_API_JSON_RESPONSE, {
+        reason: 'Near Intents quote has invalid amountInUsd / amountOutUsd',
+      })
+    }
+    const slippageRatio = Math.min(1, Math.max(0, 1 - amountOutUsd / amountInUsd))
+    const slippageBps = Math.trunc(slippageRatio * 10_000)
+
+    // Fee = amount * slippage in bigint space (avoid Number(amountIn) precision loss on large quotes).
+    const SLIPPAGE_FRACTION_SCALE = 1_000_000_000_000n // 10^12; numerator = round(slippageRatio * 10^12)
+    const slippageNumerator = BigInt(Math.round(slippageRatio * Number(SLIPPAGE_FRACTION_SCALE)))
+
+    // BridgeCosts:
+    // - amountInSellCurrency = fee in bridge input units (intermediate token units)
+    // - amountInBuyCurrency = fee in bridge output units (destination token units)
+    const feeInBridgeInputUnits = (amountInBn * slippageNumerator) / SLIPPAGE_FRACTION_SCALE
+    const feeInBridgeOutputUnits = (amountOutBn * slippageNumerator) / SLIPPAGE_FRACTION_SCALE
 
     return {
       id: recoveredDepositAddress.quoteHash,
@@ -195,7 +210,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
         maxDeposit: BigInt(quote.amountIn),
       },
       fees: {
-        bridgeFee: BigInt(bridgeFee), // The bridge fee is already included in `minAmountOut`. This means `bridgeFee` represents the maximum possible fee (worst case), but the actual fee may be lower.
+        bridgeFee: feeInBridgeInputUnits, // The bridge fee is already included in `minAmountOut`. This means `bridgeFee` represents the maximum possible fee (worst case), but the actual fee may be lower.
         destinationGasFee: BigInt(0),
       },
       amountsAndCosts: {
@@ -215,8 +230,8 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
         costs: {
           bridgingFee: {
             feeBps: slippageBps,
-            amountInSellCurrency: BigInt(feeAmountInSellCurrency),
-            amountInBuyCurrency: BigInt(feeAmountInBuyCurrency),
+            amountInSellCurrency: feeInBridgeInputUnits,
+            amountInBuyCurrency: feeInBridgeOutputUnits,
           },
         },
       },
@@ -283,7 +298,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     }
   }
 
-  getExplorerUrl(bridgingId: string): string {
+  getExplorerUrl(bridgingId: string, _: string): string {
     return `https://explorer.near-intents.org/transactions/${bridgingId}`
   }
 
