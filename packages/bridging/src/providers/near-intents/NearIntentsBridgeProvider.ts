@@ -177,9 +177,11 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     const payoutRatio = Number(quote.amountOutUsd) / Number(quote.amountInUsd)
     const slippage = 1 - payoutRatio
     const slippageBps = Math.trunc(slippage * 10_000)
-    const feeAmountInBuyCurrency = Math.trunc(Number(quote.amountIn) * slippage)
-    const feeAmountInSellCurrency = Math.trunc(Number(quote.amountOut) * slippage)
-    const bridgeFee = Math.trunc(Number(quote.amountIn) * slippage)
+    const amountOut = BigInt(quote.amountOut)
+    const minAmountOut = BigInt(quote.minAmountOut)
+    const amountIn = BigInt(quote.amountIn)
+    const feeAmountInSellCurrency = amountOut - minAmountOut
+    const feeAmountInBuyCurrency = amountOut > 0n ? amountIn - (amountIn * minAmountOut) / amountOut : 0n
 
     return {
       id: recoveredDepositAddress.quoteHash,
@@ -195,7 +197,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
         maxDeposit: BigInt(quote.amountIn),
       },
       fees: {
-        bridgeFee: BigInt(bridgeFee), // The bridge fee is already included in `minAmountOut`. This means `bridgeFee` represents the maximum possible fee (worst case), but the actual fee may be lower.
+        bridgeFee: feeAmountInBuyCurrency,
         destinationGasFee: BigInt(0),
       },
       amountsAndCosts: {
@@ -214,9 +216,9 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
         slippageBps,
         costs: {
           bridgingFee: {
-            feeBps: slippageBps,
-            amountInSellCurrency: BigInt(feeAmountInSellCurrency),
-            amountInBuyCurrency: BigInt(feeAmountInBuyCurrency),
+            feeBps: amountOut > 0n ? Number((feeAmountInSellCurrency * 10_000n) / amountOut) : 0,
+            amountInSellCurrency: feeAmountInSellCurrency,
+            amountInBuyCurrency: feeAmountInBuyCurrency,
           },
         },
       },

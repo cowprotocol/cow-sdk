@@ -484,6 +484,9 @@ adapterNames.forEach((adapterName) => {
         expect(quote.signature).toBe('ed25519:testBtcSignature')
         expect(quote.depositAddress).toBe('0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e')
         expect(quote.amountsAndCosts.beforeFee.buyAmount).toBe(10000n)
+        expect(quote.amountsAndCosts.afterFee.buyAmount).toBe(9900n)
+        expect(quote.amountsAndCosts.costs.bridgingFee.amountInSellCurrency).toBe(100n)
+        expect(quote.amountsAndCosts.costs.bridgingFee.feeBps).toBe(100)
       })
 
       it('should return quote when destination asset is solana', async () => {
@@ -578,6 +581,9 @@ adapterNames.forEach((adapterName) => {
         expect(quote.signature).toBe('ed25519:testSolSignature')
         expect(quote.depositAddress).toBe('0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e')
         expect(quote.amountsAndCosts.beforeFee.buyAmount).toBe(100000000n)
+        expect(quote.amountsAndCosts.afterFee.buyAmount).toBe(99000000n)
+        expect(quote.amountsAndCosts.costs.bridgingFee.amountInSellCurrency).toBe(1000000n)
+        expect(quote.amountsAndCosts.costs.bridgingFee.feeBps).toBe(100)
       })
 
       it('should throw NO_ROUTES when sellTokenAddress is BTC_CURRENCY_ADDRESS', async () => {
