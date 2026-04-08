@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v1.1.2...sdk-config-v1.1.3) (2026-04-08)
+
+
+### 🐛 Bug Fixes
+
+* use adaptToken if contract address is empty ([#850](https://github.com/cowprotocol/cow-sdk/issues/850)) ([d57c397](https://github.com/cowprotocol/cow-sdk/commit/d57c3972d9104fbf846e15a831d004d4e20b961f))
+
 ## [1.1.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v1.1.1...sdk-config-v1.1.2) (2026-03-17)
 
 

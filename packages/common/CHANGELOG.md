@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.10.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.9.0...sdk-common-v0.10.0) (2026-04-08)
+
+
+### ✨ Features
+
+* expose address regular expressions ([#858](https://github.com/cowprotocol/cow-sdk/issues/858)) ([1747364](https://github.com/cowprotocol/cow-sdk/commit/17473645636178cb876402d893d6d18a08b477c3))
+
+
+### 🐛 Bug Fixes
+
+* use adaptToken if contract address is empty ([#850](https://github.com/cowprotocol/cow-sdk/issues/850)) ([d57c397](https://github.com/cowprotocol/cow-sdk/commit/d57c3972d9104fbf846e15a831d004d4e20b961f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 1.1.3
+
 ## [0.9.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.8.2...sdk-common-v0.9.0) (2026-04-01)
 
 

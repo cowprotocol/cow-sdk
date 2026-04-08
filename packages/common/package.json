@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-common",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Common utilities and types for CoW Protocol SDK",
   "repository": {
     "type": "git",

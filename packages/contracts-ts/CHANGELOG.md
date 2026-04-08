@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v2.3.0...sdk-contracts-ts-v2.4.0) (2026-04-08)
+
+
+### ✨ Features
+
+* expose address regular expressions ([#858](https://github.com/cowprotocol/cow-sdk/issues/858)) ([1747364](https://github.com/cowprotocol/cow-sdk/commit/17473645636178cb876402d893d6d18a08b477c3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.0
+    * @cowprotocol/sdk-config bumped to 1.1.3
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.2
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.2
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.16
+
 ## [2.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v2.2.0...sdk-contracts-ts-v2.3.0) (2026-04-01)
 
 
