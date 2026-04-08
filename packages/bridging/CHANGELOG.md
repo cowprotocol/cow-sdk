@@ -1,5 +1,31 @@
 # Changelog
 
+## [3.3.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v3.3.1...sdk-bridging-v3.3.2) (2026-04-08)
+
+
+### 🐛 Bug Fixes
+
+* use adaptToken if contract address is empty ([#850](https://github.com/cowprotocol/cow-sdk/issues/850)) ([d57c397](https://github.com/cowprotocol/cow-sdk/commit/d57c3972d9104fbf846e15a831d004d4e20b961f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 4.6.14
+    * @cowprotocol/sdk-common bumped to 0.10.0
+    * @cowprotocol/sdk-config bumped to 1.1.3
+    * @cowprotocol/sdk-contracts-ts bumped to 2.4.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.3.5
+    * @cowprotocol/sdk-order-book bumped to 2.0.5
+    * @cowprotocol/sdk-trading bumped to 1.2.2
+    * @cowprotocol/sdk-weiroll bumped to 0.1.28
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.2
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.2
+    * @cowprotocol/sdk-order-signing bumped to 0.2.5
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.16
+
 ## [3.3.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v3.3.0...sdk-bridging-v3.3.1) (2026-04-07)
 
 

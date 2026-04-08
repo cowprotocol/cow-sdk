@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-contracts-ts",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "TypeScript contract bindings for CoW Protocol SDK",
   "repository": {
     "type": "git",
