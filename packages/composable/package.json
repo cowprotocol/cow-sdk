@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-composable",
-  "version": "0.2.5",
+  "version": "0.3.0",
   "description": "TypeScript composable features for CoW Protocol SDK",
   "repository": {
     "type": "git",

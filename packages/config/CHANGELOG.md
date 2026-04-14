@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v1.1.3...sdk-config-v1.2.0) (2026-04-14)
+
+
+### ✨ Features
+
+* migrate to cow.finance domain ([#860](https://github.com/cowprotocol/cow-sdk/issues/860)) ([a4e7633](https://github.com/cowprotocol/cow-sdk/commit/a4e76333b7a276baec5c977f44b15498550d8e50))
+
 ## [1.1.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v1.1.2...sdk-config-v1.1.3) (2026-04-08)
 
 

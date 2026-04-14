@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v2.0.5...sdk-order-book-v2.1.0) (2026-04-14)
+
+
+### ✨ Features
+
+* migrate to cow.finance domain ([#860](https://github.com/cowprotocol/cow-sdk/issues/860)) ([a4e7633](https://github.com/cowprotocol/cow-sdk/commit/a4e76333b7a276baec5c977f44b15498550d8e50))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 1.2.0
+    * @cowprotocol/sdk-common bumped to 0.10.1
+
 ## [2.0.5](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v2.0.4...sdk-order-book-v2.0.5) (2026-04-08)
 
 
