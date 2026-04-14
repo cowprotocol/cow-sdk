@@ -569,7 +569,7 @@ export const YOUR_BRIDGE_CONTRACTS: Record<SupportedChainId, string> = {
 }
 
 // const/misc.ts
-export const HOOK_DAPP_BRIDGE_PROVIDER_PREFIX = 'cow-hooks.cow.fi'
+export const HOOK_DAPP_BRIDGE_PROVIDER_PREFIX = 'cow-hooks.cow.finance'
 export const YOUR_BRIDGE_SUPPORTED_TOKENS = {
   // Define supported token lists
 }

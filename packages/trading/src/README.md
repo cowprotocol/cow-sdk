@@ -16,8 +16,8 @@ It will put all necessary parameters to your order, calculates proper amounts, a
 
 ### Why Use This SDK?
 
-- [App-data](https://docs.cow.fi/cow-protocol/reference/sdks/app-data) (order metadata)
-- [Order signing](https://docs.cow.fi/cow-protocol/reference/sdks/cow-sdk/classes/OrderSigningUtils)
+- [App-data](https://docs.cow.finance/cow-protocol/reference/sdks/app-data) (order metadata)
+- [Order signing](https://docs.cow.finance/cow-protocol/reference/sdks/cow-sdk/classes/OrderSigningUtils)
 - Network costs, fees, and slippage
 - Order parameters (validity, partial fills, etc.)
 - Quote API settings (price quality, signing scheme, etc.)
@@ -43,7 +43,7 @@ Special cases:
 
 You need:
 
-- `chainId` - Supported chain ID ([see list](https://docs.cow.fi/cow-protocol/reference/sdks/core-utilities/sdk-config)).
+- `chainId` - Supported chain ID ([see list](https://docs.cow.finance/cow-protocol/reference/sdks/core-utilities/sdk-config)).
 - `signer` - Private key, ethers signer, or `Eip1193` provider.
 - `appCode` - Unique app identifier for tracking orders.
 
@@ -89,9 +89,9 @@ The function returns `quoteResults` object with the following properties:
 
 - `tradeParameters` - trade type, assets, amounts and other optional parameters
 - `amountsAndCosts` - the order sell/buy amounts including network costs, fees and slippage
-- `orderToSign` - order parameters to sign (see [order signing](https://docs.cow.fi/cow-protocol/reference/sdks/cow-sdk/classes/OrderSigningUtils))
-- `quoteResponse` - DTO from [quote API](https://api.cow.fi/docs/#/default/post_api_v1_quote)
-- `appDataInfo` - [order's metadata](https://docs.cow.fi/cow-protocol/reference/sdks/app-data)
+- `orderToSign` - order parameters to sign (see [order signing](https://docs.cow.finance/cow-protocol/reference/sdks/cow-sdk/classes/OrderSigningUtils))
+- `quoteResponse` - DTO from [quote API](https://api.cow.finance/docs/#/default/post_api_v1_quote)
+- `appDataInfo` - [order's metadata](https://docs.cow.finance/cow-protocol/reference/sdks/app-data)
 - `orderTypedData` - EIP-712 typed data for signing
 
 Another parameter is returned by this function is `postSwapOrderFromQuote`.
@@ -386,7 +386,7 @@ See `TradeOptionalParameters` type for more details.
 | `slippageBps`        | `number`       | 50                | Slippage tolerance applied to the order to get the limit price. Expressed in Basis Points (BPS). One basis point is equivalent to 0.01% (1/100th of a percent). |
 | `receiver`           | `string`       | order creator     | The address that will receive the order's tokens.                                                                                                               |
 | `validFor` / `validTo` | `number`       | 30 mins (validFor) | Order expiration: Use `validFor` for seconds from now (e.g., 600 = 10 mins), OR use `validTo` for exact timestamp (e.g., 2524608000). Cannot use both.      |
-| `partnerFee`         | `PartnerFee`   | -                 | Partners of the protocol can specify their fee for the order, including the fee in basis points (BPS) and the fee recipient address. [Read more](https://docs.cow.fi/governance/fees/partner-fee)                  |
+| `partnerFee`         | `PartnerFee`   | -                 | Partners of the protocol can specify their fee for the order, including the fee in basis points (BPS) and the fee recipient address. [Read more](https://docs.cow.finance/governance/fees/partner-fee)                  |
 
 ##### Example
 
@@ -430,8 +430,8 @@ However, you can provide additional parameters to customize the order creation.
 
 #### Swap
 
-1. `quoteRequest` - the quote request object. It is used to get a quote from the quote API ([read more](https://docs.cow.fi/cow-protocol/reference/sdks/cow-sdk/modules#orderquoterequest))
-2. `appData` - the order's metadata ([read more](https://docs.cow.fi/cow-protocol/reference/sdks/app-data/modules#appdataparams))
+1. `quoteRequest` - the quote request object. It is used to get a quote from the quote API ([read more](https://docs.cow.finance/cow-protocol/reference/sdks/cow-sdk/modules#orderquoterequest))
+2. `appData` - the order's metadata ([read more](https://docs.cow.finance/cow-protocol/reference/sdks/app-data/modules#appdataparams))
 
 ##### Example
 
