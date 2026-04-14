@@ -65,7 +65,7 @@ Special cases:
 
 You need:
 
-- `chainId` - Supported chain ID ([see list](https://docs.cow.fi/cow-protocol/reference/sdks/core-utilities/sdk-config)).
+- `chainId` - Supported chain ID ([see list](https://docs.cow.finance/cow-protocol/reference/sdks/core-utilities/sdk-config)).
 - `appCode` - Unique app identifier for tracking orders.
 - `signer` - Private key, ethers signer, or `Eip1193` provider (optional - will use global adapter's signer if not provided).
 
@@ -159,9 +159,9 @@ The function returns `quoteResults` object with the following properties:
 
 - `tradeParameters` - trade type, assets, amounts and other optional parameters
 - `amountsAndCosts` - the order sell/buy amounts including network costs, fees and slippage
-- `orderToSign` - order parameters to sign (see [order signing](https://docs.cow.fi/cow-protocol/reference/sdks/cow-sdk/classes/OrderSigningUtils))
-- `quoteResponse` - DTO from [quote API](https://api.cow.fi/docs/#/default/post_api_v1_quote)
-- `appDataInfo` - [order's metadata](https://docs.cow.fi/cow-protocol/reference/sdks/app-data)
+- `orderToSign` - order parameters to sign (see [order signing](https://docs.cow.finance/cow-protocol/reference/sdks/cow-sdk/classes/OrderSigningUtils))
+- `quoteResponse` - DTO from [quote API](https://api.cow.finance/docs/#/default/post_api_v1_quote)
+- `appDataInfo` - [order's metadata](https://docs.cow.finance/cow-protocol/reference/sdks/app-data)
 - `orderTypedData` - EIP-712 typed data for signing
 
 Another parameter is returned by this function is `postSwapOrderFromQuote`.
@@ -536,7 +536,7 @@ See `TradeOptionalParameters` type for more details.
 | `slippageBps`       | `number`     | 50                | Slippage tolerance applied to the order to get the limit price. Expressed in Basis Points (BPS). One basis point is equivalent to 0.01% (1/100th of a percent).                                   |
 | `receiver`          | `string`     | order creator     | The address that will receive the order's tokens.                                                                                                                                                 |
 | `validFor`          | `number`     | 30 mins           | The order expiration time in seconds.                                                                                                                                                             |
-| `partnerFee`        | `PartnerFee` | -                 | Partners of the protocol can specify their fee for the order, including the fee in basis points (BPS) and the fee recipient address. [Read more](https://docs.cow.fi/governance/fees/partner-fee) |
+| `partnerFee`        | `PartnerFee` | -                 | Partners of the protocol can specify their fee for the order, including the fee in basis points (BPS) and the fee recipient address. [Read more](https://docs.cow.finance/governance/fees/partner-fee) |
 
 ##### Example
 
@@ -585,8 +585,8 @@ However, you can provide additional parameters to customize the order creation.
 
 #### Swap
 
-1. `quoteRequest` - the quote request object. It is used to get a quote from the quote API ([read more](https://docs.cow.fi/cow-protocol/reference/sdks/cow-sdk/modules#orderquoterequest))
-2. `appData` - the order's metadata ([read more](https://docs.cow.fi/cow-protocol/reference/sdks/app-data/modules#appdataparams))
+1. `quoteRequest` - the quote request object. It is used to get a quote from the quote API ([read more](https://docs.cow.finance/cow-protocol/reference/sdks/cow-sdk/modules#orderquoterequest))
+2. `appData` - the order's metadata ([read more](https://docs.cow.finance/cow-protocol/reference/sdks/app-data/modules#appdataparams))
 
 ##### Example
 
@@ -690,7 +690,7 @@ console.log('Buy amount:', order.buyAmount)
 
 Cancels an order off-chain by sending a signed cancellation request to the order book API. This is a "soft cancel" that is faster and doesn't require gas, but requires order book support.
 
-You always can cancel orders using [CoW Swap](https://swap.cow.fi), [see the tutorial for more details](https://docs.cow.fi/cow-protocol/tutorials/cow-swap/swap#cancel-your-order).
+You always can cancel orders using [CoW Swap](https://swap.cow.finance), [see the tutorial for more details](https://docs.cow.finance/cow-protocol/tutorials/cow-swap/swap#cancel-your-order).
 
 **Parameters:**
 - `orderUid` - The unique identifier of the order to cancel

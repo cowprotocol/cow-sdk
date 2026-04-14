@@ -30,14 +30,14 @@ import { DEFAULT_BACKOFF_OPTIONS, DEFAULT_LIMITER_OPTIONS, FetchParams, OrderBoo
 import { transformOrder } from './transformOrder'
 import { EnrichedOrder } from './types'
 
-const PROD_BASE_URL = 'https://api.cow.fi'
-const STAGING_BASE_URL = 'https://barn.api.cow.fi'
-const PARTNER_PROD_BASE_URL = 'https://partners.cow.fi'
-const PARTNER_STAGING_BASE_URL = 'https://partners.barn.cow.fi'
+const PROD_BASE_URL = 'https://api.cow.finance'
+const STAGING_BASE_URL = 'https://barn.api.cow.finance'
+const PARTNER_PROD_BASE_URL = 'https://partners.cow.finance'
+const PARTNER_STAGING_BASE_URL = 'https://partners.barn.cow.finance'
 
 /**
  * An object containing *production* environment base URLs for each supported `chainId`.
- * @see {@link https://api.cow.fi/docs/#/}
+ * @see {@link https://api.cow.finance/docs/#/}
  */
 export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.MAINNET]: `${PROD_BASE_URL}/mainnet`,
@@ -73,7 +73,7 @@ export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
 /**
  * An object containing *partner production* environment base URLs for each supported `chainId`.
  * Used when apiKey is set; requests include X-API-Key header.
- * @see {@link https://partners.cow.fi}
+ * @see {@link https://partners.cow.finance}
  */
 export const ORDER_BOOK_PARTNER_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.MAINNET]: `${PARTNER_PROD_BASE_URL}/mainnet`,
@@ -92,7 +92,7 @@ export const ORDER_BOOK_PARTNER_PROD_CONFIG: ApiBaseUrls = {
 /**
  * An object containing *partner staging* environment base URLs for each supported `chainId`.
  * Used when apiKey is set and env is staging; requests include X-API-Key header.
- * @see {@link https://partners.barn.cow.fi}
+ * @see {@link https://partners.barn.cow.finance}
  */
 export const ORDER_BOOK_PARTNER_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.MAINNET]: `${PARTNER_STAGING_BASE_URL}/mainnet`,
@@ -193,7 +193,7 @@ export type GetTradesRequest = {
  * }
  * ```
  *
- * @see {@link Swagger documentation https://api.cow.fi/docs/#/}
+ * @see {@link Swagger documentation https://api.cow.finance/docs/#/}
  * @see {@link OrderBook API https://github.com/cowprotocol/services}
  */
 export class OrderBookApi {
@@ -214,7 +214,7 @@ export class OrderBookApi {
    * Get the version of the API.
    * @param contextOverride Optional context override for this request.
    * @returns The version of the API.
-   * @see {@link https://api.cow.fi/docs/#/default/get_api_v1_version}
+   * @see {@link https://api.cow.finance/docs/#/default/get_api_v1_version}
    */
   getVersion(contextOverride: PartialApiContext = {}): Promise<string> {
     return this.fetch({ path: '/api/v1/version', method: 'GET' }, contextOverride)

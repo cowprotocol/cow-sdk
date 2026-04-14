@@ -77,7 +77,7 @@ export type TwapDataBase = {
   /**
    * Meta-data associated with the order. Normally would be the keccak256 hash of the document generated in http://github.com/cowprotocol/app-data
    *
-   * This hash should have been uploaded to the API https://api.cow.fi/docs/#/default/put_api_v1_app_data__app_data_hash_ and potentially to other data availability protocols like IPFS.
+   * This hash should have been uploaded to the API https://api.cow.finance/docs/#/default/put_api_v1_app_data__app_data_hash_ and potentially to other data availability protocols like IPFS.
    *
    */
   readonly appData: string

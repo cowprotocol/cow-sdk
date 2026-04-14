@@ -4,7 +4,7 @@ import { RateLimiter } from 'limiter'
 
 fetchMock.enableMocks()
 
-const URL = 'https://cow.fi'
+const URL = 'https://cow.finance'
 const ERROR_MESSAGE = '💣💥 Booom!'
 
 const OK_RESPONSE = {

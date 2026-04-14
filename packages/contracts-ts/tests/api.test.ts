@@ -79,14 +79,14 @@ describe('API Functions and Classes', () => {
   describe('apiUrl', () => {
     test('should generate correct URLs for different environments and networks', () => {
       // Test Dev environment
-      expect(apiUrl(Environment.Dev, 'mainnet')).toBe('https://barn.api.cow.fi/mainnet')
-      expect(apiUrl(Environment.Dev, 'goerli')).toBe('https://barn.api.cow.fi/goerli')
-      expect(apiUrl(Environment.Dev, 'sepolia')).toBe('https://barn.api.cow.fi/sepolia')
+      expect(apiUrl(Environment.Dev, 'mainnet')).toBe('https://barn.api.cow.finance/mainnet')
+      expect(apiUrl(Environment.Dev, 'goerli')).toBe('https://barn.api.cow.finance/goerli')
+      expect(apiUrl(Environment.Dev, 'sepolia')).toBe('https://barn.api.cow.finance/sepolia')
 
       // Test Prod environment
-      expect(apiUrl(Environment.Prod, 'mainnet')).toBe('https://api.cow.fi/mainnet')
-      expect(apiUrl(Environment.Prod, 'goerli')).toBe('https://api.cow.fi/goerli')
-      expect(apiUrl(Environment.Prod, 'sepolia')).toBe('https://api.cow.fi/sepolia')
+      expect(apiUrl(Environment.Prod, 'mainnet')).toBe('https://api.cow.finance/mainnet')
+      expect(apiUrl(Environment.Prod, 'goerli')).toBe('https://api.cow.finance/goerli')
+      expect(apiUrl(Environment.Prod, 'sepolia')).toBe('https://api.cow.finance/sepolia')
     })
 
     test('should throw error for invalid environment', () => {
@@ -131,11 +131,11 @@ describe('API Functions and Classes', () => {
 
       // All should have the same properties
       expect(ethersV5Api.network).toBe('mainnet')
-      expect(ethersV5Api.baseUrl).toBe('https://api.cow.fi/mainnet')
+      expect(ethersV5Api.baseUrl).toBe('https://api.cow.finance/mainnet')
       expect(ethersV6Api.network).toBe('mainnet')
-      expect(ethersV6Api.baseUrl).toBe('https://api.cow.fi/mainnet')
+      expect(ethersV6Api.baseUrl).toBe('https://api.cow.finance/mainnet')
       expect(viemApi.network).toBe('mainnet')
-      expect(viemApi.baseUrl).toBe('https://api.cow.fi/mainnet')
+      expect(viemApi.baseUrl).toBe('https://api.cow.finance/mainnet')
     })
   })
 
@@ -286,7 +286,7 @@ describe('API Functions and Classes', () => {
       // Verify fetch was called with correct parameters
       expect(mockFetch).toHaveBeenCalledTimes(3)
       const lastCall = mockFetch.mock.calls[mockFetch.mock.calls.length - 1]
-      expect(lastCall?.[0]).toBe('https://api.cow.fi/mainnet/api/v1/orders')
+      expect(lastCall?.[0]).toBe('https://api.cow.finance/mainnet/api/v1/orders')
       expect(lastCall?.[1]?.method).toBe('post')
       expect(lastCall?.[1]?.headers).toEqual({ 'Content-Type': 'application/json' })
     })

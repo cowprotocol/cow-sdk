@@ -4,7 +4,7 @@
 
 # CoW SDK
 
-## 📚 [Docs website](https://docs.cow.fi/)
+## 📚 [Docs website](https://docs.cow.finance/)
 
 ## Test coverage
 
@@ -31,13 +31,13 @@ The SDK supports all CoW Protocol enabled networks:
 
 ## 🔗 **Related Resources**
 
-- **[CoW Protocol Documentation](https://docs.cow.fi/)**
-- **[API Reference](https://api.cow.fi/docs/)**
-- **[CoW Protocol Website](https://cow.fi/)**
+- **[CoW Protocol Documentation](https://docs.cow.finance/)**
+- **[API Reference](https://api.cow.finance/docs/)**
+- **[CoW Protocol Website](https://cow.finance/)**
 - **[Examples Repository](https://github.com/cowprotocol/cow-sdk/tree/main/examples)**
 - **Issues**: [GitHub Issues](https://github.com/cowprotocol/cow-sdk/issues)
 - **Discord**: [CoW Protocol Discord](https://discord.com/invite/cowprotocol)
-- **Documentation**: [docs.cow.fi](https://docs.cow.fi/)
+- **Documentation**: [docs.cow.finance](https://docs.cow.finance/)
 
 ## Getting Started
 
@@ -81,7 +81,7 @@ The `@cowprotocol/cow-sdk` provides tools at different abstraction levels, allow
 
 ### Advanced
 - **[`BridgingSdk`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/bridging/README.md)** - Cross-chain token transfers and bridging functionality
-- **[`ConditionalOrder`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/composable/README.md)** - SDK for Programmatic Orders such as TWAP ([Read more](https://docs.cow.fi/cow-protocol/concepts/order-types/programmatic-orders))
+- **[`ConditionalOrder`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/composable/README.md)** - SDK for Programmatic Orders such as TWAP ([Read more](https://docs.cow.finance/cow-protocol/concepts/order-types/programmatic-orders))
 - **[`CowShedSdk`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/cow-shed/README.md)** - Account abstraction that leverages EOA with smart contract capabilities
 
 ## v6 → v7 Migration Guide
@@ -290,7 +290,7 @@ const orderBookApi = new OrderBookApi({
 })
 ```
 
-By default, the SDK routes requests through `partners.cow.fi` (prod) or `partners.barn.cow.fi` (staging) and includes the `X-API-Key` header. If you provide custom `baseUrls`, those take precedence over the default partner hosts, but the `X-API-Key` header is still sent with every request.
+By default, the SDK routes requests through `partners.cow.finance` (prod) or `partners.barn.cow.finance` (staging) and includes the `X-API-Key` header. If you provide custom `baseUrls`, those take precedence over the default partner hosts, but the `X-API-Key` header is still sent with every request.
 
 See the [OrderBookApi documentation](https://github.com/cowprotocol/cow-sdk/tree/main/packages/order-book/README.md#partner-api-authenticated-access) for more details, including usage with the Trading SDK.
 
