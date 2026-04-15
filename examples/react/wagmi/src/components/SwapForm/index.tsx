@@ -171,7 +171,7 @@ export function SwapForm({ isSdkReady }: { isSdkReady: boolean }) {
             <code style={{ wordBreak: 'break-all', fontSize: '0.9em' }}>{postedOrderHash}</code>
           </p>
           <p>
-            <a href={`https://explorer.cow.fi/orders/${postedOrderHash}`} target="_blank" rel="noopener noreferrer">
+            <a href={`https://explorer.cow.finance/orders/${postedOrderHash}`} target="_blank" rel="noopener noreferrer">
               View in CoW Explorer
             </a>
           </p>

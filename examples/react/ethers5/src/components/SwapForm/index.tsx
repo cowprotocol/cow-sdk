@@ -16,7 +16,7 @@ const WETH_SEPOLIA = WRAPPED_NATIVE_CURRENCIES[chainId]
 
 const USDC_SEPOLIA: TokenInfo = {
   logoUrl:
-    'https://files.cow.fi/token-lists/images/1/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48/logo.png',
+    'https://files.cow.finance/token-lists/images/1/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48/logo.png',
   chainId: SupportedChainId.SEPOLIA,
   address: '0xbe72E441BF55620febc26715db68d3494213D8Cb',
   decimals: 18,
@@ -126,7 +126,7 @@ export function SwapForm() {
         <div className="box">
           <h4>Order has been posted</h4>
           <p>
-            <a href={`https://explorer.cow.fi/sepolia/orders/${postedOrderHash}`}>See details in Explorer</a>
+            <a href={`https://explorer.cow.finance/sepolia/orders/${postedOrderHash}`}>See details in Explorer</a>
           </p>
         </div>
       )}
