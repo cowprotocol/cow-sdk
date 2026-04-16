@@ -47,7 +47,7 @@ npm install @cowprotocol/sdk-trading
 ## Setup
 
 You need:
-- `chainId` - Supported chain ID (see [SDK config](https://docs.cow.finance/cow-protocol/reference/sdks/core-utilities/sdk-config))
+- `chainId` - Supported chain ID (see [SDK config](https://docs.cow.fi/cow-protocol/reference/sdks/core-utilities/sdk-config))
 - `appCode` - Unique app identifier for tracking orders
 - `signer` - Private key, ethers signer, or `Eip1193` provider
 - `TradingSdk` instance - For getting quotes and posting orders
@@ -501,6 +501,6 @@ Adapter contracts are:
 ## Resources
 
 - [Aave Flash Loans Documentation](https://docs.aave.com/developers/guides/flash-loans)
-- [CoW Protocol Documentation](https://docs.cow.finance/)
-- [CoW Protocol Hooks](https://docs.cow.finance/cow-protocol/reference/core/intents/hooks)
+- [CoW Protocol Documentation](https://docs.cow.fi/)
+- [CoW Protocol Hooks](https://docs.cow.fi/cow-protocol/reference/core/intents/hooks)
 - [EIP-1271 Specification](https://eips.ethereum.org/EIPS/eip-1271)

@@ -8,7 +8,7 @@ AppData schema definitions
 
 These schemas are used in the data encoded on `appData` field for CowProtocol orders.
 
-For more details, check [the docs](https://docs.cow.finance/cow-protocol/reference/core/intents/app-data).
+For more details, check [the docs](https://docs.cow.fi/cow-protocol/reference/core/intents/app-data).
 
 ## Installation
 

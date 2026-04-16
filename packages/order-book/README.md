@@ -127,8 +127,8 @@ Partners can use the Partner API for authenticated, rate-limited access with hig
 
 | Environment | Partner API Base URL |
 |-------------|---------------------|
-| Production  | `https://partners.cow.finance` |
-| Staging     | `https://partners.barn.cow.finance` |
+| Production  | `https://partners.cow.fi` |
+| Staging     | `https://partners.barn.cow.fi` |
 
 ```typescript
 const orderBookApi = new OrderBookApi({

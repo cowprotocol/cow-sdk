@@ -128,4 +128,4 @@ We welcome contributions to the CoW Protocol SDK! Here's how to get started:
 
 - Check existing [issues](https://github.com/cowprotocol/cow-sdk/issues) for similar problems
 - Join our [Discord](https://discord.gg/cowprotocol) for community support
-- Read the [CoW Protocol documentation](https://docs.cow.finance)
+- Read the [CoW Protocol documentation](https://docs.cow.fi)

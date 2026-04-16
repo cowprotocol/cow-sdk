@@ -32,7 +32,7 @@ export const COW_EIP712_TYPES = {
  * Utility class for signing order intents and cancellations.
  *
  * @remarks This class only supports `eth_sign` and wallet-native EIP-712 signing. For use of
- *          `presign` and `eip1271` {@link https://docs.cow.finance/ | see the docs}.
+ *          `presign` and `eip1271` {@link https://docs.cow.fi/ | see the docs}.
  * @example
  *
  * ```typescript

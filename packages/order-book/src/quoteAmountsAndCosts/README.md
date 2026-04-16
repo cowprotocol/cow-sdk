@@ -1,7 +1,7 @@
 # CoW Protocol Order Amounts and Costs
 
 This document explains how CoW Protocol calculates order amounts and costs,
-from the initial `https://api.cow.finance/mainnet/api/v1/quote` API response to the final signed order.
+from the initial `https://api.cow.fi/mainnet/api/v1/quote` API response to the final signed order.
 
 ## 1. What `/quote` API returns
 
@@ -41,7 +41,7 @@ Quote API response example:
 
 An order example:
 ```
-https://api.cow.finance/mainnet/api/v1/orders/0xeaed649f015a7d39c47cc9edf9e0d503cac55c9420cbf1951e3017c50a8d5c36d8da6bf26964af9d7eed9e03e53415d37aa9604568401277
+https://api.cow.fi/mainnet/api/v1/orders/0xeaed649f015a7d39c47cc9edf9e0d503cac55c9420cbf1951e3017c50a8d5c36d8da6bf26964af9d7eed9e03e53415d37aa9604568401277
 ```
 
 The response `quote` field contains three amount fields:
