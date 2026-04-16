@@ -10,17 +10,17 @@ export enum Environment {
 
 export const LIMIT_CONCURRENT_REQUESTS = 5
 
-const PARTNER_PROD_BASE_URL = 'https://partners.cow.finance'
-const PARTNER_DEV_BASE_URL = 'https://partners.barn.cow.finance'
+const PARTNER_PROD_BASE_URL = 'https://partners.cow.fi'
+const PARTNER_DEV_BASE_URL = 'https://partners.barn.cow.fi'
 
 export function apiUrl(environment: Environment, network: string, apiKey?: string): string {
   let baseUrl: string
   switch (environment) {
     case Environment.Dev:
-      baseUrl = apiKey ? PARTNER_DEV_BASE_URL : 'https://barn.api.cow.finance'
+      baseUrl = apiKey ? PARTNER_DEV_BASE_URL : 'https://barn.api.cow.fi'
       break
     case Environment.Prod:
-      baseUrl = apiKey ? PARTNER_PROD_BASE_URL : 'https://api.cow.finance'
+      baseUrl = apiKey ? PARTNER_PROD_BASE_URL : 'https://api.cow.fi'
       break
     default:
       throw new Error('Invalid environment')
@@ -134,7 +134,12 @@ function apiSigningScheme(scheme: SigningScheme): string {
   }
 }
 
-async function call<T>(route: string, baseUrl: string, init?: RequestInit, apiKey?: string): Promise<T> {
+async function call<T>(
+  route: string,
+  baseUrl: string,
+  init?: RequestInit,
+  apiKey?: string,
+): Promise<T> {
   const url = `${baseUrl}/api/v1/${route}`
   const headers: Record<string, string> = {
     ...((init?.headers as Record<string, string>) ?? {}),
@@ -195,31 +200,37 @@ async function estimateTradeAmount({
   return getGlobalAdapter().utils.toBigIntish(estimatedAmount)
 }
 
-async function placeOrder({ order, signature, baseUrl, from, apiKey }: PlaceOrderQuery & ApiCall): Promise<string> {
+async function placeOrder({
+  order,
+  signature,
+  baseUrl,
+  from,
+  apiKey,
+}: PlaceOrderQuery & ApiCall): Promise<string> {
   const normalizedOrder = normalizeOrder(order)
   const adapter = getGlobalAdapter()
   return await call(
     'orders',
     baseUrl,
     {
-      method: 'post',
-      body: JSON.stringify({
-        sellToken: normalizedOrder.sellToken,
-        buyToken: normalizedOrder.buyToken,
-        sellAmount: String(adapter.utils.toBigIntish(normalizedOrder.sellAmount)),
-        buyAmount: String(adapter.utils.toBigIntish(normalizedOrder.buyAmount)),
-        validTo: normalizedOrder.validTo,
-        appData: normalizedOrder.appData,
-        feeAmount: String(adapter.utils.toBigIntish(normalizedOrder.feeAmount)),
-        kind: apiKind(order.kind),
-        partiallyFillable: normalizedOrder.partiallyFillable,
-        signature: encodeSignatureData(signature),
-        signingScheme: apiSigningScheme(signature.scheme),
-        receiver: normalizedOrder.receiver,
-        from,
-      }),
-      headers: { 'Content-Type': 'application/json' },
-    },
+    method: 'post',
+    body: JSON.stringify({
+      sellToken: normalizedOrder.sellToken,
+      buyToken: normalizedOrder.buyToken,
+      sellAmount: String(adapter.utils.toBigIntish(normalizedOrder.sellAmount)),
+      buyAmount: String(adapter.utils.toBigIntish(normalizedOrder.buyAmount)),
+      validTo: normalizedOrder.validTo,
+      appData: normalizedOrder.appData,
+      feeAmount: String(adapter.utils.toBigIntish(normalizedOrder.feeAmount)),
+      kind: apiKind(order.kind),
+      partiallyFillable: normalizedOrder.partiallyFillable,
+      signature: encodeSignatureData(signature),
+      signingScheme: apiSigningScheme(signature.scheme),
+      receiver: normalizedOrder.receiver,
+      from,
+    }),
+    headers: { 'Content-Type': 'application/json' },
+  },
     apiKey,
   )
 }
@@ -233,7 +244,10 @@ async function getExecutedSellAmount({
   return getGlobalAdapter().utils.toBigIntish(response.executedSellAmount)
 }
 
-async function getQuote({ baseUrl, apiKey }: ApiCall, quote: QuoteQuery): Promise<GetQuoteResponse> {
+async function getQuote(
+  { baseUrl, apiKey }: ApiCall,
+  quote: QuoteQuery,
+): Promise<GetQuoteResponse> {
   // Convert BigNumber into JSON strings (native serialisation is a hex object)
   if ((<SellAmountBeforeFee>quote).sellAmountBeforeFee) {
     ;(<SellAmountBeforeFee>quote).sellAmountBeforeFee = String((<SellAmountBeforeFee>quote).sellAmountBeforeFee)

@@ -25,7 +25,7 @@ export const BUY_TOKENS = [
   {
     chainId: SupportedChainId.MAINNET,
     address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-    logoUrl: 'https://swap.cow.finance/assets/network-mainnet-logo-BJe1wK_m.svg',
+    logoUrl: 'https://swap.cow.fi/assets/network-mainnet-logo-BJe1wK_m.svg',
     name: 'USD Coin',
     symbol: 'USDC',
     decimals: 6,
@@ -33,7 +33,7 @@ export const BUY_TOKENS = [
   {
     chainId: SupportedChainId.MAINNET,
     address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-    logoUrl: 'https://swap.cow.finance/assets/network-gnosis-chain-logo-Do_DEWQv.svg',
+    logoUrl: 'https://swap.cow.fi/assets/network-gnosis-chain-logo-Do_DEWQv.svg',
     name: 'Wrapped Ether',
     symbol: 'WETH',
     decimals: 18,
@@ -41,7 +41,7 @@ export const BUY_TOKENS = [
   {
     chainId: SupportedChainId.SEPOLIA,
     address: '0x0625aFB445C3B6B7B929342a04A22599fd5dBB59',
-    logoUrl: 'https://swap.cow.finance/assets/network-mainnet-logo-BJe1wK_m.svg',
+    logoUrl: 'https://swap.cow.fi/assets/network-mainnet-logo-BJe1wK_m.svg',
     name: 'CoW Protocol Token',
     symbol: 'COW',
     decimals: 18,
@@ -49,7 +49,7 @@ export const BUY_TOKENS = [
   {
     chainId: AdditionalTargetChainId.OPTIMISM,
     address: '0x4200000000000000000000000000000000000006',
-    logoUrl: 'https://swap.cow.finance/assets/network-mainnet-logo-BJe1wK_m.svg',
+    logoUrl: 'https://swap.cow.fi/assets/network-mainnet-logo-BJe1wK_m.svg',
     name: 'Wrapped Ether',
     symbol: 'WETH',
     decimals: 18,

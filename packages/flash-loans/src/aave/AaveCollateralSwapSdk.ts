@@ -91,7 +91,7 @@ export type AaveCollateralSwapSdkConfig = {
  *          complex flow of flash loans, order creation, and hook configuration.
  *
  * @see https://docs.aave.com/developers/guides/flash-loans
- * @see https://docs.cow.finance/
+ * @see https://docs.cow.fi/
  */
 export class AaveCollateralSwapSdk {
   private readonly hookAdapterPerType: Record<AaveFlashLoanType, Record<SupportedChainId, string>>
