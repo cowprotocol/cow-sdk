@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-subgraph",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "CowProtocol subgraph",
   "repository": {
     "type": "git",

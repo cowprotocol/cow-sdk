@@ -1,5 +1,32 @@
 # Changelog
 
+## [2.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v1.3.0...sdk-trading-v2.0.0) (2026-04-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* bring cow.fi back ([#863](https://github.com/cowprotocol/cow-sdk/issues/863))
+
+### ✨ Features
+
+* bring cow.fi back ([#863](https://github.com/cowprotocol/cow-sdk/issues/863)) ([d607fd2](https://github.com/cowprotocol/cow-sdk/commit/d607fd2cfbc93ace39de04f3a7870f723fdd9b21))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.2
+    * @cowprotocol/sdk-config bumped to 2.0.0
+    * @cowprotocol/sdk-app-data bumped to 5.0.0
+    * @cowprotocol/sdk-order-book bumped to 3.0.0
+    * @cowprotocol/sdk-order-signing bumped to 1.0.0
+    * @cowprotocol/sdk-contracts-ts bumped to 3.0.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.4
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.4
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.18
+
 ## [1.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v1.2.2...sdk-trading-v1.3.0) (2026-04-14)
 
 
