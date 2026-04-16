@@ -1,5 +1,29 @@
 # Changelog
 
+## [9.0.0](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v8.1.0...cow-sdk-v9.0.0) (2026-04-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* bring cow.fi back ([#863](https://github.com/cowprotocol/cow-sdk/issues/863))
+
+### ✨ Features
+
+* bring cow.fi back ([#863](https://github.com/cowprotocol/cow-sdk/issues/863)) ([d607fd2](https://github.com/cowprotocol/cow-sdk/commit/d607fd2cfbc93ace39de04f3a7870f723fdd9b21))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 5.0.0
+    * @cowprotocol/sdk-common bumped to 0.10.2
+    * @cowprotocol/sdk-config bumped to 2.0.0
+    * @cowprotocol/sdk-contracts-ts bumped to 3.0.0
+    * @cowprotocol/sdk-order-book bumped to 3.0.0
+    * @cowprotocol/sdk-order-signing bumped to 1.0.0
+    * @cowprotocol/sdk-trading bumped to 2.0.0
+
 ## [8.1.0](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v8.0.6...cow-sdk-v8.1.0) (2026-04-14)
 
 
