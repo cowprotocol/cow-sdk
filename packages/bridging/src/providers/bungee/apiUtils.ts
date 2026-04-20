@@ -109,7 +109,7 @@ export function isValidBungeeEventsResponse(response: unknown): response is Bung
       'isCowswapTrade' in e &&
       'orderId' in e &&
       // 'recipient' in e &&
-      'sender' in e &&
+      // 'sender' in e &&
       'srcTxStatus' in e &&
       'destTxStatus' in e
     )
