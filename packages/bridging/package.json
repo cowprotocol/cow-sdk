@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-bridging",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Bridging for CoW Protocol",
   "repository": {
     "type": "git",
