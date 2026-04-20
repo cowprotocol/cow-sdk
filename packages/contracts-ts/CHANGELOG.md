@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.0.0...sdk-contracts-ts-v3.0.1) (2026-04-20)
+
+
+### 🐛 Bug Fixes
+
+* **bridge:** make sender optional in Bungee events response ([#865](https://github.com/cowprotocol/cow-sdk/issues/865)) ([b5eba89](https://github.com/cowprotocol/cow-sdk/commit/b5eba898a3173b5ca0a449f0e50d4b871da303c6))
+
 ## [3.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v2.5.0...sdk-contracts-ts-v3.0.0) (2026-04-16)
 
 

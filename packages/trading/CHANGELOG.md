@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.0.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v2.0.0...sdk-trading-v2.0.1) (2026-04-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-order-signing bumped to 1.0.1
+    * @cowprotocol/sdk-contracts-ts bumped to 3.0.1
+
 ## [2.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v1.3.0...sdk-trading-v2.0.0) (2026-04-16)
 
 

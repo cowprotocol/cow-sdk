@@ -1,5 +1,28 @@
 # Changelog
 
+## [4.0.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.0.0...sdk-bridging-v4.0.1) (2026-04-20)
+
+
+### 🐛 Bug Fixes
+
+* **bridge:** make sender optional in Bungee events response ([#865](https://github.com/cowprotocol/cow-sdk/issues/865)) ([b5eba89](https://github.com/cowprotocol/cow-sdk/commit/b5eba898a3173b5ca0a449f0e50d4b871da303c6))
+
+
+### 📚 Documentation
+
+* **bridge:** use real WETH addresses in README example ([#851](https://github.com/cowprotocol/cow-sdk/issues/851)) ([12c130a](https://github.com/cowprotocol/cow-sdk/commit/12c130a36d753db7bf3bc63c262f3c15adc19fd0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-contracts-ts bumped to 3.0.1
+    * @cowprotocol/sdk-cow-shed bumped to 0.3.8
+    * @cowprotocol/sdk-trading bumped to 2.0.1
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 1.0.1
+
 ## [4.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v3.4.0...sdk-bridging-v4.0.0) (2026-04-16)
 
 
