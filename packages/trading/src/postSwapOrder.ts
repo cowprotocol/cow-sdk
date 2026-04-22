@@ -37,6 +37,10 @@ export async function postSwapOrderFromQuote(
     {
       signingScheme: advancedSettings?.quoteRequest?.signingScheme,
       networkCostsAmount: quoteResponse.quote.feeAmount,
+      protocolFeeBps:
+        (advancedSettings?.additionalParams?.protocolFeeBps ?? quoteResponse.protocolFeeBps)
+          ? Number(quoteResponse.protocolFeeBps)
+          : undefined,
       ...advancedSettings?.additionalParams,
     },
     signer,

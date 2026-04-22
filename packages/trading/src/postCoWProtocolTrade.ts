@@ -21,6 +21,7 @@ export async function postCoWProtocolTrade(
     signingScheme: _signingScheme = SigningScheme.EIP712,
     customEIP1271Signature,
     applyCostsSlippageAndFees,
+    protocolFeeBps,
   } = additionalParams
 
   const isEthFlow = getIsEthFlowOrder(params)
@@ -44,7 +45,7 @@ export async function postCoWProtocolTrade(
   const from = owner || (await signer.getAddress())
 
   const orderToSign = getOrderToSign(
-    { chainId, from, networkCostsAmount, isEthFlow, applyCostsSlippageAndFees },
+    { chainId, from, networkCostsAmount, isEthFlow, applyCostsSlippageAndFees, protocolFeeBps },
     params,
     appData.appDataKeccak256,
   )
@@ -66,12 +67,10 @@ export async function postCoWProtocolTrade(
         }
       }
 
-      const signingResult = await OrderSigningUtils.signOrder(
-        orderToSign,
-        chainId,
-        signer,
-        { env, settlementContractOverride },
-      )
+      const signingResult = await OrderSigningUtils.signOrder(orderToSign, chainId, signer, {
+        env,
+        settlementContractOverride,
+      })
 
       if (isEip1271) {
         return {
