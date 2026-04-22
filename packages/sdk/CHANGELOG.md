@@ -1,5 +1,14 @@
 # Changelog
 
+## [9.0.2](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v9.0.1...cow-sdk-v9.0.2) (2026-04-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-trading bumped to 2.0.2
+
 ## [9.0.1](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v9.0.0...cow-sdk-v9.0.1) (2026-04-20)
 
 
