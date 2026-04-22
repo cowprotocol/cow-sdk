@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v2.0.1...sdk-trading-v2.0.2) (2026-04-22)
+
+
+### 🐛 Bug Fixes
+
+* **trading:** take protocol fee into account ([#867](https://github.com/cowprotocol/cow-sdk/issues/867)) ([ea1399c](https://github.com/cowprotocol/cow-sdk/commit/ea1399c344155cd7bf968019deba7a7361676fbf))
+
 ## [2.0.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v2.0.0...sdk-trading-v2.0.1) (2026-04-20)
 
 
