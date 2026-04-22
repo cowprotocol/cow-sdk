@@ -306,4 +306,6 @@ export interface PostTradeAdditionalParams {
    * by the caller (for example, for limit orders that should not include these costs).
    */
   applyCostsSlippageAndFees?: boolean
+
+  protocolFeeBps?: number
 }

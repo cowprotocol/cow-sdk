@@ -216,6 +216,35 @@ describe('postCoWProtocolTrade', () => {
     }
   })
 
+  it('When protocolFeeBps is in additionalParams with partnerFee, then buyAmount should account for protocol fee in partner fee base', async () => {
+    const expectedBuyAmountWithProtocolFee = '1970090045022511257'
+    const expectedBuyAmountWithoutProtocolFee = '1970100000000000000'
+
+    const orderWithPartnerFee: LimitOrderParameters = {
+      ...defaultOrderParams,
+      partnerFee: { volumeBps: 100, recipient: '0xfeerecipient' },
+    }
+
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+
+      await postCoWProtocolTrade(orderBookApiMock, appDataMock, orderWithPartnerFee, {}, adapters[adapterName].signer)
+      expect(sendOrderMock.mock.calls[0][0].buyAmount).toBe(expectedBuyAmountWithoutProtocolFee)
+      sendOrderMock.mockReset()
+
+      await postCoWProtocolTrade(
+        orderBookApiMock,
+        appDataMock,
+        orderWithPartnerFee,
+        { protocolFeeBps: 5 },
+        adapters[adapterName].signer,
+      )
+      expect(sendOrderMock.mock.calls[0][0].buyAmount).toBe(expectedBuyAmountWithProtocolFee)
+      sendOrderMock.mockReset()
+    }
+  })
+
   describe('settlementContractOverride', () => {
     it('should pass settlementContractOverride to signOrder', async () => {
       const customAddress = '0x1111111111111111111111111111111111111111'
