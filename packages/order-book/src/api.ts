@@ -491,11 +491,14 @@ export class OrderBookApi {
    */
   private fetch<T>(params: FetchParams, contextOverride: PartialApiContext = {}): Promise<T> {
     const context = this.getContextWithOverride(contextOverride)
-    const { chainId, backoffOpts: _backoffOpts, apiKey } = context
+    const { chainId, backoffOpts: _backoffOpts, apiKey, requestHeaders } = context
     const baseUrl = this.getApiBaseUrls(context)[chainId]
     const backoffOpts = _backoffOpts || DEFAULT_BACKOFF_OPTIONS
     const rateLimiter = contextOverride.limiterOpts ? new RateLimiter(contextOverride.limiterOpts) : this.rateLimiter
-    const additionalHeaders = apiKey ? { 'X-API-Key': apiKey } : undefined
+    const additionalHeaders = {
+      ...requestHeaders,
+      ...(apiKey ? { 'X-API-Key': apiKey } : undefined),
+    }
 
     log(`Fetching OrderBook API: ${baseUrl}${params.path}. Params: ${JSON.stringify(params, jsonWithBigintReplacer)}`)
 
