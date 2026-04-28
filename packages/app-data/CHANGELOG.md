@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v5.0.0...sdk-app-data-v5.1.0) (2026-04-28)
+
+
+### ✨ Features
+
+* update ipfsOnlyHash deps ([#869](https://github.com/cowprotocol/cow-sdk/issues/869)) ([d6b30cf](https://github.com/cowprotocol/cow-sdk/commit/d6b30cfc248cb7d93f9b00113da7412b45b58194))
+
 ## [5.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v4.7.0...sdk-app-data-v5.0.0) (2026-04-16)
 
 
