@@ -1,4 +1,5 @@
 import type { CID, MultibaseDecoder } from 'multiformats/cid'
+import type { ImporterOptions } from 'ipfs-unixfs-importer'
 
 // CID uses multibase to self-describe the encoding used (See https://github.com/multiformats/multibase)
 //   - Most reference implementations (multiformats/cid or Pinata, etc) use base58btc encoding
@@ -32,4 +33,31 @@ export async function extractDigest(cid: string): Promise<string> {
   const { digest } = cidDetails.multihash
 
   return `0x${Buffer.from(digest).toString('hex')}`
+}
+
+const block = {
+  put: async () => {
+    throw new Error('unexpected block API put')
+  },
+}
+
+/**
+ * Copied and modified version of https://github.com/alanshaw/ipfs-only-hash/blob/master/index.js
+ * The original package is not maintained for the last 4 years
+ */
+export async function ipfsOnlyHash(_content: string, options: ImporterOptions): Promise<string> {
+  // The option doesn't exist in the new versions
+  // options.onlyHash = true
+
+  const content = new TextEncoder().encode(_content)
+
+  const { importer } = await import('ipfs-unixfs-importer')
+
+  let lastCid
+
+  for await (const { cid } of importer([{ content }], block, options)) {
+    lastCid = cid
+  }
+
+  return `${lastCid}`
 }

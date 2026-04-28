@@ -2,7 +2,7 @@ import { getGlobalAdapter } from '@cowprotocol/sdk-common'
 import { MetaDataError } from '../consts'
 import { AnyAppDataDocVersion } from '../generatedTypes'
 import { AppDataInfo } from '../types'
-import { extractDigest } from '../utils/ipfs'
+import { extractDigest, ipfsOnlyHash } from '../utils/ipfs'
 import { stringifyDeterministic } from '../utils/stringify'
 import { appDataHexToCid } from './appDataHexToCid'
 import { validateAppDataDoc } from './validateAppDataDoc'
@@ -126,8 +126,5 @@ async function _appDataToCid(fullAppDataJson: string): Promise<string> {
 export async function _appDataToCidLegacy(doc: AnyAppDataDocVersion | string): Promise<string> {
   const fullAppData = typeof doc === 'string' ? doc : await stringifyDeterministic(doc as Record<string, unknown>)
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const { of } = await import('ipfs-only-hash')
-  return of(fullAppData, { cidVersion: 0 })
+  return ipfsOnlyHash(fullAppData, { cidVersion: 0 })
 }
