@@ -1,5 +1,5 @@
 import type { CID, MultibaseDecoder } from 'multiformats/cid'
-import type { ImporterOptions } from 'ipfs-unixfs-importer/src'
+import type { ImporterOptions } from 'ipfs-unixfs-importer'
 
 // CID uses multibase to self-describe the encoding used (See https://github.com/multiformats/multibase)
 //   - Most reference implementations (multiformats/cid or Pinata, etc) use base58btc encoding
