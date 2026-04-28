@@ -33,20 +33,12 @@ jest.mock('./appDataHexToCid', () => ({
 
 jest.mock('../utils/ipfs', () => ({
   extractDigest: jest.fn().mockImplementation(() => APP_DATA_HEX),
+  ipfsOnlyHash: jest.fn().mockReturnValue(CID_LEGACY),
 }))
 
 jest.mock('../utils/stringify', () => ({
   stringifyDeterministic: jest.fn().mockResolvedValue(APP_DATA_STRING),
 }))
-
-// Mock ipfs-only-hash for legacy CID generation
-jest.mock(
-  'ipfs-only-hash',
-  () => ({
-    of: jest.fn().mockReturnValue(CID_LEGACY),
-  }),
-  { virtual: true },
-)
 
 describe('getAppDataInfo', () => {
   let adapters: ReturnType<typeof createAdapters>
@@ -189,9 +181,6 @@ describe('getAppDataInfoLegacy', () => {
       const originalStringify = JSON.stringify
       global.JSON.stringify = jest.fn().mockReturnValue(APP_DATA_STRING)
 
-      // Setup mocks for this test
-      const ipfsOnlyHash = require('ipfs-only-hash')
-      ipfsOnlyHash.of.mockReturnValueOnce(CID_LEGACY)
       const { extractDigest } = require('../utils/ipfs')
       extractDigest.mockReturnValueOnce(APP_DATA_HEX_LEGACY)
 

@@ -56,15 +56,11 @@
   "peerDependencies": {
     "@openzeppelin/merkle-tree": "^1.x",
     "cross-fetch": "^3.x",
-    "ipfs-only-hash": "^4.x",
     "multiformats": "^9.x"
   },
   "peerDependenciesMeta": {
     "cross-fetch": {
       "optional": false
-    },
-    "ipfs-only-hash": {
-      "optional": true
     },
     "multiformats": {
       "optional": true
