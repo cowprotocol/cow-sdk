@@ -81,6 +81,7 @@ export enum SupportedChainId {
   INK = INK_ID,
   LINEA = LINEA_ID,
   SEPOLIA = SEPOLIA_ID,
+  SOLANA = SOLANA_ID,
 }
 
 /**
@@ -90,7 +91,6 @@ export enum SupportedChainId {
 export enum AdditionalTargetChainId {
   OPTIMISM = OPTIMISM_ID,
   BITCOIN = BITCOIN_ID,
-  SOLANA = SOLANA_ID,
 }
 
 /**

@@ -49,6 +49,7 @@ export class SubgraphApi {
       [SupportedChainId.LINEA]: null,
       [SupportedChainId.PLASMA]: null,
       [SupportedChainId.INK]: null,
+      [SupportedChainId.SOLANA]: null, // there is no subgraph on sol
     }
     this.context = {
       ...DEFAULT_COW_API_CONTEXT,
