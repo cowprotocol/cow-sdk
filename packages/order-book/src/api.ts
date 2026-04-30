@@ -51,7 +51,7 @@ export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.LINEA]: `${PROD_BASE_URL}/linea`,
   [SupportedChainId.PLASMA]: `${PROD_BASE_URL}/plasma`,
   [SupportedChainId.INK]: `${PROD_BASE_URL}/ink`,
-  [SupportedChainId.SOLANA]: `${PROD_BASE_URL}/solana`, // will be changed
+  [SupportedChainId.SOLANA]: `${PROD_BASE_URL}/solana`, // could be changed
 }
 
 /**

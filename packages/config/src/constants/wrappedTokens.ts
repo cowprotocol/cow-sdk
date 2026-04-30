@@ -9,12 +9,11 @@ const wrappedNativeCurrencyEth = {
   logoUrl: `${TOKEN_LIST_IMAGES_PATH}/1/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2/logo.png`,
 }
 
-// todo fix
 const wrappedNativeCurrencySol = {
   decimals: 9,
-  name: 'Wrapped Sol',
+  name: 'Wrapped SOL (WSOL)',
   symbol: 'WSOL',
-  logoUrl: `${TOKEN_LIST_IMAGES_PATH}/1/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2/logo.png`,
+  logoUrl: `https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png`,
 }
 
 export const WRAPPED_NATIVE_CURRENCIES: Record<SupportedChainId, TokenInfo> = {
