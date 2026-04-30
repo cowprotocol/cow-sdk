@@ -10,7 +10,6 @@ import {
   WRAPPED_NATIVE_CURRENCIES,
 } from '@cowprotocol/cow-sdk'
 import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
-import { log } from 'console'
 
 // =================== Config ===================
 const RPC_URL = 'https://ethereum-sepolia-public.nodies.app'
