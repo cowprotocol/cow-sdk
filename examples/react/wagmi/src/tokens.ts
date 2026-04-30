@@ -80,11 +80,10 @@ export const USDC_TOKENS: Record<SupportedChainId, TokenInfo> = {
     symbol: 'USDC',
   },
   [SupportedChainId.SOLANA]: {
-    // todo fix
     chainId: SupportedChainId.SOLANA,
-    address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238', // USDC (Sepolia testnet deployment by Circle)
+    address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
     decimals: 6,
-    name: 'USD Coin',
+    name: 'USDC (USDC)',
     symbol: 'USDC',
   },
 }
