@@ -4,7 +4,7 @@ import { gnosis } from 'viem/chains'
 
 import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
 import { getOrderToSign, LimitTradeParameters, TradingSdk } from '@cowprotocol/sdk-trading'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { EvmChains, isEvmChain, SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 
 import { AaveCollateralSwapSdk } from './AaveCollateralSwapSdk'
@@ -46,7 +46,7 @@ describe('AaveFlashLoanIntegration.collateralSwap', () => {
     try {
       const result = await flashLoanSdk.collateralSwap(
         {
-          chainId: SupportedChainId.GNOSIS_CHAIN,
+          chainId: EvmChains.GNOSIS_CHAIN,
           collateralToken: '0xd0Dd6cEF72143E22cCED4867eb0d5F2328715533', // aGnoWXDAI
           tradeParameters: {
             sellToken: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d', // WXDAI
@@ -135,21 +135,25 @@ describe('AaveFlashLoanIntegration.collateralSwap', () => {
       HASH_ZERO,
     )
 
+    if (!isEvmChain(chainId)) {
+      throw new Error('Set EvmChainId')
+    }
+
     const orderPostParams = await flashLoanSdk.getOrderPostingSettings(
-      AaveFlashLoanType.CollateralSwap,
-      {
-        chainId,
-        validTo,
-        owner,
-        flashLoanFeeAmount,
-      },
-      {
-        sellAmount,
-        buyAmount,
-        orderToSign,
-        collateralPermit,
-      },
-    )
+        AaveFlashLoanType.CollateralSwap,
+        {
+          chainId,
+          validTo,
+          owner,
+          flashLoanFeeAmount,
+        },
+        {
+          sellAmount,
+          buyAmount,
+          orderToSign,
+          collateralPermit,
+        },
+      )
 
     try {
       const result = await tradingSdk.postLimitOrder(limitOrder, orderPostParams.swapSettings)
