@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { createPublicClient, http, parseUnits } from 'viem'
+import { createPublicClient, Hash, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { sepolia } from 'viem/chains'
 import {
@@ -50,50 +50,42 @@ async function main() {
   const amount = BigInt(Math.floor(DEFAULT_SELL_AMOUNT * 10 ** WETH.decimals)) // 0.1 WETH
   const slippageBps = 50
 
-  // const approvedAmount = await sdk.getCowProtocolAllowance({
-  //   tokenAddress: WETH.address,
-  //   owner,
-  // })
-
-  // console.log('Checking ...')
-  // if (approvedAmount < amount) {
-  //   console.log('Approving Cow Protocol...')
-  //   try {
-  //     const approvalTxHash = await sdk.approveCowProtocol({
-  //       tokenAddress: WETH.address,
-  //       amount: amount,
-  //     })
-
-  //     const res = await publicClient.waitForTransactionReceipt({ hash: approvalTxHash as Hash })
-  //     console.log('Approved:', res)
-  //   } catch (e) {
-  //     console.error('Approval tx failed:', e)
-  //     process.exit(1)
-  //   }
-  // } else {
-  //   console.log('Already approved Cow Protocol for swap amount')
-  // }
-
-  console.log('Owner:', owner)
   console.log('Getting quote...')
 
-  const params: LimitTradeParameters = {
-    // from TradeBaseParameters
-    kind: OrderKind.SELL, // or OrderKind.BUY
-    sellToken: '0xYourSellToken',
-    sellTokenDecimals: 18,
-    buyToken: '0xYourBuyToken',
-    buyTokenDecimals: 6,
+  const quoteAndPost = await sdk.getQuote({
+    chainId,
+    kind: OrderKind.SELL,
+    owner,
+    amount: amount.toString(),
+    sellToken: WETH.address,
+    sellTokenDecimals: WETH.decimals,
+    buyToken: USDC.address,
+    buyTokenDecimals: USDC.decimals,
+    slippageBps,
+  })
 
-    // from LimitTradeParameters
+  const { beforeAllFees } = quoteAndPost.quoteResults.amountsAndCosts
+  console.log('Current market rate (buy amount):', beforeAllFees.buyAmount)
+
+  // Target: 5% above current market rate
+  const targetBuyAmount = (beforeAllFees.buyAmount * 105n) / 100n
+  console.log('Limit buy amount (+5%):', targetBuyAmount)
+
+  const params: LimitTradeParameters = {
+    kind: OrderKind.SELL,
+    sellToken: WETH.address,
+    sellTokenDecimals: WETH.decimals,
+    buyToken: USDC.address,
+    buyTokenDecimals: USDC.decimals,
     sellAmount: amount.toString(),
-    buyAmount: parseUnits('300', 6).toString(), // this is your limit price
-    validTo: Math.floor(Date.now() / 1000) + 3600, // 1hr from now, in seconds
-    quoteId: undefined, // optional, can omit entirely
+    buyAmount: targetBuyAmount.toString(),
+    validTo: Math.floor(Date.now() / 1000) + 86400, // valid for 24 hours
   }
 
-  const order = sdk.postLimitOrder(params)
+  console.log('Posting limit order...')
+  const order = await sdk.postLimitOrder(params)
   console.log('Order posted:', order)
+  console.log('View order on CowExplorer for Sepolia: https://explorer.cow.fi/sepolia/orders/' + order.orderId)
 }
 
 main().catch((e) => {
