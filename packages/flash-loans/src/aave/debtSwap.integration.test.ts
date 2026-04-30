@@ -4,7 +4,7 @@ import { gnosis } from 'viem/chains'
 
 import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
 import { getOrderToSign, LimitTradeParameters, TradingSdk } from '@cowprotocol/sdk-trading'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { EvmChains, SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 
 import { AaveCollateralSwapSdk } from './AaveCollateralSwapSdk'
@@ -82,7 +82,7 @@ describe('AaveFlashLoanIntegration.debtSwap', () => {
     const orderPostParams = await flashLoanSdk.getOrderPostingSettings(
       AaveFlashLoanType.DebtSwap,
       {
-        chainId,
+        chainId: chainId as unknown as EvmChains,
         validTo,
         owner,
         flashLoanFeeAmount,

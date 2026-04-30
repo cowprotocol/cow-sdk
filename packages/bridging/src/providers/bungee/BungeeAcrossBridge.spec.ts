@@ -8,7 +8,7 @@ import { toBridgeQuoteResult } from './util'
 import { BungeeQuoteAPIRequest, BungeeQuoteWithBuildTx } from './types'
 import { BungeeApi } from './BungeeApi'
 import { createBungeeDepositCall } from './createBungeeDepositCall'
-import { EvmCall, SupportedChainId } from '@cowprotocol/sdk-config'
+import { EvmCall, EvmChains, SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { AccountAddress, getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { getWallet } from '../../test'
@@ -29,7 +29,7 @@ describe.skip('BungeeAcrossBridge full transaction', () => {
   })
 
   it('builds the tx data for the quote', async () => {
-    const wallet = await getWallet(SupportedChainId.MAINNET)
+    const wallet = await getWallet(EvmChains.MAINNET)
     if (!wallet) {
       console.warn('Wallet not found, skipping test')
       return
@@ -78,7 +78,7 @@ describe.skip('BungeeAcrossBridge full transaction', () => {
   })
 
   it('creates the deposit call', async () => {
-    const wallet = await getWallet(SupportedChainId.MAINNET)
+    const wallet = await getWallet(EvmChains.MAINNET)
     if (!wallet) {
       console.warn('Wallet not found, skipping test')
       return

@@ -12,9 +12,10 @@ import {
   sepolia,
   ink,
   SupportedChainId,
+  EvmChains,
 } from '@cowprotocol/sdk-config'
 
-const DEFAULT_RPC_URL: Record<SupportedChainId, string | undefined> = {
+const DEFAULT_RPC_URL: Record<EvmChains, string | undefined> = {
   [SupportedChainId.MAINNET]: mainnet.rpcUrls.default.http[0],
   [SupportedChainId.GNOSIS_CHAIN]: gnosisChain.rpcUrls.default.http[0],
   [SupportedChainId.ARBITRUM_ONE]: arbitrumOne.rpcUrls.default.http[0],
@@ -26,9 +27,10 @@ const DEFAULT_RPC_URL: Record<SupportedChainId, string | undefined> = {
   [SupportedChainId.LINEA]: linea.rpcUrls.default.http[0],
   [SupportedChainId.PLASMA]: plasma.rpcUrls.default.http[0],
   [SupportedChainId.INK]: ink.rpcUrls.default.http[0],
+  [EvmChains.OPTIMISM]: undefined,
 }
 
-export async function getRpcProvider(chainId: SupportedChainId) {
+export async function getRpcProvider(chainId: EvmChains) {
   const rpcUrl = DEFAULT_RPC_URL[chainId]
   if (!rpcUrl) {
     throw new Error(`No RPC URL found for chain ${chainId}. Please define env ${chainId}`)
@@ -48,7 +50,7 @@ export async function getRpcProvider(chainId: SupportedChainId) {
   return provider
 }
 
-export async function getWallet(chainId: SupportedChainId) {
+export async function getWallet(chainId: EvmChains) {
   const pk = getPk()
   return pk ? new ethers.Wallet(pk, await getRpcProvider(chainId)) : null
 }

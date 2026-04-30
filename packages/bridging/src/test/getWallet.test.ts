@@ -1,6 +1,6 @@
 import { ethers } from 'ethers'
 import { getPk, getRpcProvider, getWallet } from './getWallet'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { EvmChains, SupportedChainId } from '@cowprotocol/sdk-config'
 
 // Mock ethers to avoid actual network calls
 jest.mock('ethers')
@@ -63,7 +63,7 @@ describe('getWallet utilities', () => {
         name: 'homestead',
       })
 
-      const provider = await getRpcProvider(SupportedChainId.MAINNET)
+      const provider = await getRpcProvider(EvmChains.MAINNET)
 
       expect(ethers.providers.JsonRpcProvider).toHaveBeenCalledWith(expect.stringContaining('http'))
       expect(mockGetNetwork).toHaveBeenCalled()
@@ -76,24 +76,24 @@ describe('getWallet utilities', () => {
         name: 'arbitrum',
       })
 
-      await expect(getRpcProvider(SupportedChainId.MAINNET)).rejects.toThrow(
-        `Provider is not connected to chain ${SupportedChainId.MAINNET}. Provider is connected to chain ${SupportedChainId.ARBITRUM_ONE} (arbitrum)`,
+      await expect(getRpcProvider(EvmChains.MAINNET)).rejects.toThrow(
+        `Provider is not connected to chain ${EvmChains.MAINNET}. Provider is connected to chain ${SupportedChainId.ARBITRUM_ONE} (arbitrum)`,
       )
     })
 
     it('should work with all supported chain IDs', async () => {
-      const chainIds = [
-        SupportedChainId.MAINNET,
-        SupportedChainId.GNOSIS_CHAIN,
-        SupportedChainId.ARBITRUM_ONE,
-        SupportedChainId.BASE,
-        SupportedChainId.SEPOLIA,
-        SupportedChainId.POLYGON,
-        SupportedChainId.AVALANCHE,
-        SupportedChainId.BNB,
-        SupportedChainId.LINEA,
-        SupportedChainId.PLASMA,
-        SupportedChainId.INK,
+      const chainIds: EvmChains[] = [
+        EvmChains.MAINNET,
+        EvmChains.GNOSIS_CHAIN,
+        EvmChains.ARBITRUM_ONE,
+        EvmChains.BASE,
+        EvmChains.SEPOLIA,
+        EvmChains.POLYGON,
+        EvmChains.AVALANCHE,
+        EvmChains.BNB,
+        EvmChains.LINEA,
+        EvmChains.PLASMA,
+        EvmChains.INK,
       ]
 
       for (const chainId of chainIds) {
@@ -110,7 +110,7 @@ describe('getWallet utilities', () => {
     it('should handle network errors gracefully', async () => {
       mockGetNetwork.mockRejectedValue(new Error('Network error'))
 
-      await expect(getRpcProvider(SupportedChainId.MAINNET)).rejects.toThrow('Network error')
+      await expect(getRpcProvider(EvmChains.MAINNET)).rejects.toThrow('Network error')
     })
   })
 
@@ -126,7 +126,7 @@ describe('getWallet utilities', () => {
       const testPk = '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef'
       process.env.PRIVATE_KEY = testPk
 
-      const wallet = await getWallet(SupportedChainId.MAINNET)
+      const wallet = await getWallet(EvmChains.MAINNET)
 
       expect(wallet).toBe(mockWallet)
       expect(ethers.Wallet).toHaveBeenCalledWith(testPk, mockProvider)
@@ -135,7 +135,7 @@ describe('getWallet utilities', () => {
     it('should return null when private key is not available', async () => {
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation()
 
-      const wallet = await getWallet(SupportedChainId.MAINNET)
+      const wallet = await getWallet(EvmChains.MAINNET)
 
       expect(wallet).toBeNull()
       expect(ethers.Wallet).not.toHaveBeenCalled()
@@ -147,7 +147,7 @@ describe('getWallet utilities', () => {
       const testPk = '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef'
       process.env.PRIVATE_KEY = testPk
 
-      const chainIds = [SupportedChainId.GNOSIS_CHAIN, SupportedChainId.ARBITRUM_ONE, SupportedChainId.BASE]
+      const chainIds: EvmChains[] = [EvmChains.GNOSIS_CHAIN, EvmChains.ARBITRUM_ONE, EvmChains.BASE]
 
       for (const chainId of chainIds) {
         mockGetNetwork.mockResolvedValue({
@@ -170,8 +170,8 @@ describe('getWallet utilities', () => {
         name: 'arbitrum',
       })
 
-      await expect(getWallet(SupportedChainId.MAINNET)).rejects.toThrow(
-        `Provider is not connected to chain ${SupportedChainId.MAINNET}`,
+      await expect(getWallet(EvmChains.MAINNET)).rejects.toThrow(
+        `Provider is not connected to chain ${EvmChains.MAINNET}`,
       )
     })
   })
