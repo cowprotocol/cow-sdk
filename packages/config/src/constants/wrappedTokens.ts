@@ -92,7 +92,11 @@ export const WRAPPED_NATIVE_CURRENCIES: Record<SupportedChainId, TokenInfo> = {
     '0x4200000000000000000000000000000000000006',
     wrappedNativeCurrencyEth,
   ),
-  [SupportedChainId.SOLANA]: createWrappedTokenForChain(SupportedChainId.SOLANA, '', wrappedNativeCurrencySol),
+  [SupportedChainId.SOLANA]: createWrappedTokenForChain(
+    SupportedChainId.SOLANA,
+    'So11111111111111111111111111111111111111112',
+    wrappedNativeCurrencySol,
+  ),
 }
 
 function createWrappedTokenForChain(
