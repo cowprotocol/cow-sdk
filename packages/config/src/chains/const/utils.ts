@@ -1,4 +1,4 @@
-import { ALL_CHAINS_IDS, ALL_SUPPORTED_CHAIN_IDS } from './chainIds'
+import { ALL_CHAINS_IDS, ALL_EVM_CHAINS_IDS, ALL_SUPPORTED_CHAIN_IDS } from './chainIds'
 import { EvmChains, SupportedChainId, TargetChainId } from '../types'
 
 export function mapSupportedNetworks<T>(value: (chainId: SupportedChainId) => T): Record<SupportedChainId, T>
@@ -36,10 +36,10 @@ export function mapAddressToEvmNetworks(address: string): Record<EvmChains, stri
 export function mapEvmNetworks<T>(value: (chainId: EvmChains) => T): Record<EvmChains, T>
 export function mapEvmNetworks<T>(value: T): Record<EvmChains, T>
 export function mapEvmNetworks<T>(value: T | ((chainId: EvmChains) => T)): Record<EvmChains, T> {
-  return ALL_CHAINS_IDS.reduce<Record<number | string, T>>(
+  return ALL_EVM_CHAINS_IDS.reduce<Record<number | string, T>>(
     (acc, chainId) => ({
       ...acc,
-      [chainId]: typeof value === 'function' ? (value as (chainId: TargetChainId) => T)(chainId) : value,
+      [chainId]: typeof value === 'function' ? (value as (chainId: EvmChains) => T)(chainId) : value,
     }),
     {},
   ) as Record<EvmChains, T>
