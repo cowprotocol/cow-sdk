@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc -b",
     "start": "node dist/index.js",
-    "dev": "node --loader ts-node/esm src/index.ts"
+    "dev:market-swap": "node --loader ts-node/esm src/market-swap.ts",
+    "dev:limit-order": "node --loader ts-node/esm src/limit-order.ts"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
