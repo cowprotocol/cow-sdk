@@ -1,7 +1,7 @@
 import { NonEvmChainInfo, SupportedChainId } from '../types'
 import { RAW_CHAINS_FILES_PATH, SOL_NATIVE_CURRENCY_ADDRESS } from '../../constants'
 
-const solanaLogo = `${RAW_CHAINS_FILES_PATH}/images/solana-logo.svg`
+export const solanaLogo = `${RAW_CHAINS_FILES_PATH}/images/solana-logo.svg`
 
 export const solana: NonEvmChainInfo = {
   id: SupportedChainId.SOLANA,
