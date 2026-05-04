@@ -13,6 +13,7 @@ import { plasma } from '../details/plasma'
 import { ink } from '../details/ink'
 import { bitcoin } from '../details/bitcoin'
 import { solana } from '../details/solana'
+import { isEvmChain, isEvmChainInfo } from '../utils'
 
 /**
  * Details of all supported chains.
@@ -93,14 +94,14 @@ export const ALL_CHAINS_IDS: TargetChainId[] = ALL_CHAINS.map((chain) => chain.i
  * All EVM chain IDs that are directly supported by CoW Protocol.
  */
 export const ALL_EVM_CHAINS_IDS: EvmChains[] = ALL_SUPPORTED_CHAINS.filter(
-  (chain): chain is EvmChainInfo => chain.id in EvmChains,
+  (chain): chain is EvmChainInfo => isEvmChain(chain.id),
 ).map((chain) => chain.id as EvmChains)
 
 /**
  * All EVM chain infos that are directly supported by CoW Protocol.
  */
 export const ALL_EVM_CHAINS: EvmChainInfo[] = ALL_SUPPORTED_CHAINS.filter(
-  (chain): chain is EvmChainInfo => chain.id in EvmChains,
+  (chain): chain is EvmChainInfo => isEvmChain(chain.id),
 )
 
 /**

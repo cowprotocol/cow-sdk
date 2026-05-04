@@ -1,4 +1,4 @@
-import { EvmChains, mapEvmNetworks, SupportedChainId } from '@cowprotocol/sdk-config'
+import { EvmChains, mapEvmNetworks } from '@cowprotocol/sdk-config'
 import { CollateralPermitData } from './types'
 
 export const HASH_ZERO = '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -10,19 +10,18 @@ export enum AaveFlashLoanType {
 }
 
 // See https://aave.com/docs/resources/addresses
-// todo use evmChains instead of SupportedChainId
 export const AAVE_POOL_ADDRESS: Record<EvmChains, string> = {
-  [SupportedChainId.SEPOLIA]: '',
-  [SupportedChainId.GNOSIS_CHAIN]: '0xb50201558B00496A145fE76f7424749556E326D8',
-  [SupportedChainId.MAINNET]: '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2',
-  [SupportedChainId.BASE]: '0xA238Dd80C259a72e81d7e4664a9801593F98d1c5',
-  [SupportedChainId.ARBITRUM_ONE]: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
-  [SupportedChainId.AVALANCHE]: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
-  [SupportedChainId.BNB]: '0x6807dc923806fE8Fd134338EABCA509979a7e0cB',
-  [SupportedChainId.POLYGON]: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
-  [SupportedChainId.LINEA]: '0xc47b8C00b0f69a36fa203Ffeac0334874574a8Ac',
-  [SupportedChainId.PLASMA]: '0x925a2A7214Ed92428B5b1B090F80b25700095e12',
-  [SupportedChainId.INK]: '0x2816cf15F6d2A220E789aA011D5EE4eB6c47FEbA',
+  [EvmChains.SEPOLIA]: '',
+  [EvmChains.GNOSIS_CHAIN]: '0xb50201558B00496A145fE76f7424749556E326D8',
+  [EvmChains.MAINNET]: '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2',
+  [EvmChains.BASE]: '0xA238Dd80C259a72e81d7e4664a9801593F98d1c5',
+  [EvmChains.ARBITRUM_ONE]: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
+  [EvmChains.AVALANCHE]: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
+  [EvmChains.BNB]: '0x6807dc923806fE8Fd134338EABCA509979a7e0cB',
+  [EvmChains.POLYGON]: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
+  [EvmChains.LINEA]: '0xc47b8C00b0f69a36fa203Ffeac0334874574a8Ac',
+  [EvmChains.PLASMA]: '0x925a2A7214Ed92428B5b1B090F80b25700095e12',
+  [EvmChains.INK]: '0x2816cf15F6d2A220E789aA011D5EE4eB6c47FEbA',
   [EvmChains.OPTIMISM]: '',
 }
 
