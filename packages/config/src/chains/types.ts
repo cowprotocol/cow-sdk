@@ -66,8 +66,8 @@ export enum NonEvmChains {
 }
 
 /**
- * All EVM chains supported directly by CoW Protocol (where you can sell tokens from).
- * Subset of EvmChains — excludes bridge-only chains like OPTIMISM.
+ * All chains supported directly by CoW Protocol (where you can sell tokens from).
+ * Includes both EVM and non-EVM chains.
  */
 export enum SupportedChainId {
   MAINNET = MAINNET_ID,
@@ -81,6 +81,7 @@ export enum SupportedChainId {
   INK = INK_ID,
   LINEA = LINEA_ID,
   SEPOLIA = SEPOLIA_ID,
+  SOLANA = SOLANA_ID,
 }
 
 /**
@@ -90,7 +91,6 @@ export enum SupportedChainId {
 export enum AdditionalTargetChainId {
   OPTIMISM = OPTIMISM_ID,
   BITCOIN = BITCOIN_ID,
-  SOLANA = SOLANA_ID,
 }
 
 /**

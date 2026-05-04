@@ -22,6 +22,7 @@ export const AAVE_POOL_ADDRESS: Record<SupportedChainId, string> = {
   [SupportedChainId.LINEA]: '0xc47b8C00b0f69a36fa203Ffeac0334874574a8Ac',
   [SupportedChainId.PLASMA]: '0x925a2A7214Ed92428B5b1B090F80b25700095e12',
   [SupportedChainId.INK]: '0x2816cf15F6d2A220E789aA011D5EE4eB6c47FEbA',
+  [SupportedChainId.SOLANA]: '',
 }
 
 export const AAVE_ADAPTER_FACTORY: Record<SupportedChainId, string> = mapAddressToSupportedNetworks(

@@ -47,8 +47,8 @@ export function isBtcChain(chainId: ChainId): chainId is NonEvmChains.BITCOIN {
  * @param chainId - The chain ID to check
  * @returns True if the chain ID is Solana, false otherwise
  */
-export function isSolanaChain(chainId: ChainId): chainId is NonEvmChains.SOLANA {
-  return chainId === NonEvmChains.SOLANA;
+export function isSolanaChain(chainId: ChainId): chainId is SupportedChainId.SOLANA {
+  return chainId === SupportedChainId.SOLANA;
 }
 
 /**
