@@ -565,7 +565,7 @@ adapterNames.forEach((adapterName) => {
           sellTokenChainId: SupportedChainId.BASE,
           sellTokenAddress,
           sellTokenDecimals: 6,
-          buyTokenChainId: NonEvmChains.SOLANA as number,
+          buyTokenChainId: SupportedChainId.SOLANA as number,
           buyTokenAddress,
           buyTokenDecimals: 9,
           amount: 1000000n,

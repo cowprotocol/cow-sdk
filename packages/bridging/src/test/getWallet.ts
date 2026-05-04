@@ -26,6 +26,7 @@ const DEFAULT_RPC_URL: Record<SupportedChainId, string | undefined> = {
   [SupportedChainId.LINEA]: linea.rpcUrls.default.http[0],
   [SupportedChainId.PLASMA]: plasma.rpcUrls.default.http[0],
   [SupportedChainId.INK]: ink.rpcUrls.default.http[0],
+  [SupportedChainId.SOLANA]: undefined,
 }
 
 export async function getRpcProvider(chainId: SupportedChainId) {
