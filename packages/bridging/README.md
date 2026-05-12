@@ -18,8 +18,6 @@ yarn add @cowprotocol/sdk-bridging
 
 ## Usage
 
-### Individual package usage
-
 ```typescript
 import {
   SupportedChainId,
@@ -74,70 +72,6 @@ const { swap, bridge, postSwapOrderFromQuote } = quoteResult
 console.log('Swap info', swap)
 
 // Display all data related to the bridge (costs, amounts, provider info, hook, and the bridging quote) ✉️
-console.log('Bridge info', bridge)
-
-// Get the buy amount after slippage in the target chain
-const { buyAmount } = bridge.amountsAndCosts.afterSlippage
-
-if (confirm(`You will get at least: ${buyAmount}, ok?`)) {
-  const orderId = await postSwapOrderFromQuote()
-  console.log('Order created, id: ', orderId)
-}
-```
-
-### Usage with CoW SDK
-
-```typescript
-import {
-  CowSdk,
-  SupportedChainId,
-  QuoteBridgeRequest,
-  OrderKind,
-  assertIsBridgeQuoteAndPost,
-} from '@cowprotocol/cow-sdk'
-import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
-import { JsonRpcProvider, Wallet } from 'ethers'
-
-// Configure the adapter
-const provider = new JsonRpcProvider('YOUR_RPC_URL')
-const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
-const adapter = new EthersV6Adapter({ provider, signer: wallet })
-
-// Initialize the unified SDK
-const sdk = new CowSdk({
-  chainId: SupportedChainId.ARBITRUM_ONE, // Source chain
-  adapter,
-})
-
-const parameters: QuoteBridgeRequest = {
-  // Cross-chain orders are always SELL orders (BUY not supported yet)
-  kind: OrderKind.SELL,
-
-  // Sell token (and source chain)
-  sellTokenChainId: SupportedChainId.ARBITRUM_ONE,
-  sellTokenAddress: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
-  sellTokenDecimals: 18,
-
-  // Buy token (and target chain)
-  buyTokenChainId: SupportedChainId.BASE,
-  buyTokenAddress: '0x4200000000000000000000000000000000000006',
-  buyTokenDecimals: 18,
-
-  // Amount to sell
-  amount: '120000000000000000',
-
-  signer: adapter.signer,
-
-  // Optional parameters
-  appCode: 'YOUR_APP_CODE',
-}
-
-const quoteResult = await bridgingSdk.getQuote(parameters)
-assertIsBridgeQuoteAndPost(quoteResult)
-const { swap, bridge, postSwapOrderFromQuote } = quoteResult
-
-// Display all data related to the swap and bridge
-console.log('Swap info', swap)
 console.log('Bridge info', bridge)
 
 // Get the buy amount after slippage in the target chain
