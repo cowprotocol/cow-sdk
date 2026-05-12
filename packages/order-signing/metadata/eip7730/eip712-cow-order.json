@@ -1,0 +1,147 @@
+{
+  "$schema": "https://eips.ethereum.org/assets/eip-7730/erc7730-v1.schema.json",
+  "context": {
+    "$id": "CowProtocolOrder",
+    "eip712": {
+      "schemas": [
+        {
+          "primaryType": "Order",
+          "types": {
+            "EIP712Domain": [
+              { "name": "name", "type": "string" },
+              { "name": "version", "type": "string" },
+              { "name": "chainId", "type": "uint256" },
+              { "name": "verifyingContract", "type": "address" }
+            ],
+            "Order": [
+              { "name": "sellToken", "type": "address" },
+              { "name": "buyToken", "type": "address" },
+              { "name": "receiver", "type": "address" },
+              { "name": "sellAmount", "type": "uint256" },
+              { "name": "buyAmount", "type": "uint256" },
+              { "name": "validTo", "type": "uint32" },
+              { "name": "appData", "type": "bytes32" },
+              { "name": "feeAmount", "type": "uint256" },
+              { "name": "kind", "type": "string" },
+              { "name": "partiallyFillable", "type": "bool" },
+              { "name": "sellTokenBalance", "type": "string" },
+              { "name": "buyTokenBalance", "type": "string" }
+            ]
+          }
+        }
+      ],
+      "domain": {
+        "name": "Gnosis Protocol",
+        "version": "v2"
+      },
+      "deployments": [
+        { "chainId": 1, "address": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41" },
+        { "chainId": 56, "address": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41" },
+        { "chainId": 100, "address": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41" },
+        { "chainId": 137, "address": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41" },
+        { "chainId": 8453, "address": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41" },
+        { "chainId": 9745, "address": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41" },
+        { "chainId": 42161, "address": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41" },
+        { "chainId": 43114, "address": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41" },
+        { "chainId": 57073, "address": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41" },
+        { "chainId": 59144, "address": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41" },
+        { "chainId": 11155111, "address": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41" }
+      ]
+    }
+  },
+  "metadata": {
+    "owner": "CoW Protocol",
+    "info": {
+      "legalName": "CoW DAO",
+      "url": "https://cow.fi",
+      "deploymentDate": "2022-03-01T00:00:00Z"
+    },
+    "enums": {
+      "kind": {
+        "sell": "Sell order — sell exact sellAmount for at least buyAmount",
+        "buy": "Buy order — buy exact buyAmount for at most sellAmount"
+      },
+      "balance": {
+        "erc20": "Standard ERC-20 balance",
+        "external": "Balancer Vault external balance (sell side only)",
+        "internal": "Balancer Vault internal balance"
+      }
+    }
+  },
+  "display": {
+    "formats": {
+      "Order": {
+        "intent": "Sign CoW Protocol order",
+        "fields": [
+          {
+            "path": "kind",
+            "label": "Order type",
+            "format": "enum",
+            "params": { "$ref": "$.metadata.enums.kind" }
+          },
+          {
+            "path": "sellAmount",
+            "label": "Sell",
+            "format": "tokenAmount",
+            "params": { "tokenPath": "sellToken" }
+          },
+          {
+            "path": "buyAmount",
+            "label": "Buy at least",
+            "format": "tokenAmount",
+            "params": { "tokenPath": "buyToken" }
+          },
+          {
+            "path": "receiver",
+            "label": "Receiver",
+            "format": "addressName",
+            "params": {
+              "types": ["eoa", "wallet", "contract"],
+              "sources": ["local", "ens"]
+            }
+          },
+          {
+            "path": "validTo",
+            "label": "Valid until",
+            "format": "date",
+            "params": { "encoding": "timestamp" }
+          },
+          {
+            "path": "partiallyFillable",
+            "label": "Allow partial fills",
+            "format": "raw"
+          },
+          {
+            "path": "sellTokenBalance",
+            "label": "Sell balance source",
+            "format": "enum",
+            "params": { "$ref": "$.metadata.enums.balance" }
+          },
+          {
+            "path": "buyTokenBalance",
+            "label": "Buy balance destination",
+            "format": "enum",
+            "params": { "$ref": "$.metadata.enums.balance" }
+          },
+          {
+            "path": "appData",
+            "label": "App data hash",
+            "format": "raw"
+          }
+        ],
+        "excluded": ["sellToken", "buyToken", "feeAmount"],
+        "required": [
+          "kind",
+          "sellAmount",
+          "buyAmount",
+          "receiver",
+          "validTo",
+          "partiallyFillable",
+          "sellTokenBalance",
+          "buyTokenBalance",
+          "appData"
+        ]
+      }
+    }
+  }
+}
