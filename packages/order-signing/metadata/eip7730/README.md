@@ -20,3 +20,7 @@ The `$schema` field in each JSON file also enables editor-side validation in VS 
 ## Submission
 
 These files are designed for submission to the [Ledger clear-signing registry](https://github.com/LedgerHQ/clear-signing-erc7730-registry). Submission is a manual PR to that repository; this monorepo holds the source of truth.
+
+## Last validation
+
+- `erc7730 lint` passed locally on 2026-05-12 against `eip712-cow-order.json`.
