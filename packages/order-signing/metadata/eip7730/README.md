@@ -24,3 +24,11 @@ These files are designed for submission to the [Ledger clear-signing registry](h
 ## Last validation
 
 - `erc7730 lint` passed locally on 2026-05-12 against `eip712-cow-order.json`.
+
+## Verification checklist (before registry submission)
+
+The following values in `eip712-cow-order.json` are not pinned to source-of-truth in this repo and should be confirmed by a CoW Protocol maintainer before the registry PR is opened:
+
+- [ ] `metadata.info.legalName` — currently `"CoW DAO"`. Confirm this is the correct legal entity name.
+- [ ] `metadata.info.deploymentDate` — currently `"2022-03-01T00:00:00Z"`. Confirm against the earliest GPv2 mainnet deployment timestamp.
+- [ ] `metadata.info.url` — currently `"https://cow.fi"`. Confirm this is the canonical project URL Ledger should display.
