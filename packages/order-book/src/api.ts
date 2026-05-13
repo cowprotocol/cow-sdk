@@ -491,12 +491,12 @@ export class OrderBookApi {
    */
   private fetch<T>(params: FetchParams, contextOverride: PartialApiContext = {}): Promise<T> {
     const context = this.getContextWithOverride(contextOverride)
-    const { chainId, backoffOpts: _backoffOpts, apiKey, requestHeaders } = context
+    const { chainId, backoffOpts: _backoffOpts, apiKey, bearerToken } = context
     const baseUrl = this.getApiBaseUrls(context)[chainId]
     const backoffOpts = _backoffOpts || DEFAULT_BACKOFF_OPTIONS
     const rateLimiter = contextOverride.limiterOpts ? new RateLimiter(contextOverride.limiterOpts) : this.rateLimiter
     const additionalHeaders = {
-      ...requestHeaders,
+      ...(bearerToken ? { Authorization: `Bearer ${bearerToken}` } : undefined),
       ...(apiKey ? { 'X-API-Key': apiKey } : undefined),
     }
 
