@@ -16,7 +16,6 @@ import {
   CompetitionOrderStatus,
   NativePriceResponse,
   Order,
-  OrderCancellations,
   OrderCreation,
   OrderQuoteRequest,
   OrderQuoteResponse,
@@ -29,6 +28,7 @@ import {
 import { DEFAULT_BACKOFF_OPTIONS, DEFAULT_LIMITER_OPTIONS, FetchParams, OrderBookApiError, request } from './request'
 import { transformOrder } from './transformOrder'
 import { EnrichedOrder } from './types'
+import { OrderCancellations } from './signingSchemes'
 
 const PROD_BASE_URL = 'https://api.cow.fi'
 const STAGING_BASE_URL = 'https://barn.api.cow.fi'
