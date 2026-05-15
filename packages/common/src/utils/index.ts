@@ -1,3 +1,4 @@
+export * from './accountKind'
 export * from './cowError'
 export * from './log'
 export * from './serialize'
