@@ -70,9 +70,25 @@ export interface CollateralSwapTradeParams {
 }
 
 export interface CollateralSwapOrder {
-  sellAmount: bigint
-  buyAmount: bigint
+  /**
+   * Gross amount borrowed via the Aave flash loan, in the underlying token's unit.
+   * Populates {@link FlashLoanHookAmounts.flashLoanAmount} on the resulting hooks.
+   * Includes the portion that gets repaid as the flash loan fee — i.e. `orderToSign.sellAmount + flashLoanFeeAmount`
+   * for a standard collateral swap, since aTokens are 1:1 with the underlying.
+   */
+  flashLoanAmount: bigint
+  /**
+   * The unsigned CoW Protocol order that will be signed via EIP-1271. The order's `sellAmount`,
+   * `buyAmount`, `sellToken`, `buyToken`, `kind`, and `validTo` are the source of truth for the
+   * hooks — flash loan amount and hook buy/sell amounts are derived from this order to guarantee
+   * the generated hooks match the order they get attached to.
+   */
   orderToSign: UnsignedOrder
+  /**
+   * Optional EIP-2612 permit signature authorizing the adapter to spend the collateral aToken.
+   * When provided, the SDK uses permit-based approval instead of a separate `approve` tx. Leave
+   * undefined to fall back to the standard ERC-20 approval flow.
+   */
   collateralPermit?: CollateralPermitData
 }
 
