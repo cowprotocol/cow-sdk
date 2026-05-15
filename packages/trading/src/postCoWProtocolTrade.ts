@@ -79,6 +79,22 @@ export async function postCoWProtocolTrade(
         }
       }
 
+      // Auto-route wrapped signatures (EIP-7702 delegates that produce
+      // ERC-7739 nested envelopes, ERC-7579 / Modular Account v2
+      // validator-prefixed sigs, or stacked combinations) to EIP-1271 with
+      // raw wallet bytes forwarded verbatim. CoW resolves verification via
+      // `isValidSignature` on `from`, which EIP-7702 dispatches to the
+      // delegate. Detection is by byte length: anything other than a
+      // 65-byte ECDSA is treated as wrapped.
+      const sigHex = (signingResult.signature ?? '').replace(/^0x/, '')
+      const ECDSA_HEX_LEN = 65 * 2
+      if (sigHex.length > 0 && sigHex.length !== ECDSA_HEX_LEN) {
+        return {
+          signature: signingResult.signature,
+          signingScheme: SigningScheme.EIP1271,
+        }
+      }
+
       return { signature: signingResult.signature, signingScheme: SIGN_SCHEME_MAP[signingResult.signingScheme] }
     }
   })()
