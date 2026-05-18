@@ -27,13 +27,18 @@ export const calculateDeadline = (seconds: number) => {
 export const adaptToken = (token: TokenResponse): TokenInfo | null => {
   const chainId = NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS[token.blockchain as NearBlockchainKey]
   if (!chainId) return null
+  // BTC's '1cs_v1:btc:native:coin' shape reports contractAddress as the
+  // literal 'coin' — treat it like an absent contractAddress so downstream
+  // callers see the BTC_CURRENCY_ADDRESS sentinel.
+  const isBtcNativeCoin = chainId === NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS.btc && token.contractAddress === 'coin'
   const tokenAddress =
-    token.contractAddress ??
-    (chainId === NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS.btc
-      ? BTC_CURRENCY_ADDRESS
-      : chainId === NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS.sol
-        ? SOL_NATIVE_CURRENCY_ADDRESS
-        : ETH_ADDRESS)
+    token.contractAddress && !isBtcNativeCoin
+      ? token.contractAddress
+      : chainId === NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS.btc
+        ? BTC_CURRENCY_ADDRESS
+        : chainId === NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS.sol
+          ? SOL_NATIVE_CURRENCY_ADDRESS
+          : ETH_ADDRESS
   if (!tokenAddress) return null
 
   return {
@@ -63,14 +68,19 @@ export const getTokenByAddressAndChainId = (
     if (!chainId) return false
     if (chainId !== targetTokenChainId) return false
 
-    // For non-EVM chains, match native tokens (no contractAddress) against known native sentinels,
-    // or match SPL/other tokens by contractAddress directly
+    // BTC's '1cs_v1:btc:native:coin' shape reports contractAddress as 'coin' —
+    // treat it as native.
     if (!isEvmChain(targetTokenChainId)) {
-      if (!token.contractAddress) {
-        return (
-          areAddressesEqual(targetTokenAddress, BTC_CURRENCY_ADDRESS) ||
-          areAddressesEqual(targetTokenAddress, SOL_NATIVE_CURRENCY_ADDRESS)
-        )
+      const isBtcNativeCoin =
+        targetTokenChainId === NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS.btc && token.contractAddress === 'coin'
+      if (!token.contractAddress || isBtcNativeCoin) {
+        const nativeSentinel =
+          targetTokenChainId === NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS.btc
+            ? BTC_CURRENCY_ADDRESS
+            : targetTokenChainId === NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS.sol
+              ? SOL_NATIVE_CURRENCY_ADDRESS
+              : undefined
+        return nativeSentinel ? areAddressesEqual(targetTokenAddress, nativeSentinel) : false
       }
       return areAddressesEqual(token.contractAddress, targetTokenAddress)
     }

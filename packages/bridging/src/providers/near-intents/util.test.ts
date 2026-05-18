@@ -1,4 +1,10 @@
-import { ETH_ADDRESS, EVM_NATIVE_CURRENCY_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
+import {
+  BTC_CURRENCY_ADDRESS,
+  ETH_ADDRESS,
+  EVM_NATIVE_CURRENCY_ADDRESS,
+  NonEvmChains,
+  SupportedChainId,
+} from '@cowprotocol/sdk-config'
 import { TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 
 import { adaptToken, getTokenByAddressAndChainId } from './util'
@@ -41,6 +47,26 @@ describe('Near Intents Utils', () => {
         address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
         name: 'USDC',
         symbol: 'USDC',
+      })
+    })
+
+    it("should adapt a BTC native token whose contractAddress is the 'coin' placeholder", () => {
+      const tokenResponse: TokenResponse = {
+        assetId: '1cs_v1:btc:native:coin',
+        decimals: 8,
+        blockchain: TokenResponse.blockchain.BTC,
+        symbol: 'BTC(OMNI)',
+        price: 77297,
+        priceUpdatedAt: '2026-05-18T13:29:00.433Z',
+        contractAddress: 'coin',
+      }
+
+      expect(adaptToken(tokenResponse)).toStrictEqual({
+        chainId: NonEvmChains.BITCOIN,
+        decimals: 8,
+        address: BTC_CURRENCY_ADDRESS,
+        name: 'BTC(OMNI)',
+        symbol: 'BTC(OMNI)',
       })
     })
 
@@ -139,6 +165,22 @@ describe('Near Intents Utils', () => {
           SupportedChainId.ARBITRUM_ONE,
         ),
       ).toStrictEqual(undefined)
+    })
+
+    it("should match BTC native token whose contractAddress is the 'coin' placeholder", () => {
+      const btcToken: TokenResponse = {
+        assetId: '1cs_v1:btc:native:coin',
+        decimals: 8,
+        blockchain: TokenResponse.blockchain.BTC,
+        symbol: 'BTC(OMNI)',
+        price: 77297,
+        priceUpdatedAt: '2026-05-18T13:29:00.433Z',
+        contractAddress: 'coin',
+      }
+
+      expect(getTokenByAddressAndChainId([btcToken], BTC_CURRENCY_ADDRESS, NonEvmChains.BITCOIN)).toStrictEqual(
+        btcToken,
+      )
     })
   })
 })

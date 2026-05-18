@@ -235,7 +235,12 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     const depositAddress = order.receiver
     if (!depositAddress) return null
 
-    const [tokens, status] = await Promise.all([this.api.getTokens(), this.api.getStatus(depositAddress)])
+    // Include deprecated asset IDs: this method resolves historical orders
+    // whose saved quoteRequest may still reference now-deprecated assets.
+    const [tokens, status] = await Promise.all([
+      this.api.getTokens({ includeDeprecated: true }),
+      this.api.getStatus(depositAddress),
+    ])
 
     // Unpack quote data
     const qr = status.quoteResponse?.quoteRequest
@@ -268,8 +273,8 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
         fillTxHash: status.swapDetails?.destinationChainTxHashes?.[0]?.hash,
       },
       params: {
-        inputTokenAddress: inputToken.contractAddress ?? adaptedInput.address,
-        outputTokenAddress: outputToken.contractAddress ?? adaptedOutput.address,
+        inputTokenAddress: adaptedInput.address,
+        outputTokenAddress: adaptedOutput.address,
         inputAmount: BigInt(quote.amountIn),
         outputAmount: swapDetails.amountOut ? BigInt(swapDetails.amountOut) : BigInt(quote.amountOut),
         owner: order.owner,
