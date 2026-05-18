@@ -54,8 +54,6 @@ class CustomOrder extends ConditionalOrder<DataType, StaticType> {
 
 ## Usage
 
-### Individual package usage
-
 ```typescript
 import { ConditionalOrderFactory, Multiplexer, ConditionalOrder, ProofLocation } from '@cowprotocol/sdk-composable'
 import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
@@ -92,38 +90,6 @@ const multiplexer = new Multiplexer(SupportedChainId.MAINNET, orders, merkleRoot
 
 // Generate proofs for off-chain storage
 const proofs = multiplexer.dumpProofsAndParams()
-```
-
-### Usage with CoW SDK
-
-```typescript
-import { CowSdk, ConditionalOrderFactory, Multiplexer, ProofLocation } from '@cowprotocol/cow-sdk'
-import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
-import { JsonRpcProvider, Wallet } from 'ethers'
-
-// Configure the adapter
-const provider = new JsonRpcProvider('YOUR_RPC_URL')
-const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
-const adapter = new EthersV6Adapter({ provider, signer: wallet })
-
-// Initialize the unified SDK
-const sdk = new CowSdk({
-  chainId: SupportedChainId.MAINNET,
-  adapter,
-  composableOptions: {
-    registry: orderTypeRegistry,
-    orders: initialOrders,
-    root: merkleRoot,
-    location: ProofLocation.PRIVATE,
-  },
-})
-
-// Access composable functionality
-const factory = sdk.composable.factory
-const multiplexer = sdk.composable.multiplexer
-
-// Create conditional orders
-const conditionalOrder = factory.fromParams(orderParams)
 ```
 
 ## Conditional Order Types

@@ -27,8 +27,6 @@ yarn add @cowprotocol/sdk-weiroll
 
 ## Usage
 
-### Individual package usage
-
 ```typescript
 import {
   WeirollPlanner,
