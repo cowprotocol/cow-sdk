@@ -125,11 +125,24 @@ export class ViemSignerAdapter extends AbstractSigner<PublicClient> {
     }
 
     const formattedTx = this._formatTxParams(txParams)
+    // `eth_estimateGas` is called directly via `publicClient.request`, bypassing
+    // viem's parameter formatting. Strict go-ethereum RPCs (BNB Chain, Arbitrum One,
+    // Polygon, Avalanche, Linea) unmarshal `value` into `*hexutil.Big`, which
+    // requires a 0x-prefixed hex string. Callers (e.g. the SDK's eth-flow path,
+    // which forwards `orderToSign.sellAmount` from `BigInt.toString()`) pass `value`
+    // through as a decimal string, so hex-encode it here to satisfy the RPC.
+    const rawValue = formattedTx.value
+    const value =
+      rawValue === undefined || rawValue === null
+        ? '0x0'
+        : typeof rawValue === 'string' && rawValue.startsWith('0x')
+          ? rawValue
+          : '0x' + BigInt(rawValue).toString(16)
     const params = {
       from: typeof this._account === 'string' ? this._account : this._account.address,
       to: formattedTx.to,
       data: formattedTx.data,
-      value: formattedTx.value ?? '0x0',
+      value,
     }
 
     const hexGas = await this._publicClient.request({
