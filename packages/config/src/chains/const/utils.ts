@@ -92,16 +92,20 @@ export function mapChainEnum<E1 extends ChainEnumLike, E2 extends ChainEnumLike,
   enum2: E2,
   value: T,
 ): Record<ChainIdOf<E1> | ChainIdOf<E2>, T>
-// Implementation
-export function mapChainEnum(...args: unknown[]): Record<number, unknown> {
-  const value = args[args.length - 1]
-  const chainEnums = args.slice(0, -1) as ChainEnumLike[]
+// Implementation. The variadic tuple captures the shape: ≥1 chain enum followed by a
+// value or factory. Concrete chain-id types come from the overloads above; here we work
+// against `number` since the impl is enum-agnostic.
+export function mapChainEnum<T>(
+  ...args: readonly [ChainEnumLike, ...ChainEnumLike[], T | ((chainId: number) => T)]
+): Record<number, T> {
+  const value = args[args.length - 1] as T | ((chainId: number) => T)
+  const chainEnums = args.slice(0, -1) as readonly ChainEnumLike[]
   const isFn = typeof value === 'function'
-  const result: Record<number, unknown> = {}
+  const result: Record<number, T> = {}
   for (const chainEnum of chainEnums) {
     for (const v of Object.values(chainEnum)) {
       if (typeof v === 'number') {
-        result[v] = isFn ? (value as (id: number) => unknown)(v) : value
+        result[v] = isFn ? (value as (id: number) => T)(v) : value
       }
     }
   }
