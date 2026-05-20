@@ -1,5 +1,28 @@
 # Changelog
 
+## [4.0.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.0.3...sdk-bridging-v4.0.4) (2026-05-20)
+
+
+### 📚 Documentation
+
+* remove info about umbrella sdk ([#874](https://github.com/cowprotocol/cow-sdk/issues/874)) ([bb0280e](https://github.com/cowprotocol/cow-sdk/commit/bb0280e7bfcdd6c2d7b122baf43910d9e4e4299f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 5.1.1
+    * @cowprotocol/sdk-contracts-ts bumped to 3.0.2
+    * @cowprotocol/sdk-cow-shed bumped to 0.3.9
+    * @cowprotocol/sdk-trading bumped to 2.0.4
+    * @cowprotocol/sdk-weiroll bumped to 0.1.31
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.5
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.5
+    * @cowprotocol/sdk-order-signing bumped to 1.0.2
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.19
+
 ## [4.0.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.0.2...sdk-bridging-v4.0.3) (2026-04-28)
 
 
