@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.19](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.3.18...sdk-viem-adapter-v0.3.19) (2026-05-20)
+
+
+### 🐛 Bug Fixes
+
+* **viem-adapter:** hex-encode value in estimateGas ([#884](https://github.com/cowprotocol/cow-sdk/issues/884)) ([fb932fa](https://github.com/cowprotocol/cow-sdk/commit/fb932fa6d59966186c591823951a891a58f90047))
+
+
+### 📚 Documentation
+
+* remove info about umbrella sdk ([#874](https://github.com/cowprotocol/cow-sdk/issues/874)) ([bb0280e](https://github.com/cowprotocol/cow-sdk/commit/bb0280e7bfcdd6c2d7b122baf43910d9e4e4299f))
+
 ## [0.3.18](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.3.17...sdk-viem-adapter-v0.3.18) (2026-04-16)
 
 
