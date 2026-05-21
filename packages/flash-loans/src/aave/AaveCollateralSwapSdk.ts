@@ -146,7 +146,7 @@ export class AaveCollateralSwapSdk {
       tradeParameters: { amount },
       settings,
     } = params
-    const sellAmount = BigInt(amount)
+    const flashLoanAmount = BigInt(amount)
 
     const quoteAndPost = await tradingSdk.getQuote(quoteParams)
 
@@ -156,8 +156,7 @@ export class AaveCollateralSwapSdk {
       AaveFlashLoanType.CollateralSwap,
       quoteParams,
       {
-        sellAmount,
-        buyAmount: quoteResults.amountsAndCosts.afterSlippage.buyAmount,
+        flashLoanAmount,
         orderToSign: quoteResults.orderToSign,
         collateralPermit: settings?.collateralPermit,
       },
@@ -167,11 +166,11 @@ export class AaveCollateralSwapSdk {
       instanceAddress,
       trader: quoteParams.owner,
       collateralToken: collateralToken,
-      amount: sellAmount,
+      amount: flashLoanAmount,
     }
 
     if (!settings?.preventApproval && !settings?.collateralPermit) {
-      await this.approveCollateralIfNeeded(collateralParams, sellAmount)
+      await this.approveCollateralIfNeeded(collateralParams)
     }
 
     return postSwapOrderFromQuote(swapSettings)
@@ -240,6 +239,9 @@ export class AaveCollateralSwapSdk {
    *          and token amounts required for execution. The hooks enable the order to trigger
    *          flash loan deployment (pre-hook) and collateral swap execution (post-hook).
    *
+   * @param {AaveFlashLoanType} flashLoanType - The flash loan flow to configure (CollateralSwap,
+   *                                              DebtSwap, or RepayCollateral). Selects which Aave
+   *                                              hook adapter and post-hook call data are used.
    * @param {CollateralSwapTradeParams} params - Trade parameters including chain ID, validity period,
    *                                              owner address, and flash loan fee amount.
    * @param {CollateralSwapOrder} settings - Order configuration including sell/buy amounts, the
@@ -256,10 +258,11 @@ export class AaveCollateralSwapSdk {
     params: CollateralSwapTradeParams,
     settings: CollateralSwapOrder,
   ): Promise<CollateralSwapPostParams> {
-    const { sellAmount, buyAmount, orderToSign, collateralPermit } = settings
+    const { flashLoanAmount, orderToSign, collateralPermit } = settings
     const { chainId, flashLoanFeeAmount, validTo, owner: trader } = params
 
-    const amount = sellAmount.toString()
+    const amount = flashLoanAmount.toString()
+    const buyAmount = orderToSign.buyAmount
 
     const encodedOrder: EncodedOrder = {
       ...OrderSigningUtils.encodeUnsignedOrder(orderToSign),
@@ -271,7 +274,7 @@ export class AaveCollateralSwapSdk {
       flashLoanAmount: amount,
       flashLoanFeeAmount: flashLoanFeeAmount.toString(),
       sellAssetAmount: amount,
-      buyAssetAmount: buyAmount.toString(),
+      buyAssetAmount: buyAmount,
     }
 
     const instanceAddress = await this.getExpectedInstanceAddress(
@@ -422,14 +425,14 @@ export class AaveCollateralSwapSdk {
     })) as AccountAddress
   }
 
-  private async approveCollateralIfNeeded(collateralParams: CollateralParameters, sellAmount: bigint): Promise<void> {
+  private async approveCollateralIfNeeded(collateralParams: CollateralParameters): Promise<void> {
     const allowance = await this.getCollateralAllowance(collateralParams).catch((error) => {
       console.error('[AaveCollateralSwapSdk] Could not get allowance for collateral token', error)
 
       return null
     })
 
-    if (!allowance || allowance < sellAmount) {
+    if (!allowance || allowance < collateralParams.amount) {
       await this.approveCollateral(collateralParams)
     }
   }

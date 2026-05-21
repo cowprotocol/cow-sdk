@@ -71,8 +71,6 @@ You need:
 
 ## Usage
 
-### Individual package usage
-
 ```typescript
 import { SupportedChainId, OrderKind, TradeParameters, TradingSdk } from '@cowprotocol/sdk-trading'
 import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'

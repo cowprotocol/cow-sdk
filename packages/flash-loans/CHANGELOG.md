@@ -1,5 +1,25 @@
 # Changelog
 
+## [3.0.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v3.0.3...sdk-flash-loans-v3.0.4) (2026-05-20)
+
+
+### 🐛 Bug Fixes
+
+* **flash-loans:** simplify CollateralSwapOrder interface ([#877](https://github.com/cowprotocol/cow-sdk/issues/877)) ([0edf7d1](https://github.com/cowprotocol/cow-sdk/commit/0edf7d158a65403190de3348097a2e464e24e28d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 5.1.1
+    * @cowprotocol/sdk-trading bumped to 2.0.4
+    * @cowprotocol/sdk-order-signing bumped to 1.0.2
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.5
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.5
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.19
+
 ## [3.0.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v3.0.2...sdk-flash-loans-v3.0.3) (2026-04-28)
 
 

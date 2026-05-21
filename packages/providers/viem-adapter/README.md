@@ -37,41 +37,7 @@ const provider = createPublicClient({ chain: sepolia, transport })
 const adapter = new ViemAdapter({ provider, signer: account })
 ```
 
-### Using with CoW SDK
-
-```typescript
-import { CowSdk, SupportedChainId } from '@cowprotocol/cow-sdk'
-import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
-import { http, createPublicClient, privateKeyToAccount } from 'viem'
-import { sepolia } from 'viem/chains'
-
-// Configure the adapter
-const account = privateKeyToAccount('YOUR_PRIVATE_KEY' as `0x${string}`)
-const transport = http('YOUR_RPC_URL')
-const provider = createPublicClient({ chain: sepolia, transport })
-// You also can set `walletClient` instead of `signer` using `useWalletClient` from wagmi
-const adapter = new ViemAdapter({ provider, signer: account })
-
-// Initialize the unified SDK
-const sdk = new CowSdk({
-  chainId: SupportedChainId.SEPOLIA,
-  adapter,
-  tradingOptions: {
-    traderParams: {
-      appCode: 'YOUR_APP_CODE',
-    },
-    options: {
-      chainId: SupportedChainId.SEPOLIA,
-    },
-  },
-})
-
-// Use the SDK
-const orderId = await sdk.trading.postSwapOrder(parameters)
-const orders = await sdk.orderBook.getOrders({ owner: address })
-```
-
-### Using with Individual Packages
+### Example
 
 ```typescript
 import { TradingSdk } from '@cowprotocol/sdk-trading'

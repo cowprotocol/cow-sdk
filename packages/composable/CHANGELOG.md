@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.0.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.0.1...sdk-composable-v1.0.2) (2026-05-20)
+
+
+### 📚 Documentation
+
+* remove info about umbrella sdk ([#874](https://github.com/cowprotocol/cow-sdk/issues/874)) ([bb0280e](https://github.com/cowprotocol/cow-sdk/commit/bb0280e7bfcdd6c2d7b122baf43910d9e4e4299f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-contracts-ts bumped to 3.0.2
+    * @cowprotocol/sdk-order-signing bumped to 1.0.2
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.5
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.5
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.19
+
 ## [1.0.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.0.0...sdk-composable-v1.0.1) (2026-04-20)
 
 

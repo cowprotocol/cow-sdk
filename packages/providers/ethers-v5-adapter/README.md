@@ -34,38 +34,7 @@ const wallet = new ethers.Wallet('YOUR_PRIVATE_KEY', provider)
 const adapter = new EthersV5Adapter({ provider, signer: wallet })
 ```
 
-### Using with CoW SDK
-
-```typescript
-import { CowSdk, SupportedChainId } from '@cowprotocol/cow-sdk'
-import { EthersV5Adapter } from '@cowprotocol/sdk-ethers-v5-adapter'
-import { ethers } from 'ethers'
-
-// Configure the adapter
-const provider = new ethers.providers.JsonRpcProvider('YOUR_RPC_URL')
-const wallet = new ethers.Wallet('YOUR_PRIVATE_KEY', provider)
-const adapter = new EthersV5Adapter({ provider, signer: wallet })
-
-// Initialize the unified SDK
-const sdk = new CowSdk({
-  chainId: SupportedChainId.SEPOLIA,
-  adapter,
-  tradingOptions: {
-    traderParams: {
-      appCode: 'YOUR_APP_CODE',
-    },
-    options: {
-      chainId: SupportedChainId.SEPOLIA,
-    },
-  },
-})
-
-// Use the SDK
-const orderId = await sdk.trading.postSwapOrder(parameters)
-const orders = await sdk.orderBook.getOrders({ owner: address })
-```
-
-### Using with Individual Packages
+### Example
 
 ```typescript
 import { TradingSdk } from '@cowprotocol/sdk-trading'
