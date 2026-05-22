@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3.20](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.3.19...sdk-viem-adapter-v0.3.20) (2026-05-22)
+
+
+### 🔧 Miscellaneous
+
+* fix typing issue ([#885](https://github.com/cowprotocol/cow-sdk/issues/885)) ([73d6d95](https://github.com/cowprotocol/cow-sdk/commit/73d6d95082f8d8b8ec62de6ccbf72f43fccc0f41))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.3
+
 ## [0.3.19](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.3.18...sdk-viem-adapter-v0.3.19) (2026-05-20)
 
 
