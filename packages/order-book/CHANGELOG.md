@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v3.0.0...sdk-order-book-v3.1.0) (2026-05-22)
+
+
+### ✨ Features
+
+* **order-book:** add bearer token support in ApiContext ([#825](https://github.com/cowprotocol/cow-sdk/issues/825)) ([d605ba4](https://github.com/cowprotocol/cow-sdk/commit/d605ba4579d3fe12b043ecb22d2608018e0962ba))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.1.0
+    * @cowprotocol/sdk-common bumped to 0.10.3
+
 ## [3.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v2.1.0...sdk-order-book-v3.0.0) (2026-04-16)
 
 
