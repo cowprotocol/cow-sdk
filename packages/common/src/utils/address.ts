@@ -1,4 +1,9 @@
-import { BTC_ADDRESS_PATTERN, EVM_ADDRESS_PATTERN, SOL_ADDRESS_PATTERN } from './addressPatterns'
+import {
+  BTC_BECH32_ADDRESS_PATTERN,
+  BTC_LEGACY_ADDRESS_PATTERN,
+  EVM_ADDRESS_PATTERN,
+  SOL_ADDRESS_PATTERN,
+} from './addressPatterns'
 
 export type EvmAddressKey = `0x${string}`
 export type BtcAddressKey = string
@@ -29,7 +34,8 @@ export function isBtcAddress(address: string | null | undefined): address is Btc
   if (typeof address !== 'string') return false
   if (address.length < 25 || address.length > 62) return false
 
-  return BTC_ADDRESS_PATTERN.test(address)
+  // Legacy P2PKH/P2SH is case-sensitive base58; Bech32 P2WPKH/P2WSH is permissive on case.
+  return BTC_LEGACY_ADDRESS_PATTERN.test(address) || BTC_BECH32_ADDRESS_PATTERN.test(address)
 }
 
 /**
