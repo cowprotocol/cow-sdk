@@ -22,8 +22,6 @@ interface GetAttestationResponse {
 }
 
 export class NearIntentsApi {
-  private static readonly DEPRECATED_ASSET_IDS: readonly string[] = ['nep141:btc.omft.near']
-
   private cachedTokens: TokenResponse[] = []
 
   constructor(apiKey?: string) {
@@ -32,13 +30,11 @@ export class NearIntentsApi {
     }
   }
 
-  async getTokens(options: { includeDeprecated?: boolean } = {}): Promise<TokenResponse[]> {
+  async getTokens(): Promise<TokenResponse[]> {
     if (this.cachedTokens.length === 0) {
       this.cachedTokens = await OneClickService.getTokens()
     }
-    return options.includeDeprecated
-      ? this.cachedTokens
-      : this.cachedTokens.filter((t) => !NearIntentsApi.DEPRECATED_ASSET_IDS.includes(t.assetId))
+    return this.cachedTokens
   }
 
   async getQuote(request: QuoteRequest): Promise<QuoteResponse> {

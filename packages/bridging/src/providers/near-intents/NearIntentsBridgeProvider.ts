@@ -235,12 +235,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     const depositAddress = order.receiver
     if (!depositAddress) return null
 
-    // Include deprecated asset IDs: this method resolves historical orders
-    // whose saved quoteRequest may still reference now-deprecated assets.
-    const [tokens, status] = await Promise.all([
-      this.api.getTokens({ includeDeprecated: true }),
-      this.api.getStatus(depositAddress),
-    ])
+    const [tokens, status] = await Promise.all([this.api.getTokens(), this.api.getStatus(depositAddress)])
 
     // Unpack quote data
     const qr = status.quoteResponse?.quoteRequest

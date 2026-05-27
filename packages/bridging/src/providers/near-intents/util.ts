@@ -24,21 +24,25 @@ export const calculateDeadline = (seconds: number) => {
   return d.toISOString().replace(/\.\d{3}Z$/, 'Z')
 }
 
+/**
+ * One-Click returns natives as either `contractAddress = undefined` (EVM, SOL)
+ * or the literal string `'coin'` (BTC's `1cs_v1:btc:native:coin` shape).
+ * Normalize both forms to the cow-sdk native sentinel for the given chain.
+ */
+const resolveTokenAddress = (chainId: ChainId, contractAddress: string | undefined): string | null => {
+  const isBtcNative =
+    chainId === NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS.btc && (!contractAddress || contractAddress === 'coin')
+  if (isBtcNative) return BTC_CURRENCY_ADDRESS
+  if (contractAddress) return contractAddress
+  if (chainId === NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS.sol) return SOL_NATIVE_CURRENCY_ADDRESS
+  if (isEvmChain(chainId)) return ETH_ADDRESS
+  return null
+}
+
 export const adaptToken = (token: TokenResponse): TokenInfo | null => {
   const chainId = NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS[token.blockchain as NearBlockchainKey]
   if (!chainId) return null
-  // BTC's '1cs_v1:btc:native:coin' shape reports contractAddress as the
-  // literal 'coin' — treat it like an absent contractAddress so downstream
-  // callers see the BTC_CURRENCY_ADDRESS sentinel.
-  const isBtcNativeCoin = chainId === NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS.btc && token.contractAddress === 'coin'
-  const tokenAddress =
-    token.contractAddress && !isBtcNativeCoin
-      ? token.contractAddress
-      : chainId === NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS.btc
-        ? BTC_CURRENCY_ADDRESS
-        : chainId === NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS.sol
-          ? SOL_NATIVE_CURRENCY_ADDRESS
-          : ETH_ADDRESS
+  const tokenAddress = resolveTokenAddress(chainId, token.contractAddress)
   if (!tokenAddress) return null
 
   return {
@@ -65,33 +69,9 @@ export const getTokenByAddressAndChainId = (
 ): TokenResponse | undefined => {
   return tokens.find((token) => {
     const chainId = NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS[token.blockchain as NearBlockchainKey]
-    if (!chainId) return false
-    if (chainId !== targetTokenChainId) return false
-
-    // BTC's '1cs_v1:btc:native:coin' shape reports contractAddress as 'coin' —
-    // treat it as native.
-    if (!isEvmChain(targetTokenChainId)) {
-      const isBtcNativeCoin =
-        targetTokenChainId === NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS.btc && token.contractAddress === 'coin'
-      if (!token.contractAddress || isBtcNativeCoin) {
-        const nativeSentinel =
-          targetTokenChainId === NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS.btc
-            ? BTC_CURRENCY_ADDRESS
-            : targetTokenChainId === NEAR_INTENTS_BLOCKCHAIN_CHAIN_IDS.sol
-              ? SOL_NATIVE_CURRENCY_ADDRESS
-              : undefined
-        return nativeSentinel ? areAddressesEqual(targetTokenAddress, nativeSentinel) : false
-      }
-      return areAddressesEqual(token.contractAddress, targetTokenAddress)
-    }
-
-    // Match native/unwrapped EVM tokens (no contractAddress) via ETH_ADDRESS sentinel
-    if (areAddressesEqual(targetTokenAddress, ETH_ADDRESS)) {
-      return !token.contractAddress
-    }
-
-    const tokenAddress = token.contractAddress || ETH_ADDRESS
-    return areAddressesEqual(tokenAddress, targetTokenAddress)
+    if (!chainId || chainId !== targetTokenChainId) return false
+    const tokenAddress = resolveTokenAddress(chainId, token.contractAddress)
+    return tokenAddress ? areAddressesEqual(tokenAddress, targetTokenAddress) : false
   })
 }
 
