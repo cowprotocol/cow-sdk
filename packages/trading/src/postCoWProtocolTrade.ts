@@ -6,32 +6,11 @@ import { ORDER_TYPE_FIELDS } from '@cowprotocol/sdk-contracts-ts'
 import { getOrderToSign } from './getOrderToSign'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getIsEthFlowOrder } from './utils/misc'
-import { getGlobalAdapter, log, SignerLike } from '@cowprotocol/sdk-common'
+import { log, SignerLike } from '@cowprotocol/sdk-common'
 import { resolveSigner } from './utils/resolveSigner'
+import { isEip7702DelegatedAccount } from './utils/isEip7702DelegatedAccount'
 
-const EIP7702_DELEGATION_PREFIX = '0xef0100'
-const EIP7702_DELEGATION_HEX_LENGTH = 2 + 23 * 2 // "0x" + 23 bytes
 const ECDSA_HEX_LENGTH = 65 * 2
-
-/**
- * True if the address holds an EIP-7702 set-code marker (`0xef0100 || delegate`,
- * 23 bytes). These accounts are still EOAs but their `signTypedData_v4` may
- * return non-ECDSA bytes (ERC-7739 nested envelopes, ERC-7579 / Modular Account
- * v2 validator-prefixed sigs). The bytes verify via the owner's
- * `isValidSignature`, which 7702 dispatches to the delegate.
- */
-async function isEip7702DelegatedAccount(owner: string): Promise<boolean> {
-  try {
-    const code = (await getGlobalAdapter().getCode(owner)) ?? '0x'
-    if (typeof code !== 'string') return false
-    const lower = code.toLowerCase()
-    return lower.length === EIP7702_DELEGATION_HEX_LENGTH && lower.startsWith(EIP7702_DELEGATION_PREFIX)
-  } catch {
-    // Treat any RPC error as "not delegated" — fall through to the existing
-    // signing path so plain EOAs aren't penalized when getCode is unavailable.
-    return false
-  }
-}
 
 export async function postCoWProtocolTrade(
   orderBookApi: OrderBookApi,
@@ -102,10 +81,10 @@ export async function postCoWProtocolTrade(
       // Plain EOAs and Safes fall through to the normal `signOrder` path
       // which keeps its v4/v3/eth_sign fallback chain.
       if (await isEip7702DelegatedAccount(from)) {
-        // Note: `OrderSigningUtils.getDomain` only accepts chainId in the
-        // exported surface today; env/settlementContractOverride aren't
-        // plumbed through. That's a separate fix from the wrapping path.
-        const domain = await OrderSigningUtils.getDomain(chainId)
+        const domain = await OrderSigningUtils.getDomain(chainId, {
+          env,
+          settlementContractOverride,
+        })
         const rawSig = await signer.signTypedData(
           domain as unknown as Record<string, unknown>,
           { Order: ORDER_TYPE_FIELDS },
@@ -114,7 +93,14 @@ export async function postCoWProtocolTrade(
         const hexLen = (rawSig ?? '').replace(/^0x/, '').length
         if (hexLen === ECDSA_HEX_LENGTH) {
           // Plain ECDSA from a 7702 delegate (e.g. Metamask Smart Account).
-          // Same path as a regular EOA — eip712.
+          // Respect the caller's explicit scheme: if they asked for EIP1271,
+          // wrap via the standard `(order, sig)` ABI tuple. Otherwise eip712.
+          if (isEip1271) {
+            return {
+              signature: OrderSigningUtils.getEip1271Signature(orderToSign, rawSig),
+              signingScheme: _signingScheme,
+            }
+          }
           return { signature: rawSig, signingScheme: SigningScheme.EIP712 }
         }
         // Wrapped bytes (ERC-7739 / ERC-7579 MA v2 / stacked) — forward to
