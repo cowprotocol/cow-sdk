@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.1.0...sdk-config-v2.2.0) (2026-05-27)
+
+
+### ✨ Features
+
+* move solana to supported chain id ([#873](https://github.com/cowprotocol/cow-sdk/issues/873)) ([da8a7c2](https://github.com/cowprotocol/cow-sdk/commit/da8a7c24cd07afcd465199844c480ebe3e81383d))
+
 ## [2.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.0.0...sdk-config-v2.1.0) (2026-05-22)
 
 
