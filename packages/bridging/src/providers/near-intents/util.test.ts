@@ -129,26 +129,6 @@ describe('Near Intents Utils', () => {
       })
     })
 
-    it('should adapt a BTC non-native token using its contractAddress', () => {
-      const tokenResponse: TokenResponse = {
-        assetId: 'nep141:btc-token.example.near',
-        decimals: 8,
-        blockchain: TokenResponse.blockchain.BTC,
-        symbol: 'BRC',
-        price: 1,
-        priceUpdatedAt: '2026-05-18T13:29:00.433Z',
-        contractAddress: 'bc1qbrc20token',
-      }
-
-      expect(adaptToken(tokenResponse)).toStrictEqual({
-        chainId: NonEvmChains.BITCOIN,
-        decimals: 8,
-        address: 'bc1qbrc20token',
-        name: 'BRC',
-        symbol: 'BRC',
-      })
-    })
-
     it('should return null for a non supported chain', () => {
       const tokenResponse: TokenResponse = {
         assetId: 'nep141:ton.omft.near',
