@@ -29,7 +29,7 @@ export const ACROSS_SPOOK_CONTRACT_ADDRESSES: Record<TargetChainId, string | und
   [SupportedChainId.GNOSIS_CHAIN]: undefined,
   [SupportedChainId.AVALANCHE]: undefined,
   [AdditionalTargetChainId.BITCOIN]: undefined,
-  [AdditionalTargetChainId.SOLANA]: undefined,
+  [SupportedChainId.SOLANA]: undefined,
 }
 
 export const ACROSS_MATH_CONTRACT_ADDRESSES: Record<TargetChainId, string | undefined> = {
@@ -49,5 +49,5 @@ export const ACROSS_MATH_CONTRACT_ADDRESSES: Record<TargetChainId, string | unde
   [SupportedChainId.INK]: undefined, // TODO: confirm
   [AdditionalTargetChainId.OPTIMISM]: undefined,
   [AdditionalTargetChainId.BITCOIN]: undefined,
-  [AdditionalTargetChainId.SOLANA]: undefined,
+  [SupportedChainId.SOLANA]: undefined,
 }

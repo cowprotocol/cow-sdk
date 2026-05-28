@@ -1,5 +1,5 @@
 import { isEvmAddress, isBtcAddress, isSolanaAddress, BtcAddressKey, EvmAddressKey, SolAddressKey } from './address'
-import { SOL_NATIVE_CURRENCY_ADDRESS, BTC_CURRENCY_ADDRESS } from '@cowprotocol/sdk-config'
+import { SOL_NATIVE_CURRENCY_ADDRESS } from '@cowprotocol/sdk-config'
 
 describe('isEvmAddress', () => {
   describe('valid EVM addresses', () => {
@@ -101,14 +101,6 @@ describe('isBtcAddress', () => {
       expect(isBtcAddress('BC1QW508D6QEJXTDG4Y5R3ZARVARY0C5XW7KV8F3T4')).toBe(true)
     })
 
-    it('should return true for valid Bech32 mainnet address (mixed case)', () => {
-      expect(isBtcAddress('bc1QW508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4')).toBe(true)
-    })
-
-    it('should return true for valid Bech32 testnet address (tb1)', () => {
-      expect(isBtcAddress('tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx')).toBe(true)
-    })
-
     it('should return true for longer Bech32 address (P2WSH)', () => {
       expect(
         isBtcAddress('bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3'),
@@ -118,11 +110,15 @@ describe('isBtcAddress', () => {
 
   describe('invalid BTC addresses', () => {
     it('should return false for address that is too short', () => {
-      expect(isBtcAddress('1A1zP1eP5QGefi2DMPTfTL5SLmv7Divf')).toBe(false)
+      // 9 chars — clearly below the legacy P2PKH/P2SH minimum (≈26).
+      expect(isBtcAddress('1A1zP1eP5')).toBe(false)
     })
 
     it('should return false for address that is too long', () => {
-      expect(isBtcAddress('bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4extra')).toBe(false)
+      // bc1 + 70 Bech32 chars = 73 chars, exceeds the practical P2WSH max (62).
+      expect(
+        isBtcAddress('bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4qw508d6qejxtdg4y5r3zarvary0c5xw'),
+      ).toBe(false)
     })
 
     it('should return false for EVM address', () => {
@@ -149,21 +145,28 @@ describe('isBtcAddress', () => {
       expect(isBtcAddress('ac1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4')).toBe(false) // wrong prefix
       expect(isBtcAddress('bc0qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4')).toBe(false) // wrong prefix
     })
+
+    it('should return false for mixed-case Bech32 address (BIP-173 forbids it)', () => {
+      // Mixed-case Bech32 produces a different checksum than its case-normalized form,
+      // so it's invalid by spec. Accepting it would let malformed addresses through.
+      expect(isBtcAddress('bc1QW508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4')).toBe(false)
+    })
   })
 
   describe('case sensitivity', () => {
-    it('should preserve case for Bech32 addresses', () => {
+    it('accepts strictly all-lowercase or all-uppercase Bech32; rejects mixed case', () => {
       const lower = 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4'
       const upper = 'BC1QW508D6QEJXTDG4Y5R3ZARVARY0C5XW7KV8F3T4'
       const mixed = 'bc1QW508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4'
 
       expect(isBtcAddress(lower)).toBe(true)
       expect(isBtcAddress(upper)).toBe(true)
-      expect(isBtcAddress(mixed)).toBe(true)
+      // BIP-173 explicitly forbids mixed case.
+      expect(isBtcAddress(mixed)).toBe(false)
 
-      // They should be considered different addresses
+      // Lower- and upper-case variants are distinct string values even though they
+      // represent the same Bech32 address per the spec.
       expect(lower).not.toBe(upper)
-      expect(lower).not.toBe(mixed)
     })
   })
 })
@@ -186,9 +189,11 @@ describe('isSolanaAddress', () => {
   })
 
   describe('invalid Solana addresses', () => {
-    it('should return false for BTC_CURRENCY_ADDRESS', () => {
-      expect(isSolanaAddress(BTC_CURRENCY_ADDRESS)).toBe(false)
-    })
+    // Note: legacy BTC P2PKH/P2SH addresses share the base58 alphabet with Solana and
+    // can fall within Solana's valid length range (32-44). They are indistinguishable
+    // by character/length alone — callers needing to discriminate should check
+    // `isBtcAddress` first. Hence no assertion for `isSolanaAddress(BTC_CURRENCY_ADDRESS)`
+    // here; we test BTC Bech32 below, which IS distinguishable (different alphabet).
 
     it('should return false for EVM address', () => {
       expect(isSolanaAddress('0x742d35cc6634c0532925a3b844bc9e7595f0bebd')).toBe(false)

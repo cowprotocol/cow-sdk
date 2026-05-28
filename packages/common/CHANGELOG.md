@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.11.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.10.3...sdk-common-v0.11.0) (2026-05-27)
+
+
+### ✨ Features
+
+* move solana to supported chain id ([#873](https://github.com/cowprotocol/cow-sdk/issues/873)) ([da8a7c2](https://github.com/cowprotocol/cow-sdk/commit/da8a7c24cd07afcd465199844c480ebe3e81383d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.2.0
+
+## [0.10.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.10.2...sdk-common-v0.10.3) (2026-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.1.0
+
 ## [0.10.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.10.1...sdk-common-v0.10.2) (2026-04-16)
 
 

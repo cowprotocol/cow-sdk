@@ -1,5 +1,49 @@
 # Changelog
 
+## [3.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.0.3...sdk-contracts-ts-v3.1.0) (2026-05-27)
+
+
+### ✨ Features
+
+* move solana to supported chain id ([#873](https://github.com/cowprotocol/cow-sdk/issues/873)) ([da8a7c2](https://github.com/cowprotocol/cow-sdk/commit/da8a7c24cd07afcd465199844c480ebe3e81383d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.11.0
+    * @cowprotocol/sdk-config bumped to 2.2.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.7
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.7
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.21
+
+## [3.0.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.0.2...sdk-contracts-ts-v3.0.3) (2026-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.3
+    * @cowprotocol/sdk-config bumped to 2.1.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.6
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.6
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.20
+
+## [3.0.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.0.1...sdk-contracts-ts-v3.0.2) (2026-05-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.5
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.5
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.19
+
 ## [3.0.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.0.0...sdk-contracts-ts-v3.0.1) (2026-04-20)
 
 

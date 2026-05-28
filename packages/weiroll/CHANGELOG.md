@@ -1,5 +1,49 @@
 # Changelog
 
+## [0.1.33](https://github.com/cowprotocol/cow-sdk/compare/sdk-weiroll-v0.1.32...sdk-weiroll-v0.1.33) (2026-05-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.11.0
+    * @cowprotocol/sdk-config bumped to 2.2.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.7
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.7
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.21
+
+## [0.1.32](https://github.com/cowprotocol/cow-sdk/compare/sdk-weiroll-v0.1.31...sdk-weiroll-v0.1.32) (2026-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.3
+    * @cowprotocol/sdk-config bumped to 2.1.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.6
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.6
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.20
+
+## [0.1.31](https://github.com/cowprotocol/cow-sdk/compare/sdk-weiroll-v0.1.30...sdk-weiroll-v0.1.31) (2026-05-20)
+
+
+### 📚 Documentation
+
+* remove info about umbrella sdk ([#874](https://github.com/cowprotocol/cow-sdk/issues/874)) ([bb0280e](https://github.com/cowprotocol/cow-sdk/commit/bb0280e7bfcdd6c2d7b122baf43910d9e4e4299f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.5
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.5
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.19
+
 ## [0.1.30](https://github.com/cowprotocol/cow-sdk/compare/sdk-weiroll-v0.1.29...sdk-weiroll-v0.1.30) (2026-04-16)
 
 

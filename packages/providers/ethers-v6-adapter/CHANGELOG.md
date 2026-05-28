@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.4.7](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v6-adapter-v0.4.6...sdk-ethers-v6-adapter-v0.4.7) (2026-05-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.11.0
+
+## [0.4.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v6-adapter-v0.4.5...sdk-ethers-v6-adapter-v0.4.6) (2026-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.3
+
+## [0.4.5](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v6-adapter-v0.4.4...sdk-ethers-v6-adapter-v0.4.5) (2026-05-20)
+
+
+### 📚 Documentation
+
+* remove info about umbrella sdk ([#874](https://github.com/cowprotocol/cow-sdk/issues/874)) ([bb0280e](https://github.com/cowprotocol/cow-sdk/commit/bb0280e7bfcdd6c2d7b122baf43910d9e4e4299f))
+
 ## [0.4.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-ethers-v6-adapter-v0.4.3...sdk-ethers-v6-adapter-v0.4.4) (2026-04-16)
 
 

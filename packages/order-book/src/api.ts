@@ -51,6 +51,7 @@ export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.LINEA]: `${PROD_BASE_URL}/linea`,
   [SupportedChainId.PLASMA]: `${PROD_BASE_URL}/plasma`,
   [SupportedChainId.INK]: `${PROD_BASE_URL}/ink`,
+  [SupportedChainId.SOLANA]: `${PROD_BASE_URL}/solana`,
 }
 
 /**
@@ -68,6 +69,7 @@ export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.LINEA]: `${STAGING_BASE_URL}/linea`,
   [SupportedChainId.PLASMA]: `${STAGING_BASE_URL}/plasma`,
   [SupportedChainId.INK]: `${STAGING_BASE_URL}/ink`,
+  [SupportedChainId.SOLANA]: `${STAGING_BASE_URL}/solana`,
 }
 
 /**
@@ -87,6 +89,7 @@ export const ORDER_BOOK_PARTNER_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.LINEA]: `${PARTNER_PROD_BASE_URL}/linea`,
   [SupportedChainId.PLASMA]: `${PARTNER_PROD_BASE_URL}/plasma`,
   [SupportedChainId.INK]: `${PARTNER_PROD_BASE_URL}/ink`,
+  [SupportedChainId.SOLANA]: `${PARTNER_PROD_BASE_URL}/solana`,
 }
 
 /**
@@ -106,6 +109,7 @@ export const ORDER_BOOK_PARTNER_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.LINEA]: `${PARTNER_STAGING_BASE_URL}/linea`,
   [SupportedChainId.PLASMA]: `${PARTNER_STAGING_BASE_URL}/plasma`,
   [SupportedChainId.INK]: `${PARTNER_STAGING_BASE_URL}/ink`,
+  [SupportedChainId.SOLANA]: `${PARTNER_STAGING_BASE_URL}/solana`,
 }
 
 function cleanObjectFromUndefinedValues(obj: Record<string, string>): typeof obj {
@@ -491,11 +495,14 @@ export class OrderBookApi {
    */
   private fetch<T>(params: FetchParams, contextOverride: PartialApiContext = {}): Promise<T> {
     const context = this.getContextWithOverride(contextOverride)
-    const { chainId, backoffOpts: _backoffOpts, apiKey } = context
+    const { chainId, backoffOpts: _backoffOpts, apiKey, bearerToken } = context
     const baseUrl = this.getApiBaseUrls(context)[chainId]
     const backoffOpts = _backoffOpts || DEFAULT_BACKOFF_OPTIONS
     const rateLimiter = contextOverride.limiterOpts ? new RateLimiter(contextOverride.limiterOpts) : this.rateLimiter
-    const additionalHeaders = apiKey ? { 'X-API-Key': apiKey } : undefined
+    const additionalHeaders = {
+      ...(bearerToken ? { Authorization: `Bearer ${bearerToken}` } : undefined),
+      ...(apiKey ? { 'X-API-Key': apiKey } : undefined),
+    }
 
     log(`Fetching OrderBook API: ${baseUrl}${params.path}. Params: ${JSON.stringify(params, jsonWithBigintReplacer)}`)
 

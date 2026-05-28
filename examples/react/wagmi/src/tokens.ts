@@ -79,4 +79,11 @@ export const USDC_TOKENS: Record<SupportedChainId, TokenInfo> = {
     name: 'USD Coin',
     symbol: 'USDC',
   },
+  [SupportedChainId.SOLANA]: {
+    chainId: SupportedChainId.SOLANA,
+    address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC (Native Solana)
+    decimals: 6,
+    name: 'USD Coin',
+    symbol: 'USDC',
+  },
 }

@@ -144,8 +144,7 @@ describe('AaveFlashLoanIntegration.collateralSwap', () => {
         flashLoanFeeAmount,
       },
       {
-        sellAmount,
-        buyAmount,
+        flashLoanAmount: sellAmount,
         orderToSign,
         collateralPermit,
       },

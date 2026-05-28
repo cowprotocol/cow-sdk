@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.0.8...sdk-subgraph-v1.1.0) (2026-05-27)
+
+
+### ✨ Features
+
+* move solana to supported chain id ([#873](https://github.com/cowprotocol/cow-sdk/issues/873)) ([da8a7c2](https://github.com/cowprotocol/cow-sdk/commit/da8a7c24cd07afcd465199844c480ebe3e81383d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.11.0
+    * @cowprotocol/sdk-config bumped to 2.2.0
+
+## [1.0.8](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.0.7...sdk-subgraph-v1.0.8) (2026-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.10.3
+    * @cowprotocol/sdk-config bumped to 2.1.0
+
 ## [1.0.7](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.0.6...sdk-subgraph-v1.0.7) (2026-04-16)
 
 
