@@ -247,6 +247,14 @@
       "created_at": "2026-05-19T17:12:23Z",
       "repoId": 476465733,
       "pullRequestNo": 884
+    },
+    {
+      "name": "jmg-duarte",
+      "id": 15343819,
+      "comment_id": 4594747249,
+      "created_at": "2026-06-01T17:01:26Z",
+      "repoId": 476465733,
+      "pullRequestNo": 888
     }
   ]
 }
