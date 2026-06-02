@@ -4,11 +4,11 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { sepolia } from 'viem/chains'
 import {
   SupportedChainId,
-  TradingSdk,
   OrderBookApi,
   buildAppData,
   COMPOSABLE_COW_CONTRACT_ADDRESS,
   WRAPPED_NATIVE_CURRENCIES,
+  setGlobalAdapter,
 } from '@cowprotocol/cow-sdk'
 import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
 // NOTE: Twap is NOT re-exported by `@cowprotocol/cow-sdk` — import it from the composable package.
@@ -56,10 +56,8 @@ async function main() {
 
   const adapter = new ViemAdapter({ provider: publicClient, signer: account })
 
-  // Passing the adapter to TradingSdk registers it as the global adapter, which is what
-  // buildAppData / Twap / ConditionalOrder use internally (via getGlobalAdapter()).
-  // The same sdk instance can also manage the resulting parts later (getOrder, cancelOrder, ...).
-  new TradingSdk({ chainId, appCode: APP_CODE, signer: account }, {}, adapter)
+  setGlobalAdapter(adapter)
+
   const orderBookApi = new OrderBookApi({ chainId })
 
   console.log('Safe (order owner):', SAFE_ADDRESS)
