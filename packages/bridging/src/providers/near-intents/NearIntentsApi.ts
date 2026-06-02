@@ -22,13 +22,7 @@ interface GetAttestationResponse {
 }
 
 export class NearIntentsApi {
-  // Assets the upstream 1Click API still lists but no longer routes/attests.
-  // Filtered out at cache time so quote/attestation flows never pick them.
-  private static readonly DEPRECATED_ASSET_IDS: ReadonlySet<string> = new Set([
-    // POA BTC bridge, replaced by `1cs_v1:btc:native:coin` (Omni migration).
-    // https://partners.near-intents.org/omni-migration
-    'nep141:btc.omft.near',
-  ])
+  private static readonly DEPRECATED_ASSET_IDS: readonly string[] = ['nep141:btc.omft.near']
 
   private cachedTokens: TokenResponse[] = []
 
@@ -38,12 +32,13 @@ export class NearIntentsApi {
     }
   }
 
-  async getTokens(): Promise<TokenResponse[]> {
+  async getTokens(options: { includeDeprecated?: boolean } = {}): Promise<TokenResponse[]> {
     if (this.cachedTokens.length === 0) {
-      const response = await OneClickService.getTokens()
-      this.cachedTokens = response.filter((t) => !NearIntentsApi.DEPRECATED_ASSET_IDS.has(t.assetId))
+      this.cachedTokens = await OneClickService.getTokens()
     }
-    return this.cachedTokens
+    return options.includeDeprecated
+      ? this.cachedTokens
+      : this.cachedTokens.filter((t) => !NearIntentsApi.DEPRECATED_ASSET_IDS.includes(t.assetId))
   }
 
   async getQuote(request: QuoteRequest): Promise<QuoteResponse> {

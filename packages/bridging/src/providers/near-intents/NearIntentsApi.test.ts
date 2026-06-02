@@ -1,4 +1,4 @@
-import { OneClickService, OpenAPI, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
+import { OneClickService, OpenAPI } from '@defuse-protocol/one-click-sdk-typescript'
 
 import { NearIntentsApi } from './NearIntentsApi'
 
@@ -41,6 +41,66 @@ describe('NearIntentsApi', () => {
     )
   })
 
+  it('filters deprecated asset IDs out of getTokens', async () => {
+    const deprecatedToken = {
+      assetId: 'nep141:btc.omft.near',
+      decimals: 8,
+      blockchain: 'btc',
+      symbol: 'BTC',
+      price: 60000,
+      priceUpdatedAt: '2026-01-01T00:00:00Z',
+    }
+    const keepToken = {
+      assetId: '1cs_v1:btc:native:coin',
+      decimals: 8,
+      blockchain: 'btc',
+      symbol: 'BTC(OMNI)',
+      price: 60000,
+      priceUpdatedAt: '2026-01-01T00:00:00Z',
+      contractAddress: 'coin',
+    }
+
+    const getTokensSpy = jest.spyOn(OneClickService, 'getTokens').mockResolvedValue([deprecatedToken, keepToken] as any)
+
+    try {
+      const api = new NearIntentsApi()
+      const tokens = await api.getTokens()
+      expect(tokens).toEqual([keepToken])
+    } finally {
+      getTokensSpy.mockRestore()
+    }
+  })
+
+  it('returns deprecated asset IDs when includeDeprecated is true', async () => {
+    const deprecatedToken = {
+      assetId: 'nep141:btc.omft.near',
+      decimals: 8,
+      blockchain: 'btc',
+      symbol: 'BTC',
+      price: 60000,
+      priceUpdatedAt: '2026-01-01T00:00:00Z',
+    }
+    const keepToken = {
+      assetId: '1cs_v1:btc:native:coin',
+      decimals: 8,
+      blockchain: 'btc',
+      symbol: 'BTC(OMNI)',
+      price: 60000,
+      priceUpdatedAt: '2026-01-01T00:00:00Z',
+      contractAddress: 'coin',
+    }
+
+    const getTokensSpy = jest.spyOn(OneClickService, 'getTokens').mockResolvedValue([deprecatedToken, keepToken] as any)
+
+    try {
+      const api = new NearIntentsApi()
+      const tokens = await api.getTokens({ includeDeprecated: true })
+      expect(tokens).toEqual([deprecatedToken, keepToken])
+    } finally {
+      getTokensSpy.mockRestore()
+    }
+  })
+
   it("doesn't add Authorization header when api key is not set", async () => {
     const api = new NearIntentsApi()
 
@@ -67,78 +127,5 @@ describe('NearIntentsApi', () => {
         Authorization: expect.any(String),
       }),
     )
-  })
-
-  describe('getTokens', () => {
-    afterEach(() => {
-      jest.restoreAllMocks()
-    })
-
-    // Regression: NEAR Omni migration deprecated `nep141:btc.omft.near` (POA),
-    // but the upstream 1Click /v0/tokens endpoint still returns it alongside
-    // the new `1cs_v1:btc:native:coin`. Both entries report `blockchain: 'btc'`
-    // and both end up matching the BTC_CURRENCY_ADDRESS sentinel through
-    // resolveTokenAddress, so without filtering `tokens.find()` would pick
-    // the deprecated entry (it appears first in the upstream response) and
-    // quote requests would target an asset that the attestation service no
-    // longer signs, causing /v0/attestation to fail with "Invalid quote hash".
-    it('filters out deprecated nep141:btc.omft.near from the cached token list', async () => {
-      const upstream: TokenResponse[] = [
-        {
-          assetId: 'nep141:btc.omft.near',
-          decimals: 8,
-          blockchain: TokenResponse.blockchain.BTC,
-          symbol: 'BTC',
-          price: 60000,
-          priceUpdatedAt: '2026-05-18T09:18:00.452Z',
-        },
-        {
-          assetId: '1cs_v1:btc:native:coin',
-          decimals: 8,
-          blockchain: TokenResponse.blockchain.BTC,
-          symbol: 'BTC(OMNI)',
-          price: 60000,
-          priceUpdatedAt: '2026-05-18T09:18:00.452Z',
-          contractAddress: 'coin',
-        },
-      ]
-      jest.spyOn(OneClickService, 'getTokens').mockResolvedValue(upstream as any)
-
-      const api = new NearIntentsApi()
-      const tokens = await api.getTokens()
-
-      expect(tokens.map((t) => t.assetId)).toEqual(['1cs_v1:btc:native:coin'])
-    })
-
-    it('keeps non-deprecated tokens unchanged', async () => {
-      const upstream: TokenResponse[] = [
-        {
-          assetId: 'nep141:eth.omft.near',
-          decimals: 18,
-          blockchain: TokenResponse.blockchain.ETH,
-          symbol: 'ETH',
-          price: 3000,
-          priceUpdatedAt: '2026-05-18T09:18:00.452Z',
-        },
-        {
-          assetId: '1cs_v1:btc:native:coin',
-          decimals: 8,
-          blockchain: TokenResponse.blockchain.BTC,
-          symbol: 'BTC(OMNI)',
-          price: 60000,
-          priceUpdatedAt: '2026-05-18T09:18:00.452Z',
-          contractAddress: 'coin',
-        },
-      ]
-      jest.spyOn(OneClickService, 'getTokens').mockResolvedValue(upstream as any)
-
-      const api = new NearIntentsApi()
-      const tokens = await api.getTokens()
-
-      expect(tokens).toHaveLength(2)
-      expect(tokens.map((t) => t.assetId)).toEqual(
-        expect.arrayContaining(['nep141:eth.omft.near', '1cs_v1:btc:native:coin']),
-      )
-    })
   })
 })
