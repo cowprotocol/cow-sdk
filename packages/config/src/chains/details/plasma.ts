@@ -8,6 +8,7 @@ const dark = light
 // and https://github.com/ethereum-lists/chains/blob/master/_data/chains/eip155-9745.json
 export const plasma: EvmChainInfo = {
   id: SupportedChainId.PLASMA,
+  cowNetworkName: 'plasma',
   label: 'Plasma',
   eip155Label: 'Plasma Mainnet',
   logo: { light, dark },

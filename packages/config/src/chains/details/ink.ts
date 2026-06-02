@@ -8,6 +8,7 @@ const inkLogo = `${RAW_CHAINS_FILES_PATH}/images/ink-logo.svg`
 // and https://github.com/ethereum-lists/chains/blob/master/_data/chains/eip155-57073.json
 export const ink: EvmChainInfo = {
   id: SupportedChainId.INK,
+  cowNetworkName: 'ink',
   label: 'Ink',
   eip155Label: 'Ink Chain Mainnet',
   logo: { light: inkLogo, dark: inkLogo },

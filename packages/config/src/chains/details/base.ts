@@ -11,6 +11,7 @@ const baseLogo = `${RAW_CHAINS_FILES_PATH}/images/base-logo.svg`
  */
 export const base: EvmChainInfo = {
   id: SupportedChainId.BASE,
+  cowNetworkName: 'base',
   label: 'Base',
   eip155Label: 'Base',
   nativeCurrency: {
