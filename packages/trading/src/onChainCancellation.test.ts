@@ -37,6 +37,7 @@ const mockEnrichedOrder: EnrichedOrder = {
   executedBuyAmount: '0',
   executedFeeAmount: '0',
   invalidated: false,
+  settlementContract: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
 }
 
 const ESTIMATED_GAS = BigInt(125000)

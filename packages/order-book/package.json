@@ -25,7 +25,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage --json --outputFile=jest.results.json && npx coveralls < ./coverage/lcov.info",
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
-    "swagger:codegen": "openapi --input https://raw.githubusercontent.com/cowprotocol/services/dfb50cb4a103e8f949f5a7145beb6be63ef41c85/crates/orderbook/openapi.yml --output src/generated --exportServices false --exportCore false",
+    "swagger:codegen": "openapi --input https://raw.githubusercontent.com/cowprotocol/services/5341875c9498b2026d1b6f67c840b086e4696dcd/crates/orderbook/openapi.yml --output src/generated --exportServices false --exportCore false",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
