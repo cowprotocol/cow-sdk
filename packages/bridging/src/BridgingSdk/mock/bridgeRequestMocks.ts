@@ -80,6 +80,9 @@ export const orderQuoteResponse: OrderQuoteResponse = {
       '{"appCode":"test","metadata":{"orderClass":{"orderClass":"market"},"quote":{"slippageBips":50}},"version":"1.3.0"}',
 
     feeAmount: BigInt('1000000').toString(), // 1 USDC (6 decimals)
+    gasAmount: '0',
+    gasPrice: '0',
+    sellTokenPrice: '0',
     kind: OrderKind.SELL,
     partiallyFillable: false,
     sellTokenBalance: SellTokenSource.ERC20,
