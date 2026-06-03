@@ -19,7 +19,7 @@ pnpm add @cowprotocol/sdk-app-data
 ## Usage
 
 ```typescript
-import { MetadataApi } from '@cowprotocol/sdk-app-data'
+import { AppDataSdk } from '@cowprotocol/sdk-app-data'
 import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
 import { JsonRpcProvider, Wallet } from 'ethers'
 
@@ -28,7 +28,7 @@ const provider = new JsonRpcProvider('YOUR_RPC_URL')
 const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
 const adapter = new EthersV6Adapter({ provider, signer: wallet })
 
-export const metadataApi = new MetadataApi(adapter)
+export const appDataSdk = new AppDataSdk(adapter)
 
 const appCode = 'YOUR_APP_CODE'
 const environment = 'prod'
@@ -37,7 +37,7 @@ const referrer = { address: `REFERRER_ADDRESS` }
 const quote = { slippageBips: 1 } // Slippage percent, it's 0 to 100
 const orderClass = { orderClass: 'market' } // "market" | "limit" | "liquidity"
 
-const appDataDoc = await metadataApi.generateAppDataDoc({
+const appDataDoc = await appDataSdk.generateAppDataDoc({
   appCode,
   environment,
   metadata: {
@@ -48,7 +48,7 @@ const appDataDoc = await metadataApi.generateAppDataDoc({
 })
 
 // Get appData info
-const { appDataContent, appDataHex, cid } = await metadataApi.getAppDataInfo(appDataDoc)
+const { appDataContent, appDataHex, cid } = await appDataSdk.getAppDataInfo(appDataDoc)
 
 // The app-data hex string (app-data part of the order struct)
 console.log(appDataHex)
@@ -66,10 +66,10 @@ console.log(cid)
 
 ### Using via Cow SDK
 
-You can also import `MetadataApi` directly from the main SDK:
+You can also import `AppDataSdk` directly from the main SDK:
 
 ```typescript
-import { MetadataApi } from '@cowprotocol/cow-sdk'
+import { AppDataSdk } from '@cowprotocol/cow-sdk'
 import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
 import { JsonRpcProvider, Wallet } from 'ethers'
 
@@ -78,7 +78,7 @@ const provider = new JsonRpcProvider('YOUR_RPC_URL')
 const wallet = new Wallet('YOUR_PRIVATE_KEY', provider)
 const adapter = new EthersV6Adapter({ provider, signer: wallet })
 
-export const metadataApi = new MetadataApi(adapter)
+export const appDataSdk = new AppDataSdk(adapter)
 // ... rest of the usage remains the same
 ```
 
