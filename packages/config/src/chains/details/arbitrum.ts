@@ -11,7 +11,7 @@ const arbitrumLogo = `${RAW_CHAINS_FILES_PATH}/images/arbitrum-logo.svg`
  */
 export const arbitrumOne: EvmChainInfo = {
   id: SupportedChainId.ARBITRUM_ONE,
-  cowNetworkName: 'arbitrum-one',
+  internalId: 'arbitrum-one',
   label: 'Arbitrum',
   eip155Label: 'Arbitrum One',
   nativeCurrency: {

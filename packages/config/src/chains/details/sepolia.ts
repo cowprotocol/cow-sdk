@@ -11,7 +11,7 @@ const sepoliaLogo = `${RAW_CHAINS_FILES_PATH}/images/sepolia-logo.svg`
  */
 export const sepolia: EvmChainInfo = {
   id: SupportedChainId.SEPOLIA,
-  cowNetworkName: 'sepolia',
+  internalId: 'sepolia',
   label: 'Sepolia',
   eip155Label: 'Ethereum Sepolia',
   nativeCurrency: {

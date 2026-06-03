@@ -215,12 +215,12 @@ export interface EvmChainInfo extends BaseChainInfo {
   readonly id: ChainId
 
   /**
-   * CoW Protocol network name.
+   * Internal CoW Protocol identifier.
    *
    * Used by internal services, metrics labels, and database names. This can differ
    * from display labels, ERC-3770 prefixes, and API URL path segments.
    */
-  readonly cowNetworkName: string
+  readonly internalId?: string
 
   /**
    * EIP155 label of the chain. Field used for connecting to MetaMask.
@@ -257,12 +257,12 @@ export interface NonEvmChainInfo extends BaseChainInfo {
   readonly id: ChainId
 
   /**
-   * CoW Protocol network name.
+   * Internal CoW Protocol identifier.
    *
    * Used by internal services, metrics labels, and database names. This can differ
    * from display labels, ERC-3770 prefixes, and API URL path segments.
    */
-  readonly cowNetworkName?: string
+  readonly internalId?: string
 
   /**
    * Native currency of the chain (address is empty string for non-EVM chains).

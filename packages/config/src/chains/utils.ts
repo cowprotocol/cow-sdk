@@ -89,12 +89,12 @@ export function getChainInfo(chainId: ChainId): ChainInfo | undefined {
 }
 
 /**
- * Return the CoW Protocol network name for a chain.
+ * Return the internal CoW Protocol identifier for a chain.
  *
  * This is used by internal services, metrics labels, and database names.
  */
-export function getCowNetworkName(chainId: ChainId): string | undefined {
-  return getChainInfo(chainId)?.cowNetworkName
+export function getInternalId(chainId: ChainId): string | undefined {
+  return getChainInfo(chainId)?.internalId
 }
 
 /**

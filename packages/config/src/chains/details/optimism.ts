@@ -7,7 +7,7 @@ const optimismLogo = `${RAW_CHAINS_FILES_PATH}/images/optimism-logo.svg`
 // See https://github.com/wevm/viem/blob/main/src/chains/definitions/optimism.ts
 export const optimism: EvmChainInfo = {
   id: 10,
-  cowNetworkName: 'optimism',
+  internalId: 'optimism',
   label: 'Optimism',
   eip155Label: 'OP Mainnet',
   logo: { light: optimismLogo, dark: optimismLogo },

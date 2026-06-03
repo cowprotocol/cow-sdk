@@ -7,7 +7,7 @@ const lineaLogo = `${RAW_CHAINS_FILES_PATH}/images/linea-logo.svg`
 // and https://github.com/ethereum-lists/chains/blob/master/_data/chains/eip155-59144.json
 export const linea: EvmChainInfo = {
   id: SupportedChainId.LINEA,
-  cowNetworkName: 'linea',
+  internalId: 'linea',
   label: 'Linea',
   eip155Label: 'Linea Mainnet',
   logo: { light: lineaLogo, dark: lineaLogo },
