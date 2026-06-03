@@ -8,6 +8,7 @@ const bnbLogo = `${RAW_CHAINS_FILES_PATH}/images/bnb-logo.svg`
 // and https://github.com/ethereum-lists/chains/blob/master/_data/chains/eip155-56.json
 export const bnb: EvmChainInfo = {
   id: SupportedChainId.BNB,
+  internalId: 'bnb',
   label: 'BNB',
   eip155Label: 'BNB Chain Mainnet',
   logo: { light: bnbLogo, dark: bnbLogo },
