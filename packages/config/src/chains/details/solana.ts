@@ -30,4 +30,5 @@ export const solana: NonEvmChainInfo = {
     name: 'Solana Explorer',
     url: 'https://explorer.solana.com',
   },
+  isUnderDevelopment: true,
 }

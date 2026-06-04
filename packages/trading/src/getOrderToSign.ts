@@ -59,6 +59,11 @@ export function getOrderToSign(
     feeAmount: networkCostsAmount,
     appData: appDataKeccak256,
     partiallyFillable,
+    // Quote-only gas/price metadata: not known when building an order to sign and
+    // unused by getQuoteAmountsAndCosts. Set to zero placeholders to satisfy OrderParameters.
+    gasAmount: '0',
+    gasPrice: '0',
+    sellTokenPrice: '0',
   }
 
   let sellAmountToUse = sellAmount

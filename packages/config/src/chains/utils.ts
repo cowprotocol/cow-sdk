@@ -89,6 +89,15 @@ export function getChainInfo(chainId: ChainId): ChainInfo | undefined {
 }
 
 /**
+ * Return the internal CoW Protocol identifier for a chain.
+ *
+ * This is used by internal services, metrics labels, and database names.
+ */
+export function getInternalId(chainId: ChainId): string | undefined {
+  return getChainInfo(chainId)?.internalId
+}
+
+/**
  * Check if the chain is supported by CoW Protocol.
  */
 export function isSupportedChain(chainId: ChainId): chainId is SupportedChainId {
