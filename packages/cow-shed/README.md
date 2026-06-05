@@ -8,7 +8,7 @@
 
 | Statements                  | Branches                | Functions                 | Lines             |
 | --------------------------- | ----------------------- | ------------------------- | ----------------- |
-| ![Statements](#statements#) | ![Branches](#branches#) | ![Functions](#functions#) | ![Lines](#lines#) |
+| ![Statements](https://img.shields.io/badge/statements-91.07%25-brightgreen.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-82.75%25-yellow.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-94.11%25-brightgreen.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-91.07%25-brightgreen.svg?style=flat) |
 
 The Cow Shed SDK is a TypeScript library that provides a set of functions to interact with the [Cow Shed contract](https://github.com/cowdao-grants/cow-shed).
 

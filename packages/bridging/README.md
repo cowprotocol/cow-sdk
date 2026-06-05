@@ -8,7 +8,7 @@
 
 | Statements                  | Branches                | Functions                 | Lines             |
 | --------------------------- | ----------------------- | ------------------------- | ----------------- |
-| ![Statements](#statements#) | ![Branches](#branches#) | ![Functions](#functions#) | ![Lines](#lines#) |
+| ![Statements](https://img.shields.io/badge/statements-68.3%25-red.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-53.08%25-red.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-64.68%25-red.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-69.36%25-red.svg?style=flat) |
 
 This package provides bridging functionality for the CoW Protocol SDK, enabling cross-chain token transfers and interactions. It integrates with various bridge providers to facilitate seamless asset movement across supported blockchain networks.
 
