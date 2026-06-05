@@ -4,6 +4,12 @@
 
 # Cow AppData SDK
 
+## Test coverage
+
+| Statements                  | Branches                | Functions                 | Lines             |
+| --------------------------- | ----------------------- | ------------------------- | ----------------- |
+| ![Statements](#statements#) | ![Branches](#branches#) | ![Functions](#functions#) | ![Lines](#lines#) |
+
 AppData schema definitions
 
 These schemas are used in the data encoded on `appData` field for CowProtocol orders.

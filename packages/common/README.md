@@ -4,6 +4,12 @@
 
 # SDK Common
 
+## Test coverage
+
+| Statements                  | Branches                | Functions                 | Lines             |
+| --------------------------- | ----------------------- | ------------------------- | ----------------- |
+| ![Statements](#statements#) | ![Branches](#branches#) | ![Functions](#functions#) | ![Lines](#lines#) |
+
 This package is part of the core CoW Protocol SDK. It doesn't have significant standalone functionality, but provides access to important types, interfaces, and utilities that are shared across all SDK packages.
 
 ## What's included

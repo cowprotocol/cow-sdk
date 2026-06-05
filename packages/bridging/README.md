@@ -4,6 +4,12 @@
 
 # SDK Bridging
 
+## Test coverage
+
+| Statements                  | Branches                | Functions                 | Lines             |
+| --------------------------- | ----------------------- | ------------------------- | ----------------- |
+| ![Statements](#statements#) | ![Branches](#branches#) | ![Functions](#functions#) | ![Lines](#lines#) |
+
 This package provides bridging functionality for the CoW Protocol SDK, enabling cross-chain token transfers and interactions. It integrates with various bridge providers to facilitate seamless asset movement across supported blockchain networks.
 
 ## Installation

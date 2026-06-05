@@ -4,6 +4,12 @@
 
 # SDK Order Book
 
+## Test coverage
+
+| Statements                  | Branches                | Functions                 | Lines             |
+| --------------------------- | ----------------------- | ------------------------- | ----------------- |
+| ![Statements](#statements#) | ![Branches](#branches#) | ![Functions](#functions#) | ![Lines](#lines#) |
+
 This package provides a comprehensive API client for interacting with the CoW Protocol Order Book. It handles order submission, retrieval, cancellation, and trading data with built-in rate limiting, retries, and error handling.
 
 ## Installation

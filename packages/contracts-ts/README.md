@@ -4,6 +4,12 @@
 
 # SDK Contracts
 
+## Test coverage
+
+| Statements                  | Branches                | Functions                 | Lines             |
+| --------------------------- | ----------------------- | ------------------------- | ----------------- |
+| ![Statements](#statements#) | ![Branches](#branches#) | ![Functions](#functions#) | ![Lines](#lines#) |
+
 This package provides TypeScript contract interfaces and utilities for interacting with CoW Protocol smart contracts. It includes type-safe contract wrappers and helper functions for all CoW Protocol contracts.
 
 ## Package Origin

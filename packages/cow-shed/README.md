@@ -4,6 +4,12 @@
 
 # Cow Shed SDK
 
+## Test coverage
+
+| Statements                  | Branches                | Functions                 | Lines             |
+| --------------------------- | ----------------------- | ------------------------- | ----------------- |
+| ![Statements](#statements#) | ![Branches](#branches#) | ![Functions](#functions#) | ![Lines](#lines#) |
+
 The Cow Shed SDK is a TypeScript library that provides a set of functions to interact with the [Cow Shed contract](https://github.com/cowdao-grants/cow-shed).
 
 In essence, CoW Shed acts as a user owned smart contract (1/1 multisig if you will) that can execute multiple calls on behalf of the user (once the user has pre-authorized the calls).

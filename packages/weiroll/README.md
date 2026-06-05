@@ -4,6 +4,12 @@
 
 # SDK Weiroll
 
+## Test coverage
+
+| Statements                  | Branches                | Functions                 | Lines             |
+| --------------------------- | ----------------------- | ------------------------- | ----------------- |
+| ![Statements](#statements#) | ![Branches](#branches#) | ![Functions](#functions#) | ![Lines](#lines#) |
+
 This package provides adapter-agnostic Weiroll functionality for the CoW Protocol SDK. Weiroll is a powerful scripting language for executing complex multi-step transactions on Ethereum.
 
 ## Package Origin

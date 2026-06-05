@@ -4,6 +4,12 @@
 
 # Flash Loans SDK
 
+## Test coverage
+
+| Statements                  | Branches                | Functions                 | Lines             |
+| --------------------------- | ----------------------- | ------------------------- | ----------------- |
+| ![Statements](#statements#) | ![Branches](#branches#) | ![Functions](#functions#) | ![Lines](#lines#) |
+
 Execute flash loan-based collateral swaps using Aave Protocol V3 integrated with CoW Protocol for optimal trading execution.
 
 This SDK facilitates complex flash loan operations where you can:

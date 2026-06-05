@@ -4,6 +4,12 @@
 
 # Trading SDK
 
+## Test coverage
+
+| Statements                  | Branches                | Functions                 | Lines             |
+| --------------------------- | ----------------------- | ------------------------- | ----------------- |
+| ![Statements](#statements#) | ![Branches](#branches#) | ![Functions](#functions#) | ![Lines](#lines#) |
+
 CoW Protocol is intent based, decentralized trading protocol that allows users to trade ERC-20 tokens.
 This SDK makes it easier to interact with CoW Protocol by handling order parameters, calculating amounts, and signing orders.
 
