@@ -23,6 +23,8 @@
     "lint": "eslint src/**/*.ts",
     "typecheck": "tsc --noEmit",
     "test": "jest",
+    "test:coverage": "jest --coverage",
+    "coverage:badges": "istanbul-badges-readme --exitCode=1",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
     "prepublishOnly": "npm run build"
   },

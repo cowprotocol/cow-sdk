@@ -25,7 +25,8 @@
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage --json --outputFile=jest.results.json && npx coveralls < ./coverage/lcov.info",
+    "test:coverage": "jest --coverage",
+    "coverage:badges": "istanbul-badges-readme --exitCode=1",
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
@@ -43,7 +44,6 @@
     "@cowprotocol/sdk-viem-adapter": "workspace:*",
     "@types/jest": "^29.5.5",
     "@types/node": "^20.17.31",
-    "coveralls": "^3.1.1",
     "ethers-v5": "npm:ethers@^5.7.2",
     "ethers-v6": "npm:ethers@^6.13.7",
     "jest": "^29.7.0",
