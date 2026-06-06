@@ -41,8 +41,8 @@ const APP_CODE = 'CoWSdkNodeExampleViem'
 async function main() {
   const chainId = SupportedChainId.SEPOLIA
 
-  if (!PRIVATE_KEY || !SAFE_ADDRESS) {
-    console.log('Set PRIVATE_KEY and SAFE_ADDRESS to run this example')
+  if (!PRIVATE_KEY || !SAFE_ADDRESS || !SAFE_API_KEY) {
+    console.log('Set PRIVATE_KEY, SAFE_ADDRESS, and SAFE_API_KEY to run this example')
     process.exit(0)
   }
 
