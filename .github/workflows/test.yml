@@ -52,7 +52,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
         with:
-          token: ${{ github.token }}
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@7c12f8017d5436eb855f1ed4399f037a36fbd9e8 # v2
@@ -81,6 +81,8 @@ jobs:
         run: pnpm coverage:badges
 
       - name: Commit badge updates
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           if git diff --quiet -- README.md packages/*/README.md; then
             echo "Coverage badges unchanged, nothing to commit"
@@ -90,4 +92,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add README.md packages/*/README.md
           git commit -m "chore: update coverage badges [skip ci]"
-          git push
+          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
