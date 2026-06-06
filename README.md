@@ -97,6 +97,9 @@ pnpm build
 # Run tests
 pnpm test
 
+# Run tests with coverage and update README coverage badges
+pnpm coverage:badges
+
 # Run linting
 pnpm lint
 
