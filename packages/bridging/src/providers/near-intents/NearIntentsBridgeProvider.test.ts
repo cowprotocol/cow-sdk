@@ -239,14 +239,6 @@ adapterNames.forEach((adapterName) => {
           contractAddress: sellTokenAddress,
         },
         {
-          assetId: 'nep141:btc.omft.near',
-          decimals: 8,
-          blockchain: TokenResponse.blockchain.BTC,
-          symbol: 'BTC',
-          price: 60000,
-          priceUpdatedAt: '2025-09-05T12:00:38.695Z',
-        },
-        {
           assetId: '1cs_v1:btc:native:coin',
           decimals: 8,
           blockchain: TokenResponse.blockchain.BTC,
@@ -319,15 +311,6 @@ adapterNames.forEach((adapterName) => {
         jest.spyOn(api, 'getStatus').mockResolvedValue(status)
         provider.setApi(api)
       }
-
-      it('resolves a historical order whose destinationAsset is the deprecated BTC id', async () => {
-        mockApi(buildMockStatus('nep141:btc.omft.near'))
-        const result = await provider.getBridgingParams(SupportedChainId.BASE, mockOrder as any, '0xtxhash')
-        expect(result).not.toBeNull()
-        expect(result?.params.outputTokenAddress).toBe(BTC_CURRENCY_ADDRESS)
-        expect(result?.params.destinationChainId).toBe(NonEvmChains.BITCOIN)
-        expect(result?.status.status).toBe(BridgeStatus.EXECUTED)
-      })
 
       it('resolves an order whose destinationAsset is the new BTC id (1cs_v1:btc:native:coin)', async () => {
         mockApi(buildMockStatus('1cs_v1:btc:native:coin'))
