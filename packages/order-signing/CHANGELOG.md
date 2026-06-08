@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-signing-v1.0.5...sdk-order-signing-v1.0.6) (2026-06-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.11.2
+    * @cowprotocol/sdk-config bumped to 2.3.0
+    * @cowprotocol/sdk-contracts-ts bumped to 3.1.2
+    * @cowprotocol/sdk-order-book bumped to 3.2.2
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.9
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.9
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.23
+
 ## [1.0.5](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-signing-v1.0.4...sdk-order-signing-v1.0.5) (2026-06-02)
 
 
