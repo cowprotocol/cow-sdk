@@ -22,6 +22,17 @@ interface GetAttestationResponse {
 }
 
 export class NearIntentsApi {
+  // Upstream /v0/tokens still lists deprecated assets the attestation service
+  // no longer signs. They share `blockchain: 'btc'` with the live token and
+  // both resolve to BTC_CURRENCY_ADDRESS, so without this filter `tokens.find()`
+  // picks the deprecated entry (it appears first) and /v0/attestation fails
+  // with "Invalid quote hash".
+  private static readonly DEPRECATED_ASSET_IDS: ReadonlySet<string> = new Set([
+    // POA BTC bridge, replaced by `1cs_v1:btc:native:coin` (Omni migration).
+    // https://partners.near-intents.org/omni-migration
+    'nep141:btc.omft.near',
+  ])
+
   private cachedTokens: TokenResponse[] = []
 
   constructor(apiKey?: string) {
@@ -32,7 +43,8 @@ export class NearIntentsApi {
 
   async getTokens(): Promise<TokenResponse[]> {
     if (this.cachedTokens.length === 0) {
-      this.cachedTokens = await OneClickService.getTokens()
+      const response = await OneClickService.getTokens()
+      this.cachedTokens = response.filter((t) => !NearIntentsApi.DEPRECATED_ASSET_IDS.has(t.assetId))
     }
     return this.cachedTokens
   }
