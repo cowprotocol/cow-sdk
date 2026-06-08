@@ -73,7 +73,7 @@
     },
     "maxVolumeBps": {
       "title": "Max Volume Basis Point (BPS)",
-      "description": "The maximum volume in basis points (BPS) to be paid to the partner. Capped to 9999 BPS (99%). You can chose to go lower but not higher",
+      "description": "The maximum volume in basis points (BPS) to be paid to the partner. Capped to 9999 BPS (99.99%). You can chose to go lower but not higher",
       "type": "integer",
       "maximum": 9999,
       "minimum": 1,
