@@ -1,5 +1,24 @@
 # Changelog
 
+## [3.1.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.1.1...sdk-contracts-ts-v3.1.2) (2026-06-08)
+
+
+### 🐛 Bug Fixes
+
+* **app-data:** bump maxVolumeBps cap ([#896](https://github.com/cowprotocol/cow-sdk/issues/896)) ([1e98a71](https://github.com/cowprotocol/cow-sdk/commit/1e98a71dbccc75c13dd185bb8d75b8f92f6ecc8f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.11.2
+    * @cowprotocol/sdk-config bumped to 2.3.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.9
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.9
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.23
+
 ## [3.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.1.0...sdk-contracts-ts-v3.1.1) (2026-06-02)
 
 
