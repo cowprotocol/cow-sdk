@@ -1,5 +1,42 @@
 # Changelog
 
+## [1.0.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-signing-v1.0.5...sdk-order-signing-v1.0.6) (2026-06-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.11.2
+    * @cowprotocol/sdk-config bumped to 2.3.0
+    * @cowprotocol/sdk-contracts-ts bumped to 3.1.2
+    * @cowprotocol/sdk-order-book bumped to 3.2.2
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.9
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.9
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.23
+
+## [1.0.5](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-signing-v1.0.4...sdk-order-signing-v1.0.5) (2026-06-02)
+
+
+### 🔧 Miscellaneous
+
+* Update openapi.yml version ([#888](https://github.com/cowprotocol/cow-sdk/issues/888)) ([b8a3726](https://github.com/cowprotocol/cow-sdk/commit/b8a37263195afba0a12a42c879eb13c1a2cc2e8b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.11.1
+    * @cowprotocol/sdk-config bumped to 2.2.1
+    * @cowprotocol/sdk-contracts-ts bumped to 3.1.1
+    * @cowprotocol/sdk-order-book bumped to 3.2.1
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.8
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.8
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.22
+
 ## [1.0.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-signing-v1.0.3...sdk-order-signing-v1.0.4) (2026-05-27)
 
 

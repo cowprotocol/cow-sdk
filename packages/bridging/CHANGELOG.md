@@ -1,5 +1,52 @@
 # Changelog
 
+## [4.1.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.1.1...sdk-bridging-v4.1.2) (2026-06-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 5.2.0
+    * @cowprotocol/sdk-common bumped to 0.11.2
+    * @cowprotocol/sdk-config bumped to 2.3.0
+    * @cowprotocol/sdk-contracts-ts bumped to 3.1.2
+    * @cowprotocol/sdk-cow-shed bumped to 0.3.13
+    * @cowprotocol/sdk-order-book bumped to 3.2.2
+    * @cowprotocol/sdk-trading bumped to 2.1.2
+    * @cowprotocol/sdk-weiroll bumped to 0.1.35
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.9
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.9
+    * @cowprotocol/sdk-order-signing bumped to 1.0.6
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.23
+
+## [4.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.1.0...sdk-bridging-v4.1.1) (2026-06-02)
+
+
+### 🔧 Miscellaneous
+
+* Update openapi.yml version ([#888](https://github.com/cowprotocol/cow-sdk/issues/888)) ([b8a3726](https://github.com/cowprotocol/cow-sdk/commit/b8a37263195afba0a12a42c879eb13c1a2cc2e8b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 5.1.4
+    * @cowprotocol/sdk-common bumped to 0.11.1
+    * @cowprotocol/sdk-config bumped to 2.2.1
+    * @cowprotocol/sdk-contracts-ts bumped to 3.1.1
+    * @cowprotocol/sdk-cow-shed bumped to 0.3.12
+    * @cowprotocol/sdk-order-book bumped to 3.2.1
+    * @cowprotocol/sdk-trading bumped to 2.1.1
+    * @cowprotocol/sdk-weiroll bumped to 0.1.34
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.8
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.8
+    * @cowprotocol/sdk-order-signing bumped to 1.0.5
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.22
+
 ## [4.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.0.5...sdk-bridging-v4.1.0) (2026-05-27)
 
 

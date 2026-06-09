@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.2.1...sdk-config-v2.3.0) (2026-06-08)
+
+
+### ✨ Features
+
+* internal ids for evm chains ([#891](https://github.com/cowprotocol/cow-sdk/issues/891)) ([1c3c961](https://github.com/cowprotocol/cow-sdk/commit/1c3c9619c3d0ee832ce43a2d695ad650c2ec7a18))
+
+## [2.2.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.2.0...sdk-config-v2.2.1) (2026-06-02)
+
+
+### 🐛 Bug Fixes
+
+* trigger release please ([#890](https://github.com/cowprotocol/cow-sdk/issues/890)) ([cc11990](https://github.com/cowprotocol/cow-sdk/commit/cc11990047e4d77a450582a84a07a453f4a7ccc8))
+
 ## [2.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.1.0...sdk-config-v2.2.0) (2026-05-27)
 
 

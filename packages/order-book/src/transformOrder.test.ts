@@ -24,6 +24,7 @@ const ORDER: Order = {
   executedFeeAmount: '1234567890',
   invalidated: true,
   status: OrderStatus.FULFILLED,
+  settlementContract: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
 }
 
 describe('transformOrder', () => {

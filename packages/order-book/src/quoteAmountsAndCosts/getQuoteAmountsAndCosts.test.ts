@@ -12,6 +12,9 @@ const otherFields = {
   validTo: 1716904696,
   appData: '{}',
   appDataHash: '0x0',
+  gasAmount: '0',
+  gasPrice: '0',
+  sellTokenPrice: '0',
 }
 
 /**

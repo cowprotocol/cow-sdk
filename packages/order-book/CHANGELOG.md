@@ -1,5 +1,30 @@
 # Changelog
 
+## [3.2.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v3.2.1...sdk-order-book-v3.2.2) (2026-06-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.3.0
+    * @cowprotocol/sdk-common bumped to 0.11.2
+
+## [3.2.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v3.2.0...sdk-order-book-v3.2.1) (2026-06-02)
+
+
+### 🔧 Miscellaneous
+
+* Update openapi.yml version ([#888](https://github.com/cowprotocol/cow-sdk/issues/888)) ([b8a3726](https://github.com/cowprotocol/cow-sdk/commit/b8a37263195afba0a12a42c879eb13c1a2cc2e8b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.2.1
+    * @cowprotocol/sdk-common bumped to 0.11.1
+
 ## [3.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v3.1.0...sdk-order-book-v3.2.0) (2026-05-27)
 
 
