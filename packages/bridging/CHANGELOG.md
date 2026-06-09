@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.1.2...sdk-bridging-v4.1.3) (2026-06-09)
+
+
+### 🐛 Bug Fixes
+
+* **near-intents:** btc migration ([#882](https://github.com/cowprotocol/cow-sdk/issues/882)) ([d8bfe62](https://github.com/cowprotocol/cow-sdk/commit/d8bfe62fbf88a78d546734f9a3e414ff8f14811a))
+
 ## [4.1.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.1.1...sdk-bridging-v4.1.2) (2026-06-08)
 
 
