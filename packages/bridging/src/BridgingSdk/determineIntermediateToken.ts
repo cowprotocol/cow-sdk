@@ -57,13 +57,8 @@ export async function determineIntermediateToken(
 
   // Calculate priority for each token
   const tokensWithPriority = filteredTokens.map((token) => {
-    const isNativeOrWrapped = isNativeToken(token) || isWrappedNativeToken(token)
-
     if (areAddressesEqual(token.address, sourceTokenAddress)) {
-      // Native/wrapped -> native/wrapped is not supported yet (backend restriction)
-      if (!(isSellNativeOrWrapped && isNativeOrWrapped)) {
-        return { token, priority: TokenPriority.HIGHEST }
-      }
+      return { token, priority: TokenPriority.HIGHEST }
     }
     if (isStablecoinPriorityToken(token.chainId, token.address)) {
       return { token, priority: TokenPriority.HIGH }
