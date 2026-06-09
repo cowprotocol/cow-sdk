@@ -268,8 +268,8 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
         fillTxHash: status.swapDetails?.destinationChainTxHashes?.[0]?.hash,
       },
       params: {
-        inputTokenAddress: inputToken.contractAddress ?? adaptedInput.address,
-        outputTokenAddress: outputToken.contractAddress ?? adaptedOutput.address,
+        inputTokenAddress: adaptedInput.address,
+        outputTokenAddress: adaptedOutput.address,
         inputAmount: BigInt(quote.amountIn),
         outputAmount: swapDetails.amountOut ? BigInt(swapDetails.amountOut) : BigInt(quote.amountOut),
         owner: order.owner,
