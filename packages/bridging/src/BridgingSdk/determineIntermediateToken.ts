@@ -16,12 +16,12 @@ export interface IntermediateTokenContext {
  * Priority levels for intermediate token selection
  */
 enum TokenPriority {
-  SUPERIOR = 6, // Stable coin, same as destination token
-  HIGHEST = 5, // Same as sell token
-  HIGH = 4, // USDC/USDT from hardcoded registry
-  MEDIUM = 3, // Tokens in CMS correlated tokens list
-  LOW = 2, // Blockchain native token
-  LOWEST = 1, // Other tokens
+  STABLECOIN_MATCHES_DESTINATION = 6, // Stable coin, same as destination token
+  MATCHES_SELL = 5, // Same as sell token
+  STABLECOIN = 4, // USDC/USDT from hardcoded registry
+  CORRELATED = 3, // Tokens in CMS correlated tokens list
+  NATIVE = 2, // Blockchain native token
+  OTHER = 1, // Other tokens
 }
 
 /**
@@ -79,24 +79,24 @@ export async function determineIntermediateToken(context: IntermediateTokenConte
         !!token.symbol && token.symbol.toLowerCase() === destinationStableCoin?.symbol?.toLowerCase()
 
       if (matchesDestinationTokenSymbol) {
-        return { token, priority: TokenPriority.SUPERIOR }
+        return { token, priority: TokenPriority.STABLECOIN_MATCHES_DESTINATION }
       }
     }
 
     if (areAddressesEqual(token.address, sourceTokenAddress)) {
-      return { token, priority: TokenPriority.HIGHEST }
+      return { token, priority: TokenPriority.MATCHES_SELL }
     }
     if (isStableCoin) {
-      return { token, priority: TokenPriority.HIGH }
+      return { token, priority: TokenPriority.STABLECOIN }
     }
     if (isCorrelatedToken(token.address, correlatedTokens)) {
-      return { token, priority: TokenPriority.MEDIUM }
+      return { token, priority: TokenPriority.CORRELATED }
     }
     if (isNativeToken(token)) {
-      return { token, priority: TokenPriority.LOW }
+      return { token, priority: TokenPriority.NATIVE }
     }
 
-    return { token, priority: TokenPriority.LOWEST }
+    return { token, priority: TokenPriority.OTHER }
   })
 
   // Sort by priority (highest first), then by original order for stability
