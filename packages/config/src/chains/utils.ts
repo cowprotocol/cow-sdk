@@ -93,6 +93,13 @@ export function getChainInfo(chainId: ChainId): ChainInfo | undefined {
  *
  * This is used by internal services, metrics labels, and database names.
  */
+export function getInternalChainId(chainId: ChainId): string | undefined {
+  return getChainInfo(chainId)?.internalId
+}
+
+/**
+ * @deprecated use `getInternalChainId` instead.
+ */
 export function getInternalId(chainId: ChainId): string | undefined {
   return getChainInfo(chainId)?.internalId
 }
