@@ -16,9 +16,9 @@ export interface IntermediateTokenContext {
  * Priority levels for intermediate token selection
  */
 enum TokenPriority {
-  STABLECOIN_MATCHES_DESTINATION = 6, // Stable coin, same as destination token
+  STABLECOIN_MATCHES_DESTINATION = 6, // The same stablecoin as destination token
   MATCHES_SELL = 5, // Same as sell token
-  STABLECOIN = 4, // USDC/USDT from hardcoded registry
+  STABLECOIN = 4, // USDC/USDT from hardcoded registry (when not covered by STABLECOIN_MATCHES_DESTINATION)
   CORRELATED = 3, // Tokens in CMS correlated tokens list
   NATIVE = 2, // Blockchain native token
   OTHER = 1, // Other tokens
