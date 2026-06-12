@@ -80,7 +80,7 @@ jobs:
       - name: Update coverage badges
         run: pnpm coverage:badges
 
-      - name: Commit badge updates
+      - name: Open coverage badges PR
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
@@ -88,8 +88,17 @@ jobs:
             echo "Coverage badges unchanged, nothing to commit"
             exit 0
           fi
+          BRANCH="chore/update-coverage-badges"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
           git add README.md packages/*/README.md
-          git commit -m "chore: update coverage badges [skip ci]"
-          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
+          git commit -m "chore: update coverage badges"
+          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$BRANCH"
+          if gh pr view "$BRANCH" --json state --jq '.state' 2>/dev/null | grep -q OPEN; then
+            echo "PR already open for $BRANCH, updated with latest badges"
+          else
+            gh pr create --base main --head "$BRANCH" \
+              --title "chore: update coverage badges" \
+              --body "Automated coverage badge update from the latest \`main\` build."
+          fi
