@@ -4,6 +4,12 @@
 
 # SDK Order Signing
 
+## Test coverage
+
+| Statements                  | Branches                | Functions                 | Lines             |
+| --------------------------- | ----------------------- | ------------------------- | ----------------- |
+| ![Statements](https://img.shields.io/badge/statements-69.72%25-red.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-48.97%25-red.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-82.6%25-yellow.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-70.09%25-red.svg?style=flat) |
+
 This package provides EIP-712 order signing and cancellation utilities for the CoW Protocol. It handles all the cryptographic operations required to sign orders and cancellations according to CoW Protocol's specifications.
 
 ## Installation

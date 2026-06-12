@@ -4,6 +4,12 @@
 
 # SDK Weiroll
 
+## Test coverage
+
+| Statements                  | Branches                | Functions                 | Lines             |
+| --------------------------- | ----------------------- | ------------------------- | ----------------- |
+| ![Statements](https://img.shields.io/badge/statements-90.71%25-brightgreen.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-82.24%25-yellow.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-85.71%25-yellow.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-92.22%25-brightgreen.svg?style=flat) |
+
 This package provides adapter-agnostic Weiroll functionality for the CoW Protocol SDK. Weiroll is a powerful scripting language for executing complex multi-step transactions on Ethereum.
 
 ## Package Origin

@@ -4,6 +4,12 @@
 
 # SDK Subgraph
 
+## Test coverage
+
+| Statements                  | Branches                | Functions                 | Lines             |
+| --------------------------- | ----------------------- | ------------------------- | ----------------- |
+| ![Statements](https://img.shields.io/badge/statements-7.15%25-red.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-14%25-red.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-25.92%25-red.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-6.96%25-red.svg?style=flat) |
+
 This package provides a TypeScript client for querying CoW Protocol data from TheGraph subgraphs. It offers a simple and type-safe way to access historical trading data, volume statistics, and other protocol metrics across multiple chains.
 
 ## What's included

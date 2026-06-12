@@ -4,6 +4,12 @@
 
 # SDK Composable
 
+## Test coverage
+
+| Statements                  | Branches                | Functions                 | Lines             |
+| --------------------------- | ----------------------- | ------------------------- | ----------------- |
+| ![Statements](https://img.shields.io/badge/statements-84.93%25-yellow.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-76.74%25-red.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-82.35%25-yellow.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-85.16%25-yellow.svg?style=flat) |
+
 This package provides advanced conditional and programmable order functionality for the CoW Protocol. It enables the creation, management, and execution of sophisticated trading strategies through conditional orders that execute automatically when specified conditions are met.
 
 ## Installation

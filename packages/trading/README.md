@@ -4,6 +4,12 @@
 
 # Trading SDK
 
+## Test coverage
+
+| Statements                  | Branches                | Functions                 | Lines             |
+| --------------------------- | ----------------------- | ------------------------- | ----------------- |
+| ![Statements](https://img.shields.io/badge/statements-84.71%25-yellow.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-83.33%25-yellow.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-64.77%25-red.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-87.63%25-yellow.svg?style=flat) |
+
 CoW Protocol is intent based, decentralized trading protocol that allows users to trade ERC-20 tokens.
 This SDK makes it easier to interact with CoW Protocol by handling order parameters, calculating amounts, and signing orders.
 
