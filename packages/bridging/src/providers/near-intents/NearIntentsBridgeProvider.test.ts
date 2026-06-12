@@ -225,6 +225,103 @@ adapterNames.forEach((adapterName) => {
       })
     })
 
+    describe('getBridgingParams', () => {
+      const sellTokenAddress = '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'
+
+      const mockTokens: TokenResponse[] = [
+        {
+          assetId: 'nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near',
+          decimals: 6,
+          blockchain: TokenResponse.blockchain.BASE,
+          symbol: 'USDC',
+          price: 1,
+          priceUpdatedAt: '2025-09-05T12:00:38.695Z',
+          contractAddress: sellTokenAddress,
+        },
+        {
+          assetId: '1cs_v1:btc:native:coin',
+          decimals: 8,
+          blockchain: TokenResponse.blockchain.BTC,
+          symbol: 'BTC(OMNI)',
+          price: 60000,
+          priceUpdatedAt: '2025-09-05T12:00:38.695Z',
+          contractAddress: 'coin',
+        },
+      ]
+
+      const buildMockStatus = (destinationAsset: string): GetExecutionStatusResponse => ({
+        status: GetExecutionStatusResponse.status.SUCCESS,
+        updatedAt: '2025-09-05T12:01:33.000Z',
+        swapDetails: {
+          intentHashes: ['intentHash1'],
+          nearTxHashes: ['nearTxHash1'],
+          amountIn: '52000000',
+          amountInFormatted: '52.0',
+          amountInUsd: '51.9929',
+          amountOut: '86000',
+          amountOutFormatted: '0.00086',
+          amountOutUsd: '51.6',
+          slippage: -5,
+          refundedAmount: '0',
+          refundedAmountFormatted: '0',
+          refundedAmountUsd: '0',
+          originChainTxHashes: [{ hash: 'originChainTxHash1', explorerUrl: '' }],
+          destinationChainTxHashes: [{ hash: 'destBtcTxHash1', explorerUrl: '' }],
+        },
+        quoteResponse: {
+          timestamp: '2025-09-05T12:00:38.695Z',
+          signature: 'ed25519:signature',
+          quoteRequest: {
+            dry: false,
+            swapType: QuoteRequest.swapType.EXACT_INPUT,
+            depositMode: QuoteRequest.depositMode.SIMPLE,
+            slippageTolerance: 100,
+            originAsset: 'nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near',
+            depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
+            destinationAsset,
+            amount: '52000000',
+            refundTo: '0xRefundTo',
+            refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
+            recipient: 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4',
+            recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
+            deadline: '2025-09-05T12:10:38.605Z',
+          },
+          quote: {
+            amountIn: '52000000',
+            amountInFormatted: '52.0',
+            amountInUsd: '51.9897',
+            minAmountIn: '52000000',
+            amountOut: '87000',
+            amountOutFormatted: '0.00087',
+            amountOutUsd: '52.2',
+            minAmountOut: '86000',
+            timeWhenInactive: '2025-09-06T12:00:41.894Z',
+            depositAddress: '0xDepositAddress',
+            deadline: '2025-09-06T12:00:41.894Z',
+            timeEstimate: 600,
+          },
+        },
+      })
+
+      const mockOrder = { receiver: '0xDepositAddress', owner: '0xOwner' }
+
+      const mockApi = (status: GetExecutionStatusResponse) => {
+        const api = new NearIntentsApi()
+        jest.spyOn(api, 'getTokens').mockResolvedValue(mockTokens)
+        jest.spyOn(api, 'getStatus').mockResolvedValue(status)
+        provider.setApi(api)
+      }
+
+      it('resolves an order whose destinationAsset is the new BTC id (1cs_v1:btc:native:coin)', async () => {
+        mockApi(buildMockStatus('1cs_v1:btc:native:coin'))
+        const result = await provider.getBridgingParams(SupportedChainId.BASE, mockOrder as any, '0xtxhash')
+        expect(result).not.toBeNull()
+        expect(result?.params.outputTokenAddress).toBe(BTC_CURRENCY_ADDRESS)
+        expect(result?.params.destinationChainId).toBe(NonEvmChains.BITCOIN)
+        expect(result?.status.status).toBe(BridgeStatus.EXECUTED)
+      })
+    })
+
     describe('getCancelBridgingTx', () => {
       it('should throw error as not implemented', async () => {
         await expect(() => provider.getCancelBridgingTx('123')).toThrow('Not implemented')
@@ -420,7 +517,7 @@ adapterNames.forEach((adapterName) => {
             slippageTolerance: 100,
             originAsset: 'nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near',
             depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
-            destinationAsset: 'nep141:btc.omft.near',
+            destinationAsset: '1cs_v1:btc:native:coin',
             amount: '1000000',
             refundTo: '0x0000000000000000000000000000000000000000',
             refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
@@ -444,12 +541,13 @@ adapterNames.forEach((adapterName) => {
             contractAddress: sellTokenAddress,
           },
           {
-            assetId: 'nep141:btc.omft.near',
+            assetId: '1cs_v1:btc:native:coin',
             decimals: 8,
             blockchain: TokenResponse.blockchain.BTC,
-            symbol: 'BTC',
+            symbol: 'BTC(OMNI)',
             price: 60000,
             priceUpdatedAt: '2025-09-05T12:00:38.695Z',
+            contractAddress: 'coin',
           },
         ])
         jest.spyOn(api, 'getAttestation').mockResolvedValue({
@@ -565,7 +663,7 @@ adapterNames.forEach((adapterName) => {
           sellTokenChainId: SupportedChainId.BASE,
           sellTokenAddress,
           sellTokenDecimals: 6,
-          buyTokenChainId: SupportedChainId.SOLANA as number,
+          buyTokenChainId: NonEvmChains.SOLANA as number,
           buyTokenAddress,
           buyTokenDecimals: 9,
           amount: 1000000n,

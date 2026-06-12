@@ -9,6 +9,7 @@ const config: Config = {
     '^.+\\.tsx?$': 'ts-jest',
   },
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts'],
+  coverageReporters: ['json-summary', 'lcov', 'text'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   setupFiles: ['./setupTests.ts'],
 }
