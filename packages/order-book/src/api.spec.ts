@@ -699,7 +699,7 @@ describe('CoW Api', () => {
     // then
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      `https://api.cow.fi/xdai/api/v1/solver_competition/${auctionId}`,
+      `https://api.cow.fi/xdai/api/v2/solver_competition/${auctionId}`,
       FETCH_RESPONSE_PARAMETERS,
     )
     expect(competition).toEqual(AUCTION)
@@ -719,7 +719,7 @@ describe('CoW Api', () => {
     // then
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
-      `https://api.cow.fi/xdai/api/v1/solver_competition/by_tx_hash/${txHash}`,
+      `https://api.cow.fi/xdai/api/v2/solver_competition/by_tx_hash/${txHash}`,
       FETCH_RESPONSE_PARAMETERS,
     )
     expect(competition).toEqual(AUCTION)
