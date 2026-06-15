@@ -64,13 +64,15 @@ export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
   })
 
   // Determine the best intermediate token based on priority (USDC/USDT > CMS correlated > others)
-  const intermediateToken = await determineIntermediateToken(
-    sellTokenChainId,
-    sellTokenAddress,
+  const intermediateToken = await determineIntermediateToken({
+    sourceChainId: sellTokenChainId,
+    sourceTokenAddress: sellTokenAddress,
+    destinationChainId: buyTokenChainId,
+    destinationTokenAddress: buyTokenAddress,
     intermediateTokens,
-    params.advancedSettings?.getCorrelatedTokens,
+    getCorrelatedTokens: params.advancedSettings?.getCorrelatedTokens,
     allowIntermediateEqSellToken,
-  )
+  })
 
   log(`Using ${intermediateToken?.name ?? intermediateToken?.address} as intermediate tokens`)
 

@@ -1,17 +1,27 @@
-import { SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
-import { Address, areAddressesEqual, getAddressKey, isNativeToken, isWrappedNativeToken } from '@cowprotocol/sdk-common'
+import { isSupportedChain, SupportedChainId, TargetChainId, TokenInfo } from '@cowprotocol/sdk-config'
+import { Address, areAddressesEqual, getAddressKey, isNativeToken } from '@cowprotocol/sdk-common'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../errors'
-import { isStablecoinPriorityToken, isCorrelatedToken } from './tokenPriority'
+import { isStablecoinPriorityToken, isCorrelatedToken, getStablecoinPriorityToken } from './tokenPriority'
 
+export interface IntermediateTokenContext {
+  sourceChainId: SupportedChainId
+  sourceTokenAddress: Address
+  destinationChainId: TargetChainId
+  destinationTokenAddress: Address
+  intermediateTokens: TokenInfo[]
+  getCorrelatedTokens?: (chainId: SupportedChainId) => Promise<string[]>
+  allowIntermediateEqSellToken?: boolean
+}
 /**
  * Priority levels for intermediate token selection
  */
 enum TokenPriority {
-  HIGHEST = 5, // Same as sell token
-  HIGH = 4, // USDC/USDT from hardcoded registry
-  MEDIUM = 3, // Tokens in CMS correlated tokens list
-  LOW = 2, // Blockchain native token
-  LOWEST = 1, // Other tokens
+  STABLECOIN_MATCHES_DESTINATION = 6, // The same stablecoin as destination token
+  MATCHES_SELL = 5, // Same as sell token
+  STABLECOIN = 4, // USDC/USDT from hardcoded registry (when not covered by STABLECOIN_MATCHES_DESTINATION)
+  CORRELATED = 3, // Tokens in CMS correlated tokens list
+  NATIVE = 2, // Blockchain native token
+  OTHER = 1, // Other tokens
 }
 
 /**
@@ -28,13 +38,17 @@ enum TokenPriority {
  *
  * @throws {BridgeProviderQuoteError} If `intermediateTokens` is empty or undefined
  */
-export async function determineIntermediateToken(
-  sourceChainId: SupportedChainId,
-  sourceTokenAddress: Address,
-  intermediateTokens: TokenInfo[],
-  getCorrelatedTokens?: (chainId: SupportedChainId) => Promise<string[]>,
-  allowIntermediateEqSellToken?: boolean,
-): Promise<TokenInfo> {
+export async function determineIntermediateToken(context: IntermediateTokenContext): Promise<TokenInfo> {
+  const {
+    sourceChainId,
+    sourceTokenAddress,
+    destinationChainId,
+    destinationTokenAddress,
+    intermediateTokens,
+    getCorrelatedTokens,
+    allowIntermediateEqSellToken,
+  } = context
+
   const firstToken = intermediateTokens[0]
 
   if (intermediateTokens.length === 0 || !firstToken) {
@@ -48,35 +62,41 @@ export async function determineIntermediateToken(
 
   const correlatedTokens = await resolveCorrelatedTokens(sourceChainId, getCorrelatedTokens)
 
-  const sellTokenLike = { chainId: sourceChainId, address: sourceTokenAddress }
-  const isSellNativeOrWrapped = isNativeToken(sellTokenLike) || isWrappedNativeToken(sellTokenLike)
-
   const filteredTokens = allowIntermediateEqSellToken
     ? intermediateTokens
     : intermediateTokens.filter((token) => !areAddressesEqual(token.address, sourceTokenAddress))
 
+  const destinationStableCoin = isSupportedChain(destinationChainId)
+    ? getStablecoinPriorityToken(destinationChainId, destinationTokenAddress)
+    : undefined
+
   // Calculate priority for each token
   const tokensWithPriority = filteredTokens.map((token) => {
-    const isNativeOrWrapped = isNativeToken(token) || isWrappedNativeToken(token)
+    const isStableCoin = isStablecoinPriorityToken(token.chainId, token.address)
 
-    if (areAddressesEqual(token.address, sourceTokenAddress)) {
-      // Native/wrapped -> native/wrapped is not supported yet (backend restriction)
-      if (!(isSellNativeOrWrapped && isNativeOrWrapped)) {
-        return { token, priority: TokenPriority.HIGHEST }
+    if (destinationStableCoin && isStableCoin) {
+      const matchesDestinationTokenSymbol =
+        !!token.symbol && token.symbol.toLowerCase() === destinationStableCoin?.symbol?.toLowerCase()
+
+      if (matchesDestinationTokenSymbol) {
+        return { token, priority: TokenPriority.STABLECOIN_MATCHES_DESTINATION }
       }
     }
-    if (isStablecoinPriorityToken(token.chainId, token.address)) {
-      return { token, priority: TokenPriority.HIGH }
+
+    if (areAddressesEqual(token.address, sourceTokenAddress)) {
+      return { token, priority: TokenPriority.MATCHES_SELL }
+    }
+    if (isStableCoin) {
+      return { token, priority: TokenPriority.STABLECOIN }
     }
     if (isCorrelatedToken(token.address, correlatedTokens)) {
-      return { token, priority: TokenPriority.MEDIUM }
+      return { token, priority: TokenPriority.CORRELATED }
     }
-    // Native/wrapped -> native/wrapped is not supported yet (backend restriction)
-    if (isNativeToken(token) && !isSellNativeOrWrapped) {
-      return { token, priority: TokenPriority.LOW }
+    if (isNativeToken(token)) {
+      return { token, priority: TokenPriority.NATIVE }
     }
 
-    return { token, priority: TokenPriority.LOWEST }
+    return { token, priority: TokenPriority.OTHER }
   })
 
   // Sort by priority (highest first), then by original order for stability
