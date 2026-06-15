@@ -446,7 +446,7 @@ export class OrderBookApi {
   ): Promise<SolverCompetitionResponse> {
     return this.fetch(
       {
-        path: `/api/v1/solver_competition${typeof auctionIdorTx === 'string' ? '/by_tx_hash' : ''}/${auctionIdorTx}`,
+        path: `/api/v2/solver_competition${typeof auctionIdorTx === 'string' ? '/by_tx_hash' : ''}/${auctionIdorTx}`,
         method: 'GET',
       },
       contextOverride,
