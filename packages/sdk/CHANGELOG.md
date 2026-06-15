@@ -1,5 +1,25 @@
 # Changelog
 
+## [9.2.0](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v9.1.5...cow-sdk-v9.2.0) (2026-06-15)
+
+
+### ✨ Features
+
+* per-package test coverage badges, updated in CI ([#895](https://github.com/cowprotocol/cow-sdk/issues/895)) ([c73246c](https://github.com/cowprotocol/cow-sdk/commit/c73246cc52c4fc79b2628b7c5f580695fd3dc1e2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 5.3.0
+    * @cowprotocol/sdk-common bumped to 0.12.0
+    * @cowprotocol/sdk-config bumped to 2.3.1
+    * @cowprotocol/sdk-contracts-ts bumped to 3.2.0
+    * @cowprotocol/sdk-order-book bumped to 4.0.0
+    * @cowprotocol/sdk-order-signing bumped to 1.1.0
+    * @cowprotocol/sdk-trading bumped to 2.2.0
+
 ## [9.1.5](https://github.com/cowprotocol/cow-sdk/compare/cow-sdk-v9.1.4...cow-sdk-v9.1.5) (2026-06-08)
 
 

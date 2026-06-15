@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.12.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.11.2...sdk-common-v0.12.0) (2026-06-15)
+
+
+### ✨ Features
+
+* per-package test coverage badges, updated in CI ([#895](https://github.com/cowprotocol/cow-sdk/issues/895)) ([c73246c](https://github.com/cowprotocol/cow-sdk/commit/c73246cc52c4fc79b2628b7c5f580695fd3dc1e2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.3.1
+
 ## [0.11.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.11.1...sdk-common-v0.11.2) (2026-06-08)
 
 

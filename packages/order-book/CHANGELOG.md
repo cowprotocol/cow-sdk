@@ -1,5 +1,30 @@
 # Changelog
 
+## [4.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v3.2.2...sdk-order-book-v4.0.0) (2026-06-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* migrate to API v2 for /solver_competition ([#904](https://github.com/cowprotocol/cow-sdk/issues/904))
+
+### ✨ Features
+
+* migrate to API v2 for /solver_competition ([#904](https://github.com/cowprotocol/cow-sdk/issues/904)) ([803e62d](https://github.com/cowprotocol/cow-sdk/commit/803e62d91ff0a6460da153cbdddb1df409e354f0))
+* per-package test coverage badges, updated in CI ([#895](https://github.com/cowprotocol/cow-sdk/issues/895)) ([c73246c](https://github.com/cowprotocol/cow-sdk/commit/c73246cc52c4fc79b2628b7c5f580695fd3dc1e2))
+
+
+### 🐛 Bug Fixes
+
+* make EcdsaSigningScheme assignable to SigningScheme ([#876](https://github.com/cowprotocol/cow-sdk/issues/876)) ([47066a6](https://github.com/cowprotocol/cow-sdk/commit/47066a6b2805d27bf96cb0edeb509dd84708d300))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.3.1
+    * @cowprotocol/sdk-common bumped to 0.12.0
+
 ## [3.2.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v3.2.1...sdk-order-book-v3.2.2) (2026-06-08)
 
 

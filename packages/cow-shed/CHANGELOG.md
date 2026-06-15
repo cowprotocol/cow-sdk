@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-cow-shed-v0.3.13...sdk-cow-shed-v0.4.0) (2026-06-15)
+
+
+### ✨ Features
+
+* per-package test coverage badges, updated in CI ([#895](https://github.com/cowprotocol/cow-sdk/issues/895)) ([c73246c](https://github.com/cowprotocol/cow-sdk/commit/c73246cc52c4fc79b2628b7c5f580695fd3dc1e2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.3.1
+    * @cowprotocol/sdk-common bumped to 0.12.0
+    * @cowprotocol/sdk-contracts-ts bumped to 3.2.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.10
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.10
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.24
+
 ## [0.3.13](https://github.com/cowprotocol/cow-sdk/compare/sdk-cow-shed-v0.3.12...sdk-cow-shed-v0.3.13) (2026-06-08)
 
 
