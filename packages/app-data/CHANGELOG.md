@@ -1,5 +1,29 @@
 # Changelog
 
+## [5.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v5.2.0...sdk-app-data-v5.3.0) (2026-06-15)
+
+
+### ✨ Features
+
+* per-package test coverage badges, updated in CI ([#895](https://github.com/cowprotocol/cow-sdk/issues/895)) ([c73246c](https://github.com/cowprotocol/cow-sdk/commit/c73246cc52c4fc79b2628b7c5f580695fd3dc1e2))
+
+
+### 🔧 Miscellaneous
+
+* update coverage badges ([#903](https://github.com/cowprotocol/cow-sdk/issues/903)) ([c9e4b94](https://github.com/cowprotocol/cow-sdk/commit/c9e4b94fa77c364dfd1df5c61b67326c023e4731))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.12.0
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 2.3.1
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.10
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.10
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.24
+
 ## [5.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v5.1.4...sdk-app-data-v5.2.0) (2026-06-08)
 
 

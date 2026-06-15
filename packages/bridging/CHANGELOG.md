@@ -1,5 +1,37 @@
 # Changelog
 
+## [4.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.1.3...sdk-bridging-v4.2.0) (2026-06-15)
+
+
+### ✨ Features
+
+* **bridge:** allow sell=buy for native/wrapped ([#897](https://github.com/cowprotocol/cow-sdk/issues/897)) ([1a3bf4f](https://github.com/cowprotocol/cow-sdk/commit/1a3bf4f26b40a18cf7f33ebd71fd696474828093))
+* per-package test coverage badges, updated in CI ([#895](https://github.com/cowprotocol/cow-sdk/issues/895)) ([c73246c](https://github.com/cowprotocol/cow-sdk/commit/c73246cc52c4fc79b2628b7c5f580695fd3dc1e2))
+
+
+### 🔧 Miscellaneous
+
+* update coverage badges ([#903](https://github.com/cowprotocol/cow-sdk/issues/903)) ([c9e4b94](https://github.com/cowprotocol/cow-sdk/commit/c9e4b94fa77c364dfd1df5c61b67326c023e4731))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 5.3.0
+    * @cowprotocol/sdk-common bumped to 0.12.0
+    * @cowprotocol/sdk-config bumped to 2.3.1
+    * @cowprotocol/sdk-contracts-ts bumped to 3.2.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.4.0
+    * @cowprotocol/sdk-order-book bumped to 4.0.0
+    * @cowprotocol/sdk-trading bumped to 2.2.0
+    * @cowprotocol/sdk-weiroll bumped to 0.2.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.10
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.10
+    * @cowprotocol/sdk-order-signing bumped to 1.1.0
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.24
+
 ## [4.1.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.1.2...sdk-bridging-v4.1.3) (2026-06-09)
 
 

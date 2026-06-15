@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.3.0...sdk-config-v2.3.1) (2026-06-15)
+
+
+### ♻️ Refactoring
+
+* rename util function ([#899](https://github.com/cowprotocol/cow-sdk/issues/899)) ([095e280](https://github.com/cowprotocol/cow-sdk/commit/095e280ce0fa99f6fc71efd61ea146c70f061684))
+
 ## [2.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.2.1...sdk-config-v2.3.0) (2026-06-08)
 
 
