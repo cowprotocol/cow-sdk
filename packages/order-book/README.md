@@ -8,7 +8,7 @@
 
 | Statements                  | Branches                | Functions                 | Lines             |
 | --------------------------- | ----------------------- | ------------------------- | ----------------- |
-| ![Statements](https://img.shields.io/badge/statements-86.89%25-yellow.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-77%25-red.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-88.09%25-yellow.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-87.06%25-yellow.svg?style=flat) |
+| ![Statements](https://img.shields.io/badge/statements-86.19%25-yellow.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-77%25-red.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-86.04%25-yellow.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-86.76%25-yellow.svg?style=flat) |
 
 This package provides a comprehensive API client for interacting with the CoW Protocol Order Book. It handles order submission, retrieval, cancellation, and trading data with built-in rate limiting, retries, and error handling.
 
