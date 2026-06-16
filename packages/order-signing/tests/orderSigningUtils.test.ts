@@ -1,13 +1,14 @@
 import { AdaptersTestSetup, createAdapters, TEST_ADDRESS } from './setup'
-import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { AbstractSigner, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { OrderSigningUtils } from '../src/orderSigningUtils'
 import {
   COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS,
   COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS_STAGING,
   SupportedChainId,
 } from '@cowprotocol/sdk-config'
+import { ORDER_TYPE_FIELDS } from '@cowprotocol/sdk-contracts-ts'
 import { UnsignedOrder } from '../src/types'
-import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { OrderKind, SigningScheme } from '@cowprotocol/sdk-order-book'
 
 describe('OrderSigningUtils', () => {
   let adapters: AdaptersTestSetup
@@ -280,6 +281,144 @@ describe('OrderSigningUtils', () => {
       expect(buyResult).not.toEqual(sellResult)
       expect(buyResult).toMatch(/^0x[a-fA-F0-9]+$/)
       expect(sellResult).toMatch(/^0x[a-fA-F0-9]+$/)
+    })
+  })
+
+  describe('getEip7702Signature', () => {
+    const testOrder: UnsignedOrder = {
+      sellToken: '0xd057b63f5e69cf1b929b356b579cba08d7688048',
+      buyToken: '0x7B878668Cd1a3adF89764D3a331E0A7BB832192D',
+      receiver: '0xa6ddbd0de6b310819b49f680f65871bee85f517e',
+      sellAmount: '500000000000000',
+      buyAmount: '23000020000',
+      validTo: 5000222,
+      appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      feeAmount: '2300000',
+      kind: OrderKind.SELL,
+      partiallyFillable: true,
+    }
+
+    // 65-byte (130 hex chars) ECDSA signature, as produced by a plain EOA / 7702 delegate.
+    const ecdsaSignature = `0x${'ab'.repeat(65)}`
+    // A "wrapped" signature whose length differs from a plain ECDSA signature
+    // (ERC-7739 / ERC-7579 modular account output).
+    const wrappedSignature = `0x${'cd'.repeat(200)}`
+
+    function createMockSigner(signature: string | null | undefined): {
+      signer: AbstractSigner<unknown>
+      signTypedData: jest.Mock
+    } {
+      const signTypedData = jest.fn().mockResolvedValue(signature)
+      return { signer: { signTypedData } as unknown as AbstractSigner<unknown>, signTypedData }
+    }
+
+    beforeEach(() => {
+      setGlobalAdapter(adapters.viemAdapter)
+    })
+
+    test('should wrap a plain ECDSA signature via EIP-1271 ABI tuple when scheme is EIP1271', async () => {
+      const { signer } = createMockSigner(ecdsaSignature)
+
+      const result = await OrderSigningUtils.getEip7702Signature(
+        SupportedChainId.SEPOLIA,
+        'prod',
+        testOrder,
+        SigningScheme.EIP1271,
+        signer,
+      )
+
+      const expected = OrderSigningUtils.getEip1271Signature(testOrder, ecdsaSignature)
+      expect(result).toEqual({ signature: expected, signingScheme: SigningScheme.EIP1271 })
+    })
+
+    test('should return raw ECDSA signature as EIP712 when scheme is not EIP1271', async () => {
+      const { signer } = createMockSigner(ecdsaSignature)
+
+      const result = await OrderSigningUtils.getEip7702Signature(
+        SupportedChainId.SEPOLIA,
+        'prod',
+        testOrder,
+        SigningScheme.EIP712,
+        signer,
+      )
+
+      expect(result).toEqual({ signature: ecdsaSignature, signingScheme: SigningScheme.EIP712 })
+    })
+
+    test('should treat a 0x-prefixed and non-prefixed ECDSA signature identically', async () => {
+      const { signer } = createMockSigner('ab'.repeat(65))
+
+      const result = await OrderSigningUtils.getEip7702Signature(
+        SupportedChainId.SEPOLIA,
+        'prod',
+        testOrder,
+        SigningScheme.EIP712,
+        signer,
+      )
+
+      expect(result).toEqual({ signature: 'ab'.repeat(65), signingScheme: SigningScheme.EIP712 })
+    })
+
+    test('should forward a wrapped signature as EIP1271 without ABI-tuple wrapping', async () => {
+      const { signer } = createMockSigner(wrappedSignature)
+
+      const result = await OrderSigningUtils.getEip7702Signature(
+        SupportedChainId.SEPOLIA,
+        'prod',
+        testOrder,
+        SigningScheme.EIP712,
+        signer,
+      )
+
+      expect(result).toEqual({ signature: wrappedSignature, signingScheme: SigningScheme.EIP1271 })
+    })
+
+    test('should forward a wrapped signature as EIP1271 even when caller asks for EIP1271', async () => {
+      const { signer } = createMockSigner(wrappedSignature)
+
+      const result = await OrderSigningUtils.getEip7702Signature(
+        SupportedChainId.SEPOLIA,
+        'prod',
+        testOrder,
+        SigningScheme.EIP1271,
+        signer,
+      )
+
+      // Wrapped bytes are forwarded verbatim, not run through getEip1271Signature.
+      expect(result).toEqual({ signature: wrappedSignature, signingScheme: SigningScheme.EIP1271 })
+    })
+
+    test('should sign typed data using the resolved domain and Order type fields', async () => {
+      const { signer, signTypedData } = createMockSigner(ecdsaSignature)
+
+      await OrderSigningUtils.getEip7702Signature(
+        SupportedChainId.SEPOLIA,
+        'prod',
+        testOrder,
+        SigningScheme.EIP712,
+        signer,
+      )
+
+      const expectedDomain = await OrderSigningUtils.getDomain(SupportedChainId.SEPOLIA, { env: 'prod' })
+      expect(signTypedData).toHaveBeenCalledTimes(1)
+      expect(signTypedData).toHaveBeenCalledWith(expectedDomain, { Order: ORDER_TYPE_FIELDS }, testOrder)
+    })
+
+    test('should forward env and settlementContractOverride to the signing domain', async () => {
+      const customAddress = '0x1111111111111111111111111111111111111111'
+      const { signer, signTypedData } = createMockSigner(ecdsaSignature)
+
+      await OrderSigningUtils.getEip7702Signature(
+        SupportedChainId.MAINNET,
+        'staging',
+        testOrder,
+        SigningScheme.EIP712,
+        signer,
+        { [SupportedChainId.MAINNET]: customAddress },
+      )
+
+      const signedDomain = signTypedData.mock.calls[0][0]
+      expect(signedDomain.verifyingContract).toBe(customAddress)
     })
   })
 })

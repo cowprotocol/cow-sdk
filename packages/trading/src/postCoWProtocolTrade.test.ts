@@ -2,6 +2,8 @@ jest.mock('@cowprotocol/sdk-order-signing', () => {
   return {
     OrderSigningUtils: {
       signOrder: jest.fn(),
+      getEip7702Signature: jest.fn(),
+      getEip1271Signature: jest.fn(),
     },
   }
 })
@@ -12,14 +14,21 @@ jest.mock('./postSellNativeCurrencyOrder', () => {
   }
 })
 
+jest.mock('./getIsEip7702Account', () => {
+  return {
+    getIsEip7702Account: jest.fn(),
+  }
+})
+
 import { postCoWProtocolTrade } from './postCoWProtocolTrade'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
+import { getIsEip7702Account } from './getIsEip7702Account'
 import { AdaptersTestSetup, createAdapters, TEST_ADDRESS } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 import { TradingAppDataInfo, LimitOrderParameters } from './types'
 import { ETH_ADDRESS, SupportedChainId } from '@cowprotocol/sdk-config'
-import { OrderBookApi, OrderKind } from '@cowprotocol/sdk-order-book'
+import { OrderBookApi, OrderKind, SigningScheme } from '@cowprotocol/sdk-order-book'
 import { OrderSigningUtils as OrderSigningUtilsMock, UnsignedOrder } from '@cowprotocol/sdk-order-signing'
 
 const defaultOrderParams: LimitOrderParameters = {
@@ -85,11 +94,17 @@ const getExpectedOrderBody = (appData: any) => ({
 
 describe('postCoWProtocolTrade', () => {
   let signOrderMock: jest.SpyInstance
+  let getEip7702SignatureMock: jest.SpyInstance
+  let getEip1271SignatureMock: jest.SpyInstance
+  let getIsEip7702AccountMock: jest.SpyInstance
   let postSellNativeCurrencyOrderMock: jest.SpyInstance
   let adapters: AdaptersTestSetup
 
   beforeAll(() => {
     signOrderMock = OrderSigningUtilsMock.signOrder as unknown as jest.SpyInstance
+    getEip7702SignatureMock = OrderSigningUtilsMock.getEip7702Signature as unknown as jest.SpyInstance
+    getEip1271SignatureMock = OrderSigningUtilsMock.getEip1271Signature as unknown as jest.SpyInstance
+    getIsEip7702AccountMock = getIsEip7702Account as unknown as jest.SpyInstance
     postSellNativeCurrencyOrderMock = postSellNativeCurrencyOrder as unknown as jest.SpyInstance
     adapters = createAdapters()
   })
@@ -97,10 +112,15 @@ describe('postCoWProtocolTrade', () => {
   beforeEach(() => {
     Date.now = jest.fn(() => currentTimestamp)
     signOrderMock.mockResolvedValue(signatureMock)
+    // Default to a non-delegated EOA so the standard signOrder path is taken.
+    getIsEip7702AccountMock.mockResolvedValue(false)
   })
 
   afterEach(() => {
     signOrderMock.mockReset()
+    getEip7702SignatureMock.mockReset()
+    getEip1271SignatureMock.mockReset()
+    getIsEip7702AccountMock.mockReset()
     postSellNativeCurrencyOrderMock.mockReset()
     sendOrderMock.mockReset()
     uploadAppDataMock.mockReset()
@@ -243,6 +263,92 @@ describe('postCoWProtocolTrade', () => {
       expect(sendOrderMock.mock.calls[0][0].buyAmount).toBe(expectedBuyAmountWithProtocolFee)
       sendOrderMock.mockReset()
     }
+  })
+
+  describe('EIP-7702 delegated account', () => {
+    const eip7702Signature = {
+      signature: '0x7702aabbcc',
+      signingScheme: SigningScheme.EIP1271,
+    }
+
+    beforeEach(() => {
+      getIsEip7702AccountMock.mockResolvedValue(true)
+      getEip7702SignatureMock.mockResolvedValue(eip7702Signature)
+    })
+
+    it('should route to getEip7702Signature instead of signOrder when account is delegated', async () => {
+      setGlobalAdapter(adapters.ethersV5Adapter)
+
+      await postCoWProtocolTrade(orderBookApiMock, appDataMock, defaultOrderParams, {}, adapters.ethersV5Adapter.signer)
+
+      expect(getEip7702SignatureMock).toHaveBeenCalledTimes(1)
+      expect(signOrderMock).not.toHaveBeenCalled()
+    })
+
+    it('should pass chainId, env, signing scheme, signer and overrides to getEip7702Signature', async () => {
+      const customAddress = '0x1111111111111111111111111111111111111111'
+      const chainId = defaultOrderParams.chainId
+      setGlobalAdapter(adapters.ethersV5Adapter)
+
+      const order: LimitOrderParameters = {
+        ...defaultOrderParams,
+        env: 'staging',
+        settlementContractOverride: { [chainId]: customAddress },
+      }
+
+      await postCoWProtocolTrade(
+        orderBookApiMock,
+        appDataMock,
+        order,
+        { signingScheme: SigningScheme.EIP1271 },
+        adapters.ethersV5Adapter.signer,
+      )
+
+      const [calledChainId, calledEnv, orderToSign, calledScheme, , calledOverride] =
+        getEip7702SignatureMock.mock.calls[0]
+
+      expect(calledChainId).toBe(chainId)
+      expect(calledEnv).toBe('staging')
+      expect(orderToSign).toEqual(expect.objectContaining({ sellToken: '0xaaa', buyToken: '0xbbb' }))
+      expect(calledScheme).toBe(SigningScheme.EIP1271)
+      expect(calledOverride).toEqual({ [chainId]: customAddress })
+    })
+
+    it('should post the order with the signature and scheme returned by getEip7702Signature', async () => {
+      setGlobalAdapter(adapters.ethersV5Adapter)
+
+      const result = await postCoWProtocolTrade(
+        orderBookApiMock,
+        appDataMock,
+        defaultOrderParams,
+        {},
+        adapters.ethersV5Adapter.signer,
+      )
+
+      expect(sendOrderMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          signature: eip7702Signature.signature,
+          signingScheme: eip7702Signature.signingScheme,
+        }),
+      )
+      expect(result.signature).toBe(eip7702Signature.signature)
+      expect(result.signingScheme).toBe(eip7702Signature.signingScheme)
+    })
+
+    it('should check delegation against the resolved "from" (owner) address', async () => {
+      const ownerAddress = '0x1234567890123456789012345678901234567890'
+      setGlobalAdapter(adapters.ethersV5Adapter)
+
+      await postCoWProtocolTrade(
+        orderBookApiMock,
+        appDataMock,
+        { ...defaultOrderParams, owner: ownerAddress },
+        {},
+        adapters.ethersV5Adapter.signer,
+      )
+
+      expect(getIsEip7702AccountMock).toHaveBeenCalledWith(ownerAddress)
+    })
   })
 
   describe('settlementContractOverride', () => {

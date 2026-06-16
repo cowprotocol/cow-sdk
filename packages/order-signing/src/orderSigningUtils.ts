@@ -1,9 +1,11 @@
-import { ProtocolOptions, SupportedChainId } from '@cowprotocol/sdk-config'
-import type { ContractsOrder as Order, OrderUidParams } from '@cowprotocol/sdk-contracts-ts'
+import { type AddressPerChain, CowEnv, ProtocolOptions, SupportedChainId } from '@cowprotocol/sdk-config'
+import { ORDER_TYPE_FIELDS, type ContractsOrder as Order, type OrderUidParams } from '@cowprotocol/sdk-contracts-ts'
 import type { SigningResult, UnsignedOrder } from './types'
-import { getGlobalAdapter, Signer, TypedDataDomain } from '@cowprotocol/sdk-common'
+import { AbstractSigner, getGlobalAdapter, Signer, TypedDataDomain } from '@cowprotocol/sdk-common'
 import { generateOrderId, getDomain, signOrder, signOrderCancellation, signOrderCancellations } from './utils'
-import { BuyTokenDestination, SellTokenSource } from '@cowprotocol/sdk-order-book'
+import { BuyTokenDestination, SellTokenSource, SigningScheme } from '@cowprotocol/sdk-order-book'
+
+const ECDSA_HEX_LENGTH = 65 * 2
 
 export const ORDER_PRIMARY_TYPE = 'Order' as const
 
@@ -209,6 +211,45 @@ export class OrderSigningUtils {
       ],
       [values, ecdsaSignature],
     ) as string
+  }
+
+  static async getEip7702Signature(
+    chainId: SupportedChainId,
+    env: CowEnv,
+    orderToSign: UnsignedOrder,
+    signingScheme: SigningScheme,
+    signer: AbstractSigner<unknown>,
+    settlementContractOverride?: Partial<AddressPerChain>,
+  ): Promise<{ signature: string; signingScheme: SigningScheme }> {
+    const isEip1271 = signingScheme === SigningScheme.EIP1271
+
+    const domain = await OrderSigningUtils.getDomain(chainId, {
+      env,
+      settlementContractOverride,
+    })
+    const rawSig = await signer.signTypedData(
+      domain as unknown as Record<string, unknown>,
+      { Order: ORDER_TYPE_FIELDS },
+      orderToSign as unknown as Record<string, unknown>,
+    )
+    const hexLen = (rawSig ?? '').replace(/^0x/, '').length
+    if (hexLen === ECDSA_HEX_LENGTH) {
+      // Plain ECDSA from a 7702 delegate (e.g. Metamask Smart Account).
+      // Respect the caller's explicit scheme: if they asked for EIP1271,
+      // wrap via the standard `(order, sig)` ABI tuple. Otherwise eip712.
+      if (isEip1271) {
+        return {
+          signature: OrderSigningUtils.getEip1271Signature(orderToSign, rawSig),
+          signingScheme,
+        }
+      }
+      return { signature: rawSig, signingScheme: SigningScheme.EIP712 }
+    }
+    // Wrapped bytes (ERC-7739 / ERC-7579 MA v2 / stacked) — forward to
+    // CoW as eip1271 with `from = EOA`. CoW calls `isValidSignature`
+    // on the owner; the EIP-7702 marker dispatches to the delegate
+    // which handles unwrapping. No `(order, sig)` ABI tuple wrap.
+    return { signature: rawSig, signingScheme: SigningScheme.EIP1271 }
   }
 
   static encodeUnsignedOrder(orderToSign: UnsignedOrder): Record<string, string> {

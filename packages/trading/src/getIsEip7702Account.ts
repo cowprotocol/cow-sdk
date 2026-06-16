@@ -13,13 +13,17 @@ const EIP7702_DELEGATION_HEX_LENGTH = 2 + 23 * 2 // "0x" + 23 bytes
  * Any RPC error is swallowed and treated as "not delegated" so plain EOAs
  * aren't penalized when `getCode` is unavailable.
  */
-export async function isEip7702DelegatedAccount(owner: string): Promise<boolean> {
+export async function getIsEip7702Account(owner: string): Promise<boolean> {
   try {
-    const code = (await getGlobalAdapter().getCode(owner)) ?? '0x'
-    if (typeof code !== 'string') return false
+    const code = await getGlobalAdapter().getCode(owner)
+
+    if (!code || typeof code !== 'string') return false
+
     const lower = code.toLowerCase()
     return lower.length === EIP7702_DELEGATION_HEX_LENGTH && lower.startsWith(EIP7702_DELEGATION_PREFIX)
   } catch {
+    // Treat any RPC error as "not delegated" — fall through to the existing
+    // signing path so plain EOAs aren't penalized when getCode is unavailable.
     return false
   }
 }
