@@ -31,6 +31,8 @@ export class NearIntentsApi {
     // POA BTC bridge, replaced by `1cs_v1:btc:native:coin` (Omni migration).
     // https://partners.near-intents.org/omni-migration
     'nep141:btc.omft.near',
+    'nep245:v2_1.omni.hot.tg:9745_3aL9skCy1yhPoDB8oKMmRHRN7SJW',
+    'nep245:v2_1.omni.hot.tg:9745_11111111111111111111',
   ])
 
   private cachedTokens: TokenResponse[] = []
