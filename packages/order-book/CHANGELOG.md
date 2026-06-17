@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.0.0...sdk-order-book-v4.0.1) (2026-06-17)
+
+
+### 🔧 Miscellaneous
+
+* update coverage badges ([#905](https://github.com/cowprotocol/cow-sdk/issues/905)) ([3dc14ca](https://github.com/cowprotocol/cow-sdk/commit/3dc14ca820cb3e9db438b6207d2160b98c56944f))
+
 ## [4.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v3.2.2...sdk-order-book-v4.0.0) (2026-06-15)
 
 
