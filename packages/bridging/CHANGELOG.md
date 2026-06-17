@@ -1,5 +1,27 @@
 # Changelog
 
+## [4.2.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.2.0...sdk-bridging-v4.2.1) (2026-06-17)
+
+
+### 🐛 Bug Fixes
+
+* **bridge:** deprecate near old version xpl and usdt0 ([#907](https://github.com/cowprotocol/cow-sdk/issues/907)) ([c1a930e](https://github.com/cowprotocol/cow-sdk/commit/c1a930e8660ba70405d830772af76f58380c5272))
+
+
+### 🔧 Miscellaneous
+
+* update coverage badges ([#905](https://github.com/cowprotocol/cow-sdk/issues/905)) ([3dc14ca](https://github.com/cowprotocol/cow-sdk/commit/3dc14ca820cb3e9db438b6207d2160b98c56944f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-order-book bumped to 4.0.1
+    * @cowprotocol/sdk-trading bumped to 2.2.1
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 1.1.1
+
 ## [4.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.1.3...sdk-bridging-v4.2.0) (2026-06-15)
 
 
