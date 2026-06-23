@@ -483,6 +483,7 @@ adapterNames.forEach((adapterName) => {
         expect(result?.attestationSignature).toBe(mockAttestationSignature)
         expect(result?.stringifiedQuote).toBeDefined()
         expect(result?.stringifiedQuote.length).toBeGreaterThan(0)
+        expect(result?.stringifiedQuote).not.toContain('depositMode')
         expect(result?.quoteHash).toBeDefined()
         expect(result?.quoteHash.length).toBeGreaterThan(0)
         expect(result?.address).toBeDefined()
