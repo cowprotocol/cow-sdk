@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.3.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v5.3.0...sdk-app-data-v5.3.1) (2026-06-23)
+
+
+### 🐛 Bug Fixes
+
+* near-bridging ([#908](https://github.com/cowprotocol/cow-sdk/issues/908)) ([b4d471c](https://github.com/cowprotocol/cow-sdk/commit/b4d471c8ebc7646d00bd6f6fd097b0692ac08f40))
+
 ## [5.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v5.2.0...sdk-app-data-v5.3.0) (2026-06-15)
 
 
