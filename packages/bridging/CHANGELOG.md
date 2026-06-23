@@ -1,5 +1,24 @@
 # Changelog
 
+## [4.2.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.2.1...sdk-bridging-v4.2.2) (2026-06-23)
+
+
+### 🐛 Bug Fixes
+
+* near-bridging ([#908](https://github.com/cowprotocol/cow-sdk/issues/908)) ([b4d471c](https://github.com/cowprotocol/cow-sdk/commit/b4d471c8ebc7646d00bd6f6fd097b0692ac08f40))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 5.3.1
+    * @cowprotocol/sdk-contracts-ts bumped to 3.2.1
+    * @cowprotocol/sdk-cow-shed bumped to 0.4.1
+    * @cowprotocol/sdk-trading bumped to 2.2.2
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 1.1.2
+
 ## [4.2.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.2.0...sdk-bridging-v4.2.1) (2026-06-17)
 
 
