@@ -90,7 +90,6 @@ export const hashQuote = ({
     swapType: quoteRequest.swapType,
     slippageTolerance: quoteRequest.slippageTolerance,
     originAsset: quoteRequest.originAsset,
-    depositType: quoteRequest.depositType,
     destinationAsset: quoteRequest.destinationAsset,
     amount: quoteRequest.amount,
     refundTo: quoteRequest.refundTo,
