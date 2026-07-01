@@ -14,6 +14,12 @@ export type { AcrossQuoteResult, AcrossBridgeProviderOptions } from './providers
 export { BungeeBridgeProvider } from './providers/bungee/BungeeBridgeProvider'
 export type { BungeeQuoteResult, BungeeBridgeProviderOptions } from './providers/bungee/BungeeBridgeProvider'
 
+export { BungeeBridgeThenSwapProvider } from './providers/bungee/BungeeBridgeThenSwapProvider'
+export type {
+  BungeeBridgeThenSwapQuoteResult,
+  BungeeBridgeThenSwapProviderOptions,
+} from './providers/bungee/BungeeBridgeThenSwapProvider'
+
 export { NearIntentsBridgeProvider } from './providers/near-intents/NearIntentsBridgeProvider'
 
 export type {
