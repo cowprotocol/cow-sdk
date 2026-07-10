@@ -42,13 +42,15 @@ export async function getDomainVerifier(
   chainId: SupportedChainId,
   provider: Provider,
 ): Promise<string> {
-  return (await getGlobalAdapter().readContract({
-    address: EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS[chainId],
-    abi: ExtensibleFallbackHandlerFactoryAbi,
-    functionName: 'domainVerifiers',
-    args: [safe, domain],
-  }),
-  provider) as string
+  return (await getGlobalAdapter().readContract(
+    {
+      address: EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS[chainId],
+      abi: ExtensibleFallbackHandlerFactoryAbi,
+      functionName: 'domainVerifiers',
+      args: [safe, domain],
+    },
+    provider,
+  )) as string
 }
 
 export function createSetDomainVerifierTx(domain: string, verifier: string): string {

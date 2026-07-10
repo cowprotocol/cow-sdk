@@ -1,8 +1,22 @@
 import { decodeParams, encodeParams, fromStructToOrder, isValidAbi } from '../src/utils'
+import {
+  createSetDomainVerifierTx,
+  DEFAULT_TOKEN_FORMATTER,
+  formatEpoch,
+  getBlockInfo,
+  getDomainVerifier,
+  isComposableCow,
+  isExtensibleFallbackHandler,
+} from '../src/utils'
 import { DurationType, StartTimeValue, TwapData, TwapStruct, transformDataToStruct } from '../src/orderTypes/Twap'
 import { GPv2Order } from '../src/types'
 import { createAdapters } from './setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import {
+  COMPOSABLE_COW_CONTRACT_ADDRESS,
+  EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS,
+  SupportedChainId,
+} from '@cowprotocol/sdk-config'
 
 describe('Utils Functions - Multi-Adapter Tests', () => {
   let adapters: ReturnType<typeof createAdapters>
@@ -208,6 +222,101 @@ describe('Utils Functions - Multi-Adapter Tests', () => {
       }
 
       expect(firstOrder).toEqual(expectedOrder)
+    })
+
+    test('should map buy kind and non-erc20 balances', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const order = fromStructToOrder({
+        ...ORDER_DATA,
+        kind: '0x6ed88e868af0a1983e3886d5f3e95a2fafbd6c3450bc229e27342283dc429ccc',
+        sellTokenBalance: '0xabee3b73373acd583a130924aad6dc38cfdc44ba0555ba94ce2ff63980ea0632',
+        buyTokenBalance: '0x4ac99ace14ee0a5ef932dc609df0943ab7ac16b7583634612f8dc35a4289a6ce',
+      })
+
+      expect(order.kind).toBe('buy')
+      expect(order.sellTokenBalance).toBe('external')
+      expect(order.buyTokenBalance).toBe('internal')
+    })
+
+    test('should throw for unknown balance and kind hashes', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      expect(() =>
+        fromStructToOrder({
+          ...ORDER_DATA,
+          sellTokenBalance: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
+        }),
+      ).toThrow('Unknown balance type')
+
+      expect(() =>
+        fromStructToOrder({
+          ...ORDER_DATA,
+          kind: '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
+        }),
+      ).toThrow('Unknown kind')
+    })
+  })
+
+  describe('handler helpers', () => {
+    test('should identify composable cow and extensible fallback handler addresses', () => {
+      const chainId = SupportedChainId.MAINNET
+
+      expect(isComposableCow(COMPOSABLE_COW_CONTRACT_ADDRESS[chainId], chainId)).toBe(true)
+      expect(isComposableCow('0x0000000000000000000000000000000000000001', chainId)).toBe(false)
+      expect(isExtensibleFallbackHandler(EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS[chainId], chainId)).toBe(true)
+      expect(isExtensibleFallbackHandler('0x0000000000000000000000000000000000000001', chainId)).toBe(false)
+    })
+  })
+
+  describe('extensible fallback handler utilities', () => {
+    test('should encode setDomainVerifier calldata', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const domain = '0x' + '11'.repeat(32)
+      const verifier = '0x' + '22'.repeat(20)
+
+      expect(createSetDomainVerifierTx(domain, verifier)).toMatch(/^0x/)
+    })
+
+    test('should read domain verifier from the fallback handler', async () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const domain = '0x' + '11'.repeat(32)
+      const verifier = '0x' + '22'.repeat(20)
+      const safe = '0x' + '33'.repeat(20)
+      const chainId = SupportedChainId.MAINNET
+      const provider = {
+        readContract: jest.fn().mockResolvedValue(verifier),
+      }
+
+      await expect(getDomainVerifier(safe, domain, chainId, provider)).resolves.toBe(verifier)
+      expect(provider.readContract).toHaveBeenCalled()
+    })
+  })
+
+  describe('misc helpers', () => {
+    test('should format token amounts with the default formatter', () => {
+      expect(DEFAULT_TOKEN_FORMATTER('0xabc', 42n)).toBe('42@0xabc')
+    })
+  })
+
+  describe('block helpers', () => {
+    test('should format epoch timestamps and read latest block info', async () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      jest.spyOn(adapters.viemAdapter, 'getBlock').mockResolvedValue({
+        number: 42n,
+        timestamp: 1_700_000_000n,
+      } as never)
+
+      await expect(getBlockInfo({})).resolves.toEqual({
+        blockNumber: 42,
+        blockTimestamp: 1_700_000_000,
+      })
+      expect(formatEpoch(1_700_000_000)).toBe('2023-11-14T22:13:20.000Z')
+
+      jest.restoreAllMocks()
     })
   })
 })
