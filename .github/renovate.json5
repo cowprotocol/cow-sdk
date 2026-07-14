@@ -24,6 +24,7 @@
     },
     {
       matchManagers: ["npm"],
+      matchDepTypes: ["packageManager"],
       matchPackageNames: ["pnpm"],
       enabled: true,
       semanticCommitScope: "pnpm",
