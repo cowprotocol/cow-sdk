@@ -2,12 +2,37 @@
 // easier to maintain.
 {
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
-  // Disable every built-in manager (npm, dockerfile, ...) except github-actions.
-  enabledManagers: ["github-actions"],
+  // Enable the npm manager solely so Renovate can bump the
+  // `packageManager` field in package.json — the single source of
+  // truth for the pnpm version used by every workflow. All other
+  // npm dependency updates are suppressed in packageRules below.
+  enabledManagers: ["github-actions", "npm"],
   // PR titles use Conventional Commits: `deps(<action>): ...`
   semanticCommits: "enabled",
   semanticCommitType: "deps",
   packageRules: [
+    // ---
+    // npm: suppress every dependency update except `pnpm` (the
+    // `packageManager` field in package.json). Workflows read the
+    // pnpm version from there via pnpm/action-setup, so bumping
+    // package.json is all that's needed — no `version:` input in
+    // any workflow file, and no version-mismatch errors.
+    // ---
+    {
+      matchManagers: ["npm"],
+      enabled: false,
+    },
+    {
+      matchManagers: ["npm"],
+      matchDepTypes: ["packageManager"],
+      matchPackageNames: ["pnpm"],
+      enabled: true,
+      semanticCommitScope: "pnpm",
+      commitMessageTopic: "pnpm",
+      schedule: ["on monday"],
+      minimumReleaseAge: "14 days",
+      separateMajorMinor: false,
+    },
     // GitHub Actions updates: run weekly, skip releases newer than 2 weeks
     // to avoid picking up freshly published versions that may be unstable or
     // compromised, and pin to full commit SHAs (with the version as a
