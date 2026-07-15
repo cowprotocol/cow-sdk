@@ -177,8 +177,8 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     const payoutRatio = Number(quote.amountOutUsd) / Number(quote.amountInUsd)
     const slippage = 1 - payoutRatio
     const slippageBps = Math.trunc(slippage * 10_000)
-    const feeAmountInBuyCurrency = Math.trunc(Number(quote.amountIn) * slippage)
-    const feeAmountInSellCurrency = Math.trunc(Number(quote.amountOut) * slippage)
+    const feeAmountInBuyCurrency = Math.trunc(Number(quote.amountOut) * slippage)
+    const feeAmountInSellCurrency = Math.trunc(Number(quote.amountIn) * slippage)
     const bridgeFee = Math.trunc(Number(quote.amountIn) * slippage)
 
     return {
