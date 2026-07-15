@@ -58,6 +58,36 @@ class CustomOrder extends ConditionalOrder<DataType, StaticType> {
 }
 ```
 
+### JIT Poller
+
+Build the calls for a just-in-time funded TWAP. The application owns the deployed poller address, which must use this ABI.
+
+```typescript
+import {
+  ComposableCowPollerSchedule,
+  encodePollFunds,
+  encodeRegister,
+  encodeRevoke,
+  getScheduleId,
+} from '@cowprotocol/sdk-composable'
+import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+
+setGlobalAdapter(adapter)
+
+const schedule: ComposableCowPollerSchedule = {
+  handler: twapHandler,
+  funder: eoa,
+  owner: cowShed,
+  salt,
+  staticInput,
+}
+
+const id = getScheduleId(schedule)
+const registerCalldata = encodeRegister(schedule)
+const preHook = { target: pollerAddress, callData: encodePollFunds(id) }
+const revokeCalldata = encodeRevoke(id)
+```
+
 ## Usage
 
 ```typescript
