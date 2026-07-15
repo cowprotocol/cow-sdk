@@ -1,16 +1,16 @@
-// This file follows JSON5 syntax, to make it
+// This file follows JSONC syntax, to make it
 // easier to maintain.
 {
-  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   // Enable the npm manager solely so Renovate can bump the
   // `packageManager` field in package.json — the single source of
   // truth for the pnpm version used by every workflow. All other
   // npm dependency updates are suppressed in packageRules below.
-  enabledManagers: ["github-actions", "npm"],
+  "enabledManagers": ["github-actions", "npm"],
   // PR titles use Conventional Commits: `deps(<action>): ...`
-  semanticCommits: "enabled",
-  semanticCommitType: "deps",
-  packageRules: [
+  "semanticCommits": "enabled",
+  "semanticCommitType": "deps",
+  "packageRules": [
     // ---
     // npm: suppress every dependency update except `pnpm` (the
     // `packageManager` field in package.json). Workflows read the
@@ -19,19 +19,19 @@
     // any workflow file, and no version-mismatch errors.
     // ---
     {
-      matchManagers: ["npm"],
-      enabled: false,
+      "matchManagers": ["npm"],
+      "enabled": false,
     },
     {
-      matchManagers: ["npm"],
-      matchDepTypes: ["packageManager"],
-      matchPackageNames: ["pnpm"],
-      enabled: true,
-      semanticCommitScope: "pnpm",
-      commitMessageTopic: "pnpm",
-      schedule: ["on monday"],
-      minimumReleaseAge: "14 days",
-      separateMajorMinor: false,
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["packageManager"],
+      "matchPackageNames": ["pnpm"],
+      "enabled": true,
+      "semanticCommitScope": "pnpm",
+      "commitMessageTopic": "pnpm",
+      "schedule": ["on monday"],
+      "minimumReleaseAge": "14 days", // Keep in sync with pnpm-workspace.yaml.
+      "separateMajorMinor": false,
     },
     // GitHub Actions updates: run weekly, skip releases newer than 2 weeks
     // to avoid picking up freshly published versions that may be unstable or
@@ -40,18 +40,18 @@
     // When both major and minor releases exist, propose only the latest bump
     // (typically major) instead of a separate minor PR.
     {
-      matchManagers: ["github-actions"],
-      schedule: ["on monday"],
-      minimumReleaseAge: "14 days",
+      "matchManagers": ["github-actions"],
+      "schedule": ["on monday"],
+      "minimumReleaseAge": "14 days", // Keep in sync with pnpm-workspace.yaml.
       // Track upgrades by semver tag, but pin the resolved version to its full
       // commit SHA (semver tag kept as a trailing comment). Use the coerced
       // variant so short tags like `v3` / `v1.7` (which several actions only
       // publish) still parse instead of silently stopping updates.
-      versioning: "semver-coerced",
-      pinDigests: true,
-      separateMajorMinor: false,
-      semanticCommitScope: "{{depName}}",
-      commitMessageTopic: "{{depName}}",
+      "versioning": "semver-coerced",
+      "pinDigests": true,
+      "separateMajorMinor": false,
+      "semanticCommitScope": "{{depName}}",
+      "commitMessageTopic": "{{depName}}",
     },
   ],
 }
