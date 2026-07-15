@@ -12,6 +12,8 @@ import {
 } from './types'
 import { postSwapOrder, postSwapOrderFromQuote } from './postSwapOrder'
 import { postLimitOrder } from './postLimitOrder'
+import { postSignedOrder, PostSignedOrderResult } from './postSignedOrder'
+import { OrderToSubmit } from './getOrderToSubmit'
 import { getQuote, getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getTradeParametersAfterQuote, swapParamsToLimitOrderParams } from './utils/misc'
@@ -197,6 +199,37 @@ export class TradingSdk {
     advancedSettings?: SwapAdvancedSettings,
   ): Promise<OrderPostingResult> {
     return postSwapOrder(this.mergeParams(params), advancedSettings, this.resolveOrderBookApi(params))
+  }
+
+  /**
+   * Submits an externally signed order to the order book (uploads app-data, then sends the order).
+   *
+   * Use together with {@link getQuoteOnly} and `getOrderToSubmit` for EIP-712 signer-less flows
+   * where the signature is produced outside the SDK (cold wallets or MPC/custody services).
+   *
+   * @param orderToSubmit - Order body built by `getOrderToSubmit` from the quote results.
+   * @param signature - Signature produced externally over `quoteResults.orderTypedData`
+   * (`eth_signTypedData_v4`) by the order's `from` account.
+   * @param params - Optional chainId/env override; defaults to the SDK's trader params.
+   * @returns The created order's UID together with the submitted signature and signing scheme.
+   *
+   * @example
+   * ```typescript
+   * const quoteResults = await sdk.getQuoteOnly({ owner, ...tradeParameters })
+   * const orderToSubmit = getOrderToSubmit(quoteResults)
+   *
+   * // Sign quoteResults.orderTypedData in your own environment
+   * const signature = await signInYourEnvironment(quoteResults.orderTypedData)
+   *
+   * const { orderId } = await sdk.postSignedOrder(orderToSubmit, signature)
+   * ```
+   */
+  async postSignedOrder(
+    orderToSubmit: OrderToSubmit,
+    signature: string,
+    params: Partial<Omit<TraderParameters, 'signer'>> = {},
+  ): Promise<PostSignedOrderResult> {
+    return postSignedOrder(this.resolveOrderBookApi(params), orderToSubmit, signature)
   }
 
   async postLimitOrder(
