@@ -110,12 +110,14 @@ export class ProgrammaticOrdersClient {
     const items: T[] = []
     const cursors = new Set<string>()
     let after: string | null = null
+    let hasNextPage = true
 
-    while (true) {
+    while (hasNextPage) {
       const page = await getPage(after)
       items.push(...page.items)
+      hasNextPage = page.hasNextPage
 
-      if (!page.hasNextPage) return items
+      if (!hasNextPage) break
       if (page.endCursor === null || page.endCursor.length === 0 || cursors.has(page.endCursor)) {
         invalidResponse(`${label}.pageInfo contains an invalid pagination cursor`)
       }
@@ -123,6 +125,8 @@ export class ProgrammaticOrdersClient {
       cursors.add(page.endCursor)
       after = page.endCursor
     }
+
+    return items
   }
 
   async query(operation: string, query: string, variables: Record<string, unknown>): Promise<unknown> {
