@@ -24,7 +24,7 @@ yarn add @cowprotocol/sdk-composable
 
 ## Read TWAP history
 
-`ProgrammaticOrderApi` lists TWAP orders and their part orders for an EVM owner. It resolves current proxy mappings, so the protocol `owner` may differ from `resolvedOwner`.
+`ProgrammaticOrderApi` lists TWAP orders and their part orders for a controlling EOA or Safe.
 
 ```typescript
 import { ProgrammaticOrderApi } from '@cowprotocol/sdk-composable'
@@ -32,7 +32,7 @@ import { SupportedChainId } from '@cowprotocol/sdk-config'
 
 const api = new ProgrammaticOrderApi()
 const twapOrders = await api.getTwapOrders({
-  owner: '0x...',
+  resolvedOwner: '0x...',
   chainId: SupportedChainId.GNOSIS_CHAIN,
 })
 ```

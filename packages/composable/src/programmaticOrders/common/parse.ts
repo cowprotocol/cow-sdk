@@ -48,11 +48,6 @@ export const TIMESTAMP_SCHEMA = v.pipe(
   v.transform((value) => Number(value)),
 )
 export const PROGRAMMATIC_ORDER_STATUS_SCHEMA = v.picklist(['Active', 'Cancelled', 'Completed'])
-export const OWNER_MAPPING_SCHEMA = v.object({
-  address: ADDRESS_SCHEMA,
-  chainId: SAFE_INTEGER_SCHEMA,
-  owner: ADDRESS_SCHEMA,
-})
 
 export interface Page<T> {
   items: T[]

@@ -5,8 +5,8 @@ import type { ProgrammaticOrderStatus } from '../common/types'
 
 /** Input for querying TWAP orders. */
 export interface GetTwapOrdersParams {
-  /** EOA or mapped programmatic-order proxy address. */
-  owner: string
+  /** Controlling EOA or Safe address. Must not be a CoWShed proxy. */
+  resolvedOwner: string
   /** Supported EVM chain containing the orders. */
   chainId: SupportedChainId
 }
@@ -84,9 +84,9 @@ export interface TwapOrder {
   /** ComposableCoW single-order hash. Multiple creation events may share it. */
   hash: string
   chainId: SupportedChainId
-  /** Protocol owner used by the generated CoW orders, which may be a proxy. */
+  /** Protocol owner used by the generated CoW orders: the CoWShed proxy for an EOA TWAP, or the Safe for a Safe TWAP. */
   owner: string
-  /** Current owner after applying the indexer's proxy mapping. */
+  /** Canonical owner after applying known proxy mappings: the controlling EOA for a proxy, otherwise `owner`. */
   resolvedOwner: string
   status: ProgrammaticOrderStatus
   /** Unix creation time in seconds. */
@@ -101,6 +101,7 @@ export interface TwapParent {
   hash: string
   chainId: number
   owner: string
+  /** Owner stored by the API after applying any known proxy mapping; nullable on the wire. */
   resolvedOwner: string | null
   status: ProgrammaticOrderStatus
   createdAt: number
