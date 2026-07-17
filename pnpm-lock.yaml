@@ -552,6 +552,9 @@ importers:
       '@openzeppelin/merkle-tree':
         specifier: ^1.0.8
         version: 1.0.8
+      valibot:
+        specifier: 1.4.2
+        version: 1.4.2(typescript@5.8.3)
     devDependencies:
       '@cow-sdk/typescript-config':
         specifier: workspace:*
@@ -6886,6 +6889,14 @@ packages:
   uuid@9.0.1:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
+
+  valibot@1.4.2:
+    resolution: {integrity: sha512-gjdCvJ6d3RyHAneqxMYMW9QMCwYMb3jpOO0IyHZV1bnRHFBHrX3VkIILt5XYR0WhwHiH7Mty8ovuPZ/O3gamrg==}
+    peerDependencies:
+      typescript: '>=5'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
@@ -15157,6 +15168,10 @@ snapshots:
   util-deprecate@1.0.2: {}
 
   uuid@9.0.1: {}
+
+  valibot@1.4.2(typescript@5.8.3):
+    optionalDependencies:
+      typescript: 5.8.3
 
   v8-compile-cache-lib@3.0.1: {}
 

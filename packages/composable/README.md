@@ -22,6 +22,25 @@ or
 yarn add @cowprotocol/sdk-composable
 ```
 
+## Read TWAP history
+
+`ProgrammaticOrderApi` lists TWAP orders and their part orders for an EVM owner. It resolves current proxy mappings, so the protocol `owner` may differ from `resolvedOwner`.
+
+```typescript
+import { ProgrammaticOrderApi } from '@cowprotocol/sdk-composable'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
+
+const api = new ProgrammaticOrderApi()
+const twapOrders = await api.getTwapOrders({
+  owner: '0x...',
+  chainId: SupportedChainId.GNOSIS_CHAIN,
+})
+```
+
+Each result preserves both its creation `eventId` and ComposableCoW `hash`. `schedule.numberOfParts` is the number of scheduled parts. `partOrders` contains the corresponding part orders, so its length may be smaller. `executedAmounts` sums those part orders. The schedule's `effectiveStartTime` is the creation block timestamp when the on-chain `t0` was zero. Pass `apiUrl` to the constructor to use another programmatic orders API deployment.
+
+Source contracts: [conditional-order generator](https://github.com/bleu/cow-programmatic-orders-api/blob/main/src/api/gql-docs/conditional-order-generator.ts), [discrete order](https://github.com/bleu/cow-programmatic-orders-api/blob/main/src/api/gql-docs/discrete-order.ts), [TWAP schedule](https://github.com/bleu/cow-programmatic-orders-api/blob/main/docs/supported-order-types.md#twap-time-weighted-average-price), and the canonical [ComposableCoW TWAP order](https://github.com/cowprotocol/composable-cow/blob/main/src/types/twap/libraries/TWAPOrder.sol#L31-L42).
+
 ## Core Components
 
 ### ConditionalOrderFactory
