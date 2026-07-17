@@ -585,6 +585,112 @@ adapterNames.forEach((adapterName) => {
         expect(quote.amountsAndCosts.beforeFee.buyAmount).toBe(10000n)
       })
 
+      it('should compute a sane BTC-denominated fee for a real production BTC bridge quote', async () => {
+        // Regression test for a swapped-currency bug: the BTC-denominated fee was
+        // being computed from the USDC-side amount (and vice versa), which is invisible
+        // on same-magnitude routes but produces an absurd result on BTC (8 decimals).
+        // Numbers below are the real quote/settlement for deposit address
+        // 0x712bf81469904cee52f5ba897fd51a338f6b73e4, see
+        // https://explorer.near-intents.org/transactions/0x712bf81469904cee52f5ba897fd51a338f6b73e4
+        const api = new NearIntentsApi()
+        const sellTokenAddress = '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
+        const buyTokenAddress = BTC_CURRENCY_ADDRESS
+        const testQuoteHash = '0xtestRealBtcTxQuoteHash'
+
+        const mockQuoteResponse: QuoteResponse = {
+          quote: {
+            amountIn: '5945707',
+            amountInFormatted: '5.945707',
+            amountInUsd: '5.9446',
+            minAmountIn: '5915978',
+            amountOut: '7047',
+            amountOutFormatted: '0.00007047',
+            amountOutUsd: '4.6811',
+            minAmountOut: '7011',
+            timeEstimate: 470,
+            deadline: '2026-06-19T12:03:12.000Z',
+            timeWhenInactive: '2026-06-19T12:03:12.000Z',
+            depositAddress: '0x712bF81469904cEE52f5ba897Fd51A338f6b73e4',
+          },
+          quoteRequest: {
+            dry: false,
+            swapType: QuoteRequest.swapType.FLEX_INPUT,
+            depositMode: QuoteRequest.depositMode.SIMPLE,
+            slippageTolerance: 50,
+            originAsset: 'nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near',
+            depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
+            destinationAsset: '1cs_v1:btc:native:coin',
+            amount: '5945707',
+            refundTo: '0x0000000000000000000000000000000000000000',
+            refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
+            recipient: 'bc1qray0vz42y0sl4m0qwar58yel6lure25q8f22cn',
+            recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
+            deadline: '2026-06-19T12:03:12.000Z',
+          },
+          signature: 'ed25519:testRealBtcSignature',
+          timestamp: '2026-06-16T11:33:13.082Z',
+        }
+
+        jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
+        jest.spyOn(api, 'getTokens').mockResolvedValue([
+          {
+            assetId: 'nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near',
+            decimals: 6,
+            blockchain: TokenResponse.blockchain.ARB,
+            symbol: 'USDC',
+            price: 1,
+            priceUpdatedAt: '2026-06-16T11:33:13.082Z',
+            contractAddress: sellTokenAddress,
+          },
+          {
+            assetId: '1cs_v1:btc:native:coin',
+            decimals: 8,
+            blockchain: TokenResponse.blockchain.BTC,
+            symbol: 'BTC(OMNI)',
+            price: 66432,
+            priceUpdatedAt: '2026-06-16T11:33:13.082Z',
+            contractAddress: 'coin',
+          },
+        ])
+        jest.spyOn(api, 'getAttestation').mockResolvedValue({
+          version: 1,
+          signature:
+            '0x66edc32e2ab001213321ab7d959a2207fcef5190cc9abb6da5b0d2a8a9af2d4d2b0700e2c317c4106f337fd934fbbb0bf62efc8811a78603b33a8265d3b8f8cb1c',
+        })
+        provider.setApi(api)
+
+        jest.spyOn(provider, 'recoverDepositAddress').mockResolvedValue({
+          address: ATTESTATOR_ADDRESS,
+          quoteHash: testQuoteHash,
+          stringifiedQuote: '',
+          attestationSignature: '',
+        })
+
+        const quote = await provider.getQuote({
+          kind: OrderKind.SELL,
+          sellTokenChainId: SupportedChainId.ARBITRUM_ONE,
+          sellTokenAddress,
+          sellTokenDecimals: 6,
+          buyTokenChainId: NonEvmChains.BITCOIN as number,
+          buyTokenAddress,
+          buyTokenDecimals: 8,
+          amount: 5945707n,
+          account: '0x0000000000000000000000000000000000000000',
+          appCode: 'test',
+          signer: '0x0000000000000000000000000000000000000000',
+        })
+
+        // The BTC-denominated fee must never exceed the BTC amount being bridged (7047 sats).
+        expect(quote.fees.bridgeFee).toBeLessThan(quote.amountsAndCosts.beforeFee.buyAmount)
+        expect(quote.amountsAndCosts.costs.bridgingFee.amountInBuyCurrency).toBeLessThan(
+          quote.amountsAndCosts.beforeFee.buyAmount,
+        )
+        // With the swapped-currency bug this was 1,263,735 sats (bigger than the whole trade).
+        // Fixed value derived from amountOut (7047) vs minAmountOut (7011).
+        expect(quote.fees.bridgeFee).toBe(36n)
+        expect(quote.amountsAndCosts.slippageBps).toBe(51)
+      })
+
       it('should return quote when destination asset is solana', async () => {
         const api = new NearIntentsApi()
         const sellTokenAddress = '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'
