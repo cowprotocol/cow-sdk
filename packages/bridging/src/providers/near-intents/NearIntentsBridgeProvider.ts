@@ -174,12 +174,13 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
 
     const { quote, timestamp: isoDate } = quoteResponse
 
-    const payoutRatio = Number(quote.amountOutUsd) / Number(quote.amountInUsd)
-    const slippage = 1 - payoutRatio
+    const amountOut = Number(quote.amountOut)
+    const minAmountOut = Number(quote.minAmountOut)
+    const slippage = amountOut > 0 ? (amountOut - minAmountOut) / amountOut : 0
     const slippageBps = Math.trunc(slippage * 10_000)
-    const feeAmountInBuyCurrency = Math.trunc(Number(quote.amountOut) * slippage)
+    const feeAmountInBuyCurrency = Math.trunc(amountOut * slippage)
     const feeAmountInSellCurrency = Math.trunc(Number(quote.amountIn) * slippage)
-    const bridgeFee = Math.trunc(Number(quote.amountIn) * slippage)
+    const bridgeFee = feeAmountInBuyCurrency
 
     return {
       id: recoveredDepositAddress.quoteHash,
