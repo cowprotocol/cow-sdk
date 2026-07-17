@@ -23,47 +23,40 @@ export class ProgrammaticOrderApi {
   }
 
   /**
-   * Returns all TWAP orders and their part orders for an owner on a supported EVM chain.
+   * Returns all TWAP orders and their part orders for a canonical owner on a supported EVM chain.
    *
    * @remarks
-   * Resolves EOA/proxy owner mappings and follows every API page. `partOrders`
-   * contains part orders; scheduled parts without a part order are not included.
+   * Follows every API page. `partOrders` contains part orders; scheduled parts without a part order are not included.
    * A failed page rejects the request rather than returning partial results.
    *
-   * @param params - Owner address and chain to query.
+   * @param params - Controlling EOA or Safe address and chain to query. The address must not be a CoWShed proxy.
    * @returns All TWAP orders and their part orders.
    * @throws {@link ProgrammaticOrderApiError} when input validation, the request,
    * GraphQL, or response validation fails.
    */
   async getTwapOrders(params: GetTwapOrdersParams): Promise<TwapOrder[]> {
-    const { owner, chainId } = params
-    const requestedOwner = validateRequest(owner, chainId)
+    const { chainId } = params
+    const resolvedOwner = validateRequest(params.resolvedOwner, chainId)
 
-    log(`ProgrammaticOrderApi: fetching TWAP orders for ${requestedOwner} on chain ${chainId}`)
+    log(`ProgrammaticOrderApi: fetching TWAP orders for ${resolvedOwner} on chain ${chainId}`)
 
-    const { resolvedOwner, owners } = await this.client.getOwnerScope(requestedOwner, chainId)
-    const parents = await getTwapParents(this.client, resolvedOwner, chainId, owners)
+    const parents = await getTwapParents(this.client, resolvedOwner, chainId)
     const partOrdersByParent = await getTwapPartOrders(
       this.client,
       chainId,
       parents.map(({ eventId }) => eventId),
     )
 
-    const orders = parents.map<TwapOrder>((parent) => {
+    const orders = parents.map((parent) => {
       const partOrders = partOrdersByParent.get(parent.eventId) ?? []
 
       return {
-        eventId: parent.eventId,
-        hash: parent.hash,
+        ...parent,
         chainId,
-        owner: parent.owner,
         resolvedOwner,
-        status: parent.status,
-        createdAt: parent.createdAt,
-        schedule: parent.schedule,
         partOrders,
         executedAmounts: sumExecutedAmounts(partOrders),
-      }
+      } satisfies TwapOrder
     })
 
     log(

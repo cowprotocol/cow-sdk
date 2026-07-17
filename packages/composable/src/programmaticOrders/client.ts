@@ -1,109 +1,16 @@
-import type { SupportedChainId } from '@cowprotocol/sdk-config'
-import { areAddressesEqual, getEvmAddressKey, log } from '@cowprotocol/sdk-common'
+import { log } from '@cowprotocol/sdk-common'
 
-import {
-  invalidResponse,
-  OWNER_MAPPING_SCHEMA,
-  parseGraphqlData,
-  parsePage,
-  type Page,
-} from './common/parse'
+import { invalidResponse, parseGraphqlData, type Page } from './common/parse'
 import { ProgrammaticOrderApiError } from './common/types'
 
 const DEFAULT_API_URL = 'https://cow-programmatic-order.bleu.blue'
 export const PAGE_SIZE = 1000
-
-const OWNER_MAPPINGS_QUERY = `
-  query OwnerMappings($owner: String!, $chainId: Int!, $after: String, $limit: Int!) {
-    ownerMappings(where: { owner: $owner, chainId: $chainId }, after: $after, limit: $limit) {
-      items {
-        address
-        chainId
-        owner
-      }
-      pageInfo {
-        hasNextPage
-        endCursor
-      }
-    }
-  }
-`
-
-const OWNER_RESOLUTION_QUERY = `
-  query OwnerResolution($address: String!, $chainId: Int!, $after: String, $limit: Int!) {
-    ownerMappings(where: { address: $address, chainId: $chainId }, after: $after, limit: $limit) {
-      items {
-        address
-        chainId
-        owner
-      }
-      pageInfo {
-        hasNextPage
-        endCursor
-      }
-    }
-  }
-`
-
-interface OwnerScope {
-  resolvedOwner: string
-  owners: string[]
-}
 
 export class ProgrammaticOrdersClient {
   private readonly graphqlUrl: string
 
   constructor(apiUrl?: string) {
     this.graphqlUrl = getGraphqlUrl(apiUrl ?? DEFAULT_API_URL)
-  }
-
-  async getOwnerScope(owner: string, chainId: SupportedChainId): Promise<OwnerScope> {
-    const inputMappings = await this.paginate('owner resolution', async (after) => {
-      const data = await this.query('owner resolution', OWNER_RESOLUTION_QUERY, {
-        address: owner,
-        chainId,
-        after,
-        limit: PAGE_SIZE,
-      })
-
-      return parsePage(data, 'ownerMappings', OWNER_MAPPING_SCHEMA)
-    })
-
-    if (inputMappings.length > 1) invalidResponse('ownerMappings contains conflicting mappings for an address')
-
-    const inputMapping = inputMappings[0]
-
-    if (inputMapping && (inputMapping.chainId !== chainId || !areAddressesEqual(inputMapping.address, owner))) {
-      invalidResponse('ownerMappings.items contains a row for another address or chain')
-    }
-
-    const resolvedOwner = inputMapping?.owner ?? owner
-    const mappings = await this.paginate('owner mappings', async (after) => {
-      const data = await this.query('owner mappings', OWNER_MAPPINGS_QUERY, {
-        owner: resolvedOwner,
-        chainId,
-        after,
-        limit: PAGE_SIZE,
-      })
-
-      return parsePage(data, 'ownerMappings', OWNER_MAPPING_SCHEMA)
-    })
-    const owners = new Map<string, string>([
-      [getEvmAddressKey(resolvedOwner), resolvedOwner],
-      [getEvmAddressKey(owner), owner],
-    ])
-
-    for (const mapping of mappings) {
-      if (mapping.chainId !== chainId || !areAddressesEqual(mapping.owner, resolvedOwner)) {
-        invalidResponse('ownerMappings.items contains a row for another owner or chain')
-      }
-
-      owners.set(getEvmAddressKey(mapping.address), mapping.address)
-    }
-
-    log(`ProgrammaticOrderApi: resolved ${owners.size - 1} proxy owner(s)`)
-
-    return { resolvedOwner, owners: [...owners.values()] }
   }
 
   async paginate<T>(label: string, getPage: (after: string | null) => Promise<Page<T>>): Promise<T[]> {

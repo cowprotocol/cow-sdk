@@ -9,12 +9,17 @@ import type { TwapParent, TwapPartOrder, TwapPartOrderRecord } from './types'
 const PART_PARENT_BATCH_SIZE = 100
 
 const TWAP_ORDERS_QUERY = `
-  query TwapOrders($owner: String!, $chainId: Int!, $owners: [String!]!, $after: String, $limit: Int!) {
+  query TwapOrders(
+    $resolvedOwner: String!
+    $chainId: Int!
+    $after: String
+    $limit: Int!
+  ) {
     twapOrders: conditionalOrderGenerators(
       where: {
         chainId: $chainId
         orderType: TWAP
-        OR: [{ resolvedOwner: $owner }, { owner_in: $owners }]
+        resolvedOwner: $resolvedOwner
       }
       after: $after
       limit: $limit
@@ -67,13 +72,11 @@ export async function getTwapParents(
   client: ProgrammaticOrdersClient,
   resolvedOwner: string,
   chainId: SupportedChainId,
-  owners: string[],
 ): Promise<TwapParent[]> {
   const parents = await client.paginate('TWAP orders', async (after) => {
     const data = await client.query('TWAP orders', TWAP_ORDERS_QUERY, {
-      owner: resolvedOwner,
+      resolvedOwner,
       chainId,
-      owners,
       after,
       limit: PAGE_SIZE,
     })
@@ -83,10 +86,9 @@ export async function getTwapParents(
   const uniqueParents = new Map<string, TwapParent>()
 
   for (const parent of parents) {
-    const matchesOwner = owners.some((owner) => areAddressesEqual(parent.owner, owner))
     const matchesResolvedOwner = parent.resolvedOwner !== null && areAddressesEqual(parent.resolvedOwner, resolvedOwner)
 
-    if (parent.chainId !== chainId || (!matchesOwner && !matchesResolvedOwner)) {
+    if (parent.chainId !== chainId || !matchesResolvedOwner) {
       invalidResponse('twapOrders.items contains a row for another owner or chain')
     }
 
