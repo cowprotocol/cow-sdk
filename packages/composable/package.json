@@ -37,7 +37,8 @@
     "@cowprotocol/sdk-contracts-ts": "workspace:*",
     "@cowprotocol/sdk-order-book": "workspace:*",
     "@cowprotocol/sdk-order-signing": "workspace:*",
-    "@openzeppelin/merkle-tree": "^1.0.8"
+    "@openzeppelin/merkle-tree": "^1.0.8",
+    "valibot": "1.4.2"
   },
   "devDependencies": {
     "@cowprotocol/sdk-ethers-v5-adapter": "workspace:*",
