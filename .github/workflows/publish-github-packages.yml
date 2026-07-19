@@ -48,9 +48,14 @@ jobs:
             if [ "$REPO_NAME" = "$REPOSITORY" ]; then
               echo "✅ Internal PR - proceeding with publish"
             else
-              # Check for allow-publish label
+              # Check for allow-publish label.
+              # Parse the labels as JSON and match the "name" field exactly. We use jq
+              # (pre-installed on GitHub-hosted runners) instead of grep because
+              # toJson() pretty-prints with a space after the colon ("name": "allow-publish"),
+              # which the previous no-space grep pattern never matched. Exact equality also
+              # avoids accidentally matching the label's url or any partial/substring name.
               echo "🔍 Checking for 'allow-publish' label..."
-              if echo "$LABELS_JSON" | grep -q '"name":"allow-publish"'; then
+              if [ "$(printf '%s' "$LABELS_JSON" | jq -r 'any(.[]?; .name == "allow-publish")')" = "true" ]; then
                 echo "✅ External PR with 'allow-publish' label - proceeding with publish"
               else
                 echo "❌ External PR without 'allow-publish' label - skipping publish for security"
