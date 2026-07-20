@@ -1,3 +1,23 @@
+# Use the public npm registry for unscoped dependencies.
+registries:
+  default: https://registry.npmjs.org/
+
+# Prefer cached data, but fetch anything missing.
+preferOffline: true
+
+# Quarantine new third-party releases; keep this aligned with Renovate.
+minimumReleaseAge: 20160 # 14 days
+minimumReleaseAgeExclude:
+  - '@cowprotocol/*'
+
+# Reject transitive dependencies from git or direct tarball URLs.
+blockExoticSubdeps: true
+
+# Protect age-exempt packages from weaker publisher evidence during the same window.
+trustPolicy: no-downgrade
+trustPolicyIgnoreAfter: 20160 # 14 days
+
+# Explicitly skip dependency lifecycle scripts currently present in the lockfile.
 allowBuilds:
   '@swc/core': false
   bufferutil: false
