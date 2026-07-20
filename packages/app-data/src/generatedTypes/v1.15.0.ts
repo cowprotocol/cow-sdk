@@ -127,7 +127,7 @@ export type PartnerFee =
         }
     );
 /**
- * The fee in basis points (BPS) to be paid to the partner based on volume. Capped at protocol level to 100 BPS (1%)
+ * The fee in basis points (BPS) to be paid to the partner based on volume. Capped to 9999 BPS (99%)
  */
 export type VolumeBasisPointBPS = number;
 /**
@@ -139,7 +139,7 @@ export type PartnerAccount = string;
  */
 export type SurplusBasisPointBPS = number;
 /**
- * The maximum volume in basis points (BPS) to be paid to the partner. Capped at protocol level to 100 BPS (1%). You can chose to go lower but not higher
+ * The maximum volume in basis points (BPS) to be paid to the partner. Capped to 9999 BPS (99.99%). You can chose to go lower but not higher
  */
 export type MaxVolumeBasisPointBPS = number;
 /**

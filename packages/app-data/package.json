@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-app-data",
-  "version": "5.3.0",
+  "version": "5.3.1",
   "description": "CoW Protocol AppData schema definitions",
   "repository": {
     "type": "git",

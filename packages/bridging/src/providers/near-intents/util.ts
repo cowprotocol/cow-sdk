@@ -107,7 +107,6 @@ export const hashQuote = ({
     customRecipientMsg: undefined,
     sessionId: undefined,
     connectedWallets: undefined,
-    depositMode: quoteRequest.depositMode,
     amountIn: quote.amountIn,
     amountInFormatted: quote.amountInFormatted,
     amountInUsd: quote.amountInUsd,
