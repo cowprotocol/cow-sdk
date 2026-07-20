@@ -430,4 +430,97 @@ describe('Multiplexer (ComposableCoW) - Multi-Adapter Tests', () => {
       }
     })
   })
+
+  describe('Error handling', () => {
+    test('should throw when accessing missing orders', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const m = new Multiplexer(SupportedChainId.GNOSIS_CHAIN)
+      const twap = Twap.fromData(TWAP_PARAMS_TEST)
+      m.add(twap)
+
+      expect(() => m.getById('0x' + 'ab'.repeat(32))).toThrow('Order with id')
+      expect(() => m.getByIndex(99)).toThrow('Order with index 99 not found')
+      expect(() => m.update('0x' + 'cd'.repeat(32), (order) => order)).toThrow('Order with id')
+
+      jest.spyOn(m, 'orderIds', 'get').mockReturnValue([twap.id])
+      Reflect.deleteProperty(m as { orders: Orders }, 'orders')
+      ;(m as { orders: Orders }).orders = {}
+
+      expect(() => m.getByIndex(0)).toThrow(`Order with id ${twap.id} not found`)
+    })
+  })
+
+  describe('Static poll', () => {
+    const OWNER = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+    const signature = '0x' + '11'.repeat(65)
+
+    test('should read tradeable orders with and without off-chain input', async () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const twap = Twap.fromData(TWAP_PARAMS_TEST)
+      const proofWithParams = {
+        proof: ['0x' + '22'.repeat(32)],
+        params: twap.leaf,
+      }
+      const order = {
+        sellToken: TWAP_PARAMS_TEST.sellToken,
+        buyToken: TWAP_PARAMS_TEST.buyToken,
+        receiver: TWAP_PARAMS_TEST.receiver,
+        sellAmount: 1n,
+        buyAmount: 1n,
+        validTo: 1,
+        appData: TWAP_PARAMS_TEST.appData,
+        feeAmount: 0n,
+        kind: '0xf3b277728b3fee749481eb3e0b3b48980dbbab78658fc419025cb16eee346775',
+        partiallyFillable: false,
+        sellTokenBalance: '0x5a28e9363bb942b639270062aa6bb295f434bcdfc42c97267bf003f272060dc9',
+        buyTokenBalance: '0x5a28e9363bb942b639270062aa6bb295f434bcdfc42c97267bf003f272060dc9',
+      }
+
+      const readContract = jest.spyOn(adapters.viemAdapter, 'readContract').mockResolvedValue([order, signature])
+
+      await expect(
+        Multiplexer.poll(OWNER, proofWithParams, SupportedChainId.MAINNET, {}),
+      ).resolves.toEqual([order, signature])
+
+      await expect(
+        Multiplexer.poll(OWNER, proofWithParams, SupportedChainId.MAINNET, {}, async () => '0xbeef'),
+      ).resolves.toEqual([order, signature])
+
+      expect(readContract).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          functionName: 'getTradeableOrderWithSignature',
+          args: [OWNER, proofWithParams.params, '0x', proofWithParams.proof],
+        }),
+        {},
+      )
+      expect(readContract).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          args: [OWNER, proofWithParams.params, '0xbeef', proofWithParams.proof],
+        }),
+        {},
+      )
+
+      jest.restoreAllMocks()
+    })
+  })
+
+  describe('Serialization edge cases', () => {
+    test('should reject legacy BigNumber-shaped JSON values during deserialization', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const payload = JSON.stringify({
+        chain: SupportedChainId.GNOSIS_CHAIN,
+        orders: {},
+        root: '0x' + '00'.repeat(32),
+        location: ProofLocation.EMITTED,
+        legacy: { type: 'BigNumber', hex: '0x01' },
+      })
+
+      expect(() => Multiplexer.fromJSON(payload)).toThrow()
+    })
+  })
 })

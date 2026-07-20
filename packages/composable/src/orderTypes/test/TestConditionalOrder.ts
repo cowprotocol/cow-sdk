@@ -1,3 +1,4 @@
+import { AbstractProviderAdapter } from '@cowprotocol/sdk-common'
 import { ConditionalOrder } from '../../ConditionalOrder'
 import { GPv2Order, IsValidResult, PollParams, PollResultErrors } from '../../types'
 import { encodeParams } from '../../utils'
@@ -18,13 +19,16 @@ export type TestConditionalOrderParams = {
 export class TestConditionalOrder extends ConditionalOrder<string, string> {
   isSingleOrder: boolean
 
-  constructor(params: TestConditionalOrderParams) {
+  constructor(params: TestConditionalOrderParams, adapter?: AbstractProviderAdapter) {
     const { handler, salt, data = '0x', isSingleOrder = true } = params
-    super({
-      handler,
-      salt,
-      data,
-    })
+    super(
+      {
+        handler,
+        salt,
+        data,
+      },
+      adapter,
+    )
     this.isSingleOrder = isSingleOrder
   }
 

@@ -2,9 +2,12 @@ import {
   DEFAULT_ORDER_PARAMS,
   TestConditionalOrder,
   createTestConditionalOrder,
+  type TestConditionalOrderParams,
 } from '../src/orderTypes/test/TestConditionalOrder'
 import { ConditionalOrder } from '../src/ConditionalOrder'
-import { Twap } from '../src/orderTypes/Twap'
+import { Twap, CURRENT_BLOCK_TIMESTAMP_FACTORY_ADDRESS } from '../src/orderTypes/Twap'
+import { TWAP_PARAMS_TEST } from './Twap.spec'
+import { ComposableCowFactoryAbi } from '../src/abis/ComposableCowFactoryAbi'
 
 import { GPv2Order, OwnerContext, PollParams, PollResultCode, PollResultErrors } from '../src/types'
 import { BuyTokenDestination, OrderBookApi, OrderKind, SellTokenSource } from '@cowprotocol/sdk-order-book'
@@ -90,6 +93,31 @@ describe('ConditionalOrder - Multi-Adapter Tests', () => {
       orders.forEach((order) => {
         expect(order).toBeDefined()
       })
+    })
+
+    test('should accept an adapter in the constructor', () => {
+      const order = new TestConditionalOrder(DEFAULT_ORDER_PARAMS, adapters.ethersV5Adapter)
+
+      expect(order.isValid().isValid).toBe(true)
+    })
+
+    test('should default optional constructor fields', () => {
+      const order = new TestConditionalOrder({
+        handler: DEFAULT_ORDER_PARAMS.handler,
+      } as TestConditionalOrderParams)
+
+      expect(order.encodeStaticInput()).toBe('0x')
+      expect(order.isSingleOrder).toBe(true)
+    })
+
+    test('should allow overriding isSingleOrder', () => {
+      const order = new TestConditionalOrder({
+        handler: DEFAULT_ORDER_PARAMS.handler,
+        data: DEFAULT_ORDER_PARAMS.data,
+        isSingleOrder: false,
+      })
+
+      expect(order.isSingleOrder).toBe(false)
     })
 
     test('should fail with bad address across all adapters', () => {
@@ -698,6 +726,197 @@ describe('ConditionalOrder - Multi-Adapter Tests', () => {
 
         jest.restoreAllMocks()
       }
+    })
+
+    test('should return handlePollFailedAlreadyPresent result when order is already in orderbook', async () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      class OrderInBookOrder extends TestConditionalOrder {
+        protected handlePollFailedAlreadyPresent(): Promise<PollResultErrors> {
+          return Promise.resolve({
+            result: PollResultCode.TRY_AT_EPOCH,
+            epoch: 1_800_000_000,
+            reason: 'Handled by order type',
+          })
+        }
+      }
+
+      const param = {
+        owner: OWNER,
+        chainId: 1,
+        provider: {},
+        orderBookApi: mockOrderBookApi as unknown as OrderBookApi,
+      } as PollParams
+
+      jest.spyOn(adapters.viemAdapter, 'readContract').mockImplementation(async (params) => {
+        if (params.functionName === 'getTradeableOrderWithSignature') {
+          return [DISCRETE_ORDER, signature]
+        }
+        if (params.functionName === 'singleOrders') {
+          return true
+        }
+        throw new Error(`Unexpected call: ${params.functionName}`)
+      })
+
+      const order = new OrderInBookOrder(DEFAULT_ORDER_PARAMS)
+      mockOrderBookApi.getOrder.mockResolvedValue({})
+
+      const pollResult = await order.poll(param)
+
+      expect(pollResult).toEqual({
+        result: PollResultCode.TRY_AT_EPOCH,
+        epoch: 1_800_000_000,
+        reason: 'Handled by order type',
+      })
+
+      jest.restoreAllMocks()
+    })
+  })
+
+  describe('calldata helpers', () => {
+    function decodeCalldata(functionName: 'create' | 'createWithContext' | 'remove', calldata: string) {
+      return adapters.viemAdapter.utils.decodeFunctionData(ComposableCowFactoryAbi, functionName, calldata)
+    }
+
+    function expectFunctionSelector(functionName: 'create' | 'createWithContext' | 'remove', calldata: string) {
+      const selector = adapters.viemAdapter.utils
+        .id(`${functionName}((address,bytes32,bytes),bool)`)
+        .slice(0, 10)
+
+      if (functionName === 'createWithContext') {
+        expect(calldata.slice(0, 10)).toBe(
+          adapters.viemAdapter.utils.id(`${functionName}((address,bytes32,bytes),address,bytes,bool)`).slice(0, 10),
+        )
+        return
+      }
+
+      if (functionName === 'remove') {
+        expect(calldata.slice(0, 10)).toBe(adapters.viemAdapter.utils.id('remove(bytes32)').slice(0, 10))
+        return
+      }
+
+      expect(calldata.slice(0, 10)).toBe(selector)
+    }
+
+    test('should encode create and remove calldata for valid orders', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const order = createTestConditionalOrder()
+      const createCalldata = order.createCalldata
+      const removeCalldata = order.removeCalldata
+
+      expectFunctionSelector('create', createCalldata)
+      expectFunctionSelector('remove', removeCalldata)
+
+      const [params, dispatch] = decodeCalldata('create', createCalldata) as [
+        { handler: string; salt: string; staticInput: string },
+        boolean,
+      ]
+      const [orderId] = decodeCalldata('remove', removeCalldata) as [string]
+
+      expect(params).toEqual({
+        handler: order.handler,
+        salt: order.salt,
+        staticInput: order.encodeStaticInput(),
+      })
+      expect(dispatch).toBe(true)
+      expect(orderId).toBe(order.id)
+    })
+
+    test('should encode createWithContext calldata when context has no factory args', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const twap = Twap.fromData(TWAP_PARAMS_TEST)
+      const createCalldata = twap.createCalldata
+
+      expectFunctionSelector('createWithContext', createCalldata)
+
+      const [params, factory, factoryData, dispatch] = decodeCalldata('createWithContext', createCalldata) as [
+        { handler: string; salt: string; staticInput: string },
+        string,
+        string,
+        boolean,
+      ]
+
+      expect(params).toEqual({
+        handler: twap.handler,
+        salt: twap.salt,
+        staticInput: twap.encodeStaticInput(),
+      })
+      expect(factory).toBe(CURRENT_BLOCK_TIMESTAMP_FACTORY_ADDRESS)
+      expect(factoryData).toBe('0x')
+      expect(dispatch).toBe(true)
+    })
+
+    test('should encode createWithContext calldata when an order has context', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      class ContextOrder extends TestConditionalOrder {
+        get context() {
+          return {
+            address: '0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc',
+            factoryArgs: {
+              argsType: ['uint256'],
+              args: [42n],
+            },
+          }
+        }
+      }
+
+      const order = new ContextOrder(DEFAULT_ORDER_PARAMS)
+      const createCalldata = order.createCalldata
+
+      expectFunctionSelector('createWithContext', createCalldata)
+
+      const [params, factory, factoryData, dispatch] = decodeCalldata('createWithContext', createCalldata) as [
+        { handler: string; salt: string; staticInput: string },
+        string,
+        string,
+        boolean,
+      ]
+
+      expect(params).toEqual({
+        handler: order.handler,
+        salt: order.salt,
+        staticInput: order.encodeStaticInput(),
+      })
+      expect(factory).toBe('0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc')
+      expect(adapters.viemAdapter.utils.decodeAbi(['uint256'], factoryData)[0]).toBe(42n)
+      expect(dispatch).toBe(true)
+    })
+
+    test('should throw when generating calldata for invalid orders', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      class InvalidOrder extends TestConditionalOrder {
+        isValid() {
+          return { isValid: false, reason: 'Nope' }
+        }
+      }
+
+      const order = new InvalidOrder(DEFAULT_ORDER_PARAMS)
+
+      expect(() => order.createCalldata).toThrow('Invalid order: Nope')
+      expect(() => order.removeCalldata).toThrow('Invalid order: Nope')
+    })
+  })
+
+  describe('TestConditionalOrder helpers', () => {
+    test('should expose order type and helper methods', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const order = createTestConditionalOrder()
+
+      expect(order.orderType).toBe('TEST')
+      expect(order.encodeStaticInput()).toBe(DEFAULT_ORDER_PARAMS.data)
+      expect(order.transformStructToData('0x01')).toBe('0x01')
+      expect(order.transformDataToStruct('0x02')).toBe('0x02')
+    })
+
+    test('should throw from toString until implemented', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      expect(() => createTestConditionalOrder().toString()).toThrow('Method not implemented.')
     })
   })
 })
