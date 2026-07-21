@@ -350,7 +350,10 @@ export class BungeeApi {
   }
 
   private getSupportedBridges(bridges?: SupportedBridge[]): SupportedBridge[] {
-    return bridges ?? this.options.includeBridges ?? SUPPORTED_BRIDGES
+    const bridgeList = bridges ?? this.options.includeBridges ?? SUPPORTED_BRIDGES
+    const normalized = bridgeList.map((bridge) => (bridge === 'cctp' ? 'cctp-v2' : bridge))
+
+    return Array.from(new Set(normalized))
   }
 
   private isBungeeApi(apiType: BungeeApiType): boolean {
