@@ -1,25 +1,29 @@
 import { isEvmChain, isSupportedChain } from '@cowprotocol/sdk-config'
-import type { SupportedChainId } from '@cowprotocol/sdk-config'
 import { getEvmAddressKey, isEvmAddress, log } from '@cowprotocol/sdk-common'
 
-import { ProgrammaticOrdersClient } from './client'
 import { ProgrammaticOrderApiError, type ProgrammaticOrderApiOptions } from './common/types'
+import { GraphqlClient } from './graphql'
 import { sumExecutedAmounts } from './twap/parse'
 import { getTwapParents, getTwapPartOrders } from './twap/queries'
 import type { GetTwapOrdersParams, TwapOrder } from './twap/types'
 
-/** Read-only client for programmatic orders. */
+const DEFAULT_API_URL = 'https://cow-programmatic-order.bleu.blue'
+
 export class ProgrammaticOrderApi {
-  private readonly client: ProgrammaticOrdersClient
+  private readonly graphql: GraphqlClient
 
   /**
    * Creates a client backed by the default programmatic orders API.
    *
    * @param options - Optional API endpoint configuration.
-   * @throws {@link ProgrammaticOrderApiError} with kind `invalid-request` when `apiUrl` is invalid.
+   * @throws {@link ProgrammaticOrderApiError} when `apiUrl` is invalid.
    */
   constructor(options: ProgrammaticOrderApiOptions = {}) {
-    this.client = new ProgrammaticOrdersClient(options.apiUrl)
+    try {
+      this.graphql = new GraphqlClient(options.apiUrl ?? DEFAULT_API_URL)
+    } catch (cause) {
+      throw new ProgrammaticOrderApiError('Invalid programmatic orders API URL', { cause })
+    }
   }
 
   /**
@@ -27,7 +31,8 @@ export class ProgrammaticOrderApi {
    *
    * @remarks
    * Follows every API page. `partOrders` contains part orders; scheduled parts without a part order are not included.
-   * A failed page rejects the request rather than returning partial results.
+   * Progress callbacks contain fully assembled TWAP orders. A failed page rejects the request, but TWAP orders emitted
+   * by earlier callbacks remain provisional.
    *
    * @param params - Controlling EOA or Safe address and chain to query. The address must not be a CoWShed proxy.
    * @returns All TWAP orders and their part orders.
@@ -35,46 +40,47 @@ export class ProgrammaticOrderApi {
    * GraphQL, or response validation fails.
    */
   async getTwapOrders(params: GetTwapOrdersParams): Promise<TwapOrder[]> {
-    const { chainId } = params
-    const resolvedOwner = validateRequest(params.resolvedOwner, chainId)
+    const { chainId, onProgress } = params
+
+    if (!isEvmAddress(params.resolvedOwner)) {
+      throw new ProgrammaticOrderApiError(`Invalid EVM owner address: ${params.resolvedOwner}`)
+    }
+
+    if (!Number.isInteger(chainId) || !isSupportedChain(chainId) || !isEvmChain(chainId)) {
+      throw new ProgrammaticOrderApiError(`Unsupported EVM chain: ${chainId}`)
+    }
+
+    const resolvedOwner = getEvmAddressKey(params.resolvedOwner)
 
     log(`ProgrammaticOrderApi: fetching TWAP orders for ${resolvedOwner} on chain ${chainId}`)
 
-    const parents = await getTwapParents(this.client, resolvedOwner, chainId)
-    const partOrdersByParent = await getTwapPartOrders(
-      this.client,
-      chainId,
-      parents.map(({ eventId }) => eventId),
-    )
+    try {
+      const orders: TwapOrder[] = []
+      const parents = await getTwapParents(this.graphql, resolvedOwner, chainId)
 
-    const orders = parents.map((parent) => {
-      const partOrders = partOrdersByParent.get(parent.eventId) ?? []
+      for (const parent of parents) {
+        const partOrders = await getTwapPartOrders(this.graphql, chainId, parent.eventId)
+        const order = {
+          ...parent,
+          chainId,
+          resolvedOwner,
+          partOrders,
+          executedAmounts: sumExecutedAmounts(partOrders),
+        } satisfies TwapOrder
 
-      return {
-        ...parent,
-        chainId,
-        resolvedOwner,
-        partOrders,
-        executedAmounts: sumExecutedAmounts(partOrders),
-      } satisfies TwapOrder
-    })
+        orders.push(order)
+        onProgress?.(order)
+      }
 
-    log(
-      `ProgrammaticOrderApi: fetched ${orders.length} TWAP orders and ${orders.reduce((sum, order) => sum + order.partOrders.length, 0)} part orders`,
-    )
+      log(
+        `ProgrammaticOrderApi: fetched ${orders.length} TWAP orders and ${orders.reduce((sum, order) => sum + order.partOrders.length, 0)} part orders`,
+      )
 
-    return orders
+      return orders
+    } catch (cause) {
+      if (cause instanceof ProgrammaticOrderApiError) throw cause
+
+      throw new ProgrammaticOrderApiError('Failed to fetch TWAP orders', { cause })
+    }
   }
-}
-
-function validateRequest(owner: string, chainId: SupportedChainId): string {
-  if (!isEvmAddress(owner)) {
-    throw new ProgrammaticOrderApiError('invalid-request', `Invalid EVM owner address: ${owner}`)
-  }
-
-  if (!Number.isInteger(chainId) || !isSupportedChain(chainId) || !isEvmChain(chainId)) {
-    throw new ProgrammaticOrderApiError('invalid-request', `Unsupported EVM chain: ${chainId}`)
-  }
-
-  return getEvmAddressKey(owner)
 }

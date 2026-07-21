@@ -39,6 +39,8 @@ const twapOrders = await api.getTwapOrders({
 
 Each result preserves both its creation `eventId` and ComposableCoW `hash`. `schedule.numberOfParts` is the number of scheduled parts. `partOrders` contains the corresponding part orders, so its length may be smaller. `executedAmounts` sums those part orders. The schedule's `effectiveStartTime` is the creation block timestamp when the on-chain `t0` was zero. Pass `apiUrl` to the constructor to use another programmatic orders API deployment.
 
+Pass `onProgress` to receive each fully assembled TWAP order after all its available part orders are fetched. The promise returns the complete result. If a later page fails, the promise rejects and previously emitted orders remain provisional.
+
 Source contracts: [conditional-order generator](https://github.com/bleu/cow-programmatic-orders-api/blob/main/src/api/gql-docs/conditional-order-generator.ts), [discrete order](https://github.com/bleu/cow-programmatic-orders-api/blob/main/src/api/gql-docs/discrete-order.ts), [TWAP schedule](https://github.com/bleu/cow-programmatic-orders-api/blob/main/docs/supported-order-types.md#twap-time-weighted-average-price), and the canonical [ComposableCoW TWAP order](https://github.com/cowprotocol/composable-cow/blob/main/src/types/twap/libraries/TWAPOrder.sol#L31-L42).
 
 ## Core Components
