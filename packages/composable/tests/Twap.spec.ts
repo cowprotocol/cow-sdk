@@ -1,6 +1,6 @@
 import { Block, getGlobalAdapter, Provider, setGlobalAdapter, ZERO_ADDRESS } from '@cowprotocol/sdk-common'
 import { GPv2Order, OwnerContext, PollParams, PollResultCode, PollResultErrors } from '../src/types'
-import { DurationType, StartTimeValue, Twap, TWAP_ADDRESS, TwapData } from '../src/orderTypes/Twap'
+import { DurationType, StartTimeValue, Twap, TWAP_ADDRESS, transformDataToStruct, transformStructToData, TwapData } from '../src/orderTypes/Twap'
 
 import { createAdapters } from './setup'
 
@@ -845,6 +845,35 @@ describe('TWAP Order - Multi-Adapter Tests', () => {
       })
     })
 
+    test('should return DONT_TRY_AGAIN when cabinet is not set for mining-time TWAPs', async () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const twap = new MockTwap({ handler: TWAP_ADDRESS, data: TWAP_PARAMS_TEST })
+      mockCabinet.mockReturnValue(uint256Helper(0))
+
+      const result = await twap.pollValidate({ ...pollParams, blockInfo: { blockNumber, blockTimestamp } })
+
+      expect(result).toEqual({
+        result: PollResultCode.DONT_TRY_AGAIN,
+        reason:
+          'Cabinet is not set. Required for TWAP orders that start at mining time.. User likely removed the order.',
+      })
+    })
+
+    test('should return UNEXPECTED_ERROR when poll validation fails unexpectedly', async () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const twap = new MockTwap({ handler: TWAP_ADDRESS, data: TWAP_PARAMS_TEST })
+      mockCabinet.mockRejectedValue(new Error('rpc unavailable'))
+
+      const result = await twap.pollValidate({ ...pollParams, blockInfo: { blockNumber, blockTimestamp } })
+
+      expect(result).toMatchObject({
+        result: PollResultCode.UNEXPECTED_ERROR,
+        reason: 'Unexpected error: rpc unavailable',
+      })
+    })
+
     test('should fetch latest block when blockInfo is not provided across all adapters', async () => {
       const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
@@ -1032,6 +1061,188 @@ describe('TWAP Order - Multi-Adapter Tests', () => {
         reason: "TWAP part hash't started. First TWAP part start at 1700000000 (2023-11-14T22:13:20.000Z)",
         error: undefined,
       })
+    })
+
+    test('should return UNEXPECTED_ERROR when TWAP is already expired', async () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const pollParams = getPollParams({
+        blockTimestamp: startTimestamp + 10 * timeBetweenParts,
+      })
+
+      const twap = new MockTwap({
+        handler: TWAP_ADDRESS,
+        data: {
+          ...TWAP_PARAMS_TEST,
+          timeBetweenParts: BigInt(timeBetweenParts),
+          numberOfParts: BigInt(10),
+          startTime: {
+            startType: StartTimeValue.AT_EPOCH,
+            epoch: BigInt(startTimestamp),
+          },
+        },
+      })
+
+      const result = await twap.handlePollFailedAlreadyPresent(orderId, order, pollParams)
+
+      expect(result).toEqual({
+        result: PollResultCode.UNEXPECTED_ERROR,
+        reason: 'TWAP is expired. Expired at 1700001000 (2023-11-14T22:30:00.000Z)',
+        error: undefined,
+      })
+    })
+    test('should handle polling when blockInfo is not provided', async () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      jest.spyOn(adapters.viemAdapter, 'getBlock').mockResolvedValue({
+        number: 123456n,
+        timestamp: 1_700_000_000n,
+      } as never)
+
+      const twap = new MockTwap({
+        handler: TWAP_ADDRESS,
+        data: {
+          ...TWAP_PARAMS_TEST,
+          timeBetweenParts: BigInt(100),
+          numberOfParts: BigInt(10),
+          startTime: {
+            startType: StartTimeValue.AT_EPOCH,
+            epoch: BigInt(1_700_000_000),
+          },
+        },
+      })
+
+      const result = await twap.handlePollFailedAlreadyPresent(orderId, order, {
+        owner: OWNER,
+        chainId: 1,
+        provider: {},
+      })
+
+      expect(result?.result).toBe(PollResultCode.TRY_AT_EPOCH)
+
+      jest.restoreAllMocks()
+    })
+  })
+
+  describe('factory and transforms', () => {
+    test('should instantiate from params and round-trip struct transforms', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const twap = Twap.fromData(TWAP_PARAMS_TEST)
+      const fromParams = Twap.fromParams(twap.leaf)
+
+      expect(fromParams.id).toBe(twap.id)
+      expect(twap.transformStructToData(twap.staticInput)).toEqual(twap.data)
+    })
+
+    test('should compute end timestamp for auto-duration TWAPs', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      class EndTimestampTwap extends Twap {
+        public computeEndTimestamp(startTimestamp: number): number {
+          return this.endTimestamp(startTimestamp)
+        }
+      }
+
+      const twap = new EndTimestampTwap({
+        handler: TWAP_ADDRESS,
+        data: TWAP_PARAMS_TEST,
+      })
+
+      expect(twap.computeEndTimestamp(1_000)).toBe(1_000 + 10 * 3_600)
+    })
+
+    test('should compute end timestamp for limit-duration TWAPs', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      class EndTimestampTwap extends Twap {
+        public computeEndTimestamp(startTimestamp: number): number {
+          return this.endTimestamp(startTimestamp)
+        }
+      }
+
+      const twap = new EndTimestampTwap({
+        handler: TWAP_ADDRESS,
+        data: {
+          ...TWAP_PARAMS_TEST,
+          durationOfPart: {
+            durationType: DurationType.LIMIT_DURATION,
+            duration: 500n,
+          },
+        },
+      })
+
+      expect(twap.computeEndTimestamp(1_000)).toBe(1_000 + 9 * 3_600 + 500)
+    })
+
+    test('should use default start time and duration when transforming partial data', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const partialData = { ...TWAP_PARAMS_TEST } as Partial<TwapData>
+      delete partialData.startTime
+      delete partialData.durationOfPart
+
+      const struct = transformDataToStruct(partialData as TwapData)
+
+      expect(struct.t0).toBe(0n)
+      expect(struct.span).toBe(0n)
+      expect(transformStructToData(struct).startTime.startType).toBe(StartTimeValue.AT_MINING_TIME)
+    })
+
+    test('should round-trip limit-duration structs', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const struct = transformDataToStruct({
+        ...TWAP_PARAMS_TEST,
+        durationOfPart: { durationType: DurationType.LIMIT_DURATION, duration: 500n },
+      })
+
+      expect(transformStructToData(struct).durationOfPart).toEqual({
+        durationType: DurationType.LIMIT_DURATION,
+        duration: 500n,
+      })
+    })
+
+    test('should validate TWAPs that rely on default start time and duration fields', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const partialData = { ...TWAP_PARAMS_TEST } as Partial<TwapData>
+      delete partialData.startTime
+      delete partialData.durationOfPart
+
+      expect(new Twap({ handler: TWAP_ADDRESS, data: partialData as TwapData }).isValid()).toEqual({
+        isValid: true,
+      })
+    })
+
+    test('should invalidate epoch start times outside uint32 range', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const result = Twap.fromData({
+        ...TWAP_PARAMS_TEST,
+        startTime: { startType: StartTimeValue.AT_EPOCH, epoch: BigInt(2 ** 32) },
+      }).isValid()
+
+      expect(result).toEqual({ isValid: false, reason: 'InvalidStartTime' })
+    })
+
+    test('should accept an adapter in the Twap constructor', () => {
+      const twap = new Twap({ handler: TWAP_ADDRESS, data: TWAP_PARAMS_TEST }, adapters.ethersV5Adapter)
+
+      expect(twap.isValid().isValid).toBe(true)
+    })
+
+    test('should format toString with default start time and duration', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const partialData = { ...TWAP_PARAMS_TEST } as Partial<TwapData>
+      delete partialData.startTime
+      delete partialData.durationOfPart
+
+      const twap = new Twap({ handler: TWAP_ADDRESS, data: partialData as TwapData })
+
+      expect(twap.toString()).toContain('AT_MINING_TIME')
+      expect(twap.toString()).toContain('"durationOfPart":"AUTO"')
     })
   })
 })
