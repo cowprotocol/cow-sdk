@@ -834,7 +834,7 @@ describe('ConditionalOrder - Multi-Adapter Tests', () => {
       const [params, factory, factoryData, dispatch] = decodeCalldata('createWithContext', createCalldata) as [
         { handler: string; salt: string; staticInput: string },
         string,
-        string,
+        `0x${string}`,
         boolean,
       ]
 
@@ -871,7 +871,7 @@ describe('ConditionalOrder - Multi-Adapter Tests', () => {
       const [params, factory, factoryData, dispatch] = decodeCalldata('createWithContext', createCalldata) as [
         { handler: string; salt: string; staticInput: string },
         string,
-        string,
+        `0x${string}`,
         boolean,
       ]
 
