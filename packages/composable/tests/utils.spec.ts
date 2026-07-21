@@ -290,7 +290,7 @@ describe('Utils Functions - Multi-Adapter Tests', () => {
         readContract: jest.fn().mockResolvedValue(verifier),
       }
 
-      await expect(getDomainVerifier(safe, domain, chainId, provider)).resolves.toBe(verifier)
+      await expect(getDomainVerifier(safe, domain, chainId, provider as any)).resolves.toBe(verifier)
       expect(provider.readContract).toHaveBeenCalled()
     })
   })
