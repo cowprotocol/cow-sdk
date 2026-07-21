@@ -1,9 +1,9 @@
 import type { SupportedChainId } from '@cowprotocol/sdk-config'
 import { areAddressesEqual } from '@cowprotocol/sdk-common'
 
-import type { GraphqlClient } from '../graphql'
-import { TWAP_PARENT_SCHEMA, TWAP_PART_ORDER_SCHEMA } from './parse'
-import type { TwapParent, TwapPartOrder } from './types'
+import type { GraphqlClient } from './graphql'
+import { TWAP_PARENT_SCHEMA, TWAP_PART_ORDER_SCHEMA } from './twap-schemas'
+import type { TwapParent, TwapPartOrder } from './twap-types'
 
 const PAGE_SIZE = 1000
 

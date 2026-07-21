@@ -1,7 +1,7 @@
 import type { SupportedChainId } from '@cowprotocol/sdk-config'
 import type { OrderStatus } from '@cowprotocol/sdk-order-book'
 
-import type { ProgrammaticOrderStatus } from '../common/types'
+import type { ProgrammaticOrderStatus } from './types'
 
 /** Input for querying TWAP orders. */
 export interface GetTwapOrdersParams {

@@ -11,8 +11,8 @@ import {
   TIMESTAMP_SCHEMA,
   UINT32_SCHEMA,
   UINT256_SCHEMA,
-} from '../common/parse'
-import type { TwapExecutedAmounts, TwapParent, TwapPartOrder } from './types'
+} from './schemas'
+import type { TwapParent } from './twap-types'
 
 /** @see https://github.com/bleu/cow-programmatic-orders-api/blob/main/docs/supported-order-types.md#twap-time-weighted-average-price */
 const TWAP_SCHEDULE_SCHEMA = v.object({
@@ -72,15 +72,3 @@ export const TWAP_PART_ORDER_SCHEMA = v.object({
   executedSellAmount: v.nullable(UINT256_SCHEMA),
   executedBuyAmount: v.nullable(UINT256_SCHEMA),
 })
-
-export function sumExecutedAmounts(partOrders: TwapPartOrder[]): TwapExecutedAmounts {
-  let executedSellAmount = 0n
-  let executedBuyAmount = 0n
-
-  for (const partOrder of partOrders) {
-    executedSellAmount += partOrder.executedSellAmount ?? 0n
-    executedBuyAmount += partOrder.executedBuyAmount ?? 0n
-  }
-
-  return { executedSellAmount, executedBuyAmount }
-}

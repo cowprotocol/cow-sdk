@@ -1,11 +1,10 @@
 import { isEvmChain, isSupportedChain } from '@cowprotocol/sdk-config'
 import { getEvmAddressKey, isEvmAddress, log } from '@cowprotocol/sdk-common'
 
-import { ProgrammaticOrderApiError, type ProgrammaticOrderApiOptions } from './common/types'
 import { GraphqlClient } from './graphql'
-import { sumExecutedAmounts } from './twap/parse'
-import { getTwapParents, getTwapPartOrders } from './twap/queries'
-import type { GetTwapOrdersParams, TwapOrder } from './twap/types'
+import { getTwapParents, getTwapPartOrders } from './twap-queries'
+import type { GetTwapOrdersParams, TwapOrder } from './twap-types'
+import { ProgrammaticOrderApiError, type ProgrammaticOrderApiOptions } from './types'
 
 const DEFAULT_API_URL = 'https://cow-programmatic-order.bleu.blue'
 
@@ -60,12 +59,20 @@ export class ProgrammaticOrderApi {
 
       for (const parent of parents) {
         const partOrders = await getTwapPartOrders(this.graphql, chainId, parent.eventId)
+        let executedSellAmount = 0n
+        let executedBuyAmount = 0n
+
+        for (const partOrder of partOrders) {
+          executedSellAmount += partOrder.executedSellAmount ?? 0n
+          executedBuyAmount += partOrder.executedBuyAmount ?? 0n
+        }
+
         const order = {
           ...parent,
           chainId,
           resolvedOwner,
           partOrders,
-          executedAmounts: sumExecutedAmounts(partOrders),
+          executedAmounts: { executedSellAmount, executedBuyAmount },
         } satisfies TwapOrder
 
         orders.push(order)
