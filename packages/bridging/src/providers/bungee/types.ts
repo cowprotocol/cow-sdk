@@ -1,6 +1,6 @@
 import type { SupportedChainId, TargetChainId } from '@cowprotocol/sdk-config'
 
-export type SupportedBridge = 'across' | 'cctp-v2' | 'cctp' | 'gnosis-native-bridge'
+export type SupportedBridge = 'across' | 'cctp-v2-fast' | 'cctp-v2' | 'cctp' | 'gnosis-native-bridge'
 
 export interface BungeeQuoteAPIRequest {
   userAddress: string
@@ -111,6 +111,7 @@ export interface BungeeQuoteAPIResponse {
 export enum BungeeBridge {
   'Across' = 'across',
   'CircleCCTPV2' = 'cctp-v2',
+  'CircleCCTPV2Fast' = 'cctp-v2-fast',
   'GnosisNative' = 'gnosis-native-bridge',
 }
 
@@ -118,6 +119,7 @@ export enum BungeeBridge {
 export const BungeeBridgeNames: Record<string, BungeeBridge> = {
   Across: BungeeBridge.Across,
   'Circle CCTP V2': BungeeBridge.CircleCCTPV2,
+  'Circle CCTP V2 Fast': BungeeBridge.CircleCCTPV2Fast,
   'Gnosis Native': BungeeBridge.GnosisNative,
 }
 
@@ -208,6 +210,7 @@ export enum BungeeEventStatus {
 export enum BungeeBridgeName {
   ACROSS = 'across',
   CCTP_V2 = 'cctp-v2',
+  CCTP_V2_FAST = 'cctp-v2-fast',
   GNOSIS_NATIVE = 'gnosis-native-bridge',
 }
 
