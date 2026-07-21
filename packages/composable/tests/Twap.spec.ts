@@ -1,6 +1,14 @@
 import { Block, getGlobalAdapter, Provider, setGlobalAdapter, ZERO_ADDRESS } from '@cowprotocol/sdk-common'
 import { GPv2Order, OwnerContext, PollParams, PollResultCode, PollResultErrors } from '../src/types'
-import { DurationType, StartTimeValue, Twap, TWAP_ADDRESS, transformDataToStruct, transformStructToData, TwapData } from '../src/orderTypes/Twap'
+import {
+  DurationType,
+  StartTimeValue,
+  Twap,
+  TWAP_ADDRESS,
+  transformDataToStruct,
+  transformStructToData,
+  TwapData,
+} from '../src/orderTypes/Twap'
 
 import { createAdapters } from './setup'
 
@@ -1116,6 +1124,7 @@ describe('TWAP Order - Multi-Adapter Tests', () => {
         owner: OWNER,
         chainId: 1,
         provider: {},
+        orderBookApi: {} as any,
       })
 
       expect(result?.result).toBe(PollResultCode.TRY_AT_EPOCH)
@@ -1178,7 +1187,7 @@ describe('TWAP Order - Multi-Adapter Tests', () => {
     test('should use default start time and duration when transforming partial data', () => {
       setGlobalAdapter(adapters.viemAdapter)
 
-      const partialData = { ...TWAP_PARAMS_TEST } as Partial<TwapData>
+      const partialData = { ...TWAP_PARAMS_TEST } as any
       delete partialData.startTime
       delete partialData.durationOfPart
 
@@ -1186,7 +1195,7 @@ describe('TWAP Order - Multi-Adapter Tests', () => {
 
       expect(struct.t0).toBe(0n)
       expect(struct.span).toBe(0n)
-      expect(transformStructToData(struct).startTime.startType).toBe(StartTimeValue.AT_MINING_TIME)
+      expect(transformStructToData(struct).startTime?.startType).toBe(StartTimeValue.AT_MINING_TIME)
     })
 
     test('should round-trip limit-duration structs', () => {
@@ -1206,7 +1215,7 @@ describe('TWAP Order - Multi-Adapter Tests', () => {
     test('should validate TWAPs that rely on default start time and duration fields', () => {
       setGlobalAdapter(adapters.viemAdapter)
 
-      const partialData = { ...TWAP_PARAMS_TEST } as Partial<TwapData>
+      const partialData = { ...TWAP_PARAMS_TEST } as any
       delete partialData.startTime
       delete partialData.durationOfPart
 
@@ -1235,7 +1244,7 @@ describe('TWAP Order - Multi-Adapter Tests', () => {
     test('should format toString with default start time and duration', () => {
       setGlobalAdapter(adapters.viemAdapter)
 
-      const partialData = { ...TWAP_PARAMS_TEST } as Partial<TwapData>
+      const partialData = { ...TWAP_PARAMS_TEST } as any
       delete partialData.startTime
       delete partialData.durationOfPart
 

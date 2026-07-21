@@ -444,8 +444,8 @@ describe('Multiplexer (ComposableCoW) - Multi-Adapter Tests', () => {
       expect(() => m.update('0x' + 'cd'.repeat(32), (order) => order)).toThrow('Order with id')
 
       jest.spyOn(m, 'orderIds', 'get').mockReturnValue([twap.id])
-      Reflect.deleteProperty(m as { orders: Orders }, 'orders')
-      ;(m as { orders: Orders }).orders = {}
+      Reflect.deleteProperty(m as unknown as { orders: Orders }, 'orders')
+      ;(m as unknown as { orders: Orders }).orders = {}
 
       expect(() => m.getByIndex(0)).toThrow(`Order with id ${twap.id} not found`)
     })
@@ -480,9 +480,10 @@ describe('Multiplexer (ComposableCoW) - Multi-Adapter Tests', () => {
 
       const readContract = jest.spyOn(adapters.viemAdapter, 'readContract').mockResolvedValue([order, signature])
 
-      await expect(
-        Multiplexer.poll(OWNER, proofWithParams, SupportedChainId.MAINNET, {}),
-      ).resolves.toEqual([order, signature])
+      await expect(Multiplexer.poll(OWNER, proofWithParams, SupportedChainId.MAINNET, {})).resolves.toEqual([
+        order,
+        signature,
+      ])
 
       await expect(
         Multiplexer.poll(OWNER, proofWithParams, SupportedChainId.MAINNET, {}, async () => '0xbeef'),
