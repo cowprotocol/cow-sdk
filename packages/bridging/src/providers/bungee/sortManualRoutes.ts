@@ -12,12 +12,15 @@ export function sortManualRoutes(manualRoutes: ManualRoutes): ManualRoutes {
     const bBridgeName = getBungeeBridgeFromDisplayName(b.routeDetails.name)
 
     if (aBridgeName && bBridgeName && CCTPV2_FAMILY.includes(aBridgeName) && CCTPV2_FAMILY.includes(bBridgeName)) {
-      // Should choose fast when amount is less than 5k
-      if (a.output.effectiveReceivedInUsd < CCTP_FAST_THRESHOLD) {
-        return aBridgeName === BungeeBridge.CircleCCTPV2Fast ? -1 : 1
+      if (aBridgeName === bBridgeName) {
+        return Number(b.output.amount) - Number(a.output.amount)
       }
 
-      return aBridgeName === BungeeBridge.CircleCCTPV2Fast ? 1 : -1
+      const isAFast = aBridgeName === BungeeBridge.CircleCCTPV2Fast
+      const fastRoute = isAFast ? a : b
+      const isFastPreferred = fastRoute.output.effectiveReceivedInUsd < CCTP_FAST_THRESHOLD
+
+      return isAFast === isFastPreferred ? -1 : 1
     }
 
     return Number(b.output.amount) - Number(a.output.amount)
