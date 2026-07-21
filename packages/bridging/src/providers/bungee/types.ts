@@ -14,6 +14,10 @@ export interface BungeeQuoteAPIRequest {
   disableSwapping: true
   disableAuto: true
   includeBridges?: SupportedBridge[]
+  /** ABI-encoded calldata to be executed on the destination chain after bridging */
+  destinationPayload?: string
+  /** Gas limit for executing the destination payload (add 30k buffer for receiver contract overhead) */
+  destinationGasLimit?: string
 }
 
 export interface BungeeQuoteAPIResponse {

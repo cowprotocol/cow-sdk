@@ -5,16 +5,24 @@ import {
   BridgeProvider,
   BridgeQuoteAndPost,
   BridgeQuoteResult,
+  BridgeThenSwapProvider,
+  BridgeThenSwapQuoteAndPost,
   CrossChainQuoteAndPost,
   HookBridgeProvider,
 } from './types'
 
 export function isBridgeQuoteAndPost(quote: CrossChainQuoteAndPost): quote is BridgeQuoteAndPost {
-  return 'bridge' in quote
+  return 'bridge' in quote && 'swap' in quote && !('bridgeTransaction' in quote)
+}
+
+export function isBridgeThenSwapQuoteAndPost(
+  quote: CrossChainQuoteAndPost,
+): quote is BridgeThenSwapQuoteAndPost {
+  return 'bridgeTransaction' in quote && 'orderFlowAddress' in quote
 }
 
 export function isQuoteAndPost(quote: CrossChainQuoteAndPost): quote is QuoteAndPost {
-  return !isBridgeQuoteAndPost(quote)
+  return !isBridgeQuoteAndPost(quote) && !isBridgeThenSwapQuoteAndPost(quote)
 }
 
 export function assertIsBridgeQuoteAndPost(quote: CrossChainQuoteAndPost): asserts quote is BridgeQuoteAndPost {
@@ -26,6 +34,16 @@ export function assertIsBridgeQuoteAndPost(quote: CrossChainQuoteAndPost): asser
 export function assertIsQuoteAndPost(quote: CrossChainQuoteAndPost): asserts quote is QuoteAndPost {
   if (!isQuoteAndPost(quote)) {
     throw new Error('Quote result is not of type QuoteAndPost. Are you sure the sell and buy chains are the same?')
+  }
+}
+
+export function assertIsBridgeThenSwapQuoteAndPost(
+  quote: CrossChainQuoteAndPost,
+): asserts quote is BridgeThenSwapQuoteAndPost {
+  if (!isBridgeThenSwapQuoteAndPost(quote)) {
+    throw new Error(
+      'Quote result is not of type BridgeThenSwapQuoteAndPost. Are you sure this is a bridge-then-swap operation?',
+    )
   }
 }
 
@@ -61,4 +79,10 @@ export function isReceiverAccountBridgeProvider<Q extends BridgeQuoteResult>(
   provider: BridgeProvider<Q>,
 ): provider is ReceiverAccountBridgeProvider<Q> {
   return provider.type === 'ReceiverAccountBridgeProvider'
+}
+
+export function isBridgeThenSwapProvider<Q extends BridgeQuoteResult>(
+  provider: BridgeProvider<Q>,
+): provider is BridgeThenSwapProvider<Q> {
+  return provider.type === 'BridgeThenSwapProvider'
 }
