@@ -9,6 +9,11 @@ export interface GetTwapOrdersParams {
   resolvedOwner: string
   /** Supported EVM chain containing the orders. */
   chainId: SupportedChainId
+  /**
+   * Receives each fully assembled TWAP order after all its available part orders are fetched.
+   * Emitted orders are provisional when a later page fails; the promise returns the complete result.
+   */
+  onProgress?: (order: TwapOrder) => void
 }
 
 /**
@@ -106,9 +111,4 @@ export interface TwapParent {
   status: ProgrammaticOrderStatus
   createdAt: number
   schedule: TwapSchedule
-}
-
-export interface TwapPartOrderRecord extends TwapPartOrder {
-  chainId: number
-  parentEventId: string
 }
