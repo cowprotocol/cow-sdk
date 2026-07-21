@@ -431,6 +431,117 @@ adapterNames.forEach((adapterName) => {
         expect(quote.signature).toBe('ed25519:testSignature')
       })
 
+      it('reports bridging fee amounts in the correct sell and buy currency scales', async () => {
+        const api = new NearIntentsApi()
+        const sellTokenAddress = '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'
+        const buyTokenAddress = '0x4200000000000000000000000000000000000006'
+        const testQuoteHash = '0xtestFeeCurrencyQuoteHash'
+
+        // Sell token (USDC, 6 decimals) and buy token (ETH, 18 decimals) differ hugely in scale,
+        // and amountInUsd !== amountOutUsd so the slippage-derived fees are non-zero. This makes a
+        // sell/buy-currency swap observable (with equal USD values, slippage is 0 and the swap hides).
+        const amountIn = '52000000' // 52 USDC (6 decimals)
+        const amountOut = '11760237526222378' // ~0.01176 ETH (18 decimals)
+        const amountInUsd = '51.9897'
+        const amountOutUsd = '51.9508'
+
+        const mockQuoteResponse: QuoteResponse = {
+          quote: {
+            amountIn,
+            amountInFormatted: '52.0',
+            amountInUsd,
+            minAmountIn: amountIn,
+            amountOut,
+            amountOutFormatted: '0.011760237526222378',
+            amountOutUsd,
+            minAmountOut: '11701433538591266',
+            timeEstimate: 60,
+            deadline: '2025-09-05T12:10:38.605Z',
+            timeWhenInactive: '2025-09-05T12:10:38.605Z',
+            depositAddress: '0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e',
+          },
+          quoteRequest: {
+            dry: false,
+            swapType: QuoteRequest.swapType.EXACT_INPUT,
+            depositMode: QuoteRequest.depositMode.SIMPLE,
+            slippageTolerance: 100,
+            originAsset: 'nep141:usdc.omft.near',
+            depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
+            destinationAsset: 'nep141:base.omft.near',
+            amount: amountIn,
+            refundTo: '0x0000000000000000000000000000000000000000',
+            refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
+            recipient: '0x0000000000000000000000000000000000000000',
+            recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
+            deadline: '2025-09-05T12:10:38.605Z',
+          },
+          signature: 'ed25519:testFeeSignature',
+          timestamp: '2025-09-05T12:00:38.695Z',
+        }
+
+        jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
+        jest.spyOn(api, 'getTokens').mockResolvedValue([
+          {
+            assetId: 'nep141:usdc.omft.near',
+            decimals: 6,
+            blockchain: TokenResponse.blockchain.BASE,
+            symbol: 'USDC',
+            price: 1,
+            priceUpdatedAt: '2025-09-05T12:00:38.695Z',
+            contractAddress: sellTokenAddress,
+          },
+          {
+            assetId: 'nep141:base.omft.near',
+            decimals: 18,
+            blockchain: TokenResponse.blockchain.BASE,
+            symbol: 'ETH',
+            price: 1,
+            priceUpdatedAt: '2025-09-05T12:00:38.695Z',
+            contractAddress: buyTokenAddress,
+          },
+        ])
+        jest.spyOn(api, 'getAttestation').mockResolvedValue({
+          version: 1,
+          signature:
+            '0x66edc32e2ab001213321ab7d959a2207fcef5190cc9abb6da5b0d2a8a9af2d4d2b0700e2c317c4106f337fd934fbbb0bf62efc8811a78603b33a8265d3b8f8cb1c',
+        })
+        provider.setApi(api)
+
+        jest.spyOn(provider, 'recoverDepositAddress').mockResolvedValue({
+          address: ATTESTATOR_ADDRESS,
+          quoteHash: testQuoteHash,
+          stringifiedQuote: '',
+          attestationSignature: '',
+        })
+
+        const quote = await provider.getQuote({
+          kind: OrderKind.SELL,
+          sellTokenChainId: 8453,
+          sellTokenAddress,
+          sellTokenDecimals: 6,
+          buyTokenChainId: 8453,
+          buyTokenAddress,
+          buyTokenDecimals: 18,
+          amount: 52000000n,
+          account: '0x0000000000000000000000000000000000000000',
+          appCode: 'test',
+          signer: '0x0000000000000000000000000000000000000000',
+        })
+
+        const slippage = 1 - Number(amountOutUsd) / Number(amountInUsd)
+        const bridgingFee = quote.amountsAndCosts.costs.bridgingFee
+
+        // The sell-currency fee must be denominated in the sell token (USDC, 6 decimals) and thus
+        // scaled by amountIn; the buy-currency fee in the buy token (ETH, 18 decimals), scaled by
+        // amountOut. Before the fix these two were swapped (each reported in the wrong token).
+        expect(bridgingFee.amountInSellCurrency).toBe(BigInt(Math.trunc(Number(amountIn) * slippage)))
+        expect(bridgingFee.amountInBuyCurrency).toBe(BigInt(Math.trunc(Number(amountOut) * slippage)))
+
+        // Sanity on magnitude: the sell fee is USDC-sized (small), the buy fee is ETH-sized (large).
+        expect(bridgingFee.amountInSellCurrency < 1_000_000n).toBe(true)
+        expect(bridgingFee.amountInBuyCurrency > 1_000_000_000_000n).toBe(true)
+      })
+
       it('should return stringifiedQuote and attestationSignature', async () => {
         const api = new NearIntentsApi()
 
