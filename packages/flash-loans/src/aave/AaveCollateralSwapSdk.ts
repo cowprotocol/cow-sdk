@@ -29,8 +29,10 @@ import {
 } from './types'
 import {
   AAVE_ADAPTER_FACTORY,
+  AAVE_ADAPTER_FACTORY_STAGING,
   AAVE_DAPP_ID_PER_TYPE,
   AAVE_HOOK_ADAPTER_PER_TYPE,
+  AAVE_HOOK_ADAPTER_PER_TYPE_STAGING,
   AAVE_POOL_ADDRESS,
   AaveFlashLoanType,
   ADAPTER_DOMAIN_NAME,
@@ -42,7 +44,7 @@ import {
   HASH_ZERO,
   PERCENT_SCALE,
 } from './const'
-import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
 import { aaveAdapterFactoryAbi } from './abi/AaveAdapterFactory'
 import { collateralSwapAdapterHookAbi } from './abi/CollateralSwapAdapterHook'
 import { debtSwapAdapterAbi } from './abi/DebtSwapAdapter'
@@ -81,6 +83,7 @@ export type AaveCollateralSwapSdkConfig = {
   aaveAdapterFactory?: Record<SupportedChainId, string>
   aavePoolAddress?: Record<SupportedChainId, string>
   hooksGasLimit?: { pre: bigint; post: bigint }
+  env?: CowEnv
 }
 
 /**
@@ -112,10 +115,16 @@ export class AaveCollateralSwapSdk {
    * @param {Record<SupportedChainId, string>} config.aavePoolAddress -
    *        Mapping of chain IDs to Aave pool addresses.
    *        Defaults to the predefined addresses from the constants.
+   * @param {CowEnv} config.env -
+   *        CoW settlement environment. Selects the prod or staging adapter addresses
+   *        when no explicit override is given. Defaults to 'prod'.
    */
   constructor(config?: AaveCollateralSwapSdkConfig) {
-    this.hookAdapterPerType = config?.hookAdapterPerType ?? AAVE_HOOK_ADAPTER_PER_TYPE
-    this.aaveAdapterFactory = config?.aaveAdapterFactory ?? AAVE_ADAPTER_FACTORY
+    const isStaging = config?.env === 'staging'
+    this.hookAdapterPerType =
+      config?.hookAdapterPerType ?? (isStaging ? AAVE_HOOK_ADAPTER_PER_TYPE_STAGING : AAVE_HOOK_ADAPTER_PER_TYPE)
+    this.aaveAdapterFactory =
+      config?.aaveAdapterFactory ?? (isStaging ? AAVE_ADAPTER_FACTORY_STAGING : AAVE_ADAPTER_FACTORY)
     this.aavePoolAddress = config?.aavePoolAddress ?? AAVE_POOL_ADDRESS
     this.hooksGasLimit = config?.hooksGasLimit ?? DEFAULT_HOOK_GAS_LIMIT
   }

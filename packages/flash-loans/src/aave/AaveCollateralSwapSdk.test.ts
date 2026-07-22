@@ -1273,6 +1273,54 @@ adapterNames.forEach((adapterName) => {
         swapSettingsCall = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
         expect(swapSettingsCall.appData.metadata.flashloan.liquidityProvider).toBe(customMainnetPool)
       })
+
+      test('should use staging (barn) adapter addresses on Base when env is "staging"', async () => {
+        const stagingSdk = new AaveCollateralSwapSdk({ env: 'staging' })
+        const readContractSpy = setupReadContractMock()
+
+        await stagingSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.BASE,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        const getInstanceCall = readContractSpy.mock.calls.find(
+          (call) => call[0]?.functionName === 'getInstanceDeterministicAddress',
+        )
+
+        expect(getInstanceCall?.[0]?.address).toBe('0xF06B99bFD3ABa9b494eE531c23b19dfCc14e2627')
+        expect(getInstanceCall?.[0]?.args?.[0]).toBe('0x48D064a4B7fe0bDDB754BEE5cf5a562B68AB34A5')
+
+        const swapSettingsCall = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
+        expect(swapSettingsCall.appData.metadata.flashloan.receiver).toBe('0xF06B99bFD3ABa9b494eE531c23b19dfCc14e2627')
+      })
+
+      test('should let an explicit adapter override win over env', async () => {
+        const customFactory = '0x1111111111111111111111111111111111111111'
+        const overrideSdk = new AaveCollateralSwapSdk({
+          env: 'staging',
+          aaveAdapterFactory: { ...AAVE_ADAPTER_FACTORY, [SupportedChainId.BASE]: customFactory },
+        })
+        const readContractSpy = setupReadContractMock()
+
+        await overrideSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.BASE,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        const getInstanceCall = readContractSpy.mock.calls.find(
+          (call) => call[0]?.functionName === 'getInstanceDeterministicAddress',
+        )
+
+        expect(getInstanceCall?.[0]?.address).toBe(customFactory)
+      })
     })
   })
 })
