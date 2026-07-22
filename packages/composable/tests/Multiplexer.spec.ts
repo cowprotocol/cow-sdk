@@ -1,4 +1,4 @@
-import { Multiplexer, Orders } from '../src/Multiplexer'
+import { Multiplexer, type Orders } from '../src/Multiplexer'
 import { ProofLocation } from '../src/types'
 import { Twap } from '../src/orderTypes/Twap'
 import { TWAP_PARAMS_TEST } from './Twap.spec'
@@ -444,8 +444,8 @@ describe('Multiplexer (ComposableCoW) - Multi-Adapter Tests', () => {
       expect(() => m.update('0x' + 'cd'.repeat(32), (order) => order)).toThrow('Order with id')
 
       jest.spyOn(m, 'orderIds', 'get').mockReturnValue([twap.id])
-      Reflect.deleteProperty(m as { orders: Orders }, 'orders')
-      ;(m as { orders: Orders }).orders = {}
+      Reflect.deleteProperty(m, 'orders')
+      Reflect.set(m, 'orders', {})
 
       expect(() => m.getByIndex(0)).toThrow(`Order with id ${twap.id} not found`)
     })
