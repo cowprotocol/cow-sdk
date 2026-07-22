@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.3.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.3.0...sdk-contracts-ts-v3.3.1) (2026-07-22)
+
+
+### 🐛 Bug Fixes
+
+* bump version ([#940](https://github.com/cowprotocol/cow-sdk/issues/940)) ([ffaa067](https://github.com/cowprotocol/cow-sdk/commit/ffaa067644c5e3ea28febfff8e1a5d79e82254c3))
+
 ## [3.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.2.1...sdk-contracts-ts-v3.3.0) (2026-07-22)
 
 
