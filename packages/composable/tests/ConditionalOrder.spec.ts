@@ -775,13 +775,11 @@ describe('ConditionalOrder - Multi-Adapter Tests', () => {
 
   describe('calldata helpers', () => {
     function decodeCalldata(functionName: 'create' | 'createWithContext' | 'remove', calldata: string) {
-      return adapters.viemAdapter.utils.decodeFunctionData(ComposableCowFactoryAbi, functionName, calldata)
+      return adapters.viemAdapter.utils.decodeFunctionData(ComposableCowFactoryAbi as any, functionName, calldata)
     }
 
     function expectFunctionSelector(functionName: 'create' | 'createWithContext' | 'remove', calldata: string) {
-      const selector = adapters.viemAdapter.utils
-        .id(`${functionName}((address,bytes32,bytes),bool)`)
-        .slice(0, 10)
+      const selector = adapters.viemAdapter.utils.id(`${functionName}((address,bytes32,bytes),bool)`).slice(0, 10)
 
       if (functionName === 'createWithContext') {
         expect(calldata.slice(0, 10)).toBe(
@@ -881,7 +879,7 @@ describe('ConditionalOrder - Multi-Adapter Tests', () => {
         staticInput: order.encodeStaticInput(),
       })
       expect(factory).toBe('0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc')
-      expect(adapters.viemAdapter.utils.decodeAbi(['uint256'], factoryData)[0]).toBe(42n)
+      expect(adapters.viemAdapter.utils.decodeAbi(['uint256'], factoryData as `0x${string}`)[0]).toBe(42n)
       expect(dispatch).toBe(true)
     })
 
