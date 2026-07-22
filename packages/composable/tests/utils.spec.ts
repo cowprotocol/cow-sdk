@@ -287,6 +287,7 @@ describe('Utils Functions - Multi-Adapter Tests', () => {
       const safe = '0x' + '33'.repeat(20)
       const chainId = SupportedChainId.MAINNET
       const provider = {
+        getStorage: jest.fn(),
         readContract: jest.fn().mockResolvedValue(verifier),
       }
 

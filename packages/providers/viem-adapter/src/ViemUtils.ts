@@ -265,12 +265,8 @@ export class ViemUtils implements AdapterUtils {
     })
   }
 
-  decodeFunctionData(
-    abi: Array<{ name: string; inputs: Array<{ type: string }>; type: string }>,
-    functionName: string,
-    data: string,
-  ): any {
-    const functionAbi = abi.find((item) => item.type === 'function' && item.name === functionName)
+  decodeFunctionData(abi: Abi, functionName: string, data: string): any {
+    const functionAbi = abi.find((item): item is AbiFunction => item.type === 'function' && item.name === functionName)
     if (!functionAbi) {
       throw new Error(`Function ${functionName} not found in ABI`)
     }

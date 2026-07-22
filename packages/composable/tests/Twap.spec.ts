@@ -1,14 +1,6 @@
 import { Block, getGlobalAdapter, Provider, setGlobalAdapter, ZERO_ADDRESS } from '@cowprotocol/sdk-common'
 import { GPv2Order, OwnerContext, PollParams, PollResultCode, PollResultErrors } from '../src/types'
-import {
-  DurationType,
-  StartTimeValue,
-  Twap,
-  TWAP_ADDRESS,
-  transformDataToStruct,
-  transformStructToData,
-  TwapData,
-} from '../src/orderTypes/Twap'
+import { DurationType, StartTimeValue, Twap, TWAP_ADDRESS, transformDataToStruct, transformStructToData, TwapData } from '../src/orderTypes/Twap'
 
 import { createAdapters } from './setup'
 
@@ -1124,7 +1116,7 @@ describe('TWAP Order - Multi-Adapter Tests', () => {
         owner: OWNER,
         chainId: 1,
         provider: {},
-        orderBookApi: {} as any,
+        orderBookApi: {} as PollParams['orderBookApi'],
       })
 
       expect(result?.result).toBe(PollResultCode.TRY_AT_EPOCH)
@@ -1187,11 +1179,9 @@ describe('TWAP Order - Multi-Adapter Tests', () => {
     test('should use default start time and duration when transforming partial data', () => {
       setGlobalAdapter(adapters.viemAdapter)
 
-      const partialData = { ...TWAP_PARAMS_TEST } as any
-      delete partialData.startTime
-      delete partialData.durationOfPart
+      const partialData = { ...TWAP_PARAMS_TEST, startTime: undefined, durationOfPart: undefined }
 
-      const struct = transformDataToStruct(partialData as TwapData)
+      const struct = transformDataToStruct(partialData)
 
       expect(struct.t0).toBe(0n)
       expect(struct.span).toBe(0n)
@@ -1215,11 +1205,9 @@ describe('TWAP Order - Multi-Adapter Tests', () => {
     test('should validate TWAPs that rely on default start time and duration fields', () => {
       setGlobalAdapter(adapters.viemAdapter)
 
-      const partialData = { ...TWAP_PARAMS_TEST } as any
-      delete partialData.startTime
-      delete partialData.durationOfPart
+      const partialData = { ...TWAP_PARAMS_TEST, startTime: undefined, durationOfPart: undefined }
 
-      expect(new Twap({ handler: TWAP_ADDRESS, data: partialData as TwapData }).isValid()).toEqual({
+      expect(new Twap({ handler: TWAP_ADDRESS, data: partialData }).isValid()).toEqual({
         isValid: true,
       })
     })
@@ -1244,11 +1232,9 @@ describe('TWAP Order - Multi-Adapter Tests', () => {
     test('should format toString with default start time and duration', () => {
       setGlobalAdapter(adapters.viemAdapter)
 
-      const partialData = { ...TWAP_PARAMS_TEST } as any
-      delete partialData.startTime
-      delete partialData.durationOfPart
+      const partialData = { ...TWAP_PARAMS_TEST, startTime: undefined, durationOfPart: undefined }
 
-      const twap = new Twap({ handler: TWAP_ADDRESS, data: partialData as TwapData })
+      const twap = new Twap({ handler: TWAP_ADDRESS, data: partialData })
 
       expect(twap.toString()).toContain('AT_MINING_TIME')
       expect(twap.toString()).toContain('"durationOfPart":"AUTO"')
