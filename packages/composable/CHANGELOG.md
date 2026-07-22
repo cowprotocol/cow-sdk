@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.1.2...sdk-composable-v1.2.0) (2026-07-22)
+
+
+### ✨ Features
+
+* **bridge:** support CCTP v2 in Bungee ([#933](https://github.com/cowprotocol/cow-sdk/issues/933)) ([fcb0d26](https://github.com/cowprotocol/cow-sdk/commit/fcb0d2630b93d826474245a7fdf26fb8bccf6d34))
+
+
+### 🐛 Bug Fixes
+
+* fix typescript errors ([#937](https://github.com/cowprotocol/cow-sdk/issues/937)) ([b00e6ed](https://github.com/cowprotocol/cow-sdk/commit/b00e6ed8d380cc0e665e6e47ecf0ca2c635748a6))
+
+
+### 🧪 Tests
+
+* **composable:** reach full unit test coverage ([#920](https://github.com/cowprotocol/cow-sdk/issues/920)) ([68d9b7c](https://github.com/cowprotocol/cow-sdk/commit/68d9b7c67573ab311d7f315c6754bb11f4a74642))
+
+
+### 🔧 Miscellaneous
+
+* update coverage badges ([#935](https://github.com/cowprotocol/cow-sdk/issues/935)) ([db7f12d](https://github.com/cowprotocol/cow-sdk/commit/db7f12d0471aa28c602c9371a6fee17face8f01c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-contracts-ts bumped to 3.3.0
+    * @cowprotocol/sdk-order-signing bumped to 1.1.3
+  * devDependencies
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.25
+
 ## [1.1.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.1.1...sdk-composable-v1.1.2) (2026-06-23)
 
 

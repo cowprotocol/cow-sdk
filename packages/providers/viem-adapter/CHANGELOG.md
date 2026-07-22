@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.25](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.3.24...sdk-viem-adapter-v0.3.25) (2026-07-22)
+
+
+### 🐛 Bug Fixes
+
+* fix typescript errors ([#937](https://github.com/cowprotocol/cow-sdk/issues/937)) ([b00e6ed](https://github.com/cowprotocol/cow-sdk/commit/b00e6ed8d380cc0e665e6e47ecf0ca2c635748a6))
+
 ## [0.3.24](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.3.23...sdk-viem-adapter-v0.3.24) (2026-06-15)
 
 

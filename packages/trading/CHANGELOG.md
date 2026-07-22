@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.2.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v2.2.2...sdk-trading-v2.2.3) (2026-07-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 5.3.2
+    * @cowprotocol/sdk-order-signing bumped to 1.1.3
+    * @cowprotocol/sdk-contracts-ts bumped to 3.3.0
+  * devDependencies
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.25
+
 ## [2.2.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v2.2.1...sdk-trading-v2.2.2) (2026-06-23)
 
 

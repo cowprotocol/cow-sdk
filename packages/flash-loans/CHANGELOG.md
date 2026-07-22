@@ -1,5 +1,23 @@
 # Changelog
 
+## [3.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v3.2.2...sdk-flash-loans-v3.3.0) (2026-07-22)
+
+
+### ✨ Features
+
+* **flash-loans:** add barn (staging) Aave V3 adapters on Base ([#938](https://github.com/cowprotocol/cow-sdk/issues/938)) ([aceb15b](https://github.com/cowprotocol/cow-sdk/commit/aceb15bd0b96f362a6b5a0a27d5d03e603c95565))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 5.3.2
+    * @cowprotocol/sdk-trading bumped to 2.2.3
+    * @cowprotocol/sdk-order-signing bumped to 1.1.3
+  * devDependencies
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.25
+
 ## [3.2.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v3.2.1...sdk-flash-loans-v3.2.2) (2026-06-23)
 
 
