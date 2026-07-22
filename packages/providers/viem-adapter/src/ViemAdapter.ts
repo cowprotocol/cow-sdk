@@ -45,7 +45,7 @@ export interface ViemTypes extends AdapterTypes {
 
 export interface ViemAdapterOptions {
   provider: PublicClient
-  signer?: Account | PrivateKey // Optional account or private key
+  signer?: Account | PrivateKey
   walletClient?: WalletClient
 }
 

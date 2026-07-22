@@ -16,7 +16,6 @@ export enum WeirollCommandFlags {
 }
 
 const WEIROLL_ADDRESS = '0x9585c3062Df1C247d5E373Cfca9167F7dC2b5963'
-
 const WEIROLL_ABI = [
   {
     inputs: [
