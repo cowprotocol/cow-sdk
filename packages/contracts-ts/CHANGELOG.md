@@ -1,5 +1,19 @@
 # Changelog
 
+## [3.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.2.1...sdk-contracts-ts-v3.3.0) (2026-07-22)
+
+
+### ✨ Features
+
+* **bridge:** support CCTP v2 in Bungee ([#933](https://github.com/cowprotocol/cow-sdk/issues/933)) ([fcb0d26](https://github.com/cowprotocol/cow-sdk/commit/fcb0d2630b93d826474245a7fdf26fb8bccf6d34))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.25
+
 ## [3.2.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.2.0...sdk-contracts-ts-v3.2.1) (2026-06-23)
 
 

@@ -1,5 +1,31 @@
 # Changelog
 
+## [4.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.2.2...sdk-bridging-v4.3.0) (2026-07-22)
+
+
+### ✨ Features
+
+* **bridge:** support CCTP v2 in Bungee ([#933](https://github.com/cowprotocol/cow-sdk/issues/933)) ([fcb0d26](https://github.com/cowprotocol/cow-sdk/commit/fcb0d2630b93d826474245a7fdf26fb8bccf6d34))
+
+
+### 🐛 Bug Fixes
+
+* **bridge:** correct fee amounts in Near Intents ([#926](https://github.com/cowprotocol/cow-sdk/issues/926)) ([fa6665c](https://github.com/cowprotocol/cow-sdk/commit/fa6665c1ea492146080a1cfdefaaa4ab2eded2c6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 5.3.2
+    * @cowprotocol/sdk-contracts-ts bumped to 3.3.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.4.2
+    * @cowprotocol/sdk-trading bumped to 2.2.3
+    * @cowprotocol/sdk-weiroll bumped to 0.2.1
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 1.1.3
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.25
+
 ## [4.2.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.2.1...sdk-bridging-v4.2.2) (2026-06-23)
 
 

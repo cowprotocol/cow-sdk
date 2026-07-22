@@ -1,5 +1,14 @@
 # Changelog
 
+## [5.3.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v5.3.1...sdk-app-data-v5.3.2) (2026-07-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.25
+
 ## [5.3.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v5.3.0...sdk-app-data-v5.3.1) (2026-06-23)
 
 
