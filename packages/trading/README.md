@@ -49,6 +49,8 @@ Main functions:
 - `postSwapOrder` - Get a quote and create a swap order.
 - `postLimitOrder` - Create a limit order.
 - `getQuote` - Fetch a quote for a swap order.
+- `getQuoteOnly` - Fetch a quote with only an owner address, no signer needed.
+- `postSignedOrder` - Submit an order signed externally (see [signer-less flow](#sign-an-order-externally-signer-less-flow)).
 
 Order Management:
 
@@ -527,6 +529,67 @@ console.log('Execute the transaction to sign the order', preSignTransaction)
 
 > **Note:** it's important to specify the `owner` parameter if you create an order with a smart-contract wallet, and it differs from the signer (for example Safe).
 > CoW Protocol will use `owner` in order to check the order owner balance, allowance and other things.
+
+### Sign an order externally (signer-less flow)
+
+If the signing key can't be handed to the SDK — cold wallets (Tangem), MPC/custody services (Fireblocks), or any setup where signing happens in a separate environment — you can complete a swap with only the `owner` address and an externally-produced signature:
+
+1. `getQuoteOnly({ owner, ... })` — get a quote for the owner account, no signer needed
+2. `getOrderToSubmit(quoteResults)` — build the order body, everything except the signature
+3. Sign `quoteResults.orderTypedData` in your own environment (`eth_signTypedData_v4`)
+4. `postSignedOrder(orderToSubmit, signature)` — upload the app-data and submit the order
+
+#### Example
+
+```typescript
+import { setGlobalAdapter, SupportedChainId, OrderKind, TradingSdk, getOrderToSubmit } from '@cowprotocol/cow-sdk'
+import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
+import { JsonRpcProvider } from 'ethers'
+
+// The adapter carries NO signer — it is only used for hashing utilities when
+// building app-data. The private key never enters the SDK.
+setGlobalAdapter(new EthersV6Adapter({ provider: new JsonRpcProvider('YOUR_RPC_URL') }))
+
+const sdk = new TradingSdk({
+  chainId: SupportedChainId.SEPOLIA,
+  appCode: '<YOUR_APP_CODE>',
+})
+
+const quoteResults = await sdk.getQuoteOnly({
+  owner: '0x<ownerAddress>', // the account that will sign the order
+  kind: OrderKind.SELL,
+  sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+  sellTokenDecimals: 18,
+  buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
+  buyTokenDecimals: 18,
+  amount: '120000000000000000',
+})
+
+// Everything sendOrder needs, except the signature
+const orderToSubmit = getOrderToSubmit(quoteResults)
+
+// Produce the signature in your own environment, e.g. with a raw JSON-RPC call:
+//   eth_signTypedData_v4(owner, JSON.stringify(quoteResults.orderTypedData))
+// or with a signing library (see the note about EIP712Domain below):
+//   const { EIP712Domain: _, ...types } = quoteResults.orderTypedData.types
+//   const signature = await coldWallet.signTypedData(quoteResults.orderTypedData.domain, types, quoteResults.orderTypedData.message)
+const signature = await signInYourEnvironment(quoteResults.orderTypedData)
+
+const { orderId } = await sdk.postSignedOrder(orderToSubmit, signature)
+
+console.log('Order created, id: ', orderId)
+```
+
+Runnable versions (with a local wallet playing the cold wallet) are in `examples/nodejs/ethers6/src/signerless.ts` and `examples/nodejs/viem/src/signerless.ts`.
+
+> **Note:** the signature must come from the `owner` account — the order book recovers the signer and rejects the order if it doesn't match. `owner` also needs the sell-token balance and a Vault Relayer approval.
+
+A few things specific to this flow:
+
+- Sign `orderToSign` verbatim: network costs and slippage are already folded in and `feeAmount` is `0`, so the typed-data amounts won't match the headline quote. Nothing can be changed without re-quoting.
+- Native-token sells aren't supported here — they need an on-chain transaction (see `postSellNativeCurrencyOrder`).
+- `orderTypedData.types` includes `EIP712Domain` so it works as-is with raw `eth_signTypedData_v4`. ethers throws if it's present — drop it from `types` first (see the example); viem accepts either form.
+- `getOrderToSubmit` defaults to the `EIP712` signing scheme (sign `orderTypedData` via `eth_signTypedData_v4`). To sign with `eth_sign`/`personal_sign` instead, compute the EIP-712 digest of the order and `personal_sign` that, then pass `getOrderToSubmit(quoteResults, SigningScheme.ETHSIGN)` — the scheme must match how you signed. `PRESIGN` (on-chain flow) isn't part of this flow, and `EIP1271` (smart-account) support is planned for a later milestone.
 
 ### Optional parameters
 
