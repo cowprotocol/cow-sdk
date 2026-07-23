@@ -68,6 +68,8 @@ async function main() {
   // Everything sendOrder needs, except the signature.
   // The amounts differ from the quote: network costs and slippage are already folded in,
   // and that is what gets signed.
+  // Defaults to EIP712 (matches signTypedData below). For personal_sign, compute the
+  // EIP-712 digest, sign that, and pass SigningScheme.ETHSIGN as the 2nd argument.
   const orderToSubmit = getOrderToSubmit(quoteResults)
   console.log('Order to submit:', orderToSubmit)
 

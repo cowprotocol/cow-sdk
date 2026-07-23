@@ -72,10 +72,24 @@ describe('getOrderToSubmit', () => {
     expect(result.from).toBe(owner)
   })
 
-  it('should always use the EIP712 signing scheme', () => {
+  it('should default to the EIP712 signing scheme', () => {
     const result = getOrderToSubmit(defaultQuoteResults)
 
     expect(result.signingScheme).toBe(SigningScheme.EIP712)
+  })
+
+  it('should use the provided signing scheme', () => {
+    const result = getOrderToSubmit(defaultQuoteResults, SigningScheme.ETHSIGN)
+
+    expect(result.signingScheme).toBe(SigningScheme.ETHSIGN)
+  })
+
+  it('should throw for the PRESIGN scheme (on-chain flow)', () => {
+    expect(() => getOrderToSubmit(defaultQuoteResults, SigningScheme.PRESIGN)).toThrow(/PRESIGN/)
+  })
+
+  it('should throw for the EIP1271 scheme (not yet supported)', () => {
+    expect(() => getOrderToSubmit(defaultQuoteResults, SigningScheme.EIP1271)).toThrow(/EIP-1271/)
   })
 
   it('should pass the quoteId through', () => {

@@ -589,6 +589,7 @@ A few things specific to this flow:
 - Sign `orderToSign` verbatim: network costs and slippage are already folded in and `feeAmount` is `0`, so the typed-data amounts won't match the headline quote. Nothing can be changed without re-quoting.
 - Native-token sells aren't supported here — they need an on-chain transaction (see `postSellNativeCurrencyOrder`).
 - `orderTypedData.types` includes `EIP712Domain` so it works as-is with raw `eth_signTypedData_v4`. ethers throws if it's present — drop it from `types` first (see the example); viem accepts either form.
+- `getOrderToSubmit` defaults to the `EIP712` signing scheme (sign `orderTypedData` via `eth_signTypedData_v4`). To sign with `eth_sign`/`personal_sign` instead, compute the EIP-712 digest of the order and `personal_sign` that, then pass `getOrderToSubmit(quoteResults, SigningScheme.ETHSIGN)` — the scheme must match how you signed. `PRESIGN` (on-chain flow) isn't part of this flow, and `EIP1271` (smart-account) support is planned for a later milestone.
 
 ### Optional parameters
 
