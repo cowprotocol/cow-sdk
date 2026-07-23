@@ -1,0 +1,136 @@
+export const ComposableCowPollerAbi = [
+  {
+    type: 'constructor',
+    inputs: [
+      { name: 'composableCow', type: 'address', internalType: 'contract ComposableCoW' },
+      { name: 'cowShedFactory', type: 'address', internalType: 'contract ICowShedFactory' },
+    ],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'COMPOSABLE_COW',
+    inputs: [],
+    outputs: [{ name: '', type: 'address', internalType: 'contract ComposableCoW' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'COW_SHED_FACTORY',
+    inputs: [],
+    outputs: [{ name: '', type: 'address', internalType: 'contract ICowShedFactory' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'funded',
+    inputs: [
+      { name: '', type: 'bytes32', internalType: 'bytes32' },
+      { name: '', type: 'bytes32', internalType: 'bytes32' },
+    ],
+    outputs: [{ name: '', type: 'bool', internalType: 'bool' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'pollFunds',
+    inputs: [{ name: 'id', type: 'bytes32', internalType: 'bytes32' }],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'register',
+    inputs: [
+      {
+        name: 'schedule',
+        type: 'tuple',
+        internalType: 'struct ComposableCowPoller.Schedule',
+        components: [
+          { name: 'handler', type: 'address', internalType: 'contract IConditionalOrderGenerator' },
+          { name: 'funder', type: 'address', internalType: 'address' },
+          { name: 'owner', type: 'address', internalType: 'address' },
+          { name: 'salt', type: 'bytes32', internalType: 'bytes32' },
+          { name: 'staticInput', type: 'bytes', internalType: 'bytes' },
+        ],
+      },
+    ],
+    outputs: [{ name: 'id', type: 'bytes32', internalType: 'bytes32' }],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'revoke',
+    inputs: [{ name: 'id', type: 'bytes32', internalType: 'bytes32' }],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'scheduleId',
+    inputs: [
+      {
+        name: 'schedule',
+        type: 'tuple',
+        internalType: 'struct ComposableCowPoller.Schedule',
+        components: [
+          { name: 'handler', type: 'address', internalType: 'contract IConditionalOrderGenerator' },
+          { name: 'funder', type: 'address', internalType: 'address' },
+          { name: 'owner', type: 'address', internalType: 'address' },
+          { name: 'salt', type: 'bytes32', internalType: 'bytes32' },
+          { name: 'staticInput', type: 'bytes', internalType: 'bytes' },
+        ],
+      },
+    ],
+    outputs: [{ name: '', type: 'bytes32', internalType: 'bytes32' }],
+    stateMutability: 'pure',
+  },
+  {
+    type: 'function',
+    name: 'schedules',
+    inputs: [{ name: '', type: 'bytes32', internalType: 'bytes32' }],
+    outputs: [
+      { name: 'handler', type: 'address', internalType: 'contract IConditionalOrderGenerator' },
+      { name: 'funder', type: 'address', internalType: 'address' },
+      { name: 'owner', type: 'address', internalType: 'address' },
+      { name: 'salt', type: 'bytes32', internalType: 'bytes32' },
+      { name: 'staticInput', type: 'bytes', internalType: 'bytes' },
+    ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'event',
+    name: 'Pulled',
+    inputs: [
+      { name: 'id', type: 'bytes32', indexed: true, internalType: 'bytes32' },
+      { name: 'orderDigest', type: 'bytes32', indexed: false, internalType: 'bytes32' },
+      { name: 'amount', type: 'uint256', indexed: false, internalType: 'uint256' },
+    ],
+    anonymous: false,
+  },
+  {
+    type: 'event',
+    name: 'ScheduleRegistered',
+    inputs: [
+      { name: 'id', type: 'bytes32', indexed: true, internalType: 'bytes32' },
+      { name: 'owner', type: 'address', indexed: true, internalType: 'address' },
+      { name: 'funder', type: 'address', indexed: true, internalType: 'address' },
+    ],
+    anonymous: false,
+  },
+  {
+    type: 'event',
+    name: 'ScheduleRevoked',
+    inputs: [
+      { name: 'id', type: 'bytes32', indexed: true, internalType: 'bytes32' },
+      { name: 'owner', type: 'address', indexed: true, internalType: 'address' },
+      { name: 'funder', type: 'address', indexed: true, internalType: 'address' },
+    ],
+    anonymous: false,
+  },
+  { type: 'error', name: 'InvalidComposableCow', inputs: [] },
+  { type: 'error', name: 'InvalidCowShedFactory', inputs: [] },
+  { type: 'error', name: 'NoSchedule', inputs: [] },
+  { type: 'error', name: 'OrderNotLive', inputs: [] },
+  { type: 'error', name: 'UnauthorizedCaller', inputs: [] },
+] as const

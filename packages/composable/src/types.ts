@@ -83,6 +83,19 @@ export type ConditionalOrderParams = {
   readonly staticInput: string
 }
 
+/** Fields that determine a JIT poller schedule ID. */
+export type ComposableCowPollerScheduleKey = {
+  readonly handler: string
+  readonly funder: string
+  readonly owner: string
+  readonly salt: string
+}
+
+/** A JIT funding schedule stored by the Composable CoW poller. */
+export type ComposableCowPollerSchedule = ComposableCowPollerScheduleKey & {
+  readonly staticInput: string
+}
+
 export enum ProofLocation {
   // The location of the proofs is private to the caller.
   PRIVATE = 0,
