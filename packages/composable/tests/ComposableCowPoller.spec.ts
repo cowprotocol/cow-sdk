@@ -63,22 +63,49 @@ describe('ComposableCowPoller - Multi-Adapter Tests', () => {
       .map((item) => item.name)
       .sort()
     const constructor = ComposableCowPollerAbi.find((item) => item.type === 'constructor')
+    const register = ComposableCowPollerAbi.find((item) => item.type === 'function' && item.name === 'register')
+    const scheduleId = ComposableCowPollerAbi.find((item) => item.type === 'function' && item.name === 'scheduleId')
+    const funded = ComposableCowPollerAbi.find((item) => item.type === 'function' && item.name === 'funded')
+    const scheduleRevoked = ComposableCowPollerAbi.find(
+      (item) => item.type === 'event' && item.name === 'ScheduleRevoked',
+    )
 
     expect(functionNames).toEqual([
-      'composableCow',
-      'lastFunded',
+      'COMPOSABLE_COW',
+      'COW_SHED_FACTORY',
+      'funded',
       'pollFunds',
       'register',
       'revoke',
       'scheduleId',
       'schedules',
     ])
-    expect(errorNames).toEqual(['NoSchedule', 'OnlyFunder', 'OrderNotLive'])
+    expect(errorNames).toEqual([
+      'InvalidComposableCow',
+      'InvalidCowShedFactory',
+      'NoSchedule',
+      'OrderNotLive',
+      'UnauthorizedCaller',
+    ])
     expect(eventNames).toEqual(['Pulled', 'ScheduleRegistered', 'ScheduleRevoked'])
     expect(constructor).toEqual({
-      inputs: [{ internalType: 'contract ComposableCoW', name: '_composableCow', type: 'address' }],
+      inputs: [
+        { internalType: 'contract ComposableCoW', name: 'composableCow', type: 'address' },
+        { internalType: 'contract ICowShedFactory', name: 'cowShedFactory', type: 'address' },
+      ],
       stateMutability: 'nonpayable',
       type: 'constructor',
     })
+    expect(scheduleId?.inputs).toEqual(register?.inputs)
+    expect(funded?.inputs).toEqual([
+      { internalType: 'bytes32', name: '', type: 'bytes32' },
+      { internalType: 'bytes32', name: '', type: 'bytes32' },
+    ])
+    expect(funded?.outputs).toEqual([{ internalType: 'bool', name: '', type: 'bool' }])
+    expect(scheduleRevoked?.inputs).toEqual([
+      { indexed: true, internalType: 'bytes32', name: 'id', type: 'bytes32' },
+      { indexed: true, internalType: 'address', name: 'owner', type: 'address' },
+      { indexed: true, internalType: 'address', name: 'funder', type: 'address' },
+    ])
   })
 })
