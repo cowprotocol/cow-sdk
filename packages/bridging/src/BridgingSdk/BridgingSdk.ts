@@ -13,7 +13,13 @@ import { findBridgeProviderFromHook } from './findBridgeProviderFromHook'
 import { SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { ALL_SUPPORTED_CHAINS, ChainInfo, TokenInfo } from '@cowprotocol/sdk-config'
-import { AbstractProviderAdapter, enableLogging, getAddressKey, setGlobalAdapter, TTLCache } from '@cowprotocol/sdk-common'
+import {
+  AbstractProviderAdapter,
+  enableLogging,
+  getAddressKey,
+  setGlobalAdapter,
+  TTLCache,
+} from '@cowprotocol/sdk-common'
 import { BridgingSdkCacheConfig, BridgingSdkConfig, BridgingSdkOptions, GetOrderParams } from './types'
 import { getCacheKey } from './helpers'
 import { SingleQuoteStrategy, MultiQuoteStrategy, BestQuoteStrategy } from './strategies'
@@ -23,8 +29,8 @@ import { createBridgeRequestTimeoutPromise } from './utils'
 // Default cache configuration
 const DEFAULT_CACHE_CONFIG: BridgingSdkCacheConfig = {
   enabled: true,
-  intermediateTokensTtl: 5 * 60 * 1000, // 2 minutes
-  buyTokensTtl: 2 * 60 * 1000, // 2 minutes
+  intermediateTokensTtl: 5 * 60 * 1000, // 5 minutes
+  buyTokensTtl: 24 * 60 * 60 * 1000, // 24 hours
 }
 
 const DEFAULT_MULTI_PROVIDER_REQUEST_TIMEOUT = 10 * 1000 // 10 seconds
