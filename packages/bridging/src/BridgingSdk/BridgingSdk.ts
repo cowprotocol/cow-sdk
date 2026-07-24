@@ -30,7 +30,7 @@ import { createBridgeRequestTimeoutPromise } from './utils'
 const DEFAULT_CACHE_CONFIG: BridgingSdkCacheConfig = {
   enabled: true,
   intermediateTokensTtl: 5 * 60 * 1000, // 5 minutes
-  buyTokensTtl: 24 * 60 * 60 * 1000, // 24 hours
+  buyTokensTtl: 1 * 60 * 60 * 1000, // 1 hour
 }
 
 const DEFAULT_MULTI_PROVIDER_REQUEST_TIMEOUT = 10 * 1000 // 10 seconds
