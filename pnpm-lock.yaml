@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@cowprotocol/dx':
+        specifier: workspace:*
+        version: link:packages/dx
       '@eslint/js':
         specifier: ^9.18.0
         version: 9.27.0
@@ -733,6 +736,12 @@ importers:
       viem:
         specifier: ^2.28.4
         version: 2.30.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+
+  packages/dx:
+    dependencies:
+      prettier:
+        specifier: 3.5.3
+        version: 3.5.3
 
   packages/flash-loans:
     dependencies:

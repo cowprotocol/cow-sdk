@@ -71,6 +71,10 @@
     "packages/sdk": {
       "package-name": "@cowprotocol/cow-sdk",
       "release-type": "node"
+    },
+    "packages/dx": {
+      "package-name": "@cowprotocol/dx",
+      "release-type": "node"
     }
   },
   "plugins": ["node-workspace"],

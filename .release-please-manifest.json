@@ -15,5 +15,6 @@
   "packages/providers/ethers-v6-adapter": "0.4.10",
   "packages/providers/viem-adapter": "0.3.25",
   "packages/sdk": "9.2.4",
-  "packages/flash-loans": "3.3.1"
+  "packages/flash-loans": "3.3.1",
+  "packages/dx": "0.1.0"
 }
