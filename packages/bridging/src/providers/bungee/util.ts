@@ -82,7 +82,10 @@ function toAmountsAndCosts(
       buyAmount: buyAmountBeforeFee,
     },
     afterFee: {
-      sellAmount: sellAmountAfterFee,
+      // @note sellAmount does not change: the user deposits the full sellAmountBeforeFee into the
+      // bridge. The routeFee is a cost (see costs.bridgingFee.amountInSellCurrency), not a reduction
+      // of the sold amount. Keeping it constant across tiers matches the other bridge providers.
+      sellAmount: sellAmountBeforeFee,
       buyAmount: buyAmountAfterFee,
     },
     afterSlippage: {
