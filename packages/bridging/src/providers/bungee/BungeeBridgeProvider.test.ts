@@ -273,14 +273,16 @@ adapterNames.forEach((adapterName) => {
           isSell: true,
           quoteBody: stringify(mockBungeeQuote),
           amountsAndCosts: {
-            beforeFee: { sellAmount: 1000000000000000000n, buyAmount: 1000000n },
-            afterFee: { sellAmount: 1000000000000000000n, buyAmount: 1000000n },
+            beforeFee: { sellAmount: 1000000000000000000n, buyAmount: 1005025n },
+            afterFee: { sellAmount: 995000000000000000n, buyAmount: 1000000n },
             afterSlippage: { sellAmount: 1000000000000000000n, buyAmount: 1000000n },
             costs: {
               bridgingFee: {
                 feeBps: 50,
                 amountInSellCurrency: 5000000000000000n,
-                amountInBuyCurrency: 5000n,
+                // feeBuyToken = feeSellToken * (buyAmountAfterFee / (sellAmount - feeSellToken))
+                //            = 5000000000000000 * (1000000 / (1000000000000000000 - 5000000000000000)) = 5025
+                amountInBuyCurrency: 5025n,
               },
             },
             slippageBps: 0,

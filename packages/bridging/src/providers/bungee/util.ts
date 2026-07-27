@@ -55,16 +55,20 @@ function toAmountsAndCosts(
   // Get the amounts before fees
   const sellAmountBeforeFee = BigInt(amount)
   const buyAmountFromBungeeQuote = bungeeQuote.route.output.amount
-  const buyAmountBeforeFee = BigInt(buyAmountFromBungeeQuote)
-  // @note buyAmountAfterFee does not change, since routeFee is taken in the src chain intermediate token
-  const buyAmountAfterFee = buyAmountBeforeFee
+  const buyAmountAfterFee = BigInt(buyAmountFromBungeeQuote)
 
   // Calculate the fee
   const feeSellToken = bungeeQuote.route.routeDetails.routeFee.amount
-  // Calculate feeBuyToken based on price ratio between buy and sell amounts
-  // feeBuyToken = feeSellToken * (buyAmount / sellAmount)
-  const feeBuyToken = sellAmountBeforeFee > 0n ? (BigInt(feeSellToken) * buyAmountBeforeFee) / sellAmountBeforeFee : 0n
+  const feeSellTokenBig = BigInt(feeSellToken)
+  // @note bungee's output.amount is already net of the routeFee (the fee is deducted from the input
+  // on the src chain). So the true exchange rate must compare the output against the post-fee sell
+  // amount, not the pre-fee sell amount. Using sellAmountBeforeFee here would understate the rate and
+  // produce an invalid feeBuyToken (e.g. 83813 instead of 400000 for a 1:1 USDC->USDC bridge).
+  // feeBuyToken = feeSellToken * (buyAmountAfterFee / (sellAmountBeforeFee - feeSellToken))
+  const sellAmountAfterFee = sellAmountBeforeFee - feeSellTokenBig
+  const feeBuyToken = sellAmountAfterFee > 0n ? (feeSellTokenBig * buyAmountAfterFee) / sellAmountAfterFee : 0n
 
+  const buyAmountBeforeFee = buyAmountAfterFee + feeBuyToken
   // Apply slippage
   const buyAmountAfterSlippage = applyBps(buyAmountAfterFee, slippageBps)
 
@@ -78,7 +82,7 @@ function toAmountsAndCosts(
       buyAmount: buyAmountBeforeFee,
     },
     afterFee: {
-      sellAmount: sellAmountBeforeFee,
+      sellAmount: sellAmountAfterFee,
       buyAmount: buyAmountAfterFee,
     },
     afterSlippage: {
@@ -214,21 +218,24 @@ export const decodeAmountsBungeeTxData = (
   }
 
   // decode input amount
-  const inputAmountEndIndex = functionParams.inputAmount.bytesString_startIndex + functionParams.inputAmount.bytesString_length
+  const inputAmountEndIndex =
+    functionParams.inputAmount.bytesString_startIndex + functionParams.inputAmount.bytesString_length
   if (txData.length < inputAmountEndIndex) {
-    throw new Error(`Invalid txData: insufficient data for inputAmount. Expected at least ${inputAmountEndIndex} characters, got ${txData.length}`)
+    throw new Error(
+      `Invalid txData: insufficient data for inputAmount. Expected at least ${inputAmountEndIndex} characters, got ${txData.length}`,
+    )
   }
 
-  const inputAmountBytes = `0x${txData.slice(
-    functionParams.inputAmount.bytesString_startIndex,
-    inputAmountEndIndex,
-  )}`
+  const inputAmountBytes = `0x${txData.slice(functionParams.inputAmount.bytesString_startIndex, inputAmountEndIndex)}`
   const inputAmountBigNumber = BigInt(inputAmountBytes)
 
   if ('outputAmount' in functionParams) {
-    const outputAmountEndIndex = functionParams.outputAmount.bytesString_startIndex + functionParams.outputAmount.bytesString_length
+    const outputAmountEndIndex =
+      functionParams.outputAmount.bytesString_startIndex + functionParams.outputAmount.bytesString_length
     if (txData.length < outputAmountEndIndex) {
-      throw new Error(`Invalid txData: insufficient data for outputAmount. Expected at least ${outputAmountEndIndex} characters, got ${txData.length}`)
+      throw new Error(
+        `Invalid txData: insufficient data for outputAmount. Expected at least ${outputAmountEndIndex} characters, got ${txData.length}`,
+      )
     }
 
     const outputAmountBytes = `0x${txData.slice(
