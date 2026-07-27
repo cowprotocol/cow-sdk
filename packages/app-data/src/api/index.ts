@@ -1,7 +1,6 @@
 import { AbstractProviderAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { appDataHexToCid } from './appDataHexToCid'
 import { cidToAppDataHex } from './cidToAppDataHex'
-import { fetchDocFromAppDataHex } from './fetchDocFromAppData'
 
 import { generateAppDataDoc } from './generateAppDataDoc'
 import { getAppDataInfo } from './getAppDataInfo'
@@ -33,9 +32,6 @@ export class AppDataSdk {
   getAppDataInfo = getAppDataInfo // (appData | fullAppData) -->  { cid, appDataHex, appDataContent }
   appDataHexToCid = appDataHexToCid // appDataHex --> cid
   cidToAppDataHex = cidToAppDataHex // cid --> appDataHex
-
-  // Fetch from IPFS
-  fetchDocFromAppDataHex = fetchDocFromAppDataHex // appDataHex --> appData
 }
 
 /**

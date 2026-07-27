@@ -12,7 +12,7 @@ import { validateAppDataDoc } from './validateAppDataDoc'
  *
  * - appDataContent is the exact string with the pre-image that gets hashed using keccak to get the appDataHex
  * - appDataHex is the hex used for the bytes32 struct field appData in the CoW order
- * - cid is the IPFS identifier of the appDataHex. If the document is in IPFS it can be found using this identifier.
+ * - cid is the appDataHex re-encoded as a CIDv1 (raw codec, keccak-256), derived locally
  */
 export async function getAppDataInfo(appData: AnyAppDataDocVersion): Promise<AppDataInfo>
 
@@ -21,7 +21,7 @@ export async function getAppDataInfo(appData: AnyAppDataDocVersion): Promise<App
  *
  * - appDataContent is the exact string with the pre-image that gets hashed using keccak to get the appDataHex
  * - appDataHex is the hex used for the bytes32 struct field appData in the CoW order
- * - cid is the IPFS identifier of the appDataHex. If the document is in IPFS it can be found using this identifier.
+ * - cid is the appDataHex re-encoded as a CIDv1 (raw codec, keccak-256), derived locally
  */
 export async function getAppDataInfo(fullAppData: string): Promise<AppDataInfo | undefined>
 
@@ -30,7 +30,7 @@ export async function getAppDataInfo(fullAppData: string): Promise<AppDataInfo |
  *
  * - appDataContent is the exact string with the pre-image that gets hashed using keccak to get the appDataHex
  * - appDataHex is the hex used for the bytes32 struct field appData in the CoW order
- * - cid is the IPFS identifier of the appDataHex. If the document is in IPFS it can be found using this identifier.
+ * - cid is the appDataHex re-encoded as a CIDv1 (raw codec, keccak-256), derived locally
  */
 export async function getAppDataInfo(appDataAux: AnyAppDataDocVersion | string): Promise<AppDataInfo> {
   return _appDataToCidAux(appDataAux, _appDataToCid)
@@ -68,10 +68,10 @@ export async function _appDataToCidAux(
 }
 
 /**
- * Derive the IPFS CID v0 from the full appData JSON content
+ * Derive the CID v1 from the full appData JSON content
  *
  * @param fullAppDataJson string with the full AppData in JSON format. It is a string to make the hashing deterministic (do not rely on stringification of objects)
- * @returns the IPFS CID v0 of the content
+ * @returns the CID v1 of the content
  */
 async function _appDataToCid(fullAppDataJson: string): Promise<string> {
   const adapter = getGlobalAdapter()

@@ -11,11 +11,6 @@ export async function parseCid(ipfsHash: string): Promise<CID> {
   return CID.parse(ipfsHash, decoder)
 }
 
-export async function decodeCid(bytes: Uint8Array): Promise<CID> {
-  const { CID } = await import('multiformats/cid')
-  return CID.decode(bytes)
-}
-
 async function getDecoder(ipfsHash: string): Promise<MultibaseDecoder<string> | undefined> {
   if (ipfsHash[0] === MULTIBASE_BASE16) {
     // Base 16 encoding
