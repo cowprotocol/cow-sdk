@@ -1,6 +1,6 @@
 import { MetaDataError } from '../consts'
 import { AnyAppDataDocVersion } from '../generatedTypes'
-import { appDataHexToCid, appDataHexToCidLegacy } from './appDataHexToCid'
+import { appDataHexToCid } from './appDataHexToCid'
 import { fetchDocFromCid } from './fetchDocFromCid'
 
 /**
@@ -18,22 +18,6 @@ export async function fetchDocFromAppDataHex(
   ipfsUri?: string,
 ): Promise<void | AnyAppDataDocVersion> {
   return _fetchDocFromCidAux(appDataHexToCid, appDataHex, ipfsUri)
-}
-
-/**
- * Fetches the document from IPFS using the appData hex
- *
- * @deprecated Uses the legacy method of deriving the CID from the appData hex
- *
- * @param appDataHex
- * @param ipfsUri
- * @returns
- */
-export async function fetchDocFromAppDataHexLegacy(
-  appDataHex: string,
-  ipfsUri?: string,
-): Promise<void | AnyAppDataDocVersion> {
-  return _fetchDocFromCidAux(appDataHexToCidLegacy, appDataHex, ipfsUri)
 }
 
 export async function _fetchDocFromCidAux(

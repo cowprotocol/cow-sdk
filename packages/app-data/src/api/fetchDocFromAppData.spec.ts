@@ -1,8 +1,8 @@
-import { APP_DATA_DOC_CUSTOM, APP_DATA_HEX_LEGACY, CID_LEGACY } from '../mocks'
-import { fetchDocFromAppDataHex, fetchDocFromAppDataHexLegacy } from './fetchDocFromAppData'
+import { APP_DATA_DOC_CUSTOM, APP_DATA_HEX, CID } from '../mocks'
+import { fetchDocFromAppDataHex } from './fetchDocFromAppData'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import fetchMock from 'jest-fetch-mock'
-import { appDataHexToCidLegacy } from './appDataHexToCid'
+import { appDataHexToCid } from './appDataHexToCid'
 import { fetchDocFromCid } from './fetchDocFromCid'
 import { createAdapters } from '../../test/setup'
 
@@ -14,14 +14,13 @@ jest.mock('./appDataHexToCid', () => ({
     if (hash === 'invalidHash') {
       throw new Error('Invalid hash format')
     }
-    return 'valid-cid'
+    return CID
   }),
-  appDataHexToCidLegacy: jest.fn(async () => CID_LEGACY),
 }))
 
 jest.mock('./fetchDocFromCid', () => ({
   fetchDocFromCid: jest.fn(async (cid) => {
-    if (cid === CID_LEGACY) {
+    if (cid === CID) {
       return APP_DATA_DOC_CUSTOM
     }
     return {}
@@ -50,13 +49,13 @@ describe('fetchDocFromAppData', () => {
 
     for (const adapterName of adapterNames) {
       setGlobalAdapter(adapters[adapterName])
-      const appDataDoc = await fetchDocFromAppDataHexLegacy(APP_DATA_HEX_LEGACY)
+      const appDataDoc = await fetchDocFromAppDataHex(APP_DATA_HEX)
       results.push(appDataDoc)
     }
 
     results.forEach((appDataDoc) => {
-      expect(appDataHexToCidLegacy).toHaveBeenCalledWith(APP_DATA_HEX_LEGACY)
-      expect(fetchDocFromCid).toHaveBeenCalledWith(CID_LEGACY, undefined)
+      expect(appDataHexToCid).toHaveBeenCalledWith(APP_DATA_HEX)
+      expect(fetchDocFromCid).toHaveBeenCalledWith(CID, undefined)
       expect(appDataDoc).toEqual(APP_DATA_DOC_CUSTOM)
     })
   })

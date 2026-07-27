@@ -36,14 +36,6 @@ export type AppDataInfo = {
   appDataHex: string
 }
 
-export interface Ipfs {
-  uri?: string
-  writeUri?: string
-  readUri?: string
-  pinataApiKey?: string
-  pinataApiSecret?: string
-}
-
 export type ValidationResult = {
   success: boolean
   errors?: string
