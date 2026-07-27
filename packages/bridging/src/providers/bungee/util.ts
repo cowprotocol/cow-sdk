@@ -55,7 +55,9 @@ function toAmountsAndCosts(
   // Get the amounts before fees
   const sellAmountBeforeFee = BigInt(amount)
   const buyAmountFromBungeeQuote = bungeeQuote.route.output.amount
-  const buyAmountAfterFee = BigInt(buyAmountFromBungeeQuote)
+  const buyAmountBeforeFee = BigInt(buyAmountFromBungeeQuote)
+  // @note buyAmountAfterFee does not change, since routeFee is taken in the src chain intermediate token
+  const buyAmountAfterFee = buyAmountBeforeFee
 
   // Calculate the fee
   const feeSellToken = bungeeQuote.route.routeDetails.routeFee.amount
@@ -68,7 +70,6 @@ function toAmountsAndCosts(
   const sellAmountAfterFee = sellAmountBeforeFee - feeSellTokenBig
   const feeBuyToken = sellAmountAfterFee > 0n ? (feeSellTokenBig * buyAmountAfterFee) / sellAmountAfterFee : 0n
 
-  const buyAmountBeforeFee = buyAmountAfterFee + feeBuyToken
   // Apply slippage
   const buyAmountAfterSlippage = applyBps(buyAmountAfterFee, slippageBps)
 

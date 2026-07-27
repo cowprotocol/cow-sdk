@@ -273,7 +273,7 @@ adapterNames.forEach((adapterName) => {
           isSell: true,
           quoteBody: stringify(mockBungeeQuote),
           amountsAndCosts: {
-            beforeFee: { sellAmount: 1000000000000000000n, buyAmount: 1005025n },
+            beforeFee: { sellAmount: 1000000000000000000n, buyAmount: 1000000n },
             afterFee: { sellAmount: 1000000000000000000n, buyAmount: 1000000n },
             afterSlippage: { sellAmount: 1000000000000000000n, buyAmount: 1000000n },
             costs: {
