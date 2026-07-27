@@ -1,20 +1,34 @@
-import { isEvmChain, isSupportedChain } from '@cowprotocol/sdk-config'
-import { getEvmAddressKey, isEvmAddress, log } from '@cowprotocol/sdk-common'
-
 import { GraphqlClient } from './graphql'
-import { getTwapParents, getTwapPartOrders } from './twap-queries'
-import type { GetTwapOrdersParams, TwapOrder } from './twap-types'
-import { ProgrammaticOrderApiError, type ProgrammaticOrderApiOptions } from './types'
+import { QUERY_OPTIONS_SCHEMA } from './schemas'
+import { TWAP_ORDERS_QUERY, TWAP_PART_ORDERS_QUERY } from './twap-queries'
+import {
+  GET_TWAP_ORDERS_PARAMS_SCHEMA,
+  GET_TWAP_PART_ORDERS_PARAMS_SCHEMA,
+  TWAP_PARENT_SCHEMA,
+  TWAP_PART_ORDER_SCHEMA,
+} from './twap-schemas'
+import type { GetTwapOrdersParams, GetTwapPartOrdersParams, TwapOrder, TwapPartOrder } from './twap-types'
+import {
+  ProgrammaticOrderApiError,
+  type ProgrammaticOrderApiOptions,
+  type QueryDirection,
+  type QueryOptions,
+  type QueryPage,
+} from './types'
+import { parseInput } from './validation'
 
 const DEFAULT_API_URL = 'https://cow-programmatic-order.bleu.blue'
+const DEFAULT_PAGE_LIMIT = 100
+const DEFAULT_PAGE_OFFSET = 0
+const DEFAULT_QUERY_DIRECTION: QueryDirection = 'desc'
 
 export class ProgrammaticOrderApi {
   private readonly graphql: GraphqlClient
 
   /**
-   * Creates a client backed by the default programmatic orders API.
+   * Creates a client that uses the default programmatic orders API.
    *
-   * @param options - Optional API endpoint configuration.
+   * @param options - API endpoint settings.
    * @throws {@link ProgrammaticOrderApiError} when `apiUrl` is invalid.
    */
   constructor(options: ProgrammaticOrderApiOptions = {}) {
@@ -26,68 +40,79 @@ export class ProgrammaticOrderApi {
   }
 
   /**
-   * Returns all TWAP orders and their part orders for a canonical owner on a supported EVM chain.
+   * Returns one page of TWAP orders created by an EOA or Safe.
    *
-   * @remarks
-   * Follows every API page. `partOrders` contains part orders; scheduled parts without a part order are not included.
-   * Progress callbacks contain fully assembled TWAP orders. A failed page rejects the request, but TWAP orders emitted
-   * by earlier callbacks remain provisional.
+   * Results are sorted by creation time, newest first by default. Use {@link getTwapPartOrders} to fetch part orders.
    *
-   * @param params - Controlling EOA or Safe address and chain to query. The address must not be a CoWShed proxy.
-   * @returns All TWAP orders and their part orders.
-   * @throws {@link ProgrammaticOrderApiError} when input validation, the request,
-   * GraphQL, or response validation fails.
+   * @param params - EOA or Safe address and chain. Do not pass a CoWShed proxy address.
+   * @param options - Pagination and sort direction.
+   * @returns The requested TWAP orders and the total number found.
+   * @throws {@link ProgrammaticOrderApiError} when the input is invalid or the request fails.
    */
-  async getTwapOrders(params: GetTwapOrdersParams): Promise<TwapOrder[]> {
-    const { chainId, onProgress } = params
-
-    if (!isEvmAddress(params.resolvedOwner)) {
-      throw new ProgrammaticOrderApiError(`Invalid EVM owner address: ${params.resolvedOwner}`)
-    }
-
-    if (!Number.isInteger(chainId) || !isSupportedChain(chainId) || !isEvmChain(chainId)) {
-      throw new ProgrammaticOrderApiError(`Unsupported EVM chain: ${chainId}`)
-    }
-
-    const resolvedOwner = getEvmAddressKey(params.resolvedOwner)
-
-    log(`ProgrammaticOrderApi: fetching TWAP orders for ${resolvedOwner} on chain ${chainId}`)
+  async getTwapOrders(params: GetTwapOrdersParams, options: QueryOptions = {}): Promise<QueryPage<TwapOrder>> {
+    const { chainId, resolvedOwner } = parseInput(GET_TWAP_ORDERS_PARAMS_SCHEMA, params)
+    const {
+      direction = DEFAULT_QUERY_DIRECTION,
+      limit = DEFAULT_PAGE_LIMIT,
+      offset = DEFAULT_PAGE_OFFSET,
+    } = parseInput(QUERY_OPTIONS_SCHEMA, options)
 
     try {
-      const orders: TwapOrder[] = []
-      const parents = await getTwapParents(this.graphql, resolvedOwner, chainId)
-
-      for (const parent of parents) {
-        const partOrders = await getTwapPartOrders(this.graphql, chainId, parent.eventId)
-        let executedSellAmount = 0n
-        let executedBuyAmount = 0n
-
-        for (const partOrder of partOrders) {
-          executedSellAmount += partOrder.executedSellAmount ?? 0n
-          executedBuyAmount += partOrder.executedBuyAmount ?? 0n
-        }
-
-        const order = {
-          ...parent,
-          chainId,
+      const page = await this.graphql.queryPage({
+        query: TWAP_ORDERS_QUERY,
+        page: 'twapOrders',
+        variables: {
           resolvedOwner,
-          partOrders,
-          executedAmounts: { executedSellAmount, executedBuyAmount },
-        } satisfies TwapOrder
+          chainId,
+          offset,
+          limit,
+          direction,
+        },
+        itemSchema: TWAP_PARENT_SCHEMA,
+      })
 
-        orders.push(order)
-        onProgress?.(order)
-      }
-
-      log(
-        `ProgrammaticOrderApi: fetched ${orders.length} TWAP orders and ${orders.reduce((sum, order) => sum + order.partOrders.length, 0)} part orders`,
-      )
-
-      return orders
+      return page
     } catch (cause) {
-      if (cause instanceof ProgrammaticOrderApiError) throw cause
-
       throw new ProgrammaticOrderApiError('Failed to fetch TWAP orders', { cause })
+    }
+  }
+
+  /**
+   * Returns one page of part orders for a TWAP order, newest first by default.
+   *
+   * @param params - Parent event ID and chain.
+   * @param options - Pagination and sort direction.
+   * @returns The requested part orders and the total number found.
+   * @throws {@link ProgrammaticOrderApiError} when the input is invalid or the request fails.
+   */
+  async getTwapPartOrders(
+    params: GetTwapPartOrdersParams,
+    options: QueryOptions = {},
+  ): Promise<QueryPage<TwapPartOrder>> {
+    const { chainId, eventId } = parseInput(GET_TWAP_PART_ORDERS_PARAMS_SCHEMA, params)
+    const {
+      direction = DEFAULT_QUERY_DIRECTION,
+      limit = DEFAULT_PAGE_LIMIT,
+      offset = DEFAULT_PAGE_OFFSET,
+    } = parseInput(QUERY_OPTIONS_SCHEMA, options)
+
+    try {
+      const page = await this.graphql.queryPage({
+        query: TWAP_PART_ORDERS_QUERY,
+        page: 'partOrders',
+        variables: {
+          chainId,
+          parentEventId: eventId,
+          offset,
+          limit,
+          direction,
+        },
+        itemSchema: TWAP_PART_ORDER_SCHEMA,
+      })
+
+      return page
+    } catch (cause) {
+      throw new ProgrammaticOrderApiError('Failed to fetch TWAP part orders', { cause })
     }
   }
 }

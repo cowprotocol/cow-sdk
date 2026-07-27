@@ -5,15 +5,18 @@ import type { ProgrammaticOrderStatus } from './types'
 
 /** Input for querying TWAP orders. */
 export interface GetTwapOrdersParams {
-  /** Controlling EOA or Safe address. Must not be a CoWShed proxy. */
+  /** EOA or Safe that created the TWAP order. Do not pass a CoWShed proxy address. */
   resolvedOwner: string
-  /** Supported EVM chain containing the orders. */
+  /** Chain containing the TWAP orders. */
   chainId: SupportedChainId
-  /**
-   * Receives each fully assembled TWAP order after all its available part orders are fetched.
-   * Emitted orders are provisional when a later page fails; the promise returns the complete result.
-   */
-  onProgress?: (order: TwapOrder) => void
+}
+
+/** Input for querying one page of TWAP part orders. */
+export interface GetTwapPartOrdersParams {
+  /** Parent event ID returned by `getTwapOrders`. */
+  eventId: string
+  /** Chain containing the part orders. */
+  chainId: SupportedChainId
 }
 
 /**
@@ -33,8 +36,8 @@ export type TwapPartOrderStatus =
   | 'unfilled'
 
 /**
- * TWAP schedule. Unlike {@link TwapStruct},
- * `effectiveStartTime` is the creation block timestamp when on-chain `t0` was zero.
+ * Schedule for a TWAP order. Unlike {@link TwapStruct}, `effectiveStartTime`
+ * uses the creation block timestamp when the on-chain `t0` value is zero.
  * @see https://github.com/bleu/cow-programmatic-orders-api/blob/main/docs/supported-order-types.md#twap-time-weighted-average-price
  * @see https://github.com/cowprotocol/composable-cow/blob/main/src/types/twap/libraries/TWAPOrder.sol#L31-L42
  */
@@ -70,45 +73,39 @@ export interface TwapPartOrder {
   createdAt: number
   executedSellAmount: bigint | null
   executedBuyAmount: bigint | null
+  /** Actual fee charged at settlement, in the sell token. */
+  executedFeeAmount: bigint | null
 }
 
 export interface TwapExecutedAmounts {
-  /** Executed sell and buy amounts summed over all part orders. */
+  /** Execution totals for all part orders. */
   executedSellAmount: bigint
   executedBuyAmount: bigint
+  executedFeeAmount: bigint
 }
 
 /**
- * TWAP order with its schedule, part orders, and executed amounts.
+ * TWAP order with its schedule and execution totals.
  * @see https://github.com/bleu/cow-programmatic-orders-api/blob/main/src/api/gql-docs/conditional-order-generator.ts
  * @see https://github.com/bleu/cow-programmatic-orders-api/blob/main/src/api/gql-docs/owner-mapping.ts
  */
 export interface TwapOrder {
-  /** Opaque creation-event identity. Unique together with `chainId`. */
+  /** Creation event ID. Unique within a chain. */
   eventId: string
-  /** ComposableCoW single-order hash. Multiple creation events may share it. */
+  /** ComposableCoW order hash. More than one creation event can have the same hash. */
   hash: string
   chainId: SupportedChainId
-  /** Protocol owner used by the generated CoW orders: the CoWShed proxy for an EOA TWAP, or the Safe for a Safe TWAP. */
+  /** Address that owns the generated CoW orders: a CoWShed proxy or Safe. */
   owner: string
-  /** Canonical owner after applying known proxy mappings: the controlling EOA for a proxy, otherwise `owner`. */
+  /** EOA behind a known CoWShed proxy, or `owner` for a Safe. */
   resolvedOwner: string
   status: ProgrammaticOrderStatus
   /** Unix creation time in seconds. */
   createdAt: number
+  /** Block in which the indexer last updated this TWAP or one of its part orders. */
+  updatedAtBlock: bigint
+  /** Number of part orders currently reported for this parent. */
+  partOrdersCount: number
   schedule: TwapSchedule
-  partOrders: TwapPartOrder[]
   executedAmounts: TwapExecutedAmounts
-}
-
-export interface TwapParent {
-  eventId: string
-  hash: string
-  chainId: number
-  owner: string
-  /** Owner stored by the API after applying any known proxy mapping; nullable on the wire. */
-  resolvedOwner: string | null
-  status: ProgrammaticOrderStatus
-  createdAt: number
-  schedule: TwapSchedule
 }

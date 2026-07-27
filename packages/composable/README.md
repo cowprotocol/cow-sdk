@@ -24,24 +24,29 @@ yarn add @cowprotocol/sdk-composable
 
 ## Read TWAP history
 
-`ProgrammaticOrderApi` lists TWAP orders and their part orders for a controlling EOA or Safe.
-
 ```typescript
 import { ProgrammaticOrderApi } from '@cowprotocol/sdk-composable'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 
 const api = new ProgrammaticOrderApi()
-const twapOrders = await api.getTwapOrders({
+const { items: twaps } = await api.getTwapOrders({
   resolvedOwner: '0x...',
   chainId: SupportedChainId.GNOSIS_CHAIN,
 })
+const { items: parts } = await api.getTwapPartOrders(
+  {
+    eventId: twaps[0].eventId,
+    chainId: SupportedChainId.GNOSIS_CHAIN,
+  },
+  {
+    offset: 0,
+    limit: 10,
+    direction: 'desc',
+  },
+)
 ```
 
-Each result preserves both its creation `eventId` and ComposableCoW `hash`. `schedule.numberOfParts` is the number of scheduled parts. `partOrders` contains the corresponding part orders, so its length may be smaller. `executedAmounts` sums those part orders. The schedule's `effectiveStartTime` is the creation block timestamp when the on-chain `t0` was zero. Pass `apiUrl` to the constructor to use another programmatic orders API deployment.
-
-Pass `onProgress` to receive each fully assembled TWAP order after all its available part orders are fetched. The promise returns the complete result. If a later page fails, the promise rejects and previously emitted orders remain provisional.
-
-Source contracts: [conditional-order generator](https://github.com/bleu/cow-programmatic-orders-api/blob/main/src/api/gql-docs/conditional-order-generator.ts), [discrete order](https://github.com/bleu/cow-programmatic-orders-api/blob/main/src/api/gql-docs/discrete-order.ts), [TWAP schedule](https://github.com/bleu/cow-programmatic-orders-api/blob/main/docs/supported-order-types.md#twap-time-weighted-average-price), and the canonical [ComposableCoW TWAP order](https://github.com/cowprotocol/composable-cow/blob/main/src/types/twap/libraries/TWAPOrder.sol#L31-L42).
+Both methods return `QueryPage<T>` and accept optional `QueryOptions` (`offset`, `limit`, `direction`). Parent results include execution totals and indexed part counts; pass the returned `eventId` to fetch parts.
 
 ## Core Components
 
@@ -94,7 +99,7 @@ const adapter = new EthersV6Adapter({ provider, signer: wallet })
 // Create a conditional order factory
 const registry = {
   twap: TWAPOrderFactory,
-  dca: DCAOrderFactory,
+  dca: DCAOrderFactory, // WIP: not implemented
   // ... other order types
 }
 
@@ -138,7 +143,9 @@ const twapOrder = new TWAPOrder({
 })
 ```
 
-### DCA (Dollar Cost Averaging)
+### DCA (Dollar Cost Averaging) — WIP
+
+> `DCAOrder` is not implemented or exported yet.
 
 Regularly buy or sell assets at predetermined intervals:
 
@@ -153,7 +160,9 @@ const dcaOrder = new DCAOrder({
 })
 ```
 
-### Stop-Loss Orders
+### Stop-Loss Orders — WIP
+
+> `StopLossOrder` is not implemented or exported yet.
 
 Automatically sell when price drops below threshold:
 

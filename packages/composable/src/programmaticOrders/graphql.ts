@@ -5,11 +5,16 @@ const GRAPHQL_ENVELOPE_SCHEMA = v.object({
   errors: v.optional(v.nullable(v.array(v.object({ message: v.string() })))),
 })
 
-interface GraphqlPaginatedOperation<TItemSchema extends v.GenericSchema> {
+interface GraphqlPageOperation<TItemSchema extends v.GenericSchema> {
   query: string
   page: string
-  variables: (after: string | null) => Record<string, unknown>
+  variables: Record<string, unknown>
   itemSchema: TItemSchema
+}
+
+export interface GraphqlPage<TItem> {
+  items: TItem[]
+  totalCount: number
 }
 
 export class GraphqlClientError extends Error {
@@ -85,52 +90,29 @@ export class GraphqlClient {
     return data
   }
 
-  async paginate<TItemSchema extends v.GenericSchema>(
-    operation: GraphqlPaginatedOperation<TItemSchema>,
-  ): Promise<v.InferOutput<TItemSchema>[]> {
-    const items: v.InferOutput<TItemSchema>[] = []
-    const cursors = new Set<string>()
-    let after: string | null = null
-    let hasNextPage = true
-
-    while (hasNextPage) {
-      const data = await this.query(operation.query, operation.variables(after))
-      const result = v.safeParse(
-        v.object({
-          [operation.page]: v.object({
-            items: v.array(operation.itemSchema),
-            pageInfo: v.object({
-              hasNextPage: v.boolean(),
-              endCursor: v.nullable(v.string()),
-            }),
-          }),
+  async queryPage<TItemSchema extends v.GenericSchema>(
+    operation: GraphqlPageOperation<TItemSchema>,
+  ): Promise<GraphqlPage<v.InferOutput<TItemSchema>>> {
+    const data = await this.query(operation.query, operation.variables)
+    const result = v.safeParse(
+      v.object({
+        [operation.page]: v.object({
+          items: v.array(operation.itemSchema),
+          totalCount: v.pipe(v.number(), v.safeInteger(), v.minValue(0)),
         }),
-        data,
-        { abortEarly: true },
-      )
+      }),
+      data,
+      { abortEarly: true },
+    )
 
-      if (!result.success) {
-        throw new GraphqlClientError(`Invalid GraphQL page: ${operation.page}`)
-      }
-
-      const page = result.output[operation.page]
-
-      if (page === undefined) throw new GraphqlClientError(`response.data.${operation.page} is missing`)
-
-      const { endCursor } = page.pageInfo
-
-      hasNextPage = page.pageInfo.hasNextPage
-      items.push(...page.items)
-
-      if (!hasNextPage) break
-      if (endCursor === null || endCursor.length === 0 || cursors.has(endCursor)) {
-        throw new GraphqlClientError('GraphQL page contains an invalid pagination cursor')
-      }
-
-      cursors.add(endCursor)
-      after = endCursor
+    if (!result.success) {
+      throw new GraphqlClientError(`Invalid GraphQL page: ${operation.page}`)
     }
 
-    return items
+    const page = result.output[operation.page]
+
+    if (page === undefined) throw new GraphqlClientError(`response.data.${operation.page} is missing`)
+
+    return page
   }
 }
