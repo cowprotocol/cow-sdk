@@ -2,19 +2,7 @@
 
 exports[`ProgrammaticOrderApi lists one page of EOA TWAP part orders from the live programmatic orders API 1`] = `
 {
-  "partOrders": [
-    {
-      "buyAmount": 776195194471677430n,
-      "createdAt": 1782860530,
-      "executedBuyAmount": 0n,
-      "executedFeeAmount": null,
-      "executedSellAmount": 0n,
-      "feeAmount": 0n,
-      "orderUid": "0x4f44aa86f906fc8b796a602e1cbf6edba7a0542c0d842a64e2108237f430098c62587918b2f00176646679509217a5a4d1ebbfd56a444be1",
-      "sellAmount": 100000000000000000n,
-      "status": "expired",
-      "validTo": 1782860769,
-    },
+  "items": [
     {
       "buyAmount": 776195194471677430n,
       "createdAt": 1782860530,
@@ -26,6 +14,18 @@ exports[`ProgrammaticOrderApi lists one page of EOA TWAP part orders from the li
       "sellAmount": 100000000000000000n,
       "status": "fulfilled",
       "validTo": 1782860649,
+    },
+    {
+      "buyAmount": 776195194471677430n,
+      "createdAt": 1782860530,
+      "executedBuyAmount": 0n,
+      "executedFeeAmount": null,
+      "executedSellAmount": 0n,
+      "feeAmount": 0n,
+      "orderUid": "0x4f44aa86f906fc8b796a602e1cbf6edba7a0542c0d842a64e2108237f430098c62587918b2f00176646679509217a5a4d1ebbfd56a444be1",
+      "sellAmount": 100000000000000000n,
+      "status": "expired",
+      "validTo": 1782860769,
     },
   ],
   "totalCount": 2,
