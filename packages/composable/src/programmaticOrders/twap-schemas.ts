@@ -8,6 +8,7 @@ import {
   ORDER_UID_SCHEMA,
   PROGRAMMATIC_ORDER_STATUS_SCHEMA,
   SAFE_INTEGER_SCHEMA,
+  SAFE_UINT256_NUMBER_SCHEMA,
   SUPPORTED_EVM_CHAIN_ID_SCHEMA,
   TIMESTAMP_SCHEMA,
   UINT32_SCHEMA,
@@ -34,10 +35,10 @@ const TWAP_SCHEDULE_SCHEMA = v.object({
   receiver: ADDRESS_SCHEMA,
   partSellAmount: UINT256_SCHEMA,
   minPartLimit: UINT256_SCHEMA,
-  t0: UINT256_SCHEMA,
-  n: UINT256_SCHEMA,
-  t: UINT256_SCHEMA,
-  span: UINT256_SCHEMA,
+  t0: SAFE_UINT256_NUMBER_SCHEMA,
+  n: SAFE_UINT256_NUMBER_SCHEMA,
+  t: SAFE_UINT256_NUMBER_SCHEMA,
+  span: SAFE_UINT256_NUMBER_SCHEMA,
   appData: BYTES_32_SCHEMA,
 })
 
@@ -82,7 +83,7 @@ export const TWAP_PARENT_SCHEMA = v.pipe(
         },
         schedule: {
           ...scheduleParams,
-          effectiveStartTime: t0 === 0n ? BigInt(createdAt) : t0,
+          effectiveStartTime: t0 === 0 ? createdAt : t0,
           numberOfParts: n,
           timeBetweenParts: t,
           durationOfPart: span,

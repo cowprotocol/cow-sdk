@@ -48,12 +48,12 @@ export interface TwapSchedule {
   partSellAmount: bigint
   minPartLimit: bigint
   /** Effective Unix start time in seconds. */
-  effectiveStartTime: bigint
-  numberOfParts: bigint
+  effectiveStartTime: number
+  numberOfParts: number
   /** Seconds between consecutive parts. */
-  timeBetweenParts: bigint
+  timeBetweenParts: number
   /** Part validity in seconds; zero means the full interval. */
-  durationOfPart: bigint
+  durationOfPart: number
   appData: string
 }
 

@@ -127,6 +127,12 @@ describe('ProgrammaticOrderApi', () => {
       { eventId: 'newer-event', createdAt: 200 },
       { eventId: 'older-event', createdAt: 100 },
     ])
+    expect(page.items[0]?.schedule).toMatchObject({
+      effectiveStartTime: 200,
+      numberOfParts: 1,
+      timeBetweenParts: 1,
+      durationOfPart: 0,
+    })
     expect(page.items[0]).not.toHaveProperty('partOrders')
   })
 

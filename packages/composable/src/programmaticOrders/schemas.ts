@@ -51,6 +51,11 @@ export const UINT256_SCHEMA = v.pipe(
   v.transform((value) => BigInt(value)),
   v.maxValue(MAX_UINT256, 'must fit uint256'),
 )
+export const SAFE_UINT256_NUMBER_SCHEMA = v.pipe(
+  UINT256_SCHEMA,
+  v.transform(Number),
+  v.safeInteger('must be a safe integer'),
+)
 export const TIMESTAMP_SCHEMA = v.pipe(
   UINT256_SCHEMA,
   v.maxValue(MAX_DATE_SECONDS, 'is outside the supported date range'),
