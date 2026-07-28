@@ -80,13 +80,7 @@ describe('ComposableCowPoller - Multi-Adapter Tests', () => {
       'scheduleId',
       'schedules',
     ])
-    expect(errorNames).toEqual([
-      'InvalidComposableCow',
-      'InvalidCowShedFactory',
-      'NoSchedule',
-      'OrderNotLive',
-      'UnauthorizedCaller',
-    ])
+    expect(errorNames).toEqual(['NoSchedule', 'OrderNotLive', 'UnauthorizedCaller'])
     expect(eventNames).toEqual(['Pulled', 'ScheduleRegistered', 'ScheduleRevoked'])
     expect(constructor).toEqual({
       inputs: [

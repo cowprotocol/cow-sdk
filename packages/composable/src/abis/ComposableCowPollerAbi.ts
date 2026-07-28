@@ -128,8 +128,6 @@ export const ComposableCowPollerAbi = [
     ],
     anonymous: false,
   },
-  { type: 'error', name: 'InvalidComposableCow', inputs: [] },
-  { type: 'error', name: 'InvalidCowShedFactory', inputs: [] },
   { type: 'error', name: 'NoSchedule', inputs: [] },
   { type: 'error', name: 'OrderNotLive', inputs: [] },
   { type: 'error', name: 'UnauthorizedCaller', inputs: [] },

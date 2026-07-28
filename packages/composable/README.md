@@ -83,8 +83,13 @@ const schedule: ComposableCowPollerSchedule = {
 }
 
 const id = getScheduleId(schedule)
+// register and revoke may be called by the funder or its canonical CowShed
 const registerCalldata = encodeRegister(schedule)
-const preHook = { target: pollerAddress, callData: encodePollFunds(id) }
+const preHook = {
+  target: pollerAddress,
+  callData: encodePollFunds(id),
+  gasLimit: '350000',
+}
 const revokeCalldata = encodeRevoke(id)
 ```
 
