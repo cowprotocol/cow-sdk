@@ -11,6 +11,8 @@ import {
 import { BungeeBridge, BungeeQuoteWithBuildTx } from './types'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
+import { decodeAmountsBungeeTxData } from './util'
+import { CCTP_V2_TX_DATA } from './testData'
 
 describe('Bungee Utils', () => {
   describe('toBridgeQuoteResult', () => {
@@ -249,13 +251,13 @@ describe('Bungee Utils', () => {
     it('should convert object to URLSearchParams correctly', () => {
       const params = {
         userAddress: '0x123',
-        includeBridges: ['across', 'cctp'],
+        includeBridges: ['across', 'cctp-v2'],
         amount: '1000',
       }
 
       const result = objectToSearchParams(params)
       expect(result.get('userAddress')).toBe('0x123')
-      expect(result.get('includeBridges')).toBe('across,cctp')
+      expect(result.get('includeBridges')).toBe('across,cctp-v2')
       expect(result.get('amount')).toBe('1000')
     })
   })
@@ -263,12 +265,25 @@ describe('Bungee Utils', () => {
   describe('BungeeBridge helpers', () => {
     it('should get bridge from display name', () => {
       expect(getBungeeBridgeFromDisplayName('Across')).toBe(BungeeBridge.Across)
+      expect(getBungeeBridgeFromDisplayName('Circle CCTP V2')).toBe(BungeeBridge.CircleCCTPV2)
+      expect(getBungeeBridgeFromDisplayName('Gnosis Native')).toBe(BungeeBridge.GnosisNative)
       expect(getBungeeBridgeFromDisplayName('Invalid')).toBeUndefined()
     })
 
     it('should get display name from bridge', () => {
       expect(getDisplayNameFromBungeeBridge(BungeeBridge.Across)).toBe('Across')
       expect(getDisplayNameFromBungeeBridge('Invalid' as BungeeBridge)).toBeUndefined()
+    })
+  })
+
+  describe('decodeAmountsBungeeTxData', () => {
+    it('should decode the cctp-v2 input amount and feeAmount from txData', () => {
+      const result = decodeAmountsBungeeTxData(CCTP_V2_TX_DATA, BungeeBridge.CircleCCTPV2)
+
+      expect(result.inputAmountBytes).toBe('0x0000000000000000000000000000000000000000000000000000000005f5e100')
+      expect(result.inputAmountBigNumber).toBe(100000000n)
+      expect(result.outputAmountBytes).toBe('0x00000000000000000000000000000000000000000000000000000000001e8480')
+      expect(result.outputAmountBigNumber).toBe(2000000n)
     })
   })
 
@@ -395,11 +410,12 @@ describe('Bungee Utils', () => {
 
       const result = toBridgeQuoteResult(request, 0, bungeeQuoteWithBuildTx)
 
-      // feeBuyToken = feeSellToken * (buyAmount / sellAmount)
-      // feeBuyToken = 10000000000000000 * (2000000000 / 1000000000000000000)
-      // feeBuyToken = 10000000000000000 * 2000000000 / 1000000000000000000
-      // feeBuyToken = 20000000
-      expect(result.amountsAndCosts.costs.bridgingFee.amountInBuyCurrency).toBe(20000000n)
+      // output.amount is net of the routeFee, so the rate uses the post-fee sell amount:
+      // feeBuyToken = feeSellToken * (buyAmountAfterFee / (sellAmount - feeSellToken))
+      // feeBuyToken = 10000000000000000 * (2000000000 / (1000000000000000000 - 10000000000000000))
+      // feeBuyToken = 10000000000000000 * 2000000000 / 990000000000000000
+      // feeBuyToken = 20202020
+      expect(result.amountsAndCosts.costs.bridgingFee.amountInBuyCurrency).toBe(20202020n)
       expect(result.amountsAndCosts.costs.bridgingFee.amountInSellCurrency).toBe(10000000000000000n)
     })
 
@@ -525,12 +541,145 @@ describe('Bungee Utils', () => {
 
       const result = toBridgeQuoteResult(request, 0, bungeeQuoteWithBuildTx)
 
-      // feeBuyToken = feeSellToken * (buyAmount / sellAmount)
-      // feeBuyToken = 50000000000000000 * (950000000000000000 / 1000000000000000000)
-      // feeBuyToken = 50000000000000000 * 0.95
-      // feeBuyToken = 47500000000000000
-      expect(result.amountsAndCosts.costs.bridgingFee.amountInBuyCurrency).toBe(47500000000000000n)
+      // output.amount is net of the routeFee, so the rate uses the post-fee sell amount:
+      // feeBuyToken = feeSellToken * (buyAmountAfterFee / (sellAmount - feeSellToken))
+      // feeBuyToken = 50000000000000000 * (950000000000000000 / (1000000000000000000 - 50000000000000000))
+      // feeBuyToken = 50000000000000000 * (950000000000000000 / 950000000000000000)
+      // feeBuyToken = 50000000000000000
+      expect(result.amountsAndCosts.costs.bridgingFee.amountInBuyCurrency).toBe(50000000000000000n)
       expect(result.amountsAndCosts.costs.bridgingFee.amountInSellCurrency).toBe(50000000000000000n)
+    })
+
+    it('should calculate feeBuyToken correctly when output.amount is already net of the routeFee (USDC -> USDC, real quote)', () => {
+      // Real quote: USDC (Base) -> USDC (Arbitrum) via CCTP v2.
+      // input.amount 506031 - routeFee 400000 = 106031 = output.amount (1:1 same-decimals asset).
+      // Since it is a 1:1 exchange, feeBuyToken should be ~ feeSellToken (400000), NOT 83813.
+      const request: QuoteBridgeRequest = {
+        kind: OrderKind.SELL,
+        sellTokenChainId: SupportedChainId.BASE,
+        sellTokenAddress: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+        sellTokenDecimals: 6,
+        buyTokenChainId: SupportedChainId.ARBITRUM_ONE,
+        buyTokenAddress: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+        buyTokenDecimals: 6,
+        amount: 506031n,
+        appCode: 'test',
+        account: '0xf4274b8ed7860446e6f41fd7fb5e0e11e5b29103',
+        signer: '0xf4274b8ed7860446e6f41fd7fb5e0e11e5b29103',
+      }
+
+      const bungeeQuoteWithBuildTx: BungeeQuoteWithBuildTx = {
+        bungeeQuote: {
+          originChainId: 8453,
+          destinationChainId: 42161,
+          userAddress: '0xf4274b8ed7860446e6f41fd7fb5e0e11e5b29103',
+          receiverAddress: '0x04cfe2548843e10fef2e696bdeef8eb8fcb29b44',
+          input: {
+            token: {
+              chainId: 8453,
+              address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+              name: 'USDC',
+              symbol: 'USDC',
+              decimals: 6,
+              logoURI: '',
+              icon: '',
+            },
+            amount: '506031',
+            priceInUsd: 1,
+            valueInUsd: 0.506031,
+          },
+          route: {
+            affiliateFee: null,
+            quoteId: '9dfd96d58e5378b0',
+            quoteExpiry: 1785153241,
+            output: {
+              token: {
+                chainId: 42161,
+                address: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+                name: 'USDC',
+                symbol: 'USDC',
+                decimals: 6,
+                logoURI: '',
+                icon: '',
+              },
+              amount: '106031',
+              priceInUsd: 1,
+              valueInUsd: 0.106031,
+              minAmountOut: '106031',
+              effectiveReceivedInUsd: 0.10376238536,
+            },
+            approvalData: {
+              spenderAddress: '0x3a23f943181408eac424116af7b7790c94cb97a5',
+              amount: '506031',
+              tokenAddress: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+              userAddress: '0xf4274b8ed7860446e6f41fd7fb5e0e11e5b29103',
+            },
+            gasFee: {
+              gasToken: {
+                chainId: 8453,
+                address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+                symbol: 'ETH',
+                name: 'Ethereum',
+                decimals: 18,
+                icon: '',
+                logoURI: '',
+                chainAgnosticId: 'ETH',
+              },
+              gasLimit: '193000',
+              gasPrice: '6000000',
+              estimatedFee: '1158000000000',
+              feeInUsd: 0.00226861464,
+            },
+            slippage: 0.3,
+            estimatedTime: 1200,
+            routeDetails: {
+              name: 'Circle CCTP V2',
+              logoURI: '',
+              routeFee: {
+                token: {
+                  chainId: 8453,
+                  address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+                  symbol: 'USDC',
+                  name: 'USDC',
+                  decimals: 6,
+                  icon: '',
+                  logoURI: '',
+                },
+                amount: '400000',
+                feeInUsd: 0.399954,
+                priceInUsd: 0.999885,
+              },
+              dexDetails: null,
+            },
+            refuel: null,
+          },
+          routeBridge: BungeeBridge.CircleCCTPV2,
+          quoteTimestamp: 1785153182,
+        },
+        buildTx: {
+          approvalData: {
+            spenderAddress: '0x3a23f943181408eac424116af7b7790c94cb97a5',
+            amount: '506031',
+            tokenAddress: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+            userAddress: '0xf4274b8ed7860446e6f41fd7fb5e0e11e5b29103',
+          },
+          txData: {
+            data: '0x',
+            to: '0x123',
+            chainId: 8453,
+            value: '0',
+          },
+          userOp: '',
+        },
+      }
+
+      const result = toBridgeQuoteResult(request, 0, bungeeQuoteWithBuildTx)
+
+      // output.amount (106031) is net of the routeFee, so the true exchange rate is
+      // output.amount / (sellAmount - feeSellToken) = 106031 / (506031 - 400000) = 1.
+      // feeBuyToken = feeSellToken * rate = 400000.
+      expect(result.amountsAndCosts.costs.bridgingFee.amountInSellCurrency).toBe(400000n)
+      expect(result.amountsAndCosts.costs.bridgingFee.amountInBuyCurrency).toBe(400000n)
     })
   })
 })

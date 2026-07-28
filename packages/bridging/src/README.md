@@ -34,7 +34,7 @@ The BridgingSdk supports two types of operations:
 
 Supported bridge providers:
 
-- **Bungee/Socket**: Multi-bridge aggregation platform with support for multiple underlying bridges including Across, CCTP, and others
+- **Bungee/Socket**: Multi-bridge aggregation platform with support for multiple underlying bridges including Across, CCTP V2, and others
 
 > Since `BridgingSdk` is compatible with [TradingSDK](https://github.com/cowprotocol/cow-sdk/tree/main/packages/trading/README.md), almost everything described for `TradingSDK` applies to `BridgingSdk` as well.
 > The main difference is smart contract wallet support. Currently, `BridgingSdk` only supports EOA wallets; this will likely change soon — stay tuned!
@@ -137,7 +137,7 @@ const adapter = new ViemAdapter({
 // Initialize the bridge provider
 const bungeeProvider = new BungeeBridgeProvider({
   apiOptions: {
-    includeBridges: ['across', 'cctp'], // Optional: specify which bridges to include
+    includeBridges: ['across', 'cctp-v2'], // Optional: specify which bridges to include
   },
 })
 
@@ -288,7 +288,7 @@ const tradingSdk: TradingSdk = new TradingSdk(
 
 const bungeeProvider: BungeeBridgeProvider = new BungeeBridgeProvider({
   apiOptions: {
-    includeBridges: ['across', 'cctp'],
+    includeBridges: ['across', 'cctp-v2'],
   },
 })
 
@@ -411,7 +411,7 @@ const adapter = new ViemAdapter({
 
 const bungeeProvider = new BungeeBridgeProvider({
   apiOptions: {
-    includeBridges: ['across', 'cctp'], // Optional: specify which bridges to include
+    includeBridges: ['across', 'cctp-v2'], // Optional: specify which bridges to include
   },
 })
 
@@ -526,7 +526,7 @@ async function main() {
   // Initialize bridge provider
   const bungeeProvider = new BungeeBridgeProvider({
     apiOptions: {
-      includeBridges: ['across', 'cctp'], // Optional: specify which bridges to include
+      includeBridges: ['across', 'cctp-v2'], // Optional: specify which bridges to include
     },
   })
 

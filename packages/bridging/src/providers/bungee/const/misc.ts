@@ -2,6 +2,24 @@ import { BungeeTxDataBytesIndicesType } from '../types'
 
 export const HOOK_DAPP_BRIDGE_PROVIDER_PREFIX = 'cow-sdk://bridging/providers'
 
+const CCTP_V2_INDICES = {
+  // bridgeERC20To
+  ['0x3ca7f5bc'.toLowerCase()]: {
+    inputAmount: {
+      bytes_startIndex: 8, // first 8 bytes are the routeId, followed by the function selector
+      bytes_length: 32, // first 32 bytes of the params are the amount
+      bytesString_startIndex: 2 + 8 * 2, // first two characters are 0x and 8 bytes = 16 chars for the amount
+      bytesString_length: 32 * 2, // 32 bytes = 64 chars for the amount
+    },
+    outputAmount: {
+      bytes_startIndex: 200, // feeAmount is the 7th parameter -> 8 + 6*32 = 200
+      bytes_length: 32,
+      bytesString_startIndex: 2 + 200 * 2,
+      bytesString_length: 32 * 2,
+    },
+  },
+}
+
 /**
  * Mapping of indices of different fields in the calldata for different bridges
  * Considers the full SocketGateway calldata eg. calldata that goes via SocketGateway.fallback()
@@ -28,17 +46,8 @@ export const BungeeTxDataBytesIndices: BungeeTxDataBytesIndicesType = {
       },
     },
   },
-  cctp: {
-    // bridgeERC20To
-    ['0xb7dfe9d0'.toLowerCase()]: {
-      inputAmount: {
-        bytes_startIndex: 8, // first 8 bytes are the routeId, followed by the function selector
-        bytes_length: 32, // first 32 bytes of the params are the amount
-        bytesString_startIndex: 2 + 8 * 2, // first two characters are 0x and 8 bytes = 16 chars for the amount
-        bytesString_length: 32 * 2, // 32 bytes = 64 chars for the amount
-      },
-    },
-  },
+  'cctp-v2': CCTP_V2_INDICES,
+  'cctp-v2-fast': CCTP_V2_INDICES,
   'gnosis-native-bridge': {
     // bridgeERC20To (amount is 5th param -> 8 + 4*32 = 136)
     ['0x3bf5c228'.toLowerCase()]: {

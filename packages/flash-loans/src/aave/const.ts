@@ -45,6 +45,71 @@ export const AAVE_HOOK_ADAPTER_PER_TYPE: Record<AaveFlashLoanType, Record<Suppor
   [AaveFlashLoanType.RepayCollateral]: AAVE_REPAY_COLLATERAL_ADAPTER_HOOK,
 }
 
+// Staging (barn) is only deployed on Base, bound to the CoW staging settlement.
+export const AAVE_ADAPTER_FACTORY_STAGING: Record<SupportedChainId, string> = {
+  [SupportedChainId.SEPOLIA]: '',
+  [SupportedChainId.GNOSIS_CHAIN]: '',
+  [SupportedChainId.MAINNET]: '',
+  [SupportedChainId.BASE]: '0xF06B99bFD3ABa9b494eE531c23b19dfCc14e2627',
+  [SupportedChainId.ARBITRUM_ONE]: '',
+  [SupportedChainId.AVALANCHE]: '',
+  [SupportedChainId.BNB]: '',
+  [SupportedChainId.POLYGON]: '',
+  [SupportedChainId.LINEA]: '',
+  [SupportedChainId.PLASMA]: '',
+  [SupportedChainId.INK]: '',
+  [SupportedChainId.SOLANA]: '',
+}
+
+const AAVE_COLLATERAL_SWAP_ADAPTER_HOOK_STAGING: Record<SupportedChainId, string> = {
+  [SupportedChainId.SEPOLIA]: '',
+  [SupportedChainId.GNOSIS_CHAIN]: '',
+  [SupportedChainId.MAINNET]: '',
+  [SupportedChainId.BASE]: '0x48D064a4B7fe0bDDB754BEE5cf5a562B68AB34A5',
+  [SupportedChainId.ARBITRUM_ONE]: '',
+  [SupportedChainId.AVALANCHE]: '',
+  [SupportedChainId.BNB]: '',
+  [SupportedChainId.POLYGON]: '',
+  [SupportedChainId.LINEA]: '',
+  [SupportedChainId.PLASMA]: '',
+  [SupportedChainId.INK]: '',
+  [SupportedChainId.SOLANA]: '',
+}
+const AAVE_DEBT_SWAP_ADAPTER_HOOK_STAGING: Record<SupportedChainId, string> = {
+  [SupportedChainId.SEPOLIA]: '',
+  [SupportedChainId.GNOSIS_CHAIN]: '',
+  [SupportedChainId.MAINNET]: '',
+  [SupportedChainId.BASE]: '0x0426DCaFB8aEc417f0e93bCc3fA75bd3E5D8B67B',
+  [SupportedChainId.ARBITRUM_ONE]: '',
+  [SupportedChainId.AVALANCHE]: '',
+  [SupportedChainId.BNB]: '',
+  [SupportedChainId.POLYGON]: '',
+  [SupportedChainId.LINEA]: '',
+  [SupportedChainId.PLASMA]: '',
+  [SupportedChainId.INK]: '',
+  [SupportedChainId.SOLANA]: '',
+}
+const AAVE_REPAY_COLLATERAL_ADAPTER_HOOK_STAGING: Record<SupportedChainId, string> = {
+  [SupportedChainId.SEPOLIA]: '',
+  [SupportedChainId.GNOSIS_CHAIN]: '',
+  [SupportedChainId.MAINNET]: '',
+  [SupportedChainId.BASE]: '0x40bf6655e0B0A7ccF896319536DE3005422bAC9b',
+  [SupportedChainId.ARBITRUM_ONE]: '',
+  [SupportedChainId.AVALANCHE]: '',
+  [SupportedChainId.BNB]: '',
+  [SupportedChainId.POLYGON]: '',
+  [SupportedChainId.LINEA]: '',
+  [SupportedChainId.PLASMA]: '',
+  [SupportedChainId.INK]: '',
+  [SupportedChainId.SOLANA]: '',
+}
+
+export const AAVE_HOOK_ADAPTER_PER_TYPE_STAGING: Record<AaveFlashLoanType, Record<SupportedChainId, string>> = {
+  [AaveFlashLoanType.CollateralSwap]: AAVE_COLLATERAL_SWAP_ADAPTER_HOOK_STAGING,
+  [AaveFlashLoanType.DebtSwap]: AAVE_DEBT_SWAP_ADAPTER_HOOK_STAGING,
+  [AaveFlashLoanType.RepayCollateral]: AAVE_REPAY_COLLATERAL_ADAPTER_HOOK_STAGING,
+}
+
 export const DEFAULT_HOOK_GAS_LIMIT = {
   pre: 300_000n,
   post: 600_000n,

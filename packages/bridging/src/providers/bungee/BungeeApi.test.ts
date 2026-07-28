@@ -120,7 +120,7 @@ const mockQuoteRequest: BungeeQuoteAPIRequest = {
   disableAuto: true,
 }
 
-describe.skip('BungeeApi', () => {
+describe('BungeeApi', () => {
   let api: BungeeApi
 
   beforeEach(() => {
@@ -149,6 +149,20 @@ describe.skip('BungeeApi', () => {
       expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('/quote'), expect.any(Object))
     })
 
+    it('should normalize "cctp" bridge to "cctp-v2"', async () => {
+      const request: BungeeQuoteAPIRequest = {
+        ...mockQuoteRequest,
+        includeBridges: ['cctp', 'across'],
+      }
+
+      await api.getBungeeQuote(request)
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('includeBridges=cctp-v2%2Cacross'),
+        expect.any(Object),
+      )
+    })
+
     it('should handle API errors', async () => {
       mockFetch.mockResolvedValue({
         ok: false,
@@ -160,7 +174,7 @@ describe.skip('BungeeApi', () => {
     })
   })
 
-  describe.skip('getBungeeBuildTx', () => {
+  describe('getBungeeBuildTx', () => {
     const mockBuildTxResponse = {
       success: true,
       statusCode: 200,
@@ -383,7 +397,7 @@ describe.skip('BungeeApi', () => {
     })
   })
 
-  describe.skip('getEvents', () => {
+  describe('getEvents', () => {
     const mockEventsResponse = {
       success: true,
       result: [
@@ -454,7 +468,7 @@ describe.skip('BungeeApi', () => {
     })
   })
 
-  describe.skip('getAcrossStatus', () => {
+  describe('getAcrossStatus', () => {
     const mockAcrossStatusResponse = {
       status: 'filled',
     }
@@ -484,7 +498,7 @@ describe.skip('BungeeApi', () => {
     })
   })
 
-  describe.skip('custom API URL', () => {
+  describe('custom API URL', () => {
     it('should use custom API URL when provided', async () => {
       const customUrl = 'https://custom-api.example.com'
       const customApi = new BungeeApi({ apiBaseUrl: customUrl })
@@ -500,7 +514,7 @@ describe.skip('BungeeApi', () => {
     })
   })
 
-  describe.skip('fallback mechanism', () => {
+  describe('fallback mechanism', () => {
     beforeEach(() => {
       jest.useFakeTimers()
     })
@@ -509,7 +523,7 @@ describe.skip('BungeeApi', () => {
       jest.useRealTimers()
     })
 
-    describe.skip('fallback configuration', () => {
+    describe('fallback configuration', () => {
       it('should use default fallback timeout (5 minutes) when not specified', () => {
         const api = new BungeeApi()
         // Access private property for testing
@@ -843,7 +857,7 @@ describe.skip('BungeeApi', () => {
     })
   })
 
-  describe.skip('apiKey and customApiBaseUrl', () => {
+  describe('apiKey and customApiBaseUrl', () => {
     describe('when both apiKey and customApiBaseUrl are present', () => {
       const customApiBaseUrl = 'https://custom-bungee-api.example.com'
       const apiKey = 'test-api-key-123'

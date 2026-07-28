@@ -280,7 +280,9 @@ adapterNames.forEach((adapterName) => {
               bridgingFee: {
                 feeBps: 50,
                 amountInSellCurrency: 5000000000000000n,
-                amountInBuyCurrency: 5000n,
+                // feeBuyToken = feeSellToken * (buyAmountAfterFee / (sellAmount - feeSellToken))
+                //            = 5000000000000000 * (1000000 / (1000000000000000000 - 5000000000000000)) = 5025
+                amountInBuyCurrency: 5025n,
               },
             },
             slippageBps: 0,

@@ -51,6 +51,6 @@ export async function getBridgingStatusFromEvents(
     }
   }
 
-  // there is no failed case for across - gets auto-refunded - or cctp - attestation can be relayed by anyone on destination chain
+  // there is no failed case for across - gets auto-refunded - or cctp-v2 - attestation can be relayed by anyone on destination chain
   throw new Error('Unknown status')
 }

@@ -42,6 +42,7 @@ import {
   isValidQuoteResponse,
   resolveApiEndpointFromOptions,
 } from './apiUtils'
+import { sortManualRoutes } from './sortManualRoutes'
 
 type BungeeApiType = 'bungee' | 'events' | 'across' | 'bungee-manual'
 
@@ -203,9 +204,7 @@ export class BungeeApi {
 
       // sort manual routes by output
       // @todo do we give users the option to choose bw time and output and any other factors?
-      const sortedManualRoutes = manualRoutes.sort((a, b) => {
-        return Number(b.output.amount) - Number(a.output.amount)
-      })
+      const sortedManualRoutes = sortManualRoutes(manualRoutes)
 
       if (!sortedManualRoutes[0]) {
         throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES, sortedManualRoutes)
@@ -350,7 +349,10 @@ export class BungeeApi {
   }
 
   private getSupportedBridges(bridges?: SupportedBridge[]): SupportedBridge[] {
-    return bridges ?? this.options.includeBridges ?? SUPPORTED_BRIDGES
+    const bridgeList = bridges ?? this.options.includeBridges ?? SUPPORTED_BRIDGES
+    const normalized = bridgeList.map((bridge) => (bridge === 'cctp' ? 'cctp-v2' : bridge))
+
+    return Array.from(new Set(normalized))
   }
 
   private isBungeeApi(apiType: BungeeApiType): boolean {

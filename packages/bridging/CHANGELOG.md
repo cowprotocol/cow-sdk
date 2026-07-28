@@ -1,5 +1,67 @@
 # Changelog
 
+## [4.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.3.1...sdk-bridging-v4.4.0) (2026-07-28)
+
+
+### ✨ Features
+
+* **bridge:** increase buyTokens cache TTL ([#942](https://github.com/cowprotocol/cow-sdk/issues/942)) ([d78840e](https://github.com/cowprotocol/cow-sdk/commit/d78840e992b39641a16ef6648c268e54fdded5ed))
+
+
+### 🐛 Bug Fixes
+
+* **bridge:** fix bridge fee in buy token ([#947](https://github.com/cowprotocol/cow-sdk/issues/947)) ([fc60e04](https://github.com/cowprotocol/cow-sdk/commit/fc60e04b2c23677217b1811f37fd1b4bfba4a03a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-contracts-ts bumped to 3.3.2
+    * @cowprotocol/sdk-cow-shed bumped to 0.4.4
+    * @cowprotocol/sdk-trading bumped to 2.2.5
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 1.1.5
+
+## [4.3.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.3.0...sdk-bridging-v4.3.1) (2026-07-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-contracts-ts bumped to 3.3.1
+    * @cowprotocol/sdk-cow-shed bumped to 0.4.3
+    * @cowprotocol/sdk-trading bumped to 2.2.4
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 1.1.4
+
+## [4.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.2.2...sdk-bridging-v4.3.0) (2026-07-22)
+
+
+### ✨ Features
+
+* **bridge:** support CCTP v2 in Bungee ([#933](https://github.com/cowprotocol/cow-sdk/issues/933)) ([fcb0d26](https://github.com/cowprotocol/cow-sdk/commit/fcb0d2630b93d826474245a7fdf26fb8bccf6d34))
+
+
+### 🐛 Bug Fixes
+
+* **bridge:** correct fee amounts in Near Intents ([#926](https://github.com/cowprotocol/cow-sdk/issues/926)) ([fa6665c](https://github.com/cowprotocol/cow-sdk/commit/fa6665c1ea492146080a1cfdefaaa4ab2eded2c6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 5.3.2
+    * @cowprotocol/sdk-contracts-ts bumped to 3.3.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.4.2
+    * @cowprotocol/sdk-trading bumped to 2.2.3
+    * @cowprotocol/sdk-weiroll bumped to 0.2.1
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 1.1.3
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.25
+
 ## [4.2.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.2.1...sdk-bridging-v4.2.2) (2026-06-23)
 
 

@@ -1,5 +1,11 @@
-name: 'ESLint check'
-on: [pull_request]
+name: 'Lint & Typecheck'
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize]
 
 env:
   NODE_VERSION: lts/jod

@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-weiroll-v0.2.0...sdk-weiroll-v0.2.1) (2026-07-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.25
+
 ## [0.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-weiroll-v0.1.35...sdk-weiroll-v0.2.0) (2026-06-15)
 
 
