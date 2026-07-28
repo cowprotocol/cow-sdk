@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.3.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.3.1...sdk-contracts-ts-v3.3.2) (2026-07-28)
+
+
+### 🐛 Bug Fixes
+
+* **bridge:** fix bridge fee in buy token ([#947](https://github.com/cowprotocol/cow-sdk/issues/947)) ([fc60e04](https://github.com/cowprotocol/cow-sdk/commit/fc60e04b2c23677217b1811f37fd1b4bfba4a03a))
+
 ## [3.3.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.3.0...sdk-contracts-ts-v3.3.1) (2026-07-22)
 
 

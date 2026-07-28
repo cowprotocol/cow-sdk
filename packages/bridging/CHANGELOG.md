@@ -1,5 +1,28 @@
 # Changelog
 
+## [4.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.3.1...sdk-bridging-v4.4.0) (2026-07-28)
+
+
+### ✨ Features
+
+* **bridge:** increase buyTokens cache TTL ([#942](https://github.com/cowprotocol/cow-sdk/issues/942)) ([d78840e](https://github.com/cowprotocol/cow-sdk/commit/d78840e992b39641a16ef6648c268e54fdded5ed))
+
+
+### 🐛 Bug Fixes
+
+* **bridge:** fix bridge fee in buy token ([#947](https://github.com/cowprotocol/cow-sdk/issues/947)) ([fc60e04](https://github.com/cowprotocol/cow-sdk/commit/fc60e04b2c23677217b1811f37fd1b4bfba4a03a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-contracts-ts bumped to 3.3.2
+    * @cowprotocol/sdk-cow-shed bumped to 0.4.4
+    * @cowprotocol/sdk-trading bumped to 2.2.5
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 1.1.5
+
 ## [4.3.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.3.0...sdk-bridging-v4.3.1) (2026-07-22)
 
 
