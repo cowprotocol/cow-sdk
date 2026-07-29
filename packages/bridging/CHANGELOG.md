@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.4.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.4.0...sdk-bridging-v4.4.1) (2026-07-29)
+
+
+### 🐛 Bug Fixes
+
+* **bridge:** fee calculation for btc ([#929](https://github.com/cowprotocol/cow-sdk/issues/929)) ([ef6dc40](https://github.com/cowprotocol/cow-sdk/commit/ef6dc405f1e4b4a891a1ed5ec01712bfc20b5a76))
+
 ## [4.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.3.1...sdk-bridging-v4.4.0) (2026-07-28)
 
 
