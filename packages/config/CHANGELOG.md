@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.3.1...sdk-config-v2.4.0) (2026-07-29)
+
+
+### ✨ Features
+
+* **config:** add sol settlement address ([#950](https://github.com/cowprotocol/cow-sdk/issues/950)) ([2cbe87a](https://github.com/cowprotocol/cow-sdk/commit/2cbe87a0a9e26394190684d52cbda6e06dc97c71))
+
 ## [2.3.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.3.0...sdk-config-v2.3.1) (2026-06-15)
 
 
