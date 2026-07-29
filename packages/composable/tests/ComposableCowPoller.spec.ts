@@ -2,12 +2,12 @@ import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 import {
   ComposableCowPollerAbi,
+  type ComposableCowPollerSchedule,
   encodePollFunds,
   encodeRegister,
   encodeRevoke,
   getScheduleId,
-} from '../src/ComposableCowPoller'
-import { ComposableCowPollerSchedule } from '../src/types'
+} from '../src'
 import { createAdapters } from './setup'
 
 const SCHEDULE: ComposableCowPollerSchedule = {
