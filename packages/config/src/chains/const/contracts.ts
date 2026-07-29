@@ -24,6 +24,15 @@ export const COW_PROTOCOL_VAULT_RELAYER_ADDRESS = mapAddressToSupportedNetworks(
 export const COW_PROTOCOL_VAULT_RELAYER_ADDRESS_STAGING = mapAddressToSupportedNetworks(VAULT_RELAYER_STAGING)
 
 /**
+ * CoW Protocol settlement program id on Solana (base58, not an EVM address).
+ * The on-chain settlement-state PDA derived from this program is the SPL delegate a sell-token account
+ * is approved to — the Solana analogue of the EVM vault relayer spender.
+ * @see https://github.com/cowprotocol/solana-programs
+ */
+export const SOLANA_SETTLEMENT_PROGRAM_ID = 'moosEjJg5mbGRPRU7Vg4AaHZLvbbgknevWR9J1bNgME'
+export const SOLANA_SETTLEMENT_PROGRAM_ID_STAGING = SOLANA_SETTLEMENT_PROGRAM_ID
+
+/**
  * An object containing the addresses of the `ExtensibleFallbackHandler` contracts for each supported chain.
  */
 export const EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS = mapAddressToSupportedNetworks(EXTENSIBLE_FALLBACK_HANDLER)
