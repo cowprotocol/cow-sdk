@@ -22,6 +22,32 @@ or
 yarn add @cowprotocol/sdk-composable
 ```
 
+## Read TWAP history
+
+```typescript
+import { ProgrammaticOrderApi } from '@cowprotocol/sdk-composable'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
+
+const api = new ProgrammaticOrderApi()
+const { items: twaps } = await api.getTwapOrders({
+  resolvedOwner: '0x...',
+  chainId: SupportedChainId.GNOSIS_CHAIN,
+})
+const { items: parts } = await api.getTwapPartOrders(
+  {
+    eventId: twaps[0].eventId,
+    chainId: SupportedChainId.GNOSIS_CHAIN,
+  },
+  {
+    offset: 0,
+    limit: 10,
+    direction: 'desc',
+  },
+)
+```
+
+Both methods return `QueryPage<T>` and accept optional `QueryOptions` (`offset`, `limit`, `direction`). Parent results include execution totals and indexed part counts; pass the returned `eventId` to fetch parts.
+
 ## Core Components
 
 ### ConditionalOrderFactory
@@ -73,7 +99,7 @@ const adapter = new EthersV6Adapter({ provider, signer: wallet })
 // Create a conditional order factory
 const registry = {
   twap: TWAPOrderFactory,
-  dca: DCAOrderFactory,
+  dca: DCAOrderFactory, // WIP: not implemented
   // ... other order types
 }
 
@@ -117,7 +143,9 @@ const twapOrder = new TWAPOrder({
 })
 ```
 
-### DCA (Dollar Cost Averaging)
+### DCA (Dollar Cost Averaging) — WIP
+
+> `DCAOrder` is not implemented or exported yet.
 
 Regularly buy or sell assets at predetermined intervals:
 
@@ -132,7 +160,9 @@ const dcaOrder = new DCAOrder({
 })
 ```
 
-### Stop-Loss Orders
+### Stop-Loss Orders — WIP
+
+> `StopLossOrder` is not implemented or exported yet.
 
 Automatically sell when price drops below threshold:
 
