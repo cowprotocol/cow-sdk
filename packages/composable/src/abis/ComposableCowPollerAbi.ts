@@ -47,7 +47,7 @@ export const ComposableCowPollerAbi = [
     type: 'function',
     name: 'pollFunds',
     inputs: [{ name: 'id', type: 'bytes32', internalType: 'bytes32' }],
-    outputs: [],
+    outputs: [{ name: '', type: 'bool', internalType: 'bool' }],
     stateMutability: 'nonpayable',
   },
   {
@@ -149,7 +149,7 @@ export const ComposableCowPollerAbi = [
     name: 'Pulled',
     inputs: [
       { name: 'id', type: 'bytes32', indexed: true, internalType: 'bytes32' },
-      { name: 'orderDigest', type: 'bytes32', indexed: false, internalType: 'bytes32' },
+      { name: 'orderDigest', type: 'bytes32', indexed: true, internalType: 'bytes32' },
       { name: 'amount', type: 'uint256', indexed: false, internalType: 'uint256' },
     ],
     anonymous: false,
@@ -161,6 +161,7 @@ export const ComposableCowPollerAbi = [
       { name: 'id', type: 'bytes32', indexed: true, internalType: 'bytes32' },
       { name: 'owner', type: 'address', indexed: true, internalType: 'address' },
       { name: 'funder', type: 'address', indexed: true, internalType: 'address' },
+      { name: 'paramsHash', type: 'bytes32', indexed: false, internalType: 'bytes32' },
     ],
     anonymous: false,
   },
@@ -174,6 +175,7 @@ export const ComposableCowPollerAbi = [
     ],
     anonymous: false,
   },
+  { type: 'error', name: 'AlreadyRegistered', inputs: [] },
   { type: 'error', name: 'InvalidShortString', inputs: [] },
   { type: 'error', name: 'InvalidSignature', inputs: [] },
   { type: 'error', name: 'NoSchedule', inputs: [] },

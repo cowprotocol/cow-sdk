@@ -98,37 +98,38 @@ const revokeCalldata = encodeRevoke(id)
 
 // Alternatively, the funder can authorize any address to submit each action.
 const nonce = await readPollerNonce(schedule.funder)
-const deadline = Math.floor(Date.now() / 1000) + 15 * 60
+const registerDeadline = Math.floor(Date.now() / 1000) + 15 * 60
 const registerTypedData = getRegisterTypedData({
   chainId,
   pollerAddress,
   schedule,
   nonce,
-  deadline,
+  deadline: registerDeadline,
 })
 const registerSignature = await signer.signTypedData(
   registerTypedData.domain,
   registerTypedData.types,
   registerTypedData.message,
 )
-const signedRegisterCalldata = encodeRegisterWithSignature(schedule, deadline, registerSignature)
+const signedRegisterCalldata = encodeRegisterWithSignature(schedule, registerDeadline, registerSignature)
 
 // Fetch the nonce again after registration because every successful action consumes it.
 const revokeNonce = await readPollerNonce(schedule.funder)
+const revokeDeadline = Math.floor(Date.now() / 1000) + 15 * 60
 const revokeTypedData = getRevokeTypedData({
   chainId,
   pollerAddress,
   id,
   funder: schedule.funder,
   nonce: revokeNonce,
-  deadline,
+  deadline: revokeDeadline,
 })
 const revokeSignature = await signer.signTypedData(
   revokeTypedData.domain,
   revokeTypedData.types,
   revokeTypedData.message,
 )
-const signedRevokeCalldata = encodeRevokeWithSignature(id, deadline, revokeSignature)
+const signedRevokeCalldata = encodeRevokeWithSignature(id, revokeDeadline, revokeSignature)
 ```
 
 ## Usage

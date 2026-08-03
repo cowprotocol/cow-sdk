@@ -116,4 +116,19 @@ describe('ComposableCowPoller - Multi-Adapter Tests', () => {
     expect(functionNames).toEqual(expect.arrayContaining(['nonces', 'registerWithSignature', 'revokeWithSignature']))
     expect(functionNames).not.toContain('topUp')
   })
+
+  test('matches the final Poller ABI shape', () => {
+    expect(ComposableCowPollerAbi.find((item) => item.type === 'function' && item.name === 'pollFunds')).toMatchObject(
+      { outputs: [{ name: '', type: 'bool', internalType: 'bool' }] },
+    )
+    expect(ComposableCowPollerAbi.find((item) => item.type === 'event' && item.name === 'Pulled')).toMatchObject({
+      inputs: expect.arrayContaining([expect.objectContaining({ name: 'orderDigest', type: 'bytes32', indexed: true })]),
+    })
+    expect(
+      ComposableCowPollerAbi.find((item) => item.type === 'event' && item.name === 'ScheduleRegistered'),
+    ).toMatchObject({
+      inputs: expect.arrayContaining([expect.objectContaining({ name: 'paramsHash', type: 'bytes32', indexed: false })]),
+    })
+    expect(ComposableCowPollerAbi).toContainEqual({ type: 'error', name: 'AlreadyRegistered', inputs: [] })
+  })
 })
