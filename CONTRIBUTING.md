@@ -46,8 +46,6 @@ When you merge a PR into `main`, release-please will create a new release PR if 
 
 You must then merge that PR to create a new release.
 
-Note: *DO NOT* forget to unlock the conversation after merging, otherwise the GH Action will fail.
-
 ## Publishing to npm
 
 In this project packages we use `workspace:*` as version for local packages in `package.json` dependencies.
