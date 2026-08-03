@@ -1,17 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 import fetchMock from 'jest-fetch-mock'
-import {
-  APP_DATA_DOC,
-  APP_DATA_HEX,
-  APP_DATA_HEX_2,
-  APP_DATA_HEX_LEGACY,
-  APP_DATA_STRING,
-  APP_DATA_STRING_2,
-  CID,
-  CID_2,
-  CID_LEGACY,
-} from '../mocks'
-import { getAppDataInfo, getAppDataInfoLegacy } from './getAppDataInfo'
+import { APP_DATA_DOC, APP_DATA_HEX, APP_DATA_HEX_2, APP_DATA_STRING, APP_DATA_STRING_2, CID, CID_2 } from '../mocks'
+import { getAppDataInfo } from './getAppDataInfo'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { createAdapters } from '../../test/setup'
 
@@ -33,7 +23,6 @@ jest.mock('./appDataHexToCid', () => ({
 
 jest.mock('../utils/ipfs', () => ({
   extractDigest: jest.fn().mockImplementation(() => APP_DATA_HEX),
-  ipfsOnlyHash: jest.fn().mockReturnValue(CID_LEGACY),
 }))
 
 jest.mock('../utils/stringify', () => ({
@@ -56,7 +45,6 @@ describe('getAppDataInfo', () => {
     extractDigest.mockImplementation((cid: string) => {
       if (cid === CID) return APP_DATA_HEX
       if (cid === CID_2) return APP_DATA_HEX_2
-      if (cid === CID_LEGACY) return APP_DATA_HEX_LEGACY
       return APP_DATA_HEX
     })
 
@@ -150,67 +138,6 @@ describe('getAppDataInfo', () => {
     for (const adapterName of adapterNames) {
       setGlobalAdapter(adapters[adapterName])
       const promise = getAppDataInfo(doc)
-      await expect(promise).rejects.toThrow('Invalid appData provided')
-    }
-  })
-})
-
-describe('getAppDataInfoLegacy', () => {
-  let adapters: ReturnType<typeof createAdapters>
-
-  beforeAll(() => {
-    adapters = createAdapters()
-  })
-
-  beforeEach(() => {
-    fetchMock.resetMocks()
-    jest.clearAllMocks()
-  })
-
-  afterEach(() => {
-    jest.restoreAllMocks()
-  })
-
-  test('Happy path', async () => {
-    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
-    const results: any[] = []
-
-    for (const adapterName of adapterNames) {
-      setGlobalAdapter(adapters[adapterName])
-      // Mock JSON.stringify
-      const originalStringify = JSON.stringify
-      global.JSON.stringify = jest.fn().mockReturnValue(APP_DATA_STRING)
-
-      const { extractDigest } = require('../utils/ipfs')
-      extractDigest.mockReturnValueOnce(APP_DATA_HEX_LEGACY)
-
-      const result = await getAppDataInfoLegacy(APP_DATA_DOC)
-      results.push(result)
-
-      // Restore JSON.stringify
-      global.JSON.stringify = originalStringify
-    }
-
-    results.forEach((result) => {
-      expect(result).not.toBeFalsy()
-      expect(result).toEqual({
-        cid: CID_LEGACY,
-        appDataHex: APP_DATA_HEX_LEGACY,
-        appDataContent: APP_DATA_STRING,
-      })
-    })
-  })
-
-  test('Throws with invalid appDoc', async () => {
-    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
-    const doc = {
-      ...APP_DATA_DOC,
-      metadata: { quote: { sellAmount: 'fsdfas', buyAmount: '41231', version: '0.1.0' } },
-    }
-
-    for (const adapterName of adapterNames) {
-      setGlobalAdapter(adapters[adapterName])
-      const promise = getAppDataInfoLegacy(doc)
       await expect(promise).rejects.toThrow('Invalid appData provided')
     }
   })

@@ -1,13 +1,10 @@
 import { AbstractProviderAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
-import { appDataHexToCid, appDataHexToCidLegacy } from './appDataHexToCid'
+import { appDataHexToCid } from './appDataHexToCid'
 import { cidToAppDataHex } from './cidToAppDataHex'
-import { fetchDocFromAppDataHex, fetchDocFromAppDataHexLegacy } from './fetchDocFromAppData'
-import { fetchDocFromCid } from './fetchDocFromCid'
 
 import { generateAppDataDoc } from './generateAppDataDoc'
-import { getAppDataInfo, getAppDataInfoLegacy } from './getAppDataInfo'
+import { getAppDataInfo } from './getAppDataInfo'
 import { getAppDataSchema } from './getAppDataSchema'
-import { uploadMetadataDocToIpfsLegacy } from './uploadMetadataDocToIpfsLegacy'
 import { validateAppDataDoc } from './validateAppDataDoc'
 
 /**
@@ -35,21 +32,6 @@ export class AppDataSdk {
   getAppDataInfo = getAppDataInfo // (appData | fullAppData) -->  { cid, appDataHex, appDataContent }
   appDataHexToCid = appDataHexToCid // appDataHex --> cid
   cidToAppDataHex = cidToAppDataHex // cid --> appDataHex
-
-  // Fetch from IPFS
-  fetchDocFromAppDataHex = fetchDocFromAppDataHex // appDataHex --> appData
-
-  // Legacy methods
-  legacy = {
-    // Fetch appData document from IPFS (deprecated)
-    fetchDocFromCid: fetchDocFromCid, // cid --> document
-
-    // Upload to IPFS (deprecated)
-    uploadMetadataDocToIpfs: uploadMetadataDocToIpfsLegacy, //  appData --> cid + publish IPFS
-    appDataToCid: getAppDataInfoLegacy, // (appData | fullAppData) --> cid
-    appDataHexToCid: appDataHexToCidLegacy, // appDataHex --> cid
-    fetchDocFromAppDataHex: fetchDocFromAppDataHexLegacy, // appDataHex --> appData
-  }
 }
 
 /**
