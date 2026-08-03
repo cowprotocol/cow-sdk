@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.2.3...sdk-composable-v1.3.0) (2026-08-03)
+
+
+### ✨ Features
+
+* add new getTwapOrders method ([#928](https://github.com/cowprotocol/cow-sdk/issues/928)) ([494e35f](https://github.com/cowprotocol/cow-sdk/commit/494e35f50ed937db36802aefdb55e24179799580))
+
 ## [1.2.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.2.2...sdk-composable-v1.2.3) (2026-07-29)
 
 
