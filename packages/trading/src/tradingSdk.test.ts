@@ -775,6 +775,87 @@ describe('TradingSdk', () => {
     })
   })
 
+  describe('getOrderToSubmit and postSignedOrder', () => {
+    const ownerAddress = '0xfb3c7eb936caa12b5a884d612393969a557d4307' as AccountAddress
+    const signature = `0x${'ab'.repeat(65)}`
+
+    let sendOrderSpy: jest.SpyInstance
+    let uploadAppDataSpy: jest.SpyInstance
+
+    beforeEach(() => {
+      sendOrderSpy = jest.fn().mockResolvedValue('0xorderid')
+      uploadAppDataSpy = jest.fn().mockResolvedValue(undefined)
+      orderBookApi = {
+        context: {
+          chainId: SupportedChainId.GNOSIS_CHAIN,
+        },
+        getQuote: jest.fn().mockResolvedValue(quoteResponseMock),
+        sendOrder: sendOrderSpy,
+        uploadAppData: uploadAppDataSpy,
+      } as unknown as OrderBookApi
+    })
+
+    afterEach(() => {
+      jest.resetAllMocks()
+    })
+
+    // Trader params carry no signer; the adapter is only used for app-data hashing
+    function createSignerlessSdk(adapterName: keyof AdaptersTestSetup): TradingSdk {
+      return new TradingSdk(
+        {
+          chainId: SupportedChainId.GNOSIS_CHAIN,
+          appCode: 'test',
+        },
+        { enableLogging: false, orderBookApi },
+        adapters[adapterName],
+      )
+    }
+
+    it('should build the order to submit from quote results, defaulting to EIP712', async () => {
+      for (const adapterName of adapterNames) {
+        const sdk = createSignerlessSdk(adapterName)
+        const quoteResults = await sdk.getQuoteOnly({ ...defaultOrderParams, owner: ownerAddress })
+
+        const orderToSubmit = sdk.getOrderToSubmit({ quoteResults })
+
+        expect(orderToSubmit.from).toBe(ownerAddress)
+        expect(orderToSubmit.signingScheme).toBe(SigningScheme.EIP712)
+        // The order book wants the full document in `appData` and the hash in `appDataHash`
+        expect(orderToSubmit.appData).toBe(quoteResults.appDataInfo.fullAppData)
+        expect(orderToSubmit.appDataHash).toBe(quoteResults.appDataInfo.appDataKeccak256)
+      }
+    })
+
+    it('should forward the signing scheme to the built order', async () => {
+      for (const adapterName of adapterNames) {
+        const sdk = createSignerlessSdk(adapterName)
+        const quoteResults = await sdk.getQuoteOnly({ ...defaultOrderParams, owner: ownerAddress })
+
+        const orderToSubmit = sdk.getOrderToSubmit({ quoteResults, signingScheme: SigningScheme.ETHSIGN })
+
+        expect(orderToSubmit.signingScheme).toBe(SigningScheme.ETHSIGN)
+      }
+    })
+
+    it('should upload app-data and submit the order with the external signature', async () => {
+      for (const adapterName of adapterNames) {
+        const sdk = createSignerlessSdk(adapterName)
+        const quoteResults = await sdk.getQuoteOnly({ ...defaultOrderParams, owner: ownerAddress })
+        const orderToSubmit = sdk.getOrderToSubmit({ quoteResults })
+
+        const result = await sdk.postSignedOrder({ orderToSubmit, signature })
+
+        expect(result).toEqual({
+          orderId: '0xorderid',
+          signature,
+          signingScheme: SigningScheme.EIP712,
+        })
+        expect(uploadAppDataSpy).toHaveBeenCalledWith(orderToSubmit.appDataHash, orderToSubmit.appData)
+        expect(sendOrderSpy).toHaveBeenCalledWith({ ...orderToSubmit, signature })
+      }
+    })
+  })
+
   describe('settlementContractOverride and ethFlowContractOverride', () => {
     const chainId = SupportedChainId.GNOSIS_CHAIN
     const customSettlementAddress = '0x1111111111111111111111111111111111111111'

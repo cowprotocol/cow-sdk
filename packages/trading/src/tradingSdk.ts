@@ -13,7 +13,7 @@ import {
 import { postSwapOrder, postSwapOrderFromQuote } from './postSwapOrder'
 import { postLimitOrder } from './postLimitOrder'
 import { postSignedOrder, PostSignedOrderResult } from './postSignedOrder'
-import { OrderToSubmit } from './getOrderToSubmit'
+import { getOrderToSubmit, OrderToSubmit, QuoteResultsForOrderToSubmit } from './getOrderToSubmit'
 import { getQuote, getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getTradeParametersAfterQuote, swapParamsToLimitOrderParams } from './utils/misc'
@@ -28,7 +28,7 @@ import {
   getGlobalAdapter,
   setGlobalAdapter,
 } from '@cowprotocol/sdk-common'
-import { EnrichedOrder, OrderBookApi } from '@cowprotocol/sdk-order-book'
+import { EnrichedOrder, OrderBookApi, SigningScheme } from '@cowprotocol/sdk-order-book'
 import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
 import { getEthFlowContract } from './getEthFlowTransaction'
 import { getEthFlowCancellation, getSettlementCancellation } from './onChainCancellation'
@@ -53,6 +53,25 @@ export type WithPartialTraderParams<T> = T & Partial<TraderParameters>
 export type QuoteOnlyParams<T> = T & Partial<Omit<TraderParameters, 'signer'>> & { owner: AccountAddress }
 
 export type OrderTraderParams = WithPartialTraderParams<{ orderUid: string }>
+
+/**
+ * Parameters for submitting an externally signed order.
+ * Trader params are optional overrides and exclude `signer`,
+ * since the signature is produced outside the SDK and no signer is ever needed.
+ */
+export type PostSignedOrderParams = Partial<Omit<TraderParameters, 'signer'>> & {
+  orderToSubmit: OrderToSubmit
+  signature: string
+}
+
+/**
+ * Parameters for building an order to be signed externally.
+ * No trader params: the order body is derived entirely from the quote results.
+ */
+export type GetOrderToSubmitParams = {
+  quoteResults: QuoteResultsForOrderToSubmit
+  signingScheme?: SigningScheme
+}
 
 export interface TradingSdkOptions {
   enableLogging: boolean
@@ -201,37 +220,6 @@ export class TradingSdk {
     return postSwapOrder(this.mergeParams(params), advancedSettings, this.resolveOrderBookApi(params))
   }
 
-  /**
-   * Submits an externally signed order to the order book (uploads app-data, then sends the order).
-   *
-   * Use together with {@link getQuoteOnly} and `getOrderToSubmit` for EIP-712 signer-less flows
-   * where the signature is produced outside the SDK (cold wallets or MPC/custody services).
-   *
-   * @param orderToSubmit - Order body built by `getOrderToSubmit` from the quote results.
-   * @param signature - Signature produced externally over `quoteResults.orderTypedData`
-   * (`eth_signTypedData_v4`) by the order's `from` account.
-   * @param params - Optional chainId/env override; defaults to the SDK's trader params.
-   * @returns The created order's UID together with the submitted signature and signing scheme.
-   *
-   * @example
-   * ```typescript
-   * const quoteResults = await sdk.getQuoteOnly({ owner, ...tradeParameters })
-   * const orderToSubmit = getOrderToSubmit(quoteResults)
-   *
-   * // Sign quoteResults.orderTypedData in your own environment
-   * const signature = await signInYourEnvironment(quoteResults.orderTypedData)
-   *
-   * const { orderId } = await sdk.postSignedOrder(orderToSubmit, signature)
-   * ```
-   */
-  async postSignedOrder(
-    orderToSubmit: OrderToSubmit,
-    signature: string,
-    params: Partial<Omit<TraderParameters, 'signer'>> = {},
-  ): Promise<PostSignedOrderResult> {
-    return postSignedOrder(this.resolveOrderBookApi(params), orderToSubmit, signature)
-  }
-
   async postLimitOrder(
     params: WithPartialTraderParams<LimitTradeParameters>,
     advancedSettings?: LimitOrderAdvancedSettings,
@@ -283,6 +271,65 @@ export class TradingSdk {
       advancedSettings?.additionalParams,
       quoteResults.result.signer,
     )
+  }
+
+  /**
+   * Builds the order body to be signed externally, for EIP-712 signer-less flows.
+   *
+   * Unlike the other methods this one is synchronous and pulls nothing from the SDK's trader
+   * params — the order body comes entirely from the quote, which is what the external signature
+   * covers. It is the quote-time `orderToSign` struct verbatim, so nothing is recomputed here and
+   * the app-data is frozen: to trade with different app-data, request a new quote and sign again.
+   *
+   * @param params - The quote results from {@link getQuoteOnly} (must be bound to an owner via
+   * `tradeParameters.owner`), and how the external signature will be produced. `signingScheme`
+   * defaults to `EIP712` (sign `quoteResults.orderTypedData` via `eth_signTypedData_v4`); pass
+   * `ETHSIGN` if you `personal_sign` the order digest instead. It cannot be derived from the
+   * signature bytes, which is why it is declared here, and it must match how you actually sign.
+   * @returns Order body ready for {@link postSignedOrder} once the signature is attached.
+   * @throws If the quote has no owner; if it sells the native token (such orders go through the
+   * EthFlow contract, see {@link postSellNativeCurrencyOrder}, and cannot be submitted to the order
+   * book); or if `signingScheme` is `PRESIGN` (on-chain flow, see {@link getPreSignTransaction}) or
+   * `EIP1271` (smart-account signatures, planned for a later milestone).
+   *
+   * @example
+   * ```typescript
+   * const quoteResults = await sdk.getQuoteOnly({ owner, ...tradeParameters })
+   * const orderToSubmit = sdk.getOrderToSubmit({ quoteResults })
+   * ```
+   */
+  getOrderToSubmit(params: GetOrderToSubmitParams): OrderToSubmit {
+    return getOrderToSubmit(params.quoteResults, params.signingScheme)
+  }
+
+  /**
+   * Submits an externally signed order to the order book (uploads app-data, then sends the order).
+   *
+   * Use together with {@link getQuoteOnly} and {@link getOrderToSubmit} for EIP-712 signer-less
+   * flows where the signature is produced outside the SDK (cold wallets or MPC/custody services).
+   *
+   * Unlike the other `post*` methods this takes no `advancedSettings`: every field there
+   * (`quoteRequest`, `appData`, `additionalParams`) applies at quote or signing time, and changing
+   * any of them here would invalidate the signature the caller already produced.
+   *
+   * @param params - The order body from {@link getOrderToSubmit}, the externally produced `signature`
+   * over `quoteResults.orderTypedData` (`eth_signTypedData_v4`) by the order's `from` account, and
+   * an optional chainId/env override defaulting to the SDK's trader params.
+   * @returns The created order's UID together with the submitted signature and signing scheme.
+   *
+   * @example
+   * ```typescript
+   * const quoteResults = await sdk.getQuoteOnly({ owner, ...tradeParameters })
+   * const orderToSubmit = sdk.getOrderToSubmit({ quoteResults })
+   *
+   * // Sign quoteResults.orderTypedData in your own environment
+   * const signature = await signInYourEnvironment(quoteResults.orderTypedData)
+   *
+   * const { orderId } = await sdk.postSignedOrder({ orderToSubmit, signature })
+   * ```
+   */
+  async postSignedOrder(params: PostSignedOrderParams): Promise<PostSignedOrderResult> {
+    return postSignedOrder(this.resolveOrderBookApi(params), params.orderToSubmit, params.signature)
   }
 
   async getPreSignTransaction(params: OrderTraderParams): ReturnType<typeof getPreSignTransaction> {

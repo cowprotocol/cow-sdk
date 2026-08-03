@@ -11,28 +11,14 @@ import { OrderPostingResult } from './types'
 export type PostSignedOrderResult = Pick<OrderPostingResult, 'orderId' | 'signingScheme' | 'signature'>
 
 /**
- * Submits an externally signed order to the order book.
+ * Submits an externally signed order to the order book (uploads app-data, then sends the order).
  *
  * Counterpart of {@link getOrderToSubmit} for flows where the order is signed outside the SDK
- * (cold wallets or MPC/custody services): uploads the order's app-data document and then
- * sends the order.
+ * (cold wallets or MPC/custody services).
  *
- * @param orderBookApi - The order book API instance to submit through. Must point to the same
- * chain and environment the quote was requested on.
- * @param orderToSubmit - Order body from {@link getOrderToSubmit}.
- * @param signature - Signature produced externally over `quoteResults.orderTypedData`
- * (`eth_signTypedData_v4`) by the order's `from` account.
- * @returns The created order's UID together with the submitted signature and signing scheme.
+ * `orderBookApi` must point to the same chain and environment the quote was requested on.
  *
- * @example
- * ```typescript
- * const quoteResults = await sdk.getQuoteOnly({ owner, ...tradeParameters })
- * const orderToSubmit = getOrderToSubmit(quoteResults)
- *
- * const signature = await signInYourEnvironment(quoteResults.orderTypedData)
- *
- * const { orderId } = await postSignedOrder(orderBookApi, orderToSubmit, signature)
- * ```
+ * @see TradingSdk.postSignedOrder for the documented entry point.
  */
 export async function postSignedOrder(
   orderBookApi: OrderBookApi,

@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { createPublicClient, http, type TypedDataDefinition } from 'viem'
+import { createPublicClient, http, parseUnits, type TypedDataDefinition } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { sepolia } from 'viem/chains'
 import {
@@ -8,7 +8,6 @@ import {
   TradingSdk,
   OrderKind,
   WRAPPED_NATIVE_CURRENCIES,
-  getOrderToSubmit,
 } from '@cowprotocol/cow-sdk'
 import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
 
@@ -26,7 +25,7 @@ import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
 // =================== Config ===================
 const RPC_URL = 'https://sepolia.gateway.tenderly.co'
 const PRIVATE_KEY = '' // private key here (0x...) — held by the "cold wallet", never passed to the SDK
-const DEFAULT_SELL_AMOUNT = 0.1 // WETH amount
+const DEFAULT_SELL_AMOUNT = '0.1' // WETH amount
 // ===============================================================
 
 async function main() {
@@ -50,7 +49,7 @@ async function main() {
 
   const WETH = WRAPPED_NATIVE_CURRENCIES[chainId]
   const USDC = { address: '0xbe72E441BF55620febc26715db68d3494213D8Cb', decimals: 18 }
-  const amount = BigInt(Math.floor(DEFAULT_SELL_AMOUNT * 10 ** WETH.decimals)).toString()
+  const amount = parseUnits(DEFAULT_SELL_AMOUNT, WETH.decimals).toString()
 
   console.log('Owner:', owner)
   console.log('Getting quote...')
@@ -69,8 +68,8 @@ async function main() {
   // The amounts differ from the quote: network costs and slippage are already folded in,
   // and that is what gets signed.
   // Defaults to EIP712 (matches signTypedData below). For personal_sign, compute the
-  // EIP-712 digest, sign that, and pass SigningScheme.ETHSIGN as the 2nd argument.
-  const orderToSubmit = getOrderToSubmit(quoteResults)
+  // EIP-712 digest, sign that, and pass signingScheme: SigningScheme.ETHSIGN.
+  const orderToSubmit = sdk.getOrderToSubmit({ quoteResults })
   console.log('Order to submit:', orderToSubmit)
 
   // ----- External signing environment -----
@@ -83,7 +82,7 @@ async function main() {
 
   // ----- Integrator environment -----
   console.log('Posting order...')
-  const { orderId } = await sdk.postSignedOrder(orderToSubmit, signature)
+  const { orderId } = await sdk.postSignedOrder({ orderToSubmit, signature })
   console.log('Order created, id:', orderId)
 }
 
