@@ -38,6 +38,28 @@ export type GetQuoteWithBridgeParams = {
   allowIntermediateEqSellToken?: boolean
 }
 
+export type GetQuoteWithBridgeThenSwapParams = {
+  /**
+   * Overall request for the bridge-then-swap operation.
+   */
+  swapAndBridgeRequest: QuoteBridgeRequest
+
+  /**
+   * Advanced settings for the destination swap.
+   */
+  advancedSettings?: SwapAdvancedSettings
+
+  /**
+   * Trading SDK.
+   */
+  tradingSdk: TradingSdk
+
+  /**
+   * Cache for intermediate tokens.
+   */
+  intermediateTokensCache?: TTLCache<TokenInfo[]>
+}
+
 export type BridgingSdkConfig = Required<Omit<BridgingSdkOptions, 'enableLogging' | 'cacheConfig'>>
 
 /**
