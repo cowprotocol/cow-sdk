@@ -1,10 +1,7 @@
 export const ComposableCowPollerAbi = [
   {
     type: 'constructor',
-    inputs: [
-      { name: 'composableCow', type: 'address', internalType: 'contract ComposableCoW' },
-      { name: 'cowShedFactory', type: 'address', internalType: 'contract ICowShedFactory' },
-    ],
+    inputs: [{ name: '_composableCow', type: 'address', internalType: 'contract ComposableCoW' }],
     stateMutability: 'nonpayable',
   },
   {
@@ -16,9 +13,17 @@ export const ComposableCowPollerAbi = [
   },
   {
     type: 'function',
-    name: 'COW_SHED_FACTORY',
+    name: 'eip712Domain',
     inputs: [],
-    outputs: [{ name: '', type: 'address', internalType: 'contract ICowShedFactory' }],
+    outputs: [
+      { name: 'fields', type: 'bytes1', internalType: 'bytes1' },
+      { name: 'name', type: 'string', internalType: 'string' },
+      { name: 'version', type: 'string', internalType: 'string' },
+      { name: 'chainId', type: 'uint256', internalType: 'uint256' },
+      { name: 'verifyingContract', type: 'address', internalType: 'address' },
+      { name: 'salt', type: 'bytes32', internalType: 'bytes32' },
+      { name: 'extensions', type: 'uint256[]', internalType: 'uint256[]' },
+    ],
     stateMutability: 'view',
   },
   {
@@ -29,6 +34,13 @@ export const ComposableCowPollerAbi = [
       { name: '', type: 'bytes32', internalType: 'bytes32' },
     ],
     outputs: [{ name: '', type: 'bool', internalType: 'bool' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'nonces',
+    inputs: [{ name: 'funder', type: 'address', internalType: 'address' }],
+    outputs: [{ name: 'nonce', type: 'uint256', internalType: 'uint256' }],
     stateMutability: 'view',
   },
   {
@@ -60,8 +72,41 @@ export const ComposableCowPollerAbi = [
   },
   {
     type: 'function',
+    name: 'registerWithSignature',
+    inputs: [
+      {
+        name: 'schedule',
+        type: 'tuple',
+        internalType: 'struct ComposableCowPoller.Schedule',
+        components: [
+          { name: 'handler', type: 'address', internalType: 'contract IConditionalOrderGenerator' },
+          { name: 'funder', type: 'address', internalType: 'address' },
+          { name: 'owner', type: 'address', internalType: 'address' },
+          { name: 'salt', type: 'bytes32', internalType: 'bytes32' },
+          { name: 'staticInput', type: 'bytes', internalType: 'bytes' },
+        ],
+      },
+      { name: 'deadline', type: 'uint256', internalType: 'uint256' },
+      { name: 'signature', type: 'bytes', internalType: 'bytes' },
+    ],
+    outputs: [{ name: 'id', type: 'bytes32', internalType: 'bytes32' }],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
     name: 'revoke',
     inputs: [{ name: 'id', type: 'bytes32', internalType: 'bytes32' }],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'revokeWithSignature',
+    inputs: [
+      { name: 'id', type: 'bytes32', internalType: 'bytes32' },
+      { name: 'deadline', type: 'uint256', internalType: 'uint256' },
+      { name: 'signature', type: 'bytes', internalType: 'bytes' },
+    ],
     outputs: [],
     stateMutability: 'nonpayable',
   },
@@ -98,6 +143,7 @@ export const ComposableCowPollerAbi = [
     ],
     stateMutability: 'view',
   },
+  { type: 'event', name: 'EIP712DomainChanged', inputs: [], anonymous: false },
   {
     type: 'event',
     name: 'Pulled',
@@ -128,7 +174,15 @@ export const ComposableCowPollerAbi = [
     ],
     anonymous: false,
   },
+  { type: 'error', name: 'InvalidShortString', inputs: [] },
+  { type: 'error', name: 'InvalidSignature', inputs: [] },
   { type: 'error', name: 'NoSchedule', inputs: [] },
+  { type: 'error', name: 'OnlyFunder', inputs: [] },
   { type: 'error', name: 'OrderNotLive', inputs: [] },
-  { type: 'error', name: 'UnauthorizedCaller', inputs: [] },
+  { type: 'error', name: 'SignatureExpired', inputs: [] },
+  {
+    type: 'error',
+    name: 'StringTooLong',
+    inputs: [{ name: 'str', type: 'string', internalType: 'string' }],
+  },
 ] as const

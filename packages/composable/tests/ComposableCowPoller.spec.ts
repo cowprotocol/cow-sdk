@@ -5,7 +5,11 @@ import {
   type ComposableCowPollerSchedule,
   encodePollFunds,
   encodeRegister,
+  encodeRegisterWithSignature,
   encodeRevoke,
+  encodeRevokeWithSignature,
+  getRegisterTypedData,
+  getRevokeTypedData,
   getScheduleId,
 } from '../src'
 import { createAdapters } from './setup'
@@ -23,6 +27,12 @@ const REGISTER_CALLDATA =
   '0x80313a250000000000000000000000000000000000000000000000000000000000000020000000000000000000000000111111111111111111111111111111111111111100000000000000000000000022222222222222222222222222222222222222220000000000000000000000003333333333333333333333333333333333333333000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000021234000000000000000000000000000000000000000000000000000000000000'
 const POLL_FUNDS_CALLDATA = '0xf83740307b1516d117fa5dd96fddfb9489b52af1c3cca64e1bc88c32324bdd6a92c6057c'
 const REVOKE_CALLDATA = '0xb75c7dc67b1516d117fa5dd96fddfb9489b52af1c3cca64e1bc88c32324bdd6a92c6057c'
+const POLLER_ADDRESS = '0x4444444444444444444444444444444444444444'
+const NONCE = 7
+const DEADLINE = 2_000_000_000
+const SIGNATURE = '0x123456'
+const REGISTER_DIGEST = '0x19c2f3157fd433af46f24ac718b47fb3b8a9b456d2a2f2b6c31cc07820bec2d1'
+const REVOKE_DIGEST = '0x904595cae3f7402646e3fba3b2683afaee0b71fd0eaf835ce0bb9c2bd7a3c9fd'
 
 describe('ComposableCowPoller - Multi-Adapter Tests', () => {
   const adapters = createAdapters()
@@ -52,54 +62,58 @@ describe('ComposableCowPoller - Multi-Adapter Tests', () => {
     }
   })
 
-  test('exports the combined poller interface, not the removed topUp method', () => {
-    const functionNames = ComposableCowPollerAbi.filter((item) => item.type === 'function')
-      .map((item) => item.name)
-      .sort()
-    const errorNames = ComposableCowPollerAbi.filter((item) => item.type === 'error')
-      .map((item) => item.name)
-      .sort()
-    const eventNames = ComposableCowPollerAbi.filter((item) => item.type === 'event')
-      .map((item) => item.name)
-      .sort()
-    const constructor = ComposableCowPollerAbi.find((item) => item.type === 'constructor')
-    const register = ComposableCowPollerAbi.find((item) => item.type === 'function' && item.name === 'register')
-    const scheduleId = ComposableCowPollerAbi.find((item) => item.type === 'function' && item.name === 'scheduleId')
-    const funded = ComposableCowPollerAbi.find((item) => item.type === 'function' && item.name === 'funded')
-    const scheduleRevoked = ComposableCowPollerAbi.find(
-      (item) => item.type === 'event' && item.name === 'ScheduleRevoked',
+  test('builds Solidity-compatible signature digests across adapters', () => {
+    for (const adapter of Object.values(adapters)) {
+      setGlobalAdapter(adapter)
+      const registerTypedData = getRegisterTypedData({
+        chainId: 1,
+        pollerAddress: POLLER_ADDRESS,
+        schedule: SCHEDULE,
+        nonce: NONCE,
+        deadline: DEADLINE,
+      })
+      const revokeTypedData = getRevokeTypedData({
+        chainId: 1,
+        pollerAddress: POLLER_ADDRESS,
+        id: SCHEDULE_ID,
+        funder: SCHEDULE.funder,
+        nonce: NONCE,
+        deadline: DEADLINE,
+      })
+
+      expect(
+        adapter.utils.hashTypedData(registerTypedData.domain, registerTypedData.types, registerTypedData.message),
+      ).toEqual(REGISTER_DIGEST)
+      expect(
+        adapter.utils.hashTypedData(revokeTypedData.domain, revokeTypedData.types, revokeTypedData.message),
+      ).toEqual(REVOKE_DIGEST)
+    }
+  })
+
+  test('encodes signature calls', () => {
+    const adapter = adapters.viemAdapter
+    setGlobalAdapter(adapter)
+
+    const registerCall = adapter.utils.decodeFunctionData(
+      ComposableCowPollerAbi,
+      'registerWithSignature',
+      encodeRegisterWithSignature(SCHEDULE, DEADLINE, SIGNATURE),
+    )
+    const revokeCall = adapter.utils.decodeFunctionData(
+      ComposableCowPollerAbi,
+      'revokeWithSignature',
+      encodeRevokeWithSignature(SCHEDULE_ID, DEADLINE, SIGNATURE),
     )
 
-    expect(functionNames).toEqual([
-      'COMPOSABLE_COW',
-      'COW_SHED_FACTORY',
-      'funded',
-      'pollFunds',
-      'register',
-      'revoke',
-      'scheduleId',
-      'schedules',
-    ])
-    expect(errorNames).toEqual(['NoSchedule', 'OrderNotLive', 'UnauthorizedCaller'])
-    expect(eventNames).toEqual(['Pulled', 'ScheduleRegistered', 'ScheduleRevoked'])
-    expect(constructor).toEqual({
-      inputs: [
-        { internalType: 'contract ComposableCoW', name: 'composableCow', type: 'address' },
-        { internalType: 'contract ICowShedFactory', name: 'cowShedFactory', type: 'address' },
-      ],
-      stateMutability: 'nonpayable',
-      type: 'constructor',
-    })
-    expect(scheduleId?.inputs).toEqual(register?.inputs)
-    expect(funded?.inputs).toEqual([
-      { internalType: 'bytes32', name: '', type: 'bytes32' },
-      { internalType: 'bytes32', name: '', type: 'bytes32' },
-    ])
-    expect(funded?.outputs).toEqual([{ internalType: 'bool', name: '', type: 'bool' }])
-    expect(scheduleRevoked?.inputs).toEqual([
-      { indexed: true, internalType: 'bytes32', name: 'id', type: 'bytes32' },
-      { indexed: true, internalType: 'address', name: 'owner', type: 'address' },
-      { indexed: true, internalType: 'address', name: 'funder', type: 'address' },
-    ])
+    expect(Array.from(registerCall)).toEqual([SCHEDULE, BigInt(DEADLINE), SIGNATURE])
+    expect(Array.from(revokeCall)).toEqual([SCHEDULE_ID, BigInt(DEADLINE), SIGNATURE])
+  })
+
+  test('exports the signature poller interface', () => {
+    const functionNames = ComposableCowPollerAbi.filter((item) => item.type === 'function')
+      .map((item) => item.name)
+
+    expect(functionNames).toEqual(expect.arrayContaining(['nonces', 'registerWithSignature', 'revokeWithSignature']))
+    expect(functionNames).not.toContain('topUp')
   })
 })

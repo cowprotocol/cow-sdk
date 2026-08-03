@@ -67,7 +67,11 @@ import {
   ComposableCowPollerSchedule,
   encodePollFunds,
   encodeRegister,
+  encodeRegisterWithSignature,
   encodeRevoke,
+  encodeRevokeWithSignature,
+  getRegisterTypedData,
+  getRevokeTypedData,
   getScheduleId,
 } from '@cowprotocol/sdk-composable'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
@@ -83,7 +87,7 @@ const schedule: ComposableCowPollerSchedule = {
 }
 
 const id = getScheduleId(schedule)
-// register and revoke may be called by the funder or its canonical CowShed
+// The funder can still submit the direct calls.
 const registerCalldata = encodeRegister(schedule)
 const preHook = {
   target: pollerAddress,
@@ -91,6 +95,40 @@ const preHook = {
   gasLimit: '350000',
 }
 const revokeCalldata = encodeRevoke(id)
+
+// Alternatively, the funder can authorize any address to submit each action.
+const nonce = await readPollerNonce(schedule.funder)
+const deadline = Math.floor(Date.now() / 1000) + 15 * 60
+const registerTypedData = getRegisterTypedData({
+  chainId,
+  pollerAddress,
+  schedule,
+  nonce,
+  deadline,
+})
+const registerSignature = await signer.signTypedData(
+  registerTypedData.domain,
+  registerTypedData.types,
+  registerTypedData.message,
+)
+const signedRegisterCalldata = encodeRegisterWithSignature(schedule, deadline, registerSignature)
+
+// Fetch the nonce again after registration because every successful action consumes it.
+const revokeNonce = await readPollerNonce(schedule.funder)
+const revokeTypedData = getRevokeTypedData({
+  chainId,
+  pollerAddress,
+  id,
+  funder: schedule.funder,
+  nonce: revokeNonce,
+  deadline,
+})
+const revokeSignature = await signer.signTypedData(
+  revokeTypedData.domain,
+  revokeTypedData.types,
+  revokeTypedData.message,
+)
+const signedRevokeCalldata = encodeRevokeWithSignature(id, deadline, revokeSignature)
 ```
 
 ## Usage

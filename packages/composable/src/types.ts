@@ -1,5 +1,5 @@
 import { SupportedChainId } from '@cowprotocol/sdk-config'
-import { Bytes, Provider } from '@cowprotocol/sdk-common'
+import { BigIntish, Bytes, Provider, TypedDataContext } from '@cowprotocol/sdk-common'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 
 export declare namespace GPv2Order {
@@ -94,6 +94,28 @@ export type ComposableCowPollerScheduleKey = {
 /** A JIT funding schedule stored by the Composable CoW poller. */
 export type ComposableCowPollerSchedule = ComposableCowPollerScheduleKey & {
   readonly staticInput: string
+}
+
+export type ComposableCowPollerTypedData<TPrimaryType extends string, TMessage> = TypedDataContext & {
+  readonly primaryType: TPrimaryType
+  readonly message: TMessage
+}
+
+export type ComposableCowPollerRegisterTypedDataParams = {
+  readonly chainId: number
+  readonly pollerAddress: string
+  readonly schedule: ComposableCowPollerSchedule
+  readonly nonce: BigIntish
+  readonly deadline: BigIntish
+}
+
+export type ComposableCowPollerRevokeTypedDataParams = {
+  readonly chainId: number
+  readonly pollerAddress: string
+  readonly id: string
+  readonly funder: string
+  readonly nonce: BigIntish
+  readonly deadline: BigIntish
 }
 
 export enum ProofLocation {
