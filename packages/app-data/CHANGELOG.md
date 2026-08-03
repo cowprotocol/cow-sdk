@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v5.3.3...sdk-app-data-v6.0.0) (2026-08-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* **app-data:** remove `AppDataSdk.legacy` methods ([#946](https://github.com/cowprotocol/cow-sdk/issues/946)) ([46a21b2](https://github.com/cowprotocol/cow-sdk/commit/46a21b2420883e4fc40b686c76d6a65f27467211))
+
+
 ## [5.3.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v5.3.2...sdk-app-data-v5.3.3) (2026-07-29)
 
 
