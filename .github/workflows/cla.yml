@@ -20,3 +20,4 @@ jobs:
           path-to-signatures: 'signatures/version1/cla.json'
           path-to-document: 'https://github.com/cowprotocol/cla/blob/main/CLA.md'
           allowlist: '*[bot]'
+          lock-pullrequest-aftermerge: 'false'
