@@ -1,4 +1,28 @@
-import { ComposableCowPollerAbi } from '../src'
+import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+
+import {
+  ComposableCowPollerAbi,
+  type ComposableCowPollerSchedule,
+  encodePollFunds,
+  encodeRegister,
+  encodeRevoke,
+  getScheduleId,
+} from '../src'
+import { createAdapters } from './setup'
+
+const SCHEDULE: ComposableCowPollerSchedule = {
+  handler: '0x1111111111111111111111111111111111111111',
+  funder: '0x2222222222222222222222222222222222222222',
+  owner: '0x3333333333333333333333333333333333333333',
+  salt: '0x0000000000000000000000000000000000000000000000000000000000000001',
+  staticInput: '0x1234',
+}
+
+const SCHEDULE_ID = '0x7b1516d117fa5dd96fddfb9489b52af1c3cca64e1bc88c32324bdd6a92c6057c'
+const REGISTER_CALLDATA =
+  '0x80313a250000000000000000000000000000000000000000000000000000000000000020000000000000000000000000111111111111111111111111111111111111111100000000000000000000000022222222222222222222222222222222222222220000000000000000000000003333333333333333333333333333333333333333000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000021234000000000000000000000000000000000000000000000000000000000000'
+const POLL_FUNDS_CALLDATA = '0xf83740307b1516d117fa5dd96fddfb9489b52af1c3cca64e1bc88c32324bdd6a92c6057c'
+const REVOKE_CALLDATA = '0xb75c7dc67b1516d117fa5dd96fddfb9489b52af1c3cca64e1bc88c32324bdd6a92c6057c'
 
 describe('ComposableCowPoller ABI', () => {
   test('exports the complete interface', () => {
@@ -37,9 +61,9 @@ describe('ComposableCowPoller ABI', () => {
   })
 
   test('matches the final observable shape', () => {
-    expect(ComposableCowPollerAbi.find((item) => item.type === 'function' && item.name === 'pollFunds')).toMatchObject(
-      { outputs: [{ name: '', type: 'bool', internalType: 'bool' }] },
-    )
+    expect(ComposableCowPollerAbi.find((item) => item.type === 'function' && item.name === 'pollFunds')).toMatchObject({
+      outputs: [{ name: '', type: 'bool', internalType: 'bool' }],
+    })
     expect(ComposableCowPollerAbi.find((item) => item.type === 'event' && item.name === 'Pulled')).toMatchObject({
       inputs: expect.arrayContaining([expect.objectContaining({ name: 'orderDigest', indexed: true })]),
     })
@@ -48,5 +72,28 @@ describe('ComposableCowPoller ABI', () => {
     ).toMatchObject({
       inputs: expect.arrayContaining([expect.objectContaining({ name: 'paramsHash', indexed: false })]),
     })
+  })
+})
+
+describe('ComposableCowPoller helpers', () => {
+  const adapters = createAdapters()
+
+  test('derives the schedule ID across adapters', () => {
+    const updatedSchedule = { ...SCHEDULE, staticInput: '0xdeadbeef' }
+
+    for (const adapter of Object.values(adapters)) {
+      setGlobalAdapter(adapter)
+      expect(getScheduleId(SCHEDULE)).toEqual(SCHEDULE_ID)
+      expect(getScheduleId(updatedSchedule)).toEqual(SCHEDULE_ID)
+    }
+  })
+
+  test('encodes direct calls across adapters', () => {
+    for (const adapter of Object.values(adapters)) {
+      setGlobalAdapter(adapter)
+      expect(encodeRegister(SCHEDULE)).toEqual(REGISTER_CALLDATA)
+      expect(encodePollFunds(SCHEDULE_ID)).toEqual(POLL_FUNDS_CALLDATA)
+      expect(encodeRevoke(SCHEDULE_ID)).toEqual(REVOKE_CALLDATA)
+    }
   })
 })

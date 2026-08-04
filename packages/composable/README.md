@@ -86,11 +86,40 @@ class CustomOrder extends ConditionalOrder<DataType, StaticType> {
 
 ### JIT Poller
 
-The package exports the complete ABI for integrating with a deployed `ComposableCowPoller`.
+The package exports the complete ABI and helpers for direct `ComposableCowPoller` calls.
 
 ```typescript
-import { ComposableCowPollerAbi } from '@cowprotocol/sdk-composable'
+import {
+  ComposableCowPollerAbi,
+  type ComposableCowPollerSchedule,
+  encodePollFunds,
+  encodeRegister,
+  encodeRevoke,
+  getScheduleId,
+} from '@cowprotocol/sdk-composable'
+import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+
+setGlobalAdapter(adapter)
+
+const schedule: ComposableCowPollerSchedule = {
+  handler: twapHandler,
+  funder,
+  owner,
+  salt,
+  staticInput,
+}
+
+const id = getScheduleId(schedule)
+const registerCalldata = encodeRegister(schedule)
+const preHook = {
+  target: pollerAddress,
+  callData: encodePollFunds(id),
+  gasLimit: '350000',
+}
+const revokeCalldata = encodeRevoke(id)
 ```
+
+`encodeRegister` and `encodeRevoke` return Poller calldata only. Use `@cowprotocol/sdk-cow-shed` when the call must be executed through Cow Shed.
 
 ## Usage
 
