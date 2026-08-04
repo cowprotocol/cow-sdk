@@ -113,7 +113,7 @@ const registerSignature = await signer.signTypedData(
 )
 const signedRegisterCalldata = encodeRegisterWithSignature(schedule, registerDeadline, registerSignature)
 
-// Fetch the nonce again after registration because every successful action consumes it.
+// Fetch the nonce again after registration; only the first execution consumes it.
 const revokeNonce = await readPollerNonce(schedule.funder)
 const revokeDeadline = Math.floor(Date.now() / 1000) + 15 * 60
 const revokeTypedData = getRevokeTypedData({
