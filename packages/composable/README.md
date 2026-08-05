@@ -104,13 +104,13 @@ const schedule: ComposableCowPollerSchedule = {
 }
 
 const id = poller.getScheduleId(schedule)
-const registerCalldata = poller.encodeRegister(schedule)
+const registerCalldata = poller.register(schedule)
 const preHook = {
   target: poller.pollerAddress,
-  callData: poller.encodePollFunds(id),
+  callData: poller.pollFunds(id),
   gasLimit: '350000',
 }
-const revokeCalldata = poller.encodeRevoke(id)
+const revokeCalldata = poller.revoke(id)
 ```
 
 Add `preHook` to the order to poll its funding immediately before execution. The direct `registerCalldata` and `revokeCalldata` calls must be submitted to `poller.pollerAddress` by `schedule.funder`.

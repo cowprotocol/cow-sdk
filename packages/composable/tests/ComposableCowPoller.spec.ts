@@ -90,9 +90,9 @@ describe('ComposableCowPoller', () => {
   test('encodes direct calls across adapters', () => {
     for (const adapter of Object.values(adapters)) {
       setGlobalAdapter(adapter)
-      expect(poller.encodeRegister(SCHEDULE)).toEqual(REGISTER_CALLDATA)
-      expect(poller.encodePollFunds(SCHEDULE_ID)).toEqual(POLL_FUNDS_CALLDATA)
-      expect(poller.encodeRevoke(SCHEDULE_ID)).toEqual(REVOKE_CALLDATA)
+      expect(poller.register(SCHEDULE)).toEqual(REGISTER_CALLDATA)
+      expect(poller.pollFunds(SCHEDULE_ID)).toEqual(POLL_FUNDS_CALLDATA)
+      expect(poller.revoke(SCHEDULE_ID)).toEqual(REVOKE_CALLDATA)
     }
   })
 })

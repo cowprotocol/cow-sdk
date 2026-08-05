@@ -22,17 +22,17 @@ export class ComposableCowPoller {
   }
 
   /** Encodes Poller.register. */
-  public encodeRegister(schedule: ComposableCowPollerSchedule): string {
+  public register(schedule: ComposableCowPollerSchedule): string {
     return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'register', [schedule]) as string
   }
 
   /** Encodes Poller.pollFunds. */
-  public encodePollFunds(id: string): string {
+  public pollFunds(id: string): string {
     return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'pollFunds', [id]) as string
   }
 
   /** Encodes Poller.revoke. */
-  public encodeRevoke(id: string): string {
+  public revoke(id: string): string {
     return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'revoke', [id]) as string
   }
 }
