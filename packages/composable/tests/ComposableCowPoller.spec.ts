@@ -1,7 +1,12 @@
-import { ComposableCowPollerAbi } from '../src'
+import * as composable from '../src'
+import { ComposableCowPollerAbi } from '../src/abis/ComposableCowPollerAbi'
 
 describe('ComposableCowPoller ABI', () => {
-  test('exports the SDK interface', () => {
+  test('keeps the ABI internal', () => {
+    expect(composable).not.toHaveProperty('ComposableCowPollerAbi')
+  })
+
+  test('contains the SDK interface', () => {
     expect(ComposableCowPollerAbi.filter((item) => item.type === 'function').map((item) => item.name)).toEqual([
       'COMPOSABLE_COW',
       'nonces',
