@@ -6,8 +6,8 @@
 
 ## Test coverage
 
-| Statements                                                                               | Branches                                                                             | Functions                                                                              | Lines                                                                          |
-| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Statements                  | Branches                | Functions                 | Lines             |
+| --------------------------- | ----------------------- | ------------------------- | ----------------- |
 | ![Statements](https://img.shields.io/badge/statements-100%25-brightgreen.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-100%25-brightgreen.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-100%25-brightgreen.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-100%25-brightgreen.svg?style=flat) |
 
 This package provides advanced conditional and programmable order functionality for the CoW Protocol. It enables the creation, management, and execution of sophisticated trading strategies through conditional orders that execute automatically when specified conditions are met.
@@ -86,7 +86,7 @@ class CustomOrder extends ConditionalOrder<DataType, StaticType> {
 
 ### JIT Poller
 
-The package exports the ABI and utilities needed to integrate with a deployed `ComposableCowPoller`.
+The package exports utilities needed to integrate with a deployed `ComposableCowPoller`.
 
 ```typescript
 import { ComposableCowPoller, type ComposableCowPollerSchedule } from '@cowprotocol/sdk-composable'
@@ -114,6 +114,7 @@ const revokeCalldata = poller.revoke(id)
 ```
 
 Add `preHook` to the order to poll its funding immediately before execution. The direct `registerCalldata` and `revokeCalldata` calls must be submitted to `poller.pollerAddress` by `schedule.funder`.
+Use `poller.composableCow()`, `poller.nonce(funder)`, and `poller.schedule(id)` to read Poller state.
 
 ## Usage
 

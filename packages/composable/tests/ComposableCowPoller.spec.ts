@@ -1,6 +1,8 @@
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 
-import { ComposableCowPoller, ComposableCowPollerAbi, type ComposableCowPollerSchedule } from '../src'
+import * as composable from '../src'
+import { ComposableCowPoller, type ComposableCowPollerSchedule } from '../src'
+import { ComposableCowPollerAbi } from '../src/abis/ComposableCowPollerAbi'
 import { createAdapters } from './setup'
 
 const SCHEDULE: ComposableCowPollerSchedule = {
@@ -18,7 +20,11 @@ const POLL_FUNDS_CALLDATA = '0xf83740307b1516d117fa5dd96fddfb9489b52af1c3cca64e1
 const REVOKE_CALLDATA = '0xb75c7dc67b1516d117fa5dd96fddfb9489b52af1c3cca64e1bc88c32324bdd6a92c6057c'
 
 describe('ComposableCowPoller ABI', () => {
-  test('exports the SDK interface', () => {
+  test('keeps the ABI internal', () => {
+    expect(composable).not.toHaveProperty('ComposableCowPollerAbi')
+  })
+
+  test('contains the SDK interface', () => {
     expect(ComposableCowPollerAbi.filter((item) => item.type === 'function').map((item) => item.name)).toEqual([
       'COMPOSABLE_COW',
       'nonces',

@@ -1,4 +1,4 @@
-import { getGlobalAdapter } from '@cowprotocol/sdk-common'
+import { BigIntish, getGlobalAdapter, Provider } from '@cowprotocol/sdk-common'
 
 import { ComposableCowPollerAbi } from './abis/ComposableCowPollerAbi'
 import type { ComposableCowPollerSchedule, ComposableCowPollerScheduleKey } from './types'
@@ -8,6 +8,27 @@ const SCHEDULE_ID_ABI = ['address', 'address', 'address', 'bytes32']
 /** Utilities for interacting with a ComposableCowPoller deployment. */
 export class ComposableCowPoller {
   constructor(public readonly pollerAddress?: string) {}
+
+  private read(functionName: string, args: unknown[] = [], provider?: Provider): Promise<unknown> {
+    if (!this.pollerAddress) throw new Error('pollerAddress is required')
+
+    return getGlobalAdapter().readContract(
+      { address: this.pollerAddress, abi: ComposableCowPollerAbi, functionName, args },
+      provider,
+    )
+  }
+
+  public async composableCow(provider?: Provider): Promise<string> {
+    return (await this.read('COMPOSABLE_COW', [], provider)) as string
+  }
+
+  public async nonce(funder: string, provider?: Provider): Promise<BigIntish> {
+    return getGlobalAdapter().utils.toBigIntish((await this.read('nonces', [funder], provider)) as BigIntish)
+  }
+
+  public async schedule(id: string, provider?: Provider): Promise<ComposableCowPollerSchedule> {
+    return (await this.read('schedules', [id], provider)) as ComposableCowPollerSchedule
+  }
 
   /** Returns the app-data-independent schedule ID. */
   public scheduleId(schedule: ComposableCowPollerScheduleKey): string {
