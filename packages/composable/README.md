@@ -86,7 +86,7 @@ class CustomOrder extends ConditionalOrder<DataType, StaticType> {
 
 ### JIT Poller
 
-The package exports the complete ABI and utilities for direct `ComposableCowPoller` calls.
+The package exports the ABI and utilities needed to integrate with a deployed `ComposableCowPoller`.
 
 ```typescript
 import { ComposableCowPoller, type ComposableCowPollerSchedule } from '@cowprotocol/sdk-composable'
@@ -103,7 +103,7 @@ const schedule: ComposableCowPollerSchedule = {
   staticInput,
 }
 
-const id = poller.getScheduleId(schedule)
+const id = poller.scheduleId(schedule)
 const registerCalldata = poller.register(schedule)
 const preHook = {
   target: poller.pollerAddress,

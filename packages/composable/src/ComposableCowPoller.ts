@@ -10,7 +10,7 @@ export class ComposableCowPoller {
   constructor(public readonly pollerAddress?: string) {}
 
   /** Returns the app-data-independent schedule ID. */
-  public getScheduleId(schedule: ComposableCowPollerScheduleKey): string {
+  public scheduleId(schedule: ComposableCowPollerScheduleKey): string {
     const encoded = getGlobalAdapter().utils.encodeAbi(SCHEDULE_ID_ABI, [
       schedule.funder,
       schedule.handler,
