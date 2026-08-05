@@ -1,13 +1,6 @@
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 
-import {
-  ComposableCowPollerAbi,
-  type ComposableCowPollerSchedule,
-  encodePollFunds,
-  encodeRegister,
-  encodeRevoke,
-  getScheduleId,
-} from '../src'
+import { ComposableCowPoller, ComposableCowPollerAbi, type ComposableCowPollerSchedule } from '../src'
 import { createAdapters } from './setup'
 
 const SCHEDULE: ComposableCowPollerSchedule = {
@@ -75,25 +68,31 @@ describe('ComposableCowPoller ABI', () => {
   })
 })
 
-describe('ComposableCowPoller helpers', () => {
+describe('ComposableCowPoller', () => {
   const adapters = createAdapters()
+  const pollerAddress = '0x4444444444444444444444444444444444444444'
+  const poller = new ComposableCowPoller(pollerAddress)
+
+  test('retains the configured Poller address', () => {
+    expect(poller.pollerAddress).toEqual(pollerAddress)
+  })
 
   test('derives the schedule ID across adapters', () => {
     const updatedSchedule = { ...SCHEDULE, staticInput: '0xdeadbeef' }
 
     for (const adapter of Object.values(adapters)) {
       setGlobalAdapter(adapter)
-      expect(getScheduleId(SCHEDULE)).toEqual(SCHEDULE_ID)
-      expect(getScheduleId(updatedSchedule)).toEqual(SCHEDULE_ID)
+      expect(poller.getScheduleId(SCHEDULE)).toEqual(SCHEDULE_ID)
+      expect(poller.getScheduleId(updatedSchedule)).toEqual(SCHEDULE_ID)
     }
   })
 
   test('encodes direct calls across adapters', () => {
     for (const adapter of Object.values(adapters)) {
       setGlobalAdapter(adapter)
-      expect(encodeRegister(SCHEDULE)).toEqual(REGISTER_CALLDATA)
-      expect(encodePollFunds(SCHEDULE_ID)).toEqual(POLL_FUNDS_CALLDATA)
-      expect(encodeRevoke(SCHEDULE_ID)).toEqual(REVOKE_CALLDATA)
+      expect(poller.encodeRegister(SCHEDULE)).toEqual(REGISTER_CALLDATA)
+      expect(poller.encodePollFunds(SCHEDULE_ID)).toEqual(POLL_FUNDS_CALLDATA)
+      expect(poller.encodeRevoke(SCHEDULE_ID)).toEqual(REVOKE_CALLDATA)
     }
   })
 })

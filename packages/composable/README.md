@@ -6,8 +6,8 @@
 
 ## Test coverage
 
-| Statements                  | Branches                | Functions                 | Lines             |
-| --------------------------- | ----------------------- | ------------------------- | ----------------- |
+| Statements                                                                               | Branches                                                                             | Functions                                                                              | Lines                                                                          |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | ![Statements](https://img.shields.io/badge/statements-100%25-brightgreen.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-100%25-brightgreen.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-100%25-brightgreen.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-100%25-brightgreen.svg?style=flat) |
 
 This package provides advanced conditional and programmable order functionality for the CoW Protocol. It enables the creation, management, and execution of sophisticated trading strategies through conditional orders that execute automatically when specified conditions are met.
@@ -86,21 +86,15 @@ class CustomOrder extends ConditionalOrder<DataType, StaticType> {
 
 ### JIT Poller
 
-The package exports the complete ABI and helpers for direct `ComposableCowPoller` calls.
+The package exports the complete ABI and utilities for direct `ComposableCowPoller` calls.
 
 ```typescript
-import {
-  ComposableCowPollerAbi,
-  type ComposableCowPollerSchedule,
-  encodePollFunds,
-  encodeRegister,
-  encodeRevoke,
-  getScheduleId,
-} from '@cowprotocol/sdk-composable'
+import { ComposableCowPoller, type ComposableCowPollerSchedule } from '@cowprotocol/sdk-composable'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 setGlobalAdapter(adapter)
 
+const poller = new ComposableCowPoller(pollerAddress)
 const schedule: ComposableCowPollerSchedule = {
   handler: twapHandler,
   funder,
@@ -109,17 +103,17 @@ const schedule: ComposableCowPollerSchedule = {
   staticInput,
 }
 
-const id = getScheduleId(schedule)
-const registerCalldata = encodeRegister(schedule)
+const id = poller.getScheduleId(schedule)
+const registerCalldata = poller.encodeRegister(schedule)
 const preHook = {
-  target: pollerAddress,
-  callData: encodePollFunds(id),
+  target: poller.pollerAddress,
+  callData: poller.encodePollFunds(id),
   gasLimit: '350000',
 }
-const revokeCalldata = encodeRevoke(id)
+const revokeCalldata = poller.encodeRevoke(id)
 ```
 
-`encodeRegister` and `encodeRevoke` return Poller calldata only. Use `@cowprotocol/sdk-cow-shed` when the call must be executed through Cow Shed.
+Add `preHook` to the order to poll its funding immediately before execution. The direct `registerCalldata` and `revokeCalldata` calls must be submitted to `poller.pollerAddress` by `schedule.funder`.
 
 ## Usage
 
