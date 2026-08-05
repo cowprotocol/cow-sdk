@@ -29,3 +29,13 @@ Build + run:
 pnpm --filter example-nodejs-ethers6 build
 pnpm --filter example-nodejs-ethers6 start
 ```
+
+## Signer-less example
+
+`src/signerless.ts` runs the same trade without ever passing a signer or private key to the SDK:
+the order is signed by a local ethers `Wallet` standing in for a cold wallet or custody service.
+Set `PRIVATE_KEY` in `src/signerless.ts`, then:
+
+```
+pnpm --filter example-nodejs-ethers6 dev:signerless
+```
