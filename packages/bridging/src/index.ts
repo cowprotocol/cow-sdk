@@ -20,3 +20,6 @@ export type {
   NearIntentsQuoteResult,
   NearIntentsBridgeProviderOptions,
 } from './providers/near-intents/NearIntentsBridgeProvider'
+
+export { RelayBridgeProvider } from './providers/relay/RelayBridgeProvider'
+export type { RelayQuoteResult, RelayBridgeProviderOptions } from './providers/relay/RelayBridgeProvider'
