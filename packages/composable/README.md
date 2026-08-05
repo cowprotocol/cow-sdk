@@ -86,7 +86,7 @@ class CustomOrder extends ConditionalOrder<DataType, StaticType> {
 
 ### JIT Poller
 
-The package exports the complete ABI for integrating with a deployed `ComposableCowPoller`.
+The package exports the ABI needed to integrate with a deployed `ComposableCowPoller`.
 
 ```typescript
 import { ComposableCowPollerAbi } from '@cowprotocol/sdk-composable'
