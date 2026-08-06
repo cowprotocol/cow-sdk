@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v2.2.6...sdk-trading-v2.3.0) (2026-08-06)
+
+
+### ✨ Features
+
+* **trading:** add externally signed order submission ([#925](https://github.com/cowprotocol/cow-sdk/issues/925)) ([d79c55a](https://github.com/cowprotocol/cow-sdk/commit/d79c55a7d80aebf601e9f3138c1dcf092b538a16))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-order-signing bumped to 1.1.7
+    * @cowprotocol/sdk-contracts-ts bumped to 3.3.4
+
 ## [2.2.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v2.2.5...sdk-trading-v2.2.6) (2026-07-29)
 
 
