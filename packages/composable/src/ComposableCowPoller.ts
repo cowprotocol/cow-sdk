@@ -7,6 +7,8 @@ const SCHEDULE_ID_ABI = ['address', 'address', 'address', 'bytes32']
 
 /** Utilities for interacting with a ComposableCowPoller deployment. */
 export class ComposableCowPoller {
+  private composableCowAddress?: { adapter: ReturnType<typeof getGlobalAdapter>; address: string }
+
   constructor(public readonly pollerAddress?: string) {}
 
   private read(functionName: string, args: unknown[] = [], provider?: Provider): Promise<unknown> {
@@ -19,7 +21,12 @@ export class ComposableCowPoller {
   }
 
   public async getComposableCowAddress(provider?: Provider): Promise<string> {
-    return (await this.read('COMPOSABLE_COW', [], provider)) as string
+    const adapter = getGlobalAdapter()
+    if (!provider && this.composableCowAddress?.adapter === adapter) return this.composableCowAddress.address
+
+    const address = (await this.read('COMPOSABLE_COW', [], provider)) as string
+    if (!provider) this.composableCowAddress = { adapter, address }
+    return address
   }
 
   public async getNonce(funder: string, provider?: Provider): Promise<BigIntish> {
