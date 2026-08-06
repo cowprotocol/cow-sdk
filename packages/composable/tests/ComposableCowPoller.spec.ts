@@ -18,6 +18,8 @@ const REGISTER_CALLDATA =
   '0x80313a250000000000000000000000000000000000000000000000000000000000000020000000000000000000000000111111111111111111111111111111111111111100000000000000000000000022222222222222222222222222222222222222220000000000000000000000003333333333333333333333333333333333333333000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000021234000000000000000000000000000000000000000000000000000000000000'
 const POLL_FUNDS_CALLDATA = '0xf83740307b1516d117fa5dd96fddfb9489b52af1c3cca64e1bc88c32324bdd6a92c6057c'
 const REVOKE_CALLDATA = '0xb75c7dc67b1516d117fa5dd96fddfb9489b52af1c3cca64e1bc88c32324bdd6a92c6057c'
+const DEADLINE = 1_800_000_000n
+const SIGNATURE = '0x123456'
 
 describe('ComposableCowPoller ABI', () => {
   test('keeps the ABI internal', () => {
@@ -58,17 +60,43 @@ describe('ComposableCowPoller', () => {
 
     for (const adapter of Object.values(adapters)) {
       setGlobalAdapter(adapter)
-      expect(poller.scheduleId(SCHEDULE)).toEqual(SCHEDULE_ID)
-      expect(poller.scheduleId(updatedSchedule)).toEqual(SCHEDULE_ID)
+      expect(poller.getScheduleId(SCHEDULE)).toEqual(SCHEDULE_ID)
+      expect(poller.getScheduleId(updatedSchedule)).toEqual(SCHEDULE_ID)
     }
   })
 
   test('encodes direct calls across adapters', () => {
     for (const adapter of Object.values(adapters)) {
       setGlobalAdapter(adapter)
-      expect(poller.register(SCHEDULE)).toEqual(REGISTER_CALLDATA)
-      expect(poller.pollFunds(SCHEDULE_ID)).toEqual(POLL_FUNDS_CALLDATA)
-      expect(poller.revoke(SCHEDULE_ID)).toEqual(REVOKE_CALLDATA)
+      expect(poller.encodeRegister(SCHEDULE)).toEqual(REGISTER_CALLDATA)
+      expect(poller.encodePollFunds(SCHEDULE_ID)).toEqual(POLL_FUNDS_CALLDATA)
+      expect(poller.encodeRevoke(SCHEDULE_ID)).toEqual(REVOKE_CALLDATA)
     }
   })
+
+  test('encodes signed registration calldata across adapters', () => {
+    const encodedCalls = []
+
+    for (const adapter of Object.values(adapters)) {
+      setGlobalAdapter(adapter)
+      encodedCalls.push(poller.encodeRegisterWithSignature(SCHEDULE, DEADLINE, SIGNATURE))
+    }
+
+    expect(new Set(encodedCalls).size).toEqual(1)
+
+    const [schedule, deadline, signature] = adapters.viemAdapter.utils.decodeFunctionData(
+      ComposableCowPollerAbi,
+      'registerWithSignature',
+      encodedCalls[0]!,
+    )
+
+    expect(schedule.handler.toLowerCase()).toEqual(SCHEDULE.handler)
+    expect(schedule.funder.toLowerCase()).toEqual(SCHEDULE.funder)
+    expect(schedule.owner.toLowerCase()).toEqual(SCHEDULE.owner)
+    expect(schedule.salt).toEqual(SCHEDULE.salt)
+    expect(schedule.staticInput).toEqual(SCHEDULE.staticInput)
+    expect(adapters.viemAdapter.utils.toBigIntish(deadline)).toEqual(DEADLINE)
+    expect(signature).toEqual(SIGNATURE)
+  })
+
 })

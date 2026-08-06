@@ -18,20 +18,20 @@ export class ComposableCowPoller {
     )
   }
 
-  public async composableCow(provider?: Provider): Promise<string> {
+  public async getComposableCowAddress(provider?: Provider): Promise<string> {
     return (await this.read('COMPOSABLE_COW', [], provider)) as string
   }
 
-  public async nonce(funder: string, provider?: Provider): Promise<BigIntish> {
+  public async getNonce(funder: string, provider?: Provider): Promise<BigIntish> {
     return getGlobalAdapter().utils.toBigIntish((await this.read('nonces', [funder], provider)) as BigIntish)
   }
 
-  public async schedule(id: string, provider?: Provider): Promise<ComposableCowPollerSchedule> {
+  public async getSchedule(id: string, provider?: Provider): Promise<ComposableCowPollerSchedule> {
     return (await this.read('schedules', [id], provider)) as ComposableCowPollerSchedule
   }
 
   /** Returns the app-data-independent schedule ID. */
-  public scheduleId(schedule: ComposableCowPollerScheduleKey): string {
+  public getScheduleId(schedule: ComposableCowPollerScheduleKey): string {
     const encoded = getGlobalAdapter().utils.encodeAbi(SCHEDULE_ID_ABI, [
       schedule.funder,
       schedule.handler,
@@ -43,17 +43,30 @@ export class ComposableCowPoller {
   }
 
   /** Encodes Poller.register. */
-  public register(schedule: ComposableCowPollerSchedule): string {
+  public encodeRegister(schedule: ComposableCowPollerSchedule): string {
     return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'register', [schedule]) as string
   }
 
+  /** Encodes Poller.registerWithSignature. */
+  public encodeRegisterWithSignature(
+    schedule: ComposableCowPollerSchedule,
+    deadline: BigIntish,
+    signature: string,
+  ): string {
+    return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'registerWithSignature', [
+      schedule,
+      deadline,
+      signature,
+    ]) as string
+  }
+
   /** Encodes Poller.pollFunds. */
-  public pollFunds(id: string): string {
+  public encodePollFunds(id: string): string {
     return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'pollFunds', [id]) as string
   }
 
   /** Encodes Poller.revoke. */
-  public revoke(id: string): string {
+  public encodeRevoke(id: string): string {
     return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'revoke', [id]) as string
   }
 }
