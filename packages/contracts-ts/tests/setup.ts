@@ -1,5 +1,3 @@
-import { sepolia as sepoliaConfig } from '@cowprotocol/sdk-config'
-
 import { EthersV5Adapter } from '@cowprotocol/sdk-ethers-v5-adapter'
 import { EthersV6Adapter } from '@cowprotocol/sdk-ethers-v6-adapter'
 import { ViemAdapter } from '@cowprotocol/sdk-viem-adapter'
@@ -11,7 +9,7 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { sepolia } from 'viem/chains'
 
 export const TEST_PRIVATE_KEY = '0x4de4739ebdab31d6a36e5ecef027c6ab2fd1a80cf2692c3861ba1ccfeb6cf8b8'
-export const TEST_RPC_URL = sepoliaConfig.rpcUrls.default.http[0]
+export const TEST_RPC_URL = 'https://ethereum-sepolia-rpc.publicnode.com'
 export const TEST_CHAIN_ID = 11155111
 export const ethersV5Wallet = new ethersV5.Wallet(TEST_PRIVATE_KEY)
 export const TEST_ADDRESS = ethersV5Wallet.address
