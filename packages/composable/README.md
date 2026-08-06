@@ -116,6 +116,23 @@ const signedRegisterCalldata = poller.encodeRegisterWithSignature(schedule, dead
 
 // Submit this calldata to pollerAddress from schedule.funder.
 const revokeCalldata = poller.encodeRevoke(scheduleId)
+
+// After registration succeeds, read the funder's shared action nonce again before signing revocation.
+const revokeNonce = await poller.getNonce(schedule.funder)
+const revokeDeadline = Math.floor(Date.now() / 1000) + 15 * 60
+const revokeTypedData = poller.getRevokeTypedData({
+  chainId,
+  id: scheduleId,
+  funder: schedule.funder,
+  nonce: revokeNonce,
+  deadline: revokeDeadline,
+})
+const revokeSignature = await signer.signTypedData(
+  revokeTypedData.domain,
+  revokeTypedData.types,
+  revokeTypedData.message,
+)
+const signedRevokeCalldata = poller.encodeRevokeWithSignature(scheduleId, revokeDeadline, revokeSignature)
 ```
 
 ## Usage
