@@ -24,6 +24,7 @@ const NONCE = 7n
 const DEADLINE = 2_000_000_000n
 const SIGNATURE = '0x123456'
 const REGISTER_DIGEST = '0x19c2f3157fd433af46f24ac718b47fb3b8a9b456d2a2f2b6c31cc07820bec2d1'
+const REVOKE_DIGEST = '0x904595cae3f7402646e3fba3b2683afaee0b71fd0eaf835ce0bb9c2bd7a3c9fd'
 
 describe('ComposableCowPoller ABI', () => {
   test('keeps the ABI internal', () => {
@@ -138,6 +139,15 @@ describe('ComposableCowPoller', () => {
     expect(() =>
       instance.getRegisterTypedData({ chainId: CHAIN_ID, schedule: SCHEDULE, nonce: NONCE, deadline: DEADLINE }),
     ).toThrow('pollerAddress is required')
+    expect(() =>
+      instance.getRevokeTypedData({
+        chainId: CHAIN_ID,
+        id: SCHEDULE_ID,
+        funder: SCHEDULE.funder,
+        nonce: NONCE,
+        deadline: DEADLINE,
+      }),
+    ).toThrow('pollerAddress is required')
   })
 
   test('builds the register digest across adapters', () => {
@@ -177,5 +187,39 @@ describe('ComposableCowPoller', () => {
     expect(schedule.staticInput).toEqual(SCHEDULE.staticInput)
     expect(adapters.viemAdapter.utils.toBigIntish(deadline)).toEqual(DEADLINE)
     expect(signature).toEqual(SIGNATURE)
+  })
+
+  test('builds the revoke digest across adapters', () => {
+    for (const adapter of Object.values(adapters)) {
+      setGlobalAdapter(adapter)
+      const typedData = poller.getRevokeTypedData({
+        chainId: CHAIN_ID,
+        id: SCHEDULE_ID,
+        funder: SCHEDULE.funder,
+        nonce: NONCE,
+        deadline: DEADLINE,
+      })
+
+      expect(adapter.utils.hashTypedData(typedData.domain, typedData.types, typedData.message)).toEqual(REVOKE_DIGEST)
+    }
+  })
+
+  test('encodes signed revocation calldata across adapters', () => {
+    const encodedCalls = []
+
+    for (const adapter of Object.values(adapters)) {
+      setGlobalAdapter(adapter)
+      encodedCalls.push(poller.encodeRevokeWithSignature(SCHEDULE_ID, DEADLINE, SIGNATURE))
+    }
+
+    expect(new Set(encodedCalls).size).toEqual(1)
+
+    const call = adapters.viemAdapter.utils.decodeFunctionData(
+      ComposableCowPollerAbi,
+      'revokeWithSignature',
+      encodedCalls[0]!,
+    )
+
+    expect(Array.from(call)).toEqual([SCHEDULE_ID, BigInt(DEADLINE), SIGNATURE])
   })
 })
