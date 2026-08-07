@@ -11,13 +11,16 @@ export function getSettlementContract(
   signer: Signer,
   options?: ProtocolOptions,
 ): SettlementContract {
+  return ContractFactory.createSettlementContract(getSettlementContractAddress(chainId, options), signer)
+}
+
+export function getSettlementContractAddress(chainId: SupportedChainId, options?: ProtocolOptions): string {
   const { env, settlementContractOverride } = options ?? {}
 
-  return ContractFactory.createSettlementContract(
+  return (
     settlementContractOverride?.[chainId] ??
-      (env === 'staging'
-        ? COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS_STAGING[chainId]
-        : COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[chainId]),
-    signer,
+    (env === 'staging'
+      ? COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS_STAGING[chainId]
+      : COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[chainId])
   )
 }
