@@ -79,16 +79,23 @@ describe('ComposableCowPollerSdk', () => {
   })
 
   test('submits direct and signature-authorized Poller transactions', async () => {
-    const sendTransaction = jest.spyOn(adapter.signer, 'sendTransaction').mockResolvedValue({
+    const transactionResponse = {
       hash: '0xtransaction',
       wait: jest.fn(),
-    } as never)
+    }
+    const sendTransaction = jest
+      .spyOn(adapter.signer, 'sendTransaction')
+      .mockResolvedValue(transactionResponse as never)
 
-    await expect(sdk.register({ schedule: SCHEDULE })).resolves.toEqual('0xtransaction')
-    await sdk.registerWithSignature({ schedule: SCHEDULE, deadline: DEADLINE, signature: SIGNATURE })
-    await sdk.pollFunds({ id: SCHEDULE_ID })
-    await sdk.revoke({ id: SCHEDULE_ID })
-    await sdk.revokeWithSignature({ id: SCHEDULE_ID, deadline: DEADLINE, signature: SIGNATURE })
+    await expect(sdk.register({ schedule: SCHEDULE })).resolves.toBe(transactionResponse)
+    await expect(
+      sdk.registerWithSignature({ schedule: SCHEDULE, deadline: DEADLINE, signature: SIGNATURE }),
+    ).resolves.toBe(transactionResponse)
+    await expect(sdk.pollFunds({ id: SCHEDULE_ID })).resolves.toBe(transactionResponse)
+    await expect(sdk.revoke({ id: SCHEDULE_ID })).resolves.toBe(transactionResponse)
+    await expect(sdk.revokeWithSignature({ id: SCHEDULE_ID, deadline: DEADLINE, signature: SIGNATURE })).resolves.toBe(
+      transactionResponse,
+    )
 
     expect(sendTransaction.mock.calls).toEqual([
       [{ to: POLLER_ADDRESS, data: sdk.poller.encodeRegister(SCHEDULE) }],

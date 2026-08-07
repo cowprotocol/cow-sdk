@@ -144,7 +144,8 @@ const pollerSdk = new ComposableCowPollerSdk({ chainId, pollerAddress, signer },
 const deadline = Math.floor(Date.now() / 1000) + 15 * 60
 
 // Direct flow: submit registration with the adapter's signer.
-await pollerSdk.register({ schedule })
+const transaction = await pollerSdk.register({ schedule })
+await transaction.wait()
 
 // Signature flow: fetch the current nonce, sign it, and encode the authorized call.
 const authorization = await pollerSdk.signRegister({ schedule, deadline })
@@ -152,12 +153,13 @@ const authorization = await pollerSdk.signRegister({ schedule, deadline })
 // authorization.typedData and authorization.signature are also available for inspection.
 
 // Alternatively, submit the authorization now with a relayer signer.
-await pollerSdk.registerWithSignature({
+const relayedTransaction = await pollerSdk.registerWithSignature({
   schedule,
   deadline,
   signature: authorization.signature,
   signer: relayerSigner,
 })
+await relayedTransaction.wait()
 ```
 
 `signRevoke` follows the same signature flow and reads the funder's current shared action nonce when called.

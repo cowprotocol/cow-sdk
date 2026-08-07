@@ -26,6 +26,7 @@ import {
   ERC20_ALLOWANCE_ABI,
   ERC20_APPROVE_ABI,
   getGlobalAdapter,
+  resolveSigner,
   setGlobalAdapter,
 } from '@cowprotocol/sdk-common'
 import { EnrichedOrder, OrderBookApi, SigningScheme } from '@cowprotocol/sdk-order-book'
@@ -41,7 +42,6 @@ import {
   COW_PROTOCOL_VAULT_RELAYER_ADDRESS_STAGING,
   AddressPerChain,
 } from '@cowprotocol/sdk-config'
-import { resolveSigner } from './utils/resolveSigner'
 
 export type WithPartialTraderParams<T> = T & Partial<TraderParameters>
 
