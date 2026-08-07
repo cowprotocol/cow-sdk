@@ -18,8 +18,12 @@ const REGISTER_CALLDATA =
   '0x80313a250000000000000000000000000000000000000000000000000000000000000020000000000000000000000000111111111111111111111111111111111111111100000000000000000000000022222222222222222222222222222222222222220000000000000000000000003333333333333333333333333333333333333333000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000021234000000000000000000000000000000000000000000000000000000000000'
 const POLL_FUNDS_CALLDATA = '0xf83740307b1516d117fa5dd96fddfb9489b52af1c3cca64e1bc88c32324bdd6a92c6057c'
 const REVOKE_CALLDATA = '0xb75c7dc67b1516d117fa5dd96fddfb9489b52af1c3cca64e1bc88c32324bdd6a92c6057c'
-const DEADLINE = 1_800_000_000n
+const POLLER_ADDRESS = '0x4444444444444444444444444444444444444444'
+const CHAIN_ID = 1
+const NONCE = 7n
+const DEADLINE = 2_000_000_000n
 const SIGNATURE = '0x123456'
+const REGISTER_DIGEST = '0x19c2f3157fd433af46f24ac718b47fb3b8a9b456d2a2f2b6c31cc07820bec2d1'
 
 describe('ComposableCowPoller ABI', () => {
   test('keeps the ABI internal', () => {
@@ -48,7 +52,7 @@ describe('ComposableCowPoller ABI', () => {
 
 describe('ComposableCowPoller', () => {
   const adapters = createAdapters()
-  const pollerAddress = '0x4444444444444444444444444444444444444444'
+  const pollerAddress = POLLER_ADDRESS
   const composableCowAddress = '0x5555555555555555555555555555555555555555'
   const poller = new ComposableCowPoller(pollerAddress)
 
@@ -115,6 +119,38 @@ describe('ComposableCowPoller', () => {
       expect(poller.encodeRegister(SCHEDULE)).toEqual(REGISTER_CALLDATA)
       expect(poller.encodePollFunds(SCHEDULE_ID)).toEqual(POLL_FUNDS_CALLDATA)
       expect(poller.encodeRevoke(SCHEDULE_ID)).toEqual(REVOKE_CALLDATA)
+    }
+  })
+
+  test('builds the EIP-712 domain from the configured Poller address', () => {
+    expect(poller.getEip712Domain(CHAIN_ID)).toEqual({
+      name: 'ComposableCowPoller',
+      version: '1',
+      chainId: CHAIN_ID,
+      verifyingContract: POLLER_ADDRESS,
+    })
+  })
+
+  test('requires a Poller address to build EIP-712 data', () => {
+    const instance = new ComposableCowPoller()
+
+    expect(() => instance.getEip712Domain(CHAIN_ID)).toThrow('pollerAddress is required')
+    expect(() =>
+      instance.getRegisterTypedData({ chainId: CHAIN_ID, schedule: SCHEDULE, nonce: NONCE, deadline: DEADLINE }),
+    ).toThrow('pollerAddress is required')
+  })
+
+  test('builds the register digest across adapters', () => {
+    for (const adapter of Object.values(adapters)) {
+      setGlobalAdapter(adapter)
+      const typedData = poller.getRegisterTypedData({
+        chainId: CHAIN_ID,
+        schedule: SCHEDULE,
+        nonce: NONCE,
+        deadline: DEADLINE,
+      })
+
+      expect(adapter.utils.hashTypedData(typedData.domain, typedData.types, typedData.message)).toEqual(REGISTER_DIGEST)
     }
   })
 
