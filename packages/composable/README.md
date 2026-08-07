@@ -86,7 +86,7 @@ class CustomOrder extends ConditionalOrder<DataType, StaticType> {
 
 ### JIT Poller
 
-The SDK encodes calldata for registering and revoking `ComposableCowPoller` schedules. Signing, gas estimation, transaction submission, and confirmation remain the consumer's responsibility.
+The package exposes two Poller APIs: the low-level `ComposableCowPoller` below only reads state and encodes calldata, while `ComposableCowPollerSdk` adds signing and transaction submission through the configured adapter.
 
 ```typescript
 import { ComposableCowPoller, type ComposableCowPollerSchedule } from '@cowprotocol/sdk-composable'
@@ -134,6 +134,33 @@ const revokeSignature = await signer.signTypedData(
 )
 const signedRevokeCalldata = poller.encodeRevokeWithSignature(scheduleId, revokeDeadline, revokeSignature)
 ```
+
+Use `ComposableCowPollerSdk` to sign or submit transactions through the configured adapter. Its `poller` property exposes the same low-level calldata and read methods shown above. Using that `schedule`, choose either the direct flow or the signature flow below; do not run both for the same registration.
+
+```typescript
+import { ComposableCowPollerSdk } from '@cowprotocol/sdk-composable'
+
+const pollerSdk = new ComposableCowPollerSdk({ chainId, pollerAddress, signer }, adapter)
+const deadline = Math.floor(Date.now() / 1000) + 15 * 60
+
+// Direct flow: submit registration with the adapter's signer.
+await pollerSdk.register({ schedule })
+
+// Signature flow: fetch the current nonce, sign it, and encode the authorized call.
+const authorization = await pollerSdk.signRegister({ schedule, deadline })
+// authorization.calldata is ready for a hook or relayed transaction.
+// authorization.typedData and authorization.signature are also available for inspection.
+
+// Alternatively, submit the authorization now with a relayer signer.
+await pollerSdk.registerWithSignature({
+  schedule,
+  deadline,
+  signature: authorization.signature,
+  signer: relayerSigner,
+})
+```
+
+`signRevoke` follows the same signature flow and reads the funder's current shared action nonce when called.
 
 ## Usage
 
