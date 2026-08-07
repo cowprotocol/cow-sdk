@@ -18,6 +18,7 @@ import { getQuote, getQuoteWithSigner, QuoteResultsWithSigner } from './getQuote
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getTradeParametersAfterQuote, swapParamsToLimitOrderParams } from './utils/misc'
 import { getPreSignTransaction } from './getPreSignTransaction'
+import { getPreSignCallData, PreSignCallData } from './getPreSignCallData'
 import {
   AbstractProviderAdapter,
   AccountAddress,
@@ -53,6 +54,14 @@ export type WithPartialTraderParams<T> = T & Partial<TraderParameters>
 export type QuoteOnlyParams<T> = T & Partial<Omit<TraderParameters, 'signer'>> & { owner: AccountAddress }
 
 export type OrderTraderParams = WithPartialTraderParams<{ orderUid: string }>
+
+/** Parameters for building pre-sign calldata without requiring a signer. */
+export interface GetPreSignCallDataParams {
+  orderUid: string
+  chainId?: SupportedChainId
+  env?: CowEnv
+  settlementContractOverride?: Partial<AddressPerChain>
+}
 
 /**
  * Parameters for submitting an externally signed order.
@@ -339,6 +348,29 @@ export class TradingSdk {
     return getPreSignTransaction(signer, chainId, orderUid, {
       env,
       settlementContractOverride,
+    })
+  }
+
+  /**
+   * Builds calldata for pre-signing an order without requiring a signer or making an RPC call.
+   *
+   * `chainId` and `env` fall back to the SDK's trader configuration and order-book context;
+   * `settlementContractOverride` falls back to the trader configuration.
+   *
+   * Submit the returned `{ to, data, value }` through the order owner's wallet, multisig, or custody
+   * stack. The transaction must be executed by the owner encoded in `orderUid`.
+   */
+  getPreSignCallData(params: GetPreSignCallDataParams): PreSignCallData {
+    const orderBookContext = this.options.orderBookApi?.context
+    const chainId = params.chainId ?? this.traderParams.chainId ?? orderBookContext?.chainId
+
+    if (!chainId) {
+      throw new Error('Missing pre-sign parameters: chainId')
+    }
+
+    return getPreSignCallData(chainId, params.orderUid, {
+      env: params.env ?? this.traderParams.env ?? orderBookContext?.env,
+      settlementContractOverride: params.settlementContractOverride ?? this.traderParams.settlementContractOverride,
     })
   }
 

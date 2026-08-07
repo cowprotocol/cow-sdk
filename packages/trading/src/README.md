@@ -37,7 +37,8 @@ Special cases:
 
 - 'setTraderParams' - In case if you work with different chains and need to switch between them in runtime.
 - `postSellNativeCurrencyOrder` - Sell blockchain native tokens (e.g., ETH on Ethereum).
-- `getPreSignTransaction` - Sign an order using a smart contract wallet.
+- `getPreSignCallData` - Build unsigned pre-sign calldata for an external wallet, multisig, or custody stack.
+- `getPreSignTransaction` - Build a pre-sign transaction with a signer-based gas estimate.
 
 ### Setup
 
@@ -289,8 +290,7 @@ console.log('Quote:', quoteResults)
 
 ### Create an order with smart-contract wallet
 
-If you want to create an order with a smart-contract wallet, you should specify the `signingScheme` parameter in the `postSwapOrder` function.
-And then you need to send a transaction from `getPreSignTransaction` result in order to sign the order.
+If you want to create an order with a smart-contract wallet, specify the `PRESIGN` signing scheme when posting the order. After the order is created, use `getPreSignCallData` to submit the pre-sign transaction through your own wallet stack, or `getPreSignTransaction` when you have an SDK signer and want a gas estimate included.
 
 #### Example of Swap order
 
@@ -303,6 +303,8 @@ const sdk = new TradingSdk({
   appCode: '<YOUR_APP_CODE>',
 })
 
+const smartContractWalletAddress = '0x<smartContractWalletAddress>'
+
 const parameters: TradeParameters = {
   kind: OrderKind.BUY,
   sellToken: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
@@ -310,6 +312,7 @@ const parameters: TradeParameters = {
   buyToken: '0x0625afb445c3b6b7b929342a04a22599fd5dbb59',
   buyTokenDecimals: 18,
   amount: '120000000000000000',
+  owner: smartContractWalletAddress,
 }
 
 const advancedParameters: SwapAdvancedSettings = {
@@ -319,9 +322,8 @@ const advancedParameters: SwapAdvancedSettings = {
   },
 }
 
-const smartContractWalletAddress = '0x<smartContractWalletAddress>'
 const { orderId } = await sdk.postSwapOrder(parameters, advancedParameters)
-const preSignTransaction = await sdk.getPreSignTransaction({ orderId, account: smartContractWalletAddress })
+const preSignTransaction = await sdk.getPreSignTransaction({ orderUid: orderId })
 
 console.log('Order created with "pre-sign" state, id: ', orderId)
 console.log('Execute the transaction to sign the order', preSignTransaction)
@@ -365,7 +367,7 @@ const advancedParameters: LimitOrderAdvancedSettings = {
 }
 
 const { orderId } = await sdk.postLimitOrder(limitOrderParameters, advancedParameters)
-const preSignTransaction = await sdk.getPreSignTransaction({ orderId, account: smartContractWalletAddress })
+const preSignTransaction = await sdk.getPreSignTransaction({ orderUid: orderId })
 
 console.log('Order created with "pre-sign" state, id: ', orderId)
 console.log('Execute the transaction to sign the order', preSignTransaction)
@@ -373,6 +375,19 @@ console.log('Execute the transaction to sign the order', preSignTransaction)
 
 > **Note:** it's important to specify the `owner` parameter if you create an order with a smart-contract wallet, and it differs from the signer (for example Safe).
 > CoW Protocol will use `owner` in order to check the order owner balance, allowance and other things.
+
+#### Build pre-sign calldata without a signer
+
+For a Safe, multisig, or custody flow, request the raw transaction data and submit it through your own stack:
+
+```typescript
+const preSignCallData = sdk.getPreSignCallData({ orderUid: orderId })
+
+// Returns { to, data, value } and does not estimate gas.
+await yourMultisigOrCustodyStack.submitTransaction(preSignCallData)
+```
+
+The helper does not access a signer or make an RPC call. The final transaction must be executed by the order owner encoded in the order UID—for a Safe-owned order, the Safe itself must call the settlement contract.
 
 ### Optional parameters
 
