@@ -298,8 +298,9 @@ export class TradingSdk {
    * @returns Order body ready for {@link postSignedOrder} once the signature is attached.
    * @throws If the quote has no owner; if it sells the native token (such orders go through the
    * EthFlow contract, see {@link postSellNativeCurrencyOrder}, and cannot be submitted to the order
-   * book); or if `signingScheme` is `PRESIGN` (on-chain flow, see {@link getPreSignTransaction}) or
-   * `EIP1271` (smart-account signatures, planned for a later milestone).
+   * book); or if `signingScheme` is `PRESIGN` (on-chain flow, see {@link getPreSignCallData} or
+   * {@link getPreSignTransaction}) or `EIP1271` (smart-account signatures, planned for a later
+   * milestone).
    *
    * @example
    * ```typescript
