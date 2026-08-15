@@ -30,6 +30,33 @@ describe('OrderSigningUtils', () => {
       partiallyFillable: true,
     }
 
+    test('should reject a full appData document instead of surfacing an opaque hex error', async () => {
+      // What you get back from OrderQuoteResponse if you pass it straight through
+      const fullAppData = JSON.stringify({
+        appCode: 'Decentralized CoW',
+        environment: 'prod',
+        metadata: { orderClass: { orderClass: 'limit' }, quote: { slippageBips: '50' } },
+        version: '0.11.0',
+      })
+
+      for (const [, adapter] of Object.entries(adapters)) {
+        setGlobalAdapter(adapter)
+
+        await expect(
+          OrderSigningUtils.signOrder({ ...testOrder, appData: fullAppData }, SupportedChainId.SEPOLIA, adapter.signer),
+        ).rejects.toThrow(/expected the bytes32 appData hash/)
+      }
+    })
+
+    test('should reject an appData hash that is not 32 bytes', async () => {
+      const [, adapter] = Object.entries(adapters)[0]
+      setGlobalAdapter(adapter)
+
+      await expect(
+        OrderSigningUtils.signOrder({ ...testOrder, appData: '0xdeadbeef' }, SupportedChainId.SEPOLIA, adapter.signer),
+      ).rejects.toThrow(/expected the bytes32 appData hash/)
+    })
+
     test('should consistently sign orders across different adapters', async () => {
       const signatures: Record<string, string> = {}
 
