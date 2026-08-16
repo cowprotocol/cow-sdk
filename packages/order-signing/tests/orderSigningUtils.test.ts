@@ -1,5 +1,5 @@
 import { AdaptersTestSetup, createAdapters, TEST_ADDRESS } from './setup'
-import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { CowError, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { OrderSigningUtils } from '../src/orderSigningUtils'
 import {
   COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS,
@@ -42,9 +42,13 @@ describe('OrderSigningUtils', () => {
       for (const [, adapter] of Object.entries(adapters)) {
         setGlobalAdapter(adapter)
 
-        await expect(
-          OrderSigningUtils.signOrder({ ...testOrder, appData: fullAppData }, SupportedChainId.SEPOLIA, adapter.signer),
-        ).rejects.toThrow(/expected the bytes32 appData hash/)
+        const promise = OrderSigningUtils.signOrder(
+          { ...testOrder, appData: fullAppData },
+          SupportedChainId.SEPOLIA,
+          adapter.signer,
+        )
+        await expect(promise).rejects.toThrow(CowError)
+        await expect(promise).rejects.toThrow(/expected the bytes32 appData hash/)
       }
     })
 
@@ -52,9 +56,13 @@ describe('OrderSigningUtils', () => {
       const [, adapter] = Object.entries(adapters)[0]
       setGlobalAdapter(adapter)
 
-      await expect(
-        OrderSigningUtils.signOrder({ ...testOrder, appData: '0xdeadbeef' }, SupportedChainId.SEPOLIA, adapter.signer),
-      ).rejects.toThrow(/expected the bytes32 appData hash/)
+      const promise = OrderSigningUtils.signOrder(
+        { ...testOrder, appData: '0xdeadbeef' },
+        SupportedChainId.SEPOLIA,
+        adapter.signer,
+      )
+      await expect(promise).rejects.toThrow(CowError)
+      await expect(promise).rejects.toThrow(/expected the bytes32 appData hash/)
     })
 
     test('should consistently sign orders across different adapters', async () => {
