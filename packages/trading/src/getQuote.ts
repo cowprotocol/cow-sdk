@@ -169,9 +169,7 @@ export async function getQuoteRaw(
   if (slippageBps === undefined) {
     if (suggestedSlippageBps != null) {
       // Recursive call, this time using the suggested slippage
-      log(
-        `Suggested slippage is greater than ${defaultSlippageBps} BPS (default), using the suggested slippage (${suggestedSlippageBps} BPS)`,
-      )
+      log(`Using suggested slippage (${suggestedSlippageBps} BPS) instead of the default (${defaultSlippageBps} BPS)`)
 
       const newAppDataInfo = await buildAppData(
         {
