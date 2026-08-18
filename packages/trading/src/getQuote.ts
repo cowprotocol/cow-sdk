@@ -162,12 +162,12 @@ export async function getQuoteRaw(
     isEthFlow,
     quote,
     orderBookApi,
-    suggestedSlippageBps: suggestedSlippageBps || defaultSlippageBps,
+    suggestedSlippageBps: suggestedSlippageBps ?? defaultSlippageBps,
   }
 
   // If no slippage is specified. AUTO slippage is used
   if (slippageBps === undefined) {
-    if (suggestedSlippageBps) {
+    if (suggestedSlippageBps != null) {
       // Recursive call, this time using the suggested slippage
       log(
         `Suggested slippage is greater than ${defaultSlippageBps} BPS (default), using the suggested slippage (${suggestedSlippageBps} BPS)`,

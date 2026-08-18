@@ -498,6 +498,33 @@ describe('getQuote', () => {
       })
     })
 
+    it('Should use suggested 0 slippage as-is, not fall back to the default and not skip the rebuild branch', async () => {
+      resolveSlippageSuggestion.mockResolvedValue({ slippageBps: 0 })
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+      const results: any[] = []
+
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        const result = await getQuoteWithSigner(
+          {
+            ...defaultOrderParams,
+            signer: adapters[adapterName].signer,
+            slippageBps: undefined, // AUTO slippage
+          },
+          {},
+          orderBookApiMock,
+        )
+        results.push(result)
+      }
+
+      results.forEach(({ result }) => {
+        expect(result.suggestedSlippageBps).toBe(0)
+        // If the rebuild branch (line 170) were skipped, appData would keep defaultOrderParams' fixture slippage (50)
+        const appData = JSON.parse(result.appDataInfo.fullAppData)
+        expect(appData.metadata.quote.slippageBips).toBe(0)
+      })
+    })
+
     it('Should pass getSlippageSuggestion callback from advanced settings', async () => {
       const mockCallback = jest.fn().mockResolvedValue({ slippageBps: 300 })
       const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>

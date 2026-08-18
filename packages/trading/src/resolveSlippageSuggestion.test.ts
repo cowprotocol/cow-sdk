@@ -223,6 +223,37 @@ describe('resolveSlippageSuggestion', () => {
     })
   })
 
+  describe('When getSlippageSuggestion returns a legitimate 0 slippageBps', () => {
+    it('Should call suggestSlippageBps with 0 volumeMultiplierPercent, not fall through to the default suggestion', async () => {
+      suggestSlippageBps.mockReturnValue(0)
+      const mockGetSlippageSuggestion = jest.fn().mockResolvedValue({ slippageBps: 0 })
+      const advancedSettings: SwapAdvancedSettings = {
+        quoteRequest: { priceQuality: PriceQuality.OPTIMAL },
+        getSlippageSuggestion: mockGetSlippageSuggestion,
+      }
+
+      const result = await resolveSlippageSuggestion(
+        SupportedChainId.GNOSIS_CHAIN,
+        mockTradeParameters,
+        mockTrader,
+        mockQuoteResponse,
+        false,
+        advancedSettings,
+      )
+
+      expect(result).toEqual({ slippageBps: 0 })
+      expect(suggestSlippageBps).toHaveBeenCalledTimes(2)
+      expect(suggestSlippageBps).toHaveBeenLastCalledWith({
+        isEthFlow: false,
+        quote: mockQuoteResponse,
+        tradeParameters: mockTradeParameters,
+        trader: mockTrader,
+        advancedSettings,
+        volumeMultiplierPercent: 0, // 0 BPS = 0%
+      })
+    })
+  })
+
   describe('EthFlow orders', () => {
     it('Should pass isEthFlow flag to suggestSlippageBps', async () => {
       await resolveSlippageSuggestion(
