@@ -19,7 +19,8 @@
     "prepublishOnly": "pnpm run typecheck && pnpm test && pnpm run lint",
     "release:dry-run": "release-please release-pr --dry-run",
     "release:pr": "release-please release-pr",
-    "release:github": "release-please github-release"
+    "release:github": "release-please github-release",
+    "bundle:size": "node scripts/bundle-size.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
