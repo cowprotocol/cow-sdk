@@ -174,13 +174,37 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
 
     const { quote, timestamp: isoDate } = quoteResponse
 
-    const amountOut = Number(quote.amountOut)
-    const minAmountOut = Number(quote.minAmountOut)
-    const slippage = amountOut > 0 ? (amountOut - minAmountOut) / amountOut : 0
-    const slippageBps = Math.trunc(slippage * 10_000)
-    const feeAmountInBuyCurrency = Math.trunc(amountOut * slippage)
-    const feeAmountInSellCurrency = Math.trunc(Number(quote.amountIn) * slippage)
-    const bridgeFee = feeAmountInBuyCurrency
+    const sellAmount = BigInt(quote.amountIn)
+    const buyAmount = BigInt(quote.amountOut)
+    const minBuyAmount = BigInt(quote.minAmountOut)
+
+    // Slippage is the tolerance we asked for. 1Click documents `minAmountOut` as "Minimum output
+    // amount after slippage is applied", and it comes back as exactly
+    // `amountOut * (1 - slippageTolerance)`, so this gap is *not* a fee.
+    const slippageBps = buyAmount > 0n ? Number(((buyAmount - minBuyAmount) * 10_000n) / buyAmount) : 0
+
+    // 1Click charges exactly two fees, both already reflected in `amountOut`:
+    //  - `appFees`, a share of `amountIn` in bps, taken off the input before the swap
+    //  - `withdrawFee`, the destination withdrawal cost, in units of the buy token
+    // Whatever else separates the two sides is the execution spread, which is not a fee. Deriving
+    // the fee from `amountInUsd`/`amountOutUsd` folds that spread in: those are oracle products
+    // (`amount * price`), so on cross-asset routes the gap measured 34 bps on USDC->ETH against
+    // 10 bps of actual fees, and on ETH->USDC came out *below* the known appFee.
+    // `refundFee` is deliberately excluded: it only applies when a swap is refunded.
+    const appFeeBps = (quoteResponse.quoteRequest.appFees ?? []).reduce((total, { fee }) => total + fee, 0)
+    const withdrawFee = BigInt(quote.withdrawFee ?? 0)
+
+    // The two fees sit on opposite sides of the swap, so converting between currencies uses the rate
+    // the swap actually got: gross output over net input.
+    const appFee = (sellAmount * BigInt(appFeeBps)) / 10_000n
+    const netSellAmount = sellAmount - appFee
+    const grossBuyAmount = buyAmount + withdrawFee
+
+    const feeAmountInSellCurrency =
+      grossBuyAmount > 0n ? appFee + (withdrawFee * netSellAmount) / grossBuyAmount : appFee
+    const feeAmountInBuyCurrency =
+      netSellAmount > 0n ? (appFee * grossBuyAmount) / netSellAmount + withdrawFee : withdrawFee
+    const feeBps = sellAmount > 0n ? Number((feeAmountInSellCurrency * 10_000n + sellAmount / 2n) / sellAmount) : 0
 
     return {
       id: recoveredDepositAddress.quoteHash,
@@ -193,31 +217,37 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       expectedFillTimeSeconds: quote.timeEstimate,
       limits: {
         minDeposit: BigInt(quote.minAmountIn),
-        maxDeposit: BigInt(quote.amountIn),
+        maxDeposit: sellAmount,
       },
       fees: {
-        bridgeFee: BigInt(bridgeFee), // The bridge fee is already included in `minAmountOut`. This means `bridgeFee` represents the maximum possible fee (worst case), but the actual fee may be lower.
+        // Denominated in the sell currency, i.e. the same value as
+        // `costs.bridgingFee.amountInSellCurrency`. This is the SDK's own cross-provider convention
+        // (PROVIDER_README.md, plus the Bungee and Across providers), not something 1Click dictates.
+        // Like Bungee's `routeFee` this is the fee only, and excludes execution spread.
+        bridgeFee: feeAmountInSellCurrency,
         destinationGasFee: BigInt(0),
       },
       amountsAndCosts: {
         beforeFee: {
-          sellAmount: BigInt(quote.amountIn),
-          buyAmount: BigInt(quote.amountOut),
+          sellAmount,
+          buyAmount,
         },
         afterFee: {
-          sellAmount: BigInt(quote.amountIn),
-          buyAmount: BigInt(quote.minAmountOut),
+          // `amountOut` is already net of every 1Click fee, so the buy amount does not change here.
+          // Same as the Bungee provider, where the fee is likewise not deducted from the output.
+          sellAmount,
+          buyAmount,
         },
         afterSlippage: {
-          sellAmount: BigInt(quote.amountIn),
-          buyAmount: BigInt(quote.minAmountOut),
+          sellAmount,
+          buyAmount: minBuyAmount,
         },
         slippageBps,
         costs: {
           bridgingFee: {
-            feeBps: slippageBps,
-            amountInSellCurrency: BigInt(feeAmountInSellCurrency),
-            amountInBuyCurrency: BigInt(feeAmountInBuyCurrency),
+            feeBps,
+            amountInSellCurrency: feeAmountInSellCurrency,
+            amountInBuyCurrency: feeAmountInBuyCurrency,
           },
         },
       },

@@ -144,6 +144,7 @@ adapterNames.forEach((adapterName) => {
       const mockStatus: GetExecutionStatusResponse = {
         status: GetExecutionStatusResponse.status.SUCCESS,
         updatedAt: '2025-09-05T12:01:33.000Z',
+        correlationId: 'test-correlation-id',
         swapDetails: {
           intentHashes: ['intentHash1'],
           nearTxHashes: ['nearTxHash1', 'nearTxHash2', 'nearTxHash3'],
@@ -163,6 +164,7 @@ adapterNames.forEach((adapterName) => {
         quoteResponse: {
           timestamp: '2025-09-05T12:00:38.695Z',
           signature: 'ed25519:signature',
+          correlationId: 'test-correlation-id',
           quoteRequest: {
             dry: false,
             swapType: QuoteRequest.swapType.EXACT_INPUT,
@@ -252,6 +254,7 @@ adapterNames.forEach((adapterName) => {
       const buildMockStatus = (destinationAsset: string): GetExecutionStatusResponse => ({
         status: GetExecutionStatusResponse.status.SUCCESS,
         updatedAt: '2025-09-05T12:01:33.000Z',
+        correlationId: 'test-correlation-id',
         swapDetails: {
           intentHashes: ['intentHash1'],
           nearTxHashes: ['nearTxHash1'],
@@ -271,6 +274,7 @@ adapterNames.forEach((adapterName) => {
         quoteResponse: {
           timestamp: '2025-09-05T12:00:38.695Z',
           signature: 'ed25519:signature',
+          correlationId: 'test-correlation-id',
           quoteRequest: {
             dry: false,
             swapType: QuoteRequest.swapType.EXACT_INPUT,
@@ -375,6 +379,7 @@ adapterNames.forEach((adapterName) => {
           },
           signature: 'ed25519:testSignature',
           timestamp: '2025-09-05T12:00:38.695Z',
+          correlationId: 'test-correlation-id',
         }
 
         jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
@@ -437,9 +442,9 @@ adapterNames.forEach((adapterName) => {
         const buyTokenAddress = '0x4200000000000000000000000000000000000006'
         const testQuoteHash = '0xtestFeeCurrencyQuoteHash'
 
-        // Sell token (USDC, 6 decimals) and buy token (ETH, 18 decimals) differ hugely in scale,
-        // and amountOut !== minAmountOut so the slippage-derived fees are non-zero. This makes a
-        // sell/buy-currency swap observable (with zero slippage, the fee is 0 and the swap hides).
+        // Sell token (USDC, 6 decimals) and buy token (ETH, 18 decimals) differ hugely in scale, and
+        // the quote carries both fees, so a sell/buy-currency swap is observable (with no fees at all
+        // both sides are 0 and the swap hides).
         const amountIn = '52000000' // 52 USDC (6 decimals)
         const amountOut = '11760237526222378' // ~0.01176 ETH (18 decimals)
         const minAmountOut = '11701433538591266'
@@ -456,6 +461,7 @@ adapterNames.forEach((adapterName) => {
             amountOutFormatted: '0.011760237526222378',
             amountOutUsd,
             minAmountOut,
+            withdrawFee: '560000000000',
             timeEstimate: 60,
             deadline: '2025-09-05T12:10:38.605Z',
             timeWhenInactive: '2025-09-05T12:10:38.605Z',
@@ -475,9 +481,11 @@ adapterNames.forEach((adapterName) => {
             recipient: '0x0000000000000000000000000000000000000000',
             recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
             deadline: '2025-09-05T12:10:38.605Z',
+            appFees: [{ recipient: 'test.near', fee: 10 }],
           },
           signature: 'ed25519:testFeeSignature',
           timestamp: '2025-09-05T12:00:38.695Z',
+          correlationId: 'test-correlation-id',
         }
 
         jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
@@ -529,14 +537,21 @@ adapterNames.forEach((adapterName) => {
           signer: '0x0000000000000000000000000000000000000000',
         })
 
-        const slippage = (Number(amountOut) - Number(minAmountOut)) / Number(amountOut)
         const bridgingFee = quote.amountsAndCosts.costs.bridgingFee
 
         // The sell-currency fee must be denominated in the sell token (USDC, 6 decimals) and thus
-        // scaled by amountIn; the buy-currency fee in the buy token (ETH, 18 decimals), scaled by
-        // amountOut. Before the fix these two were swapped (each reported in the wrong token).
-        expect(bridgingFee.amountInSellCurrency).toBe(BigInt(Math.trunc(Number(amountIn) * slippage)))
-        expect(bridgingFee.amountInBuyCurrency).toBe(BigInt(Math.trunc(Number(amountOut) * slippage)))
+        // scaled by amountIn; the buy-currency fee in the buy token (ETH, 18 decimals). Before the
+        // fix these two were swapped (each reported in the wrong token).
+        // 10 bps appFee on 52 USDC = 52000 atoms, plus the 5.6e11 wei withdrawFee converted across.
+        expect(bridgingFee.amountInSellCurrency).toBe(54473n)
+        expect(bridgingFee.amountInBuyCurrency).toBe(12332570096318n)
+        // `fees.bridgeFee` mirrors the sell-currency amount, as documented in PROVIDER_README.md.
+        expect(quote.fees.bridgeFee).toBe(bridgingFee.amountInSellCurrency)
+
+        // The fee is the two 1Click fees, never the 50 bps slippage tolerance that separates
+        // amountOut from minAmountOut.
+        expect(bridgingFee.feeBps).toBe(10)
+        expect(quote.amountsAndCosts.slippageBps).toBe(50)
 
         // Sanity on magnitude: the sell fee is USDC-sized (small), the buy fee is ETH-sized (large).
         expect(bridgingFee.amountInSellCurrency < 1_000_000n).toBe(true)
@@ -578,6 +593,7 @@ adapterNames.forEach((adapterName) => {
           },
           signature: 'ed25519:testSignature',
           timestamp: '2025-09-05T12:00:38.695Z',
+          correlationId: 'test-correlation-id',
         }
 
         const mockAttestationSignature =
@@ -640,6 +656,7 @@ adapterNames.forEach((adapterName) => {
           },
           signature: 'ed25519:testBtcSignature',
           timestamp: '2025-09-05T12:00:38.695Z',
+          correlationId: 'test-correlation-id',
         }
 
         jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
@@ -719,6 +736,7 @@ adapterNames.forEach((adapterName) => {
             amountOutFormatted: '0.00007047',
             amountOutUsd: '4.6811',
             minAmountOut: '7011',
+            withdrawFee: '11', // ~15 bps of amountOut, the going rate for a BTC withdrawal
             timeEstimate: 470,
             deadline: '2026-06-19T12:03:12.000Z',
             timeWhenInactive: '2026-06-19T12:03:12.000Z',
@@ -738,9 +756,11 @@ adapterNames.forEach((adapterName) => {
             recipient: 'bc1qray0vz42y0sl4m0qwar58yel6lure25q8f22cn',
             recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
             deadline: '2026-06-19T12:03:12.000Z',
+            appFees: [{ recipient: 'test.near', fee: 10 }],
           },
           signature: 'ed25519:testRealBtcSignature',
           timestamp: '2026-06-16T11:33:13.082Z',
+          correlationId: 'test-correlation-id',
         }
 
         jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
@@ -792,15 +812,261 @@ adapterNames.forEach((adapterName) => {
           signer: '0x0000000000000000000000000000000000000000',
         })
 
+        const bridgingFee = quote.amountsAndCosts.costs.bridgingFee
+
         // The BTC-denominated fee must never exceed the BTC amount being bridged (7047 sats).
-        expect(quote.fees.bridgeFee).toBeLessThan(quote.amountsAndCosts.beforeFee.buyAmount)
-        expect(quote.amountsAndCosts.costs.bridgingFee.amountInBuyCurrency).toBeLessThan(
-          quote.amountsAndCosts.beforeFee.buyAmount,
-        )
-        // With the swapped-currency bug this was 1,263,735 sats (bigger than the whole trade).
-        // Fixed value derived from amountOut (7047) vs minAmountOut (7011).
-        expect(quote.fees.bridgeFee).toBe(36n)
+        // With the swapped-currency bug it was 1,263,735 sats, bigger than the whole trade.
+        expect(bridgingFee.amountInBuyCurrency).toBeLessThan(quote.amountsAndCosts.beforeFee.buyAmount)
+        // 11 sats of withdrawFee, plus the 10 bps appFee converted from the USDC side.
+        expect(bridgingFee.amountInBuyCurrency).toBe(18n)
+        expect(bridgingFee.amountInSellCurrency).toBe(15202n)
+        expect(quote.fees.bridgeFee).toBe(bridgingFee.amountInSellCurrency)
+        // BTC is where withdrawFee dominates: 26 bps total against a 10 bps appFee. Deriving the fee
+        // from the USD values instead would have reported 2125 bps on this quote.
+        expect(bridgingFee.feeBps).toBe(26)
+        // Slippage stays what we asked Near for, and is reported separately from the fee.
         expect(quote.amountsAndCosts.slippageBps).toBe(51)
+        // amountOut is already net of both fees, so it carries through beforeFee and afterFee.
+        expect(quote.amountsAndCosts.beforeFee.buyAmount).toBe(7047n)
+        expect(quote.amountsAndCosts.afterFee.buyAmount).toBe(7047n)
+        expect(quote.amountsAndCosts.afterSlippage.buyAmount).toBe(7011n)
+      })
+
+      it('should not report the slippage tolerance as the bridging fee', async () => {
+        // Regression test for https://github.com/cowprotocol/cow-sdk/pull/929, which derived the fee
+        // from (amountOut - minAmountOut). That gap is just the slippageTolerance we send in the
+        // request, so every Near route reported a flat 0.5% fee. Real quote from an ETH -> ETH
+        // bridge where Near actually charged ~1 bp.
+        const api = new NearIntentsApi()
+        const sellTokenAddress = '0x0000000000000000000000000000000000000000'
+        const buyTokenAddress = '0x4200000000000000000000000000000000000006'
+        const testQuoteHash = '0xtestSlippageNotFeeQuoteHash'
+
+        const amountIn = '27627599418206933101'
+        const amountOut = '27624746408619420000'
+        const minAmountOut = '27486622676576326000' // amountOut - 50 bps
+        // The quote lost 1.03 bps end to end, less than a single bp of appFee would allow, so it
+        // carried none. What little it did cost was execution spread, which is not a fee.
+        const withdrawFee = '560000000000'
+
+        const mockQuoteResponse: QuoteResponse = {
+          quote: {
+            amountIn,
+            amountInFormatted: '27.627599418206933101',
+            amountInUsd: '69068.9985',
+            minAmountIn: amountIn,
+            amountOut,
+            amountOutFormatted: '27.62474640861942',
+            amountOutUsd: '69061.8660',
+            minAmountOut,
+            withdrawFee,
+            timeEstimate: 60,
+            deadline: '2026-08-28T12:10:38.605Z',
+            timeWhenInactive: '2026-08-28T12:10:38.605Z',
+            depositAddress: '0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e',
+          },
+          quoteRequest: {
+            dry: false,
+            swapType: QuoteRequest.swapType.FLEX_INPUT,
+            depositMode: QuoteRequest.depositMode.SIMPLE,
+            slippageTolerance: 50,
+            originAsset: 'nep141:eth.omft.near',
+            depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
+            destinationAsset: 'nep141:base.omft.near',
+            amount: amountIn,
+            refundTo: '0x0000000000000000000000000000000000000000',
+            refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
+            recipient: '0x0000000000000000000000000000000000000000',
+            recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
+            deadline: '2026-08-28T12:10:38.605Z',
+            appFees: [],
+          },
+          signature: 'ed25519:testSlippageNotFeeSignature',
+          timestamp: '2026-08-28T12:00:38.695Z',
+          correlationId: 'test-correlation-id',
+        }
+
+        jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
+        jest.spyOn(api, 'getTokens').mockResolvedValue([
+          {
+            assetId: 'nep141:eth.omft.near',
+            decimals: 18,
+            blockchain: TokenResponse.blockchain.ETH,
+            symbol: 'ETH',
+            price: 2500,
+            priceUpdatedAt: '2026-08-28T12:00:38.695Z',
+            contractAddress: sellTokenAddress,
+          },
+          {
+            assetId: 'nep141:base.omft.near',
+            decimals: 18,
+            blockchain: TokenResponse.blockchain.BASE,
+            symbol: 'ETH',
+            price: 2500,
+            priceUpdatedAt: '2026-08-28T12:00:38.695Z',
+            contractAddress: buyTokenAddress,
+          },
+        ])
+        jest.spyOn(api, 'getAttestation').mockResolvedValue({
+          version: 1,
+          signature:
+            '0x66edc32e2ab001213321ab7d959a2207fcef5190cc9abb6da5b0d2a8a9af2d4d2b0700e2c317c4106f337fd934fbbb0bf62efc8811a78603b33a8265d3b8f8cb1c',
+        })
+        provider.setApi(api)
+
+        jest.spyOn(provider, 'recoverDepositAddress').mockResolvedValue({
+          address: ATTESTATOR_ADDRESS,
+          quoteHash: testQuoteHash,
+          stringifiedQuote: '',
+          attestationSignature: '',
+        })
+
+        const quote = await provider.getQuote({
+          kind: OrderKind.SELL,
+          sellTokenChainId: SupportedChainId.MAINNET,
+          sellTokenAddress,
+          sellTokenDecimals: 18,
+          buyTokenChainId: 8453,
+          buyTokenAddress,
+          buyTokenDecimals: 18,
+          amount: BigInt(amountIn),
+          account: '0x0000000000000000000000000000000000000000',
+          appCode: 'test',
+          signer: '0x0000000000000000000000000000000000000000',
+        })
+
+        // 1Click's only charge here is the withdrawFee, well under a bp. The bug reported 49 bps
+        // (0.1381 ETH) -- five orders of magnitude more.
+        expect(quote.amountsAndCosts.costs.bridgingFee.feeBps).toBe(0)
+        expect(quote.fees.bridgeFee).toBe(560057823942n)
+        expect(quote.fees.bridgeFee).toBeLessThan(138123732043094000n)
+
+        // Slippage is reported on its own, and must not leak into the fee.
+        expect(quote.amountsAndCosts.slippageBps).toBe(49)
+        expect(quote.amountsAndCosts.costs.bridgingFee.feeBps).not.toBe(quote.amountsAndCosts.slippageBps)
+
+        // The fee is taken on the origin side, so amountOut carries through to afterFee, and
+        // afterSlippage is the guaranteed floor.
+        expect(quote.amountsAndCosts.afterFee.buyAmount).toBe(BigInt(amountOut))
+        expect(quote.amountsAndCosts.afterSlippage.buyAmount).toBe(BigInt(minAmountOut))
+      })
+
+      it('should match the real cost of a live 1Click quote on a same-asset route', async () => {
+        // Every field below is a verbatim 1Click response (dry quote, USDC Arbitrum -> USDC Base,
+        // slippageTolerance 50), including the appFees the API attaches to our quotes. Sell and buy
+        // are the same asset, so the total loss is exactly amountIn - amountOut = 1_104_298 atoms
+        // (11.04 bps), which splits into 10.02 bps of fees and 1.02 bps of execution spread.
+        const api = new NearIntentsApi()
+        const sellTokenAddress = '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
+        const buyTokenAddress = '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'
+        const testQuoteHash = '0xtestLiveSameAssetQuoteHash'
+
+        const amountIn = '1000000000'
+        const amountOut = '998895702'
+        const minAmountOut = '993901223' // amountOut * (1 - 50 bps), i.e. pure slippage
+
+        const mockQuoteResponse: QuoteResponse = {
+          quote: {
+            amountIn,
+            amountInFormatted: '1000.0',
+            amountInUsd: '999.976000000000',
+            minAmountIn: '995000000',
+            amountOut,
+            amountOutFormatted: '998.895702',
+            amountOutUsd: '998.871728503152',
+            minAmountOut,
+            withdrawFee: '2400',
+            timeEstimate: 27,
+            deadline: '2026-08-29T12:00:00.000Z',
+            timeWhenInactive: '2026-08-29T12:00:00.000Z',
+            depositAddress: '0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e',
+          },
+          quoteRequest: {
+            dry: false,
+            swapType: QuoteRequest.swapType.FLEX_INPUT,
+            depositMode: QuoteRequest.depositMode.SIMPLE,
+            slippageTolerance: 50,
+            originAsset: 'nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near',
+            depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
+            destinationAsset: 'nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near',
+            amount: amountIn,
+            refundTo: '0x0000000000000000000000000000000000000000',
+            refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
+            recipient: '0x0000000000000000000000000000000000000000',
+            recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
+            deadline: '2026-08-29T12:00:00.000Z',
+            appFees: [{ recipient: '5880ad2b362620fadf759cbceb1cd5737ce8c6ed7fb8e9942881e6731f9247dd', fee: 10 }],
+          },
+          signature: 'ed25519:testLiveSameAssetSignature',
+          timestamp: '2026-08-28T12:03:34.889Z',
+          correlationId: 'test-correlation-id',
+        }
+
+        jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
+        jest.spyOn(api, 'getTokens').mockResolvedValue([
+          {
+            assetId: 'nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near',
+            decimals: 6,
+            blockchain: TokenResponse.blockchain.ARB,
+            symbol: 'USDC',
+            price: 1,
+            priceUpdatedAt: '2026-08-28T12:03:34.889Z',
+            contractAddress: sellTokenAddress,
+          },
+          {
+            assetId: 'nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near',
+            decimals: 6,
+            blockchain: TokenResponse.blockchain.BASE,
+            symbol: 'USDC',
+            price: 1,
+            priceUpdatedAt: '2026-08-28T12:03:34.889Z',
+            contractAddress: buyTokenAddress,
+          },
+        ])
+        jest.spyOn(api, 'getAttestation').mockResolvedValue({
+          version: 1,
+          signature:
+            '0x66edc32e2ab001213321ab7d959a2207fcef5190cc9abb6da5b0d2a8a9af2d4d2b0700e2c317c4106f337fd934fbbb0bf62efc8811a78603b33a8265d3b8f8cb1c',
+        })
+        provider.setApi(api)
+
+        jest.spyOn(provider, 'recoverDepositAddress').mockResolvedValue({
+          address: ATTESTATOR_ADDRESS,
+          quoteHash: testQuoteHash,
+          stringifiedQuote: '',
+          attestationSignature: '',
+        })
+
+        const quote = await provider.getQuote({
+          kind: OrderKind.SELL,
+          sellTokenChainId: SupportedChainId.ARBITRUM_ONE,
+          sellTokenAddress,
+          sellTokenDecimals: 6,
+          buyTokenChainId: 8453,
+          buyTokenAddress,
+          buyTokenDecimals: 6,
+          amount: BigInt(amountIn),
+          account: '0x0000000000000000000000000000000000000000',
+          appCode: 'test',
+          signer: '0x0000000000000000000000000000000000000000',
+        })
+
+        // 10 bps appFee on 1000 USDC = 1_000_000 atoms, plus the 2400 atom withdrawFee.
+        expect(quote.fees.bridgeFee).toBe(1002400n)
+        expect(quote.amountsAndCosts.costs.bridgingFee.feeBps).toBe(10)
+
+        // The remainder of the 1_104_298 atom total loss is execution spread, not a fee, so the
+        // reported fee sits just below it. Deriving the fee from the USD values would have swept
+        // that spread in -- harmless here, but 34 bps against 10 bps of fees on a cross-asset route.
+        const totalLoss = BigInt(amountIn) - BigInt(amountOut)
+        expect(totalLoss).toBe(1104298n)
+        expect(quote.fees.bridgeFee).toBeLessThan(totalLoss)
+        expect(totalLoss - quote.fees.bridgeFee).toBe(101898n)
+
+        // The 50 bps tolerance is slippage, and reporting it as the fee (the #929 bug) would have
+        // claimed 4.99 USDC of cost instead of 1.00.
+        expect(quote.amountsAndCosts.slippageBps).toBe(50)
+        expect(quote.fees.bridgeFee).toBeLessThan(BigInt(amountOut) - BigInt(minAmountOut))
       })
 
       it('should return quote when destination asset is solana', async () => {
@@ -841,6 +1107,7 @@ adapterNames.forEach((adapterName) => {
           },
           signature: 'ed25519:testSolSignature',
           timestamp: '2025-09-05T12:00:38.695Z',
+          correlationId: 'test-correlation-id',
         }
 
         jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
