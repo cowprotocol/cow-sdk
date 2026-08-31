@@ -28,7 +28,7 @@ export const GET_TWAP_PART_ORDERS_PARAMS_SCHEMA = v.object({
   chainId: SUPPORTED_EVM_CHAIN_ID_SCHEMA,
 })
 
-/** @see https://github.com/bleu/cow-programmatic-orders-api/blob/main/docs/supported-order-types.md#twap-time-weighted-average-price */
+/** @see https://github.com/cowprotocol/cow-programmatic-orders-api/blob/main/docs/supported-order-types.md#twap-time-weighted-average-price */
 const TWAP_SCHEDULE_SCHEMA = v.object({
   sellToken: ADDRESS_SCHEMA,
   buyToken: ADDRESS_SCHEMA,
@@ -42,7 +42,7 @@ const TWAP_SCHEDULE_SCHEMA = v.object({
   appData: BYTES_32_SCHEMA,
 })
 
-/** @see https://github.com/bleu/cow-programmatic-orders-api/blob/main/src/api/gql-docs/conditional-order-generator.ts */
+/** @see https://github.com/cowprotocol/cow-programmatic-orders-api/blob/main/src/api/gql-docs/conditional-order-generator.ts */
 export const TWAP_PARENT_SCHEMA = v.pipe(
   v.object({
     eventId: NON_EMPTY_STRING_SCHEMA,
@@ -93,7 +93,7 @@ export const TWAP_PARENT_SCHEMA = v.pipe(
   ),
 )
 
-/** @see https://github.com/bleu/cow-programmatic-orders-api/blob/main/src/api/gql-docs/discrete-order.ts */
+/** @see https://github.com/cowprotocol/cow-programmatic-orders-api/blob/main/src/api/gql-docs/discrete-order.ts */
 export const TWAP_PART_ORDER_SCHEMA = v.object({
   orderUid: ORDER_UID_SCHEMA,
   status: v.picklist([OrderStatus.OPEN, OrderStatus.FULFILLED, OrderStatus.EXPIRED, OrderStatus.CANCELLED, 'unfilled']),

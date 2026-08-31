@@ -175,13 +175,18 @@ describe('ProgrammaticOrderApi', () => {
     expect(page).toEqual({ items: [], totalCount: 12 })
   })
 
-  it('lists the latest EOA TWAP parents from the live programmatic orders API', async () => {
-    const page = await new ProgrammaticOrderApi().getTwapOrders({
-      resolvedOwner: EOA,
-      chainId: SupportedChainId.GNOSIS_CHAIN,
-    })
+  it('lists a completed EOA TWAP window from the live programmatic orders API', async () => {
+    const page = await new ProgrammaticOrderApi().getTwapOrders(
+      {
+        resolvedOwner: EOA,
+        chainId: SupportedChainId.GNOSIS_CHAIN,
+      },
+      { direction: 'asc', offset: 7, limit: 2 },
+    )
 
-    expect(page.items).toMatchSnapshot()
+    expect(page.items).toHaveLength(2)
+    expect(page.items.every(({ status }) => status === 'Completed')).toBe(true)
+    expect([...page.items].reverse()).toMatchSnapshot()
   }, 30_000)
 
   it('lists the latest Safe TWAP parents from the live programmatic orders API', async () => {
@@ -195,11 +200,16 @@ describe('ProgrammaticOrderApi', () => {
 
   it('lists one page of EOA TWAP part orders from the live programmatic orders API', async () => {
     const api = new ProgrammaticOrderApi()
-    const parentsPage = await api.getTwapOrders({
-      resolvedOwner: EOA,
-      chainId: SupportedChainId.GNOSIS_CHAIN,
-    })
-    const parent = parentsPage.items.find(({ executedAmounts }) => executedAmounts.executedFeeAmount > 0n)
+    const parentsPage = await api.getTwapOrders(
+      {
+        resolvedOwner: EOA,
+        chainId: SupportedChainId.GNOSIS_CHAIN,
+      },
+      { direction: 'asc', offset: 7, limit: 2 },
+    )
+    const parent = parentsPage.items.find(
+      ({ executedAmounts, status }) => status === 'Completed' && executedAmounts.executedFeeAmount > 0n,
+    )
 
     expect(parent).toBeDefined()
 
@@ -208,7 +218,7 @@ describe('ProgrammaticOrderApi', () => {
         eventId: String(parent?.eventId),
         chainId: SupportedChainId.GNOSIS_CHAIN,
       },
-      { offset: 0, limit: 10 },
+      { direction: 'asc', offset: 0, limit: 10 },
     )
 
     expect(page.totalCount).toBe(parent?.partOrdersCount)
