@@ -1,10 +1,16 @@
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 
-import { ComposableCowPollerSdk, type ComposableCowPollerSchedule } from '../src'
+import {
+  ComposableCowPollerSdk,
+  type ComposableCowPollerDirectRevoke,
+  type ComposableCowPollerSchedule,
+  type ComposableCowPollerScheduleAuthorization,
+} from '../src'
 import { createAdapters } from './setup'
 
 const SCHEDULE: ComposableCowPollerSchedule = {
   handler: '0x1111111111111111111111111111111111111111',
+  authEpoch: 0n,
   funder: '0x2222222222222222222222222222222222222222',
   owner: '0x3333333333333333333333333333333333333333',
   salt: '0x0000000000000000000000000000000000000000000000000000000000000001',
@@ -14,9 +20,18 @@ const SCHEDULE: ComposableCowPollerSchedule = {
 const SCHEDULE_ID = '0x7b1516d117fa5dd96fddfb9489b52af1c3cca64e1bc88c32324bdd6a92c6057c'
 const POLLER_ADDRESS = '0x4444444444444444444444444444444444444444'
 const CHAIN_ID = 1
-const NONCE = 7n
 const DEADLINE = 2_000_000_000n
 const SIGNATURE = '0x123456'
+const DIRECT_REVOKE: ComposableCowPollerDirectRevoke = {
+  handler: SCHEDULE.handler,
+  owner: SCHEDULE.owner,
+  salt: SCHEDULE.salt,
+}
+const AUTHORIZATION: ComposableCowPollerScheduleAuthorization = {
+  ...DIRECT_REVOKE,
+  authEpoch: SCHEDULE.authEpoch,
+  funder: SCHEDULE.funder,
+}
 
 describe('ComposableCowPollerSdk', () => {
   const adapters = createAdapters()
@@ -32,17 +47,14 @@ describe('ComposableCowPollerSdk', () => {
   })
 
   test('signs registration and returns ready-to-submit calldata', async () => {
-    jest.spyOn(sdk.poller, 'getNonce').mockResolvedValue(NONCE)
     const getRegisterTypedData = jest.spyOn(sdk.poller, 'getRegisterTypedData')
     const signTypedData = jest.spyOn(adapter.signer, 'signTypedData').mockResolvedValue(SIGNATURE)
 
     const result = await sdk.signRegister({ schedule: SCHEDULE, deadline: DEADLINE })
 
-    expect(sdk.poller.getNonce).toHaveBeenCalledWith(SCHEDULE.funder)
     expect(getRegisterTypedData.mock.calls[0]?.[0]).toEqual({
       chainId: CHAIN_ID,
       schedule: SCHEDULE,
-      nonce: NONCE,
       deadline: DEADLINE,
     })
     expect(signTypedData).toHaveBeenCalledWith(
@@ -55,18 +67,14 @@ describe('ComposableCowPollerSdk', () => {
   })
 
   test('signs revocation and returns ready-to-submit calldata', async () => {
-    jest.spyOn(sdk.poller, 'getNonce').mockResolvedValue(NONCE)
     const getRevokeTypedData = jest.spyOn(sdk.poller, 'getRevokeTypedData')
     const signTypedData = jest.spyOn(adapter.signer, 'signTypedData').mockResolvedValue(SIGNATURE)
 
-    const result = await sdk.signRevoke({ id: SCHEDULE_ID, funder: SCHEDULE.funder, deadline: DEADLINE })
+    const result = await sdk.signRevoke({ ...AUTHORIZATION, deadline: DEADLINE })
 
-    expect(sdk.poller.getNonce).toHaveBeenCalledWith(SCHEDULE.funder)
     expect(getRevokeTypedData.mock.calls[0]?.[0]).toEqual({
       chainId: CHAIN_ID,
-      id: SCHEDULE_ID,
-      funder: SCHEDULE.funder,
-      nonce: NONCE,
+      ...AUTHORIZATION,
       deadline: DEADLINE,
     })
     expect(signTypedData).toHaveBeenCalledWith(
@@ -75,7 +83,7 @@ describe('ComposableCowPollerSdk', () => {
       result.typedData.message,
     )
     expect(result.signature).toEqual(SIGNATURE)
-    expect(result.calldata).toEqual(sdk.poller.encodeRevokeWithSignature(SCHEDULE_ID, DEADLINE, SIGNATURE))
+    expect(result.calldata).toEqual(sdk.poller.encodeRevokeWithSignature(AUTHORIZATION, DEADLINE, SIGNATURE))
   })
 
   test('submits direct and signature-authorized Poller transactions', async () => {
@@ -92,17 +100,17 @@ describe('ComposableCowPollerSdk', () => {
       sdk.registerWithSignature({ schedule: SCHEDULE, deadline: DEADLINE, signature: SIGNATURE }),
     ).resolves.toBe(transactionResponse)
     await expect(sdk.pollFunds({ id: SCHEDULE_ID })).resolves.toBe(transactionResponse)
-    await expect(sdk.revoke({ id: SCHEDULE_ID })).resolves.toBe(transactionResponse)
-    await expect(sdk.revokeWithSignature({ id: SCHEDULE_ID, deadline: DEADLINE, signature: SIGNATURE })).resolves.toBe(
-      transactionResponse,
-    )
+    await expect(sdk.revoke(DIRECT_REVOKE)).resolves.toBe(transactionResponse)
+    await expect(
+      sdk.revokeWithSignature({ ...AUTHORIZATION, deadline: DEADLINE, signature: SIGNATURE }),
+    ).resolves.toBe(transactionResponse)
 
     expect(sendTransaction.mock.calls).toEqual([
       [{ to: POLLER_ADDRESS, data: sdk.poller.encodeRegister(SCHEDULE) }],
       [{ to: POLLER_ADDRESS, data: sdk.poller.encodeRegisterWithSignature(SCHEDULE, DEADLINE, SIGNATURE) }],
       [{ to: POLLER_ADDRESS, data: sdk.poller.encodePollFunds(SCHEDULE_ID) }],
-      [{ to: POLLER_ADDRESS, data: sdk.poller.encodeRevoke(SCHEDULE_ID) }],
-      [{ to: POLLER_ADDRESS, data: sdk.poller.encodeRevokeWithSignature(SCHEDULE_ID, DEADLINE, SIGNATURE) }],
+      [{ to: POLLER_ADDRESS, data: sdk.poller.encodeRevoke(DIRECT_REVOKE) }],
+      [{ to: POLLER_ADDRESS, data: sdk.poller.encodeRevokeWithSignature(AUTHORIZATION, DEADLINE, SIGNATURE) }],
     ])
   })
 
@@ -119,12 +127,10 @@ describe('ComposableCowPollerSdk', () => {
       pollerAddress: POLLER_ADDRESS,
       signer: configuredSignerLike,
     })
-    jest.spyOn(configuredSdk.poller, 'getNonce').mockResolvedValue(NONCE)
 
     await configuredSdk.signRegister({ schedule: SCHEDULE, deadline: DEADLINE })
     await configuredSdk.signRevoke({
-      id: SCHEDULE_ID,
-      funder: SCHEDULE.funder,
+      ...AUTHORIZATION,
       deadline: DEADLINE,
       signer: overrideSignerLike,
     })

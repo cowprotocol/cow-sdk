@@ -1,12 +1,19 @@
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { BigNumber } from 'ethers-v5'
 
 import * as composable from '../src'
-import { ComposableCowPoller, type ComposableCowPollerSchedule } from '../src'
+import {
+  ComposableCowPoller,
+  type ComposableCowPollerDirectRevoke,
+  type ComposableCowPollerSchedule,
+  type ComposableCowPollerScheduleAuthorization,
+} from '../src'
 import { ComposableCowPollerAbi } from '../src/abis/ComposableCowPollerAbi'
 import { createAdapters } from './setup'
 
 const SCHEDULE: ComposableCowPollerSchedule = {
   handler: '0x1111111111111111111111111111111111111111',
+  authEpoch: 0n,
   funder: '0x2222222222222222222222222222222222222222',
   owner: '0x3333333333333333333333333333333333333333',
   salt: '0x0000000000000000000000000000000000000000000000000000000000000001',
@@ -14,17 +21,20 @@ const SCHEDULE: ComposableCowPollerSchedule = {
 }
 
 const SCHEDULE_ID = '0x7b1516d117fa5dd96fddfb9489b52af1c3cca64e1bc88c32324bdd6a92c6057c'
-const REGISTER_CALLDATA =
-  '0x80313a250000000000000000000000000000000000000000000000000000000000000020000000000000000000000000111111111111111111111111111111111111111100000000000000000000000022222222222222222222222222222222222222220000000000000000000000003333333333333333333333333333333333333333000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000021234000000000000000000000000000000000000000000000000000000000000'
 const POLL_FUNDS_CALLDATA = '0xf83740307b1516d117fa5dd96fddfb9489b52af1c3cca64e1bc88c32324bdd6a92c6057c'
-const REVOKE_CALLDATA = '0xb75c7dc67b1516d117fa5dd96fddfb9489b52af1c3cca64e1bc88c32324bdd6a92c6057c'
 const POLLER_ADDRESS = '0x4444444444444444444444444444444444444444'
 const CHAIN_ID = 1
-const NONCE = 7n
 const DEADLINE = 2_000_000_000n
 const SIGNATURE = '0x123456'
-const REGISTER_DIGEST = '0x19c2f3157fd433af46f24ac718b47fb3b8a9b456d2a2f2b6c31cc07820bec2d1'
-const REVOKE_DIGEST = '0x904595cae3f7402646e3fba3b2683afaee0b71fd0eaf835ce0bb9c2bd7a3c9fd'
+const REGISTER_DIGEST = '0x7abf30523ae51092914ae8230bc2af45078d9b4f47062f3c9cb6e39cd13106bf'
+const REVOKE_DIGEST = '0x11b6cb77364f3c3f8a454cb36f0d22166c6acd9575c066b309f95c9aff712c5f'
+const AUTHORIZATION: ComposableCowPollerScheduleAuthorization = {
+  handler: SCHEDULE.handler,
+  authEpoch: SCHEDULE.authEpoch,
+  funder: SCHEDULE.funder,
+  owner: SCHEDULE.owner,
+  salt: SCHEDULE.salt,
+}
 
 describe('ComposableCowPoller ABI', () => {
   test('keeps the ABI internal', () => {
@@ -34,11 +44,13 @@ describe('ComposableCowPoller ABI', () => {
   test('contains the SDK interface', () => {
     expect(ComposableCowPollerAbi.filter((item) => item.type === 'function').map((item) => item.name)).toEqual([
       'COMPOSABLE_COW',
-      'nonces',
+      'COW_SHED_FACTORY',
       'pollFunds',
       'register',
+      'registerFromShed',
       'registerWithSignature',
       'revoke',
+      'revokeFromShed',
       'revokeWithSignature',
       'schedules',
     ])
@@ -55,6 +67,7 @@ describe('ComposableCowPoller', () => {
   const adapters = createAdapters()
   const pollerAddress = POLLER_ADDRESS
   const composableCowAddress = '0x5555555555555555555555555555555555555555'
+  const cowShedFactoryAddress = '0x6666666666666666666666666666666666666666'
   const poller = new ComposableCowPoller(pollerAddress)
 
   test('retains the configured Poller address', () => {
@@ -104,8 +117,53 @@ describe('ComposableCowPoller', () => {
     ethersRead.mockRestore()
   })
 
+  test('memoizes the CowShed factory address for the default provider', async () => {
+    const adapter = adapters.viemAdapter
+    const instance = new ComposableCowPoller(pollerAddress)
+    const readContract = jest.spyOn(adapter, 'readContract').mockResolvedValue(cowShedFactoryAddress)
+    setGlobalAdapter(adapter)
+
+    await expect(instance.getCowShedFactoryAddress()).resolves.toEqual(cowShedFactoryAddress)
+    await expect(instance.getCowShedFactoryAddress()).resolves.toEqual(cowShedFactoryAddress)
+    expect(readContract).toHaveBeenCalledTimes(1)
+
+    readContract.mockRestore()
+  })
+
+  test('normalizes schedule reads across adapters', async () => {
+    const authEpoch = 7n
+    const expected = { ...SCHEDULE, authEpoch }
+    const cases = [
+      { adapter: adapters.ethersV5Adapter, rawAuthEpoch: BigNumber.from(authEpoch) },
+      { adapter: adapters.ethersV6Adapter, rawAuthEpoch: authEpoch },
+      { adapter: adapters.viemAdapter, rawAuthEpoch: authEpoch },
+    ]
+
+    for (const { adapter, rawAuthEpoch } of cases) {
+      const rawSchedule = Object.assign(
+        [SCHEDULE.handler, rawAuthEpoch, SCHEDULE.funder, SCHEDULE.owner, SCHEDULE.salt, SCHEDULE.staticInput],
+        {
+          handler: SCHEDULE.handler,
+          authEpoch: rawAuthEpoch,
+          funder: SCHEDULE.funder,
+          owner: SCHEDULE.owner,
+          salt: SCHEDULE.salt,
+          staticInput: SCHEDULE.staticInput,
+        },
+      )
+      const readContract = jest.spyOn(adapter, 'readContract').mockResolvedValue(rawSchedule)
+      setGlobalAdapter(adapter)
+
+      const schedule = await poller.getSchedule(SCHEDULE_ID)
+
+      expect(schedule).toEqual(expected)
+      expect(Array.isArray(schedule)).toBe(false)
+      readContract.mockRestore()
+    }
+  })
+
   test('derives the schedule ID across adapters', () => {
-    const updatedSchedule = { ...SCHEDULE, staticInput: '0xdeadbeef' }
+    const updatedSchedule = { ...SCHEDULE, authEpoch: 42n, staticInput: '0xdeadbeef' }
 
     for (const adapter of Object.values(adapters)) {
       setGlobalAdapter(adapter)
@@ -115,12 +173,57 @@ describe('ComposableCowPoller', () => {
   })
 
   test('encodes direct calls across adapters', () => {
+    const directRevoke: ComposableCowPollerDirectRevoke = {
+      handler: SCHEDULE.handler,
+      owner: SCHEDULE.owner,
+      salt: SCHEDULE.salt,
+    }
+    const registerCalls = []
+    const registerFromShedCalls = []
+    const revokeCalls = []
+    const revokeFromShedCalls = []
+
     for (const adapter of Object.values(adapters)) {
       setGlobalAdapter(adapter)
-      expect(poller.encodeRegister(SCHEDULE)).toEqual(REGISTER_CALLDATA)
+      registerCalls.push(poller.encodeRegister(SCHEDULE))
+      registerFromShedCalls.push(poller.encodeRegisterFromShed(SCHEDULE))
       expect(poller.encodePollFunds(SCHEDULE_ID)).toEqual(POLL_FUNDS_CALLDATA)
-      expect(poller.encodeRevoke(SCHEDULE_ID)).toEqual(REVOKE_CALLDATA)
+      revokeCalls.push(poller.encodeRevoke(directRevoke))
+      revokeFromShedCalls.push(poller.encodeRevokeFromShed(SCHEDULE))
     }
+
+    expect(new Set(registerCalls).size).toEqual(1)
+    expect(new Set(registerFromShedCalls).size).toEqual(1)
+    expect(new Set(revokeCalls).size).toEqual(1)
+    expect(new Set(revokeFromShedCalls).size).toEqual(1)
+
+    const [registeredSchedule] = adapters.viemAdapter.utils.decodeFunctionData(
+      ComposableCowPollerAbi,
+      'registerFromShed',
+      registerFromShedCalls[0]!,
+    )
+    expect(registeredSchedule.authEpoch).toEqual(SCHEDULE.authEpoch)
+
+    const [handler, owner, salt] = adapters.viemAdapter.utils.decodeFunctionData(
+      ComposableCowPollerAbi,
+      'revoke',
+      revokeCalls[0]!,
+    )
+    expect(handler.toLowerCase()).toEqual(SCHEDULE.handler)
+    expect(owner.toLowerCase()).toEqual(SCHEDULE.owner)
+    expect(salt).toEqual(SCHEDULE.salt)
+
+    const [shedHandler, funder, shedOwner, shedSalt, authEpoch] =
+      adapters.viemAdapter.utils.decodeFunctionData(
+        ComposableCowPollerAbi,
+        'revokeFromShed',
+        revokeFromShedCalls[0]!,
+      )
+    expect(shedHandler.toLowerCase()).toEqual(SCHEDULE.handler)
+    expect(funder.toLowerCase()).toEqual(SCHEDULE.funder)
+    expect(shedOwner.toLowerCase()).toEqual(SCHEDULE.owner)
+    expect(shedSalt).toEqual(SCHEDULE.salt)
+    expect(authEpoch).toEqual(SCHEDULE.authEpoch)
   })
 
   test('builds the EIP-712 domain from the configured Poller address', () => {
@@ -137,14 +240,12 @@ describe('ComposableCowPoller', () => {
 
     expect(() => instance.getEip712Domain(CHAIN_ID)).toThrow('pollerAddress is required')
     expect(() =>
-      instance.getRegisterTypedData({ chainId: CHAIN_ID, schedule: SCHEDULE, nonce: NONCE, deadline: DEADLINE }),
+      instance.getRegisterTypedData({ chainId: CHAIN_ID, schedule: SCHEDULE, deadline: DEADLINE }),
     ).toThrow('pollerAddress is required')
     expect(() =>
       instance.getRevokeTypedData({
         chainId: CHAIN_ID,
-        id: SCHEDULE_ID,
-        funder: SCHEDULE.funder,
-        nonce: NONCE,
+        ...AUTHORIZATION,
         deadline: DEADLINE,
       }),
     ).toThrow('pollerAddress is required')
@@ -156,10 +257,10 @@ describe('ComposableCowPoller', () => {
       const typedData = poller.getRegisterTypedData({
         chainId: CHAIN_ID,
         schedule: SCHEDULE,
-        nonce: NONCE,
         deadline: DEADLINE,
       })
 
+      expect(typedData.primaryType).toEqual('ScheduleRegistration')
       expect(adapter.utils.hashTypedData(typedData.domain, typedData.types, typedData.message)).toEqual(REGISTER_DIGEST)
     }
   })
@@ -181,6 +282,7 @@ describe('ComposableCowPoller', () => {
     )
 
     expect(schedule.handler.toLowerCase()).toEqual(SCHEDULE.handler)
+    expect(schedule.authEpoch).toEqual(SCHEDULE.authEpoch)
     expect(schedule.funder.toLowerCase()).toEqual(SCHEDULE.funder)
     expect(schedule.owner.toLowerCase()).toEqual(SCHEDULE.owner)
     expect(schedule.salt).toEqual(SCHEDULE.salt)
@@ -194,12 +296,11 @@ describe('ComposableCowPoller', () => {
       setGlobalAdapter(adapter)
       const typedData = poller.getRevokeTypedData({
         chainId: CHAIN_ID,
-        id: SCHEDULE_ID,
-        funder: SCHEDULE.funder,
-        nonce: NONCE,
+        ...AUTHORIZATION,
         deadline: DEADLINE,
       })
 
+      expect(typedData.primaryType).toEqual('Revoke')
       expect(adapter.utils.hashTypedData(typedData.domain, typedData.types, typedData.message)).toEqual(REVOKE_DIGEST)
     }
   })
@@ -209,17 +310,23 @@ describe('ComposableCowPoller', () => {
 
     for (const adapter of Object.values(adapters)) {
       setGlobalAdapter(adapter)
-      encodedCalls.push(poller.encodeRevokeWithSignature(SCHEDULE_ID, DEADLINE, SIGNATURE))
+      encodedCalls.push(poller.encodeRevokeWithSignature(AUTHORIZATION, DEADLINE, SIGNATURE))
     }
 
     expect(new Set(encodedCalls).size).toEqual(1)
 
-    const call = adapters.viemAdapter.utils.decodeFunctionData(
+    const [handler, funder, owner, salt, authEpoch, deadline, signature] = adapters.viemAdapter.utils.decodeFunctionData(
       ComposableCowPollerAbi,
       'revokeWithSignature',
       encodedCalls[0]!,
     )
 
-    expect(Array.from(call)).toEqual([SCHEDULE_ID, BigInt(DEADLINE), SIGNATURE])
+    expect(handler.toLowerCase()).toEqual(AUTHORIZATION.handler)
+    expect(funder.toLowerCase()).toEqual(AUTHORIZATION.funder)
+    expect(owner.toLowerCase()).toEqual(AUTHORIZATION.owner)
+    expect(salt).toEqual(AUTHORIZATION.salt)
+    expect(authEpoch).toEqual(AUTHORIZATION.authEpoch)
+    expect(deadline).toEqual(DEADLINE)
+    expect(signature).toEqual(SIGNATURE)
   })
 })
