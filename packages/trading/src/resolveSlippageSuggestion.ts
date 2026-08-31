@@ -23,7 +23,8 @@ export async function resolveSlippageSuggestion(
   }
   const getSlippageSuggestion = advancedSettings?.getSlippageSuggestion
 
-  const priceQuality = advancedSettings?.quoteRequest?.priceQuality ?? PriceQuality.OPTIMAL
+  // Keep in sync with the default in getQuote()
+  const priceQuality = advancedSettings?.quoteRequest?.priceQuality ?? PriceQuality.VERIFIED
 
   const defaultSuggestion = suggestSlippageBps(suggestSlippageParams)
 

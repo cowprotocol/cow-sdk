@@ -125,7 +125,12 @@ export async function getQuoteRaw(
     ...(typeof validTo === 'number' ? { validTo } : { validFor: effectiveValidFor }),
     appData: fullAppData,
     appDataHash: appDataKeccak256,
-    priceQuality: PriceQuality.OPTIMAL, // Do not change this parameter because we rely on the fact that quote has id
+    // Defaults to VERIFIED: the backend simulates the quote and prefers verified quotes over higher
+    // unverified ones, which is what we want for order placement. Override via
+    // `advancedSettings.quoteRequest.priceQuality` (e.g. OPTIMAL for the highest, unsimulated quote).
+    // Never use FAST here: fast quotes are not persisted by the backend, so they have no `id`,
+    // which order placement relies on.
+    priceQuality: PriceQuality.VERIFIED,
     signingScheme: SigningScheme.EIP712,
     ...(isEthFlow ? ETH_FLOW_AUX_QUOTE_PARAMS : {}),
     ...(isSell
