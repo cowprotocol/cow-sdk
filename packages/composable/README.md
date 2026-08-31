@@ -97,6 +97,7 @@ setGlobalAdapter(adapter)
 const poller = new ComposableCowPoller(pollerAddress)
 const schedule: ComposableCowPollerSchedule = {
   handler,
+  authEpoch,
   funder,
   owner,
   salt,
@@ -111,18 +112,23 @@ const registerCalldata = poller.encodeRegister(schedule)
 const signedRegisterCalldata = poller.encodeRegisterWithSignature(schedule, deadline, signature)
 
 // Direct revocation must be submitted by schedule.funder.
-const revokeCalldata = poller.encodeRevoke(scheduleId)
+const revokeCalldata = poller.encodeRevoke(schedule)
+
+// These variants must execute from the funder's CowShed.
+const shedRegisterCalldata = poller.encodeRegisterFromShed(schedule)
+const shedRevokeCalldata = poller.encodeRevokeFromShed(schedule)
 ```
 
 The schedule fields are:
 
 - `handler`: the registered conditional order's handler.
+- `authEpoch`: the schedule ID's current replay-protection epoch; it starts at zero and increments on revocation.
 - `funder`: the account from which the Poller draws sell tokens.
 - `owner`: the ComposableCoW conditional-order owner that receives those tokens.
 - `salt`: the registered conditional order's salt.
 - `staticInput`: the registered conditional order's encoded static input.
 
-The SDK only encodes these transactions; the consumer owns signing, gas policy, submission, and confirmation. Submit direct registration and revocation calldata to `pollerAddress` from `schedule.funder`, or submit `signedRegisterCalldata` through a relayer. The signed calldata contains the schedule, deadline, and signature; the funder's nonce is part of the signed EIP-712 message and contract state, not a separate calldata argument. Use `poller.getComposableCowAddress()`, `poller.getNonce(funder)`, and `poller.getSchedule(scheduleId)` to read Poller state.
+The SDK only encodes these transactions; the consumer owns signing, gas policy, submission, and confirmation. Submit direct registration and revocation calldata to `pollerAddress` from `schedule.funder`, submit `signedRegisterCalldata` through a relayer, or include a CowShed variant in a bundle executed by the funder's own CowShed. The signed calldata contains the schedule, deadline, and signature; replay protection is scoped to the schedule ID through `authEpoch`. Use `poller.getComposableCowAddress()`, `poller.getCowShedFactoryAddress()`, and `poller.getSchedule(scheduleId)` to read Poller state.
 
 ## Usage
 

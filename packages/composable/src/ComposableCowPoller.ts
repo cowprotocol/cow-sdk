@@ -1,13 +1,19 @@
 import { BigIntish, getGlobalAdapter, Provider } from '@cowprotocol/sdk-common'
 
 import { ComposableCowPollerAbi } from './abis/ComposableCowPollerAbi'
-import type { ComposableCowPollerSchedule, ComposableCowPollerScheduleKey } from './types'
+import type {
+  ComposableCowPollerDirectRevoke,
+  ComposableCowPollerSchedule,
+  ComposableCowPollerScheduleAuthorization,
+  ComposableCowPollerScheduleKey,
+} from './types'
 
 const SCHEDULE_ID_ABI = ['address', 'address', 'address', 'bytes32']
 
 /** Utilities for interacting with a ComposableCowPoller deployment. */
 export class ComposableCowPoller {
   private composableCowAddress?: { adapter: ReturnType<typeof getGlobalAdapter>; address: string }
+  private cowShedFactoryAddress?: { adapter: ReturnType<typeof getGlobalAdapter>; address: string }
 
   constructor(public readonly pollerAddress?: string) {}
 
@@ -29,12 +35,34 @@ export class ComposableCowPoller {
     return address
   }
 
-  public async getNonce(funder: string, provider?: Provider): Promise<BigIntish> {
-    return getGlobalAdapter().utils.toBigIntish((await this.read('nonces', [funder], provider)) as BigIntish)
+  public async getCowShedFactoryAddress(provider?: Provider): Promise<string> {
+    const adapter = getGlobalAdapter()
+    if (!provider && this.cowShedFactoryAddress?.adapter === adapter) return this.cowShedFactoryAddress.address
+
+    const address = (await this.read('COW_SHED_FACTORY', [], provider)) as string
+    if (!provider) this.cowShedFactoryAddress = { adapter, address }
+    return address
   }
 
   public async getSchedule(id: string, provider?: Provider): Promise<ComposableCowPollerSchedule> {
-    return (await this.read('schedules', [id], provider)) as ComposableCowPollerSchedule
+    const adapter = getGlobalAdapter()
+    const [handler, authEpoch, funder, owner, salt, staticInput] = (await this.read('schedules', [id], provider)) as [
+      string,
+      BigIntish,
+      string,
+      string,
+      string,
+      string,
+    ]
+
+    return {
+      handler,
+      authEpoch: adapter.utils.toBigIntish(authEpoch),
+      funder,
+      owner,
+      salt,
+      staticInput,
+    }
   }
 
   /** Returns the app-data-independent schedule ID. */
@@ -52,6 +80,11 @@ export class ComposableCowPoller {
   /** Encodes Poller.register. */
   public encodeRegister(schedule: ComposableCowPollerSchedule): string {
     return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'register', [schedule]) as string
+  }
+
+  /** Encodes Poller.registerFromShed for execution by the funder's CowShed. */
+  public encodeRegisterFromShed(schedule: ComposableCowPollerSchedule): string {
+    return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'registerFromShed', [schedule]) as string
   }
 
   /** Encodes Poller.registerWithSignature. */
@@ -73,7 +106,24 @@ export class ComposableCowPoller {
   }
 
   /** Encodes Poller.revoke. */
-  public encodeRevoke(id: string): string {
-    return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'revoke', [id]) as string
+  public encodeRevoke({ handler, owner, salt }: ComposableCowPollerDirectRevoke): string {
+    return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'revoke', [handler, owner, salt]) as string
+  }
+
+  /** Encodes Poller.revokeFromShed for execution by the funder's CowShed. */
+  public encodeRevokeFromShed({
+    handler,
+    funder,
+    owner,
+    salt,
+    authEpoch,
+  }: ComposableCowPollerScheduleAuthorization): string {
+    return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'revokeFromShed', [
+      handler,
+      funder,
+      owner,
+      salt,
+      authEpoch,
+    ]) as string
   }
 }
