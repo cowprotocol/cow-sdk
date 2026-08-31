@@ -826,8 +826,8 @@ adapterNames.forEach((adapterName) => {
         expect(bridgingFee.feeBps).toBe(26)
         // Slippage stays what we asked Near for, and is reported separately from the fee.
         expect(quote.amountsAndCosts.slippageBps).toBe(51)
-        // amountOut is already net of both fees, so it carries through beforeFee and afterFee.
-        expect(quote.amountsAndCosts.beforeFee.buyAmount).toBe(7047n)
+        // beforeFee -> afterFee is the fee, afterFee -> afterSlippage is the slippage.
+        expect(quote.amountsAndCosts.beforeFee.buyAmount).toBe(7065n)
         expect(quote.amountsAndCosts.afterFee.buyAmount).toBe(7047n)
         expect(quote.amountsAndCosts.afterSlippage.buyAmount).toBe(7011n)
       })
@@ -945,8 +945,8 @@ adapterNames.forEach((adapterName) => {
         expect(quote.amountsAndCosts.slippageBps).toBe(49)
         expect(quote.amountsAndCosts.costs.bridgingFee.feeBps).not.toBe(quote.amountsAndCosts.slippageBps)
 
-        // The fee is taken on the origin side, so amountOut carries through to afterFee, and
-        // afterSlippage is the guaranteed floor.
+        // afterFee is what 1Click quotes, afterSlippage is the guaranteed floor.
+        expect(quote.amountsAndCosts.beforeFee.buyAmount).toBe(27624746968619420000n)
         expect(quote.amountsAndCosts.afterFee.buyAmount).toBe(BigInt(amountOut))
         expect(quote.amountsAndCosts.afterSlippage.buyAmount).toBe(BigInt(minAmountOut))
       })
@@ -1067,6 +1067,125 @@ adapterNames.forEach((adapterName) => {
         // claimed 4.99 USDC of cost instead of 1.00.
         expect(quote.amountsAndCosts.slippageBps).toBe(50)
         expect(quote.fees.bridgeFee).toBeLessThan(BigInt(amountOut) - BigInt(minAmountOut))
+      })
+
+      it('should keep the expected buy amount above the minimum on a fee-heavy BTC route', async () => {
+        // Regression test for https://github.com/cowprotocol/cowswap/issues/7426. Consumers render
+        // "expected to receive" as `beforeFee.buyAmount - bridgingFee.amountInBuyCurrency`, so if
+        // `beforeFee.buyAmount` is left at `amountOut` -- which 1Click already reports net of
+        // `withdrawFee` -- the fee is subtracted twice and the result drops below `afterSlippage`.
+        // Verbatim 1Click response for 9.9923 USDC (Arbitrum) -> BTC, the quote from the bug report.
+        // BTC's withdrawFee is a flat 1900 sats no matter the size, which is 17% of a trade this
+        // small, so it is the sharpest case available.
+        const api = new NearIntentsApi()
+        const sellTokenAddress = '0xaf88d065e77c8cc2239327c5edb3a432268e5831'
+        const buyTokenAddress = BTC_CURRENCY_ADDRESS
+        const testQuoteHash = '0xtestBtcExpectedAboveMinQuoteHash'
+
+        const amountIn = '9992300'
+        const amountOut = '10813'
+        const minAmountOut = '10758'
+
+        const mockQuoteResponse: QuoteResponse = {
+          quote: {
+            amountIn,
+            amountInFormatted: '9.9923',
+            amountInUsd: '9.990561339800',
+            minAmountIn: '9942338',
+            amountOut,
+            amountOutFormatted: '0.00010813',
+            amountOutUsd: '8.489826950000',
+            minAmountOut,
+            withdrawFee: '1900',
+            refundFee: '5300',
+            timeEstimate: 470,
+            deadline: '2026-09-01T12:00:00.000Z',
+            timeWhenInactive: '2026-09-01T12:00:00.000Z',
+            depositAddress: '0xAd8b7139196c5ae9fb66B71C91d87A1F9071687e',
+          },
+          quoteRequest: {
+            dry: false,
+            swapType: QuoteRequest.swapType.FLEX_INPUT,
+            depositMode: QuoteRequest.depositMode.SIMPLE,
+            slippageTolerance: 50,
+            originAsset: 'nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near',
+            depositType: QuoteRequest.depositType.ORIGIN_CHAIN,
+            destinationAsset: '1cs_v1:btc:native:coin',
+            amount: amountIn,
+            refundTo: '0x0000000000000000000000000000000000000000',
+            refundType: QuoteRequest.refundType.ORIGIN_CHAIN,
+            recipient: 'bc1qray0vz42y0sl4m0qwar58yel6lure25q8f22cn',
+            recipientType: QuoteRequest.recipientType.DESTINATION_CHAIN,
+            deadline: '2026-09-01T12:00:00.000Z',
+            appFees: [{ recipient: '5880ad2b362620fadf759cbceb1cd5737ce8c6ed7fb8e9942881e6731f9247dd', fee: 10 }],
+          },
+          signature: 'ed25519:testBtcExpectedAboveMinSignature',
+          timestamp: '2026-08-31T10:00:00.000Z',
+          correlationId: 'test-correlation-id',
+        }
+
+        jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
+        jest.spyOn(api, 'getTokens').mockResolvedValue([
+          {
+            assetId: 'nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near',
+            decimals: 6,
+            blockchain: TokenResponse.blockchain.ARB,
+            symbol: 'USDC',
+            price: 1,
+            priceUpdatedAt: '2026-08-31T10:00:00.000Z',
+            contractAddress: sellTokenAddress,
+          },
+          {
+            assetId: '1cs_v1:btc:native:coin',
+            decimals: 8,
+            blockchain: TokenResponse.blockchain.BTC,
+            symbol: 'BTC(OMNI)',
+            price: 78518,
+            priceUpdatedAt: '2026-08-31T10:00:00.000Z',
+            contractAddress: 'coin',
+          },
+        ])
+        jest.spyOn(api, 'getAttestation').mockResolvedValue({
+          version: 1,
+          signature:
+            '0x66edc32e2ab001213321ab7d959a2207fcef5190cc9abb6da5b0d2a8a9af2d4d2b0700e2c317c4106f337fd934fbbb0bf62efc8811a78603b33a8265d3b8f8cb1c',
+        })
+        provider.setApi(api)
+
+        jest.spyOn(provider, 'recoverDepositAddress').mockResolvedValue({
+          address: ATTESTATOR_ADDRESS,
+          quoteHash: testQuoteHash,
+          stringifiedQuote: '',
+          attestationSignature: '',
+        })
+
+        const quote = await provider.getQuote({
+          kind: OrderKind.SELL,
+          sellTokenChainId: SupportedChainId.ARBITRUM_ONE,
+          sellTokenAddress,
+          sellTokenDecimals: 6,
+          buyTokenChainId: NonEvmChains.BITCOIN as number,
+          buyTokenAddress,
+          buyTokenDecimals: 8,
+          amount: BigInt(amountIn),
+          account: '0x0000000000000000000000000000000000000000',
+          appCode: 'test',
+          signer: '0x0000000000000000000000000000000000000000',
+        })
+
+        const { beforeFee, afterFee, afterSlippage, costs } = quote.amountsAndCosts
+
+        // 1900 sats of withdrawFee plus the 10 bps appFee converted across the swap rate.
+        expect(costs.bridgingFee.amountInBuyCurrency).toBe(1912n)
+
+        // Subtracting the fee from beforeFee must land exactly on what 1Click quotes, and that must
+        // stay above the guaranteed floor. Before the fix this was 10813 - 1912 = 8901 < 10758.
+        expect(beforeFee.buyAmount - costs.bridgingFee.amountInBuyCurrency).toBe(BigInt(amountOut))
+        expect(beforeFee.buyAmount).toBe(12725n)
+        expect(afterFee.buyAmount).toBe(BigInt(amountOut))
+        expect(afterSlippage.buyAmount).toBe(BigInt(minAmountOut))
+        expect(beforeFee.buyAmount - costs.bridgingFee.amountInBuyCurrency).toBeGreaterThan(afterSlippage.buyAmount)
+        expect(afterFee.buyAmount).toBeGreaterThan(afterSlippage.buyAmount)
       })
 
       it('should return quote when destination asset is solana', async () => {

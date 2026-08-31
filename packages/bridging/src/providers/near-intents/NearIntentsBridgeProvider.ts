@@ -229,12 +229,17 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       },
       amountsAndCosts: {
         beforeFee: {
+          // `amountOut` arrives already net of both fees, so the pre-fee buy amount has to add them
+          // back. Keeping `beforeFee.buyAmount` at `amountOut` makes consumers that render
+          // "expected to receive" as `beforeFee - bridgingFee` subtract the fee a second time, which
+          // can push it below `afterSlippage`. Bungee can hold both equal because its `routeFee` is
+          // taken in the source token; 1Click's `withdrawFee` comes out of the destination token.
           sellAmount,
-          buyAmount,
+          buyAmount: buyAmount + feeAmountInBuyCurrency,
         },
         afterFee: {
-          // `amountOut` is already net of every 1Click fee, so the buy amount does not change here.
-          // Same as the Bungee provider, where the fee is likewise not deducted from the output.
+          // The sell amount does not change: the user deposits the full `amountIn` and the fees are
+          // reported as costs, matching the Bungee and Across providers.
           sellAmount,
           buyAmount,
         },
