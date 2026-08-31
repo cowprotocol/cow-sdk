@@ -74,58 +74,22 @@ describe('ComposableCowPoller', () => {
     expect(poller.pollerAddress).toEqual(pollerAddress)
   })
 
-  test('memoizes the ComposableCoW address for the default provider', async () => {
+  test('reads immutable addresses on every call', async () => {
     const adapter = adapters.viemAdapter
     const instance = new ComposableCowPoller(pollerAddress)
-    const readContract = jest.spyOn(adapter, 'readContract').mockResolvedValue(composableCowAddress)
+    const readContract = jest
+      .spyOn(adapter, 'readContract')
+      .mockResolvedValueOnce(composableCowAddress)
+      .mockResolvedValueOnce(pollerAddress)
+      .mockResolvedValueOnce(cowShedFactoryAddress)
+      .mockResolvedValueOnce(pollerAddress)
     setGlobalAdapter(adapter)
 
     await expect(instance.getComposableCowAddress()).resolves.toEqual(composableCowAddress)
-    await expect(instance.getComposableCowAddress()).resolves.toEqual(composableCowAddress)
-    expect(readContract).toHaveBeenCalledTimes(1)
-
-    readContract.mockRestore()
-  })
-
-  test('does not memoize ComposableCoW reads for an explicit provider', async () => {
-    const adapter = adapters.viemAdapter
-    const instance = new ComposableCowPoller(pollerAddress)
-    const provider = {} as Parameters<typeof instance.getComposableCowAddress>[0]
-    const readContract = jest.spyOn(adapter, 'readContract').mockResolvedValue(composableCowAddress)
-    setGlobalAdapter(adapter)
-
-    await instance.getComposableCowAddress(provider)
-    await instance.getComposableCowAddress(provider)
-    expect(readContract).toHaveBeenCalledTimes(2)
-
-    readContract.mockRestore()
-  })
-
-  test('does not reuse a memoized ComposableCoW address after changing adapters', async () => {
-    const instance = new ComposableCowPoller(pollerAddress)
-    const viemRead = jest.spyOn(adapters.viemAdapter, 'readContract').mockResolvedValue(composableCowAddress)
-    const ethersRead = jest.spyOn(adapters.ethersV6Adapter, 'readContract').mockResolvedValue(pollerAddress)
-
-    setGlobalAdapter(adapters.viemAdapter)
-    await expect(instance.getComposableCowAddress()).resolves.toEqual(composableCowAddress)
-    setGlobalAdapter(adapters.ethersV6Adapter)
     await expect(instance.getComposableCowAddress()).resolves.toEqual(pollerAddress)
-    expect(viemRead).toHaveBeenCalledTimes(1)
-    expect(ethersRead).toHaveBeenCalledTimes(1)
-
-    viemRead.mockRestore()
-    ethersRead.mockRestore()
-  })
-
-  test('memoizes the CowShed factory address for the default provider', async () => {
-    const adapter = adapters.viemAdapter
-    const instance = new ComposableCowPoller(pollerAddress)
-    const readContract = jest.spyOn(adapter, 'readContract').mockResolvedValue(cowShedFactoryAddress)
-    setGlobalAdapter(adapter)
-
     await expect(instance.getCowShedFactoryAddress()).resolves.toEqual(cowShedFactoryAddress)
-    await expect(instance.getCowShedFactoryAddress()).resolves.toEqual(cowShedFactoryAddress)
-    expect(readContract).toHaveBeenCalledTimes(1)
+    await expect(instance.getCowShedFactoryAddress()).resolves.toEqual(pollerAddress)
+    expect(readContract).toHaveBeenCalledTimes(4)
 
     readContract.mockRestore()
   })
