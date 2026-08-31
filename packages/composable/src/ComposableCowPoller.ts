@@ -12,9 +12,6 @@ const SCHEDULE_ID_ABI = ['address', 'address', 'address', 'bytes32']
 
 /** Utilities for interacting with a ComposableCowPoller deployment. */
 export class ComposableCowPoller {
-  private composableCowAddress?: { adapter: ReturnType<typeof getGlobalAdapter>; address: string }
-  private cowShedFactoryAddress?: { adapter: ReturnType<typeof getGlobalAdapter>; address: string }
-
   constructor(public readonly pollerAddress?: string) {}
 
   private read(functionName: string, args: unknown[] = [], provider?: Provider): Promise<unknown> {
@@ -27,21 +24,11 @@ export class ComposableCowPoller {
   }
 
   public async getComposableCowAddress(provider?: Provider): Promise<string> {
-    const adapter = getGlobalAdapter()
-    if (!provider && this.composableCowAddress?.adapter === adapter) return this.composableCowAddress.address
-
-    const address = (await this.read('COMPOSABLE_COW', [], provider)) as string
-    if (!provider) this.composableCowAddress = { adapter, address }
-    return address
+    return (await this.read('COMPOSABLE_COW', [], provider)) as string
   }
 
   public async getCowShedFactoryAddress(provider?: Provider): Promise<string> {
-    const adapter = getGlobalAdapter()
-    if (!provider && this.cowShedFactoryAddress?.adapter === adapter) return this.cowShedFactoryAddress.address
-
-    const address = (await this.read('COW_SHED_FACTORY', [], provider)) as string
-    if (!provider) this.cowShedFactoryAddress = { adapter, address }
-    return address
+    return (await this.read('COW_SHED_FACTORY', [], provider)) as string
   }
 
   public async getSchedule(id: string, provider?: Provider): Promise<ComposableCowPollerSchedule> {
@@ -82,7 +69,7 @@ export class ComposableCowPoller {
     return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'register', [schedule]) as string
   }
 
-  /** Encodes Poller.registerFromShed for execution by the funder's CowShed. */
+  /** Encodes Poller.registerFromShed for execution by the funder's CowShed, which must equal schedule.owner. */
   public encodeRegisterFromShed(schedule: ComposableCowPollerSchedule): string {
     return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'registerFromShed', [schedule]) as string
   }
