@@ -1,3 +1,21 @@
+const SCHEDULE_COMPONENTS = [
+  { name: 'handler', type: 'address', internalType: 'contract IConditionalOrderGenerator' },
+  { name: 'authEpoch', type: 'uint96', internalType: 'uint96' },
+  { name: 'funder', type: 'address', internalType: 'address' },
+  { name: 'owner', type: 'address', internalType: 'address' },
+  { name: 'salt', type: 'bytes32', internalType: 'bytes32' },
+  { name: 'staticInput', type: 'bytes', internalType: 'bytes' },
+] as const
+
+const SCHEDULE_INPUT = {
+  name: 'schedule',
+  type: 'tuple',
+  internalType: 'struct ComposableCowPoller.Schedule',
+  components: SCHEDULE_COMPONENTS,
+} as const
+
+const ID_OUTPUT = [{ name: 'id', type: 'bytes32', internalType: 'bytes32' }] as const
+
 export const ComposableCowPollerAbi = [
   {
     type: 'function',
@@ -8,9 +26,9 @@ export const ComposableCowPollerAbi = [
   },
   {
     type: 'function',
-    name: 'nonces',
-    inputs: [{ name: 'funder', type: 'address', internalType: 'address' }],
-    outputs: [{ name: 'nonce', type: 'uint256', internalType: 'uint256' }],
+    name: 'COW_SHED_FACTORY',
+    inputs: [],
+    outputs: [{ name: '', type: 'address', internalType: 'contract ICowShedFactory' }],
     stateMutability: 'view',
   },
   {
@@ -23,74 +41,72 @@ export const ComposableCowPollerAbi = [
   {
     type: 'function',
     name: 'register',
-    inputs: [
-      {
-        name: 'schedule',
-        type: 'tuple',
-        internalType: 'struct ComposableCowPoller.Schedule',
-        components: [
-          { name: 'handler', type: 'address', internalType: 'contract IConditionalOrderGenerator' },
-          { name: 'funder', type: 'address', internalType: 'address' },
-          { name: 'owner', type: 'address', internalType: 'address' },
-          { name: 'salt', type: 'bytes32', internalType: 'bytes32' },
-          { name: 'staticInput', type: 'bytes', internalType: 'bytes' },
-        ],
-      },
-    ],
-    outputs: [{ name: 'id', type: 'bytes32', internalType: 'bytes32' }],
+    inputs: [SCHEDULE_INPUT],
+    outputs: ID_OUTPUT,
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'registerFromShed',
+    inputs: [SCHEDULE_INPUT],
+    outputs: ID_OUTPUT,
     stateMutability: 'nonpayable',
   },
   {
     type: 'function',
     name: 'registerWithSignature',
     inputs: [
-      {
-        name: 'schedule',
-        type: 'tuple',
-        internalType: 'struct ComposableCowPoller.Schedule',
-        components: [
-          { name: 'handler', type: 'address', internalType: 'contract IConditionalOrderGenerator' },
-          { name: 'funder', type: 'address', internalType: 'address' },
-          { name: 'owner', type: 'address', internalType: 'address' },
-          { name: 'salt', type: 'bytes32', internalType: 'bytes32' },
-          { name: 'staticInput', type: 'bytes', internalType: 'bytes' },
-        ],
-      },
+      SCHEDULE_INPUT,
       { name: 'deadline', type: 'uint256', internalType: 'uint256' },
       { name: 'signature', type: 'bytes', internalType: 'bytes' },
     ],
-    outputs: [{ name: 'id', type: 'bytes32', internalType: 'bytes32' }],
+    outputs: ID_OUTPUT,
     stateMutability: 'nonpayable',
   },
   {
     type: 'function',
     name: 'revoke',
-    inputs: [{ name: 'id', type: 'bytes32', internalType: 'bytes32' }],
-    outputs: [],
+    inputs: [
+      { name: 'handler', type: 'address', internalType: 'contract IConditionalOrderGenerator' },
+      { name: 'owner', type: 'address', internalType: 'address' },
+      { name: 'salt', type: 'bytes32', internalType: 'bytes32' },
+    ],
+    outputs: ID_OUTPUT,
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'revokeFromShed',
+    inputs: [
+      { name: 'handler', type: 'address', internalType: 'contract IConditionalOrderGenerator' },
+      { name: 'funder', type: 'address', internalType: 'address' },
+      { name: 'owner', type: 'address', internalType: 'address' },
+      { name: 'salt', type: 'bytes32', internalType: 'bytes32' },
+      { name: 'authEpoch', type: 'uint96', internalType: 'uint96' },
+    ],
+    outputs: ID_OUTPUT,
     stateMutability: 'nonpayable',
   },
   {
     type: 'function',
     name: 'revokeWithSignature',
     inputs: [
-      { name: 'id', type: 'bytes32', internalType: 'bytes32' },
+      { name: 'handler', type: 'address', internalType: 'contract IConditionalOrderGenerator' },
+      { name: 'funder', type: 'address', internalType: 'address' },
+      { name: 'owner', type: 'address', internalType: 'address' },
+      { name: 'salt', type: 'bytes32', internalType: 'bytes32' },
+      { name: 'authEpoch', type: 'uint96', internalType: 'uint96' },
       { name: 'deadline', type: 'uint256', internalType: 'uint256' },
       { name: 'signature', type: 'bytes', internalType: 'bytes' },
     ],
-    outputs: [],
+    outputs: ID_OUTPUT,
     stateMutability: 'nonpayable',
   },
   {
     type: 'function',
     name: 'schedules',
     inputs: [{ name: '', type: 'bytes32', internalType: 'bytes32' }],
-    outputs: [
-      { name: 'handler', type: 'address', internalType: 'contract IConditionalOrderGenerator' },
-      { name: 'funder', type: 'address', internalType: 'address' },
-      { name: 'owner', type: 'address', internalType: 'address' },
-      { name: 'salt', type: 'bytes32', internalType: 'bytes32' },
-      { name: 'staticInput', type: 'bytes', internalType: 'bytes' },
-    ],
+    outputs: SCHEDULE_COMPONENTS,
     stateMutability: 'view',
   },
 ] as const

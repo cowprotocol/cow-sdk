@@ -91,8 +91,16 @@ export type ComposableCowPollerScheduleKey = {
   readonly salt: string
 }
 
+/** Fields accepted by a direct revoke; the transaction sender supplies the funder namespace. */
+export type ComposableCowPollerDirectRevoke = Omit<ComposableCowPollerScheduleKey, 'funder'>
+
+/** A schedule identity together with its current replay-protection epoch. */
+export type ComposableCowPollerScheduleAuthorization = ComposableCowPollerScheduleKey & {
+  readonly authEpoch: BigIntish
+}
+
 /** A JIT funding schedule stored by the Composable CoW Poller. */
-export type ComposableCowPollerSchedule = ComposableCowPollerScheduleKey & {
+export type ComposableCowPollerSchedule = ComposableCowPollerScheduleAuthorization & {
   readonly staticInput: string
 }
 
@@ -104,7 +112,6 @@ export type ComposableCowPollerTypedData<TPrimaryType extends string, TMessage> 
 export type ComposableCowPollerRegisterTypedDataParams = {
   readonly chainId: number
   readonly schedule: ComposableCowPollerSchedule
-  readonly nonce: BigIntish
   readonly deadline: BigIntish
 }
 

@@ -2,38 +2,41 @@ import { BigIntish, getGlobalAdapter, Provider } from '@cowprotocol/sdk-common'
 
 import { ComposableCowPollerAbi } from './abis/ComposableCowPollerAbi'
 import type {
+  ComposableCowPollerDirectRevoke,
   ComposableCowPollerRegisterTypedDataParams,
   ComposableCowPollerSchedule,
+  ComposableCowPollerScheduleAuthorization,
   ComposableCowPollerScheduleKey,
   ComposableCowPollerTypedData,
 } from './types'
 
 const SCHEDULE_ID_ABI = ['address', 'address', 'address', 'bytes32']
 const REGISTER_TYPES = {
-  Register: [
+  ScheduleRegistration: [
     { name: 'handler', type: 'address' },
+    { name: 'authEpoch', type: 'uint96' },
     { name: 'funder', type: 'address' },
     { name: 'owner', type: 'address' },
     { name: 'salt', type: 'bytes32' },
-    { name: 'staticInputHash', type: 'bytes32' },
-    { name: 'nonce', type: 'uint256' },
+    { name: 'staticInput', type: 'bytes' },
     { name: 'deadline', type: 'uint256' },
   ],
 }
 
 type RegisterMessage = {
   readonly handler: string
+  readonly authEpoch: BigIntish
   readonly funder: string
   readonly owner: string
   readonly salt: string
-  readonly staticInputHash: string
-  readonly nonce: BigIntish
+  readonly staticInput: string
   readonly deadline: BigIntish
 }
 
 /** Utilities for interacting with a ComposableCowPoller deployment. */
 export class ComposableCowPoller {
   private composableCowAddress?: { adapter: ReturnType<typeof getGlobalAdapter>; address: string }
+  private cowShedFactoryAddress?: { adapter: ReturnType<typeof getGlobalAdapter>; address: string }
 
   constructor(public readonly pollerAddress?: string) {}
 
@@ -59,12 +62,34 @@ export class ComposableCowPoller {
     return address
   }
 
-  public async getNonce(funder: string, provider?: Provider): Promise<BigIntish> {
-    return getGlobalAdapter().utils.toBigIntish((await this.read('nonces', [funder], provider)) as BigIntish)
+  public async getCowShedFactoryAddress(provider?: Provider): Promise<string> {
+    const adapter = getGlobalAdapter()
+    if (!provider && this.cowShedFactoryAddress?.adapter === adapter) return this.cowShedFactoryAddress.address
+
+    const address = (await this.read('COW_SHED_FACTORY', [], provider)) as string
+    if (!provider) this.cowShedFactoryAddress = { adapter, address }
+    return address
   }
 
   public async getSchedule(id: string, provider?: Provider): Promise<ComposableCowPollerSchedule> {
-    return (await this.read('schedules', [id], provider)) as ComposableCowPollerSchedule
+    const adapter = getGlobalAdapter()
+    const [handler, authEpoch, funder, owner, salt, staticInput] = (await this.read('schedules', [id], provider)) as [
+      string,
+      BigIntish,
+      string,
+      string,
+      string,
+      string,
+    ]
+
+    return {
+      handler,
+      authEpoch: adapter.utils.toBigIntish(authEpoch),
+      funder,
+      owner,
+      salt,
+      staticInput,
+    }
   }
 
   public getEip712Domain(chainId: number) {
@@ -80,20 +105,22 @@ export class ComposableCowPoller {
   public getRegisterTypedData({
     chainId,
     schedule,
-    nonce,
     deadline,
-  }: ComposableCowPollerRegisterTypedDataParams): ComposableCowPollerTypedData<'Register', RegisterMessage> {
+  }: ComposableCowPollerRegisterTypedDataParams): ComposableCowPollerTypedData<
+    'ScheduleRegistration',
+    RegisterMessage
+  > {
     return {
       domain: this.getEip712Domain(chainId),
       types: REGISTER_TYPES,
-      primaryType: 'Register',
+      primaryType: 'ScheduleRegistration',
       message: {
         handler: schedule.handler,
+        authEpoch: schedule.authEpoch,
         funder: schedule.funder,
         owner: schedule.owner,
         salt: schedule.salt,
-        staticInputHash: getGlobalAdapter().utils.keccak256(schedule.staticInput),
-        nonce,
+        staticInput: schedule.staticInput,
         deadline,
       },
     }
@@ -116,6 +143,11 @@ export class ComposableCowPoller {
     return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'register', [schedule]) as string
   }
 
+  /** Encodes Poller.registerFromShed for execution by the funder's CowShed. */
+  public encodeRegisterFromShed(schedule: ComposableCowPollerSchedule): string {
+    return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'registerFromShed', [schedule]) as string
+  }
+
   /** Encodes Poller.registerWithSignature. */
   public encodeRegisterWithSignature(
     schedule: ComposableCowPollerSchedule,
@@ -135,7 +167,24 @@ export class ComposableCowPoller {
   }
 
   /** Encodes Poller.revoke. */
-  public encodeRevoke(id: string): string {
-    return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'revoke', [id]) as string
+  public encodeRevoke({ handler, owner, salt }: ComposableCowPollerDirectRevoke): string {
+    return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'revoke', [handler, owner, salt]) as string
+  }
+
+  /** Encodes Poller.revokeFromShed for execution by the funder's CowShed. */
+  public encodeRevokeFromShed({
+    handler,
+    funder,
+    owner,
+    salt,
+    authEpoch,
+  }: ComposableCowPollerScheduleAuthorization): string {
+    return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'revokeFromShed', [
+      handler,
+      funder,
+      owner,
+      salt,
+      authEpoch,
+    ]) as string
   }
 }
