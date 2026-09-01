@@ -33,7 +33,7 @@ export function createAdapters(): AdaptersTestSetup {
   const ethersV5Adapter = new EthersV5Adapter({ provider: ethersV5Provider, signer: ethersV5Wallet })
 
   // EthersV6 setup
-  const ethersV6Provider = new ethersV6.JsonRpcProvider(TEST_RPC_URL)
+  const ethersV6Provider = new ethersV6.JsonRpcProvider(TEST_RPC_URL, TEST_CHAIN_ID, { staticNetwork: true })
   const ethersV6Wallet = new ethersV6.Wallet(TEST_PRIVATE_KEY, ethersV6Provider)
   const ethersV6Adapter = new EthersV6Adapter({ provider: ethersV6Provider, signer: ethersV6Wallet })
 
