@@ -27,8 +27,3 @@ export * from './appDataUtils'
 export * from './calculateUniqueOrderId'
 export { getPartnerFeeBps } from './utils/getPartnerFeeBps'
 export { mapQuoteAmountsAndCosts, swapParamsToLimitOrderParams, getTradeParametersAfterQuote } from './utils/misc'
-
-/**
- * Solana settlement support
- */
-export * from './solana'

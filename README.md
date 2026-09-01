@@ -66,6 +66,10 @@ The project uses modern tooling for efficient development and publishing:
 - **[`@cowprotocol/sdk-composable`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/composable/README.md)** - Programmatic orders (TWAP, conditional orders, etc.)
 - **[`@cowprotocol/sdk-cow-shed`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/cow-shed/README.md)** - Account abstraction with smart contract capabilities
 
+#### 🧪 Experimental
+
+- **[`@cowprotocol/sdk-trading-solana`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/sdk-trading-solana/README.md)** - Solana trading: Jupiter-sourced quotes and on-chain order posting (private, not published)
+
 #### 🔌 Provider Adapters
 
 - **[`@cowprotocol/sdk-viem-adapter`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/providers/viem-adapter/README.md)** - Viem blockchain library adapter

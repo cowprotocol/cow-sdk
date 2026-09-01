@@ -2,6 +2,7 @@ import { buildCreateOrderInstruction } from './createOrderInstruction'
 import { toHex } from './orderIntent'
 import { SolanaOrderPostingResult, SolanaQuote, SolanaSignAndSend } from './types'
 
+// TODO: implement real order posting flow, see https://github.com/cowprotocol/cowswap/pull/7860
 /**
  * Builds the real `CreateOrder` instruction for `quote` and has the caller sign and submit it. This is
  * the Solana analogue of `postSwapOrderFromQuote` in `postSwapOrder.ts` — but where the EVM version signs
