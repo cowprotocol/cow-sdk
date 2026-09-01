@@ -149,6 +149,77 @@ describe('getEthFlowTransaction', () => {
     )
   })
 
+  describe('when a collision is detected by checkEthFlowOrderExists', () => {
+    it('builds the on-chain transaction from the adjusted order, not the original — and returns a consistent orderToSign', async () => {
+      setGlobalAdapter(adapters.ethersV5Adapter)
+
+      // Baseline: what buyAmount getOrderToSign computes with no collision at all
+      // (it applies its own slippage adjustment, so this is NOT literally params.buyAmount).
+      const baseline = await getEthFlowTransaction(
+        appDataKeccak256,
+        params,
+        chainId,
+        { checkEthFlowOrderExists: jest.fn().mockResolvedValue(false) },
+        adapters.ethersV5Adapter.signer,
+      )
+
+      let alreadyCalled = false
+      const checkEthFlowOrderExists = jest.fn().mockImplementation(() => {
+        return Promise.resolve(
+          (() => {
+            if (alreadyCalled) return false
+            alreadyCalled = true
+            return true
+          })(),
+        )
+      })
+
+      const result = await getEthFlowTransaction(
+        appDataKeccak256,
+        params,
+        chainId,
+        { checkEthFlowOrderExists },
+        adapters.ethersV5Adapter.signer,
+      )
+
+      // Regression: this used to build the transaction from the ORIGINAL (pre-collision)
+      // order even after a collision was detected, silently recreating the exact order
+      // that would revert on-chain with OrderIsAlreadyOwned. The returned order must be
+      // nudged by exactly 1 wei relative to the no-collision baseline.
+      expect(result.orderToSign.buyAmount).toBe((BigInt(baseline.orderToSign.buyAmount) - BigInt(1)).toString())
+
+      // The encoded calldata (what actually gets sent on-chain) must reflect the same
+      // adjusted amount as what's returned to the caller — not the original input.
+      expect(mockContract.interface.encodeFunctionData).toHaveBeenCalledWith(
+        'createOrder',
+        expect.arrayContaining([expect.objectContaining({ buyAmount: result.orderToSign.buyAmount })]),
+      )
+    })
+
+    it('does not adjust anything when no collision is ever detected', async () => {
+      setGlobalAdapter(adapters.ethersV5Adapter)
+
+      const noCollision = jest.fn().mockResolvedValue(false)
+
+      const resultA = await getEthFlowTransaction(
+        appDataKeccak256,
+        params,
+        chainId,
+        { checkEthFlowOrderExists: noCollision },
+        adapters.ethersV5Adapter.signer,
+      )
+      const resultB = await getEthFlowTransaction(
+        appDataKeccak256,
+        params,
+        chainId,
+        { checkEthFlowOrderExists: noCollision },
+        adapters.ethersV5Adapter.signer,
+      )
+
+      expect(resultA.orderToSign.buyAmount).toBe(resultB.orderToSign.buyAmount)
+    })
+  })
+
   describe('ethFlowContractOverride', () => {
     it('should use default ETH flow contract address when no override provided', async () => {
       setGlobalAdapter(adapters.ethersV5Adapter)
