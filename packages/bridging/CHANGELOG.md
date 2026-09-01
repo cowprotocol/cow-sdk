@@ -1,5 +1,23 @@
 # Changelog
 
+## [4.4.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.4.2...sdk-bridging-v4.4.3) (2026-09-01)
+
+
+### 🐛 Bug Fixes
+
+* **bridging:** fix near bridging slippage being set as bridge fee ([#972](https://github.com/cowprotocol/cow-sdk/issues/972)) ([b4ff485](https://github.com/cowprotocol/cow-sdk/commit/b4ff485d3169845a4bf2b1ccc3d62b9c4dd9cfc1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-contracts-ts bumped to 3.4.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.4.6
+    * @cowprotocol/sdk-trading bumped to 2.3.0
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 1.1.7
+
 ## [4.4.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.4.1...sdk-bridging-v4.4.2) (2026-07-29)
 
 
