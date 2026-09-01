@@ -125,7 +125,9 @@ export async function getQuoteRaw(
     ...(typeof validTo === 'number' ? { validTo } : { validFor: effectiveValidFor }),
     appData: fullAppData,
     appDataHash: appDataKeccak256,
-    priceQuality: PriceQuality.OPTIMAL, // Do not change this parameter because we rely on the fact that quote has id
+    // Simulated quote: preferred over a higher unverified one for order placement.
+    // Override via `advancedSettings.quoteRequest.priceQuality` (spread below).
+    priceQuality: PriceQuality.VERIFIED,
     signingScheme: SigningScheme.EIP712,
     ...(isEthFlow ? ETH_FLOW_AUX_QUOTE_PARAMS : {}),
     ...(isSell
