@@ -44,6 +44,10 @@
       "package-name": "@cowprotocol/sdk-order-signing",
       "release-type": "node"
     },
+    "packages/sdk-trading-solana": {
+      "package-name": "@cowprotocol/sdk-tradling-solana",
+      "release-type": "node"
+    },
     "packages/subgraph": {
       "package-name": "@cowprotocol/sdk-subgraph",
       "release-type": "node"
