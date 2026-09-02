@@ -46,9 +46,15 @@ const FLAG_PARTIALLY_FILLABLE = 1 << 2
  * Encodes a `SolanaOrderIntent` into the 213-byte layout the settlement program reads, byte-for-byte
  * matching `EncodedOrderIntent::from(&OrderIntent)` in `cow-settlement-interface`.
  */
+/** Inclusive upper bound of a u32, matching the wire width of `validTo` in `EncodedOrderIntent`. */
+const MAX_VALID_TO = 0xffffffff
+
 export function encodeOrderIntent(intent: SolanaOrderIntent): Uint8Array {
   if (intent.appData.length !== 32) {
     throw new Error('appData must be exactly 32 bytes')
+  }
+  if (!Number.isInteger(intent.validTo) || intent.validTo < 0 || intent.validTo > MAX_VALID_TO) {
+    throw new Error(`validTo must be an integer between 0 and ${MAX_VALID_TO}`)
   }
 
   const bytes = new Uint8Array(ENCODED_ORDER_INTENT_SIZE)

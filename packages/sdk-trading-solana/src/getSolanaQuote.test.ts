@@ -80,6 +80,24 @@ describe('getSolanaQuote', () => {
     expect(quoteResults.amountsAndCosts).toBeDefined()
   })
 
+  it('rejects a non-positive validForSeconds without requesting a Jupiter quote', async () => {
+    await expect(
+      getSolanaQuote({
+        ownerAddress: owner,
+        receiverAddress: receiver,
+        sellTokenAddress: sellMint,
+        sellTokenDecimals,
+        buyTokenAddress: buyMint,
+        buyTokenDecimals,
+        amount: 1_000_000_000n,
+        kind: OrderKind.SELL,
+        validForSeconds: -1,
+      }),
+    ).rejects.toThrow('validForSeconds must be a finite number greater than zero')
+
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it('requests an ExactOut quote for a BUY order', async () => {
     fetchMock.mockResponseOnce(
       JSON.stringify({

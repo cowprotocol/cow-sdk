@@ -47,10 +47,24 @@ describe('encodeOrderIntent', () => {
       'appData must be exactly 32 bytes',
     )
   })
+
+  it('accepts validTo at the uint32 boundaries', () => {
+    expect(() => encodeOrderIntent({ ...SAMPLE_INTENT, validTo: 0 })).not.toThrow()
+    expect(() => encodeOrderIntent({ ...SAMPLE_INTENT, validTo: 0xffffffff })).not.toThrow()
+  })
+
+  it('rejects a negative validTo instead of wrapping', () => {
+    expect(() => encodeOrderIntent({ ...SAMPLE_INTENT, validTo: -1 })).toThrow('validTo must be an integer')
+  })
+
+  it('rejects a validTo above the uint32 range instead of silently wrapping modulo 2^32', () => {
+    // DataView.setUint32 would otherwise wrap this to 0, encoding an intent that never expires.
+    expect(() => encodeOrderIntent({ ...SAMPLE_INTENT, validTo: 0x1_0000_0000 })).toThrow('validTo must be an integer')
+  })
 })
 
 describe('hashOrderIntent', () => {
-  it('matches the settlement program\'s own SHA-256 digest for the sample intent', async () => {
+  it("matches the settlement program's own SHA-256 digest for the sample intent", async () => {
     const encoded = encodeOrderIntent(SAMPLE_INTENT)
     const uid = await hashOrderIntent(encoded)
 

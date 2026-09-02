@@ -16,10 +16,22 @@ describe('JupiterAPI.getOrder', () => {
     swapMode: 'ExactIn' as const,
   }
 
-  it('calls the Jupiter order endpoint with the expected query params', async () => {
+  function mockValidResponse(overrides: Record<string, unknown> = {}): void {
     fetchMock.mockResponseOnce(
-      JSON.stringify({ inAmount: '1000000000', outAmount: '9707507795', swapMode: 'ExactIn', slippageBps: 50 }),
+      JSON.stringify({
+        inputMint: request.inputMint,
+        outputMint: request.outputMint,
+        inAmount: '1000000000',
+        outAmount: '9707507795',
+        swapMode: 'ExactIn',
+        slippageBps: 50,
+        ...overrides,
+      }),
     )
+  }
+
+  it('calls the Jupiter order endpoint with the expected query params', async () => {
+    mockValidResponse()
 
     const api = new JupiterAPI()
     const order = await api.getOrder(request)
@@ -32,8 +44,16 @@ describe('JupiterAPI.getOrder', () => {
     expect(calledUrl.searchParams.get('amount')).toBe(request.amount)
     expect(calledUrl.searchParams.get('swapMode')).toBe('ExactIn')
     expect(calledUrl.searchParams.get('clientPlatform')).toBeTruthy()
+    expect(fetchMock.mock.calls[0]?.[1]?.signal).toBeInstanceOf(AbortSignal)
 
-    expect(order).toEqual({ inAmount: '1000000000', outAmount: '9707507795', swapMode: 'ExactIn', slippageBps: 50 })
+    expect(order).toEqual({
+      inputMint: request.inputMint,
+      outputMint: request.outputMint,
+      inAmount: '1000000000',
+      outAmount: '9707507795',
+      swapMode: 'ExactIn',
+      slippageBps: 50,
+    })
   })
 
   it('throws the API-provided error message on a non-ok response', async () => {
@@ -50,5 +70,29 @@ describe('JupiterAPI.getOrder', () => {
     const api = new JupiterAPI()
 
     await expect(api.getOrder(request)).rejects.toThrow('Jupiter quote request failed (502)')
+  })
+
+  it('rejects a response whose echoed pair does not match the request', async () => {
+    mockValidResponse({ outputMint: 'some-other-mint' })
+
+    const api = new JupiterAPI()
+
+    await expect(api.getOrder(request)).rejects.toThrow('malformed or does not match')
+  })
+
+  it('rejects a response with a non-numeric amount', async () => {
+    mockValidResponse({ outAmount: 'not-a-number' })
+
+    const api = new JupiterAPI()
+
+    await expect(api.getOrder(request)).rejects.toThrow('malformed or does not match')
+  })
+
+  it('rejects a response missing required fields', async () => {
+    fetchMock.mockResponseOnce(JSON.stringify({ swapMode: 'ExactIn' }))
+
+    const api = new JupiterAPI()
+
+    await expect(api.getOrder(request)).rejects.toThrow('malformed or does not match')
   })
 })

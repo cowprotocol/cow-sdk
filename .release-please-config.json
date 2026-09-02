@@ -45,7 +45,7 @@
       "release-type": "node"
     },
     "packages/sdk-trading-solana": {
-      "package-name": "@cowprotocol/sdk-tradling-solana",
+      "package-name": "@cowprotocol/sdk-trading-solana",
       "release-type": "node"
     },
     "packages/subgraph": {

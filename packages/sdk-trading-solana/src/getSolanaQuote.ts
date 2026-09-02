@@ -32,6 +32,10 @@ export async function getSolanaQuote(
     buyTokenProgramId,
   } = params
 
+  if (!Number.isFinite(validForSeconds) || validForSeconds <= 0) {
+    throw new Error('validForSeconds must be a finite number greater than zero')
+  }
+
   const owner = new PublicKey(ownerAddress)
   const receiver = new PublicKey(receiverAddress)
   const sellMint = new PublicKey(params.sellTokenAddress)
