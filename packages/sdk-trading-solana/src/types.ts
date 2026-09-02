@@ -1,13 +1,16 @@
-import { PublicKey, TransactionInstruction } from '@solana/web3.js'
+import { PublicKey, PublicKeyInitData, TransactionInstruction } from '@solana/web3.js'
 
 import { JupiterOrderResponse } from './jupiterApi'
 import { SolanaOrderIntent } from './orderIntent'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 
 export interface SolanaQuoteParameters {
-  owner: PublicKey
-  sellMint: PublicKey
-  buyMint: PublicKey
+  ownerAddress: PublicKeyInitData
+  receiverAddress: PublicKeyInitData
+  sellTokenAddress: PublicKeyInitData
+  sellTokenDecimals: number
+  buyTokenAddress: PublicKeyInitData
+  buyTokenDecimals: number
   /** Sell-side amount for a SELL order, buy-side amount for a BUY order — same convention as Jupiter's `amount`. */
   amount: bigint
   kind: OrderKind
@@ -17,9 +20,9 @@ export interface SolanaQuoteParameters {
   /** Token program owning `sellMint`'s accounts (classic SPL Token vs Token-2022). Defaults to the
    * classic SPL Token program — pass `TOKEN_2022_PROGRAM_ID` explicitly for Token-2022 mints, since the
    * associated token account address differs by program. */
-  sellTokenProgramId?: PublicKey
+  sellTokenProgramId?: PublicKeyInitData
   /** Same as `sellTokenProgramId`, for `buyMint`. */
-  buyTokenProgramId?: PublicKey
+  buyTokenProgramId?: PublicKeyInitData
 }
 
 export interface SolanaQuote {

@@ -15,7 +15,7 @@ import {
   SigningScheme,
   TokenAmount,
 } from '@cowprotocol/sdk-order-book'
-import type { AbstractSigner, AccountAddress, Provider, SignerLike } from '@cowprotocol/sdk-common'
+import type { AbstractSigner, Provider, SignerLike } from '@cowprotocol/sdk-common'
 import type { ORDER_PRIMARY_TYPE, UnsignedOrder } from '@cowprotocol/sdk-order-signing'
 import type { SupportedChainId, CowEnv, AddressPerChain } from '@cowprotocol/sdk-config'
 
@@ -52,7 +52,7 @@ export interface OrderTypedData {
  */
 export interface TradeBaseParameters {
   kind: OrderKind
-  owner?: AccountAddress
+  owner?: string
   sellToken: OrderParameters['sellToken']
   sellTokenDecimals: number
   buyToken: OrderParameters['buyToken']
@@ -102,7 +102,7 @@ export interface TraderParameters {
   ethFlowContractOverride?: Partial<AddressPerChain>
 }
 
-export type QuoterParameters = Omit<TraderParameters, 'signer'> & { account: AccountAddress }
+export type QuoterParameters = Omit<TraderParameters, 'signer'> & { account: string }
 
 export interface SlippageToleranceResponse {
   slippageBps: number | null

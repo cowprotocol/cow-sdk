@@ -1046,6 +1046,9 @@ importers:
       '@cowprotocol/sdk-order-book':
         specifier: workspace:*
         version: link:../order-book
+      '@cowprotocol/sdk-trading':
+        specifier: workspace:*
+        version: link:../trading
       '@solana/spl-token':
         specifier: 0.4.14
         version: 0.4.14(@solana/web3.js@1.98.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@6.0.6))(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(utf-8-validate@6.0.6)
