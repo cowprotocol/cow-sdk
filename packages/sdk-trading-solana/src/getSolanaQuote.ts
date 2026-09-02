@@ -36,6 +36,8 @@ export async function getSolanaQuote(
   const receiver = new PublicKey(receiverAddress)
   const sellMint = new PublicKey(params.sellTokenAddress)
   const buyMint = new PublicKey(params.buyTokenAddress)
+  const sellTokenProgram = sellTokenProgramId ? new PublicKey(sellTokenProgramId) : undefined
+  const buyTokenProgram = buyTokenProgramId ? new PublicKey(buyTokenProgramId) : undefined
 
   const sellTokenAddress = sellMint.toBase58()
   const buyTokenAddress = buyMint.toBase58()
@@ -49,19 +51,9 @@ export async function getSolanaQuote(
 
   const intent: SolanaOrderIntent = {
     owner,
-    buyTokenAccount: getAssociatedTokenAddressSync(
-      buyMint,
-      receiver,
-      false,
-      buyTokenProgramId ? new PublicKey(buyTokenProgramId) : undefined,
-    ),
+    buyTokenAccount: getAssociatedTokenAddressSync(buyMint, receiver, false, buyTokenProgram),
     buyMint,
-    sellTokenAccount: getAssociatedTokenAddressSync(
-      sellMint,
-      owner,
-      false,
-      sellTokenProgramId ? new PublicKey(sellTokenProgramId) : undefined,
-    ),
+    sellTokenAccount: getAssociatedTokenAddressSync(sellMint, owner, false, sellTokenProgram),
     sellMint,
     sellAmount: BigInt(jupiterOrder.inAmount),
     buyAmount: BigInt(jupiterOrder.outAmount),
@@ -77,7 +69,15 @@ export async function getSolanaQuote(
   const programId = new PublicKey(SOLANA_SETTLEMENT_PROGRAM_ID)
   const [orderPda] = findOrderPda(programId, uid)
 
-  const solanaQuote: SolanaQuote = { intent, intentBytes, uid, orderPda, programId, jupiterOrder }
+  const solanaQuote: SolanaQuote = {
+    intent,
+    intentBytes,
+    uid,
+    orderPda,
+    programId,
+    jupiterOrder,
+    buyTokenProgramId: buyTokenProgram,
+  }
 
   const orderParams: OrderParameters = {
     sellToken: sellTokenAddress,

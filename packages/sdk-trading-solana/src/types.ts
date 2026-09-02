@@ -34,6 +34,9 @@ export interface SolanaQuote {
   programId: PublicKey
   /** The raw Jupiter response the quote was built from — real amounts/slippage for the caller to read. */
   jupiterOrder: JupiterOrderResponse
+  /** Token program owning `intent.buyMint`'s accounts, as resolved at quote time — needed to re-derive
+   * `buyTokenAccount`'s associated token address if `receiver` is overridden when posting. */
+  buyTokenProgramId?: PublicKey
 }
 
 /** Signs and submits a `CreateOrder` instruction; supplied by the caller since this SDK has no bound

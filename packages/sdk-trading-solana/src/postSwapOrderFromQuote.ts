@@ -4,8 +4,10 @@ import type {
   OrderPostingResult,
   QuoteResults,
 } from '@cowprotocol/sdk-trading'
+import { getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { buildCreateOrderInstruction } from './createOrderInstruction'
-import { toHex } from './orderIntent'
+import { encodeOrderIntent, hashOrderIntent, toHex } from './orderIntent'
+import { findOrderPda } from './orderPda'
 import { SolanaQuote, SolanaSignAndSend } from './types'
 import { SigningScheme } from '@cowprotocol/sdk-order-book'
 import { PublicKey } from '@solana/web3.js'
@@ -25,19 +27,36 @@ export async function postSolanaSwapOrderFromQuote(
   signingStepManager?: SigningStepManager,
 ): Promise<OrderPostingResult> {
   const intent = { ...solanaQuote.intent }
+  let uid = solanaQuote.uid
+  let orderPda = solanaQuote.orderPda
 
   if (advancedSettings?.quoteRequest) {
     const { validTo, receiver } = advancedSettings.quoteRequest
 
-    if (receiver) intent.buyTokenAccount = new PublicKey(receiver)
+    if (receiver) {
+      intent.buyTokenAccount = getAssociatedTokenAddressSync(
+        intent.buyMint,
+        new PublicKey(receiver),
+        false,
+        solanaQuote.buyTokenProgramId,
+      )
+    }
     if (validTo) intent.validTo = validTo
+
+    // `uid`/`orderPda` are the hash/PDA of the *quoted* intent bytes — re-derive them whenever the
+    // intent is overridden so the posted order PDA still matches the intent actually being created.
+    if (receiver || validTo) {
+      const intentBytes = encodeOrderIntent(intent)
+      uid = await hashOrderIntent(intentBytes)
+      ;[orderPda] = findOrderPda(solanaQuote.programId, uid)
+    }
   }
 
   const instruction = buildCreateOrderInstruction({
     programId: solanaQuote.programId,
     owner: intent.owner,
     createdBy: intent.owner,
-    orderPda: solanaQuote.orderPda,
+    orderPda,
     intent,
   })
 
@@ -50,7 +69,7 @@ export async function postSolanaSwapOrderFromQuote(
   const orderToSign = quoteResults.orderToSign
 
   return {
-    orderId: toHex(solanaQuote.uid),
+    orderId: toHex(uid),
     txHash: signature,
     signature,
     signingScheme: SigningScheme.PRESIGN,
