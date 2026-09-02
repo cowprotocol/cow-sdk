@@ -1,12 +1,19 @@
 {
   "name": "@cowprotocol/sdk-trading-solana",
   "version": "0.1.0",
-  "private": true,
   "description": "CowProtocol Solana trading: Jupiter-sourced quotes and on-chain CreateOrder posting against the Solana settlement program",
   "repository": {
     "type": "git",
     "url": "https://github.com/cowprotocol/cow-sdk.git",
     "directory": "packages/sdk-trading-solana"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.js"
+    }
   },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
