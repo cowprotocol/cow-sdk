@@ -239,7 +239,12 @@ export function extractOrderUidParams(orderUid: string): OrderUidParams {
     throw new Error('invalid order UID length')
   }
 
-  const view = new DataView(bytes.buffer)
+  // NOTE: `bytes` may be a view into a larger backing buffer (e.g. a pooled Node Buffer),
+  // so the DataView must be scoped to `bytes`'s own byteOffset/byteLength. Constructing it
+  // over the raw `bytes.buffer` would silently read from the wrong offset whenever
+  // `bytes.byteOffset !== 0`, and the `bytes.length` check above can't catch that since it
+  // only validates the view's own length, not the underlying buffer.
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
   return {
     orderDigest: adapter.utils.hexlify(bytes.subarray(0, 32)),
     owner: adapter.utils.getChecksumAddress(adapter.utils.hexlify(bytes.subarray(32, 52))),
