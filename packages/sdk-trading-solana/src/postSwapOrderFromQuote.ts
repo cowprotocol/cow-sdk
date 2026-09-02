@@ -18,7 +18,7 @@ import { SigningScheme } from '@cowprotocol/sdk-order-book'
  * a single connected wallet both authenticates and funds the order's rent.
  */
 export async function postSolanaSwapOrderFromQuote(
-  {quoteResults, solanaQuote}: { quoteResults: QuoteResults; solanaQuote: SolanaQuote },
+  { quoteResults, solanaQuote }: { quoteResults: QuoteResults; solanaQuote: SolanaQuote },
   signAndSend: SolanaSignAndSend,
   advancedSettings?: SwapAdvancedSettings,
   signingStepManager?: SigningStepManager,
@@ -35,10 +35,10 @@ export async function postSolanaSwapOrderFromQuote(
 
   const instruction = buildCreateOrderInstruction({
     programId: solanaQuote.programId,
-    owner: solanaQuote.intent.owner,
-    createdBy: solanaQuote.intent.owner,
+    owner: intent.owner,
+    createdBy: intent.owner,
     orderPda: solanaQuote.orderPda,
-    intent: solanaQuote.intent,
+    intent,
   })
 
   signingStepManager?.beforeOrderSign?.()
@@ -49,5 +49,11 @@ export async function postSolanaSwapOrderFromQuote(
 
   const orderToSign = quoteResults.orderToSign
 
-  return { orderId: toHex(solanaQuote.uid), txHash: signature, signature, signingScheme: SigningScheme.PRESIGN, orderToSign }
+  return {
+    orderId: toHex(solanaQuote.uid),
+    txHash: signature,
+    signature,
+    signingScheme: SigningScheme.PRESIGN,
+    orderToSign,
+  }
 }

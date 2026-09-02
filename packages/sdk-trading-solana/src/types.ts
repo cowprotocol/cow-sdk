@@ -39,10 +39,3 @@ export interface SolanaQuote {
 /** Signs and submits a `CreateOrder` instruction; supplied by the caller since this SDK has no bound
  * Solana wallet/signer (unlike the EVM adapter). */
 export type SolanaSignAndSend = (instruction: TransactionInstruction) => Promise<{ signature: string }>
-
-export interface SolanaOrderPostingResult {
-  /** Hex-encoded order uid. */
-  orderId: string
-  /** Hex-encoded order uid — no distinct field for it exists yet, so it's used as-is instead of being invented.  */
-  txHash: string
-}

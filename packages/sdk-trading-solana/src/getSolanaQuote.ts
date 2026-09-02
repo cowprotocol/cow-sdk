@@ -16,7 +16,9 @@ const ZERO_APP_DATA = new Uint8Array(32)
 
 const jupiterApi = new JupiterAPI()
 
-export async function getSolanaQuote(params: SolanaQuoteParameters): Promise<{ quoteResults: QuoteResults, solanaQuote: SolanaQuote }> {
+export async function getSolanaQuote(
+  params: SolanaQuoteParameters,
+): Promise<{ quoteResults: QuoteResults; solanaQuote: SolanaQuote }> {
   const {
     ownerAddress,
     receiverAddress,

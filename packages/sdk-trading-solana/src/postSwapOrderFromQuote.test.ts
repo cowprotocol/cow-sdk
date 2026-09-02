@@ -1,5 +1,6 @@
 import { PublicKey } from '@solana/web3.js'
-import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { OrderKind, SigningScheme } from '@cowprotocol/sdk-order-book'
+import type { QuoteResults } from '@cowprotocol/sdk-trading'
 
 import { postSolanaSwapOrderFromQuote } from './postSwapOrderFromQuote'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toHex } from './orderIntent'
@@ -44,25 +45,60 @@ async function buildFixtureQuote(): Promise<SolanaQuote> {
   }
 }
 
+function buildFixtureQuoteResults(orderToSign: unknown = { fake: 'orderToSign' }): QuoteResults {
+  return { orderToSign } as unknown as QuoteResults
+}
+
 describe('postSolanaSwapOrderFromQuote', () => {
-  it('signs and sends the CreateOrder instruction, returning the hex uid as orderId/txHash', async () => {
-    const quote = await buildFixtureQuote()
+  it('signs and sends the CreateOrder instruction, returning the order posting result', async () => {
+    const solanaQuote = await buildFixtureQuote()
+    const quoteResults = buildFixtureQuoteResults()
     const signAndSend = jest.fn().mockResolvedValue({ signature: 'fake-signature' })
 
-    const result = await postSolanaSwapOrderFromQuote(quote, signAndSend)
+    const result = await postSolanaSwapOrderFromQuote({ quoteResults, solanaQuote }, signAndSend)
 
     expect(signAndSend).toHaveBeenCalledTimes(1)
     const instruction = signAndSend.mock.calls[0][0]
-    expect(instruction.programId.toBase58()).toBe(quote.programId.toBase58())
+    expect(instruction.programId.toBase58()).toBe(solanaQuote.programId.toBase58())
     expect(instruction.data[0]).toBe(2)
 
-    expect(result).toEqual({ orderId: toHex(quote.uid), txHash: 'fake-signature' })
+    expect(result).toEqual({
+      orderId: toHex(solanaQuote.uid),
+      txHash: 'fake-signature',
+      signature: 'fake-signature',
+      signingScheme: SigningScheme.PRESIGN,
+      orderToSign: quoteResults.orderToSign,
+    })
   })
 
   it('propagates a signAndSend rejection', async () => {
-    const quote = await buildFixtureQuote()
+    const solanaQuote = await buildFixtureQuote()
+    const quoteResults = buildFixtureQuoteResults()
     const signAndSend = jest.fn().mockRejectedValue(new Error('user rejected'))
 
-    await expect(postSolanaSwapOrderFromQuote(quote, signAndSend)).rejects.toThrow('user rejected')
+    await expect(postSolanaSwapOrderFromQuote({ quoteResults, solanaQuote }, signAndSend)).rejects.toThrow(
+      'user rejected',
+    )
+  })
+
+  it('invokes signingStepManager hooks around signing', async () => {
+    const solanaQuote = await buildFixtureQuote()
+    const quoteResults = buildFixtureQuoteResults()
+    const signAndSend = jest.fn().mockResolvedValue({ signature: 'fake-signature' })
+    const calls: string[] = []
+    const signingStepManager = {
+      beforeOrderSign: jest.fn(() => {
+        calls.push('before')
+      }),
+      afterOrderSign: jest.fn(() => {
+        calls.push('after')
+      }),
+    }
+
+    await postSolanaSwapOrderFromQuote({ quoteResults, solanaQuote }, signAndSend, undefined, signingStepManager)
+
+    expect(signingStepManager.beforeOrderSign).toHaveBeenCalledTimes(1)
+    expect(signingStepManager.afterOrderSign).toHaveBeenCalledTimes(1)
+    expect(calls).toEqual(['before', 'after'])
   })
 })
