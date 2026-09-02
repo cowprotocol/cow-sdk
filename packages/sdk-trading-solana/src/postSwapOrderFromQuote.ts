@@ -8,6 +8,7 @@ import { buildCreateOrderInstruction } from './createOrderInstruction'
 import { toHex } from './orderIntent'
 import { SolanaQuote, SolanaSignAndSend } from './types'
 import { SigningScheme } from '@cowprotocol/sdk-order-book'
+import { PublicKey } from '@solana/web3.js'
 
 // TODO: implement real order posting flow, see https://github.com/cowprotocol/cowswap/pull/7860
 /**
@@ -26,10 +27,9 @@ export async function postSolanaSwapOrderFromQuote(
   const intent = { ...solanaQuote.intent }
 
   if (advancedSettings?.quoteRequest) {
-    const { validTo } = advancedSettings.quoteRequest
+    const { validTo, receiver } = advancedSettings.quoteRequest
 
-    // TODO: Why intent doesn't have receiver?
-    // if (receiver) intent.receiver = receiver
+    if (receiver) intent.buyTokenAccount = new PublicKey(receiver)
     if (validTo) intent.validTo = validTo
   }
 

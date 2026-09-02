@@ -8,8 +8,15 @@ import { OrderKind } from '@cowprotocol/sdk-order-book'
  */
 export interface SolanaOrderIntent {
   owner: PublicKey
+  // Token account that receives the buy-side proceeds. Implicitly
+  // encodes the recipient.
   buyTokenAccount: PublicKey
   buyMint: PublicKey
+  // Token account the sell-side funds are pulled from. Implicitly
+  // encodes the spender. The settlement state PDA must hold the SPL
+  // `delegate` on this account for the order to be settleable.
+  // This token account must be owned by the intent owner. An intent
+  // that doesn't satisfy this property will be rejected.
   sellTokenAccount: PublicKey
   sellMint: PublicKey
   sellAmount: bigint

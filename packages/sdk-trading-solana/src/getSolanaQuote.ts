@@ -51,7 +51,7 @@ export async function getSolanaQuote(
     owner,
     buyTokenAccount: getAssociatedTokenAddressSync(
       buyMint,
-      owner,
+      receiver,
       false,
       buyTokenProgramId ? new PublicKey(buyTokenProgramId) : undefined,
     ),

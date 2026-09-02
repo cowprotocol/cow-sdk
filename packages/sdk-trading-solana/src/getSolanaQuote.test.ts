@@ -1,6 +1,6 @@
 import fetchMock from 'jest-fetch-mock'
 import { PublicKey } from '@solana/web3.js'
-import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token'
+import { getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { SOLANA_SETTLEMENT_PROGRAM_ID } from '@cowprotocol/sdk-config'
 
@@ -105,6 +105,37 @@ describe('getSolanaQuote', () => {
 
     const calledUrl = new URL(fetchMock.mock.calls[0]?.[0] as string)
     expect(calledUrl.searchParams.get('swapMode')).toBe('ExactOut')
+  })
+
+  it('derives buyTokenAccount for the receiver and sellTokenAccount for the owner', async () => {
+    fetchMock.mockResponseOnce(
+      JSON.stringify({
+        inputMint: sellMint.toBase58(),
+        outputMint: buyMint.toBase58(),
+        inAmount: '1000000000',
+        outAmount: '9707507795',
+        swapMode: 'ExactIn',
+        slippageBps: 50,
+      }),
+    )
+
+    const { solanaQuote } = await getSolanaQuote({
+      ownerAddress: owner,
+      receiverAddress: receiver,
+      sellTokenAddress: sellMint,
+      sellTokenDecimals,
+      buyTokenAddress: buyMint,
+      buyTokenDecimals,
+      amount: 1_000_000_000n,
+      kind: OrderKind.SELL,
+    })
+
+    expect(solanaQuote.intent.buyTokenAccount.toBase58()).toBe(
+      getAssociatedTokenAddressSync(buyMint, receiver, false).toBase58(),
+    )
+    expect(solanaQuote.intent.sellTokenAccount.toBase58()).toBe(
+      getAssociatedTokenAddressSync(sellMint, owner, false).toBase58(),
+    )
   })
 
   it('derives different token accounts for Token-2022 mints than for classic SPL Token mints', async () => {
