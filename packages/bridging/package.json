@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-bridging",
-  "version": "4.4.2",
+  "version": "4.4.3",
   "description": "Bridging for CoW Protocol",
   "repository": {
     "type": "git",
@@ -40,7 +40,7 @@
     "@cowprotocol/sdk-order-book": "workspace:*",
     "@cowprotocol/sdk-trading": "workspace:*",
     "@cowprotocol/sdk-weiroll": "workspace:*",
-    "@defuse-protocol/one-click-sdk-typescript": "0.1.1-0.2",
+    "@defuse-protocol/one-click-sdk-typescript": "0.1.25",
     "json-stable-stringify": "^1.3.0"
   },
   "devDependencies": {

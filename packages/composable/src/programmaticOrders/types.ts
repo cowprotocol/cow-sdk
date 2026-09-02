@@ -21,8 +21,8 @@ export interface QueryPage<T> {
 
 /**
  * Status reported by the programmatic orders API.
- * @see https://github.com/bleu/cow-programmatic-orders-api/blob/main/schema/tables.ts#L20-L24
- * @see https://github.com/bleu/cow-programmatic-orders-api/blob/main/src/api/gql-docs/conditional-order-generator.ts
+ * @see https://github.com/cowprotocol/cow-programmatic-orders-api/blob/main/schema/tables.ts#L20-L24
+ * @see https://github.com/cowprotocol/cow-programmatic-orders-api/blob/main/src/api/gql-docs/conditional-order-generator.ts
  */
 export type ProgrammaticOrderStatus = 'Active' | 'Cancelled' | 'Completed'
 

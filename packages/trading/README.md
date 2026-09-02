@@ -654,6 +654,8 @@ However, you can provide additional parameters to customize the order creation.
 #### Swap
 
 1. `quoteRequest` - the quote request object. It is used to get a quote from the quote API ([read more](https://docs.cow.fi/cow-protocol/reference/sdks/cow-sdk/modules#orderquoterequest))
+
+   `priceQuality` defaults to `verified`: the backend simulates quotes and prefers verified ones over higher unverified ones. Pass `optimal` to get the highest quote without simulation (faster, but a higher risk the order turns out unfillable).
 2. `appData` - the order's metadata ([read more](https://docs.cow.fi/cow-protocol/reference/sdks/app-data/modules#appdataparams))
 
 ##### Example
