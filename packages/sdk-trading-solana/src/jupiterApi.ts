@@ -1,3 +1,6 @@
+/**
+ * For testing purposes only! Not for production!
+ */
 const JUPITER_ORDER_ENDPOINT = 'https://ultra-api.jup.ag/order'
 const DEFAULT_CLIENT_PLATFORM = 'cowswap'
 

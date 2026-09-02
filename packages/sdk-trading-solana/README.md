@@ -24,10 +24,13 @@ yet. See `docs/superpowers/specs/2026-09-01-sdk-trading-solana-extraction-design
 import { SolanaTradingSdk } from '@cowprotocol/sdk-trading-solana'
 
 const sdk = new SolanaTradingSdk({ signAndSend })
-const { quote, postSwapOrderFromQuote } = await sdk.getQuote({
-  owner,
-  sellMint,
-  buyMint,
+const { quoteResults, postSwapOrderFromQuote } = await sdk.getQuote({
+  ownerAddress,
+  receiverAddress,
+  sellTokenAddress,
+  sellTokenDecimals,
+  buyTokenAddress,
+  buyTokenDecimals,
   amount,
   kind,
 })
