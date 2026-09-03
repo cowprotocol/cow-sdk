@@ -114,9 +114,7 @@ export async function getSolanaQuote(
     buyTokenProgramId: buyTokenProgram,
   }
 
-  const requestIdParts = jupiterOrder.requestId.split('-')
   const quoteResponse: OrderQuoteResponse = {
-    id: +('0x' + (requestIdParts[requestIdParts.length - 1] ?? '').slice(0, 8)),
     quote: orderParams,
     from: owner.toBase58(),
     expiration: new Date(intent.validTo * 1000).toISOString(),
