@@ -1,6 +1,6 @@
 import { PublicKey } from '@solana/web3.js'
 import { getAssociatedTokenAddressSync } from '@solana/spl-token'
-import { SOLANA_SETTLEMENT_PROGRAM_ID } from '@cowprotocol/sdk-config'
+import { CowEnv, SOLANA_SETTLEMENT_PROGRAM_ID, SOLANA_SETTLEMENT_PROGRAM_ID_STAGING } from '@cowprotocol/sdk-config'
 import { getQuoteAmountsAndCosts, OrderKind, OrderParameters, OrderQuoteResponse } from '@cowprotocol/sdk-order-book'
 
 import { JupiterAPI } from './jupiterApi'
@@ -18,6 +18,7 @@ const jupiterApi = new JupiterAPI()
 
 export async function getSolanaQuote(
   params: SolanaQuoteParameters,
+  options: { env?: CowEnv } = {},
 ): Promise<{ quoteResults: QuoteResults; solanaQuote: SolanaQuote }> {
   const {
     ownerAddress,
@@ -98,7 +99,9 @@ export async function getSolanaQuote(
 
   const intentBytes = encodeOrderIntent(intent)
   const uid = await hashOrderIntent(intentBytes)
-  const programId = new PublicKey(SOLANA_SETTLEMENT_PROGRAM_ID)
+  const programId = new PublicKey(
+    options.env === 'staging' ? SOLANA_SETTLEMENT_PROGRAM_ID_STAGING : SOLANA_SETTLEMENT_PROGRAM_ID,
+  )
   const [orderPda] = findOrderPda(programId, uid)
 
   const solanaQuote: SolanaQuote = {

@@ -1,10 +1,12 @@
 import type { QuoteAndPost, SigningStepManager, SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
+import { CowEnv } from '@cowprotocol/sdk-config'
 import { getSolanaQuote } from './getSolanaQuote'
 import { postSolanaSwapOrderFromQuote } from './postSwapOrderFromQuote'
 import { SolanaQuoteParameters, SolanaSignAndSend } from './types'
 
 export interface SolanaTradingSdkOptions {
   signAndSend: SolanaSignAndSend
+  env?: CowEnv
 }
 
 /**
@@ -17,7 +19,7 @@ export class SolanaTradingSdk {
   constructor(private readonly options: SolanaTradingSdkOptions) {}
 
   async getQuote(params: SolanaQuoteParameters): Promise<QuoteAndPost> {
-    const quote = await getSolanaQuote(params)
+    const quote = await getSolanaQuote(params, { env: this.options.env })
 
     return {
       quoteResults: quote.quoteResults,

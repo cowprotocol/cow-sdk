@@ -98,8 +98,18 @@ describe('SolanaTradingSdk', () => {
 
     const result = await sdk.getQuote(params)
 
-    expect(mockGetSolanaQuote).toHaveBeenCalledWith(params)
+    expect(mockGetSolanaQuote).toHaveBeenCalledWith(params, { env: undefined })
     expect(result.quoteResults).toBe(quoteResultsFixture)
+  })
+
+  it('getQuote forwards the constructor-bound env to getSolanaQuote', async () => {
+    mockGetSolanaQuote.mockResolvedValue(quoteFixture)
+    const signAndSend = jest.fn()
+    const sdk = new SolanaTradingSdk({ signAndSend, env: 'staging' })
+
+    await sdk.getQuote(params)
+
+    expect(mockGetSolanaQuote).toHaveBeenCalledWith(params, { env: 'staging' })
   })
 
   it('postSwapOrderFromQuote delegates to postSolanaSwapOrderFromQuote with the constructor-bound signAndSend', async () => {

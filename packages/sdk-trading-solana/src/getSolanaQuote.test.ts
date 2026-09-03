@@ -2,7 +2,7 @@ import fetchMock from 'jest-fetch-mock'
 import { PublicKey } from '@solana/web3.js'
 import { getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
-import { SOLANA_SETTLEMENT_PROGRAM_ID } from '@cowprotocol/sdk-config'
+import { SOLANA_SETTLEMENT_PROGRAM_ID, SOLANA_SETTLEMENT_PROGRAM_ID_STAGING } from '@cowprotocol/sdk-config'
 
 import { getSolanaQuote } from './getSolanaQuote'
 import { findOrderPda } from './orderPda'
@@ -81,6 +81,61 @@ describe('getSolanaQuote', () => {
     })
     expect(quoteResults.suggestedSlippageBps).toBe(50)
     expect(quoteResults.amountsAndCosts).toBeDefined()
+  })
+
+  it('defaults to the prod settlement program id when no env is given', async () => {
+    fetchMock.mockResponseOnce(
+      JSON.stringify({
+        inputMint: sellMint.toBase58(),
+        outputMint: buyMint.toBase58(),
+        inAmount: '1000000000',
+        outAmount: '9707507795',
+        swapMode: 'ExactIn',
+        slippageBps: 50,
+      }),
+    )
+
+    const { solanaQuote } = await getSolanaQuote({
+      ownerAddress: owner,
+      receiverAddress: receiver,
+      sellTokenAddress: sellMint,
+      sellTokenDecimals,
+      buyTokenAddress: buyMint,
+      buyTokenDecimals,
+      amount: 1_000_000_000n,
+      kind: OrderKind.SELL,
+    })
+
+    expect(solanaQuote.programId.toBase58()).toBe(new PublicKey(SOLANA_SETTLEMENT_PROGRAM_ID).toBase58())
+  })
+
+  it('uses the staging settlement program id when env is "staging"', async () => {
+    fetchMock.mockResponseOnce(
+      JSON.stringify({
+        inputMint: sellMint.toBase58(),
+        outputMint: buyMint.toBase58(),
+        inAmount: '1000000000',
+        outAmount: '9707507795',
+        swapMode: 'ExactIn',
+        slippageBps: 50,
+      }),
+    )
+
+    const { solanaQuote } = await getSolanaQuote(
+      {
+        ownerAddress: owner,
+        receiverAddress: receiver,
+        sellTokenAddress: sellMint,
+        sellTokenDecimals,
+        buyTokenAddress: buyMint,
+        buyTokenDecimals,
+        amount: 1_000_000_000n,
+        kind: OrderKind.SELL,
+      },
+      { env: 'staging' },
+    )
+
+    expect(solanaQuote.programId.toBase58()).toBe(new PublicKey(SOLANA_SETTLEMENT_PROGRAM_ID_STAGING).toBase58())
   })
 
   it('rejects a non-positive validForSeconds without requesting a Jupiter quote', async () => {
