@@ -53,15 +53,43 @@ export async function getSolanaQuote(
     swapMode: kind === OrderKind.SELL ? 'ExactIn' : 'ExactOut',
   })
 
+  const validTo = Math.floor(Date.now() / 1000) + validForSeconds
+
+  const orderParams: OrderParameters = {
+    sellToken: sellTokenAddress,
+    buyToken: buyTokenAddress,
+    receiver: receiver.toBase58(),
+    sellAmount: jupiterOrder.inAmount,
+    buyAmount: jupiterOrder.outAmount,
+    validTo,
+    // TODO: fill appData when we know the format
+    appData: '{}',
+    // TODO: implement fees
+    feeAmount: '0',
+    gasAmount: '0',
+    gasPrice: '0',
+    sellTokenPrice: '0',
+    kind,
+    partiallyFillable,
+  }
+
+  const amountsAndCosts = getQuoteAmountsAndCosts({
+    orderParams,
+    slippagePercentBps: jupiterOrder.slippageBps,
+    // TODO: implement fees
+    partnerFeeBps: 0,
+    protocolFeeBps: 0,
+  })
+
   const intent: SolanaOrderIntent = {
     owner,
     buyTokenAccount: getAssociatedTokenAddressSync(buyMint, receiver, false, buyTokenProgram),
     buyMint,
     sellTokenAccount: getAssociatedTokenAddressSync(sellMint, owner, false, sellTokenProgram),
     sellMint,
-    sellAmount: BigInt(jupiterOrder.inAmount),
-    buyAmount: BigInt(jupiterOrder.outAmount),
-    validTo: Math.floor(Date.now() / 1000) + validForSeconds,
+    sellAmount: amountsAndCosts.amountsToSign.sellAmount,
+    buyAmount: amountsAndCosts.amountsToSign.buyAmount,
+    validTo,
     kind,
     partiallyFillable,
     createdOnChain: true,
@@ -83,38 +111,12 @@ export async function getSolanaQuote(
     buyTokenProgramId: buyTokenProgram,
   }
 
-  const orderParams: OrderParameters = {
-    sellToken: sellTokenAddress,
-    buyToken: buyTokenAddress,
-    receiver: receiver.toBase58(),
-    sellAmount: intent.sellAmount.toString(),
-    buyAmount: intent.buyAmount.toString(),
-    validTo: intent.validTo,
-    // TODO: fill appData when we know the format
-    appData: '{}',
-    // TODO: implement fees
-    feeAmount: '0',
-    gasAmount: '0',
-    gasPrice: '0',
-    sellTokenPrice: '0',
-    kind,
-    partiallyFillable,
-  }
-
   const quoteResponse: OrderQuoteResponse = {
     quote: orderParams,
     from: owner.toBase58(),
     expiration: new Date(intent.validTo * 1000).toISOString(),
     verified: false,
   }
-
-  const amountsAndCosts = getQuoteAmountsAndCosts({
-    orderParams,
-    slippagePercentBps: jupiterOrder.slippageBps,
-    // TODO: implement fees
-    partnerFeeBps: 0,
-    protocolFeeBps: 0,
-  })
 
   // Auto-slippage only: `slippageBps` is intentionally left unset (Jupiter's suggestion lives in
   // `suggestedSlippageBps` above) so `quoteUsingSameParameters`'s `compareSlippage` treats it as "no

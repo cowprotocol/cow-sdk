@@ -44,8 +44,11 @@ describe('getSolanaQuote', () => {
       kind: OrderKind.SELL,
     })
 
+    // intent.sellAmount/buyAmount are amountsToSign from getQuoteAmountsAndCosts: sellAmount is
+    // unaffected (no network/partner/protocol fees here), buyAmount is reduced by the 50 bps
+    // slippage tolerance (9707507795 - 9707507795 * 50 / 10000 = 9658970257).
     expect(solanaQuote.intent.sellAmount).toBe(1_000_000_000n)
-    expect(solanaQuote.intent.buyAmount).toBe(9_707_507_795n)
+    expect(solanaQuote.intent.buyAmount).toBe(9_658_970_257n)
     expect(solanaQuote.intent.kind).toBe(OrderKind.SELL)
     expect(solanaQuote.intent.createdOnChain).toBe(true)
     expect(solanaQuote.intent.owner.toBase58()).toBe(owner.toBase58())
