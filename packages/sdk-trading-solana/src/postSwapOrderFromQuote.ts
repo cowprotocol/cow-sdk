@@ -60,11 +60,11 @@ export async function postSolanaSwapOrderFromQuote(
     intent,
   })
 
-  signingStepManager?.beforeOrderSign?.()
+  await signingStepManager?.beforeOrderSign?.()
 
   const { signature } = await signAndSend(instruction)
 
-  signingStepManager?.afterOrderSign?.()
+  await signingStepManager?.afterOrderSign?.()
 
   const orderToSign = quoteResults.orderToSign
 
