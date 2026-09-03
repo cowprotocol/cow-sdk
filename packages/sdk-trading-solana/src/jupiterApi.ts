@@ -21,7 +21,6 @@ export interface JupiterOrderRequest {
  * but orders are posted through the CoW Protocol settlement program, never through Jupiter's `/execute`.
  */
 export interface JupiterOrderResponse {
-  requestId: string
   inputMint: string
   outputMint: string
   inAmount: string
