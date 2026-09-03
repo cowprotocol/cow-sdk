@@ -148,6 +148,32 @@ const shedRegisterCalldata = poller.encodeRegisterFromShed(schedule)
 const shedRevokeCalldata = poller.encodeRevokeFromShed(schedule)
 ```
 
+Bundle either CowShed variant with other setup or cleanup calls through `@cowprotocol/sdk-cow-shed`. Custom CowShed deployments can supply their factory addresses, proxy creation code, and EIP-712 domain version directly; no SDK subclass or version cast is needed.
+
+```typescript
+import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
+
+const cowShedSdk = new CowShedSdk(adapter, {
+  ...cowShedDeployment,
+  domainVersion: '2.1.0',
+})
+const cowShed = cowShedSdk.getCowShedAccount(chainId, funder)
+
+const registration = await cowShedSdk.signCalls({
+  chainId,
+  signer,
+  calls: [
+    {
+      target: pollerAddress,
+      callData: poller.encodeRegisterFromShed({ ...schedule, owner: cowShed }),
+      value: 0n,
+      isDelegateCall: false,
+      allowFailure: false,
+    },
+  ],
+})
+```
+
 Use `ComposableCowPollerSdk` to sign or submit transactions through the configured adapter. Its `poller` property exposes the same low-level calldata and read methods shown above. Using that `schedule`, choose either the direct flow or the signature flow below; do not run both for the same registration.
 
 ```typescript

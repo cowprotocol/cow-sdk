@@ -4,6 +4,7 @@ import { ICoWShedCall } from './types'
 import { AdaptersTestSetup, createAdapters } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { ContractsSigningScheme as SigningScheme } from '@cowprotocol/sdk-contracts-ts'
+import { COW_SHED_PROXY_INIT_CODE } from './const'
 const MOCK_CALL_DATA = '0xabcdef'
 
 const DEFAULT_QUOTE_VALIDITY = 60 * 30 // 30 min
@@ -30,6 +31,37 @@ describe('CowShedSdk', () => {
   })
 
   describe('signCalls()', () => {
+    test('uses a custom deployment and signing-domain version without subclassing', async () => {
+      const adapter = adapters.viemAdapter
+      const factoryAddress = '0x1111111111111111111111111111111111111111'
+      const implementationAddress = '0x2222222222222222222222222222222222222222'
+      const signTypedData = jest.spyOn(adapter.signer, 'signTypedData')
+      jest.spyOn(adapter, 'getCode').mockResolvedValue('0x')
+      setGlobalAdapter(adapter)
+
+      const sdk = new CowShedSdk(adapter, {
+        factoryAddress,
+        implementationAddress,
+        proxyCreationCode: COW_SHED_PROXY_INIT_CODE['1.0.1'],
+        domainVersion: '2.1.0',
+      })
+      const call = await sdk.signCalls({
+        calls: CALLS_MOCK,
+        chainId: SupportedChainId.MAINNET,
+        defaultGasLimit: 1000000n,
+      })
+
+      expect(call.signedMulticall.to).toBe(factoryAddress)
+      expect(sdk.getCowShedAccount(SupportedChainId.MAINNET, await adapter.signer.getAddress())).toBe(
+        call.cowShedAccount,
+      )
+      expect(signTypedData).toHaveBeenCalledWith(
+        expect.objectContaining({ version: '2.1.0', verifyingContract: call.cowShedAccount }),
+        expect.any(Object),
+        expect.any(Object),
+      )
+    })
+
     test('Should use specified signer', async () => {
       const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
       const signedCalls: any[] = []
