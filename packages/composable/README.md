@@ -167,7 +167,7 @@ const authorization = await pollerSdk.signRegister({ schedule: currentSchedule, 
 
 // Alternatively, submit the authorization now with a relayer signer.
 const relayedTransaction = await pollerSdk.registerWithSignature({
-  schedule,
+  schedule: currentSchedule,
   deadline,
   signature: authorization.signature,
   signer: relayerSigner,
