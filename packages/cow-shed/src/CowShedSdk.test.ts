@@ -72,30 +72,6 @@ describe('CowShedSdk', () => {
       })
     })
 
-    // TODO: CoW Shed 1.0.1 is not deployed to Sepolia
-    test.skip('When signer has provider, then should estimate gas', async () => {
-      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
-      const signedCalls: any[] = []
-
-      for (const adapterName of adapterNames) {
-        setGlobalAdapter(adapters[adapterName])
-        const sdk = new CowShedSdk()
-
-        const call = await sdk.signCalls({
-          calls: CALLS_MOCK,
-          signer: adapters[adapterName].signer,
-          chainId: SupportedChainId.SEPOLIA,
-          deadline: getOrderDeadlineFromNow(DEFAULT_QUOTE_VALIDITY),
-        })
-
-        signedCalls.push(call)
-      }
-
-      signedCalls.forEach((call) => {
-        expect(call.gasLimit).toBeGreaterThan(1)
-      })
-    })
-
     test('Value of signedMulticall should be zero', async () => {
       const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
       const signedCalls: any[] = []

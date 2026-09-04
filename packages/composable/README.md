@@ -108,10 +108,13 @@ const scheduleId = poller.getScheduleId(schedule)
 // Submit this calldata to pollerAddress from schedule.funder.
 const registerCalldata = poller.encodeRegister(schedule)
 
+// Anyone may submit this calldata to pollerAddress when the next order part needs funding.
+const pollFundsCalldata = poller.encodePollFunds(scheduleId)
+
 // Or authorize registration for submission by another account.
 const deadline = Math.floor(Date.now() / 1000) + 15 * 60
 const typedData = poller.getRegisterTypedData({ chainId, schedule, deadline })
-const signature = await signer.signTypedData(typedData.domain, typedData.types, typedData.message)
+const signature = await adapter.signer.signTypedData(typedData.domain, typedData.types, typedData.message)
 const signedRegisterCalldata = poller.encodeRegisterWithSignature(schedule, deadline, signature)
 
 // Direct revocation must be submitted by schedule.funder.

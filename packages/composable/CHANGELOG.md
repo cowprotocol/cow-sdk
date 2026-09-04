@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.3.0...sdk-composable-v1.4.0) (2026-09-01)
+
+
+### ✨ Features
+
+* **composable:** export JIT Poller ABI ([#957](https://github.com/cowprotocol/cow-sdk/issues/957)) ([5f8a863](https://github.com/cowprotocol/cow-sdk/commit/5f8a8632c70a353afe0a9856c1eace1909a9c3da))
+* use internal indexer ([#974](https://github.com/cowprotocol/cow-sdk/issues/974)) ([455e44b](https://github.com/cowprotocol/cow-sdk/commit/455e44b5532bc197e66f8b81828bf7fc6608b0d2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-contracts-ts bumped to 3.4.0
+    * @cowprotocol/sdk-order-signing bumped to 1.1.7
+
 ## [1.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.2.3...sdk-composable-v1.3.0) (2026-08-03)
 
 

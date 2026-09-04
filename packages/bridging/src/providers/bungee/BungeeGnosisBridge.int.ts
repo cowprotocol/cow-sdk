@@ -1,6 +1,6 @@
 /* This integration test performs a full transaction, therefore is not run as default.
 
-   To run it: `PRIVATE_KEY=XXX yarn test:bungeeAcrossBridge`
+   To run it: `PRIVATE_KEY=XXX yarn test:bungee`
 */
 
 import { QuoteBridgeRequest } from '../../types'
@@ -10,14 +10,14 @@ import { BungeeApi } from './BungeeApi'
 import { createBungeeDepositCall } from './createBungeeDepositCall'
 import { EvmCall, SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
-import { AccountAddress, getGlobalAdapter, setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { AccountAddress, getGlobalAdapter } from '@cowprotocol/sdk-common'
 import { getWallet } from '../../test'
-import { createAdapters } from '../../../tests/setup'
 
 // unmock cross-fetch to use the real API
 jest.unmock('cross-fetch')
 
-describe.skip('BungeeAcrossBridge full transaction', () => {
+// Bungee v1 returns HTTP 410. Unskip after BungeeApi migrates to Socket V3.
+describe.skip('BungeeGnosisBridge full transaction', () => {
   let api: BungeeApi
   let quote: BungeeQuoteAPIRequest
   let txData: BungeeQuoteWithBuildTx
@@ -35,23 +35,19 @@ describe.skip('BungeeAcrossBridge full transaction', () => {
       return
     }
 
-    const adapters = createAdapters()
-
-    setGlobalAdapter(adapters.ethersV5Adapter)
     getGlobalAdapter().setSigner(wallet)
 
     quote = {
-      userAddress: `${wallet.address}`,
-      originChainId: SupportedChainId.ARBITRUM_ONE.toString(),
-      destinationChainId: SupportedChainId.BASE.toString(),
-      inputToken: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', // Arbitrum USDC
-      inputAmount: '1000000', // 1 USDC
-      receiverAddress: `${wallet.address}`,
-      outputToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC on base
+      userAddress: `0x${wallet.address}`,
+      originChainId: SupportedChainId.MAINNET.toString(),
+      destinationChainId: SupportedChainId.GNOSIS_CHAIN.toString(),
+      inputToken: '0x6B175474E89094C44Da98b954EedeAC495271d0F', // dai
+      inputAmount: '10000000000000000000', // 10 dai
+      receiverAddress: `0x${wallet.address}`,
+      outputToken: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', // xDAI
       enableManual: true,
       disableSwapping: true,
       disableAuto: true,
-      includeBridges: ['across'],
     }
 
     txData = await api.getBungeeQuoteWithBuildTx(quote)
@@ -59,10 +55,10 @@ describe.skip('BungeeAcrossBridge full transaction', () => {
     expect(txData).toBeDefined()
 
     expect(txData.bungeeQuote).toBeDefined()
-    expect(txData.bungeeQuote.originChainId).toBe(SupportedChainId.ARBITRUM_ONE)
-    expect(txData.bungeeQuote.destinationChainId).toBe(SupportedChainId.BASE)
+    expect(txData.bungeeQuote.originChainId).toBe(SupportedChainId.MAINNET)
+    expect(txData.bungeeQuote.destinationChainId).toBe(SupportedChainId.GNOSIS_CHAIN)
     expect(txData.bungeeQuote.route).toBeDefined()
-    expect(txData.bungeeQuote.routeBridge).toBe('across')
+    expect(txData.bungeeQuote.routeBridge).toBe('gnosis-native-bridge')
 
     expect(txData.buildTx).toBeDefined()
     expect(txData.buildTx.txData).toBeDefined()
@@ -86,14 +82,14 @@ describe.skip('BungeeAcrossBridge full transaction', () => {
 
     const request: QuoteBridgeRequest = {
       kind: OrderKind.SELL,
-      amount: BigInt(1000000),
+      amount: BigInt(10000000000000000000),
       owner: wallet.address as AccountAddress,
-      sellTokenChainId: SupportedChainId.ARBITRUM_ONE,
-      sellTokenAddress: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
-      sellTokenDecimals: 6,
-      buyTokenChainId: SupportedChainId.BASE,
-      buyTokenAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      buyTokenDecimals: 6,
+      sellTokenChainId: SupportedChainId.MAINNET,
+      sellTokenAddress: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+      sellTokenDecimals: 18,
+      buyTokenChainId: SupportedChainId.GNOSIS_CHAIN,
+      buyTokenAddress: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+      buyTokenDecimals: 18,
       appCode: 'bungee',
       account: wallet.address as AccountAddress,
       signer: wallet,
@@ -108,7 +104,7 @@ describe.skip('BungeeAcrossBridge full transaction', () => {
 
     expect(call).toBeDefined()
     expect(call.data).toBeDefined()
-    expect(call.to).toBe('0xD06a673fe1fa27B1b9E5BA0be980AB15Dbce85cc')
+    expect(call.to).toBe('0x936fa1cfd96849329B18b915773E176718A64b95')
     expect(call.value).toBe(0n)
   })
 })
