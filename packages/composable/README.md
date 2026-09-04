@@ -108,6 +108,9 @@ const scheduleId = poller.getScheduleId(schedule)
 // Direct registration must be submitted by schedule.funder.
 const registerCalldata = poller.encodeRegister(schedule)
 
+// Anyone may submit this calldata to pollerAddress when the next order part needs funding.
+const pollFundsCalldata = poller.encodePollFunds(scheduleId)
+
 // Signed registration may be submitted by any account.
 const signedRegisterCalldata = poller.encodeRegisterWithSignature(schedule, deadline, signature)
 
