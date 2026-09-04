@@ -6,8 +6,8 @@
 
 > Coverage of the [`@cowprotocol/sdk-trading`](./packages/trading) package. See the [Package Structure](#package-structure) section for links to each package's README, which shows its own coverage.
 
-| Statements                  | Branches                | Functions                 | Lines             |
-| --------------------------- | ----------------------- | ------------------------- | ----------------- |
+| Statements                                                                            | Branches                                                                          | Functions                                                                        | Lines                                                                       |
+| ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | ![Statements](https://img.shields.io/badge/statements-84.71%25-yellow.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-83.33%25-yellow.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-64.77%25-red.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-87.63%25-yellow.svg?style=flat) |
 
 ## Use CoW Protocol
@@ -29,7 +29,6 @@ CoW Swap is currently available on the following chains:
 - **Ink** (57073)
 - **Linea** (59144)
 - **Sepolia** (11155111) (Testnet)
-
 
 ## Technical Overview
 
@@ -65,6 +64,10 @@ The project uses modern tooling for efficient development and publishing:
 - **[`@cowprotocol/sdk-bridging`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/bridging/README.md)** - Cross-chain token transfers and bridging functionality
 - **[`@cowprotocol/sdk-composable`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/composable/README.md)** - Programmatic orders (TWAP, conditional orders, etc.)
 - **[`@cowprotocol/sdk-cow-shed`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/cow-shed/README.md)** - Account abstraction with smart contract capabilities
+
+#### 🧪 Experimental
+
+- **[`@cowprotocol/sdk-trading-solana`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/sdk-trading-solana/README.md)** - Solana trading: Jupiter-sourced quotes and on-chain order posting
 
 #### 🔌 Provider Adapters
 
