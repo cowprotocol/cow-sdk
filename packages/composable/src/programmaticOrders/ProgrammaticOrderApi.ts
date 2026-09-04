@@ -17,7 +17,7 @@ import {
 } from './types'
 import { parseInput } from './validation'
 
-const DEFAULT_API_URL = 'https://cow-programmatic-order.bleu.blue'
+const DEFAULT_API_URL = 'https://programmatic-orders.cow.fi/'
 const DEFAULT_PAGE_LIMIT = 100
 const DEFAULT_PAGE_OFFSET = 0
 const DEFAULT_QUERY_DIRECTION: QueryDirection = 'desc'

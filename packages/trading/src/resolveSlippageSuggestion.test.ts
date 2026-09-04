@@ -58,8 +58,8 @@ describe('resolveSlippageSuggestion', () => {
     suggestSlippageBps.mockReturnValue(100)
   })
 
-  describe('When priceQuality defaults to OPTIMAL', () => {
-    it('Should call getSlippageSuggestion when priceQuality is undefined (defaults to OPTIMAL)', async () => {
+  describe('When priceQuality is not set', () => {
+    it('Should call getSlippageSuggestion when priceQuality is undefined', async () => {
       const mockGetSlippageSuggestion = jest.fn().mockResolvedValue({ slippageBps: 200 })
       const advancedSettings: SwapAdvancedSettings = {
         getSlippageSuggestion: mockGetSlippageSuggestion,

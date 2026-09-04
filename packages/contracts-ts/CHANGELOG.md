@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.3.3...sdk-contracts-ts-v3.4.0) (2026-09-01)
+
+
+### ✨ Features
+
+* use internal indexer ([#974](https://github.com/cowprotocol/cow-sdk/issues/974)) ([455e44b](https://github.com/cowprotocol/cow-sdk/commit/455e44b5532bc197e66f8b81828bf7fc6608b0d2))
+
+
+### 🔧 Miscellaneous
+
+* fix contracts-ts tests ([#964](https://github.com/cowprotocol/cow-sdk/issues/964)) ([8a756e8](https://github.com/cowprotocol/cow-sdk/commit/8a756e813dd51dcaa815278f71f8880ddc5044f2))
+
 ## [3.3.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.3.2...sdk-contracts-ts-v3.3.3) (2026-07-29)
 
 

@@ -39,3 +39,14 @@ Set `PRIVATE_KEY` in `src/signerless.ts`, then:
 ```
 pnpm --filter example-nodejs-ethers6 dev:signerless
 ```
+
+## Pre-sign example
+
+`src/presign.ts` creates a `PRESIGN` order and then builds its `setPreSignature` transaction with
+`getPreSignCallData` on a signer-less adapter — no signer, no RPC call, no gas estimate — before
+sending it from the owner's wallet. That last step stands in for a Safe, multisig, or custody stack.
+Set `PRIVATE_KEY` in `src/presign.ts`, then:
+
+```
+pnpm --filter example-nodejs-ethers6 dev:presign
+```
