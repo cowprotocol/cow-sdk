@@ -3,22 +3,49 @@ import { BigIntish, getGlobalAdapter, Provider } from '@cowprotocol/sdk-common'
 import { ComposableCowPollerAbi } from './abis/ComposableCowPollerAbi'
 import type {
   ComposableCowPollerDirectRevoke,
+  ComposableCowPollerRegisterTypedDataParams,
   ComposableCowPollerSchedule,
   ComposableCowPollerScheduleAuthorization,
   ComposableCowPollerScheduleKey,
+  ComposableCowPollerTypedData,
 } from './types'
 
 const SCHEDULE_ID_ABI = ['address', 'address', 'address', 'bytes32']
+const REGISTER_TYPES = {
+  ScheduleRegistration: [
+    { name: 'handler', type: 'address' },
+    { name: 'authEpoch', type: 'uint96' },
+    { name: 'funder', type: 'address' },
+    { name: 'owner', type: 'address' },
+    { name: 'salt', type: 'bytes32' },
+    { name: 'staticInput', type: 'bytes' },
+    { name: 'deadline', type: 'uint256' },
+  ],
+}
+
+type RegisterMessage = {
+  readonly handler: string
+  readonly authEpoch: BigIntish
+  readonly funder: string
+  readonly owner: string
+  readonly salt: string
+  readonly staticInput: string
+  readonly deadline: BigIntish
+}
 
 /** Utilities for interacting with a ComposableCowPoller deployment. */
 export class ComposableCowPoller {
   constructor(public readonly pollerAddress?: string) {}
 
-  private read(functionName: string, args: unknown[] = [], provider?: Provider): Promise<unknown> {
+  private getPollerAddress(): string {
     if (!this.pollerAddress) throw new Error('pollerAddress is required')
 
+    return this.pollerAddress
+  }
+
+  private read(functionName: string, args: unknown[] = [], provider?: Provider): Promise<unknown> {
     return getGlobalAdapter().readContract(
-      { address: this.pollerAddress, abi: ComposableCowPollerAbi, functionName, args },
+      { address: this.getPollerAddress(), abi: ComposableCowPollerAbi, functionName, args },
       provider,
     )
   }
@@ -49,6 +76,40 @@ export class ComposableCowPoller {
       owner,
       salt,
       staticInput,
+    }
+  }
+
+  public getEip712Domain(chainId: number) {
+    return {
+      name: 'ComposableCowPoller',
+      version: '1',
+      chainId,
+      verifyingContract: this.getPollerAddress(),
+    }
+  }
+
+  /** Builds the EIP-712 payload authorized by registerWithSignature. */
+  public getRegisterTypedData({
+    chainId,
+    schedule,
+    deadline,
+  }: ComposableCowPollerRegisterTypedDataParams): ComposableCowPollerTypedData<
+    'ScheduleRegistration',
+    RegisterMessage
+  > {
+    return {
+      domain: this.getEip712Domain(chainId),
+      types: REGISTER_TYPES,
+      primaryType: 'ScheduleRegistration',
+      message: {
+        handler: schedule.handler,
+        authEpoch: schedule.authEpoch,
+        funder: schedule.funder,
+        owner: schedule.owner,
+        salt: schedule.salt,
+        staticInput: schedule.staticInput,
+        deadline,
+      },
     }
   }
 

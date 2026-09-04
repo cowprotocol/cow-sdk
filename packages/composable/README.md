@@ -86,7 +86,7 @@ class CustomOrder extends ConditionalOrder<DataType, StaticType> {
 
 ### JIT Poller
 
-The package exports utilities needed to integrate with a deployed `ComposableCowPoller`. The Poller moves sell tokens just in time from a funding account (often an EOA) to the ComposableCoW order owner/trader. This avoids requiring the trader account to be prefunded for the full schedule, reducing setup friction and idle capital.
+The SDK encodes calldata for registering and revoking `ComposableCowPoller` schedules. Signing, gas estimation, transaction submission, and confirmation remain the consumer's responsibility.
 
 ```typescript
 import { ComposableCowPoller, type ComposableCowPollerSchedule } from '@cowprotocol/sdk-composable'
@@ -105,13 +105,16 @@ const schedule: ComposableCowPollerSchedule = {
 }
 const scheduleId = poller.getScheduleId(schedule)
 
-// Direct registration must be submitted by schedule.funder.
+// Submit this calldata to pollerAddress from schedule.funder.
 const registerCalldata = poller.encodeRegister(schedule)
 
 // Anyone may submit this calldata to pollerAddress when the next order part needs funding.
 const pollFundsCalldata = poller.encodePollFunds(scheduleId)
 
-// Signed registration may be submitted by any account.
+// Or authorize registration for submission by another account.
+const deadline = Math.floor(Date.now() / 1000) + 15 * 60
+const typedData = poller.getRegisterTypedData({ chainId, schedule, deadline })
+const signature = await adapter.signer.signTypedData(typedData.domain, typedData.types, typedData.message)
 const signedRegisterCalldata = poller.encodeRegisterWithSignature(schedule, deadline, signature)
 
 // Direct revocation must be submitted by schedule.funder.

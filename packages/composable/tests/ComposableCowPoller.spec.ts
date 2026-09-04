@@ -17,13 +17,16 @@ const SCHEDULE: ComposableCowPollerSchedule = {
 
 const SCHEDULE_ID = '0x7b1516d117fa5dd96fddfb9489b52af1c3cca64e1bc88c32324bdd6a92c6057c'
 const POLL_FUNDS_CALLDATA = '0xf83740307b1516d117fa5dd96fddfb9489b52af1c3cca64e1bc88c32324bdd6a92c6057c'
+const POLLER_ADDRESS = '0x4444444444444444444444444444444444444444'
+const CHAIN_ID = 1
 const REGISTER_SELECTOR = '0x199d771f'
 const REGISTER_FROM_SHED_SELECTOR = '0x81b1b677'
 const REGISTER_WITH_SIGNATURE_SELECTOR = '0x9e72edd4'
 const REVOKE_SELECTOR = '0xd96054c4'
 const REVOKE_FROM_SHED_SELECTOR = '0x526c2744'
-const DEADLINE = 1_800_000_000n
+const DEADLINE = 2_000_000_000n
 const SIGNATURE = '0x123456'
+const REGISTER_DIGEST = '0x7abf30523ae51092914ae8230bc2af45078d9b4f47062f3c9cb6e39cd13106bf'
 
 describe('ComposableCowPoller ABI', () => {
   test('keeps the ABI internal', () => {
@@ -84,7 +87,7 @@ describe('ComposableCowPoller ABI', () => {
 
 describe('ComposableCowPoller', () => {
   const adapters = createAdapters()
-  const pollerAddress = '0x4444444444444444444444444444444444444444'
+  const pollerAddress = POLLER_ADDRESS
   const composableCowAddress = '0x5555555555555555555555555555555555555555'
   const cowShedFactoryAddress = '0x6666666666666666666666666666666666666666'
   const poller = new ComposableCowPoller(pollerAddress)
@@ -210,6 +213,38 @@ describe('ComposableCowPoller', () => {
     expect(shedOwner.toLowerCase()).toEqual(SCHEDULE.owner)
     expect(shedSalt).toEqual(SCHEDULE.salt)
     expect(authEpoch).toEqual(SCHEDULE.authEpoch)
+  })
+
+  test('builds the EIP-712 domain from the configured Poller address', () => {
+    expect(poller.getEip712Domain(CHAIN_ID)).toEqual({
+      name: 'ComposableCowPoller',
+      version: '1',
+      chainId: CHAIN_ID,
+      verifyingContract: POLLER_ADDRESS,
+    })
+  })
+
+  test('requires a Poller address to build EIP-712 data', () => {
+    const instance = new ComposableCowPoller()
+
+    expect(() => instance.getEip712Domain(CHAIN_ID)).toThrow('pollerAddress is required')
+    expect(() => instance.getRegisterTypedData({ chainId: CHAIN_ID, schedule: SCHEDULE, deadline: DEADLINE })).toThrow(
+      'pollerAddress is required',
+    )
+  })
+
+  test('builds the register digest across adapters', () => {
+    for (const adapter of Object.values(adapters)) {
+      setGlobalAdapter(adapter)
+      const typedData = poller.getRegisterTypedData({
+        chainId: CHAIN_ID,
+        schedule: SCHEDULE,
+        deadline: DEADLINE,
+      })
+
+      expect(typedData.primaryType).toEqual('ScheduleRegistration')
+      expect(adapter.utils.hashTypedData(typedData.domain, typedData.types, typedData.message)).toEqual(REGISTER_DIGEST)
+    }
   })
 
   test('encodes signed registration calldata across adapters', () => {
