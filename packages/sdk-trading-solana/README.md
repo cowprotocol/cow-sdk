@@ -8,7 +8,7 @@
 
 | Statements                                                                              | Branches                                                                            | Functions                                                                             | Lines                                                                         |
 | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| ![Statements](https://img.shields.io/badge/statements-pending-lightgrey.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-pending-lightgrey.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-pending-lightgrey.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-pending-lightgrey.svg?style=flat) |
+| ![Statements](https://img.shields.io/badge/statements-87.64%25-yellow.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-95.91%25-brightgreen.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-55.17%25-red.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-95%25-brightgreen.svg?style=flat) |
 
 CoW Protocol's Solana settlement support: Jupiter-sourced quotes and on-chain `CreateOrder`
 posting against the CoW Protocol Solana settlement program.
