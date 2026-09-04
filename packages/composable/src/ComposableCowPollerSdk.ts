@@ -71,7 +71,8 @@ export class ComposableCowPollerSdk {
   }: Omit<ComposableCowPollerRegisterTypedDataParams, 'chainId'> & {
     readonly signer?: SignerLike
   }): Promise<ComposableCowPollerSignedCall<ReturnType<ComposableCowPoller['getRegisterTypedData']>>> {
-    const typedData = this.poller.getRegisterTypedData({ chainId: this.chainId, schedule, deadline })
+    const scheduleSnapshot = { ...schedule }
+    const typedData = this.poller.getRegisterTypedData({ chainId: this.chainId, schedule: scheduleSnapshot, deadline })
     const signature = await resolveSigner(signer ?? this.signer).signTypedData(
       typedData.domain,
       typedData.types,
@@ -81,7 +82,7 @@ export class ComposableCowPollerSdk {
     return {
       typedData,
       signature,
-      calldata: this.poller.encodeRegisterWithSignature(schedule, deadline, signature),
+      calldata: this.poller.encodeRegisterWithSignature(scheduleSnapshot, deadline, signature),
     }
   }
 

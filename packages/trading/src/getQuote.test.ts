@@ -2,7 +2,7 @@ import { ETH_FLOW_DEFAULT_SLIPPAGE_BPS } from './consts'
 import { getQuoteWithSigner, getQuoteWithoutSigner } from './getQuote'
 import { QuoterParameters, SwapParameters } from './types'
 import { ETH_ADDRESS, WRAPPED_NATIVE_CURRENCIES, SupportedChainId } from '@cowprotocol/sdk-config'
-import { OrderBookApi, OrderKind, OrderQuoteResponse } from '@cowprotocol/sdk-order-book'
+import { OrderBookApi, OrderKind, OrderQuoteResponse, PriceQuality } from '@cowprotocol/sdk-order-book'
 import { AdaptersTestSetup, createAdapters } from '../tests/setup'
 import { AccountAddress, setGlobalAdapter } from '@cowprotocol/sdk-common'
 
@@ -182,12 +182,28 @@ describe('getQuote', () => {
       }
     })
 
-    it('priceQuality must always be OPTIMAL', async () => {
+    it('priceQuality defaults to VERIFIED', async () => {
       const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
       for (const adapterName of adapterNames) {
         setGlobalAdapter(adapters[adapterName])
         await getQuoteWithSigner({ ...defaultOrderParams, signer: adapters[adapterName].signer }, {}, orderBookApiMock)
+
+        const call = getQuoteMock.mock.calls[0][0]
+        expect(call.priceQuality).toBe('verified')
+      }
+    })
+
+    it('priceQuality can be overridden, for example with OPTIMAL', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        await getQuoteWithSigner(
+          { ...defaultOrderParams, signer: adapters[adapterName].signer },
+          { quoteRequest: { priceQuality: PriceQuality.OPTIMAL } },
+          orderBookApiMock,
+        )
 
         const call = getQuoteMock.mock.calls[0][0]
         expect(call.priceQuality).toBe('optimal')

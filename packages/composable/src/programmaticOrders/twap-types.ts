@@ -25,8 +25,8 @@ export interface GetTwapPartOrdersParams {
  * Unlike `OrderStatus` from `@cowprotocol/sdk-order-book`, this API reports
  * `unfilled` when an order leaves the orderbook without settling, and does not
  * report `presignaturePending`.
- * @see https://github.com/bleu/cow-programmatic-orders-api/blob/main/schema/tables.ts#L36-L42
- * @see https://github.com/bleu/cow-programmatic-orders-api/blob/main/src/api/gql-docs/discrete-order.ts
+ * @see https://github.com/cowprotocol/cow-programmatic-orders-api/blob/main/schema/tables.ts#L36-L42
+ * @see https://github.com/cowprotocol/cow-programmatic-orders-api/blob/main/src/api/gql-docs/discrete-order.ts
  */
 export type TwapPartOrderStatus =
   | OrderStatus.OPEN
@@ -38,7 +38,7 @@ export type TwapPartOrderStatus =
 /**
  * Schedule for a TWAP order. Unlike {@link TwapStruct}, `effectiveStartTime`
  * uses the creation block timestamp when the on-chain `t0` value is zero.
- * @see https://github.com/bleu/cow-programmatic-orders-api/blob/main/docs/supported-order-types.md#twap-time-weighted-average-price
+ * @see https://github.com/cowprotocol/cow-programmatic-orders-api/blob/main/docs/supported-order-types.md#twap-time-weighted-average-price
  * @see https://github.com/cowprotocol/composable-cow/blob/main/src/types/twap/libraries/TWAPOrder.sol#L31-L42
  */
 export interface TwapSchedule {
@@ -59,7 +59,7 @@ export interface TwapSchedule {
 
 /**
  * Part order generated for one scheduled part.
- * @see https://github.com/bleu/cow-programmatic-orders-api/blob/main/src/api/gql-docs/discrete-order.ts
+ * @see https://github.com/cowprotocol/cow-programmatic-orders-api/blob/main/src/api/gql-docs/discrete-order.ts
  */
 export interface TwapPartOrder {
   orderUid: string
@@ -86,8 +86,8 @@ export interface TwapExecutedAmounts {
 
 /**
  * TWAP order with its schedule and execution totals.
- * @see https://github.com/bleu/cow-programmatic-orders-api/blob/main/src/api/gql-docs/conditional-order-generator.ts
- * @see https://github.com/bleu/cow-programmatic-orders-api/blob/main/src/api/gql-docs/owner-mapping.ts
+ * @see https://github.com/cowprotocol/cow-programmatic-orders-api/blob/main/src/api/gql-docs/conditional-order-generator.ts
+ * @see https://github.com/cowprotocol/cow-programmatic-orders-api/blob/main/src/api/gql-docs/owner-mapping.ts
  */
 export interface TwapOrder {
   /** Creation event ID. Unique within a chain. */

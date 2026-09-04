@@ -49,7 +49,9 @@ export function getOrderToSubmit(
   // External EIP1271 / smart-account support is planned as a later milestone (P3).
   if (signingScheme === SigningScheme.PRESIGN) {
     throw new Error(
-      'PRESIGN orders are validated by an on-chain transaction, not a signature. Use getPreSignTransaction instead.',
+      'PRESIGN orders are validated by an on-chain transaction, not a signature. Build that transaction ' +
+        'with getPreSignCallData (no signer needed), or getPreSignTransaction when you have a signer and ' +
+        'want a gas estimate included.',
     )
   }
   if (signingScheme === SigningScheme.EIP1271) {

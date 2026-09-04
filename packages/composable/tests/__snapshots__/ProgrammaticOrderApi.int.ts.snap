@@ -1,0 +1,127 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ProgrammaticOrderApi lists a completed EOA TWAP window from the live programmatic orders API 1`] = `
+[
+  {
+    "chainId": 100,
+    "createdAt": 1782860530,
+    "eventId": "178286053000000000000001000000000046969430000000000000000850000000000000041",
+    "executedAmounts": {
+      "executedBuyAmount": 862488114171327656n,
+      "executedFeeAmount": 20028480706687n,
+      "executedSellAmount": 100000000000000000n,
+    },
+    "hash": "0xc6e1f5bc9f8cd772e89ab65222c6e5511fc121be2bb3cae3889ab666fa506c80",
+    "owner": "0x62587918b2f00176646679509217a5a4d1ebbfd5",
+    "partOrdersCount": 2,
+    "resolvedOwner": "0x016f34d4f2578c3e9dffc3f2b811ba30c0c9e7f3",
+    "schedule": {
+      "appData": "0xf248f0d7eee2efe935d59e82d615db8d2a47f7929698e4712416cb608e8877d9",
+      "buyToken": "0x177127622c4a00f3d409b75571e12cb3c8973d3c",
+      "durationOfPart": 0,
+      "effectiveStartTime": 1782860530,
+      "minPartLimit": 776195194471677430n,
+      "numberOfParts": 2,
+      "partSellAmount": 100000000000000000n,
+      "receiver": "0x016f34d4f2578c3e9dffc3f2b811ba30c0c9e7f3",
+      "sellToken": "0xaf204776c7245bf4147c2612bf6e5972ee483701",
+      "timeBetweenParts": 120,
+    },
+    "status": "Completed",
+    "updatedAtBlock": 46969430n,
+  },
+  {
+    "chainId": 100,
+    "createdAt": 1782860530,
+    "eventId": "178286053000000000000001000000000046969430000000000000000850000000000000038",
+    "executedAmounts": {
+      "executedBuyAmount": 862367902269494618n,
+      "executedFeeAmount": 20054871788565n,
+      "executedSellAmount": 100000000000000000n,
+    },
+    "hash": "0x5ec4e09e073067d53acbcb81a94f926608ce075f0f04842e91a3b22ca2ea333d",
+    "owner": "0x62587918b2f00176646679509217a5a4d1ebbfd5",
+    "partOrdersCount": 2,
+    "resolvedOwner": "0x016f34d4f2578c3e9dffc3f2b811ba30c0c9e7f3",
+    "schedule": {
+      "appData": "0x302493bc6206f0065533621e960c9e5411c58044ea0b5a80b4f61edac00ba2f3",
+      "buyToken": "0x177127622c4a00f3d409b75571e12cb3c8973d3c",
+      "durationOfPart": 0,
+      "effectiveStartTime": 1782860530,
+      "minPartLimit": 776021953726338606n,
+      "numberOfParts": 2,
+      "partSellAmount": 100000000000000000n,
+      "receiver": "0x016f34d4f2578c3e9dffc3f2b811ba30c0c9e7f3",
+      "sellToken": "0xaf204776c7245bf4147c2612bf6e5972ee483701",
+      "timeBetweenParts": 120,
+    },
+    "status": "Completed",
+    "updatedAtBlock": 46969430n,
+  },
+]
+`;
+
+exports[`ProgrammaticOrderApi lists one page of EOA TWAP part orders from the live programmatic orders API 1`] = `
+{
+  "items": [
+    {
+      "buyAmount": 776021953726338606n,
+      "createdAt": 1782860530,
+      "executedBuyAmount": 862367902269494618n,
+      "executedFeeAmount": 20054871788565n,
+      "executedSellAmount": 100000000000000000n,
+      "feeAmount": 0n,
+      "orderUid": "0x24106d3b23805bd9b992bfdba43bd692de4582180acf44ca4edb0d698312562d62587918b2f00176646679509217a5a4d1ebbfd56a444b69",
+      "sellAmount": 100000000000000000n,
+      "status": "fulfilled",
+      "validTo": 1782860649,
+    },
+    {
+      "buyAmount": 776021953726338606n,
+      "createdAt": 1782860530,
+      "executedBuyAmount": 0n,
+      "executedFeeAmount": 0n,
+      "executedSellAmount": 0n,
+      "feeAmount": 0n,
+      "orderUid": "0xd8d939a5b9bfe1ede5357ec33c48748a1e59567530a6a44a634d615c2a35abfc62587918b2f00176646679509217a5a4d1ebbfd56a444be1",
+      "sellAmount": 100000000000000000n,
+      "status": "expired",
+      "validTo": 1782860769,
+    },
+  ],
+  "totalCount": 2,
+}
+`;
+
+exports[`ProgrammaticOrderApi lists the latest Safe TWAP parents from the live programmatic orders API 1`] = `
+[
+  {
+    "chainId": 100,
+    "createdAt": 1784289275,
+    "eventId": "178428927500000000000001000000000047248688000000000000002250000000000000129",
+    "executedAmounts": {
+      "executedBuyAmount": 15897778052264678730n,
+      "executedFeeAmount": 635102768951199n,
+      "executedSellAmount": 2300000000000000000n,
+    },
+    "hash": "0x9aa36d973466810ad97a07041496c6f7776e7a2ab3cc63c47584006673f14050",
+    "owner": "0xaa248d5328c7d781a96d93d7d013bcf393157bb4",
+    "partOrdersCount": 2,
+    "resolvedOwner": "0xaa248d5328c7d781a96d93d7d013bcf393157bb4",
+    "schedule": {
+      "appData": "0x832ef833029247a34f08ea828c3d19301241443de679ecfe2d53ead11c983a59",
+      "buyToken": "0x177127622c4a00f3d409b75571e12cb3c8973d3c",
+      "durationOfPart": 0,
+      "effectiveStartTime": 1784289275,
+      "minPartLimit": 7143588130746906513n,
+      "numberOfParts": 2,
+      "partSellAmount": 1150000000000000000n,
+      "receiver": "0xaa248d5328c7d781a96d93d7d013bcf393157bb4",
+      "sellToken": "0xe91d153e0b41518a2ce8dd3d7944fa863463a97d",
+      "timeBetweenParts": 1800,
+    },
+    "status": "Completed",
+    "updatedAtBlock": 47248688n,
+  },
+]
+`;
