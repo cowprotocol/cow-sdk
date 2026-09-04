@@ -92,6 +92,72 @@ describe('calculateUniqueOrderId', () => {
         expect(chainId).toBe(SupportedChainId.MAINNET)
         expect(order.buyAmount).toBe('99')
       })
+
+      it('Then the returned order (not just the id) reflects the adjusted amounts', async () => {
+        // Regression test: calculateUniqueOrderId used to return a bare orderId string,
+        // silently discarding the adjusted order that actually produced it. A caller
+        // building a transaction from its original input (rather than this returned
+        // order) would recreate the exact order that was just detected as colliding.
+        let alreadyCalled = false
+
+        const checkEthFlowOrderExists = jest.fn().mockImplementation(() => {
+          return Promise.resolve(
+            (() => {
+              if (alreadyCalled) return false
+              alreadyCalled = true
+
+              return true
+            })(),
+          )
+        })
+
+        const result = await calculateUniqueOrderId(SupportedChainId.MAINNET, orderMock, checkEthFlowOrderExists)
+
+        expect(result.orderId).toBe('0xab444')
+        expect(result.order.buyAmount).toBe('99')
+        // Every other field must be preserved unchanged from the original order.
+        expect(result.order.sellAmount).toBe(orderMock.sellAmount)
+        expect(result.order.sellToken).toBe(orderMock.sellToken)
+        expect(result.order.buyToken).toBe(orderMock.buyToken)
+        expect(result.order.validTo).toBe(orderMock.validTo)
+      })
+    })
+
+    describe('When checkEthFlowOrderExists returns false (no collision)', () => {
+      it('Then the returned order is exactly the original order, unmodified', async () => {
+        const checkEthFlowOrderExists = jest.fn().mockResolvedValue(false)
+
+        const result = await calculateUniqueOrderId(SupportedChainId.MAINNET, orderMock, checkEthFlowOrderExists)
+
+        expect(result.orderId).toBe('0xab444')
+        expect(result.order).toEqual(orderMock)
+      })
+    })
+
+    describe('When buyAmount cannot be nudged further down without going to zero or below', () => {
+      it('Then it throws instead of silently producing an invalid order', async () => {
+        const checkEthFlowOrderExists = jest.fn().mockResolvedValue(true)
+
+        await expect(
+          calculateUniqueOrderId(
+            SupportedChainId.MAINNET,
+            { ...orderMock, buyAmount: '1' },
+            checkEthFlowOrderExists,
+          ),
+        ).rejects.toThrow(/too small to adjust further/)
+      })
+
+      it('Then a buyAmount of 0 also throws (never even reachable via nudging, but guard it anyway)', async () => {
+        const checkEthFlowOrderExists = jest.fn().mockResolvedValue(true)
+
+        await expect(
+          calculateUniqueOrderId(
+            SupportedChainId.MAINNET,
+            { ...orderMock, buyAmount: '0' },
+            checkEthFlowOrderExists,
+          ),
+        ).rejects.toThrow(/too small to adjust further/)
+      })
     })
   })
 
