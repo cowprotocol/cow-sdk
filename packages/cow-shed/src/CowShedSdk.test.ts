@@ -4,7 +4,7 @@ import { ICoWShedCall } from './types'
 import { AdaptersTestSetup, createAdapters } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { ContractsSigningScheme as SigningScheme } from '@cowprotocol/sdk-contracts-ts'
-import { COW_SHED_PROXY_INIT_CODE } from './const'
+import { COW_SHED_FACTORY, COW_SHED_PROXY_INIT_CODE } from './const'
 const MOCK_CALL_DATA = '0xabcdef'
 
 const DEFAULT_QUOTE_VALIDITY = 60 * 30 // 30 min
@@ -62,6 +62,27 @@ describe('CowShedSdk', () => {
       )
     })
 
+    test('forwards an explicit SDK version to the CowShed hooks', async () => {
+      const adapter = adapters.viemAdapter
+      const signTypedData = jest.spyOn(adapter.signer, 'signTypedData')
+      jest.spyOn(adapter, 'getCode').mockResolvedValue('0x')
+      setGlobalAdapter(adapter)
+
+      const sdk = new CowShedSdk(adapter, undefined, '1.0.0')
+      const call = await sdk.signCalls({
+        calls: CALLS_MOCK,
+        chainId: SupportedChainId.MAINNET,
+        defaultGasLimit: 1000000n,
+      })
+
+      expect(call.signedMulticall.to).toBe(COW_SHED_FACTORY['1.0.0'])
+      expect(signTypedData).toHaveBeenCalledWith(
+        expect.objectContaining({ version: '1.0.0', verifyingContract: call.cowShedAccount }),
+        expect.any(Object),
+        expect.any(Object),
+      )
+    })
+
     test('Should use specified signer', async () => {
       const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
       const signedCalls: any[] = []
@@ -101,30 +122,6 @@ describe('CowShedSdk', () => {
 
         expect(call.gasLimit).toBeDefined()
         expect(typeof call.gasLimit).toBe('bigint')
-      })
-    })
-
-    // TODO: CoW Shed 1.0.1 is not deployed to Sepolia
-    test.skip('When signer has provider, then should estimate gas', async () => {
-      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
-      const signedCalls: any[] = []
-
-      for (const adapterName of adapterNames) {
-        setGlobalAdapter(adapters[adapterName])
-        const sdk = new CowShedSdk()
-
-        const call = await sdk.signCalls({
-          calls: CALLS_MOCK,
-          signer: adapters[adapterName].signer,
-          chainId: SupportedChainId.SEPOLIA,
-          deadline: getOrderDeadlineFromNow(DEFAULT_QUOTE_VALIDITY),
-        })
-
-        signedCalls.push(call)
-      }
-
-      signedCalls.forEach((call) => {
-        expect(call.gasLimit).toBeGreaterThan(1)
       })
     })
 

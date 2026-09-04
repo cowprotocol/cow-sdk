@@ -11,7 +11,7 @@ const adapters = createAdapters()
 const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
 adapterNames.forEach((adapterName) => {
-  // TODO: these tests should be run locally and not by the CI.
+  // Bungee v1 returns HTTP 410. Unskip after BungeeApi migrates to Socket V3.
   describe.skip(`BungeeApi: Shape of API response (with ${adapterName})`, () => {
     let api: BungeeApi
 

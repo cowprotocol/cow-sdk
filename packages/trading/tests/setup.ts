@@ -52,3 +52,24 @@ export function createAdapters(): AdaptersTestSetup {
     viemAdapter,
   }
 }
+
+export function createSignerlessAdapters(): AdaptersTestSetup {
+  const ethersV5Adapter = new EthersV5Adapter({
+    provider: new ethersV5.providers.JsonRpcProvider(TEST_RPC_URL),
+  })
+  const ethersV6Adapter = new EthersV6Adapter({
+    provider: new ethersV6.JsonRpcProvider(TEST_RPC_URL),
+  })
+  const viemAdapter = new ViemAdapter({
+    provider: createPublicClient({
+      chain: sepolia,
+      transport: http(TEST_RPC_URL),
+    }),
+  })
+
+  return {
+    ethersV5Adapter,
+    ethersV6Adapter,
+    viemAdapter,
+  }
+}

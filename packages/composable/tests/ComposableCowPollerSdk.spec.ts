@@ -66,6 +66,30 @@ describe('ComposableCowPollerSdk', () => {
     expect(result.calldata).toEqual(sdk.poller.encodeRegisterWithSignature(SCHEDULE, DEADLINE, SIGNATURE))
   })
 
+  test('uses one schedule snapshot for the registration signature and calldata', async () => {
+    const schedule = { ...SCHEDULE }
+    const scheduleSnapshot = { ...schedule }
+    let finishSigning!: (signature: string) => void
+    const signTypedData = jest.spyOn(adapter.signer, 'signTypedData').mockReturnValue(
+      new Promise((resolve) => {
+        finishSigning = resolve
+      }),
+    )
+
+    const resultPromise = sdk.signRegister({ schedule, deadline: DEADLINE })
+    schedule.authEpoch = 1n
+    schedule.staticInput = '0xdeadbeef'
+    finishSigning(SIGNATURE)
+    const result = await resultPromise
+
+    expect(signTypedData).toHaveBeenCalledWith(
+      result.typedData.domain,
+      result.typedData.types,
+      result.typedData.message,
+    )
+    expect(result.calldata).toEqual(sdk.poller.encodeRegisterWithSignature(scheduleSnapshot, DEADLINE, SIGNATURE))
+  })
+
   test('signs revocation and returns ready-to-submit calldata', async () => {
     const getRevokeTypedData = jest.spyOn(sdk.poller, 'getRevokeTypedData')
     const signTypedData = jest.spyOn(adapter.signer, 'signTypedData').mockResolvedValue(SIGNATURE)
@@ -101,9 +125,9 @@ describe('ComposableCowPollerSdk', () => {
     ).resolves.toBe(transactionResponse)
     await expect(sdk.pollFunds({ id: SCHEDULE_ID })).resolves.toBe(transactionResponse)
     await expect(sdk.revoke(DIRECT_REVOKE)).resolves.toBe(transactionResponse)
-    await expect(
-      sdk.revokeWithSignature({ ...AUTHORIZATION, deadline: DEADLINE, signature: SIGNATURE }),
-    ).resolves.toBe(transactionResponse)
+    await expect(sdk.revokeWithSignature({ ...AUTHORIZATION, deadline: DEADLINE, signature: SIGNATURE })).resolves.toBe(
+      transactionResponse,
+    )
 
     expect(sendTransaction.mock.calls).toEqual([
       [{ to: POLLER_ADDRESS, data: sdk.poller.encodeRegister(SCHEDULE) }],
@@ -138,6 +162,22 @@ describe('ComposableCowPollerSdk', () => {
     expect(createSigner.mock.calls).toEqual([[configuredSignerLike], [overrideSignerLike]])
     expect(configuredSigner.signTypedData).toHaveBeenCalledTimes(1)
     expect(overrideSigner.signTypedData).toHaveBeenCalledTimes(1)
+  })
+
+  test('does not replace an explicitly supplied empty signer with the adapter signer', async () => {
+    const emptySigner = { signTypedData: jest.fn().mockResolvedValue(SIGNATURE) }
+    const createSigner = jest.spyOn(adapter, 'createSigner').mockReturnValue(emptySigner as never)
+    const configuredSdk = new ComposableCowPollerSdk({
+      chainId: CHAIN_ID,
+      pollerAddress: POLLER_ADDRESS,
+      signer: '',
+    })
+
+    await configuredSdk.signRegister({ schedule: SCHEDULE, deadline: DEADLINE })
+    await sdk.signRegister({ schedule: SCHEDULE, deadline: DEADLINE, signer: '' })
+
+    expect(createSigner.mock.calls).toEqual([[''], ['']])
+    expect(emptySigner.signTypedData).toHaveBeenCalledTimes(2)
   })
 
   test('configures an explicitly supplied adapter', async () => {

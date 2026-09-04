@@ -12,7 +12,7 @@ import {
   SellTokenSource,
   SigningScheme,
 } from '@cowprotocol/sdk-order-book'
-import { AdaptersTestSetup, createAdapters } from '../tests/setup'
+import { AdaptersTestSetup, createAdapters, createSignerlessAdapters } from '../tests/setup'
 import { AccountAddress } from '@cowprotocol/sdk-common'
 import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
 import * as onChainCancellationModule from './onChainCancellation'
@@ -1043,6 +1043,47 @@ describe('TradingSdk', () => {
             settlementContractOverride: expect.objectContaining({ [chainId]: customSettlementAddress }),
           }),
         )
+      })
+    })
+
+    describe('getPreSignCallData', () => {
+      const signerlessAdapters = createSignerlessAdapters()
+
+      it('should build calldata without a signer or appCode', () => {
+        const adapter = signerlessAdapters.ethersV6Adapter
+        const sdk = new TradingSdk({ chainId }, {}, adapter)
+
+        expect(adapter.signerOrNull()).toBeNull()
+        expect(sdk.getPreSignCallData({ orderUid })).toEqual({
+          to: COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[chainId],
+          data: expect.stringMatching(/^0xec6cb13f/),
+          value: '0',
+        })
+      })
+
+      it('should support per-call chain and settlement contract overrides', () => {
+        const customAddress = '0x2222222222222222222222222222222222222222'
+        const sdk = new TradingSdk({}, {}, signerlessAdapters.viemAdapter)
+
+        expect(
+          sdk.getPreSignCallData({
+            orderUid,
+            chainId,
+            settlementContractOverride: { [chainId]: customAddress },
+          }).to,
+        ).toBe(customAddress)
+      })
+
+      it('should resolve chain ID from the configured order book', () => {
+        const sdk = new TradingSdk({}, { orderBookApi }, signerlessAdapters.ethersV5Adapter)
+
+        expect(sdk.getPreSignCallData({ orderUid }).to).toBe(COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS[chainId])
+      })
+
+      it('should throw a targeted error when chain ID is missing', () => {
+        const sdk = new TradingSdk({}, {}, signerlessAdapters.ethersV5Adapter)
+
+        expect(() => sdk.getPreSignCallData({ orderUid })).toThrow('Missing pre-sign parameters: chainId')
       })
     })
   })

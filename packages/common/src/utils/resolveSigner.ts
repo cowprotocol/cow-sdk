@@ -3,5 +3,5 @@ import { AbstractSigner, getGlobalAdapter, Provider, type SignerLike } from '../
 /** Resolves a signer-like value through the global adapter, falling back to its configured signer. */
 export function resolveSigner(signer?: SignerLike): AbstractSigner<Provider> {
   const adapter = getGlobalAdapter()
-  return signer ? adapter.createSigner(signer) : adapter.signer
+  return signer !== undefined ? adapter.createSigner(signer) : adapter.signer
 }

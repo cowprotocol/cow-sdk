@@ -159,7 +159,10 @@ export class CowShedSdk {
     }
   }
 
-  protected getCowShedHooks(chainId: SupportedChainId) {
+  protected getCowShedHooks(
+    chainId: SupportedChainId,
+    customOptions: ICoWShedOptions | undefined = this.factoryOptions,
+  ) {
     let cowShedHooks = this.hooksCache.get(chainId)
 
     if (cowShedHooks) {
@@ -168,7 +171,7 @@ export class CowShedSdk {
     }
 
     // Create new cow-shed hooks and cache it
-    cowShedHooks = new CowShedHooks(chainId, this.factoryOptions, this.version)
+    cowShedHooks = new CowShedHooks(chainId, customOptions, this.version)
     this.hooksCache.set(chainId, cowShedHooks)
     return cowShedHooks
   }
