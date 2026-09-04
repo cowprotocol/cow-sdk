@@ -4,6 +4,7 @@ import { ComposableCowPollerAbi } from './abis/ComposableCowPollerAbi'
 import type {
   ComposableCowPollerDirectRevoke,
   ComposableCowPollerRegisterTypedDataParams,
+  ComposableCowPollerRevokeTypedDataParams,
   ComposableCowPollerSchedule,
   ComposableCowPollerScheduleAuthorization,
   ComposableCowPollerScheduleKey,
@@ -22,6 +23,16 @@ const REGISTER_TYPES = {
     { name: 'deadline', type: 'uint256' },
   ],
 }
+const REVOKE_TYPES = {
+  Revoke: [
+    { name: 'handler', type: 'address' },
+    { name: 'authEpoch', type: 'uint96' },
+    { name: 'funder', type: 'address' },
+    { name: 'owner', type: 'address' },
+    { name: 'salt', type: 'bytes32' },
+    { name: 'deadline', type: 'uint256' },
+  ],
+}
 
 type RegisterMessage = {
   readonly handler: string
@@ -30,6 +41,15 @@ type RegisterMessage = {
   readonly owner: string
   readonly salt: string
   readonly staticInput: string
+  readonly deadline: BigIntish
+}
+
+type RevokeMessage = {
+  readonly handler: string
+  readonly authEpoch: BigIntish
+  readonly funder: string
+  readonly owner: string
+  readonly salt: string
   readonly deadline: BigIntish
 }
 
@@ -113,6 +133,24 @@ export class ComposableCowPoller {
     }
   }
 
+  /** Builds the EIP-712 payload authorized by revokeWithSignature. */
+  public getRevokeTypedData({
+    chainId,
+    handler,
+    authEpoch,
+    funder,
+    owner,
+    salt,
+    deadline,
+  }: ComposableCowPollerRevokeTypedDataParams): ComposableCowPollerTypedData<'Revoke', RevokeMessage> {
+    return {
+      domain: this.getEip712Domain(chainId),
+      types: REVOKE_TYPES,
+      primaryType: 'Revoke',
+      message: { handler, authEpoch, funder, owner, salt, deadline },
+    }
+  }
+
   /** Returns the app-data-independent schedule ID. */
   public getScheduleId(schedule: ComposableCowPollerScheduleKey): string {
     const encoded = getGlobalAdapter().utils.encodeAbi(SCHEDULE_ID_ABI, [
@@ -172,6 +210,23 @@ export class ComposableCowPoller {
       owner,
       salt,
       authEpoch,
+    ]) as string
+  }
+
+  /** Encodes Poller.revokeWithSignature. */
+  public encodeRevokeWithSignature(
+    { handler, funder, owner, salt, authEpoch }: ComposableCowPollerScheduleAuthorization,
+    deadline: BigIntish,
+    signature: string,
+  ): string {
+    return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'revokeWithSignature', [
+      handler,
+      funder,
+      owner,
+      salt,
+      authEpoch,
+      deadline,
+      signature,
     ]) as string
   }
 }
