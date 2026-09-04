@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.2.0...sdk-trading-solana-v0.3.0) (2026-09-04)
+
+
+### ✨ Features
+
+* trading sdk for solana ([#973](https://github.com/cowprotocol/cow-sdk/issues/973)) ([60b39b9](https://github.com/cowprotocol/cow-sdk/commit/60b39b93883889d794f02138b8dbef74f7dc6c5b))
+
+
+### 🔧 Miscellaneous
+
+* release main ([#986](https://github.com/cowprotocol/cow-sdk/issues/986)) ([1c82bfb](https://github.com/cowprotocol/cow-sdk/commit/1c82bfb80469a631de5f4e035a06511402e81c4f))
+
 ## [0.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.1.0...sdk-trading-solana-v0.2.0) (2026-09-04)
 
 
