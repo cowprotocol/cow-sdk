@@ -5,8 +5,7 @@ import { OrderSigningUtils } from '@cowprotocol/sdk-order-signing'
 import { getOrderToSign } from './getOrderToSign'
 import { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 import { getIsEthFlowOrder } from './utils/misc'
-import { log, SignerLike } from '@cowprotocol/sdk-common'
-import { resolveSigner } from './utils/resolveSigner'
+import { log, resolveSigner, SignerLike } from '@cowprotocol/sdk-common'
 
 export async function postCoWProtocolTrade(
   orderBookApi: OrderBookApi,
