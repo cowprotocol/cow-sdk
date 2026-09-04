@@ -1,5 +1,29 @@
 # Changelog
 
+## [3.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.4.0...sdk-contracts-ts-v3.5.0) (2026-09-04)
+
+
+### ✨ Features
+
+* trading sdk for solana ([#973](https://github.com/cowprotocol/cow-sdk/issues/973)) ([60b39b9](https://github.com/cowprotocol/cow-sdk/commit/60b39b93883889d794f02138b8dbef74f7dc6c5b))
+
+
+### 🔧 Miscellaneous
+
+* split integration tests ([#978](https://github.com/cowprotocol/cow-sdk/issues/978)) ([72bbc6f](https://github.com/cowprotocol/cow-sdk/commit/72bbc6f8f88ce66597f36cd08d391ab79e342843))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.12.2
+    * @cowprotocol/sdk-config bumped to 2.5.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.12
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.12
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.27
+
 ## [3.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.3.3...sdk-contracts-ts-v3.4.0) (2026-09-01)
 
 
