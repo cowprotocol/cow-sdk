@@ -224,7 +224,9 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
 
     if (!event) return null
 
-    const status = await getBridgingStatusFromEvents(events, (orderId) => this.api.getAcrossStatus(orderId))
+    const status = await getBridgingStatusFromEvents(events, (depositTxHash) =>
+      this.api.getAcrossStatus(depositTxHash),
+    )
 
     const params: BridgingDepositParams = {
       inputTokenAddress: event.srcTokenAddress,
@@ -258,7 +260,7 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
     // fetch indexed event from api
     const events = await this.api.getEvents({ orderId: _bridgingId })
 
-    return getBridgingStatusFromEvents(events, (orderId) => this.api.getAcrossStatus(orderId))
+    return getBridgingStatusFromEvents(events, (depositTxHash) => this.api.getAcrossStatus(depositTxHash))
   }
 
   async getCancelBridgingTx(_bridgingId: string): Promise<EvmCall> {
