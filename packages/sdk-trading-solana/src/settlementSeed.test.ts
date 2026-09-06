@@ -11,6 +11,12 @@ describe('getSettlementSeed', () => {
     expect(getSettlementSeed('prod')).toEqual(getSettlementSeed())
   })
 
+  it('hands out a copy so callers cannot corrupt the cached seed', () => {
+    getSettlementSeed()[0] = 0
+
+    expect(new TextDecoder().decode(getSettlementSeed())).toBe('settlement v0.3    ')
+  })
+
   it('builds a fixed-width seed for staging', () => {
     // Only the width is asserted: staging currently resolves to the same bytes as prod because both envs
     // share one deployment, but that is a property of today's config, not an invariant to lock in.

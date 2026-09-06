@@ -30,7 +30,10 @@ const SETTLEMENT_SEEDS: Record<CowEnv, Uint8Array> = {
  * Version-embedded seed shared by every settlement-program PDA of `env` (`SETTLEMENT_SEED` in
  * cow-settlement-interface). Keyed by env because the version is a property of a deployment: each env's seed
  * has to be derived from the version of the program id that env resolves to.
+ *
+ * Returns a copy: the cached seeds are mutable `Uint8Array`s, and a caller writing into one would silently
+ * corrupt every later derivation for that env.
  */
 export function getSettlementSeed(env: CowEnv = 'prod'): Uint8Array {
-  return SETTLEMENT_SEEDS[env]
+  return SETTLEMENT_SEEDS[env].slice()
 }
