@@ -41,6 +41,14 @@ export const SOLANA_SETTLEMENT_PROGRAM_ID_STAGING = SOLANA_SETTLEMENT_PROGRAM_ID
 export const SOLANA_SETTLEMENT_PROGRAM_VERSION = '0.3'
 
 /**
+ * Staging counterpart of `SOLANA_SETTLEMENT_PROGRAM_VERSION`. The version is a property of a specific
+ * deployment, so it must be bumped together with `SOLANA_SETTLEMENT_PROGRAM_ID_STAGING`: pairing one env's
+ * program id with another's version derives PDAs that program never signs as.
+ * Aliased while both envs share a single deployment.
+ */
+export const SOLANA_SETTLEMENT_PROGRAM_VERSION_STAGING = SOLANA_SETTLEMENT_PROGRAM_VERSION
+
+/**
  * An object containing the addresses of the `ExtensibleFallbackHandler` contracts for each supported chain.
  */
 export const EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS = mapAddressToSupportedNetworks(EXTENSIBLE_FALLBACK_HANDLER)
