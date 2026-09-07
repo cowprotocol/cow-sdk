@@ -159,8 +159,9 @@ const deadline = Math.floor(Date.now() / 1000) + 15 * 60
 const transaction = await pollerSdk.register({ schedule })
 await transaction.wait()
 
-// Signature flow: refresh authEpoch from the Poller before signing.
-const currentSchedule = await pollerSdk.poller.getSchedule(scheduleId)
+// Signature flow: keep the intended schedule and refresh only its replay-protection epoch.
+const { authEpoch } = await pollerSdk.poller.getSchedule(scheduleId)
+const currentSchedule = { ...schedule, authEpoch }
 const authorization = await pollerSdk.signRegister({ schedule: currentSchedule, deadline })
 // authorization.calldata is ready for a hook or relayed transaction.
 // authorization.typedData and authorization.signature are also available for inspection.
@@ -175,7 +176,7 @@ const relayedTransaction = await pollerSdk.registerWithSignature({
 await relayedTransaction.wait()
 ```
 
-`signRevoke` follows the same signature flow and signs the supplied schedule identity and `authEpoch`. Refresh the schedule with `pollerSdk.poller.getSchedule(scheduleId)` immediately before signing so the epoch matches current Poller state.
+`signRevoke` follows the same signature flow and signs the supplied schedule identity and `authEpoch`. Refresh only `authEpoch` with `pollerSdk.poller.getSchedule(scheduleId)` immediately before signing; an inactive schedule retains its epoch but not its other fields.
 
 The schedule fields are:
 
