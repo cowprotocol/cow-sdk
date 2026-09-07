@@ -6,7 +6,7 @@ import type {
 } from '@cowprotocol/sdk-trading'
 import { getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { buildCreateOrderInstruction } from './createOrderInstruction'
-import { encodeOrderIntent, hashOrderIntent, toHex } from './orderIntent'
+import { encodeOrderIntent, hashOrderIntent, toOrderId } from './orderIntent'
 import { findOrderPda } from './orderPda'
 import { SolanaQuote, SolanaSignAndSend } from './types'
 import { SigningScheme } from '@cowprotocol/sdk-order-book'
@@ -69,7 +69,7 @@ export async function postSolanaSwapOrderFromQuote(
   const orderToSign = quoteResults.orderToSign
 
   return {
-    orderId: toHex(uid),
+    orderId: toOrderId(uid),
     txHash: signature,
     signature,
     signingScheme: SigningScheme.PRESIGN,
