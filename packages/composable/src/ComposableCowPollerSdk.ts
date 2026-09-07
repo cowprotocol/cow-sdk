@@ -73,11 +73,7 @@ export class ComposableCowPollerSdk {
   }): Promise<ComposableCowPollerSignedCall<ReturnType<ComposableCowPoller['getRegisterTypedData']>>> {
     const scheduleSnapshot = { ...schedule }
     const typedData = this.poller.getRegisterTypedData({ chainId: this.chainId, schedule: scheduleSnapshot, deadline })
-    const signature = await resolveSigner(signer ?? this.signer).signTypedData(
-      typedData.domain,
-      typedData.types,
-      typedData.message,
-    )
+    const signature = await this.getSigner(signer).signTypedData(typedData.domain, typedData.types, typedData.message)
 
     return {
       typedData,
@@ -106,11 +102,7 @@ export class ComposableCowPollerSdk {
   }): Promise<ComposableCowPollerSignedCall<ReturnType<ComposableCowPoller['getRevokeTypedData']>>> {
     const authorization = { handler, authEpoch, funder, owner, salt }
     const typedData = this.poller.getRevokeTypedData({ chainId: this.chainId, ...authorization, deadline })
-    const signature = await resolveSigner(signer ?? this.signer).signTypedData(
-      typedData.domain,
-      typedData.types,
-      typedData.message,
-    )
+    const signature = await this.getSigner(signer).signTypedData(typedData.domain, typedData.types, typedData.message)
 
     return {
       typedData,
@@ -207,6 +199,10 @@ export class ComposableCowPollerSdk {
   }
 
   private send(calldata: string, signer?: SignerLike): Promise<TransactionResponse> {
-    return resolveSigner(signer ?? this.signer).sendTransaction({ to: this.pollerAddress, data: calldata })
+    return this.getSigner(signer).sendTransaction({ to: this.pollerAddress, data: calldata })
+  }
+
+  private getSigner(signer?: SignerLike) {
+    return resolveSigner(signer === undefined ? this.signer : signer)
   }
 }

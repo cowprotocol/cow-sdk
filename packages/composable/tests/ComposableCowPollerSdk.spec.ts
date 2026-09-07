@@ -180,6 +180,28 @@ describe('ComposableCowPollerSdk', () => {
     expect(emptySigner.signTypedData).toHaveBeenCalledTimes(2)
   })
 
+  test('does not replace explicitly supplied null signers with the adapter signer', async () => {
+    const nullSigner = {
+      signTypedData: jest.fn().mockResolvedValue(SIGNATURE),
+      sendTransaction: jest.fn().mockResolvedValue({ hash: '0xnull-signer', wait: jest.fn() }),
+    }
+    const createSigner = jest.spyOn(adapter, 'createSigner').mockReturnValue(nullSigner as never)
+    const configuredSdk = new ComposableCowPollerSdk({
+      chainId: CHAIN_ID,
+      pollerAddress: POLLER_ADDRESS,
+      signer: null,
+    })
+
+    await configuredSdk.signRegister({ schedule: SCHEDULE, deadline: DEADLINE })
+    await configuredSdk.register({ schedule: SCHEDULE })
+    await sdk.signRevoke({ ...AUTHORIZATION, deadline: DEADLINE, signer: null })
+    await sdk.revoke({ ...DIRECT_REVOKE, signer: null })
+
+    expect(createSigner.mock.calls).toEqual([[null], [null], [null], [null]])
+    expect(nullSigner.signTypedData).toHaveBeenCalledTimes(2)
+    expect(nullSigner.sendTransaction).toHaveBeenCalledTimes(2)
+  })
+
   test('configures an explicitly supplied adapter', async () => {
     setGlobalAdapter(adapters.ethersV6Adapter)
     const sendTransaction = jest.spyOn(adapter.signer, 'sendTransaction').mockResolvedValue({
