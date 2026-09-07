@@ -19,11 +19,13 @@ the `cowswap` repo for background.
 
 ## Usage
 
+Quoting needs no signer:
+
 ```ts
 import { SolanaTradingSdk } from '@cowprotocol/sdk-trading-solana'
 
-const sdk = new SolanaTradingSdk({ signAndSend })
-const { quoteResults, postSwapOrderFromQuote } = await sdk.getQuote({
+const sdk = new SolanaTradingSdk()
+const { quoteResults, solanaQuote, buildOrder, postSwapOrderFromQuote } = await sdk.getQuote({
   ownerAddress,
   receiverAddress,
   sellTokenAddress,
@@ -33,6 +35,26 @@ const { quoteResults, postSwapOrderFromQuote } = await sdk.getQuote({
   amount,
   kind,
 })
-
-const result = await postSwapOrderFromQuote()
 ```
+
+### Let the SDK submit the order
+
+`signAndSend` is passed at the point of signing:
+
+```ts
+const result = await postSwapOrderFromQuote(signAndSend)
+```
+
+### Bundle the order with your own instructions
+
+A Solana order is created by a single instruction, so it can share a transaction with, say, a wrap and a
+token delegation. `buildOrder` returns that instruction without sending it:
+
+```ts
+const { instruction, orderId } = await buildOrder()
+
+await sendMyTransaction([...wrapInstructions, approveInstruction, instruction])
+```
+
+Both paths apply `advancedSettings` identically — overriding `receiver` or `validTo` re-derives the order's
+`uid` and PDA so they still match the intent actually being created.
