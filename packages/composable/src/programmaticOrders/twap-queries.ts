@@ -1,10 +1,11 @@
 export const TWAP_ORDERS_QUERY = `
-  query TwapOrders($resolvedOwner: String!, $chainId: Int!, $offset: Int!, $limit: Int!, $direction: String!) {
+  query TwapOrders($resolvedOwner: String!, $chainId: Int!, $offset: Int!, $limit: Int!, $direction: String!, $updatedAtBlockGte: BigInt) {
     twapOrders: conditionalOrderGenerators(
       where: {
         chainId: $chainId
         orderType: TWAP
         resolvedOwner: $resolvedOwner
+        updatedAtBlock_gte: $updatedAtBlockGte
       }
       offset: $offset
       limit: $limit

@@ -82,6 +82,13 @@ describe('ProgrammaticOrderApi', () => {
     await expect(api.getTwapPartOrders(null as unknown as GetTwapPartOrdersParams)).rejects.toThrow(
       'Invalid type: Expected Object but received null',
     )
+    await expect(
+      api.getTwapOrders({
+        resolvedOwner: EOA,
+        chainId: SupportedChainId.GNOSIS_CHAIN,
+        updatedAtBlockGte: -1n,
+      }),
+    ).rejects.toThrow('must be a non-negative bigint')
   })
 
   it('requests parent-only TWAPs by creation and preserves the returned order', async () => {
@@ -135,6 +142,32 @@ describe('ProgrammaticOrderApi', () => {
     expect(page.items[0]).not.toHaveProperty('partOrders')
   })
 
+  it('filters TWAP orders by an inclusive update block', async () => {
+    const fetchMock = jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ data: { twapOrders: { items: [], totalCount: 2 } } }), {
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      )
+
+    const page = await new ProgrammaticOrderApi({ apiUrl: 'https://example.com' }).getTwapOrders(
+      {
+        resolvedOwner: EOA,
+        chainId: SupportedChainId.GNOSIS_CHAIN,
+        updatedAtBlockGte: 10n,
+      },
+      { limit: 1000 },
+    )
+    const request = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)) as {
+      query: string
+      variables: Record<string, unknown>
+    }
+
+    expect(request.query).toContain('updatedAtBlock_gte: $updatedAtBlockGte')
+    expect(request.variables.updatedAtBlockGte).toBe('10')
+    expect(page).toEqual({ items: [], totalCount: 2 })
+  })
   it('applies query options to a part-order page', async () => {
     const fetchMock = jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
       new Response(
@@ -173,7 +206,6 @@ describe('ProgrammaticOrderApi', () => {
     })
     expect(page).toEqual({ items: [], totalCount: 12 })
   })
-
 })
 
 function twapParent(eventId: string, blockTimestamp: number): Record<string, unknown> {
