@@ -1,6 +1,6 @@
 import { CowShedSdk } from './CowShedSdk'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
-import { ICoWShedCall } from './types'
+import { ICoWShedCall, ICoWShedOptions } from './types'
 import { AdaptersTestSetup, createAdapters } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { ContractsSigningScheme as SigningScheme } from '@cowprotocol/sdk-contracts-ts'
@@ -28,6 +28,30 @@ describe('CowShedSdk', () => {
 
   beforeAll(() => {
     adapters = createAdapters()
+  })
+
+  describe('getCowShedAccount()', () => {
+    test('forwards custom factory options to subclass hooks', () => {
+      const factoryOptions: ICoWShedOptions = {
+        factoryAddress: '0x1111111111111111111111111111111111111111',
+        implementationAddress: '0x2222222222222222222222222222222222222222',
+        proxyCreationCode: COW_SHED_PROXY_INIT_CODE['1.0.1'],
+        domainVersion: '2.1.0',
+      }
+      let receivedOptions: ICoWShedOptions | undefined
+
+      class CustomCowShedSdk extends CowShedSdk {
+        protected override getCowShedHooks(chainId: SupportedChainId, customOptions?: ICoWShedOptions) {
+          receivedOptions = customOptions
+          return super.getCowShedHooks(chainId, customOptions)
+        }
+      }
+
+      const sdk = new CustomCowShedSdk(adapters.viemAdapter, factoryOptions)
+      sdk.getCowShedAccount(SupportedChainId.MAINNET, '0x3333333333333333333333333333333333333333')
+
+      expect(receivedOptions).toBe(factoryOptions)
+    })
   })
 
   describe('signCalls()', () => {

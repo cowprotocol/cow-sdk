@@ -94,7 +94,7 @@ export class CowShedSdk {
   }
 
   getCowShedAccount(chainId: SupportedChainId, ownerAddress: string): string {
-    const cowShedHooks = this.getCowShedHooks(chainId)
+    const cowShedHooks = this.getCowShedHooks(chainId, this.factoryOptions)
     return cowShedHooks.proxyOf(ownerAddress)
   }
 
