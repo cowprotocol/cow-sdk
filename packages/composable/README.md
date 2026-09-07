@@ -155,7 +155,7 @@ import { ComposableCowPollerSdk } from '@cowprotocol/sdk-composable'
 const pollerSdk = new ComposableCowPollerSdk({ chainId, pollerAddress, signer }, adapter)
 const deadline = Math.floor(Date.now() / 1000) + 15 * 60
 
-// Direct flow: submit registration with the adapter's signer.
+// Direct flow: use the SDK signer, or the adapter signer when none was configured.
 const transaction = await pollerSdk.register({ schedule })
 await transaction.wait()
 
