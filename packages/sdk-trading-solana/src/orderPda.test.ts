@@ -1,15 +1,7 @@
 import { PublicKey } from '@solana/web3.js'
 
-import { findOrderPda, ORDER_SEED, SETTLEMENT_SEED } from './orderPda'
-
-describe('SETTLEMENT_SEED', () => {
-  it('is the settlement-program-version-embedded seed prefix', () => {
-    // "settlement v" (12 bytes) + "0.3" right-padded to a fixed 7-byte version field = 19 bytes total,
-    // matching `SETTLEMENT_SEED_LEN` in cow-settlement-interface.
-    expect(SETTLEMENT_SEED.length).toBe(19)
-    expect(new TextDecoder().decode(SETTLEMENT_SEED)).toBe('settlement v0.3    ')
-  })
-})
+import { findOrderPda, ORDER_SEED } from './orderPda'
+import { getSettlementSeed } from './settlementSeed'
 
 describe('findOrderPda', () => {
   const programId = new PublicKey(new Uint8Array(32).fill(1))
@@ -37,9 +29,21 @@ describe('findOrderPda', () => {
     expect(pda1.toBase58()).not.toBe(pda2.toBase58())
   })
 
-  it('uses the [SETTLEMENT_SEED, uid, ORDER_SEED] seed scheme', () => {
-    const [expectedPda] = PublicKey.findProgramAddressSync([SETTLEMENT_SEED, uid, ORDER_SEED], programId)
+  it('uses the [settlement seed, uid, ORDER_SEED] seed scheme', () => {
+    const [expectedPda] = PublicKey.findProgramAddressSync([getSettlementSeed(), uid, ORDER_SEED], programId)
     const [pda] = findOrderPda(programId, uid)
+
+    expect(pda.toBase58()).toBe(expectedPda.toBase58())
+  })
+
+  it('derives with the seed of the requested env', () => {
+    // Asserts the env is threaded into the seed rather than that the envs differ: they resolve to the same
+    // bytes while prod and staging share a deployment, and this stays true once they diverge.
+    const [expectedPda] = PublicKey.findProgramAddressSync(
+      [getSettlementSeed('staging'), uid, ORDER_SEED],
+      programId,
+    )
+    const [pda] = findOrderPda(programId, uid, 'staging')
 
     expect(pda.toBase58()).toBe(expectedPda.toBase58())
   })
