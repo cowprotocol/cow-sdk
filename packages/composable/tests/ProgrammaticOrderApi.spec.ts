@@ -140,16 +140,16 @@ describe('ProgrammaticOrderApi', () => {
       durationOfPart: 0,
     })
     expect(page.items[0]).not.toHaveProperty('partOrders')
+    expect(page.items[0]?.partOrdersCount).toBe(2)
+    expect(request.query).toContain('twapOrders: programmaticOrders(')
   })
 
   it('filters TWAP orders by an inclusive update block', async () => {
-    const fetchMock = jest
-      .spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ data: { twapOrders: { items: [], totalCount: 2 } } }), {
-          headers: { 'Content-Type': 'application/json' },
-        }),
-      )
+    const fetchMock = jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ data: { twapOrders: { items: [], totalCount: 2 } } }), {
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
 
     const page = await new ProgrammaticOrderApi({ apiUrl: 'https://example.com' }).getTwapOrders(
       {
@@ -195,7 +195,8 @@ describe('ProgrammaticOrderApi', () => {
       variables: Record<string, unknown>
     }
 
-    expect(request.query).toContain('orderBy: "creationDate"')
+    expect(request.query).toContain('partOrders: partOrders(')
+    expect(request.query).toContain('orderBy: "sortKey"')
     expect(request.query).toContain('orderDirection: $direction')
     expect(request.variables).toEqual({
       chainId: SupportedChainId.GNOSIS_CHAIN,
@@ -205,6 +206,54 @@ describe('ProgrammaticOrderApi', () => {
       direction: 'desc',
     })
     expect(page).toEqual({ items: [], totalCount: 12 })
+  })
+
+  it('returns unconfirmed candidates without inventing executed amounts', async () => {
+    const orderUid = `0x${'1'.repeat(112)}`
+    jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          data: {
+            partOrders: {
+              items: [
+                {
+                  orderUid,
+                  status: 'unconfirmed',
+                  sellAmount: '10',
+                  buyAmount: '5',
+                  feeAmount: '0',
+                  validTo: 2000,
+                  createdAt: '1000',
+                  executedSellAmount: null,
+                  executedBuyAmount: null,
+                  executedFeeAmount: null,
+                },
+              ],
+              totalCount: 1,
+            },
+          },
+        }),
+      ),
+    )
+
+    const page = await new ProgrammaticOrderApi().getTwapPartOrders({
+      eventId: 'parent',
+      chainId: SupportedChainId.GNOSIS_CHAIN,
+    })
+    expect(page.items).toEqual([
+      {
+        orderUid,
+        status: 'unconfirmed',
+        sellAmount: 10n,
+        buyAmount: 5n,
+        feeAmount: 0n,
+        validTo: 2000,
+        createdAt: 1000,
+        executedSellAmount: null,
+        executedBuyAmount: null,
+        executedFeeAmount: null,
+      },
+    ])
   })
 })
 
@@ -222,7 +271,7 @@ function twapParent(eventId: string, blockTimestamp: number): Record<string, unk
       executedBuyAmount: '0',
       executedFee: '0',
     },
-    partOrders: { totalCount: 0 },
+    partOrdersCount: 2,
     schedule: {
       sellToken: EOA,
       buyToken: EOA,
@@ -235,6 +284,6 @@ function twapParent(eventId: string, blockTimestamp: number): Record<string, unk
       span: '0',
       appData: `0x${'2'.repeat(64)}`,
     },
-    transaction: { blockTimestamp: String(blockTimestamp) },
+    createdAt: String(blockTimestamp),
   }
 }

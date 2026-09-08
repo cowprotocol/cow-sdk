@@ -58,25 +58,17 @@ export const TWAP_PARENT_SCHEMA = v.pipe(
       executedBuyAmount: UINT256_SCHEMA,
       executedFee: UINT256_SCHEMA,
     }),
-    partOrders: v.object({ totalCount: SAFE_INTEGER_SCHEMA }),
-    transaction: v.object({ blockTimestamp: TIMESTAMP_SCHEMA }),
+    partOrdersCount: v.pipe(SAFE_INTEGER_SCHEMA, v.minValue(0)),
+    createdAt: TIMESTAMP_SCHEMA,
     schedule: TWAP_SCHEDULE_SCHEMA,
   }),
   v.transform(
-    ({
-      additionalData: { executedSellAmount, executedBuyAmount, executedFee },
-      partOrders,
-      schedule,
-      transaction,
-      ...parent
-    }) => {
+    ({ additionalData: { executedSellAmount, executedBuyAmount, executedFee }, schedule, createdAt, ...parent }) => {
       const { t0, n, t, span, ...scheduleParams } = schedule
-      const createdAt = transaction.blockTimestamp
 
       return {
         ...parent,
         createdAt,
-        partOrdersCount: partOrders.totalCount,
         executedAmounts: {
           executedSellAmount,
           executedBuyAmount,
@@ -97,7 +89,14 @@ export const TWAP_PARENT_SCHEMA = v.pipe(
 /** @see https://github.com/cowprotocol/cow-programmatic-orders-api/blob/main/src/api/gql-docs/discrete-order.ts */
 export const TWAP_PART_ORDER_SCHEMA = v.object({
   orderUid: ORDER_UID_SCHEMA,
-  status: v.picklist([OrderStatus.OPEN, OrderStatus.FULFILLED, OrderStatus.EXPIRED, OrderStatus.CANCELLED, 'unfilled']),
+  status: v.picklist([
+    OrderStatus.OPEN,
+    OrderStatus.FULFILLED,
+    OrderStatus.EXPIRED,
+    OrderStatus.CANCELLED,
+    'unfilled',
+    'unconfirmed',
+  ]),
   sellAmount: UINT256_SCHEMA,
   buyAmount: UINT256_SCHEMA,
   feeAmount: UINT256_SCHEMA,

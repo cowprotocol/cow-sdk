@@ -42,7 +42,7 @@ export class ProgrammaticOrderApi {
   /**
    * Returns one page of TWAP orders created by an EOA or Safe.
    *
-   * Results are sorted by creation time, newest first by default. Use {@link getTwapPartOrders} to fetch part orders.
+   * Results are sorted by event ID, descending by default. Use {@link getTwapPartOrders} to fetch part orders.
    *
    * @param params - EOA or Safe address and chain. Do not pass a CoWShed proxy address.
    * @param options - Pagination and sort direction.
@@ -79,7 +79,7 @@ export class ProgrammaticOrderApi {
   }
 
   /**
-   * Returns one page of part orders for a TWAP order, newest first by default.
+   * Returns known parts, including unconfirmed candidates, sorted by expiry and UID, descending by default.
    *
    * @param params - Parent event ID and chain.
    * @param options - Pagination and sort direction.

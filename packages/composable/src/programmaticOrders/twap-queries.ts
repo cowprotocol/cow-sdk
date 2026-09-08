@@ -1,6 +1,6 @@
 export const TWAP_ORDERS_QUERY = `
   query TwapOrders($resolvedOwner: String!, $chainId: Int!, $offset: Int!, $limit: Int!, $direction: String!, $updatedAtBlockGte: BigInt) {
-    twapOrders: conditionalOrderGenerators(
+    twapOrders: programmaticOrders(
       where: {
         chainId: $chainId
         orderType: TWAP
@@ -21,13 +21,9 @@ export const TWAP_ORDERS_QUERY = `
         status
         updatedAtBlock
         additionalData
-        partOrders: discreteOrders(limit: 1) {
-          totalCount
-        }
+        partOrdersCount
         schedule: decodedParams
-        transaction {
-          blockTimestamp
-        }
+        createdAt: creationDate
       }
       totalCount
     }
@@ -36,14 +32,14 @@ export const TWAP_ORDERS_QUERY = `
 
 export const TWAP_PART_ORDERS_QUERY = `
   query TwapPartOrders($chainId: Int!, $parentEventId: String!, $offset: Int!, $limit: Int!, $direction: String!) {
-    partOrders: discreteOrders(
+    partOrders: partOrders(
       where: {
         chainId: $chainId
         conditionalOrderGeneratorId: $parentEventId
       }
       offset: $offset
       limit: $limit
-      orderBy: "creationDate"
+      orderBy: "sortKey"
       orderDirection: $direction
     ) {
       items {
