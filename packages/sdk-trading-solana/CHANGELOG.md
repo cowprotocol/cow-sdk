@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.4.0...sdk-trading-solana-v0.4.1) (2026-09-08)
+
+
+### 🐛 Bug Fixes
+
+* **solana:** add 0x prefix to orderId ([#997](https://github.com/cowprotocol/cow-sdk/issues/997)) ([50c9ff7](https://github.com/cowprotocol/cow-sdk/commit/50c9ff7a3a0bc2513ea56fbd2cd2582bb11afdb1))
+
 ## [0.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.3.0...sdk-trading-solana-v0.4.0) (2026-09-07)
 
 
