@@ -1,16 +1,12 @@
 import { PublicKey } from '@solana/web3.js'
 import { getAssociatedTokenAddressSync } from '@solana/spl-token'
-import {
-  CowEnv,
-  SOL_NATIVE_CURRENCY_ADDRESS,
-  SupportedChainId,
-  WRAPPED_NATIVE_CURRENCIES,
-} from '@cowprotocol/sdk-config'
+import { CowEnv } from '@cowprotocol/sdk-config'
 import { getQuoteAmountsAndCosts, OrderKind, OrderParameters, OrderQuoteResponse } from '@cowprotocol/sdk-order-book'
 
 import { JupiterAPI } from './jupiterApi'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent } from './orderIntent'
 import { findOrderPda } from './orderPda'
+import { toSplMint } from './splMint'
 import { getSolanaSettlementProgramId } from './statePda'
 import { SolanaQuote, SolanaQuoteParameters } from './types'
 import type { QuoteResults, TradeParameters } from '@cowprotocol/sdk-trading'
@@ -21,23 +17,6 @@ const DEFAULT_VALID_FOR_SECONDS = 30 * 60
 const ZERO_APP_DATA = new Uint8Array(32)
 
 const jupiterApi = new JupiterAPI()
-
-/** The chain's native-currency sentinel — the System Program address, which is not a token mint. */
-const NATIVE_SOL_MINT = new PublicKey(SOL_NATIVE_CURRENCY_ADDRESS)
-const WSOL_MINT = new PublicKey(WRAPPED_NATIVE_CURRENCIES[SupportedChainId.SOLANA].address)
-
-/**
- * Jupiter routes and the settlement intent both address tokens by SPL mint, and native SOL has none.
- * Callers pass the native sentinel, so substitute WSOL — the same adjustment `getQuote` makes for EVM
- * eth-flow orders via `adjustEthFlowOrderParams`. Both have 9 decimals, so amounts carry over unchanged.
- *
- * This has to happen before the intent is built, not just before the Jupiter call: the intent's
- * `sellTokenAccount` is the associated token account of this mint, and only the WSOL one can ever hold
- * the wrapped lamports the caller's wrap step produces.
- */
-function toSplMint(mint: PublicKey): PublicKey {
-  return mint.equals(NATIVE_SOL_MINT) ? WSOL_MINT : mint
-}
 
 export async function getSolanaQuote(
   params: SolanaQuoteParameters,
