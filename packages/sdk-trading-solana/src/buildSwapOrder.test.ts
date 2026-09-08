@@ -4,7 +4,7 @@ import { OrderKind, SigningScheme } from '@cowprotocol/sdk-order-book'
 import type { QuoteResults } from '@cowprotocol/sdk-trading'
 
 import { buildSolanaSwapOrder } from './buildSwapOrder'
-import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toHex } from './orderIntent'
+import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toOrderId } from './orderIntent'
 import { findOrderPda } from './orderPda'
 import { SolanaQuote } from './types'
 
@@ -72,7 +72,7 @@ describe('buildSolanaSwapOrder', () => {
 
     const order = await buildSolanaSwapOrder({ quoteResults, solanaQuote })
 
-    expect(order.orderId).toBe(toHex(solanaQuote.uid))
+    expect(order.orderId).toBe(toOrderId(solanaQuote.uid))
     expect(order.uid).toEqual(solanaQuote.uid)
     expect(order.orderPda.toBase58()).toBe(solanaQuote.orderPda.toBase58())
     expect(order.intent).toEqual(solanaQuote.intent)
@@ -126,8 +126,8 @@ describe('buildSolanaSwapOrder', () => {
     expect(Uint8Array.from(order.instruction.data.subarray(1))).toEqual(encodeOrderIntent(expectedIntent))
     expect(order.orderPda.toBase58()).toBe(expectedOrderPda.toBase58())
     expect(order.orderPda.toBase58()).not.toBe(solanaQuote.orderPda.toBase58())
-    expect(order.orderId).toBe(toHex(expectedUid))
-    expect(order.orderId).not.toBe(toHex(solanaQuote.uid))
+    expect(order.orderId).toBe(toOrderId(expectedUid))
+    expect(order.orderId).not.toBe(toOrderId(solanaQuote.uid))
   })
 
   it('overriding validTo re-derives uid/orderPda to match the posted intent', async () => {
@@ -145,7 +145,7 @@ describe('buildSolanaSwapOrder', () => {
     expect(order.intent.validTo).toBe(newValidTo)
     expect(order.orderPda.toBase58()).toBe(expectedOrderPda.toBase58())
     expect(order.orderPda.toBase58()).not.toBe(solanaQuote.orderPda.toBase58())
-    expect(order.orderId).toBe(toHex(expectedUid))
+    expect(order.orderId).toBe(toOrderId(expectedUid))
   })
 
   it('keeps the quoted uid/orderPda when advancedSettings overrides nothing relevant', async () => {
@@ -155,7 +155,7 @@ describe('buildSolanaSwapOrder', () => {
       quoteRequest: {},
     })
 
-    expect(order.orderId).toBe(toHex(solanaQuote.uid))
+    expect(order.orderId).toBe(toOrderId(solanaQuote.uid))
     expect(order.orderPda.toBase58()).toBe(solanaQuote.orderPda.toBase58())
   })
 })

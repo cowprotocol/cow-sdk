@@ -3,7 +3,7 @@ import { OrderKind, SigningScheme } from '@cowprotocol/sdk-order-book'
 import type { QuoteResults } from '@cowprotocol/sdk-trading'
 
 import { postSolanaSwapOrderFromQuote } from './postSwapOrderFromQuote'
-import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toHex } from './orderIntent'
+import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toOrderId } from './orderIntent'
 import { findOrderPda } from './orderPda'
 import { SolanaQuote } from './types'
 
@@ -68,12 +68,26 @@ describe('postSolanaSwapOrderFromQuote', () => {
     expect(instruction.data[0]).toBe(2)
 
     expect(result).toEqual({
-      orderId: toHex(solanaQuote.uid),
+      orderId: toOrderId(solanaQuote.uid),
       txHash: 'fake-signature',
       signature: 'fake-signature',
       signingScheme: SigningScheme.PRESIGN,
       orderToSign: quoteResults.orderToSign,
     })
+  })
+
+  it('returns the order id "0x"-prefixed, matching the order-book API\'s EnrichedOrder.uid format', async () => {
+    // The order-book API always returns/expects order ids "0x"-prefixed (like EVM order uids). Without
+    // this prefix, any code that looks an order up by the API's uid (e.g. reducer batch actions,
+    // notifications) mismatches the locally-stored id and silently fails to find the order.
+    const solanaQuote = await buildFixtureQuote()
+    const quoteResults = buildFixtureQuoteResults()
+    const signAndSend = jest.fn().mockResolvedValue({ signature: 'fake-signature' })
+
+    const result = await postSolanaSwapOrderFromQuote({ quoteResults, solanaQuote }, signAndSend)
+
+    expect(result.orderId.startsWith('0x')).toBe(true)
+    expect(result.orderId).toBe(toOrderId(solanaQuote.uid))
   })
 
   it('propagates a signAndSend rejection', async () => {
@@ -119,7 +133,7 @@ describe('postSolanaSwapOrderFromQuote', () => {
 
     const expectedUid = await hashOrderIntent(encodeOrderIntent({ ...solanaQuote.intent, validTo: newValidTo }))
 
-    expect(result.orderId).toBe(toHex(expectedUid))
-    expect(result.orderId).not.toBe(toHex(solanaQuote.uid))
+    expect(result.orderId).toBe(toOrderId(expectedUid))
+    expect(result.orderId).not.toBe(toOrderId(solanaQuote.uid))
   })
 })

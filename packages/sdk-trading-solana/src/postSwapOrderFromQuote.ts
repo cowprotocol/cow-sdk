@@ -1,8 +1,4 @@
-import type {
-  SwapAdvancedSettings,
-  SigningStepManager,
-  OrderPostingResult,
-} from '@cowprotocol/sdk-trading'
+import type { SwapAdvancedSettings, SigningStepManager, OrderPostingResult } from '@cowprotocol/sdk-trading'
 import { buildSolanaSwapOrder, SolanaSwapOrderQuote } from './buildSwapOrder'
 import { SolanaSignAndSend } from './types'
 

@@ -3,7 +3,7 @@ import { SigningScheme } from '@cowprotocol/sdk-order-book'
 import { getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { buildCreateOrderInstruction } from './createOrderInstruction'
-import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toHex } from './orderIntent'
+import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toOrderId } from './orderIntent'
 import { findOrderPda } from './orderPda'
 import { SolanaQuote } from './types'
 
@@ -15,7 +15,7 @@ export interface SolanaSwapOrderQuote {
 export interface SolanaSwapOrder {
   /** The `CreateOrder` instruction. Send it on its own, or bundle it with other instructions. */
   instruction: TransactionInstruction
-  /** Hex-encoded `uid`, the order's id in the order-book. */
+  /** `uid` as the order-book's `0x`-prefixed uid — see `toOrderId`. */
   orderId: string
   uid: Uint8Array
   orderPda: PublicKey
@@ -74,7 +74,7 @@ export async function buildSolanaSwapOrder(
 
   return {
     instruction,
-    orderId: toHex(uid),
+    orderId: toOrderId(uid),
     uid,
     orderPda,
     intent,

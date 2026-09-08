@@ -108,3 +108,12 @@ export function toHex(bytes: Uint8Array): string {
     .map((byte) => byte.toString(16).padStart(2, '0'))
     .join('')
 }
+
+/**
+ * Formats a uid as an order id in the same "0x"-prefixed form the order-book API returns in
+ * `EnrichedOrder.uid` (matching EVM order uids). Code that looks an order up by the API's uid
+ * (reducer batch actions, notifications, etc.) needs this to match whatever id was stored locally.
+ */
+export function toOrderId(uid: Uint8Array): string {
+  return `0x${toHex(uid)}`
+}
