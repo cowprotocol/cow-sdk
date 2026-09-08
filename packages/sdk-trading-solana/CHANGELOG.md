@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.3.0...sdk-trading-solana-v0.4.0) (2026-09-07)
+
+
+### ✨ Features
+
+* derive pda address from the seed ([#995](https://github.com/cowprotocol/cow-sdk/issues/995)) ([e7bf33f](https://github.com/cowprotocol/cow-sdk/commit/e7bf33ffdcc27ff4121573988b23443df9097e14))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.6.0
+    * @cowprotocol/sdk-order-book bumped to 4.0.4
+    * @cowprotocol/sdk-trading bumped to 2.4.1
+
 ## [0.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.2.0...sdk-trading-solana-v0.3.0) (2026-09-04)
 
 
