@@ -68,12 +68,26 @@ describe('postSolanaSwapOrderFromQuote', () => {
     expect(instruction.data[0]).toBe(2)
 
     expect(result).toEqual({
-      orderId: toHex(solanaQuote.uid),
+      orderId: `0x${toHex(solanaQuote.uid)}`,
       txHash: 'fake-signature',
       signature: 'fake-signature',
       signingScheme: SigningScheme.PRESIGN,
       orderToSign: quoteResults.orderToSign,
     })
+  })
+
+  it('returns the order id "0x"-prefixed, matching the order-book API\'s EnrichedOrder.uid format', async () => {
+    // The order-book API always returns/expects order ids "0x"-prefixed (like EVM order uids). Without
+    // this prefix, any code that looks an order up by the API's uid (e.g. reducer batch actions,
+    // notifications) mismatches the locally-stored id and silently fails to find the order.
+    const solanaQuote = await buildFixtureQuote()
+    const quoteResults = buildFixtureQuoteResults()
+    const signAndSend = jest.fn().mockResolvedValue({ signature: 'fake-signature' })
+
+    const result = await postSolanaSwapOrderFromQuote({ quoteResults, solanaQuote }, signAndSend)
+
+    expect(result.orderId.startsWith('0x')).toBe(true)
+    expect(result.orderId).toBe(`0x${toHex(solanaQuote.uid)}`)
   })
 
   it('propagates a signAndSend rejection', async () => {
@@ -133,8 +147,8 @@ describe('postSolanaSwapOrderFromQuote', () => {
     expect(instruction.keys[2].pubkey.toBase58()).toBe(expectedOrderPda.toBase58())
     expect(instruction.keys[2].pubkey.toBase58()).not.toBe(solanaQuote.orderPda.toBase58())
 
-    expect(result.orderId).toBe(toHex(expectedUid))
-    expect(result.orderId).not.toBe(toHex(solanaQuote.uid))
+    expect(result.orderId).toBe(`0x${toHex(expectedUid)}`)
+    expect(result.orderId).not.toBe(`0x${toHex(solanaQuote.uid)}`)
   })
 
   it('overriding validTo re-derives uid/orderPda to match the posted intent', async () => {
@@ -155,7 +169,7 @@ describe('postSolanaSwapOrderFromQuote', () => {
     expect(instruction.keys[2].pubkey.toBase58()).toBe(expectedOrderPda.toBase58())
     expect(instruction.keys[2].pubkey.toBase58()).not.toBe(solanaQuote.orderPda.toBase58())
 
-    expect(result.orderId).toBe(toHex(expectedUid))
-    expect(result.orderId).not.toBe(toHex(solanaQuote.uid))
+    expect(result.orderId).toBe(`0x${toHex(expectedUid)}`)
+    expect(result.orderId).not.toBe(`0x${toHex(solanaQuote.uid)}`)
   })
 })

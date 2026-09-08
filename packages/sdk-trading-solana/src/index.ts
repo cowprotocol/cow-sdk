@@ -1,5 +1,5 @@
 export * from './types'
-export { encodeOrderIntent, ENCODED_ORDER_INTENT_SIZE, hashOrderIntent, toHex } from './orderIntent'
+export { encodeOrderIntent, ENCODED_ORDER_INTENT_SIZE, hashOrderIntent, toHex, toOrderId } from './orderIntent'
 export type { SolanaOrderIntent } from './orderIntent'
 export { findOrderPda, ORDER_SEED } from './orderPda'
 export { getSettlementSeed } from './settlementSeed'
