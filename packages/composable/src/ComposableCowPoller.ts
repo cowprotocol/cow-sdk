@@ -5,7 +5,6 @@ import type {
   ComposableCowPollerDirectRevoke,
   ComposableCowPollerRegisterTypedDataParams,
   ComposableCowPollerSchedule,
-  ComposableCowPollerScheduleAuthorization,
   ComposableCowPollerScheduleKey,
   ComposableCowPollerTypedData,
 } from './types'
@@ -52,10 +51,6 @@ export class ComposableCowPoller {
 
   public async getComposableCowAddress(provider?: Provider): Promise<string> {
     return (await this.read('COMPOSABLE_COW', [], provider)) as string
-  }
-
-  public async getCowShedFactoryAddress(provider?: Provider): Promise<string> {
-    return (await this.read('COW_SHED_FACTORY', [], provider)) as string
   }
 
   public async getSchedule(id: string, provider?: Provider): Promise<ComposableCowPollerSchedule> {
@@ -130,11 +125,6 @@ export class ComposableCowPoller {
     return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'register', [schedule]) as string
   }
 
-  /** Encodes Poller.registerFromShed for execution by the funder's CowShed, which must equal schedule.owner. */
-  public encodeRegisterFromShed(schedule: ComposableCowPollerSchedule): string {
-    return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'registerFromShed', [schedule]) as string
-  }
-
   /** Encodes Poller.registerWithSignature. */
   public encodeRegisterWithSignature(
     schedule: ComposableCowPollerSchedule,
@@ -156,22 +146,5 @@ export class ComposableCowPoller {
   /** Encodes Poller.revoke. */
   public encodeRevoke({ handler, owner, salt }: ComposableCowPollerDirectRevoke): string {
     return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'revoke', [handler, owner, salt]) as string
-  }
-
-  /** Encodes Poller.revokeFromShed for execution by the funder's CowShed. */
-  public encodeRevokeFromShed({
-    handler,
-    funder,
-    owner,
-    salt,
-    authEpoch,
-  }: ComposableCowPollerScheduleAuthorization): string {
-    return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'revokeFromShed', [
-      handler,
-      funder,
-      owner,
-      salt,
-      authEpoch,
-    ]) as string
   }
 }

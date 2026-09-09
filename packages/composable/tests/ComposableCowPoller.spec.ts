@@ -20,10 +20,8 @@ const POLL_FUNDS_CALLDATA = '0xf83740307b1516d117fa5dd96fddfb9489b52af1c3cca64e1
 const POLLER_ADDRESS = '0x4444444444444444444444444444444444444444'
 const CHAIN_ID = 1
 const REGISTER_SELECTOR = '0x199d771f'
-const REGISTER_FROM_SHED_SELECTOR = '0x81b1b677'
 const REGISTER_WITH_SIGNATURE_SELECTOR = '0x9e72edd4'
 const REVOKE_SELECTOR = '0xd96054c4'
-const REVOKE_FROM_SHED_SELECTOR = '0x526c2744'
 const DEADLINE = 2_000_000_000n
 const SIGNATURE = '0x123456'
 const REGISTER_DIGEST = '0x7abf30523ae51092914ae8230bc2af45078d9b4f47062f3c9cb6e39cd13106bf'
@@ -36,14 +34,10 @@ describe('ComposableCowPoller ABI', () => {
   test('contains the SDK interface', () => {
     expect(ComposableCowPollerAbi.filter((item) => item.type === 'function').map((item) => item.name)).toEqual([
       'COMPOSABLE_COW',
-      'COW_SHED_FACTORY',
       'pollFunds',
       'register',
-      'registerFromShed',
       'registerWithSignature',
       'revoke',
-      'revokeFromShed',
-      'revokeWithSignature',
       'schedules',
     ])
   })
@@ -53,65 +47,30 @@ describe('ComposableCowPoller ABI', () => {
       outputs: [{ name: '', type: 'bool', internalType: 'bool' }],
     })
   })
-
-  test('matches the audited CowShed function inputs', () => {
-    expect(
-      ComposableCowPollerAbi.find((item) => item.type === 'function' && item.name === 'registerFromShed'),
-    ).toMatchObject({
-      inputs: [
-        {
-          components: [
-            { name: 'handler', type: 'address' },
-            { name: 'authEpoch', type: 'uint96' },
-            { name: 'funder', type: 'address' },
-            { name: 'owner', type: 'address' },
-            { name: 'salt', type: 'bytes32' },
-            { name: 'staticInput', type: 'bytes' },
-          ],
-        },
-      ],
-    })
-    expect(
-      ComposableCowPollerAbi.find((item) => item.type === 'function' && item.name === 'revokeFromShed'),
-    ).toMatchObject({
-      inputs: [
-        { name: 'handler', type: 'address' },
-        { name: 'funder', type: 'address' },
-        { name: 'owner', type: 'address' },
-        { name: 'salt', type: 'bytes32' },
-        { name: 'authEpoch', type: 'uint96' },
-      ],
-    })
-  })
 })
 
 describe('ComposableCowPoller', () => {
   const adapters = createAdapters()
   const pollerAddress = POLLER_ADDRESS
   const composableCowAddress = '0x5555555555555555555555555555555555555555'
-  const cowShedFactoryAddress = '0x6666666666666666666666666666666666666666'
   const poller = new ComposableCowPoller(pollerAddress)
 
   test('retains the configured Poller address', () => {
     expect(poller.pollerAddress).toEqual(pollerAddress)
   })
 
-  test('reads immutable addresses on every call', async () => {
+  test('reads the ComposableCoW address on every call', async () => {
     const adapter = adapters.viemAdapter
     const instance = new ComposableCowPoller(pollerAddress)
     const readContract = jest
       .spyOn(adapter, 'readContract')
       .mockResolvedValueOnce(composableCowAddress)
       .mockResolvedValueOnce(pollerAddress)
-      .mockResolvedValueOnce(cowShedFactoryAddress)
-      .mockResolvedValueOnce(pollerAddress)
     setGlobalAdapter(adapter)
 
     await expect(instance.getComposableCowAddress()).resolves.toEqual(composableCowAddress)
     await expect(instance.getComposableCowAddress()).resolves.toEqual(pollerAddress)
-    await expect(instance.getCowShedFactoryAddress()).resolves.toEqual(cowShedFactoryAddress)
-    await expect(instance.getCowShedFactoryAddress()).resolves.toEqual(pollerAddress)
-    expect(readContract).toHaveBeenCalledTimes(4)
+    expect(readContract).toHaveBeenCalledTimes(2)
 
     readContract.mockRestore()
   })
@@ -165,34 +124,26 @@ describe('ComposableCowPoller', () => {
       salt: SCHEDULE.salt,
     }
     const registerCalls = []
-    const registerFromShedCalls = []
     const revokeCalls = []
-    const revokeFromShedCalls = []
 
     for (const adapter of Object.values(adapters)) {
       setGlobalAdapter(adapter)
       registerCalls.push(poller.encodeRegister(SCHEDULE))
-      registerFromShedCalls.push(poller.encodeRegisterFromShed(SCHEDULE))
       expect(poller.encodePollFunds(SCHEDULE_ID)).toEqual(POLL_FUNDS_CALLDATA)
       revokeCalls.push(poller.encodeRevoke(directRevoke))
-      revokeFromShedCalls.push(poller.encodeRevokeFromShed(SCHEDULE))
     }
 
     expect(new Set(registerCalls).size).toEqual(1)
-    expect(new Set(registerFromShedCalls).size).toEqual(1)
     expect(new Set(revokeCalls).size).toEqual(1)
-    expect(new Set(revokeFromShedCalls).size).toEqual(1)
     expect(registerCalls[0]?.slice(0, 10)).toEqual(REGISTER_SELECTOR)
-    expect(registerFromShedCalls[0]?.slice(0, 10)).toEqual(REGISTER_FROM_SHED_SELECTOR)
     expect(revokeCalls[0]?.slice(0, 10)).toEqual(REVOKE_SELECTOR)
-    expect(revokeFromShedCalls[0]?.slice(0, 10)).toEqual(REVOKE_FROM_SHED_SELECTOR)
 
     const [registeredSchedule] = adapters.viemAdapter.utils.decodeFunctionData(
       ComposableCowPollerAbi,
-      'registerFromShed',
-      registerFromShedCalls[0]!,
+      'register',
+      registerCalls[0]!,
     )
-    expect(registeredSchedule.authEpoch).toEqual(SCHEDULE.authEpoch)
+    expect(registeredSchedule).toEqual(SCHEDULE)
 
     const [handler, owner, salt] = adapters.viemAdapter.utils.decodeFunctionData(
       ComposableCowPollerAbi,
@@ -202,17 +153,6 @@ describe('ComposableCowPoller', () => {
     expect(handler.toLowerCase()).toEqual(SCHEDULE.handler)
     expect(owner.toLowerCase()).toEqual(SCHEDULE.owner)
     expect(salt).toEqual(SCHEDULE.salt)
-
-    const [shedHandler, funder, shedOwner, shedSalt, authEpoch] = adapters.viemAdapter.utils.decodeFunctionData(
-      ComposableCowPollerAbi,
-      'revokeFromShed',
-      revokeFromShedCalls[0]!,
-    )
-    expect(shedHandler.toLowerCase()).toEqual(SCHEDULE.handler)
-    expect(funder.toLowerCase()).toEqual(SCHEDULE.funder)
-    expect(shedOwner.toLowerCase()).toEqual(SCHEDULE.owner)
-    expect(shedSalt).toEqual(SCHEDULE.salt)
-    expect(authEpoch).toEqual(SCHEDULE.authEpoch)
   })
 
   test('builds the EIP-712 domain from the configured Poller address', () => {
