@@ -13,7 +13,11 @@ jest.mock('./getSolanaQuote', () => ({
 jest.mock('./postSwapOrderFromQuote', () => ({
   postSolanaSwapOrderFromQuote: jest.fn(),
 }))
+jest.mock('./buildSwapOrder', () => ({
+  buildSolanaSwapOrder: jest.fn(),
+}))
 
+import { buildSolanaSwapOrder, SolanaSwapOrder } from './buildSwapOrder'
 import { getSolanaQuote } from './getSolanaQuote'
 import { postSolanaSwapOrderFromQuote } from './postSwapOrderFromQuote'
 import { SolanaTradingSdk } from './solanaTradingSdk'
@@ -23,6 +27,7 @@ const mockGetSolanaQuote = getSolanaQuote as jest.MockedFunction<typeof getSolan
 const mockPostSolanaSwapOrderFromQuote = postSolanaSwapOrderFromQuote as jest.MockedFunction<
   typeof postSolanaSwapOrderFromQuote
 >
+const mockBuildSolanaSwapOrder = buildSolanaSwapOrder as jest.MockedFunction<typeof buildSolanaSwapOrder>
 
 function fillPubkey(byte: number): PublicKey {
   return new PublicKey(new Uint8Array(32).fill(byte))
@@ -85,16 +90,18 @@ const orderPostingResultFixture: OrderPostingResult = {
   orderToSign: {} as OrderPostingResult['orderToSign'],
 }
 
+const swapOrderFixture = { orderId: 'deadbeef' } as SolanaSwapOrder
+
 describe('SolanaTradingSdk', () => {
   beforeEach(() => {
     mockGetSolanaQuote.mockReset()
     mockPostSolanaSwapOrderFromQuote.mockReset()
+    mockBuildSolanaSwapOrder.mockReset()
+    mockGetSolanaQuote.mockResolvedValue(quoteFixture)
   })
 
   it('getQuote delegates to getSolanaQuote with the given params', async () => {
-    mockGetSolanaQuote.mockResolvedValue(quoteFixture)
-    const signAndSend = jest.fn()
-    const sdk = new SolanaTradingSdk({ signAndSend })
+    const sdk = new SolanaTradingSdk()
 
     const result = await sdk.getQuote(params)
 
@@ -103,38 +110,64 @@ describe('SolanaTradingSdk', () => {
   })
 
   it('getQuote forwards the constructor-bound env to getSolanaQuote', async () => {
-    mockGetSolanaQuote.mockResolvedValue(quoteFixture)
-    const signAndSend = jest.fn()
-    const sdk = new SolanaTradingSdk({ signAndSend, env: 'staging' })
+    const sdk = new SolanaTradingSdk({ env: 'staging' })
 
     await sdk.getQuote(params)
 
     expect(mockGetSolanaQuote).toHaveBeenCalledWith(params, { env: 'staging' })
   })
 
-  it('postSwapOrderFromQuote delegates to postSolanaSwapOrderFromQuote with the constructor-bound signAndSend', async () => {
-    mockGetSolanaQuote.mockResolvedValue(quoteFixture)
+  it('getQuote exposes solanaQuote, so callers can inspect the intent and PDA', async () => {
+    const sdk = new SolanaTradingSdk()
+
+    const result = await sdk.getQuote(params)
+
+    expect(result.solanaQuote).toBe(solanaQuoteFixture)
+  })
+
+  it('buildOrder delegates to buildSolanaSwapOrder without needing a signer', async () => {
+    mockBuildSolanaSwapOrder.mockResolvedValue(swapOrderFixture)
+    const sdk = new SolanaTradingSdk()
+
+    const { buildOrder } = await sdk.getQuote(params)
+    const order = await buildOrder()
+
+    expect(mockBuildSolanaSwapOrder).toHaveBeenCalledWith(quoteFixture, undefined)
+    expect(order).toBe(swapOrderFixture)
+  })
+
+  it('buildOrder forwards advancedSettings', async () => {
+    mockBuildSolanaSwapOrder.mockResolvedValue(swapOrderFixture)
+    const advancedSettings: SwapAdvancedSettings = { quoteRequest: { validTo: 1_800_000_000 } }
+    const sdk = new SolanaTradingSdk()
+
+    const { buildOrder } = await sdk.getQuote(params)
+    await buildOrder(advancedSettings)
+
+    expect(mockBuildSolanaSwapOrder).toHaveBeenCalledWith(quoteFixture, advancedSettings)
+  })
+
+  it('postSwapOrderFromQuote takes signAndSend per call, not at construction', async () => {
     mockPostSolanaSwapOrderFromQuote.mockResolvedValue(orderPostingResultFixture)
     const signAndSend = jest.fn()
-    const sdk = new SolanaTradingSdk({ signAndSend })
+    const sdk = new SolanaTradingSdk()
 
     const { postSwapOrderFromQuote } = await sdk.getQuote(params)
-    const result = await postSwapOrderFromQuote()
+    const result = await postSwapOrderFromQuote(signAndSend)
 
     expect(mockPostSolanaSwapOrderFromQuote).toHaveBeenCalledWith(quoteFixture, signAndSend, undefined, undefined)
     expect(result).toEqual(orderPostingResultFixture)
   })
 
   it('postSwapOrderFromQuote forwards advancedSettings and signingStepManager', async () => {
-    mockGetSolanaQuote.mockResolvedValue(quoteFixture)
     mockPostSolanaSwapOrderFromQuote.mockResolvedValue(orderPostingResultFixture)
     const signAndSend = jest.fn()
-    const sdk = new SolanaTradingSdk({ signAndSend })
+    const sdk = new SolanaTradingSdk()
     const advancedSettings: SwapAdvancedSettings = { quoteRequest: { validTo: 1_800_000_000 } }
     const signingStepManager: SigningStepManager = { beforeOrderSign: jest.fn() }
 
     const { postSwapOrderFromQuote } = await sdk.getQuote(params)
-    await postSwapOrderFromQuote(advancedSettings, signingStepManager)
+    await postSwapOrderFromQuote(signAndSend, advancedSettings, signingStepManager)
 
     expect(mockPostSolanaSwapOrderFromQuote).toHaveBeenCalledWith(
       quoteFixture,
