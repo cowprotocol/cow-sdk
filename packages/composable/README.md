@@ -140,11 +140,6 @@ const revokeSignature = await adapter.signer.signTypedData(
   revokeTypedData.message,
 )
 const signedRevokeCalldata = poller.encodeRevokeWithSignature(revokeAuthorization, revokeDeadline, revokeSignature)
-
-// These variants must execute from the funder's CowShed.
-// For registration, schedule.owner must equal that CowShed.
-const shedRegisterCalldata = poller.encodeRegisterFromShed(schedule)
-const shedRevokeCalldata = poller.encodeRevokeFromShed(schedule)
 ```
 
 Use `ComposableCowPollerSdk` to sign or submit transactions through the configured adapter. Its `poller` property exposes the same low-level calldata and read methods shown above. Using that `schedule`, choose either the direct flow or the signature flow below; do not run both for the same registration.
@@ -187,7 +182,7 @@ The schedule fields are:
 - `salt`: the registered conditional order's salt.
 - `staticInput`: the registered conditional order's encoded static input.
 
-The low-level `ComposableCowPoller` only encodes these transactions; its consumer owns signing, gas policy, submission, and confirmation. Submit direct registration and revocation calldata to `pollerAddress` from `schedule.funder`, submit `signedRegisterCalldata` or `signedRevokeCalldata` through a relayer, or include a CowShed variant in a bundle executed by the funder's own CowShed. `registerFromShed` additionally requires `schedule.owner` to equal that CowShed. Signed registration calldata contains the schedule, deadline, and signature. Signed revocation calldata contains the handler, funder, owner, salt, `authEpoch`, deadline, and signature. Replay protection is scoped to the schedule ID through `authEpoch`. Use `poller.getComposableCowAddress()`, `poller.getCowShedFactoryAddress()`, and `poller.getSchedule(scheduleId)` to read Poller state.
+The low-level `ComposableCowPoller` only encodes these transactions; its consumer owns signing, gas policy, submission, and confirmation. Submit direct registration and revocation calldata to `pollerAddress` from `schedule.funder`, or submit `signedRegisterCalldata` or `signedRevokeCalldata` through a relayer. Signed registration calldata contains the schedule, deadline, and signature. Signed revocation calldata contains the handler, funder, owner, salt, `authEpoch`, deadline, and signature. Replay protection is scoped to the schedule ID through `authEpoch`. Use `poller.getComposableCowAddress()` and `poller.getSchedule(scheduleId)` to read Poller state.
 
 ## Usage
 
