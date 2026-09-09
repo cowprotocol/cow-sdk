@@ -115,6 +115,11 @@ export type ComposableCowPollerRegisterTypedDataParams = {
   readonly deadline: BigIntish
 }
 
+export type ComposableCowPollerRevokeTypedDataParams = ComposableCowPollerScheduleAuthorization & {
+  readonly chainId: number
+  readonly deadline: BigIntish
+}
+
 export enum ProofLocation {
   // The location of the proofs is private to the caller.
   PRIVATE = 0,
