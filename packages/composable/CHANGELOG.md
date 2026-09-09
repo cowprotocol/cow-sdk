@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.4.2...sdk-composable-v1.5.0) (2026-09-09)
+
+
+### ✨ Features
+
+* allow fetching twap deltas ([#996](https://github.com/cowprotocol/cow-sdk/issues/996)) ([46cf8b6](https://github.com/cowprotocol/cow-sdk/commit/46cf8b68bb7fd6189ae7cfbcd02df44330e88352))
+* include scheduled parts ([#1002](https://github.com/cowprotocol/cow-sdk/issues/1002)) ([9fdd914](https://github.com/cowprotocol/cow-sdk/commit/9fdd91494ddfee381e710e587f9e33537bddc7c3))
+
 ## [1.4.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.4.1...sdk-composable-v1.4.2) (2026-09-07)
 
 
