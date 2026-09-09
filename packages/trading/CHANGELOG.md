@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.4.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v2.4.1...sdk-trading-v2.4.2) (2026-09-09)
+
+
+### 🔧 Miscellaneous
+
+* update coverage badges ([#948](https://github.com/cowprotocol/cow-sdk/issues/948)) ([151d7a4](https://github.com/cowprotocol/cow-sdk/commit/151d7a4bc51194ffa7dc46a102eb2bc0e3537124))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 6.0.3
+
 ## [2.4.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v2.4.0...sdk-trading-v2.4.1) (2026-09-07)
 
 
