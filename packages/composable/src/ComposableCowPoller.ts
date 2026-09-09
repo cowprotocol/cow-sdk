@@ -191,6 +191,23 @@ export class ComposableCowPoller {
     return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'revoke', [handler, owner, salt]) as string
   }
 
+  /** Encodes Poller.revokeFromShed for execution by the funder's CowShed. */
+  public encodeRevokeFromShed({
+    handler,
+    funder,
+    owner,
+    salt,
+    authEpoch,
+  }: ComposableCowPollerScheduleAuthorization): string {
+    return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'revokeFromShed', [
+      handler,
+      funder,
+      owner,
+      salt,
+      authEpoch,
+    ]) as string
+  }
+
   /** Encodes Poller.revokeWithSignature. */
   public encodeRevokeWithSignature(
     { handler, funder, owner, salt, authEpoch }: ComposableCowPollerScheduleAuthorization,

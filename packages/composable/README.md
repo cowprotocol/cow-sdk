@@ -165,6 +165,26 @@ const cowShedSdk = new CowShedSdk(
 const cowShed = cowShedSdk.getCowShedAccount(chainId, funder)
 ```
 
+Revoke from the funder's own CowShed by including the Poller call in a signed bundle. Use the original schedule identity and refresh its epoch before signing. Revocation does not require the schedule owner to equal the CowShed.
+
+```typescript
+const { authEpoch: revokeAuthEpoch } = await poller.getSchedule(scheduleId)
+
+const revocation = await cowShedSdk.signCalls({
+  chainId,
+  signer,
+  calls: [
+    {
+      target: pollerAddress,
+      callData: poller.encodeRevokeFromShed({ ...schedule, authEpoch: revokeAuthEpoch }),
+      value: 0n,
+      isDelegateCall: false,
+      allowFailure: false,
+    },
+  ],
+})
+```
+
 Use `ComposableCowPollerSdk` to sign or submit transactions through the configured adapter. Its `poller` property exposes the same low-level calldata and read methods shown above. Using that `schedule`, choose either the direct flow or the signature flow below; do not run both for the same registration.
 
 ```typescript

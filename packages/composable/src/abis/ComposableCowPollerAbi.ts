@@ -69,6 +69,19 @@ export const ComposableCowPollerAbi = [
   },
   {
     type: 'function',
+    name: 'revokeFromShed',
+    inputs: [
+      { name: 'handler', type: 'address', internalType: 'contract IConditionalOrderGenerator' },
+      { name: 'funder', type: 'address', internalType: 'address' },
+      { name: 'owner', type: 'address', internalType: 'address' },
+      { name: 'salt', type: 'bytes32', internalType: 'bytes32' },
+      { name: 'authEpoch', type: 'uint96', internalType: 'uint96' },
+    ],
+    outputs: ID_OUTPUT,
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
     name: 'revokeWithSignature',
     inputs: [
       { name: 'handler', type: 'address', internalType: 'contract IConditionalOrderGenerator' },
