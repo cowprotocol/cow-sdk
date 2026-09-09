@@ -1,13 +1,22 @@
+import * as v from 'valibot'
+
 import { GraphqlClient } from './graphql'
-import { QUERY_OPTIONS_SCHEMA } from './schemas'
-import { TWAP_ORDERS_QUERY, TWAP_PART_ORDERS_QUERY } from './twap-queries'
+import { BYTES_32_SCHEMA, QUERY_OPTIONS_SCHEMA, SAFE_INTEGER_SCHEMA } from './schemas'
+import { TWAP_ORDER_QUERY, TWAP_ORDERS_QUERY, TWAP_PART_ORDERS_QUERY } from './twap-queries'
 import {
+  GET_TWAP_ORDER_PARAMS_SCHEMA,
   GET_TWAP_ORDERS_PARAMS_SCHEMA,
   GET_TWAP_PART_ORDERS_PARAMS_SCHEMA,
   TWAP_PARENT_SCHEMA,
   TWAP_PART_ORDER_SCHEMA,
 } from './twap-schemas'
-import type { GetTwapOrdersParams, GetTwapPartOrdersParams, TwapOrder, TwapPartOrder } from './twap-types'
+import type {
+  GetTwapOrderParams,
+  GetTwapOrdersParams,
+  GetTwapPartOrdersParams,
+  TwapOrder,
+  TwapPartOrder,
+} from './twap-types'
 import {
   ProgrammaticOrderApiError,
   type ProgrammaticOrderApiOptions,
@@ -36,6 +45,54 @@ export class ProgrammaticOrderApi {
       this.graphql = new GraphqlClient(options.apiUrl ?? DEFAULT_API_URL)
     } catch (cause) {
       throw new ProgrammaticOrderApiError('Invalid programmatic orders API URL', { cause })
+    }
+  }
+
+  /**
+   * Returns one TWAP order by its chain-local event ID.
+   *
+   * @returns The TWAP order, or `null` when the event is missing or belongs to another order type.
+   * @throws {@link ProgrammaticOrderApiError} when the input is invalid or the request fails.
+   */
+  async getTwapOrder(params: GetTwapOrderParams): Promise<TwapOrder | null> {
+    const { chainId, eventId } = parseInput(GET_TWAP_ORDER_PARAMS_SCHEMA, params)
+
+    try {
+      const data = await this.graphql.query(TWAP_ORDER_QUERY, { chainId, partsChainId: chainId, eventId })
+      const result = v.safeParse(v.object({ twapOrder: v.nullable(v.unknown()) }), data, { abortEarly: true })
+
+      if (!result.success) throw new Error('Invalid TWAP order response')
+      if (result.output.twapOrder === null) return null
+
+      const orderType = v.safeParse(v.object({ orderType: v.string() }), result.output.twapOrder, { abortEarly: true })
+
+      if (!orderType.success) throw new Error('Invalid TWAP order type')
+      if (orderType.output.orderType !== 'TWAP') return null
+
+      const details = v.parse(
+        v.object({ txHash: BYTES_32_SCHEMA, transaction: v.object({ blockTimestamp: v.string() }) }),
+        result.output.twapOrder,
+      )
+      const { knownParts } = v.parse(
+        v.object({ knownParts: v.object({ totalCount: v.pipe(SAFE_INTEGER_SCHEMA, v.minValue(0)) }) }),
+        data,
+      )
+      const order = v.safeParse(
+        TWAP_PARENT_SCHEMA,
+        {
+          ...result.output.twapOrder,
+          txHash: details.txHash,
+          createdAt: details.transaction.blockTimestamp,
+          partOrdersCount: knownParts.totalCount,
+        },
+        { abortEarly: true },
+      )
+
+      if (!order.success) throw new Error('Invalid TWAP order')
+
+      return order.output
+    } catch (cause) {
+      throw new ProgrammaticOrderApiError('Failed to fetch TWAP order', { cause })
     }
   }
 

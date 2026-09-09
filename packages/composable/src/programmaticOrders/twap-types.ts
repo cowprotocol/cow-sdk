@@ -13,6 +13,14 @@ export interface GetTwapOrdersParams {
   updatedAtBlockGte?: bigint
 }
 
+/** Input for querying one TWAP order. */
+export interface GetTwapOrderParams {
+  /** Parent event ID. Unique within a chain. */
+  eventId: string
+  /** Chain containing the TWAP order. */
+  chainId: SupportedChainId
+}
+
 /** Input for querying one page of TWAP part orders. */
 export interface GetTwapPartOrdersParams {
   /** Parent event ID returned by `getTwapOrders`. */
@@ -105,10 +113,27 @@ export interface TwapOrder {
   status: ProgrammaticOrderStatus
   /** Unix creation time in seconds. */
   createdAt: number
+  /** Creation transaction. Available from `getTwapOrder`, omitted from list responses. */
+  creationTxHash?: string
   /** Block in which the indexer last updated this TWAP or one of its part orders. */
   updatedAtBlock: bigint
   /** Number of known parts, including unconfirmed candidates, without duplicates. */
   partOrdersCount: number
   schedule: TwapSchedule
   executedAmounts: TwapExecutedAmounts
+}
+
+/** User-facing execution state derived from the parent and its aggregate fills. */
+export type TwapExecutionStatus = 'open' | 'filled' | 'partiallyFilled' | 'expired' | 'cancelled'
+
+/** Inputs required to classify a TWAP without reading ambient time. */
+export interface GetTwapExecutionStatusParams {
+  status: ProgrammaticOrderStatus
+  executedSellAmount: bigint
+  partSellAmount: bigint
+  numberOfParts: number
+  effectiveStartTime: number
+  timeBetweenParts: number
+  /** Unix time in seconds. */
+  now: number
 }

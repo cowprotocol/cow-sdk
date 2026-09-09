@@ -1,3 +1,31 @@
+const TWAP_PARENT_FIELDS = `
+  eventId
+  chainId
+  hash
+  owner
+  resolvedOwner
+  status
+  updatedAtBlock
+  additionalData
+  schedule: decodedParams
+`
+
+export const TWAP_ORDER_QUERY = `
+  query TwapOrder($chainId: Float!, $partsChainId: Int!, $eventId: String!) {
+    twapOrder: conditionalOrderGenerator(chainId: $chainId, eventId: $eventId) {
+      orderType
+      ${TWAP_PARENT_FIELDS}
+      txHash
+      transaction {
+        blockTimestamp
+      }
+    }
+    knownParts: partOrders(where: { chainId: $partsChainId, conditionalOrderGeneratorId: $eventId }, limit: 1) {
+      totalCount
+    }
+  }
+`
+
 export const TWAP_ORDERS_QUERY = `
   query TwapOrders($resolvedOwner: String!, $chainId: Int!, $offset: Int!, $limit: Int!, $direction: String!, $updatedAtBlockGte: BigInt) {
     twapOrders: programmaticOrders(
@@ -13,16 +41,8 @@ export const TWAP_ORDERS_QUERY = `
       orderDirection: $direction
     ) {
       items {
-        eventId
-        chainId
-        hash
-        owner
-        resolvedOwner
-        status
-        updatedAtBlock
-        additionalData
+        ${TWAP_PARENT_FIELDS}
         partOrdersCount
-        schedule: decodedParams
         createdAt: creationDate
       }
       totalCount

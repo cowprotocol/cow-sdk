@@ -2,6 +2,7 @@ import { SupportedChainId } from '@cowprotocol/sdk-config'
 
 import {
   ProgrammaticOrderApi,
+  type GetTwapOrderParams,
   type GetTwapOrdersParams,
   type GetTwapPartOrdersParams,
   type QueryDirection,
@@ -89,6 +90,69 @@ describe('ProgrammaticOrderApi', () => {
         updatedAtBlockGte: -1n,
       }),
     ).rejects.toThrow('must be a non-negative bigint')
+    await expect(api.getTwapOrder(undefined as unknown as GetTwapOrderParams)).rejects.toThrow(
+      'Invalid type: Expected Object but received undefined',
+    )
+  })
+
+  it('returns one TWAP parent by event ID', async () => {
+    const fetchMock = jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          data: {
+            twapOrder: {
+              ...twapParent('event', 200),
+              orderType: 'TWAP',
+              txHash: `0x${'3'.repeat(64)}`,
+              transaction: { blockTimestamp: '200' },
+            },
+            knownParts: { totalCount: 3 },
+          },
+        }),
+        { headers: { 'Content-Type': 'application/json' } },
+      ),
+    )
+
+    const order = await new ProgrammaticOrderApi({ apiUrl: 'https://example.com' }).getTwapOrder({
+      eventId: 'event',
+      chainId: SupportedChainId.GNOSIS_CHAIN,
+    })
+    const request = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)) as {
+      query: string
+      variables: Record<string, unknown>
+    }
+
+    expect(request.query).toContain('conditionalOrderGenerator(chainId: $chainId, eventId: $eventId)')
+    expect(request.query).toContain('knownParts: partOrders(')
+    expect(request.variables).toEqual({
+      chainId: SupportedChainId.GNOSIS_CHAIN,
+      partsChainId: SupportedChainId.GNOSIS_CHAIN,
+      eventId: 'event',
+    })
+    expect(order).toMatchObject({
+      eventId: 'event',
+      createdAt: 200,
+      creationTxHash: `0x${'3'.repeat(64)}`,
+      partOrdersCount: 3,
+    })
+  })
+
+  it.each([
+    ['a missing event', null],
+    ['another programmatic order type', { orderType: 'StopLoss' }],
+  ])('returns null for %s', async (_case, twapOrder) => {
+    jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ data: { twapOrder } }), {
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
+
+    await expect(
+      new ProgrammaticOrderApi({ apiUrl: 'https://example.com' }).getTwapOrder({
+        eventId: 'event',
+        chainId: SupportedChainId.GNOSIS_CHAIN,
+      }),
+    ).resolves.toBeNull()
   })
 
   it('requests parent-only TWAPs by creation and preserves the returned order', async () => {
