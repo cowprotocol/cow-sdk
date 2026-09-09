@@ -1,4 +1,4 @@
-import { getGlobalAdapter, log, AccountAddress, AbstractSigner } from '@cowprotocol/sdk-common'
+import { getGlobalAdapter, log, AccountAddress, AbstractSigner, resolveSigner } from '@cowprotocol/sdk-common'
 import { DEFAULT_QUOTE_VALIDITY } from './consts'
 import {
   TradingAppDataInfo,
@@ -27,7 +27,6 @@ import { getPartnerFeeBps } from './utils/getPartnerFeeBps'
 import { adjustEthFlowOrderParams, getIsEthFlowOrder, swapParamsToLimitOrderParams } from './utils/misc'
 import { getDefaultSlippageBps } from './utils/slippage'
 import { resolveSlippageSuggestion } from './resolveSlippageSuggestion'
-import { resolveSigner } from './utils/resolveSigner'
 
 // ETH-FLOW orders require different quote params
 // check the isEthFlow flag and set in quote req obj

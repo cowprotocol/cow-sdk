@@ -86,7 +86,7 @@ class CustomOrder extends ConditionalOrder<DataType, StaticType> {
 
 ### JIT Poller
 
-The SDK encodes calldata for registering and revoking `ComposableCowPoller` schedules. Signing, gas estimation, transaction submission, and confirmation remain the consumer's responsibility.
+The package exposes two Poller APIs: the low-level `ComposableCowPoller` below only reads state and encodes calldata, while `ComposableCowPollerSdk` adds signing and transaction submission through the configured adapter.
 
 ```typescript
 import { ComposableCowPoller, type ComposableCowPollerSchedule } from '@cowprotocol/sdk-composable'
@@ -142,6 +142,37 @@ const revokeSignature = await adapter.signer.signTypedData(
 const signedRevokeCalldata = poller.encodeRevokeWithSignature(revokeAuthorization, revokeDeadline, revokeSignature)
 ```
 
+Use `ComposableCowPollerSdk` to sign or submit transactions through the configured adapter. Its `poller` property exposes the same low-level calldata and read methods shown above. Using that `schedule`, choose either the direct flow or the signature flow below; do not run both for the same registration.
+
+```typescript
+import { ComposableCowPollerSdk } from '@cowprotocol/sdk-composable'
+
+const pollerSdk = new ComposableCowPollerSdk({ chainId, pollerAddress, signer }, adapter)
+const deadline = Math.floor(Date.now() / 1000) + 15 * 60
+
+// Direct flow: use the SDK signer, or the adapter signer when none was configured.
+const transaction = await pollerSdk.register({ schedule })
+await transaction.wait()
+
+// Signature flow: keep the intended schedule and refresh only its replay-protection epoch.
+const { authEpoch } = await pollerSdk.poller.getSchedule(scheduleId)
+const currentSchedule = { ...schedule, authEpoch }
+const authorization = await pollerSdk.signRegister({ schedule: currentSchedule, deadline })
+// authorization.calldata is ready for a hook or relayed transaction.
+// authorization.typedData and authorization.signature are also available for inspection.
+
+// Alternatively, submit the authorization now with a relayer signer.
+const relayedTransaction = await pollerSdk.registerWithSignature({
+  schedule: currentSchedule,
+  deadline,
+  signature: authorization.signature,
+  signer: relayerSigner,
+})
+await relayedTransaction.wait()
+```
+
+`signRevoke` follows the same signature flow and signs the supplied schedule identity and `authEpoch`. Refresh only `authEpoch` with `pollerSdk.poller.getSchedule(scheduleId)` immediately before signing; an inactive schedule retains its epoch but not its other fields.
+
 The schedule fields are:
 
 - `handler`: the registered conditional order's handler.
@@ -151,7 +182,7 @@ The schedule fields are:
 - `salt`: the registered conditional order's salt.
 - `staticInput`: the registered conditional order's encoded static input.
 
-The SDK only encodes these transactions; the consumer owns signing, gas policy, submission, and confirmation. Submit direct registration and revocation calldata to `pollerAddress` from `schedule.funder`, or submit `signedRegisterCalldata` or `signedRevokeCalldata` through a relayer. Signed registration calldata contains the schedule, deadline, and signature. Signed revocation calldata contains the handler, funder, owner, salt, `authEpoch`, deadline, and signature. Replay protection is scoped to the schedule ID through `authEpoch`. Use `poller.getComposableCowAddress()` and `poller.getSchedule(scheduleId)` to read Poller state.
+The low-level `ComposableCowPoller` only encodes these transactions; its consumer owns signing, gas policy, submission, and confirmation. Submit direct registration and revocation calldata to `pollerAddress` from `schedule.funder`, or submit `signedRegisterCalldata` or `signedRevokeCalldata` through a relayer. Signed registration calldata contains the schedule, deadline, and signature. Signed revocation calldata contains the handler, funder, owner, salt, `authEpoch`, deadline, and signature. Replay protection is scoped to the schedule ID through `authEpoch`. Use `poller.getComposableCowAddress()` and `poller.getSchedule(scheduleId)` to read Poller state.
 
 ## Usage
 
