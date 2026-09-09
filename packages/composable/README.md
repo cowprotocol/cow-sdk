@@ -86,7 +86,7 @@ class CustomOrder extends ConditionalOrder<DataType, StaticType> {
 
 ### JIT Poller
 
-The package exports utilities needed to integrate with a deployed `ComposableCowPoller`. The Poller moves sell tokens just in time from a funding account (often an EOA) to the ComposableCoW order owner/trader. This avoids requiring the trader account to be prefunded for the full schedule, reducing setup friction and idle capital.
+The SDK encodes calldata for registering and revoking `ComposableCowPoller` schedules. Signing, gas estimation, transaction submission, and confirmation remain the consumer's responsibility.
 
 ```typescript
 import { ComposableCowPoller, type ComposableCowPollerSchedule } from '@cowprotocol/sdk-composable'
@@ -105,11 +105,17 @@ const schedule: ComposableCowPollerSchedule = {
 }
 const scheduleId = poller.getScheduleId(schedule)
 
-// Direct registration must be submitted by schedule.funder.
+// Submit this calldata to pollerAddress from schedule.funder.
 const registerCalldata = poller.encodeRegister(schedule)
 
 // Anyone may submit this calldata to pollerAddress when the next order part needs funding.
 const pollFundsCalldata = poller.encodePollFunds(scheduleId)
+
+// Or authorize registration for submission by another account.
+const deadline = Math.floor(Date.now() / 1000) + 15 * 60
+const typedData = poller.getRegisterTypedData({ chainId, schedule, deadline })
+const signature = await adapter.signer.signTypedData(typedData.domain, typedData.types, typedData.message)
+const signedRegisterCalldata = poller.encodeRegisterWithSignature(schedule, deadline, signature)
 
 // Direct revocation must be submitted by schedule.funder.
 const revokeCalldata = poller.encodeRevoke(schedule)
@@ -124,7 +130,7 @@ The schedule fields are:
 - `salt`: the registered conditional order's salt.
 - `staticInput`: the registered conditional order's encoded static input.
 
-The SDK only encodes these transactions; the consumer owns signing, gas policy, submission, and confirmation. Submit direct registration and revocation calldata to `pollerAddress` from `schedule.funder`. Replay protection is scoped to the schedule ID through `authEpoch`. Use `poller.getComposableCowAddress()` and `poller.getSchedule(scheduleId)` to read Poller state.
+The SDK only encodes these transactions; the consumer owns signing, gas policy, submission, and confirmation. Submit direct registration and revocation calldata to `pollerAddress` from `schedule.funder`, or submit `signedRegisterCalldata` through a relayer. Signed registration calldata contains the schedule, deadline, and signature. Replay protection is scoped to the schedule ID through `authEpoch`. Use `poller.getComposableCowAddress()` and `poller.getSchedule(scheduleId)` to read Poller state.
 
 ## Usage
 
