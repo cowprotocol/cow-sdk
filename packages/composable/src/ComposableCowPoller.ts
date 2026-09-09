@@ -74,6 +74,10 @@ export class ComposableCowPoller {
     return (await this.read('COMPOSABLE_COW', [], provider)) as string
   }
 
+  public async getCowShedFactoryAddress(provider?: Provider): Promise<string> {
+    return (await this.read('COW_SHED_FACTORY', [], provider)) as string
+  }
+
   public async getSchedule(id: string, provider?: Provider): Promise<ComposableCowPollerSchedule> {
     const adapter = getGlobalAdapter()
     const [handler, authEpoch, funder, owner, salt, staticInput] = (await this.read('schedules', [id], provider)) as [

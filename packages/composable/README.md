@@ -142,6 +142,29 @@ const revokeSignature = await adapter.signer.signTypedData(
 const signedRevokeCalldata = poller.encodeRevokeWithSignature(revokeAuthorization, revokeDeadline, revokeSignature)
 ```
 
+Install the optional CowShed package to derive a Poller-compatible account:
+
+```sh
+npm install @cowprotocol/sdk-cow-shed
+```
+
+Configure `CowShedSdk` with the composable deployment below. The Poller only accepts sheds created by the factory returned from `poller.getCowShedFactoryAddress()`.
+
+```typescript
+import { COW_SHED_2_1_0_VERSION, COW_SHED_PROXY_INIT_CODE, CowShedSdk } from '@cowprotocol/sdk-cow-shed'
+
+const cowShedSdk = new CowShedSdk(
+  adapter,
+  {
+    factoryAddress: '0x5E284e80F3bd6A7D80A8500D9c49878028110848',
+    implementationAddress: '0xF0D400089d5b9fACA64E3422AD6614546587cfFB',
+    proxyCreationCode: COW_SHED_PROXY_INIT_CODE[COW_SHED_2_1_0_VERSION],
+  },
+  COW_SHED_2_1_0_VERSION,
+)
+const cowShed = cowShedSdk.getCowShedAccount(chainId, funder)
+```
+
 Use `ComposableCowPollerSdk` to sign or submit transactions through the configured adapter. Its `poller` property exposes the same low-level calldata and read methods shown above. Using that `schedule`, choose either the direct flow or the signature flow below; do not run both for the same registration.
 
 ```typescript

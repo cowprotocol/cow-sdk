@@ -72,6 +72,28 @@ const tx = await anotherWallet.sendTransaction({
 })
 ```
 
+### CowShed versions and custom deployments
+
+`CowShedSdk` defaults to the canonical CowShed 2.1.0 deployment. You can select an older supported deployment with the constructor's third argument.
+
+Composable CoW integrations must use the 2.1.0 `COWShedForComposableCoW` factory. It deploys sheds with ERC-1271 forwarding:
+
+```ts
+import { COW_SHED_2_1_0_VERSION, COW_SHED_PROXY_INIT_CODE, CowShedSdk } from '@cowprotocol/sdk-cow-shed'
+
+const cowShedSdk = new CowShedSdk(
+  adapter,
+  {
+    factoryAddress: '0x5E284e80F3bd6A7D80A8500D9c49878028110848',
+    implementationAddress: '0xF0D400089d5b9fACA64E3422AD6614546587cfFB',
+    proxyCreationCode: COW_SHED_PROXY_INIT_CODE[COW_SHED_2_1_0_VERSION],
+  },
+  COW_SHED_2_1_0_VERSION,
+)
+```
+
+For another custom deployment, pass its factory and implementation addresses. Set `proxyCreationCode` when it differs from the selected SDK version, and set `domainVersion` when its EIP-712 version differs.
+
 ### Using via Cow SDK
 
 You can also import `CowShedSdk` directly from the main SDK:

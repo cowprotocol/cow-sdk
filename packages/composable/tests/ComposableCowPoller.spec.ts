@@ -48,6 +48,7 @@ describe('ComposableCowPoller ABI', () => {
   test('contains the SDK interface', () => {
     expect(ComposableCowPollerAbi.filter((item) => item.type === 'function').map((item) => item.name)).toEqual([
       'COMPOSABLE_COW',
+      'COW_SHED_FACTORY',
       'pollFunds',
       'register',
       'registerWithSignature',
@@ -68,24 +69,29 @@ describe('ComposableCowPoller', () => {
   const adapters = createAdapters()
   const pollerAddress = POLLER_ADDRESS
   const composableCowAddress = '0x5555555555555555555555555555555555555555'
+  const cowShedFactoryAddress = '0x6666666666666666666666666666666666666666'
   const poller = new ComposableCowPoller(pollerAddress)
 
   test('retains the configured Poller address', () => {
     expect(poller.pollerAddress).toEqual(pollerAddress)
   })
 
-  test('reads the ComposableCoW address on every call', async () => {
+  test('reads immutable addresses on every call', async () => {
     const adapter = adapters.viemAdapter
     const instance = new ComposableCowPoller(pollerAddress)
     const readContract = jest
       .spyOn(adapter, 'readContract')
       .mockResolvedValueOnce(composableCowAddress)
       .mockResolvedValueOnce(pollerAddress)
+      .mockResolvedValueOnce(cowShedFactoryAddress)
+      .mockResolvedValueOnce(pollerAddress)
     setGlobalAdapter(adapter)
 
     await expect(instance.getComposableCowAddress()).resolves.toEqual(composableCowAddress)
     await expect(instance.getComposableCowAddress()).resolves.toEqual(pollerAddress)
-    expect(readContract).toHaveBeenCalledTimes(2)
+    await expect(instance.getCowShedFactoryAddress()).resolves.toEqual(cowShedFactoryAddress)
+    await expect(instance.getCowShedFactoryAddress()).resolves.toEqual(pollerAddress)
+    expect(readContract).toHaveBeenCalledTimes(4)
 
     readContract.mockRestore()
   })
