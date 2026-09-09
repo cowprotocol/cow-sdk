@@ -165,6 +165,27 @@ const cowShedSdk = new CowShedSdk(
 const cowShed = cowShedSdk.getCowShedAccount(chainId, funder)
 ```
 
+Register from the funder's own CowShed by including the Poller call in a signed bundle. The schedule owner must equal that CowShed. Refresh the epoch for this schedule ID before signing.
+
+```typescript
+const shedSchedule = { ...schedule, owner: cowShed }
+const { authEpoch: shedAuthEpoch } = await poller.getSchedule(poller.getScheduleId(shedSchedule))
+
+const registration = await cowShedSdk.signCalls({
+  chainId,
+  signer,
+  calls: [
+    {
+      target: pollerAddress,
+      callData: poller.encodeRegisterFromShed({ ...shedSchedule, authEpoch: shedAuthEpoch }),
+      value: 0n,
+      isDelegateCall: false,
+      allowFailure: false,
+    },
+  ],
+})
+```
+
 Use `ComposableCowPollerSdk` to sign or submit transactions through the configured adapter. Its `poller` property exposes the same low-level calldata and read methods shown above. Using that `schedule`, choose either the direct flow or the signature flow below; do not run both for the same registration.
 
 ```typescript
