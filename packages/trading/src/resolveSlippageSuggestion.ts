@@ -50,12 +50,13 @@ export async function resolveSlippageSuggestion(
     const suggestedSlippageBps = suggestedSlippage.slippageBps
 
     return {
-      slippageBps: suggestedSlippageBps
-        ? suggestSlippageBps({
-            ...suggestSlippageParams,
-            volumeMultiplierPercent: bpsToPercentage(suggestedSlippageBps),
-          })
-        : defaultSuggestion,
+      slippageBps:
+        suggestedSlippageBps != null
+          ? suggestSlippageBps({
+              ...suggestSlippageParams,
+              volumeMultiplierPercent: bpsToPercentage(suggestedSlippageBps),
+            })
+          : defaultSuggestion,
     }
   } catch (e: unknown) {
     log(`getSlippageSuggestion() error: ${(e as Error).message || String(e)}`)
