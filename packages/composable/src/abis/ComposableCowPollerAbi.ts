@@ -47,13 +47,6 @@ export const ComposableCowPollerAbi = [
   },
   {
     type: 'function',
-    name: 'registerFromShed',
-    inputs: [SCHEDULE_INPUT],
-    outputs: ID_OUTPUT,
-    stateMutability: 'nonpayable',
-  },
-  {
-    type: 'function',
     name: 'registerWithSignature',
     inputs: [
       SCHEDULE_INPUT,
@@ -70,19 +63,6 @@ export const ComposableCowPollerAbi = [
       { name: 'handler', type: 'address', internalType: 'contract IConditionalOrderGenerator' },
       { name: 'owner', type: 'address', internalType: 'address' },
       { name: 'salt', type: 'bytes32', internalType: 'bytes32' },
-    ],
-    outputs: ID_OUTPUT,
-    stateMutability: 'nonpayable',
-  },
-  {
-    type: 'function',
-    name: 'revokeFromShed',
-    inputs: [
-      { name: 'handler', type: 'address', internalType: 'contract IConditionalOrderGenerator' },
-      { name: 'funder', type: 'address', internalType: 'address' },
-      { name: 'owner', type: 'address', internalType: 'address' },
-      { name: 'salt', type: 'bytes32', internalType: 'bytes32' },
-      { name: 'authEpoch', type: 'uint96', internalType: 'uint96' },
     ],
     outputs: ID_OUTPUT,
     stateMutability: 'nonpayable',
