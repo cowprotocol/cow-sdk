@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.3.7](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v3.3.6...sdk-flash-loans-v3.3.7) (2026-09-09)
+
+
+### 🔧 Miscellaneous
+
+* update coverage badges ([#948](https://github.com/cowprotocol/cow-sdk/issues/948)) ([151d7a4](https://github.com/cowprotocol/cow-sdk/commit/151d7a4bc51194ffa7dc46a102eb2bc0e3537124))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 6.0.3
+    * @cowprotocol/sdk-trading bumped to 2.4.2
+
 ## [3.3.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v3.3.5...sdk-flash-loans-v3.3.6) (2026-09-07)
 
 
