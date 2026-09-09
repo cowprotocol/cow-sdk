@@ -2,7 +2,7 @@
   "packages/app-data": "6.0.2",
   "packages/bridging": "4.4.5",
   "packages/common": "0.12.3",
-  "packages/composable": "1.4.2",
+  "packages/composable": "1.5.0",
   "packages/config": "2.6.0",
   "packages/contracts-ts": "3.5.1",
   "packages/cow-shed": "0.4.8",
