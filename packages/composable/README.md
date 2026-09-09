@@ -153,15 +153,20 @@ Install the optional CowShed package before bundling these calls:
 npm install @cowprotocol/sdk-cow-shed
 ```
 
-Bundle either CowShed variant with other setup or cleanup calls through `@cowprotocol/sdk-cow-shed`. Custom CowShed deployments can supply their factory addresses, proxy creation code, and EIP-712 domain version directly; no SDK subclass or version cast is needed.
+Bundle either CowShed variant with other setup or cleanup calls through `@cowprotocol/sdk-cow-shed`. The Poller only accepts sheds created by the factory returned from `poller.getCowShedFactoryAddress()`.
 
 ```typescript
-import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
+import { COW_SHED_2_1_0_VERSION, COW_SHED_PROXY_INIT_CODE, CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 
-const cowShedSdk = new CowShedSdk(adapter, {
-  ...cowShedDeployment,
-  domainVersion: '2.1.0',
-})
+const cowShedSdk = new CowShedSdk(
+  adapter,
+  {
+    factoryAddress: '0x5E284e80F3bd6A7D80A8500D9c49878028110848',
+    implementationAddress: '0xF0D400089d5b9fACA64E3422AD6614546587cfFB',
+    proxyCreationCode: COW_SHED_PROXY_INIT_CODE[COW_SHED_2_1_0_VERSION],
+  },
+  COW_SHED_2_1_0_VERSION,
+)
 const cowShed = cowShedSdk.getCowShedAccount(chainId, funder)
 
 const registration = await cowShedSdk.signCalls({
@@ -187,7 +192,7 @@ import { ComposableCowPollerSdk } from '@cowprotocol/sdk-composable'
 const pollerSdk = new ComposableCowPollerSdk({ chainId, pollerAddress, signer }, adapter)
 const deadline = Math.floor(Date.now() / 1000) + 15 * 60
 
-// Direct flow: submit registration with the adapter's signer.
+// Direct flow: use the SDK signer, or the adapter signer when none was configured.
 const transaction = await pollerSdk.register({ schedule })
 await transaction.wait()
 
