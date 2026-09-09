@@ -22,7 +22,7 @@ export interface GetTwapPartOrdersParams {
 }
 
 /**
- * Orderbook status of a TWAP part order.
+ * Indexer status of a TWAP part order, including unconfirmed candidates.
  *
  * Unlike `OrderStatus` from `@cowprotocol/sdk-order-book`, this API reports
  * `unfilled` when an order leaves the orderbook without settling, and does not
@@ -36,6 +36,7 @@ export type TwapPartOrderStatus =
   | OrderStatus.EXPIRED
   | OrderStatus.CANCELLED
   | 'unfilled'
+  | 'unconfirmed'
 
 /**
  * Schedule for a TWAP order. Unlike {@link TwapStruct}, `effectiveStartTime`
@@ -106,7 +107,7 @@ export interface TwapOrder {
   createdAt: number
   /** Block in which the indexer last updated this TWAP or one of its part orders. */
   updatedAtBlock: bigint
-  /** Number of part orders currently reported for this parent. */
+  /** Number of known parts, including unconfirmed candidates, without duplicates. */
   partOrdersCount: number
   schedule: TwapSchedule
   executedAmounts: TwapExecutedAmounts
