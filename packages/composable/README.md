@@ -165,6 +165,27 @@ const cowShedSdk = new CowShedSdk(
 const cowShed = cowShedSdk.getCowShedAccount(chainId, funder)
 ```
 
+Register from the funder's own CowShed by including the Poller call in a signed bundle. The schedule owner must equal that CowShed. Refresh the epoch for this schedule ID before signing.
+
+```typescript
+const shedSchedule = { ...schedule, owner: cowShed }
+const { authEpoch: shedAuthEpoch } = await poller.getSchedule(poller.getScheduleId(shedSchedule))
+
+const registration = await cowShedSdk.signCalls({
+  chainId,
+  signer,
+  calls: [
+    {
+      target: pollerAddress,
+      callData: poller.encodeRegisterFromShed({ ...shedSchedule, authEpoch: shedAuthEpoch }),
+      value: 0n,
+      isDelegateCall: false,
+      allowFailure: false,
+    },
+  ],
+})
+```
+
 Revoke from the funder's own CowShed by including the Poller call in a signed bundle. Use the original schedule identity and refresh its epoch before signing. Revocation does not require the schedule owner to equal the CowShed.
 
 ```typescript

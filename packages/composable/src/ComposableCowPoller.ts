@@ -168,6 +168,11 @@ export class ComposableCowPoller {
     return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'register', [schedule]) as string
   }
 
+  /** Encodes Poller.registerFromShed for execution by the funder's CowShed, which must equal schedule.owner. */
+  public encodeRegisterFromShed(schedule: ComposableCowPollerSchedule): string {
+    return getGlobalAdapter().utils.encodeFunction(ComposableCowPollerAbi, 'registerFromShed', [schedule]) as string
+  }
+
   /** Encodes Poller.registerWithSignature. */
   public encodeRegisterWithSignature(
     schedule: ComposableCowPollerSchedule,
