@@ -6,6 +6,7 @@ import { getQuoteAmountsAndCosts, OrderKind, OrderParameters, OrderQuoteResponse
 import { JupiterAPI } from './jupiterApi'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent } from './orderIntent'
 import { findOrderPda } from './orderPda'
+import { toSplMint } from './splMint'
 import { getSolanaSettlementProgramId } from './statePda'
 import { SolanaQuote, SolanaQuoteParameters } from './types'
 import type { QuoteResults, TradeParameters } from '@cowprotocol/sdk-trading'
@@ -40,7 +41,8 @@ export async function getSolanaQuote(
 
   const owner = new PublicKey(ownerAddress)
   const receiver = new PublicKey(receiverAddress)
-  const sellMint = new PublicKey(params.sellTokenAddress)
+  const requestedSellMint = new PublicKey(params.sellTokenAddress)
+  const sellMint = toSplMint(requestedSellMint)
   const buyMint = new PublicKey(params.buyTokenAddress)
   const sellTokenProgram = sellTokenProgramId ? new PublicKey(sellTokenProgramId) : undefined
   const buyTokenProgram = buyTokenProgramId ? new PublicKey(buyTokenProgramId) : undefined
@@ -126,7 +128,10 @@ export async function getSolanaQuote(
   const tradeParameters: TradeParameters = {
     kind,
     owner: owner.toBase58(),
-    sellToken: sellTokenAddress,
+    // The mint the caller asked for, not the substituted one: callers compare the returned parameters
+    // against the ones they passed to decide whether a quote is still current, and reporting WSOL for a
+    // native-SOL request would read as a changed sell token and requote forever.
+    sellToken: requestedSellMint.toBase58(),
     sellTokenDecimals,
     buyToken: buyTokenAddress,
     buyTokenDecimals,

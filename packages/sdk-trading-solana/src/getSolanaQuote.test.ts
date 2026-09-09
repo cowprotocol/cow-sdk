@@ -2,7 +2,13 @@ import fetchMock from 'jest-fetch-mock'
 import { PublicKey } from '@solana/web3.js'
 import { getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
-import { SOLANA_SETTLEMENT_PROGRAM_ID, SOLANA_SETTLEMENT_PROGRAM_ID_STAGING } from '@cowprotocol/sdk-config'
+import {
+  SOL_NATIVE_CURRENCY_ADDRESS,
+  SOLANA_SETTLEMENT_PROGRAM_ID,
+  SOLANA_SETTLEMENT_PROGRAM_ID_STAGING,
+  SupportedChainId,
+  WRAPPED_NATIVE_CURRENCIES,
+} from '@cowprotocol/sdk-config'
 
 import { getSolanaQuote } from './getSolanaQuote'
 import { findOrderPda } from './orderPda'
@@ -181,6 +187,106 @@ describe('getSolanaQuote', () => {
 
     const calledUrl = new URL(fetchMock.mock.calls[0]?.[0] as string)
     expect(calledUrl.searchParams.get('swapMode')).toBe('ExactOut')
+  })
+
+  describe('selling native SOL', () => {
+    const wsolMint = new PublicKey(WRAPPED_NATIVE_CURRENCIES[SupportedChainId.SOLANA].address)
+    const usdcMint = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
+
+    function mockJupiterOrder(): void {
+      fetchMock.mockResponseOnce(
+        JSON.stringify({
+          inputMint: wsolMint.toBase58(),
+          outputMint: usdcMint.toBase58(),
+          inAmount: '1000000000',
+          outAmount: '150000000',
+          swapMode: 'ExactIn',
+          slippageBps: 50,
+        }),
+      )
+    }
+
+    function quoteNativeSell(): ReturnType<typeof getSolanaQuote> {
+      return getSolanaQuote({
+        ownerAddress: owner,
+        receiverAddress: receiver,
+        sellTokenAddress: SOL_NATIVE_CURRENCY_ADDRESS,
+        sellTokenDecimals: 9,
+        buyTokenAddress: usdcMint,
+        buyTokenDecimals: 6,
+        amount: 1_000_000_000n,
+        kind: OrderKind.SELL,
+      })
+    }
+
+    it('asks Jupiter for the WSOL mint, since the native sentinel is not a token mint', async () => {
+      mockJupiterOrder()
+
+      await quoteNativeSell()
+
+      const calledUrl = new URL(fetchMock.mock.calls[0]?.[0] as string)
+      expect(calledUrl.searchParams.get('inputMint')).toBe(wsolMint.toBase58())
+      expect(calledUrl.searchParams.get('inputMint')).not.toBe(SOL_NATIVE_CURRENCY_ADDRESS)
+    })
+
+    it('builds the intent against the WSOL account the wrap step funds, not the System Program', async () => {
+      mockJupiterOrder()
+
+      const { solanaQuote } = await quoteNativeSell()
+
+      expect(solanaQuote.intent.sellMint.toBase58()).toBe(wsolMint.toBase58())
+      expect(solanaQuote.intent.sellTokenAccount.toBase58()).toBe(
+        getAssociatedTokenAddressSync(wsolMint, owner, false, undefined).toBase58(),
+      )
+      expect(solanaQuote.intent.sellTokenAccount.toBase58()).not.toBe(
+        getAssociatedTokenAddressSync(new PublicKey(SOL_NATIVE_CURRENCY_ADDRESS), owner, false, undefined).toBase58(),
+      )
+    })
+
+    it('reports the requested sell token back, so callers do not see it as a changed parameter', async () => {
+      mockJupiterOrder()
+
+      const { quoteResults } = await quoteNativeSell()
+
+      expect(quoteResults.tradeParameters.sellToken).toBe(SOL_NATIVE_CURRENCY_ADDRESS)
+    })
+
+    it('places the order against WSOL, which is what actually gets settled', async () => {
+      mockJupiterOrder()
+
+      const { quoteResults } = await quoteNativeSell()
+
+      expect(quoteResults.quoteResponse.quote.sellToken).toBe(wsolMint.toBase58())
+    })
+
+    it('leaves an SPL sell mint untouched', async () => {
+      fetchMock.mockResponseOnce(
+        JSON.stringify({
+          inputMint: usdcMint.toBase58(),
+          outputMint: wsolMint.toBase58(),
+          inAmount: '150000000',
+          outAmount: '1000000000',
+          swapMode: 'ExactIn',
+          slippageBps: 50,
+        }),
+      )
+
+      const { solanaQuote, quoteResults } = await getSolanaQuote({
+        ownerAddress: owner,
+        receiverAddress: receiver,
+        sellTokenAddress: usdcMint,
+        sellTokenDecimals: 6,
+        buyTokenAddress: wsolMint,
+        buyTokenDecimals: 9,
+        amount: 150_000_000n,
+        kind: OrderKind.SELL,
+      })
+
+      const calledUrl = new URL(fetchMock.mock.calls[0]?.[0] as string)
+      expect(calledUrl.searchParams.get('inputMint')).toBe(usdcMint.toBase58())
+      expect(solanaQuote.intent.sellMint.toBase58()).toBe(usdcMint.toBase58())
+      expect(quoteResults.tradeParameters.sellToken).toBe(usdcMint.toBase58())
+    })
   })
 
   it('derives buyTokenAccount for the receiver and sellTokenAccount for the owner', async () => {
