@@ -50,7 +50,7 @@ export class ProgrammaticOrderApi {
    * @throws {@link ProgrammaticOrderApiError} when the input is invalid or the request fails.
    */
   async getTwapOrders(params: GetTwapOrdersParams, options: QueryOptions = {}): Promise<QueryPage<TwapOrder>> {
-    const { chainId, resolvedOwner } = parseInput(GET_TWAP_ORDERS_PARAMS_SCHEMA, params)
+    const { chainId, resolvedOwner, updatedAtBlockGte } = parseInput(GET_TWAP_ORDERS_PARAMS_SCHEMA, params)
     const {
       direction = DEFAULT_QUERY_DIRECTION,
       limit = DEFAULT_PAGE_LIMIT,
@@ -67,6 +67,7 @@ export class ProgrammaticOrderApi {
           offset,
           limit,
           direction,
+          ...(updatedAtBlockGte === undefined ? {} : { updatedAtBlockGte: updatedAtBlockGte.toString() }),
         },
         itemSchema: TWAP_PARENT_SCHEMA,
       })

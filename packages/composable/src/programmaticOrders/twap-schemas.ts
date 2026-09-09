@@ -18,6 +18,7 @@ import {
 export const GET_TWAP_ORDERS_PARAMS_SCHEMA = v.object({
   resolvedOwner: ADDRESS_SCHEMA,
   chainId: SUPPORTED_EVM_CHAIN_ID_SCHEMA,
+  updatedAtBlockGte: v.optional(v.pipe(v.bigint(), v.minValue(0n, 'must be a non-negative bigint'))),
 })
 
 export const GET_TWAP_PART_ORDERS_PARAMS_SCHEMA = v.object({

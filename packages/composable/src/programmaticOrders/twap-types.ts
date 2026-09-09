@@ -9,6 +9,8 @@ export interface GetTwapOrdersParams {
   resolvedOwner: string
   /** Chain containing the TWAP orders. */
   chainId: SupportedChainId
+  /** Return only orders updated at or after this indexer block. */
+  updatedAtBlockGte?: bigint
 }
 
 /** Input for querying one page of TWAP part orders. */
