@@ -111,16 +111,8 @@ const registerCalldata = poller.encodeRegister(schedule)
 // Anyone may submit this calldata to pollerAddress when the next order part needs funding.
 const pollFundsCalldata = poller.encodePollFunds(scheduleId)
 
-// Signed registration may be submitted by any account.
-const signedRegisterCalldata = poller.encodeRegisterWithSignature(schedule, deadline, signature)
-
 // Direct revocation must be submitted by schedule.funder.
 const revokeCalldata = poller.encodeRevoke(schedule)
-
-// These variants must execute from the funder's CowShed.
-// For registration, schedule.owner must equal that CowShed.
-const shedRegisterCalldata = poller.encodeRegisterFromShed(schedule)
-const shedRevokeCalldata = poller.encodeRevokeFromShed(schedule)
 ```
 
 The schedule fields are:
@@ -132,7 +124,7 @@ The schedule fields are:
 - `salt`: the registered conditional order's salt.
 - `staticInput`: the registered conditional order's encoded static input.
 
-The SDK only encodes these transactions; the consumer owns signing, gas policy, submission, and confirmation. Submit direct registration and revocation calldata to `pollerAddress` from `schedule.funder`, submit `signedRegisterCalldata` through a relayer, or include a CowShed variant in a bundle executed by the funder's own CowShed. `registerFromShed` additionally requires `schedule.owner` to equal that CowShed. The signed calldata contains the schedule, deadline, and signature; replay protection is scoped to the schedule ID through `authEpoch`. Use `poller.getComposableCowAddress()`, `poller.getCowShedFactoryAddress()`, and `poller.getSchedule(scheduleId)` to read Poller state.
+The SDK only encodes these transactions; the consumer owns signing, gas policy, submission, and confirmation. Submit direct registration and revocation calldata to `pollerAddress` from `schedule.funder`. Replay protection is scoped to the schedule ID through `authEpoch`. Use `poller.getComposableCowAddress()` and `poller.getSchedule(scheduleId)` to read Poller state.
 
 ## Usage
 
