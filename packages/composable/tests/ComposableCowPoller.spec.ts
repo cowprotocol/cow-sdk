@@ -54,6 +54,7 @@ describe('ComposableCowPoller ABI', () => {
       'registerFromShed',
       'registerWithSignature',
       'revoke',
+      'revokeFromShed',
       'revokeWithSignature',
       'schedules',
     ])

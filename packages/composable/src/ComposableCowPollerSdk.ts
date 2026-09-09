@@ -41,6 +41,10 @@ export type ComposableCowPollerRegisterFromShedParams = ComposableCowPollerShedO
   readonly schedule: ComposableCowPollerSchedule
 }
 
+/** Revocation through the funder's CowShed, preserving the original schedule identity. */
+export type ComposableCowPollerRevokeFromShedParams = ComposableCowPollerShedOptions &
+  ComposableCowPollerScheduleAuthorization
+
 /**
  * Signer-aware facade for a {@link ComposableCowPoller} deployment.
  *
@@ -229,6 +233,32 @@ export class ComposableCowPollerSdk {
       this.poller.encodeRevokeWithSignature({ handler, authEpoch, funder, owner, salt }, deadline, signature),
       signer,
     )
+  }
+
+  /**
+   * Signs a CowShed bundle containing a Poller revocation, without submitting a transaction.
+   * The resolved signer must be the funder. Preserve the original owner, handler and salt;
+   * the owner need not be the CowShed. Refresh `authEpoch` before signing.
+   */
+  async signRevokeFromShed({
+    handler,
+    authEpoch,
+    funder,
+    owner,
+    salt,
+    ...options
+  }: ComposableCowPollerRevokeFromShedParams): Promise<CowShedCall> {
+    return this.signFromShed(this.poller.encodeRevokeFromShed({ handler, authEpoch, funder, owner, salt }), options)
+  }
+
+  /**
+   * Signs and submits revocation through the CowShed factory using the resolved funder signer.
+   * The signer pays transaction gas. Use `signRevokeFromShed` to hand the bundle to a relayer instead.
+   */
+  async revokeFromShed(params: ComposableCowPollerRevokeFromShedParams): Promise<TransactionResponse> {
+    const signer = this.getSigner(params.signer)
+    const { signedMulticall, gasLimit } = await this.signRevokeFromShed({ ...params, signer })
+    return signer.sendTransaction({ ...signedMulticall, gasLimit })
   }
 
   private signFromShed(

@@ -186,6 +186,26 @@ const registration = await cowShedSdk.signCalls({
 })
 ```
 
+Revoke from the funder's own CowShed by including the Poller call in a signed bundle. Use the original schedule identity and refresh its epoch before signing. Revocation does not require the schedule owner to equal the CowShed.
+
+```typescript
+const { authEpoch: revokeAuthEpoch } = await poller.getSchedule(scheduleId)
+
+const revocation = await cowShedSdk.signCalls({
+  chainId,
+  signer,
+  calls: [
+    {
+      target: pollerAddress,
+      callData: poller.encodeRevokeFromShed({ ...schedule, authEpoch: revokeAuthEpoch }),
+      value: 0n,
+      isDelegateCall: false,
+      allowFailure: false,
+    },
+  ],
+})
+```
+
 Use `ComposableCowPollerSdk` to sign or submit transactions through the configured adapter. Its `poller` property exposes the same low-level calldata and read methods shown above. Using that `schedule`, choose either the direct flow or the signature flow below; do not run both for the same registration.
 
 ```typescript
@@ -240,6 +260,30 @@ await shedRegistrationTx.wait()
 ```
 
 Choose one of these flows. Both sign a CowShed bundle with a single Poller call. The factory creates the CowShed if needed and executes registration from it. They accept CowShed's `nonce`, `deadline`, `signingScheme`, `gasLimit`, and `defaultGasLimit` options. Without a gas override, CowShed estimates gas; failures reject the call unless a fallback is supplied. For bundles containing other calls, use `pollerSdk.poller.encodeRegisterFromShed` with `cowShedSdk.signCalls`.
+
+For revocation from CowShed, keep the original schedule identity, including its owner even when it differs from the CowShed. The resolved signer must be the funder. Refresh the epoch before signing:
+
+```typescript
+const { authEpoch: revocationEpoch } = await pollerSdk.poller.getSchedule(scheduleId)
+const shedRevocationParams = {
+  cowShedSdk,
+  handler: schedule.handler,
+  funder: schedule.funder,
+  owner: schedule.owner,
+  salt: schedule.salt,
+  authEpoch: revocationEpoch,
+  deadline: BigInt(Math.floor(Date.now() / 1000) + 15 * 60),
+}
+
+// Sign only: return the factory bundle for a relayer or hook.
+const signedRevocation = await pollerSdk.signRevokeFromShed(shedRevocationParams)
+
+// Alternative: sign and submit now; the resolved signer pays transaction gas.
+const shedRevocationTx = await pollerSdk.revokeFromShed(shedRevocationParams)
+await shedRevocationTx.wait()
+```
+
+Choose one flow. `signRevokeFromShed` returns `cowShedAccount`, `signedMulticall`, and `gasLimit` without submitting. Both methods accept the same signer and CowShed options as registration. For a bundle containing other calls, use `pollerSdk.poller.encodeRevokeFromShed` with `cowShedSdk.signCalls`.
 
 The schedule fields are:
 
