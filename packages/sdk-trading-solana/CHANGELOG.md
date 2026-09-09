@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.4.1...sdk-trading-solana-v0.5.0) (2026-09-09)
+
+
+### ✨ Features
+
+* **solana:** expose the CreateOrder instruction for bundling ([#999](https://github.com/cowprotocol/cow-sdk/issues/999)) ([cd19b73](https://github.com/cowprotocol/cow-sdk/commit/cd19b7366975e5def6ae2442810a8d2c8f3073ac))
+* **solana:** replace sol on wsol in quiotes ([#1003](https://github.com/cowprotocol/cow-sdk/issues/1003)) ([0d588a8](https://github.com/cowprotocol/cow-sdk/commit/0d588a84bfb1fe28ec05dac7c114b1b73cd29e4c))
+
 ## [0.4.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.4.0...sdk-trading-solana-v0.4.1) (2026-09-08)
 
 
