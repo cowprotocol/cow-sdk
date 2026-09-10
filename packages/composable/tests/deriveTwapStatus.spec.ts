@@ -35,14 +35,27 @@ describe('deriveTwapStatus', () => {
     ).toBe('filled')
   })
 
-  it('preserves explicit cancellation and reports progress separately', () => {
+  it('gives a partial fill precedence over cancellation', () => {
     expect(
       deriveTwapStatus({
         ...OPEN_ORDER,
         lifecycleStatus: 'Cancelled',
         executedAmounts: { executedSellAmount: 10n },
       }),
-    ).toBe('cancelled')
+    ).toBe('partiallyFilled')
+  })
+
+  it('keeps an active partially executed order open', () => {
+    expect(deriveTwapStatus({ ...OPEN_ORDER, executedAmounts: { executedSellAmount: 10n } })).toBe('open')
+  })
+
+  it('keeps a cancelled order without execution cancelled', () => {
+    expect(deriveTwapStatus({ ...OPEN_ORDER, lifecycleStatus: 'Cancelled' })).toBe('cancelled')
+  })
+
+  it('expires an active order without execution after its schedule', () => {
+    jest.mocked(Date.now).mockReturnValue(141_000)
+    expect(deriveTwapStatus(OPEN_ORDER)).toBe('expired')
   })
 
   it('classifies a terminal partial fill', () => {

@@ -144,7 +144,9 @@ describe('ProgrammaticOrderApi', () => {
     ['Active', '1', 203, 'partiallyFilled'],
     ['Completed', '1', 200, 'partiallyFilled'],
     ['Active', '2', 200, 'filled'],
-    ['Cancelled', '1', 200, 'cancelled'],
+    ['Cancelled', '0', 200, 'cancelled'],
+    ['Cancelled', '1', 200, 'partiallyFilled'],
+    ['Cancelled', '2', 200, 'filled'],
   ])('derives %s with %s sold at %s as %s in both endpoints', async (status, sold, now, expected) => {
     jest.spyOn(Date, 'now').mockReturnValue(Number(now) * 1000)
     const parent = {
