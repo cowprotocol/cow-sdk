@@ -2,6 +2,7 @@ const TWAP_PARENT_FIELDS = `
   eventId
   chainId
   hash
+  txHash
   owner
   resolvedOwner
   status
@@ -15,7 +16,6 @@ export const TWAP_ORDER_QUERY = `
     twapOrder: conditionalOrderGenerator(chainId: $chainId, eventId: $eventId) {
       orderType
       ${TWAP_PARENT_FIELDS}
-      txHash
       transaction {
         blockTimestamp
       }

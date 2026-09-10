@@ -103,7 +103,6 @@ describe('ProgrammaticOrderApi', () => {
             twapOrder: {
               ...twapParent('event', 200),
               orderType: 'TWAP',
-              txHash: `0x${'3'.repeat(64)}`,
               transaction: { blockTimestamp: '200' },
             },
             knownParts: { totalCount: 3 },
@@ -129,12 +128,43 @@ describe('ProgrammaticOrderApi', () => {
       partsChainId: SupportedChainId.GNOSIS_CHAIN,
       eventId: 'event',
     })
+    if (!order) throw new Error('Expected a TWAP order')
+    const txHash: string = order.txHash
     expect(order).toMatchObject({
       eventId: 'event',
       createdAt: 200,
-      creationTxHash: `0x${'3'.repeat(64)}`,
       partOrdersCount: 3,
     })
+    expect(txHash).toBe(`0x${'3'.repeat(64)}`)
+  })
+
+  it.each([
+    ['missing', undefined],
+    ['null', null],
+  ])('rejects a %s creation transaction hash', async (_case, txHash) => {
+    jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          data: {
+            twapOrder: {
+              ...twapParent('event', 200),
+              orderType: 'TWAP',
+              txHash,
+              transaction: { blockTimestamp: '200' },
+            },
+            knownParts: { totalCount: 3 },
+          },
+        }),
+        { headers: { 'Content-Type': 'application/json' } },
+      ),
+    )
+
+    await expect(
+      new ProgrammaticOrderApi({ apiUrl: 'https://example.com' }).getTwapOrder({
+        eventId: 'event',
+        chainId: SupportedChainId.GNOSIS_CHAIN,
+      }),
+    ).rejects.toThrow('Failed to fetch TWAP order')
   })
 
   it.each([
@@ -185,6 +215,7 @@ describe('ProgrammaticOrderApi', () => {
     expect(request.query).toContain('orderBy: "eventId"')
     expect(request.query).toContain('orderDirection: $direction')
     expect(request.query).not.toContain('discreteOrders {\n')
+    expect(request.query).toContain('txHash')
     expect(request.variables).toEqual({
       resolvedOwner: EOA.toLowerCase(),
       chainId: SupportedChainId.GNOSIS_CHAIN,
@@ -205,6 +236,7 @@ describe('ProgrammaticOrderApi', () => {
     })
     expect(page.items[0]).not.toHaveProperty('partOrders')
     expect(page.items[0]?.partOrdersCount).toBe(2)
+    expect(page.items[0]?.txHash).toBe(`0x${'3'.repeat(64)}`)
     expect(request.query).toContain('twapOrders: programmaticOrders(')
   })
 
@@ -326,6 +358,7 @@ function twapParent(eventId: string, blockTimestamp: number): Record<string, unk
     eventId,
     chainId: SupportedChainId.GNOSIS_CHAIN,
     hash: `0x${'1'.repeat(64)}`,
+    txHash: `0x${'3'.repeat(64)}`,
     owner: EOA,
     resolvedOwner: EOA,
     status: 'Active',

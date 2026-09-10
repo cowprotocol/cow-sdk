@@ -1,7 +1,7 @@
 import * as v from 'valibot'
 
 import { GraphqlClient } from './graphql'
-import { BYTES_32_SCHEMA, QUERY_OPTIONS_SCHEMA, SAFE_INTEGER_SCHEMA } from './schemas'
+import { QUERY_OPTIONS_SCHEMA, SAFE_INTEGER_SCHEMA } from './schemas'
 import { TWAP_ORDER_QUERY, TWAP_ORDERS_QUERY, TWAP_PART_ORDERS_QUERY } from './twap-queries'
 import {
   GET_TWAP_ORDER_PARAMS_SCHEMA,
@@ -70,7 +70,7 @@ export class ProgrammaticOrderApi {
       if (orderType.output.orderType !== 'TWAP') return null
 
       const details = v.parse(
-        v.object({ txHash: BYTES_32_SCHEMA, transaction: v.object({ blockTimestamp: v.string() }) }),
+        v.object({ transaction: v.object({ blockTimestamp: v.string() }) }),
         result.output.twapOrder,
       )
       const { knownParts } = v.parse(
@@ -81,7 +81,6 @@ export class ProgrammaticOrderApi {
         TWAP_PARENT_SCHEMA,
         {
           ...result.output.twapOrder,
-          txHash: details.txHash,
           createdAt: details.transaction.blockTimestamp,
           partOrdersCount: knownParts.totalCount,
         },

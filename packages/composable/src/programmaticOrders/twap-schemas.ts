@@ -54,7 +54,7 @@ export const TWAP_PARENT_SCHEMA = v.pipe(
     owner: ADDRESS_SCHEMA,
     resolvedOwner: ADDRESS_SCHEMA,
     status: PROGRAMMATIC_ORDER_STATUS_SCHEMA,
-    txHash: v.optional(BYTES_32_SCHEMA),
+    txHash: BYTES_32_SCHEMA,
     updatedAtBlock: UINT256_SCHEMA,
     additionalData: v.object({
       executedSellAmount: UINT256_SCHEMA,
@@ -78,7 +78,7 @@ export const TWAP_PARENT_SCHEMA = v.pipe(
       return {
         ...parent,
         createdAt,
-        ...(txHash === undefined ? {} : { creationTxHash: txHash }),
+        txHash,
         executedAmounts: {
           executedSellAmount,
           executedBuyAmount,

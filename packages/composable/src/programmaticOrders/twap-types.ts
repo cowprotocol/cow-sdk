@@ -113,8 +113,8 @@ export interface TwapOrder {
   status: ProgrammaticOrderStatus
   /** Unix creation time in seconds. */
   createdAt: number
-  /** Creation transaction. Available from `getTwapOrder`, omitted from list responses. */
-  creationTxHash?: string
+  /** Hash of the transaction that created the TWAP order. */
+  txHash: string
   /** Block in which the indexer last updated this TWAP or one of its part orders. */
   updatedAtBlock: bigint
   /** Number of known parts, including unconfirmed candidates, without duplicates. */
