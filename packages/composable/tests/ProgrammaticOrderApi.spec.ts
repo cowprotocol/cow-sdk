@@ -100,12 +100,10 @@ describe('ProgrammaticOrderApi', () => {
       new Response(
         JSON.stringify({
           data: {
-            twapOrder: {
-              ...twapParent('event', 200),
-              orderType: 'TWAP',
-              transaction: { blockTimestamp: '200' },
+            twapOrders: {
+              items: [{ ...twapParent('event', 200), partOrdersCount: 3 }],
+              totalCount: 1,
             },
-            knownParts: { totalCount: 3 },
           },
         }),
         { headers: { 'Content-Type': 'application/json' } },
@@ -121,12 +119,13 @@ describe('ProgrammaticOrderApi', () => {
       variables: Record<string, unknown>
     }
 
-    expect(request.query).toContain('conditionalOrderGenerator(chainId: $chainId, eventId: $eventId)')
-    expect(request.query).toContain('knownParts: partOrders(')
+    expect(request.query).toContain('programmaticOrders(')
+    expect(request.query).toContain('eventId: $eventId')
+    expect(request.query).toContain('orderType: TWAP')
     expect(request.variables).toEqual({
       chainId: SupportedChainId.GNOSIS_CHAIN,
-      partsChainId: SupportedChainId.GNOSIS_CHAIN,
       eventId: 'event',
+      limit: 1,
     })
     if (!order) throw new Error('Expected a TWAP order')
     const txHash: string = order.txHash
@@ -163,8 +162,7 @@ describe('ProgrammaticOrderApi', () => {
         new Response(
           JSON.stringify({
             data: {
-              twapOrder: { ...parent, orderType: 'TWAP', transaction: { blockTimestamp: '200' } },
-              knownParts: { totalCount: 2 },
+              twapOrders: { items: [parent], totalCount: 1 },
             },
           }),
         ),
@@ -195,13 +193,10 @@ describe('ProgrammaticOrderApi', () => {
       new Response(
         JSON.stringify({
           data: {
-            twapOrder: {
-              ...twapParent('event', 200),
-              orderType: 'TWAP',
-              txHash,
-              transaction: { blockTimestamp: '200' },
+            twapOrders: {
+              items: [{ ...twapParent('event', 200), txHash }],
+              totalCount: 1,
             },
-            knownParts: { totalCount: 3 },
           },
         }),
         { headers: { 'Content-Type': 'application/json' } },
@@ -216,12 +211,9 @@ describe('ProgrammaticOrderApi', () => {
     ).rejects.toThrow('Failed to fetch TWAP order')
   })
 
-  it.each([
-    ['a missing event', null],
-    ['another programmatic order type', { orderType: 'StopLoss' }],
-  ])('returns null for %s', async (_case, twapOrder) => {
+  it('returns null when the filtered view has no matching TWAP', async () => {
     jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response(JSON.stringify({ data: { twapOrder } }), {
+      new Response(JSON.stringify({ data: { twapOrders: { items: [], totalCount: 0 } } }), {
         headers: { 'Content-Type': 'application/json' },
       }),
     )
@@ -348,7 +340,6 @@ describe('ProgrammaticOrderApi', () => {
       parentEventId: 'event',
       offset: 10,
       limit: 10,
-      direction: 'desc',
     })
     expect(page).toEqual({ items: [], totalCount: 12 })
   })

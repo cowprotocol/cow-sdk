@@ -1,36 +1,15 @@
-const TWAP_PARENT_FIELDS = `
-  eventId
-  chainId
-  hash
-  txHash
-  owner
-  resolvedOwner
-  status
-  updatedAtBlock
-  additionalData
-  schedule: decodedParams
-`
+import type { QueryDirection } from './types'
 
-export const TWAP_ORDER_QUERY = `
-  query TwapOrder($chainId: Float!, $partsChainId: Int!, $eventId: String!) {
-    twapOrder: conditionalOrderGenerator(chainId: $chainId, eventId: $eventId) {
-      orderType
-      ${TWAP_PARENT_FIELDS}
-      transaction {
-        blockTimestamp
-      }
-    }
-    knownParts: partOrders(where: { chainId: $partsChainId, conditionalOrderGeneratorId: $eventId }, limit: 1) {
-      totalCount
-    }
-  }
-`
+const DEFAULT_PAGE_LIMIT = 100
+const DEFAULT_PAGE_OFFSET = 0
+const DEFAULT_QUERY_DIRECTION: QueryDirection = 'desc'
 
 export const TWAP_ORDERS_QUERY = `
-  query TwapOrders($resolvedOwner: String!, $chainId: Int!, $offset: Int!, $limit: Int!, $direction: String!, $updatedAtBlockGte: BigInt) {
+  query TwapOrders($resolvedOwner: String, $eventId: String, $chainId: Int!, $offset: Int! = ${DEFAULT_PAGE_OFFSET}, $limit: Int! = ${DEFAULT_PAGE_LIMIT}, $direction: String! = "${DEFAULT_QUERY_DIRECTION}", $updatedAtBlockGte: BigInt) {
     twapOrders: programmaticOrders(
       where: {
         chainId: $chainId
+        eventId: $eventId
         orderType: TWAP
         resolvedOwner: $resolvedOwner
         updatedAtBlock_gte: $updatedAtBlockGte
@@ -41,7 +20,16 @@ export const TWAP_ORDERS_QUERY = `
       orderDirection: $direction
     ) {
       items {
-        ${TWAP_PARENT_FIELDS}
+        eventId
+        chainId
+        hash
+        txHash
+        owner
+        resolvedOwner
+        status
+        updatedAtBlock
+        additionalData
+        schedule: decodedParams
         partOrdersCount
         createdAt: creationDate
       }
@@ -51,7 +39,7 @@ export const TWAP_ORDERS_QUERY = `
 `
 
 export const TWAP_PART_ORDERS_QUERY = `
-  query TwapPartOrders($chainId: Int!, $parentEventId: String!, $offset: Int!, $limit: Int!, $direction: String!) {
+  query TwapPartOrders($chainId: Int!, $parentEventId: String!, $offset: Int! = ${DEFAULT_PAGE_OFFSET}, $limit: Int! = ${DEFAULT_PAGE_LIMIT}, $direction: String! = "${DEFAULT_QUERY_DIRECTION}") {
     partOrders: partOrders(
       where: {
         chainId: $chainId

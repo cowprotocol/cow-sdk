@@ -1,8 +1,6 @@
-import * as v from 'valibot'
-
 import { GraphqlClient } from './graphql'
-import { QUERY_OPTIONS_SCHEMA, SAFE_INTEGER_SCHEMA } from './schemas'
-import { TWAP_ORDER_QUERY, TWAP_ORDERS_QUERY, TWAP_PART_ORDERS_QUERY } from './twap-queries'
+import { QUERY_OPTIONS_SCHEMA } from './schemas'
+import { TWAP_ORDERS_QUERY, TWAP_PART_ORDERS_QUERY } from './twap-queries'
 import {
   GET_TWAP_ORDER_PARAMS_SCHEMA,
   GET_TWAP_ORDERS_PARAMS_SCHEMA,
@@ -20,16 +18,12 @@ import type {
 import {
   ProgrammaticOrderApiError,
   type ProgrammaticOrderApiOptions,
-  type QueryDirection,
   type QueryOptions,
   type QueryPage,
 } from './types'
 import { parseInput } from './validation'
 
 const DEFAULT_API_URL = 'https://programmatic-orders.cow.fi/'
-const DEFAULT_PAGE_LIMIT = 100
-const DEFAULT_PAGE_OFFSET = 0
-const DEFAULT_QUERY_DIRECTION: QueryDirection = 'desc'
 
 export class ProgrammaticOrderApi {
   private readonly graphql: GraphqlClient
@@ -58,38 +52,14 @@ export class ProgrammaticOrderApi {
     const { chainId, eventId } = parseInput(GET_TWAP_ORDER_PARAMS_SCHEMA, params)
 
     try {
-      const data = await this.graphql.query(TWAP_ORDER_QUERY, { chainId, partsChainId: chainId, eventId })
-      const result = v.safeParse(v.object({ twapOrder: v.nullable(v.unknown()) }), data, { abortEarly: true })
+      const { items } = await this.graphql.queryPage({
+        query: TWAP_ORDERS_QUERY,
+        page: 'twapOrders',
+        variables: { chainId, eventId, limit: 1 },
+        itemSchema: TWAP_PARENT_SCHEMA,
+      })
 
-      if (!result.success) throw new Error('Invalid TWAP order response')
-      if (result.output.twapOrder === null) return null
-
-      const orderType = v.safeParse(v.object({ orderType: v.string() }), result.output.twapOrder, { abortEarly: true })
-
-      if (!orderType.success) throw new Error('Invalid TWAP order type')
-      if (orderType.output.orderType !== 'TWAP') return null
-
-      const details = v.parse(
-        v.object({ transaction: v.object({ blockTimestamp: v.string() }) }),
-        result.output.twapOrder,
-      )
-      const { knownParts } = v.parse(
-        v.object({ knownParts: v.object({ totalCount: v.pipe(SAFE_INTEGER_SCHEMA, v.minValue(0)) }) }),
-        data,
-      )
-      const order = v.safeParse(
-        TWAP_PARENT_SCHEMA,
-        {
-          ...result.output.twapOrder,
-          createdAt: details.transaction.blockTimestamp,
-          partOrdersCount: knownParts.totalCount,
-        },
-        { abortEarly: true },
-      )
-
-      if (!order.success) throw new Error('Invalid TWAP order')
-
-      return order.output
+      return items[0] ?? null
     } catch (cause) {
       throw new ProgrammaticOrderApiError('Failed to fetch TWAP order', { cause })
     }
@@ -107,11 +77,7 @@ export class ProgrammaticOrderApi {
    */
   async getTwapOrders(params: GetTwapOrdersParams, options: QueryOptions = {}): Promise<QueryPage<TwapOrder>> {
     const { chainId, resolvedOwner, updatedAtBlockGte } = parseInput(GET_TWAP_ORDERS_PARAMS_SCHEMA, params)
-    const {
-      direction = DEFAULT_QUERY_DIRECTION,
-      limit = DEFAULT_PAGE_LIMIT,
-      offset = DEFAULT_PAGE_OFFSET,
-    } = parseInput(QUERY_OPTIONS_SCHEMA, options)
+    const { direction, limit, offset } = parseInput(QUERY_OPTIONS_SCHEMA, options)
 
     try {
       const page = await this.graphql.queryPage({
@@ -147,11 +113,7 @@ export class ProgrammaticOrderApi {
     options: QueryOptions = {},
   ): Promise<QueryPage<TwapPartOrder>> {
     const { chainId, eventId } = parseInput(GET_TWAP_PART_ORDERS_PARAMS_SCHEMA, params)
-    const {
-      direction = DEFAULT_QUERY_DIRECTION,
-      limit = DEFAULT_PAGE_LIMIT,
-      offset = DEFAULT_PAGE_OFFSET,
-    } = parseInput(QUERY_OPTIONS_SCHEMA, options)
+    const { direction, limit, offset } = parseInput(QUERY_OPTIONS_SCHEMA, options)
 
     try {
       const page = await this.graphql.queryPage({
