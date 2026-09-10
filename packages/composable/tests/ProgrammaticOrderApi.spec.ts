@@ -2,6 +2,7 @@ import { SupportedChainId } from '@cowprotocol/sdk-config'
 
 import {
   ProgrammaticOrderApi,
+  type GetTwapOrderParams,
   type GetTwapOrdersParams,
   type GetTwapPartOrdersParams,
   type QueryDirection,
@@ -89,6 +90,142 @@ describe('ProgrammaticOrderApi', () => {
         updatedAtBlockGte: -1n,
       }),
     ).rejects.toThrow('must be a non-negative bigint')
+    await expect(api.getTwapOrder(undefined as unknown as GetTwapOrderParams)).rejects.toThrow(
+      'Invalid type: Expected Object but received undefined',
+    )
+  })
+
+  it('returns one TWAP parent by event ID', async () => {
+    const fetchMock = jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          data: {
+            twapOrders: {
+              items: [{ ...twapParent('event', 200), partOrdersCount: 3 }],
+              totalCount: 1,
+            },
+          },
+        }),
+        { headers: { 'Content-Type': 'application/json' } },
+      ),
+    )
+
+    const order = await new ProgrammaticOrderApi({ apiUrl: 'https://example.com' }).getTwapOrder({
+      eventId: 'event',
+      chainId: SupportedChainId.GNOSIS_CHAIN,
+    })
+    const request = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)) as {
+      query: string
+      variables: Record<string, unknown>
+    }
+
+    expect(request.query).toContain('programmaticOrders(')
+    expect(request.query).toContain('eventId: $eventId')
+    expect(request.query).toContain('orderType: TWAP')
+    expect(request.variables).toEqual({
+      chainId: SupportedChainId.GNOSIS_CHAIN,
+      eventId: 'event',
+      limit: 1,
+    })
+    if (!order) throw new Error('Expected a TWAP order')
+    const txHash: string = order.txHash
+    expect(order).toMatchObject({
+      eventId: 'event',
+      createdAt: 200,
+      partOrdersCount: 3,
+    })
+    expect(txHash).toBe(`0x${'3'.repeat(64)}`)
+  })
+
+  it.each([
+    ['Active', '0', 200, 'open'],
+    ['Active', '1', 200, 'open'],
+    ['Active', '0', 203, 'expired'],
+    ['Active', '1', 203, 'partiallyFilled'],
+    ['Completed', '1', 200, 'partiallyFilled'],
+    ['Active', '2', 200, 'filled'],
+    ['Cancelled', '0', 200, 'cancelled'],
+    ['Cancelled', '1', 200, 'partiallyFilled'],
+    ['Cancelled', '2', 200, 'filled'],
+  ])('derives %s with %s sold at %s as %s in both endpoints', async (status, sold, now, expected) => {
+    jest.spyOn(Date, 'now').mockReturnValue(Number(now) * 1000)
+    const parent = {
+      ...twapParent('event', 200),
+      status,
+      schedule: {
+        ...(twapParent('event', 200).schedule as Record<string, unknown>),
+        n: '2',
+      },
+      additionalData: { executedSellAmount: sold, executedBuyAmount: sold, executedFee: '0' },
+    }
+    jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: {
+              twapOrders: { items: [parent], totalCount: 1 },
+            },
+          }),
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: {
+              twapOrders: { items: [parent], totalCount: 1 },
+            },
+          }),
+        ),
+      )
+    const api = new ProgrammaticOrderApi()
+    const order = await api.getTwapOrder({ eventId: 'event', chainId: SupportedChainId.GNOSIS_CHAIN })
+    const page = await api.getTwapOrders({ resolvedOwner: EOA, chainId: SupportedChainId.GNOSIS_CHAIN })
+    expect(order?.status).toBe(expected)
+    expect(page.items[0]?.status).toBe(expected)
+    expect(order?.lifecycleStatus).toBe(status)
+    expect(page.items[0]?.lifecycleStatus).toBe(status)
+  })
+
+  it.each([
+    ['missing', undefined],
+    ['null', null],
+  ])('rejects a %s creation transaction hash', async (_case, txHash) => {
+    jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          data: {
+            twapOrders: {
+              items: [{ ...twapParent('event', 200), txHash }],
+              totalCount: 1,
+            },
+          },
+        }),
+        { headers: { 'Content-Type': 'application/json' } },
+      ),
+    )
+
+    await expect(
+      new ProgrammaticOrderApi({ apiUrl: 'https://example.com' }).getTwapOrder({
+        eventId: 'event',
+        chainId: SupportedChainId.GNOSIS_CHAIN,
+      }),
+    ).rejects.toThrow('Failed to fetch TWAP order')
+  })
+
+  it('returns null when the filtered view has no matching TWAP', async () => {
+    jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ data: { twapOrders: { items: [], totalCount: 0 } } }), {
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
+
+    await expect(
+      new ProgrammaticOrderApi({ apiUrl: 'https://example.com' }).getTwapOrder({
+        eventId: 'event',
+        chainId: SupportedChainId.GNOSIS_CHAIN,
+      }),
+    ).resolves.toBeNull()
   })
 
   it('requests parent-only TWAPs by creation and preserves the returned order', async () => {
@@ -121,6 +258,7 @@ describe('ProgrammaticOrderApi', () => {
     expect(request.query).toContain('orderBy: "eventId"')
     expect(request.query).toContain('orderDirection: $direction')
     expect(request.query).not.toContain('discreteOrders {\n')
+    expect(request.query).toContain('txHash')
     expect(request.variables).toEqual({
       resolvedOwner: EOA.toLowerCase(),
       chainId: SupportedChainId.GNOSIS_CHAIN,
@@ -141,6 +279,7 @@ describe('ProgrammaticOrderApi', () => {
     })
     expect(page.items[0]).not.toHaveProperty('partOrders')
     expect(page.items[0]?.partOrdersCount).toBe(2)
+    expect(page.items[0]?.txHash).toBe(`0x${'3'.repeat(64)}`)
     expect(request.query).toContain('twapOrders: programmaticOrders(')
   })
 
@@ -203,7 +342,6 @@ describe('ProgrammaticOrderApi', () => {
       parentEventId: 'event',
       offset: 10,
       limit: 10,
-      direction: 'desc',
     })
     expect(page).toEqual({ items: [], totalCount: 12 })
   })
@@ -262,6 +400,7 @@ function twapParent(eventId: string, blockTimestamp: number): Record<string, unk
     eventId,
     chainId: SupportedChainId.GNOSIS_CHAIN,
     hash: `0x${'1'.repeat(64)}`,
+    txHash: `0x${'3'.repeat(64)}`,
     owner: EOA,
     resolvedOwner: EOA,
     status: 'Active',

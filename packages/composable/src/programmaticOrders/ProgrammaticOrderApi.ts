@@ -2,25 +2,28 @@ import { GraphqlClient } from './graphql'
 import { QUERY_OPTIONS_SCHEMA } from './schemas'
 import { TWAP_ORDERS_QUERY, TWAP_PART_ORDERS_QUERY } from './twap-queries'
 import {
+  GET_TWAP_ORDER_PARAMS_SCHEMA,
   GET_TWAP_ORDERS_PARAMS_SCHEMA,
   GET_TWAP_PART_ORDERS_PARAMS_SCHEMA,
   TWAP_PARENT_SCHEMA,
   TWAP_PART_ORDER_SCHEMA,
 } from './twap-schemas'
-import type { GetTwapOrdersParams, GetTwapPartOrdersParams, TwapOrder, TwapPartOrder } from './twap-types'
+import type {
+  GetTwapOrderParams,
+  GetTwapOrdersParams,
+  GetTwapPartOrdersParams,
+  TwapOrder,
+  TwapPartOrder,
+} from './twap-types'
 import {
   ProgrammaticOrderApiError,
   type ProgrammaticOrderApiOptions,
-  type QueryDirection,
   type QueryOptions,
   type QueryPage,
 } from './types'
 import { parseInput } from './validation'
 
 const DEFAULT_API_URL = 'https://programmatic-orders.cow.fi/'
-const DEFAULT_PAGE_LIMIT = 100
-const DEFAULT_PAGE_OFFSET = 0
-const DEFAULT_QUERY_DIRECTION: QueryDirection = 'desc'
 
 export class ProgrammaticOrderApi {
   private readonly graphql: GraphqlClient
@@ -40,6 +43,29 @@ export class ProgrammaticOrderApi {
   }
 
   /**
+   * Returns one TWAP order by its chain-local event ID.
+   *
+   * @returns The TWAP order, or `null` when the event is missing or belongs to another order type.
+   * @throws {@link ProgrammaticOrderApiError} when the input is invalid or the request fails.
+   */
+  async getTwapOrder(params: GetTwapOrderParams): Promise<TwapOrder | null> {
+    const { chainId, eventId } = parseInput(GET_TWAP_ORDER_PARAMS_SCHEMA, params)
+
+    try {
+      const { items } = await this.graphql.queryPage({
+        query: TWAP_ORDERS_QUERY,
+        page: 'twapOrders',
+        variables: { chainId, eventId, limit: 1 },
+        itemSchema: TWAP_PARENT_SCHEMA,
+      })
+
+      return items[0] ?? null
+    } catch (cause) {
+      throw new ProgrammaticOrderApiError('Failed to fetch TWAP order', { cause })
+    }
+  }
+
+  /**
    * Returns one page of TWAP orders created by an EOA or Safe.
    *
    * Results are sorted by event ID, descending by default. Use {@link getTwapPartOrders} to fetch part orders.
@@ -51,11 +77,7 @@ export class ProgrammaticOrderApi {
    */
   async getTwapOrders(params: GetTwapOrdersParams, options: QueryOptions = {}): Promise<QueryPage<TwapOrder>> {
     const { chainId, resolvedOwner, updatedAtBlockGte } = parseInput(GET_TWAP_ORDERS_PARAMS_SCHEMA, params)
-    const {
-      direction = DEFAULT_QUERY_DIRECTION,
-      limit = DEFAULT_PAGE_LIMIT,
-      offset = DEFAULT_PAGE_OFFSET,
-    } = parseInput(QUERY_OPTIONS_SCHEMA, options)
+    const { direction, limit, offset } = parseInput(QUERY_OPTIONS_SCHEMA, options)
 
     try {
       const page = await this.graphql.queryPage({
@@ -91,11 +113,7 @@ export class ProgrammaticOrderApi {
     options: QueryOptions = {},
   ): Promise<QueryPage<TwapPartOrder>> {
     const { chainId, eventId } = parseInput(GET_TWAP_PART_ORDERS_PARAMS_SCHEMA, params)
-    const {
-      direction = DEFAULT_QUERY_DIRECTION,
-      limit = DEFAULT_PAGE_LIMIT,
-      offset = DEFAULT_PAGE_OFFSET,
-    } = parseInput(QUERY_OPTIONS_SCHEMA, options)
+    const { direction, limit, offset } = parseInput(QUERY_OPTIONS_SCHEMA, options)
 
     try {
       const page = await this.graphql.queryPage({
