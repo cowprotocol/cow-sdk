@@ -277,7 +277,15 @@ export class TradingSdk {
         getTradeParametersAfterQuote({ quoteParameters: tradeParameters, sellToken: params.sellToken }),
         quoteResponse,
       ),
-      advancedSettings?.additionalParams,
+      {
+        // Forward the costs of the quote we just fetched, exactly like postSwapOrderFromQuote() does.
+        // For SELL orders the /quote API returns `sellAmount` AFTER network costs, so without
+        // `networkCostsAmount` the EthFlow order would sell `quote.sellAmount` instead of the amount
+        // the user asked for (`quote.sellAmount + quote.feeAmount`).
+        networkCostsAmount: quoteResponse.quote.feeAmount,
+        protocolFeeBps: quoteResponse.protocolFeeBps ? Number(quoteResponse.protocolFeeBps) : undefined,
+        ...advancedSettings?.additionalParams,
+      },
       quoteResults.result.signer,
     )
   }
