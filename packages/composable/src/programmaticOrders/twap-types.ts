@@ -110,7 +110,10 @@ export interface TwapOrder {
   owner: string
   /** EOA behind a known CoWShed proxy, or `owner` for a Safe. */
   resolvedOwner: string
-  status: ProgrammaticOrderStatus
+  /** TWAP status derived from its lifecycle, schedule, and executed amounts. */
+  status: TwapStatus
+  /** Indexer lifecycle: Active, Cancelled, or Completed. Completed means no more parts can be produced. */
+  lifecycleStatus: ProgrammaticOrderStatus
   /** Unix creation time in seconds. */
   createdAt: number
   /** Hash of the transaction that created the TWAP order. */
@@ -124,16 +127,11 @@ export interface TwapOrder {
 }
 
 /** User-facing execution state derived from the parent and its aggregate fills. */
-export type TwapExecutionStatus = 'open' | 'filled' | 'partiallyFilled' | 'expired' | 'cancelled'
+export type TwapStatus = 'open' | 'filled' | 'partiallyFilled' | 'expired' | 'cancelled'
 
-/** Inputs required to classify a TWAP without reading ambient time. */
-export interface GetTwapExecutionStatusParams {
-  status: ProgrammaticOrderStatus
-  executedSellAmount: bigint
-  partSellAmount: bigint
-  numberOfParts: number
-  effectiveStartTime: number
-  timeBetweenParts: number
-  /** Unix time in seconds. */
-  now: number
+/** Parent fields required to derive execution status from the indexer lifecycle. */
+export interface DeriveTwapStatusParams {
+  lifecycleStatus: TwapOrder['lifecycleStatus']
+  executedAmounts: Pick<TwapExecutedAmounts, 'executedSellAmount'>
+  schedule: Pick<TwapSchedule, 'partSellAmount' | 'numberOfParts' | 'effectiveStartTime' | 'timeBetweenParts'>
 }

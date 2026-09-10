@@ -139,6 +139,55 @@ describe('ProgrammaticOrderApi', () => {
   })
 
   it.each([
+    ['Active', '0', 200, 'open'],
+    ['Active', '1', 200, 'open'],
+    ['Active', '0', 203, 'expired'],
+    ['Active', '1', 203, 'partiallyFilled'],
+    ['Completed', '1', 200, 'partiallyFilled'],
+    ['Active', '2', 200, 'filled'],
+    ['Cancelled', '1', 200, 'cancelled'],
+  ])('derives %s with %s sold at %s as %s in both endpoints', async (status, sold, now, expected) => {
+    jest.spyOn(Date, 'now').mockReturnValue(Number(now) * 1000)
+    const parent = {
+      ...twapParent('event', 200),
+      status,
+      schedule: {
+        ...(twapParent('event', 200).schedule as Record<string, unknown>),
+        n: '2',
+      },
+      additionalData: { executedSellAmount: sold, executedBuyAmount: sold, executedFee: '0' },
+    }
+    jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: {
+              twapOrder: { ...parent, orderType: 'TWAP', transaction: { blockTimestamp: '200' } },
+              knownParts: { totalCount: 2 },
+            },
+          }),
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: {
+              twapOrders: { items: [parent], totalCount: 1 },
+            },
+          }),
+        ),
+      )
+    const api = new ProgrammaticOrderApi()
+    const order = await api.getTwapOrder({ eventId: 'event', chainId: SupportedChainId.GNOSIS_CHAIN })
+    const page = await api.getTwapOrders({ resolvedOwner: EOA, chainId: SupportedChainId.GNOSIS_CHAIN })
+    expect(order?.status).toBe(expected)
+    expect(page.items[0]?.status).toBe(expected)
+    expect(order?.lifecycleStatus).toBe(status)
+    expect(page.items[0]?.lifecycleStatus).toBe(status)
+  })
+
+  it.each([
     ['missing', undefined],
     ['null', null],
   ])('rejects a %s creation transaction hash', async (_case, txHash) => {

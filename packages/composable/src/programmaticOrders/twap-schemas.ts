@@ -1,6 +1,8 @@
 import { OrderStatus } from '@cowprotocol/sdk-order-book'
 import * as v from 'valibot'
 
+import { deriveTwapStatus } from './deriveTwapStatus'
+
 import {
   ADDRESS_SCHEMA,
   BYTES_32_SCHEMA,
@@ -70,15 +72,16 @@ export const TWAP_PARENT_SCHEMA = v.pipe(
       additionalData: { executedSellAmount, executedBuyAmount, executedFee },
       schedule,
       createdAt,
-      txHash,
+      status,
       ...parent
     }) => {
       const { t0, n, t, span, ...scheduleParams } = schedule
+      const effectiveStartTime = t0 === 0 ? createdAt : t0
 
-      return {
+      const order = {
         ...parent,
         createdAt,
-        txHash,
+        lifecycleStatus: status,
         executedAmounts: {
           executedSellAmount,
           executedBuyAmount,
@@ -86,12 +89,14 @@ export const TWAP_PARENT_SCHEMA = v.pipe(
         },
         schedule: {
           ...scheduleParams,
-          effectiveStartTime: t0 === 0 ? createdAt : t0,
+          effectiveStartTime,
           numberOfParts: n,
           timeBetweenParts: t,
           durationOfPart: span,
         },
       }
+
+      return { ...order, status: deriveTwapStatus(order) }
     },
   ),
 )
