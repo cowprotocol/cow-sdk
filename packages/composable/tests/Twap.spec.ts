@@ -1091,6 +1091,43 @@ describe('TWAP Order - Multi-Adapter Tests', () => {
         error: undefined,
       })
     })
+    test('should return UNEXPECTED_ERROR at the span-shortened expiry of a LIMIT_DURATION TWAP', async () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      // With durationOfPart = LIMIT_DURATION(50), the last part's window ends 50 seconds after the
+      // start of the last part, not a full `timeBetweenParts` (100s) later: expiry is
+      // startTimestamp + (10 - 1) * 100 + 50 = startTimestamp + 950, matching `endTimestamp()`.
+      // A naive `numberOfParts * timeBetweenParts` calculation would instead say expiry is at +1000,
+      // wrongly reporting the TWAP as still active at +960.
+      const pollParams = getPollParams({
+        blockTimestamp: startTimestamp + 960,
+      })
+
+      const twap = new MockTwap({
+        handler: TWAP_ADDRESS,
+        data: {
+          ...TWAP_PARAMS_TEST,
+          timeBetweenParts: BigInt(timeBetweenParts),
+          numberOfParts: BigInt(10),
+          durationOfPart: {
+            durationType: DurationType.LIMIT_DURATION,
+            duration: BigInt(50),
+          },
+          startTime: {
+            startType: StartTimeValue.AT_EPOCH,
+            epoch: BigInt(startTimestamp),
+          },
+        },
+      })
+
+      const result = await twap.handlePollFailedAlreadyPresent(orderId, order, pollParams)
+
+      expect(result).toEqual({
+        result: PollResultCode.UNEXPECTED_ERROR,
+        reason: 'TWAP is expired. Expired at 1700000950 (2023-11-14T22:29:10.000Z)',
+        error: undefined,
+      })
+    })
     test('should handle polling when blockInfo is not provided', async () => {
       setGlobalAdapter(adapters.viemAdapter)
 
