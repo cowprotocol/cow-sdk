@@ -198,11 +198,13 @@ amountBeforeFee = amountAfterFee * 10000 / (10000 + feeBps)
 feeAmount       = amountAfterFee * feeBps / (10000 + feeBps)
 ```
 
-Applied to sell amount (where `sellAfterNetwork = sellAmount + feeAmount`):
+Applied to sell amount. Note `sellAmount` alone is the protocol-fee-inclusive base here —
+`feeAmount` (network costs) is reported separately by the API and is NOT baked into
+`sellAmount` for BUY orders (see section 4.2 below), so it must not be added in:
 
 ```
-protocolFeeAmount           = sellAfterNetwork * protocolFeeBps / (10000 + protocolFeeBps)
-sellAmountBeforeProtocolFee = sellAfterNetwork - protocolFeeAmount
+protocolFeeAmount           = sellAmount * protocolFeeBps / (10000 + protocolFeeBps)
+sellAmountBeforeProtocolFee = sellAmount - protocolFeeAmount
 ```
 
 > Source: [`getProtocolFeeAmount()`](./getProtocolFeeAmount.ts)
