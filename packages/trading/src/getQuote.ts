@@ -111,6 +111,8 @@ export async function getQuoteRaw(
     orderClass: 'market',
     appCode,
     partnerFee,
+    enableFastPath: tradeParameters.enableFastPath,
+    validFrom: tradeParameters.validFrom,
   }
   const appDataInfo = await buildAppData(buildAppDataParams, advancedSettings?.appData)
 
@@ -129,6 +131,7 @@ export async function getQuoteRaw(
     // Override via `advancedSettings.quoteRequest.priceQuality` (spread below).
     priceQuality: PriceQuality.VERIFIED,
     signingScheme: SigningScheme.EIP712,
+    ...(tradeParameters.enableFastPath ? { fastPath: true } : {}),
     ...(isEthFlow ? ETH_FLOW_AUX_QUOTE_PARAMS : {}),
     ...(isSell
       ? { kind: OrderQuoteSideKindSell.SELL, sellAmountBeforeFee: amount }
