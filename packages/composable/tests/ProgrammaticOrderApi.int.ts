@@ -18,7 +18,7 @@ describe('ProgrammaticOrderApi', () => {
     )
 
     expect(page.items).toHaveLength(2)
-    expect(page.items.every(({ status }) => status === 'Completed')).toBe(true)
+    expect(page.items.every(({ status }) => status === 'partiallyFilled')).toBe(true)
     expect([...page.items].reverse()).toMatchSnapshot()
   })
 
@@ -41,7 +41,7 @@ describe('ProgrammaticOrderApi', () => {
       { direction: 'asc', offset: 7, limit: 2 },
     )
     const parent = parentsPage.items.find(
-      ({ executedAmounts, status }) => status === 'Completed' && executedAmounts.executedFeeAmount > 0n,
+      ({ executedAmounts, status }) => status === 'partiallyFilled' && executedAmounts.executedFeeAmount > 0n,
     )
 
     expect(parent).toBeDefined()

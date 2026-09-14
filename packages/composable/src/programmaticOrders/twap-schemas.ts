@@ -1,6 +1,8 @@
 import { OrderStatus } from '@cowprotocol/sdk-order-book'
 import * as v from 'valibot'
 
+import { deriveTwapStatus } from './deriveTwapStatus'
+
 import {
   ADDRESS_SCHEMA,
   BYTES_32_SCHEMA,
@@ -21,13 +23,15 @@ export const GET_TWAP_ORDERS_PARAMS_SCHEMA = v.object({
   updatedAtBlockGte: v.optional(v.pipe(v.bigint(), v.minValue(0n, 'must be a non-negative bigint'))),
 })
 
-export const GET_TWAP_PART_ORDERS_PARAMS_SCHEMA = v.object({
+export const GET_TWAP_ORDER_PARAMS_SCHEMA = v.object({
   eventId: v.pipe(
     v.string(),
     v.check((eventId) => eventId.trim().length > 0, 'TWAP eventId must not be empty'),
   ),
   chainId: SUPPORTED_EVM_CHAIN_ID_SCHEMA,
 })
+
+export const GET_TWAP_PART_ORDERS_PARAMS_SCHEMA = GET_TWAP_ORDER_PARAMS_SCHEMA
 
 /** @see https://github.com/cowprotocol/cow-programmatic-orders-api/blob/main/docs/supported-order-types.md#twap-time-weighted-average-price */
 const TWAP_SCHEDULE_SCHEMA = v.object({
@@ -52,6 +56,7 @@ export const TWAP_PARENT_SCHEMA = v.pipe(
     owner: ADDRESS_SCHEMA,
     resolvedOwner: ADDRESS_SCHEMA,
     status: PROGRAMMATIC_ORDER_STATUS_SCHEMA,
+    txHash: BYTES_32_SCHEMA,
     updatedAtBlock: UINT256_SCHEMA,
     additionalData: v.object({
       executedSellAmount: UINT256_SCHEMA,
@@ -63,12 +68,20 @@ export const TWAP_PARENT_SCHEMA = v.pipe(
     schedule: TWAP_SCHEDULE_SCHEMA,
   }),
   v.transform(
-    ({ additionalData: { executedSellAmount, executedBuyAmount, executedFee }, schedule, createdAt, ...parent }) => {
+    ({
+      additionalData: { executedSellAmount, executedBuyAmount, executedFee },
+      schedule,
+      createdAt,
+      status,
+      ...parent
+    }) => {
       const { t0, n, t, span, ...scheduleParams } = schedule
+      const effectiveStartTime = t0 === 0 ? createdAt : t0
 
-      return {
+      const order = {
         ...parent,
         createdAt,
+        lifecycleStatus: status,
         executedAmounts: {
           executedSellAmount,
           executedBuyAmount,
@@ -76,12 +89,14 @@ export const TWAP_PARENT_SCHEMA = v.pipe(
         },
         schedule: {
           ...scheduleParams,
-          effectiveStartTime: t0 === 0 ? createdAt : t0,
+          effectiveStartTime,
           numberOfParts: n,
           timeBetweenParts: t,
           durationOfPart: span,
         },
       }
+
+      return { ...order, status: deriveTwapStatus(order) }
     },
   ),
 )

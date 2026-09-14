@@ -1,4 +1,5 @@
 export { ProgrammaticOrderApi } from './ProgrammaticOrderApi'
+export { deriveTwapStatus } from './deriveTwapStatus'
 export { ProgrammaticOrderApiError } from './types'
 export type {
   ProgrammaticOrderApiOptions,
@@ -8,9 +9,12 @@ export type {
   QueryPage,
 } from './types'
 export type {
+  DeriveTwapStatusParams,
+  GetTwapOrderParams,
   GetTwapOrdersParams,
   GetTwapPartOrdersParams,
   TwapOrder,
+  TwapStatus,
   TwapPartOrder,
   TwapPartOrderStatus,
   TwapSchedule,
