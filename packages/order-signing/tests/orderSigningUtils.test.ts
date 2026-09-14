@@ -1,5 +1,5 @@
 import { AdaptersTestSetup, createAdapters, TEST_ADDRESS } from './setup'
-import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { CowError, setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { OrderSigningUtils } from '../src/orderSigningUtils'
 import {
   COW_PROTOCOL_SETTLEMENT_CONTRACT_ADDRESS,
@@ -29,6 +29,41 @@ describe('OrderSigningUtils', () => {
       kind: OrderKind.SELL,
       partiallyFillable: true,
     }
+
+    test('should reject a full appData document instead of surfacing an opaque hex error', async () => {
+      // What you get back from OrderQuoteResponse if you pass it straight through
+      const fullAppData = JSON.stringify({
+        appCode: 'Decentralized CoW',
+        environment: 'prod',
+        metadata: { orderClass: { orderClass: 'limit' }, quote: { slippageBips: '50' } },
+        version: '0.11.0',
+      })
+
+      for (const [, adapter] of Object.entries(adapters)) {
+        setGlobalAdapter(adapter)
+
+        const promise = OrderSigningUtils.signOrder(
+          { ...testOrder, appData: fullAppData },
+          SupportedChainId.SEPOLIA,
+          adapter.signer,
+        )
+        await expect(promise).rejects.toThrow(CowError)
+        await expect(promise).rejects.toThrow(/expected the bytes32 appData hash/)
+      }
+    })
+
+    test('should reject an appData hash that is not 32 bytes', async () => {
+      const [, adapter] = Object.entries(adapters)[0]
+      setGlobalAdapter(adapter)
+
+      const promise = OrderSigningUtils.signOrder(
+        { ...testOrder, appData: '0xdeadbeef' },
+        SupportedChainId.SEPOLIA,
+        adapter.signer,
+      )
+      await expect(promise).rejects.toThrow(CowError)
+      await expect(promise).rejects.toThrow(/expected the bytes32 appData hash/)
+    })
 
     test('should consistently sign orders across different adapters', async () => {
       const signatures: Record<string, string> = {}
