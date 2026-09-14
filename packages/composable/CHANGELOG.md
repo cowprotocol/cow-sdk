@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.5.0...sdk-composable-v1.6.0) (2026-09-14)
+
+
+### ✨ Features
+
+* more twap retrieval methods ([#1008](https://github.com/cowprotocol/cow-sdk/issues/1008)) ([4bfaef6](https://github.com/cowprotocol/cow-sdk/commit/4bfaef6cd609d087dbd47fbee15ca17094fd4f9d))
+
+
+### 🔧 Miscellaneous
+
+* update coverage badges ([#948](https://github.com/cowprotocol/cow-sdk/issues/948)) ([151d7a4](https://github.com/cowprotocol/cow-sdk/commit/151d7a4bc51194ffa7dc46a102eb2bc0e3537124))
+
 ## [1.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.4.2...sdk-composable-v1.5.0) (2026-09-09)
 
 
