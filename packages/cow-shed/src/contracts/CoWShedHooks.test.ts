@@ -951,5 +951,64 @@ describe('CowShedHooks', () => {
         adapter.getCode = originalGetCode
       }
     })
+
+    it('should NOT leak account code cache across different chains for the same account', async () => {
+      // TTLCache persists to real `localStorage` when it's available (its default backend), and
+      // every CowShedHooks instance builds its accountCodeCache with the same hardcoded keyPrefix
+      // ('cowshed-account-code') regardless of chainId. If doesAccountHaveCode() keys its cache
+      // entry on `account` alone, two CowShedHooks instances for DIFFERENT chains but backed by the
+      // same browser localStorage will read each other's cached hasCode result for the same
+      // address -- even though an address can be a deployed contract on one chain and undeployed
+      // (no code) on another (e.g. a counterfactual Safe address, or a CREATE2 deploy that only
+      // landed on one chain so far).
+      const sharedLocalStorageMap = new Map<string, string>()
+      ;(globalThis as any).localStorage = {
+        getItem: (key: string) => sharedLocalStorageMap.get(key) ?? null,
+        setItem: (key: string, value: string) => {
+          sharedLocalStorageMap.set(key, value)
+        },
+        removeItem: (key: string) => {
+          sharedLocalStorageMap.delete(key)
+        },
+        get length() {
+          return sharedLocalStorageMap.size
+        },
+        key: (index: number) => Array.from(sharedLocalStorageMap.keys())[index] ?? null,
+      }
+
+      const adapter = adapters.viemAdapter
+      const originalGetCode = adapter.getCode
+
+      try {
+        setGlobalAdapter(adapter)
+
+        const chain1Hooks = new CowShedHooks(1, {
+          factoryAddress: MOCK_COW_SHED_FACTORY,
+          implementationAddress: MOCK_COW_SHED_IMPLEMENTATION,
+          proxyCreationCode: MOCK_INIT_CODE,
+        })
+        const chain100Hooks = new CowShedHooks(100, {
+          factoryAddress: MOCK_COW_SHED_FACTORY,
+          implementationAddress: MOCK_COW_SHED_IMPLEMENTATION,
+          proxyCreationCode: MOCK_INIT_CODE,
+        })
+
+        // Chain 1: account IS a deployed contract.
+        adapter.getCode = jest.fn().mockResolvedValue('0x608060405234801561001057600080fd5b50')
+        const chain1Result = await (chain1Hooks as any).doesAccountHaveCode(USER_MOCK)
+        expect(chain1Result).toBe(true)
+
+        // Chain 100: the SAME address has no code yet on this chain.
+        const chain100GetCodeMock = jest.fn().mockResolvedValue('0x')
+        adapter.getCode = chain100GetCodeMock
+        const chain100Result = await (chain100Hooks as any).doesAccountHaveCode(USER_MOCK)
+
+        expect(chain100Result).toBe(false)
+        expect(chain100GetCodeMock).toHaveBeenCalledWith(USER_MOCK)
+      } finally {
+        adapter.getCode = originalGetCode
+        delete (globalThis as any).localStorage
+      }
+    })
   })
 })
