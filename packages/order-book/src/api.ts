@@ -417,13 +417,13 @@ export class OrderBookApi {
    * @param appDataHash `bytes32` hash of the app data
    * @param fullAppData Full app data to be uploaded
    * @param contextOverride Optional context override for this request.
-   * @returns The string encoding of the full app data that was uploaded.
+   * @returns The `appDataHash` the full app data was registered under.
    */
   uploadAppData(
     appDataHash: AppDataHash,
     fullAppData: string,
     contextOverride: PartialApiContext = {},
-  ): Promise<AppDataObject> {
+  ): Promise<AppDataHash> {
     return this.fetch(
       { path: `/api/v1/app_data/${appDataHash}`, method: 'PUT', body: { fullAppData } },
       contextOverride,
