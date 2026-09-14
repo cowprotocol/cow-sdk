@@ -24,7 +24,7 @@ export function getDefaultUtmParams() {
 }
 
 export async function buildAppData(
-  { slippageBps, appCode, orderClass: orderClassName, partnerFee }: BuildAppDataParams,
+  { slippageBps, appCode, orderClass: orderClassName, partnerFee, enableFastPath, validFrom }: BuildAppDataParams,
   advancedParams?: AppDataParams,
 ): Promise<TradingAppDataInfo> {
   const quoteParams = { slippageBips: slippageBps }
@@ -40,6 +40,8 @@ export async function buildAppData(
     quote: quoteParams,
     orderClass,
     partnerFee,
+    ...(enableFastPath ? { enableFastPath: true } : {}),
+    ...(validFrom !== undefined ? { validFrom } : {}),
     ...(shouldAddDefaultUtm ? { utm: getDefaultUtmParams() } : {}),
   }
 

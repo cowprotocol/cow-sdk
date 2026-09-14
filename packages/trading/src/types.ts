@@ -88,6 +88,20 @@ export interface TradeOptionalParameters {
    */
   validTo?: OrderParameters['validTo']
   partnerFee?: latest.PartnerFee
+  /**
+   * Opt into out-of-competition ("fast path") execution: the winning quote's
+   * solver can settle the order directly, within a short exclusivity window,
+   * instead of waiting for the next batch auction. Falls back to the normal
+   * auction cycle if it isn't settled in time.
+   */
+  enableFastPath?: boolean
+  /**
+   * Earliest time the order may enter a batch auction, as a UNIX timestamp in
+   * seconds. Optional and independent of fast path: for a fast-path order it
+   * also acts as the exclusivity window (the order can only be fast-pathed
+   * until it passes), and a default value is used when not set explicitly.
+   */
+  validFrom?: number
 }
 
 /**
@@ -247,6 +261,8 @@ export interface BuildAppDataParams {
   slippageBps: latest.SlippageBips
   orderClass: latest.OrderClass['orderClass']
   partnerFee?: latest.PartnerFee
+  enableFastPath?: boolean
+  validFrom?: number
 }
 
 /**
