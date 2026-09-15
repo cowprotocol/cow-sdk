@@ -1,5 +1,5 @@
 import type { SwapAdvancedSettings, SigningStepManager, OrderPostingResult } from '@cowprotocol/sdk-trading'
-import { buildSolanaSwapOrder, SolanaSwapOrderQuote } from './buildSwapOrder'
+import { BuildSolanaSwapOrderOptions, buildSolanaSwapOrder, SolanaSwapOrderQuote } from './buildSwapOrder'
 import { SolanaSignAndSend } from './types'
 
 // TODO: implement real order posting flow, see https://github.com/cowprotocol/cowswap/pull/7860
@@ -15,7 +15,12 @@ export async function postSolanaSwapOrderFromQuote(
   signAndSend: SolanaSignAndSend,
   advancedSettings?: SwapAdvancedSettings,
   signingStepManager?: SigningStepManager,
+  options: BuildSolanaSwapOrderOptions = {},
 ): Promise<OrderPostingResult> {
+  if (options.sponsor) {
+    throw new Error('A sponsored order is signed by the backend and goes to the order book, not to an RPC')
+  }
+
   const { instruction, orderId, signingScheme, orderToSign } = await buildSolanaSwapOrder(quote, advancedSettings)
 
   await signingStepManager?.beforeOrderSign?.()

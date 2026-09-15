@@ -90,6 +90,34 @@ describe('buildSolanaSwapOrder', () => {
     const ownerBase58 = solanaQuote.intent.owner.toBase58()
 
     expect(accounts.slice(0, 2)).toEqual([ownerBase58, ownerBase58])
+    expect(order.feePayer.toBase58()).toBe(ownerBase58)
+  })
+
+  it('funds the order rent from the sponsor when one is configured, leaving the owner as authenticator', async () => {
+    const solanaQuote = await buildFixtureQuote()
+    const sponsor = fillPubkey(0x99)
+
+    const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, undefined, {
+      sponsor,
+    })
+
+    const accounts = order.instruction.keys.map((key) => key.pubkey.toBase58())
+
+    expect(accounts.slice(0, 2)).toEqual([solanaQuote.intent.owner.toBase58(), sponsor.toBase58()])
+    expect(order.feePayer.toBase58()).toBe(sponsor.toBase58())
+  })
+
+  it('keeps the order identity independent of who pays, since the sponsor is not part of the intent', async () => {
+    const solanaQuote = await buildFixtureQuote()
+    const quoteResults = buildFixtureQuoteResults()
+
+    const ownerPaid = await buildSolanaSwapOrder({ quoteResults, solanaQuote })
+    const sponsored = await buildSolanaSwapOrder({ quoteResults, solanaQuote }, undefined, {
+      sponsor: fillPubkey(0x99),
+    })
+
+    expect(sponsored.orderId).toBe(ownerPaid.orderId)
+    expect(sponsored.orderPda.toBase58()).toBe(ownerPaid.orderPda.toBase58())
   })
 
   it('leaves the quoted intent untouched', async () => {
