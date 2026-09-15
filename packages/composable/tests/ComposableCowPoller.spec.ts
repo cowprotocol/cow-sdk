@@ -2,7 +2,12 @@ import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { BigNumber } from 'ethers-v5'
 
 import * as composable from '../src'
-import { ComposableCowPoller, type ComposableCowPollerDirectRevoke, type ComposableCowPollerSchedule } from '../src'
+import {
+  ComposableCowPoller,
+  type ComposableCowPollerDirectRevoke,
+  type ComposableCowPollerSchedule,
+  type ComposableCowPollerScheduleAuthorization,
+} from '../src'
 import { ComposableCowPollerAbi } from '../src/abis/ComposableCowPollerAbi'
 import { createAdapters } from './setup'
 
@@ -22,9 +27,18 @@ const CHAIN_ID = 1
 const REGISTER_SELECTOR = '0x199d771f'
 const REGISTER_WITH_SIGNATURE_SELECTOR = '0x9e72edd4'
 const REVOKE_SELECTOR = '0xd96054c4'
+const REVOKE_WITH_SIGNATURE_SELECTOR = '0xbfd83f22'
 const DEADLINE = 2_000_000_000n
 const SIGNATURE = '0x123456'
 const REGISTER_DIGEST = '0x7abf30523ae51092914ae8230bc2af45078d9b4f47062f3c9cb6e39cd13106bf'
+const REVOKE_DIGEST = '0x11b6cb77364f3c3f8a454cb36f0d22166c6acd9575c066b309f95c9aff712c5f'
+const AUTHORIZATION: ComposableCowPollerScheduleAuthorization = {
+  handler: SCHEDULE.handler,
+  authEpoch: SCHEDULE.authEpoch,
+  funder: SCHEDULE.funder,
+  owner: SCHEDULE.owner,
+  salt: SCHEDULE.salt,
+}
 
 describe('ComposableCowPoller ABI', () => {
   test('keeps the ABI internal', () => {
@@ -38,6 +52,7 @@ describe('ComposableCowPoller ABI', () => {
       'register',
       'registerWithSignature',
       'revoke',
+      'revokeWithSignature',
       'schedules',
     ])
   })
@@ -171,6 +186,13 @@ describe('ComposableCowPoller', () => {
     expect(() => instance.getRegisterTypedData({ chainId: CHAIN_ID, schedule: SCHEDULE, deadline: DEADLINE })).toThrow(
       'pollerAddress is required',
     )
+    expect(() =>
+      instance.getRevokeTypedData({
+        chainId: CHAIN_ID,
+        ...AUTHORIZATION,
+        deadline: DEADLINE,
+      }),
+    ).toThrow('pollerAddress is required')
   })
 
   test('builds the register digest across adapters', () => {
@@ -211,6 +233,43 @@ describe('ComposableCowPoller', () => {
     expect(schedule.salt).toEqual(SCHEDULE.salt)
     expect(schedule.staticInput).toEqual(SCHEDULE.staticInput)
     expect(adapters.viemAdapter.utils.toBigIntish(deadline)).toEqual(DEADLINE)
+    expect(signature).toEqual(SIGNATURE)
+  })
+
+  test('builds the revoke digest across adapters', () => {
+    for (const adapter of Object.values(adapters)) {
+      setGlobalAdapter(adapter)
+      const typedData = poller.getRevokeTypedData({
+        chainId: CHAIN_ID,
+        ...AUTHORIZATION,
+        deadline: DEADLINE,
+      })
+
+      expect(typedData.primaryType).toEqual('Revoke')
+      expect(adapter.utils.hashTypedData(typedData.domain, typedData.types, typedData.message)).toEqual(REVOKE_DIGEST)
+    }
+  })
+
+  test('encodes signed revocation calldata across adapters', () => {
+    const encodedCalls = []
+
+    for (const adapter of Object.values(adapters)) {
+      setGlobalAdapter(adapter)
+      encodedCalls.push(poller.encodeRevokeWithSignature(AUTHORIZATION, DEADLINE, SIGNATURE))
+    }
+
+    expect(new Set(encodedCalls).size).toEqual(1)
+    expect(encodedCalls[0]?.slice(0, 10)).toEqual(REVOKE_WITH_SIGNATURE_SELECTOR)
+
+    const [handler, funder, owner, salt, authEpoch, deadline, signature] =
+      adapters.viemAdapter.utils.decodeFunctionData(ComposableCowPollerAbi, 'revokeWithSignature', encodedCalls[0]!)
+
+    expect(handler.toLowerCase()).toEqual(AUTHORIZATION.handler)
+    expect(funder.toLowerCase()).toEqual(AUTHORIZATION.funder)
+    expect(owner.toLowerCase()).toEqual(AUTHORIZATION.owner)
+    expect(salt).toEqual(AUTHORIZATION.salt)
+    expect(authEpoch).toEqual(AUTHORIZATION.authEpoch)
+    expect(deadline).toEqual(DEADLINE)
     expect(signature).toEqual(SIGNATURE)
   })
 })

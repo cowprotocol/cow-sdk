@@ -119,6 +119,27 @@ const signedRegisterCalldata = poller.encodeRegisterWithSignature(schedule, dead
 
 // Direct revocation must be submitted by schedule.funder.
 const revokeCalldata = poller.encodeRevoke(schedule)
+
+// Or authorize revocation for submission by another account.
+const revokeAuthorization = {
+  handler: schedule.handler,
+  authEpoch: schedule.authEpoch,
+  funder: schedule.funder,
+  owner: schedule.owner,
+  salt: schedule.salt,
+}
+const revokeDeadline = Math.floor(Date.now() / 1000) + 15 * 60
+const revokeTypedData = poller.getRevokeTypedData({
+  chainId,
+  ...revokeAuthorization,
+  deadline: revokeDeadline,
+})
+const revokeSignature = await adapter.signer.signTypedData(
+  revokeTypedData.domain,
+  revokeTypedData.types,
+  revokeTypedData.message,
+)
+const signedRevokeCalldata = poller.encodeRevokeWithSignature(revokeAuthorization, revokeDeadline, revokeSignature)
 ```
 
 The schedule fields are:
@@ -130,7 +151,7 @@ The schedule fields are:
 - `salt`: the registered conditional order's salt.
 - `staticInput`: the registered conditional order's encoded static input.
 
-The SDK only encodes these transactions; the consumer owns signing, gas policy, submission, and confirmation. Submit direct registration and revocation calldata to `pollerAddress` from `schedule.funder`, or submit `signedRegisterCalldata` through a relayer. Signed registration calldata contains the schedule, deadline, and signature. Replay protection is scoped to the schedule ID through `authEpoch`. Use `poller.getComposableCowAddress()` and `poller.getSchedule(scheduleId)` to read Poller state.
+The SDK only encodes these transactions; the consumer owns signing, gas policy, submission, and confirmation. Submit direct registration and revocation calldata to `pollerAddress` from `schedule.funder`, or submit `signedRegisterCalldata` or `signedRevokeCalldata` through a relayer. Signed registration calldata contains the schedule, deadline, and signature. Signed revocation calldata contains the handler, funder, owner, salt, `authEpoch`, deadline, and signature. Replay protection is scoped to the schedule ID through `authEpoch`. Use `poller.getComposableCowAddress()` and `poller.getSchedule(scheduleId)` to read Poller state.
 
 ## Usage
 
