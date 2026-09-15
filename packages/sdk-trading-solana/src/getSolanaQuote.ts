@@ -12,16 +12,24 @@ import { SolanaQuote, SolanaQuoteParameters } from './types'
 import type { QuoteResults, TradeParameters } from '@cowprotocol/sdk-trading'
 
 const DEFAULT_VALID_FOR_SECONDS = 30 * 60
+const DEFAULT_SLIPPAGE_MULTIPLIER = 1
 /** No Solana app-data convention exists yet (confirmed absent from the settlement program's intent
  * struct beyond an opaque 32 bytes) — sent as zeroes until one is defined. */
 const ZERO_APP_DATA = new Uint8Array(32)
 
 const jupiterApi = new JupiterAPI()
 
+export interface GetSolanaQuoteOptions {
+  env?: CowEnv
+  /** Test purpose only. */
+  slippageMultiplier?: number
+}
+
 export async function getSolanaQuote(
   params: SolanaQuoteParameters,
-  options: { env?: CowEnv } = {},
+  options: GetSolanaQuoteOptions = {},
 ): Promise<{ quoteResults: QuoteResults; solanaQuote: SolanaQuote }> {
+  const { slippageMultiplier = DEFAULT_SLIPPAGE_MULTIPLIER } = options
   const {
     ownerAddress,
     receiverAddress,
@@ -37,6 +45,11 @@ export async function getSolanaQuote(
 
   if (!Number.isFinite(validForSeconds) || validForSeconds <= 0) {
     throw new Error('validForSeconds must be a finite number greater than zero')
+  }
+
+  // Below 1 would sign less slippage than the quote suggests, which is strictly worse than not passing it.
+  if (!Number.isFinite(slippageMultiplier) || slippageMultiplier < 1) {
+    throw new Error('slippageMultiplier must be a finite number greater than or equal to one')
   }
 
   const owner = new PublicKey(ownerAddress)
@@ -56,6 +69,8 @@ export async function getSolanaQuote(
     amount: amount.toString(),
     swapMode: kind === OrderKind.SELL ? 'ExactIn' : 'ExactOut',
   })
+
+  const suggestedSlippageBps = jupiterOrder.slippageBps * slippageMultiplier
 
   const validTo = Math.floor(Date.now() / 1000) + validForSeconds
 
@@ -79,7 +94,7 @@ export async function getSolanaQuote(
 
   const amountsAndCosts = getQuoteAmountsAndCosts({
     orderParams,
-    slippagePercentBps: jupiterOrder.slippageBps,
+    slippagePercentBps: suggestedSlippageBps,
     // TODO: implement fees
     partnerFeeBps: 0,
     protocolFeeBps: 0,
@@ -144,7 +159,7 @@ export async function getSolanaQuote(
   const quoteResults: QuoteResults = {
     quoteResponse,
     amountsAndCosts,
-    suggestedSlippageBps: jupiterOrder.slippageBps,
+    suggestedSlippageBps,
     tradeParameters,
     orderToSign: {} as QuoteResults['orderToSign'],
     appDataInfo: {} as QuoteResults['appDataInfo'],
