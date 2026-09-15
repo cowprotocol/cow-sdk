@@ -7,8 +7,6 @@ import { SolanaQuote, SolanaQuoteParameters, SolanaSignAndSend } from './types'
 
 export interface SolanaTradingSdkOptions {
   env?: CowEnv
-  /** Test purpose only. */
-  slippageMultiplier?: number
 }
 
 /**
@@ -39,10 +37,7 @@ export class SolanaTradingSdk {
   constructor(private readonly options: SolanaTradingSdkOptions = {}) {}
 
   async getQuote(params: SolanaQuoteParameters): Promise<SolanaQuoteAndPost> {
-    const quote = await getSolanaQuote(params, {
-      env: this.options.env,
-      slippageMultiplier: this.options.slippageMultiplier,
-    })
+    const quote = await getSolanaQuote(params, { env: this.options.env })
 
     return {
       quoteResults: quote.quoteResults,

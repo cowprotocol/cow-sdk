@@ -105,7 +105,7 @@ describe('SolanaTradingSdk', () => {
 
     const result = await sdk.getQuote(params)
 
-    expect(mockGetSolanaQuote).toHaveBeenCalledWith(params, { env: undefined, slippageMultiplier: undefined })
+    expect(mockGetSolanaQuote).toHaveBeenCalledWith(params, { env: undefined })
     expect(result.quoteResults).toBe(quoteResultsFixture)
   })
 
@@ -114,15 +114,7 @@ describe('SolanaTradingSdk', () => {
 
     await sdk.getQuote(params)
 
-    expect(mockGetSolanaQuote).toHaveBeenCalledWith(params, { env: 'staging', slippageMultiplier: undefined })
-  })
-
-  it('getQuote forwards the constructor-bound slippageMultiplier to getSolanaQuote', async () => {
-    const sdk = new SolanaTradingSdk({ slippageMultiplier: 4 })
-
-    await sdk.getQuote(params)
-
-    expect(mockGetSolanaQuote).toHaveBeenCalledWith(params, { env: undefined, slippageMultiplier: 4 })
+    expect(mockGetSolanaQuote).toHaveBeenCalledWith(params, { env: 'staging' })
   })
 
   it('getQuote exposes solanaQuote, so callers can inspect the intent and PDA', async () => {
