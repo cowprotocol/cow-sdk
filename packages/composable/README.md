@@ -6,9 +6,9 @@
 
 ## Test coverage
 
-| Statements                                                                               | Branches                                                                             | Functions                                                                              | Lines                                                                          |
-| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| ![Statements](https://img.shields.io/badge/statements-100%25-brightgreen.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-100%25-brightgreen.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-100%25-brightgreen.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-100%25-brightgreen.svg?style=flat) |
+| Statements                  | Branches                | Functions                 | Lines             |
+| --------------------------- | ----------------------- | ------------------------- | ----------------- |
+| ![Statements](https://img.shields.io/badge/statements-97.68%25-brightgreen.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-95.58%25-brightgreen.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-98.31%25-brightgreen.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-98.13%25-brightgreen.svg?style=flat) |
 
 This package provides advanced conditional and programmable order functionality for the CoW Protocol. It enables the creation, management, and execution of sophisticated trading strategies through conditional orders that execute automatically when specified conditions are met.
 
@@ -86,7 +86,7 @@ class CustomOrder extends ConditionalOrder<DataType, StaticType> {
 
 ### JIT Poller
 
-The SDK encodes calldata for registering and revoking `ComposableCowPoller` schedules. Signing, gas estimation, transaction submission, and confirmation remain the consumer's responsibility.
+The package exports utilities needed to integrate with a deployed `ComposableCowPoller`. The Poller moves sell tokens just in time from a funding account (often an EOA) to the ComposableCoW order owner/trader. This avoids requiring the trader account to be prefunded for the full schedule, reducing setup friction and idle capital.
 
 ```typescript
 import { ComposableCowPoller, type ComposableCowPollerSchedule } from '@cowprotocol/sdk-composable'

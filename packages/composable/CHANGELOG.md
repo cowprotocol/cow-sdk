@@ -1,5 +1,71 @@
 # Changelog
 
+## [1.6.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.6.0...sdk-composable-v1.6.1) (2026-09-15)
+
+
+### 🐛 Bug Fixes
+
+* use executedFee instead of the deprecated executedFeeAmount ([#1012](https://github.com/cowprotocol/cow-sdk/issues/1012)) ([1ae7a49](https://github.com/cowprotocol/cow-sdk/commit/1ae7a49bb088e4231d913e919e3d09bcdf0a2272))
+
+## [1.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.5.0...sdk-composable-v1.6.0) (2026-09-14)
+
+
+### ✨ Features
+
+* more twap retrieval methods ([#1008](https://github.com/cowprotocol/cow-sdk/issues/1008)) ([4bfaef6](https://github.com/cowprotocol/cow-sdk/commit/4bfaef6cd609d087dbd47fbee15ca17094fd4f9d))
+
+
+### 🔧 Miscellaneous
+
+* update coverage badges ([#948](https://github.com/cowprotocol/cow-sdk/issues/948)) ([151d7a4](https://github.com/cowprotocol/cow-sdk/commit/151d7a4bc51194ffa7dc46a102eb2bc0e3537124))
+
+## [1.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.4.2...sdk-composable-v1.5.0) (2026-09-09)
+
+
+### ✨ Features
+
+* allow fetching twap deltas ([#996](https://github.com/cowprotocol/cow-sdk/issues/996)) ([46cf8b6](https://github.com/cowprotocol/cow-sdk/commit/46cf8b68bb7fd6189ae7cfbcd02df44330e88352))
+* include scheduled parts ([#1002](https://github.com/cowprotocol/cow-sdk/issues/1002)) ([9fdd914](https://github.com/cowprotocol/cow-sdk/commit/9fdd91494ddfee381e710e587f9e33537bddc7c3))
+
+## [1.4.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.4.1...sdk-composable-v1.4.2) (2026-09-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.12.3
+    * @cowprotocol/sdk-config bumped to 2.6.0
+    * @cowprotocol/sdk-contracts-ts bumped to 3.5.1
+    * @cowprotocol/sdk-order-book bumped to 4.0.4
+    * @cowprotocol/sdk-order-signing bumped to 1.1.9
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.13
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.13
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.28
+
+## [1.4.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.4.0...sdk-composable-v1.4.1) (2026-09-04)
+
+
+### 🔧 Miscellaneous
+
+* split integration tests ([#978](https://github.com/cowprotocol/cow-sdk/issues/978)) ([72bbc6f](https://github.com/cowprotocol/cow-sdk/commit/72bbc6f8f88ce66597f36cd08d391ab79e342843))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.12.2
+    * @cowprotocol/sdk-config bumped to 2.5.0
+    * @cowprotocol/sdk-contracts-ts bumped to 3.5.0
+    * @cowprotocol/sdk-order-book bumped to 4.0.3
+    * @cowprotocol/sdk-order-signing bumped to 1.1.8
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.12
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.12
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.27
+
 ## [1.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.3.0...sdk-composable-v1.4.0) (2026-09-01)
 
 
