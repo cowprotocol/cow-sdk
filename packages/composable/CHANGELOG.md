@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.6.1...sdk-composable-v1.7.0) (2026-09-15)
+
+
+### ✨ Features
+
+* **composable:** add direct JIT Poller helpers ([#958](https://github.com/cowprotocol/cow-sdk/issues/958)) ([2d934d6](https://github.com/cowprotocol/cow-sdk/commit/2d934d68df527c332e4a7d6a7869a9998b112b28))
+* **composable:** add signed Poller registration ([#959](https://github.com/cowprotocol/cow-sdk/issues/959)) ([ec4be35](https://github.com/cowprotocol/cow-sdk/commit/ec4be353837993405ac7ff5a71831c7da978064e))
+* **composable:** add signed Poller revocation ([#960](https://github.com/cowprotocol/cow-sdk/issues/960)) ([ea2ffdb](https://github.com/cowprotocol/cow-sdk/commit/ea2ffdb067ca035bb8a3551e8ffa50c2e921d302))
+
 ## [1.6.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.6.0...sdk-composable-v1.6.1) (2026-09-15)
 
 
