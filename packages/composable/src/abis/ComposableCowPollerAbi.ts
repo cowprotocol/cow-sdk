@@ -40,6 +40,17 @@ export const ComposableCowPollerAbi = [
   },
   {
     type: 'function',
+    name: 'registerWithSignature',
+    inputs: [
+      SCHEDULE_INPUT,
+      { name: 'deadline', type: 'uint256', internalType: 'uint256' },
+      { name: 'signature', type: 'bytes', internalType: 'bytes' },
+    ],
+    outputs: ID_OUTPUT,
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
     name: 'revoke',
     inputs: [
       { name: 'handler', type: 'address', internalType: 'contract IConditionalOrderGenerator' },
