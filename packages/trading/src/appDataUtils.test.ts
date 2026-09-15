@@ -102,6 +102,23 @@ describe('AppData utils', () => {
     })
   })
 
+  it('Should throw when both enableFastPath and validFrom are set', async () => {
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      await expect(
+        buildAppData({
+          slippageBps: 100,
+          appCode: 'cowswap',
+          orderClass: 'market',
+          enableFastPath: true,
+          validFrom: 1893456000,
+        }),
+      ).rejects.toThrow('mutually exclusive')
+    }
+  })
+
   it('Should add advanced parameters to the doc', async () => {
     const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
     const results: any[] = []

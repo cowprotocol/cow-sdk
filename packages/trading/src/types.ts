@@ -93,13 +93,16 @@ export interface TradeOptionalParameters {
    * solver can settle the order directly, within a short exclusivity window,
    * instead of waiting for the next batch auction. Falls back to the normal
    * auction cycle if it isn't settled in time.
+   *
+   * Mutually exclusive with {@link validFrom}: a fast-path order's exclusivity
+   * window is controlled by the backend, so setting both throws.
    */
   enableFastPath?: boolean
   /**
-   * Earliest time the order may enter a batch auction, as a UNIX timestamp in
-   * seconds. Optional and independent of fast path: for a fast-path order it
-   * also acts as the exclusivity window (the order can only be fast-pathed
-   * until it passes), and a default value is used when not set explicitly.
+   * Earliest time the order may enter a batch auction, as a UNIX timestamp
+   * in seconds. Delays the order's solvability until then.
+   * Mutually exclusive with {@link enableFastPath}: a fast-path order ignores
+   * this field (its window is backend-controlled), so setting both throws.
    */
   validFrom?: number
 }
