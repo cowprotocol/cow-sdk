@@ -84,15 +84,18 @@ export interface TwapPartOrder {
   createdAt: number
   executedSellAmount: bigint | null
   executedBuyAmount: bigint | null
-  /** Actual fee charged at settlement, in the sell token. */
-  executedFeeAmount: bigint | null
+  /** @deprecated Always zero: use `executedFee` for actual execution fees. */
+  executedFeeAmount: bigint
+  executedFee: bigint | null
 }
 
 export interface TwapExecutedAmounts {
   /** Execution totals for all part orders. */
   executedSellAmount: bigint
   executedBuyAmount: bigint
+  /** @deprecated Always zero: use `executedFee` for actual execution fees. */
   executedFeeAmount: bigint
+  executedFee: bigint
 }
 
 /**

@@ -60,7 +60,7 @@ export const TWAP_PART_ORDERS_QUERY = `
         createdAt: creationDate
         executedSellAmount
         executedBuyAmount
-        executedFeeAmount: executedFee
+        executedFee
       }
       totalCount
     }
