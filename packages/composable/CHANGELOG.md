@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.6.0...sdk-composable-v1.6.1) (2026-09-15)
+
+
+### 🐛 Bug Fixes
+
+* use executedFee instead of the deprecated executedFeeAmount ([#1012](https://github.com/cowprotocol/cow-sdk/issues/1012)) ([1ae7a49](https://github.com/cowprotocol/cow-sdk/commit/1ae7a49bb088e4231d913e919e3d09bcdf0a2272))
+
 ## [1.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.5.0...sdk-composable-v1.6.0) (2026-09-14)
 
 
