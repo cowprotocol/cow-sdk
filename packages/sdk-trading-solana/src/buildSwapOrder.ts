@@ -1,7 +1,7 @@
 import type { QuoteResults, SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
 import { SigningScheme } from '@cowprotocol/sdk-order-book'
 import { getAssociatedTokenAddressSync } from '@solana/spl-token'
-import { PublicKey, TransactionInstruction } from '@solana/web3.js'
+import { PublicKey, PublicKeyInitData, TransactionInstruction } from '@solana/web3.js'
 import { buildCreateOrderInstruction } from './createOrderInstruction'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toOrderId } from './orderIntent'
 import { findOrderPda } from './orderPda'
@@ -10,6 +10,10 @@ import { SolanaQuote } from './types'
 export interface SolanaSwapOrderQuote {
   quoteResults: QuoteResults
   solanaQuote: SolanaQuote
+}
+
+export interface BuildSolanaSwapOrderOptions {
+  sponsor?: PublicKeyInitData
 }
 
 export interface SolanaSwapOrder {
@@ -23,6 +27,8 @@ export interface SolanaSwapOrder {
   intent: SolanaOrderIntent
   signingScheme: SigningScheme
   orderToSign: QuoteResults['orderToSign']
+  /** Pays and co-signs: the owner, or the sponsor. A sponsor signs on the backend, not here. */
+  feePayer: PublicKey
 }
 
 /**
@@ -31,12 +37,13 @@ export interface SolanaSwapOrder {
  * other instructions (a wrap, a token delegation) take `instruction` from here and send it themselves.
  *
  * Solana orders are created entirely on-chain, so — unlike the EVM `postSwapOrderFromQuote` — there is no
- * signed order body to POST, and `createdBy` is always `intent.owner`: a single connected wallet both
- * authenticates the order and funds its PDA's rent.
+ * signed order body to POST. Without `options.sponsor` a single connected wallet both authenticates the
+ * order and funds its PDA's rent; with one, those two roles split and `created_by` becomes the sponsor.
  */
 export async function buildSolanaSwapOrder(
   { quoteResults, solanaQuote }: SolanaSwapOrderQuote,
   advancedSettings?: SwapAdvancedSettings,
+  options: BuildSolanaSwapOrderOptions = {},
 ): Promise<SolanaSwapOrder> {
   const intent = { ...solanaQuote.intent }
   let uid = solanaQuote.uid
@@ -64,10 +71,12 @@ export async function buildSolanaSwapOrder(
     }
   }
 
+  const feePayer = options.sponsor ? new PublicKey(options.sponsor) : intent.owner
+
   const instruction = buildCreateOrderInstruction({
     programId: solanaQuote.programId,
     owner: intent.owner,
-    createdBy: intent.owner,
+    createdBy: feePayer,
     orderPda,
     intent,
   })
@@ -80,5 +89,6 @@ export async function buildSolanaSwapOrder(
     intent,
     signingScheme: SigningScheme.PRESIGN,
     orderToSign: quoteResults.orderToSign,
+    feePayer,
   }
 }

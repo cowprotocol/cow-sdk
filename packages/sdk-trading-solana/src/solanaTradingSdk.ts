@@ -1,6 +1,6 @@
 import type { OrderPostingResult, QuoteResults, SigningStepManager, SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
 import { CowEnv } from '@cowprotocol/sdk-config'
-import { buildSolanaSwapOrder, SolanaSwapOrder } from './buildSwapOrder'
+import { BuildSolanaSwapOrderOptions, buildSolanaSwapOrder, SolanaSwapOrder } from './buildSwapOrder'
 import { getSolanaQuote } from './getSolanaQuote'
 import { postSolanaSwapOrderFromQuote } from './postSwapOrderFromQuote'
 import { SolanaQuote, SolanaQuoteParameters, SolanaSignAndSend } from './types'
@@ -18,12 +18,13 @@ export interface SolanaQuoteAndPost {
   quoteResults: QuoteResults
   solanaQuote: SolanaQuote
   /** Build the `CreateOrder` instruction without sending it, to bundle with other instructions. */
-  buildOrder(advancedSettings?: SwapAdvancedSettings): Promise<SolanaSwapOrder>
-  /** Build, sign and submit the order as its own transaction. */
+  buildOrder(advancedSettings?: SwapAdvancedSettings, options?: BuildSolanaSwapOrderOptions): Promise<SolanaSwapOrder>
+  /** Build, sign and submit the order as its own transaction. Rejects a sponsor: it cannot sign here. */
   postSwapOrderFromQuote(
     signAndSend: SolanaSignAndSend,
     advancedSettings?: SwapAdvancedSettings,
     signingStepManager?: SigningStepManager,
+    options?: BuildSolanaSwapOrderOptions,
   ): Promise<OrderPostingResult>
 }
 
@@ -42,12 +43,14 @@ export class SolanaTradingSdk {
     return {
       quoteResults: quote.quoteResults,
       solanaQuote: quote.solanaQuote,
-      buildOrder: (advancedSettings?: SwapAdvancedSettings) => buildSolanaSwapOrder(quote, advancedSettings),
+      buildOrder: (advancedSettings?: SwapAdvancedSettings, options?: BuildSolanaSwapOrderOptions) =>
+        buildSolanaSwapOrder(quote, advancedSettings, options),
       postSwapOrderFromQuote: (
         signAndSend: SolanaSignAndSend,
         advancedSettings?: SwapAdvancedSettings,
         signingStepManager?: SigningStepManager,
-      ) => postSolanaSwapOrderFromQuote(quote, signAndSend, advancedSettings, signingStepManager),
+        options?: BuildSolanaSwapOrderOptions,
+      ) => postSolanaSwapOrderFromQuote(quote, signAndSend, advancedSettings, signingStepManager, options),
     }
   }
 }

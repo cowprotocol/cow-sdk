@@ -132,7 +132,7 @@ describe('SolanaTradingSdk', () => {
     const { buildOrder } = await sdk.getQuote(params)
     const order = await buildOrder()
 
-    expect(mockBuildSolanaSwapOrder).toHaveBeenCalledWith(quoteFixture, undefined)
+    expect(mockBuildSolanaSwapOrder).toHaveBeenCalledWith(quoteFixture, undefined, undefined)
     expect(order).toBe(swapOrderFixture)
   })
 
@@ -144,7 +144,19 @@ describe('SolanaTradingSdk', () => {
     const { buildOrder } = await sdk.getQuote(params)
     await buildOrder(advancedSettings)
 
-    expect(mockBuildSolanaSwapOrder).toHaveBeenCalledWith(quoteFixture, advancedSettings)
+    expect(mockBuildSolanaSwapOrder).toHaveBeenCalledWith(quoteFixture, advancedSettings, undefined)
+  })
+
+  // The sponsor comes from the backend, so it is only known per order, not when the SDK is constructed.
+  it('buildOrder forwards a per-call sponsor', async () => {
+    mockBuildSolanaSwapOrder.mockResolvedValue(swapOrderFixture)
+    const sponsor = 'So11111111111111111111111111111111111111112'
+    const sdk = new SolanaTradingSdk()
+
+    const { buildOrder } = await sdk.getQuote(params)
+    await buildOrder(undefined, { sponsor })
+
+    expect(mockBuildSolanaSwapOrder).toHaveBeenCalledWith(quoteFixture, undefined, { sponsor })
   })
 
   it('postSwapOrderFromQuote takes signAndSend per call, not at construction', async () => {
@@ -155,7 +167,13 @@ describe('SolanaTradingSdk', () => {
     const { postSwapOrderFromQuote } = await sdk.getQuote(params)
     const result = await postSwapOrderFromQuote(signAndSend)
 
-    expect(mockPostSolanaSwapOrderFromQuote).toHaveBeenCalledWith(quoteFixture, signAndSend, undefined, undefined)
+    expect(mockPostSolanaSwapOrderFromQuote).toHaveBeenCalledWith(
+      quoteFixture,
+      signAndSend,
+      undefined,
+      undefined,
+      undefined,
+    )
     expect(result).toEqual(orderPostingResultFixture)
   })
 
@@ -174,6 +192,7 @@ describe('SolanaTradingSdk', () => {
       signAndSend,
       advancedSettings,
       signingStepManager,
+      undefined,
     )
   })
 })
