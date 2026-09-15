@@ -364,7 +364,7 @@ describe('ProgrammaticOrderApi', () => {
                   createdAt: '1000',
                   executedSellAmount: null,
                   executedBuyAmount: null,
-                  executedFeeAmount: null,
+                  executedFee: null,
                 },
               ],
               totalCount: 1,
@@ -389,7 +389,8 @@ describe('ProgrammaticOrderApi', () => {
         createdAt: 1000,
         executedSellAmount: null,
         executedBuyAmount: null,
-        executedFeeAmount: null,
+        executedFeeAmount: 0n,
+        executedFee: null,
       },
     ])
   })
