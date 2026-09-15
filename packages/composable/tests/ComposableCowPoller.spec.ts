@@ -51,6 +51,7 @@ describe('ComposableCowPoller ABI', () => {
       'COW_SHED_FACTORY',
       'pollFunds',
       'register',
+      'registerFromShed',
       'registerWithSignature',
       'revoke',
       'revokeWithSignature',

@@ -47,6 +47,13 @@ export const ComposableCowPollerAbi = [
   },
   {
     type: 'function',
+    name: 'registerFromShed',
+    inputs: [SCHEDULE_INPUT],
+    outputs: ID_OUTPUT,
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
     name: 'registerWithSignature',
     inputs: [
       SCHEDULE_INPUT,
