@@ -9,6 +9,16 @@ export interface GetTwapOrdersParams {
   resolvedOwner: string
   /** Chain containing the TWAP orders. */
   chainId: SupportedChainId
+  /** Return only orders updated at or after this indexer block. */
+  updatedAtBlockGte?: bigint
+}
+
+/** Input for querying one TWAP order. */
+export interface GetTwapOrderParams {
+  /** Parent event ID. Unique within a chain. */
+  eventId: string
+  /** Chain containing the TWAP order. */
+  chainId: SupportedChainId
 }
 
 /** Input for querying one page of TWAP part orders. */
@@ -20,7 +30,7 @@ export interface GetTwapPartOrdersParams {
 }
 
 /**
- * Orderbook status of a TWAP part order.
+ * Indexer status of a TWAP part order, including unconfirmed candidates.
  *
  * Unlike `OrderStatus` from `@cowprotocol/sdk-order-book`, this API reports
  * `unfilled` when an order leaves the orderbook without settling, and does not
@@ -34,6 +44,7 @@ export type TwapPartOrderStatus =
   | OrderStatus.EXPIRED
   | OrderStatus.CANCELLED
   | 'unfilled'
+  | 'unconfirmed'
 
 /**
  * Schedule for a TWAP order. Unlike {@link TwapStruct}, `effectiveStartTime`
@@ -73,15 +84,18 @@ export interface TwapPartOrder {
   createdAt: number
   executedSellAmount: bigint | null
   executedBuyAmount: bigint | null
-  /** Actual fee charged at settlement, in the sell token. */
-  executedFeeAmount: bigint | null
+  /** @deprecated Always zero: use `executedFee` for actual execution fees. */
+  executedFeeAmount: bigint
+  executedFee: bigint | null
 }
 
 export interface TwapExecutedAmounts {
   /** Execution totals for all part orders. */
   executedSellAmount: bigint
   executedBuyAmount: bigint
+  /** @deprecated Always zero: use `executedFee` for actual execution fees. */
   executedFeeAmount: bigint
+  executedFee: bigint
 }
 
 /**
@@ -99,13 +113,28 @@ export interface TwapOrder {
   owner: string
   /** EOA behind a known CoWShed proxy, or `owner` for a Safe. */
   resolvedOwner: string
-  status: ProgrammaticOrderStatus
+  /** TWAP status derived from its lifecycle, schedule, and executed amounts. */
+  status: TwapStatus
+  /** Indexer lifecycle: Active, Cancelled, or Completed. Completed means no more parts can be produced. */
+  lifecycleStatus: ProgrammaticOrderStatus
   /** Unix creation time in seconds. */
   createdAt: number
+  /** Hash of the transaction that created the TWAP order. */
+  txHash: string
   /** Block in which the indexer last updated this TWAP or one of its part orders. */
   updatedAtBlock: bigint
-  /** Number of part orders currently reported for this parent. */
+  /** Number of known parts, including unconfirmed candidates, without duplicates. */
   partOrdersCount: number
   schedule: TwapSchedule
   executedAmounts: TwapExecutedAmounts
+}
+
+/** User-facing execution state derived from the parent and its aggregate fills. */
+export type TwapStatus = 'open' | 'filled' | 'partiallyFilled' | 'expired' | 'cancelled'
+
+/** Parent fields required to derive execution status from the indexer lifecycle. */
+export interface DeriveTwapStatusParams {
+  lifecycleStatus: TwapOrder['lifecycleStatus']
+  executedAmounts: Pick<TwapExecutedAmounts, 'executedSellAmount'>
+  schedule: Pick<TwapSchedule, 'partSellAmount' | 'numberOfParts' | 'effectiveStartTime' | 'timeBetweenParts'>
 }

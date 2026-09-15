@@ -1,10 +1,18 @@
+import type { QueryDirection } from './types'
+
+const DEFAULT_PAGE_LIMIT = 100
+const DEFAULT_PAGE_OFFSET = 0
+const DEFAULT_QUERY_DIRECTION: QueryDirection = 'desc'
+
 export const TWAP_ORDERS_QUERY = `
-  query TwapOrders($resolvedOwner: String!, $chainId: Int!, $offset: Int!, $limit: Int!, $direction: String!) {
-    twapOrders: conditionalOrderGenerators(
+  query TwapOrders($resolvedOwner: String, $eventId: String, $chainId: Int!, $offset: Int! = ${DEFAULT_PAGE_OFFSET}, $limit: Int! = ${DEFAULT_PAGE_LIMIT}, $direction: String! = "${DEFAULT_QUERY_DIRECTION}", $updatedAtBlockGte: BigInt) {
+    twapOrders: programmaticOrders(
       where: {
         chainId: $chainId
+        eventId: $eventId
         orderType: TWAP
         resolvedOwner: $resolvedOwner
+        updatedAtBlock_gte: $updatedAtBlockGte
       }
       offset: $offset
       limit: $limit
@@ -15,18 +23,15 @@ export const TWAP_ORDERS_QUERY = `
         eventId
         chainId
         hash
+        txHash
         owner
         resolvedOwner
         status
         updatedAtBlock
         additionalData
-        partOrders: discreteOrders(limit: 1) {
-          totalCount
-        }
         schedule: decodedParams
-        transaction {
-          blockTimestamp
-        }
+        partOrdersCount
+        createdAt: creationDate
       }
       totalCount
     }
@@ -34,15 +39,15 @@ export const TWAP_ORDERS_QUERY = `
 `
 
 export const TWAP_PART_ORDERS_QUERY = `
-  query TwapPartOrders($chainId: Int!, $parentEventId: String!, $offset: Int!, $limit: Int!, $direction: String!) {
-    partOrders: discreteOrders(
+  query TwapPartOrders($chainId: Int!, $parentEventId: String!, $offset: Int! = ${DEFAULT_PAGE_OFFSET}, $limit: Int! = ${DEFAULT_PAGE_LIMIT}, $direction: String! = "${DEFAULT_QUERY_DIRECTION}") {
+    partOrders: partOrders(
       where: {
         chainId: $chainId
         conditionalOrderGeneratorId: $parentEventId
       }
       offset: $offset
       limit: $limit
-      orderBy: "creationDate"
+      orderBy: "sortKey"
       orderDirection: $direction
     ) {
       items {
@@ -55,7 +60,7 @@ export const TWAP_PART_ORDERS_QUERY = `
         createdAt: creationDate
         executedSellAmount
         executedBuyAmount
-        executedFeeAmount: executedFee
+        executedFee
       }
       totalCount
     }
