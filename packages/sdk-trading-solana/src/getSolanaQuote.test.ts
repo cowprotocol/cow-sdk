@@ -89,6 +89,63 @@ describe('getSolanaQuote', () => {
     expect(quoteResults.amountsAndCosts).toBeDefined()
   })
 
+  describe('slippageMultiplier', () => {
+    function mockJupiterOrder(slippageBps: number): void {
+      fetchMock.mockResponseOnce(
+        JSON.stringify({
+          inputMint: sellMint.toBase58(),
+          outputMint: buyMint.toBase58(),
+          inAmount: '1000000000',
+          outAmount: '9707507795',
+          swapMode: 'ExactIn',
+          slippageBps,
+        }),
+      )
+    }
+
+    function quoteWithMultiplier(slippageMultiplier?: number): ReturnType<typeof getSolanaQuote> {
+      return getSolanaQuote(
+        {
+          ownerAddress: owner,
+          receiverAddress: receiver,
+          sellTokenAddress: sellMint,
+          sellTokenDecimals,
+          buyTokenAddress: buyMint,
+          buyTokenDecimals,
+          amount: 1_000_000_000n,
+          kind: OrderKind.SELL,
+        },
+        { slippageMultiplier },
+      )
+    }
+
+    it('multiplies the slippage that reaches the signed amounts', async () => {
+      mockJupiterOrder(50)
+
+      const { solanaQuote, quoteResults } = await quoteWithMultiplier(4)
+
+      expect(quoteResults.suggestedSlippageBps).toBe(200)
+      // 9707507795 - 9707507795 * 200 / 10000 = 9513357640
+      expect(solanaQuote.intent.buyAmount).toBe(9_513_357_640n)
+    })
+
+    it('leaves the raw Jupiter slippage untouched, so callers can still read what was suggested', async () => {
+      mockJupiterOrder(50)
+
+      const { solanaQuote } = await quoteWithMultiplier(4)
+
+      expect(solanaQuote.jupiterOrder.slippageBps).toBe(50)
+    })
+
+    it('rejects a multiplier below 1, which would sign less slippage than suggested', async () => {
+      await expect(quoteWithMultiplier(0.5)).rejects.toThrow(
+        'slippageMultiplier must be a finite number greater than or equal to one',
+      )
+
+      expect(fetchMock).not.toHaveBeenCalled()
+    })
+  })
+
   it('defaults to the prod settlement program id when no env is given', async () => {
     fetchMock.mockResponseOnce(
       JSON.stringify({
