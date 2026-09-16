@@ -12,7 +12,6 @@ import { SolanaQuote, SolanaQuoteParameters } from './types'
 import type { QuoteResults, TradeParameters } from '@cowprotocol/sdk-trading'
 
 const DEFAULT_VALID_FOR_SECONDS = 30 * 60
-const DEFAULT_SLIPPAGE_MULTIPLIER = 1
 /** No Solana app-data convention exists yet (confirmed absent from the settlement program's intent
  * struct beyond an opaque 32 bytes) — sent as zeroes until one is defined. */
 const ZERO_APP_DATA = new Uint8Array(32)
@@ -21,15 +20,16 @@ const jupiterApi = new JupiterAPI()
 
 export interface GetSolanaQuoteOptions {
   env?: CowEnv
-  /** Test purpose only. */
-  slippageMultiplier?: number
+  /** Slippage tolerance to sign, in basis points. Overrides the one Jupiter reports, which is `0`
+   * unless the order is requested for a specific taker. Defaults to Jupiter's value. */
+  slippageBps?: number
 }
 
 export async function getSolanaQuote(
   params: SolanaQuoteParameters,
   options: GetSolanaQuoteOptions = {},
 ): Promise<{ quoteResults: QuoteResults; solanaQuote: SolanaQuote }> {
-  const { slippageMultiplier = DEFAULT_SLIPPAGE_MULTIPLIER } = options
+  const { slippageBps: slippageBpsOverride } = options
   const {
     ownerAddress,
     receiverAddress,
@@ -47,9 +47,8 @@ export async function getSolanaQuote(
     throw new Error('validForSeconds must be a finite number greater than zero')
   }
 
-  // Below 1 would sign less slippage than the quote suggests, which is strictly worse than not passing it.
-  if (!Number.isFinite(slippageMultiplier) || slippageMultiplier < 1) {
-    throw new Error('slippageMultiplier must be a finite number greater than or equal to one')
+  if (slippageBpsOverride !== undefined && (!Number.isFinite(slippageBpsOverride) || slippageBpsOverride < 0)) {
+    throw new Error('slippageBps must be a finite number greater than or equal to zero')
   }
 
   const owner = new PublicKey(ownerAddress)
@@ -70,7 +69,7 @@ export async function getSolanaQuote(
     swapMode: kind === OrderKind.SELL ? 'ExactIn' : 'ExactOut',
   })
 
-  const suggestedSlippageBps = jupiterOrder.slippageBps * slippageMultiplier
+  const suggestedSlippageBps = slippageBpsOverride ?? jupiterOrder.slippageBps
 
   const validTo = Math.floor(Date.now() / 1000) + validForSeconds
 
@@ -137,10 +136,11 @@ export async function getSolanaQuote(
     verified: false,
   }
 
-  // Auto-slippage only: `slippageBps` is intentionally left unset (Jupiter's suggestion lives in
-  // `suggestedSlippageBps` above) so `quoteUsingSameParameters`'s `compareSlippage` treats it as "no
-  // user override" and doesn't force a requote whenever Jupiter's suggestion drifts between polls.
+  // Reported only when the caller set the tolerance, so `quoteUsingSameParameters`'s `compareSlippage`
+  // requotes when they change it. Left unset otherwise: Jupiter's own suggestion is not a user override,
+  // and echoing it would force a requote every time it drifts between polls.
   const tradeParameters: TradeParameters = {
+    ...(slippageBpsOverride !== undefined ? { slippageBps: slippageBpsOverride } : undefined),
     kind,
     owner: owner.toBase58(),
     // The mint the caller asked for, not the substituted one: callers compare the returned parameters
