@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.12.3...sdk-common-v0.13.0) (2026-09-16)
+
+
+### ✨ Features
+
+* **composable:** add signer-aware Poller SDK ([#966](https://github.com/cowprotocol/cow-sdk/issues/966)) ([65d0eac](https://github.com/cowprotocol/cow-sdk/commit/65d0eac03cc21c0e0e55ec75a50ae49934a80272))
+
 ## [0.12.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.12.2...sdk-common-v0.12.3) (2026-09-07)
 
 
