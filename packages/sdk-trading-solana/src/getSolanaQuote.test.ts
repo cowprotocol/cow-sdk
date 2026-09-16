@@ -104,19 +104,17 @@ describe('getSolanaQuote', () => {
     }
 
     function quoteWithSlippage(slippageBps?: number): ReturnType<typeof getSolanaQuote> {
-      return getSolanaQuote(
-        {
-          ownerAddress: owner,
-          receiverAddress: receiver,
-          sellTokenAddress: sellMint,
-          sellTokenDecimals,
-          buyTokenAddress: buyMint,
-          buyTokenDecimals,
-          amount: 1_000_000_000n,
-          kind: OrderKind.SELL,
-        },
-        slippageBps === undefined ? {} : { slippageBps },
-      )
+      return getSolanaQuote({
+        ownerAddress: owner,
+        receiverAddress: receiver,
+        sellTokenAddress: sellMint,
+        sellTokenDecimals,
+        buyTokenAddress: buyMint,
+        buyTokenDecimals,
+        amount: 1_000_000_000n,
+        kind: OrderKind.SELL,
+        ...(slippageBps === undefined ? undefined : { slippageBps }),
+      })
     }
 
     it('signs the caller tolerance instead of the one Jupiter reported', async () => {

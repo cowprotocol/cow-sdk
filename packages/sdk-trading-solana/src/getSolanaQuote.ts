@@ -18,19 +18,12 @@ const ZERO_APP_DATA = new Uint8Array(32)
 
 const jupiterApi = new JupiterAPI()
 
-export interface GetSolanaQuoteOptions {
-  env?: CowEnv
-  /** Slippage tolerance to sign, in basis points. Overrides the one Jupiter reports, which is `0`
-   * unless the order is requested for a specific taker. Defaults to Jupiter's value. */
-  slippageBps?: number
-}
-
 export async function getSolanaQuote(
   params: SolanaQuoteParameters,
-  options: GetSolanaQuoteOptions = {},
+  options: { env?: CowEnv } = {},
 ): Promise<{ quoteResults: QuoteResults; solanaQuote: SolanaQuote }> {
-  const { slippageBps: slippageBpsOverride } = options
   const {
+    slippageBps: slippageBpsOverride,
     ownerAddress,
     receiverAddress,
     sellTokenDecimals,
