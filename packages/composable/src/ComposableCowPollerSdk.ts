@@ -30,6 +30,44 @@ export type ComposableCowPollerSignedCall<TData> = {
   readonly calldata: string
 }
 
+export type ComposableCowPollerSignRegisterParams = Omit<ComposableCowPollerRegisterTypedDataParams, 'chainId'> & {
+  readonly signer?: SignerLike
+}
+
+export type ComposableCowPollerSignRevokeParams = Omit<ComposableCowPollerRevokeTypedDataParams, 'chainId'> & {
+  readonly signer?: SignerLike
+}
+
+export type ComposableCowPollerRegisterParams = {
+  readonly schedule: ComposableCowPollerSchedule
+  readonly signer?: SignerLike
+}
+
+export type ComposableCowPollerRegisterWithSignatureParams = {
+  readonly schedule: ComposableCowPollerSchedule
+  readonly deadline: BigIntish
+  readonly signature: string
+  readonly signer?: SignerLike
+}
+
+export type ComposableCowPollerPollFundsParams = { readonly id: string; readonly signer?: SignerLike }
+
+export type ComposableCowPollerRevokeParams = ComposableCowPollerDirectRevoke & { readonly signer?: SignerLike }
+
+export type ComposableCowPollerRevokeWithSignatureParams = ComposableCowPollerScheduleAuthorization & {
+  readonly deadline: BigIntish
+  readonly signature: string
+  readonly signer?: SignerLike
+}
+
+export type ComposableCowPollerSignRegisterResult = ComposableCowPollerSignedCall<
+  ReturnType<ComposableCowPoller['getRegisterTypedData']>
+>
+
+export type ComposableCowPollerSignRevokeResult = ComposableCowPollerSignedCall<
+  ReturnType<ComposableCowPoller['getRevokeTypedData']>
+>
+
 /**
  * Signer-aware facade for a {@link ComposableCowPoller} deployment.
  *
@@ -68,9 +106,7 @@ export class ComposableCowPollerSdk {
     schedule,
     deadline,
     signer,
-  }: Omit<ComposableCowPollerRegisterTypedDataParams, 'chainId'> & {
-    readonly signer?: SignerLike
-  }): Promise<ComposableCowPollerSignedCall<ReturnType<ComposableCowPoller['getRegisterTypedData']>>> {
+  }: ComposableCowPollerSignRegisterParams): Promise<ComposableCowPollerSignRegisterResult> {
     const scheduleSnapshot = { ...schedule }
     const typedData = this.poller.getRegisterTypedData({ chainId: this.chainId, schedule: scheduleSnapshot, deadline })
     const signature = await this.getSigner(signer).signTypedData(typedData.domain, typedData.types, typedData.message)
@@ -97,9 +133,7 @@ export class ComposableCowPollerSdk {
     salt,
     deadline,
     signer,
-  }: Omit<ComposableCowPollerRevokeTypedDataParams, 'chainId'> & {
-    readonly signer?: SignerLike
-  }): Promise<ComposableCowPollerSignedCall<ReturnType<ComposableCowPoller['getRevokeTypedData']>>> {
+  }: ComposableCowPollerSignRevokeParams): Promise<ComposableCowPollerSignRevokeResult> {
     const authorization = { handler, authEpoch, funder, owner, salt }
     const typedData = this.poller.getRevokeTypedData({ chainId: this.chainId, ...authorization, deadline })
     const signature = await this.getSigner(signer).signTypedData(typedData.domain, typedData.types, typedData.message)
@@ -117,13 +151,7 @@ export class ComposableCowPollerSdk {
    * @param params - Poller schedule and optional signer override.
    * @returns The submitted transaction response.
    */
-  register({
-    schedule,
-    signer,
-  }: {
-    readonly schedule: ComposableCowPollerSchedule
-    readonly signer?: SignerLike
-  }): Promise<TransactionResponse> {
+  register({ schedule, signer }: ComposableCowPollerRegisterParams): Promise<TransactionResponse> {
     return this.send(this.poller.encodeRegister(schedule), signer)
   }
 
@@ -138,12 +166,7 @@ export class ComposableCowPollerSdk {
     deadline,
     signature,
     signer,
-  }: {
-    readonly schedule: ComposableCowPollerSchedule
-    readonly deadline: BigIntish
-    readonly signature: string
-    readonly signer?: SignerLike
-  }): Promise<TransactionResponse> {
+  }: ComposableCowPollerRegisterWithSignatureParams): Promise<TransactionResponse> {
     return this.send(this.poller.encodeRegisterWithSignature(schedule, deadline, signature), signer)
   }
 
@@ -153,7 +176,7 @@ export class ComposableCowPollerSdk {
    * @param params - Schedule ID and optional signer override.
    * @returns The submitted transaction response.
    */
-  pollFunds({ id, signer }: { readonly id: string; readonly signer?: SignerLike }): Promise<TransactionResponse> {
+  pollFunds({ id, signer }: ComposableCowPollerPollFundsParams): Promise<TransactionResponse> {
     return this.send(this.poller.encodePollFunds(id), signer)
   }
 
@@ -163,12 +186,7 @@ export class ComposableCowPollerSdk {
    * @param params - Direct-revoke fields and optional signer override.
    * @returns The submitted transaction response.
    */
-  revoke({
-    handler,
-    owner,
-    salt,
-    signer,
-  }: ComposableCowPollerDirectRevoke & { readonly signer?: SignerLike }): Promise<TransactionResponse> {
+  revoke({ handler, owner, salt, signer }: ComposableCowPollerRevokeParams): Promise<TransactionResponse> {
     return this.send(this.poller.encodeRevoke({ handler, owner, salt }), signer)
   }
 
@@ -187,11 +205,7 @@ export class ComposableCowPollerSdk {
     deadline,
     signature,
     signer,
-  }: ComposableCowPollerScheduleAuthorization & {
-    readonly deadline: BigIntish
-    readonly signature: string
-    readonly signer?: SignerLike
-  }): Promise<TransactionResponse> {
+  }: ComposableCowPollerRevokeWithSignatureParams): Promise<TransactionResponse> {
     return this.send(
       this.poller.encodeRevokeWithSignature({ handler, authEpoch, funder, owner, salt }, deadline, signature),
       signer,
