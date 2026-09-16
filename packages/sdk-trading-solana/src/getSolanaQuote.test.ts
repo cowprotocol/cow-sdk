@@ -89,6 +89,79 @@ describe('getSolanaQuote', () => {
     expect(quoteResults.amountsAndCosts).toBeDefined()
   })
 
+  describe('slippageBps', () => {
+    function mockJupiterOrder(slippageBps: number): void {
+      fetchMock.mockResponseOnce(
+        JSON.stringify({
+          inputMint: sellMint.toBase58(),
+          outputMint: buyMint.toBase58(),
+          inAmount: '1000000000',
+          outAmount: '9707507795',
+          swapMode: 'ExactIn',
+          slippageBps,
+        }),
+      )
+    }
+
+    function quoteWithSlippage(slippageBps?: number): ReturnType<typeof getSolanaQuote> {
+      return getSolanaQuote({
+        ownerAddress: owner,
+        receiverAddress: receiver,
+        sellTokenAddress: sellMint,
+        sellTokenDecimals,
+        buyTokenAddress: buyMint,
+        buyTokenDecimals,
+        amount: 1_000_000_000n,
+        kind: OrderKind.SELL,
+        ...(slippageBps === undefined ? undefined : { slippageBps }),
+      })
+    }
+
+    it('signs the caller tolerance instead of the one Jupiter reported', async () => {
+      mockJupiterOrder(0)
+
+      const { solanaQuote, quoteResults } = await quoteWithSlippage(50)
+
+      expect(quoteResults.suggestedSlippageBps).toBe(50)
+      // 9707507795 - 9707507795 * 50 / 10000 = 9658970257
+      expect(solanaQuote.intent.buyAmount).toBe(9_658_970_257n)
+    })
+
+    it('reports the caller tolerance in tradeParameters, so a change to it forces a requote', async () => {
+      mockJupiterOrder(0)
+
+      const { quoteResults } = await quoteWithSlippage(50)
+
+      expect(quoteResults.tradeParameters.slippageBps).toBe(50)
+    })
+
+    it('falls back to the Jupiter value when the caller sets none', async () => {
+      mockJupiterOrder(25)
+
+      const { quoteResults } = await quoteWithSlippage()
+
+      expect(quoteResults.suggestedSlippageBps).toBe(25)
+      // Jupiter's own suggestion is not a user override, so it must not drive requoting.
+      expect(quoteResults.tradeParameters.slippageBps).toBeUndefined()
+    })
+
+    it('leaves the raw Jupiter slippage untouched, so callers can still read what was suggested', async () => {
+      mockJupiterOrder(25)
+
+      const { solanaQuote } = await quoteWithSlippage(500)
+
+      expect(solanaQuote.jupiterOrder.slippageBps).toBe(25)
+    })
+
+    it('rejects a negative tolerance without requesting a Jupiter quote', async () => {
+      await expect(quoteWithSlippage(-1)).rejects.toThrow(
+        'slippageBps must be a finite number greater than or equal to zero',
+      )
+
+      expect(fetchMock).not.toHaveBeenCalled()
+    })
+  })
+
   it('defaults to the prod settlement program id when no env is given', async () => {
     fetchMock.mockResponseOnce(
       JSON.stringify({

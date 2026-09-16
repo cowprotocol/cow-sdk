@@ -23,6 +23,7 @@ export async function getSolanaQuote(
   options: { env?: CowEnv } = {},
 ): Promise<{ quoteResults: QuoteResults; solanaQuote: SolanaQuote }> {
   const {
+    slippageBps: slippageBpsOverride,
     ownerAddress,
     receiverAddress,
     sellTokenDecimals,
@@ -37,6 +38,10 @@ export async function getSolanaQuote(
 
   if (!Number.isFinite(validForSeconds) || validForSeconds <= 0) {
     throw new Error('validForSeconds must be a finite number greater than zero')
+  }
+
+  if (slippageBpsOverride !== undefined && (!Number.isFinite(slippageBpsOverride) || slippageBpsOverride < 0)) {
+    throw new Error('slippageBps must be a finite number greater than or equal to zero')
   }
 
   const owner = new PublicKey(ownerAddress)
@@ -56,6 +61,8 @@ export async function getSolanaQuote(
     amount: amount.toString(),
     swapMode: kind === OrderKind.SELL ? 'ExactIn' : 'ExactOut',
   })
+
+  const suggestedSlippageBps = slippageBpsOverride ?? jupiterOrder.slippageBps
 
   const validTo = Math.floor(Date.now() / 1000) + validForSeconds
 
@@ -79,7 +86,7 @@ export async function getSolanaQuote(
 
   const amountsAndCosts = getQuoteAmountsAndCosts({
     orderParams,
-    slippagePercentBps: jupiterOrder.slippageBps,
+    slippagePercentBps: suggestedSlippageBps,
     // TODO: implement fees
     partnerFeeBps: 0,
     protocolFeeBps: 0,
@@ -122,10 +129,11 @@ export async function getSolanaQuote(
     verified: false,
   }
 
-  // Auto-slippage only: `slippageBps` is intentionally left unset (Jupiter's suggestion lives in
-  // `suggestedSlippageBps` above) so `quoteUsingSameParameters`'s `compareSlippage` treats it as "no
-  // user override" and doesn't force a requote whenever Jupiter's suggestion drifts between polls.
+  // Reported only when the caller set the tolerance, so `quoteUsingSameParameters`'s `compareSlippage`
+  // requotes when they change it. Left unset otherwise: Jupiter's own suggestion is not a user override,
+  // and echoing it would force a requote every time it drifts between polls.
   const tradeParameters: TradeParameters = {
+    ...(slippageBpsOverride !== undefined ? { slippageBps: slippageBpsOverride } : undefined),
     kind,
     owner: owner.toBase58(),
     // The mint the caller asked for, not the substituted one: callers compare the returned parameters
@@ -144,7 +152,7 @@ export async function getSolanaQuote(
   const quoteResults: QuoteResults = {
     quoteResponse,
     amountsAndCosts,
-    suggestedSlippageBps: jupiterOrder.slippageBps,
+    suggestedSlippageBps,
     tradeParameters,
     orderToSign: {} as QuoteResults['orderToSign'],
     appDataInfo: {} as QuoteResults['appDataInfo'],
