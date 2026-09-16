@@ -20,6 +20,7 @@ trustPolicyIgnoreAfter: 20160 # 14 days
 # Explicitly skip dependency lifecycle scripts currently present in the lockfile.
 allowBuilds:
   '@swc/core': false
+  bigint-buffer: false
   bufferutil: false
   es5-ext: false
   esbuild: false
@@ -30,3 +31,9 @@ packages:
   - 'packages/*/*'
   - 'examples/*/*'
   - '!**/dist' # exclude dist directories to avoid build artifacts being treated as packages
+
+# rpc-websockets (a transitive @solana/web3.js dependency) pulls in uuid@14, which is ESM-only
+# and breaks under Jest's CJS runtime ("ERR_REQUIRE_ESM"). Pin the whole tree to 9.0.1, the
+# version @cowprotocol/cow-sdk and @cowprotocol/sdk-composable already depend on directly.
+overrides:
+  uuid: '9.0.1'

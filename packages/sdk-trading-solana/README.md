@@ -1,0 +1,60 @@
+<p align="center">
+  <img width="400" src="https://github.com/cowprotocol/cow-sdk/raw/main/docs/images/CoW.png" alt="CoW Protocol logo" />
+</p>
+
+# Solana Trading SDK
+
+## Test coverage
+
+| Statements                                                                              | Branches                                                                            | Functions                                                                             | Lines                                                                         |
+| --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| ![Statements](https://img.shields.io/badge/statements-85.64%25-yellow.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-94.44%25-brightgreen.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-58.13%25-red.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-93.78%25-brightgreen.svg?style=flat) |
+
+CoW Protocol's Solana settlement support: Jupiter-sourced quotes and on-chain `CreateOrder`
+posting against the CoW Protocol Solana settlement program.
+
+**Experimental.** The Solana settlement program this package targets isn't deployed anywhere
+reachable yet. See `docs/superpowers/specs/2026-09-01-sdk-trading-solana-extraction-design.md` in
+the `cowswap` repo for background.
+
+## Usage
+
+Quoting needs no signer:
+
+```ts
+import { SolanaTradingSdk } from '@cowprotocol/sdk-trading-solana'
+
+const sdk = new SolanaTradingSdk()
+const { quoteResults, solanaQuote, buildOrder, postSwapOrderFromQuote } = await sdk.getQuote({
+  ownerAddress,
+  receiverAddress,
+  sellTokenAddress,
+  sellTokenDecimals,
+  buyTokenAddress,
+  buyTokenDecimals,
+  amount,
+  kind,
+})
+```
+
+### Let the SDK submit the order
+
+`signAndSend` is passed at the point of signing:
+
+```ts
+const result = await postSwapOrderFromQuote(signAndSend)
+```
+
+### Bundle the order with your own instructions
+
+A Solana order is created by a single instruction, so it can share a transaction with, say, a wrap and a
+token delegation. `buildOrder` returns that instruction without sending it:
+
+```ts
+const { instruction, orderId } = await buildOrder()
+
+await sendMyTransaction([...wrapInstructions, approveInstruction, instruction])
+```
+
+Both paths apply `advancedSettings` identically — overriding `receiver` or `validTo` re-derives the order's
+`uid` and PDA so they still match the intent actually being created.

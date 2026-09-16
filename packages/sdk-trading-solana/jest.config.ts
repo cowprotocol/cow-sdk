@@ -1,0 +1,16 @@
+import type { Config } from 'jest'
+
+const config: Config = {
+  preset: 'ts-jest/presets/js-with-ts-esm',
+  testEnvironment: 'node',
+  roots: ['<rootDir>/src'],
+  testMatch: ['**/?(*.)+(spec|test).ts?(x)'],
+  transform: {
+    '^.+\\.tsx?$': 'ts-jest',
+  },
+  collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts'],
+  coverageReporters: ['json-summary', 'lcov', 'text'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+}
+
+export default config

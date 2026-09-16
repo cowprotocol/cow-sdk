@@ -27,10 +27,26 @@ export const COW_PROTOCOL_VAULT_RELAYER_ADDRESS_STAGING = mapAddressToSupportedN
  * CoW Protocol settlement program id on Solana (base58, not an EVM address).
  * The on-chain settlement-state PDA derived from this program is the SPL delegate a sell-token account
  * is approved to — the Solana analogue of the EVM vault relayer spender.
- * @see https://github.com/cowprotocol/solana-programs
+ * Released as `cow-settlement-interface` / `solana-programs` v0.3.0.
+ * @see https://github.com/cowprotocol/solana-programs/releases/tag/v0.3
  */
-export const SOLANA_SETTLEMENT_PROGRAM_ID = 'moosEjJg5mbGRPRU7Vg4AaHZLvbbgknevWR9J1bNgME'
+export const SOLANA_SETTLEMENT_PROGRAM_ID = 'FYp8R5K4B3B1Kfr7QuWzMz4TwoT7wptjYtxgCrY5sRXb'
 export const SOLANA_SETTLEMENT_PROGRAM_ID_STAGING = SOLANA_SETTLEMENT_PROGRAM_ID
+
+/**
+ * Major.minor version of the deployed settlement program, embedded in every settlement-program PDA seed
+ * (see `SETTLEMENT_SEED` in `cow-settlement-interface`) to keep PDAs from colliding across versions. Must
+ * be bumped together with `SOLANA_SETTLEMENT_PROGRAM_ID` whenever the settlement program is redeployed.
+ */
+export const SOLANA_SETTLEMENT_PROGRAM_VERSION = '0.3'
+
+/**
+ * Staging counterpart of `SOLANA_SETTLEMENT_PROGRAM_VERSION`. The version is a property of a specific
+ * deployment, so it must be bumped together with `SOLANA_SETTLEMENT_PROGRAM_ID_STAGING`: pairing one env's
+ * program id with another's version derives PDAs that program never signs as.
+ * Aliased while both envs share a single deployment.
+ */
+export const SOLANA_SETTLEMENT_PROGRAM_VERSION_STAGING = SOLANA_SETTLEMENT_PROGRAM_VERSION
 
 /**
  * An object containing the addresses of the `ExtensibleFallbackHandler` contracts for each supported chain.
