@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.6.1...sdk-composable-v1.7.0) (2026-09-16)
+
+
+### ✨ Features
+
+* **composable:** add direct JIT Poller helpers ([#958](https://github.com/cowprotocol/cow-sdk/issues/958)) ([2d934d6](https://github.com/cowprotocol/cow-sdk/commit/2d934d68df527c332e4a7d6a7869a9998b112b28))
+* **composable:** add Poller registration from CowShed ([#1006](https://github.com/cowprotocol/cow-sdk/issues/1006)) ([5321553](https://github.com/cowprotocol/cow-sdk/commit/532155337b2d6d7a58313f3f60446bfd255aeaf4))
+* **composable:** add Poller revocation from CowShed ([#1007](https://github.com/cowprotocol/cow-sdk/issues/1007)) ([6241bf9](https://github.com/cowprotocol/cow-sdk/commit/6241bf9e787cfed240d024a9285f9776122acf5c))
+* **composable:** add signed Poller registration ([#959](https://github.com/cowprotocol/cow-sdk/issues/959)) ([ec4be35](https://github.com/cowprotocol/cow-sdk/commit/ec4be353837993405ac7ff5a71831c7da978064e))
+* **composable:** add signed Poller revocation ([#960](https://github.com/cowprotocol/cow-sdk/issues/960)) ([ea2ffdb](https://github.com/cowprotocol/cow-sdk/commit/ea2ffdb067ca035bb8a3551e8ffa50c2e921d302))
+* **composable:** add signer-aware Poller SDK ([#966](https://github.com/cowprotocol/cow-sdk/issues/966)) ([65d0eac](https://github.com/cowprotocol/cow-sdk/commit/65d0eac03cc21c0e0e55ec75a50ae49934a80272))
+* **cow-shed:** support custom deployment domains ([#990](https://github.com/cowprotocol/cow-sdk/issues/990)) ([8ffa557](https://github.com/cowprotocol/cow-sdk/commit/8ffa557b888079d390f7388eb8575b0ca0d42330))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.13.0
+    * @cowprotocol/sdk-contracts-ts bumped to 3.5.2
+    * @cowprotocol/sdk-cow-shed bumped to 0.5.0
+    * @cowprotocol/sdk-order-book bumped to 4.0.5
+    * @cowprotocol/sdk-order-signing bumped to 1.1.10
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.14
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.14
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.29
+
 ## [1.6.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.6.0...sdk-composable-v1.6.1) (2026-09-15)
 
 
