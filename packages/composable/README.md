@@ -6,9 +6,9 @@
 
 ## Test coverage
 
-| Statements                                                                               | Branches                                                                             | Functions                                                                              | Lines                                                                          |
-| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| ![Statements](https://img.shields.io/badge/statements-100%25-brightgreen.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-100%25-brightgreen.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-100%25-brightgreen.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-100%25-brightgreen.svg?style=flat) |
+| Statements                  | Branches                | Functions                 | Lines             |
+| --------------------------- | ----------------------- | ------------------------- | ----------------- |
+| ![Statements](https://img.shields.io/badge/statements-97.68%25-brightgreen.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-95.58%25-brightgreen.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-98.31%25-brightgreen.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-98.13%25-brightgreen.svg?style=flat) |
 
 This package provides advanced conditional and programmable order functionality for the CoW Protocol. It enables the creation, management, and execution of sophisticated trading strategies through conditional orders that execute automatically when specified conditions are met.
 
@@ -86,6 +86,8 @@ class CustomOrder extends ConditionalOrder<DataType, StaticType> {
 
 ### JIT Poller
 
+The package exports utilities needed to integrate with a deployed `ComposableCowPoller`. The Poller moves sell tokens just in time from a funding account (often an EOA) to the ComposableCoW order owner/trader. This avoids requiring the trader account to be prefunded for the full schedule, reducing setup friction and idle capital.
+
 The package exposes two Poller APIs: the low-level `ComposableCowPoller` below only reads state and encodes calldata, while `ComposableCowPollerSdk` adds signing and transaction submission through the configured adapter.
 
 ```typescript
@@ -148,20 +150,15 @@ Install the CowShed package to derive a Poller-compatible account:
 npm install @cowprotocol/sdk-cow-shed
 ```
 
-Configure `CowShedSdk` with the composable deployment below. The Poller only accepts sheds created by the factory returned from `poller.getCowShedFactoryAddress()`.
+Configure `CowShedSdk` with the Poller's deployment addresses and proxy creation code. The factory must match `poller.getCowShedFactoryAddress()`.
 
 ```typescript
-import { COW_SHED_2_1_0_VERSION, COW_SHED_PROXY_INIT_CODE, CowShedSdk } from '@cowprotocol/sdk-cow-shed'
+import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 
-const cowShedSdk = new CowShedSdk(
-  adapter,
-  {
-    factoryAddress: '0x5E284e80F3bd6A7D80A8500D9c49878028110848',
-    implementationAddress: '0xF0D400089d5b9fACA64E3422AD6614546587cfFB',
-    proxyCreationCode: COW_SHED_PROXY_INIT_CODE[COW_SHED_2_1_0_VERSION],
-  },
-  COW_SHED_2_1_0_VERSION,
-)
+const cowShedSdk = new CowShedSdk(adapter, {
+  ...cowShedDeployment,
+  domainVersion: '2.1.0',
+})
 const cowShed = cowShedSdk.getCowShedAccount(chainId, funder)
 ```
 

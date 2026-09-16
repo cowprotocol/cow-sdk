@@ -26,3 +26,6 @@ packages/cow-sdk/docs/typedoc/
 
 #app-data
 packages/app-data/schemas/
+
+# devcontainer
+.devcontainer

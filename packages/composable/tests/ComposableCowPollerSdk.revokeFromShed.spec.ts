@@ -1,5 +1,5 @@
 import { setGlobalAdapter, type AbstractProviderAdapter } from '@cowprotocol/sdk-common'
-import { COW_SHED_2_1_0_VERSION, CowShedSdk } from '@cowprotocol/sdk-cow-shed'
+import { COW_SHED_PROXY_INIT_CODE, CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 import { decodeFunctionData, parseAbi } from 'viem'
 
 import { ComposableCowPollerSdk, type ComposableCowPollerSchedule } from '../src'
@@ -22,14 +22,12 @@ describe('ComposableCowPollerSdk revocation from CowShed', () => {
   function setup(adapter: AbstractProviderAdapter = adapters.viemAdapter) {
     setGlobalAdapter(adapter)
     jest.spyOn(adapter, 'getCode').mockResolvedValue('0x')
-    const cowShedSdk = new CowShedSdk(
-      undefined,
-      {
-        factoryAddress: FACTORY,
-        implementationAddress: '0xF0D400089d5b9fACA64E3422AD6614546587cfFB',
-      },
-      COW_SHED_2_1_0_VERSION,
-    )
+    const cowShedSdk = new CowShedSdk(undefined, {
+      factoryAddress: FACTORY,
+      implementationAddress: '0xF0D400089d5b9fACA64E3422AD6614546587cfFB',
+      proxyCreationCode: COW_SHED_PROXY_INIT_CODE['1.0.1'],
+      domainVersion: '2.1.0',
+    })
     const sdk = new ComposableCowPollerSdk({ chainId: 1, pollerAddress: POLLER })
     const schedule: ComposableCowPollerSchedule = {
       handler: '0x1111111111111111111111111111111111111111',

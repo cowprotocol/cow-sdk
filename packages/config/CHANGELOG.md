@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.5.0...sdk-config-v2.6.0) (2026-09-07)
+
+
+### ✨ Features
+
+* derive pda address from the seed ([#995](https://github.com/cowprotocol/cow-sdk/issues/995)) ([e7bf33f](https://github.com/cowprotocol/cow-sdk/commit/e7bf33ffdcc27ff4121573988b23443df9097e14))
+
+## [2.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.4.0...sdk-config-v2.5.0) (2026-09-04)
+
+
+### ✨ Features
+
+* trading sdk for solana ([#973](https://github.com/cowprotocol/cow-sdk/issues/973)) ([60b39b9](https://github.com/cowprotocol/cow-sdk/commit/60b39b93883889d794f02138b8dbef74f7dc6c5b))
+
 ## [2.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.3.1...sdk-config-v2.4.0) (2026-07-29)
 
 

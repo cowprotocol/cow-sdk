@@ -1,6 +1,8 @@
 import { OrderStatus } from '@cowprotocol/sdk-order-book'
 import * as v from 'valibot'
 
+import { deriveTwapStatus } from './deriveTwapStatus'
+
 import {
   ADDRESS_SCHEMA,
   BYTES_32_SCHEMA,
@@ -18,15 +20,18 @@ import {
 export const GET_TWAP_ORDERS_PARAMS_SCHEMA = v.object({
   resolvedOwner: ADDRESS_SCHEMA,
   chainId: SUPPORTED_EVM_CHAIN_ID_SCHEMA,
+  updatedAtBlockGte: v.optional(v.pipe(v.bigint(), v.minValue(0n, 'must be a non-negative bigint'))),
 })
 
-export const GET_TWAP_PART_ORDERS_PARAMS_SCHEMA = v.object({
+export const GET_TWAP_ORDER_PARAMS_SCHEMA = v.object({
   eventId: v.pipe(
     v.string(),
     v.check((eventId) => eventId.trim().length > 0, 'TWAP eventId must not be empty'),
   ),
   chainId: SUPPORTED_EVM_CHAIN_ID_SCHEMA,
 })
+
+export const GET_TWAP_PART_ORDERS_PARAMS_SCHEMA = GET_TWAP_ORDER_PARAMS_SCHEMA
 
 /** @see https://github.com/cowprotocol/cow-programmatic-orders-api/blob/main/docs/supported-order-types.md#twap-time-weighted-average-price */
 const TWAP_SCHEDULE_SCHEMA = v.object({
@@ -51,58 +56,72 @@ export const TWAP_PARENT_SCHEMA = v.pipe(
     owner: ADDRESS_SCHEMA,
     resolvedOwner: ADDRESS_SCHEMA,
     status: PROGRAMMATIC_ORDER_STATUS_SCHEMA,
+    txHash: BYTES_32_SCHEMA,
     updatedAtBlock: UINT256_SCHEMA,
     additionalData: v.object({
       executedSellAmount: UINT256_SCHEMA,
       executedBuyAmount: UINT256_SCHEMA,
       executedFee: UINT256_SCHEMA,
     }),
-    partOrders: v.object({ totalCount: SAFE_INTEGER_SCHEMA }),
-    transaction: v.object({ blockTimestamp: TIMESTAMP_SCHEMA }),
+    partOrdersCount: v.pipe(SAFE_INTEGER_SCHEMA, v.minValue(0)),
+    createdAt: TIMESTAMP_SCHEMA,
     schedule: TWAP_SCHEDULE_SCHEMA,
   }),
   v.transform(
     ({
       additionalData: { executedSellAmount, executedBuyAmount, executedFee },
-      partOrders,
       schedule,
-      transaction,
+      createdAt,
+      status,
       ...parent
     }) => {
       const { t0, n, t, span, ...scheduleParams } = schedule
-      const createdAt = transaction.blockTimestamp
+      const effectiveStartTime = t0 === 0 ? createdAt : t0
 
-      return {
+      const order = {
         ...parent,
         createdAt,
-        partOrdersCount: partOrders.totalCount,
+        lifecycleStatus: status,
         executedAmounts: {
           executedSellAmount,
           executedBuyAmount,
-          executedFeeAmount: executedFee, // TODO rename in indexer
+          executedFeeAmount: 0n,
+          executedFee,
         },
         schedule: {
           ...scheduleParams,
-          effectiveStartTime: t0 === 0 ? createdAt : t0,
+          effectiveStartTime,
           numberOfParts: n,
           timeBetweenParts: t,
           durationOfPart: span,
         },
       }
+
+      return { ...order, status: deriveTwapStatus(order) }
     },
   ),
 )
 
 /** @see https://github.com/cowprotocol/cow-programmatic-orders-api/blob/main/src/api/gql-docs/discrete-order.ts */
-export const TWAP_PART_ORDER_SCHEMA = v.object({
-  orderUid: ORDER_UID_SCHEMA,
-  status: v.picklist([OrderStatus.OPEN, OrderStatus.FULFILLED, OrderStatus.EXPIRED, OrderStatus.CANCELLED, 'unfilled']),
-  sellAmount: UINT256_SCHEMA,
-  buyAmount: UINT256_SCHEMA,
-  feeAmount: UINT256_SCHEMA,
-  validTo: v.nullable(UINT32_SCHEMA),
-  createdAt: TIMESTAMP_SCHEMA,
-  executedSellAmount: v.nullable(UINT256_SCHEMA),
-  executedBuyAmount: v.nullable(UINT256_SCHEMA),
-  executedFeeAmount: v.nullable(UINT256_SCHEMA),
-})
+export const TWAP_PART_ORDER_SCHEMA = v.pipe(
+  v.object({
+    orderUid: ORDER_UID_SCHEMA,
+    status: v.picklist([
+      OrderStatus.OPEN,
+      OrderStatus.FULFILLED,
+      OrderStatus.EXPIRED,
+      OrderStatus.CANCELLED,
+      'unfilled',
+      'unconfirmed',
+    ]),
+    sellAmount: UINT256_SCHEMA,
+    buyAmount: UINT256_SCHEMA,
+    feeAmount: UINT256_SCHEMA,
+    validTo: v.nullable(UINT32_SCHEMA),
+    createdAt: TIMESTAMP_SCHEMA,
+    executedSellAmount: v.nullable(UINT256_SCHEMA),
+    executedBuyAmount: v.nullable(UINT256_SCHEMA),
+    executedFee: v.nullable(UINT256_SCHEMA),
+  }),
+  v.transform((order) => ({ ...order, executedFeeAmount: 0n })),
+)
