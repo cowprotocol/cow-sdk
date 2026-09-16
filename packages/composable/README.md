@@ -144,7 +144,13 @@ const revokeSignature = await adapter.signer.signTypedData(
 const signedRevokeCalldata = poller.encodeRevokeWithSignature(revokeAuthorization, revokeDeadline, revokeSignature)
 ```
 
-Bundle either CowShed variant with other setup or cleanup calls through `@cowprotocol/sdk-cow-shed`. Custom CowShed deployments can supply their factory addresses, proxy creation code, and EIP-712 domain version directly; no SDK subclass or version cast is needed.
+Install the CowShed package to derive a Poller-compatible account:
+
+```sh
+npm install @cowprotocol/sdk-cow-shed
+```
+
+Configure `CowShedSdk` with the Poller's deployment addresses and proxy creation code. The factory must match `poller.getCowShedFactoryAddress()`.
 
 ```typescript
 import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
@@ -154,6 +160,13 @@ const cowShedSdk = new CowShedSdk(adapter, {
   domainVersion: '2.1.0',
 })
 const cowShed = cowShedSdk.getCowShedAccount(chainId, funder)
+```
+
+Register from the funder's own CowShed by including the Poller call in a signed bundle. The schedule owner must equal that CowShed. Refresh the epoch for this schedule ID before signing.
+
+```typescript
+const shedSchedule = { ...schedule, owner: cowShed }
+const { authEpoch: shedAuthEpoch } = await poller.getSchedule(poller.getScheduleId(shedSchedule))
 
 const registration = await cowShedSdk.signCalls({
   chainId,
@@ -161,7 +174,7 @@ const registration = await cowShedSdk.signCalls({
   calls: [
     {
       target: pollerAddress,
-      callData: poller.encodeRegisterFromShed({ ...schedule, owner: cowShed }),
+      callData: poller.encodeRegisterFromShed({ ...shedSchedule, authEpoch: shedAuthEpoch }),
       value: 0n,
       isDelegateCall: false,
       allowFailure: false,
@@ -200,6 +213,30 @@ await relayedTransaction.wait()
 ```
 
 `signRevoke` follows the same signature flow and signs the supplied schedule identity and `authEpoch`. Refresh only `authEpoch` with `pollerSdk.poller.getSchedule(scheduleId)` immediately before signing; an inactive schedule retains its epoch but not its other fields.
+
+For registration from CowShed, pass the `cowShedSdk` configured above. The SDK uses its configured signer, the adapter signer when none is configured, or a per-call `signer` override. That signer must be the schedule's funder, and the schedule owner must be its CowShed.
+
+```typescript
+const registrationSchedule = { ...schedule, owner: cowShed }
+const { authEpoch: registrationEpoch } = await pollerSdk.poller.getSchedule(
+  pollerSdk.poller.getScheduleId(registrationSchedule),
+)
+const shedRegistrationParams = {
+  cowShedSdk,
+  schedule: { ...registrationSchedule, authEpoch: registrationEpoch },
+  deadline: BigInt(Math.floor(Date.now() / 1000) + 15 * 60),
+}
+
+// Sign only: hand this factory transaction to a relayer or hook.
+const signedRegistration = await pollerSdk.signRegisterFromShed(shedRegistrationParams)
+// signedRegistration includes cowShedAccount, signedMulticall and gasLimit.
+
+// Alternative: sign and submit now; the resolved signer pays transaction gas.
+const shedRegistrationTx = await pollerSdk.registerFromShed(shedRegistrationParams)
+await shedRegistrationTx.wait()
+```
+
+Choose one of these flows. Both sign a CowShed bundle with a single Poller call. The factory creates the CowShed if needed and executes registration from it. They accept CowShed's `nonce`, `deadline`, `signingScheme`, `gasLimit`, and `defaultGasLimit` options. Without a gas override, CowShed estimates gas; failures reject the call unless a fallback is supplied. For bundles containing other calls, use `pollerSdk.poller.encodeRegisterFromShed` with `cowShedSdk.signCalls`.
 
 The schedule fields are:
 

@@ -26,6 +26,13 @@ export const ComposableCowPollerAbi = [
   },
   {
     type: 'function',
+    name: 'COW_SHED_FACTORY',
+    inputs: [],
+    outputs: [{ name: '', type: 'address', internalType: 'contract ICowShedFactory' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
     name: 'pollFunds',
     inputs: [{ name: 'id', type: 'bytes32', internalType: 'bytes32' }],
     outputs: [{ name: '', type: 'bool', internalType: 'bool' }],
@@ -34,6 +41,13 @@ export const ComposableCowPollerAbi = [
   {
     type: 'function',
     name: 'register',
+    inputs: [SCHEDULE_INPUT],
+    outputs: ID_OUTPUT,
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'registerFromShed',
     inputs: [SCHEDULE_INPUT],
     outputs: ID_OUTPUT,
     stateMutability: 'nonpayable',

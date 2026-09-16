@@ -7,6 +7,8 @@ import {
   TransactionResponse,
 } from '@cowprotocol/sdk-common'
 
+import type { CowShedCall, CowShedSdk, SignAndEncodeTxArgs } from '@cowprotocol/sdk-cow-shed'
+
 import { ComposableCowPoller } from './ComposableCowPoller'
 import type {
   ComposableCowPollerDirectRevoke,
@@ -67,6 +69,16 @@ export type ComposableCowPollerSignRegisterResult = ComposableCowPollerSignedCal
 export type ComposableCowPollerSignRevokeResult = ComposableCowPollerSignedCall<
   ReturnType<ComposableCowPoller['getRevokeTypedData']>
 >
+
+/** CowShed deployment and signing options. The deployment must match the Poller's factory. */
+export type ComposableCowPollerShedOptions = Omit<SignAndEncodeTxArgs, 'chainId' | 'calls'> & {
+  readonly cowShedSdk: CowShedSdk
+}
+
+/** Registration through the funder's CowShed, using the schedule's supplied epoch. */
+export type ComposableCowPollerRegisterFromShedParams = ComposableCowPollerShedOptions & {
+  readonly schedule: ComposableCowPollerSchedule
+}
 
 /**
  * Signer-aware facade for a {@link ComposableCowPoller} deployment.
@@ -171,6 +183,28 @@ export class ComposableCowPollerSdk {
   }
 
   /**
+   * Signs a CowShed bundle containing a Poller registration, without submitting a transaction.
+   * The resolved signer must be the funder, and `schedule.owner` must be that funder's CowShed.
+   * Refresh the schedule's `authEpoch` before signing. Nonce, deadline and gas options go to CowShedSdk.
+   */
+  async signRegisterFromShed({
+    schedule,
+    ...options
+  }: ComposableCowPollerRegisterFromShedParams): Promise<CowShedCall> {
+    return this.signFromShed(this.poller.encodeRegisterFromShed(schedule), options)
+  }
+
+  /**
+   * Signs and submits registration through the CowShed factory using the resolved funder signer.
+   * The signer pays transaction gas. Use `signRegisterFromShed` to hand the bundle to a relayer instead.
+   */
+  async registerFromShed(params: ComposableCowPollerRegisterFromShedParams): Promise<TransactionResponse> {
+    const signer = this.getSigner(params.signer)
+    const { signedMulticall, gasLimit } = await this.signRegisterFromShed({ ...params, signer })
+    return signer.sendTransaction({ ...signedMulticall, gasLimit })
+  }
+
+  /**
    * Polls funds for a registered schedule.
    *
    * @param params - Schedule ID and optional signer override.
@@ -210,6 +244,26 @@ export class ComposableCowPollerSdk {
       this.poller.encodeRevokeWithSignature({ handler, authEpoch, funder, owner, salt }, deadline, signature),
       signer,
     )
+  }
+
+  private signFromShed(
+    calldata: string,
+    { cowShedSdk, signer, ...options }: ComposableCowPollerShedOptions,
+  ): Promise<CowShedCall> {
+    return cowShedSdk.signCalls({
+      ...options,
+      chainId: this.chainId,
+      signer: this.getSigner(signer),
+      calls: [
+        {
+          target: this.pollerAddress,
+          callData: calldata,
+          value: 0n,
+          allowFailure: false,
+          isDelegateCall: false,
+        },
+      ],
+    })
   }
 
   private send(calldata: string, signer?: SignerLike): Promise<TransactionResponse> {
