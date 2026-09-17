@@ -52,7 +52,7 @@ export async function buildSolanaSwapOrder(
     }),
     ...(validTo && { validTo }),
     ...(advancedSettings?.appData && {
-      appData: await mergeAppData(quoteResults.appDataInfo.doc, advancedSettings.appData),
+      appData: await mergeAppData(quoteResults.appDataInfo.doc ?? {}, advancedSettings.appData),
     }),
   }
 
