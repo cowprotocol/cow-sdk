@@ -10,9 +10,9 @@ import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { SolanaTradingSdk } from '@cowprotocol/sdk-trading-solana'
 
 // =================== Config ===================
-const RPC_URL = 'https://solana-rpc.publicnode.com'
-// A Solana CLI keypair file's JSON array content (`solana-keygen new -o wallet.json`, then paste the
-// file's content here). This wallet needs devnet SOL for fees/rent and a balance of SELL_MINT.
+const RPC_URL = 'https://solana-rpc.publicnode.com' // mainnet-beta by default — trades real funds
+// Base58-encoded secret key (e.g. Phantom/Solflare's "Export Private Key"). This wallet needs SOL
+// for fees/rent and a balance of SELL_MINT, on whatever cluster RPC_URL points at.
 const PRIVATE_KEY = process.env['PRIVATE_KEY']
 // WSOL
 const SELL_MINT = 'So11111111111111111111111111111111111111112'

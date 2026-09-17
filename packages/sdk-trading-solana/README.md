@@ -209,8 +209,9 @@ Solana counterpart of an EVM `PRESIGN` order (`buildSolanaSwapOrder` reports
 ## Example app
 
 [`examples/nodejs/solana`](../../examples/nodejs/solana) is a runnable, end-to-end demo: it gets a
-devnet quote, approves the settlement program's delegate, builds the `CreateOrder` instruction,
-bundles both into one transaction and submits it. See that example's own README for setup.
+quote, approves the settlement program's delegate, builds the `CreateOrder` instruction, bundles
+both into one transaction and submits it. **It targets mainnet-beta by default and trades real
+funds** — see that example's own README for setup, including how to point it at devnet instead.
 
 ## Why Solana trading looks different from EVM trading
 
