@@ -170,6 +170,17 @@ describe('buildSolanaSwapOrder', () => {
     expect(order.orderId).toBe(toOrderId(expectedUid))
   })
 
+  it('overriding appData does not throw when the quote has no app-data doc yet, matching getSolanaQuote\'s current stub', async () => {
+    const solanaQuote = await buildFixtureQuote()
+    // `getSolanaQuote` currently returns `appDataInfo: {} as QuoteResults['appDataInfo']` — no `doc` key at
+    // all — until Solana app-data generation is implemented. `buildSolanaSwapOrder` must not crash on it.
+    const quoteResults = { orderToSign: {}, appDataInfo: {} } as unknown as QuoteResults
+
+    await expect(
+      buildSolanaSwapOrder({ quoteResults, solanaQuote }, { appData: { appCode: 'some-app' } }),
+    ).resolves.toBeDefined()
+  })
+
   it('keeps the quoted uid/orderPda when advancedSettings overrides nothing relevant', async () => {
     const solanaQuote = await buildFixtureQuote()
 
