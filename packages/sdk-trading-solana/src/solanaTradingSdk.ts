@@ -1,12 +1,25 @@
 import type { OrderPostingResult, QuoteResults, SigningStepManager, SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
 import { CowEnv } from '@cowprotocol/sdk-config'
+import { createApproveInstruction, getAssociatedTokenAddressSync } from '@solana/spl-token'
+import { PublicKey, PublicKeyInitData, TransactionInstruction } from '@solana/web3.js'
 import { buildSolanaSwapOrder, SolanaSwapOrder } from './buildSwapOrder'
 import { getSolanaQuote } from './getSolanaQuote'
 import { postSolanaSwapOrderFromQuote } from './postSwapOrderFromQuote'
+import { getSolanaDelegateAuthority } from './statePda'
 import { SolanaQuote, SolanaQuoteParameters, SolanaSignAndSend } from './types'
 
 export interface SolanaTradingSdkOptions {
   env?: CowEnv
+}
+
+export interface ApproveCowProtocolParams {
+  ownerAddress: PublicKeyInitData
+  sellTokenAddress: PublicKeyInitData
+  /** Amount to approve, at least the order's `sellAmount`. */
+  sellAmount: bigint
+  /** Token program owning the sell mint's accounts (classic SPL Token vs Token-2022). Defaults to the
+   * classic SPL Token program — pass `TOKEN_2022_PROGRAM_ID` explicitly for Token-2022 mints. */
+  sellTokenProgramId?: PublicKeyInitData
 }
 
 /**
@@ -35,6 +48,23 @@ export interface SolanaQuoteAndPost {
  */
 export class SolanaTradingSdk {
   constructor(private readonly options: SolanaTradingSdkOptions = {}) {}
+
+  /**
+   * Builds the SPL `approve` instruction that delegates `sellAmount` of `sellTokenAddress` to the
+   * settlement program, without sending it — see "Step 0" in the README for why this is required
+   * before an order on a given sell-token account can settle. Bundle it with `buildOrder`'s
+   * instruction in the same transaction the first time a wallet trades a given token.
+   */
+  approveCowProtocol(params: ApproveCowProtocolParams): TransactionInstruction {
+    const owner = new PublicKey(params.ownerAddress)
+    const sellMint = new PublicKey(params.sellTokenAddress)
+    const tokenProgramId = params.sellTokenProgramId ? new PublicKey(params.sellTokenProgramId) : undefined
+
+    const sellTokenAccount = getAssociatedTokenAddressSync(sellMint, owner, false, tokenProgramId)
+    const delegate = getSolanaDelegateAuthority(this.options.env)
+
+    return createApproveInstruction(sellTokenAccount, delegate, owner, params.sellAmount, undefined, tokenProgramId)
+  }
 
   async getQuote(params: SolanaQuoteParameters): Promise<SolanaQuoteAndPost> {
     const quote = await getSolanaQuote(params, { env: this.options.env })

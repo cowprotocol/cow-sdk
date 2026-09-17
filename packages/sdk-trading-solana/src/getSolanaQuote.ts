@@ -24,7 +24,7 @@ export async function getSolanaQuote(
 ): Promise<{ quoteResults: QuoteResults; solanaQuote: SolanaQuote }> {
   const {
     ownerAddress,
-    receiverAddress,
+    receiverAddress = ownerAddress,
     sellTokenDecimals,
     buyTokenDecimals,
     amount,

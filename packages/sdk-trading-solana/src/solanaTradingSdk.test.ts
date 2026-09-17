@@ -1,4 +1,5 @@
 import { PublicKey } from '@solana/web3.js'
+import { decodeApproveInstruction, TOKEN_2022_PROGRAM_ID, getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { OrderKind, SigningScheme } from '@cowprotocol/sdk-order-book'
 import type {
   OrderPostingResult,
@@ -6,6 +7,7 @@ import type {
   SigningStepManager,
   SwapAdvancedSettings,
 } from '@cowprotocol/sdk-trading'
+import { getSolanaDelegateAuthority } from './statePda'
 
 jest.mock('./getSolanaQuote', () => ({
   getSolanaQuote: jest.fn(),
@@ -175,5 +177,54 @@ describe('SolanaTradingSdk', () => {
       advancedSettings,
       signingStepManager,
     )
+  })
+
+  describe('approveCowProtocol', () => {
+    it('builds an approve instruction delegating the sell-token account to the settlement authority', () => {
+      const sdk = new SolanaTradingSdk()
+
+      const instruction = sdk.approveCowProtocol({
+        ownerAddress: owner,
+        sellTokenAddress: sellMint,
+        sellAmount: 123n,
+      })
+
+      const decoded = decodeApproveInstruction(instruction)
+      expect(decoded.keys.account.pubkey).toEqual(getAssociatedTokenAddressSync(sellMint, owner))
+      expect(decoded.keys.delegate.pubkey).toEqual(getSolanaDelegateAuthority())
+      expect(decoded.keys.owner.pubkey).toEqual(owner)
+      expect(decoded.keys.owner.isSigner).toBe(true)
+      expect(decoded.data.amount).toBe(123n)
+    })
+
+    it('uses the constructor-bound env to resolve the delegate authority', () => {
+      const sdk = new SolanaTradingSdk({ env: 'staging' })
+
+      const instruction = sdk.approveCowProtocol({
+        ownerAddress: owner,
+        sellTokenAddress: sellMint,
+        sellAmount: 123n,
+      })
+
+      const decoded = decodeApproveInstruction(instruction)
+      expect(decoded.keys.delegate.pubkey).toEqual(getSolanaDelegateAuthority('staging'))
+    })
+
+    it('derives the associated token account under the given token program for Token-2022 mints', () => {
+      const sdk = new SolanaTradingSdk()
+
+      const instruction = sdk.approveCowProtocol({
+        ownerAddress: owner,
+        sellTokenAddress: sellMint,
+        sellAmount: 123n,
+        sellTokenProgramId: TOKEN_2022_PROGRAM_ID,
+      })
+
+      const decoded = decodeApproveInstruction(instruction, TOKEN_2022_PROGRAM_ID)
+      expect(decoded.keys.account.pubkey).toEqual(
+        getAssociatedTokenAddressSync(sellMint, owner, false, TOKEN_2022_PROGRAM_ID),
+      )
+      expect(instruction.programId).toEqual(TOKEN_2022_PROGRAM_ID)
+    })
   })
 })

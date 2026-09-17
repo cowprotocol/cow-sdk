@@ -6,7 +6,6 @@ import { OrderKind } from '@cowprotocol/sdk-order-book'
 
 export interface SolanaQuoteParameters {
   ownerAddress: PublicKeyInitData
-  receiverAddress: PublicKeyInitData
   sellTokenAddress: PublicKeyInitData
   sellTokenDecimals: number
   buyTokenAddress: PublicKeyInitData
@@ -14,6 +13,7 @@ export interface SolanaQuoteParameters {
   /** Sell-side amount for a SELL order, buy-side amount for a BUY order — same convention as Jupiter's `amount`. */
   amount: bigint
   kind: OrderKind
+  receiverAddress?: PublicKeyInitData
   partiallyFillable?: boolean
   /** Order lifetime from now, in seconds. Defaults to 30 minutes. */
   validForSeconds?: number
