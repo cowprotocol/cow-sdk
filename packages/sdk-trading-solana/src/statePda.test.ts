@@ -53,8 +53,8 @@ describe('getSolanaDelegateAuthority', () => {
   it('derives the state PDA the deployed settlement program signs as', () => {
     // Bumping the program version moves every PDA and invalidates existing delegations. Re-derive this
     // expectation with the release's own generated client (`findStatePdaPda`) before updating it.
-    expect(SOLANA_SETTLEMENT_PROGRAM_VERSION).toBe('0.3')
-    expect(getSolanaDelegateAuthority().toBase58()).toBe('9MM8zpg6xeDzgnzKJhgW2Jptd5yRk2NqBUigPZ6STWGz')
+    expect(SOLANA_SETTLEMENT_PROGRAM_VERSION).toBe('0.4')
+    expect(getSolanaDelegateAuthority().toBase58()).toBe('9t7yR5UvhuQvApxSqsZFL7wxqq4u78DAkQQhxKxMxkJt')
   })
 
   it('pairs each env program id with that same env seed', () => {
