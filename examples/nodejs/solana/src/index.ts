@@ -66,7 +66,7 @@ async function main() {
   const approveInstruction = sdk.approveCowProtocol({
     ownerAddress: owner.publicKey,
     sellTokenAddress: SELL_MINT,
-    sellAmount: solanaQuote.intent.sellAmount,
+    approveAmount: solanaQuote.intent.sellAmount,
   })
 
   // Step 2: build the CreateOrder instruction without sending it, so it can be bundled with the
