@@ -1,0 +1,41 @@
+import type { LatestAppDataDocVersion } from '@cowprotocol/sdk-app-data'
+
+import { mergeAppData } from './appData'
+
+const BASE_DOC = { appCode: 'base-app', metadata: {} } as unknown as LatestAppDataDocVersion
+
+describe('mergeAppData', () => {
+  it('digests to exactly 32 bytes', async () => {
+    const result = await mergeAppData(BASE_DOC, { metadata: { referrer: { code: 'someone' } } })
+
+    expect(result).toHaveLength(32)
+  })
+
+  it('is deterministic for the same doc and override', async () => {
+    const override = { metadata: { referrer: { code: 'someone' } } }
+
+    const first = await mergeAppData(BASE_DOC, override)
+    const second = await mergeAppData(BASE_DOC, override)
+
+    expect(first).toEqual(second)
+  })
+
+  it('changes when the override changes', async () => {
+    const withReferrer = await mergeAppData(BASE_DOC, { metadata: { referrer: { code: 'someone' } } })
+    const withDifferentReferrer = await mergeAppData(BASE_DOC, { metadata: { referrer: { code: 'someone-else' } } })
+
+    expect(withReferrer).not.toEqual(withDifferentReferrer)
+  })
+
+  it('overrides the base doc rather than just appending to it', async () => {
+    const docWithAppCode = { ...BASE_DOC, appCode: 'original' } as unknown as LatestAppDataDocVersion
+
+    const overridden = await mergeAppData(docWithAppCode, { appCode: 'replaced' })
+    const replacedFromScratch = await mergeAppData(
+      { ...BASE_DOC, appCode: 'replaced' } as unknown as LatestAppDataDocVersion,
+      {},
+    )
+
+    expect(overridden).toEqual(replacedFromScratch)
+  })
+})

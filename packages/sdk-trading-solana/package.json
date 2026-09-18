@@ -1,7 +1,7 @@
 {
   "name": "@cowprotocol/sdk-trading-solana",
-  "version": "0.6.0",
-  "description": "CowProtocol Solana trading: CoW Protocol quotes and on-chain CreateOrder posting against the Solana settlement program",
+  "version": "0.7.0",
+  "description": "CowProtocol Solana trading: Jupiter-sourced quotes and on-chain CreateOrder posting against the Solana settlement program",
   "repository": {
     "type": "git",
     "url": "https://github.com/cowprotocol/cow-sdk.git",
@@ -48,10 +48,12 @@
     "ts-jest": "^29.0.0"
   },
   "dependencies": {
+    "@cowprotocol/sdk-app-data": "workspace:*",
     "@cowprotocol/sdk-config": "workspace:*",
     "@cowprotocol/sdk-order-book": "workspace:*",
     "@cowprotocol/sdk-trading": "workspace:*",
     "@solana/spl-token": "0.4.14",
-    "@solana/web3.js": "1.98.4"
+    "@solana/web3.js": "1.98.4",
+    "deepmerge": "^4.3.1"
   }
 }

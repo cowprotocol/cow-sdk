@@ -12,10 +12,10 @@ function fillPubkey(byte: number): PublicKey {
 
 const SAMPLE_INTENT: SolanaOrderIntent = {
   owner: fillPubkey(0x11),
-  buyTokenAccount: fillPubkey(0x22),
-  buyMint: fillPubkey(0x33),
-  sellTokenAccount: fillPubkey(0x44),
-  sellMint: fillPubkey(0x55),
+  sellTokenAccount: fillPubkey(0x22),
+  sellMint: fillPubkey(0x33),
+  buyTokenAccount: fillPubkey(0x44),
+  buyMint: fillPubkey(0x55),
   sellAmount: 0x0123_4567_89ab_cdefn,
   buyAmount: 0xfedc_ba98_7654_3210n,
   validTo: 0xdead_beef,
@@ -31,10 +31,10 @@ describe('encodeOrderIntent', () => {
 
     expect(encoded.length).toBe(ENCODED_ORDER_INTENT_SIZE)
     expect(Array.from(encoded.subarray(0, 32))).toEqual(new Array(32).fill(0x11)) // owner
-    expect(Array.from(encoded.subarray(32, 64))).toEqual(new Array(32).fill(0x22)) // buy_token_account
-    expect(Array.from(encoded.subarray(64, 96))).toEqual(new Array(32).fill(0x33)) // buy_mint
-    expect(Array.from(encoded.subarray(96, 128))).toEqual(new Array(32).fill(0x44)) // sell_token_account
-    expect(Array.from(encoded.subarray(128, 160))).toEqual(new Array(32).fill(0x55)) // sell_mint
+    expect(Array.from(encoded.subarray(32, 64))).toEqual(new Array(32).fill(0x22)) // sell_token_account
+    expect(Array.from(encoded.subarray(64, 96))).toEqual(new Array(32).fill(0x33)) // sell_mint
+    expect(Array.from(encoded.subarray(96, 128))).toEqual(new Array(32).fill(0x44)) // buy_token_account
+    expect(Array.from(encoded.subarray(128, 160))).toEqual(new Array(32).fill(0x55)) // buy_mint
     expect(toHex(encoded.subarray(160, 168))).toBe('efcdab8967452301') // sell_amount, LE
     expect(toHex(encoded.subarray(168, 176))).toBe('1032547698badcfe') // buy_amount, LE
     expect(toHex(encoded.subarray(176, 180))).toBe('efbeadde') // valid_to, LE

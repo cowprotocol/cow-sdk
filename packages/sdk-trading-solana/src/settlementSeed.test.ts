@@ -5,16 +5,16 @@ const SETTLEMENT_SEED_LEN = 19
 
 describe('getSettlementSeed', () => {
   it('builds the version-embedded seed for prod', () => {
-    // "settlement v" + "0.3" right-padded to the fixed 7-byte version field.
+    // "settlement v" + "0.4" right-padded to the fixed 7-byte version field.
     expect(getSettlementSeed().length).toBe(SETTLEMENT_SEED_LEN)
-    expect(new TextDecoder().decode(getSettlementSeed())).toBe('settlement v0.3    ')
+    expect(new TextDecoder().decode(getSettlementSeed())).toBe('settlement v0.4    ')
     expect(getSettlementSeed('prod')).toEqual(getSettlementSeed())
   })
 
   it('hands out a copy so callers cannot corrupt the cached seed', () => {
     getSettlementSeed()[0] = 0
 
-    expect(new TextDecoder().decode(getSettlementSeed())).toBe('settlement v0.3    ')
+    expect(new TextDecoder().decode(getSettlementSeed())).toBe('settlement v0.4    ')
   })
 
   it('builds a fixed-width seed for staging', () => {

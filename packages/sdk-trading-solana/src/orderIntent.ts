@@ -2,16 +2,12 @@ import { PublicKey } from '@solana/web3.js'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 
 /**
- * TS port of `cow-settlement-interface`'s `OrderIntent` (interface/src/data/intent.rs, v0.3.0).
+ * TS port of `cow-settlement-interface`'s `OrderIntent` (interface/src/data/intent.rs, v0.4.0).
  * Every field here has a Rust counterpart with the same name; keep them in sync if the settlement
  * program's wire format changes.
  */
 export interface SolanaOrderIntent {
   owner: PublicKey
-  // Token account that receives the buy-side proceeds. Implicitly
-  // encodes the recipient.
-  buyTokenAccount: PublicKey
-  buyMint: PublicKey
   // Token account the sell-side funds are pulled from. Implicitly
   // encodes the spender. The settlement state PDA must hold the SPL
   // `delegate` on this account for the order to be settleable.
@@ -19,6 +15,10 @@ export interface SolanaOrderIntent {
   // that doesn't satisfy this property will be rejected.
   sellTokenAccount: PublicKey
   sellMint: PublicKey
+  // Token account that receives the buy-side proceeds. Implicitly
+  // encodes the recipient.
+  buyTokenAccount: PublicKey
+  buyMint: PublicKey
   sellAmount: bigint
   buyAmount: bigint
   /** Unix timestamp seconds. */
@@ -71,10 +71,10 @@ export function encodeOrderIntent(intent: SolanaOrderIntent): Uint8Array {
   }
 
   writePubkey(intent.owner)
-  writePubkey(intent.buyTokenAccount)
-  writePubkey(intent.buyMint)
   writePubkey(intent.sellTokenAccount)
   writePubkey(intent.sellMint)
+  writePubkey(intent.buyTokenAccount)
+  writePubkey(intent.buyMint)
   writeU64LE(intent.sellAmount)
   writeU64LE(intent.buyAmount)
 

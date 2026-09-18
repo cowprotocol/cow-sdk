@@ -180,11 +180,20 @@ describe('getSolanaQuote', () => {
     it('signs the caller tolerance instead of the default', async () => {
       mockQuoteResponse()
 
-      const { solanaQuote, quoteResults } = await quoteWithSlippage(50)
+      const { solanaQuote } = await quoteWithSlippage(50)
 
-      expect(quoteResults.suggestedSlippageBps).toBe(50)
       // 9707507795 - 9707507795 * 50 / 10000 = 9658970257
       expect(solanaQuote.intent.buyAmount).toBe(9_658_970_257n)
+    })
+
+    // Consumers read `suggestedSlippageBps` as a recommendation and turn it into "smart" slippage, so
+    // handing the caller their own input back would make the app advise whatever it just chose.
+    it('never reports the caller tolerance as the provider suggestion', async () => {
+      mockJupiterOrder(25)
+
+      const { quoteResults } = await quoteWithSlippage(500)
+
+      expect(quoteResults.suggestedSlippageBps).toBe(25)
     })
 
     it('reports the caller tolerance in tradeParameters, so a change to it forces a requote', async () => {

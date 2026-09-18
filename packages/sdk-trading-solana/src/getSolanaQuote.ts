@@ -34,7 +34,7 @@ export async function getSolanaQuote(
   const {
     slippageBps: slippageBpsOverride,
     ownerAddress,
-    receiverAddress,
+    receiverAddress = ownerAddress,
     sellTokenDecimals,
     buyTokenDecimals,
     amount,
@@ -85,11 +85,13 @@ export async function getSolanaQuote(
   const orderParams = quoteResponse.quote
   const validTo = orderParams.validTo
 
-  const suggestedSlippageBps = slippageBpsOverride ?? DEFAULT_SLIPPAGE_BPS
+  // TODO: add suggested slippage
+  const suggestedSlippageBps = DEFAULT_SLIPPAGE_BPS
+  const signedSlippageBps = slippageBpsOverride ?? suggestedSlippageBps
 
   const amountsAndCosts = getQuoteAmountsAndCosts({
     orderParams,
-    slippagePercentBps: suggestedSlippageBps,
+    slippagePercentBps: signedSlippageBps,
     // TODO: implement fees
     partnerFeeBps: 0,
     protocolFeeBps: 0,
@@ -149,6 +151,8 @@ export async function getSolanaQuote(
   const quoteResults: QuoteResults = {
     quoteResponse,
     amountsAndCosts,
+    // What the quote provider suggested, never the caller's own `slippageBps`: consumers read this as a
+    // recommendation and would otherwise be handed their own input back as advice.
     suggestedSlippageBps,
     tradeParameters,
     orderToSign: {} as QuoteResults['orderToSign'],

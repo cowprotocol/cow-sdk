@@ -2,6 +2,7 @@ import type { QuoteResults, SwapAdvancedSettings } from '@cowprotocol/sdk-tradin
 import { SigningScheme } from '@cowprotocol/sdk-order-book'
 import { getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
+import { mergeAppData } from './appData'
 import { buildCreateOrderInstruction } from './createOrderInstruction'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toOrderId } from './orderIntent'
 import { findOrderPda } from './orderPda'
@@ -38,30 +39,32 @@ export async function buildSolanaSwapOrder(
   { quoteResults, solanaQuote }: SolanaSwapOrderQuote,
   advancedSettings?: SwapAdvancedSettings,
 ): Promise<SolanaSwapOrder> {
-  const intent = { ...solanaQuote.intent }
-  let uid = solanaQuote.uid
-  let orderPda = solanaQuote.orderPda
+  const { validTo, receiver } = advancedSettings?.quoteRequest ?? {}
 
-  if (advancedSettings?.quoteRequest) {
-    const { validTo, receiver } = advancedSettings.quoteRequest
-
-    if (receiver) {
-      intent.buyTokenAccount = getAssociatedTokenAddressSync(
-        intent.buyMint,
+  const overrides: Partial<SolanaOrderIntent> = {
+    ...(receiver && {
+      buyTokenAccount: getAssociatedTokenAddressSync(
+        solanaQuote.intent.buyMint,
         new PublicKey(receiver),
         false,
         solanaQuote.buyTokenProgramId,
-      )
-    }
-    if (validTo) intent.validTo = validTo
+      ),
+    }),
+    ...(validTo && { validTo }),
+    ...(advancedSettings?.appData && {
+      appData: await mergeAppData(quoteResults.appDataInfo.doc ?? {}, advancedSettings.appData),
+    }),
+  }
 
-    // `uid`/`orderPda` are the hash/PDA of the *quoted* intent bytes — re-derive them whenever the
-    // intent is overridden so the posted order PDA still matches the intent actually being created.
-    if (receiver || validTo) {
-      const intentBytes = encodeOrderIntent(intent)
-      uid = await hashOrderIntent(intentBytes)
-      ;[orderPda] = findOrderPda(solanaQuote.programId, uid)
-    }
+  const intent = { ...solanaQuote.intent, ...overrides }
+
+  let uid = solanaQuote.uid
+  let orderPda = solanaQuote.orderPda
+
+  if (Object.keys(overrides).length > 0) {
+    const intentBytes = encodeOrderIntent(intent)
+    uid = await hashOrderIntent(intentBytes)
+    ;[orderPda] = findOrderPda(solanaQuote.programId, uid)
   }
 
   const instruction = buildCreateOrderInstruction({
