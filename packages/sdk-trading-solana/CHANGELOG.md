@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.6.0...sdk-trading-solana-v0.7.0) (2026-09-18)
+
+
+### ✨ Features
+
+* sol suggested slippage echo ([#1020](https://github.com/cowprotocol/cow-sdk/issues/1020)) ([9bf45df](https://github.com/cowprotocol/cow-sdk/commit/9bf45dfdb815e180d3b0a7bde0ab3a04f3c4d70c))
+
 ## [0.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.5.1...sdk-trading-solana-v0.6.0) (2026-09-16)
 
 
