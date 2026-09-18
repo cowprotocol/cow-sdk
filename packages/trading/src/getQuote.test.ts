@@ -119,6 +119,55 @@ describe('getQuote', () => {
         expect(appData.environment).toBe('barn')
       })
     })
+
+    it('Should set fastPath on the request and enableFastPath in appData when enabled', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        const { result } = await getQuoteWithSigner(
+          { ...defaultOrderParams, signer: adapters[adapterName].signer, enableFastPath: true },
+          {},
+          orderBookApiMock,
+        )
+
+        expect(getQuoteMock.mock.calls.at(-1)![0].fastPath).toBe(true)
+        expect(JSON.parse(result.appDataInfo.fullAppData).metadata.enableFastPath).toBe(true)
+      }
+    })
+
+    it('Should set validFrom in appData but not on the request', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        const { result } = await getQuoteWithSigner(
+          { ...defaultOrderParams, signer: adapters[adapterName].signer, validFrom: 1893456000 },
+          {},
+          orderBookApiMock,
+        )
+
+        expect(JSON.parse(result.appDataInfo.fullAppData).metadata.validFrom).toBe(1893456000)
+        expect(getQuoteMock.mock.calls.at(-1)![0]).not.toHaveProperty('validFrom')
+      }
+    })
+
+    it('Should reject when both enableFastPath and validFrom are set', async () => {
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        await expect(
+          getQuoteWithSigner(
+            { ...defaultOrderParams, signer: adapters[adapterName].signer, enableFastPath: true, validFrom: 1893456000 },
+            {},
+            orderBookApiMock,
+          ),
+        ).rejects.toThrow('mutually exclusive')
+        // guard fires before any quote request is made
+        expect(getQuoteMock).not.toHaveBeenCalled()
+      }
+    })
   })
 
   describe('Quote request', () => {
