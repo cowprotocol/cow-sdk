@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.13.1...sdk-common-v0.13.2) (2026-09-18)
+
+
+### 🔧 Miscellaneous
+
+* update coverage badges ([#1011](https://github.com/cowprotocol/cow-sdk/issues/1011)) ([3701bb5](https://github.com/cowprotocol/cow-sdk/commit/3701bb53a4815d553757db70ebd8bba8db02f0db))
+
 ## [0.13.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.13.0...sdk-common-v0.13.1) (2026-09-18)
 
 
