@@ -186,7 +186,7 @@ describe('SolanaTradingSdk', () => {
       const instruction = sdk.approveCowProtocol({
         ownerAddress: owner,
         sellTokenAddress: sellMint,
-        sellAmount: 123n,
+        approveAmount: 123n,
       })
 
       const decoded = decodeApproveInstruction(instruction)
@@ -203,7 +203,7 @@ describe('SolanaTradingSdk', () => {
       const instruction = sdk.approveCowProtocol({
         ownerAddress: owner,
         sellTokenAddress: sellMint,
-        sellAmount: 123n,
+        approveAmount: 123n,
       })
 
       const decoded = decodeApproveInstruction(instruction)
@@ -216,7 +216,7 @@ describe('SolanaTradingSdk', () => {
       const instruction = sdk.approveCowProtocol({
         ownerAddress: owner,
         sellTokenAddress: sellMint,
-        sellAmount: 123n,
+        approveAmount: 123n,
         sellTokenProgramId: TOKEN_2022_PROGRAM_ID,
       })
 

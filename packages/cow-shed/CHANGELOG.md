@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-cow-shed-v0.4.8...sdk-cow-shed-v0.5.0) (2026-09-16)
+
+
+### ✨ Features
+
+* **cow-shed:** support custom deployment domains ([#990](https://github.com/cowprotocol/cow-sdk/issues/990)) ([8ffa557](https://github.com/cowprotocol/cow-sdk/commit/8ffa557b888079d390f7388eb8575b0ca0d42330))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.13.0
+    * @cowprotocol/sdk-contracts-ts bumped to 3.5.2
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.14
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.14
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.29
+
 ## [0.4.8](https://github.com/cowprotocol/cow-sdk/compare/sdk-cow-shed-v0.4.7...sdk-cow-shed-v0.4.8) (2026-09-07)
 
 

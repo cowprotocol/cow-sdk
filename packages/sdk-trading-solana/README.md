@@ -29,7 +29,7 @@ A runnable end-to-end example lives in [`examples/nodejs/solana`](../../examples
 
 ## Making a trade
 
-### Step 0 — approve the settlement program as SPL delegate (one-time per token, per program version)
+### Step 0 — approve the settlement program as SPL delegate
 
 The settlement program moves funds out of the seller's token account via a CPI, which SPL Token
 only allows for an approved `delegate`. Before any order on a given sell-token account can settle,
@@ -43,15 +43,20 @@ const sdk = new SolanaTradingSdk() // same env as the SDK instance used for the 
 const approveInstruction = sdk.approveCowProtocol({
   ownerAddress: owner,
   sellTokenAddress: sellMint,
-  sellAmount, // at least the order's sellAmount
+  approveAmount, // at least the order's sellAmount
 })
 ```
 
-Because the delegate PDA is derived from the settlement program's major/minor version
-(`getSettlementSeed`), a program upgrade that bumps that version changes the delegate address and
-approvals have to be renewed. This step can be sent as its own transaction ahead of time, or bundled
-with the `CreateOrder` instruction in the same transaction — see [Step 2](#step-2--create-the-order)
-below.
+This approval is **not one-time**: like any SPL delegate, each settled order decrements the
+delegate's remaining allowance by the amount actually transferred, so approving once for exactly one
+order's `sellAmount` leaves nothing for the next one. Check the sell-token account's current
+`delegate`/`delegatedAmount` before building an order, and reapprove (topping the allowance back up)
+whenever it's insufficient — approving a new amount replaces the previous allowance rather than
+adding to it. Separately, because the delegate PDA is derived from the settlement program's
+major/minor version (`getSettlementSeed`), a program upgrade that bumps that version changes the
+delegate address entirely, requiring a fresh approval regardless of remaining allowance. This step
+can be sent as its own transaction ahead of time, or bundled with the `CreateOrder` instruction in
+the same transaction — see [Step 2](#step-2--create-the-order) below.
 
 ### Step 1 — get a quote
 
@@ -111,8 +116,9 @@ const { instruction, orderId, orderPda, uid } = await buildOrder()
 await sendMyTransaction([approveInstruction, instruction])
 ```
 
-This is the recommended path the first time a wallet trades a given token, since it lets the
-one-time delegate approval and the order creation land atomically in one transaction.
+This is the recommended path whenever the sell-token account's delegate allowance needs
+topping up for this trade, since it lets the delegate approval and the order creation land
+atomically in one transaction.
 
 Both paths accept the same optional `advancedSettings` (currently `quoteRequest.receiver` and
 `quoteRequest.validTo`) and apply them identically — overriding `receiver` or `validTo` re-derives

@@ -57,13 +57,16 @@ async function main() {
   })
 
   // Step 0: approve the settlement program's delegate on the sell-token account, so the order can
-  // actually settle once created. Only needed once per (token, settlement program version) — safe to
-  // send every run, but in a real app you'd check the existing delegate/allowance first.
+  // actually settle once created. Each settled order decrements the delegate's remaining allowance
+  // by the amount transferred, so this is not one-time — a real app should check the existing
+  // delegate/allowance first and only reapprove when it's insufficient. This example always
+  // approves for exactly this order's sellAmount, which is simpler but wastes a transaction when
+  // the existing allowance would already have covered it.
   console.log('Approving settlement program as SPL delegate...')
   const approveInstruction = sdk.approveCowProtocol({
     ownerAddress: owner.publicKey,
     sellTokenAddress: SELL_MINT,
-    sellAmount: solanaQuote.intent.sellAmount,
+    approveAmount: solanaQuote.intent.sellAmount,
   })
 
   // Step 2: build the CreateOrder instruction without sending it, so it can be bundled with the

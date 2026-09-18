@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.6.0...sdk-trading-solana-v0.7.0) (2026-09-18)
+
+
+### ✨ Features
+
+* sol suggested slippage echo ([#1020](https://github.com/cowprotocol/cow-sdk/issues/1020)) ([9bf45df](https://github.com/cowprotocol/cow-sdk/commit/9bf45dfdb815e180d3b0a7bde0ab3a04f3c4d70c))
+
+## [0.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.5.1...sdk-trading-solana-v0.6.0) (2026-09-16)
+
+
+### ✨ Features
+
+* add multiplier configuration for slippage ([#1016](https://github.com/cowprotocol/cow-sdk/issues/1016)) ([ccdaf18](https://github.com/cowprotocol/cow-sdk/commit/ccdaf18958d77016798d899be1ef06c6588f5bb3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-order-book bumped to 4.0.5
+    * @cowprotocol/sdk-trading bumped to 2.5.0
+
 ## [0.5.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.5.0...sdk-trading-solana-v0.5.1) (2026-09-14)
 
 

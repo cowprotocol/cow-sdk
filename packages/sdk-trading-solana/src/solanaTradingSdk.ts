@@ -16,7 +16,7 @@ export interface ApproveCowProtocolParams {
   ownerAddress: PublicKeyInitData
   sellTokenAddress: PublicKeyInitData
   /** Amount to approve, at least the order's `sellAmount`. */
-  sellAmount: bigint
+  approveAmount: bigint
   /** Token program owning the sell mint's accounts (classic SPL Token vs Token-2022). Defaults to the
    * classic SPL Token program — pass `TOKEN_2022_PROGRAM_ID` explicitly for Token-2022 mints. */
   sellTokenProgramId?: PublicKeyInitData
@@ -63,7 +63,7 @@ export class SolanaTradingSdk {
     const sellTokenAccount = getAssociatedTokenAddressSync(sellMint, owner, false, tokenProgramId)
     const delegate = getSolanaDelegateAuthority(this.options.env)
 
-    return createApproveInstruction(sellTokenAccount, delegate, owner, params.sellAmount, undefined, tokenProgramId)
+    return createApproveInstruction(sellTokenAccount, delegate, owner, params.approveAmount, undefined, tokenProgramId)
   }
 
   async getQuote(params: SolanaQuoteParameters): Promise<SolanaQuoteAndPost> {

@@ -17,6 +17,8 @@ export interface SolanaQuoteParameters {
   partiallyFillable?: boolean
   /** Order lifetime from now, in seconds. Defaults to 30 minutes. */
   validForSeconds?: number
+  /** Slippage tolerance to sign, in basis points. Defaults to the one the quote reports. */
+  slippageBps?: number
   /** Token program owning `sellMint`'s accounts (classic SPL Token vs Token-2022). Defaults to the
    * classic SPL Token program — pass `TOKEN_2022_PROGRAM_ID` explicitly for Token-2022 mints, since the
    * associated token account address differs by program. */
