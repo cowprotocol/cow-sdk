@@ -1,0 +1,64 @@
+{
+  "swapMode": "ExactIn",
+  "inputMint": "So11111111111111111111111111111111111111112",
+  "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  "inAmount": "2000000",
+  "outAmount": "203281",
+  "priceImpactPct": "0.0006024991674487946",
+  "routePlan": [
+    {
+      "percent": 100,
+      "bps": 10000,
+      "usdValue": 0.203245430199726,
+      "swapInfo": {
+        "ammKey": "D6NdKrKNQPmRZCCnG1GqXtF7MMoHB7qR6GU5TkG59Qz1",
+        "label": "Whirlpools",
+        "inputMint": "So11111111111111111111111111111111111111112",
+        "outputMint": "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm",
+        "inAmount": "1999600",
+        "outAmount": "1024448"
+      }
+    },
+    {
+      "percent": 100,
+      "bps": 10000,
+      "usdValue": 0.203245430199726,
+      "swapInfo": {
+        "ammKey": "58oVxJHmvQoxL2GTCP9JrAYQt3PLJ8ApQwkZcjgmmSco",
+        "label": "Meteora",
+        "inputMint": "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm",
+        "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "inAmount": "1024448",
+        "outAmount": "203281"
+      }
+    }
+  ],
+  "feeMint": "So11111111111111111111111111111111111111112",
+  "feeBps": 2,
+  "platformFee": {
+    "feeBps": 2,
+    "feeMint": "So11111111111111111111111111111111111111112"
+  },
+  "swapType": "aggregator",
+  "router": "dflow",
+  "guaranteedPrice": false,
+  "gasless": false,
+  "jitOptimized": false,
+  "signatureFeeLamports": 0,
+  "signatureFeePayer": null,
+  "prioritizationFeeLamports": 0,
+  "prioritizationFeePayer": null,
+  "rentFeeLamports": 0,
+  "rentFeePayer": null,
+  "requestId": "01a05d94-80f2-7606-a83e-c2b06524748d",
+  "taker": null,
+  "transaction": null,
+  "slippageBps": 0,
+  "otherAmountThreshold": "203281",
+  "inUsdValue": 0.203123048731976,
+  "outUsdValue": 0.203245430199726,
+  "swapUsdValue": 0.203245430199726,
+  "priceImpact": 0.0602499167448795,
+  "mode": "ultra",
+  "totalTime": 113
+}

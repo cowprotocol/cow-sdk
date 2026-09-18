@@ -25,7 +25,7 @@ export async function getSolanaQuote(
   const {
     slippageBps: slippageBpsOverride,
     ownerAddress,
-    receiverAddress,
+    receiverAddress = ownerAddress,
     sellTokenDecimals,
     buyTokenDecimals,
     amount,
