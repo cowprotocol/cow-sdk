@@ -136,4 +136,19 @@ describe('postSolanaSwapOrderFromQuote', () => {
     expect(result.orderId).toBe(toOrderId(expectedUid))
     expect(result.orderId).not.toBe(toOrderId(solanaQuote.uid))
   })
+
+  // The sponsor's signature comes from the backend, so there is nothing here that could produce a
+  // broadcastable transaction — failing loudly beats submitting something that can only be rejected.
+  it('refuses to submit a sponsored order and never reaches the signer', async () => {
+    const solanaQuote = await buildFixtureQuote()
+    const signAndSend = jest.fn().mockResolvedValue({ signature: 'fake-signature' })
+
+    await expect(
+      postSolanaSwapOrderFromQuote({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, signAndSend, undefined, undefined, {
+        sponsor: new PublicKey(new Uint8Array(32).fill(0x99)),
+      }),
+    ).rejects.toThrow(/sponsored order/i)
+
+    expect(signAndSend).not.toHaveBeenCalled()
+  })
 })
