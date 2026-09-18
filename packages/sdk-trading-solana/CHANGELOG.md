@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.8.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.7.0...sdk-trading-solana-v0.8.0) (2026-09-18)
+
+
+### ✨ Features
+
+* **solana:** approveCowProtocol method and docs update ([#1017](https://github.com/cowprotocol/cow-sdk/issues/1017)) ([eeb0e70](https://github.com/cowprotocol/cow-sdk/commit/eeb0e7070e7310d87c67fba5883f512b509ce83d))
+* **solana:** migrate to 0.4 settlement program ([#1019](https://github.com/cowprotocol/cow-sdk/issues/1019)) ([9baf9cb](https://github.com/cowprotocol/cow-sdk/commit/9baf9cbb650434ed6b1a46ce63b9c82b0736be76))
+* **solana:** override appData ([#1018](https://github.com/cowprotocol/cow-sdk/issues/1018)) ([0c2a8cf](https://github.com/cowprotocol/cow-sdk/commit/0c2a8cf967cc2f38a68135dca09a1696e0f42ba6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 6.0.5
+    * @cowprotocol/sdk-config bumped to 2.7.0
+    * @cowprotocol/sdk-order-book bumped to 4.0.6
+    * @cowprotocol/sdk-trading bumped to 2.6.0
+
 ## [0.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.6.0...sdk-trading-solana-v0.7.0) (2026-09-18)
 
 
