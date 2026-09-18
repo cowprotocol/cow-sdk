@@ -8,7 +8,7 @@
 
 | Statements                                                                              | Branches                                                                            | Functions                                                                             | Lines                                                                         |
 | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| ![Statements](https://img.shields.io/badge/statements-85.64%25-yellow.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-94.44%25-brightgreen.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-58.13%25-red.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-93.78%25-brightgreen.svg?style=flat) |
+| ![Statements](https://img.shields.io/badge/statements-86.69%25-yellow.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-91.89%25-brightgreen.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-60%25-red.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-94.31%25-brightgreen.svg?style=flat) |
 
 `@cowprotocol/sdk-trading-solana` is CoW Protocol's Solana settlement client: it turns a quote
 into an on-chain `CreateOrder` instruction against the CoW Protocol Solana
