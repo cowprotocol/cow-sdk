@@ -3,6 +3,7 @@ import { getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from '@solana/sp
 import { OrderKind, SigningScheme } from '@cowprotocol/sdk-order-book'
 import type { QuoteResults } from '@cowprotocol/sdk-trading'
 
+import { mergeAppData } from './appData'
 import { buildSolanaSwapOrder } from './buildSwapOrder'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toOrderId } from './orderIntent'
 import { findOrderPda } from './orderPda'
@@ -51,7 +52,10 @@ async function buildFixtureQuote(buyTokenProgramId?: PublicKey): Promise<SolanaQ
 }
 
 function buildFixtureQuoteResults(orderToSign: unknown = { fake: 'orderToSign' }): QuoteResults {
-  return { orderToSign } as unknown as QuoteResults
+  return {
+    orderToSign,
+    appDataInfo: { doc: { appCode: 'fixture-app', metadata: {} } },
+  } as unknown as QuoteResults
 }
 
 describe('buildSolanaSwapOrder', () => {
@@ -146,6 +150,35 @@ describe('buildSolanaSwapOrder', () => {
     expect(order.orderPda.toBase58()).toBe(expectedOrderPda.toBase58())
     expect(order.orderPda.toBase58()).not.toBe(solanaQuote.orderPda.toBase58())
     expect(order.orderId).toBe(toOrderId(expectedUid))
+  })
+
+  it('overriding appData merges it into the quoted app-data doc and re-derives uid/orderPda to match', async () => {
+    const solanaQuote = await buildFixtureQuote()
+    const quoteResults = buildFixtureQuoteResults()
+    const appDataOverride = { metadata: { referrer: { code: 'someone' } } }
+
+    const order = await buildSolanaSwapOrder({ quoteResults, solanaQuote }, { appData: appDataOverride })
+
+    const expectedAppData = await mergeAppData(quoteResults.appDataInfo.doc, appDataOverride)
+    const expectedIntent = { ...solanaQuote.intent, appData: expectedAppData }
+    const expectedUid = await hashOrderIntent(encodeOrderIntent(expectedIntent))
+    const [expectedOrderPda] = findOrderPda(solanaQuote.programId, expectedUid)
+
+    expect(order.intent.appData).toEqual(expectedAppData)
+    expect(order.orderPda.toBase58()).toBe(expectedOrderPda.toBase58())
+    expect(order.orderPda.toBase58()).not.toBe(solanaQuote.orderPda.toBase58())
+    expect(order.orderId).toBe(toOrderId(expectedUid))
+  })
+
+  it('overriding appData does not throw when the quote has no app-data doc yet, matching getSolanaQuote\'s current stub', async () => {
+    const solanaQuote = await buildFixtureQuote()
+    // `getSolanaQuote` currently returns `appDataInfo: {} as QuoteResults['appDataInfo']` — no `doc` key at
+    // all — until Solana app-data generation is implemented. `buildSolanaSwapOrder` must not crash on it.
+    const quoteResults = { orderToSign: {}, appDataInfo: {} } as unknown as QuoteResults
+
+    await expect(
+      buildSolanaSwapOrder({ quoteResults, solanaQuote }, { appData: { appCode: 'some-app' } }),
+    ).resolves.toBeDefined()
   })
 
   it('keeps the quoted uid/orderPda when advancedSettings overrides nothing relevant', async () => {
