@@ -70,14 +70,6 @@ const solanaQuoteFixture: SolanaQuote = {
   uid: new Uint8Array(32),
   orderPda: fillPubkey(0x66),
   programId: fillPubkey(0x77),
-  jupiterOrder: {
-    inputMint: sellMint.toBase58(),
-    outputMint: buyMint.toBase58(),
-    inAmount: '100',
-    outAmount: '200',
-    swapMode: 'ExactIn',
-    slippageBps: 0,
-  },
 }
 
 const quoteResultsFixture = { fake: 'quoteResults' } as unknown as QuoteResults

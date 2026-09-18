@@ -1,6 +1,5 @@
 import { PublicKey, PublicKeyInitData, TransactionInstruction } from '@solana/web3.js'
 
-import { JupiterOrderResponse } from './jupiterApi'
 import { SolanaOrderIntent } from './orderIntent'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 
@@ -10,7 +9,7 @@ export interface SolanaQuoteParameters {
   sellTokenDecimals: number
   buyTokenAddress: PublicKeyInitData
   buyTokenDecimals: number
-  /** Sell-side amount for a SELL order, buy-side amount for a BUY order — same convention as Jupiter's `amount`. */
+  /** Sell-side amount for a SELL order, buy-side amount for a BUY order. */
   amount: bigint
   kind: OrderKind
   receiverAddress?: PublicKeyInitData
@@ -34,8 +33,6 @@ export interface SolanaQuote {
   uid: Uint8Array
   orderPda: PublicKey
   programId: PublicKey
-  /** The raw Jupiter response the quote was built from — real amounts/slippage for the caller to read. */
-  jupiterOrder: JupiterOrderResponse
   /** Token program owning `intent.buyMint`'s accounts, as resolved at quote time — needed to re-derive
    * `buyTokenAccount`'s associated token address if `receiver` is overridden when posting. */
   buyTokenProgramId?: PublicKey
