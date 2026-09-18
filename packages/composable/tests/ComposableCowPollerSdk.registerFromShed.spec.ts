@@ -1,12 +1,17 @@
 import { setGlobalAdapter, type AbstractProviderAdapter } from '@cowprotocol/sdk-common'
-import { COW_SHED_PROXY_INIT_CODE, CowShedSdk } from '@cowprotocol/sdk-cow-shed'
+import {
+  COW_SHED_FACTORY_FOR_COMPOSABLE_COW,
+  COW_SHED_IMPLEMENTATION_FOR_COMPOSABLE_COW,
+  COW_SHED_LATEST_VERSION,
+  CowShedSdk,
+} from '@cowprotocol/sdk-cow-shed'
 import { decodeFunctionData, parseAbi } from 'viem'
 
 import { ComposableCowPollerSdk, type ComposableCowPollerSchedule } from '../src'
 import { createAdapters, TEST_ADDRESS, TEST_PRIVATE_KEY } from './setup'
 
 const POLLER = '0x4444444444444444444444444444444444444444'
-const FACTORY = '0x5E284e80F3bd6A7D80A8500D9c49878028110848'
+const FACTORY = COW_SHED_FACTORY_FOR_COMPOSABLE_COW[COW_SHED_LATEST_VERSION]
 const NONCE = `0x${'12'.repeat(32)}`
 const DEADLINE = 2_000_000_000n
 const GAS_LIMIT = 400_000n
@@ -22,11 +27,9 @@ describe('ComposableCowPollerSdk registration from CowShed', () => {
   function setup(adapter: AbstractProviderAdapter = adapters.viemAdapter) {
     setGlobalAdapter(adapter)
     jest.spyOn(adapter, 'getCode').mockResolvedValue('0x')
-    const cowShedSdk = new CowShedSdk(undefined, {
+    const cowShedSdk = new CowShedSdk(adapter, {
       factoryAddress: FACTORY,
-      implementationAddress: '0xF0D400089d5b9fACA64E3422AD6614546587cfFB',
-      proxyCreationCode: COW_SHED_PROXY_INIT_CODE['1.0.1'],
-      domainVersion: '2.1.0',
+      implementationAddress: COW_SHED_IMPLEMENTATION_FOR_COMPOSABLE_COW[COW_SHED_LATEST_VERSION],
     })
     const sdk = new ComposableCowPollerSdk({ chainId: 1, pollerAddress: POLLER })
     const schedule: ComposableCowPollerSchedule = {

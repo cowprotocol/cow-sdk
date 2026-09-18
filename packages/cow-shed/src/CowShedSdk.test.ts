@@ -5,6 +5,8 @@ import { AdaptersTestSetup, createAdapters } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { ContractsSigningScheme as SigningScheme } from '@cowprotocol/sdk-contracts-ts'
 import { COW_SHED_PROXY_INIT_CODE } from './const'
+import { decodeFunctionData } from 'viem'
+import { CowShedFactoryAbi } from './abi/CowShedFactoryAbi'
 const MOCK_CALL_DATA = '0xabcdef'
 
 const DEFAULT_QUOTE_VALIDITY = 60 * 30 // 30 min
@@ -28,6 +30,16 @@ describe('CowShedSdk', () => {
 
   beforeAll(() => {
     adapters = createAdapters()
+  })
+
+  test('encodes executeOwnHooks', () => {
+    setGlobalAdapter(adapters.viemAdapter)
+    const sdk = new CowShedSdk()
+    const call = sdk.encodeExecuteOwnHooks({ calls: CALLS_MOCK, chainId: SupportedChainId.MAINNET })
+    const decoded = decodeFunctionData({ abi: CowShedFactoryAbi, data: call.data as `0x${string}` })
+
+    expect(decoded.functionName).toBe('executeOwnHooks')
+    expect(decoded.args).toEqual([CALLS_MOCK])
   })
 
   describe('signCalls()', () => {
