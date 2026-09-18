@@ -62,7 +62,7 @@ export async function getSolanaQuote(
     swapMode: kind === OrderKind.SELL ? 'ExactIn' : 'ExactOut',
   })
 
-  const suggestedSlippageBps = slippageBpsOverride ?? jupiterOrder.slippageBps
+  const signedSlippageBps = slippageBpsOverride ?? jupiterOrder.slippageBps
 
   const validTo = Math.floor(Date.now() / 1000) + validForSeconds
 
@@ -86,7 +86,7 @@ export async function getSolanaQuote(
 
   const amountsAndCosts = getQuoteAmountsAndCosts({
     orderParams,
-    slippagePercentBps: suggestedSlippageBps,
+    slippagePercentBps: signedSlippageBps,
     // TODO: implement fees
     partnerFeeBps: 0,
     protocolFeeBps: 0,
@@ -152,7 +152,9 @@ export async function getSolanaQuote(
   const quoteResults: QuoteResults = {
     quoteResponse,
     amountsAndCosts,
-    suggestedSlippageBps,
+    // What the quote provider suggested, never the caller's own `slippageBps`: consumers read this as a
+    // recommendation and would otherwise be handed their own input back as advice.
+    suggestedSlippageBps: jupiterOrder.slippageBps,
     tradeParameters,
     orderToSign: {} as QuoteResults['orderToSign'],
     appDataInfo: {} as QuoteResults['appDataInfo'],
