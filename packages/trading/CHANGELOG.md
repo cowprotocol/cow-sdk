@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v2.5.0...sdk-trading-v2.6.0) (2026-09-18)
+
+
+### ✨ Features
+
+* **solana:** approveCowProtocol method and docs update ([#1017](https://github.com/cowprotocol/cow-sdk/issues/1017)) ([eeb0e70](https://github.com/cowprotocol/cow-sdk/commit/eeb0e7070e7310d87c67fba5883f512b509ce83d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.13.1
+    * @cowprotocol/sdk-config bumped to 2.7.0
+    * @cowprotocol/sdk-app-data bumped to 6.0.5
+    * @cowprotocol/sdk-order-book bumped to 4.0.6
+    * @cowprotocol/sdk-order-signing bumped to 1.1.11
+    * @cowprotocol/sdk-contracts-ts bumped to 3.6.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.15
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.15
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.30
+
 ## [2.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v2.4.2...sdk-trading-v2.5.0) (2026-09-16)
 
 
