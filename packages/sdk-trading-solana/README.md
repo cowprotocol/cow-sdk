@@ -43,7 +43,7 @@ const sdk = new SolanaTradingSdk() // same env as the SDK instance used for the 
 const approveInstruction = sdk.approveCowProtocol({
   ownerAddress: owner,
   sellTokenAddress: sellMint,
-  sellAmount, // at least the order's sellAmount
+  approveAmount, // at least the order's sellAmount
 })
 ```
 
