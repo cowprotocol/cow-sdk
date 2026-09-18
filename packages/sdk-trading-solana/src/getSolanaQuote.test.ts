@@ -189,11 +189,11 @@ describe('getSolanaQuote', () => {
     // Consumers read `suggestedSlippageBps` as a recommendation and turn it into "smart" slippage, so
     // handing the caller their own input back would make the app advise whatever it just chose.
     it('never reports the caller tolerance as the provider suggestion', async () => {
-      mockJupiterOrder(25)
+      mockQuoteResponse()
 
       const { quoteResults } = await quoteWithSlippage(500)
 
-      expect(quoteResults.suggestedSlippageBps).toBe(25)
+      expect(quoteResults.suggestedSlippageBps).toBe(50)
     })
 
     it('reports the caller tolerance in tradeParameters, so a change to it forces a requote', async () => {
