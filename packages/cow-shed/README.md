@@ -72,6 +72,8 @@ const tx = await anotherWallet.sendTransaction({
 })
 ```
 
+Use `encodeExecuteOwnHooks` to encode a factory `executeOwnHooks` call.
+
 ### Using via Cow SDK
 
 You can also import `CowShedSdk` directly from the main SDK:

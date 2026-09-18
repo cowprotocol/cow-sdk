@@ -66,6 +66,26 @@ export const CowShedFactoryAbi = [
     type: 'function',
   },
   {
+    inputs: [
+      {
+        components: [
+          { internalType: 'address', name: 'target', type: 'address' },
+          { internalType: 'uint256', name: 'value', type: 'uint256' },
+          { internalType: 'bytes', name: 'callData', type: 'bytes' },
+          { internalType: 'bool', name: 'allowFailure', type: 'bool' },
+          { internalType: 'bool', name: 'isDelegateCall', type: 'bool' },
+        ],
+        internalType: 'struct Call[]',
+        name: 'calls',
+        type: 'tuple[]',
+      },
+    ],
+    name: 'executeOwnHooks',
+    outputs: [{ internalType: 'address', name: 'proxy', type: 'address' }],
+    stateMutability: 'payable',
+    type: 'function',
+  },
+  {
     inputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
     name: 'forwardResolutionNodeToAddress',
     outputs: [{ internalType: 'address', name: '', type: 'address' }],

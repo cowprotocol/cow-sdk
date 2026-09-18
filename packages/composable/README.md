@@ -150,14 +150,19 @@ Install the CowShed package to derive a Poller-compatible account:
 npm install @cowprotocol/sdk-cow-shed
 ```
 
-Configure `CowShedSdk` with the Poller's deployment addresses and proxy creation code. The factory must match `poller.getCowShedFactoryAddress()`.
+Configure `CowShedSdk` with the Composable CoW factory. It must match `poller.getCowShedFactoryAddress()`.
 
 ```typescript
-import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
+import {
+  COW_SHED_FACTORY_FOR_COMPOSABLE_COW,
+  COW_SHED_IMPLEMENTATION_FOR_COMPOSABLE_COW,
+  COW_SHED_LATEST_VERSION,
+  CowShedSdk,
+} from '@cowprotocol/sdk-cow-shed'
 
 const cowShedSdk = new CowShedSdk(adapter, {
-  ...cowShedDeployment,
-  domainVersion: '2.1.0',
+  factoryAddress: COW_SHED_FACTORY_FOR_COMPOSABLE_COW[COW_SHED_LATEST_VERSION],
+  implementationAddress: COW_SHED_IMPLEMENTATION_FOR_COMPOSABLE_COW[COW_SHED_LATEST_VERSION],
 })
 const cowShed = cowShedSdk.getCowShedAccount(chainId, funder)
 ```

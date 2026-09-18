@@ -5,6 +5,7 @@ import {
   ContractsSigningScheme as SigningScheme,
 } from '@cowprotocol/sdk-contracts-ts'
 import { ICoWShedCall, ICoWShedOptions } from './types'
+import { CowShedFactoryAbi } from './abi/CowShedFactoryAbi'
 
 import {
   AbstractProviderAdapter,
@@ -62,6 +63,12 @@ export interface SignAndEncodeTxArgs {
   signingScheme?: EcdsaSigningScheme
 }
 
+export interface EncodeExecuteOwnHooksArgs {
+  calls: ICoWShedCall[]
+  chainId: SupportedChainId
+  value?: bigint
+}
+
 export interface CowShedCall {
   cowShedAccount: string
   signedMulticall: EvmCall
@@ -96,6 +103,15 @@ export class CowShedSdk {
   getCowShedAccount(chainId: SupportedChainId, ownerAddress: string): string {
     const cowShedHooks = this.getCowShedHooks(chainId)
     return cowShedHooks.proxyOf(ownerAddress)
+  }
+
+  encodeExecuteOwnHooks({ calls, chainId, value = 0n }: EncodeExecuteOwnHooksArgs): EvmCall {
+    const cowShedHooks = this.getCowShedHooks(chainId)
+    return {
+      to: cowShedHooks.getFactoryAddress(),
+      data: getGlobalAdapter().utils.encodeFunction(CowShedFactoryAbi, 'executeOwnHooks', [calls]) as string,
+      value,
+    }
   }
 
   /**
