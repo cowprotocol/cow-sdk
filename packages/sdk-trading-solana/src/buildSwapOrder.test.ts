@@ -38,14 +38,6 @@ async function buildFixtureQuote(buyTokenProgramId?: PublicKey): Promise<SolanaQ
     uid,
     orderPda,
     programId,
-    jupiterOrder: {
-      inputMint: intent.sellMint.toBase58(),
-      outputMint: intent.buyMint.toBase58(),
-      inAmount: '100',
-      outAmount: '200',
-      swapMode: 'ExactIn',
-      slippageBps: 0,
-    },
     buyTokenProgramId,
   }
 }
