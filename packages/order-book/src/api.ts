@@ -27,7 +27,7 @@ import {
 } from './generated'
 import { DEFAULT_BACKOFF_OPTIONS, DEFAULT_LIMITER_OPTIONS, FetchParams, OrderBookApiError, request } from './request'
 import { transformOrder } from './transformOrder'
-import { EnrichedOrder, SolanaOrderCreation } from './types'
+import { EnrichedOrder, SolanaOrderCreation, SolanaQuoteResponse } from './types'
 import { OrderCancellations } from './signingSchemes'
 
 const PROD_BASE_URL = 'https://api.cow.fi'
@@ -377,6 +377,19 @@ export class OrderBookApi {
    */
   sendOrder(requestBody: OrderCreation, contextOverride: PartialApiContext = {}): Promise<UID> {
     return this.fetch({ path: '/api/v1/orders', method: 'POST', body: requestBody }, contextOverride)
+  }
+
+  /**
+   * Get a quote for a Solana order.
+   *
+   * Same endpoint and body as {@link getQuote}; the response additionally carries the deployment's
+   * sponsored-order funder, which the EVM-generated response type has no field for.
+   * @param requestBody The parameters for the order quote request.
+   * @param contextOverride Optional context override for this request.
+   * @returns A hydrated order matching the request.
+   */
+  getSolanaQuote(requestBody: OrderQuoteRequest, contextOverride: PartialApiContext = {}): Promise<SolanaQuoteResponse> {
+    return this.fetch({ path: '/api/v1/quote', method: 'POST', body: requestBody }, contextOverride)
   }
 
   /**

@@ -82,7 +82,7 @@ export async function getSolanaQuote(
       : { kind: OrderQuoteSideKindBuy.BUY, buyAmountAfterFee: amount.toString() }),
   }
 
-  const quoteResponse = await orderBookApi.getQuote(quoteRequest, apiContext)
+  const quoteResponse = await orderBookApi.getSolanaQuote(quoteRequest, apiContext)
   const orderParams = quoteResponse.quote
   const validTo = orderParams.validTo
 
@@ -130,6 +130,7 @@ export async function getSolanaQuote(
     orderPda,
     programId,
     buyTokenProgramId: buyTokenProgram,
+    ...(quoteResponse.funder ? { funder: new PublicKey(quoteResponse.funder) } : undefined),
   }
 
   // Reported only when the caller set the tolerance, so `quoteUsingSameParameters`'s `compareSlippage`

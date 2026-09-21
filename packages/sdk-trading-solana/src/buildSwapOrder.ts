@@ -14,9 +14,9 @@ export interface SolanaSwapOrderQuote {
 }
 
 export interface BuildSolanaSwapOrderOptions {
-  /** Funds the order PDA's rent and pays the transaction fee instead of the owner — take it from
-   * `getSolanaOrderSponsor`. It signs on the back end, never here, so a sponsored transaction leaves
-   * its signature slot empty. */
+  /** Funds the order PDA's rent and pays the transaction fee instead of the owner — take it from the
+   * quote's `funder`. It signs on the back end, never here, so a sponsored transaction leaves its
+   * signature slot empty. */
   sponsor?: PublicKeyInitData
 }
 
