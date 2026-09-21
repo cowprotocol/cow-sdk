@@ -1,6 +1,6 @@
 import { PublicKey } from '@solana/web3.js'
 import { getAssociatedTokenAddressSync } from '@solana/spl-token'
-import { CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
+import { CowEnv } from '@cowprotocol/sdk-config'
 import {
   getQuoteAmountsAndCosts,
   OrderBookApi,
@@ -12,6 +12,7 @@ import {
   SigningScheme,
 } from '@cowprotocol/sdk-order-book'
 
+import { solanaApiContext } from './apiContext'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent } from './orderIntent'
 import { findOrderPda } from './orderPda'
 import { resolveSolanaSlippageSuggestion } from './resolveSlippageSuggestion'
@@ -63,7 +64,8 @@ export async function getSolanaQuote(
   const sellTokenAddress = sellMint.toBase58()
   const buyTokenAddress = buyMint.toBase58()
 
-  const orderBookApi = options.orderBookApi ?? new OrderBookApi({ chainId: SupportedChainId.SOLANA, env: options.env })
+  const apiContext = solanaApiContext(options.env)
+  const orderBookApi = options.orderBookApi ?? new OrderBookApi(apiContext)
 
   const quoteRequest: OrderQuoteRequest = {
     from: owner.toBase58(),
@@ -80,7 +82,7 @@ export async function getSolanaQuote(
       : { kind: OrderQuoteSideKindBuy.BUY, buyAmountAfterFee: amount.toString() }),
   }
 
-  const quoteResponse = await orderBookApi.getQuote(quoteRequest)
+  const quoteResponse = await orderBookApi.getQuote(quoteRequest, apiContext)
   const orderParams = quoteResponse.quote
   const validTo = orderParams.validTo
 

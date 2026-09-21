@@ -1,5 +1,7 @@
-import { CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
+import { CowEnv } from '@cowprotocol/sdk-config'
 import { OrderBookApi, SolanaOrderCreation, UID } from '@cowprotocol/sdk-order-book'
+
+import { solanaApiContext } from './apiContext'
 
 export interface PostSolanaSponsoredOrderOptions {
   env?: CowEnv
@@ -19,12 +21,7 @@ export function postSolanaSponsoredOrder(
   order: SolanaOrderCreation,
   options: PostSolanaSponsoredOrderOptions = {},
 ): Promise<UID> {
-  // Spreading `env: undefined` would overwrite the client's `prod` default and resolve to staging,
-  // so the key is only present when the caller set it.
-  const context = {
-    chainId: SupportedChainId.SOLANA,
-    ...(options.env ? { env: options.env } : undefined),
-  }
+  const context = solanaApiContext(options.env)
   const orderBookApi = options.orderBookApi ?? new OrderBookApi(context)
 
   return orderBookApi.sendSolanaOrder(order, context)

@@ -20,15 +20,17 @@ describe('getSolanaQuote', () => {
   const sellTokenDecimals = 6
   const buyTokenDecimals = 9
 
-  const getQuoteMock = jest.fn<Promise<OrderQuoteResponse>, [OrderQuoteRequest]>()
+  const SOLANA_CONTEXT = { chainId: SupportedChainId.SOLANA }
+
+  const getQuoteMock = jest.fn<Promise<OrderQuoteResponse>, [OrderQuoteRequest, unknown]>()
   const orderBookApiMock = { getQuote: getQuoteMock } as unknown as OrderBookApi
 
   beforeEach(() => {
     getQuoteMock.mockReset()
   })
 
-  function mockQuoteResponse(overrides: Partial<OrderQuoteResponse['quote']> = {}): void {
-    getQuoteMock.mockResolvedValueOnce({
+  function quoteResponseFixture(overrides: Partial<OrderQuoteResponse['quote']> = {}): OrderQuoteResponse {
+    return {
       quote: {
         sellToken: sellMint.toBase58(),
         buyToken: buyMint.toBase58(),
@@ -45,7 +47,11 @@ describe('getSolanaQuote', () => {
       from: owner.toBase58(),
       expiration: '2024-01-01T00:30:00.000Z',
       verified: false,
-    } as OrderQuoteResponse)
+    } as OrderQuoteResponse
+  }
+
+  function mockQuoteResponse(overrides: Partial<OrderQuoteResponse['quote']> = {}): void {
+    getQuoteMock.mockResolvedValueOnce(quoteResponseFixture(overrides))
   }
 
   it('builds a quote from a CoW Protocol quote response', async () => {
@@ -130,6 +136,7 @@ describe('getSolanaQuote', () => {
           buyToken: buyMint.toBase58(),
           receiver: receiver.toBase58(),
         }),
+        SOLANA_CONTEXT,
       )
     })
 
@@ -155,6 +162,7 @@ describe('getSolanaQuote', () => {
           kind: 'buy',
           buyAmountAfterFee: '9707507795',
         }),
+        SOLANA_CONTEXT,
       )
     })
 
@@ -184,7 +192,10 @@ describe('getSolanaQuote', () => {
 
         await quoteWithPriceQuality()
 
-        expect(getQuoteMock).toHaveBeenCalledWith(expect.objectContaining({ priceQuality: PriceQuality.VERIFIED }))
+        expect(getQuoteMock).toHaveBeenCalledWith(
+          expect.objectContaining({ priceQuality: PriceQuality.VERIFIED }),
+          SOLANA_CONTEXT,
+        )
       })
 
       it('falls back to advancedSettings.quoteRequest.priceQuality when the caller sets none', async () => {
@@ -192,7 +203,10 @@ describe('getSolanaQuote', () => {
 
         await quoteWithPriceQuality(undefined, { quoteRequest: { priceQuality: PriceQuality.FAST } })
 
-        expect(getQuoteMock).toHaveBeenCalledWith(expect.objectContaining({ priceQuality: PriceQuality.FAST }))
+        expect(getQuoteMock).toHaveBeenCalledWith(
+          expect.objectContaining({ priceQuality: PriceQuality.FAST }),
+          SOLANA_CONTEXT,
+        )
       })
 
       it('prefers the caller-supplied priceQuality over advancedSettings.quoteRequest.priceQuality', async () => {
@@ -200,7 +214,10 @@ describe('getSolanaQuote', () => {
 
         await quoteWithPriceQuality(PriceQuality.OPTIMAL, { quoteRequest: { priceQuality: PriceQuality.FAST } })
 
-        expect(getQuoteMock).toHaveBeenCalledWith(expect.objectContaining({ priceQuality: PriceQuality.OPTIMAL }))
+        expect(getQuoteMock).toHaveBeenCalledWith(
+          expect.objectContaining({ priceQuality: PriceQuality.OPTIMAL }),
+          SOLANA_CONTEXT,
+        )
       })
     })
   })
@@ -454,9 +471,7 @@ describe('getSolanaQuote', () => {
 
       await quoteNativeSell()
 
-      expect(getQuoteMock).toHaveBeenCalledWith(
-        expect.objectContaining({ sellToken: wsolMint.toBase58() }),
-      )
+      expect(getQuoteMock).toHaveBeenCalledWith(expect.objectContaining({ sellToken: wsolMint.toBase58() }), SOLANA_CONTEXT)
       expect(getQuoteMock.mock.calls[0]?.[0].sellToken).not.toBe(SOL_NATIVE_CURRENCY_ADDRESS)
     })
 
@@ -523,7 +538,10 @@ describe('getSolanaQuote', () => {
         { orderBookApi: orderBookApiMock },
       )
 
-      expect(getQuoteMock).toHaveBeenCalledWith(expect.objectContaining({ sellToken: usdcMint.toBase58() }))
+      expect(getQuoteMock).toHaveBeenCalledWith(
+        expect.objectContaining({ sellToken: usdcMint.toBase58() }),
+        SOLANA_CONTEXT,
+      )
       expect(solanaQuote.intent.sellMint.toBase58()).toBe(usdcMint.toBase58())
       expect(quoteResults.tradeParameters.sellToken).toBe(usdcMint.toBase58())
     })
@@ -589,5 +607,63 @@ describe('getSolanaQuote', () => {
 
     expect(token2022Quote.intent.sellTokenAccount.toBase58()).not.toBe(classicQuote.intent.sellTokenAccount.toBase58())
     expect(token2022Quote.intent.buyTokenAccount.toBase58()).not.toBe(classicQuote.intent.buyTokenAccount.toBase58())
+  })
+
+  describe('default order book client', () => {
+    function quoteWithDefaultClient(env?: 'prod' | 'staging'): {
+      quote: ReturnType<typeof getSolanaQuote>
+      context: () => OrderBookApi['context'] | undefined
+      restore: () => void
+    } {
+      let seen: OrderBookApi['context'] | undefined
+      const spy = jest.spyOn(OrderBookApi.prototype, 'getQuote').mockImplementation(function (this: OrderBookApi) {
+        seen = this.context
+
+        return Promise.resolve(quoteResponseFixture())
+      })
+
+      const quote = getSolanaQuote(
+        {
+          ownerAddress: owner,
+          receiverAddress: receiver,
+          sellTokenAddress: sellMint,
+          sellTokenDecimals,
+          buyTokenAddress: buyMint,
+          buyTokenDecimals,
+          amount: 1_000_000_000n,
+          kind: OrderKind.SELL,
+        },
+        env ? { env } : {},
+      )
+
+      return { quote, context: () => seen, restore: () => spy.mockRestore() }
+    }
+
+    it('builds it for Solana', async () => {
+      const { quote, context, restore } = quoteWithDefaultClient('staging')
+
+      try {
+        await quote
+
+        expect(context()?.chainId).toBe(SupportedChainId.SOLANA)
+        expect(context()?.env).toBe('staging')
+      } finally {
+        restore()
+      }
+    })
+
+    // An explicit `env: undefined` would land on staging: the client resolves anything but `prod` to
+    // the staging base urls, so the default must survive rather than be overwritten.
+    it('stays on prod when no env is given', async () => {
+      const { quote, context, restore } = quoteWithDefaultClient()
+
+      try {
+        await quote
+
+        expect(context()?.env).toBe('prod')
+      } finally {
+        restore()
+      }
+    })
   })
 })
