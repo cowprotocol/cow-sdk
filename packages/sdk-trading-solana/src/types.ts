@@ -1,7 +1,7 @@
 import { PublicKey, PublicKeyInitData, TransactionInstruction } from '@solana/web3.js'
+import type { OrderKind, PriceQuality } from '@cowprotocol/sdk-order-book'
 
 import { SolanaOrderIntent } from './orderIntent'
-import { OrderKind } from '@cowprotocol/sdk-order-book'
 
 export interface SolanaQuoteParameters {
   ownerAddress: PublicKeyInitData
@@ -12,6 +12,7 @@ export interface SolanaQuoteParameters {
   /** Sell-side amount for a SELL order, buy-side amount for a BUY order. */
   amount: bigint
   kind: OrderKind
+  priceQuality?: PriceQuality
   receiverAddress?: PublicKeyInitData
   partiallyFillable?: boolean
   /** Order lifetime from now, in seconds. Defaults to 30 minutes. */

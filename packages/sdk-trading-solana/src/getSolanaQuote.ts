@@ -35,6 +35,7 @@ export async function getSolanaQuote(
     slippageBps: slippageBpsOverride,
     ownerAddress,
     receiverAddress = ownerAddress,
+    priceQuality = PriceQuality.VERIFIED,
     sellTokenDecimals,
     buyTokenDecimals,
     amount,
@@ -74,7 +75,7 @@ export async function getSolanaQuote(
     validFor: validForSeconds,
     // TODO: fill appData when we know the format
     appData: '{}',
-    priceQuality: PriceQuality.VERIFIED,
+    priceQuality,
     signingScheme: SigningScheme.EIP712,
     ...(kind === OrderKind.SELL
       ? { kind: OrderQuoteSideKindSell.SELL, sellAmountBeforeFee: amount.toString() }
