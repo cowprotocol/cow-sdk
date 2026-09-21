@@ -150,13 +150,11 @@ export function suggestSlippageBps(params: SuggestSlippageBpsParams): number {
     volumeMultiplierPercent = SLIPPAGE_VOLUME_MULTIPLIER_PERCENT,
   } = params
 
-  // Account for some slippage due to the fee increase
   const slippageBpsFromFee = suggestSlippageFromFee({
     feeAmount,
     multiplyingFactorPercent: SLIPPAGE_FEE_MULTIPLIER_PERCENT,
   })
 
-  // Account for some slippage due to price change (volume slippage)
   const slippageBpsFromVolume = suggestSlippageFromVolume({
     isSell,
     sellAmountBeforeNetworkCosts,
@@ -164,10 +162,8 @@ export function suggestSlippageBps(params: SuggestSlippageBpsParams): number {
     slippagePercent: volumeMultiplierPercent,
   })
 
-  // Aggregate all slippages
   const totalSlippageBps = slippageBpsFromFee + slippageBpsFromVolume
 
-  // Get percentage slippage
   const slippagePercent = getSlippagePercent({
     isSell,
     sellAmountBeforeNetworkCosts,
@@ -175,9 +171,7 @@ export function suggestSlippageBps(params: SuggestSlippageBpsParams): number {
     slippage: totalSlippageBps,
   })
 
-  // Convert to BPS
   const slippageBps = percentageToBps(slippagePercent)
 
-  // Clamp slippage to min/max
   return Math.max(Math.min(slippageBps, MAX_SLIPPAGE_BPS), lowerCapBps)
 }
