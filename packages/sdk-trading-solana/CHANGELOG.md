@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.9.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.8.0...sdk-trading-solana-v0.9.0) (2026-09-21)
+
+
+### ✨ Features
+
+* **solana:** use cow protocol quotes ([#1023](https://github.com/cowprotocol/cow-sdk/issues/1023)) ([dc76c98](https://github.com/cowprotocol/cow-sdk/commit/dc76c98475855d7d291c762c664050aa06dd12fb))
+
+
+### 🔧 Miscellaneous
+
+* update coverage badges ([#1011](https://github.com/cowprotocol/cow-sdk/issues/1011)) ([3701bb5](https://github.com/cowprotocol/cow-sdk/commit/3701bb53a4815d553757db70ebd8bba8db02f0db))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 6.0.6
+    * @cowprotocol/sdk-common bumped to 0.14.0
+    * @cowprotocol/sdk-order-book bumped to 4.1.0
+    * @cowprotocol/sdk-trading bumped to 2.7.0
+
 ## [0.8.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.7.0...sdk-trading-solana-v0.8.0) (2026-09-18)
 
 

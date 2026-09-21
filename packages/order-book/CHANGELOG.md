@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.0.6...sdk-order-book-v4.1.0) (2026-09-21)
+
+
+### ✨ Features
+
+* **solana:** use cow protocol quotes ([#1023](https://github.com/cowprotocol/cow-sdk/issues/1023)) ([dc76c98](https://github.com/cowprotocol/cow-sdk/commit/dc76c98475855d7d291c762c664050aa06dd12fb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.14.0
+
 ## [4.0.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.0.5...sdk-order-book-v4.0.6) (2026-09-18)
 
 
