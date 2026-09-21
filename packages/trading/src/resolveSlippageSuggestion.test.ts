@@ -4,14 +4,14 @@ import { resolveSlippageSuggestion } from './resolveSlippageSuggestion'
 import { QuoterParameters, SwapAdvancedSettings, TradeParameters } from './types'
 
 jest.mock('./suggestTradingSlippageBps', () => ({
-  suggestSlippageBps: jest.fn(),
+  suggestTradingSlippageBps: jest.fn(),
 }))
 
 jest.mock('./utils/getPartnerFeeBps', () => ({
   getPartnerFeeBps: jest.fn().mockReturnValue(0),
 }))
 
-const { suggestSlippageBps } = jest.requireMock('./suggestTradingSlippageBps')
+const { suggestTradingSlippageBps } = jest.requireMock('./suggestTradingSlippageBps')
 
 const mockQuoteResponse: OrderQuoteResponse = {
   quote: {
@@ -55,7 +55,7 @@ const mockTrader: QuoterParameters = {
 describe('resolveSlippageSuggestion', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    suggestSlippageBps.mockReturnValue(100)
+    suggestTradingSlippageBps.mockReturnValue(100)
   })
 
   describe('When priceQuality is not set', () => {
@@ -75,7 +75,7 @@ describe('resolveSlippageSuggestion', () => {
       )
 
       expect(mockGetSlippageSuggestion).toHaveBeenCalled()
-      expect(suggestSlippageBps).toHaveBeenCalledWith({
+      expect(suggestTradingSlippageBps).toHaveBeenCalledWith({
         isEthFlow: false,
         quote: mockQuoteResponse,
         tradeParameters: mockTradeParameters,
@@ -105,7 +105,7 @@ describe('resolveSlippageSuggestion', () => {
 
       expect(result).toEqual({ slippageBps: 100 })
       expect(mockGetSlippageSuggestion).not.toHaveBeenCalled()
-      expect(suggestSlippageBps).toHaveBeenCalledWith({
+      expect(suggestTradingSlippageBps).toHaveBeenCalledWith({
         isEthFlow: false,
         quote: mockQuoteResponse,
         tradeParameters: mockTradeParameters,
@@ -126,7 +126,7 @@ describe('resolveSlippageSuggestion', () => {
       )
 
       expect(result).toEqual({ slippageBps: 100 })
-      expect(suggestSlippageBps).toHaveBeenCalled()
+      expect(suggestTradingSlippageBps).toHaveBeenCalled()
     })
   })
 
@@ -154,7 +154,7 @@ describe('resolveSlippageSuggestion', () => {
         sellAmount: expect.any(BigInt),
         buyAmount: expect.any(BigInt),
       })
-      expect(suggestSlippageBps).toHaveBeenCalledWith({
+      expect(suggestTradingSlippageBps).toHaveBeenCalledWith({
         isEthFlow: false,
         quote: mockQuoteResponse,
         tradeParameters: mockTradeParameters,
@@ -195,7 +195,7 @@ describe('resolveSlippageSuggestion', () => {
 
   describe('When priceQuality is OPTIMAL and getSlippageSuggestion is provided', () => {
     it('Should handle when getSlippageSuggestion returns null/undefined slippageBps', async () => {
-      suggestSlippageBps.mockReturnValue(150)
+      suggestTradingSlippageBps.mockReturnValue(150)
       const mockGetSlippageSuggestion = jest.fn().mockResolvedValue({ slippageBps: null })
       const advancedSettings: SwapAdvancedSettings = {
         quoteRequest: { priceQuality: PriceQuality.OPTIMAL },
@@ -212,8 +212,8 @@ describe('resolveSlippageSuggestion', () => {
       )
 
       expect(result).toEqual({ slippageBps: 150 })
-      expect(suggestSlippageBps).toHaveBeenCalledTimes(1)
-      expect(suggestSlippageBps).toHaveBeenCalledWith({
+      expect(suggestTradingSlippageBps).toHaveBeenCalledTimes(1)
+      expect(suggestTradingSlippageBps).toHaveBeenCalledWith({
         isEthFlow: false,
         quote: mockQuoteResponse,
         tradeParameters: mockTradeParameters,
@@ -224,7 +224,7 @@ describe('resolveSlippageSuggestion', () => {
   })
 
   describe('EthFlow orders', () => {
-    it('Should pass isEthFlow flag to suggestSlippageBps', async () => {
+    it('Should pass isEthFlow flag to suggestTradingSlippageBps', async () => {
       await resolveSlippageSuggestion(
         SupportedChainId.GNOSIS_CHAIN,
         mockTradeParameters,
@@ -233,7 +233,7 @@ describe('resolveSlippageSuggestion', () => {
         true,
       )
 
-      expect(suggestSlippageBps).toHaveBeenCalledWith({
+      expect(suggestTradingSlippageBps).toHaveBeenCalledWith({
         isEthFlow: true,
         quote: mockQuoteResponse,
         tradeParameters: mockTradeParameters,
