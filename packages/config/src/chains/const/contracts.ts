@@ -48,6 +48,11 @@ export const SOLANA_SETTLEMENT_PROGRAM_VERSION = '0.4'
  */
 export const SOLANA_SETTLEMENT_PROGRAM_VERSION_STAGING = SOLANA_SETTLEMENT_PROGRAM_VERSION
 
+/** Pays for sponsored Solana orders: named as the creation transaction's fee payer, countersigned
+ * and submitted by the back end. */
+export const SOLANA_ORDER_SPONSOR = '6vFq2dRADQkpDAJK64Vm4JpEBygByRpjicwf4US9f9QW'
+export const SOLANA_ORDER_SPONSOR_STAGING = SOLANA_ORDER_SPONSOR
+
 /**
  * An object containing the addresses of the `ExtensibleFallbackHandler` contracts for each supported chain.
  */

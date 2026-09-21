@@ -7,6 +7,17 @@ export interface EnrichedOrder extends Order {
   totalFee: string
 }
 
+/**
+ * A sponsored Solana order. The owner signs the creation transaction but does not pay for it: the
+ * protocol's funder is its fee payer, countersigns it, and submits it.
+ */
+export interface SolanaOrderCreation {
+  /** The owner-signed, funder-unsigned creation transaction, base64. */
+  transaction: string
+  /** The id the quote endpoint answered for this order. Kept only when the quote matches the order. */
+  quoteId?: number
+}
+
 export interface Amounts<T> {
   sellAmount: T
   buyAmount: T

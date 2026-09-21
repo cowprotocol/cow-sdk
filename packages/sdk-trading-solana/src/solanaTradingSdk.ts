@@ -1,10 +1,11 @@
 import type { OrderPostingResult, QuoteResults, SigningStepManager, SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
 import { CowEnv } from '@cowprotocol/sdk-config'
-import { OrderBookApi } from '@cowprotocol/sdk-order-book'
+import { OrderBookApi, UID } from '@cowprotocol/sdk-order-book'
 import { createApproveInstruction, getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { PublicKey, PublicKeyInitData, TransactionInstruction } from '@solana/web3.js'
-import { buildSolanaSwapOrder, SolanaSwapOrder } from './buildSwapOrder'
+import { BuildSolanaSwapOrderOptions, buildSolanaSwapOrder, SolanaSwapOrder } from './buildSwapOrder'
 import { getSolanaQuote } from './getSolanaQuote'
+import { postSolanaSponsoredOrder } from './postSponsoredOrder'
 import { postSolanaSwapOrderFromQuote } from './postSwapOrderFromQuote'
 import { getSolanaDelegateAuthority } from './statePda'
 import { SolanaQuote, SolanaQuoteParameters, SolanaSignAndSend } from './types'
@@ -35,13 +36,17 @@ export interface SolanaQuoteAndPost {
   quoteResults: QuoteResults
   solanaQuote: SolanaQuote
   /** Build the `CreateOrder` instruction without sending it, to bundle with other instructions. */
-  buildOrder(advancedSettings?: SwapAdvancedSettings): Promise<SolanaSwapOrder>
-  /** Build, sign and submit the order as its own transaction. */
+  buildOrder(advancedSettings?: SwapAdvancedSettings, options?: BuildSolanaSwapOrderOptions): Promise<SolanaSwapOrder>
+  /** Build, sign and submit the order as its own transaction. The owner pays; for a sponsored order
+   * build the bundle with a `sponsor`, sign it without sending, and use `postSponsoredOrder`. */
   postSwapOrderFromQuote(
     signAndSend: SolanaSignAndSend,
     advancedSettings?: SwapAdvancedSettings,
     signingStepManager?: SigningStepManager,
   ): Promise<OrderPostingResult>
+  /** Hand the signed sponsored bundle to the order book, which pays for it and submits it. `quoteId`
+   * comes from this quote, so the order book can tie the order back to what was quoted. */
+  postSponsoredOrder(transaction: string): Promise<UID>
 }
 
 /**
@@ -80,12 +85,20 @@ export class SolanaTradingSdk {
     return {
       quoteResults: quote.quoteResults,
       solanaQuote: quote.solanaQuote,
-      buildOrder: (advancedSettings?: SwapAdvancedSettings) => buildSolanaSwapOrder(quote, advancedSettings),
+      buildOrder: (advancedSettings?: SwapAdvancedSettings, options?: BuildSolanaSwapOrderOptions) =>
+        buildSolanaSwapOrder(quote, advancedSettings, options),
       postSwapOrderFromQuote: (
         signAndSend: SolanaSignAndSend,
         advancedSettings?: SwapAdvancedSettings,
         signingStepManager?: SigningStepManager,
       ) => postSolanaSwapOrderFromQuote(quote, signAndSend, advancedSettings, signingStepManager),
+      postSponsoredOrder: (transaction: string) =>
+        postSolanaSponsoredOrder(
+          // The endpoint reports `id: null` when it fails to store a quote, which the generated type
+          // does not admit — normalize it away rather than posting an explicit null.
+          { transaction, quoteId: quote.quoteResults.quoteResponse.id ?? undefined },
+          { env: this.options.env, orderBookApi: this.options.orderBookApi },
+        ),
     }
   }
 }

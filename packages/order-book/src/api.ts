@@ -27,7 +27,7 @@ import {
 } from './generated'
 import { DEFAULT_BACKOFF_OPTIONS, DEFAULT_LIMITER_OPTIONS, FetchParams, OrderBookApiError, request } from './request'
 import { transformOrder } from './transformOrder'
-import { EnrichedOrder } from './types'
+import { EnrichedOrder, SolanaOrderCreation } from './types'
 import { OrderCancellations } from './signingSchemes'
 
 const PROD_BASE_URL = 'https://api.cow.fi'
@@ -376,6 +376,19 @@ export class OrderBookApi {
    * @returns The unique identifier of the order.
    */
   sendOrder(requestBody: OrderCreation, contextOverride: PartialApiContext = {}): Promise<UID> {
+    return this.fetch({ path: '/api/v1/orders', method: 'POST', body: requestBody }, contextOverride)
+  }
+
+  /**
+   * Submit a sponsored Solana order to the order book.
+   *
+   * Same endpoint as {@link sendOrder}, different body: a Solana order is created on-chain, so what is
+   * posted is the creation transaction itself rather than a signed order struct.
+   * @param requestBody The owner-signed creation transaction, base64.
+   * @param contextOverride Optional context override for this request.
+   * @returns The unique identifier of the order.
+   */
+  sendSolanaOrder(requestBody: SolanaOrderCreation, contextOverride: PartialApiContext = {}): Promise<UID> {
     return this.fetch({ path: '/api/v1/orders', method: 'POST', body: requestBody }, contextOverride)
   }
 
