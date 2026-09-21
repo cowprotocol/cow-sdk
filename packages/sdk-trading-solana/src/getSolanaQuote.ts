@@ -33,7 +33,7 @@ export async function getSolanaQuote(
     slippageBps: slippageBpsOverride,
     ownerAddress,
     receiverAddress = ownerAddress,
-    priceQuality = PriceQuality.VERIFIED,
+    priceQuality = options.advancedSettings?.quoteRequest?.priceQuality ?? PriceQuality.VERIFIED,
     sellTokenDecimals,
     buyTokenDecimals,
     amount,
