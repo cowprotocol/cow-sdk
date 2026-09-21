@@ -7,7 +7,7 @@ import { AdaptersTestSetup, createAdapters } from '../tests/setup'
 import { AccountAddress, setGlobalAdapter } from '@cowprotocol/sdk-common'
 
 jest.mock('./suggestTradingSlippageBps', () => ({
-  suggestSlippageBps: jest.fn(),
+  suggestTradingSlippageBps: jest.fn(),
 }))
 
 jest.mock('./resolveSlippageSuggestion', () => ({

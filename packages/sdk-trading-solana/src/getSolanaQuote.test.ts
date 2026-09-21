@@ -157,6 +157,52 @@ describe('getSolanaQuote', () => {
         }),
       )
     })
+
+    describe('priceQuality', () => {
+      function quoteWithPriceQuality(
+        priceQuality?: PriceQuality,
+        advancedSettings?: { quoteRequest: { priceQuality: PriceQuality } },
+      ): ReturnType<typeof getSolanaQuote> {
+        return getSolanaQuote(
+          {
+            ownerAddress: owner,
+            receiverAddress: receiver,
+            sellTokenAddress: sellMint,
+            sellTokenDecimals,
+            buyTokenAddress: buyMint,
+            buyTokenDecimals,
+            amount: 1_000_000_000n,
+            kind: OrderKind.SELL,
+            ...(priceQuality === undefined ? undefined : { priceQuality }),
+          },
+          { orderBookApi: orderBookApiMock, advancedSettings },
+        )
+      }
+
+      it('defaults to VERIFIED when neither the caller nor advancedSettings set one', async () => {
+        mockQuoteResponse()
+
+        await quoteWithPriceQuality()
+
+        expect(getQuoteMock).toHaveBeenCalledWith(expect.objectContaining({ priceQuality: PriceQuality.VERIFIED }))
+      })
+
+      it('falls back to advancedSettings.quoteRequest.priceQuality when the caller sets none', async () => {
+        mockQuoteResponse()
+
+        await quoteWithPriceQuality(undefined, { quoteRequest: { priceQuality: PriceQuality.FAST } })
+
+        expect(getQuoteMock).toHaveBeenCalledWith(expect.objectContaining({ priceQuality: PriceQuality.FAST }))
+      })
+
+      it('prefers the caller-supplied priceQuality over advancedSettings.quoteRequest.priceQuality', async () => {
+        mockQuoteResponse()
+
+        await quoteWithPriceQuality(PriceQuality.OPTIMAL, { quoteRequest: { priceQuality: PriceQuality.FAST } })
+
+        expect(getQuoteMock).toHaveBeenCalledWith(expect.objectContaining({ priceQuality: PriceQuality.OPTIMAL }))
+      })
+    })
   })
 
   describe('slippageBps', () => {
