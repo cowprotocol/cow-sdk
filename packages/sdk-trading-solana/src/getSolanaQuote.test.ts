@@ -1,6 +1,6 @@
 import { PublicKey } from '@solana/web3.js'
 import { getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token'
-import { OrderKind, OrderBookApi, OrderQuoteRequest, OrderQuoteResponse } from '@cowprotocol/sdk-order-book'
+import { OrderKind, OrderBookApi, OrderQuoteRequest, OrderQuoteResponse, PriceQuality } from '@cowprotocol/sdk-order-book'
 import {
   SOL_NATIVE_CURRENCY_ADDRESS,
   SOLANA_SETTLEMENT_PROGRAM_ID,
@@ -220,6 +220,85 @@ describe('getSolanaQuote', () => {
       )
 
       expect(getQuoteMock).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('advancedSettings.getSlippageSuggestion', () => {
+    function quoteWithAdvancedSettings(
+      getSlippageSuggestion?: jest.Mock,
+      priceQuality?: PriceQuality,
+    ): ReturnType<typeof getSolanaQuote> {
+      return getSolanaQuote(
+        {
+          ownerAddress: owner,
+          receiverAddress: receiver,
+          sellTokenAddress: sellMint,
+          sellTokenDecimals,
+          buyTokenAddress: buyMint,
+          buyTokenDecimals,
+          amount: 1_000_000_000n,
+          kind: OrderKind.SELL,
+          ...(priceQuality === undefined ? undefined : { priceQuality }),
+        },
+        {
+          orderBookApi: orderBookApiMock,
+          ...(getSlippageSuggestion === undefined ? undefined : { advancedSettings: { getSlippageSuggestion } }),
+        },
+      )
+    }
+
+    it('uses the callback result to re-derive the suggested slippage, instead of the flat default', async () => {
+      mockQuoteResponse()
+      const getSlippageSuggestion = jest.fn().mockResolvedValue({ slippageBps: 200 })
+
+      const { quoteResults } = await quoteWithAdvancedSettings(getSlippageSuggestion)
+
+      expect(getSlippageSuggestion).toHaveBeenCalledWith({
+        chainId: SupportedChainId.SOLANA,
+        sellToken: sellMint.toBase58(),
+        buyToken: buyMint.toBase58(),
+        sellAmount: 1_000_000_000n,
+        buyAmount: 9_707_507_795n,
+      })
+      // With a zero fee, the fee+volume heuristic scales linearly with the requested multiplier, so a
+      // 200 bps suggestion from the callback comes back out as exactly 200 bps.
+      expect(quoteResults.suggestedSlippageBps).toBe(200)
+    })
+
+    it('falls back to the default when the callback resolves no slippage', async () => {
+      mockQuoteResponse()
+      const getSlippageSuggestion = jest.fn().mockResolvedValue({ slippageBps: null })
+
+      const { quoteResults } = await quoteWithAdvancedSettings(getSlippageSuggestion)
+
+      expect(quoteResults.suggestedSlippageBps).toBe(50)
+    })
+
+    it('falls back to the default when the callback rejects', async () => {
+      mockQuoteResponse()
+      const getSlippageSuggestion = jest.fn().mockRejectedValue(new Error('boom'))
+
+      const { quoteResults } = await quoteWithAdvancedSettings(getSlippageSuggestion)
+
+      expect(quoteResults.suggestedSlippageBps).toBe(50)
+    })
+
+    it('skips the callback for a FAST quote, so it never waits on a full quote-derived suggestion', async () => {
+      mockQuoteResponse()
+      const getSlippageSuggestion = jest.fn().mockResolvedValue({ slippageBps: 200 })
+
+      const { quoteResults } = await quoteWithAdvancedSettings(getSlippageSuggestion, PriceQuality.FAST)
+
+      expect(getSlippageSuggestion).not.toHaveBeenCalled()
+      expect(quoteResults.suggestedSlippageBps).toBe(50)
+    })
+
+    it('skips the callback entirely when none is given', async () => {
+      mockQuoteResponse()
+
+      const { quoteResults } = await quoteWithAdvancedSettings()
+
+      expect(quoteResults.suggestedSlippageBps).toBe(50)
     })
   })
 

@@ -266,7 +266,7 @@ BUY:  partnerFeeAmount = beforeAllFees.sellAmount * partnerFeeBps / 10000
 
 `slippagePercentBps` comes from [`TradeParameters.slippageBps`](../../../trading/src/types.ts).
 If not provided by the caller, the SDK uses **auto slippage** — it fetches a quote first, then
-calls [`suggestSlippageBps()`](../../../trading/src/suggestSlippageBps.ts) to determine an
+calls [`suggestSlippageBps()`](../../../trading/src/suggestTradingSlippageBps.ts) to determine an
 appropriate value based on the fee-to-volume ratio and price impact.
 
 Slippage tolerance protects the user from price movements between quoting and execution.

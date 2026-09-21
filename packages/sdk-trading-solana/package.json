@@ -49,6 +49,7 @@
   },
   "dependencies": {
     "@cowprotocol/sdk-app-data": "workspace:*",
+    "@cowprotocol/sdk-common": "workspace:*",
     "@cowprotocol/sdk-config": "workspace:*",
     "@cowprotocol/sdk-order-book": "workspace:*",
     "@cowprotocol/sdk-trading": "workspace:*",

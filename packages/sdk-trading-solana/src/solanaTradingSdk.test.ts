@@ -111,6 +111,16 @@ describe('SolanaTradingSdk', () => {
     expect(mockGetSolanaQuote).toHaveBeenCalledWith(params, { env: 'staging' })
   })
 
+  it('getQuote forwards advancedSettings to getSolanaQuote', async () => {
+    const sdk = new SolanaTradingSdk()
+    const getSlippageSuggestion = jest.fn()
+    const advancedSettings: SwapAdvancedSettings = { getSlippageSuggestion }
+
+    await sdk.getQuote(params, advancedSettings)
+
+    expect(mockGetSolanaQuote).toHaveBeenCalledWith(params, { env: undefined, advancedSettings })
+  })
+
   it('getQuote exposes solanaQuote, so callers can inspect the intent and PDA', async () => {
     const sdk = new SolanaTradingSdk()
 

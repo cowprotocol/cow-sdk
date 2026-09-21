@@ -3,7 +3,7 @@ import { OrderKind, OrderQuoteResponse, PriceQuality } from '@cowprotocol/sdk-or
 import { resolveSlippageSuggestion } from './resolveSlippageSuggestion'
 import { QuoterParameters, SwapAdvancedSettings, TradeParameters } from './types'
 
-jest.mock('./suggestSlippageBps', () => ({
+jest.mock('./suggestTradingSlippageBps', () => ({
   suggestSlippageBps: jest.fn(),
 }))
 
@@ -11,7 +11,7 @@ jest.mock('./utils/getPartnerFeeBps', () => ({
   getPartnerFeeBps: jest.fn().mockReturnValue(0),
 }))
 
-const { suggestSlippageBps } = jest.requireMock('./suggestSlippageBps')
+const { suggestSlippageBps } = jest.requireMock('./suggestTradingSlippageBps')
 
 const mockQuoteResponse: OrderQuoteResponse = {
   quote: {

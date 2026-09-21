@@ -14,22 +14,20 @@ import {
 
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent } from './orderIntent'
 import { findOrderPda } from './orderPda'
+import { resolveSolanaSlippageSuggestion } from './resolveSlippageSuggestion'
 import { toSplMint } from './splMint'
 import { getSolanaSettlementProgramId } from './statePda'
 import { SolanaQuote, SolanaQuoteParameters } from './types'
-import type { QuoteResults, TradeParameters } from '@cowprotocol/sdk-trading'
+import type { QuoteResults, SwapAdvancedSettings, TradeParameters } from '@cowprotocol/sdk-trading'
 
 const DEFAULT_VALID_FOR_SECONDS = 30 * 60
-/** CoW Protocol's `/quote` doesn't suggest a slippage for Solana the way Jupiter used to — falls back to
- * the same default the EVM SDK uses when the caller doesn't override it. */
-const DEFAULT_SLIPPAGE_BPS = 50
 /** No Solana app-data convention exists yet (confirmed absent from the settlement program's intent
  * struct beyond an opaque 32 bytes) — sent as zeroes until one is defined. */
 const ZERO_APP_DATA = new Uint8Array(32)
 
 export async function getSolanaQuote(
   params: SolanaQuoteParameters,
-  options: { env?: CowEnv; orderBookApi?: OrderBookApi } = {},
+  options: { env?: CowEnv; orderBookApi?: OrderBookApi; advancedSettings?: SwapAdvancedSettings } = {},
 ): Promise<{ quoteResults: QuoteResults; solanaQuote: SolanaQuote }> {
   const {
     slippageBps: slippageBpsOverride,
@@ -86,8 +84,13 @@ export async function getSolanaQuote(
   const orderParams = quoteResponse.quote
   const validTo = orderParams.validTo
 
-  // TODO: add suggested slippage
-  const suggestedSlippageBps = DEFAULT_SLIPPAGE_BPS
+  const suggestedSlippageBps = await resolveSolanaSlippageSuggestion({
+    sellToken: sellTokenAddress,
+    buyToken: buyTokenAddress,
+    priceQuality,
+    quoteResponse,
+    advancedSettings: options.advancedSettings,
+  })
   const signedSlippageBps = slippageBpsOverride ?? suggestedSlippageBps
 
   const amountsAndCosts = getQuoteAmountsAndCosts({

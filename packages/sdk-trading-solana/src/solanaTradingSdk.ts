@@ -70,8 +70,12 @@ export class SolanaTradingSdk {
     return createApproveInstruction(sellTokenAccount, delegate, owner, params.approveAmount, undefined, tokenProgramId)
   }
 
-  async getQuote(params: SolanaQuoteParameters): Promise<SolanaQuoteAndPost> {
-    const quote = await getSolanaQuote(params, { env: this.options.env, orderBookApi: this.options.orderBookApi })
+  async getQuote(params: SolanaQuoteParameters, advancedSettings?: SwapAdvancedSettings): Promise<SolanaQuoteAndPost> {
+    const quote = await getSolanaQuote(params, {
+      env: this.options.env,
+      orderBookApi: this.options.orderBookApi,
+      advancedSettings,
+    })
 
     return {
       quoteResults: quote.quoteResults,
