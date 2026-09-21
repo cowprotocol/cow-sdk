@@ -6,8 +6,8 @@ import { OrderBookApi, OrderKind, OrderQuoteResponse, PriceQuality } from '@cowp
 import { AdaptersTestSetup, createAdapters } from '../tests/setup'
 import { AccountAddress, setGlobalAdapter } from '@cowprotocol/sdk-common'
 
-jest.mock('./suggestSlippageBps', () => ({
-  suggestSlippageBps: jest.fn(),
+jest.mock('./suggestTradingSlippageBps', () => ({
+  suggestTradingSlippageBps: jest.fn(),
 }))
 
 jest.mock('./resolveSlippageSuggestion', () => ({

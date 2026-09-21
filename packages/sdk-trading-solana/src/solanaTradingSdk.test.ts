@@ -70,14 +70,6 @@ const solanaQuoteFixture: SolanaQuote = {
   uid: new Uint8Array(32),
   orderPda: fillPubkey(0x66),
   programId: fillPubkey(0x77),
-  jupiterOrder: {
-    inputMint: sellMint.toBase58(),
-    outputMint: buyMint.toBase58(),
-    inAmount: '100',
-    outAmount: '200',
-    swapMode: 'ExactIn',
-    slippageBps: 0,
-  },
 }
 
 const quoteResultsFixture = { fake: 'quoteResults' } as unknown as QuoteResults
@@ -117,6 +109,16 @@ describe('SolanaTradingSdk', () => {
     await sdk.getQuote(params)
 
     expect(mockGetSolanaQuote).toHaveBeenCalledWith(params, { env: 'staging' })
+  })
+
+  it('getQuote forwards advancedSettings to getSolanaQuote', async () => {
+    const sdk = new SolanaTradingSdk()
+    const getSlippageSuggestion = jest.fn()
+    const advancedSettings: SwapAdvancedSettings = { getSlippageSuggestion }
+
+    await sdk.getQuote(params, advancedSettings)
+
+    expect(mockGetSolanaQuote).toHaveBeenCalledWith(params, { env: undefined, advancedSettings })
   })
 
   it('getQuote exposes solanaQuote, so callers can inspect the intent and PDA', async () => {

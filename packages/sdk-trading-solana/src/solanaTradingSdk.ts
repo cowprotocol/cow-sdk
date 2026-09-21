@@ -1,5 +1,6 @@
 import type { OrderPostingResult, QuoteResults, SigningStepManager, SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
 import { CowEnv } from '@cowprotocol/sdk-config'
+import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { createApproveInstruction, getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { PublicKey, PublicKeyInitData, TransactionInstruction } from '@solana/web3.js'
 import { buildSolanaSwapOrder, SolanaSwapOrder } from './buildSwapOrder'
@@ -10,6 +11,9 @@ import { SolanaQuote, SolanaQuoteParameters, SolanaSignAndSend } from './types'
 
 export interface SolanaTradingSdkOptions {
   env?: CowEnv
+  /** Overrides the default `OrderBookApi` instance used to fetch quotes — e.g. to supply a `bearerToken`
+   * while the Solana `/quote` endpoint is gated, or a custom `baseUrls`/`apiKey`. */
+  orderBookApi?: OrderBookApi
 }
 
 export interface ApproveCowProtocolParams {
@@ -66,8 +70,12 @@ export class SolanaTradingSdk {
     return createApproveInstruction(sellTokenAccount, delegate, owner, params.approveAmount, undefined, tokenProgramId)
   }
 
-  async getQuote(params: SolanaQuoteParameters): Promise<SolanaQuoteAndPost> {
-    const quote = await getSolanaQuote(params, { env: this.options.env })
+  async getQuote(params: SolanaQuoteParameters, advancedSettings?: SwapAdvancedSettings): Promise<SolanaQuoteAndPost> {
+    const quote = await getSolanaQuote(params, {
+      env: this.options.env,
+      orderBookApi: this.options.orderBookApi,
+      advancedSettings,
+    })
 
     return {
       quoteResults: quote.quoteResults,

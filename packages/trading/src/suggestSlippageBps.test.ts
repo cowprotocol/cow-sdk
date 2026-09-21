@@ -1,35 +1,16 @@
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { OrderQuoteResponse } from '@cowprotocol/sdk-order-book'
 
-import { suggestSlippageBps, SuggestSlippageBps } from './suggestSlippageBps'
+import { suggestTradingSlippageBps, SuggestSlippageBps } from './suggestTradingSlippageBps'
 import { QuoterParameters, TradeParameters } from './types'
 import { ETH_FLOW_DEFAULT_SLIPPAGE_BPS } from './consts'
 
 jest.mock('@cowprotocol/sdk-common', () => ({
-  percentageToBps: jest.fn((percent) => Math.round(percent * 100)),
+  ...jest.requireActual('@cowprotocol/sdk-common'),
+  suggestSlippageBps: jest.fn(),
 }))
 
-jest.mock('@cowprotocol/sdk-order-book', () => ({
-  ...jest.requireActual('@cowprotocol/sdk-order-book'),
-  getQuoteAmountsWithCosts: jest.fn(),
-}))
-
-jest.mock('./utils/slippage', () => ({
-  getSlippagePercent: jest.fn(),
-}))
-
-jest.mock('./suggestSlippageFromFee', () => ({
-  suggestSlippageFromFee: jest.fn(),
-}))
-
-jest.mock('./suggestSlippageFromVolume', () => ({
-  suggestSlippageFromVolume: jest.fn(),
-}))
-
-const { getQuoteAmountsWithCosts } = jest.requireMock('@cowprotocol/sdk-order-book')
-const { getSlippagePercent } = jest.requireMock('./utils/slippage')
-const { suggestSlippageFromFee } = jest.requireMock('./suggestSlippageFromFee')
-const { suggestSlippageFromVolume } = jest.requireMock('./suggestSlippageFromVolume')
+const { suggestSlippageBps: suggestSlippageBpsCore } = jest.requireMock('@cowprotocol/sdk-common')
 
 const mockQuoteResponse: OrderQuoteResponse = {
   quote: {
@@ -68,123 +49,66 @@ const mockTrader: QuoterParameters = {
 describe('suggestSlippageBps', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    suggestSlippageBpsCore.mockReturnValue(123)
+  })
 
-    getQuoteAmountsWithCosts.mockReturnValue({
+  it('extracts amounts from the quote and delegates the math to the shared core function', () => {
+    const params: SuggestSlippageBps = {
+      quote: mockQuoteResponse,
+      tradeParameters: mockTradeParameters,
+      trader: mockTrader,
+      isEthFlow: false,
+      volumeMultiplierPercent: 0.75,
+    }
+
+    const result = suggestTradingSlippageBps(params)
+
+    // sellAmount=98115217044683860, feeAmount=1884782955316140 -> before = sell+fee, after = sell (sell order)
+    expect(suggestSlippageBpsCore).toHaveBeenCalledWith({
       isSell: true,
-      sellAmountBeforeNetworkCosts: BigInt('100000000000000000'),
-      sellAmountAfterNetworkCosts: BigInt('98115217044683860'),
+      feeAmount: 1884782955316140n,
+      sellAmountBeforeNetworkCosts: 98115217044683860n + 1884782955316140n,
+      sellAmountAfterNetworkCosts: 98115217044683860n,
+      lowerCapBps: 0,
+      volumeMultiplierPercent: 0.75,
     })
-
-    suggestSlippageFromFee.mockReturnValue(10)
-    suggestSlippageFromVolume.mockReturnValue(5)
+    expect(result).toBe(123)
   })
 
-  describe('Lower bound clamping', () => {
-    it('Should clamp to 0 for non-EthFlow orders when calculated slippage is negative', () => {
-      getSlippagePercent.mockReturnValue(-1)
-
-      const params: SuggestSlippageBps = {
-        quote: mockQuoteResponse,
-        tradeParameters: mockTradeParameters,
-        trader: mockTrader,
-        isEthFlow: false,
-      }
-
-      const result = suggestSlippageBps(params)
-
-      expect(result).toBe(0)
+  it('passes no lower cap for a non-eth-flow order', () => {
+    suggestTradingSlippageBps({
+      quote: mockQuoteResponse,
+      tradeParameters: mockTradeParameters,
+      trader: mockTrader,
+      isEthFlow: false,
     })
 
-    it('Should clamp to ETH_FLOW_DEFAULT_SLIPPAGE_BPS for EthFlow orders when calculated slippage is below default', () => {
-      getSlippagePercent.mockReturnValue(0.01) // Very low slippage, results in 1 BPS
-
-      const params: SuggestSlippageBps = {
-        quote: mockQuoteResponse,
-        tradeParameters: mockTradeParameters,
-        trader: mockTrader,
-        isEthFlow: true,
-      }
-
-      const result = suggestSlippageBps(params)
-
-      expect(result).toBe(ETH_FLOW_DEFAULT_SLIPPAGE_BPS[SupportedChainId.GNOSIS_CHAIN])
-    })
-
-    it('Should not clamp for non-EthFlow orders when calculated slippage is above 0', () => {
-      getSlippagePercent.mockReturnValue(1) // 1% = 100 BPS
-
-      const params: SuggestSlippageBps = {
-        quote: mockQuoteResponse,
-        tradeParameters: mockTradeParameters,
-        trader: mockTrader,
-        isEthFlow: false,
-      }
-
-      const result = suggestSlippageBps(params)
-
-      expect(result).toBe(100)
-    })
-
-    it('Should not clamp for EthFlow orders when calculated slippage is above default', () => {
-      getSlippagePercent.mockReturnValue(2) // 2% = 200 BPS
-
-      const params: SuggestSlippageBps = {
-        quote: mockQuoteResponse,
-        tradeParameters: mockTradeParameters,
-        trader: mockTrader,
-        isEthFlow: true,
-      }
-
-      const result = suggestSlippageBps(params)
-
-      expect(result).toBe(200)
-    })
+    expect(suggestSlippageBpsCore).toHaveBeenCalledWith(expect.objectContaining({ lowerCapBps: 0 }))
   })
 
-  describe('Upper bound clamping', () => {
-    it('Should clamp to MAX_SLIPPAGE_BPS (10000) when calculated slippage exceeds 100%', () => {
-      getSlippagePercent.mockReturnValue(150) // 150% = 15000 BPS
-
-      const params: SuggestSlippageBps = {
-        quote: mockQuoteResponse,
-        tradeParameters: mockTradeParameters,
-        trader: mockTrader,
-        isEthFlow: false,
-      }
-
-      const result = suggestSlippageBps(params)
-
-      expect(result).toBe(10000)
+  it("passes the chain's eth-flow default as the lower cap for an eth-flow order", () => {
+    suggestTradingSlippageBps({
+      quote: mockQuoteResponse,
+      tradeParameters: mockTradeParameters,
+      trader: mockTrader,
+      isEthFlow: true,
     })
 
-    it('Should clamp to MAX_SLIPPAGE_BPS (10000) for EthFlow orders when calculated slippage exceeds 100%', () => {
-      getSlippagePercent.mockReturnValue(200) // 200% = 20000 BPS
+    expect(suggestSlippageBpsCore).toHaveBeenCalledWith(
+      expect.objectContaining({ lowerCapBps: ETH_FLOW_DEFAULT_SLIPPAGE_BPS[SupportedChainId.GNOSIS_CHAIN] }),
+    )
+  })
 
-      const params: SuggestSlippageBps = {
-        quote: mockQuoteResponse,
-        tradeParameters: mockTradeParameters,
-        trader: mockTrader,
-        isEthFlow: true,
-      }
-
-      const result = suggestSlippageBps(params)
-
-      expect(result).toBe(10000)
+  it('uses the trader chainId to resolve the eth-flow lower cap', () => {
+    suggestTradingSlippageBps({
+      quote: mockQuoteResponse,
+      tradeParameters: mockTradeParameters,
+      trader: { ...mockTrader, chainId: SupportedChainId.MAINNET },
+      isEthFlow: true,
     })
 
-    it('Should not clamp when calculated slippage is exactly at MAX_SLIPPAGE_BPS', () => {
-      getSlippagePercent.mockReturnValue(100) // 100% = 10000 BPS
-
-      const params: SuggestSlippageBps = {
-        quote: mockQuoteResponse,
-        tradeParameters: mockTradeParameters,
-        trader: mockTrader,
-        isEthFlow: false,
-      }
-
-      const result = suggestSlippageBps(params)
-
-      expect(result).toBe(10000)
-    })
+    expect(suggestSlippageBpsCore).toHaveBeenCalledWith(
+      expect.objectContaining({ lowerCapBps: ETH_FLOW_DEFAULT_SLIPPAGE_BPS[SupportedChainId.MAINNET] }),
+    )
   })
 })

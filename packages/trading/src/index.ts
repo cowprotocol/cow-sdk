@@ -19,7 +19,7 @@ export { postSellNativeCurrencyOrder } from './postSellNativeCurrencyOrder'
 export { postSignedOrder } from './postSignedOrder'
 export type { PostSignedOrderResult } from './postSignedOrder'
 export { postSwapOrder, postSwapOrderFromQuote } from './postSwapOrder'
-export { suggestSlippageBps } from './suggestSlippageBps'
+export { suggestTradingSlippageBps } from './suggestTradingSlippageBps'
 export { getEthFlowContract } from './getEthFlowTransaction'
 
 /**

@@ -1,31 +1,39 @@
 import { PublicKey } from '@solana/web3.js'
 import { getAssociatedTokenAddressSync } from '@solana/spl-token'
-import { CowEnv } from '@cowprotocol/sdk-config'
-import { getQuoteAmountsAndCosts, OrderKind, OrderParameters, OrderQuoteResponse } from '@cowprotocol/sdk-order-book'
+import { CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
+import {
+  getQuoteAmountsAndCosts,
+  OrderBookApi,
+  OrderKind,
+  OrderQuoteRequest,
+  OrderQuoteSideKindBuy,
+  OrderQuoteSideKindSell,
+  PriceQuality,
+  SigningScheme,
+} from '@cowprotocol/sdk-order-book'
 
-import { JupiterAPI } from './jupiterApi'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent } from './orderIntent'
 import { findOrderPda } from './orderPda'
+import { resolveSolanaSlippageSuggestion } from './resolveSlippageSuggestion'
 import { toSplMint } from './splMint'
 import { getSolanaSettlementProgramId } from './statePda'
 import { SolanaQuote, SolanaQuoteParameters } from './types'
-import type { QuoteResults, TradeParameters } from '@cowprotocol/sdk-trading'
+import type { QuoteResults, SwapAdvancedSettings, TradeParameters } from '@cowprotocol/sdk-trading'
 
 const DEFAULT_VALID_FOR_SECONDS = 30 * 60
 /** No Solana app-data convention exists yet (confirmed absent from the settlement program's intent
  * struct beyond an opaque 32 bytes) — sent as zeroes until one is defined. */
 const ZERO_APP_DATA = new Uint8Array(32)
 
-const jupiterApi = new JupiterAPI()
-
 export async function getSolanaQuote(
   params: SolanaQuoteParameters,
-  options: { env?: CowEnv } = {},
+  options: { env?: CowEnv; orderBookApi?: OrderBookApi; advancedSettings?: SwapAdvancedSettings } = {},
 ): Promise<{ quoteResults: QuoteResults; solanaQuote: SolanaQuote }> {
   const {
     slippageBps: slippageBpsOverride,
     ownerAddress,
     receiverAddress = ownerAddress,
+    priceQuality = options.advancedSettings?.quoteRequest?.priceQuality ?? PriceQuality.VERIFIED,
     sellTokenDecimals,
     buyTokenDecimals,
     amount,
@@ -55,34 +63,35 @@ export async function getSolanaQuote(
   const sellTokenAddress = sellMint.toBase58()
   const buyTokenAddress = buyMint.toBase58()
 
-  const jupiterOrder = await jupiterApi.getOrder({
-    inputMint: sellTokenAddress,
-    outputMint: buyTokenAddress,
-    amount: amount.toString(),
-    swapMode: kind === OrderKind.SELL ? 'ExactIn' : 'ExactOut',
-  })
+  const orderBookApi = options.orderBookApi ?? new OrderBookApi({ chainId: SupportedChainId.SOLANA, env: options.env })
 
-  const signedSlippageBps = slippageBpsOverride ?? jupiterOrder.slippageBps
-
-  const validTo = Math.floor(Date.now() / 1000) + validForSeconds
-
-  const orderParams: OrderParameters = {
+  const quoteRequest: OrderQuoteRequest = {
+    from: owner.toBase58(),
     sellToken: sellTokenAddress,
     buyToken: buyTokenAddress,
     receiver: receiver.toBase58(),
-    sellAmount: jupiterOrder.inAmount,
-    buyAmount: jupiterOrder.outAmount,
-    validTo,
+    validFor: validForSeconds,
     // TODO: fill appData when we know the format
     appData: '{}',
-    // TODO: implement fees
-    feeAmount: '0',
-    gasAmount: '0',
-    gasPrice: '0',
-    sellTokenPrice: '0',
-    kind,
-    partiallyFillable,
+    priceQuality,
+    signingScheme: SigningScheme.EIP712,
+    ...(kind === OrderKind.SELL
+      ? { kind: OrderQuoteSideKindSell.SELL, sellAmountBeforeFee: amount.toString() }
+      : { kind: OrderQuoteSideKindBuy.BUY, buyAmountAfterFee: amount.toString() }),
   }
+
+  const quoteResponse = await orderBookApi.getQuote(quoteRequest)
+  const orderParams = quoteResponse.quote
+  const validTo = orderParams.validTo
+
+  const suggestedSlippageBps = await resolveSolanaSlippageSuggestion({
+    sellToken: sellTokenAddress,
+    buyToken: buyTokenAddress,
+    priceQuality,
+    quoteResponse,
+    advancedSettings: options.advancedSettings,
+  })
+  const signedSlippageBps = slippageBpsOverride ?? suggestedSlippageBps
 
   const amountsAndCosts = getQuoteAmountsAndCosts({
     orderParams,
@@ -118,19 +127,11 @@ export async function getSolanaQuote(
     uid,
     orderPda,
     programId,
-    jupiterOrder,
     buyTokenProgramId: buyTokenProgram,
   }
 
-  const quoteResponse: OrderQuoteResponse = {
-    quote: orderParams,
-    from: owner.toBase58(),
-    expiration: new Date(intent.validTo * 1000).toISOString(),
-    verified: false,
-  }
-
   // Reported only when the caller set the tolerance, so `quoteUsingSameParameters`'s `compareSlippage`
-  // requotes when they change it. Left unset otherwise: Jupiter's own suggestion is not a user override,
+  // requotes when they change it. Left unset otherwise: the quote's own suggestion is not a user override,
   // and echoing it would force a requote every time it drifts between polls.
   const tradeParameters: TradeParameters = {
     ...(slippageBpsOverride !== undefined ? { slippageBps: slippageBpsOverride } : undefined),
@@ -146,7 +147,9 @@ export async function getSolanaQuote(
     amount: amount.toString(),
     receiver: receiver.toBase58(),
     validFor: validForSeconds,
-    partiallyFillable: orderParams.partiallyFillable,
+    // The caller's own request, not the API's echoed value: `partiallyFillable` isn't part of the quote
+    // request, so the response says nothing about what the caller actually intends to sign.
+    partiallyFillable,
   }
 
   const quoteResults: QuoteResults = {
@@ -154,7 +157,7 @@ export async function getSolanaQuote(
     amountsAndCosts,
     // What the quote provider suggested, never the caller's own `slippageBps`: consumers read this as a
     // recommendation and would otherwise be handed their own input back as advice.
-    suggestedSlippageBps: jupiterOrder.slippageBps,
+    suggestedSlippageBps,
     tradeParameters,
     orderToSign: {} as QuoteResults['orderToSign'],
     appDataInfo: {} as QuoteResults['appDataInfo'],

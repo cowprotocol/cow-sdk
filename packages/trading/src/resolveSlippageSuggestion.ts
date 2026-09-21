@@ -3,7 +3,7 @@ import { bpsToPercentage, log } from '@cowprotocol/sdk-common'
 import { getQuoteAmountsAndCosts, OrderQuoteResponse, PriceQuality } from '@cowprotocol/sdk-order-book'
 
 import { QuoterParameters, SlippageToleranceResponse, SwapAdvancedSettings, TradeParameters } from './types'
-import { suggestSlippageBps, SuggestSlippageBps } from './suggestSlippageBps'
+import { suggestTradingSlippageBps, SuggestSlippageBps } from './suggestTradingSlippageBps'
 import { getPartnerFeeBps } from './utils/getPartnerFeeBps'
 
 export async function resolveSlippageSuggestion(
@@ -23,7 +23,7 @@ export async function resolveSlippageSuggestion(
   }
   const getSlippageSuggestion = advancedSettings?.getSlippageSuggestion
 
-  const defaultSuggestion = suggestSlippageBps(suggestSlippageParams)
+  const defaultSuggestion = suggestTradingSlippageBps(suggestSlippageParams)
 
   if (advancedSettings?.quoteRequest?.priceQuality === PriceQuality.FAST || !getSlippageSuggestion) {
     return { slippageBps: defaultSuggestion }
@@ -51,7 +51,7 @@ export async function resolveSlippageSuggestion(
 
     return {
       slippageBps: suggestedSlippageBps
-        ? suggestSlippageBps({
+        ? suggestTradingSlippageBps({
             ...suggestSlippageParams,
             volumeMultiplierPercent: bpsToPercentage(suggestedSlippageBps),
           })
