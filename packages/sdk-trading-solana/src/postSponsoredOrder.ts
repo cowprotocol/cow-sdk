@@ -19,7 +19,13 @@ export function postSolanaSponsoredOrder(
   order: SolanaOrderCreation,
   options: PostSolanaSponsoredOrderOptions = {},
 ): Promise<UID> {
-  const orderBookApi = options.orderBookApi ?? new OrderBookApi({ chainId: SupportedChainId.SOLANA, env: options.env })
+  // Spreading `env: undefined` would overwrite the client's `prod` default and resolve to staging,
+  // so the key is only present when the caller set it.
+  const context = {
+    chainId: SupportedChainId.SOLANA,
+    ...(options.env ? { env: options.env } : undefined),
+  }
+  const orderBookApi = options.orderBookApi ?? new OrderBookApi(context)
 
-  return orderBookApi.sendSolanaOrder(order)
+  return orderBookApi.sendSolanaOrder(order, context)
 }
