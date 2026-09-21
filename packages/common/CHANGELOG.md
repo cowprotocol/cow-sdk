@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.14.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.13.1...sdk-common-v0.14.0) (2026-09-21)
+
+
+### ✨ Features
+
+* **solana:** use cow protocol quotes ([#1023](https://github.com/cowprotocol/cow-sdk/issues/1023)) ([dc76c98](https://github.com/cowprotocol/cow-sdk/commit/dc76c98475855d7d291c762c664050aa06dd12fb))
+
+
+### 🔧 Miscellaneous
+
+* update coverage badges ([#1011](https://github.com/cowprotocol/cow-sdk/issues/1011)) ([3701bb5](https://github.com/cowprotocol/cow-sdk/commit/3701bb53a4815d553757db70ebd8bba8db02f0db))
+
 ## [0.13.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.13.0...sdk-common-v0.13.1) (2026-09-18)
 
 

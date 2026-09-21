@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.7.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.7.1...sdk-composable-v1.7.2) (2026-09-21)
+
+
+### 🔧 Miscellaneous
+
+* update coverage badges ([#1011](https://github.com/cowprotocol/cow-sdk/issues/1011)) ([3701bb5](https://github.com/cowprotocol/cow-sdk/commit/3701bb53a4815d553757db70ebd8bba8db02f0db))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.14.0
+    * @cowprotocol/sdk-contracts-ts bumped to 3.7.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.5.2
+    * @cowprotocol/sdk-order-book bumped to 4.1.0
+    * @cowprotocol/sdk-order-signing bumped to 1.1.12
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.16
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.16
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.31
+
 ## [1.7.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.7.0...sdk-composable-v1.7.1) (2026-09-18)
 
 
