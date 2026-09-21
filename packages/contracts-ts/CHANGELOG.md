@@ -1,5 +1,24 @@
 # Changelog
 
+## [3.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.5.2...sdk-contracts-ts-v3.6.0) (2026-09-18)
+
+
+### ✨ Features
+
+* **solana:** override appData ([#1018](https://github.com/cowprotocol/cow-sdk/issues/1018)) ([0c2a8cf](https://github.com/cowprotocol/cow-sdk/commit/0c2a8cf967cc2f38a68135dca09a1696e0f42ba6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.13.1
+    * @cowprotocol/sdk-config bumped to 2.7.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.15
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.15
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.30
+
 ## [3.5.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.5.1...sdk-contracts-ts-v3.5.2) (2026-09-16)
 
 

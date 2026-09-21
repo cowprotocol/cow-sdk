@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.13.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.13.0...sdk-common-v0.13.1) (2026-09-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.7.0
+
 ## [0.13.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-common-v0.12.3...sdk-common-v0.13.0) (2026-09-16)
 
 

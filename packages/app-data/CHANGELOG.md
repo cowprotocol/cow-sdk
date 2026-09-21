@@ -1,5 +1,19 @@
 # Changelog
 
+## [6.0.5](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v6.0.4...sdk-app-data-v6.0.5) (2026-09-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.13.1
+  * devDependencies
+    * @cowprotocol/sdk-config bumped to 2.7.0
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.15
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.15
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.30
+
 ## [6.0.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v6.0.3...sdk-app-data-v6.0.4) (2026-09-16)
 
 

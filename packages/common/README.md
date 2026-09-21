@@ -8,7 +8,7 @@
 
 | Statements                  | Branches                | Functions                 | Lines             |
 | --------------------------- | ----------------------- | ------------------------- | ----------------- |
-| ![Statements](https://img.shields.io/badge/statements-16.1%25-red.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-23.23%25-red.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-12.82%25-red.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-14.15%25-red.svg?style=flat) |
+| ![Statements](https://img.shields.io/badge/statements-25.9%25-red.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-24.75%25-red.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-13.92%25-red.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-24.62%25-red.svg?style=flat) |
 
 This package is part of the core CoW Protocol SDK. It doesn't have significant standalone functionality, but provides access to important types, interfaces, and utilities that are shared across all SDK packages.
 
