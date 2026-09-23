@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.8.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.7.2...sdk-composable-v1.8.0) (2026-09-23)
+
+
+### ✨ Features
+
+* **cow-shed:** support v1.2.0 factory flow ([#1025](https://github.com/cowprotocol/cow-sdk/issues/1025)) ([9a14861](https://github.com/cowprotocol/cow-sdk/commit/9a14861d8a5b158bbda2b8a8a9b72d30c5f01466))
+* return cowsheds ([#1030](https://github.com/cowprotocol/cow-sdk/issues/1030)) ([83b9374](https://github.com/cowprotocol/cow-sdk/commit/83b9374b146d421bbbb4b143c4599b2da4d113a4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-cow-shed bumped to 0.6.0
+
 ## [1.7.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.7.1...sdk-composable-v1.7.2) (2026-09-21)
 
 
