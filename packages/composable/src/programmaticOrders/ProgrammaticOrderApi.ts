@@ -50,10 +50,10 @@ export class ProgrammaticOrderApi {
   }
 
   /**
-   * Returns one page of deployed CoWShed proxies for an EOA across indexed chains.
+   * Returns one page of deployed CoWShed proxies for an EOA.
    * Results are sorted by proxy address in descending order by default.
    *
-   * @param params - EOA address that owns the proxies.
+   * @param params - EOA address and optional chain ID. Without a chain ID, the query includes all indexed chains.
    * @param options - Page size, offset, and sort direction. The default page size is 100; the maximum is 1000.
    * @returns The proxy addresses, chain IDs, deployment transactions, block numbers, and total count.
    * @throws {@link ProgrammaticOrderApiError} when the input is invalid or the request fails.
@@ -62,14 +62,14 @@ export class ProgrammaticOrderApi {
     params: GetDeployedCowShedsParams,
     options: QueryOptions = {},
   ): Promise<QueryPage<DeployedCowShed>> {
-    const { owner } = parseInput(GET_DEPLOYED_COW_SHEDS_PARAMS_SCHEMA, params)
+    const { owner, chainId } = parseInput(GET_DEPLOYED_COW_SHEDS_PARAMS_SCHEMA, params)
     const { direction, limit, offset } = parseInput(QUERY_OPTIONS_SCHEMA, options)
 
     try {
       return await this.graphql.queryPage({
         query: COW_SHEDS_QUERY,
         page: 'ownerMappings',
-        variables: { owner, direction, limit, offset },
+        variables: { owner, chainId, direction, limit, offset },
         itemSchema: COW_SHED_SCHEMA,
       })
     } catch (cause) {

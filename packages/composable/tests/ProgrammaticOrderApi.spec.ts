@@ -43,6 +43,24 @@ describe('ProgrammaticOrderApi', () => {
     })
   })
 
+  it('filters deployed CoWSheds by chain', async () => {
+    const fetchMock = jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ data: { ownerMappings: { items: [], totalCount: 0 } } })),
+    )
+
+    await new ProgrammaticOrderApi({ apiUrl: 'https://example.com' }).getDeployedCowSheds({
+      owner: EOA,
+      chainId: SupportedChainId.GNOSIS_CHAIN,
+    })
+    const request = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)) as {
+      query: string
+      variables: Record<string, unknown>
+    }
+
+    expect(request.query).toContain('chainId: $chainId')
+    expect(request.variables.chainId).toBe(SupportedChainId.GNOSIS_CHAIN)
+  })
+
   it('validates parent and part page bounds before requesting', async () => {
     const api = new ProgrammaticOrderApi()
 
