@@ -1,7 +1,7 @@
 import { getEthFlowContract, TradingSdk } from '@cowprotocol/sdk-trading'
 import { MockHookBridgeProvider } from '../providers/mock/HookMockBridgeProvider'
 import { MockReceiverAccountBridgeProvider } from '../providers/mock/ReceiverAccountMockBridgeProvider'
-import { QuoteBridgeRequest } from '../types'
+import { BridgeQuoteAndPost, QuoteBridgeRequest } from '../types'
 import { getQuoteWithBridge } from './getQuoteWithBridge'
 import {
   bridgeCallDetails,
@@ -85,7 +85,7 @@ adapterNames.forEach((adapterName) => {
       return getQuoteWithBridge(mockProvider, {
         swapAndBridgeRequest: request,
         tradingSdk,
-      })
+      }) as Promise<BridgeQuoteAndPost>
     }
 
     async function postOrderWithCustomReceiver(customReceiver: string) {

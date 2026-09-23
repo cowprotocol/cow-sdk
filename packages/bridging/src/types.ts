@@ -21,7 +21,7 @@ import type {
 } from '@cowprotocol/sdk-trading'
 import type { AccountAddress, SignerLike, TTLCache } from '@cowprotocol/sdk-common'
 
-export type BridgeProviderType = 'ReceiverAccountBridgeProvider' | 'HookBridgeProvider'
+export type BridgeProviderType = 'ReceiverAccountBridgeProvider' | 'HookBridgeProvider' | 'BridgeThenSwapProvider'
 
 export interface BridgeProviderInfo {
   name: string
@@ -347,13 +347,90 @@ export interface HookBridgeProvider<Q extends BridgeQuoteResult> extends BridgeP
 }
 
 /**
+ * Parameters for encoding a destination chain CoW Protocol order.
+ * This data is ABI-encoded and passed as the bridge's destination payload.
+ */
+export interface DestinationOrderParams {
+  /** Token arriving from bridge (on destination chain) */
+  sellToken: string
+  /** Final desired token (on destination chain) */
+  buyToken: string
+  /** User's address to receive bought tokens */
+  receiver: string
+  /** User address (used for OrderFlow CREATE2 derivation) */
+  owner: string
+  /** Amount of sell token (bridge output) */
+  sellAmount: bigint
+  /** Minimum buy amount from CoW quote */
+  buyAmount: bigint
+  /** Order validity timestamp */
+  validTo: number
+  /** bytes32 appData hash */
+  appData: string
+  /** Fee amount (typically 0 for limit orders) */
+  feeAmount?: bigint
+  /** Whether the order is partially fillable */
+  partiallyFillable?: boolean
+  /** Quote ID from CoW Swap API */
+  quoteId?: number
+}
+
+/**
+ * Transaction data for submitting a bridge-then-swap on the source chain.
+ */
+export interface BridgeThenSwapTransaction {
+  to: string
+  data: string
+  value: string
+  chainId: number
+}
+
+/**
+ * A bridge provider that initiates a bridge on the source chain, with the destination chain
+ * automatically creating a CoW Protocol order from the bridged tokens.
+ *
+ * Flow: Bridge (source chain) → OrderFlowFactory receives tokens → OrderFlow creates CoW order (destination chain)
+ */
+export interface BridgeThenSwapProvider<Q extends BridgeQuoteResult> extends BridgeProvider<Q> {
+  type: 'BridgeThenSwapProvider'
+
+  /**
+   * Get the deterministic address of the OrderFlow contract on the destination chain.
+   * Computed via CREATE2 from the OrderFlowFactory.
+   */
+  getOrderFlowAddress(owner: string, destinationChainId: TargetChainId): string
+
+  /**
+   * Encode the order data that will be passed as destination payload to the bridge.
+   * This encodes an OrderFlowOrder.Data struct for the OrderFlowFactory.
+   */
+  encodeDestinationOrderData(params: DestinationOrderParams): string
+
+  /**
+   * Estimate the gas limit for executing the destination payload
+   * (OrderFlowFactory.executeData + OrderFlow.createOrder).
+   */
+  getDestinationGasLimit(params: DestinationOrderParams): Promise<number>
+
+  /**
+   * Build the unsigned bridge transaction for the user to sign on the source chain.
+   * This includes the destination payload (encoded order) in the bridge calldata.
+   */
+  getBridgeTransaction(params: {
+    bridgeQuote: Q
+    destinationPayload: string
+    destinationGasLimit: number
+  }): Promise<BridgeThenSwapTransaction>
+}
+
+/**
  * A quote and post for a cross-chain swap.
  *
  * If the order happens in a single chain, it returns the quote and post details for CoW Protocol.
  * If the order happens in multiple chains, it returns the quote and post details for CoW Protocol, the bridging
  * details, and a summary of the overall multi-step order.
  */
-export type CrossChainQuoteAndPost = QuoteAndPost | BridgeQuoteAndPost
+export type CrossChainQuoteAndPost = QuoteAndPost | BridgeQuoteAndPost | BridgeThenSwapQuoteAndPost
 
 export interface BridgeQuoteAndPost {
   /**
@@ -375,6 +452,53 @@ export interface BridgeQuoteAndPost {
     advancedSettings?: SwapAdvancedSettings,
     signingStepManager?: SigningStepManager,
   ): Promise<OrderPostingResult>
+}
+
+/**
+ * Quote result for a bridge-then-swap operation.
+ *
+ * Unlike BridgeQuoteAndPost (swap-then-bridge), this represents the reverse flow:
+ * the user submits a bridge transaction on the source chain, and a CoW Protocol order
+ * is automatically created on the destination chain by the OrderFlowFactory contract.
+ */
+export interface BridgeThenSwapQuoteAndPost {
+  /**
+   * Bridge quote details (source chain bridging).
+   */
+  bridge: BridgeQuoteResults
+
+  /**
+   * Estimated swap on the destination chain (indicative, since the actual order
+   * is created by the OrderFlow contract after bridging completes).
+   */
+  destinationSwap: {
+    sellToken: TokenInfo
+    buyToken: TokenInfo
+    estimatedBuyAmount: bigint
+    minBuyAmount: bigint
+    validTo: number
+    quoteId?: string
+  }
+
+  /**
+   * Deterministic OrderFlow contract address on the destination chain.
+   */
+  orderFlowAddress: string
+
+  /**
+   * The bridge transaction to submit on the source chain.
+   */
+  bridgeTransaction: BridgeThenSwapTransaction
+
+  /**
+   * Approval data if ERC20 approval is needed before submitting the bridge transaction.
+   */
+  approvalData?: { spenderAddress: string; amount: string; tokenAddress: string }
+
+  /**
+   * Submit the bridge transaction on the source chain.
+   */
+  submitBridgeTransaction(signer: SignerLike): Promise<{ txHash: string }>
 }
 
 export interface BridgeCosts<T = bigint> {
@@ -483,7 +607,7 @@ export interface CrossChainOrder {
 
 export interface MultiQuoteResult {
   providerDappId: string
-  quote: BridgeQuoteAndPost | null
+  quote: BridgeQuoteAndPost | BridgeThenSwapQuoteAndPost | null
   error?: Error
 }
 
