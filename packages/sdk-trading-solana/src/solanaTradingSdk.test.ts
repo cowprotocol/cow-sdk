@@ -225,9 +225,9 @@ describe('SolanaTradingSdk', () => {
       mockBuildSolanaLimitOrderOrder.mockResolvedValue(swapOrderFixture)
       const sdk = new SolanaTradingSdk({ env: 'staging' })
 
-      await sdk.buildLimitOrder({ ...limitOrderParams, env: 'production' })
+      await sdk.buildLimitOrder({ ...limitOrderParams, env: 'prod' })
 
-      expect(mockBuildSolanaLimitOrderOrder).toHaveBeenCalledWith({ ...limitOrderParams, env: 'production' })
+      expect(mockBuildSolanaLimitOrderOrder).toHaveBeenCalledWith({ ...limitOrderParams, env: 'prod' })
     })
   })
 
