@@ -1,6 +1,6 @@
 import type { LatestAppDataDocVersion } from '@cowprotocol/sdk-app-data'
 
-import { mergeAppData } from './appData'
+import { hashAppDataDoc, mergeAppData } from './appData'
 
 const BASE_DOC = { appCode: 'base-app', metadata: {} } as unknown as LatestAppDataDocVersion
 
@@ -37,5 +37,31 @@ describe('mergeAppData', () => {
     )
 
     expect(overridden).toEqual(replacedFromScratch)
+  })
+})
+
+describe('hashAppDataDoc', () => {
+  it('digests to exactly 32 bytes', async () => {
+    const result = await hashAppDataDoc(BASE_DOC)
+
+    expect(result).toHaveLength(32)
+  })
+
+  it('is deterministic for the same doc', async () => {
+    const first = await hashAppDataDoc(BASE_DOC)
+    const second = await hashAppDataDoc(BASE_DOC)
+
+    expect(first).toEqual(second)
+  })
+
+  it('changes when the doc changes', async () => {
+    const docA = { ...BASE_DOC, appCode: 'app-a' } as unknown as LatestAppDataDocVersion
+    const docB = { ...BASE_DOC, appCode: 'app-b' } as unknown as LatestAppDataDocVersion
+
+    expect(await hashAppDataDoc(docA)).not.toEqual(await hashAppDataDoc(docB))
+  })
+
+  it('agrees with mergeAppData against an empty override, since merging nothing is just hashing the doc', async () => {
+    expect(await hashAppDataDoc(BASE_DOC)).toEqual(await mergeAppData(BASE_DOC, {}))
   })
 })
