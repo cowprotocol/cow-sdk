@@ -8,6 +8,15 @@ const SAFE = '0xaA248D5328c7D781a96D93d7D013bcF393157bB4'
 describe('ProgrammaticOrderApi', () => {
   jest.setTimeout(30_000)
 
+  it('lists deployed CoWSheds for an EOA from the live programmatic orders API', async () => {
+    const page = await new ProgrammaticOrderApi().getDeployedCowSheds({ owner: EOA }, { limit: 1000 })
+
+    expect(page.totalCount).toBeGreaterThan(0)
+    expect(page.items).toHaveLength(page.totalCount)
+    expect(page.items.some(({ chainId }) => chainId === SupportedChainId.GNOSIS_CHAIN)).toBe(true)
+    expect(page.items.every(({ address, blockNumber }) => /^0x[0-9a-f]{40}$/.test(address) && blockNumber > 0n)).toBe(true)
+  })
+
   it('lists a completed EOA TWAP window from the live programmatic orders API', async () => {
     const page = await new ProgrammaticOrderApi().getTwapOrders(
       {

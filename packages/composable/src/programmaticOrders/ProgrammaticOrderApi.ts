@@ -1,3 +1,10 @@
+import {
+  COW_SHEDS_QUERY,
+  COW_SHED_SCHEMA,
+  GET_DEPLOYED_COW_SHEDS_PARAMS_SCHEMA,
+  type DeployedCowShed,
+  type GetDeployedCowShedsParams,
+} from './cow-shed'
 import { GraphqlClient } from './graphql'
 import { QUERY_OPTIONS_SCHEMA } from './schemas'
 import { TWAP_ORDERS_QUERY, TWAP_PART_ORDERS_QUERY } from './twap-queries'
@@ -39,6 +46,34 @@ export class ProgrammaticOrderApi {
       this.graphql = new GraphqlClient(options.apiUrl ?? DEFAULT_API_URL)
     } catch (cause) {
       throw new ProgrammaticOrderApiError('Invalid programmatic orders API URL', { cause })
+    }
+  }
+
+  /**
+   * Returns one page of deployed CoWShed proxies for an EOA across indexed chains.
+   * Results are sorted by proxy address in descending order by default.
+   *
+   * @param params - EOA address that owns the proxies.
+   * @param options - Page size, offset, and sort direction. The default page size is 100; the maximum is 1000.
+   * @returns The proxy addresses, chain IDs, deployment transactions, block numbers, and total count.
+   * @throws {@link ProgrammaticOrderApiError} when the input is invalid or the request fails.
+   */
+  async getDeployedCowSheds(
+    params: GetDeployedCowShedsParams,
+    options: QueryOptions = {},
+  ): Promise<QueryPage<DeployedCowShed>> {
+    const { owner } = parseInput(GET_DEPLOYED_COW_SHEDS_PARAMS_SCHEMA, params)
+    const { direction, limit, offset } = parseInput(QUERY_OPTIONS_SCHEMA, options)
+
+    try {
+      return await this.graphql.queryPage({
+        query: COW_SHEDS_QUERY,
+        page: 'ownerMappings',
+        variables: { owner, direction, limit, offset },
+        itemSchema: COW_SHED_SCHEMA,
+      })
+    } catch (cause) {
+      throw new ProgrammaticOrderApiError('Failed to fetch deployed CoWSheds', { cause })
     }
   }
 

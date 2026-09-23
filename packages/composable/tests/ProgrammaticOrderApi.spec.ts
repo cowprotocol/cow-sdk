@@ -15,6 +15,34 @@ describe('ProgrammaticOrderApi', () => {
     jest.restoreAllMocks()
   })
 
+  it('fetches deployed CoWSheds for an EOA across indexed chains', async () => {
+    const sheds = [
+      { address: `0x${'1'.repeat(40)}`, chainId: 1, txHash: `0x${'a'.repeat(64)}`, blockNumber: '123' },
+      { address: `0x${'2'.repeat(40)}`, chainId: 100, txHash: `0x${'b'.repeat(64)}`, blockNumber: '456' },
+    ]
+    const fetchMock = jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ data: { ownerMappings: { items: sheds, totalCount: 2 } } })),
+    )
+
+    const result = await new ProgrammaticOrderApi({ apiUrl: 'https://example.com' }).getDeployedCowSheds(
+      { owner: EOA },
+      { direction: 'asc', limit: 2, offset: 1 },
+    )
+    const request = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)) as {
+      query: string
+      variables: Record<string, unknown>
+    }
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(request.query).toContain('addressType: cowshed_proxy')
+    expect(request.query).toContain('orderDirection: $direction')
+    expect(request.variables).toEqual({ owner: EOA.toLowerCase(), direction: 'asc', limit: 2, offset: 1 })
+    expect(result).toEqual({
+      items: sheds.map(({ blockNumber, ...shed }) => ({ ...shed, blockNumber: BigInt(blockNumber) })),
+      totalCount: 2,
+    })
+  })
+
   it('validates parent and part page bounds before requesting', async () => {
     const api = new ProgrammaticOrderApi()
 
