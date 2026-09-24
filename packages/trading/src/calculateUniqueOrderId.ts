@@ -11,12 +11,23 @@ import type { ContractsOrder as Order } from '@cowprotocol/sdk-contracts-ts'
 import { EthFlowOrderExistsCallback } from './types'
 import { unsignedOrderForSigning } from './utils/order'
 
+export interface UniqueOrderIdResult {
+  orderId: string
+  /**
+   * The order that actually produced `orderId`. On a collision this differs from the
+   * `order` argument (its `buyAmount` has been nudged) — callers MUST build the on-chain
+   * transaction from this order, not from their original input, or they'll recreate the
+   * exact order that was just detected as colliding.
+   */
+  order: UnsignedOrder
+}
+
 export async function calculateUniqueOrderId(
   chainId: SupportedChainId,
   order: UnsignedOrder,
   checkEthFlowOrderExists?: EthFlowOrderExistsCallback,
   options?: ProtocolOptions,
-): Promise<string> {
+): Promise<UniqueOrderIdResult> {
   const { env, ethFlowContractOverride } = options ?? {}
   const { orderDigest, orderId } = await OrderSigningUtils.generateOrderId(
     chainId,
@@ -48,7 +59,7 @@ export async function calculateUniqueOrderId(
     )
   }
 
-  return orderId
+  return { orderId, order }
 }
 
 function adjustAmounts(order: UnsignedOrder): UnsignedOrder {
@@ -58,6 +69,14 @@ function adjustAmounts(order: UnsignedOrder): UnsignedOrder {
   // Also, we don't want to touch the sell amount.
   // If we move it down, the price might become "too good", if we move it up, the user might not have enough funds!
   // Thus, we make the buy amount a tad bit worse by 1 wei.
-  // We can only hope this doesn't happen for an order buying 0 a decimals token 🤞
+  if (buyAmount <= BigInt(1)) {
+    // A zero (or negative, on a second collision) buyAmount can't be nudged further down
+    // without producing an invalid order — fail loudly instead of silently building a
+    // transaction with buyAmount 0 (or a BigInt that can't encode as uint256).
+    throw new Error(
+      `[calculateUniqueOrderId] Cannot resolve order-id collision: buyAmount (${order.buyAmount}) is too small to adjust further`,
+    )
+  }
+
   return { ...order, buyAmount: (buyAmount - BigInt(1)).toString() }
 }
