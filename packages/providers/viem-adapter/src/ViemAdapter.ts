@@ -132,7 +132,11 @@ export class ViemAdapter extends AbstractProviderAdapter<ViemTypes> {
   }
 
   async getChainId(): Promise<number> {
-    return this._publicClient.chain?.id ?? 0
+    // `this._publicClient.chain?.id` only reflects the static config the client was built
+    // with (undefined when created without a `chain`, e.g. a custom RPC via `http(url)` alone),
+    // silently yielding chain id 0. `getChainId()` queries `eth_chainId` on the live RPC, matching
+    // how the ethers v5/v6 adapters derive it from `provider.getNetwork()`.
+    return this._publicClient.getChainId()
   }
 
   async getCode(address: string): Promise<string | undefined> {
