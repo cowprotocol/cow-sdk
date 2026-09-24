@@ -41,6 +41,41 @@ const V3_ERROR_MSG_REGEX = /eth_signTypedData_v3 does not exist/i
 const RPC_REQUEST_FAILED_REGEX = /RPC request failed/i
 const METAMASK_STRING_CHAINID_REGEX = /provided chainid .* must match the active chainid/i
 
+/**
+ * The `appData` field of the order struct is a `bytes32`, so it can only ever hold the
+ * appData *hash*, never the document itself.
+ */
+const APP_DATA_HASH_REGEX = /^0x[0-9a-fA-F]{64}$/
+
+/**
+ * Guards against passing a full (or stringified) appData document where the order struct
+ * expects the `bytes32` appData hash.
+ *
+ * Without this, the document reaches the EIP-712 encoder and surfaces as an opaque
+ * `invalid hex string (argument="value", ... code=INVALID_ARGUMENT)` from the underlying
+ * signing lib, which gives no hint about what was actually wrong.
+ *
+ * Deliberately does NOT hash the document for you: the canonical hash is keccak256 over the
+ * *deterministically* stringified document, and it has to match the one registered with the
+ * orderbook. Hashing an arbitrary string here would happily produce a valid-looking hash that
+ * no one can resolve back to any appData.
+ */
+function assertAppDataHash(appData: UnsignedOrder['appData']): void {
+  if (typeof appData === 'string' && APP_DATA_HASH_REGEX.test(appData)) return
+
+  const received =
+    typeof appData === 'string'
+      ? `a ${appData.length}-character string starting with "${appData.slice(0, 24)}..."`
+      : `a ${typeof appData}`
+
+  throw new CowError(
+    `Invalid order.appData: expected the bytes32 appData hash (0x + 64 hex chars), got ${received}. ` +
+      `The order struct signs appData as bytes32, so the full appData document cannot be passed here. ` +
+      `Derive the hash first with getAppDataInfo() from @cowprotocol/app-data and sign its appDataHex, ` +
+      `uploading the full document with OrderBookApi.uploadAppData().`,
+  )
+}
+
 const mapSigningSchema: Record<EcdsaSigningScheme, EcdsaSigningSchemeContract> = {
   [EcdsaSigningScheme.EIP712]: SigningScheme.EIP712,
   [EcdsaSigningScheme.ETHSIGN]: SigningScheme.ETHSIGN,
@@ -184,6 +219,8 @@ export async function signOrder(
   signer: Signer,
   options?: ProtocolOptions,
 ): Promise<SigningResult> {
+  assertAppDataHash(order.appData)
+
   const { env, settlementContractOverride } = options ?? {}
   return _signPayload({ order, chainId, env, settlementContractOverride }, _signOrder, signer)
 }
