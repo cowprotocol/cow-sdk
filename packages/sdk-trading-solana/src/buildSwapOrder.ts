@@ -6,6 +6,7 @@ import { mergeAppData } from './appData'
 import { buildCreateOrderInstruction } from './createOrderInstruction'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toOrderId } from './orderIntent'
 import { findOrderPda } from './orderPda'
+import { isNativeSolMint } from './splMint'
 import { SolanaQuote } from './types'
 
 export interface SolanaSwapOrderQuote {
@@ -43,12 +44,7 @@ export async function buildSolanaSwapOrder(
 
   const overrides: Partial<SolanaOrderIntent> = {
     ...(receiver && {
-      buyTokenAccount: getAssociatedTokenAddressSync(
-        solanaQuote.intent.buyMint,
-        new PublicKey(receiver),
-        false,
-        solanaQuote.buyTokenProgramId,
-      ),
+      buyTokenAccount: resolveBuyTokenAccount(solanaQuote, new PublicKey(receiver)),
     }),
     ...(validTo && { validTo }),
     ...(advancedSettings?.appData && {
@@ -84,4 +80,17 @@ export async function buildSolanaSwapOrder(
     signingScheme: SigningScheme.PRESIGN,
     orderToSign: quoteResults.orderToSign,
   }
+}
+
+/**
+ * Where a new `receiver` gets paid. A native-SOL buy is credited as lamports on the receiver's own
+ * account, so there is no associated token account to derive — the quoted `buyMint` being the sentinel
+ * is what says so.
+ */
+function resolveBuyTokenAccount(solanaQuote: SolanaQuote, receiver: PublicKey): PublicKey {
+  const { buyMint } = solanaQuote.intent
+
+  return isNativeSolMint(buyMint)
+    ? receiver
+    : getAssociatedTokenAddressSync(buyMint, receiver, false, solanaQuote.buyTokenProgramId)
 }

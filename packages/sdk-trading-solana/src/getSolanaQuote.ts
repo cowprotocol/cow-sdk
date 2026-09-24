@@ -15,7 +15,7 @@ import {
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent } from './orderIntent'
 import { findOrderPda } from './orderPda'
 import { resolveSolanaSlippageSuggestion } from './resolveSlippageSuggestion'
-import { toSplMint } from './splMint'
+import { isNativeSolMint, toSplMint } from './splMint'
 import { getSolanaSettlementProgramId } from './statePda'
 import { SolanaQuote, SolanaQuoteParameters } from './types'
 import type { QuoteResults, SwapAdvancedSettings, TradeParameters } from '@cowprotocol/sdk-trading'
@@ -56,7 +56,10 @@ export async function getSolanaQuote(
   const receiver = new PublicKey(receiverAddress)
   const requestedSellMint = new PublicKey(params.sellTokenAddress)
   const sellMint = toSplMint(requestedSellMint)
-  const buyMint = new PublicKey(params.buyTokenAddress)
+  const requestedBuyMint = new PublicKey(params.buyTokenAddress)
+  // Only for pricing. The intent below keeps `requestedBuyMint`, which is what tells the settlement
+  // program to pay the buy side out as lamports.
+  const buyMint = toSplMint(requestedBuyMint)
   const sellTokenProgram = sellTokenProgramId ? new PublicKey(sellTokenProgramId) : undefined
   const buyTokenProgram = buyTokenProgramId ? new PublicKey(buyTokenProgramId) : undefined
 
@@ -103,8 +106,12 @@ export async function getSolanaQuote(
 
   const intent: SolanaOrderIntent = {
     owner,
-    buyTokenAccount: getAssociatedTokenAddressSync(buyMint, receiver, false, buyTokenProgram),
-    buyMint,
+    // A native-SOL buy is credited as lamports on the receiver's own account, so it names that account
+    // directly; every other buy names the associated token account of the mint.
+    buyTokenAccount: isNativeSolMint(requestedBuyMint)
+      ? receiver
+      : getAssociatedTokenAddressSync(buyMint, receiver, false, buyTokenProgram),
+    buyMint: requestedBuyMint,
     sellTokenAccount: getAssociatedTokenAddressSync(sellMint, owner, false, sellTokenProgram),
     sellMint,
     sellAmount: amountsAndCosts.amountsToSign.sellAmount,
@@ -137,12 +144,12 @@ export async function getSolanaQuote(
     ...(slippageBpsOverride !== undefined ? { slippageBps: slippageBpsOverride } : undefined),
     kind,
     owner: owner.toBase58(),
-    // The mint the caller asked for, not the substituted one: callers compare the returned parameters
+    // The mints the caller asked for, not the substituted ones: callers compare the returned parameters
     // against the ones they passed to decide whether a quote is still current, and reporting WSOL for a
-    // native-SOL request would read as a changed sell token and requote forever.
+    // native-SOL request would read as a changed token and requote forever.
     sellToken: requestedSellMint.toBase58(),
     sellTokenDecimals,
-    buyToken: buyTokenAddress,
+    buyToken: requestedBuyMint.toBase58(),
     buyTokenDecimals,
     amount: amount.toString(),
     receiver: receiver.toBase58(),

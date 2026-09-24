@@ -529,6 +529,108 @@ describe('getSolanaQuote', () => {
     })
   })
 
+  describe('buying native SOL', () => {
+    const wsolMint = new PublicKey(WRAPPED_NATIVE_CURRENCIES[SupportedChainId.SOLANA].address)
+    const usdcMint = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
+
+    function quoteNativeBuy(): ReturnType<typeof getSolanaQuote> {
+      return getSolanaQuote(
+        {
+          ownerAddress: owner,
+          receiverAddress: receiver,
+          sellTokenAddress: usdcMint,
+          sellTokenDecimals: 6,
+          buyTokenAddress: SOL_NATIVE_CURRENCY_ADDRESS,
+          buyTokenDecimals: 9,
+          amount: 150_000_000n,
+          kind: OrderKind.SELL,
+        },
+        { orderBookApi: orderBookApiMock },
+      )
+    }
+
+    function mockNativeBuyQuoteResponse(): void {
+      getQuoteMock.mockResolvedValueOnce({
+        quote: {
+          sellToken: usdcMint.toBase58(),
+          buyToken: wsolMint.toBase58(),
+          receiver: receiver.toBase58(),
+          sellAmount: '150000000',
+          buyAmount: '1000000000',
+          validTo: 1_700_001_800,
+          appData: '{}',
+          feeAmount: '0',
+          kind: OrderKind.SELL,
+          partiallyFillable: false,
+        },
+        from: owner.toBase58(),
+        expiration: '2024-01-01T00:30:00.000Z',
+        verified: false,
+      } as OrderQuoteResponse)
+    }
+
+    it('quotes against the WSOL mint, since the book answers NoLiquidity for the sentinel', async () => {
+      mockNativeBuyQuoteResponse()
+
+      await quoteNativeBuy()
+
+      expect(getQuoteMock).toHaveBeenCalledWith(expect.objectContaining({ buyToken: wsolMint.toBase58() }))
+      expect(getQuoteMock.mock.calls[0]?.[0].buyToken).not.toBe(SOL_NATIVE_CURRENCY_ADDRESS)
+    })
+
+    it('keeps the sentinel in the intent, which is what makes the program pay lamports', async () => {
+      mockNativeBuyQuoteResponse()
+
+      const { solanaQuote } = await quoteNativeBuy()
+
+      expect(solanaQuote.intent.buyMint.toBase58()).toBe(SOL_NATIVE_CURRENCY_ADDRESS)
+      expect(solanaQuote.intent.buyMint.toBase58()).not.toBe(wsolMint.toBase58())
+    })
+
+    it('names the receiver account itself, not an associated token account', async () => {
+      mockNativeBuyQuoteResponse()
+
+      const { solanaQuote } = await quoteNativeBuy()
+
+      expect(solanaQuote.intent.buyTokenAccount.toBase58()).toBe(receiver.toBase58())
+      expect(solanaQuote.intent.buyTokenAccount.toBase58()).not.toBe(
+        getAssociatedTokenAddressSync(wsolMint, receiver, false, undefined).toBase58(),
+      )
+    })
+
+    it('reports the requested buy token back, so callers do not see it as a changed parameter', async () => {
+      mockNativeBuyQuoteResponse()
+
+      const { quoteResults } = await quoteNativeBuy()
+
+      expect(quoteResults.tradeParameters.buyToken).toBe(SOL_NATIVE_CURRENCY_ADDRESS)
+    })
+
+    it('leaves an explicit WSOL buy as a token trade, associated token account and all', async () => {
+      mockNativeBuyQuoteResponse()
+
+      const { solanaQuote, quoteResults } = await getSolanaQuote(
+        {
+          ownerAddress: owner,
+          receiverAddress: receiver,
+          sellTokenAddress: usdcMint,
+          sellTokenDecimals: 6,
+          buyTokenAddress: wsolMint,
+          buyTokenDecimals: 9,
+          amount: 150_000_000n,
+          kind: OrderKind.SELL,
+        },
+        { orderBookApi: orderBookApiMock },
+      )
+
+      expect(solanaQuote.intent.buyMint.toBase58()).toBe(wsolMint.toBase58())
+      expect(solanaQuote.intent.buyTokenAccount.toBase58()).toBe(
+        getAssociatedTokenAddressSync(wsolMint, receiver, false, undefined).toBase58(),
+      )
+      expect(quoteResults.tradeParameters.buyToken).toBe(wsolMint.toBase58())
+    })
+  })
+
   it('derives buyTokenAccount for the receiver and sellTokenAccount for the owner', async () => {
     mockQuoteResponse()
 
