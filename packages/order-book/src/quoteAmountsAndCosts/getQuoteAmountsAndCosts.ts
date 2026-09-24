@@ -8,7 +8,8 @@ import { getQuoteAmountsAfterSlippage } from './getQuoteAmountsAfterSlippage'
 /**
  * Calculates all quote amount stages and costs from a `/quote` API response.
  *
- * Takes the raw order parameters (where protocol fee and network costs are already baked in)
+ * Takes the raw order parameters (where protocol fee is already baked in, and network costs
+ * are also baked in for SELL orders but reported separately in `feeAmount` for BUY orders)
  * and reconstructs every intermediate amount stage: before all fees, after protocol fees,
  * after network costs, after partner fees, and after slippage.
  *
