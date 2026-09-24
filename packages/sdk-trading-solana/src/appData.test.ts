@@ -1,6 +1,7 @@
 import type { LatestAppDataDocVersion } from '@cowprotocol/sdk-app-data'
 
 import { hashAppDataDoc, mergeAppData } from './appData'
+import { toHex } from './orderIntent'
 
 const BASE_DOC = { appCode: 'base-app', metadata: {} } as unknown as LatestAppDataDocVersion
 
@@ -63,5 +64,11 @@ describe('hashAppDataDoc', () => {
 
   it('agrees with mergeAppData against an empty override, since merging nothing is just hashing the doc', async () => {
     expect(await hashAppDataDoc(BASE_DOC)).toEqual(await mergeAppData(BASE_DOC, {}))
+  })
+
+  it('matches the known keccak256 digest for the base doc', async () => {
+    const result = await hashAppDataDoc(BASE_DOC)
+
+    expect(toHex(result)).toBe('bb0346cf4113f3cc24c24761e3c9b57c510e3359a246b2f6576c237f94f25365')
   })
 })

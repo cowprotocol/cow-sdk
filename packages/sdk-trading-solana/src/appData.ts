@@ -1,19 +1,19 @@
 import { AppDataParams, LatestAppDataDocVersion, stringifyDeterministic } from '@cowprotocol/sdk-app-data'
 import deepmerge from 'deepmerge'
+import { keccak_256 } from '@noble/hashes/sha3'
 
 /**
  * Digests an app-data doc into the 32 opaque bytes `SolanaOrderIntent.appData` carries on-chain.
  *
- * Unlike EVM's `appData` (keccak256 of the doc, via `mergeAppDataDoc` in `@cowprotocol/sdk-trading`),
- * this hashes with the Web Crypto API instead of an adapter's `keccak256`: the settlement program treats
- * `appData` as opaque with no defined convention yet, and every other function in this package is
+ * Uses the same keccak256 digest as EVM's `appData` (via `mergeAppDataDoc` in `@cowprotocol/sdk-trading`),
+ * but computes it directly with `@noble/hashes` instead of an adapter's `keccak256`: the settlement program
+ * treats `appData` as opaque with no defined convention yet, and every other function in this package is
  * deliberately adapter-free so a Solana-only integrator never needs an EVM provider configured.
  */
 export async function hashAppDataDoc(doc: LatestAppDataDocVersion): Promise<Uint8Array> {
   const fullAppData = await stringifyDeterministic(doc)
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(fullAppData))
 
-  return new Uint8Array(digest)
+  return keccak_256(new TextEncoder().encode(fullAppData))
 }
 
 /** Merges `override` into `doc` and digests the result — see `hashAppDataDoc`. */

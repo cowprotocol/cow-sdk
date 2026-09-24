@@ -25,10 +25,7 @@ export interface SolanaLimitOrderParams {
   validTo: number
   partiallyFillable: boolean
   /**
-   * The intent's opaque 32 bytes, used exactly as given — no hashing, no doc, no merging. Solana has no
-   * agreed appData-doc convention yet (unlike EVM's keccak256-of-a-JSON-doc), so there is nothing correct
-   * for this SDK to derive these bytes from; the caller decides what they mean (e.g. a fixed constant
-   * that downstream indexers/explorers recognize as "this is a limit order").
+   * The intent's opaque 32 bytes, used exactly as given — no hashing, no doc, no merging
    */
   appData: Uint8Array
   /** Token program owning `sellTokenAddress`'s accounts (classic SPL Token vs Token-2022). Defaults to the

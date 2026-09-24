@@ -167,8 +167,7 @@ await sendMyTransaction([approveInstruction, instruction])
   `receiverAddress` defaulting to `ownerAddress`, `sellTokenProgramId`/`buyTokenProgramId` for
   Token-2022 mints), but needs no upstream quote and no signer to build.
 - `appData` is used exactly as given — no hashing, no doc, no merging against a quoted value.
-  Solana has no agreed `appData` convention yet (unlike EVM's keccak256-of-a-JSON-doc), so this SDK
-  can't derive meaningful bytes on the caller's behalf; the caller decides what the 32 bytes mean.
+  Solana has no agreed `appData` convention yet.
   `hashAppDataDoc` is available if you want to derive them from an app-data doc yourself.
 - Still requires [Step 0](#step-0--approve-the-settlement-program-as-spl-delegate) before the order
   can settle, and the returned `instruction` can be bundled with that approval the same way
