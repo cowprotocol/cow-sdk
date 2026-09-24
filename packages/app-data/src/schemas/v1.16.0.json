@@ -1,0 +1,93 @@
+{
+  "$id": "https://cowswap.exchange/schemas/app-data/v1.16.0.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "description": "Metadata JSON document for adding information to orders.",
+  "required": ["version", "metadata"],
+  "title": "AppData Root Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "$ref": "definitions.json#/definitions/version",
+      "readOnly": true,
+      "default": "1.16.0"
+    },
+    "appCode": {
+      "$id": "#/properties/appCode",
+      "description": "The code identifying the CLI, UI, service generating the order.",
+      "examples": ["CoW Swap"],
+      "title": "App Code",
+      "type": "string"
+    },
+    "environment": {
+      "$id": "#/properties/environment",
+      "description": "Environment from which the order came from.",
+      "title": "Environment",
+      "type": "string",
+      "examples": ["production", "development", "staging", "ens"]
+    },
+    "metadata": {
+      "$id": "#/properties/metadata",
+      "default": {},
+      "description": "Each metadata will specify one aspect of the order.",
+      "required": [],
+      "title": "Metadata",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "signer": {
+          "$ref": "signer/v0.1.0.json#"
+        },
+        "referrer": {
+          "$ref": "referrer/v1.0.0.json#"
+        },
+        "utm": {
+          "$ref": "utm/v0.3.0.json#"
+        },
+        "quote": {
+          "$ref": "quote/v1.1.0.json#"
+        },
+        "orderClass": {
+          "$ref": "orderClass/v0.3.0.json#"
+        },
+        "hooks": {
+          "$ref": "hooks/v0.2.0.json#"
+        },
+        "widget": {
+          "$ref": "widget/v0.1.0.json#"
+        },
+        "partnerFee": {
+          "$ref": "partnerFee/v1.1.0.json#"
+        },
+        "replacedOrder": {
+          "$ref": "replacedOrder/v0.1.0.json#"
+        },
+        "bridging": {
+          "$ref": "bridging/v0.4.0.json#"
+        },
+        "flashloan": {
+          "$ref": "flashloan/v0.2.0.json#"
+        },
+        "wrappers": {
+          "$ref": "wrappers/v0.2.0.json#"
+        },
+        "userConsents": {
+          "$ref": "userConsents/v0.1.0.json#"
+        },
+        "enableFastPath": {
+          "$id": "#/properties/metadata/properties/enableFastPath",
+          "description": "Opt into out-of-competition (\"fast path\") execution. When set, the order can be settled directly by the winning quote's solver, within a short exclusivity window, instead of waiting for the next batch auction.",
+          "title": "Enable Fast Path",
+          "type": "boolean",
+          "default": false
+        },
+        "validFrom": {
+          "$id": "#/properties/metadata/properties/validFrom",
+          "description": "Earliest time, as a UNIX timestamp in seconds, at which the order may enter a batch auction. Honored if set; for fast-path orders the backend picks a value when this is not provided.",
+          "title": "Valid From",
+          "type": "integer"
+        }
+      }
+    }
+  }
+}
