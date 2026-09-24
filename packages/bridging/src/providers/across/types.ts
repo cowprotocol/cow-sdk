@@ -209,8 +209,9 @@ export interface DepositStatusResponse {
    * - pending: Deposit not yet filled
    * - expired: Deposit expired and will be refunded
    * - refunded: Deposit expired and depositor refunded on originChain
-   * - slowFillRequested: Across' relayer fills without requiring another relayer to front capital
-   *   (requires input token and output token to be the same asset)
+   * - slowFillRequested: A slow fill has been requested for the deposit but not yet executed. The deposit will be
+   *   filled in the next root bundle unless a relayer fills it first via a fast fill in the meantime.
+   *   The destination funds have NOT arrived yet.
    */
   status: 'filled' | 'pending' | 'expired' | 'refunded' | 'slowFillRequested'
 
