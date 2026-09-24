@@ -2,9 +2,10 @@ import { PublicKey } from '@solana/web3.js'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 
 /**
- * TS port of `cow-settlement-interface`'s `OrderIntent` (interface/src/data/intent.rs, v0.4.0).
- * Every field here has a Rust counterpart with the same name; keep them in sync if the settlement
- * program's wire format changes.
+ * TS port of `cow-settlement-interface`'s order intent (interface/src/data/intent.rs, v0.4.1).
+ * The fields are the flat ones the encoding is made of, which is what the Rust `OrderIntent` looked
+ * like up to v0.4.0; since v0.4.1 it groups each side into a `TokenAsset`/`Asset`, but only in Rust —
+ * the bytes on the wire did not move. Keep them in sync if that ever changes.
  */
 export interface SolanaOrderIntent {
   owner: PublicKey

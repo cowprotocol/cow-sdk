@@ -27,8 +27,9 @@ export const COW_PROTOCOL_VAULT_RELAYER_ADDRESS_STAGING = mapAddressToSupportedN
  * CoW Protocol settlement program id on Solana (base58, not an EVM address).
  * The on-chain settlement-state PDA derived from this program is the SPL delegate a sell-token account
  * is approved to — the Solana analogue of the EVM vault relayer spender.
- * Released as `cow-settlement-interface` / `solana-programs` v0.4.0.
- * @see https://github.com/cowprotocol/solana-programs/releases/tag/v0.4
+ * Released as `cow-settlement-interface` / `solana-programs` v0.4.1, an in-place upgrade of the v0.4
+ * deployment rather than a new one, so the program id is unchanged.
+ * @see https://github.com/cowprotocol/solana-programs/releases/tag/v0.4.1
  */
 export const SOLANA_SETTLEMENT_PROGRAM_ID = 'C7PXyLpLQBh3Ce7e9DNj3rDVUvwqa5orDwQG5hs1rfNi'
 export const SOLANA_SETTLEMENT_PROGRAM_ID_STAGING = SOLANA_SETTLEMENT_PROGRAM_ID
@@ -37,6 +38,10 @@ export const SOLANA_SETTLEMENT_PROGRAM_ID_STAGING = SOLANA_SETTLEMENT_PROGRAM_ID
  * Major.minor version of the deployed settlement program, embedded in every settlement-program PDA seed
  * (see `SETTLEMENT_SEED` in `cow-settlement-interface`) to keep PDAs from colliding across versions. Must
  * be bumped together with `SOLANA_SETTLEMENT_PROGRAM_ID` whenever the settlement program is redeployed.
+ *
+ * The seed carries the major and minor components only (`CARGO_PKG_VERSION_MAJOR.MINOR`), so a patch
+ * release leaves this alone: v0.4.1 still derives `settlement v0.4`. Writing a patch version here would
+ * derive PDAs the deployed program never signs as.
  */
 export const SOLANA_SETTLEMENT_PROGRAM_VERSION = '0.4'
 
