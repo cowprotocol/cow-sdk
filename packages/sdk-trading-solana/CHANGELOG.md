@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.10.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.9.0...sdk-trading-solana-v0.10.0) (2026-09-25)
+
+
+### ✨ Features
+
+* **solana:** add limit order builder ([#1029](https://github.com/cowprotocol/cow-sdk/issues/1029)) ([7456023](https://github.com/cowprotocol/cow-sdk/commit/74560231fabb142069e6f796798105dbc0e06df8))
+
+
+### 🔧 Miscellaneous
+
+* bump contract version ([566f50f](https://github.com/cowprotocol/cow-sdk/commit/566f50f638c7462a25b2ac743f3a65e981ffb3a9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 6.0.7
+    * @cowprotocol/sdk-common bumped to 0.14.1
+    * @cowprotocol/sdk-config bumped to 2.7.1
+    * @cowprotocol/sdk-order-book bumped to 4.1.1
+    * @cowprotocol/sdk-trading bumped to 2.7.1
+
 ## [0.9.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.8.0...sdk-trading-solana-v0.9.0) (2026-09-21)
 
 
