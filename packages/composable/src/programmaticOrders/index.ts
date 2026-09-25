@@ -1,4 +1,5 @@
 export { ProgrammaticOrderApi } from './ProgrammaticOrderApi'
+export type { DeployedCowShed, GetDeployedCowShedsParams } from './cow-shed'
 export { deriveTwapStatus } from './deriveTwapStatus'
 export { ProgrammaticOrderApiError } from './types'
 export type {

@@ -3,6 +3,7 @@ import { CowEnv } from '@cowprotocol/sdk-config'
 import { OrderBookApi, UID } from '@cowprotocol/sdk-order-book'
 import { createApproveInstruction, getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { PublicKey, PublicKeyInitData, TransactionInstruction } from '@solana/web3.js'
+import { buildSolanaLimitOrderOrder, SolanaLimitOrderParams } from './buildLimitOrder'
 import { BuildSolanaSwapOrderOptions, buildSolanaSwapOrder, SolanaSwapOrder } from './buildSwapOrder'
 import { getSolanaQuote } from './getSolanaQuote'
 import { postSolanaSponsoredOrder } from './postSponsoredOrder'
@@ -73,6 +74,14 @@ export class SolanaTradingSdk {
     const delegate = getSolanaDelegateAuthority(this.options.env)
 
     return createApproveInstruction(sellTokenAccount, delegate, owner, params.approveAmount, undefined, tokenProgramId)
+  }
+
+  /**
+   * Builds a limit order at the caller's own price, without going through `getQuote` — see
+   * `buildSolanaLimitOrderOrder`. Uses the constructor-bound `env` unless `params.env` overrides it.
+   */
+  buildLimitOrder(params: SolanaLimitOrderParams): Promise<SolanaSwapOrder> {
+    return buildSolanaLimitOrderOrder({ env: this.options.env, ...params })
   }
 
   async getQuote(params: SolanaQuoteParameters, advancedSettings?: SwapAdvancedSettings): Promise<SolanaQuoteAndPost> {

@@ -135,6 +135,46 @@ hex string the CoW order-book API uses for EVM orders too, so it can be handled 
 UI/state code. `solanaQuote.orderPda` is the on-chain account the order lives at once the
 `CreateOrder` instruction lands.
 
+## Limit orders
+
+`getQuote`'s `buildOrder` always signs the market-quoted amount (± slippage) — correct for a swap,
+but wrong for a limit order that should rest on-chain at a price the caller chooses, not a snapshot
+of the market at signing time. `buildLimitOrder` builds that same kind of `CreateOrder` instruction
+directly from the caller's own `sellAmount`/`buyAmount`, without calling `getQuote` at all:
+
+```ts
+import { OrderKind } from '@cowprotocol/sdk-order-book'
+import { SolanaTradingSdk } from '@cowprotocol/sdk-trading-solana'
+
+const sdk = new SolanaTradingSdk()
+
+const { instruction, orderId, orderPda, uid } = await sdk.buildLimitOrder({
+  ownerAddress,
+  sellTokenAddress,
+  buyTokenAddress,
+  sellAmount, // bigint — the caller's own price, not a quoted amount
+  buyAmount,
+  kind: OrderKind.SELL,
+  validTo, // unix timestamp, seconds — when the order expires
+  partiallyFillable,
+  appData, // exactly 32 bytes, used as-is — see below
+})
+
+await sendMyTransaction([approveInstruction, instruction])
+```
+
+- Takes the same token-account/mint resolution as `getQuote` (native SOL → WSOL substitution,
+  `receiverAddress` defaulting to `ownerAddress`, `sellTokenProgramId`/`buyTokenProgramId` for
+  Token-2022 mints), but needs no upstream quote and no signer to build.
+- `appData` is used exactly as given — no hashing, no doc, no merging against a quoted value.
+  Solana has no agreed `appData` convention yet.
+  `hashAppDataDoc` is available if you want to derive them from an app-data doc yourself.
+- Still requires [Step 0](#step-0--approve-the-settlement-program-as-spl-delegate) before the order
+  can settle, and the returned `instruction` can be bundled with that approval the same way
+  `buildOrder`'s can.
+- Uses the `env` the `SolanaTradingSdk` instance was constructed with, unless overridden per call via
+  `env` in the params.
+
 ## The intent model
 
 Every Solana order is, at its core, a `SolanaOrderIntent` — a fixed-layout struct that is the direct

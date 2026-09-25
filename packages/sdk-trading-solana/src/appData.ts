@@ -1,15 +1,22 @@
 import { AppDataParams, LatestAppDataDocVersion, stringifyDeterministic } from '@cowprotocol/sdk-app-data'
 import deepmerge from 'deepmerge'
+import { keccak_256 } from '@noble/hashes/sha3'
 
 /**
- * Merges `override` into the quoted app-data doc and digests the result into the 32 opaque bytes
- * `SolanaOrderIntent.appData` carries on-chain.
+ * Digests an app-data doc into the 32 opaque bytes `SolanaOrderIntent.appData` carries on-chain.
  *
- * Unlike EVM's `appData` (keccak256 of the doc, via `mergeAppDataDoc` in `@cowprotocol/sdk-trading`),
- * this hashes with the Web Crypto API instead of an adapter's `keccak256`: the settlement program treats
- * `appData` as opaque with no defined convention yet, and every other function in this package is
+ * Uses the same keccak256 digest as EVM's `appData` (via `mergeAppDataDoc` in `@cowprotocol/sdk-trading`),
+ * but computes it directly with `@noble/hashes` instead of an adapter's `keccak256`: the settlement program
+ * treats `appData` as opaque with no defined convention yet, and every other function in this package is
  * deliberately adapter-free so a Solana-only integrator never needs an EVM provider configured.
  */
+export async function hashAppDataDoc(doc: LatestAppDataDocVersion): Promise<Uint8Array> {
+  const fullAppData = await stringifyDeterministic(doc)
+
+  return keccak_256(new TextEncoder().encode(fullAppData))
+}
+
+/** Merges `override` into `doc` and digests the result — see `hashAppDataDoc`. */
 export async function mergeAppData(doc: LatestAppDataDocVersion, override: AppDataParams): Promise<Uint8Array> {
   // Clear arrays that would otherwise be duplicated by deepmerge concatenating them with the override's.
   const clearedDoc = {
@@ -22,8 +29,6 @@ export async function mergeAppData(doc: LatestAppDataDocVersion, override: AppDa
   }
 
   const merged = deepmerge(clearedDoc, override) as LatestAppDataDocVersion
-  const fullAppData = await stringifyDeterministic(merged)
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(fullAppData))
 
-  return new Uint8Array(digest)
+  return hashAppDataDoc(merged)
 }

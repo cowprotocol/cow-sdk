@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.6.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-cow-shed-v0.6.0...sdk-cow-shed-v0.6.1) (2026-09-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.7.1
+    * @cowprotocol/sdk-common bumped to 0.14.1
+    * @cowprotocol/sdk-contracts-ts bumped to 3.7.1
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.17
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.17
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.32
+
+## [0.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-cow-shed-v0.5.2...sdk-cow-shed-v0.6.0) (2026-09-23)
+
+
+### ✨ Features
+
+* **cow-shed:** support v1.2.0 factory flow ([#1025](https://github.com/cowprotocol/cow-sdk/issues/1025)) ([9a14861](https://github.com/cowprotocol/cow-sdk/commit/9a14861d8a5b158bbda2b8a8a9b72d30c5f01466))
+
 ## [0.5.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-cow-shed-v0.5.1...sdk-cow-shed-v0.5.2) (2026-09-21)
 
 

@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.8.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.8.0...sdk-composable-v1.8.1) (2026-09-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.14.1
+    * @cowprotocol/sdk-config bumped to 2.7.1
+    * @cowprotocol/sdk-contracts-ts bumped to 3.7.1
+    * @cowprotocol/sdk-cow-shed bumped to 0.6.1
+    * @cowprotocol/sdk-order-book bumped to 4.1.1
+    * @cowprotocol/sdk-order-signing bumped to 1.1.13
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.17
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.17
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.32
+
+## [1.8.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.7.2...sdk-composable-v1.8.0) (2026-09-23)
+
+
+### ✨ Features
+
+* **cow-shed:** support v1.2.0 factory flow ([#1025](https://github.com/cowprotocol/cow-sdk/issues/1025)) ([9a14861](https://github.com/cowprotocol/cow-sdk/commit/9a14861d8a5b158bbda2b8a8a9b72d30c5f01466))
+* return cowsheds ([#1030](https://github.com/cowprotocol/cow-sdk/issues/1030)) ([83b9374](https://github.com/cowprotocol/cow-sdk/commit/83b9374b146d421bbbb4b143c4599b2da4d113a4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-cow-shed bumped to 0.6.0
+
 ## [1.7.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.7.1...sdk-composable-v1.7.2) (2026-09-21)
 
 

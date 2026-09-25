@@ -4,8 +4,9 @@ import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { encodeOrderIntent, ENCODED_ORDER_INTENT_SIZE, hashOrderIntent, SolanaOrderIntent, toHex } from './orderIntent'
 
 // Fixture ported verbatim from `cow-settlement-interface`'s own regression tests
-// (interface/src/data/intent.rs `sample_intent` + `encoding_regression`/`uid_digest_regression`),
-// so this test proves the TS port produces byte-identical output to the Rust program's own encoder.
+// (interface/src/data/intent.rs `sample_intent` + `encoding_regression`/`uid_digest_regression`,
+// v0.4.1), so this test proves the TS port produces byte-identical output to the Rust program's own
+// encoder.
 function fillPubkey(byte: number): PublicKey {
   return new PublicKey(new Uint8Array(32).fill(byte))
 }
