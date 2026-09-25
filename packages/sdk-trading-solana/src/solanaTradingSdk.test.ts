@@ -18,6 +18,9 @@ jest.mock('./postSwapOrderFromQuote', () => ({
 jest.mock('./buildSwapOrder', () => ({
   buildSolanaSwapOrder: jest.fn(),
 }))
+jest.mock('./postSponsoredOrder', () => ({
+  postSolanaSponsoredOrder: jest.fn(),
+}))
 jest.mock('./buildLimitOrder', () => ({
   buildSolanaLimitOrderOrder: jest.fn(),
 }))
@@ -25,6 +28,7 @@ jest.mock('./buildLimitOrder', () => ({
 import { buildSolanaLimitOrderOrder, SolanaLimitOrderParams } from './buildLimitOrder'
 import { buildSolanaSwapOrder, SolanaSwapOrder } from './buildSwapOrder'
 import { getSolanaQuote } from './getSolanaQuote'
+import { postSolanaSponsoredOrder } from './postSponsoredOrder'
 import { postSolanaSwapOrderFromQuote } from './postSwapOrderFromQuote'
 import { SolanaTradingSdk } from './solanaTradingSdk'
 import { SolanaQuote, SolanaQuoteParameters } from './types'
@@ -34,6 +38,7 @@ const mockPostSolanaSwapOrderFromQuote = postSolanaSwapOrderFromQuote as jest.Mo
   typeof postSolanaSwapOrderFromQuote
 >
 const mockBuildSolanaSwapOrder = buildSolanaSwapOrder as jest.MockedFunction<typeof buildSolanaSwapOrder>
+const mockPostSolanaSponsoredOrder = postSolanaSponsoredOrder as jest.MockedFunction<typeof postSolanaSponsoredOrder>
 const mockBuildSolanaLimitOrderOrder = buildSolanaLimitOrderOrder as jest.MockedFunction<
   typeof buildSolanaLimitOrderOrder
 >
@@ -79,7 +84,7 @@ const solanaQuoteFixture: SolanaQuote = {
   programId: fillPubkey(0x77),
 }
 
-const quoteResultsFixture = { fake: 'quoteResults' } as unknown as QuoteResults
+const quoteResultsFixture = { fake: 'quoteResults', quoteResponse: { id: 7 } } as unknown as QuoteResults
 
 const quoteFixture = { quoteResults: quoteResultsFixture, solanaQuote: solanaQuoteFixture }
 
@@ -98,6 +103,7 @@ describe('SolanaTradingSdk', () => {
     mockGetSolanaQuote.mockReset()
     mockPostSolanaSwapOrderFromQuote.mockReset()
     mockBuildSolanaSwapOrder.mockReset()
+    mockPostSolanaSponsoredOrder.mockReset()
     mockBuildSolanaLimitOrderOrder.mockReset()
     mockGetSolanaQuote.mockResolvedValue(quoteFixture)
   })
@@ -144,8 +150,21 @@ describe('SolanaTradingSdk', () => {
     const { buildOrder } = await sdk.getQuote(params)
     const order = await buildOrder()
 
-    expect(mockBuildSolanaSwapOrder).toHaveBeenCalledWith(quoteFixture, undefined)
+    expect(mockBuildSolanaSwapOrder).toHaveBeenCalledWith(quoteFixture, undefined, undefined)
     expect(order).toBe(swapOrderFixture)
+  })
+
+  // The sponsor is a deployment-level address the caller learns at order time, not something the SDK
+  // can be constructed with.
+  it('buildOrder forwards a per-call sponsor', async () => {
+    mockBuildSolanaSwapOrder.mockResolvedValue(swapOrderFixture)
+    const sponsor = fillPubkey(0xaa)
+    const sdk = new SolanaTradingSdk()
+
+    const { buildOrder } = await sdk.getQuote(params)
+    await buildOrder(undefined, { sponsor })
+
+    expect(mockBuildSolanaSwapOrder).toHaveBeenCalledWith(quoteFixture, undefined, { sponsor })
   })
 
   it('buildOrder forwards advancedSettings', async () => {
@@ -156,7 +175,7 @@ describe('SolanaTradingSdk', () => {
     const { buildOrder } = await sdk.getQuote(params)
     await buildOrder(advancedSettings)
 
-    expect(mockBuildSolanaSwapOrder).toHaveBeenCalledWith(quoteFixture, advancedSettings)
+    expect(mockBuildSolanaSwapOrder).toHaveBeenCalledWith(quoteFixture, advancedSettings, undefined)
   })
 
   it('postSwapOrderFromQuote takes signAndSend per call, not at construction', async () => {
@@ -186,6 +205,38 @@ describe('SolanaTradingSdk', () => {
       signAndSend,
       advancedSettings,
       signingStepManager,
+    )
+  })
+
+  it('postSponsoredOrder ties the order back to this quote', async () => {
+    mockPostSolanaSponsoredOrder.mockResolvedValue('0xdeadbeef')
+    const sdk = new SolanaTradingSdk({ env: 'staging' })
+
+    const { postSponsoredOrder } = await sdk.getQuote(params)
+    const uid = await postSponsoredOrder('AQABAgMEBQY=')
+
+    expect(mockPostSolanaSponsoredOrder).toHaveBeenCalledWith(
+      { transaction: 'AQABAgMEBQY=', quoteId: 7 },
+      { env: 'staging', orderBookApi: undefined },
+    )
+    expect(uid).toBe('0xdeadbeef')
+  })
+
+  // The endpoint answers `id: null` when it could not store the quote; posting that null back would be
+  // a claim about a quote that does not exist.
+  it('postSponsoredOrder omits the quoteId when the quote was not stored', async () => {
+    mockGetSolanaQuote.mockResolvedValue({
+      ...quoteFixture,
+      quoteResults: { quoteResponse: { id: null } } as unknown as QuoteResults,
+    })
+    const sdk = new SolanaTradingSdk()
+
+    const { postSponsoredOrder } = await sdk.getQuote(params)
+    await postSponsoredOrder('AQABAgMEBQY=')
+
+    expect(mockPostSolanaSponsoredOrder).toHaveBeenCalledWith(
+      { transaction: 'AQABAgMEBQY=', quoteId: undefined },
+      expect.anything(),
     )
   })
 

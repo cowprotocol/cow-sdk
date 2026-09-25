@@ -37,6 +37,12 @@ describe('buildSolanaLimitOrderOrder', () => {
     expect(order.intent.buyAmount).toBe(222n)
   })
 
+  it('names the owner as fee payer — a limit order has no sponsor option', async () => {
+    const order = await buildSolanaLimitOrderOrder(buildParams())
+
+    expect(order.feePayer.toBase58()).toBe(OWNER.toBase58())
+  })
+
   it('resolves sellTokenAccount/buyTokenAccount as the owner/receiver associated token accounts', async () => {
     const order = await buildSolanaLimitOrderOrder(buildParams())
 

@@ -83,6 +83,8 @@ export async function buildSolanaLimitOrderOrder(params: SolanaLimitOrderParams)
 
   return {
     instruction,
+    // No sponsor option here yet, so the owner both authenticates the order and funds its PDA's rent.
+    feePayer: owner,
     orderId: toOrderId(uid),
     uid,
     orderPda,

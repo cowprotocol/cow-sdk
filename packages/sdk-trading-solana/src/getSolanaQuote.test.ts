@@ -1,6 +1,12 @@
 import { PublicKey } from '@solana/web3.js'
 import { getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token'
-import { OrderKind, OrderBookApi, OrderQuoteRequest, OrderQuoteResponse, PriceQuality } from '@cowprotocol/sdk-order-book'
+import {
+  OrderKind,
+  OrderBookApi,
+  OrderQuoteRequest,
+  PriceQuality,
+  SolanaQuoteResponse,
+} from '@cowprotocol/sdk-order-book'
 import {
   SOL_NATIVE_CURRENCY_ADDRESS,
   SOLANA_SETTLEMENT_PROGRAM_ID,
@@ -20,15 +26,20 @@ describe('getSolanaQuote', () => {
   const sellTokenDecimals = 6
   const buyTokenDecimals = 9
 
-  const getQuoteMock = jest.fn<Promise<OrderQuoteResponse>, [OrderQuoteRequest]>()
-  const orderBookApiMock = { getQuote: getQuoteMock } as unknown as OrderBookApi
+  const SOLANA_CONTEXT = { chainId: SupportedChainId.SOLANA }
+
+  const getSolanaQuoteMock = jest.fn<Promise<SolanaQuoteResponse>, [OrderQuoteRequest, unknown]>()
+  const orderBookApiMock = { getSolanaQuote: getSolanaQuoteMock } as unknown as OrderBookApi
 
   beforeEach(() => {
-    getQuoteMock.mockReset()
+    getSolanaQuoteMock.mockReset()
   })
 
-  function mockQuoteResponse(overrides: Partial<OrderQuoteResponse['quote']> = {}): void {
-    getQuoteMock.mockResolvedValueOnce({
+  function quoteResponseFixture(
+    overrides: Partial<SolanaQuoteResponse['quote']> = {},
+    funder?: string,
+  ): SolanaQuoteResponse {
+    return {
       quote: {
         sellToken: sellMint.toBase58(),
         buyToken: buyMint.toBase58(),
@@ -45,7 +56,12 @@ describe('getSolanaQuote', () => {
       from: owner.toBase58(),
       expiration: '2024-01-01T00:30:00.000Z',
       verified: false,
-    } as OrderQuoteResponse)
+      ...(funder ? { funder } : undefined),
+    } as SolanaQuoteResponse
+  }
+
+  function mockQuoteResponse(overrides: Partial<SolanaQuoteResponse['quote']> = {}): void {
+    getSolanaQuoteMock.mockResolvedValueOnce(quoteResponseFixture(overrides))
   }
 
   it('builds a quote from a CoW Protocol quote response', async () => {
@@ -121,7 +137,7 @@ describe('getSolanaQuote', () => {
         { orderBookApi: orderBookApiMock },
       )
 
-      expect(getQuoteMock).toHaveBeenCalledWith(
+      expect(getSolanaQuoteMock).toHaveBeenCalledWith(
         expect.objectContaining({
           kind: 'sell',
           sellAmountBeforeFee: '1000000000',
@@ -130,6 +146,7 @@ describe('getSolanaQuote', () => {
           buyToken: buyMint.toBase58(),
           receiver: receiver.toBase58(),
         }),
+        SOLANA_CONTEXT,
       )
     })
 
@@ -150,11 +167,12 @@ describe('getSolanaQuote', () => {
         { orderBookApi: orderBookApiMock },
       )
 
-      expect(getQuoteMock).toHaveBeenCalledWith(
+      expect(getSolanaQuoteMock).toHaveBeenCalledWith(
         expect.objectContaining({
           kind: 'buy',
           buyAmountAfterFee: '9707507795',
         }),
+        SOLANA_CONTEXT,
       )
     })
 
@@ -184,7 +202,10 @@ describe('getSolanaQuote', () => {
 
         await quoteWithPriceQuality()
 
-        expect(getQuoteMock).toHaveBeenCalledWith(expect.objectContaining({ priceQuality: PriceQuality.VERIFIED }))
+        expect(getSolanaQuoteMock).toHaveBeenCalledWith(
+          expect.objectContaining({ priceQuality: PriceQuality.VERIFIED }),
+          SOLANA_CONTEXT,
+        )
       })
 
       it('falls back to advancedSettings.quoteRequest.priceQuality when the caller sets none', async () => {
@@ -192,7 +213,10 @@ describe('getSolanaQuote', () => {
 
         await quoteWithPriceQuality(undefined, { quoteRequest: { priceQuality: PriceQuality.FAST } })
 
-        expect(getQuoteMock).toHaveBeenCalledWith(expect.objectContaining({ priceQuality: PriceQuality.FAST }))
+        expect(getSolanaQuoteMock).toHaveBeenCalledWith(
+          expect.objectContaining({ priceQuality: PriceQuality.FAST }),
+          SOLANA_CONTEXT,
+        )
       })
 
       it('prefers the caller-supplied priceQuality over advancedSettings.quoteRequest.priceQuality', async () => {
@@ -200,7 +224,10 @@ describe('getSolanaQuote', () => {
 
         await quoteWithPriceQuality(PriceQuality.OPTIMAL, { quoteRequest: { priceQuality: PriceQuality.FAST } })
 
-        expect(getQuoteMock).toHaveBeenCalledWith(expect.objectContaining({ priceQuality: PriceQuality.OPTIMAL }))
+        expect(getSolanaQuoteMock).toHaveBeenCalledWith(
+          expect.objectContaining({ priceQuality: PriceQuality.OPTIMAL }),
+          SOLANA_CONTEXT,
+        )
       })
     })
   })
@@ -265,7 +292,7 @@ describe('getSolanaQuote', () => {
         'slippageBps must be a finite number greater than or equal to zero',
       )
 
-      expect(getQuoteMock).not.toHaveBeenCalled()
+      expect(getSolanaQuoteMock).not.toHaveBeenCalled()
     })
   })
 
@@ -406,7 +433,7 @@ describe('getSolanaQuote', () => {
       ),
     ).rejects.toThrow('validForSeconds must be a finite number greater than zero')
 
-    expect(getQuoteMock).not.toHaveBeenCalled()
+    expect(getSolanaQuoteMock).not.toHaveBeenCalled()
   })
 
   describe('selling native SOL', () => {
@@ -430,7 +457,7 @@ describe('getSolanaQuote', () => {
     }
 
     function mockNativeSellQuoteResponse(): void {
-      getQuoteMock.mockResolvedValueOnce({
+      getSolanaQuoteMock.mockResolvedValueOnce({
         quote: {
           sellToken: wsolMint.toBase58(),
           buyToken: usdcMint.toBase58(),
@@ -446,7 +473,7 @@ describe('getSolanaQuote', () => {
         from: owner.toBase58(),
         expiration: '2024-01-01T00:30:00.000Z',
         verified: false,
-      } as OrderQuoteResponse)
+      } as SolanaQuoteResponse)
     }
 
     it('quotes against the WSOL mint, since the native sentinel is not a token mint', async () => {
@@ -454,10 +481,8 @@ describe('getSolanaQuote', () => {
 
       await quoteNativeSell()
 
-      expect(getQuoteMock).toHaveBeenCalledWith(
-        expect.objectContaining({ sellToken: wsolMint.toBase58() }),
-      )
-      expect(getQuoteMock.mock.calls[0]?.[0].sellToken).not.toBe(SOL_NATIVE_CURRENCY_ADDRESS)
+      expect(getSolanaQuoteMock).toHaveBeenCalledWith(expect.objectContaining({ sellToken: wsolMint.toBase58() }), SOLANA_CONTEXT)
+      expect(getSolanaQuoteMock.mock.calls[0]?.[0].sellToken).not.toBe(SOL_NATIVE_CURRENCY_ADDRESS)
     })
 
     it('builds the intent against the WSOL account the wrap step funds, not the System Program', async () => {
@@ -491,7 +516,7 @@ describe('getSolanaQuote', () => {
     })
 
     it('leaves an SPL sell mint untouched', async () => {
-      getQuoteMock.mockResolvedValueOnce({
+      getSolanaQuoteMock.mockResolvedValueOnce({
         quote: {
           sellToken: usdcMint.toBase58(),
           buyToken: wsolMint.toBase58(),
@@ -507,7 +532,7 @@ describe('getSolanaQuote', () => {
         from: owner.toBase58(),
         expiration: '2024-01-01T00:30:00.000Z',
         verified: false,
-      } as OrderQuoteResponse)
+      } as SolanaQuoteResponse)
 
       const { solanaQuote, quoteResults } = await getSolanaQuote(
         {
@@ -523,7 +548,10 @@ describe('getSolanaQuote', () => {
         { orderBookApi: orderBookApiMock },
       )
 
-      expect(getQuoteMock).toHaveBeenCalledWith(expect.objectContaining({ sellToken: usdcMint.toBase58() }))
+      expect(getSolanaQuoteMock).toHaveBeenCalledWith(
+        expect.objectContaining({ sellToken: usdcMint.toBase58() }),
+        SOLANA_CONTEXT,
+      )
       expect(solanaQuote.intent.sellMint.toBase58()).toBe(usdcMint.toBase58())
       expect(quoteResults.tradeParameters.sellToken).toBe(usdcMint.toBase58())
     })
@@ -589,5 +617,100 @@ describe('getSolanaQuote', () => {
 
     expect(token2022Quote.intent.sellTokenAccount.toBase58()).not.toBe(classicQuote.intent.sellTokenAccount.toBase58())
     expect(token2022Quote.intent.buyTokenAccount.toBase58()).not.toBe(classicQuote.intent.buyTokenAccount.toBase58())
+  })
+
+  // The funder rotates on the back end's schedule, so it is read from the quote rather than pinned in
+  // the SDK: a stale address is rejected as `WrongFeePayer`.
+  describe('funder', () => {
+    function quote(): ReturnType<typeof getSolanaQuote> {
+      return getSolanaQuote(
+        {
+          ownerAddress: owner,
+          receiverAddress: receiver,
+          sellTokenAddress: sellMint,
+          sellTokenDecimals,
+          buyTokenAddress: buyMint,
+          buyTokenDecimals,
+          amount: 1_000_000_000n,
+          kind: OrderKind.SELL,
+        },
+        { orderBookApi: orderBookApiMock },
+      )
+    }
+
+    it('exposes the funder the deployment reported', async () => {
+      const funder = '6vFq2dRADQkpDAJK64Vm4JpEBygByRpjicwf4US9f9QW'
+      getSolanaQuoteMock.mockResolvedValueOnce(quoteResponseFixture({}, funder))
+
+      const { solanaQuote } = await quote()
+
+      expect(solanaQuote.funder?.toBase58()).toBe(funder)
+    })
+
+    it('leaves it unset when the deployment has no sponsoring', async () => {
+      mockQuoteResponse()
+
+      const { solanaQuote } = await quote()
+
+      expect(solanaQuote.funder).toBeUndefined()
+    })
+  })
+
+  describe('default order book client', () => {
+    function quoteWithDefaultClient(env?: 'prod' | 'staging'): {
+      quote: ReturnType<typeof getSolanaQuote>
+      context: () => OrderBookApi['context'] | undefined
+      restore: () => void
+    } {
+      let seen: OrderBookApi['context'] | undefined
+      const spy = jest.spyOn(OrderBookApi.prototype, 'getSolanaQuote').mockImplementation(function (this: OrderBookApi) {
+        seen = this.context
+
+        return Promise.resolve(quoteResponseFixture())
+      })
+
+      const quote = getSolanaQuote(
+        {
+          ownerAddress: owner,
+          receiverAddress: receiver,
+          sellTokenAddress: sellMint,
+          sellTokenDecimals,
+          buyTokenAddress: buyMint,
+          buyTokenDecimals,
+          amount: 1_000_000_000n,
+          kind: OrderKind.SELL,
+        },
+        env ? { env } : {},
+      )
+
+      return { quote, context: () => seen, restore: () => spy.mockRestore() }
+    }
+
+    it('builds it for Solana', async () => {
+      const { quote, context, restore } = quoteWithDefaultClient('staging')
+
+      try {
+        await quote
+
+        expect(context()?.chainId).toBe(SupportedChainId.SOLANA)
+        expect(context()?.env).toBe('staging')
+      } finally {
+        restore()
+      }
+    })
+
+    // An explicit `env: undefined` would land on staging: the client resolves anything but `prod` to
+    // the staging base urls, so the default must survive rather than be overwritten.
+    it('stays on prod when no env is given', async () => {
+      const { quote, context, restore } = quoteWithDefaultClient()
+
+      try {
+        await quote
+
+        expect(context()?.env).toBe('prod')
+      } finally {
+        restore()
+      }
+    })
   })
 })
