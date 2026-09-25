@@ -135,6 +135,52 @@ hex string the CoW order-book API uses for EVM orders too, so it can be handled 
 UI/state code. `solanaQuote.orderPda` is the on-chain account the order lives at once the
 `CreateOrder` instruction lands.
 
+## Cancelling an order
+
+`cancelOrder` builds the `CancelOrder` instruction for an order at a given PDA, without sending it.
+Cancelling is idempotent — cancelling an already-cancelled order does nothing:
+
+```ts
+const sdk = new SolanaTradingSdk()
+
+const cancelInstruction = sdk.cancelOrder({
+  ownerAddress: owner, // must match the order's intent owner; signs the transaction
+  orderPda, // from buildOrder / buildLimitOrder / findOrderPda
+})
+
+await sendMyTransaction([cancelInstruction])
+```
+
+This is the cheaper, common form: it requires the order to already be on-chain — its data is recovered
+from `orderPda` and only its `cancelled` flag is set. If the order might not exist on-chain yet (e.g.
+cancelling before its `CreateOrder` instruction has landed), pass `intent` too; the instruction then
+creates the order already cancelled instead of failing, funding its rent from `createdByAddress`
+(defaults to `ownerAddress`), which must sign in that case:
+
+```ts
+sdk.cancelOrder({ ownerAddress: owner, orderPda, intent, createdByAddress: sponsor })
+```
+
+### Cancelling several orders in one transaction
+
+The settlement program has no dedicated batch-cancel instruction, but a Solana transaction holds
+multiple instructions natively, so cancelling several orders atomically just means bundling their
+individual `CancelOrder` instructions into one transaction. `cancelOrders` builds one instruction per
+entry — accounts shared across entries (`owner`, `createdBy`, the System Program) get deduplicated when
+the transaction is compiled, so batches for a single owner are cheap:
+
+```ts
+const cancelInstructions = sdk.cancelOrders([
+  { ownerAddress: owner, orderPda: orderPdaA },
+  { ownerAddress: owner, orderPda: orderPdaB },
+])
+
+await sendMyTransaction(cancelInstructions)
+```
+
+A legacy transaction is capped at 1232 bytes total, so very large batches may need to be split across
+multiple transactions.
+
 ## Limit orders
 
 `getQuote`'s `buildOrder` always signs the market-quoted amount (± slippage) — correct for a swap,
@@ -241,6 +287,19 @@ intent it encodes.
 - **data**: `[discriminator = 2, ...213 intent bytes]`
 - **accounts**: `owner` (readonly signer), `createdBy` (writable signer — funds the new order PDA's
   rent; may equal `owner`), `orderPda` (writable), the System Program
+
+### The `CancelOrder` instruction
+
+`buildCancelOrderInstruction` (used by `SolanaTradingSdk.cancelOrder`) builds the counterpart
+instruction that cancels an order, matching `CancelOrder::into::<Instruction>()` — the `intent_bytes`
+field on the wire is optional (`cow-settlement-interface` v0.4.1):
+
+- **data**: `[discriminator = 11]` alone to cancel an order already on-chain (its data is recovered
+  from `orderPda`), or `[discriminator = 11, ...213 intent bytes]` to also create it already cancelled
+  if `orderPda` doesn't exist yet
+- **accounts**: `owner` (readonly signer), `createdBy`, `orderPda` (writable), the System Program —
+  `createdBy` is a writable signer only in the create-cancelled form, since only that form moves rent
+- Idempotent: cancelling an already-cancelled order does nothing
 
 ### Authentication: why `createdOnChain` must be `true`
 
