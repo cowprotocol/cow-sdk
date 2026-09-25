@@ -43,7 +43,7 @@ export const SOLANA_SETTLEMENT_PROGRAM_ID_STAGING = SOLANA_SETTLEMENT_PROGRAM_ID
  * release leaves this alone: v0.4.1 still derives `settlement v0.4`. Writing a patch version here would
  * derive PDAs the deployed program never signs as.
  */
-export const SOLANA_SETTLEMENT_PROGRAM_VERSION = '0.4'
+export const SOLANA_SETTLEMENT_PROGRAM_VERSION = '0.4.1'
 
 /**
  * Staging counterpart of `SOLANA_SETTLEMENT_PROGRAM_VERSION`. The version is a property of a specific
