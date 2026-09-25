@@ -1,6 +1,7 @@
 import { Keypair, PublicKey } from '@solana/web3.js'
 import { getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token'
 import { OrderKind, SigningScheme } from '@cowprotocol/sdk-order-book'
+import { SOL_NATIVE_CURRENCY_ADDRESS } from '@cowprotocol/sdk-config'
 import type { QuoteResults } from '@cowprotocol/sdk-trading'
 
 import { mergeAppData } from './appData'
@@ -13,7 +14,10 @@ function fillPubkey(byte: number): PublicKey {
   return new PublicKey(new Uint8Array(32).fill(byte))
 }
 
-async function buildFixtureQuote(buyTokenProgramId?: PublicKey): Promise<SolanaQuote> {
+async function buildFixtureQuote(
+  buyTokenProgramId?: PublicKey,
+  intentOverrides: Partial<SolanaOrderIntent> = {},
+): Promise<SolanaQuote> {
   const programId = fillPubkey(0x01)
   const intent: SolanaOrderIntent = {
     owner: fillPubkey(0x11),
@@ -28,6 +32,7 @@ async function buildFixtureQuote(buyTokenProgramId?: PublicKey): Promise<SolanaQ
     partiallyFillable: false,
     createdOnChain: true,
     appData: new Uint8Array(32),
+    ...intentOverrides,
   }
   const intentBytes = encodeOrderIntent(intent)
   const uid = await hashOrderIntent(intentBytes)
@@ -124,6 +129,22 @@ describe('buildSolanaSwapOrder', () => {
     expect(order.orderPda.toBase58()).not.toBe(solanaQuote.orderPda.toBase58())
     expect(order.orderId).toBe(toOrderId(expectedUid))
     expect(order.orderId).not.toBe(toOrderId(solanaQuote.uid))
+  })
+
+  it('overriding the receiver on a native-SOL buy names that account itself, not a token account', async () => {
+    const solanaQuote = await buildFixtureQuote(undefined, {
+      buyMint: new PublicKey(SOL_NATIVE_CURRENCY_ADDRESS),
+    })
+    const newReceiver = Keypair.generate().publicKey
+
+    const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, {
+      quoteRequest: { receiver: newReceiver.toBase58() },
+    })
+
+    expect(order.intent.buyTokenAccount.toBase58()).toBe(newReceiver.toBase58())
+    expect(order.intent.buyTokenAccount.toBase58()).not.toBe(
+      getAssociatedTokenAddressSync(solanaQuote.intent.buyMint, newReceiver, false).toBase58(),
+    )
   })
 
   it('overriding validTo re-derives uid/orderPda to match the posted intent', async () => {
