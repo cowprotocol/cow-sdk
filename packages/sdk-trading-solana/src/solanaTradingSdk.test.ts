@@ -18,7 +18,11 @@ jest.mock('./postSwapOrderFromQuote', () => ({
 jest.mock('./buildSwapOrder', () => ({
   buildSolanaSwapOrder: jest.fn(),
 }))
+jest.mock('./buildLimitOrder', () => ({
+  buildSolanaLimitOrderOrder: jest.fn(),
+}))
 
+import { buildSolanaLimitOrderOrder, SolanaLimitOrderParams } from './buildLimitOrder'
 import { buildSolanaSwapOrder, SolanaSwapOrder } from './buildSwapOrder'
 import { getSolanaQuote } from './getSolanaQuote'
 import { postSolanaSwapOrderFromQuote } from './postSwapOrderFromQuote'
@@ -30,6 +34,9 @@ const mockPostSolanaSwapOrderFromQuote = postSolanaSwapOrderFromQuote as jest.Mo
   typeof postSolanaSwapOrderFromQuote
 >
 const mockBuildSolanaSwapOrder = buildSolanaSwapOrder as jest.MockedFunction<typeof buildSolanaSwapOrder>
+const mockBuildSolanaLimitOrderOrder = buildSolanaLimitOrderOrder as jest.MockedFunction<
+  typeof buildSolanaLimitOrderOrder
+>
 
 function fillPubkey(byte: number): PublicKey {
   return new PublicKey(new Uint8Array(32).fill(byte))
@@ -91,6 +98,7 @@ describe('SolanaTradingSdk', () => {
     mockGetSolanaQuote.mockReset()
     mockPostSolanaSwapOrderFromQuote.mockReset()
     mockBuildSolanaSwapOrder.mockReset()
+    mockBuildSolanaLimitOrderOrder.mockReset()
     mockGetSolanaQuote.mockResolvedValue(quoteFixture)
   })
 
@@ -179,6 +187,48 @@ describe('SolanaTradingSdk', () => {
       advancedSettings,
       signingStepManager,
     )
+  })
+
+  describe('buildLimitOrder', () => {
+    const limitOrderParams: SolanaLimitOrderParams = {
+      ownerAddress: owner,
+      sellTokenAddress: sellMint,
+      buyTokenAddress: buyMint,
+      sellAmount: 1_000_000n,
+      buyAmount: 999_000n,
+      kind: OrderKind.SELL,
+      validTo: 1_700_000_000,
+      partiallyFillable: false,
+      appData: new Uint8Array(32).fill(0xab),
+    }
+
+    it('delegates to buildSolanaLimitOrderOrder with the given params', async () => {
+      mockBuildSolanaLimitOrderOrder.mockResolvedValue(swapOrderFixture)
+      const sdk = new SolanaTradingSdk()
+
+      const order = await sdk.buildLimitOrder(limitOrderParams)
+
+      expect(mockBuildSolanaLimitOrderOrder).toHaveBeenCalledWith({ env: undefined, ...limitOrderParams })
+      expect(order).toBe(swapOrderFixture)
+    })
+
+    it('forwards the constructor-bound env to buildSolanaLimitOrderOrder', async () => {
+      mockBuildSolanaLimitOrderOrder.mockResolvedValue(swapOrderFixture)
+      const sdk = new SolanaTradingSdk({ env: 'staging' })
+
+      await sdk.buildLimitOrder(limitOrderParams)
+
+      expect(mockBuildSolanaLimitOrderOrder).toHaveBeenCalledWith({ ...limitOrderParams, env: 'staging' })
+    })
+
+    it("lets params.env override the SDK's constructor-bound env", async () => {
+      mockBuildSolanaLimitOrderOrder.mockResolvedValue(swapOrderFixture)
+      const sdk = new SolanaTradingSdk({ env: 'staging' })
+
+      await sdk.buildLimitOrder({ ...limitOrderParams, env: 'prod' })
+
+      expect(mockBuildSolanaLimitOrderOrder).toHaveBeenCalledWith({ ...limitOrderParams, env: 'prod' })
+    })
   })
 
   describe('approveCowProtocol', () => {
