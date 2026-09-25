@@ -5,10 +5,12 @@ import { createApproveInstruction, getAssociatedTokenAddressSync } from '@solana
 import { PublicKey, PublicKeyInitData, TransactionInstruction } from '@solana/web3.js'
 import { buildSolanaLimitOrderOrder, SolanaLimitOrderParams } from './buildLimitOrder'
 import { BuildSolanaSwapOrderOptions, buildSolanaSwapOrder, SolanaSwapOrder } from './buildSwapOrder'
+import { buildCancelOrderInstruction } from './cancelOrderInstruction'
 import { getSolanaQuote } from './getSolanaQuote'
+import { SolanaOrderIntent } from './orderIntent'
 import { postSolanaSponsoredOrder } from './postSponsoredOrder'
 import { postSolanaSwapOrderFromQuote } from './postSwapOrderFromQuote'
-import { getSolanaDelegateAuthority } from './statePda'
+import { getSolanaDelegateAuthority, getSolanaSettlementProgramId } from './statePda'
 import { SolanaQuote, SolanaQuoteParameters, SolanaSignAndSend } from './types'
 
 export interface SolanaTradingSdkOptions {
@@ -26,6 +28,22 @@ export interface ApproveCowProtocolParams {
   /** Token program owning the sell mint's accounts (classic SPL Token vs Token-2022). Defaults to the
    * classic SPL Token program — pass `TOKEN_2022_PROGRAM_ID` explicitly for Token-2022 mints. */
   sellTokenProgramId?: PublicKeyInitData
+}
+
+export interface CancelOrderParams {
+  /** Must match the order's intent owner; signs the cancellation transaction. */
+  ownerAddress: PublicKeyInitData
+  /** The order's PDA — see `findOrderPda`, or `orderPda` from `buildOrder`/`buildLimitOrder`. */
+  orderPda: PublicKeyInitData
+  /**
+   * Present only to create the order already cancelled if it doesn't exist on-chain yet. Omit for the
+   * cheaper, more common case of cancelling an order that's already on-chain: its data is recovered from
+   * `orderPda` and only its `cancelled` flag is set.
+   */
+  intent?: SolanaOrderIntent
+  /** Funds the order PDA's rent and must sign when `intent` is given; unused otherwise. Defaults to
+   * `ownerAddress`. */
+  createdByAddress?: PublicKeyInitData
 }
 
 /**
@@ -74,6 +92,32 @@ export class SolanaTradingSdk {
     const delegate = getSolanaDelegateAuthority(this.options.env)
 
     return createApproveInstruction(sellTokenAccount, delegate, owner, params.approveAmount, undefined, tokenProgramId)
+  }
+
+  /**
+   * Builds the `CancelOrder` instruction for an order at `orderPda`, without sending it — see
+   * `buildCancelOrderInstruction` for the on-chain semantics. Cancelling is idempotent.
+   */
+  cancelOrder(params: CancelOrderParams): TransactionInstruction {
+    return buildCancelOrderInstruction({
+      programId: getSolanaSettlementProgramId(this.options.env),
+      owner: new PublicKey(params.ownerAddress),
+      orderPda: new PublicKey(params.orderPda),
+      intent: params.intent,
+      createdBy: params.createdByAddress ? new PublicKey(params.createdByAddress) : undefined,
+    })
+  }
+
+  /**
+   * Builds one `CancelOrder` instruction per entry in `paramsList`, without sending them. There is no
+   * dedicated batch-cancel instruction in the settlement program, so cancelling several orders atomically
+   * means bundling their individual `CancelOrder` instructions into one transaction yourself — Solana
+   * transactions hold multiple instructions natively, and shared accounts (`owner`, `createdBy`, the
+   * System Program) are deduplicated when the transaction is compiled. A legacy transaction is capped at
+   * 1232 bytes, so very large batches may need to be split across multiple transactions.
+   */
+  cancelOrders(paramsList: CancelOrderParams[]): TransactionInstruction[] {
+    return paramsList.map((params) => this.cancelOrder(params))
   }
 
   /**
