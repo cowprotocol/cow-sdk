@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.1.1...sdk-order-book-v4.2.0) (2026-09-25)
+
+
+### ✨ Features
+
+* **solana:** add sponsored transactions ([#1027](https://github.com/cowprotocol/cow-sdk/issues/1027)) ([bf19e47](https://github.com/cowprotocol/cow-sdk/commit/bf19e4750951cef3db83875040b1ae32eb12c63e))
+
 ## [4.1.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.1.0...sdk-order-book-v4.1.1) (2026-09-25)
 
 

@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.11.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.10.0...sdk-trading-solana-v0.11.0) (2026-09-25)
+
+
+### ✨ Features
+
+* **solana:** add sponsored transactions ([#1027](https://github.com/cowprotocol/cow-sdk/issues/1027)) ([bf19e47](https://github.com/cowprotocol/cow-sdk/commit/bf19e4750951cef3db83875040b1ae32eb12c63e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-order-book bumped to 4.2.0
+    * @cowprotocol/sdk-trading bumped to 2.7.2
+
 ## [0.10.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.9.0...sdk-trading-solana-v0.10.0) (2026-09-25)
 
 
