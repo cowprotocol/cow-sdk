@@ -37,6 +37,9 @@ export interface SolanaQuote {
   /** Token program owning `intent.buyMint`'s accounts, as resolved at quote time — needed to re-derive
    * `buyTokenAccount`'s associated token address if `receiver` is overridden when posting. */
   buyTokenProgramId?: PublicKey
+  /** Pays for a sponsored order on this deployment — pass it as `sponsor` to `buildSolanaSwapOrder`
+   * and name it as the transaction's fee payer. Absent when the deployment has no sponsoring. */
+  funder?: PublicKey
 }
 
 /** Signs and submits a `CreateOrder` instruction; supplied by the caller since this SDK has no bound

@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.7.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.7.0...sdk-config-v2.7.1) (2026-09-25)
+
+
+### 🔧 Miscellaneous
+
+* bump contract version ([566f50f](https://github.com/cowprotocol/cow-sdk/commit/566f50f638c7462a25b2ac743f3a65e981ffb3a9))
+
 ## [2.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.6.0...sdk-config-v2.7.0) (2026-09-18)
 
 

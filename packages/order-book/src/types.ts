@@ -1,10 +1,30 @@
-import { Order } from './generated'
+import { Order, OrderQuoteResponse } from './generated'
 
 /**
  * An order with the total fee added.
  */
 export interface EnrichedOrder extends Order {
   totalFee: string
+}
+
+/**
+ * The Solana quote response. Same shape as the EVM one plus the deployment's funder, which the
+ * generated models cannot carry: they are produced from the EVM order book's openapi.
+ */
+export interface SolanaQuoteResponse extends OrderQuoteResponse {
+  /** Pays for sponsored orders. Absent when the deployment has no sponsoring configured. */
+  funder?: string
+}
+
+/**
+ * A sponsored Solana order. The owner signs the creation transaction but does not pay for it: the
+ * protocol's funder is its fee payer, countersigns it, and submits it.
+ */
+export interface SolanaOrderCreation {
+  /** The owner-signed, funder-unsigned creation transaction, base64. */
+  transaction: string
+  /** The id the quote endpoint answered for this order. Kept only when the quote matches the order. */
+  quoteId?: number
 }
 
 export interface Amounts<T> {
