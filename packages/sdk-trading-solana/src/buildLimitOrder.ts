@@ -6,7 +6,7 @@ import { SolanaSwapOrder } from './buildSwapOrder'
 import { buildCreateOrderInstruction } from './createOrderInstruction'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toOrderId } from './orderIntent'
 import { findOrderPda } from './orderPda'
-import { toSplMint } from './splMint'
+import { isNativeSolMint, toSplMint } from './splMint'
 import { getSolanaSettlementProgramId } from './statePda'
 
 export interface SolanaLimitOrderParams {
@@ -58,7 +58,10 @@ export async function buildSolanaLimitOrderOrder(params: SolanaLimitOrderParams)
     owner,
     sellTokenAccount: getAssociatedTokenAddressSync(sellMint, owner, false, sellTokenProgram),
     sellMint,
-    buyTokenAccount: getAssociatedTokenAddressSync(buyMint, receiver, false, buyTokenProgram),
+    // A native SOL buy is paid out as lamports, so it names the receiver's own account.
+    buyTokenAccount: isNativeSolMint(buyMint)
+      ? receiver
+      : getAssociatedTokenAddressSync(buyMint, receiver, false, buyTokenProgram),
     buyMint,
     sellAmount: params.sellAmount,
     buyAmount: params.buyAmount,

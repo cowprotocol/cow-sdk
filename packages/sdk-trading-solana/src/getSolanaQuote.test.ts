@@ -578,7 +578,7 @@ describe('getSolanaQuote', () => {
     }
 
     function mockNativeBuyQuoteResponse(): void {
-      getQuoteMock.mockResolvedValueOnce({
+      getSolanaQuoteMock.mockResolvedValueOnce({
         quote: {
           sellToken: usdcMint.toBase58(),
           buyToken: wsolMint.toBase58(),
@@ -594,7 +594,7 @@ describe('getSolanaQuote', () => {
         from: owner.toBase58(),
         expiration: '2024-01-01T00:30:00.000Z',
         verified: false,
-      } as OrderQuoteResponse)
+      } as SolanaQuoteResponse)
     }
 
     it('quotes against the WSOL mint, since the book answers NoLiquidity for the sentinel', async () => {
@@ -602,8 +602,11 @@ describe('getSolanaQuote', () => {
 
       await quoteNativeBuy()
 
-      expect(getQuoteMock).toHaveBeenCalledWith(expect.objectContaining({ buyToken: wsolMint.toBase58() }))
-      expect(getQuoteMock.mock.calls[0]?.[0].buyToken).not.toBe(SOL_NATIVE_CURRENCY_ADDRESS)
+      expect(getSolanaQuoteMock).toHaveBeenCalledWith(
+        expect.objectContaining({ buyToken: wsolMint.toBase58() }),
+        SOLANA_CONTEXT,
+      )
+      expect(getSolanaQuoteMock.mock.calls[0]?.[0].buyToken).not.toBe(SOL_NATIVE_CURRENCY_ADDRESS)
     })
 
     it('keeps the sentinel in the intent, which is what makes the program pay lamports', async () => {
