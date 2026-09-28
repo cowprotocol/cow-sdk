@@ -7,7 +7,7 @@ import type {
   SigningStepManager,
   SwapAdvancedSettings,
 } from '@cowprotocol/sdk-trading'
-import { getSolanaDelegateAuthority } from './statePda'
+import { getSolanaDelegateAuthority, getSolanaSettlementProgramId } from './statePda'
 
 jest.mock('./getSolanaQuote', () => ({
   getSolanaQuote: jest.fn(),
@@ -328,6 +328,84 @@ describe('SolanaTradingSdk', () => {
         getAssociatedTokenAddressSync(sellMint, owner, false, TOKEN_2022_PROGRAM_ID),
       )
       expect(instruction.programId).toEqual(TOKEN_2022_PROGRAM_ID)
+    })
+  })
+
+  describe('cancelOrder', () => {
+    const orderPda = fillPubkey(0x88)
+
+    it('builds a cancel instruction against the resolved settlement program', () => {
+      const sdk = new SolanaTradingSdk()
+
+      const instruction = sdk.cancelOrder({ ownerAddress: owner, orderPda })
+
+      expect(instruction.programId).toEqual(getSolanaSettlementProgramId())
+      expect(instruction.data).toEqual(Buffer.from([11]))
+      expect(instruction.keys).toEqual([
+        { pubkey: owner, isSigner: true, isWritable: false },
+        { pubkey: owner, isSigner: false, isWritable: false },
+        { pubkey: orderPda, isSigner: false, isWritable: true },
+        expect.objectContaining({ isSigner: false, isWritable: false }),
+      ])
+    })
+
+    it('uses the constructor-bound env to resolve the settlement program', () => {
+      const sdk = new SolanaTradingSdk({ env: 'staging' })
+
+      const instruction = sdk.cancelOrder({ ownerAddress: owner, orderPda })
+
+      expect(instruction.programId).toEqual(getSolanaSettlementProgramId('staging'))
+    })
+
+    it('encodes the intent and makes createdBy a writable signer when creating an already-cancelled order', () => {
+      const sdk = new SolanaTradingSdk()
+      const createdBy = fillPubkey(0xbb)
+
+      const instruction = sdk.cancelOrder({
+        ownerAddress: owner,
+        orderPda,
+        intent: solanaQuoteFixture.intent,
+        createdByAddress: createdBy,
+      })
+
+      expect(instruction.data.length).toBe(1 + 213)
+      expect(instruction.keys).toEqual([
+        { pubkey: owner, isSigner: true, isWritable: false },
+        { pubkey: createdBy, isSigner: true, isWritable: true },
+        { pubkey: orderPda, isSigner: false, isWritable: true },
+        expect.objectContaining({ isSigner: false, isWritable: false }),
+      ])
+    })
+  })
+
+  describe('cancelOrders', () => {
+    it('builds one CancelOrder instruction per entry, in order', () => {
+      const sdk = new SolanaTradingSdk()
+      const orderPdaA = fillPubkey(0x88)
+      const orderPdaB = fillPubkey(0x89)
+      const createdBy = fillPubkey(0xbb)
+
+      const instructions = sdk.cancelOrders([
+        { ownerAddress: owner, orderPda: orderPdaA },
+        { ownerAddress: owner, orderPda: orderPdaB, intent: solanaQuoteFixture.intent, createdByAddress: createdBy },
+      ])
+
+      expect(instructions).toHaveLength(2)
+      expect(instructions[0]).toEqual(sdk.cancelOrder({ ownerAddress: owner, orderPda: orderPdaA }))
+      expect(instructions[1]).toEqual(
+        sdk.cancelOrder({
+          ownerAddress: owner,
+          orderPda: orderPdaB,
+          intent: solanaQuoteFixture.intent,
+          createdByAddress: createdBy,
+        }),
+      )
+    })
+
+    it('returns an empty array for an empty list', () => {
+      const sdk = new SolanaTradingSdk()
+
+      expect(sdk.cancelOrders([])).toEqual([])
     })
   })
 })

@@ -6,6 +6,8 @@ export { getSettlementSeed } from './settlementSeed'
 export { findSettlementStatePda, getSolanaDelegateAuthority, getSolanaSettlementProgramId } from './statePda'
 export { buildCreateOrderInstruction } from './createOrderInstruction'
 export type { CreateOrderInstructionParams } from './createOrderInstruction'
+export { buildCancelOrderInstruction } from './cancelOrderInstruction'
+export type { CancelOrderInstructionParams } from './cancelOrderInstruction'
 export { getSolanaQuote } from './getSolanaQuote'
 export { buildSolanaSwapOrder } from './buildSwapOrder'
 export type { BuildSolanaSwapOrderOptions, SolanaSwapOrder, SolanaSwapOrderQuote } from './buildSwapOrder'
@@ -16,4 +18,9 @@ export { postSolanaSwapOrderFromQuote } from './postSwapOrderFromQuote'
 export { postSolanaSponsoredOrder } from './postSponsoredOrder'
 export type { PostSolanaSponsoredOrderOptions } from './postSponsoredOrder'
 export { SolanaTradingSdk } from './solanaTradingSdk'
-export type { ApproveCowProtocolParams, SolanaQuoteAndPost, SolanaTradingSdkOptions } from './solanaTradingSdk'
+export type {
+  ApproveCowProtocolParams,
+  CancelOrderParams,
+  SolanaQuoteAndPost,
+  SolanaTradingSdkOptions,
+} from './solanaTradingSdk'
