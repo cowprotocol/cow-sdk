@@ -34,6 +34,9 @@ export interface SolanaLimitOrderParams {
   sellTokenProgramId?: PublicKeyInitData
   /** Same as `sellTokenProgramId`, for `buyTokenAddress`. */
   buyTokenProgramId?: PublicKeyInitData
+  /** Funds the order PDA's rent and pays the transaction fee instead of the owner. It signs on the back
+   * end, never here, so a sponsored transaction leaves its signature slot empty. */
+  sponsor?: PublicKeyInitData
 }
 
 /**
@@ -76,18 +79,19 @@ export async function buildSolanaLimitOrderOrder(params: SolanaLimitOrderParams)
   const uid = await hashOrderIntent(intentBytes)
   const [orderPda] = findOrderPda(programId, uid, params.env)
 
+  const feePayer = params.sponsor ? new PublicKey(params.sponsor) : owner
+
   const instruction = buildCreateOrderInstruction({
     programId,
     owner,
-    createdBy: owner,
+    createdBy: feePayer,
     orderPda,
     intent,
   })
 
   return {
     instruction,
-    // No sponsor option here yet, so the owner both authenticates the order and funds its PDA's rent.
-    feePayer: owner,
+    feePayer,
     orderId: toOrderId(uid),
     uid,
     orderPda,

@@ -37,10 +37,29 @@ describe('buildSolanaLimitOrderOrder', () => {
     expect(order.intent.buyAmount).toBe(222n)
   })
 
-  it('names the owner as fee payer — a limit order has no sponsor option', async () => {
+  it('names the owner as fee payer when no sponsor is given', async () => {
     const order = await buildSolanaLimitOrderOrder(buildParams())
 
     expect(order.feePayer.toBase58()).toBe(OWNER.toBase58())
+  })
+
+  it('funds the order rent from the sponsor when one is given, leaving the owner as authenticator', async () => {
+    const sponsor = Keypair.generate().publicKey
+
+    const order = await buildSolanaLimitOrderOrder(buildParams({ sponsor }))
+
+    const accounts = order.instruction.keys.map((key) => key.pubkey.toBase58())
+    expect(accounts.slice(0, 2)).toEqual([OWNER.toBase58(), sponsor.toBase58()])
+    expect(order.feePayer.toBase58()).toBe(sponsor.toBase58())
+  })
+
+  // The settlement program's intent carries no `created_by`, so who pays cannot move the order's hash.
+  it('keeps the order identity independent of who pays for it', async () => {
+    const ownerPaid = await buildSolanaLimitOrderOrder(buildParams())
+    const sponsored = await buildSolanaLimitOrderOrder(buildParams({ sponsor: Keypair.generate().publicKey }))
+
+    expect(sponsored.orderId).toBe(ownerPaid.orderId)
+    expect(sponsored.orderPda.toBase58()).toBe(ownerPaid.orderPda.toBase58())
   })
 
   it('resolves sellTokenAccount/buyTokenAccount as the owner/receiver associated token accounts', async () => {
