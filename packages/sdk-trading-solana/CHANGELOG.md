@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.12.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.11.0...sdk-trading-solana-v0.12.0) (2026-09-28)
+
+
+### ✨ Features
+
+* **solana:** support buy sol orders ([#1032](https://github.com/cowprotocol/cow-sdk/issues/1032)) ([7627f89](https://github.com/cowprotocol/cow-sdk/commit/7627f89e531573203e6633d3cbd235d2fdf76412))
+* **solana:** support order cancellation ([#1034](https://github.com/cowprotocol/cow-sdk/issues/1034)) ([842085a](https://github.com/cowprotocol/cow-sdk/commit/842085a5ef5a656b1e8b616addd33c68bc978547))
+
 ## [0.11.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.10.0...sdk-trading-solana-v0.11.0) (2026-09-25)
 
 
