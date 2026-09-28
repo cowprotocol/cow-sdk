@@ -85,6 +85,29 @@ describe('buildSolanaLimitOrderOrder', () => {
     )
   })
 
+  it('names the receiver account itself for a native SOL buy, not an associated token account', async () => {
+    const receiver = Keypair.generate().publicKey
+
+    const order = await buildSolanaLimitOrderOrder(
+      buildParams({ buyTokenAddress: new PublicKey(SOL_NATIVE_CURRENCY_ADDRESS), receiverAddress: receiver }),
+    )
+
+    expect(order.intent.buyMint.toBase58()).toBe(SOL_NATIVE_CURRENCY_ADDRESS)
+    expect(order.intent.buyTokenAccount.toBase58()).toBe(receiver.toBase58())
+    expect(order.intent.buyTokenAccount.toBase58()).not.toBe(
+      getAssociatedTokenAddressSync(new PublicKey(SOL_NATIVE_CURRENCY_ADDRESS), receiver, false, undefined).toBase58(),
+    )
+  })
+
+  it('keeps an explicit WSOL buy a token trade, associated token account and all', async () => {
+    const order = await buildSolanaLimitOrderOrder(buildParams({ buyTokenAddress: WSOL_MINT }))
+
+    expect(order.intent.buyMint.toBase58()).toBe(WSOL_MINT.toBase58())
+    expect(order.intent.buyTokenAccount.toBase58()).toBe(
+      getAssociatedTokenAddressSync(WSOL_MINT, OWNER, false, undefined).toBase58(),
+    )
+  })
+
   it('respects an explicit token program id for a Token-2022 mint', async () => {
     const order = await buildSolanaLimitOrderOrder(
       buildParams({ buyTokenProgramId: TOKEN_2022_PROGRAM_ID, receiverAddress: OWNER }),

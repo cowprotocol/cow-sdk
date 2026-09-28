@@ -6,14 +6,19 @@ const NATIVE_SOL_MINT = new PublicKey(SOL_NATIVE_CURRENCY_ADDRESS)
 const WSOL_MINT = new PublicKey(WRAPPED_NATIVE_CURRENCIES[SupportedChainId.SOLANA].address)
 
 /**
- * CoW Protocol's quote and the settlement intent both address tokens by SPL mint, and native SOL has none.
- * Callers pass the native sentinel, so substitute WSOL — the same adjustment `getQuote` makes for EVM
- * eth-flow orders via `adjustEthFlowOrderParams`. Both have 9 decimals, so amounts carry over unchanged.
- *
- * This has to happen before the order intent is built, not just before requesting the quote: the intent's
- * `sellTokenAccount` is the associated token account of this mint, and only the WSOL one can ever hold
- * the wrapped lamports the caller's wrap step produces.
+ * Whether `mint` names native SOL rather than a real mint. The settlement program reads the same address
+ * as `ENCODED_NATIVE_SOL_TRANSFER`, so an intent carrying it moves lamports instead of tokens.
+ */
+export function isNativeSolMint(mint: PublicKey): boolean {
+  return mint.equals(NATIVE_SOL_MINT)
+}
+
+/**
+ * Quotes address tokens by SPL mint and native SOL has none, so the sentinel is answered with
+ * `NoLiquidity` and WSOL stands in — both have 9 decimals, so amounts carry over unchanged. Only the
+ * sell side carries the substitution into the intent, since a native sell is wrapped first; a native buy
+ * is paid out as lamports and keeps the sentinel.
  */
 export function toSplMint(mint: PublicKey): PublicKey {
-  return mint.equals(NATIVE_SOL_MINT) ? WSOL_MINT : mint
+  return isNativeSolMint(mint) ? WSOL_MINT : mint
 }
