@@ -425,7 +425,7 @@ describe('determineIntermediateToken', () => {
       })
 
       // WETH itself first, then its unwrapped version, before any token that needs a real swap
-      expect(result).toEqual([wethMainnet, nativeEth, usdcMainnet, randomToken])
+      expect(result.map(({ token }) => token)).toEqual([wethMainnet, nativeEth, usdcMainnet, randomToken])
     })
 
     it('should prefer WETH over stablecoins when selling native ETH', async () => {
@@ -450,7 +450,7 @@ describe('determineIntermediateToken', () => {
       })
 
       // Same order as before this priority existed: stablecoin, then native
-      expect(result).toEqual([usdcMainnet, nativeEth])
+      expect(result.map(({ token }) => token)).toEqual([usdcMainnet, nativeEth])
     })
   })
 
@@ -463,7 +463,7 @@ describe('determineIntermediateToken', () => {
         intermediateTokens: [randomToken, nativeEth, usdtMainnet, usdcMainnet],
       })
 
-      expect(result).toEqual([usdtMainnet, usdcMainnet, nativeEth, randomToken])
+      expect(result.map(({ token }) => token)).toEqual([usdtMainnet, usdcMainnet, nativeEth, randomToken])
     })
 
     it('should throw when there are no candidates', async () => {

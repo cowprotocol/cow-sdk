@@ -15,7 +15,7 @@ export interface IntermediateTokenContext {
 /**
  * Priority levels for intermediate token selection
  */
-enum TokenPriority {
+export enum TokenPriority {
   STABLECOIN_MATCHES_DESTINATION = 7, // The same stablecoin as destination token
   MATCHES_SELL = 6, // Same as sell token
   MATCHES_SELL_WRAPPED_OR_NATIVE = 5, // Native <-> wrapped native counterpart of sell token (e.g. WETH when selling ETH)
@@ -23,6 +23,11 @@ enum TokenPriority {
   CORRELATED = 3, // Tokens in CMS correlated tokens list
   NATIVE = 2, // Blockchain native token
   OTHER = 1, // Other tokens
+}
+
+export interface RankedIntermediateToken {
+  token: TokenInfo
+  priority: TokenPriority
 }
 
 /**
@@ -48,7 +53,7 @@ export async function determineIntermediateToken(context: IntermediateTokenConte
     })
   }
 
-  return result
+  return result.token
 }
 
 /**
@@ -58,7 +63,7 @@ export async function determineIntermediateToken(context: IntermediateTokenConte
  *
  * @throws {BridgeProviderQuoteError} If `intermediateTokens` is empty or undefined
  */
-export async function rankIntermediateTokens(context: IntermediateTokenContext): Promise<TokenInfo[]> {
+export async function rankIntermediateTokens(context: IntermediateTokenContext): Promise<RankedIntermediateToken[]> {
   const {
     sourceChainId,
     sourceTokenAddress,
@@ -75,9 +80,9 @@ export async function rankIntermediateTokens(context: IntermediateTokenContext):
     throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_INTERMEDIATE_TOKENS, { intermediateTokens })
   }
 
-  // If only one token, return it immediately
+  // If only one token, return it immediately. Its priority is irrelevant since there is nothing to rank it against
   if (intermediateTokens.length === 1) {
-    return [firstToken]
+    return [{ token: firstToken, priority: TokenPriority.OTHER }]
   }
 
   const correlatedTokens = await resolveCorrelatedTokens(sourceChainId, getCorrelatedTokens)
@@ -93,7 +98,7 @@ export async function rankIntermediateTokens(context: IntermediateTokenContext):
   const sellToken = { chainId: sourceChainId, address: sourceTokenAddress }
 
   // Calculate priority for each token
-  const tokensWithPriority = filteredTokens.map((token) => {
+  const tokensWithPriority = filteredTokens.map((token): RankedIntermediateToken => {
     const isStableCoin = isStablecoinPriorityToken(token.chainId, token.address)
 
     if (destinationStableCoin && isStableCoin) {
@@ -138,7 +143,7 @@ export async function rankIntermediateTokens(context: IntermediateTokenContext):
     throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_INTERMEDIATE_TOKENS, { intermediateTokens: filteredTokens })
   }
 
-  return tokensWithPriority.map(({ token }) => token)
+  return tokensWithPriority
 }
 
 /**

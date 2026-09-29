@@ -205,8 +205,38 @@ adapterNames.forEach((adapterName) => {
     describe('intermediate token fallback', () => {
       const noRoutesError = new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES)
 
+      // Selling USDC on mainnet, so these rank: USDT (stablecoin), ETH (native), then COW and RND ("other")
+      const usdt: TokenInfo = {
+        chainId: SupportedChainId.MAINNET,
+        address: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+        decimals: 6,
+        symbol: 'USDT',
+        name: 'USDT',
+      }
+      const eth: TokenInfo = {
+        chainId: SupportedChainId.MAINNET,
+        address: EVM_NATIVE_CURRENCY_ADDRESS,
+        decimals: 18,
+        symbol: 'ETH',
+        name: 'Ether',
+      }
+      const cow: TokenInfo = {
+        chainId: SupportedChainId.MAINNET,
+        address: '0xdef1ca1fb7fbcdc777520aa7f396b4e015f497ab',
+        decimals: 18,
+        symbol: 'COW',
+        name: 'COW',
+      }
+      const rnd: TokenInfo = {
+        chainId: SupportedChainId.MAINNET,
+        address: '0x1111111111111111111111111111111111111111',
+        decimals: 18,
+        symbol: 'RND',
+        name: 'Random',
+      }
+
       beforeEach(() => {
-        mockProvider.getIntermediateTokens = jest.fn().mockResolvedValue(mockIntermediateTokens)
+        mockProvider.getIntermediateTokens = jest.fn().mockResolvedValue([cow, rnd, eth, usdt])
       })
 
       it('should retry with the next intermediate token when the bridge has no route for the first one', async () => {
@@ -215,13 +245,57 @@ adapterNames.forEach((adapterName) => {
         const result = await postOrder(quoteBridgeRequest)
 
         expect(getQuoteMock).toHaveBeenCalledTimes(2)
-        expect(getQuoteMock.mock.calls[0][0].sellTokenAddress).toBe('0x123')
-        expect(getQuoteMock.mock.calls[1][0].sellTokenAddress).toBe('0x456')
+        expect(getQuoteMock.mock.calls[0][0].sellTokenAddress).toBe(usdt.address)
+        expect(getQuoteMock.mock.calls[1][0].sellTokenAddress).toBe(eth.address)
         // Both the swap and the bridge use the fallback token
-        expect(result.bridge.tradeParameters.sellTokenAddress).toBe('0x456')
-        expect(result.swap.tradeParameters.buyToken).toBe('0x456')
+        expect(result.bridge.tradeParameters.sellTokenAddress).toBe(eth.address)
+        expect(result.swap.tradeParameters.buyToken).toBe(eth.address)
         // Intermediate tokens are fetched once, not per attempt
         expect(mockProvider.getIntermediateTokens).toHaveBeenCalledTimes(1)
+      })
+
+      it('should never fall back to "other" tokens', async () => {
+        getQuoteMock.mockRejectedValue(noRoutesError)
+
+        await expect(postOrder(quoteBridgeRequest)).rejects.toBe(noRoutesError)
+
+        // USDT and ETH only, COW and RND are not tried even though MAX_INTERMEDIATE_TOKEN_ATTEMPTS allows a third one
+        expect(getQuoteMock.mock.calls.map(([request]) => request.sellTokenAddress)).toEqual([
+          usdt.address,
+          eth.address,
+        ])
+      })
+
+      it('should still use an "other" token when it is the best ranked one', async () => {
+        mockProvider.getIntermediateTokens = jest.fn().mockResolvedValue([cow, rnd])
+
+        const result = await postOrder(quoteBridgeRequest)
+
+        expect(result.bridge.tradeParameters.sellTokenAddress).toBe(cow.address)
+      })
+
+      it('should keep the NO_ROUTES error when a fallback fails for an unrelated reason', async () => {
+        getQuoteMock
+          .mockRejectedValueOnce(noRoutesError)
+          .mockRejectedValueOnce(new BridgeProviderQuoteError(BridgeQuoteErrors.QUOTE_ERROR))
+
+        await expect(postOrder(quoteBridgeRequest)).rejects.toBe(noRoutesError)
+      })
+
+      it('should keep the NO_ROUTES error when the swap quote into a fallback fails', async () => {
+        getQuoteMock.mockRejectedValueOnce(noRoutesError)
+        ;(orderBookApi.getQuote as jest.Mock)
+          .mockResolvedValueOnce(orderQuoteResponse)
+          .mockRejectedValueOnce(new Error('Not Found'))
+
+        await expect(postOrder(quoteBridgeRequest)).rejects.toBe(noRoutesError)
+      })
+
+      it('should surface a more relevant error from a fallback', async () => {
+        const tooSmallError = new BridgeProviderQuoteError(BridgeQuoteErrors.SELL_AMOUNT_TOO_SMALL)
+        getQuoteMock.mockRejectedValueOnce(noRoutesError).mockRejectedValueOnce(tooSmallError)
+
+        await expect(postOrder(quoteBridgeRequest)).rejects.toBe(tooSmallError)
       })
 
       it('should not retry on errors other than NO_ROUTES', async () => {
@@ -231,27 +305,24 @@ adapterNames.forEach((adapterName) => {
         expect(getQuoteMock).toHaveBeenCalledTimes(1)
       })
 
-      it('should throw NO_ROUTES when no intermediate token has a route', async () => {
-        getQuoteMock.mockRejectedValue(noRoutesError)
-
-        await expect(postOrder(quoteBridgeRequest)).rejects.toBe(noRoutesError)
-        expect(getQuoteMock).toHaveBeenCalledTimes(mockIntermediateTokens.length)
-      })
-
       it(`should try at most ${MAX_INTERMEDIATE_TOKEN_ATTEMPTS} intermediate tokens`, async () => {
-        mockProvider.getIntermediateTokens = jest.fn().mockResolvedValue(
-          Array.from({ length: MAX_INTERMEDIATE_TOKEN_ATTEMPTS + 2 }, (_, i) => ({
-            address: `0x${(i + 1).toString().repeat(3)}`,
-            name: `Token${i}`,
-            symbol: `TK${i}`,
-            decimals: 18,
-            chainId: 137,
-          })),
-        )
         getQuoteMock.mockRejectedValue(noRoutesError)
 
-        await expect(postOrder(quoteBridgeRequest)).rejects.toBe(noRoutesError)
-        expect(getQuoteMock).toHaveBeenCalledTimes(MAX_INTERMEDIATE_TOKEN_ATTEMPTS)
+        // Correlated tokens are eligible as fallbacks, so there are 4 candidates: USDT, COW, RND, ETH
+        await expect(
+          getQuoteWithBridge(mockProvider, {
+            swapAndBridgeRequest: quoteBridgeRequest,
+            tradingSdk,
+            advancedSettings: { getCorrelatedTokens: async () => [cow.address, rnd.address] },
+          }),
+        ).rejects.toBe(noRoutesError)
+
+        expect(MAX_INTERMEDIATE_TOKEN_ATTEMPTS).toBe(3)
+        expect(getQuoteMock.mock.calls.map(([request]) => request.sellTokenAddress)).toEqual([
+          usdt.address,
+          cow.address,
+          rnd.address,
+        ])
       })
     })
 
@@ -393,9 +464,11 @@ describe('createPostSwapOrderFromQuote with ReceiverAccountBridgeProvider', () =
       })
 
       it('should fall back to the next intermediate token when the bridge has no route for the first one', async () => {
+        const usdt = '0xdac17f958d2ee523a2206206994597c13d831ec7'
+        // Selling USDC on mainnet: USDT (stablecoin) ranks first, native ETH second
         mockProvider.getIntermediateTokens = jest.fn().mockResolvedValue([
-          { address: '0x123', name: 'Token1', symbol: 'TK1', decimals: 18, chainId: 137 },
-          { address: '0x456', name: 'Token2', symbol: 'TK2', decimals: 6, chainId: 137 },
+          { address: EVM_NATIVE_CURRENCY_ADDRESS, name: 'Ether', symbol: 'ETH', decimals: 18, chainId: 1 },
+          { address: usdt, name: 'USDT', symbol: 'USDT', decimals: 6, chainId: 1 },
         ])
         getQuoteMock.mockRejectedValueOnce(new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES))
 
@@ -405,8 +478,9 @@ describe('createPostSwapOrderFromQuote with ReceiverAccountBridgeProvider', () =
         })
 
         expect(getQuoteMock).toHaveBeenCalledTimes(2)
-        expect(result.bridge.tradeParameters.sellTokenAddress).toBe('0x456')
-        expect(result.swap.tradeParameters.buyToken).toBe('0x456')
+        expect(getQuoteMock.mock.calls[0][0].sellTokenAddress).toBe(usdt)
+        expect(result.bridge.tradeParameters.sellTokenAddress).toBe(EVM_NATIVE_CURRENCY_ADDRESS)
+        expect(result.swap.tradeParameters.buyToken).toBe(EVM_NATIVE_CURRENCY_ADDRESS)
         // The swap order is sent to the deposit address of the successful quote
         expect(result.swap.tradeParameters.receiver).toBe(result.bridge.bridgeReceiverOverride)
       })

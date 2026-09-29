@@ -13,7 +13,7 @@ import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../errors'
 import { GetQuoteWithBridgeParams } from './types'
 import { getCacheKey } from './helpers'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
-import { rankIntermediateTokens } from './determineIntermediateToken'
+import { RankedIntermediateToken, rankIntermediateTokens } from './determineIntermediateToken'
 
 export interface GetIntermediateSwapResultParams<T extends BridgeQuoteResult> {
   provider: BridgeProvider<T>
@@ -61,7 +61,7 @@ export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
     `Cross-chain ${kind} ${amount} ${sellTokenAddress} (source chain ${sellTokenChainId}) for ${buyTokenAddress} (target chain ${buyTokenChainId})`,
   )
 
-  const intermediateToken = intermediateTokenOverride ?? (await getRankedIntermediateTokens(provider, params))[0]
+  const intermediateToken = intermediateTokenOverride ?? (await getRankedIntermediateTokens(provider, params))[0]?.token
 
   if (!intermediateToken) {
     throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_INTERMEDIATE_TOKENS)
@@ -136,7 +136,7 @@ export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
 export async function getRankedIntermediateTokens<T extends BridgeQuoteResult>(
   provider: BridgeProvider<T>,
   params: GetQuoteWithBridgeParams,
-): Promise<TokenInfo[]> {
+): Promise<RankedIntermediateToken[]> {
   const { swapAndBridgeRequest, advancedSettings, allowIntermediateEqSellToken, intermediateTokensCache } = params
 
   const intermediateTokens = await getIntermediateTokens({
