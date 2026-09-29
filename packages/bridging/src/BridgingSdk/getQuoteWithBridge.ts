@@ -29,7 +29,15 @@ import { getBridgeSignedHook } from './getBridgeSignedHook'
 import { HOOK_DAPP_BRIDGE_PROVIDER_PREFIX } from '../const'
 import { getHookMockForCostEstimation } from '../hooks/utils'
 import { isHookBridgeProvider, isReceiverAccountBridgeProvider } from '../utils'
-import { getIntermediateSwapResult } from './getIntermediateSwapResult'
+import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../errors'
+import { getIntermediateSwapResult, getRankedIntermediateTokens } from './getIntermediateSwapResult'
+import type { TokenInfo } from '@cowprotocol/sdk-config'
+
+/**
+ * How many intermediate tokens to try when the bridge provider has no route for the preferred one.
+ * Every attempt costs a swap quote and a bridge quote, so this is kept small to stay within the provider timeout.
+ */
+export const MAX_INTERMEDIATE_TOKEN_ATTEMPTS = 3
 
 export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
   provider: BridgeProvider<T>,
@@ -42,17 +50,53 @@ export async function getQuoteWithBridge<T extends BridgeQuoteResult>(
     throw new Error('Bridging only support SELL orders')
   }
 
-  // If the provider relies on hooks
+  let getQuoteForIntermediateToken: (intermediateToken: TokenInfo) => Promise<BridgeQuoteAndPost>
+
   if (isHookBridgeProvider(provider)) {
-    return getQuoteWithHookBridge(provider, params)
+    // If the provider relies on hooks
+    getQuoteForIntermediateToken = (intermediateToken) => getQuoteWithHookBridge(provider, params, intermediateToken)
+  } else if (isReceiverAccountBridgeProvider(provider)) {
+    // If the provider doesn't rely on hooks
+    getQuoteForIntermediateToken = (intermediateToken) =>
+      getQuoteWithReceiverAccountBridge(provider, params, intermediateToken)
+  } else {
+    throw new Error('Provider type is unknown: ' + provider.type)
   }
 
-  // If the provider doesn't rely on hooks
-  if (isReceiverAccountBridgeProvider(provider)) {
-    return getQuoteWithReceiverAccountBridge(provider, params)
+  const candidates = (await getRankedIntermediateTokens(provider, params)).slice(0, MAX_INTERMEDIATE_TOKEN_ATTEMPTS)
+
+  return getQuoteWithIntermediateTokenFallback(candidates, getQuoteForIntermediateToken)
+}
+
+/**
+ * Tries the intermediate tokens in order and returns the first quote that succeeds.
+ * A provider can list a token and still have no route for it (e.g. NEAR Intents lists WETH but has no WETH liquidity),
+ * so on NO_ROUTES the next candidate is tried. Any other error is thrown right away.
+ */
+async function getQuoteWithIntermediateTokenFallback(
+  candidates: TokenInfo[],
+  getQuoteForIntermediateToken: (intermediateToken: TokenInfo) => Promise<BridgeQuoteAndPost>,
+): Promise<BridgeQuoteAndPost> {
+  let lastError: unknown = new BridgeProviderQuoteError(BridgeQuoteErrors.NO_INTERMEDIATE_TOKENS)
+
+  for (const intermediateToken of candidates) {
+    try {
+      return await getQuoteForIntermediateToken(intermediateToken)
+    } catch (error) {
+      if (!isNoRoutesError(error)) throw error
+
+      log(
+        `No bridge route via ${intermediateToken.symbol ?? intermediateToken.address}, trying next intermediate token`,
+      )
+      lastError = error
+    }
   }
 
-  throw new Error('Provider type is unknown: ' + provider.type)
+  throw lastError
+}
+
+function isNoRoutesError(error: unknown): boolean {
+  return error instanceof BridgeProviderQuoteError && error.message === BridgeQuoteErrors.NO_ROUTES
 }
 
 export interface CreatePostSwapOrderFromQuoteParams {
@@ -145,6 +189,7 @@ export function createPostSwapOrderFromQuote(
 export async function getQuoteWithReceiverAccountBridge<T extends BridgeQuoteResult>(
   provider: AccountBridgeProvider<T>,
   params: GetQuoteWithBridgeParams,
+  intermediateToken?: TokenInfo,
 ): Promise<BridgeQuoteAndPost> {
   // Get intermediate swap result
   const {
@@ -157,6 +202,7 @@ export async function getQuoteWithReceiverAccountBridge<T extends BridgeQuoteRes
   } = await getIntermediateSwapResult({
     provider,
     params,
+    intermediateToken,
   })
 
   // Get a new bridge provider quote result
@@ -209,6 +255,7 @@ export async function getQuoteWithReceiverAccountBridge<T extends BridgeQuoteRes
 export async function getQuoteWithHookBridge<T extends BridgeQuoteResult>(
   provider: HookBridgeProvider<T>,
   params: GetQuoteWithBridgeParams,
+  intermediateToken?: TokenInfo,
 ): Promise<BridgeQuoteAndPost> {
   const { quoteSigner } = params
 
@@ -223,6 +270,7 @@ export async function getQuoteWithHookBridge<T extends BridgeQuoteResult>(
   } = await getIntermediateSwapResult({
     provider,
     params,
+    intermediateToken,
     getBridgeHook: async (bridgeRequestWithoutAmount) => {
       // Get the hook mock for cost estimation
       const hookEstimatedGasLimit = await provider.getGasLimitEstimationForHook(bridgeRequestWithoutAmount)

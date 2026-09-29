@@ -1,5 +1,5 @@
 import { EVM_NATIVE_CURRENCY_ADDRESS, SupportedChainId, TokenInfo } from '@cowprotocol/sdk-config'
-import { determineIntermediateToken } from './determineIntermediateToken'
+import { determineIntermediateToken, rankIntermediateTokens } from './determineIntermediateToken'
 import { BridgeProviderQuoteError } from '../errors'
 
 describe('determineIntermediateToken', () => {
@@ -411,6 +411,70 @@ describe('determineIntermediateToken', () => {
 
       // cowMainnet should be kept and get HIGHEST priority
       expect(result).toBe(cowMainnet)
+    })
+  })
+
+  describe('native / wrapped native counterpart of sell token', () => {
+    it('should prefer native ETH over stablecoins when selling WETH', async () => {
+      const result = await rankIntermediateTokens({
+        sourceChainId: SupportedChainId.MAINNET,
+        sourceTokenAddress: wethMainnet.address,
+        ...NEUTRAL_DESTINATION,
+        intermediateTokens: [usdcMainnet, nativeEth, wethMainnet, randomToken],
+        allowIntermediateEqSellToken: true,
+      })
+
+      // WETH itself first, then its unwrapped version, before any token that needs a real swap
+      expect(result).toEqual([wethMainnet, nativeEth, usdcMainnet, randomToken])
+    })
+
+    it('should prefer WETH over stablecoins when selling native ETH', async () => {
+      const result = await determineIntermediateToken({
+        sourceChainId: SupportedChainId.MAINNET,
+        sourceTokenAddress: EVM_NATIVE_CURRENCY_ADDRESS,
+        ...NEUTRAL_DESTINATION,
+        intermediateTokens: [usdcMainnet, wethMainnet, randomToken],
+        allowIntermediateEqSellToken: true,
+      })
+
+      expect(result).toBe(wethMainnet)
+    })
+
+    it('should not boost the counterpart when allowIntermediateEqSellToken is false', async () => {
+      const result = await rankIntermediateTokens({
+        sourceChainId: SupportedChainId.MAINNET,
+        sourceTokenAddress: wethMainnet.address,
+        ...NEUTRAL_DESTINATION,
+        intermediateTokens: [nativeEth, wethMainnet, usdcMainnet],
+        allowIntermediateEqSellToken: false,
+      })
+
+      // Same order as before this priority existed: stablecoin, then native
+      expect(result).toEqual([usdcMainnet, nativeEth])
+    })
+  })
+
+  describe('rankIntermediateTokens', () => {
+    it('should return all candidates sorted by priority', async () => {
+      const result = await rankIntermediateTokens({
+        sourceChainId: SupportedChainId.MAINNET,
+        sourceTokenAddress: cowMainnet.address,
+        ...NEUTRAL_DESTINATION,
+        intermediateTokens: [randomToken, nativeEth, usdtMainnet, usdcMainnet],
+      })
+
+      expect(result).toEqual([usdtMainnet, usdcMainnet, nativeEth, randomToken])
+    })
+
+    it('should throw when there are no candidates', async () => {
+      await expect(
+        rankIntermediateTokens({
+          sourceChainId: SupportedChainId.MAINNET,
+          sourceTokenAddress: cowMainnet.address,
+          ...NEUTRAL_DESTINATION,
+          intermediateTokens: [],
+        }),
+      ).rejects.toThrow(BridgeProviderQuoteError)
     })
   })
 })

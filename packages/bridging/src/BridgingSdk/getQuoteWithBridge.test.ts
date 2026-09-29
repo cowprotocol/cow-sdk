@@ -2,7 +2,7 @@ import { getEthFlowContract, TradingSdk } from '@cowprotocol/sdk-trading'
 import { MockHookBridgeProvider } from '../providers/mock/HookMockBridgeProvider'
 import { MockReceiverAccountBridgeProvider } from '../providers/mock/ReceiverAccountMockBridgeProvider'
 import { QuoteBridgeRequest } from '../types'
-import { getQuoteWithBridge } from './getQuoteWithBridge'
+import { getQuoteWithBridge, MAX_INTERMEDIATE_TOKEN_ATTEMPTS } from './getQuoteWithBridge'
 import {
   bridgeCallDetails,
   bridgeQuoteResult,
@@ -202,6 +202,59 @@ adapterNames.forEach((adapterName) => {
       await expect(postOrder(quoteBridgeRequest)).rejects.toThrow(BridgeProviderQuoteError)
     })
 
+    describe('intermediate token fallback', () => {
+      const noRoutesError = new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES)
+
+      beforeEach(() => {
+        mockProvider.getIntermediateTokens = jest.fn().mockResolvedValue(mockIntermediateTokens)
+      })
+
+      it('should retry with the next intermediate token when the bridge has no route for the first one', async () => {
+        getQuoteMock.mockRejectedValueOnce(noRoutesError)
+
+        const result = await postOrder(quoteBridgeRequest)
+
+        expect(getQuoteMock).toHaveBeenCalledTimes(2)
+        expect(getQuoteMock.mock.calls[0][0].sellTokenAddress).toBe('0x123')
+        expect(getQuoteMock.mock.calls[1][0].sellTokenAddress).toBe('0x456')
+        // Both the swap and the bridge use the fallback token
+        expect(result.bridge.tradeParameters.sellTokenAddress).toBe('0x456')
+        expect(result.swap.tradeParameters.buyToken).toBe('0x456')
+        // Intermediate tokens are fetched once, not per attempt
+        expect(mockProvider.getIntermediateTokens).toHaveBeenCalledTimes(1)
+      })
+
+      it('should not retry on errors other than NO_ROUTES', async () => {
+        getQuoteMock.mockRejectedValue(new BridgeProviderQuoteError(BridgeQuoteErrors.QUOTE_ERROR))
+
+        await expect(postOrder(quoteBridgeRequest)).rejects.toThrow(BridgeQuoteErrors.QUOTE_ERROR)
+        expect(getQuoteMock).toHaveBeenCalledTimes(1)
+      })
+
+      it('should throw NO_ROUTES when no intermediate token has a route', async () => {
+        getQuoteMock.mockRejectedValue(noRoutesError)
+
+        await expect(postOrder(quoteBridgeRequest)).rejects.toBe(noRoutesError)
+        expect(getQuoteMock).toHaveBeenCalledTimes(mockIntermediateTokens.length)
+      })
+
+      it(`should try at most ${MAX_INTERMEDIATE_TOKEN_ATTEMPTS} intermediate tokens`, async () => {
+        mockProvider.getIntermediateTokens = jest.fn().mockResolvedValue(
+          Array.from({ length: MAX_INTERMEDIATE_TOKEN_ATTEMPTS + 2 }, (_, i) => ({
+            address: `0x${(i + 1).toString().repeat(3)}`,
+            name: `Token${i}`,
+            symbol: `TK${i}`,
+            decimals: 18,
+            chainId: 137,
+          })),
+        )
+        getQuoteMock.mockRejectedValue(noRoutesError)
+
+        await expect(postOrder(quoteBridgeRequest)).rejects.toBe(noRoutesError)
+        expect(getQuoteMock).toHaveBeenCalledTimes(MAX_INTERMEDIATE_TOKEN_ATTEMPTS)
+      })
+    })
+
     it('should handle validTo override in advanced settings', async () => {
       const customValidTo = Math.floor(Date.now() / 1000) + 3600 // 1 hour from now
       const { postSwapOrderFromQuote } = await postOrder(quoteBridgeRequest)
@@ -337,6 +390,25 @@ describe('createPostSwapOrderFromQuote with ReceiverAccountBridgeProvider', () =
         } as unknown as OrderBookApi
 
         tradingSdk = new TradingSdk({}, { orderBookApi })
+      })
+
+      it('should fall back to the next intermediate token when the bridge has no route for the first one', async () => {
+        mockProvider.getIntermediateTokens = jest.fn().mockResolvedValue([
+          { address: '0x123', name: 'Token1', symbol: 'TK1', decimals: 18, chainId: 137 },
+          { address: '0x456', name: 'Token2', symbol: 'TK2', decimals: 6, chainId: 137 },
+        ])
+        getQuoteMock.mockRejectedValueOnce(new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES))
+
+        const result = await getQuoteWithBridge(mockProvider, {
+          swapAndBridgeRequest: quoteBridgeRequest,
+          tradingSdk,
+        })
+
+        expect(getQuoteMock).toHaveBeenCalledTimes(2)
+        expect(result.bridge.tradeParameters.sellTokenAddress).toBe('0x456')
+        expect(result.swap.tradeParameters.buyToken).toBe('0x456')
+        // The swap order is sent to the deposit address of the successful quote
+        expect(result.swap.tradeParameters.receiver).toBe(result.bridge.bridgeReceiverOverride)
       })
 
       it('should include bridge quote id and signature in bridge result', async () => {

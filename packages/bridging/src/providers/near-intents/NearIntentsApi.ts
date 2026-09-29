@@ -65,6 +65,10 @@ export class NearIntentsApi {
             minAmount,
           })
         }
+        // 1Click lists some assets (e.g. WETH) that it cannot route, report it as a missing route
+        if (message && typeof message === 'string' && message.toLowerCase().includes('no liquidity available')) {
+          throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES, { originalMessage: message })
+        }
       }
       throw error
     }
