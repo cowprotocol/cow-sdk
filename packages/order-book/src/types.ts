@@ -29,10 +29,6 @@ export interface SolanaOrderCreation {
 
 /**
  * Auction progress of a Solana order.
- *
- * Extends the generated {@link CompetitionOrderStatus.type} with the two terminal states the EVM
- * order book has no event for. They are kept apart because they are different failures: the intent
- * itself ran out of time, versus the intent never made it on-chain to begin with.
  */
 export enum SolanaCompetitionOrderStatusType {
   OPEN = 'open',
