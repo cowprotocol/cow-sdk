@@ -5,6 +5,7 @@ import { BuyTokenDestination, OrderKind, SellTokenSource, SigningScheme } from '
 import { EcdsaSigningScheme } from './signingSchemes'
 import { SupportedChainId, ETH_ADDRESS } from '@cowprotocol/sdk-config'
 import { AUCTION } from './mock'
+import { SolanaCompetitionOrderStatusType } from './types'
 
 enableFetchMocks()
 
@@ -635,6 +636,26 @@ describe('CoW Api', () => {
       FETCH_RESPONSE_PARAMETERS,
     )
     expect(surplus).toEqual(totalSurplus)
+  })
+
+  test('Valid: Get Solana order competition status', async () => {
+    // given
+    const status = { type: SolanaCompetitionOrderStatusType.CREATION_EXPIRED }
+    fetchMock.mockResponseOnce(JSON.stringify(status), {
+      status: HTTP_STATUS_OK,
+      headers: HEADERS,
+    })
+
+    // when
+    const result = await orderBookApi.getSolanaOrderCompetitionStatus(ORDER_RESPONSE.uid)
+
+    // then
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      `https://api.cow.fi/xdai/api/v1/orders/${ORDER_RESPONSE.uid}/status`,
+      FETCH_RESPONSE_PARAMETERS,
+    )
+    expect(result).toEqual(status)
   })
 
   test('Valid: Get AppData', async () => {

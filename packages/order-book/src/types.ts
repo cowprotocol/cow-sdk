@@ -1,4 +1,4 @@
-import { Order, OrderQuoteResponse } from './generated'
+import { CompetitionOrderStatus, Order, OrderQuoteResponse } from './generated'
 
 /**
  * An order with the total fee added.
@@ -25,6 +25,39 @@ export interface SolanaOrderCreation {
   transaction: string
   /** The id the quote endpoint answered for this order. Kept only when the quote matches the order. */
   quoteId?: number
+}
+
+/**
+ * Auction progress of a Solana order.
+ *
+ * Extends the generated {@link CompetitionOrderStatus.type} with the two terminal states the EVM
+ * order book has no event for. They are kept apart because they are different failures: the intent
+ * itself ran out of time, versus the intent never made it on-chain to begin with.
+ */
+export enum SolanaCompetitionOrderStatusType {
+  OPEN = 'open',
+  SCHEDULED = 'scheduled',
+  ACTIVE = 'active',
+  SOLVED = 'solved',
+  EXECUTING = 'executing',
+  TRADED = 'traded',
+  CANCELLED = 'cancelled',
+  /** The order's own `validTo` passed while it was on the book. */
+  EXPIRED = 'expired',
+  /**
+   * A sponsored order whose creation transaction died before landing: the chain passed the
+   * `lastValidBlockHeight` the owner signed against. The order never existed on-chain and can only
+   * be retried by signing a fresh creation.
+   */
+  CREATION_EXPIRED = 'creationExpired',
+}
+
+/**
+ * The Solana order competition status. Same shape as the EVM one but with a wider `type`, which the
+ * generated models cannot carry: they are produced from the EVM order book's openapi.
+ */
+export interface SolanaCompetitionOrderStatus extends Omit<CompetitionOrderStatus, 'type'> {
+  type: SolanaCompetitionOrderStatusType
 }
 
 export interface Amounts<T> {

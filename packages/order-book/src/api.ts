@@ -27,7 +27,7 @@ import {
 } from './generated'
 import { DEFAULT_BACKOFF_OPTIONS, DEFAULT_LIMITER_OPTIONS, FetchParams, OrderBookApiError, request } from './request'
 import { transformOrder } from './transformOrder'
-import { EnrichedOrder, SolanaOrderCreation, SolanaQuoteResponse } from './types'
+import { EnrichedOrder, SolanaCompetitionOrderStatus, SolanaOrderCreation, SolanaQuoteResponse } from './types'
 import { OrderCancellations } from './signingSchemes'
 
 const PROD_BASE_URL = 'https://api.cow.fi'
@@ -403,6 +403,23 @@ export class OrderBookApi {
    */
   sendSolanaOrder(requestBody: SolanaOrderCreation, contextOverride: PartialApiContext = {}): Promise<UID> {
     return this.fetch({ path: '/api/v1/orders', method: 'POST', body: requestBody }, contextOverride)
+  }
+
+  /**
+   * Get the status of a Solana order while open.
+   *
+   * Same endpoint as {@link getOrderCompetitionStatus}; the response can additionally report that the
+   * order expired or that its creation transaction died, neither of which the EVM-generated status
+   * type has a variant for.
+   * @param orderUid The unique identifier of the order.
+   * @param contextOverride Optional context override for this request.
+   * @returns The auction progress of the order.
+   */
+  getSolanaOrderCompetitionStatus(
+    orderUid: UID,
+    contextOverride: PartialApiContext = {},
+  ): Promise<SolanaCompetitionOrderStatus> {
+    return this.fetch({ path: `/api/v1/orders/${orderUid}/status`, method: 'GET' }, contextOverride)
   }
 
   /**
