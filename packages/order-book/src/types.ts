@@ -45,7 +45,7 @@ export enum SolanaCompetitionOrderStatusType {
    * `lastValidBlockHeight` the owner signed against. The order never existed on-chain and can only
    * be retried by signing a fresh creation.
    */
-  CREATION_EXPIRED = 'creationExpired',
+  SIGNATURE_EXPIRED = 'signatureExpired',
 }
 
 /**

@@ -640,7 +640,7 @@ describe('CoW Api', () => {
 
   test('Valid: Get Solana order competition status', async () => {
     // given
-    const status = { type: SolanaCompetitionOrderStatusType.CREATION_EXPIRED }
+    const status = { type: SolanaCompetitionOrderStatusType.SIGNATURE_EXPIRED }
     fetchMock.mockResponseOnce(JSON.stringify(status), {
       status: HTTP_STATUS_OK,
       headers: HEADERS,
