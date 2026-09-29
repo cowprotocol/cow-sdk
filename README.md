@@ -8,7 +8,7 @@
 
 | Statements                                                                            | Branches                                                                          | Functions                                                                        | Lines                                                                       |
 | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| ![Statements](https://img.shields.io/badge/statements-84.7%25-yellow.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-84.64%25-yellow.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-64.94%25-red.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-87.88%25-yellow.svg?style=flat) |
+| ![Statements](https://img.shields.io/badge/statements-83.51%25-yellow.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-83.85%25-yellow.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-63.82%25-red.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-86.89%25-yellow.svg?style=flat) |
 
 ## Use CoW Protocol
 
