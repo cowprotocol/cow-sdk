@@ -1,7 +1,7 @@
 import { SupportedChainId } from '../chains/types'
 import { TokenInfo } from '../types/tokens'
 import { TOKEN_LIST_IMAGES_PATH } from './paths'
-import { solanaLogo } from '../chains'
+import { solanaLogo } from '../chains/details/solana'
 
 const wrappedNativeCurrencyEth = {
   decimals: 18,
