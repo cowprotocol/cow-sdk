@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.7.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.7.1...sdk-config-v2.7.2) (2026-09-29)
+
+
+### 🐛 Bug Fixes
+
+* solana icon ([#1039](https://github.com/cowprotocol/cow-sdk/issues/1039)) ([c0275af](https://github.com/cowprotocol/cow-sdk/commit/c0275afbcca90d15549b01f2dd82c949c259f166))
+
 ## [2.7.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.7.0...sdk-config-v2.7.1) (2026-09-25)
 
 
