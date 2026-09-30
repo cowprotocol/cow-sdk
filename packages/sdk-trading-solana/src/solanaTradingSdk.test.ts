@@ -216,7 +216,7 @@ describe('SolanaTradingSdk', () => {
     const uid = await postSponsoredOrder('AQABAgMEBQY=')
 
     expect(mockPostSolanaSponsoredOrder).toHaveBeenCalledWith(
-      { transaction: 'AQABAgMEBQY=', quoteId: 7 },
+      { partiallySignedTx: 'AQABAgMEBQY=', quoteId: 7 },
       { env: 'staging', orderBookApi: undefined },
     )
     expect(uid).toBe('0xdeadbeef')
@@ -235,7 +235,7 @@ describe('SolanaTradingSdk', () => {
     await postSponsoredOrder('AQABAgMEBQY=')
 
     expect(mockPostSolanaSponsoredOrder).toHaveBeenCalledWith(
-      { transaction: 'AQABAgMEBQY=', quoteId: undefined },
+      { partiallySignedTx: 'AQABAgMEBQY=', quoteId: undefined },
       expect.anything(),
     )
   })

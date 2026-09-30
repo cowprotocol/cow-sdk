@@ -4,7 +4,7 @@ import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { postSolanaSponsoredOrder } from './postSponsoredOrder'
 
 const UID = '0xef1b0653aff11fedb80391a424858ae82957e301633608d4d297d0861d9d58bb'
-const TRANSACTION = 'AQABAgMEBQY='
+const PARTIALLY_SIGNED_TX = 'AQABAgMEBQY='
 
 function createOrderBookApi(sendSolanaOrder = jest.fn().mockResolvedValue(UID)): {
   orderBookApi: OrderBookApi
@@ -17,25 +17,31 @@ describe('postSolanaSponsoredOrder', () => {
   it('posts the transaction and returns the order uid', async () => {
     const { orderBookApi, sendSolanaOrder } = createOrderBookApi()
 
-    const uid = await postSolanaSponsoredOrder({ transaction: TRANSACTION, quoteId: 42 }, { orderBookApi })
+    const uid = await postSolanaSponsoredOrder(
+      { partiallySignedTx: PARTIALLY_SIGNED_TX, quoteId: 42 },
+      { orderBookApi },
+    )
 
-    expect(sendSolanaOrder).toHaveBeenCalledWith({ transaction: TRANSACTION, quoteId: 42 }, expect.anything())
+    expect(sendSolanaOrder).toHaveBeenCalledWith(
+      { partiallySignedTx: PARTIALLY_SIGNED_TX, quoteId: 42 },
+      expect.anything(),
+    )
     expect(uid).toBe(UID)
   })
 
   it('posts without a quoteId when none is given', async () => {
     const { orderBookApi, sendSolanaOrder } = createOrderBookApi()
 
-    await postSolanaSponsoredOrder({ transaction: TRANSACTION }, { orderBookApi })
+    await postSolanaSponsoredOrder({ partiallySignedTx: PARTIALLY_SIGNED_TX }, { orderBookApi })
 
-    expect(sendSolanaOrder).toHaveBeenCalledWith({ transaction: TRANSACTION }, expect.anything())
+    expect(sendSolanaOrder).toHaveBeenCalledWith({ partiallySignedTx: PARTIALLY_SIGNED_TX }, expect.anything())
   })
 
   // A supplied client carries whatever chain it was built for; the order still has to reach Solana.
   it('forces the Solana chain on a supplied client', async () => {
     const { orderBookApi, sendSolanaOrder } = createOrderBookApi()
 
-    await postSolanaSponsoredOrder({ transaction: TRANSACTION }, { orderBookApi })
+    await postSolanaSponsoredOrder({ partiallySignedTx: PARTIALLY_SIGNED_TX }, { orderBookApi })
 
     expect(sendSolanaOrder).toHaveBeenCalledWith(expect.anything(), { chainId: SupportedChainId.SOLANA })
   })
@@ -43,7 +49,7 @@ describe('postSolanaSponsoredOrder', () => {
   it('forwards an explicit env', async () => {
     const { orderBookApi, sendSolanaOrder } = createOrderBookApi()
 
-    await postSolanaSponsoredOrder({ transaction: TRANSACTION }, { orderBookApi, env: 'staging' })
+    await postSolanaSponsoredOrder({ partiallySignedTx: PARTIALLY_SIGNED_TX }, { orderBookApi, env: 'staging' })
 
     expect(sendSolanaOrder).toHaveBeenCalledWith(expect.anything(), {
       chainId: SupportedChainId.SOLANA,
@@ -69,7 +75,7 @@ describe('postSolanaSponsoredOrder', () => {
       const { context, restore } = spyOnDefaultClient()
 
       try {
-        await postSolanaSponsoredOrder({ transaction: TRANSACTION }, { env: 'staging' })
+        await postSolanaSponsoredOrder({ partiallySignedTx: PARTIALLY_SIGNED_TX }, { env: 'staging' })
 
         expect(context()?.chainId).toBe(SupportedChainId.SOLANA)
         expect(context()?.env).toBe('staging')
@@ -84,7 +90,7 @@ describe('postSolanaSponsoredOrder', () => {
       const { context, restore } = spyOnDefaultClient()
 
       try {
-        await postSolanaSponsoredOrder({ transaction: TRANSACTION })
+        await postSolanaSponsoredOrder({ partiallySignedTx: PARTIALLY_SIGNED_TX })
 
         expect(context()?.env).toBe('prod')
       } finally {

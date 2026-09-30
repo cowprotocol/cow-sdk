@@ -22,7 +22,7 @@ export interface SolanaQuoteResponse extends OrderQuoteResponse {
  */
 export interface SolanaOrderCreation {
   /** The owner-signed, funder-unsigned creation transaction, base64. */
-  transaction: string
+  partiallySignedTx: string
   /** The id the quote endpoint answered for this order. Kept only when the quote matches the order. */
   quoteId?: number
 }

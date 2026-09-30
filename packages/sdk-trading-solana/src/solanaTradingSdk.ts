@@ -65,7 +65,7 @@ export interface SolanaQuoteAndPost {
   ): Promise<OrderPostingResult>
   /** Hand the signed sponsored bundle to the order book, which pays for it and submits it. `quoteId`
    * comes from this quote, so the order book can tie the order back to what was quoted. */
-  postSponsoredOrder(transaction: string): Promise<UID>
+  postSponsoredOrder(partiallySignedTx: string): Promise<UID>
 }
 
 /**
@@ -145,11 +145,11 @@ export class SolanaTradingSdk {
         advancedSettings?: SwapAdvancedSettings,
         signingStepManager?: SigningStepManager,
       ) => postSolanaSwapOrderFromQuote(quote, signAndSend, advancedSettings, signingStepManager),
-      postSponsoredOrder: (transaction: string) =>
+      postSponsoredOrder: (partiallySignedTx: string) =>
         postSolanaSponsoredOrder(
           // The endpoint reports `id: null` when it fails to store a quote, which the generated type
           // does not admit — normalize it away rather than posting an explicit null.
-          { transaction, quoteId: quote.quoteResults.quoteResponse.id ?? undefined },
+          { partiallySignedTx, quoteId: quote.quoteResults.quoteResponse.id ?? undefined },
           { env: this.options.env, orderBookApi: this.options.orderBookApi },
         ),
     }
