@@ -3,6 +3,9 @@
   "compilerOptions": {
     "outDir": "./dist",
     "baseUrl": "src",
+    // Needed to resolve `@cowprotocol/sdk-order-book/solana`: the shared base is still on classic
+    // `Node` resolution, which ignores `exports` maps.
+    "moduleResolution": "Bundler",
     "types": ["jest", "node"]
   },
   "include": ["src/**/*", "tests/**/*"],

@@ -1,6 +1,7 @@
-import type { OrderPostingResult, QuoteResults, SigningStepManager, SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
+import type { OrderPostingResult, SigningStepManager, SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
 import { CowEnv } from '@cowprotocol/sdk-config'
-import { OrderBookApi, UID } from '@cowprotocol/sdk-order-book'
+import { UID } from '@cowprotocol/sdk-order-book'
+import { SolanaOrderBookApi } from '@cowprotocol/sdk-order-book/solana'
 import { createApproveInstruction, getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { PublicKey, PublicKeyInitData, TransactionInstruction } from '@solana/web3.js'
 import { buildSolanaLimitOrderOrder, SolanaLimitOrderParams } from './buildLimitOrder'
@@ -11,13 +12,13 @@ import { SolanaOrderIntent } from './orderIntent'
 import { postSolanaSponsoredOrder } from './postSponsoredOrder'
 import { postSolanaSwapOrderFromQuote } from './postSwapOrderFromQuote'
 import { getSolanaDelegateAuthority, getSolanaSettlementProgramId } from './statePda'
-import { SolanaQuote, SolanaQuoteParameters, SolanaSignAndSend } from './types'
+import { SolanaQuote, SolanaQuoteParameters, SolanaQuoteResults, SolanaSignAndSend } from './types'
 
 export interface SolanaTradingSdkOptions {
   env?: CowEnv
-  /** Overrides the default `OrderBookApi` instance used to fetch quotes — e.g. to supply a `bearerToken`
+  /** Overrides the default `SolanaOrderBookApi` instance used to fetch quotes — e.g. to supply a `bearerToken`
    * while the Solana `/quote` endpoint is gated, or a custom `baseUrls`/`apiKey`. */
-  orderBookApi?: OrderBookApi
+  orderBookApi?: SolanaOrderBookApi
 }
 
 export interface ApproveCowProtocolParams {
@@ -52,7 +53,7 @@ export interface CancelOrderParams {
  * submit one transaction, rather than have the SDK send it alone.
  */
 export interface SolanaQuoteAndPost {
-  quoteResults: QuoteResults
+  quoteResults: SolanaQuoteResults
   solanaQuote: SolanaQuote
   /** Build the `CreateOrder` instruction without sending it, to bundle with other instructions. */
   buildOrder(advancedSettings?: SwapAdvancedSettings, options?: BuildSolanaSwapOrderOptions): Promise<SolanaSwapOrder>

@@ -1,0 +1,9 @@
+{
+  "extends": "@cow-sdk/typescript-config/base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "moduleResolution": "Bundler",
+    "types": []
+  },
+  "include": ["publicTypes.ts"]
+}

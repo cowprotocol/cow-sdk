@@ -2,7 +2,10 @@
   "extends": "@cow-sdk/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "baseUrl": "src"
+    "baseUrl": "src",
+    // Needed to resolve `@cowprotocol/sdk-order-book/solana`: the shared base is still on classic
+    // `Node` resolution, which ignores `exports` maps.
+    "moduleResolution": "Bundler"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

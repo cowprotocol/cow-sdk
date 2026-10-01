@@ -1,13 +1,9 @@
 import { PublicKey } from '@solana/web3.js'
 import { decodeApproveInstruction, TOKEN_2022_PROGRAM_ID, getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { OrderKind, SigningScheme } from '@cowprotocol/sdk-order-book'
-import type {
-  OrderPostingResult,
-  QuoteResults,
-  SigningStepManager,
-  SwapAdvancedSettings,
-} from '@cowprotocol/sdk-trading'
+import type { OrderPostingResult, SigningStepManager, SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
 import { getSolanaDelegateAuthority, getSolanaSettlementProgramId } from './statePda'
+import type { SolanaQuoteResults } from './types'
 
 jest.mock('./getSolanaQuote', () => ({
   getSolanaQuote: jest.fn(),
@@ -84,7 +80,7 @@ const solanaQuoteFixture: SolanaQuote = {
   programId: fillPubkey(0x77),
 }
 
-const quoteResultsFixture = { fake: 'quoteResults', quoteResponse: { id: 7 } } as unknown as QuoteResults
+const quoteResultsFixture = { fake: 'quoteResults', quoteResponse: { id: 7 } } as unknown as SolanaQuoteResults
 
 const quoteFixture = { quoteResults: quoteResultsFixture, solanaQuote: solanaQuoteFixture }
 
@@ -227,7 +223,7 @@ describe('SolanaTradingSdk', () => {
   it('postSponsoredOrder omits the quoteId when the quote was not stored', async () => {
     mockGetSolanaQuote.mockResolvedValue({
       ...quoteFixture,
-      quoteResults: { quoteResponse: { id: null } } as unknown as QuoteResults,
+      quoteResults: { quoteResponse: { id: null } } as unknown as SolanaQuoteResults,
     })
     const sdk = new SolanaTradingSdk()
 

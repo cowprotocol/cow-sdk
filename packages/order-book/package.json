@@ -10,6 +10,18 @@
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./solana": {
+      "types": "./dist/solana.d.ts",
+      "import": "./dist/solana.mjs",
+      "require": "./dist/solana.js"
+    }
+  },
   "sideEffects": false,
   "license": "MIT",
   "files": [
@@ -19,16 +31,19 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "build": "tsup src/index.ts src/solana.ts --format esm,cjs --dts",
     "prebuild": "pnpm swagger:codegen",
     "lint": "eslint src/**/*.ts --quiet",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "coverage:badges": "istanbul-badges-readme --exitCode=1",
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
-    "swagger:codegen": "openapi --input https://raw.githubusercontent.com/cowprotocol/services/5341875c9498b2026d1b6f67c840b086e4696dcd/crates/orderbook/openapi.yml --output src/generated --exportServices false --exportCore false",
+    "swagger:codegen": "pnpm swagger:codegen:evm && pnpm swagger:codegen:solana",
+    "swagger:codegen:evm": "openapi --input https://raw.githubusercontent.com/cowprotocol/services/5341875c9498b2026d1b6f67c840b086e4696dcd/crates/orderbook/openapi.yml --output src/generated --exportServices false --exportCore false",
+    "swagger:codegen:solana": "openapi --input https://raw.githubusercontent.com/cowprotocol/services/1a4e37e142d1c06732d2015e17ffb57470c8ff9d/crates/solana-orderbook/openapi.yml --output src/generated/solana --exportServices false --exportCore false",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
     "typecheck": "tsc --noEmit",
+    "typecheck:dist": "tsc --noEmit -p typeTests/tsconfig.json",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {

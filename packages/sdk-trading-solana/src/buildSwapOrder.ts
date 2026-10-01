@@ -1,4 +1,4 @@
-import type { QuoteResults, SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
+import type { SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
 import { SigningScheme } from '@cowprotocol/sdk-order-book'
 import { getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { PublicKey, PublicKeyInitData, TransactionInstruction } from '@solana/web3.js'
@@ -7,10 +7,10 @@ import { buildCreateOrderInstruction } from './createOrderInstruction'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toOrderId } from './orderIntent'
 import { findOrderPda } from './orderPda'
 import { isNativeSolMint } from './splMint'
-import { SolanaQuote } from './types'
+import { SolanaQuote, SolanaQuoteResults } from './types'
 
 export interface SolanaSwapOrderQuote {
-  quoteResults: QuoteResults
+  quoteResults: SolanaQuoteResults
   solanaQuote: SolanaQuote
 }
 
@@ -33,7 +33,7 @@ export interface SolanaSwapOrder {
   /** The intent actually encoded into `instruction` — `advancedSettings` may have overridden the quoted one. */
   intent: SolanaOrderIntent
   signingScheme: SigningScheme
-  orderToSign: QuoteResults['orderToSign']
+  orderToSign: SolanaQuoteResults['orderToSign']
 }
 
 /**
