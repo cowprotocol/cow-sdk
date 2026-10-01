@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.13.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.12.1...sdk-trading-solana-v0.13.0) (2026-10-01)
+
+
+### ✨ Features
+
+* use partiallySignedTx instead of transaction in order book API ([#1043](https://github.com/cowprotocol/cow-sdk/issues/1043)) ([044732e](https://github.com/cowprotocol/cow-sdk/commit/044732ec63d45f133836778e253897c10f5b4185))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-order-book bumped to 4.3.0
+    * @cowprotocol/sdk-trading bumped to 2.7.4
+
 ## [0.12.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.12.0...sdk-trading-solana-v0.12.1) (2026-09-29)
 
 

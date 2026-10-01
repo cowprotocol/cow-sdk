@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.2.1...sdk-order-book-v4.3.0) (2026-10-01)
+
+
+### ✨ Features
+
+* use partiallySignedTx instead of transaction in order book API ([#1043](https://github.com/cowprotocol/cow-sdk/issues/1043)) ([044732e](https://github.com/cowprotocol/cow-sdk/commit/044732ec63d45f133836778e253897c10f5b4185))
+
 ## [4.2.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.2.0...sdk-order-book-v4.2.1) (2026-09-29)
 
 
