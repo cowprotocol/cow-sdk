@@ -20,3 +20,9 @@ export type {
   NearIntentsQuoteResult,
   NearIntentsBridgeProviderOptions,
 } from './providers/near-intents/NearIntentsBridgeProvider'
+
+export { SocketDepositBridgeProvider } from './providers/socket/SocketDepositBridgeProvider'
+export type {
+  SocketDepositQuoteResult,
+  SocketDepositBridgeProviderOptions,
+} from './providers/socket/SocketDepositBridgeProvider'
