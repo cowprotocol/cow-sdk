@@ -9,3 +9,4 @@ export * from './quoteAmountsAndCosts'
 // depend on it. See ./signingSchemes for details.
 export { EcdsaSigningScheme } from './signingSchemes'
 export type { OrderCancellation, OrderCancellations } from './signingSchemes'
+export { CompetitionOrderStatus } from './competitionOrderStatus'

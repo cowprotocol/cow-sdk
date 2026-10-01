@@ -13,7 +13,6 @@ import {
   Address,
   AppDataHash,
   AppDataObject,
-  CompetitionOrderStatus,
   NativePriceResponse,
   Order,
   OrderCreation,
@@ -29,6 +28,7 @@ import { DEFAULT_BACKOFF_OPTIONS, DEFAULT_LIMITER_OPTIONS, FetchParams, OrderBoo
 import { transformOrder } from './transformOrder'
 import { EnrichedOrder, SolanaOrderCreation, SolanaQuoteResponse } from './types'
 import { OrderCancellations } from './signingSchemes'
+import { CompetitionOrderStatus } from './competitionOrderStatus'
 
 const PROD_BASE_URL = 'https://api.cow.fi'
 const STAGING_BASE_URL = 'https://barn.api.cow.fi'
