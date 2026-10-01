@@ -1,12 +1,12 @@
 import { CowEnv } from '@cowprotocol/sdk-config'
-import { OrderBookApi, SolanaOrderCreation, UID } from '@cowprotocol/sdk-order-book'
+import { OrderUid, SolanaOrderBookApi, SolanaOrderCreation } from '@cowprotocol/sdk-order-book/solana'
 
 import { solanaApiContext } from './apiContext'
 
 export interface PostSolanaSponsoredOrderOptions {
   env?: CowEnv
-  /** Overrides the default `OrderBookApi` instance — e.g. to supply a `bearerToken` or custom `baseUrls`. */
-  orderBookApi?: OrderBookApi
+  /** Overrides the default `SolanaOrderBookApi` instance — e.g. to supply a `bearerToken` or custom `baseUrls`. */
+  orderBookApi?: SolanaOrderBookApi
 }
 
 /**
@@ -20,9 +20,9 @@ export interface PostSolanaSponsoredOrderOptions {
 export function postSolanaSponsoredOrder(
   order: SolanaOrderCreation,
   options: PostSolanaSponsoredOrderOptions = {},
-): Promise<UID> {
+): Promise<OrderUid> {
   const context = solanaApiContext(options.env)
-  const orderBookApi = options.orderBookApi ?? new OrderBookApi(context)
+  const orderBookApi = options.orderBookApi ?? new SolanaOrderBookApi(context)
 
-  return orderBookApi.sendSolanaOrder(order, context)
+  return orderBookApi.sendOrder(order, context)
 }

@@ -1,13 +1,14 @@
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { bpsToPercentage, log, suggestSlippageBps } from '@cowprotocol/sdk-common'
-import { getQuoteAmountsAndCosts, OrderKind, OrderQuoteResponse, PriceQuality } from '@cowprotocol/sdk-order-book'
+import { getQuoteAmountsAndCosts, PriceQuality } from '@cowprotocol/sdk-order-book'
+import { OrderKind, QuoteResponse } from '@cowprotocol/sdk-order-book/solana'
 import type { SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
 
 export interface ResolveSolanaSlippageSuggestionParams {
   sellToken: string
   buyToken: string
   priceQuality: PriceQuality
-  quoteResponse: OrderQuoteResponse
+  quoteResponse: QuoteResponse
   advancedSettings?: SwapAdvancedSettings
 }
 
@@ -28,11 +29,12 @@ export async function resolveSolanaSlippageSuggestion(params: ResolveSolanaSlipp
   }
 
   // slippagePercentBps is 0 here because we only need amounts after partner fees to pass to getSlippageSuggestion()
+  // protocolFeeBps is absent from the response and fixed at zero: no Solana component charges a fee
   const { isSell, beforeAllFees, afterSlippage } = getQuoteAmountsAndCosts({
     orderParams: quoteResponse.quote,
     slippagePercentBps: 0,
     partnerFeeBps: undefined,
-    protocolFeeBps: quoteResponse.protocolFeeBps ? Number(quoteResponse.protocolFeeBps) : undefined,
+    protocolFeeBps: undefined,
   })
 
   try {
@@ -57,14 +59,14 @@ export async function resolveSolanaSlippageSuggestion(params: ResolveSolanaSlipp
 
 /** Extracts what `suggestSlippageBps` needs from a quote response and runs the shared fee+volume
  * heuristic — Solana has no eth-flow concept, so it never passes a `lowerCapBps`. */
-function defaultSlippageSuggestion(quoteResponse: OrderQuoteResponse, volumeMultiplierPercent?: number): number {
+function defaultSlippageSuggestion(quoteResponse: QuoteResponse, volumeMultiplierPercent?: number): number {
   const isSell = quoteResponse.quote.kind === OrderKind.SELL
   const {
     beforeNetworkCosts: { sellAmount: sellAmountBeforeNetworkCosts },
     afterNetworkCosts: { sellAmount: sellAmountAfterNetworkCosts },
   } = getQuoteAmountsAndCosts({
     orderParams: quoteResponse.quote,
-    protocolFeeBps: quoteResponse.protocolFeeBps ? Number(quoteResponse.protocolFeeBps) : 0,
+    protocolFeeBps: 0,
     partnerFeeBps: undefined,
     slippagePercentBps: 0,
   })

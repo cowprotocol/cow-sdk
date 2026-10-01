@@ -1,12 +1,7 @@
 import { PublicKey } from '@solana/web3.js'
 import { getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token'
-import {
-  OrderKind,
-  OrderBookApi,
-  OrderQuoteRequest,
-  PriceQuality,
-  SolanaQuoteResponse,
-} from '@cowprotocol/sdk-order-book'
+import { OrderKind, PriceQuality } from '@cowprotocol/sdk-order-book'
+import { QuoteRequest, QuoteResponse, SolanaOrderBookApi } from '@cowprotocol/sdk-order-book/solana'
 import {
   SOL_NATIVE_CURRENCY_ADDRESS,
   SOLANA_SETTLEMENT_PROGRAM_ID,
@@ -28,17 +23,17 @@ describe('getSolanaQuote', () => {
 
   const SOLANA_CONTEXT = { chainId: SupportedChainId.SOLANA }
 
-  const getSolanaQuoteMock = jest.fn<Promise<SolanaQuoteResponse>, [OrderQuoteRequest, unknown]>()
-  const orderBookApiMock = { getSolanaQuote: getSolanaQuoteMock } as unknown as OrderBookApi
+  const getSolanaQuoteMock = jest.fn<Promise<QuoteResponse>, [QuoteRequest, unknown]>()
+  const orderBookApiMock = { getQuote: getSolanaQuoteMock } as unknown as SolanaOrderBookApi
 
   beforeEach(() => {
     getSolanaQuoteMock.mockReset()
   })
 
   function quoteResponseFixture(
-    overrides: Partial<SolanaQuoteResponse['quote']> = {},
+    overrides: Partial<QuoteResponse['quote']> = {},
     funder?: string,
-  ): SolanaQuoteResponse {
+  ): QuoteResponse {
     return {
       quote: {
         sellToken: sellMint.toBase58(),
@@ -57,10 +52,10 @@ describe('getSolanaQuote', () => {
       expiration: '2024-01-01T00:30:00.000Z',
       verified: false,
       ...(funder ? { funder } : undefined),
-    } as SolanaQuoteResponse
+    } as QuoteResponse
   }
 
-  function mockQuoteResponse(overrides: Partial<SolanaQuoteResponse['quote']> = {}): void {
+  function mockQuoteResponse(overrides: Partial<QuoteResponse['quote']> = {}): void {
     getSolanaQuoteMock.mockResolvedValueOnce(quoteResponseFixture(overrides))
   }
 
@@ -177,9 +172,13 @@ describe('getSolanaQuote', () => {
     })
 
     describe('priceQuality', () => {
+      // `priceQuality` is not part of the Solana quote request — the order book accepts and ignores it,
+      // and its generated type has no field for it. It is observable only through the slippage path:
+      // a FAST quote skips `getSlippageSuggestion` entirely.
       function quoteWithPriceQuality(
+        getSlippageSuggestion: jest.Mock,
         priceQuality?: PriceQuality,
-        advancedSettings?: { quoteRequest: { priceQuality: PriceQuality } },
+        quoteRequest?: { priceQuality: PriceQuality },
       ): ReturnType<typeof getSolanaQuote> {
         return getSolanaQuote(
           {
@@ -193,41 +192,46 @@ describe('getSolanaQuote', () => {
             kind: OrderKind.SELL,
             ...(priceQuality === undefined ? undefined : { priceQuality }),
           },
-          { orderBookApi: orderBookApiMock, advancedSettings },
+          { orderBookApi: orderBookApiMock, advancedSettings: { getSlippageSuggestion, ...(quoteRequest && { quoteRequest }) } },
         )
       }
 
-      it('defaults to VERIFIED when neither the caller nor advancedSettings set one', async () => {
+      it('is never sent on the wire', async () => {
         mockQuoteResponse()
 
-        await quoteWithPriceQuality()
+        await quoteWithPriceQuality(jest.fn().mockResolvedValue({ slippageBps: 200 }), PriceQuality.OPTIMAL)
 
         expect(getSolanaQuoteMock).toHaveBeenCalledWith(
-          expect.objectContaining({ priceQuality: PriceQuality.VERIFIED }),
+          expect.not.objectContaining({ priceQuality: expect.anything() }),
           SOLANA_CONTEXT,
         )
+      })
+
+      it('defaults to VERIFIED when neither the caller nor advancedSettings set one', async () => {
+        mockQuoteResponse()
+        const getSlippageSuggestion = jest.fn().mockResolvedValue({ slippageBps: 200 })
+
+        await quoteWithPriceQuality(getSlippageSuggestion)
+
+        expect(getSlippageSuggestion).toHaveBeenCalled()
       })
 
       it('falls back to advancedSettings.quoteRequest.priceQuality when the caller sets none', async () => {
         mockQuoteResponse()
+        const getSlippageSuggestion = jest.fn().mockResolvedValue({ slippageBps: 200 })
 
-        await quoteWithPriceQuality(undefined, { quoteRequest: { priceQuality: PriceQuality.FAST } })
+        await quoteWithPriceQuality(getSlippageSuggestion, undefined, { priceQuality: PriceQuality.FAST })
 
-        expect(getSolanaQuoteMock).toHaveBeenCalledWith(
-          expect.objectContaining({ priceQuality: PriceQuality.FAST }),
-          SOLANA_CONTEXT,
-        )
+        expect(getSlippageSuggestion).not.toHaveBeenCalled()
       })
 
       it('prefers the caller-supplied priceQuality over advancedSettings.quoteRequest.priceQuality', async () => {
         mockQuoteResponse()
+        const getSlippageSuggestion = jest.fn().mockResolvedValue({ slippageBps: 200 })
 
-        await quoteWithPriceQuality(PriceQuality.OPTIMAL, { quoteRequest: { priceQuality: PriceQuality.FAST } })
+        await quoteWithPriceQuality(getSlippageSuggestion, PriceQuality.OPTIMAL, { priceQuality: PriceQuality.FAST })
 
-        expect(getSolanaQuoteMock).toHaveBeenCalledWith(
-          expect.objectContaining({ priceQuality: PriceQuality.OPTIMAL }),
-          SOLANA_CONTEXT,
-        )
+        expect(getSlippageSuggestion).toHaveBeenCalled()
       })
     })
   })
@@ -473,7 +477,7 @@ describe('getSolanaQuote', () => {
         from: owner.toBase58(),
         expiration: '2024-01-01T00:30:00.000Z',
         verified: false,
-      } as SolanaQuoteResponse)
+      } as QuoteResponse)
     }
 
     it('quotes against the WSOL mint, since the native sentinel is not a token mint', async () => {
@@ -532,7 +536,7 @@ describe('getSolanaQuote', () => {
         from: owner.toBase58(),
         expiration: '2024-01-01T00:30:00.000Z',
         verified: false,
-      } as SolanaQuoteResponse)
+      } as QuoteResponse)
 
       const { solanaQuote, quoteResults } = await getSolanaQuote(
         {
@@ -594,7 +598,7 @@ describe('getSolanaQuote', () => {
         from: owner.toBase58(),
         expiration: '2024-01-01T00:30:00.000Z',
         verified: false,
-      } as SolanaQuoteResponse)
+      } as QuoteResponse)
     }
 
     it('quotes against the WSOL mint, since the book answers NoLiquidity for the sentinel', async () => {
@@ -764,11 +768,11 @@ describe('getSolanaQuote', () => {
   describe('default order book client', () => {
     function quoteWithDefaultClient(env?: 'prod' | 'staging'): {
       quote: ReturnType<typeof getSolanaQuote>
-      context: () => OrderBookApi['context'] | undefined
+      context: () => SolanaOrderBookApi['context'] | undefined
       restore: () => void
     } {
-      let seen: OrderBookApi['context'] | undefined
-      const spy = jest.spyOn(OrderBookApi.prototype, 'getSolanaQuote').mockImplementation(function (this: OrderBookApi) {
+      let seen: SolanaOrderBookApi['context'] | undefined
+      const spy = jest.spyOn(SolanaOrderBookApi.prototype, 'getQuote').mockImplementation(function (this: SolanaOrderBookApi) {
         seen = this.context
 
         return Promise.resolve(quoteResponseFixture())

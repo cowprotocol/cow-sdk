@@ -1,4 +1,10 @@
 export * from './api'
+export {
+  ORDER_BOOK_PARTNER_PROD_CONFIG,
+  ORDER_BOOK_PARTNER_STAGING_CONFIG,
+  ORDER_BOOK_PROD_CONFIG,
+  ORDER_BOOK_STAGING_CONFIG,
+} from './apiBase'
 export * from './types'
 export * from './generated'
 export * from './request'

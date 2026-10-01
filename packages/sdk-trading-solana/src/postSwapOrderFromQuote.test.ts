@@ -1,11 +1,11 @@
 import { PublicKey } from '@solana/web3.js'
 import { OrderKind, SigningScheme } from '@cowprotocol/sdk-order-book'
-import type { QuoteResults } from '@cowprotocol/sdk-trading'
 
 import { postSolanaSwapOrderFromQuote } from './postSwapOrderFromQuote'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toOrderId } from './orderIntent'
 import { findOrderPda } from './orderPda'
 import { SolanaQuote } from './types'
+import type { SolanaQuoteResults } from './types'
 
 function fillPubkey(byte: number): PublicKey {
   return new PublicKey(new Uint8Array(32).fill(byte))
@@ -40,8 +40,8 @@ async function buildFixtureQuote(): Promise<SolanaQuote> {
   }
 }
 
-function buildFixtureQuoteResults(orderToSign: unknown = { fake: 'orderToSign' }): QuoteResults {
-  return { orderToSign } as unknown as QuoteResults
+function buildFixtureSolanaQuoteResults(orderToSign: unknown = { fake: 'orderToSign' }): SolanaQuoteResults {
+  return { orderToSign } as unknown as SolanaQuoteResults
 }
 
 /** Intent-level overrides (`receiver`/`validTo`) are covered directly in `buildSwapOrder.test.ts`; this
@@ -49,7 +49,7 @@ function buildFixtureQuoteResults(orderToSign: unknown = { fake: 'orderToSign' }
 describe('postSolanaSwapOrderFromQuote', () => {
   it('signs and sends the CreateOrder instruction, returning the order posting result', async () => {
     const solanaQuote = await buildFixtureQuote()
-    const quoteResults = buildFixtureQuoteResults()
+    const quoteResults = buildFixtureSolanaQuoteResults()
     const signAndSend = jest.fn().mockResolvedValue({ signature: 'fake-signature' })
 
     const result = await postSolanaSwapOrderFromQuote({ quoteResults, solanaQuote }, signAndSend)
@@ -73,7 +73,7 @@ describe('postSolanaSwapOrderFromQuote', () => {
     // this prefix, any code that looks an order up by the API's uid (e.g. reducer batch actions,
     // notifications) mismatches the locally-stored id and silently fails to find the order.
     const solanaQuote = await buildFixtureQuote()
-    const quoteResults = buildFixtureQuoteResults()
+    const quoteResults = buildFixtureSolanaQuoteResults()
     const signAndSend = jest.fn().mockResolvedValue({ signature: 'fake-signature' })
 
     const result = await postSolanaSwapOrderFromQuote({ quoteResults, solanaQuote }, signAndSend)
@@ -84,7 +84,7 @@ describe('postSolanaSwapOrderFromQuote', () => {
 
   it('propagates a signAndSend rejection', async () => {
     const solanaQuote = await buildFixtureQuote()
-    const quoteResults = buildFixtureQuoteResults()
+    const quoteResults = buildFixtureSolanaQuoteResults()
     const signAndSend = jest.fn().mockRejectedValue(new Error('user rejected'))
 
     await expect(postSolanaSwapOrderFromQuote({ quoteResults, solanaQuote }, signAndSend)).rejects.toThrow(
@@ -94,7 +94,7 @@ describe('postSolanaSwapOrderFromQuote', () => {
 
   it('invokes signingStepManager hooks around signing', async () => {
     const solanaQuote = await buildFixtureQuote()
-    const quoteResults = buildFixtureQuoteResults()
+    const quoteResults = buildFixtureSolanaQuoteResults()
     const signAndSend = jest.fn().mockResolvedValue({ signature: 'fake-signature' })
     const calls: string[] = []
     const signingStepManager = {
@@ -115,7 +115,7 @@ describe('postSolanaSwapOrderFromQuote', () => {
 
   it('forwards advancedSettings so the submitted instruction reflects the overridden intent', async () => {
     const solanaQuote = await buildFixtureQuote()
-    const quoteResults = buildFixtureQuoteResults()
+    const quoteResults = buildFixtureSolanaQuoteResults()
     const signAndSend = jest.fn().mockResolvedValue({ signature: 'fake-signature' })
     const newValidTo = solanaQuote.intent.validTo + 1_000
 

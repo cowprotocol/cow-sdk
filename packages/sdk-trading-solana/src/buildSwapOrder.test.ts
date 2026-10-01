@@ -2,13 +2,13 @@ import { Keypair, PublicKey } from '@solana/web3.js'
 import { getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token'
 import { OrderKind, SigningScheme } from '@cowprotocol/sdk-order-book'
 import { SOL_NATIVE_CURRENCY_ADDRESS } from '@cowprotocol/sdk-config'
-import type { QuoteResults } from '@cowprotocol/sdk-trading'
 
 import { mergeAppData } from './appData'
 import { buildSolanaSwapOrder } from './buildSwapOrder'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toOrderId } from './orderIntent'
 import { findOrderPda } from './orderPda'
 import { SolanaQuote } from './types'
+import type { SolanaQuoteResults } from './types'
 
 function fillPubkey(byte: number): PublicKey {
   return new PublicKey(new Uint8Array(32).fill(byte))
@@ -48,17 +48,17 @@ async function buildFixtureQuote(
   }
 }
 
-function buildFixtureQuoteResults(orderToSign: unknown = { fake: 'orderToSign' }): QuoteResults {
+function buildFixtureSolanaQuoteResults(orderToSign: unknown = { fake: 'orderToSign' }): SolanaQuoteResults {
   return {
     orderToSign,
     appDataInfo: { doc: { appCode: 'fixture-app', metadata: {} } },
-  } as unknown as QuoteResults
+  } as unknown as SolanaQuoteResults
 }
 
 describe('buildSolanaSwapOrder', () => {
   it('builds the CreateOrder instruction for the quoted intent', async () => {
     const solanaQuote = await buildFixtureQuote()
-    const quoteResults = buildFixtureQuoteResults()
+    const quoteResults = buildFixtureSolanaQuoteResults()
 
     const order = await buildSolanaSwapOrder({ quoteResults, solanaQuote })
 
@@ -69,7 +69,7 @@ describe('buildSolanaSwapOrder', () => {
 
   it('returns the order identity and scheme alongside the instruction', async () => {
     const solanaQuote = await buildFixtureQuote()
-    const quoteResults = buildFixtureQuoteResults()
+    const quoteResults = buildFixtureSolanaQuoteResults()
 
     const order = await buildSolanaSwapOrder({ quoteResults, solanaQuote })
 
@@ -84,7 +84,7 @@ describe('buildSolanaSwapOrder', () => {
   it('funds the order rent from the owner, so a single wallet signs the whole transaction', async () => {
     const solanaQuote = await buildFixtureQuote()
 
-    const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote })
+    const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureSolanaQuoteResults(), solanaQuote })
 
     // accounts[0] is the owner/authenticator, accounts[1] the rent payer (`createdBy`).
     const accounts = order.instruction.keys.map((key) => key.pubkey.toBase58())
@@ -98,7 +98,7 @@ describe('buildSolanaSwapOrder', () => {
     const solanaQuote = await buildFixtureQuote()
     const sponsor = fillPubkey(0x99)
 
-    const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, undefined, {
+    const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureSolanaQuoteResults(), solanaQuote }, undefined, {
       sponsor,
     })
 
@@ -111,7 +111,7 @@ describe('buildSolanaSwapOrder', () => {
   // The settlement program's intent carries no `created_by`, so who pays cannot move the order's hash.
   it('keeps the order identity independent of who pays for it', async () => {
     const solanaQuote = await buildFixtureQuote()
-    const quoteResults = buildFixtureQuoteResults()
+    const quoteResults = buildFixtureSolanaQuoteResults()
 
     const ownerPaid = await buildSolanaSwapOrder({ quoteResults, solanaQuote })
     const sponsored = await buildSolanaSwapOrder({ quoteResults, solanaQuote }, undefined, {
@@ -126,7 +126,7 @@ describe('buildSolanaSwapOrder', () => {
     const solanaQuote = await buildFixtureQuote()
     const originalValidTo = solanaQuote.intent.validTo
 
-    await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, {
+    await buildSolanaSwapOrder({ quoteResults: buildFixtureSolanaQuoteResults(), solanaQuote }, {
       quoteRequest: { validTo: originalValidTo + 1_000 },
     })
 
@@ -138,7 +138,7 @@ describe('buildSolanaSwapOrder', () => {
     const solanaQuote = await buildFixtureQuote(buyTokenProgramId)
     const newReceiver = Keypair.generate().publicKey
 
-    const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, {
+    const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureSolanaQuoteResults(), solanaQuote }, {
       quoteRequest: { receiver: newReceiver.toBase58() },
     })
 
@@ -166,7 +166,7 @@ describe('buildSolanaSwapOrder', () => {
     })
     const newReceiver = Keypair.generate().publicKey
 
-    const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, {
+    const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureSolanaQuoteResults(), solanaQuote }, {
       quoteRequest: { receiver: newReceiver.toBase58() },
     })
 
@@ -180,7 +180,7 @@ describe('buildSolanaSwapOrder', () => {
     const solanaQuote = await buildFixtureQuote()
     const newValidTo = solanaQuote.intent.validTo + 1_000
 
-    const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, {
+    const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureSolanaQuoteResults(), solanaQuote }, {
       quoteRequest: { validTo: newValidTo },
     })
 
@@ -196,7 +196,7 @@ describe('buildSolanaSwapOrder', () => {
 
   it('overriding appData merges it into the quoted app-data doc and re-derives uid/orderPda to match', async () => {
     const solanaQuote = await buildFixtureQuote()
-    const quoteResults = buildFixtureQuoteResults()
+    const quoteResults = buildFixtureSolanaQuoteResults()
     const appDataOverride = { metadata: { referrer: { code: 'someone' } } }
 
     const order = await buildSolanaSwapOrder({ quoteResults, solanaQuote }, { appData: appDataOverride })
@@ -214,9 +214,9 @@ describe('buildSolanaSwapOrder', () => {
 
   it('overriding appData does not throw when the quote has no app-data doc yet, matching getSolanaQuote\'s current stub', async () => {
     const solanaQuote = await buildFixtureQuote()
-    // `getSolanaQuote` currently returns `appDataInfo: {} as QuoteResults['appDataInfo']` — no `doc` key at
+    // `getSolanaQuote` currently returns `appDataInfo: {} as SolanaQuoteResults['appDataInfo']` — no `doc` key at
     // all — until Solana app-data generation is implemented. `buildSolanaSwapOrder` must not crash on it.
-    const quoteResults = { orderToSign: {}, appDataInfo: {} } as unknown as QuoteResults
+    const quoteResults = { orderToSign: {}, appDataInfo: {} } as unknown as SolanaQuoteResults
 
     await expect(
       buildSolanaSwapOrder({ quoteResults, solanaQuote }, { appData: { appCode: 'some-app' } }),
@@ -226,7 +226,7 @@ describe('buildSolanaSwapOrder', () => {
   it('keeps the quoted uid/orderPda when advancedSettings overrides nothing relevant', async () => {
     const solanaQuote = await buildFixtureQuote()
 
-    const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, {
+    const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureSolanaQuoteResults(), solanaQuote }, {
       quoteRequest: {},
     })
 

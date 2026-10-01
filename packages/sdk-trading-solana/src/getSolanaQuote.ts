@@ -1,16 +1,8 @@
 import { PublicKey } from '@solana/web3.js'
 import { getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { CowEnv } from '@cowprotocol/sdk-config'
-import {
-  getQuoteAmountsAndCosts,
-  OrderBookApi,
-  OrderKind,
-  OrderQuoteRequest,
-  OrderQuoteSideKindBuy,
-  OrderQuoteSideKindSell,
-  PriceQuality,
-  SigningScheme,
-} from '@cowprotocol/sdk-order-book'
+import { getQuoteAmountsAndCosts, OrderKind, PriceQuality } from '@cowprotocol/sdk-order-book'
+import { OrderKind as SolanaOrderKind, QuoteRequest, SolanaOrderBookApi } from '@cowprotocol/sdk-order-book/solana'
 
 import { solanaApiContext } from './apiContext'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent } from './orderIntent'
@@ -18,7 +10,7 @@ import { findOrderPda } from './orderPda'
 import { resolveSolanaSlippageSuggestion } from './resolveSlippageSuggestion'
 import { isNativeSolMint, toSplMint } from './splMint'
 import { getSolanaSettlementProgramId } from './statePda'
-import { SolanaQuote, SolanaQuoteParameters } from './types'
+import { SolanaQuote, SolanaQuoteParameters, SolanaQuoteResults } from './types'
 import type { QuoteResults, SwapAdvancedSettings, TradeParameters } from '@cowprotocol/sdk-trading'
 
 const DEFAULT_VALID_FOR_SECONDS = 30 * 60
@@ -28,8 +20,8 @@ const ZERO_APP_DATA = new Uint8Array(32)
 
 export async function getSolanaQuote(
   params: SolanaQuoteParameters,
-  options: { env?: CowEnv; orderBookApi?: OrderBookApi; advancedSettings?: SwapAdvancedSettings } = {},
-): Promise<{ quoteResults: QuoteResults; solanaQuote: SolanaQuote }> {
+  options: { env?: CowEnv; orderBookApi?: SolanaOrderBookApi; advancedSettings?: SwapAdvancedSettings } = {},
+): Promise<{ quoteResults: SolanaQuoteResults; solanaQuote: SolanaQuote }> {
   const {
     slippageBps: slippageBpsOverride,
     ownerAddress,
@@ -68,24 +60,20 @@ export async function getSolanaQuote(
   const buyTokenAddress = buyMint.toBase58()
 
   const apiContext = solanaApiContext(options.env)
-  const orderBookApi = options.orderBookApi ?? new OrderBookApi(apiContext)
+  const orderBookApi = options.orderBookApi ?? new SolanaOrderBookApi(apiContext)
 
-  const quoteRequest: OrderQuoteRequest = {
+  const quoteRequest: QuoteRequest = {
     from: owner.toBase58(),
     sellToken: sellTokenAddress,
     buyToken: buyTokenAddress,
     receiver: receiver.toBase58(),
     validFor: validForSeconds,
-    // TODO: fill appData when we know the format
-    appData: '{}',
-    priceQuality,
-    signingScheme: SigningScheme.EIP712,
     ...(kind === OrderKind.SELL
-      ? { kind: OrderQuoteSideKindSell.SELL, sellAmountBeforeFee: amount.toString() }
-      : { kind: OrderQuoteSideKindBuy.BUY, buyAmountAfterFee: amount.toString() }),
+      ? { kind: SolanaOrderKind.SELL, sellAmountBeforeFee: amount.toString() }
+      : { kind: SolanaOrderKind.BUY, buyAmountAfterFee: amount.toString() }),
   }
 
-  const quoteResponse = await orderBookApi.getSolanaQuote(quoteRequest, apiContext)
+  const quoteResponse = await orderBookApi.getQuote(quoteRequest, apiContext)
   const orderParams = quoteResponse.quote
   const validTo = orderParams.validTo
 
@@ -162,7 +150,7 @@ export async function getSolanaQuote(
     partiallyFillable,
   }
 
-  const quoteResults: QuoteResults = {
+  const quoteResults: SolanaQuoteResults = {
     quoteResponse,
     amountsAndCosts,
     // What the quote provider suggested, never the caller's own `slippageBps`: consumers read this as a

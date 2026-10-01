@@ -1,10 +1,11 @@
-import { OrderKind, OrderParameters } from '../generated'
+import { OrderKind } from '../generated'
 import { HUNDRED_THOUSANDS, ONE_HUNDRED_BPS } from './quoteAmountsAndCosts.const'
+import { QuoteAmountsSource } from './quoteAmountsAndCosts.types'
 
 const PROTOCOL_FEE_BPS_SCALE = BigInt(HUNDRED_THOUSANDS)
 
 export interface ProtocolFeeAmountParams {
-  orderParams: OrderParameters
+  orderParams: QuoteAmountsSource
   protocolFeeBps: number
 }
 

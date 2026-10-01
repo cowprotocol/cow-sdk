@@ -1,7 +1,14 @@
 import { PublicKey, PublicKeyInitData, TransactionInstruction } from '@solana/web3.js'
 import type { OrderKind, PriceQuality } from '@cowprotocol/sdk-order-book'
+import type { QuoteResponse } from '@cowprotocol/sdk-order-book/solana'
+import type { QuoteResults } from '@cowprotocol/sdk-trading'
 
 import { SolanaOrderIntent } from './orderIntent'
+
+/**
+ * `QuoteResults` carrying the Solana order book's own quote response.
+ */
+export type SolanaQuoteResults = QuoteResults<QuoteResponse>
 
 export interface SolanaQuoteParameters {
   ownerAddress: PublicKeyInitData

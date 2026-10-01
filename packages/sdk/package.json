@@ -16,6 +16,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
+    },
+    "./solana": {
+      "types": "./dist/solana.d.ts",
+      "import": "./dist/solana.mjs",
+      "require": "./dist/solana.js"
     }
   },
   "sideEffects": false,
@@ -26,7 +31,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts --treeshake",
+    "build": "tsup src/index.ts src/solana.ts --format esm,cjs --dts --treeshake",
     "postbuild": "pnpm copy-package-json && pnpm copy-md-files",
     "copy-package-json": "npx shx cp package.json dist",
     "copy-md-files": "npx cpx \"*.md\" dist",

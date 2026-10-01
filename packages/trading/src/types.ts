@@ -179,7 +179,7 @@ export interface LimitOrderAdvancedSettings {
  *
  * This data is used to create a trade, sign an order, and post it to the order book.
  */
-export interface QuoteResults {
+export interface QuoteResults<TQuoteResponse = OrderQuoteResponse> {
   /**
    * Information about the trade, including the kind of order, the owner, the sell and buy tokens, and the amount.
    */
@@ -204,9 +204,10 @@ export interface QuoteResults {
   orderToSign: UnsignedOrder
 
   /**
-   * Information about the quote response from the order book API.
+   * Information about the quote response from the order book API. Defaults to the EVM order book's
+   * response; the Solana order book answers its own shape.
    */
-  quoteResponse: OrderQuoteResponse
+  quoteResponse: TQuoteResponse
 
   /**
    * Information about the app-data, including the JSON document and the keccak256 hash of the full document.
