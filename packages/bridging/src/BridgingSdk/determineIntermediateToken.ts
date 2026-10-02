@@ -1,5 +1,5 @@
 import { isSupportedChain, SupportedChainId, TargetChainId, TokenInfo } from '@cowprotocol/sdk-config'
-import { Address, areAddressesEqual, getAddressKey, isNativeToken } from '@cowprotocol/sdk-common'
+import { Address, areAddressesEqual, getAddressKey, isNativeToken, isWrappedNativeToken } from '@cowprotocol/sdk-common'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../errors'
 import { isStablecoinPriorityToken, isCorrelatedToken, getStablecoinPriorityToken } from './tokenPriority'
 
@@ -15,13 +15,19 @@ export interface IntermediateTokenContext {
 /**
  * Priority levels for intermediate token selection
  */
-enum TokenPriority {
-  STABLECOIN_MATCHES_DESTINATION = 6, // The same stablecoin as destination token
-  MATCHES_SELL = 5, // Same as sell token
+export enum TokenPriority {
+  STABLECOIN_MATCHES_DESTINATION = 7, // The same stablecoin as destination token
+  MATCHES_SELL = 6, // Same as sell token
+  MATCHES_SELL_WRAPPED_OR_NATIVE = 5, // Native <-> wrapped native counterpart of sell token (e.g. WETH when selling ETH)
   STABLECOIN = 4, // USDC/USDT from hardcoded registry (when not covered by STABLECOIN_MATCHES_DESTINATION)
   CORRELATED = 3, // Tokens in CMS correlated tokens list
   NATIVE = 2, // Blockchain native token
   OTHER = 1, // Other tokens
+}
+
+export interface RankedIntermediateToken {
+  token: TokenInfo
+  priority: TokenPriority
 }
 
 /**
@@ -39,6 +45,25 @@ enum TokenPriority {
  * @throws {BridgeProviderQuoteError} If `intermediateTokens` is empty or undefined
  */
 export async function determineIntermediateToken(context: IntermediateTokenContext): Promise<TokenInfo> {
+  const [result] = await rankIntermediateTokens(context)
+
+  if (!result) {
+    throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_INTERMEDIATE_TOKENS, {
+      intermediateTokens: context.intermediateTokens,
+    })
+  }
+
+  return result.token
+}
+
+/**
+ * Sorts the candidate intermediate tokens from best to worst using the same priority algorithm as
+ * `determineIntermediateToken`. The ranking is used to fall back to the next candidate when the bridge
+ * provider has no route for the preferred one.
+ *
+ * @throws {BridgeProviderQuoteError} If `intermediateTokens` is empty or undefined
+ */
+export async function rankIntermediateTokens(context: IntermediateTokenContext): Promise<RankedIntermediateToken[]> {
   const {
     sourceChainId,
     sourceTokenAddress,
@@ -55,9 +80,9 @@ export async function determineIntermediateToken(context: IntermediateTokenConte
     throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_INTERMEDIATE_TOKENS, { intermediateTokens })
   }
 
-  // If only one token, return it immediately
+  // If only one token, return it immediately. Its priority is irrelevant since there is nothing to rank it against
   if (intermediateTokens.length === 1) {
-    return firstToken
+    return [{ token: firstToken, priority: TokenPriority.OTHER }]
   }
 
   const correlatedTokens = await resolveCorrelatedTokens(sourceChainId, getCorrelatedTokens)
@@ -70,8 +95,10 @@ export async function determineIntermediateToken(context: IntermediateTokenConte
     ? getStablecoinPriorityToken(destinationChainId, destinationTokenAddress)
     : undefined
 
+  const sellToken = { chainId: sourceChainId, address: sourceTokenAddress }
+
   // Calculate priority for each token
-  const tokensWithPriority = filteredTokens.map((token) => {
+  const tokensWithPriority = filteredTokens.map((token): RankedIntermediateToken => {
     const isStableCoin = isStablecoinPriorityToken(token.chainId, token.address)
 
     if (destinationStableCoin && isStableCoin) {
@@ -85,6 +112,10 @@ export async function determineIntermediateToken(context: IntermediateTokenConte
 
     if (areAddressesEqual(token.address, sourceTokenAddress)) {
       return { token, priority: TokenPriority.MATCHES_SELL }
+    }
+    // Wrapping/unwrapping the native token is as cheap as keeping the sell token, so it goes before any real swap
+    if (allowIntermediateEqSellToken && isWrappedOrNativeCounterpart(token, sellToken)) {
+      return { token, priority: TokenPriority.MATCHES_SELL_WRAPPED_OR_NATIVE }
     }
     if (isStableCoin) {
       return { token, priority: TokenPriority.STABLECOIN }
@@ -108,13 +139,23 @@ export async function determineIntermediateToken(context: IntermediateTokenConte
     return filteredTokens.indexOf(a.token) - filteredTokens.indexOf(b.token)
   })
 
-  const result = tokensWithPriority[0]?.token
-
-  if (!result) {
+  if (tokensWithPriority.length === 0) {
     throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_INTERMEDIATE_TOKENS, { intermediateTokens: filteredTokens })
   }
 
-  return result
+  return tokensWithPriority
+}
+
+/**
+ * True when `token` is the native currency and `sellToken` its wrapped version (e.g. ETH / WETH), or vice versa
+ */
+function isWrappedOrNativeCounterpart(token: TokenInfo, sellToken: { chainId: SupportedChainId; address: string }) {
+  if (token.chainId !== sellToken.chainId) return false
+
+  return (
+    (isNativeToken(token) && isWrappedNativeToken(sellToken)) ||
+    (isWrappedNativeToken(token) && isNativeToken(sellToken))
+  )
 }
 
 async function resolveCorrelatedTokens(

@@ -13,11 +13,15 @@ import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../errors'
 import { GetQuoteWithBridgeParams } from './types'
 import { getCacheKey } from './helpers'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
-import { determineIntermediateToken } from './determineIntermediateToken'
+import { RankedIntermediateToken, rankIntermediateTokens } from './determineIntermediateToken'
 
 export interface GetIntermediateSwapResultParams<T extends BridgeQuoteResult> {
   provider: BridgeProvider<T>
   params: GetQuoteWithBridgeParams
+  /**
+   * Intermediate token to swap into. When omitted, the best ranked candidate from the provider is used.
+   */
+  intermediateToken?: TokenInfo
   getBridgeHook?: (
     bridgeRequestWithoutAmount: QuoteBridgeRequestWithoutAmount,
   ) => Promise<cowAppDataLatestScheme.CoWHook>
@@ -36,9 +40,10 @@ export interface GetIntermediateSwapResultResult {
 export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
   provider,
   params,
+  intermediateToken: intermediateTokenOverride,
   getBridgeHook,
 }: GetIntermediateSwapResultParams<T>): Promise<GetIntermediateSwapResultResult> {
-  const { swapAndBridgeRequest, advancedSettings, tradingSdk, allowIntermediateEqSellToken } = params
+  const { swapAndBridgeRequest, advancedSettings, tradingSdk } = params
   const {
     kind,
     sellTokenChainId,
@@ -56,23 +61,11 @@ export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
     `Cross-chain ${kind} ${amount} ${sellTokenAddress} (source chain ${sellTokenChainId}) for ${buyTokenAddress} (target chain ${buyTokenChainId})`,
   )
 
-  // Get the swap params without the amount (includes the intermediate token as buyToken)
-  const intermediateTokens = await getIntermediateTokens({
-    provider,
-    quoteBridgeRequest: swapAndBridgeRequest,
-    intermediateTokensCache: params.intermediateTokensCache,
-  })
+  const intermediateToken = intermediateTokenOverride ?? (await getRankedIntermediateTokens(provider, params))[0]?.token
 
-  // Determine the best intermediate token based on priority (USDC/USDT > CMS correlated > others)
-  const intermediateToken = await determineIntermediateToken({
-    sourceChainId: sellTokenChainId,
-    sourceTokenAddress: sellTokenAddress,
-    destinationChainId: buyTokenChainId,
-    destinationTokenAddress: buyTokenAddress,
-    intermediateTokens,
-    getCorrelatedTokens: params.advancedSettings?.getCorrelatedTokens,
-    allowIntermediateEqSellToken,
-  })
+  if (!intermediateToken) {
+    throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_INTERMEDIATE_TOKENS)
+  }
 
   log(`Using ${intermediateToken?.name ?? intermediateToken?.address} as intermediate tokens`)
 
@@ -134,6 +127,33 @@ export async function getIntermediateSwapResult<T extends BridgeQuoteResult>({
     swapResult,
     orderBookApi,
   }
+}
+
+/**
+ * Returns the provider's intermediate tokens sorted from best to worst candidate
+ * (USDC/USDT > CMS correlated > others, see `rankIntermediateTokens`)
+ */
+export async function getRankedIntermediateTokens<T extends BridgeQuoteResult>(
+  provider: BridgeProvider<T>,
+  params: GetQuoteWithBridgeParams,
+): Promise<RankedIntermediateToken[]> {
+  const { swapAndBridgeRequest, advancedSettings, allowIntermediateEqSellToken, intermediateTokensCache } = params
+
+  const intermediateTokens = await getIntermediateTokens({
+    provider,
+    quoteBridgeRequest: swapAndBridgeRequest,
+    intermediateTokensCache,
+  })
+
+  return rankIntermediateTokens({
+    sourceChainId: swapAndBridgeRequest.sellTokenChainId,
+    sourceTokenAddress: swapAndBridgeRequest.sellTokenAddress,
+    destinationChainId: swapAndBridgeRequest.buyTokenChainId,
+    destinationTokenAddress: swapAndBridgeRequest.buyTokenAddress,
+    intermediateTokens,
+    getCorrelatedTokens: advancedSettings?.getCorrelatedTokens,
+    allowIntermediateEqSellToken,
+  })
 }
 
 async function getIntermediateTokens<T extends BridgeQuoteResult>(params: {
