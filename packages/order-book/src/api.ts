@@ -13,7 +13,6 @@ import {
   Address,
   AppDataHash,
   AppDataObject,
-  CompetitionOrderStatus,
   NativePriceResponse,
   Order,
   OrderCreation,
@@ -27,7 +26,7 @@ import {
 } from './generated'
 import { DEFAULT_BACKOFF_OPTIONS, DEFAULT_LIMITER_OPTIONS, FetchParams, OrderBookApiError, request } from './request'
 import { transformOrder } from './transformOrder'
-import { EnrichedOrder, SolanaOrderCreation, SolanaQuoteResponse } from './types'
+import { EnrichedOrder, OrderCompetitionStatus, SolanaOrderCreation, SolanaQuoteResponse } from './types'
 import { OrderCancellations } from './signingSchemes'
 
 const PROD_BASE_URL = 'https://api.cow.fi'
@@ -305,7 +304,7 @@ export class OrderBookApi {
   /**
    * Get the order status while open
    */
-  getOrderCompetitionStatus(orderUid: UID, contextOverride: PartialApiContext = {}): Promise<CompetitionOrderStatus> {
+  getOrderCompetitionStatus(orderUid: UID, contextOverride: PartialApiContext = {}): Promise<OrderCompetitionStatus> {
     return this.fetch({ path: `/api/v1/orders/${orderUid}/status`, method: 'GET' }, contextOverride)
   }
 

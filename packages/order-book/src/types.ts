@@ -1,10 +1,20 @@
-import { Order, OrderQuoteResponse } from './generated'
+import { CompetitionOrderStatus, Order, OrderQuoteResponse } from './generated'
 
 /**
  * An order with the total fee added.
  */
 export interface EnrichedOrder extends Order {
   totalFee: string
+}
+
+/**
+ * The /status answer: `CompetitionOrderStatus` plus `expired`, reported once the order's creation
+ * transaction can no longer land (its Solana blockhash died before submission). Hand-extended
+ * because the generated enum is produced from the pinned EVM order book openapi, which does not
+ * list it.
+ */
+export type OrderCompetitionStatus = Omit<CompetitionOrderStatus, 'type'> & {
+  type: `${CompetitionOrderStatus.type}` | 'expired'
 }
 
 /**
