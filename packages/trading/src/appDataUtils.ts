@@ -24,9 +24,18 @@ export function getDefaultUtmParams() {
 }
 
 export async function buildAppData(
-  { slippageBps, appCode, orderClass: orderClassName, partnerFee }: BuildAppDataParams,
+  { slippageBps, appCode, orderClass: orderClassName, partnerFee, enableFastPath, validFrom }: BuildAppDataParams,
   advancedParams?: AppDataParams,
 ): Promise<TradingAppDataInfo> {
+  // `enableFastPath` and `validFrom` are mutually exclusive: a fast-path order is a
+  // market its exclusivity window is set by default, and thus passed  ignores `validFrom`.
+  // So allowing both would silently drop the user's value. Reject up front instead.
+  if (enableFastPath && validFrom !== undefined) {
+    throw new Error(
+      'enableFastPath and validFrom are mutually exclusive: use validFrom for a "wait for CoW" order or enableFastPath for fast-path execution, but not both.',
+    )
+  }
+
   const quoteParams = { slippageBips: slippageBps }
   const orderClass = { orderClass: orderClassName }
   const metadataApiSdk = new MetadataApi(getGlobalAdapter())
@@ -40,6 +49,8 @@ export async function buildAppData(
     quote: quoteParams,
     orderClass,
     partnerFee,
+    ...(enableFastPath ? { enableFastPath: true } : {}),
+    ...(validFrom !== undefined ? { validFrom } : {}),
     ...(shouldAddDefaultUtm ? { utm: getDefaultUtmParams() } : {}),
   }
 
