@@ -146,6 +146,25 @@ describe('CoW Api', () => {
     expect(order?.uid).toEqual(ORDER_RESPONSE.uid)
   })
 
+  test('Valid: Get an expired order competition status', async () => {
+    // given
+    fetchMock.mockResponseOnce(JSON.stringify({ type: 'expired' }), {
+      status: HTTP_STATUS_OK,
+      headers: HEADERS,
+    })
+
+    // when
+    const status = await orderBookApi.getOrderCompetitionStatus(ORDER_RESPONSE.uid)
+
+    // then
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      `https://api.cow.fi/xdai/api/v1/orders/${ORDER_RESPONSE.uid}/status`,
+      FETCH_RESPONSE_PARAMETERS,
+    )
+    expect(status.type).toEqual('expired')
+  })
+
   test('Valid: Get an order for custom chainId', async () => {
     // given
     fetchMock.mockResponseOnce(JSON.stringify({ ...ORDER_RESPONSE, class: 'limit' }), {
