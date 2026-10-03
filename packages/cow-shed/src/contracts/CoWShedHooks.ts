@@ -202,8 +202,17 @@ export class CowShedHooks {
   }
 
   private async doesAccountHaveCode(account: string): Promise<boolean> {
+    // TTLCache persists to real browser localStorage by default, and every CowShedHooks instance
+    // uses the same hardcoded keyPrefix ('cowshed-account-code') regardless of chainId -- so the
+    // cache key itself must carry the chain ID, or two CowShedHooks instances for different chains
+    // (see CowShedSdk's one-instance-per-chainId cache) would read/write the SAME localStorage
+    // entry for the same address. An address can be a deployed contract on one chain and
+    // undeployed on another (e.g. a counterfactual Safe address, or a CREATE2 deploy that only
+    // landed on one chain so far).
+    const cacheKey = `${this.chainId}:${account}`
+
     // Check cache first
-    const cachedResult = this.accountCodeCache.get(account)
+    const cachedResult = this.accountCodeCache.get(cacheKey)
     if (cachedResult !== undefined) {
       return cachedResult
     }
@@ -215,7 +224,7 @@ export class CowShedHooks {
     const hasCode = !!userAccountCode && userAccountCode !== '0x'
 
     // Store result in cache
-    this.accountCodeCache.set(account, hasCode)
+    this.accountCodeCache.set(cacheKey, hasCode)
 
     return hasCode
   }
