@@ -1,6 +1,7 @@
-import { OneClickService, OpenAPI, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
+import { ApiError, OneClickService, OpenAPI, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 
 import { NearIntentsApi } from './NearIntentsApi'
+import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 
 const TEST_API_TOKEN = 'test-api-token'
 
@@ -139,6 +140,38 @@ describe('NearIntentsApi', () => {
       expect(tokens.map((t) => t.assetId)).toEqual(
         expect.arrayContaining(['nep141:eth.omft.near', '1cs_v1:btc:native:coin']),
       )
+    })
+  })
+
+  describe('getQuote', () => {
+    afterEach(() => {
+      jest.restoreAllMocks()
+    })
+
+    const apiError = (message: string) =>
+      new ApiError(
+        { method: 'POST', url: '/v0/quote' },
+        { url: '/v0/quote', ok: false, status: 400, statusText: 'Bad Request', body: { message } },
+        message,
+      )
+
+    // 1Click lists assets such as mainnet WETH that it cannot route. Reporting that as NO_ROUTES lets the
+    // bridging SDK fall back to another intermediate token instead of failing the whole quote.
+    it('maps "No liquidity available" to a NO_ROUTES error', async () => {
+      jest.spyOn(OneClickService, 'getQuote').mockRejectedValue(apiError('No liquidity available'))
+
+      const error = await new NearIntentsApi().getQuote({} as any).catch((e) => e)
+
+      expect(error).toBeInstanceOf(BridgeProviderQuoteError)
+      expect(error.message).toBe(BridgeQuoteErrors.NO_ROUTES)
+      expect(error.context).toEqual({ originalMessage: 'No liquidity available' })
+    })
+
+    it('rethrows other API errors unchanged', async () => {
+      const original = apiError('refundTo is not valid')
+      jest.spyOn(OneClickService, 'getQuote').mockRejectedValue(original)
+
+      await expect(new NearIntentsApi().getQuote({} as any)).rejects.toBe(original)
     })
   })
 })
