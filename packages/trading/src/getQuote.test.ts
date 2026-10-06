@@ -120,7 +120,7 @@ describe('getQuote', () => {
       })
     })
 
-    it('Should set fastPath on the request and enableFastPath in appData when enabled', async () => {
+    it('Should set enableFastPath in appData but not on the request', async () => {
       const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
 
       for (const adapterName of adapterNames) {
@@ -131,7 +131,7 @@ describe('getQuote', () => {
           orderBookApiMock,
         )
 
-        expect(getQuoteMock.mock.calls.at(-1)![0].fastPath).toBe(true)
+        expect(getQuoteMock.mock.calls.at(-1)![0]).not.toHaveProperty('fastPath')
         expect(JSON.parse(result.appDataInfo.fullAppData).metadata.enableFastPath).toBe(true)
       }
     })
