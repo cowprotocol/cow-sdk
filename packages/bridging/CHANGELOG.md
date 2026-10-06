@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.4.15](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.4.14...sdk-bridging-v4.4.15) (2026-10-06)
+
+
+### 🐛 Bug Fixes
+
+* **bridging:** fall back to next intermediate token when bridge has no route ([#1042](https://github.com/cowprotocol/cow-sdk/issues/1042)) ([b55f460](https://github.com/cowprotocol/cow-sdk/commit/b55f460eb491186b44378b3bf42c37dca3e7b836))
+
 ## [4.4.14](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.4.13...sdk-bridging-v4.4.14) (2026-10-01)
 
 
