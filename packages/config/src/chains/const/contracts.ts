@@ -27,11 +27,12 @@ export const COW_PROTOCOL_VAULT_RELAYER_ADDRESS_STAGING = mapAddressToSupportedN
  * CoW Protocol settlement program id on Solana (base58, not an EVM address).
  * The on-chain settlement-state PDA derived from this program is the SPL delegate a sell-token account
  * is approved to — the Solana analogue of the EVM vault relayer spender.
- * Released as `cow-settlement-interface` / `solana-programs` v0.4.1, an in-place upgrade of the v0.4
- * deployment rather than a new one, so the program id is unchanged.
- * @see https://github.com/cowprotocol/solana-programs/releases/tag/v0.4.1
+ * Deployed from `temp-release-0.4.1-alpha`, which carries the Token-2022 `TransferChecked` work ahead of
+ * its release. A fresh deployment, so the state PDA moved with it and every sell-token delegation has to
+ * be approved again.
+ * @see https://github.com/cowprotocol/solana-programs/tree/temp-release-0.4.1-alpha
  */
-export const SOLANA_SETTLEMENT_PROGRAM_ID = 'C7PXyLpLQBh3Ce7e9DNj3rDVUvwqa5orDwQG5hs1rfNi'
+export const SOLANA_SETTLEMENT_PROGRAM_ID = 'EzHqcdJssenE2R8xogJ8wpL66PRQet9M6ubpsX4QxpPb'
 export const SOLANA_SETTLEMENT_PROGRAM_ID_STAGING = SOLANA_SETTLEMENT_PROGRAM_ID
 
 /**
