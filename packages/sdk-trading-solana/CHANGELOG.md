@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.14.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.13.0...sdk-trading-solana-v0.14.0) (2026-10-07)
+
+
+### ✨ Features
+
+* bump settlement contract to 0.4.1-alpha ([#1050](https://github.com/cowprotocol/cow-sdk/issues/1050)) ([f092d0e](https://github.com/cowprotocol/cow-sdk/commit/f092d0eabce8df5dbbab93f3543aa896ae856de2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 6.0.9
+    * @cowprotocol/sdk-common bumped to 0.14.3
+    * @cowprotocol/sdk-config bumped to 2.8.0
+    * @cowprotocol/sdk-order-book bumped to 4.3.1
+    * @cowprotocol/sdk-trading bumped to 2.7.5
+
 ## [0.13.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.12.1...sdk-trading-solana-v0.13.0) (2026-10-01)
 
 
