@@ -57,23 +57,32 @@ export async function getEthFlowTransaction(
     params,
     appDataKeccak256,
   )
-  const orderId = await calculateUniqueOrderId(chainId, orderToSign, checkEthFlowOrderExists, protocolOptions)
+  // `uniqueOrder` may differ from `orderToSign` when a collision was detected and the
+  // amounts were nudged to produce `orderId` — the on-chain transaction and everything
+  // returned to the caller MUST be built from `uniqueOrder`, not the original input,
+  // or the transaction recreates the exact order that was just detected as colliding.
+  const { orderId, order: uniqueOrder } = await calculateUniqueOrderId(
+    chainId,
+    orderToSign,
+    checkEthFlowOrderExists,
+    protocolOptions,
+  )
 
   const ethOrderParams: EthFlowOrderData = {
-    buyToken: orderToSign.buyToken,
-    receiver: orderToSign.receiver,
-    sellAmount: orderToSign.sellAmount,
-    buyAmount: orderToSign.buyAmount,
-    feeAmount: orderToSign.feeAmount,
-    partiallyFillable: orderToSign.partiallyFillable,
+    buyToken: uniqueOrder.buyToken,
+    receiver: uniqueOrder.receiver,
+    sellAmount: uniqueOrder.sellAmount,
+    buyAmount: uniqueOrder.buyAmount,
+    feeAmount: uniqueOrder.feeAmount,
+    partiallyFillable: uniqueOrder.partiallyFillable,
     quoteId,
     appData: appDataKeccak256,
-    validTo: orderToSign.validTo.toString(),
+    validTo: uniqueOrder.validTo.toString(),
   }
 
   const estimatedGas = contract.estimateGas.createOrder
     ? await contract.estimateGas
-        .createOrder(ethOrderParams, { value: orderToSign.sellAmount })
+        .createOrder(ethOrderParams, { value: uniqueOrder.sellAmount })
         // TODO: the res type is any, before it was BigNumber from ethers
         .then((res) => {
           return BigInt(res.toHexString ? res.toHexString() : `0x${res.toString(16)}`)
@@ -89,12 +98,12 @@ export async function getEthFlowTransaction(
 
   return {
     orderId,
-    orderToSign,
+    orderToSign: uniqueOrder,
     transaction: {
       data,
       gasLimit: '0x' + calculateGasMargin(estimatedGas).toString(16),
       to: contract.address,
-      value: '0x' + BigInt(orderToSign.sellAmount).toString(16),
+      value: '0x' + BigInt(uniqueOrder.sellAmount).toString(16),
     },
   }
 }
