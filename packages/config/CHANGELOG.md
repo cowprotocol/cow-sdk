@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.8.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.7.2...sdk-config-v2.8.0) (2026-10-07)
+
+
+### ✨ Features
+
+* bump settlement contract to 0.4.1-alpha ([#1050](https://github.com/cowprotocol/cow-sdk/issues/1050)) ([f092d0e](https://github.com/cowprotocol/cow-sdk/commit/f092d0eabce8df5dbbab93f3543aa896ae856de2))
+
 ## [2.7.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.7.1...sdk-config-v2.7.2) (2026-09-29)
 
 
