@@ -22,10 +22,10 @@ export async function getBridgingStatusFromEvents(
   // if srcTxStatus = completed & destTxStatus = pending,
   if (event.srcTxStatus === BungeeEventStatus.COMPLETED && event.destTxStatus === BungeeEventStatus.PENDING) {
     // if bridgeName = across,
-    if (event.bridgeName === BungeeBridgeName.ACROSS) {
+    if (event.bridgeName === BungeeBridgeName.ACROSS && event.srcTransactionHash) {
       try {
         // check across api to check status is expired or refunded
-        const acrossStatus = await getAcrossStatus(event.orderId)
+        const acrossStatus = await getAcrossStatus(event.srcTransactionHash)
         if (acrossStatus === 'expired') {
           return { status: BridgeStatus.EXPIRED, depositTxHash: event.srcTransactionHash }
         }
