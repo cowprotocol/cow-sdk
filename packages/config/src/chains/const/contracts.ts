@@ -32,7 +32,7 @@ export const COW_PROTOCOL_VAULT_RELAYER_ADDRESS_STAGING = mapAddressToSupportedN
  * be approved again.
  * @see https://github.com/cowprotocol/solana-programs/tree/temp-release-0.4.1-alpha
  */
-export const SOLANA_SETTLEMENT_PROGRAM_ID = 'EzHqcdJssenE2R8xogJ8wpL66PRQet9M6ubpsX4QxpPb'
+export const SOLANA_SETTLEMENT_PROGRAM_ID = 'Moook87DzJ25dELx3LXJ3dnu5a4ERVFwKo1PWWF4p7Y'
 export const SOLANA_SETTLEMENT_PROGRAM_ID_STAGING = SOLANA_SETTLEMENT_PROGRAM_ID
 
 /**
@@ -44,7 +44,7 @@ export const SOLANA_SETTLEMENT_PROGRAM_ID_STAGING = SOLANA_SETTLEMENT_PROGRAM_ID
  * release leaves this alone: v0.4.1 still derives `settlement v0.4`. Writing a patch version here would
  * derive PDAs the deployed program never signs as.
  */
-export const SOLANA_SETTLEMENT_PROGRAM_VERSION = '0.4'
+export const SOLANA_SETTLEMENT_PROGRAM_VERSION = '0.5'
 
 /**
  * Staging counterpart of `SOLANA_SETTLEMENT_PROGRAM_VERSION`. The version is a property of a specific
