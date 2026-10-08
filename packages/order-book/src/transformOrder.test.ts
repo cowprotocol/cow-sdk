@@ -57,4 +57,40 @@ describe('transformOrder', () => {
       expect(transformedOrder.totalFee).toEqual('1234567890')
     })
   })
+
+  describe('fillMissingFeeAmounts', () => {
+    // Solana's order-book omits all three: it charges no fee, so its schema has no such fields,
+    // while this type declares them as required.
+    test('should default the fee amounts a Solana order leaves out', () => {
+      const rawOrder = {
+        ...ORDER,
+        feeAmount: undefined,
+        executedFeeAmount: undefined,
+        executedSellAmountBeforeFees: undefined,
+        executedSellAmount: '42',
+      } as unknown as Order
+
+      const transformedOrder = transformOrder(rawOrder)
+
+      expect(transformedOrder.feeAmount).toEqual('0')
+      expect(transformedOrder.executedFeeAmount).toEqual('0')
+      expect(transformedOrder.executedSellAmountBeforeFees).toEqual('42')
+      expect(transformedOrder.totalFee).toEqual('0')
+    })
+
+    test('should leave the fee amounts of an EVM order untouched', () => {
+      const transformedOrder = transformOrder(ORDER)
+
+      expect(transformedOrder.feeAmount).toEqual(ORDER.feeAmount)
+      expect(transformedOrder.executedFeeAmount).toEqual(ORDER.executedFeeAmount)
+      expect(transformedOrder.executedSellAmountBeforeFees).toEqual(ORDER.executedSellAmountBeforeFees)
+    })
+
+    // Zero is a real executed amount, not a missing one.
+    test('should keep a zero executedSellAmountBeforeFees instead of falling back', () => {
+      const rawOrder = { ...ORDER, executedSellAmountBeforeFees: '0', executedSellAmount: '42' }
+
+      expect(transformOrder(rawOrder).executedSellAmountBeforeFees).toEqual('0')
+    })
+  })
 })

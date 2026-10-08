@@ -10,7 +10,29 @@ import { EnrichedOrder } from './types'
  * @returns An order with the total fee added.
  */
 export function transformOrder(order: Order): EnrichedOrder {
-  return transformEthFlowOrder(addTotalFeeToOrder(order))
+  return transformEthFlowOrder(addTotalFeeToOrder(fillMissingFeeAmounts(order)))
+}
+
+/**
+ * Fill in the fee amounts the Solana order-book leaves out.
+ *
+ * No component charges a fee on Solana, so its `Order` schema has no `feeAmount`,
+ * `executedFeeAmount` or `executedSellAmountBeforeFees` at all, while this type — generated from
+ * the EVM spec — declares all three as required. Zero is the true value, and filling it in here
+ * keeps consumers from reading `undefined` off a field the type promises.
+ *
+ * A no-op for EVM orders, which always carry the three fields.
+ */
+function fillMissingFeeAmounts(order: Order): Order {
+  const { feeAmount, executedFeeAmount, executedSellAmount, executedSellAmountBeforeFees } = order
+
+  return {
+    ...order,
+    feeAmount: feeAmount ?? '0',
+    executedFeeAmount: executedFeeAmount ?? '0',
+    // With no fee deducted, what was sold before fees is what was sold.
+    executedSellAmountBeforeFees: executedSellAmountBeforeFees ?? executedSellAmount,
+  }
 }
 
 /**
