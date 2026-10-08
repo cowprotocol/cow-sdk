@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.3.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.3.1...sdk-order-book-v4.3.2) (2026-10-08)
+
+
+### 🐛 Bug Fixes
+
+* **solana:** add default values for missing fields ([#1053](https://github.com/cowprotocol/cow-sdk/issues/1053)) ([fe77eae](https://github.com/cowprotocol/cow-sdk/commit/fe77eae6fe94291ad649a7aa0636b3fe2036b533))
+
 ## [4.3.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.3.0...sdk-order-book-v4.3.1) (2026-10-07)
 
 
