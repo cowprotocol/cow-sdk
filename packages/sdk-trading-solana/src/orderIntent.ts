@@ -2,10 +2,10 @@ import { PublicKey } from '@solana/web3.js'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 
 /**
- * TS port of `cow-settlement-interface`'s order intent (interface/src/data/intent.rs, v0.4.1).
- * The fields are the flat ones the encoding is made of, which is what the Rust `OrderIntent` looked
- * like up to v0.4.0; since v0.4.1 it groups each side into a `TokenAsset`/`Asset`, but only in Rust —
- * the bytes on the wire did not move. Keep them in sync if that ever changes.
+ * TS port of `cow-settlement-interface`'s order intent (interface/src/data/intent.rs, v0.5).
+ * The fields are the flat ones the encoding is made of; the Rust side groups each side into a
+ * `TokenAsset`/`Asset`, but only in Rust — the bytes on the wire did not move. Keep them in sync if
+ * that ever changes.
  */
 export interface SolanaOrderIntent {
   owner: PublicKey
@@ -20,18 +20,14 @@ export interface SolanaOrderIntent {
   // encodes the recipient.
   buyTokenAccount: PublicKey
   buyMint: PublicKey
+  /** Must be greater than zero: the settlement program rejects orders that sell nothing. */
   sellAmount: bigint
+  /** Must be greater than zero: the settlement program rejects orders that buy nothing. */
   buyAmount: bigint
   /** Unix timestamp seconds. */
   validTo: number
   kind: OrderKind
   partiallyFillable: boolean
-  /**
-   * Must be `true`: this is the flag the `CreateOrder` instruction authenticates against (the owner
-   * signs the transaction themselves). The alternative — an off-chain Ed25519-presigned order anyone can
-   * submit — is a different, unused authentication path.
-   */
-  createdOnChain: boolean
   /** Exactly 32 bytes, opaque to the settlement program. */
   appData: Uint8Array
 }
@@ -39,7 +35,8 @@ export interface SolanaOrderIntent {
 /** Canonical byte size of an encoded `OrderIntent`, per `EncodedOrderIntent::SIZE` in the Rust source. */
 export const ENCODED_ORDER_INTENT_SIZE = 213
 
-const FLAG_CREATED_ON_CHAIN = 1 << 0
+// Bit 0 is reserved for off-chain orders and must stay clear: the program rejects a flags byte
+// carrying any reserved bit, since one order would otherwise have several encodings and uids.
 const FLAG_KIND_BUY = 1 << 1
 const FLAG_PARTIALLY_FILLABLE = 1 << 2
 
@@ -56,6 +53,9 @@ export function encodeOrderIntent(intent: SolanaOrderIntent): Uint8Array {
   }
   if (!Number.isInteger(intent.validTo) || intent.validTo < 0 || intent.validTo > MAX_VALID_TO) {
     throw new Error(`validTo must be an integer between 0 and ${MAX_VALID_TO}`)
+  }
+  if (intent.sellAmount <= 0n || intent.buyAmount <= 0n) {
+    throw new Error('sellAmount and buyAmount must both be greater than zero')
   }
 
   const bytes = new Uint8Array(ENCODED_ORDER_INTENT_SIZE)
@@ -83,7 +83,6 @@ export function encodeOrderIntent(intent: SolanaOrderIntent): Uint8Array {
   offset += 4
 
   let flags = 0
-  if (intent.createdOnChain) flags |= FLAG_CREATED_ON_CHAIN
   if (intent.kind === OrderKind.BUY) flags |= FLAG_KIND_BUY
   if (intent.partiallyFillable) flags |= FLAG_PARTIALLY_FILLABLE
   bytes[offset] = flags

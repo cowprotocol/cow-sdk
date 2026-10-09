@@ -121,7 +121,6 @@ export async function getSolanaQuote(
     validTo,
     kind,
     partiallyFillable,
-    createdOnChain: true,
     appData: ZERO_APP_DATA,
   }
 
@@ -136,6 +135,7 @@ export async function getSolanaQuote(
     uid,
     orderPda,
     programId,
+    env: options.env,
     buyTokenProgramId: buyTokenProgram,
     ...(quoteResponse.funder ? { funder: new PublicKey(quoteResponse.funder) } : undefined),
   }

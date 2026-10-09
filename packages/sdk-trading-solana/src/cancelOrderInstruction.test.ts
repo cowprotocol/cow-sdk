@@ -19,7 +19,6 @@ const intent: SolanaOrderIntent = {
   validTo: 1_700_000_000,
   kind: OrderKind.SELL,
   partiallyFillable: false,
-  createdOnChain: true,
   appData: new Uint8Array(32),
 }
 

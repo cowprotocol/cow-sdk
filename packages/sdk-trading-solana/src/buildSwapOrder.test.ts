@@ -30,7 +30,6 @@ async function buildFixtureQuote(
     validTo: 1_700_000_000,
     kind: OrderKind.SELL,
     partiallyFillable: false,
-    createdOnChain: true,
     appData: new Uint8Array(32),
     ...intentOverrides,
   }
@@ -192,6 +191,20 @@ describe('buildSolanaSwapOrder', () => {
     expect(order.orderPda.toBase58()).toBe(expectedOrderPda.toBase58())
     expect(order.orderPda.toBase58()).not.toBe(solanaQuote.orderPda.toBase58())
     expect(order.orderId).toBe(toOrderId(expectedUid))
+  })
+
+  it("re-derives the order PDA with the quote's own env", async () => {
+    const solanaQuote = { ...(await buildFixtureQuote()), env: 'staging' as const }
+    const newValidTo = solanaQuote.intent.validTo + 1_000
+
+    const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, {
+      quoteRequest: { validTo: newValidTo },
+    })
+
+    const expectedUid = await hashOrderIntent(encodeOrderIntent({ ...solanaQuote.intent, validTo: newValidTo }))
+    const [expectedPda] = findOrderPda(solanaQuote.programId, expectedUid, solanaQuote.env)
+
+    expect(order.orderPda.toBase58()).toBe(expectedPda.toBase58())
   })
 
   it('overriding appData merges it into the quoted app-data doc and re-derives uid/orderPda to match', async () => {

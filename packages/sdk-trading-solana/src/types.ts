@@ -1,4 +1,5 @@
 import { PublicKey, PublicKeyInitData, TransactionInstruction } from '@solana/web3.js'
+import type { CowEnv } from '@cowprotocol/sdk-config'
 import type { OrderKind, PriceQuality } from '@cowprotocol/sdk-order-book'
 
 import { SolanaOrderIntent } from './orderIntent'
@@ -34,6 +35,9 @@ export interface SolanaQuote {
   uid: Uint8Array
   orderPda: PublicKey
   programId: PublicKey
+  /** Deployment `programId` belongs to. Re-deriving `orderPda` needs it: the seed carries the program
+   * version, so pairing one env's id with another's seed yields a PDA that program never signs as. */
+  env?: CowEnv
   /** Token program owning `intent.buyMint`'s accounts, as resolved at quote time — needed to re-derive
    * `buyTokenAccount`'s associated token address if `receiver` is overridden when posting. */
   buyTokenProgramId?: PublicKey

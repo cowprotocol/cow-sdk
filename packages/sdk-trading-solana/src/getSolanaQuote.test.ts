@@ -87,7 +87,6 @@ describe('getSolanaQuote', () => {
     expect(solanaQuote.intent.sellAmount).toBe(1_000_000_000n)
     expect(solanaQuote.intent.buyAmount).toBe(9_658_970_257n)
     expect(solanaQuote.intent.kind).toBe(OrderKind.SELL)
-    expect(solanaQuote.intent.createdOnChain).toBe(true)
     expect(solanaQuote.intent.owner.toBase58()).toBe(owner.toBase58())
     expect(solanaQuote.uid.length).toBe(32)
 
@@ -413,6 +412,8 @@ describe('getSolanaQuote', () => {
     )
 
     expect(solanaQuote.programId.toBase58()).toBe(new PublicKey(SOLANA_SETTLEMENT_PROGRAM_ID_STAGING).toBase58())
+    // Carried so that re-deriving the order PDA after an override cannot fall back to another env's seed.
+    expect(solanaQuote.env).toBe('staging')
   })
 
   it('rejects a non-positive validForSeconds without requesting a quote', async () => {
