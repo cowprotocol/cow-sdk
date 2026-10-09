@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-trading",
-  "version": "2.7.6",
+  "version": "2.7.7",
   "description": "CowProtocol trading",
   "repository": {
     "type": "git",

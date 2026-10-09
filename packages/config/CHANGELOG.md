@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.9.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.8.0...sdk-config-v2.9.0) (2026-10-09)
+
+
+### ✨ Features
+
+* migrate to 0.5 solana settlement ([#1056](https://github.com/cowprotocol/cow-sdk/issues/1056)) ([ba2ddf6](https://github.com/cowprotocol/cow-sdk/commit/ba2ddf68e2d8df109aa16926a18200de1d7b2075))
+
 ## [2.8.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.7.2...sdk-config-v2.8.0) (2026-10-07)
 
 
