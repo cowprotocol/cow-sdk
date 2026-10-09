@@ -27,13 +27,13 @@ export const COW_PROTOCOL_VAULT_RELAYER_ADDRESS_STAGING = mapAddressToSupportedN
  * CoW Protocol settlement program id on Solana (base58, not an EVM address).
  * The on-chain settlement-state PDA derived from this program is the SPL delegate a sell-token account
  * is approved to — the Solana analogue of the EVM vault relayer spender.
- * Deployed from `temp-release-0.4.1-alpha`, which carries the Token-2022 `TransferChecked` work ahead of
- * its release. A fresh deployment, so the state PDA moved with it and every sell-token delegation has to
- * be approved again.
- * @see https://github.com/cowprotocol/solana-programs/tree/temp-release-0.4.1-alpha
+ * Deployed from v0.5. A fresh deployment, so the state PDA moved with it and every sell-token delegation
+ * has to be approved again.
+ * @see https://github.com/cowprotocol/solana-programs/releases/tag/v0.5
  */
-export const SOLANA_SETTLEMENT_PROGRAM_ID = 'EzHqcdJssenE2R8xogJ8wpL66PRQet9M6ubpsX4QxpPb'
-export const SOLANA_SETTLEMENT_PROGRAM_ID_STAGING = SOLANA_SETTLEMENT_PROGRAM_ID
+export const SOLANA_SETTLEMENT_PROGRAM_ID = 'Moook87DzJ25dELx3LXJ3dnu5a4ERVFwKo1PWWF4p7Y'
+
+export const SOLANA_SETTLEMENT_PROGRAM_ID_STAGING = 'EzHqcdJssenE2R8xogJ8wpL66PRQet9M6ubpsX4QxpPb'
 
 /**
  * Major.minor version of the deployed settlement program, embedded in every settlement-program PDA seed
@@ -41,16 +41,16 @@ export const SOLANA_SETTLEMENT_PROGRAM_ID_STAGING = SOLANA_SETTLEMENT_PROGRAM_ID
  * be bumped together with `SOLANA_SETTLEMENT_PROGRAM_ID` whenever the settlement program is redeployed.
  *
  * The seed carries the major and minor components only (`CARGO_PKG_VERSION_MAJOR.MINOR`), so a patch
- * release leaves this alone: v0.4.1 still derives `settlement v0.4`. Writing a patch version here would
+ * release leaves this alone: v0.5.1 still derives `settlement v0.5`. Writing a patch version here would
  * derive PDAs the deployed program never signs as.
  */
-export const SOLANA_SETTLEMENT_PROGRAM_VERSION = '0.4'
+export const SOLANA_SETTLEMENT_PROGRAM_VERSION = '0.5'
 
 /**
  * Staging counterpart of `SOLANA_SETTLEMENT_PROGRAM_VERSION`. The version is a property of a specific
  * deployment, so it must be bumped together with `SOLANA_SETTLEMENT_PROGRAM_ID_STAGING`: pairing one env's
  * program id with another's version derives PDAs that program never signs as.
- * Aliased while both envs share a single deployment.
+ * Aliased while both deployments run the same program version.
  */
 export const SOLANA_SETTLEMENT_PROGRAM_VERSION_STAGING = SOLANA_SETTLEMENT_PROGRAM_VERSION
 

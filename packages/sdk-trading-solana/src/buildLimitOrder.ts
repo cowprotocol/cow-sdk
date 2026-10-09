@@ -68,7 +68,6 @@ export async function buildSolanaLimitOrderOrder(params: SolanaLimitOrderParams)
     validTo: params.validTo,
     kind: params.kind,
     partiallyFillable: params.partiallyFillable,
-    createdOnChain: true,
     appData: params.appData,
   }
 

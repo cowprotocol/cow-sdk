@@ -22,7 +22,6 @@ const SAMPLE_INTENT: SolanaOrderIntent = {
   validTo: 0xdead_beef,
   kind: OrderKind.BUY,
   partiallyFillable: true,
-  createdOnChain: true,
   appData: new Uint8Array(32).fill(0x66),
 }
 
@@ -39,7 +38,7 @@ describe('encodeOrderIntent', () => {
     expect(toHex(encoded.subarray(160, 168))).toBe('efcdab8967452301') // sell_amount, LE
     expect(toHex(encoded.subarray(168, 176))).toBe('1032547698badcfe') // buy_amount, LE
     expect(toHex(encoded.subarray(176, 180))).toBe('efbeadde') // valid_to, LE
-    expect(encoded[180]).toBe(0b0000_0111) // flags: created_on_chain | kind(Buy=1<<1) | partially_fillable
+    expect(encoded[180]).toBe(0b0000_0110) // flags: kind(Buy=1<<1) | partially_fillable; bit 0 reserved
     expect(Array.from(encoded.subarray(181, 213))).toEqual(new Array(32).fill(0x66)) // app_data
   })
 
@@ -62,6 +61,14 @@ describe('encodeOrderIntent', () => {
     // DataView.setUint32 would otherwise wrap this to 0, encoding an intent that never expires.
     expect(() => encodeOrderIntent({ ...SAMPLE_INTENT, validTo: 0x1_0000_0000 })).toThrow('validTo must be an integer')
   })
+
+  it('rejects a zero sell amount, which the settlement program would reject on-chain', () => {
+    expect(() => encodeOrderIntent({ ...SAMPLE_INTENT, sellAmount: 0n })).toThrow('greater than zero')
+  })
+
+  it('rejects a zero buy amount, which the settlement program would reject on-chain', () => {
+    expect(() => encodeOrderIntent({ ...SAMPLE_INTENT, buyAmount: 0n })).toThrow('greater than zero')
+  })
 })
 
 describe('hashOrderIntent', () => {
@@ -69,6 +76,6 @@ describe('hashOrderIntent', () => {
     const encoded = encodeOrderIntent(SAMPLE_INTENT)
     const uid = await hashOrderIntent(encoded)
 
-    expect(toHex(uid)).toBe('de4096c6c100056f1e4636ea4fafefad40fc1d0b37692fe3ca1e0db3644b86bd')
+    expect(toHex(uid)).toBe('fa1b214e3167f3fdae13ba61f6d2f97975d5b8185912a46a7182a59aba07a3c2')
   })
 })

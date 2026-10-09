@@ -70,7 +70,7 @@ export async function buildSolanaSwapOrder(
   if (Object.keys(overrides).length > 0) {
     const intentBytes = encodeOrderIntent(intent)
     uid = await hashOrderIntent(intentBytes)
-    ;[orderPda] = findOrderPda(solanaQuote.programId, uid)
+    ;[orderPda] = findOrderPda(solanaQuote.programId, uid, solanaQuote.env)
   }
 
   const feePayer = options.sponsor ? new PublicKey(options.sponsor) : intent.owner

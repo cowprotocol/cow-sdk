@@ -141,10 +141,11 @@ describe('buildSolanaLimitOrderOrder', () => {
     expect(order.intent.partiallyFillable).toBe(true)
   })
 
-  it('always marks the intent as created on-chain', async () => {
+  it('leaves the reserved off-chain flag bit clear', async () => {
     const order = await buildSolanaLimitOrderOrder(buildParams())
 
-    expect(order.intent.createdOnChain).toBe(true)
+    // A non-fillable SELL sets neither defined flag, so the whole byte must be zero.
+    expect(encodeOrderIntent(order.intent)[180]).toBe(0)
   })
 
   it("derives uid/orderPda/instruction from the encoded intent, matching the primitives directly", async () => {

@@ -236,12 +236,11 @@ interface SolanaOrderIntent {
   buyMint: PublicKey
   sellTokenAccount: PublicKey // funds pulled from here — must be owned by `owner`; implicitly encodes the spender
   sellMint: PublicKey
-  sellAmount: bigint
-  buyAmount: bigint
+  sellAmount: bigint // must be greater than zero
+  buyAmount: bigint // must be greater than zero
   validTo: number // unix timestamp, seconds
   kind: OrderKind // SELL | BUY
   partiallyFillable: boolean
-  createdOnChain: boolean // must be true — see "Authentication" below
   appData: Uint8Array // exactly 32 bytes, opaque to the settlement program; no convention defined yet, sent as zeroes
 }
 ```
@@ -261,7 +260,7 @@ layout the settlement program reads (`EncodedOrderIntent::from(&OrderIntent)`):
 | 8     | `sellAmount` (u64 LE)             |
 | 8     | `buyAmount` (u64 LE)              |
 | 4     | `validTo` (u32 LE)                |
-| 1     | flags (bit 0 `createdOnChain`, bit 1 `kind === BUY`, bit 2 `partiallyFillable`) |
+| 1     | flags (bit 0 reserved for off-chain orders, bit 1 `kind === BUY`, bit 2 `partiallyFillable`) |
 | 32    | `appData`                         |
 
 ### Identity: uid and the order PDA
@@ -301,13 +300,13 @@ field on the wire is optional (`cow-settlement-interface` v0.4.1):
   `createdBy` is a writable signer only in the create-cancelled form, since only that form moves rent
 - Idempotent: cancelling an already-cancelled order does nothing
 
-### Authentication: why `createdOnChain` must be `true`
+### Authentication: orders are created on-chain
 
-`cow-settlement-interface` supports two ways an intent can be authenticated: created on-chain (the
-owner signs the `CreateOrder` transaction themselves) or via an off-chain Ed25519-presigned order
-that anyone can submit on the owner's behalf. This SDK only implements the former —
-`encodeOrderIntent` always sets the on-chain flag, and the settlement program authenticates the
-order against the transaction's own signature rather than a separate signed payload. This is the
+Orders are authenticated by the owner signing the `CreateOrder` transaction themselves. Off-chain
+Ed25519-presigned orders, which anyone could submit on the owner's behalf, were dropped in v0.5;
+bit 0 of the flags byte is reserved for them and the settlement program rejects an intent that sets
+it. The order is authenticated against the transaction's own signature rather than a separate
+signed payload, which makes it the
 Solana counterpart of an EVM `PRESIGN` order (`buildSolanaSwapOrder` reports
 `signingScheme: SigningScheme.PRESIGN` for exactly this reason) rather than an EIP-712 `EIP712` one.
 
