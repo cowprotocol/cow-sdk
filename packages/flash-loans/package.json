@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-flash-loans",
-  "version": "3.3.16",
+  "version": "3.3.17",
   "description": "Flash loans for CoW Protocol",
   "repository": {
     "type": "git",

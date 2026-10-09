@@ -1,5 +1,23 @@
 # Changelog
 
+## [3.3.17](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v3.3.16...sdk-flash-loans-v3.3.17) (2026-10-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.14.4
+    * @cowprotocol/sdk-app-data bumped to 6.0.10
+    * @cowprotocol/sdk-trading bumped to 2.7.7
+    * @cowprotocol/sdk-order-signing bumped to 1.1.19
+    * @cowprotocol/sdk-order-book bumped to 4.3.3
+    * @cowprotocol/sdk-config bumped to 2.9.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.20
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.20
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.35
+
 ## [3.3.16](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v3.3.15...sdk-flash-loans-v3.3.16) (2026-10-08)
 
 
