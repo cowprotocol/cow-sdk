@@ -8,6 +8,7 @@ import { createAdapters, TEST_ADDRESS } from '../../tests/setup'
 import { AaveCollateralSwapSdk } from './AaveCollateralSwapSdk'
 import {
   AAVE_ADAPTER_FACTORY,
+  AAVE_DAPP_ID_PER_TYPE,
   ADAPTER_DOMAIN_NAME,
   AAVE_HOOK_ADAPTER_PER_TYPE,
   AAVE_POOL_ADDRESS,
@@ -713,6 +714,31 @@ adapterNames.forEach((adapterName) => {
         )
       })
 
+      test('should sign against the configured adapterDomainName', async () => {
+        const signTypedDataSpy = jest
+          .spyOn(adapter.signer, 'signTypedData')
+          .mockResolvedValue('0xabcd1234567890' as any)
+        const customSdk = new AaveCollateralSwapSdk({ adapterDomainName: 'AaveV3AdapterV3Factory' })
+
+        await customSdk.collateralSwap(
+          {
+            chainId: SupportedChainId.GNOSIS_CHAIN,
+            tradeParameters: mockTradeParameters,
+            collateralToken,
+          },
+          mockTradingSdk,
+        )
+
+        const swapSettingsCall = (mockPostSwapOrderFromQuote as jest.Mock).mock.calls[0][0]
+        await swapSettingsCall.additionalParams.customEIP1271Signature(mockOrderToSign, adapter.signer)
+
+        expect(signTypedDataSpy).toHaveBeenCalledWith(
+          expect.objectContaining({ name: 'AaveV3AdapterV3Factory' }),
+          expect.any(Object),
+          expect.any(Object),
+        )
+      })
+
       test('should include correct signature types in EIP-712 message', async () => {
         const mockEcdsaSignature = '0xabcd1234567890'
         const signTypedDataSpy = jest
@@ -924,6 +950,7 @@ adapterNames.forEach((adapterName) => {
               ...AAVE_HOOK_ADAPTER_PER_TYPE[AaveFlashLoanType.RepayCollateral],
               [SupportedChainId.GNOSIS_CHAIN]: customRepayAddress,
             },
+            [AaveFlashLoanType.Leverage]: AAVE_HOOK_ADAPTER_PER_TYPE[AaveFlashLoanType.Leverage],
           },
         }
 
@@ -1320,6 +1347,70 @@ adapterNames.forEach((adapterName) => {
         )
 
         expect(getInstanceCall?.[0]?.address).toBe(customFactory)
+      })
+    })
+
+    describe('leverage', () => {
+      beforeEach(() => {
+        jest.clearAllMocks()
+      })
+
+      const creditDelegation = {
+        amount: '1000000',
+        deadline: 1700000000,
+        v: 27,
+        r: '0x' + '11'.repeat(32),
+        s: '0x' + '22'.repeat(32),
+      }
+
+      test('should encode leverageWithFlashLoan with an empty permit and the credit delegation', () => {
+        const callData = flashLoanSdk.getFlashLoanPostHook(AaveFlashLoanType.Leverage, creditDelegation)
+
+        expect(callData.toLowerCase()).toBe(
+          '0xf0e6a4eb0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f4240000000000000000000000000000000000000000000000000000000006553f100000000000000000000000000000000000000000000000000000000000000001b11111111111111111111111111111111111111111111111111111111111111112222222222222222222222222222222222222222222222222222222222222222',
+        )
+      })
+
+      test('should build leverage hooks with the configured adapter and dapp id', async () => {
+        const leverageAdapter = '0x4444444444444444444444444444444444444444'
+        const leverageSdk = new AaveCollateralSwapSdk({
+          hookAdapterPerType: {
+            ...AAVE_HOOK_ADAPTER_PER_TYPE,
+            [AaveFlashLoanType.Leverage]: {
+              ...AAVE_HOOK_ADAPTER_PER_TYPE[AaveFlashLoanType.Leverage],
+              [SupportedChainId.GNOSIS_CHAIN]: leverageAdapter,
+            },
+          },
+        })
+        const readContractSpy = jest
+          .spyOn(adapter, 'readContract')
+          .mockResolvedValue('0x1234567890123456789012345678901234567890' as any)
+
+        const { swapSettings } = await leverageSdk.getOrderPostingSettings(
+          AaveFlashLoanType.Leverage,
+          {
+            chainId: SupportedChainId.GNOSIS_CHAIN,
+            validTo: mockOrderToSign.validTo,
+            owner: TEST_ADDRESS,
+            flashLoanFeeAmount: 500000000000000n,
+          },
+          {
+            flashLoanAmount: 1000000000000000000n,
+            orderToSign: mockOrderToSign as any,
+            collateralPermit: creditDelegation,
+          },
+        )
+
+        const getInstanceCall = readContractSpy.mock.calls.find(
+          (call) => call[0]?.functionName === 'getInstanceDeterministicAddress',
+        )
+        expect(getInstanceCall?.[0]?.args?.[0]).toBe(leverageAdapter)
+
+        const hooks = (swapSettings.appData as any).metadata.hooks
+        const leverageDappId = AAVE_DAPP_ID_PER_TYPE[AaveFlashLoanType.Leverage]
+        expect(hooks.pre[0].dappId).toBe(leverageDappId)
+        expect(hooks.post[0].dappId).toBe(leverageDappId)
+        expect(hooks.post[0].callData).toBe(leverageSdk.getLeveragePostHookCallData(creditDelegation))
       })
     })
   })

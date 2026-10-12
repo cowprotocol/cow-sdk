@@ -49,6 +49,7 @@ import { aaveAdapterFactoryAbi } from './abi/AaveAdapterFactory'
 import { collateralSwapAdapterHookAbi } from './abi/CollateralSwapAdapterHook'
 import { debtSwapAdapterAbi } from './abi/DebtSwapAdapter'
 import { repayWithCollateralAdapterAbi } from './abi/RepayWithCollateralAdapter'
+import { leverageAdapterAbi } from './abi/LeverageAdapter'
 
 /**
  * Configuration options for the AaveCollateralSwapSdk.
@@ -61,6 +62,9 @@ import { repayWithCollateralAdapterAbi } from './abi/RepayWithCollateralAdapter'
  * @param {Record<SupportedChainId, string>} aavePoolAddress -
  *        Mapping of chain IDs to Aave pool addresses.
  *        Defaults to the predefined addresses from the constants.
+ * @param {string} adapterDomainName -
+ *        EIP-712 domain name the adapter factory verifies order signatures against.
+ *        Defaults to {@link ADAPTER_DOMAIN_NAME}, the name of the default factories.
  * @example
  * ```typescript
  * const config: AaveCollateralSwapSdkConfig = {
@@ -82,6 +86,7 @@ export type AaveCollateralSwapSdkConfig = {
   hookAdapterPerType?: Record<AaveFlashLoanType, Record<SupportedChainId, string>>
   aaveAdapterFactory?: Record<SupportedChainId, string>
   aavePoolAddress?: Record<SupportedChainId, string>
+  adapterDomainName?: string
   hooksGasLimit?: { pre: bigint; post: bigint }
   env?: CowEnv
 }
@@ -100,6 +105,7 @@ export class AaveCollateralSwapSdk {
   private readonly hookAdapterPerType: Record<AaveFlashLoanType, Record<SupportedChainId, string>>
   private readonly aaveAdapterFactory: Record<SupportedChainId, string>
   private readonly aavePoolAddress: Record<SupportedChainId, string>
+  private readonly adapterDomainName: string
   private readonly hooksGasLimit: { pre: bigint; post: bigint }
 
   /**
@@ -115,6 +121,8 @@ export class AaveCollateralSwapSdk {
    * @param {Record<SupportedChainId, string>} config.aavePoolAddress -
    *        Mapping of chain IDs to Aave pool addresses.
    *        Defaults to the predefined addresses from the constants.
+   * @param {string} config.adapterDomainName -
+   *        EIP-712 domain name of the adapter factory. Defaults to {@link ADAPTER_DOMAIN_NAME}.
    * @param {CowEnv} config.env -
    *        CoW settlement environment. Selects the prod or staging adapter addresses
    *        when no explicit override is given. Defaults to 'prod'.
@@ -126,6 +134,7 @@ export class AaveCollateralSwapSdk {
     this.aaveAdapterFactory =
       config?.aaveAdapterFactory ?? (isStaging ? AAVE_ADAPTER_FACTORY_STAGING : AAVE_ADAPTER_FACTORY)
     this.aavePoolAddress = config?.aavePoolAddress ?? AAVE_POOL_ADDRESS
+    this.adapterDomainName = config?.adapterDomainName ?? ADAPTER_DOMAIN_NAME
     this.hooksGasLimit = config?.hooksGasLimit ?? DEFAULT_HOOK_GAS_LIMIT
   }
 
@@ -520,6 +529,10 @@ export class AaveCollateralSwapSdk {
       return this.getRepayPostHookCallData(collateralPermit)
     }
 
+    if (flashLoanType === AaveFlashLoanType.Leverage) {
+      return this.getLeveragePostHookCallData(collateralPermit)
+    }
+
     return this.getCollateralSwapPostHookCallData(collateralPermit)
   }
 
@@ -536,6 +549,18 @@ export class AaveCollateralSwapSdk {
   getRepayPostHookCallData(collateralPermit: CollateralPermitData = EMPTY_PERMIT): string {
     return getGlobalAdapter().utils.encodeFunction(repayWithCollateralAdapterAbi, 'repayDebtWithFlashLoan', [
       collateralPermit,
+    ])
+  }
+
+  /**
+   * As with a debt swap, the permit is the credit delegation on the borrowed asset's variable debt token.
+   * The supply side is exactly the swap output, so the adapter pulls nothing from the wallet and its
+   * ERC-20 permit stays empty.
+   */
+  getLeveragePostHookCallData(creditDelegation: CollateralPermitData = EMPTY_PERMIT): string {
+    return getGlobalAdapter().utils.encodeFunction(leverageAdapterAbi, 'leverageWithFlashLoan', [
+      EMPTY_PERMIT,
+      creditDelegation,
     ])
   }
 
@@ -590,7 +615,7 @@ export class AaveCollateralSwapSdk {
     const encodedOrder = OrderSigningUtils.encodeUnsignedOrder(orderToSign)
 
     const domain = {
-      name: ADAPTER_DOMAIN_NAME,
+      name: this.adapterDomainName,
       version: ADAPTER_DOMAIN_VERSION,
       chainId,
       verifyingContract: adapterFactoryAddress,
