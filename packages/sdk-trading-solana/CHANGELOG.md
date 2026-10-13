@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.15.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.15.0...sdk-trading-solana-v0.15.1) (2026-10-13)
+
+
+### 🔧 Miscellaneous
+
+* update coverage badges ([#1055](https://github.com/cowprotocol/cow-sdk/issues/1055)) ([f436dc8](https://github.com/cowprotocol/cow-sdk/commit/f436dc8c53ee5e43c77671471835e2916cb19511))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 6.0.11
+    * @cowprotocol/sdk-common bumped to 0.14.5
+    * @cowprotocol/sdk-config bumped to 2.10.0
+    * @cowprotocol/sdk-order-book bumped to 4.3.4
+    * @cowprotocol/sdk-trading bumped to 2.7.8
+
 ## [0.15.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.14.1...sdk-trading-solana-v0.15.0) (2026-10-09)
 
 

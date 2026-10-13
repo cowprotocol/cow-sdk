@@ -1,5 +1,37 @@
 # Changelog
 
+## [4.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v3.3.17...sdk-flash-loans-v4.0.0) (2026-10-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* **flash-loans:** configurable adapter domain name and Leverage flash loan type ([#1059](https://github.com/cowprotocol/cow-sdk/issues/1059))
+
+### ✨ Features
+
+* **flash-loans:** configurable adapter domain name and Leverage flash loan type ([#1059](https://github.com/cowprotocol/cow-sdk/issues/1059)) ([66d1c92](https://github.com/cowprotocol/cow-sdk/commit/66d1c92fad03b05aefba15ba34232d0e8a5baafa))
+
+
+### 🔧 Miscellaneous
+
+* update coverage badges ([#1061](https://github.com/cowprotocol/cow-sdk/issues/1061)) ([7895599](https://github.com/cowprotocol/cow-sdk/commit/7895599d5fbc8af55ef65643caf41c0463616474))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.14.5
+    * @cowprotocol/sdk-app-data bumped to 6.0.11
+    * @cowprotocol/sdk-trading bumped to 2.7.8
+    * @cowprotocol/sdk-order-signing bumped to 1.1.20
+    * @cowprotocol/sdk-order-book bumped to 4.3.4
+    * @cowprotocol/sdk-config bumped to 2.10.0
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.21
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.21
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.36
+
 ## [3.3.17](https://github.com/cowprotocol/cow-sdk/compare/sdk-flash-loans-v3.3.16...sdk-flash-loans-v3.3.17) (2026-10-09)
 
 
