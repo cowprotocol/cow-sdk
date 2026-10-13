@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.10.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.9.0...sdk-config-v2.10.0) (2026-10-13)
+
+
+### ✨ Features
+
+* add caip2 namespaces ([#1060](https://github.com/cowprotocol/cow-sdk/issues/1060)) ([aec9ad7](https://github.com/cowprotocol/cow-sdk/commit/aec9ad7f456510a4547b450e085e0aaddacf1815))
+
 ## [2.9.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.8.0...sdk-config-v2.9.0) (2026-10-09)
 
 

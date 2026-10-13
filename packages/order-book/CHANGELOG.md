@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.3.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.3.3...sdk-order-book-v4.3.4) (2026-10-13)
+
+
+### 🔧 Miscellaneous
+
+* update coverage badges ([#1055](https://github.com/cowprotocol/cow-sdk/issues/1055)) ([f436dc8](https://github.com/cowprotocol/cow-sdk/commit/f436dc8c53ee5e43c77671471835e2916cb19511))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.10.0
+    * @cowprotocol/sdk-common bumped to 0.14.5
+
 ## [4.3.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.3.2...sdk-order-book-v4.3.3) (2026-10-09)
 
 
