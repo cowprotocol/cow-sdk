@@ -7,6 +7,7 @@ export enum AaveFlashLoanType {
   CollateralSwap = 'CollateralSwap',
   DebtSwap = 'DebtSwap',
   RepayCollateral = 'RepayCollateral',
+  Leverage = 'Leverage',
 }
 
 // See https://aave.com/docs/resources/addresses
@@ -38,11 +39,14 @@ const AAVE_DEBT_SWAP_ADAPTER_HOOK: Record<SupportedChainId, string> = mapAddress
 const AAVE_REPAY_COLLATERAL_ADAPTER_HOOK: Record<SupportedChainId, string> = mapAddressToSupportedNetworks(
   '0x8e25d1210FabB0fcAdE92a82C4a89568B4b10E0F',
 )
+// No leverage adapter is registered on the default factories; provide one through `hookAdapterPerType`.
+const AAVE_LEVERAGE_ADAPTER_HOOK: Record<SupportedChainId, string> = mapAddressToSupportedNetworks('')
 
 export const AAVE_HOOK_ADAPTER_PER_TYPE: Record<AaveFlashLoanType, Record<SupportedChainId, string>> = {
   [AaveFlashLoanType.CollateralSwap]: AAVE_COLLATERAL_SWAP_ADAPTER_HOOK,
   [AaveFlashLoanType.DebtSwap]: AAVE_DEBT_SWAP_ADAPTER_HOOK,
   [AaveFlashLoanType.RepayCollateral]: AAVE_REPAY_COLLATERAL_ADAPTER_HOOK,
+  [AaveFlashLoanType.Leverage]: AAVE_LEVERAGE_ADAPTER_HOOK,
 }
 
 // Staging (barn) is only deployed on Base, bound to the CoW staging settlement.
@@ -108,6 +112,7 @@ export const AAVE_HOOK_ADAPTER_PER_TYPE_STAGING: Record<AaveFlashLoanType, Recor
   [AaveFlashLoanType.CollateralSwap]: AAVE_COLLATERAL_SWAP_ADAPTER_HOOK_STAGING,
   [AaveFlashLoanType.DebtSwap]: AAVE_DEBT_SWAP_ADAPTER_HOOK_STAGING,
   [AaveFlashLoanType.RepayCollateral]: AAVE_REPAY_COLLATERAL_ADAPTER_HOOK_STAGING,
+  [AaveFlashLoanType.Leverage]: AAVE_LEVERAGE_ADAPTER_HOOK,
 }
 
 export const DEFAULT_HOOK_GAS_LIMIT = {
@@ -154,4 +159,5 @@ export const AAVE_DAPP_ID_PER_TYPE: Record<AaveFlashLoanType, string> = {
   [AaveFlashLoanType.CollateralSwap]: 'cow-sdk://flashloans/aave/v3/collateral-swap',
   [AaveFlashLoanType.DebtSwap]: 'cow-sdk://flashloans/aave/v3/debt-swap',
   [AaveFlashLoanType.RepayCollateral]: 'cow-sdk://flashloans/aave/v3/repay-with-collateral',
+  [AaveFlashLoanType.Leverage]: 'cow-sdk://flashloans/aave/v3/leverage',
 }
