@@ -14,6 +14,7 @@ export const base: EvmChainInfo = {
   internalId: 'base',
   label: 'Base',
   eip155Label: 'Base',
+  caip2Namespace: 'eip155',
   nativeCurrency: {
     ...nativeCurrencyTemplate,
     chainId: SupportedChainId.BASE,

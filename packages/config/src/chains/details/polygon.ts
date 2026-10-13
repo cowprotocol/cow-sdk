@@ -10,6 +10,7 @@ export const polygon: EvmChainInfo = {
   internalId: 'polygon',
   label: 'Polygon',
   eip155Label: 'Polygon Mainnet',
+  caip2Namespace: 'eip155',
   logo: { light: polygonLogo, dark: polygonLogo },
   nativeCurrency: {
     ...nativeCurrencyTemplate,

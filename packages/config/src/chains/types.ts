@@ -185,6 +185,8 @@ type BaseChainInfo = {
    */
   readonly blockExplorer: WebUrl
 
+  readonly caip2Namespace: 'eip155' | 'bip122' | 'solana'
+
   /**
    * Bridges of the chain.
    */

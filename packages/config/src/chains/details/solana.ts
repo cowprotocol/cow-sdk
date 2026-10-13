@@ -7,6 +7,7 @@ export const solanaTokenLogo = `${RAW_CHAINS_FILES_PATH}/images/solana-token-log
 export const solana: NonEvmChainInfo = {
   id: SupportedChainId.SOLANA,
   label: 'Solana',
+  caip2Namespace: 'solana',
   logo: { light: solanaLogo, dark: solanaLogo },
   nativeCurrency: {
     chainId: SupportedChainId.SOLANA,

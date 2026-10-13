@@ -7,6 +7,7 @@ export const bitcoin: NonEvmChainInfo = {
   id: NonEvmChains.BITCOIN,
   label: 'Bitcoin',
   logo: { light: bitcoinLogo, dark: bitcoinLogo },
+  caip2Namespace: 'bip122',
   nativeCurrency: {
     chainId: NonEvmChains.BITCOIN,
     address: BTC_CURRENCY_ADDRESS,

@@ -11,6 +11,7 @@ export const avalanche: EvmChainInfo = {
   internalId: 'avalanche',
   label: 'Avalanche',
   eip155Label: 'Avalanche C-Chain',
+  caip2Namespace: 'eip155',
   logo: { light: avaxLogo, dark: avaxLogo },
   nativeCurrency: {
     ...nativeCurrencyTemplate,

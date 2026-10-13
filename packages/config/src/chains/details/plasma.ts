@@ -11,6 +11,7 @@ export const plasma: EvmChainInfo = {
   internalId: 'plasma',
   label: 'Plasma',
   eip155Label: 'Plasma Mainnet',
+  caip2Namespace: 'eip155',
   logo: { light, dark },
   nativeCurrency: {
     ...nativeCurrencyTemplate,
