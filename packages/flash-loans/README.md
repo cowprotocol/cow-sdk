@@ -8,7 +8,7 @@
 
 | Statements                  | Branches                | Functions                 | Lines             |
 | --------------------------- | ----------------------- | ------------------------- | ----------------- |
-| ![Statements](https://img.shields.io/badge/statements-46.06%25-red.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-63.15%25-red.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-62.96%25-red.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-46.06%25-red.svg?style=flat) |
+| ![Statements](https://img.shields.io/badge/statements-47.9%25-red.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-63.93%25-red.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-64.28%25-red.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-47.9%25-red.svg?style=flat) |
 
 Execute flash loan-based collateral swaps using Aave Protocol V3 integrated with CoW Protocol for optimal trading execution.
 
