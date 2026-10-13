@@ -14,6 +14,7 @@ export const mainnet: EvmChainInfo = {
   internalId: 'mainnet',
   label: 'Ethereum',
   eip155Label: 'Ethereum Mainnet',
+  caip2Namespace: 'eip155',
   nativeCurrency: {
     ...nativeCurrencyTemplate,
     chainId: SupportedChainId.MAINNET,

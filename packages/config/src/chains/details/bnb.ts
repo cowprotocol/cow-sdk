@@ -11,6 +11,7 @@ export const bnb: EvmChainInfo = {
   internalId: 'bnb',
   label: 'BNB',
   eip155Label: 'BNB Chain Mainnet',
+  caip2Namespace: 'eip155',
   logo: { light: bnbLogo, dark: bnbLogo },
   nativeCurrency: {
     ...nativeCurrencyTemplate,

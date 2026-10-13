@@ -11,6 +11,7 @@ export const ink: EvmChainInfo = {
   internalId: 'ink',
   label: 'Ink',
   eip155Label: 'Ink Chain Mainnet',
+  caip2Namespace: 'eip155',
   logo: { light: inkLogo, dark: inkLogo },
   nativeCurrency: {
     ...nativeCurrencyTemplate,

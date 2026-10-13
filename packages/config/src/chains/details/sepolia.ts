@@ -14,6 +14,7 @@ export const sepolia: EvmChainInfo = {
   internalId: 'sepolia',
   label: 'Sepolia',
   eip155Label: 'Ethereum Sepolia',
+  caip2Namespace: 'eip155',
   nativeCurrency: {
     ...nativeCurrencyTemplate,
     chainId: SupportedChainId.SEPOLIA,

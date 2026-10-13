@@ -10,6 +10,7 @@ export const linea: EvmChainInfo = {
   internalId: 'linea',
   label: 'Linea',
   eip155Label: 'Linea Mainnet',
+  caip2Namespace: 'eip155',
   logo: { light: lineaLogo, dark: lineaLogo },
   nativeCurrency: {
     ...nativeCurrencyTemplate,

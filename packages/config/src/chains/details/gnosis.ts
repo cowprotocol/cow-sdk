@@ -15,6 +15,7 @@ export const gnosisChain: EvmChainInfo = {
   internalId: 'xdai',
   label: 'Gnosis',
   eip155Label: 'Gnosis',
+  caip2Namespace: 'eip155',
   nativeCurrency: {
     ...nativeCurrencyTemplate,
     chainId: SupportedChainId.GNOSIS_CHAIN,

@@ -10,6 +10,7 @@ export const optimism: EvmChainInfo = {
   internalId: 'optimism',
   label: 'Optimism',
   eip155Label: 'OP Mainnet',
+  caip2Namespace: 'eip155',
   logo: { light: optimismLogo, dark: optimismLogo },
   nativeCurrency: {
     ...nativeCurrencyTemplate,

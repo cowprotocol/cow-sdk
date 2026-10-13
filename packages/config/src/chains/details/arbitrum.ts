@@ -14,6 +14,7 @@ export const arbitrumOne: EvmChainInfo = {
   internalId: 'arbitrum-one',
   label: 'Arbitrum',
   eip155Label: 'Arbitrum One',
+  caip2Namespace: 'eip155',
   nativeCurrency: {
     ...nativeCurrencyTemplate,
     chainId: SupportedChainId.ARBITRUM_ONE,
