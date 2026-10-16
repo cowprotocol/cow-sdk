@@ -37,3 +37,5 @@ packages:
 # version @cowprotocol/cow-sdk and @cowprotocol/sdk-composable already depend on directly.
 overrides:
   uuid: '9.0.1'
+  # HTTPS requests must use CONNECT instead of exposing credentials to HTTP proxies.
+  axios: '^1.20.0'
