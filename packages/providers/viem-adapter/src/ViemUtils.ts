@@ -223,10 +223,11 @@ export class ViemUtils implements AdapterUtils {
     return { r, s, v }
   }
   async verifyMessage(message: string | Uint8Array, signature: `0x${string}`): Promise<string> {
-    const messageString = typeof message === 'string' ? message : new TextDecoder().decode(message)
-
     return recoverMessageAddress({
-      message: messageString,
+      // Raw bytes (e.g. an order digest hashed for ETHSIGN) are not UTF-8 text: decoding them
+      // as a string before hashing silently signs/recovers a different message. `{ raw }` tells
+      // viem to hash the bytes as-is, matching how ViemSignerAdapter.signMessage signs them.
+      message: typeof message === 'string' ? message : { raw: message },
       signature,
     })
   }
