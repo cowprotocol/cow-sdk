@@ -39,10 +39,9 @@ export function getProtocolFeeAmount(params: ProtocolFeeAmountParams): bigint {
     return 0n
   }
 
-  const { sellAmount: sellAmountStr, buyAmount: buyAmountStr, feeAmount: feeAmountStr } = orderParams
+  const { sellAmount: sellAmountStr, buyAmount: buyAmountStr } = orderParams
   const sellAmount = BigInt(sellAmountStr)
   const buyAmount = BigInt(buyAmountStr)
-  const feeAmount = BigInt(feeAmountStr)
 
   const protocolFeeScale = PROTOCOL_FEE_BPS_SCALE
   // Keep 5 decimal places of bps precision while avoiding BigInt conversion from non-integer floats.
@@ -56,18 +55,23 @@ export function getProtocolFeeAmount(params: ProtocolFeeAmountParams): bigint {
     /**
      * SELL orders formula: protocolFeeInBuy = quoteBuyAmount * protocolFeeBps / (1 - protocolFeeBps)
      *
-     * The buyAmountAfterNetworkCosts already includes the protocol fee (it was deducted from buyAmount by the API).
-     * We need to reconstruct the original buyAmount and calculate the fee amount.
+     * `orderParams.buyAmount` already has the protocol fee deducted (it was subtracted from
+     * buyAmount by the API). We reverse just that one deduction to get the fee amount.
      */
     const denominator = ONE_HUNDRED_BPS * protocolFeeScale - protocolFeeBpsBig
     return (buyAmount * protocolFeeBpsBig) / denominator
   } else {
     /**
-     * BUY orders formula: protocolFeeInSell = (quoteSellAmount + feeAmount) * protocolFeeBps / (1 + protocolFeeBps)
-     * the sellAmountAfterNetworkCosts already includes the protocol fee (it was added to sellAmount by the API).
+     * BUY orders formula: protocolFeeInSell = quoteSellAmount * protocolFeeBps / (1 + protocolFeeBps)
+     *
+     * `orderParams.sellAmount` already has the protocol fee added (it was added to sellAmount by
+     * the API) but does NOT yet include network costs -- `feeAmount` is reported separately and
+     * must be added on top later, it must not be folded into this reversal (see README.md ->
+     * "How sellAmount differs between SELL and BUY orders", and getQuoteAmountsAndCosts.ts's own
+     * `beforeAllFees.sellAmount = sellAmount - protocolFeeAmount`, which only makes sense if
+     * `sellAmount` alone -- not `sellAmount + feeAmount` -- is the protocol-fee-inclusive base).
      */
     const denominator = ONE_HUNDRED_BPS * protocolFeeScale + protocolFeeBpsBig
-    // sellAmountAfterNetworkCosts is already sellAmount + networkCosts (check getQuoteAmountsWithNetworkCosts)
-    return ((sellAmount + feeAmount) * protocolFeeBpsBig) / denominator
+    return (sellAmount * protocolFeeBpsBig) / denominator
   }
 }
