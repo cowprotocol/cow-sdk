@@ -183,7 +183,7 @@ describe('Across Utils', () => {
       expect(mapAcrossStatusToBridgeStatus('pending')).toBe(BridgeStatus.IN_PROGRESS)
       expect(mapAcrossStatusToBridgeStatus('expired')).toBe(BridgeStatus.EXPIRED)
       expect(mapAcrossStatusToBridgeStatus('refunded')).toBe(BridgeStatus.REFUND)
-      expect(mapAcrossStatusToBridgeStatus('slowFillRequested')).toBe(BridgeStatus.EXECUTED)
+      expect(mapAcrossStatusToBridgeStatus('slowFillRequested')).toBe(BridgeStatus.IN_PROGRESS)
     })
   })
 
