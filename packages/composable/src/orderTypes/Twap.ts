@@ -277,6 +277,14 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
         if (!(durationOfPart.duration <= timeBetweenParts)) return 'InvalidSpan'
       }
 
+      // Verify that the per-part amounts (floor division of the aggregate amounts by
+      // numberOfParts, as computed in `transformDataToStruct`) are non-zero. The on-chain
+      // TWAPOrder handler reverts when `partSellAmount` or `minPartLimit` is zero, so an
+      // order whose aggregate amounts pass but whose derived per-part amounts round down to
+      // zero looks valid here while every poll against the contract fails.
+      if (!(this.staticInput.partSellAmount > ZERO)) return 'InvalidPartSellAmount'
+      if (!(this.staticInput.minPartLimit > ZERO)) return 'InvalidMinPartLimit'
+
       // Verify that the staticInput derived from the data is ABI-encodable
       if (!isValidAbi(TWAP_STRUCT_ABI, [this.staticInput])) return 'InvalidData'
 
