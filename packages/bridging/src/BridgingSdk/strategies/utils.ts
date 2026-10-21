@@ -24,7 +24,6 @@ export async function fetchMultiQuote(
     swapAndBridgeRequest: quoteBridgeRequest,
     advancedSettings,
     tradingSdk,
-    quoteSigner: advancedSettings?.quoteSigner,
     allowIntermediateEqSellToken: advancedSettings?.allowIntermediateEqSellToken,
   } as const
 

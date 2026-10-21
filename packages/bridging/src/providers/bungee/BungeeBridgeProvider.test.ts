@@ -20,6 +20,7 @@ import {
   DEFAULT_GAS_COST_FOR_HOOK_ESTIMATION,
 } from '../../const'
 import stringify from 'json-stable-stringify'
+import { CowShedSdk } from '@cowprotocol/sdk-cow-shed'
 
 // Mock BungeeApi
 jest.mock('./BungeeApi')
@@ -314,6 +315,49 @@ adapterNames.forEach((adapterName) => {
           type: 'HookBridgeProvider',
           logoUrl: expect.stringContaining('bungee-logo.png'),
           website: 'https://www.bungee.exchange',
+        })
+      })
+    })
+
+    describe('getUnsignedHook', () => {
+      it('should return a hook for the owner cow-shed account with a placeholder signature', async () => {
+        const ownerAddress = '0x3333333333333333333333333333333333333333'
+        const unsignedCall = { to: '0x4444444444444444444444444444444444444444', data: '0xabcdef', value: 0n }
+        const nonce = '0x' + '01'.repeat(32)
+
+        const hook = await provider.getUnsignedHook(
+          SupportedChainId.MAINNET,
+          unsignedCall,
+          nonce,
+          1750150784n,
+          600_000,
+          ownerAddress,
+        )
+        const expected = new CowShedSdk().encodeCallsWithPlaceholderSignature({
+          calls: [
+            {
+              target: unsignedCall.to,
+              value: unsignedCall.value,
+              callData: unsignedCall.data,
+              allowFailure: false,
+              isDelegateCall: true,
+            },
+          ],
+          ownerAddress,
+          chainId: SupportedChainId.MAINNET,
+          nonce,
+          deadline: 1750150784n,
+          gasLimit: 600_000n,
+        })
+
+        expect(hook).toEqual({
+          postHook: {
+            target: expected.signedMulticall.to,
+            callData: expected.signedMulticall.data,
+            gasLimit: '600000',
+            dappId: BUNGEE_HOOK_DAPP_ID,
+          },
+          recipient: expected.cowShedAccount,
         })
       })
     })

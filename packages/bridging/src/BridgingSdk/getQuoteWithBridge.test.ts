@@ -67,6 +67,7 @@ adapterNames.forEach((adapterName) => {
         .fn()
         .mockResolvedValue(bridgeCallDetails.unsignedBridgeCall)
       mockProvider.getSignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
+      mockProvider.getUnsignedHook = jest.fn().mockResolvedValue(bridgeCallDetails.preAuthorizedBridgingHook)
 
       sendOrderMock = jest.fn().mockResolvedValue('0x01')
       orderBookApi = {
@@ -105,6 +106,31 @@ adapterNames.forEach((adapterName) => {
         intermediateTokensCache: request.intermediateTokensCache,
       })
     }
+
+    it('Should not sign the bridge hook when quoting, and sign it with the order owner when posting', async () => {
+      const { postSwapOrderFromQuote } = await postOrder(quoteBridgeRequest)
+
+      expect(mockProvider.getSignedHook).not.toHaveBeenCalled()
+      expect(mockProvider.getUnsignedHook).toHaveBeenCalledTimes(1)
+      expect((mockProvider.getUnsignedHook as jest.Mock).mock.calls[0][5]).toBe(quoteBridgeRequest.account)
+
+      await postSwapOrderFromQuote()
+
+      expect(mockProvider.getSignedHook).toHaveBeenCalledTimes(1)
+      expect((mockProvider.getSignedHook as jest.Mock).mock.calls[0][5]).toBe(signerMock)
+    })
+
+    it('Should not post the order when the signer is not the order owner', async () => {
+      const { postSwapOrderFromQuote } = await postOrder({
+        ...quoteBridgeRequest,
+        owner: '0x1111111111111111111111111111111111111111',
+      })
+
+      await expect(postSwapOrderFromQuote()).rejects.toThrow('does not match the order owner')
+
+      expect(mockProvider.getSignedHook).not.toHaveBeenCalled()
+      expect(sendOrderMock).not.toHaveBeenCalled()
+    })
 
     it('When receiver is present in advanced settings, then should add it to the hook', async () => {
       const customReceiver = '0xmyCustomReceiver'

@@ -35,7 +35,6 @@ export class SingleQuoteStrategy extends BaseSingleQuoteStrategy {
         swapAndBridgeRequest: quoteBridgeRequest,
         advancedSettings,
         tradingSdk,
-        quoteSigner: advancedSettings?.quoteSigner,
         allowIntermediateEqSellToken: advancedSettings?.allowIntermediateEqSellToken,
       } as const
 

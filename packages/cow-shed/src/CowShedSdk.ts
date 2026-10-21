@@ -16,7 +16,7 @@ import {
   setGlobalAdapter,
   SignerLike,
 } from '@cowprotocol/sdk-common'
-import { COW_SHED_LATEST_VERSION, CoWShedVersion } from './const'
+import { COW_SHED_LATEST_VERSION, COW_SHED_PLACEHOLDER_SIGNATURE, CoWShedVersion } from './const'
 
 export interface SignAndEncodeTxArgs {
   /**
@@ -61,6 +61,23 @@ export interface SignAndEncodeTxArgs {
    * Signing scheme to use for the transaction.
    */
   signingScheme?: EcdsaSigningScheme
+}
+
+export interface EncodeCallsWithPlaceholderSignatureArgs {
+  /**
+   * Calls to encode on the cow-shed account
+   */
+  calls: ICoWShedCall[]
+
+  /**
+   * Owner of the cow-shed account. The cow-shed account will be derived from it.
+   */
+  ownerAddress: string
+
+  chainId: SupportedChainId
+  nonce: string
+  deadline: bigint
+  gasLimit: bigint
 }
 
 export interface EncodeExecuteOwnHooksArgs {
@@ -172,6 +189,39 @@ export class CowShedSdk {
       cowShedAccount,
       signedMulticall: factoryCall,
       gasLimit: BigInt(gasEstimate.toString()),
+    }
+  }
+
+  /**
+   * Encodes the calls like {@link signCalls} does, but with a placeholder instead of the owner's signature.
+   *
+   * The result has the shape and gas limit of the real call, so it can be used for cost estimation
+   * (e.g. as a post-hook in a quote request), but it reverts if executed.
+   */
+  encodeCallsWithPlaceholderSignature({
+    calls,
+    ownerAddress,
+    chainId,
+    nonce,
+    deadline,
+    gasLimit,
+  }: EncodeCallsWithPlaceholderSignatureArgs): CowShedCall {
+    const cowShedHooks = this.getCowShedHooks(chainId)
+
+    return {
+      cowShedAccount: cowShedHooks.proxyOf(ownerAddress),
+      signedMulticall: {
+        to: cowShedHooks.getFactoryAddress(),
+        data: cowShedHooks.encodeExecuteHooksForFactory(
+          calls,
+          nonce,
+          deadline,
+          ownerAddress,
+          COW_SHED_PLACEHOLDER_SIGNATURE,
+        ),
+        value: BigInt(0),
+      },
+      gasLimit,
     }
   }
 

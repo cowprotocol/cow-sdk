@@ -243,6 +243,43 @@ export class BungeeBridgeProvider implements HookBridgeProvider<BungeeQuoteResul
     return { params, status }
   }
 
+  async getUnsignedHook(
+    chainId: SupportedChainId,
+    unsignedCall: EvmCall,
+    bridgeHookNonce: string,
+    deadline: bigint,
+    hookGasLimit: number,
+    ownerAddress: string,
+  ): Promise<BridgeHook> {
+    const { signedMulticall, cowShedAccount, gasLimit } = this.cowShedSdk.encodeCallsWithPlaceholderSignature({
+      calls: [
+        {
+          target: unsignedCall.to,
+          value: unsignedCall.value,
+          callData: unsignedCall.data,
+          allowFailure: false,
+          isDelegateCall: true,
+        },
+      ],
+      ownerAddress,
+      chainId,
+      nonce: bridgeHookNonce,
+      deadline,
+      gasLimit: BigInt(hookGasLimit),
+    })
+
+    const { to, data } = signedMulticall
+    return {
+      postHook: {
+        target: to,
+        callData: data,
+        gasLimit: gasLimit.toString(),
+        dappId: BUNGEE_HOOK_DAPP_ID,
+      },
+      recipient: cowShedAccount,
+    }
+  }
+
   async decodeBridgeHook(_hook: latestAppData.CoWHook): Promise<BridgeDeposit> {
     // Decoding the full quote from just hook calldata is quite hard right now
     // This will need more context and thus changes to either the hook calldata or the function interface

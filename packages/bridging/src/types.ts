@@ -336,6 +336,22 @@ export interface HookBridgeProvider<Q extends BridgeQuoteResult> extends BridgeP
   ): Promise<BridgeHook>
 
   /**
+   * Get a bridge hook like {@link getSignedHook}, but for the given owner and with a placeholder instead of the
+   * owner's signature.
+   *
+   * It is used in quotes, so the backend can estimate the hook costs without a signature from the trader.
+   * It reverts if executed, so it must be replaced by a signed hook before posting the order.
+   */
+  getUnsignedHook(
+    chainId: SupportedChainId,
+    unsignedCall: EvmCall,
+    bridgeHookNonce: string,
+    deadline: bigint,
+    hookGasLimit: number,
+    ownerAddress: string,
+  ): Promise<BridgeHook>
+
+  /**
    * Decode a bridge hook into a bridge deposit information.
    *
    * This method is used to recover the information about the limit order placed into the bridge locking contract.

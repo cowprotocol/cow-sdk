@@ -1,5 +1,5 @@
 import { SwapAdvancedSettings, TradingSdk } from '@cowprotocol/sdk-trading'
-import { SignerLike, TTLCache } from '@cowprotocol/sdk-common'
+import { TTLCache } from '@cowprotocol/sdk-common'
 import { AddressPerChain, TokenInfo } from '@cowprotocol/sdk-config'
 import { OrderBookApi } from '@cowprotocol/sdk-order-book'
 import { CowEnv, SupportedChainId } from '@cowprotocol/sdk-config'
@@ -20,12 +20,6 @@ export type GetQuoteWithBridgeParams = {
    * Trading SDK.
    */
   tradingSdk: TradingSdk
-
-  /**
-   * Some providers need a signer for quote fetching
-   * But we won't do that using users wallet and will use some static PK.
-   */
-  quoteSigner?: SignerLike
 
   /**
    * Cache for intermediate tokens.

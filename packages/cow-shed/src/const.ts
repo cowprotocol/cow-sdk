@@ -3,6 +3,11 @@ export const COW_SHED_1_0_1_VERSION = '1.0.1'
 export const COW_SHED_2_1_0_VERSION = '2.1.0'
 export const COW_SHED_LATEST_VERSION = COW_SHED_2_1_0_VERSION
 
+/**
+ * 65 bytes, non-zero so the calldata gas cost matches a real ECDSA signature. Never a valid signature.
+ */
+export const COW_SHED_PLACEHOLDER_SIGNATURE = `0x${'5e'.repeat(65)}`
+
 export type CoWShedVersion =
   | typeof COW_SHED_1_0_0_VERSION
   | typeof COW_SHED_1_0_1_VERSION

@@ -152,7 +152,9 @@ export interface SigningStepManager {
 }
 
 export interface SwapAdvancedSettings extends LimitOrderAdvancedSettings {
-  // In special case, when you want to fetch quote with a different signer
+  /**
+   * @deprecated Ignored. Bridge quotes no longer need a signer: the bridge hook is signed when the order is posted.
+   */
   quoteSigner?: SignerLike
   /**
    * An optional callback to use custom logic for slippage suggestion

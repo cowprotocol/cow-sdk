@@ -40,6 +40,10 @@ export class MockHookBridgeProvider extends BaseMockBridgeProvider implements Ho
     }
   }
 
+  async getUnsignedHook(chainId: SupportedChainId, unsignedCall: EvmCall): Promise<BridgeHook> {
+    return this.getSignedHook(chainId, unsignedCall)
+  }
+
   async decodeBridgeHook(_hook: latestAppData.CoWHook): Promise<BridgeDeposit> {
     return {
       kind: OrderKind.SELL,

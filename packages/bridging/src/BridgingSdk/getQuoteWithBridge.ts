@@ -139,7 +139,10 @@ export interface CreatePostSwapOrderFromQuoteParams {
     signer: SignerLike,
     advancedSettings?: SwapAdvancedSettings,
   ) => Promise<{ swapResult: QuoteResults; bridgeResult: BridgeQuoteResults }>
-  signer: SignerLike
+  /**
+   * Signer from the quote request. When not set, the global adapter's signer at posting time is used.
+   */
+  signer?: SignerLike
   sellTokenAddress: string
   orderBookApi: OrderBookApi
   initialSwapResult: QuoteResults
@@ -154,12 +157,15 @@ export interface CreatePostSwapOrderFromQuoteParams {
 export function createPostSwapOrderFromQuote(
   params: CreatePostSwapOrderFromQuoteParams,
 ): BridgeQuoteAndPost['postSwapOrderFromQuote'] {
-  const { provider, getBridgeProviderQuote, signer, sellTokenAddress, orderBookApi, initialSwapResult } = params
+  const { provider, getBridgeProviderQuote, sellTokenAddress, orderBookApi, initialSwapResult } = params
 
   return async function postSwapOrderFromQuote(
     advancedSettings?: SwapAdvancedSettings,
     signingStepManager?: SigningStepManager,
   ) {
+    const adapter = getGlobalAdapter()
+    const signer = params.signer ? adapter.createSigner(params.signer) : adapter.signer
+
     await signingStepManager?.beforeBridgingSign?.()
 
     const skipQuoteRefetch = isReceiverAccountBridgeProvider(provider)
@@ -226,18 +232,12 @@ export async function getQuoteWithReceiverAccountBridge<T extends BridgeQuoteRes
   intermediateToken?: TokenInfo,
 ): Promise<BridgeQuoteAndPost> {
   // Get intermediate swap result
-  const {
-    swapAndBridgeRequest,
-    signer,
-    bridgeRequestWithoutAmount,
-    intermediateTokenAmount,
-    swapResult,
-    orderBookApi,
-  } = await getIntermediateSwapResult({
-    provider,
-    params,
-    intermediateToken,
-  })
+  const { swapAndBridgeRequest, bridgeRequestWithoutAmount, intermediateTokenAmount, swapResult, orderBookApi } =
+    await getIntermediateSwapResult({
+      provider,
+      params,
+      intermediateToken,
+    })
 
   // Get a new bridge provider quote result
   async function getBridgeProviderQuote(): Promise<{ swapResult: QuoteResults; bridgeResult: BridgeQuoteResults }> {
@@ -278,7 +278,7 @@ export async function getQuoteWithReceiverAccountBridge<T extends BridgeQuoteRes
     postSwapOrderFromQuote: createPostSwapOrderFromQuote({
       provider,
       getBridgeProviderQuote,
-      signer,
+      signer: swapAndBridgeRequest.signer,
       sellTokenAddress: swapAndBridgeRequest.sellTokenAddress,
       orderBookApi,
       initialSwapResult: result.swapResult,
@@ -291,11 +291,8 @@ export async function getQuoteWithHookBridge<T extends BridgeQuoteResult>(
   params: GetQuoteWithBridgeParams,
   intermediateToken?: TokenInfo,
 ): Promise<BridgeQuoteAndPost> {
-  const { quoteSigner } = params
-
   // Get intermediate swap result
   const {
-    signer,
     swapAndBridgeRequest,
     bridgeRequestWithoutAmount,
     intermediateTokenAmount,
@@ -318,8 +315,11 @@ export async function getQuoteWithHookBridge<T extends BridgeQuoteResult>(
   const hookEstimatedGasLimit = await provider.getGasLimitEstimationForHook(bridgeRequestWithoutAmount)
 
   // Get a new bridge provider quote result
+  /**
+   * Without a signer, the bridge hook has a placeholder signature (for quoting only)
+   */
   async function getBridgeProviderQuote(
-    signer: SignerLike,
+    signer: SignerLike | undefined,
     hookGasLimit: number,
     advancedSettings?: SwapAdvancedSettings,
   ): Promise<{ swapResult: QuoteResults; bridgeResult: BridgeQuoteResults }> {
@@ -370,13 +370,7 @@ export async function getQuoteWithHookBridge<T extends BridgeQuoteResult>(
 
   log(`Using gas limit: ${hookEstimatedGasLimit}`)
 
-  const result = await getBridgeProviderQuote(
-    // Sign the hooks with quoteSigner if provided
-    quoteSigner ? getGlobalAdapter().createSigner(quoteSigner) : signer,
-    // Use estimated hook gas limit if quoteSigner is provided, so we don't have to estimate the hook gas limit twice
-    // Moreover, since quoteSigner is not the real signer, the estimation will fail
-    hookEstimatedGasLimit,
-  )
+  const result = await getBridgeProviderQuote(undefined, hookEstimatedGasLimit)
 
   return {
     swap: result.swapResult,
@@ -384,7 +378,7 @@ export async function getQuoteWithHookBridge<T extends BridgeQuoteResult>(
     postSwapOrderFromQuote: createPostSwapOrderFromQuote({
       getBridgeProviderQuote: (signer, advancedSettings) =>
         getBridgeProviderQuote(signer, hookEstimatedGasLimit, advancedSettings),
-      signer,
+      signer: swapAndBridgeRequest.signer,
       sellTokenAddress: swapAndBridgeRequest.sellTokenAddress,
       orderBookApi,
       provider,

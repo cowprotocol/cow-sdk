@@ -197,6 +197,43 @@ export class AcrossBridgeProvider implements HookBridgeProvider<AcrossQuoteResul
     }
   }
 
+  async getUnsignedHook(
+    chainId: SupportedChainId,
+    unsignedCall: EvmCall,
+    bridgeHookNonce: string,
+    deadline: bigint,
+    hookGasLimit: number,
+    ownerAddress: string,
+  ): Promise<BridgeHook> {
+    const { signedMulticall, cowShedAccount, gasLimit } = this.cowShedSdk.encodeCallsWithPlaceholderSignature({
+      calls: [
+        {
+          target: unsignedCall.to,
+          value: unsignedCall.value,
+          callData: unsignedCall.data,
+          allowFailure: false,
+          isDelegateCall: true,
+        },
+      ],
+      ownerAddress,
+      chainId,
+      nonce: bridgeHookNonce,
+      deadline,
+      gasLimit: BigInt(hookGasLimit),
+    })
+
+    const { to, data } = signedMulticall
+    return {
+      postHook: {
+        target: to,
+        callData: data,
+        gasLimit: gasLimit.toString(),
+        dappId: ACROSS_HOOK_DAPP_ID,
+      },
+      recipient: cowShedAccount,
+    }
+  }
+
   async decodeBridgeHook(_hook: latestAppData.CoWHook): Promise<BridgeDeposit> {
     throw new Error('Not implemented')
   }

@@ -93,6 +93,7 @@ interface BridgeProvider<Q extends BridgeQuoteResult> {
 | `getUnsignedBridgeCall()`        | Create unsigned bridge transaction    | ✅         |
 | `getGasLimitEstimationForHook()` | Estimate gas for hook execution       | ✅         |
 | `getSignedHook()`                | Generate pre-authorized hook          | ✅         |
+| `getUnsignedHook()`              | Generate hook for quotes (no signing) | ✅         |
 | `getStatus()`                    | Check bridge transaction status       | ✅         |
 | `getBridgingParams()`            | Extract bridge params from settlement | ✅         |
 | `getExplorerUrl()`               | Get bridge explorer URL               | ✅         |
@@ -409,6 +410,45 @@ export class YourBridgeProvider implements BridgeProvider<YourBridgeQuoteResult>
       gasLimit: BigInt(hookGasLimit),
       deadline,
       nonce: bridgeHookNonce,
+    })
+
+    const { to, data } = signedMulticall
+    return {
+      postHook: {
+        target: to,
+        callData: data,
+        gasLimit: gasLimit.toString(),
+        dappId: YOUR_BRIDGE_HOOK_DAPP_ID,
+      },
+      recipient: cowShedAccount,
+    }
+  }
+
+  // Same hook for quotes: built for the order owner, with a placeholder instead of their signature.
+  // The SDK replaces it with a signed hook when the order is posted, and checks that the signer is the order owner.
+  async getUnsignedHook(
+    chainId: SupportedChainId,
+    unsignedCall: EvmCall,
+    bridgeHookNonce: string,
+    deadline: bigint,
+    hookGasLimit: number,
+    ownerAddress: string,
+  ): Promise<BridgeHook> {
+    const { signedMulticall, cowShedAccount, gasLimit } = this.cowShedSdk.encodeCallsWithPlaceholderSignature({
+      calls: [
+        {
+          target: unsignedCall.to,
+          value: unsignedCall.value,
+          callData: unsignedCall.data,
+          allowFailure: false,
+          isDelegateCall: true,
+        },
+      ],
+      ownerAddress,
+      chainId,
+      nonce: bridgeHookNonce,
+      deadline,
+      gasLimit: BigInt(hookGasLimit),
     })
 
     const { to, data } = signedMulticall

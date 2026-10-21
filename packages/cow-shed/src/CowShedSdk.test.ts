@@ -4,7 +4,7 @@ import { ICoWShedCall } from './types'
 import { AdaptersTestSetup, createAdapters } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import { ContractsSigningScheme as SigningScheme } from '@cowprotocol/sdk-contracts-ts'
-import { COW_SHED_PROXY_INIT_CODE } from './const'
+import { COW_SHED_PLACEHOLDER_SIGNATURE, COW_SHED_PROXY_INIT_CODE } from './const'
 import { decodeFunctionData } from 'viem'
 import { CowShedFactoryAbi } from './abi/CowShedFactoryAbi'
 const MOCK_CALL_DATA = '0xabcdef'
@@ -40,6 +40,35 @@ describe('CowShedSdk', () => {
 
     expect(decoded.functionName).toBe('executeOwnHooks')
     expect(decoded.args).toEqual([CALLS_MOCK])
+  })
+
+  describe('encodeCallsWithPlaceholderSignature()', () => {
+    test('encodes executeHooks for the owner with a placeholder signature, without signing', () => {
+      const adapter = adapters.viemAdapter
+      const signTypedData = jest.spyOn(adapter.signer, 'signTypedData')
+      setGlobalAdapter(adapter)
+
+      const sdk = new CowShedSdk(adapter)
+      const ownerAddress = '0x3333333333333333333333333333333333333333'
+      const nonce = '0x' + '01'.repeat(32)
+      const deadline = getOrderDeadlineFromNow(DEFAULT_QUOTE_VALIDITY)
+
+      const call = sdk.encodeCallsWithPlaceholderSignature({
+        calls: CALLS_MOCK,
+        ownerAddress,
+        chainId: SupportedChainId.MAINNET,
+        nonce,
+        deadline,
+        gasLimit: 600_000n,
+      })
+      const decoded = decodeFunctionData({ abi: CowShedFactoryAbi, data: call.signedMulticall.data as `0x${string}` })
+
+      expect(signTypedData).not.toHaveBeenCalled()
+      expect(call.cowShedAccount).toBe(sdk.getCowShedAccount(SupportedChainId.MAINNET, ownerAddress))
+      expect(call.gasLimit).toBe(600_000n)
+      expect(decoded.functionName).toBe('executeHooks')
+      expect(decoded.args).toEqual([CALLS_MOCK, nonce, deadline, ownerAddress, COW_SHED_PLACEHOLDER_SIGNATURE])
+    })
   })
 
   describe('signCalls()', () => {
