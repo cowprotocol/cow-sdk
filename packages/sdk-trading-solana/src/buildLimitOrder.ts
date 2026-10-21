@@ -1,7 +1,7 @@
 import { CowEnv } from '@cowprotocol/sdk-config'
 import { OrderKind, SigningScheme } from '@cowprotocol/sdk-order-book'
-import { getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { PublicKey, PublicKeyInitData } from '@solana/web3.js'
+import { deriveAta } from './associatedTokenAccount'
 import { SolanaSwapOrder } from './buildSwapOrder'
 import { buildCreateOrderInstruction } from './createOrderInstruction'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toOrderId } from './orderIntent'
@@ -56,12 +56,10 @@ export async function buildSolanaLimitOrderOrder(params: SolanaLimitOrderParams)
 
   const intent: SolanaOrderIntent = {
     owner,
-    sellTokenAccount: getAssociatedTokenAddressSync(sellMint, owner, false, sellTokenProgram),
+    sellTokenAccount: deriveAta(sellMint, owner, sellTokenProgram),
     sellMint,
     // A native SOL buy is paid out as lamports, so it names the receiver's own account.
-    buyTokenAccount: isNativeSolMint(buyMint)
-      ? receiver
-      : getAssociatedTokenAddressSync(buyMint, receiver, false, buyTokenProgram),
+    buyTokenAccount: isNativeSolMint(buyMint) ? receiver : deriveAta(buyMint, receiver, buyTokenProgram),
     buyMint,
     sellAmount: params.sellAmount,
     buyAmount: params.buyAmount,

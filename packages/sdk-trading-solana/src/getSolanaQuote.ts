@@ -1,5 +1,4 @@
 import { PublicKey } from '@solana/web3.js'
-import { getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { CowEnv } from '@cowprotocol/sdk-config'
 import {
   getQuoteAmountsAndCosts,
@@ -13,6 +12,7 @@ import {
 } from '@cowprotocol/sdk-order-book'
 
 import { solanaApiContext } from './apiContext'
+import { deriveAta } from './associatedTokenAccount'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent } from './orderIntent'
 import { findOrderPda } from './orderPda'
 import { resolveSolanaSlippageSuggestion } from './resolveSlippageSuggestion'
@@ -110,11 +110,9 @@ export async function getSolanaQuote(
     owner,
     // A native-SOL buy is credited as lamports on the receiver's own account, so it names that account
     // directly; every other buy names the associated token account of the mint.
-    buyTokenAccount: isNativeSolMint(requestedBuyMint)
-      ? receiver
-      : getAssociatedTokenAddressSync(buyMint, receiver, false, buyTokenProgram),
+    buyTokenAccount: isNativeSolMint(requestedBuyMint) ? receiver : deriveAta(buyMint, receiver, buyTokenProgram),
     buyMint: requestedBuyMint,
-    sellTokenAccount: getAssociatedTokenAddressSync(sellMint, owner, false, sellTokenProgram),
+    sellTokenAccount: deriveAta(sellMint, owner, sellTokenProgram),
     sellMint,
     sellAmount: amountsAndCosts.amountsToSign.sellAmount,
     buyAmount: amountsAndCosts.amountsToSign.buyAmount,

@@ -688,6 +688,34 @@ describe('getSolanaQuote', () => {
     )
   })
 
+  it('quotes for an off-curve owner and receiver, as a multisig vault is', async () => {
+    const [vault] = PublicKey.findProgramAddressSync([Buffer.from('vault')], new PublicKey(SOLANA_SETTLEMENT_PROGRAM_ID))
+    expect(PublicKey.isOnCurve(vault.toBytes())).toBe(false)
+
+    mockQuoteResponse({ receiver: vault.toBase58() })
+
+    const { solanaQuote } = await getSolanaQuote(
+      {
+        ownerAddress: vault,
+        receiverAddress: vault,
+        sellTokenAddress: sellMint,
+        sellTokenDecimals,
+        buyTokenAddress: buyMint,
+        buyTokenDecimals,
+        amount: 1_000_000_000n,
+        kind: OrderKind.SELL,
+      },
+      { orderBookApi: orderBookApiMock },
+    )
+
+    expect(solanaQuote.intent.sellTokenAccount.toBase58()).toBe(
+      getAssociatedTokenAddressSync(sellMint, vault, true).toBase58(),
+    )
+    expect(solanaQuote.intent.buyTokenAccount.toBase58()).toBe(
+      getAssociatedTokenAddressSync(buyMint, vault, true).toBase58(),
+    )
+  })
+
   it('derives different token accounts for Token-2022 mints than for classic SPL Token mints', async () => {
     mockQuoteResponse()
     const { solanaQuote: classicQuote } = await getSolanaQuote(
