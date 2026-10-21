@@ -11,6 +11,7 @@ import { optimism } from '../details/optimism'
 import { linea } from '../details/linea'
 import { plasma } from '../details/plasma'
 import { ink } from '../details/ink'
+import { robinhood } from '../details/robinhood'
 import { bitcoin } from '../details/bitcoin'
 import { solana } from '../details/solana'
 
@@ -28,6 +29,7 @@ export const ALL_SUPPORTED_CHAINS_MAP: Record<SupportedChainId, ChainInfo> = {
   [SupportedChainId.PLASMA]: plasma,
   [SupportedChainId.LINEA]: linea,
   [SupportedChainId.INK]: ink,
+  [SupportedChainId.ROBINHOOD]: robinhood,
   [SupportedChainId.SEPOLIA]: sepolia,
   [SupportedChainId.SOLANA]: solana,
 }

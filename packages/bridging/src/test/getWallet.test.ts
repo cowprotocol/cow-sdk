@@ -94,6 +94,7 @@ describe('getWallet utilities', () => {
         SupportedChainId.LINEA,
         SupportedChainId.PLASMA,
         SupportedChainId.INK,
+        SupportedChainId.ROBINHOOD,
       ]
 
       for (const chainId of chainIds) {
