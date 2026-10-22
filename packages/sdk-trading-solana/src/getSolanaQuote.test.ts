@@ -762,6 +762,57 @@ describe('getSolanaQuote', () => {
     })
   })
 
+  describe('costs', () => {
+    const costs = {
+      token: buyMint.toBase58(),
+      networkFees: '11732551',
+      buyTokenAtaCosts: '919115681',
+      protocolFee: '0',
+      total: '930848232',
+    }
+
+    function quote(): ReturnType<typeof getSolanaQuote> {
+      return getSolanaQuote(
+        {
+          ownerAddress: owner,
+          receiverAddress: receiver,
+          sellTokenAddress: sellMint,
+          sellTokenDecimals,
+          buyTokenAddress: buyMint,
+          buyTokenDecimals,
+          amount: 1_000_000_000n,
+          kind: OrderKind.SELL,
+        },
+        { orderBookApi: orderBookApiMock },
+      )
+    }
+
+    it('exposes the costs the quote reported', async () => {
+      mockQuoteResponse({ costs })
+
+      const { solanaQuote } = await quote()
+
+      expect(solanaQuote.costs).toEqual(costs)
+    })
+
+    it('leaves them unset when the deployment does not report them', async () => {
+      mockQuoteResponse()
+
+      const { solanaQuote } = await quote()
+
+      expect(solanaQuote.costs).toBeUndefined()
+    })
+
+    it('signs the quoted amounts, which the costs are already netted out of', async () => {
+      mockQuoteResponse({ costs })
+
+      const { solanaQuote, quoteResults } = await quote()
+
+      expect(solanaQuote.intent.buyAmount).toBe(quoteResults.amountsAndCosts.afterSlippage.buyAmount)
+      expect(solanaQuote.intent.sellAmount).toBe(1_000_000_000n)
+    })
+  })
+
   describe('default order book client', () => {
     function quoteWithDefaultClient(env?: 'prod' | 'staging'): {
       quote: ReturnType<typeof getSolanaQuote>

@@ -1,4 +1,4 @@
-import { Order, OrderQuoteResponse } from './generated'
+import { Order, OrderParameters, OrderQuoteResponse } from './generated'
 
 /**
  * An order with the total fee added.
@@ -8,10 +8,40 @@ export interface EnrichedOrder extends Order {
 }
 
 /**
+ * The costs a Solana quote has already netted out of its amounts, in atoms of `token`.
+ *
+ * Every field is an integer amount, rounded up, converted at the native price the quote netted with.
+ */
+export interface SolanaQuoteCosts {
+  /** The buy token of a sell order, the sell token of a buy order. */
+  token: string
+  networkFees: string
+  /** The one-off deposit that opening the receiver's buy token account costs. `'0'` when it exists. */
+  buyTokenAtaCosts: string
+  /** Always `'0'` until Solana charges a protocol fee. */
+  protocolFee: string
+  /**
+   * The sum of the fields above, as the quote applied it: a sell order's buy amount before costs is
+   * `buyAmount + total`, a buy order's sell amount before costs is `sellAmount - total`.
+   */
+  total: string
+}
+
+/**
+ * The quoted parameters of a Solana order. Same shape as the EVM ones plus the costs netted out of
+ * them, which the generated models cannot carry: they are produced from the EVM order book's openapi.
+ */
+export interface SolanaOrderParameters extends OrderParameters {
+  /** Absent on a deployment that does not report costs yet. */
+  costs?: SolanaQuoteCosts
+}
+
+/**
  * The Solana quote response. Same shape as the EVM one plus the deployment's funder, which the
  * generated models cannot carry: they are produced from the EVM order book's openapi.
  */
 export interface SolanaQuoteResponse extends OrderQuoteResponse {
+  quote: SolanaOrderParameters
   /** Pays for sponsored orders. Absent when the deployment has no sponsoring configured. */
   funder?: string
 }

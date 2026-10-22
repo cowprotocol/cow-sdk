@@ -1,6 +1,6 @@
 import { PublicKey, PublicKeyInitData, TransactionInstruction } from '@solana/web3.js'
 import type { CowEnv } from '@cowprotocol/sdk-config'
-import type { OrderKind, PriceQuality } from '@cowprotocol/sdk-order-book'
+import type { OrderKind, PriceQuality, SolanaQuoteCosts } from '@cowprotocol/sdk-order-book'
 
 import { SolanaOrderIntent } from './orderIntent'
 
@@ -44,6 +44,9 @@ export interface SolanaQuote {
   /** Pays for a sponsored order on this deployment — pass it as `sponsor` to `buildSolanaSwapOrder`
    * and name it as the transaction's fee payer. Absent when the deployment has no sponsoring. */
   funder?: PublicKey
+  /** The costs the quote netted out of `intent`'s amounts, as the API reported them. Absent on a
+   * deployment that does not report them. */
+  costs?: SolanaQuoteCosts
 }
 
 /** Signs and submits a `CreateOrder` instruction; supplied by the caller since this SDK has no bound

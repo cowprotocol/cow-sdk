@@ -138,6 +138,7 @@ export async function getSolanaQuote(
     env: options.env,
     buyTokenProgramId: buyTokenProgram,
     ...(quoteResponse.funder ? { funder: new PublicKey(quoteResponse.funder) } : undefined),
+    ...(orderParams.costs ? { costs: orderParams.costs } : undefined),
   }
 
   // Reported only when the caller set the tolerance, so `quoteUsingSameParameters`'s `compareSlippage`
