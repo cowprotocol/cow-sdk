@@ -1,8 +1,8 @@
 import type { QuoteResults, SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
 import { SigningScheme } from '@cowprotocol/sdk-order-book'
-import { getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { PublicKey, PublicKeyInitData, TransactionInstruction } from '@solana/web3.js'
 import { mergeAppData } from './appData'
+import { deriveAta } from './associatedTokenAccount'
 import { buildCreateOrderInstruction } from './createOrderInstruction'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toOrderId } from './orderIntent'
 import { findOrderPda } from './orderPda'
@@ -103,7 +103,5 @@ export async function buildSolanaSwapOrder(
 function resolveBuyTokenAccount(solanaQuote: SolanaQuote, receiver: PublicKey): PublicKey {
   const { buyMint } = solanaQuote.intent
 
-  return isNativeSolMint(buyMint)
-    ? receiver
-    : getAssociatedTokenAddressSync(buyMint, receiver, false, solanaQuote.buyTokenProgramId)
+  return isNativeSolMint(buyMint) ? receiver : deriveAta(buyMint, receiver, solanaQuote.buyTokenProgramId)
 }

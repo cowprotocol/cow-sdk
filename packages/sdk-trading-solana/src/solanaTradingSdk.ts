@@ -1,8 +1,9 @@
 import type { OrderPostingResult, QuoteResults, SigningStepManager, SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
 import { CowEnv } from '@cowprotocol/sdk-config'
 import { OrderBookApi, UID } from '@cowprotocol/sdk-order-book'
-import { createApproveInstruction, getAssociatedTokenAddressSync } from '@solana/spl-token'
+import { createApproveInstruction } from '@solana/spl-token'
 import { PublicKey, PublicKeyInitData, TransactionInstruction } from '@solana/web3.js'
+import { deriveAta } from './associatedTokenAccount'
 import { buildSolanaLimitOrderOrder, SolanaLimitOrderParams } from './buildLimitOrder'
 import { BuildSolanaSwapOrderOptions, buildSolanaSwapOrder, SolanaSwapOrder } from './buildSwapOrder'
 import { buildCancelOrderInstruction } from './cancelOrderInstruction'
@@ -88,7 +89,7 @@ export class SolanaTradingSdk {
     const sellMint = new PublicKey(params.sellTokenAddress)
     const tokenProgramId = params.sellTokenProgramId ? new PublicKey(params.sellTokenProgramId) : undefined
 
-    const sellTokenAccount = getAssociatedTokenAddressSync(sellMint, owner, false, tokenProgramId)
+    const sellTokenAccount = deriveAta(sellMint, owner, tokenProgramId)
     const delegate = getSolanaDelegateAuthority(this.options.env)
 
     return createApproveInstruction(sellTokenAccount, delegate, owner, params.approveAmount, undefined, tokenProgramId)
