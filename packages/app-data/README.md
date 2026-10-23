@@ -184,14 +184,9 @@ Fork the repo so you can create a new PR. Then:
 - You will need to create the new file for the meta-data schema: `<meta-data-name>/<new-version>.json`
 - Update it in the main schema you just created in step 1: Set it to `"<meta-data-name>": { "$ref": "<meta-data-name>/<new-version>.json#" }`
 
-4. Modify the `compile.ts` script
-
-- Add the exported constant with the latest version in, and the new metadata:
-  - For example: <https://github.com/cowprotocol/app-data/pull/44/commits/aeef8a58e7bbd2a53664ce396011cb157a18406d>
-
 4. Generate the typescript types
 
-- Run `pnpm build`
+- Run `pnpm build`. It auto-detects every `src/schemas/v*.json` file and regenerates the types, and the latest version is derived automatically (highest semver), so there is no constant to update by hand.
 
 5. Make a test focusing on the new or modified meta-data:
 
