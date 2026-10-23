@@ -48,4 +48,5 @@ export const linea: EvmChainInfo = {
       url: 'https://linea.build/hub/bridge',
     },
   ],
+  isDeprecated: true,
 }

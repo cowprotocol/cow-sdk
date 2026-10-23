@@ -20,6 +20,7 @@ The SDK supports all CoW Protocol enabled networks:
 - **Linea** (59144) - `SupportedChainId.LINEA`
 - **Plasma** (9745) - `SupportedChainId.PLASMA`
 - **Ink** (57073) - `SupportedChainId.INK`
+- **Robinhood Chain** (4663) - `SupportedChainId.ROBINHOOD` (coming soon)
 - **Sepolia** (11155111) - `SupportedChainId.SEPOLIA` (Testnet)
 
 ## 🔗 **Related Resources**

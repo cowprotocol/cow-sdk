@@ -86,6 +86,11 @@ export const WRAPPED_NATIVE_CURRENCIES: Record<SupportedChainId, TokenInfo> = {
     '0x4200000000000000000000000000000000000006',
     wrappedNativeCurrencyEth,
   ),
+  [SupportedChainId.ROBINHOOD]: createWrappedEvmTokenForChain(
+    SupportedChainId.ROBINHOOD,
+    '0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73',
+    wrappedNativeCurrencyEth,
+  ),
   [SupportedChainId.SOLANA]: {
     chainId: SupportedChainId.SOLANA,
     address: 'So11111111111111111111111111111111111111112',

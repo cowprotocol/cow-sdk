@@ -72,6 +72,14 @@ export const USDC_TOKENS: Record<SupportedChainId, TokenInfo> = {
     name: 'USDC',
     symbol: 'USDC',
   },
+  [SupportedChainId.ROBINHOOD]: {
+    // USDG, not USDC: there's no official USDC deployment on Robinhood Chain
+    chainId: SupportedChainId.ROBINHOOD,
+    address: '0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168', // USDG (Global Dollar)
+    decimals: 6,
+    name: 'Global Dollar',
+    symbol: 'USDG',
+  },
   [SupportedChainId.SEPOLIA]: {
     chainId: SupportedChainId.SEPOLIA,
     address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238', // USDC (Sepolia testnet deployment by Circle)

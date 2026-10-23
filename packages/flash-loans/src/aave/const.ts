@@ -23,6 +23,7 @@ export const AAVE_POOL_ADDRESS: Record<SupportedChainId, string> = {
   [SupportedChainId.LINEA]: '0xc47b8C00b0f69a36fa203Ffeac0334874574a8Ac',
   [SupportedChainId.PLASMA]: '0x925a2A7214Ed92428B5b1B090F80b25700095e12',
   [SupportedChainId.INK]: '0x2816cf15F6d2A220E789aA011D5EE4eB6c47FEbA',
+  [SupportedChainId.ROBINHOOD]: '',
   [SupportedChainId.SOLANA]: '',
 }
 
@@ -62,6 +63,7 @@ export const AAVE_ADAPTER_FACTORY_STAGING: Record<SupportedChainId, string> = {
   [SupportedChainId.LINEA]: '',
   [SupportedChainId.PLASMA]: '',
   [SupportedChainId.INK]: '',
+  [SupportedChainId.ROBINHOOD]: '',
   [SupportedChainId.SOLANA]: '',
 }
 
@@ -77,6 +79,7 @@ const AAVE_COLLATERAL_SWAP_ADAPTER_HOOK_STAGING: Record<SupportedChainId, string
   [SupportedChainId.LINEA]: '',
   [SupportedChainId.PLASMA]: '',
   [SupportedChainId.INK]: '',
+  [SupportedChainId.ROBINHOOD]: '',
   [SupportedChainId.SOLANA]: '',
 }
 const AAVE_DEBT_SWAP_ADAPTER_HOOK_STAGING: Record<SupportedChainId, string> = {
@@ -91,6 +94,7 @@ const AAVE_DEBT_SWAP_ADAPTER_HOOK_STAGING: Record<SupportedChainId, string> = {
   [SupportedChainId.LINEA]: '',
   [SupportedChainId.PLASMA]: '',
   [SupportedChainId.INK]: '',
+  [SupportedChainId.ROBINHOOD]: '',
   [SupportedChainId.SOLANA]: '',
 }
 const AAVE_REPAY_COLLATERAL_ADAPTER_HOOK_STAGING: Record<SupportedChainId, string> = {
@@ -105,6 +109,7 @@ const AAVE_REPAY_COLLATERAL_ADAPTER_HOOK_STAGING: Record<SupportedChainId, strin
   [SupportedChainId.LINEA]: '',
   [SupportedChainId.PLASMA]: '',
   [SupportedChainId.INK]: '',
+  [SupportedChainId.ROBINHOOD]: '',
   [SupportedChainId.SOLANA]: '',
 }
 

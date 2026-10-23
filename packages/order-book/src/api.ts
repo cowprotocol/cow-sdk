@@ -51,6 +51,7 @@ export const ORDER_BOOK_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.LINEA]: `${PROD_BASE_URL}/linea`,
   [SupportedChainId.PLASMA]: `${PROD_BASE_URL}/plasma`,
   [SupportedChainId.INK]: `${PROD_BASE_URL}/ink`,
+  [SupportedChainId.ROBINHOOD]: `${PROD_BASE_URL}/robinhood`,
   [SupportedChainId.SOLANA]: `${PROD_BASE_URL}/solana`,
 }
 
@@ -69,6 +70,7 @@ export const ORDER_BOOK_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.LINEA]: `${STAGING_BASE_URL}/linea`,
   [SupportedChainId.PLASMA]: `${STAGING_BASE_URL}/plasma`,
   [SupportedChainId.INK]: `${STAGING_BASE_URL}/ink`,
+  [SupportedChainId.ROBINHOOD]: `${STAGING_BASE_URL}/robinhood`,
   [SupportedChainId.SOLANA]: `${STAGING_BASE_URL}/solana`,
 }
 
@@ -89,6 +91,7 @@ export const ORDER_BOOK_PARTNER_PROD_CONFIG: ApiBaseUrls = {
   [SupportedChainId.LINEA]: `${PARTNER_PROD_BASE_URL}/linea`,
   [SupportedChainId.PLASMA]: `${PARTNER_PROD_BASE_URL}/plasma`,
   [SupportedChainId.INK]: `${PARTNER_PROD_BASE_URL}/ink`,
+  [SupportedChainId.ROBINHOOD]: `${PARTNER_PROD_BASE_URL}/robinhood`,
   [SupportedChainId.SOLANA]: `${PARTNER_PROD_BASE_URL}/solana`,
 }
 
@@ -109,6 +112,7 @@ export const ORDER_BOOK_PARTNER_STAGING_CONFIG: ApiBaseUrls = {
   [SupportedChainId.LINEA]: `${PARTNER_STAGING_BASE_URL}/linea`,
   [SupportedChainId.PLASMA]: `${PARTNER_STAGING_BASE_URL}/plasma`,
   [SupportedChainId.INK]: `${PARTNER_STAGING_BASE_URL}/ink`,
+  [SupportedChainId.ROBINHOOD]: `${PARTNER_STAGING_BASE_URL}/robinhood`,
   [SupportedChainId.SOLANA]: `${PARTNER_STAGING_BASE_URL}/solana`,
 }
 

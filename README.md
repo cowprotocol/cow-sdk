@@ -22,6 +22,7 @@ CoW Swap is currently available on the following chains:
 - **BNB** (56)
 - **Gnosis Chain** (100)
 - **Polygon** (137)
+- **Robinhood Chain** (4663) (coming soon)
 - **Base** (8453)
 - **Plasma** (9745)
 - **Arbitrum One** (42161)
