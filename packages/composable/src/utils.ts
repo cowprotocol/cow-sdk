@@ -5,7 +5,7 @@ import {
   EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS,
   SupportedChainId,
 } from '@cowprotocol/sdk-config'
-import { getGlobalAdapter, Provider } from '@cowprotocol/sdk-common'
+import { getGlobalAdapter, Provider, ZERO_ADDRESS } from '@cowprotocol/sdk-common'
 import { ExtensibleFallbackHandlerFactoryAbi } from './abis/ExtensibleFallbackHandlerFactoryAbi'
 
 const ERC20_BALANCE_VALUES = ['erc20', '0x5a28e9363bb942b639270062aa6bb295f434bcdfc42c97267bf003f272060dc9']
@@ -171,7 +171,8 @@ export function fromStructToOrder(order: GPv2Order.DataStruct): Order {
     buyToken,
     buyAmount,
     feeAmount,
-    receiver,
+    // On-chain, address(0) means "the owner". `normalizeOrder` rejects an explicit zero receiver and expects `undefined`.
+    receiver: receiver === ZERO_ADDRESS ? undefined : receiver,
     partiallyFillable,
     appData,
     validTo: Number(validTo),
