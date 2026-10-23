@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.4.20](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.4.19...sdk-bridging-v4.4.20) (2026-10-23)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-order-book bumped to 4.4.0
+    * @cowprotocol/sdk-trading bumped to 2.7.9
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 1.1.21
+
 ## [4.4.19](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.4.18...sdk-bridging-v4.4.19) (2026-10-13)
 
 

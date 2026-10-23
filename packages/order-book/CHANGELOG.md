@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.3.4...sdk-order-book-v4.4.0) (2026-10-23)
+
+
+### ✨ Features
+
+* **solana:** report quote costs in the traded token ([#1067](https://github.com/cowprotocol/cow-sdk/issues/1067)) ([159b456](https://github.com/cowprotocol/cow-sdk/commit/159b4562a71f3b1171ce9358e6dce6fe4d06b1fa))
+
 ## [4.3.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.3.3...sdk-order-book-v4.3.4) (2026-10-13)
 
 

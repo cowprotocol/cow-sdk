@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.16.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.15.1...sdk-trading-solana-v0.16.0) (2026-10-23)
+
+
+### ✨ Features
+
+* **solana:** report quote costs in the traded token ([#1067](https://github.com/cowprotocol/cow-sdk/issues/1067)) ([159b456](https://github.com/cowprotocol/cow-sdk/commit/159b4562a71f3b1171ce9358e6dce6fe4d06b1fa))
+
+
+### 🐛 Bug Fixes
+
+* **solana:** derive token accounts for off-curve owners ([#1064](https://github.com/cowprotocol/cow-sdk/issues/1064)) ([fd25054](https://github.com/cowprotocol/cow-sdk/commit/fd250541d4da969bd105b1dcce154cb39f509e65))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-order-book bumped to 4.4.0
+    * @cowprotocol/sdk-trading bumped to 2.7.9
+
 ## [0.15.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.15.0...sdk-trading-solana-v0.15.1) (2026-10-13)
 
 
