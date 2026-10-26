@@ -49,6 +49,7 @@ export class SubgraphApi {
       [SupportedChainId.LINEA]: null,
       [SupportedChainId.PLASMA]: null,
       [SupportedChainId.INK]: null,
+      [SupportedChainId.ROBINHOOD]: null,
       [SupportedChainId.SOLANA]: null,
     }
     this.context = {
