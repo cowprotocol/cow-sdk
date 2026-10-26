@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.10](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.8.9...sdk-composable-v1.8.10) (2026-10-26)
+
+
+### 🐛 Bug Fixes
+
+* **composable:** map a zero receiver to undefined in fromStructToOrder ([#1069](https://github.com/cowprotocol/cow-sdk/issues/1069)) ([164fe01](https://github.com/cowprotocol/cow-sdk/commit/164fe01444428f5c6dae1d86a70175fe2ee2d588))
+
 ## [1.8.9](https://github.com/cowprotocol/cow-sdk/compare/sdk-composable-v1.8.8...sdk-composable-v1.8.9) (2026-10-23)
 
 
