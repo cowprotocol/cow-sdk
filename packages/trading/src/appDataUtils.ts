@@ -24,9 +24,15 @@ export function getDefaultUtmParams() {
 }
 
 export async function buildAppData(
-  { slippageBps, appCode, orderClass: orderClassName, partnerFee }: BuildAppDataParams,
+  { slippageBps, appCode, orderClass: orderClassName, partnerFee, enableFastPath, validFrom }: BuildAppDataParams,
   advancedParams?: AppDataParams,
 ): Promise<TradingAppDataInfo> {
+  if (enableFastPath && validFrom !== undefined) {
+    throw new Error(
+      'enableFastPath and validFrom are mutually exclusive: use validFrom for a normal order or enableFastPath for fast-path execution, but not both.',
+    )
+  }
+
   const quoteParams = { slippageBips: slippageBps }
   const orderClass = { orderClass: orderClassName }
   const metadataApiSdk = new MetadataApi(getGlobalAdapter())
@@ -40,6 +46,8 @@ export async function buildAppData(
     quote: quoteParams,
     orderClass,
     partnerFee,
+    ...(enableFastPath ? { enableFastPath: true } : {}),
+    ...(validFrom !== undefined ? { validFrom } : {}),
     ...(shouldAddDefaultUtm ? { utm: getDefaultUtmParams() } : {}),
   }
 
