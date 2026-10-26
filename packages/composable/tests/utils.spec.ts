@@ -11,7 +11,8 @@ import {
 import { DurationType, StartTimeValue, TwapData, TwapStruct, transformDataToStruct } from '../src/orderTypes/Twap'
 import { GPv2Order } from '../src/types'
 import { createAdapters } from './setup'
-import { setGlobalAdapter } from '@cowprotocol/sdk-common'
+import { setGlobalAdapter, ZERO_ADDRESS } from '@cowprotocol/sdk-common'
+import { computeOrderUid } from '@cowprotocol/sdk-contracts-ts'
 import {
   COMPOSABLE_COW_CONTRACT_ADDRESS,
   EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_ADDRESS,
@@ -237,6 +238,21 @@ describe('Utils Functions - Multi-Adapter Tests', () => {
       expect(order.kind).toBe('buy')
       expect(order.sellTokenBalance).toBe('external')
       expect(order.buyTokenBalance).toBe('internal')
+    })
+
+    test('should map a zero receiver to undefined so the order UID can be computed', () => {
+      setGlobalAdapter(adapters.viemAdapter)
+
+      const order = fromStructToOrder({ ...ORDER_DATA, receiver: ZERO_ADDRESS })
+
+      expect(order.receiver).toBeUndefined()
+      expect(() =>
+        computeOrderUid(
+          { name: 'Gnosis Protocol', version: 'v2', chainId: SupportedChainId.MAINNET },
+          order,
+          ORDER_DATA.receiver as string,
+        ),
+      ).not.toThrow()
     })
 
     test('should throw for unknown balance and kind hashes', () => {
