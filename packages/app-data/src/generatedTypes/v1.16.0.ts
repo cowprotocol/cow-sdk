@@ -228,11 +228,11 @@ export type UserConsents = {
   acceptedDate: string;
 }[];
 /**
- * Opt into out-of-competition ("fast path") execution. When set, the order can be settled directly by the winning quote's solver, within a short exclusivity window, instead of waiting for the next batch auction.
+ * Opt into out-of-competition ("fast path") execution: the winning quote's solver can settle the order directly, within a short exclusivity window, instead of waiting for the next auction. Mutually exclusive with `validFrom`.
  */
 export type EnableFastPath = boolean;
 /**
- * Earliest time, as a UNIX timestamp in seconds, at which the order may enter a batch auction. Honored if set; for fast-path orders the backend picks a value when this is not provided.
+ * Earliest time, as a UNIX timestamp in seconds, at which the order may enter an auction. Mutually exclusive with `enableFastPath`: a fast-path order ignores it, as the backend controls its window.
  */
 export type ValidFrom = number;
 

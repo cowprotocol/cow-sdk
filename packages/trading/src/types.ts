@@ -91,7 +91,7 @@ export interface TradeOptionalParameters {
   /**
    * Opt into out-of-competition ("fast path") execution: the winning quote's
    * solver can settle the order directly, within a short exclusivity window,
-   * instead of waiting for the next batch auction. Falls back to the normal
+   * instead of waiting for the next auction. Falls back to the normal
    * auction cycle if it isn't settled in time.
    *
    * Mutually exclusive with {@link validFrom}: a fast-path order's exclusivity
@@ -99,7 +99,7 @@ export interface TradeOptionalParameters {
    */
   enableFastPath?: boolean
   /**
-   * Earliest time the order may enter a batch auction, as a UNIX timestamp
+   * Earliest time the order may enter an auction, as a UNIX timestamp
    * in seconds. Delays the order's solvability until then.
    * Mutually exclusive with {@link enableFastPath}: a fast-path order ignores
    * this field (its window is backend-controlled), so setting both throws.
@@ -140,7 +140,7 @@ export interface TradeParameters extends TradeBaseParameters, TradeOptionalParam
 
 export interface SwapParameters extends TradeParameters, TraderParameters {}
 
-export interface LimitTradeParameters extends Omit<TradeParameters, 'amount'> {
+export interface LimitTradeParameters extends Omit<TradeParameters, 'amount' | 'enableFastPath'> {
   sellAmount: OrderParameters['sellAmount']
   buyAmount: OrderParameters['buyAmount']
   /**

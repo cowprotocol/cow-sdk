@@ -2,26 +2,20 @@ import { generateAppDataDoc } from '../src/api/generateAppDataDoc'
 import { validateAppDataDoc } from '../src/api/validateAppDataDoc'
 
 describe('Fast-path metadata v1.16.0', () => {
-  const metadata = {
-    enableFastPath: true,
-    validFrom: 1700000000,
-  }
-
   test('Creates appDataDoc with fast-path metadata', async () => {
     // when
-    const appDataDoc = await generateAppDataDoc({ metadata })
+    const appDataDoc = await generateAppDataDoc({ metadata: { enableFastPath: true } })
 
     // then
     expect(appDataDoc.metadata.enableFastPath).toBe(true)
-    expect(appDataDoc.metadata.validFrom).toBe(1700000000)
   })
 
-  test('Validates a v1.16.0 doc with enableFastPath and validFrom', async () => {
+  test('Validates a v1.16.0 doc with enableFastPath', async () => {
     // given
     const doc = {
       version: '1.16.0',
       appCode: 'CoW Swap',
-      metadata,
+      metadata: { enableFastPath: true },
     }
 
     // when
@@ -30,6 +24,38 @@ describe('Fast-path metadata v1.16.0', () => {
     // then
     expect(validation.success).toBeTruthy()
     expect(validation.errors).toBeUndefined()
+  })
+
+  test('Allows validFrom alongside enableFastPath: false', async () => {
+    // given
+    const doc = {
+      version: '1.16.0',
+      appCode: 'CoW Swap',
+      metadata: { enableFastPath: false, validFrom: 1700000000 },
+    }
+
+    // when
+    const validation = await validateAppDataDoc(doc)
+
+    // then
+    expect(validation.success).toBeTruthy()
+    expect(validation.errors).toBeUndefined()
+  })
+
+  test('Rejects enableFastPath: true together with validFrom (mutually exclusive)', async () => {
+    // given
+    const doc = {
+      version: '1.16.0',
+      appCode: 'CoW Swap',
+      metadata: { enableFastPath: true, validFrom: 1700000000 },
+    }
+
+    // when
+    const validation = await validateAppDataDoc(doc)
+
+    // then
+    expect(validation.success).toBeFalsy()
+    expect(validation.errors).toBeDefined()
   })
 
   test('Both fields are optional (empty metadata is valid)', async () => {

@@ -75,17 +75,18 @@
           "$ref": "userConsents/v0.1.0.json#"
         },
         "enableFastPath": {
-          "$id": "#/properties/metadata/properties/enableFastPath",
-          "description": "Opt into out-of-competition (\"fast path\") execution. When set, the order can be settled directly by the winning quote's solver, within a short exclusivity window, instead of waiting for the next batch auction.",
-          "title": "Enable Fast Path",
-          "type": "boolean",
-          "default": false
+          "$ref": "execution/v0.1.0.json#/properties/enableFastPath"
         },
         "validFrom": {
-          "$id": "#/properties/metadata/properties/validFrom",
-          "description": "Earliest time, as a UNIX timestamp in seconds, at which the order may enter a batch auction. Honored if set; for fast-path orders the backend picks a value when this is not provided.",
-          "title": "Valid From",
-          "type": "integer"
+          "$ref": "execution/v0.1.0.json#/properties/validFrom"
+        }
+      },
+      "not": {
+        "required": ["enableFastPath", "validFrom"],
+        "properties": {
+          "enableFastPath": {
+            "const": true
+          }
         }
       }
     }
