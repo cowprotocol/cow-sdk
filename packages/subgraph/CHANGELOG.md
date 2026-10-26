@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.3.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.2.11...sdk-subgraph-v1.3.0) (2026-10-26)
+
+
+### ✨ Features
+
+* **networks:** networks update ([#1066](https://github.com/cowprotocol/cow-sdk/issues/1066)) ([8664361](https://github.com/cowprotocol/cow-sdk/commit/8664361c5df7cb7f90e794803d568922a246077a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.14.6
+    * @cowprotocol/sdk-config bumped to 2.11.0
+
 ## [1.2.11](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.2.10...sdk-subgraph-v1.2.11) (2026-10-13)
 
 

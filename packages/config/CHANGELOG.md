@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.11.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.10.0...sdk-config-v2.11.0) (2026-10-26)
+
+
+### ✨ Features
+
+* **networks:** networks update ([#1066](https://github.com/cowprotocol/cow-sdk/issues/1066)) ([8664361](https://github.com/cowprotocol/cow-sdk/commit/8664361c5df7cb7f90e794803d568922a246077a))
+
 ## [2.10.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.9.0...sdk-config-v2.10.0) (2026-10-13)
 
 

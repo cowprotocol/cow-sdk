@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.4.0...sdk-order-book-v4.5.0) (2026-10-26)
+
+
+### ✨ Features
+
+* **networks:** networks update ([#1066](https://github.com/cowprotocol/cow-sdk/issues/1066)) ([8664361](https://github.com/cowprotocol/cow-sdk/commit/8664361c5df7cb7f90e794803d568922a246077a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.11.0
+    * @cowprotocol/sdk-common bumped to 0.14.6
+
 ## [4.4.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.3.4...sdk-order-book-v4.4.0) (2026-10-23)
 
 
