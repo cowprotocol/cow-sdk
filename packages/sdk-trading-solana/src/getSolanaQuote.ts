@@ -58,8 +58,8 @@ export async function getSolanaQuote(
   const requestedSellMint = new PublicKey(params.sellTokenAddress)
   const sellMint = toSplMint(requestedSellMint)
   const requestedBuyMint = new PublicKey(params.buyTokenAddress)
-  // Only for pricing. The intent below keeps `requestedBuyMint`, which is what tells the settlement
-  // program to pay the buy side out as lamports.
+  // Only for the slippage suggestion, which needs a real mint to price. The quote itself asks for
+  // native SOL, so it prices the lamport payout and the order can link to the quote it used.
   const buyMint = toSplMint(requestedBuyMint)
   const sellTokenProgram = sellTokenProgramId ? new PublicKey(sellTokenProgramId) : undefined
   const buyTokenProgram = buyTokenProgramId ? new PublicKey(buyTokenProgramId) : undefined
@@ -73,7 +73,7 @@ export async function getSolanaQuote(
   const quoteRequest: OrderQuoteRequest = {
     from: owner.toBase58(),
     sellToken: sellTokenAddress,
-    buyToken: buyTokenAddress,
+    buyToken: requestedBuyMint.toBase58(),
     receiver: receiver.toBase58(),
     validFor: validForSeconds,
     // TODO: fill appData when we know the format
