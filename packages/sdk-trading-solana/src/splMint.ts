@@ -14,10 +14,11 @@ export function isNativeSolMint(mint: PublicKey): boolean {
 }
 
 /**
- * Quotes address tokens by SPL mint and native SOL has none, so the sentinel is answered with
- * `NoLiquidity` and WSOL stands in — both have 9 decimals, so amounts carry over unchanged. Only the
- * sell side carries the substitution into the intent, since a native sell is wrapped first; a native buy
- * is paid out as lamports and keeps the sentinel.
+ * Map native SOL to WSOL, and leave any other mint alone.
+ *
+ * Use it where native SOL needs a real mint, such as deriving a token account or asking a price feed.
+ * Both have 9 decimals, so amounts carry over unchanged. Do not use it on order book requests: the
+ * order book handles native SOL itself, and prices it differently.
  */
 export function toSplMint(mint: PublicKey): PublicKey {
   return isNativeSolMint(mint) ? WSOL_MINT : mint
