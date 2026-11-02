@@ -598,16 +598,18 @@ describe('getSolanaQuote', () => {
       } as SolanaQuoteResponse)
     }
 
-    it('quotes against the WSOL mint, since the book answers NoLiquidity for the sentinel', async () => {
+    it('quotes against the sentinel, which is what the order is placed with', async () => {
       mockNativeBuyQuoteResponse()
 
       await quoteNativeBuy()
 
+      // Asking about WSOL charges the rent of an account the payout never opens, and stores the
+      // quote under a buy token the order does not match.
       expect(getSolanaQuoteMock).toHaveBeenCalledWith(
-        expect.objectContaining({ buyToken: wsolMint.toBase58() }),
+        expect.objectContaining({ buyToken: SOL_NATIVE_CURRENCY_ADDRESS }),
         SOLANA_CONTEXT,
       )
-      expect(getSolanaQuoteMock.mock.calls[0]?.[0].buyToken).not.toBe(SOL_NATIVE_CURRENCY_ADDRESS)
+      expect(getSolanaQuoteMock.mock.calls[0]?.[0].buyToken).not.toBe(wsolMint.toBase58())
     })
 
     it('keeps the sentinel in the intent, which is what makes the program pay lamports', async () => {
