@@ -74,6 +74,7 @@ const { quoteResults, solanaQuote, buildOrder, postSwapOrderFromQuote } = await 
   sellTokenDecimals,
   buyTokenAddress,
   buyTokenDecimals,
+  appCode: 'YOUR_APP_CODE',
   amount, // bigint — sell-side amount for a SELL order, buy-side amount for a BUY order
   kind: OrderKind.SELL,
 })

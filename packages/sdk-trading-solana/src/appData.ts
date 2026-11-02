@@ -16,7 +16,7 @@ export interface SolanaAppDataInfo extends TradingAppDataInfo {
 }
 
 export interface BuildSolanaAppDataParams {
-  appCode?: string
+  appCode: string
   /** Recorded in the doc's `quote` metadata; omitted when the slippage isn't known yet. */
   slippageBps?: number
 }
@@ -58,7 +58,7 @@ export async function buildSolanaAppData(
   }
 
   const doc = await new MetadataApi().generateAppDataDoc(
-    deepmerge<AppDataParams>({ ...(appCode ? { appCode } : undefined), metadata: baseMetadata }, advancedParams ?? {}),
+    deepmerge<AppDataParams>({ appCode, metadata: baseMetadata }, advancedParams ?? {}),
   )
 
   return getSolanaAppDataInfo(doc)

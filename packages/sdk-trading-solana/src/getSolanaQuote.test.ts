@@ -15,7 +15,11 @@ import {
   WRAPPED_NATIVE_CURRENCIES,
 } from '@cowprotocol/sdk-config'
 
+import { keccak_256 } from '@noble/hashes/sha3'
+import type { SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
+
 import { getSolanaQuote } from './getSolanaQuote'
+import { toHex } from './orderIntent'
 import { findOrderPda } from './orderPda'
 
 describe('getSolanaQuote', () => {
@@ -26,6 +30,7 @@ describe('getSolanaQuote', () => {
   const sellTokenDecimals = 6
   const buyTokenDecimals = 9
 
+  const APP_CODE = 'test-app'
   const SOLANA_CONTEXT = { chainId: SupportedChainId.SOLANA }
 
   const getSolanaQuoteMock = jest.fn<Promise<SolanaQuoteResponse>, [OrderQuoteRequest, unknown]>()
@@ -75,6 +80,7 @@ describe('getSolanaQuote', () => {
         sellTokenDecimals,
         buyTokenAddress: buyMint,
         buyTokenDecimals,
+        appCode: APP_CODE,
         amount: 1_000_000_000n,
         kind: OrderKind.SELL,
       },
@@ -130,6 +136,7 @@ describe('getSolanaQuote', () => {
           sellTokenDecimals,
           buyTokenAddress: buyMint,
           buyTokenDecimals,
+          appCode: APP_CODE,
           amount: 1_000_000_000n,
           kind: OrderKind.SELL,
         },
@@ -160,6 +167,7 @@ describe('getSolanaQuote', () => {
           sellTokenDecimals,
           buyTokenAddress: buyMint,
           buyTokenDecimals,
+          appCode: APP_CODE,
           amount: 9_707_507_795n,
           kind: OrderKind.BUY,
         },
@@ -188,6 +196,7 @@ describe('getSolanaQuote', () => {
             sellTokenDecimals,
             buyTokenAddress: buyMint,
             buyTokenDecimals,
+            appCode: APP_CODE,
             amount: 1_000_000_000n,
             kind: OrderKind.SELL,
             ...(priceQuality === undefined ? undefined : { priceQuality }),
@@ -231,6 +240,88 @@ describe('getSolanaQuote', () => {
     })
   })
 
+  describe('appData', () => {
+    function quoteWithAppData(
+      overrides: { slippageBps?: number; appCode?: string } = {},
+      advancedSettings?: SwapAdvancedSettings,
+    ): ReturnType<typeof getSolanaQuote> {
+      return getSolanaQuote(
+        {
+          ownerAddress: owner,
+          receiverAddress: receiver,
+          sellTokenAddress: sellMint,
+          sellTokenDecimals,
+          buyTokenAddress: buyMint,
+          buyTokenDecimals,
+          appCode: APP_CODE,
+          amount: 1_000_000_000n,
+          kind: OrderKind.SELL,
+          ...overrides,
+        },
+        { orderBookApi: orderBookApiMock, advancedSettings },
+      )
+    }
+
+    function requestedAppData(): { appData: string; appDataHash?: string } {
+      const request = getSolanaQuoteMock.mock.calls[0]?.[0]
+
+      return { appData: request?.appData as string, appDataHash: request?.appDataHash }
+    }
+
+    it('sends the full app-data doc and its keccak256 hash on the quote request, without a signing scheme', async () => {
+      mockQuoteResponse()
+
+      await quoteWithAppData()
+
+      const { appData, appDataHash } = requestedAppData()
+      expect(appDataHash).toBe(`0x${toHex(keccak_256(new TextEncoder().encode(appData)))}`)
+      expect(JSON.parse(appData)).toMatchObject({
+        appCode: APP_CODE,
+        metadata: { orderClass: { orderClass: 'market' }, utm: { utmSource: 'cowmunity' } },
+      })
+      expect(getSolanaQuoteMock.mock.calls[0]?.[0]).not.toHaveProperty('signingScheme')
+    })
+
+    it('commits the intent to the digest of the returned app-data doc', async () => {
+      mockQuoteResponse()
+
+      const { solanaQuote, quoteResults } = await quoteWithAppData()
+
+      const { fullAppData, appDataKeccak256 } = quoteResults.appDataInfo
+      expect(appDataKeccak256).toBe(`0x${toHex(keccak_256(new TextEncoder().encode(fullAppData)))}`)
+      expect(`0x${toHex(solanaQuote.intent.appData)}`).toBe(appDataKeccak256)
+    })
+
+    it('records the suggested slippage in the doc when the caller sets none', async () => {
+      mockQuoteResponse()
+
+      const { quoteResults } = await quoteWithAppData()
+
+      // The quote is requested before the suggestion is known, so only the final doc carries it.
+      expect(JSON.parse(requestedAppData().appData).metadata.quote).toBeUndefined()
+      expect(quoteResults.appDataInfo.doc.metadata.quote).toEqual({ slippageBips: 50 })
+    })
+
+    it('uses the same doc for the request and the order when the caller sets the slippage', async () => {
+      mockQuoteResponse()
+
+      const { quoteResults } = await quoteWithAppData({ slippageBps: 120 })
+
+      expect(quoteResults.appDataInfo.doc.metadata.quote).toEqual({ slippageBips: 120 })
+      expect(requestedAppData().appDataHash).toBe(quoteResults.appDataInfo.appDataKeccak256)
+    })
+
+    it('lets advancedSettings.appData override appCode and replace the default UTM', async () => {
+      mockQuoteResponse()
+      const utm = { utmSource: 'partner' }
+
+      const { quoteResults } = await quoteWithAppData({}, { appData: { appCode: 'override-app', metadata: { utm } } })
+
+      expect(quoteResults.appDataInfo.doc.appCode).toBe('override-app')
+      expect(quoteResults.appDataInfo.doc.metadata.utm).toEqual(utm)
+    })
+  })
+
   describe('slippageBps', () => {
     function quoteWithSlippage(slippageBps?: number): ReturnType<typeof getSolanaQuote> {
       return getSolanaQuote(
@@ -241,6 +332,7 @@ describe('getSolanaQuote', () => {
           sellTokenDecimals,
           buyTokenAddress: buyMint,
           buyTokenDecimals,
+          appCode: APP_CODE,
           amount: 1_000_000_000n,
           kind: OrderKind.SELL,
           ...(slippageBps === undefined ? undefined : { slippageBps }),
@@ -308,6 +400,7 @@ describe('getSolanaQuote', () => {
           sellTokenDecimals,
           buyTokenAddress: buyMint,
           buyTokenDecimals,
+          appCode: APP_CODE,
           amount: 1_000_000_000n,
           kind: OrderKind.SELL,
           ...(priceQuality === undefined ? undefined : { priceQuality }),
@@ -385,6 +478,7 @@ describe('getSolanaQuote', () => {
         sellTokenDecimals,
         buyTokenAddress: buyMint,
         buyTokenDecimals,
+        appCode: APP_CODE,
         amount: 1_000_000_000n,
         kind: OrderKind.SELL,
       },
@@ -405,6 +499,7 @@ describe('getSolanaQuote', () => {
         sellTokenDecimals,
         buyTokenAddress: buyMint,
         buyTokenDecimals,
+        appCode: APP_CODE,
         amount: 1_000_000_000n,
         kind: OrderKind.SELL,
       },
@@ -426,6 +521,7 @@ describe('getSolanaQuote', () => {
           sellTokenDecimals,
           buyTokenAddress: buyMint,
           buyTokenDecimals,
+          appCode: APP_CODE,
           amount: 1_000_000_000n,
           kind: OrderKind.SELL,
           validForSeconds: -1,
@@ -450,6 +546,7 @@ describe('getSolanaQuote', () => {
           sellTokenDecimals: 9,
           buyTokenAddress: usdcMint,
           buyTokenDecimals: 6,
+          appCode: APP_CODE,
           amount: 1_000_000_000n,
           kind: OrderKind.SELL,
         },
@@ -543,6 +640,7 @@ describe('getSolanaQuote', () => {
           sellTokenDecimals: 6,
           buyTokenAddress: wsolMint,
           buyTokenDecimals: 9,
+          appCode: APP_CODE,
           amount: 150_000_000n,
           kind: OrderKind.SELL,
         },
@@ -571,6 +669,7 @@ describe('getSolanaQuote', () => {
           sellTokenDecimals: 6,
           buyTokenAddress: SOL_NATIVE_CURRENCY_ADDRESS,
           buyTokenDecimals: 9,
+          appCode: APP_CODE,
           amount: 150_000_000n,
           kind: OrderKind.SELL,
         },
@@ -649,6 +748,7 @@ describe('getSolanaQuote', () => {
           sellTokenDecimals: 6,
           buyTokenAddress: wsolMint,
           buyTokenDecimals: 9,
+          appCode: APP_CODE,
           amount: 150_000_000n,
           kind: OrderKind.SELL,
         },
@@ -674,6 +774,7 @@ describe('getSolanaQuote', () => {
         sellTokenDecimals,
         buyTokenAddress: buyMint,
         buyTokenDecimals,
+        appCode: APP_CODE,
         amount: 1_000_000_000n,
         kind: OrderKind.SELL,
       },
@@ -702,6 +803,7 @@ describe('getSolanaQuote', () => {
         sellTokenDecimals,
         buyTokenAddress: buyMint,
         buyTokenDecimals,
+        appCode: APP_CODE,
         amount: 1_000_000_000n,
         kind: OrderKind.SELL,
       },
@@ -726,6 +828,7 @@ describe('getSolanaQuote', () => {
         sellTokenDecimals,
         buyTokenAddress: buyMint,
         buyTokenDecimals,
+        appCode: APP_CODE,
         amount: 1_000_000_000n,
         kind: OrderKind.SELL,
       },
@@ -741,6 +844,7 @@ describe('getSolanaQuote', () => {
         sellTokenDecimals,
         buyTokenAddress: buyMint,
         buyTokenDecimals,
+        appCode: APP_CODE,
         amount: 1_000_000_000n,
         kind: OrderKind.SELL,
         sellTokenProgramId: TOKEN_2022_PROGRAM_ID,
@@ -765,6 +869,7 @@ describe('getSolanaQuote', () => {
           sellTokenDecimals,
           buyTokenAddress: buyMint,
           buyTokenDecimals,
+          appCode: APP_CODE,
           amount: 1_000_000_000n,
           kind: OrderKind.SELL,
         },
@@ -808,6 +913,7 @@ describe('getSolanaQuote', () => {
           sellTokenDecimals,
           buyTokenAddress: buyMint,
           buyTokenDecimals,
+          appCode: APP_CODE,
           amount: 1_000_000_000n,
           kind: OrderKind.SELL,
         },
@@ -862,6 +968,7 @@ describe('getSolanaQuote', () => {
           sellTokenDecimals,
           buyTokenAddress: buyMint,
           buyTokenDecimals,
+          appCode: APP_CODE,
           amount: 1_000_000_000n,
           kind: OrderKind.SELL,
         },

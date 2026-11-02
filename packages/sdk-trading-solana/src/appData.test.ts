@@ -9,7 +9,7 @@ describe('mergeAppData', () => {
   it('digests to exactly 32 bytes', async () => {
     const result = await mergeAppData(BASE_DOC, { metadata: { referrer: { code: 'someone' } } })
 
-    expect(result).toHaveLength(32)
+    expect(result.appDataBytes).toHaveLength(32)
   })
 
   it('is deterministic for the same doc and override', async () => {
@@ -63,7 +63,7 @@ describe('hashAppDataDoc', () => {
   })
 
   it('agrees with mergeAppData against an empty override, since merging nothing is just hashing the doc', async () => {
-    expect(await hashAppDataDoc(BASE_DOC)).toEqual(await mergeAppData(BASE_DOC, {}))
+    expect(await hashAppDataDoc(BASE_DOC)).toEqual((await mergeAppData(BASE_DOC, {})).appDataBytes)
   })
 
   it('matches the known keccak256 digest for the base doc', async () => {
