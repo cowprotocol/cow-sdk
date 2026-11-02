@@ -1,7 +1,7 @@
-import type { QuoteResults, SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
+import type { QuoteResults, SwapAdvancedSettings, TradingAppDataInfo } from '@cowprotocol/sdk-trading'
 import { SigningScheme } from '@cowprotocol/sdk-order-book'
 import { PublicKey, PublicKeyInitData, TransactionInstruction } from '@solana/web3.js'
-import { mergeAppData } from './appData'
+import { mergeAppData, SolanaAppDataInfo } from './appData'
 import { deriveAta } from './associatedTokenAccount'
 import { buildCreateOrderInstruction } from './createOrderInstruction'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toOrderId } from './orderIntent'
@@ -34,6 +34,9 @@ export interface SolanaSwapOrder {
   intent: SolanaOrderIntent
   signingScheme: SigningScheme
   orderToSign: QuoteResults['orderToSign']
+  /** The app-data doc `intent.appData` is the digest of. The order book must be given it — uploaded, or
+   * sent with a sponsored order — for the digest to resolve. Absent when the caller supplied raw bytes. */
+  appDataInfo?: TradingAppDataInfo
 }
 
 /**
@@ -51,15 +54,16 @@ export async function buildSolanaSwapOrder(
   options: BuildSolanaSwapOrderOptions = {},
 ): Promise<SolanaSwapOrder> {
   const { validTo, receiver } = advancedSettings?.quoteRequest ?? {}
+  const appDataInfo = advancedSettings?.appData
+    ? await mergeAppData(quoteResults.appDataInfo.doc ?? {}, advancedSettings.appData)
+    : undefined
 
   const overrides: Partial<SolanaOrderIntent> = {
     ...(receiver && {
       buyTokenAccount: resolveBuyTokenAccount(solanaQuote, new PublicKey(receiver)),
     }),
     ...(validTo && { validTo }),
-    ...(advancedSettings?.appData && {
-      appData: await mergeAppData(quoteResults.appDataInfo.doc ?? {}, advancedSettings.appData),
-    }),
+    ...(appDataInfo && { appData: appDataInfo.appDataBytes }),
   }
 
   const intent = { ...solanaQuote.intent, ...overrides }
@@ -92,7 +96,16 @@ export async function buildSolanaSwapOrder(
     intent,
     signingScheme: SigningScheme.PRESIGN,
     orderToSign: quoteResults.orderToSign,
+    appDataInfo: toTradingAppDataInfo(appDataInfo) ?? quoteResults.appDataInfo,
   }
+}
+
+function toTradingAppDataInfo(info: SolanaAppDataInfo | undefined): TradingAppDataInfo | undefined {
+  if (!info) return undefined
+
+  const { doc, fullAppData, appDataKeccak256 } = info
+
+  return { doc, fullAppData, appDataKeccak256 }
 }
 
 /**

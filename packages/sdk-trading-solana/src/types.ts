@@ -20,6 +20,8 @@ export interface SolanaQuoteParameters {
   validForSeconds?: number
   /** Slippage tolerance to sign, in basis points. Defaults to the one the quote reports. */
   slippageBps?: number
+  /** Identifies the integrator in the order's app-data doc. Overridden by `advancedSettings.appData.appCode`. */
+  appCode?: string
   /** Token program owning `sellMint`'s accounts (classic SPL Token vs Token-2022). Defaults to the
    * classic SPL Token program — pass `TOKEN_2022_PROGRAM_ID` explicitly for Token-2022 mints, since the
    * associated token account address differs by program. */
