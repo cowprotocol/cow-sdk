@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.16.1...sdk-trading-solana-v0.16.2) (2026-11-02)
+
+
+### 🐛 Bug Fixes
+
+* **solana:** quote a native SOL buy against the sentinel, not WSOL ([#1074](https://github.com/cowprotocol/cow-sdk/issues/1074)) ([e761f99](https://github.com/cowprotocol/cow-sdk/commit/e761f99e929e3a37d374f536beaf2a22f927a6ae))
+
 ## [0.16.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.16.0...sdk-trading-solana-v0.16.1) (2026-10-26)
 
 
