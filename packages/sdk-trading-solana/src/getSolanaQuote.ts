@@ -71,7 +71,10 @@ export async function getSolanaQuote(
   const advancedAppData = options.advancedSettings?.appData
   // Quoted before the slippage is resolved, so the doc can only carry the caller's own tolerance here. The
   // order book checks the document against its hash but does not tie it to the order placed later.
-  const quoteAppDataInfo = await buildSolanaAppData({ appCode, slippageBps: slippageBpsOverride }, advancedAppData)
+  const quoteAppDataInfo = await buildSolanaAppData(
+    { appCode, orderClass: 'market', slippageBps: slippageBpsOverride },
+    advancedAppData,
+  )
 
   // No `signingScheme`: a Solana order is created on-chain, and the endpoint ignores the field.
   const quoteRequest: OrderQuoteRequest = {
@@ -103,7 +106,7 @@ export async function getSolanaQuote(
   const appDataInfo =
     slippageBpsOverride !== undefined
       ? quoteAppDataInfo
-      : await buildSolanaAppData({ appCode, slippageBps: signedSlippageBps }, advancedAppData)
+      : await buildSolanaAppData({ appCode, orderClass: 'market', slippageBps: signedSlippageBps }, advancedAppData)
 
   const amountsAndCosts = getQuoteAmountsAndCosts({
     orderParams,

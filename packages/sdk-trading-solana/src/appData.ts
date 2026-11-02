@@ -1,5 +1,6 @@
 import {
   AppDataParams,
+  type cowAppDataLatestScheme as latest,
   LatestAppDataDocVersion,
   MetadataApi,
   stringifyDeterministic,
@@ -17,6 +18,8 @@ export interface SolanaAppDataInfo extends TradingAppDataInfo {
 
 export interface BuildSolanaAppDataParams {
   appCode: string
+  /** Recorded in the doc's `orderClass` metadata, e.g. `market` for a swap or `limit` for a limit order. */
+  orderClass: latest.OrderClass['orderClass']
   /** Recorded in the doc's `quote` metadata; omitted when the slippage isn't known yet. */
   slippageBps?: number
 }
@@ -44,16 +47,16 @@ export async function getSolanaAppDataInfo(doc: LatestAppDataDocVersion): Promis
 
 /**
  * The Solana counterpart of `buildAppData` in `@cowprotocol/sdk-trading`: the same doc (app code, slippage,
- * `market` order class, default UTM unless the caller sets its own) with `advancedParams` merged on top.
+ * order class, default UTM unless the caller sets its own) with `advancedParams` merged on top.
  * Partner fees are left out, since no Solana component charges them yet.
  */
 export async function buildSolanaAppData(
-  { appCode, slippageBps }: BuildSolanaAppDataParams,
+  { appCode, orderClass, slippageBps }: BuildSolanaAppDataParams,
   advancedParams?: AppDataParams,
 ): Promise<SolanaAppDataInfo> {
   const baseMetadata = {
     ...(slippageBps !== undefined ? { quote: { slippageBips: slippageBps } } : undefined),
-    orderClass: { orderClass: 'market' as const },
+    orderClass: { orderClass },
     ...(advancedParams?.metadata?.utm ? undefined : { utm: getDefaultUtmParams() }),
   }
 
