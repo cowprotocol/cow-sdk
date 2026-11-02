@@ -3,7 +3,7 @@ import { OrderKind, SigningScheme } from '@cowprotocol/sdk-order-book'
 import type { QuoteResults } from '@cowprotocol/sdk-trading'
 
 import { postSolanaSwapOrderFromQuote } from './postSwapOrderFromQuote'
-import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toOrderId } from './orderIntent'
+import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toHex, toOrderId } from './orderIntent'
 import { findOrderPda } from './orderPda'
 import { SolanaQuote } from './types'
 
@@ -126,5 +126,23 @@ describe('postSolanaSwapOrderFromQuote', () => {
 
     expect(result.orderId).toBe(toOrderId(expectedUid))
     expect(result.orderId).not.toBe(toOrderId(solanaQuote.uid))
+  })
+
+  it('returns the app-data doc the posted order commits to, including an appData override', async () => {
+    const solanaQuote = await buildFixtureQuote()
+    const quoteResults = {
+      orderToSign: {},
+      appDataInfo: { doc: { appCode: 'fixture-app', metadata: {} } },
+    } as unknown as QuoteResults
+    const signAndSend = jest.fn().mockResolvedValue({ signature: 'fake-signature' })
+
+    const result = await postSolanaSwapOrderFromQuote({ quoteResults, solanaQuote }, signAndSend, {
+      appData: { metadata: { referrer: { code: 'someone' } } },
+    })
+
+    const instruction = signAndSend.mock.calls[0][0]
+    const committedAppData = Uint8Array.from(instruction.data.subarray(1)).slice(-32)
+    expect(result.appDataInfo?.doc.metadata).toMatchObject({ referrer: { code: 'someone' } })
+    expect(result.appDataInfo?.appDataKeccak256).toBe(`0x${toHex(committedAppData)}`)
   })
 })

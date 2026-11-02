@@ -64,6 +64,10 @@ export async function buildSolanaAppData(
   return getSolanaAppDataInfo(doc)
 }
 
+function replaceArray<T>(_target: T[], source: T[]): T[] {
+  return source
+}
+
 /** Merges `override` into `doc` and digests the result — see `hashAppDataDoc`. */
 export async function mergeAppData(doc: LatestAppDataDocVersion, override: AppDataParams): Promise<SolanaAppDataInfo> {
   // Clear arrays that would otherwise be duplicated by deepmerge concatenating them with the override's.
@@ -76,7 +80,10 @@ export async function mergeAppData(doc: LatestAppDataDocVersion, override: AppDa
     },
   }
 
-  const merged = deepmerge(clearedDoc, override) as LatestAppDataDocVersion
+  // The override's arrays replace the doc's: the quote's doc may already hold the same override (e.g. the
+  // caller passed one `advancedSettings` to both `getQuote` and `buildOrder`), and concatenating would
+  // duplicate entries such as `metadata.wrappers`.
+  const merged = deepmerge(clearedDoc, override, { arrayMerge: replaceArray }) as LatestAppDataDocVersion
 
   return getSolanaAppDataInfo(merged)
 }

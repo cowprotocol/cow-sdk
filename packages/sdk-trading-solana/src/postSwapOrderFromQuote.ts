@@ -1,6 +1,16 @@
-import type { SwapAdvancedSettings, SigningStepManager, OrderPostingResult } from '@cowprotocol/sdk-trading'
+import type {
+  SwapAdvancedSettings,
+  SigningStepManager,
+  OrderPostingResult,
+  TradingAppDataInfo,
+} from '@cowprotocol/sdk-trading'
 import { buildSolanaSwapOrder, SolanaSwapOrderQuote } from './buildSwapOrder'
 import { SolanaSignAndSend } from './types'
+
+export interface SolanaOrderPostingResult extends OrderPostingResult {
+  /** The app-data doc the posted order's `appData` is the digest of — see `SolanaSwapOrder.appDataInfo`. */
+  appDataInfo?: TradingAppDataInfo
+}
 
 // TODO: implement real order posting flow, see https://github.com/cowprotocol/cowswap/pull/7860
 /**
@@ -15,8 +25,11 @@ export async function postSolanaSwapOrderFromQuote(
   signAndSend: SolanaSignAndSend,
   advancedSettings?: SwapAdvancedSettings,
   signingStepManager?: SigningStepManager,
-): Promise<OrderPostingResult> {
-  const { instruction, orderId, signingScheme, orderToSign } = await buildSolanaSwapOrder(quote, advancedSettings)
+): Promise<SolanaOrderPostingResult> {
+  const { instruction, orderId, signingScheme, orderToSign, appDataInfo } = await buildSolanaSwapOrder(
+    quote,
+    advancedSettings,
+  )
 
   await signingStepManager?.beforeOrderSign?.()
 
@@ -30,5 +43,6 @@ export async function postSolanaSwapOrderFromQuote(
     signature,
     signingScheme,
     orderToSign,
+    appDataInfo,
   }
 }

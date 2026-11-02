@@ -39,6 +39,17 @@ describe('mergeAppData', () => {
 
     expect(overridden).toEqual(replacedFromScratch)
   })
+
+  it('replaces arrays instead of concatenating them, so re-merging the same override is idempotent', async () => {
+    const wrappers = [{ address: '0x0000000000000000000000000000000000000001', data: '0x' }]
+    const override = { metadata: { wrappers } }
+
+    const once = await mergeAppData(BASE_DOC, override)
+    const twice = await mergeAppData(once.doc, override)
+
+    expect(twice.doc.metadata.wrappers).toEqual(wrappers)
+    expect(twice.appDataKeccak256).toBe(once.appDataKeccak256)
+  })
 })
 
 describe('hashAppDataDoc', () => {
