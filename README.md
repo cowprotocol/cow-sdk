@@ -87,7 +87,7 @@ The project uses modern tooling for efficient development and publishing:
 
 #### 🛠️ Development Packages
 
-- **[`@cow-sdk/typescript-config`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/typescript-config)** - Shared TypeScript configuration
+- **[`@cowprotocol/typescript-config`](https://github.com/cowprotocol/cow-sdk/tree/main/packages/typescript-config)** - Shared TypeScript configuration
 
 ### Development Workflow
 
