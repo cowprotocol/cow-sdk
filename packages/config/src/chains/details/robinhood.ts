@@ -9,7 +9,7 @@ const robinhoodLogo = `${RAW_CHAINS_FILES_PATH}/images/robinhood-logo.svg`
 export const robinhood: EvmChainInfo = {
   id: SupportedChainId.ROBINHOOD,
   internalId: 'robinhood',
-  label: 'Robinhood Chain',
+  label: 'Robinhood',
   eip155Label: 'Robinhood Chain',
   caip2Namespace: 'eip155',
   logo: { light: robinhoodLogo, dark: robinhoodLogo },
