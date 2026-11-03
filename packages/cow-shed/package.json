@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-cow-shed",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "description": "CowProtocol Cow Shed package",
   "repository": {
     "type": "git",

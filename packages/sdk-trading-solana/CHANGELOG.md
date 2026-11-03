@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.16.2...sdk-trading-solana-v1.0.0) (2026-11-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* **solana:** build appData instead of hard-coding zero bytes ([#1078](https://github.com/cowprotocol/cow-sdk/issues/1078))
+
+### 🐛 Bug Fixes
+
+* **solana:** build appData instead of hard-coding zero bytes ([#1078](https://github.com/cowprotocol/cow-sdk/issues/1078)) ([7f9d872](https://github.com/cowprotocol/cow-sdk/commit/7f9d872f05b27b86581fcc1afab383f5aaa73223))
+
+
+### 🔧 Miscellaneous
+
+* update coverage badges ([#1081](https://github.com/cowprotocol/cow-sdk/issues/1081)) ([968bf48](https://github.com/cowprotocol/cow-sdk/commit/968bf48590d57136949d47ef6b9e6a491a30bb0e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 6.0.13
+    * @cowprotocol/sdk-common bumped to 0.14.7
+    * @cowprotocol/sdk-config bumped to 2.11.1
+    * @cowprotocol/sdk-order-book bumped to 4.5.1
+    * @cowprotocol/sdk-trading bumped to 2.7.11
+
 ## [0.16.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.16.1...sdk-trading-solana-v0.16.2) (2026-11-02)
 
 

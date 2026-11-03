@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.11.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.11.0...sdk-config-v2.11.1) (2026-11-03)
+
+
+### 🐛 Bug Fixes
+
+* update robinhood chain details ([#1073](https://github.com/cowprotocol/cow-sdk/issues/1073)) ([dd1cc4b](https://github.com/cowprotocol/cow-sdk/commit/dd1cc4bb6e59025bc8ad027bf07b6d1ca3176511))
+
 ## [2.11.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.10.0...sdk-config-v2.11.0) (2026-10-26)
 
 
