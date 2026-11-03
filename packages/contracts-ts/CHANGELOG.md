@@ -1,5 +1,28 @@
 # Changelog
 
+## [4.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.7.6...sdk-contracts-ts-v4.0.0) (2026-11-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* **solana:** build appData instead of hard-coding zero bytes ([#1078](https://github.com/cowprotocol/cow-sdk/issues/1078))
+
+### 🐛 Bug Fixes
+
+* **solana:** build appData instead of hard-coding zero bytes ([#1078](https://github.com/cowprotocol/cow-sdk/issues/1078)) ([7f9d872](https://github.com/cowprotocol/cow-sdk/commit/7f9d872f05b27b86581fcc1afab383f5aaa73223))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.14.7
+    * @cowprotocol/sdk-config bumped to 2.11.1
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.23
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.23
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.38
+
 ## [3.7.6](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v3.7.5...sdk-contracts-ts-v3.7.6) (2026-10-26)
 
 

@@ -1,5 +1,15 @@
 # Changelog
 
+## [4.5.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.5.0...sdk-order-book-v4.5.1) (2026-11-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.11.1
+    * @cowprotocol/sdk-common bumped to 0.14.7
+
 ## [4.5.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.4.0...sdk-order-book-v4.5.0) (2026-10-26)
 
 
