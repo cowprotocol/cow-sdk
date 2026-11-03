@@ -214,7 +214,8 @@ describe('buildSolanaSwapOrder', () => {
 
     const order = await buildSolanaSwapOrder({ quoteResults, solanaQuote }, { appData: appDataOverride })
 
-    const expectedAppData = await mergeAppData(quoteResults.appDataInfo.doc, appDataOverride)
+    const expectedAppDataInfo = await mergeAppData(quoteResults.appDataInfo.doc, appDataOverride)
+    const expectedAppData = expectedAppDataInfo.appDataBytes
     const expectedIntent = { ...solanaQuote.intent, appData: expectedAppData }
     const expectedUid = await hashOrderIntent(encodeOrderIntent(expectedIntent))
     const [expectedOrderPda] = findOrderPda(solanaQuote.programId, expectedUid)
@@ -223,12 +224,27 @@ describe('buildSolanaSwapOrder', () => {
     expect(order.orderPda.toBase58()).toBe(expectedOrderPda.toBase58())
     expect(order.orderPda.toBase58()).not.toBe(solanaQuote.orderPda.toBase58())
     expect(order.orderId).toBe(toOrderId(expectedUid))
+    expect(order.appDataInfo).toEqual({
+      doc: expectedAppDataInfo.doc,
+      fullAppData: expectedAppDataInfo.fullAppData,
+      appDataKeccak256: expectedAppDataInfo.appDataKeccak256,
+    })
+    expect(order.appDataInfo?.doc.metadata).toMatchObject({ referrer: { code: 'someone' } })
   })
 
-  it('overriding appData does not throw when the quote has no app-data doc yet, matching getSolanaQuote\'s current stub', async () => {
+  it('returns the quote\'s app-data doc when appData is not overridden', async () => {
     const solanaQuote = await buildFixtureQuote()
-    // `getSolanaQuote` currently returns `appDataInfo: {} as QuoteResults['appDataInfo']` — no `doc` key at
-    // all — until Solana app-data generation is implemented. `buildSolanaSwapOrder` must not crash on it.
+    const quoteResults = buildFixtureQuoteResults()
+
+    const order = await buildSolanaSwapOrder({ quoteResults, solanaQuote })
+
+    expect(order.appDataInfo).toBe(quoteResults.appDataInfo)
+  })
+
+  it('overriding appData does not throw when the quote results carry no app-data doc', async () => {
+    const solanaQuote = await buildFixtureQuote()
+    // `getSolanaQuote` always fills the doc, but hand-built quote results may not; `buildSolanaSwapOrder`
+    // must not crash on them.
     const quoteResults = { orderToSign: {}, appDataInfo: {} } as unknown as QuoteResults
 
     await expect(

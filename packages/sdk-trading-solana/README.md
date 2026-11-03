@@ -74,6 +74,7 @@ const { quoteResults, solanaQuote, buildOrder, postSwapOrderFromQuote } = await 
   sellTokenDecimals,
   buyTokenAddress,
   buyTokenDecimals,
+  appCode: 'YOUR_APP_CODE',
   amount, // bigint — sell-side amount for a SELL order, buy-side amount for a BUY order
   kind: OrderKind.SELL,
 })
@@ -120,9 +121,9 @@ This is the recommended path whenever the sell-token account's delegate allowanc
 topping up for this trade, since it lets the delegate approval and the order creation land
 atomically in one transaction.
 
-Both paths accept the same optional `advancedSettings` (currently `quoteRequest.receiver` and
-`quoteRequest.validTo`) and apply them identically — overriding `receiver` or `validTo` re-derives
-the order's `uid` and PDA so they still match the intent actually being created:
+Both paths accept the same optional `advancedSettings` (`quoteRequest.receiver`, `quoteRequest.validTo`
+and `appData`) and apply them identically — overriding any of them re-derives the order's `uid` and
+PDA so they still match the intent actually being created:
 
 ```ts
 await postSwapOrderFromQuote(signAndSend, { quoteRequest: { receiver: otherWallet.toBase58() } })
@@ -134,6 +135,26 @@ Both `postSwapOrderFromQuote` and `buildOrder` return an `orderId` — the `uid`
 hex string the CoW order-book API uses for EVM orders too, so it can be handled uniformly by shared
 UI/state code. `solanaQuote.orderPda` is the on-chain account the order lives at once the
 `CreateOrder` instruction lands.
+
+They also return `appDataInfo`: the app-data doc (`appCode`, slippage, order class, UTM, plus any
+`advancedSettings.appData` you merged in) whose keccak256 the intent's `appData` field carries. The
+order book only knows the hash, so upload the doc yourself for it to resolve — the SDK does not do
+this yet:
+
+```ts
+import { OrderBookApi } from '@cowprotocol/sdk-order-book'
+import { SupportedChainId } from '@cowprotocol/sdk-config'
+
+const { instruction, appDataInfo } = await buildOrder()
+
+// Always set for an order built from `getQuote`; only absent when `buildLimitOrder` was given raw bytes.
+if (appDataInfo) {
+  await new OrderBookApi({ chainId: SupportedChainId.SOLANA }).uploadAppData(
+    appDataInfo.appDataKeccak256,
+    appDataInfo.fullAppData,
+  )
+}
+```
 
 ## Cancelling an order
 
@@ -212,9 +233,21 @@ await sendMyTransaction([approveInstruction, instruction])
 - Takes the same token-account/mint resolution as `getQuote` (native SOL → WSOL substitution,
   `receiverAddress` defaulting to `ownerAddress`, `sellTokenProgramId`/`buyTokenProgramId` for
   Token-2022 mints), but needs no upstream quote and no signer to build.
-- `appData` is used exactly as given — no hashing, no doc, no merging against a quoted value.
-  Solana has no agreed `appData` convention yet.
-  `hashAppDataDoc` is available if you want to derive them from an app-data doc yourself.
+- `appData` is used exactly as given — no hashing, no doc, no merging against a quoted value. To
+  commit to the same kind of app-data doc `getQuote` builds for a swap, build it with
+  `buildSolanaAppData` and upload it as in [Step 3](#step-3--read-back-the-result):
+
+  ```ts
+  import { buildSolanaAppData } from '@cowprotocol/sdk-trading-solana'
+
+  const { appDataBytes, appDataKeccak256, fullAppData } = await buildSolanaAppData({
+    appCode: 'YOUR_APP_CODE',
+    orderClass: 'limit',
+  })
+
+  const order = await sdk.buildLimitOrder({ ...params, appData: appDataBytes })
+  await orderBookApi.uploadAppData(appDataKeccak256, fullAppData)
+  ```
 - Still requires [Step 0](#step-0--approve-the-settlement-program-as-spl-delegate) before the order
   can settle, and the returned `instruction` can be bundled with that approval the same way
   `buildOrder`'s can.
@@ -241,7 +274,7 @@ interface SolanaOrderIntent {
   validTo: number // unix timestamp, seconds
   kind: OrderKind // SELL | BUY
   partiallyFillable: boolean
-  appData: Uint8Array // exactly 32 bytes, opaque to the settlement program; no convention defined yet, sent as zeroes
+  appData: Uint8Array // exactly 32 bytes, opaque to the settlement program; the keccak256 of the order's app-data doc
 }
 ```
 

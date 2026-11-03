@@ -8,10 +8,10 @@ import {
   OrderQuoteSideKindBuy,
   OrderQuoteSideKindSell,
   PriceQuality,
-  SigningScheme,
 } from '@cowprotocol/sdk-order-book'
 
 import { solanaApiContext } from './apiContext'
+import { buildSolanaAppData } from './appData'
 import { deriveAta } from './associatedTokenAccount'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent } from './orderIntent'
 import { findOrderPda } from './orderPda'
@@ -22,9 +22,6 @@ import { SolanaQuote, SolanaQuoteParameters } from './types'
 import type { QuoteResults, SwapAdvancedSettings, TradeParameters } from '@cowprotocol/sdk-trading'
 
 const DEFAULT_VALID_FOR_SECONDS = 30 * 60
-/** No Solana app-data convention exists yet (confirmed absent from the settlement program's intent
- * struct beyond an opaque 32 bytes) — sent as zeroes until one is defined. */
-const ZERO_APP_DATA = new Uint8Array(32)
 
 export async function getSolanaQuote(
   params: SolanaQuoteParameters,
@@ -43,6 +40,7 @@ export async function getSolanaQuote(
     validForSeconds = DEFAULT_VALID_FOR_SECONDS,
     sellTokenProgramId,
     buyTokenProgramId,
+    appCode,
   } = params
 
   if (!Number.isFinite(validForSeconds) || validForSeconds <= 0) {
@@ -70,16 +68,24 @@ export async function getSolanaQuote(
   const apiContext = solanaApiContext(options.env)
   const orderBookApi = options.orderBookApi ?? new OrderBookApi(apiContext)
 
+  const advancedAppData = options.advancedSettings?.appData
+  // Quoted before the slippage is resolved, so the doc can only carry the caller's own tolerance here. The
+  // order book checks the document against its hash but does not tie it to the order placed later.
+  const quoteAppDataInfo = await buildSolanaAppData(
+    { appCode, orderClass: 'market', slippageBps: slippageBpsOverride },
+    advancedAppData,
+  )
+
+  // No `signingScheme`: a Solana order is created on-chain, and the endpoint ignores the field.
   const quoteRequest: OrderQuoteRequest = {
     from: owner.toBase58(),
     sellToken: sellTokenAddress,
     buyToken: requestedBuyMint.toBase58(),
     receiver: receiver.toBase58(),
     validFor: validForSeconds,
-    // TODO: fill appData when we know the format
-    appData: '{}',
+    appData: quoteAppDataInfo.fullAppData,
+    appDataHash: quoteAppDataInfo.appDataKeccak256,
     priceQuality,
-    signingScheme: SigningScheme.EIP712,
     ...(kind === OrderKind.SELL
       ? { kind: OrderQuoteSideKindSell.SELL, sellAmountBeforeFee: amount.toString() }
       : { kind: OrderQuoteSideKindBuy.BUY, buyAmountAfterFee: amount.toString() }),
@@ -97,6 +103,10 @@ export async function getSolanaQuote(
     advancedSettings: options.advancedSettings,
   })
   const signedSlippageBps = slippageBpsOverride ?? suggestedSlippageBps
+  const appDataInfo =
+    slippageBpsOverride !== undefined
+      ? quoteAppDataInfo
+      : await buildSolanaAppData({ appCode, orderClass: 'market', slippageBps: signedSlippageBps }, advancedAppData)
 
   const amountsAndCosts = getQuoteAmountsAndCosts({
     orderParams,
@@ -119,7 +129,7 @@ export async function getSolanaQuote(
     validTo,
     kind,
     partiallyFillable,
-    appData: ZERO_APP_DATA,
+    appData: appDataInfo.appDataBytes,
   }
 
   const intentBytes = encodeOrderIntent(intent)
@@ -169,7 +179,11 @@ export async function getSolanaQuote(
     suggestedSlippageBps,
     tradeParameters,
     orderToSign: {} as QuoteResults['orderToSign'],
-    appDataInfo: {} as QuoteResults['appDataInfo'],
+    appDataInfo: {
+      doc: appDataInfo.doc,
+      fullAppData: appDataInfo.fullAppData,
+      appDataKeccak256: appDataInfo.appDataKeccak256,
+    },
     orderTypedData: {} as QuoteResults['orderTypedData'],
   }
 

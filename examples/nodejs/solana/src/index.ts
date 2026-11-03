@@ -47,6 +47,7 @@ async function main() {
     sellTokenDecimals: SELL_MINT_DECIMALS,
     buyTokenAddress: BUY_MINT,
     buyTokenDecimals: BUY_MINT_DECIMALS,
+    appCode: 'solana-example',
     amount,
     kind: OrderKind.SELL,
   })

@@ -52,6 +52,8 @@ const receiver = fillPubkey(0x99)
 const sellMint = fillPubkey(0x22)
 const buyMint = fillPubkey(0x33)
 
+const APP_CODE = 'test-app'
+
 const params: SolanaQuoteParameters = {
   ownerAddress: owner,
   receiverAddress: receiver,
@@ -59,6 +61,7 @@ const params: SolanaQuoteParameters = {
   sellTokenDecimals: 6,
   buyTokenAddress: buyMint,
   buyTokenDecimals: 9,
+  appCode: APP_CODE,
   amount: 100n,
   kind: OrderKind.SELL,
 }

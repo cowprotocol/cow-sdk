@@ -1,4 +1,4 @@
-import type { OrderPostingResult, QuoteResults, SigningStepManager, SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
+import type { QuoteResults, SigningStepManager, SwapAdvancedSettings } from '@cowprotocol/sdk-trading'
 import { CowEnv } from '@cowprotocol/sdk-config'
 import { OrderBookApi, UID } from '@cowprotocol/sdk-order-book'
 import { createApproveInstruction } from '@solana/spl-token'
@@ -10,7 +10,7 @@ import { buildCancelOrderInstruction } from './cancelOrderInstruction'
 import { getSolanaQuote } from './getSolanaQuote'
 import { SolanaOrderIntent } from './orderIntent'
 import { postSolanaSponsoredOrder } from './postSponsoredOrder'
-import { postSolanaSwapOrderFromQuote } from './postSwapOrderFromQuote'
+import { postSolanaSwapOrderFromQuote, SolanaOrderPostingResult } from './postSwapOrderFromQuote'
 import { getSolanaDelegateAuthority, getSolanaSettlementProgramId } from './statePda'
 import { SolanaQuote, SolanaQuoteParameters, SolanaSignAndSend } from './types'
 
@@ -63,7 +63,7 @@ export interface SolanaQuoteAndPost {
     signAndSend: SolanaSignAndSend,
     advancedSettings?: SwapAdvancedSettings,
     signingStepManager?: SigningStepManager,
-  ): Promise<OrderPostingResult>
+  ): Promise<SolanaOrderPostingResult>
   /** Hand the signed sponsored bundle to the order book, which pays for it and submits it. `quoteId`
    * comes from this quote, so the order book can tie the order back to what was quoted. */
   postSponsoredOrder(partiallySignedTx: string): Promise<UID>
