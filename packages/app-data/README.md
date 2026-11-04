@@ -8,7 +8,7 @@
 
 | Statements                  | Branches                | Functions                 | Lines             |
 | --------------------------- | ----------------------- | ------------------------- | ----------------- |
-| ![Statements](https://img.shields.io/badge/statements-60.9%25-red.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-22%25-red.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-60.46%25-red.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-62.26%25-red.svg?style=flat) |
+| ![Statements](https://img.shields.io/badge/statements-61.14%25-red.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-22%25-red.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-60.46%25-red.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-62.5%25-red.svg?style=flat) |
 
 AppData schema definitions
 
