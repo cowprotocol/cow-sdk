@@ -185,6 +185,26 @@ describe('Across Utils', () => {
       expect(mapAcrossStatusToBridgeStatus('refunded')).toBe(BridgeStatus.REFUND)
       expect(mapAcrossStatusToBridgeStatus('slowFillRequested')).toBe(BridgeStatus.EXECUTED)
     })
+
+    it('should fall back to BridgeStatus.UNKNOWN for a status the map does not recognize, instead of returning undefined', () => {
+      // Guards against API drift: DepositStatusResponse['status'] is a hand-maintained type,
+      // not a contract the live Across API is bound to. A new/unrecognized wire value must
+      // not silently produce `undefined` where every caller expects a BridgeStatus.
+      expect(mapAcrossStatusToBridgeStatus('some-future-status-across-has-not-documented-yet')).toBe(
+        BridgeStatus.UNKNOWN,
+      )
+      expect(mapAcrossStatusToBridgeStatus('')).toBe(BridgeStatus.UNKNOWN)
+    })
+
+    it('should fall back to BridgeStatus.UNKNOWN for a prototype-chain property name, not resolve to an Object.prototype member', () => {
+      // A plain `AcrossStatusToBridgeStatus[status]` index (or a `??` fallback on that) would
+      // resolve 'constructor'/'toString'/'hasOwnProperty' to a function inherited from
+      // Object.prototype instead of falling through to undefined/UNKNOWN.
+      expect(mapAcrossStatusToBridgeStatus('constructor')).toBe(BridgeStatus.UNKNOWN)
+      expect(mapAcrossStatusToBridgeStatus('toString')).toBe(BridgeStatus.UNKNOWN)
+      expect(mapAcrossStatusToBridgeStatus('hasOwnProperty')).toBe(BridgeStatus.UNKNOWN)
+      expect(mapAcrossStatusToBridgeStatus('__proto__')).toBe(BridgeStatus.UNKNOWN)
+    })
   })
 
   const adapters = createAdapters()
