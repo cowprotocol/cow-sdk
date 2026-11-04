@@ -1,7 +1,6 @@
 import { PublicKey } from '@solana/web3.js'
 import { CowEnv } from '@cowprotocol/sdk-config'
 import {
-  getQuoteAmountsAndCosts,
   OrderBookApi,
   OrderKind,
   OrderQuoteRequest,
@@ -15,6 +14,7 @@ import { buildSolanaAppData } from './appData'
 import { deriveAta } from './associatedTokenAccount'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent } from './orderIntent'
 import { findOrderPda } from './orderPda'
+import { getSolanaQuoteAmountsAndCosts } from './getSolanaQuoteAmountsAndCosts'
 import { resolveSolanaSlippageSuggestion } from './resolveSlippageSuggestion'
 import { isNativeSolMint, toSplMint } from './splMint'
 import { getSolanaSettlementProgramId } from './statePda'
@@ -108,12 +108,11 @@ export async function getSolanaQuote(
       ? quoteAppDataInfo
       : await buildSolanaAppData({ appCode, orderClass: 'market', slippageBps: signedSlippageBps }, advancedAppData)
 
-  const amountsAndCosts = getQuoteAmountsAndCosts({
-    orderParams,
+  const amountsAndCosts = getSolanaQuoteAmountsAndCosts({
+    quoteResponse,
     slippagePercentBps: signedSlippageBps,
-    // TODO: implement fees
+    // TODO: implement partner fees
     partnerFeeBps: 0,
-    protocolFeeBps: 0,
   })
 
   const intent: SolanaOrderIntent = {

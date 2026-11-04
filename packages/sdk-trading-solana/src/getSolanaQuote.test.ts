@@ -947,6 +947,16 @@ describe('getSolanaQuote', () => {
       expect(solanaQuote.intent.buyAmount).toBe(quoteResults.amountsAndCosts.afterSlippage.buyAmount)
       expect(solanaQuote.intent.sellAmount).toBe(1_000_000_000n)
     })
+
+    it('reports them in the amounts and costs instead of a zero network fee', async () => {
+      mockQuoteResponse({ costs })
+
+      const { quoteResults } = await quote()
+
+      expect(quoteResults.amountsAndCosts.costs.networkFee.amountInBuyCurrency).toBe(930_848_232n)
+      expect(quoteResults.amountsAndCosts.beforeNetworkCosts.buyAmount).toBe(9_707_507_795n + 930_848_232n)
+      expect(quoteResults.amountsAndCosts.afterNetworkCosts.buyAmount).toBe(9_707_507_795n)
+    })
   })
 
   describe('default order book client', () => {
