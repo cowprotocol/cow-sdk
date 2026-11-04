@@ -24,7 +24,7 @@ export function getDefaultUtmParams() {
 }
 
 export async function buildAppData(
-  { slippageBps, appCode, orderClass: orderClassName, partnerFee }: BuildAppDataParams,
+  { slippageBps, appCode, orderClass: orderClassName, partnerFee, enableFastPath, validFrom }: BuildAppDataParams,
   advancedParams?: AppDataParams,
 ): Promise<TradingAppDataInfo> {
   const quoteParams = { slippageBips: slippageBps }
@@ -40,18 +40,23 @@ export async function buildAppData(
     quote: quoteParams,
     orderClass,
     partnerFee,
+    ...(enableFastPath ? { enableFastPath: true } : {}),
+    ...(validFrom !== undefined ? { validFrom } : {}),
     ...(shouldAddDefaultUtm ? { utm: getDefaultUtmParams() } : {}),
   }
 
-  const doc = await metadataApiSdk.generateAppDataDoc(
-    deepmerge(
-      {
-        appCode,
-        metadata: baseMetadata,
-      },
-      advancedParams || {},
-    ),
-  )
+  const mergedParams = deepmerge({ appCode, metadata: baseMetadata }, advancedParams || {})
+
+  // enableFastPath and validFrom are mutually exclusive. Check the merged metadata
+  // so the guard can't be bypassed by passing one field via advancedParams.metadata.
+  const mergedMetadata = (mergedParams.metadata ?? {}) as { enableFastPath?: boolean; validFrom?: number }
+  if (mergedMetadata.enableFastPath && mergedMetadata.validFrom !== undefined) {
+    throw new Error(
+      'enableFastPath and validFrom are mutually exclusive: use validFrom for a normal order or enableFastPath for fast-path execution, but not both.',
+    )
+  }
+
+  const doc = await metadataApiSdk.generateAppDataDoc(mergedParams)
 
   const { fullAppData, appDataKeccak256 } = await generateAppDataFromDoc(doc)
 
