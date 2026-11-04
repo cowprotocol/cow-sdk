@@ -117,6 +117,27 @@ describe('getSolanaQuoteAmountsAndCosts', () => {
       expect(beforeAllFees.sellAmount).toBe(0n)
       expect(reported.networkFee).toEqual({ amountInSellCurrency: 10n, amountInBuyCurrency: 0n })
     })
+
+    it('never takes the sell amount before all fees below zero when there is a protocol fee', () => {
+      const malformed = quoteResponse(
+        {
+          kind: OrderKind.BUY,
+          sellAmount: '2000',
+          costs: { ...costs('2000', '0'), token: SELL_MINT },
+        },
+        '10',
+      )
+      // 2000 * 10 / (10000 + 10) = 1 protocol fee atom, which would leave 2000 - 1 - 2000 = -1
+      const { beforeAllFees, costs: reported } = getSolanaQuoteAmountsAndCosts({
+        quoteResponse: malformed,
+        slippagePercentBps: 0,
+        partnerFeeBps: 100,
+      })
+
+      expect(reported.protocolFee.amount).toBe(1n)
+      expect(beforeAllFees.sellAmount).toBe(0n)
+      expect(reported.partnerFee.amount).toBe(0n)
+    })
   })
 
   describe('partner fee', () => {

@@ -93,6 +93,8 @@ function addBuyOrderCosts(
 
   const sellAmountBeforeCosts = sellAmount > costs ? sellAmount - costs : 0n
   const costsDelta = sellAmount - sellAmountBeforeCosts
+  // The generic breakdown has already taken the protocol fee off, so this can go below zero on its own.
+  const sellAmountBeforeAllFees = amountsAndCosts.beforeAllFees.sellAmount - costsDelta
   const beforeNetworkCosts = {
     ...amountsAndCosts.beforeNetworkCosts,
     sellAmount: amountsAndCosts.beforeNetworkCosts.sellAmount - costsDelta,
@@ -110,7 +112,7 @@ function addBuyOrderCosts(
     },
     beforeAllFees: {
       ...amountsAndCosts.beforeAllFees,
-      sellAmount: amountsAndCosts.beforeAllFees.sellAmount - costsDelta,
+      sellAmount: sellAmountBeforeAllFees > 0n ? sellAmountBeforeAllFees : 0n,
     },
     beforeNetworkCosts,
     afterProtocolFees: beforeNetworkCosts,
