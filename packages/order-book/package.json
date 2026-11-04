@@ -32,7 +32,7 @@
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
-    "@cow-sdk/typescript-config": "workspace:*",
+    "@cowprotocol/typescript-config": "workspace:*",
     "@types/jest": "^29.4.0",
     "@types/node": "^20.17.31",
     "@types/semver-sort": "^0.0.1",

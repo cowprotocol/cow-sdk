@@ -34,7 +34,7 @@
     "ethers": "^5.7.2"
   },
   "devDependencies": {
-    "@cow-sdk/typescript-config": "workspace:*",
+    "@cowprotocol/typescript-config": "workspace:*",
     "@types/node": "^20.5.2",
     "tsup": "^7.2.0",
     "typescript": "^5.2.2"
