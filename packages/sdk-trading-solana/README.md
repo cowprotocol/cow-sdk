@@ -90,6 +90,75 @@ const { quoteResults, solanaQuote, buildOrder, postSwapOrderFromQuote } = await 
 - Passing `sellTokenProgramId` / `buyTokenProgramId` (e.g. `TOKEN_2022_PROGRAM_ID`) is required for
   Token-2022 mints, since the associated token account address differs by program.
 
+### Showing a quote
+
+A Solana quote's amounts are **after costs**. The quote takes its costs out of the amounts instead of
+reporting a `feeAmount` (which is always `'0'`): a sell order's `buyAmount` already has them taken off,
+and a buy order's `sellAmount` already has them added on. The costs are:
+
+- **network fees** — the transaction fee to settle the order;
+- **token account rent** — the one-off deposit for opening the receiver's buy token account, charged
+  only when that account doesn't exist yet. It is a fixed amount of SOL, so on a small trade it can be
+  a noticeable share of the output (around 15 bps on a USDC → TSLAx quote, for example).
+
+Settling the order costs the user nothing on top of these. Creating it is separate: the `CreateOrder`
+transaction's fee and the order account's rent are paid by its fee payer, the owner or, for a
+sponsored order, the deployment's `funder` (see `solanaQuote.funder`).
+
+`quoteResults.amountsAndCosts` lays the quote out stage by stage, so read what to show from it:
+
+| Show                           | SELL order                                    | BUY order                                     |
+| ------------------------------ | --------------------------------------------- | --------------------------------------------- |
+| Expected amount                | `afterPartnerFees.buyAmount` (you receive)    | `afterPartnerFees.sellAmount` (you pay)       |
+| Slippage-protected limit       | `amountsToSign.buyAmount` (minimum received)  | `amountsToSign.sellAmount` (maximum sent)     |
+| Amount before costs            | `beforeNetworkCosts.buyAmount`                | `beforeNetworkCosts.sellAmount`               |
+| Costs (fees + account rent)    | `costs.networkFee.amountInBuyCurrency`        | `costs.networkFee.amountInSellCurrency`       |
+| Partner fee                    | `costs.partnerFee.amount` (buy token)         | `costs.partnerFee.amount` (sell token)        |
+
+`costs.networkFee` is reported in both tokens, so it can also be shown in the token that isn't
+changing. To show network fees and account rent as separate lines, read them from `solanaQuote.costs`
+(`networkFees`, `buyTokenAtaCosts`, in atoms of `solanaQuote.costs.token`: the buy token of a sell
+order, the sell token of a buy order).
+
+```ts
+const { amountsAndCosts } = quoteResults
+const { costs } = solanaQuote
+
+// SELL order
+const expectedToReceive = amountsAndCosts.afterPartnerFees.buyAmount
+const minimumToReceive = amountsAndCosts.amountsToSign.buyAmount // the amount the intent signs
+const networkCosts = amountsAndCosts.costs.networkFee.amountInBuyCurrency
+const accountRent = BigInt(costs?.buyTokenAtaCosts ?? '0') // part of `networkCosts`
+```
+
+Common mistakes, each of which makes a CoW quote look worse than it is:
+
+1. **Showing the minimum as the expected amount.** `amountsToSign` and `afterSlippage` already have the
+   slippage tolerance taken off. Showing them as "you receive" understates the quote by exactly the
+   slippage setting (50 bps for 50 bps slippage). Show and compare `afterPartnerFees` instead, and show
+   `amountsToSign` only as the minimum received / maximum sent.
+2. **Comparing amounts after costs with amounts before costs.** When ranking a CoW quote against other
+   routes, keep in mind that most routes return an output amount *before* the transaction fee and token
+   account rent, and charge those in SOL on top. A CoW quote has them taken off already. Compare like
+   with like: either compare the other routes' output with CoW's `beforeNetworkCosts`, or take the
+   other routes' SOL costs off their output too. In both cases, show the costs as their own line.
+3. **Taking the costs off twice.** `afterNetworkCosts` onwards, and the signed amounts, already include
+   the costs. Don't subtract `costs.networkFee` or `solanaQuote.costs` from them again.
+
+If you call the quote API yourself instead of using `getQuote`, build the same breakdown from its response
+with `getSolanaQuoteAmountsAndCosts`. The generic `getQuoteAmountsAndCosts` from `@cowprotocol/sdk-order-book`
+doesn't know about Solana costs: it reports no network fee and the same amounts before and after costs.
+
+```ts
+import { getSolanaQuoteAmountsAndCosts } from '@cowprotocol/sdk-trading-solana'
+
+const amountsAndCosts = getSolanaQuoteAmountsAndCosts({
+  quoteResponse, // the Solana /quote response
+  slippagePercentBps: 50,
+  partnerFeeBps: 0,
+})
+```
+
 ### Step 2 — create the order
 
 Two ways to get the order on-chain, depending on whether you need to bundle it with other
