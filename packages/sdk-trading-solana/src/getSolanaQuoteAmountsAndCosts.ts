@@ -1,4 +1,6 @@
 import {
+  getQuoteAmountsAfterPartnerFee,
+  getQuoteAmountsAfterSlippage,
   getQuoteAmountsAndCosts,
   OrderKind,
   QuoteAmountsAndCosts,
@@ -19,8 +21,9 @@ export interface SolanaQuoteAmountsAndCostsParams {
  * account rent) out of the amounts instead: a sell order's `buyAmount` has them subtracted, a buy
  * order's `sellAmount` has them added on top. Read as-is, the breakdown would report no network
  * fee and pre-cost stages equal to the post-cost ones. This restores `beforeAllFees` and
- * `beforeNetworkCosts` and reports the costs under `costs.networkFee`; `afterNetworkCosts` onwards,
- * the signed amounts included, stay exactly what the quote said.
+ * `beforeNetworkCosts` and reports the costs under `costs.networkFee`. `afterNetworkCosts` stays
+ * exactly what the quote said. The partner fee is taken from `beforeAllFees` with the costs, so
+ * with a partner fee the signed amounts differ from the generic breakdown; without one they match it.
  *
  * `costs.protocolFee` is left out: the protocol fee reaches the amounts through `protocolFeeBps`, so
  * counting it here as well would take it twice.
@@ -40,32 +43,53 @@ export function getSolanaQuoteAmountsAndCosts(params: SolanaQuoteAmountsAndCosts
 
   if (costs === 0n) return amountsAndCosts
 
+  const withCosts =
+    orderParams.kind === OrderKind.SELL
+      ? addSellOrderCosts(amountsAndCosts, costs, orderParams)
+      : addBuyOrderCosts(amountsAndCosts, costs, orderParams)
+
+  return applyPartnerFeeAndSlippage(withCosts, partnerFeeBps, slippagePercentBps)
+}
+
+type SolanaOrderParams = SolanaQuoteResponse['quote']
+
+function addSellOrderCosts(
+  amountsAndCosts: QuoteAmountsAndCosts,
+  costs: bigint,
+  orderParams: SolanaOrderParams,
+): QuoteAmountsAndCosts {
   const sellAmount = BigInt(orderParams.sellAmount)
   const buyAmount = BigInt(orderParams.buyAmount)
 
-  if (orderParams.kind === OrderKind.SELL) {
-    const buyAmountBeforeCosts = amountsAndCosts.beforeAllFees.buyAmount + costs
-    const beforeNetworkCosts = {
-      ...amountsAndCosts.beforeNetworkCosts,
-      buyAmount: amountsAndCosts.beforeNetworkCosts.buyAmount + costs,
-    }
-
-    return {
-      ...amountsAndCosts,
-      costs: {
-        ...amountsAndCosts.costs,
-        networkFee: {
-          // `sellAmount` buys `buyAmount + costs` before costs, which prices each cost atom at
-          // `sellAmount / (buyAmount + costs)` of the sell token.
-          amountInSellCurrency: (costs * sellAmount) / (buyAmount + costs),
-          amountInBuyCurrency: costs,
-        },
-      },
-      beforeAllFees: { ...amountsAndCosts.beforeAllFees, buyAmount: buyAmountBeforeCosts },
-      beforeNetworkCosts,
-      afterProtocolFees: beforeNetworkCosts,
-    }
+  const beforeNetworkCosts = {
+    ...amountsAndCosts.beforeNetworkCosts,
+    buyAmount: amountsAndCosts.beforeNetworkCosts.buyAmount + costs,
   }
+
+  return {
+    ...amountsAndCosts,
+    costs: {
+      ...amountsAndCosts.costs,
+      networkFee: {
+        // `sellAmount` buys `buyAmount + costs` before costs, which prices each cost atom at
+        // `sellAmount / (buyAmount + costs)` of the sell token.
+        amountInSellCurrency: (costs * sellAmount) / (buyAmount + costs),
+        amountInBuyCurrency: costs,
+      },
+    },
+    beforeAllFees: { ...amountsAndCosts.beforeAllFees, buyAmount: amountsAndCosts.beforeAllFees.buyAmount + costs },
+    beforeNetworkCosts,
+    afterProtocolFees: beforeNetworkCosts,
+  }
+}
+
+function addBuyOrderCosts(
+  amountsAndCosts: QuoteAmountsAndCosts,
+  costs: bigint,
+  orderParams: SolanaOrderParams,
+): QuoteAmountsAndCosts {
+  const sellAmount = BigInt(orderParams.sellAmount)
+  const buyAmount = BigInt(orderParams.buyAmount)
 
   const sellAmountBeforeCosts = sellAmount > costs ? sellAmount - costs : 0n
   const costsDelta = sellAmount - sellAmountBeforeCosts
@@ -90,6 +114,40 @@ export function getSolanaQuoteAmountsAndCosts(params: SolanaQuoteAmountsAndCosts
     },
     beforeNetworkCosts,
     afterProtocolFees: beforeNetworkCosts,
+  }
+}
+
+/**
+ * The generic breakdown takes the partner fee from `beforeAllFees` without the costs. Recomputes it,
+ * and everything after it, from `beforeAllFees` with the costs, as on EVM where the partner fee
+ * base includes network costs. With no partner fee this changes nothing.
+ */
+function applyPartnerFeeAndSlippage(
+  amountsAndCosts: QuoteAmountsAndCosts,
+  partnerFeeBps: number,
+  slippageBps: number,
+): QuoteAmountsAndCosts {
+  const { isSell, beforeAllFees, afterNetworkCosts } = amountsAndCosts
+
+  const { afterPartnerFees, partnerFeeAmount } = getQuoteAmountsAfterPartnerFee({
+    afterNetworkCosts,
+    beforeAllFees,
+    isSell,
+    partnerFeeBps,
+  })
+  const { afterSlippage } = getQuoteAmountsAfterSlippage({ afterPartnerFees, isSell, slippageBps })
+
+  return {
+    ...amountsAndCosts,
+    costs: {
+      ...amountsAndCosts.costs,
+      partnerFee: { amount: partnerFeeAmount, bps: partnerFeeBps },
+    },
+    afterPartnerFees,
+    afterSlippage,
+    amountsToSign: isSell
+      ? { sellAmount: beforeAllFees.sellAmount, buyAmount: afterSlippage.buyAmount }
+      : { sellAmount: afterSlippage.sellAmount, buyAmount: beforeAllFees.buyAmount },
   }
 }
 

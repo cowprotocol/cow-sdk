@@ -119,6 +119,43 @@ describe('getSolanaQuoteAmountsAndCosts', () => {
     })
   })
 
+  describe('partner fee', () => {
+    it('takes a sell order partner fee from the buy amount before costs', () => {
+      const response = quoteResponse({ costs: costs('11732551', '919115681') })
+      const result = getSolanaQuoteAmountsAndCosts({
+        quoteResponse: response,
+        slippagePercentBps: 50,
+        partnerFeeBps: 100,
+      })
+
+      // 10638356027 * 100 / 10000
+      expect(result.costs.partnerFee).toEqual({ amount: 106_383_560n, bps: 100 })
+      expect(result.afterPartnerFees).toEqual({ sellAmount: 1_000_000_000n, buyAmount: 9_601_124_235n })
+      // 9601124235 - 9601124235 * 50 / 10000
+      expect(result.afterSlippage).toEqual({ sellAmount: 1_000_000_000n, buyAmount: 9_553_118_614n })
+      expect(result.amountsToSign).toEqual({ sellAmount: 1_000_000_000n, buyAmount: 9_553_118_614n })
+    })
+
+    it('takes a buy order partner fee from the sell amount before costs', () => {
+      const response = quoteResponse({
+        kind: OrderKind.BUY,
+        costs: { ...costs('20000000', '30000000'), token: SELL_MINT },
+      })
+      const result = getSolanaQuoteAmountsAndCosts({
+        quoteResponse: response,
+        slippagePercentBps: 50,
+        partnerFeeBps: 100,
+      })
+
+      // 950000000 * 100 / 10000
+      expect(result.costs.partnerFee).toEqual({ amount: 9_500_000n, bps: 100 })
+      expect(result.afterPartnerFees).toEqual({ sellAmount: 1_009_500_000n, buyAmount: 9_707_507_795n })
+      // 1009500000 + 1009500000 * 50 / 10000
+      expect(result.afterSlippage).toEqual({ sellAmount: 1_014_547_500n, buyAmount: 9_707_507_795n })
+      expect(result.amountsToSign).toEqual({ sellAmount: 1_014_547_500n, buyAmount: 9_707_507_795n })
+    })
+  })
+
   it('matches the generic breakdown when the quote reports no costs', () => {
     const response = quoteResponse()
 
