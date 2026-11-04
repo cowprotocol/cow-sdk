@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.11.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.11.1...sdk-config-v2.11.2) (2026-11-04)
+
+
+### 🔧 Miscellaneous
+
+* rename private typescript-config package ([#1079](https://github.com/cowprotocol/cow-sdk/issues/1079)) ([862826d](https://github.com/cowprotocol/cow-sdk/commit/862826db7165f551f8dcc62c5fa7b7f240961f53))
+
 ## [2.11.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.11.0...sdk-config-v2.11.1) (2026-11-03)
 
 

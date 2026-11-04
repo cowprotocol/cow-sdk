@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.0.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v1.0.1...sdk-trading-solana-v1.0.2) (2026-11-04)
+
+
+### 🐛 Bug Fixes
+
+* **solana:** report quote costs in amountsAndCosts ([#1084](https://github.com/cowprotocol/cow-sdk/issues/1084)) ([a252c08](https://github.com/cowprotocol/cow-sdk/commit/a252c08716fd75f329d6f1f161cb2148db8b7fa1))
+
+
+### 🔧 Miscellaneous
+
+* rename private typescript-config package ([#1079](https://github.com/cowprotocol/cow-sdk/issues/1079)) ([862826d](https://github.com/cowprotocol/cow-sdk/commit/862826db7165f551f8dcc62c5fa7b7f240961f53))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 6.1.1
+    * @cowprotocol/sdk-common bumped to 0.14.8
+    * @cowprotocol/sdk-config bumped to 2.11.2
+    * @cowprotocol/sdk-order-book bumped to 4.6.1
+    * @cowprotocol/sdk-trading bumped to 2.8.1
+
 ## [1.0.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v1.0.0...sdk-trading-solana-v1.0.1) (2026-11-04)
 
 
