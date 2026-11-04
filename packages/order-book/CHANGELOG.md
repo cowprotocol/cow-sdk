@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.5.1...sdk-order-book-v4.6.0) (2026-11-04)
+
+
+### ✨ Features
+
+* add fast-path order support ([#1010](https://github.com/cowprotocol/cow-sdk/issues/1010)) ([cf6bfba](https://github.com/cowprotocol/cow-sdk/commit/cf6bfba60d4c427ccf4d95146f4862a831be5ea5))
+
 ## [4.5.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.5.0...sdk-order-book-v4.5.1) (2026-11-03)
 
 

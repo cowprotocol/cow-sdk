@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.8.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v2.7.11...sdk-trading-v2.8.0) (2026-11-04)
+
+
+### ✨ Features
+
+* add fast-path order support ([#1010](https://github.com/cowprotocol/cow-sdk/issues/1010)) ([cf6bfba](https://github.com/cowprotocol/cow-sdk/commit/cf6bfba60d4c427ccf4d95146f4862a831be5ea5))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 6.1.0
+    * @cowprotocol/sdk-order-book bumped to 4.6.0
+    * @cowprotocol/sdk-order-signing bumped to 1.1.24
+
 ## [2.7.11](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v2.7.10...sdk-trading-v2.7.11) (2026-11-03)
 
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v1.0.0...sdk-trading-solana-v1.0.1) (2026-11-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 6.1.0
+    * @cowprotocol/sdk-order-book bumped to 4.6.0
+    * @cowprotocol/sdk-trading bumped to 2.8.0
+
 ## [1.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v0.16.2...sdk-trading-solana-v1.0.0) (2026-11-03)
 
 
