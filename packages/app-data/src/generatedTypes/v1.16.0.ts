@@ -232,7 +232,7 @@ export type UserConsents = {
  */
 export type EnableFastPath = boolean;
 /**
- * Earliest time, as a UNIX timestamp in seconds, at which the order may enter an auction. Mutually exclusive with `enableFastPath`: a fast-path order ignores it, as the backend controls its window.
+ * Earliest time, as a UNIX timestamp in seconds, at which the order may enter an auction. Mutually exclusive with `enableFastPath`.
  */
 export type ValidFrom = number;
 

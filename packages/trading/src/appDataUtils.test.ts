@@ -119,6 +119,28 @@ describe('AppData utils', () => {
     }
   })
 
+  it('Should throw when the conflicting field is supplied via advancedParams.metadata', async () => {
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      // enableFastPath direct, validFrom via advancedParams
+      await expect(
+        buildAppData(
+          { slippageBps: 100, appCode: 'cowswap', orderClass: 'market', enableFastPath: true },
+          { metadata: { validFrom: 1893456000 } },
+        ),
+      ).rejects.toThrow('mutually exclusive')
+      // validFrom direct, enableFastPath via advancedParams
+      await expect(
+        buildAppData(
+          { slippageBps: 100, appCode: 'cowswap', orderClass: 'market', validFrom: 1893456000 },
+          { metadata: { enableFastPath: true } },
+        ),
+      ).rejects.toThrow('mutually exclusive')
+    }
+  })
+
   it('Should add advanced parameters to the doc', async () => {
     const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
     const results: any[] = []

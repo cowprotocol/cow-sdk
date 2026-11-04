@@ -94,15 +94,13 @@ export interface TradeOptionalParameters {
    * instead of waiting for the next auction. Falls back to the normal
    * auction cycle if it isn't settled in time.
    *
-   * Mutually exclusive with {@link validFrom}: a fast-path order's exclusivity
-   * window is controlled by the backend, so setting both throws.
+   * Mutually exclusive with {@link validFrom}: setting both throws.
    */
   enableFastPath?: boolean
   /**
    * Earliest time the order may enter an auction, as a UNIX timestamp
    * in seconds. Delays the order's solvability until then.
-   * Mutually exclusive with {@link enableFastPath}: a fast-path order ignores
-   * this field (its window is backend-controlled), so setting both throws.
+   * Mutually exclusive with {@link enableFastPath}: setting both throws.
    */
   validFrom?: number
 }
