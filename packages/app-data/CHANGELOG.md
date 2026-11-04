@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v6.0.13...sdk-app-data-v6.1.0) (2026-11-04)
+
+
+### ✨ Features
+
+* add fast-path order support ([#1010](https://github.com/cowprotocol/cow-sdk/issues/1010)) ([cf6bfba](https://github.com/cowprotocol/cow-sdk/commit/cf6bfba60d4c427ccf4d95146f4862a831be5ea5))
+
 ## [6.0.13](https://github.com/cowprotocol/cow-sdk/compare/sdk-app-data-v6.0.12...sdk-app-data-v6.0.13) (2026-11-03)
 
 
