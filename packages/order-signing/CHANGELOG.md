@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.1.25](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-signing-v1.1.24...sdk-order-signing-v1.1.25) (2026-11-04)
+
+
+### 🔧 Miscellaneous
+
+* rename private typescript-config package ([#1079](https://github.com/cowprotocol/cow-sdk/issues/1079)) ([862826d](https://github.com/cowprotocol/cow-sdk/commit/862826db7165f551f8dcc62c5fa7b7f240961f53))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.14.8
+    * @cowprotocol/sdk-config bumped to 2.11.2
+    * @cowprotocol/sdk-contracts-ts bumped to 4.0.1
+    * @cowprotocol/sdk-order-book bumped to 4.6.1
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.24
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.24
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.39
+
 ## [1.1.24](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-signing-v1.1.23...sdk-order-signing-v1.1.24) (2026-11-04)
 
 

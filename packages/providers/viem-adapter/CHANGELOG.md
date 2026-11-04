@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3.39](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.3.38...sdk-viem-adapter-v0.3.39) (2026-11-04)
+
+
+### 🔧 Miscellaneous
+
+* rename private typescript-config package ([#1079](https://github.com/cowprotocol/cow-sdk/issues/1079)) ([862826d](https://github.com/cowprotocol/cow-sdk/commit/862826db7165f551f8dcc62c5fa7b7f240961f53))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.14.8
+
 ## [0.3.38](https://github.com/cowprotocol/cow-sdk/compare/sdk-viem-adapter-v0.3.37...sdk-viem-adapter-v0.3.38) (2026-11-03)
 
 

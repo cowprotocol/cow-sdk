@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.3.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.3.1...sdk-subgraph-v1.3.2) (2026-11-04)
+
+
+### 🔧 Miscellaneous
+
+* rename private typescript-config package ([#1079](https://github.com/cowprotocol/cow-sdk/issues/1079)) ([862826d](https://github.com/cowprotocol/cow-sdk/commit/862826db7165f551f8dcc62c5fa7b7f240961f53))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.14.8
+    * @cowprotocol/sdk-config bumped to 2.11.2
+
 ## [1.3.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-subgraph-v1.3.0...sdk-subgraph-v1.3.1) (2026-11-03)
 
 
