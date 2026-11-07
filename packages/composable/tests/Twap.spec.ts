@@ -375,6 +375,54 @@ describe('TWAP Order - Multi-Adapter Tests', () => {
       })
     })
 
+    test('should invalidate a per-part sell amount that floors to zero across all adapters', () => {
+      // sellAmount/numberOfParts floors to 0 even though the aggregate sellAmount is non-zero.
+      // The on-chain TWAPOrder handler reverts on a zero partSellAmount, so this must be caught here.
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+      const results: any[] = []
+
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        const result = Twap.fromData({ ...TWAP_PARAMS_TEST, sellAmount: BigInt(90), numberOfParts: BigInt(100) }).isValid()
+        results.push(result)
+      }
+
+      // All results should be identical
+      const [firstResult, ...remainingResults] = results
+      remainingResults.forEach((result) => {
+        expect(result).toEqual(firstResult)
+      })
+
+      expect(firstResult).toEqual({
+        isValid: false,
+        reason: 'InvalidPartSellAmount',
+      })
+    })
+
+    test('should invalidate a per-part min limit that floors to zero across all adapters', () => {
+      // buyAmount/numberOfParts floors to 0 even though the aggregate buyAmount is non-zero.
+      // The on-chain TWAPOrder handler reverts on a zero minPartLimit, so this must be caught here.
+      const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+      const results: any[] = []
+
+      for (const adapterName of adapterNames) {
+        setGlobalAdapter(adapters[adapterName])
+        const result = Twap.fromData({ ...TWAP_PARAMS_TEST, buyAmount: BigInt(90), numberOfParts: BigInt(100) }).isValid()
+        results.push(result)
+      }
+
+      // All results should be identical
+      const [firstResult, ...remainingResults] = results
+      remainingResults.forEach((result) => {
+        expect(result).toEqual(firstResult)
+      })
+
+      expect(firstResult).toEqual({
+        isValid: false,
+        reason: 'InvalidMinPartLimit',
+      })
+    })
+
     test('should invalidate negative start time across all adapters', () => {
       const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
       const results: any[] = []
