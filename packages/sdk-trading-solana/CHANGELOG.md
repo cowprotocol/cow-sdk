@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v1.0.3...sdk-trading-solana-v1.1.0) (2026-11-09)
+
+
+### ✨ Features
+
+* **solana:** detect program-owned wallets ([#1089](https://github.com/cowprotocol/cow-sdk/issues/1089)) ([e695a34](https://github.com/cowprotocol/cow-sdk/commit/e695a349dbda7975618df9e824fce79b83c6ffdf))
+
 ## [1.0.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v1.0.2...sdk-trading-solana-v1.0.3) (2026-11-09)
 
 
