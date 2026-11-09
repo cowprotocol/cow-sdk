@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v1.0.2...sdk-trading-solana-v1.0.3) (2026-11-09)
+
+
+### 🐛 Bug Fixes
+
+* **solana:** export deriveAta so consumers can derive off-curve ATAs ([#1087](https://github.com/cowprotocol/cow-sdk/issues/1087)) ([81b198a](https://github.com/cowprotocol/cow-sdk/commit/81b198aeda941dee2106fe115ef7aab61d2a7fa7))
+
 ## [1.0.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v1.0.1...sdk-trading-solana-v1.0.2) (2026-11-04)
 
 
