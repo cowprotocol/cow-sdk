@@ -419,7 +419,10 @@ export class Twap extends ConditionalOrder<TwapData, TwapStruct> {
         error: undefined,
       }
     }
-    const expireTime = Number(numberOfParts * BigInt(timeBetweenParts) + BigInt(startTimestamp))
+    // NOTE: must match `endTimestamp()`'s formula, which shortens the last part's window when
+    // `durationOfPart` is `LIMIT_DURATION` (span). Re-deriving it here from `numberOfParts * timeBetweenParts`
+    // alone silently drops that adjustment and overstates how long a spanned TWAP is still active for.
+    const expireTime = this.endTimestamp(startTimestamp)
     if (blockTimestamp >= expireTime) {
       return {
         result: PollResultCode.UNEXPECTED_ERROR,
