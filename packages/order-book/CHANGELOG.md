@@ -1,5 +1,27 @@
 # Changelog
 
+## [4.6.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.6.0...sdk-order-book-v4.6.1) (2026-11-04)
+
+
+### 🔧 Miscellaneous
+
+* rename private typescript-config package ([#1079](https://github.com/cowprotocol/cow-sdk/issues/1079)) ([862826d](https://github.com/cowprotocol/cow-sdk/commit/862826db7165f551f8dcc62c5fa7b7f240961f53))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.11.2
+    * @cowprotocol/sdk-common bumped to 0.14.8
+
+## [4.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.5.1...sdk-order-book-v4.6.0) (2026-11-04)
+
+
+### ✨ Features
+
+* add fast-path order support ([#1010](https://github.com/cowprotocol/cow-sdk/issues/1010)) ([cf6bfba](https://github.com/cowprotocol/cow-sdk/commit/cf6bfba60d4c427ccf4d95146f4862a831be5ea5))
+
 ## [4.5.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.5.0...sdk-order-book-v4.5.1) (2026-11-03)
 
 

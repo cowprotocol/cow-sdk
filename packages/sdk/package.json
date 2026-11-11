@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/cow-sdk",
-  "version": "9.3.1",
+  "version": "9.3.3",
   "license": "(MIT OR Apache-2.0)",
   "description": "CoW Protocol SDK - get quote, configure your order, and trade",
   "repository": {
@@ -36,7 +36,7 @@
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
-    "@cow-sdk/typescript-config": "workspace:*",
+    "@cowprotocol/typescript-config": "workspace:*",
     "@types/node": "^20.17.31",
     "jest": "^29.7.0",
     "shx": "^0.3.4",

@@ -32,6 +32,115 @@ describe('AppData utils', () => {
     })
   })
 
+  it('Should add enableFastPath when set', async () => {
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+    const results: any[] = []
+
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      const data = await buildAppData({
+        slippageBps: 100,
+        appCode: 'cowswap',
+        orderClass: 'market',
+        enableFastPath: true,
+      })
+      results.push(data)
+    }
+
+    results.forEach((data) => {
+      expect(JSON.parse(data.fullAppData).metadata.enableFastPath).toBe(true)
+    })
+  })
+
+  it('Should omit enableFastPath when not set', async () => {
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+    const results: any[] = []
+
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      const data = await buildAppData({ slippageBps: 100, appCode: 'cowswap', orderClass: 'market' })
+      results.push(data)
+    }
+
+    results.forEach((data) => {
+      expect(JSON.parse(data.fullAppData).metadata.enableFastPath).toBeUndefined()
+    })
+  })
+
+  it('Should add validFrom when set', async () => {
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+    const results: any[] = []
+
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      const data = await buildAppData({
+        slippageBps: 100,
+        appCode: 'cowswap',
+        orderClass: 'market',
+        validFrom: 1893456000,
+      })
+      results.push(data)
+    }
+
+    results.forEach((data) => {
+      expect(JSON.parse(data.fullAppData).metadata.validFrom).toBe(1893456000)
+    })
+  })
+
+  it('Should omit validFrom when not set', async () => {
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+    const results: any[] = []
+
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      const data = await buildAppData({ slippageBps: 100, appCode: 'cowswap', orderClass: 'market' })
+      results.push(data)
+    }
+
+    results.forEach((data) => {
+      expect(JSON.parse(data.fullAppData).metadata.validFrom).toBeUndefined()
+    })
+  })
+
+  it('Should throw when both enableFastPath and validFrom are set', async () => {
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      await expect(
+        buildAppData({
+          slippageBps: 100,
+          appCode: 'cowswap',
+          orderClass: 'market',
+          enableFastPath: true,
+          validFrom: 1893456000,
+        }),
+      ).rejects.toThrow('mutually exclusive')
+    }
+  })
+
+  it('Should throw when the conflicting field is supplied via advancedParams.metadata', async () => {
+    const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
+
+    for (const adapterName of adapterNames) {
+      setGlobalAdapter(adapters[adapterName])
+      // enableFastPath direct, validFrom via advancedParams
+      await expect(
+        buildAppData(
+          { slippageBps: 100, appCode: 'cowswap', orderClass: 'market', enableFastPath: true },
+          { metadata: { validFrom: 1893456000 } },
+        ),
+      ).rejects.toThrow('mutually exclusive')
+      // validFrom direct, enableFastPath via advancedParams
+      await expect(
+        buildAppData(
+          { slippageBps: 100, appCode: 'cowswap', orderClass: 'market', validFrom: 1893456000 },
+          { metadata: { enableFastPath: true } },
+        ),
+      ).rejects.toThrow('mutually exclusive')
+    }
+  })
+
   it('Should add advanced parameters to the doc', async () => {
     const adapterNames = Object.keys(adapters) as Array<keyof typeof adapters>
     const results: any[] = []

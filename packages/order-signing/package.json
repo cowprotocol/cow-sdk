@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-order-signing",
-  "version": "1.1.23",
+  "version": "1.1.25",
   "description": "TypeScript order signing for CoW Protocol SDK",
   "repository": {
     "type": "git",
@@ -40,7 +40,7 @@
   "devDependencies": {
     "@cowprotocol/sdk-ethers-v5-adapter": "workspace:*",
     "@cowprotocol/sdk-ethers-v6-adapter": "workspace:*",
-    "@cow-sdk/typescript-config": "workspace:*",
+    "@cowprotocol/typescript-config": "workspace:*",
     "@cowprotocol/sdk-viem-adapter": "workspace:*",
     "@types/jest": "^29.5.5",
     "@types/node": "^20.17.31",

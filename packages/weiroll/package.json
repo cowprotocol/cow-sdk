@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-weiroll",
-  "version": "0.2.14",
+  "version": "0.2.15",
   "description": "CowProtocol Weiroll package",
   "repository": {
     "type": "git",
@@ -33,7 +33,7 @@
     "@cowprotocol/sdk-config": "workspace:*"
   },
   "devDependencies": {
-    "@cow-sdk/typescript-config": "workspace:*",
+    "@cowprotocol/typescript-config": "workspace:*",
     "@cowprotocol/sdk-ethers-v5-adapter": "workspace:*",
     "@cowprotocol/sdk-ethers-v6-adapter": "workspace:*",
     "@cowprotocol/sdk-viem-adapter": "workspace:*",

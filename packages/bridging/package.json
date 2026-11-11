@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-bridging",
-  "version": "4.5.1",
+  "version": "4.5.3",
   "description": "Bridging for CoW Protocol",
   "repository": {
     "type": "git",
@@ -45,7 +45,7 @@
     "json-stable-stringify": "^1.3.0"
   },
   "devDependencies": {
-    "@cow-sdk/typescript-config": "workspace:*",
+    "@cowprotocol/typescript-config": "workspace:*",
     "@cowprotocol/sdk-ethers-v5-adapter": "workspace:*",
     "@cowprotocol/sdk-ethers-v6-adapter": "workspace:*",
     "@cowprotocol/sdk-order-signing": "workspace:*",

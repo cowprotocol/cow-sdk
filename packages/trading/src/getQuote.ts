@@ -110,6 +110,8 @@ export async function getQuoteRaw(
     orderClass: 'market',
     appCode,
     partnerFee,
+    enableFastPath: tradeParameters.enableFastPath,
+    validFrom: tradeParameters.validFrom,
   }
   const appDataInfo = await buildAppData(buildAppDataParams, advancedSettings?.appData)
 

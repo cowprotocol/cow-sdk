@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-trading-solana",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "CowProtocol Solana trading: Jupiter-sourced quotes and on-chain CreateOrder posting against the Solana settlement program",
   "repository": {
     "type": "git",
@@ -39,7 +39,7 @@
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
-    "@cow-sdk/typescript-config": "workspace:*",
+    "@cowprotocol/typescript-config": "workspace:*",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.17.31",
     "tsup": "^7.2.0",

@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-common",
-  "version": "0.14.7",
+  "version": "0.14.8",
   "description": "Common utilities and types for CoW Protocol SDK",
   "repository": {
     "type": "git",
@@ -32,7 +32,7 @@
     "@cowprotocol/sdk-config": "workspace:*"
   },
   "devDependencies": {
-    "@cow-sdk/typescript-config": "workspace:*",
+    "@cowprotocol/typescript-config": "workspace:*",
     "@types/node": "^20.17.31",
     "@types/jest": "^29.4.0",
     "tsup": "^7.2.0",

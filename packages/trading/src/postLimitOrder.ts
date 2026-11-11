@@ -30,6 +30,7 @@ export async function postLimitOrder(
       orderClass: 'limit',
       appCode,
       partnerFee,
+      validFrom: params.validFrom,
     },
     advancedSettings?.appData,
   )

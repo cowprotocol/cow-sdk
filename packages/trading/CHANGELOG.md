@@ -1,5 +1,45 @@
 # Changelog
 
+## [2.8.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v2.8.0...sdk-trading-v2.8.1) (2026-11-04)
+
+
+### 🔧 Miscellaneous
+
+* rename private typescript-config package ([#1079](https://github.com/cowprotocol/cow-sdk/issues/1079)) ([862826d](https://github.com/cowprotocol/cow-sdk/commit/862826db7165f551f8dcc62c5fa7b7f240961f53))
+* update coverage badges ([#1083](https://github.com/cowprotocol/cow-sdk/issues/1083)) ([84b5616](https://github.com/cowprotocol/cow-sdk/commit/84b5616624f64e630e9e10f19c3afdba51b67768))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-common bumped to 0.14.8
+    * @cowprotocol/sdk-config bumped to 2.11.2
+    * @cowprotocol/sdk-app-data bumped to 6.1.1
+    * @cowprotocol/sdk-order-book bumped to 4.6.1
+    * @cowprotocol/sdk-order-signing bumped to 1.1.25
+    * @cowprotocol/sdk-contracts-ts bumped to 4.0.1
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.24
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.24
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.39
+
+## [2.8.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v2.7.11...sdk-trading-v2.8.0) (2026-11-04)
+
+
+### ✨ Features
+
+* add fast-path order support ([#1010](https://github.com/cowprotocol/cow-sdk/issues/1010)) ([cf6bfba](https://github.com/cowprotocol/cow-sdk/commit/cf6bfba60d4c427ccf4d95146f4862a831be5ea5))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-app-data bumped to 6.1.0
+    * @cowprotocol/sdk-order-book bumped to 4.6.0
+    * @cowprotocol/sdk-order-signing bumped to 1.1.24
+
 ## [2.7.11](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-v2.7.10...sdk-trading-v2.7.11) (2026-11-03)
 
 

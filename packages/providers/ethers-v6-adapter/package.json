@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-ethers-v6-adapter",
-  "version": "0.4.23",
+  "version": "0.4.24",
   "description": "Ethers v6 adapter for CoW Protocol SDK",
   "repository": {
     "type": "git",
@@ -32,7 +32,7 @@
     "ethers": "^6.13.7"
   },
   "devDependencies": {
-    "@cow-sdk/typescript-config": "workspace:*",
+    "@cowprotocol/typescript-config": "workspace:*",
     "@types/node": "^20.5.2",
     "tsup": "^7.2.0",
     "typescript": "^5.2.2"

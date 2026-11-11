@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-app-data",
-  "version": "6.0.13",
+  "version": "6.1.1",
   "description": "CoW Protocol AppData schema definitions",
   "repository": {
     "type": "git",
@@ -44,7 +44,7 @@
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
-    "@cow-sdk/typescript-config": "workspace:*",
+    "@cowprotocol/typescript-config": "workspace:*",
     "@cowprotocol/sdk-config": "workspace:*",
     "@cowprotocol/sdk-ethers-v5-adapter": "workspace:*",
     "@cowprotocol/sdk-ethers-v6-adapter": "workspace:*",

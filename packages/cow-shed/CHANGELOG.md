@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.6.8](https://github.com/cowprotocol/cow-sdk/compare/sdk-cow-shed-v0.6.7...sdk-cow-shed-v0.6.8) (2026-11-04)
+
+
+### 🔧 Miscellaneous
+
+* rename private typescript-config package ([#1079](https://github.com/cowprotocol/cow-sdk/issues/1079)) ([862826d](https://github.com/cowprotocol/cow-sdk/commit/862826db7165f551f8dcc62c5fa7b7f240961f53))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-config bumped to 2.11.2
+    * @cowprotocol/sdk-common bumped to 0.14.8
+    * @cowprotocol/sdk-contracts-ts bumped to 4.0.1
+  * devDependencies
+    * @cowprotocol/sdk-ethers-v5-adapter bumped to 0.4.24
+    * @cowprotocol/sdk-ethers-v6-adapter bumped to 0.4.24
+    * @cowprotocol/sdk-viem-adapter bumped to 0.3.39
+
 ## [0.6.7](https://github.com/cowprotocol/cow-sdk/compare/sdk-cow-shed-v0.6.6...sdk-cow-shed-v0.6.7) (2026-11-03)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@cowprotocol/sdk-order-book",
-  "version": "4.5.1",
+  "version": "4.6.1",
   "description": "CowProtocol Order Book package",
   "repository": {
     "type": "git",
@@ -26,13 +26,13 @@
     "test:coverage": "jest --coverage",
     "coverage:badges": "istanbul-badges-readme --exitCode=1",
     "test:coverage:html": "jest --silent=false --coverage --coverageReporters html",
-    "swagger:codegen": "openapi --input https://raw.githubusercontent.com/cowprotocol/services/5341875c9498b2026d1b6f67c840b086e4696dcd/crates/orderbook/openapi.yml --output src/generated --exportServices false --exportCore false",
+    "swagger:codegen": "openapi --input https://raw.githubusercontent.com/cowprotocol/services/74919903e905cc3aa003a07c4fa84715c8479568/crates/orderbook/openapi.yml --output src/generated --exportServices false --exportCore false",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
-    "@cow-sdk/typescript-config": "workspace:*",
+    "@cowprotocol/typescript-config": "workspace:*",
     "@types/jest": "^29.4.0",
     "@types/node": "^20.17.31",
     "@types/semver-sort": "^0.0.1",
