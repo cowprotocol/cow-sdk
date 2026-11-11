@@ -224,6 +224,30 @@ describe('SolanaTradingSdk', () => {
     expect(uid).toBe('0xdeadbeef')
   })
 
+  it('postSponsoredOrder names the receiver the payout account belongs to', async () => {
+    mockPostSolanaSponsoredOrder.mockResolvedValue('0xdeadbeef')
+    const sdk = new SolanaTradingSdk()
+
+    const { postSponsoredOrder } = await sdk.getQuote(params)
+    await postSponsoredOrder('AQABAgMEBQY=', receiver)
+
+    expect(mockPostSolanaSponsoredOrder).toHaveBeenCalledWith(
+      expect.objectContaining({ receiver: receiver.toBase58() }),
+      expect.anything(),
+    )
+  })
+
+  // Posting an explicit null/undefined receiver would read as "the owner does not receive this".
+  it('postSponsoredOrder leaves the receiver out when none is given', async () => {
+    mockPostSolanaSponsoredOrder.mockResolvedValue('0xdeadbeef')
+    const sdk = new SolanaTradingSdk()
+
+    const { postSponsoredOrder } = await sdk.getQuote(params)
+    await postSponsoredOrder('AQABAgMEBQY=')
+
+    expect(mockPostSolanaSponsoredOrder.mock.calls[0]?.[0]).not.toHaveProperty('receiver')
+  })
+
   // The endpoint answers `id: null` when it could not store the quote; posting that null back would be
   // a claim about a quote that does not exist.
   it('postSponsoredOrder omits the quoteId when the quote was not stored', async () => {

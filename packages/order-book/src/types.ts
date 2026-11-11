@@ -53,6 +53,13 @@ export interface SolanaQuoteResponse extends OrderQuoteResponse {
 export interface SolanaOrderCreation {
   /** The owner-signed, funder-unsigned creation transaction, base64. */
   partiallySignedTx: string
+  /**
+   * The wallet the intent's `buyTokenAccount` belongs to, base58, when that is not the owner: the
+   * wallet the account is the associated token account of, or the wallet itself for a native SOL buy.
+   * Naming it lets the settlement create a missing account there, as it does for the owner's own.
+   * Any other wallet is refused with `InvalidBuyTokenAccount`, so it cannot redirect the payout.
+   */
+  receiver?: string
   /** The id the quote endpoint answered for this order. Kept only when the quote matches the order. */
   quoteId?: number
 }
