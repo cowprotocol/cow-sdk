@@ -245,6 +245,7 @@ describe('SolanaTradingSdk', () => {
     const { postSponsoredOrder } = await sdk.getQuote(params)
     await postSponsoredOrder('AQABAgMEBQY=')
 
+    expect(mockPostSolanaSponsoredOrder).toHaveBeenCalledTimes(1)
     expect(mockPostSolanaSponsoredOrder.mock.calls[0]?.[0]).not.toHaveProperty('receiver')
   })
 
