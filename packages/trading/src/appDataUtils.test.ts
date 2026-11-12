@@ -1,4 +1,4 @@
-import { buildAppData, generateAppDataFromDoc, getDefaultUtmParams } from './appDataUtils'
+import { buildAppData, generateAppDataFromDoc, getDefaultUtmParams, mergeAppDataDoc } from './appDataUtils'
 import { createAdapters } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
 import sdkPackageJson from '../../sdk/package.json'
@@ -304,6 +304,26 @@ describe('AppData utils', () => {
       expect(defaultUtm.utmCampaign).toBe('developer-cohort')
       expect(defaultUtm.utmContent).toBe('')
       expect(defaultUtm.utmTerm).toBe('js')
+    })
+  })
+
+  describe('mergeAppDataDoc', () => {
+    it('Should replace arrays from the override instead of appending them to the doc arrays', async () => {
+      const partnerFee = [{ volumeBps: 50, recipient: '0x79063d9173C09887d536924E2F6eADbaBAc099f5' }]
+      const wrappers = [{ address: '0x0000000000000000000000000000000000000001', data: '0x' }]
+      const override = { metadata: { partnerFee, wrappers } }
+
+      for (const adapterName of Object.keys(adapters) as Array<keyof typeof adapters>) {
+        setGlobalAdapter(adapters[adapterName])
+        // The quote's doc already carries the override, as it does when one advancedSettings is used for both steps
+        const { doc } = await buildAppData({ slippageBps: 100, appCode: 'cowswap', orderClass: 'market' }, override)
+
+        const merged = await mergeAppDataDoc(doc, override)
+
+        expect(merged.doc.metadata.partnerFee).toEqual(partnerFee)
+        expect(merged.doc.metadata.wrappers).toEqual(wrappers)
+        expect(merged.appDataKeccak256).toBe((await generateAppDataFromDoc(doc)).appDataKeccak256)
+      }
     })
   })
 })
