@@ -65,8 +65,10 @@ export interface SolanaQuoteAndPost {
     signingStepManager?: SigningStepManager,
   ): Promise<SolanaOrderPostingResult>
   /** Hand the signed sponsored bundle to the order book, which pays for it and submits it. `quoteId`
-   * comes from this quote, so the order book can tie the order back to what was quoted. */
-  postSponsoredOrder(partiallySignedTx: string): Promise<UID>
+   * comes from this quote, so the order book can tie the order back to what was quoted. Pass
+   * `receiver` when the order pays out to another wallet, so the settlement creates its missing
+   * associated token account the way it creates the owner's — see `SolanaOrderCreation.receiver`. */
+  postSponsoredOrder(partiallySignedTx: string, receiver?: PublicKeyInitData): Promise<UID>
 }
 
 /**
@@ -146,11 +148,15 @@ export class SolanaTradingSdk {
         advancedSettings?: SwapAdvancedSettings,
         signingStepManager?: SigningStepManager,
       ) => postSolanaSwapOrderFromQuote(quote, signAndSend, advancedSettings, signingStepManager),
-      postSponsoredOrder: (partiallySignedTx: string) =>
+      postSponsoredOrder: (partiallySignedTx: string, receiver?: PublicKeyInitData) =>
         postSolanaSponsoredOrder(
-          // The endpoint reports `id: null` when it fails to store a quote, which the generated type
-          // does not admit — normalize it away rather than posting an explicit null.
-          { partiallySignedTx, quoteId: quote.quoteResults.quoteResponse.id ?? undefined },
+          {
+            partiallySignedTx,
+            ...(receiver && { receiver: new PublicKey(receiver).toBase58() }),
+            // The endpoint reports `id: null` when it fails to store a quote, which the generated type
+            // does not admit — normalize it away rather than posting an explicit null.
+            quoteId: quote.quoteResults.quoteResponse.id ?? undefined,
+          },
           { env: this.options.env, orderBookApi: this.options.orderBookApi },
         ),
     }
