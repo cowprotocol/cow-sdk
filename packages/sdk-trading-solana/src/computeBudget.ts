@@ -125,15 +125,15 @@ async function simulateUnitLimit(
   instructions: TransactionInstruction[],
   feePayer: PublicKey,
 ): Promise<number> {
-  // Without a limit of its own the simulation is capped at the runtime default and reports that cap
-  // rather than what the bundle costs, and the blockhash the node substitutes needs a placeholder.
-  const message = new TransactionMessage({
-    payerKey: feePayer,
-    recentBlockhash: PublicKey.default.toBase58(),
-    instructions: [ComputeBudgetProgram.setComputeUnitLimit({ units: MAX_COMPUTE_UNIT_LIMIT }), ...instructions],
-  }).compileToV0Message()
-
   try {
+    // Without a limit of its own the simulation is capped at the runtime default and reports that cap
+    // rather than what the bundle costs, and the blockhash the node substitutes needs a placeholder.
+    const message = new TransactionMessage({
+      payerKey: feePayer,
+      recentBlockhash: PublicKey.default.toBase58(),
+      instructions: [ComputeBudgetProgram.setComputeUnitLimit({ units: MAX_COMPUTE_UNIT_LIMIT }), ...instructions],
+    }).compileToV0Message()
+
     const { value } = await connection.simulateTransaction(new VersionedTransaction(message), {
       sigVerify: false,
       replaceRecentBlockhash: true,
