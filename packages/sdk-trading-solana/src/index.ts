@@ -12,7 +12,7 @@ export { buildCancelOrderInstruction } from './cancelOrderInstruction'
 export type { CancelOrderInstructionParams } from './cancelOrderInstruction'
 export {
   buildComputeBudgetInstructions,
-  DEFAULT_COMPUTE_UNIT_LIMIT,
+  COMPUTE_UNIT_LIMIT_PER_INSTRUCTION,
   DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS,
   DEFAULT_MAX_PRIORITY_FEE_LAMPORTS,
   getPriorityFeeLamports,

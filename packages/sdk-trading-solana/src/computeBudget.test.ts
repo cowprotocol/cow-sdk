@@ -1,7 +1,7 @@
 import { ComputeBudgetProgram, Connection, Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import {
   buildComputeBudgetInstructions,
-  DEFAULT_COMPUTE_UNIT_LIMIT,
+  COMPUTE_UNIT_LIMIT_PER_INSTRUCTION,
   DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS,
   getPriorityFeeLamports,
   resolveSolanaComputeBudget,
@@ -149,7 +149,7 @@ describe('resolveSolanaComputeBudget', () => {
     const budget = await resolveSolanaComputeBudget(connection, { instructions: INSTRUCTIONS, feePayer: FEE_PAYER })
 
     expect(budget).toEqual({
-      unitLimit: DEFAULT_COMPUTE_UNIT_LIMIT,
+      unitLimit: COMPUTE_UNIT_LIMIT_PER_INSTRUCTION,
       unitPriceMicroLamports: DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS,
     })
   })
@@ -162,7 +162,7 @@ describe('resolveSolanaComputeBudget', () => {
       feePayer: FEE_PAYER,
     })
 
-    expect(unitLimit).toBe(3 * DEFAULT_COMPUTE_UNIT_LIMIT)
+    expect(unitLimit).toBe(3 * COMPUTE_UNIT_LIMIT_PER_INSTRUCTION)
   })
 
   it('falls back to the defaults rather than throwing when the RPC is unreachable', async () => {
@@ -174,7 +174,7 @@ describe('resolveSolanaComputeBudget', () => {
     const budget = await resolveSolanaComputeBudget(connection, { instructions: INSTRUCTIONS, feePayer: FEE_PAYER })
 
     expect(budget).toEqual({
-      unitLimit: DEFAULT_COMPUTE_UNIT_LIMIT,
+      unitLimit: COMPUTE_UNIT_LIMIT_PER_INSTRUCTION,
       unitPriceMicroLamports: DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS,
     })
   })
@@ -193,7 +193,7 @@ describe('resolveSolanaComputeBudget', () => {
     })
 
     expect(budget).toEqual({
-      unitLimit: DEFAULT_COMPUTE_UNIT_LIMIT,
+      unitLimit: COMPUTE_UNIT_LIMIT_PER_INSTRUCTION,
       unitPriceMicroLamports: DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS,
     })
   })
@@ -209,6 +209,6 @@ describe('resolveSolanaComputeBudget', () => {
       feePayer: new PublicKey(FEE_PAYER),
     })
 
-    expect(unitLimit).toBe(DEFAULT_COMPUTE_UNIT_LIMIT)
+    expect(unitLimit).toBe(COMPUTE_UNIT_LIMIT_PER_INSTRUCTION)
   })
 })

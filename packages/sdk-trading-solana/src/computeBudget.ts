@@ -17,7 +17,7 @@ export const SPONSORED_PRIORITY_FEE_CEILING_LAMPORTS = 100_000
 export const DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS = 10_000
 
 /** Compute units Solana's runtime grants per instruction to a transaction that sets no limit of its own. */
-export const DEFAULT_COMPUTE_UNIT_LIMIT = 200_000
+export const COMPUTE_UNIT_LIMIT_PER_INSTRUCTION = 200_000
 
 /** Lamports a resolved budget keeps its priority fee under, a fifth of the order book's own ceiling. */
 export const DEFAULT_MAX_PRIORITY_FEE_LAMPORTS = 20_000
@@ -147,10 +147,10 @@ async function simulateUnitLimit(
   }
 }
 
-// Without a `SetComputeUnitLimit` the runtime grants DEFAULT_COMPUTE_UNIT_LIMIT per instruction, so a flat
-// 200,000 would budget a multi-instruction bundle below what it would have been given for free.
+// Matches what the runtime grants a transaction that sets no limit at all, so an unsimulated bundle is
+// never budgeted below what it would have been given for free.
 function fallbackUnitLimit(instructions: TransactionInstruction[]): number {
-  return Math.min(DEFAULT_COMPUTE_UNIT_LIMIT * Math.max(1, instructions.length), MAX_COMPUTE_UNIT_LIMIT)
+  return Math.min(COMPUTE_UNIT_LIMIT_PER_INSTRUCTION * Math.max(1, instructions.length), MAX_COMPUTE_UNIT_LIMIT)
 }
 
 async function fetchUnitPrice(

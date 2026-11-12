@@ -237,7 +237,7 @@ window the user spends approving. Pass `unitPriceMicroLamports` to skip the rece
 price the units yourself, and use `getPriorityFeeLamports(budget)` to show or check what the budget
 will cost. If the RPC fails or takes longer than `rpcTimeoutMs` (3,000 by default), the resolved budget
 falls back to `DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS` and to the limit the runtime would have granted
-the bundle on its own — `DEFAULT_COMPUTE_UNIT_LIMIT` per instruction — rather than throwing or hanging
+the bundle on its own — `COMPUTE_UNIT_LIMIT_PER_INSTRUCTION` per instruction — rather than throwing or hanging
 ahead of the wallet prompt.
 
 An owner-paid order spends the signer's own SOL, so a wallet's own estimate is nobody else's problem
