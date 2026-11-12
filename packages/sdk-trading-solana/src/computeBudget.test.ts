@@ -8,6 +8,10 @@ import {
   SPONSORED_PRIORITY_FEE_CEILING_LAMPORTS,
 } from './computeBudget'
 
+// `WALLET_GUARD_UNITS` in the module under test: the allowance for the guard instructions wallets
+// append, which a pinned limit has to cover on the fallback path as well as the simulated one.
+const GUARD_UNITS = 50_000
+
 const FEE_PAYER = Keypair.generate().publicKey
 const WRITABLE = Keypair.generate().publicKey
 const READONLY = Keypair.generate().publicKey
@@ -149,12 +153,12 @@ describe('resolveSolanaComputeBudget', () => {
     const budget = await resolveSolanaComputeBudget(connection, { instructions: INSTRUCTIONS, feePayer: FEE_PAYER })
 
     expect(budget).toEqual({
-      unitLimit: COMPUTE_UNIT_LIMIT_PER_INSTRUCTION,
+      unitLimit: COMPUTE_UNIT_LIMIT_PER_INSTRUCTION + GUARD_UNITS,
       unitPriceMicroLamports: DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS,
     })
   })
 
-  it('scales the fallback limit by the bundle, which is what the runtime would have granted anyway', async () => {
+  it('scales the fallback limit by the bundle, above what the runtime would have granted anyway', async () => {
     const { connection } = mockConnection(null, [0])
 
     const { unitLimit } = await resolveSolanaComputeBudget(connection, {
@@ -162,7 +166,7 @@ describe('resolveSolanaComputeBudget', () => {
       feePayer: FEE_PAYER,
     })
 
-    expect(unitLimit).toBe(3 * COMPUTE_UNIT_LIMIT_PER_INSTRUCTION)
+    expect(unitLimit).toBe(3 * COMPUTE_UNIT_LIMIT_PER_INSTRUCTION + GUARD_UNITS)
   })
 
   it('falls back to the defaults rather than throwing when the RPC is unreachable', async () => {
@@ -174,7 +178,7 @@ describe('resolveSolanaComputeBudget', () => {
     const budget = await resolveSolanaComputeBudget(connection, { instructions: INSTRUCTIONS, feePayer: FEE_PAYER })
 
     expect(budget).toEqual({
-      unitLimit: COMPUTE_UNIT_LIMIT_PER_INSTRUCTION,
+      unitLimit: COMPUTE_UNIT_LIMIT_PER_INSTRUCTION + GUARD_UNITS,
       unitPriceMicroLamports: DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS,
     })
   })
@@ -193,7 +197,7 @@ describe('resolveSolanaComputeBudget', () => {
     })
 
     expect(budget).toEqual({
-      unitLimit: COMPUTE_UNIT_LIMIT_PER_INSTRUCTION,
+      unitLimit: COMPUTE_UNIT_LIMIT_PER_INSTRUCTION + GUARD_UNITS,
       unitPriceMicroLamports: DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS,
     })
   })
@@ -209,6 +213,6 @@ describe('resolveSolanaComputeBudget', () => {
       feePayer: new PublicKey(FEE_PAYER),
     })
 
-    expect(unitLimit).toBe(COMPUTE_UNIT_LIMIT_PER_INSTRUCTION)
+    expect(unitLimit).toBe(COMPUTE_UNIT_LIMIT_PER_INSTRUCTION + GUARD_UNITS)
   })
 })

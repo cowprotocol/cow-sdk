@@ -219,12 +219,21 @@ import {
   resolveSolanaComputeBudget,
 } from '@cowprotocol/sdk-trading-solana'
 
-const { instruction, feePayer } = await buildOrder()
+const { solanaQuote, buildOrder, postSponsoredOrder } = await sdk.getQuote(params)
+
+// Absent when the deployment does not sponsor; without it `buildOrder` makes an owner-paid order.
+if (!solanaQuote.funder) throw new Error('this deployment has no sponsoring')
+
+const { instruction, feePayer } = await buildOrder(undefined, { sponsor: solanaQuote.funder })
 const instructions = [approveInstruction, instruction]
 
 const budget = await resolveSolanaComputeBudget(connection, { instructions, feePayer })
 
-await sendMyTransaction([...buildComputeBudgetInstructions(budget), ...instructions])
+// A sponsored bundle is signed but never broadcast here: the order book countersigns as fee payer
+// and submits it.
+const partiallySignedTx = await signMyTransaction([...buildComputeBudgetInstructions(budget), ...instructions])
+
+await postSponsoredOrder(partiallySignedTx)
 ```
 
 Set **both** instructions, which is what `buildComputeBudgetInstructions` returns: wallets that honour

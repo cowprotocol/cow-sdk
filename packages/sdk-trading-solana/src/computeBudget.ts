@@ -147,10 +147,14 @@ async function simulateUnitLimit(
   }
 }
 
-// Matches what the runtime grants a transaction that sets no limit at all, so an unsimulated bundle is
-// never budgeted below what it would have been given for free.
+// What the runtime would grant a transaction that sets no limit at all, so an unsimulated bundle is
+// never budgeted below what it would have been given for free — plus the same guard allowance the
+// simulated path adds, since pinning a limit stops the wallet's appended guards from raising it.
 function fallbackUnitLimit(instructions: TransactionInstruction[]): number {
-  return Math.min(COMPUTE_UNIT_LIMIT_PER_INSTRUCTION * Math.max(1, instructions.length), MAX_COMPUTE_UNIT_LIMIT)
+  return Math.min(
+    COMPUTE_UNIT_LIMIT_PER_INSTRUCTION * Math.max(1, instructions.length) + WALLET_GUARD_UNITS,
+    MAX_COMPUTE_UNIT_LIMIT,
+  )
 }
 
 async function fetchUnitPrice(
