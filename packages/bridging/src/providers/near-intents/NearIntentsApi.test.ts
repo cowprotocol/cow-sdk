@@ -111,6 +111,39 @@ describe('NearIntentsApi', () => {
       expect(tokens.map((t) => t.assetId)).toEqual(['1cs_v1:btc:native:coin'])
     })
 
+    // Regression: EVM Omni HOT→nep141 migration (2026-11-09) deprecated BNB /
+    // Polygon / Avalanche HOT nep245 IDs, but /v0/tokens still returns them
+    // alongside Omni nep141:….omdep.near replacements. They share
+    // (blockchain, contractAddress), so without filtering `tokens.find()`
+    // picks the deprecated entry first and attestation/quotes break.
+    // https://docs.near-intents.org/changelog/entries/2026-11-09-evm-omni-token-ids
+    it('filters out deprecated BNB HOT nep245 while keeping Omni nep141 replacement', async () => {
+      const upstream: TokenResponse[] = [
+        {
+          assetId: 'nep245:v2_1.omni.hot.tg:56_11111111111111111111',
+          decimals: 18,
+          blockchain: TokenResponse.blockchain.BSC,
+          symbol: 'BNB(DEPRECATED)',
+          price: 600,
+          priceUpdatedAt: '2026-11-09T00:00:00.000Z',
+        },
+        {
+          assetId: 'nep141:bnb.omdep.near',
+          decimals: 18,
+          blockchain: TokenResponse.blockchain.BSC,
+          symbol: 'BNB',
+          price: 600,
+          priceUpdatedAt: '2026-11-09T00:00:00.000Z',
+        },
+      ]
+      jest.spyOn(OneClickService, 'getTokens').mockResolvedValue(upstream as any)
+
+      const api = new NearIntentsApi()
+      const tokens = await api.getTokens()
+
+      expect(tokens.map((t) => t.assetId)).toEqual(['nep141:bnb.omdep.near'])
+    })
+
     it('keeps non-deprecated tokens unchanged', async () => {
       const upstream: TokenResponse[] = [
         {

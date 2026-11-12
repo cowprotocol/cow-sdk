@@ -23,16 +23,37 @@ interface GetAttestationResponse {
 
 export class NearIntentsApi {
   // Upstream /v0/tokens still lists deprecated assets the attestation service
-  // no longer signs. They share `blockchain: 'btc'` with the live token and
-  // both resolve to BTC_CURRENCY_ADDRESS, so without this filter `tokens.find()`
-  // picks the deprecated entry (it appears first) and /v0/attestation fails
-  // with "Invalid quote hash".
+  // no longer signs. They share `(blockchain, contractAddress)` with the live
+  // Omni replacements, so without this filter `tokens.find()` picks the
+  // deprecated entry (it appears first) and /v0/attestation fails with
+  // "Invalid quote hash".
+  // EVM Omni HOT→nep141 migration:
+  // https://docs.near-intents.org/changelog/entries/2026-11-09-evm-omni-token-ids
   private static readonly DEPRECATED_ASSET_IDS: ReadonlySet<string> = new Set([
     // POA BTC bridge, replaced by `1cs_v1:btc:native:coin` (Omni migration).
+    // Still returned as symbol `BTC` (no `(DEPRECATED)` marker).
     // https://partners.near-intents.org/omni-migration
     'nep141:btc.omft.near',
+    // Plasma HOT (USDT0 / XPL)
     'nep245:v2_1.omni.hot.tg:9745_3aL9skCy1yhPoDB8oKMmRHRN7SJW',
     'nep245:v2_1.omni.hot.tg:9745_11111111111111111111',
+    // BNB Chain HOT → Omni nep141:….omdep.near
+    'nep245:v2_1.omni.hot.tg:56_11111111111111111111', // BNB
+    'nep245:v2_1.omni.hot.tg:56_12zbnsg6xndDVj25QyL82YMPudb', // ASTER
+    'nep245:v2_1.omni.hot.tg:56_2CMMyVTGZkeyNZTSvS5sarzfir6g', // USDT
+    'nep245:v2_1.omni.hot.tg:56_28V9BijGeZDBFEEtkAcnJo4tPRH4', // SWEAT
+    'nep245:v2_1.omni.hot.tg:56_2w93GqMcEmQFDru84j3HZZWt557r', // USDC
+    'nep245:v2_1.omni.hot.tg:56_SZzgw3HSudhZcTwPWUTi2RJB19t', // NEAR
+    'nep245:v2_1.omni.hot.tg:56_24S22V8GMmQN8t6PbCdRb3mBewAd', // RHEA
+    // Polygon HOT → Omni nep141:….omdep.near
+    'nep245:v2_1.omni.hot.tg:137_11111111111111111111', // POL
+    'nep245:v2_1.omni.hot.tg:137_qiStmoQJDQPTebaPjgx5VBxZv6L', // USDC
+    'nep245:v2_1.omni.hot.tg:137_3hpYoaLtt8MP1Z2GH1U473DMRKgr', // USDT
+    'nep245:v2_1.omni.hot.tg:137_2jwTGwKRX3AEe7tyzDrxtDjEFgSt', // WETH
+    // Avalanche HOT → Omni nep141:….omdep.near
+    'nep245:v2_1.omni.hot.tg:43114_11111111111111111111', // AVAX
+    'nep245:v2_1.omni.hot.tg:43114_372BeH7ENZieCaabwkbWkBiTTgXp', // USDT
+    'nep245:v2_1.omni.hot.tg:43114_3atVJH3r5c4GqiSYmg9fECvjc47o', // USDC
   ])
 
   private cachedTokens: TokenResponse[] = []
