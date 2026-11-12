@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v1.1.0...sdk-trading-solana-v1.2.0) (2026-11-12)
+
+
+### ✨ Features
+
+* **solana:** name the receiver a sponsored order pays out to ([#1091](https://github.com/cowprotocol/cow-sdk/issues/1091)) ([27659a4](https://github.com/cowprotocol/cow-sdk/commit/27659a440c530d8edccba8d6d991c3e84a6de0d6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-order-book bumped to 4.7.0
+    * @cowprotocol/sdk-trading bumped to 2.8.2
+
 ## [1.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v1.0.3...sdk-trading-solana-v1.1.0) (2026-11-09)
 
 
