@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.7.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.6.1...sdk-order-book-v4.7.0) (2026-11-12)
+
+
+### ✨ Features
+
+* **solana:** name the receiver a sponsored order pays out to ([#1091](https://github.com/cowprotocol/cow-sdk/issues/1091)) ([27659a4](https://github.com/cowprotocol/cow-sdk/commit/27659a440c530d8edccba8d6d991c3e84a6de0d6))
+
 ## [4.6.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-order-book-v4.6.0...sdk-order-book-v4.6.1) (2026-11-04)
 
 
