@@ -10,6 +10,16 @@ export { buildCreateOrderInstruction } from './createOrderInstruction'
 export type { CreateOrderInstructionParams } from './createOrderInstruction'
 export { buildCancelOrderInstruction } from './cancelOrderInstruction'
 export type { CancelOrderInstructionParams } from './cancelOrderInstruction'
+export {
+  buildComputeBudgetInstructions,
+  DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS,
+  DEFAULT_MAX_PRIORITY_FEE_LAMPORTS,
+  FALLBACK_COMPUTE_UNIT_LIMIT,
+  getPriorityFeeLamports,
+  resolveSolanaComputeBudget,
+  SPONSORED_PRIORITY_FEE_CEILING_LAMPORTS,
+} from './computeBudget'
+export type { ResolveSolanaComputeBudgetParams, SolanaComputeBudget } from './computeBudget'
 export { getSolanaQuote } from './getSolanaQuote'
 export { getSolanaQuoteAmountsAndCosts } from './getSolanaQuoteAmountsAndCosts'
 export type { SolanaQuoteAmountsAndCostsParams } from './getSolanaQuoteAmountsAndCosts'

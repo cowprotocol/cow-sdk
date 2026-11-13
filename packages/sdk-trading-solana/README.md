@@ -198,6 +198,65 @@ PDA so they still match the intent actually being created:
 await postSwapOrderFromQuote(signAndSend, { quoteRequest: { receiver: otherWallet.toBase58() } })
 ```
 
+### Set a compute budget on a sponsored bundle
+
+A sponsored order's creation transaction names the deployment's `funder` as fee payer, so its base
+fee *and its priority fee* are spent by the protocol rather than by the signer. A wallet asked to
+sign a transaction that carries no `ComputeBudget` instructions adds its own — one popular wallet
+applies 375,000 micro-lamports per unit to the runtime's default 200,000-unit limit, which is 75,000
+lamports of someone else's SOL on a bundle that consumes under 45,000 units. The order book refuses a
+placement whose priority fee is above its ceiling (`SPONSORED_PRIORITY_FEE_CEILING_LAMPORTS`, 100,000
+lamports by default), so a wallet's guess can also cost the user the placement outright.
+
+Set the budget yourself and the wallets leave it alone. `resolveSolanaComputeBudget` simulates the
+bundle for its unit limit, reads recent blocks for a unit price, and holds the two together under
+`maxPriorityFeeLamports`:
+
+```ts
+import {
+  buildComputeBudgetInstructions,
+  getPriorityFeeLamports,
+  resolveSolanaComputeBudget,
+} from '@cowprotocol/sdk-trading-solana'
+
+const { solanaQuote, buildOrder, postSponsoredOrder } = await sdk.getQuote(params)
+
+// Absent when the deployment does not sponsor; without it `buildOrder` makes an owner-paid order.
+if (!solanaQuote.funder) throw new Error('this deployment has no sponsoring')
+
+const { instruction, feePayer } = await buildOrder(undefined, { sponsor: solanaQuote.funder })
+const instructions = [approveInstruction, instruction]
+
+const budget = await resolveSolanaComputeBudget(connection, { instructions, feePayer })
+
+// A sponsored bundle is signed but never broadcast here: the order book countersigns as fee payer
+// and submits it.
+const partiallySignedTx = await signMyTransaction([...buildComputeBudgetInstructions(budget), ...instructions])
+
+await postSponsoredOrder(partiallySignedTx)
+```
+
+Set **both** instructions, which is what `buildComputeBudgetInstructions` returns: wallets that honour
+an existing budget check for both, and re-estimate the limit when only the price is given. The order
+book accepts them at any position in the transaction and refuses a second instruction of either kind,
+so add them once.
+
+Resolving costs two concurrent RPC calls. Do it before taking the blockhash, since that starts the window
+the user spends approving — 150 blocks, which at the mainnet block rate measured in November 2026 is about
+35 seconds. Pass `unitPriceMicroLamports` to skip the recent-fee lookup and
+price the units yourself, and use `getPriorityFeeLamports(budget)` to show or check what the budget
+will cost. If the RPC fails or takes longer than `rpcTimeoutMs` (3,000 by default), the resolved budget
+falls back to `DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS` and `FALLBACK_COMPUTE_UNIT_LIMIT` rather than
+throwing or hanging ahead of the wallet prompt.
+
+The resolved price is never below `DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS`, and the fee it produces
+never above `maxPriorityFeeLamports` (`DEFAULT_MAX_PRIORITY_FEE_LAMPORTS`, 5,000). The floor carries more
+weight than it looks: `getRecentPrioritizationFees` reports the *minimum* fee paid per slot, which many
+RPC providers return as zero for every slot in the window, so on those endpoints the floor is the price.
+
+An owner-paid order spends the signer's own SOL, so a wallet's own estimate is nobody else's problem
+there — but setting the budget makes that transaction's cost predictable too.
+
 ### Step 3 — read back the result
 
 Both `postSwapOrderFromQuote` and `buildOrder` return an `orderId` — the `uid` as the `0x`-prefixed
