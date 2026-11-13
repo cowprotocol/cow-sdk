@@ -1,16 +1,17 @@
 import { ComputeBudgetProgram, Connection, Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import {
   buildComputeBudgetInstructions,
-  COMPUTE_UNIT_LIMIT_PER_INSTRUCTION,
   DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS,
+  DEFAULT_MAX_PRIORITY_FEE_LAMPORTS,
+  FALLBACK_COMPUTE_UNIT_LIMIT,
   getPriorityFeeLamports,
   resolveSolanaComputeBudget,
   SPONSORED_PRIORITY_FEE_CEILING_LAMPORTS,
 } from './computeBudget'
 
-// `WALLET_GUARD_UNITS` in the module under test: the allowance for the guard instructions wallets
-// append, which a pinned limit has to cover on the fallback path as well as the simulated one.
-const GUARD_UNITS = 50_000
+// `WALLET_GUARD_UNITS` in the module under test: the allowance a simulated limit adds for the guard
+// instructions wallets append, since pinning a limit stops those guards from raising it.
+const GUARD_UNITS = 25_000
 
 const FEE_PAYER = Keypair.generate().publicKey
 const WRITABLE = Keypair.generate().publicKey
@@ -78,7 +79,8 @@ describe('resolveSolanaComputeBudget', () => {
       feePayer: FEE_PAYER,
     })
 
-    expect(unitLimit).toBe(110_000)
+    // 40,000 units simulated, carrying the 1.5x margin the module applies.
+    expect(unitLimit).toBe(60_000 + GUARD_UNITS)
   })
 
   it('simulates the bundle under an explicit maximum limit so the runtime default does not cap the answer', async () => {
@@ -153,12 +155,14 @@ describe('resolveSolanaComputeBudget', () => {
     const budget = await resolveSolanaComputeBudget(connection, { instructions: INSTRUCTIONS, feePayer: FEE_PAYER })
 
     expect(budget).toEqual({
-      unitLimit: COMPUTE_UNIT_LIMIT_PER_INSTRUCTION + GUARD_UNITS,
+      unitLimit: FALLBACK_COMPUTE_UNIT_LIMIT,
       unitPriceMicroLamports: DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS,
     })
   })
 
-  it('scales the fallback limit by the bundle, above what the runtime would have granted anyway', async () => {
+  // Real creations consume a fraction of the 200,000 units per instruction the runtime grants for
+  // free, so the fallback is what was measured rather than what the bundle's shape suggests.
+  it('keeps the fallback limit flat however many instructions the bundle carries', async () => {
     const { connection } = mockConnection(null, [0])
 
     const { unitLimit } = await resolveSolanaComputeBudget(connection, {
@@ -166,7 +170,18 @@ describe('resolveSolanaComputeBudget', () => {
       feePayer: FEE_PAYER,
     })
 
-    expect(unitLimit).toBe(3 * COMPUTE_UNIT_LIMIT_PER_INSTRUCTION + GUARD_UNITS)
+    expect(unitLimit).toBe(FALLBACK_COMPUTE_UNIT_LIMIT)
+  })
+
+  it('holds the priority fee under the default maximum when the caller names none', async () => {
+    const { connection } = mockConnection(600_000, Array(10).fill(10_000_000))
+
+    const budget = await resolveSolanaComputeBudget(connection, {
+      instructions: INSTRUCTIONS,
+      feePayer: FEE_PAYER,
+    })
+
+    expect(getPriorityFeeLamports(budget)).toBeLessThanOrEqual(DEFAULT_MAX_PRIORITY_FEE_LAMPORTS)
   })
 
   it('falls back to the defaults rather than throwing when the RPC is unreachable', async () => {
@@ -178,7 +193,7 @@ describe('resolveSolanaComputeBudget', () => {
     const budget = await resolveSolanaComputeBudget(connection, { instructions: INSTRUCTIONS, feePayer: FEE_PAYER })
 
     expect(budget).toEqual({
-      unitLimit: COMPUTE_UNIT_LIMIT_PER_INSTRUCTION + GUARD_UNITS,
+      unitLimit: FALLBACK_COMPUTE_UNIT_LIMIT,
       unitPriceMicroLamports: DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS,
     })
   })
@@ -197,7 +212,7 @@ describe('resolveSolanaComputeBudget', () => {
     })
 
     expect(budget).toEqual({
-      unitLimit: COMPUTE_UNIT_LIMIT_PER_INSTRUCTION + GUARD_UNITS,
+      unitLimit: FALLBACK_COMPUTE_UNIT_LIMIT,
       unitPriceMicroLamports: DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS,
     })
   })
@@ -213,6 +228,6 @@ describe('resolveSolanaComputeBudget', () => {
       feePayer: new PublicKey(FEE_PAYER),
     })
 
-    expect(unitLimit).toBe(COMPUTE_UNIT_LIMIT_PER_INSTRUCTION + GUARD_UNITS)
+    expect(unitLimit).toBe(FALLBACK_COMPUTE_UNIT_LIMIT)
   })
 })

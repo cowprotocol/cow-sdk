@@ -12,9 +12,9 @@ export { buildCancelOrderInstruction } from './cancelOrderInstruction'
 export type { CancelOrderInstructionParams } from './cancelOrderInstruction'
 export {
   buildComputeBudgetInstructions,
-  COMPUTE_UNIT_LIMIT_PER_INSTRUCTION,
   DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS,
   DEFAULT_MAX_PRIORITY_FEE_LAMPORTS,
+  FALLBACK_COMPUTE_UNIT_LIMIT,
   getPriorityFeeLamports,
   resolveSolanaComputeBudget,
   SPONSORED_PRIORITY_FEE_CEILING_LAMPORTS,

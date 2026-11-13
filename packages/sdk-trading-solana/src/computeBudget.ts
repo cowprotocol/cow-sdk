@@ -13,23 +13,27 @@ import {
  */
 export const SPONSORED_PRIORITY_FEE_CEILING_LAMPORTS = 100_000
 
-/** Micro-lamports per compute unit used when the network reports no recent prioritization fee. */
-export const DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS = 10_000
+/** Micro-lamports per compute unit a resolved price never falls below, whatever recent blocks report. */
+export const DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS = 50_000
 
-/** Compute units Solana's runtime grants per instruction to a transaction that sets no limit of its own. */
-export const COMPUTE_UNIT_LIMIT_PER_INSTRUCTION = 200_000
+/** Lamports a resolved budget keeps its priority fee under. */
+export const DEFAULT_MAX_PRIORITY_FEE_LAMPORTS = 5_000
 
-/** Lamports a resolved budget keeps its priority fee under, a fifth of the order book's own ceiling. */
-export const DEFAULT_MAX_PRIORITY_FEE_LAMPORTS = 20_000
+/**
+ * Compute units budgeted when the bundle cannot be simulated. Covers the heaviest of 200 sampled
+ * creations (26,248 units) together with the wallet guard instructions appended to it (15,234).
+ */
+export const FALLBACK_COMPUTE_UNIT_LIMIT = 60_000
 
 const MAX_COMPUTE_UNIT_LIMIT = 1_400_000
 
 const DEFAULT_RPC_TIMEOUT_MS = 3_000
 
 // Simulation measures our own bundle. Phantom and Solflare append Lighthouse guard instructions to the
-// transaction the user signs, and those execute under this same limit.
+// transaction the user signs, and those execute under this same limit; the costliest of those seen
+// across 200 sampled creations took 15,234 units.
 const SIMULATED_UNITS_MARGIN = 1.5
-const WALLET_GUARD_UNITS = 50_000
+const WALLET_GUARD_UNITS = 25_000
 
 // `getRecentPrioritizationFees` reports one fee per recent slot, most of them zero on an idle network.
 const PRIORITIZATION_FEE_PERCENTILE = 0.75
@@ -84,8 +88,8 @@ export function buildComputeBudgetInstructions({
  * the price from what recent blocks actually paid, and the two together held under
  * `maxPriorityFeeLamports` so the order book accepts the placement.
  *
- * Falls back to what the runtime would have granted anyway, and to
- * {@link DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS}, when a lookup fails or outlasts `rpcTimeoutMs` —
+ * Falls back to {@link FALLBACK_COMPUTE_UNIT_LIMIT} and to
+ * {@link DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS} when a lookup fails or outlasts `rpcTimeoutMs` —
  * an unpriced budget is still worth setting, since it is what stops the wallet from setting one, and
  * a hung RPC must not hold up the signature it runs ahead of.
  *
@@ -106,7 +110,7 @@ export async function resolveSolanaComputeBudget(
   const timeoutMs = rpcTimeoutMs ?? DEFAULT_RPC_TIMEOUT_MS
 
   const [unitLimit, price] = await Promise.all([
-    withTimeout(simulateUnitLimit(connection, instructions, feePayer), timeoutMs, fallbackUnitLimit(instructions)),
+    withTimeout(simulateUnitLimit(connection, instructions, feePayer), timeoutMs, FALLBACK_COMPUTE_UNIT_LIMIT),
     unitPriceMicroLamports ??
       withTimeout(
         fetchUnitPrice(connection, instructions, feePayer),
@@ -139,22 +143,12 @@ async function simulateUnitLimit(
       replaceRecentBlockhash: true,
     })
 
-    if (value.err || !value.unitsConsumed) return fallbackUnitLimit(instructions)
+    if (value.err || !value.unitsConsumed) return FALLBACK_COMPUTE_UNIT_LIMIT
 
     return Math.min(Math.ceil(value.unitsConsumed * SIMULATED_UNITS_MARGIN) + WALLET_GUARD_UNITS, MAX_COMPUTE_UNIT_LIMIT)
   } catch {
-    return fallbackUnitLimit(instructions)
+    return FALLBACK_COMPUTE_UNIT_LIMIT
   }
-}
-
-// What the runtime would grant a transaction that sets no limit at all, so an unsimulated bundle is
-// never budgeted below what it would have been given for free — plus the same guard allowance the
-// simulated path adds, since pinning a limit stops the wallet's appended guards from raising it.
-function fallbackUnitLimit(instructions: TransactionInstruction[]): number {
-  return Math.min(
-    COMPUTE_UNIT_LIMIT_PER_INSTRUCTION * Math.max(1, instructions.length) + WALLET_GUARD_UNITS,
-    MAX_COMPUTE_UNIT_LIMIT,
-  )
 }
 
 async function fetchUnitPrice(

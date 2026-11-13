@@ -241,13 +241,18 @@ an existing budget check for both, and re-estimate the limit when only the price
 book accepts them at any position in the transaction and refuses a second instruction of either kind,
 so add them once.
 
-Resolving costs two concurrent RPC calls. Do it before taking the blockhash, since that starts the ~60–90s
-window the user spends approving. Pass `unitPriceMicroLamports` to skip the recent-fee lookup and
+Resolving costs two concurrent RPC calls. Do it before taking the blockhash, since that starts the window
+the user spends approving — 150 blocks, which at the mainnet block rate measured in November 2026 is about
+35 seconds. Pass `unitPriceMicroLamports` to skip the recent-fee lookup and
 price the units yourself, and use `getPriorityFeeLamports(budget)` to show or check what the budget
 will cost. If the RPC fails or takes longer than `rpcTimeoutMs` (3,000 by default), the resolved budget
-falls back to `DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS` and to the limit the runtime would have granted
-the bundle on its own — `COMPUTE_UNIT_LIMIT_PER_INSTRUCTION` per instruction — rather than throwing or hanging
-ahead of the wallet prompt.
+falls back to `DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS` and `FALLBACK_COMPUTE_UNIT_LIMIT` rather than
+throwing or hanging ahead of the wallet prompt.
+
+The resolved price is never below `DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS`, and the fee it produces
+never above `maxPriorityFeeLamports` (`DEFAULT_MAX_PRIORITY_FEE_LAMPORTS`, 5,000). The floor carries more
+weight than it looks: `getRecentPrioritizationFees` reports the *minimum* fee paid per slot, which many
+RPC providers return as zero for every slot in the window, so on those endpoints the floor is the price.
 
 An owner-paid order spends the signer's own SOL, so a wallet's own estimate is nobody else's problem
 there — but setting the budget makes that transaction's cost predictable too.
