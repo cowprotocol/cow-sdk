@@ -249,10 +249,12 @@ will cost. If the RPC fails or takes longer than `rpcTimeoutMs` (3,000 by defaul
 falls back to `DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS` and `FALLBACK_COMPUTE_UNIT_LIMIT` rather than
 throwing or hanging ahead of the wallet prompt.
 
-The resolved price is never below `DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS`, and the fee it produces
-never above `maxPriorityFeeLamports` (`DEFAULT_MAX_PRIORITY_FEE_LAMPORTS`, 5,000). The floor carries more
-weight than it looks: `getRecentPrioritizationFees` reports the *minimum* fee paid per slot, which many
-RPC providers return as zero for every slot in the window, so on those endpoints the floor is the price.
+The recent-fee lookup is floored at `DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS`, and the resolved fee is
+then held under `maxPriorityFeeLamports` (`DEFAULT_MAX_PRIORITY_FEE_LAMPORTS`, 5,000). The cap wins where
+the two disagree, so a bundle budgeted above roughly 100,000 units is priced below the floor rather than
+over the cap. The floor carries more weight than it looks: `getRecentPrioritizationFees` reports the
+*minimum* fee paid per slot, which many RPC providers return as zero for every slot in the window, so on
+those endpoints the floor is the price.
 
 An owner-paid order spends the signer's own SOL, so a wallet's own estimate is nobody else's problem
 there — but setting the budget makes that transaction's cost predictable too.
