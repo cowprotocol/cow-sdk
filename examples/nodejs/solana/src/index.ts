@@ -6,6 +6,7 @@ import {
   TransactionExpiredBlockheightExceededError,
   sendAndConfirmTransaction,
 } from '@solana/web3.js'
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { OrderKind } from '@cowprotocol/sdk-order-book'
 import { SolanaTradingSdk } from '@cowprotocol/sdk-trading-solana'
 
@@ -22,7 +23,6 @@ const BUY_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
 const BUY_MINT_DECIMALS = 6
 const DEFAULT_SELL_AMOUNT = '0.001' // SELL_MINT amount, in whole tokens
 // ===============================================================
-
 
 async function main() {
   if (!PRIVATE_KEY) {
@@ -47,6 +47,11 @@ async function main() {
     sellTokenDecimals: SELL_MINT_DECIMALS,
     buyTokenAddress: BUY_MINT,
     buyTokenDecimals: BUY_MINT_DECIMALS,
+    // Both mints here are classic SPL. A Token-2022 mint must pass TOKEN_2022_PROGRAM_ID instead:
+    // the token account address is derived from this, so the wrong one names an account that
+    // cannot exist and the order can never settle.
+    sellTokenProgramId: TOKEN_PROGRAM_ID,
+    buyTokenProgramId: TOKEN_PROGRAM_ID,
     appCode: 'solana-example',
     amount,
     kind: OrderKind.SELL,
@@ -67,6 +72,7 @@ async function main() {
   const approveInstruction = sdk.approveCowProtocol({
     ownerAddress: owner.publicKey,
     sellTokenAddress: SELL_MINT,
+    sellTokenProgramId: TOKEN_PROGRAM_ID,
     approveAmount: solanaQuote.intent.sellAmount,
   })
 
