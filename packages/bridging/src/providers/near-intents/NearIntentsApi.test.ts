@@ -1,6 +1,8 @@
+import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { ApiError, OneClickService, OpenAPI, TokenResponse } from '@defuse-protocol/one-click-sdk-typescript'
 
 import { NearIntentsApi } from './NearIntentsApi'
+import { getTokenByAddressAndChainId } from './util'
 import { BridgeProviderQuoteError, BridgeQuoteErrors } from '../../errors'
 
 const TEST_API_TOKEN = 'test-api-token'
@@ -70,76 +72,126 @@ describe('NearIntentsApi', () => {
     )
   })
 
-  describe('getTokens', () => {
+  describe('tokens', () => {
     afterEach(() => {
       jest.restoreAllMocks()
     })
 
-    // Regression: NEAR Omni migration deprecated `nep141:btc.omft.near` (POA),
-    // but the upstream 1Click /v0/tokens endpoint still returns it alongside
-    // the new `1cs_v1:btc:native:coin`. Both entries report `blockchain: 'btc'`
-    // and both end up matching the BTC_CURRENCY_ADDRESS sentinel through
-    // resolveTokenAddress, so without filtering `tokens.find()` would pick
-    // the deprecated entry (it appears first in the upstream response) and
-    // quote requests would target an asset that the attestation service no
-    // longer signs, causing /v0/attestation to fail with "Invalid quote hash".
-    it('filters out deprecated nep141:btc.omft.near from the cached token list', async () => {
-      const upstream: TokenResponse[] = [
-        {
-          assetId: 'nep141:btc.omft.near',
-          decimals: 8,
-          blockchain: TokenResponse.blockchain.BTC,
-          symbol: 'BTC',
-          price: 60000,
-          priceUpdatedAt: '2026-05-18T09:18:00.452Z',
-        },
-        {
-          assetId: '1cs_v1:btc:native:coin',
-          decimals: 8,
-          blockchain: TokenResponse.blockchain.BTC,
-          symbol: 'BTC(OMNI)',
-          price: 60000,
-          priceUpdatedAt: '2026-05-18T09:18:00.452Z',
-          contractAddress: 'coin',
-        },
-      ]
-      jest.spyOn(OneClickService, 'getTokens').mockResolvedValue(upstream as any)
+    const btcPoa: TokenResponse = {
+      assetId: 'nep141:btc.omft.near',
+      decimals: 8,
+      blockchain: TokenResponse.blockchain.BTC,
+      symbol: 'BTC',
+      price: 60000,
+      priceUpdatedAt: '2026-05-18T09:18:00.452Z',
+    }
 
-      const api = new NearIntentsApi()
-      const tokens = await api.getTokens()
+    const btcOmni: TokenResponse = {
+      assetId: '1cs_v1:btc:native:coin',
+      decimals: 8,
+      blockchain: TokenResponse.blockchain.BTC,
+      symbol: 'BTC(OMNI)',
+      price: 60000,
+      priceUpdatedAt: '2026-05-18T09:18:00.452Z',
+      contractAddress: 'coin',
+    }
 
-      expect(tokens.map((t) => t.assetId)).toEqual(['1cs_v1:btc:native:coin'])
-    })
+    // The Omni migration left a dead twin of each migrated asset in /v0/tokens, sharing the
+    // live one's `contractAddress` and listed ahead of it, so an unfiltered `tokens.find()`
+    // by address picks the twin. /v0/quote still quotes it and /v0/attestation then rejects
+    // it with "Invalid quote hash".
+    const AVAX_USDT_ADDRESS = '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7'
 
-    it('keeps non-deprecated tokens unchanged', async () => {
-      const upstream: TokenResponse[] = [
-        {
+    const avaxUsdtDeprecated: TokenResponse = {
+      assetId: 'nep245:v2_1.omni.hot.tg:43114_372BeH7ENZieCaabwkbWkBiTTgXp',
+      decimals: 6,
+      blockchain: TokenResponse.blockchain.AVAX,
+      symbol: 'USDT(DEPRECATED)',
+      price: 1,
+      priceUpdatedAt: '2026-11-16T09:18:00.452Z',
+      contractAddress: AVAX_USDT_ADDRESS,
+    }
+
+    const avaxUsdt: TokenResponse = {
+      assetId: `nep141:avax-${AVAX_USDT_ADDRESS}.omdep.near`,
+      decimals: 6,
+      blockchain: TokenResponse.blockchain.AVAX,
+      symbol: 'USDT',
+      price: 1,
+      priceUpdatedAt: '2026-11-16T09:18:00.452Z',
+      contractAddress: AVAX_USDT_ADDRESS,
+    }
+
+    describe('getRoutableTokens', () => {
+      it('drops the twins upstream marks as deprecated in the symbol', async () => {
+        jest.spyOn(OneClickService, 'getTokens').mockResolvedValue([avaxUsdtDeprecated, avaxUsdt] as any)
+
+        const tokens = await new NearIntentsApi().getRoutableTokens()
+
+        expect(tokens.map((t) => t.assetId)).toEqual([avaxUsdt.assetId])
+      })
+
+      it('drops the dead assets upstream leaves unmarked', async () => {
+        jest.spyOn(OneClickService, 'getTokens').mockResolvedValue([btcPoa, btcOmni] as any)
+
+        const tokens = await new NearIntentsApi().getRoutableTokens()
+
+        expect(tokens.map((t) => t.assetId)).toEqual([btcOmni.assetId])
+      })
+
+      it('leaves the live twin as the match for a contract address both entries share', async () => {
+        jest.spyOn(OneClickService, 'getTokens').mockResolvedValue([avaxUsdtDeprecated, avaxUsdt] as any)
+
+        const tokens = await new NearIntentsApi().getRoutableTokens()
+        const match = getTokenByAddressAndChainId(tokens, AVAX_USDT_ADDRESS, SupportedChainId.AVALANCHE)
+
+        expect(match?.assetId).toEqual(avaxUsdt.assetId)
+      })
+
+      it('keeps live tokens unchanged', async () => {
+        const eth: TokenResponse = {
           assetId: 'nep141:eth.omft.near',
           decimals: 18,
           blockchain: TokenResponse.blockchain.ETH,
           symbol: 'ETH',
           price: 3000,
           priceUpdatedAt: '2026-05-18T09:18:00.452Z',
-        },
-        {
-          assetId: '1cs_v1:btc:native:coin',
-          decimals: 8,
-          blockchain: TokenResponse.blockchain.BTC,
-          symbol: 'BTC(OMNI)',
-          price: 60000,
-          priceUpdatedAt: '2026-05-18T09:18:00.452Z',
-          contractAddress: 'coin',
-        },
-      ]
-      jest.spyOn(OneClickService, 'getTokens').mockResolvedValue(upstream as any)
+        }
+        jest.spyOn(OneClickService, 'getTokens').mockResolvedValue([eth, btcOmni] as any)
 
-      const api = new NearIntentsApi()
-      const tokens = await api.getTokens()
+        const tokens = await new NearIntentsApi().getRoutableTokens()
 
-      expect(tokens).toHaveLength(2)
-      expect(tokens.map((t) => t.assetId)).toEqual(
-        expect.arrayContaining(['nep141:eth.omft.near', '1cs_v1:btc:native:coin']),
-      )
+        expect(tokens.map((t) => t.assetId)).toEqual([eth.assetId, btcOmni.assetId])
+      })
+    })
+
+    describe('getTokens', () => {
+      // Orders placed before a migration name the deprecated asset, and getBridgingParams
+      // resolves them by assetId to report their status.
+      it('keeps deprecated assets', async () => {
+        jest
+          .spyOn(OneClickService, 'getTokens')
+          .mockResolvedValue([btcPoa, btcOmni, avaxUsdtDeprecated, avaxUsdt] as any)
+
+        const tokens = await new NearIntentsApi().getTokens()
+
+        expect(tokens.map((t) => t.assetId)).toEqual([
+          btcPoa.assetId,
+          btcOmni.assetId,
+          avaxUsdtDeprecated.assetId,
+          avaxUsdt.assetId,
+        ])
+      })
+
+      it('fetches upstream once and caches the result', async () => {
+        const upstream = jest.spyOn(OneClickService, 'getTokens').mockResolvedValue([avaxUsdt] as any)
+
+        const api = new NearIntentsApi()
+        await api.getTokens()
+        await api.getRoutableTokens()
+
+        expect(upstream).toHaveBeenCalledTimes(1)
+      })
     })
   })
 

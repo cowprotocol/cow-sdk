@@ -22,14 +22,19 @@ interface GetAttestationResponse {
 }
 
 export class NearIntentsApi {
-  // Upstream /v0/tokens still lists deprecated assets the attestation service
-  // no longer signs. They share `blockchain: 'btc'` with the live token and
-  // both resolve to BTC_CURRENCY_ADDRESS, so without this filter `tokens.find()`
-  // picks the deprecated entry (it appears first) and /v0/attestation fails
-  // with "Invalid quote hash".
+  // The Omni migration leaves a dead twin of each migrated asset in /v0/tokens: same
+  // `blockchain` and `contractAddress` as the live one, a new `assetId`, and `(DEPRECATED)`
+  // appended to the symbol. The dead twin is listed first, so a `find()` by address picks it,
+  // /v0/quote still quotes it, and /v0/attestation then refuses to sign it with
+  // "Invalid quote hash".
+  // https://partners.near-intents.org/omni-migration
+  private static readonly DEPRECATED_SYMBOL = /deprecated/i
+
+  // Dead assets the symbol does not catch: `nep141:btc.omft.near` (POA BTC, replaced by
+  // `1cs_v1:btc:native:coin`) is still listed as plain `BTC`. The two `9745_` ids are XPL and
+  // USDT0 on Plasma; upstream marks them in the symbol today, and they stay listed here in case
+  // it stops.
   private static readonly DEPRECATED_ASSET_IDS: ReadonlySet<string> = new Set([
-    // POA BTC bridge, replaced by `1cs_v1:btc:native:coin` (Omni migration).
-    // https://partners.near-intents.org/omni-migration
     'nep141:btc.omft.near',
     'nep245:v2_1.omni.hot.tg:9745_3aL9skCy1yhPoDB8oKMmRHRN7SJW',
     'nep245:v2_1.omni.hot.tg:9745_11111111111111111111',
@@ -43,12 +48,24 @@ export class NearIntentsApi {
     }
   }
 
+  private static isDeprecated(token: TokenResponse): boolean {
+    return NearIntentsApi.DEPRECATED_ASSET_IDS.has(token.assetId) || NearIntentsApi.DEPRECATED_SYMBOL.test(token.symbol)
+  }
+
+  /**
+   * Every asset 1Click lists, deprecated ones included. Resolving the asset of an order placed
+   * before a migration needs them; routing a new order does not — use `getRoutableTokens`.
+   */
   async getTokens(): Promise<TokenResponse[]> {
     if (this.cachedTokens.length === 0) {
-      const response = await OneClickService.getTokens()
-      this.cachedTokens = response.filter((t) => !NearIntentsApi.DEPRECATED_ASSET_IDS.has(t.assetId))
+      this.cachedTokens = await OneClickService.getTokens()
     }
     return this.cachedTokens
+  }
+
+  /** The assets a new quote may be routed through, i.e. everything `getTokens` returns minus the deprecated twins. */
+  async getRoutableTokens(): Promise<TokenResponse[]> {
+    return (await this.getTokens()).filter((token) => !NearIntentsApi.isDeprecated(token))
   }
 
   async getQuote(request: QuoteRequest): Promise<QuoteResponse> {
