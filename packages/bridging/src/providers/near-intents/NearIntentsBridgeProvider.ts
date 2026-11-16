@@ -84,7 +84,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
   }
 
   async getBuyTokens(params: BuyTokensParams): Promise<GetProviderBuyTokens> {
-    const tokens = adaptTokens(await this.api.getTokens())
+    const tokens = adaptTokens(await this.api.getRoutableTokens())
     const filteredTokens = tokens.filter((token) => token.chainId === params.buyChainId)
 
     return {
@@ -100,7 +100,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
 
     const { sellTokenChainId, buyTokenChainId, buyTokenAddress } = request
 
-    const tokens = adaptTokens(await this.api.getTokens())
+    const tokens = adaptTokens(await this.api.getRoutableTokens())
     const { sourceTokens, targetTokens } = tokens.reduce(
       (acc, token) => {
         if (token.chainId === sellTokenChainId) {
@@ -145,7 +145,7 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
       throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES)
     }
 
-    const tokens = await this.api.getTokens()
+    const tokens = await this.api.getRoutableTokens()
     const sellToken = getTokenByAddressAndChainId(tokens, sellTokenAddress, sellTokenChainId)
     const buyToken = getTokenByAddressAndChainId(tokens, buyTokenAddress, buyTokenChainId)
     if (!sellToken || !buyToken) throw new BridgeProviderQuoteError(BridgeQuoteErrors.NO_ROUTES)
@@ -271,6 +271,8 @@ export class NearIntentsBridgeProvider implements ReceiverAccountBridgeProvider<
     const depositAddress = order.receiver
     if (!depositAddress) return null
 
+    // Unfiltered on purpose: an order placed before a migration names the now-deprecated asset,
+    // and dropping it here would report a still-settling bridge as "Token not supported".
     const [tokens, status] = await Promise.all([this.api.getTokens(), this.api.getStatus(depositAddress)])
 
     // Unpack quote data
