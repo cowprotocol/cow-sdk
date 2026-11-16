@@ -59,8 +59,8 @@ export async function getSolanaQuote(
   // Only for the slippage suggestion, which needs a real mint to price. The quote itself asks for
   // native SOL, so it prices the lamport payout and the order can link to the quote it used.
   const buyMint = toSplMint(requestedBuyMint)
-  const sellTokenProgram = sellTokenProgramId ? new PublicKey(sellTokenProgramId) : undefined
-  const buyTokenProgram = buyTokenProgramId ? new PublicKey(buyTokenProgramId) : undefined
+  const sellTokenProgram = new PublicKey(sellTokenProgramId)
+  const buyTokenProgram = new PublicKey(buyTokenProgramId)
 
   const sellTokenAddress = sellMint.toBase58()
   const buyTokenAddress = buyMint.toBase58()

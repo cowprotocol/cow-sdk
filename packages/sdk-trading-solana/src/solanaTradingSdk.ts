@@ -26,9 +26,10 @@ export interface ApproveCowProtocolParams {
   sellTokenAddress: PublicKeyInitData
   /** Amount to approve, at least the order's `sellAmount`. */
   approveAmount: bigint
-  /** Token program owning the sell mint's accounts (classic SPL Token vs Token-2022). Defaults to the
-   * classic SPL Token program — pass `TOKEN_2022_PROGRAM_ID` explicitly for Token-2022 mints. */
-  sellTokenProgramId?: PublicKeyInitData
+  /** Token program owning the sell mint's accounts (classic SPL Token vs Token-2022). Required: the
+   * approved account is derived from it, and the wrong program approves an account the order never
+   * names. */
+  sellTokenProgramId: PublicKeyInitData
 }
 
 export interface CancelOrderParams {
@@ -89,7 +90,7 @@ export class SolanaTradingSdk {
   approveCowProtocol(params: ApproveCowProtocolParams): TransactionInstruction {
     const owner = new PublicKey(params.ownerAddress)
     const sellMint = new PublicKey(params.sellTokenAddress)
-    const tokenProgramId = params.sellTokenProgramId ? new PublicKey(params.sellTokenProgramId) : undefined
+    const tokenProgramId = new PublicKey(params.sellTokenProgramId)
 
     const sellTokenAccount = deriveAta(sellMint, owner, tokenProgramId)
     const delegate = getSolanaDelegateAuthority(this.options.env)

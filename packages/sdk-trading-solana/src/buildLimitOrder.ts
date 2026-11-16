@@ -28,12 +28,12 @@ export interface SolanaLimitOrderParams {
    * The intent's opaque 32 bytes, used exactly as given — no hashing, no doc, no merging
    */
   appData: Uint8Array
-  /** Token program owning `sellTokenAddress`'s accounts (classic SPL Token vs Token-2022). Defaults to the
-   * classic SPL Token program — pass `TOKEN_2022_PROGRAM_ID` explicitly for Token-2022 mints, since the
-   * associated token account address differs by program. */
-  sellTokenProgramId?: PublicKeyInitData
+  /** Token program owning `sellTokenAddress`'s accounts (classic SPL Token vs Token-2022). Required:
+   * the associated token account address is a PDA of `(owner, tokenProgram, mint)`, so the wrong
+   * program names an account that cannot exist for the mint. */
+  sellTokenProgramId: PublicKeyInitData
   /** Same as `sellTokenProgramId`, for `buyTokenAddress`. */
-  buyTokenProgramId?: PublicKeyInitData
+  buyTokenProgramId: PublicKeyInitData
 }
 
 /**
@@ -49,8 +49,8 @@ export async function buildSolanaLimitOrderOrder(params: SolanaLimitOrderParams)
   // Native SOL has no SPL mint; substitute WSOL, matching `getSolanaQuote` and what the wrap step produces.
   const sellMint = toSplMint(new PublicKey(params.sellTokenAddress))
   const buyMint = new PublicKey(params.buyTokenAddress)
-  const sellTokenProgram = params.sellTokenProgramId ? new PublicKey(params.sellTokenProgramId) : undefined
-  const buyTokenProgram = params.buyTokenProgramId ? new PublicKey(params.buyTokenProgramId) : undefined
+  const sellTokenProgram = new PublicKey(params.sellTokenProgramId)
+  const buyTokenProgram = new PublicKey(params.buyTokenProgramId)
 
   const programId = getSolanaSettlementProgramId(params.env)
 

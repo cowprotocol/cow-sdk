@@ -1,5 +1,10 @@
 import { SOLANA_SETTLEMENT_PROGRAM_ID } from '@cowprotocol/sdk-config'
-import { getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID, TokenOwnerOffCurveError } from '@solana/spl-token'
+import {
+  getAssociatedTokenAddressSync,
+  TOKEN_2022_PROGRAM_ID,
+  TOKEN_PROGRAM_ID,
+  TokenOwnerOffCurveError,
+} from '@solana/spl-token'
 import { Keypair, PublicKey } from '@solana/web3.js'
 import { deriveAta } from './associatedTokenAccount'
 
@@ -15,7 +20,7 @@ describe('deriveAta', () => {
     expect(PublicKey.isOnCurve(OFF_CURVE_OWNER.toBytes())).toBe(false)
     expect(() => getAssociatedTokenAddressSync(MINT, OFF_CURVE_OWNER)).toThrow(TokenOwnerOffCurveError)
 
-    expect(deriveAta(MINT, OFF_CURVE_OWNER).toBase58()).toBe(
+    expect(deriveAta(MINT, OFF_CURVE_OWNER, TOKEN_PROGRAM_ID).toBase58()).toBe(
       getAssociatedTokenAddressSync(MINT, OFF_CURVE_OWNER, true).toBase58(),
     )
   })
@@ -23,7 +28,9 @@ describe('deriveAta', () => {
   it('matches the default derivation for an ordinary keypair owner', () => {
     const owner = Keypair.generate().publicKey
 
-    expect(deriveAta(MINT, owner).toBase58()).toBe(getAssociatedTokenAddressSync(MINT, owner).toBase58())
+    expect(deriveAta(MINT, owner, TOKEN_PROGRAM_ID).toBase58()).toBe(
+      getAssociatedTokenAddressSync(MINT, owner).toBase58(),
+    )
   })
 
   it('passes the token program through', () => {
