@@ -1,5 +1,23 @@
 # Changelog
 
+## [4.6.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.5.4...sdk-bridging-v4.6.0) (2026-11-16)
+
+
+### ✨ Features
+
+* update Near Intents deprecated tokens list ([#1094](https://github.com/cowprotocol/cow-sdk/issues/1094)) ([ed15332](https://github.com/cowprotocol/cow-sdk/commit/ed153324891a3217d0e296e5bd090d500b03c29e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-contracts-ts bumped to 4.1.0
+    * @cowprotocol/sdk-cow-shed bumped to 0.6.9
+    * @cowprotocol/sdk-trading bumped to 2.8.3
+  * devDependencies
+    * @cowprotocol/sdk-order-signing bumped to 1.1.27
+
 ## [4.5.4](https://github.com/cowprotocol/cow-sdk/compare/sdk-bridging-v4.5.3...sdk-bridging-v4.5.4) (2026-11-12)
 
 

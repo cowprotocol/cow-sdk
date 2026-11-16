@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v1.2.0...sdk-trading-solana-v1.2.1) (2026-11-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @cowprotocol/sdk-trading bumped to 2.8.3
+
 ## [1.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v1.1.0...sdk-trading-solana-v1.2.0) (2026-11-12)
 
 
