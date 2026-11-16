@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v4.0.1...sdk-contracts-ts-v4.1.0) (2026-11-16)
+
+
+### ✨ Features
+
+* update Near Intents deprecated tokens list ([#1094](https://github.com/cowprotocol/cow-sdk/issues/1094)) ([ed15332](https://github.com/cowprotocol/cow-sdk/commit/ed153324891a3217d0e296e5bd090d500b03c29e))
+
 ## [4.0.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-contracts-ts-v4.0.0...sdk-contracts-ts-v4.0.1) (2026-11-04)
 
 
