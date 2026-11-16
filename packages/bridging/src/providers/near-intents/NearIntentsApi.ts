@@ -24,9 +24,10 @@ interface GetAttestationResponse {
 export class NearIntentsApi {
   // Upstream /v0/tokens still lists deprecated assets the attestation service
   // no longer signs. They share `(blockchain, contractAddress)` with the live
-  // Omni replacements, so without this filter `tokens.find()` picks the
-  // deprecated entry (it appears first) and /v0/attestation fails with
-  // "Invalid quote hash".
+  // Omni replacements, so without filtering `getRoutableTokens` a `find()` by
+  // address picks the deprecated entry (it appears first) and /v0/attestation
+  // fails with "Invalid quote hash". `getTokens` keeps them so getBridgingParams
+  // can still resolve pre-migration orders by assetId.
   // EVM Omni HOT→nep141 migration:
   // https://docs.near-intents.org/changelog/entries/2026-11-09-evm-omni-token-ids
   private static readonly DEPRECATED_ASSET_IDS: ReadonlySet<string> = new Set([
@@ -64,12 +65,20 @@ export class NearIntentsApi {
     }
   }
 
+  /**
+   * Every asset 1Click lists, deprecated ones included. Resolving the asset of an order placed
+   * before a migration needs them; routing a new order does not — use `getRoutableTokens`.
+   */
   async getTokens(): Promise<TokenResponse[]> {
     if (this.cachedTokens.length === 0) {
-      const response = await OneClickService.getTokens()
-      this.cachedTokens = response.filter((t) => !NearIntentsApi.DEPRECATED_ASSET_IDS.has(t.assetId))
+      this.cachedTokens = await OneClickService.getTokens()
     }
     return this.cachedTokens
+  }
+
+  /** Assets a new quote may be routed through — `getTokens` minus deprecated twins. */
+  async getRoutableTokens(): Promise<TokenResponse[]> {
+    return (await this.getTokens()).filter((t) => !NearIntentsApi.DEPRECATED_ASSET_IDS.has(t.assetId))
   }
 
   async getQuote(request: QuoteRequest): Promise<QuoteResponse> {

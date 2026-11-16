@@ -81,7 +81,7 @@ adapterNames.forEach((adapterName) => {
 
       const mockApi = (tokens: TokenResponse[]) => {
         api = new NearIntentsApi()
-        jest.spyOn(api, 'getTokens').mockResolvedValue(tokens)
+        jest.spyOn(api, 'getRoutableTokens').mockResolvedValue(tokens)
         provider.setApi(api)
       }
 
@@ -90,7 +90,7 @@ adapterNames.forEach((adapterName) => {
         const result = await provider.getBuyTokens({ buyChainId: 12345 as TargetChainId })
         expect(result.tokens).toEqual([])
         expect(result.isRouteAvailable).toEqual(false)
-        expect(api.getTokens).toHaveBeenCalledTimes(1)
+        expect(api.getRoutableTokens).toHaveBeenCalledTimes(1)
       })
 
       it('should return tokens for supported chain', async () => {
@@ -118,7 +118,7 @@ adapterNames.forEach((adapterName) => {
           ]),
         )
         expect(result.isRouteAvailable).toEqual(true)
-        expect(api.getTokens).toHaveBeenCalledTimes(1)
+        expect(api.getRoutableTokens).toHaveBeenCalledTimes(1)
       })
     })
 
@@ -251,6 +251,15 @@ adapterNames.forEach((adapterName) => {
         },
       ]
 
+      const btcPoaDeprecated: TokenResponse = {
+        assetId: 'nep141:btc.omft.near',
+        decimals: 8,
+        blockchain: TokenResponse.blockchain.BTC,
+        symbol: 'BTC',
+        price: 60000,
+        priceUpdatedAt: '2025-09-05T12:00:38.695Z',
+      }
+
       const buildMockStatus = (destinationAsset: string): GetExecutionStatusResponse => ({
         status: GetExecutionStatusResponse.status.SUCCESS,
         updatedAt: '2025-09-05T12:01:33.000Z',
@@ -311,13 +320,26 @@ adapterNames.forEach((adapterName) => {
 
       const mockApi = (status: GetExecutionStatusResponse) => {
         const api = new NearIntentsApi()
-        jest.spyOn(api, 'getTokens').mockResolvedValue(mockTokens)
+        jest.spyOn(api, 'getTokens').mockResolvedValue([btcPoaDeprecated, ...mockTokens])
+        jest.spyOn(api, 'getRoutableTokens').mockResolvedValue(mockTokens)
         jest.spyOn(api, 'getStatus').mockResolvedValue(status)
         provider.setApi(api)
       }
 
       it('resolves an order whose destinationAsset is the new BTC id (1cs_v1:btc:native:coin)', async () => {
         mockApi(buildMockStatus('1cs_v1:btc:native:coin'))
+        const result = await provider.getBridgingParams(SupportedChainId.BASE, mockOrder as any, '0xtxhash')
+        expect(result).not.toBeNull()
+        expect(result?.params.outputTokenAddress).toBe(BTC_CURRENCY_ADDRESS)
+        expect(result?.params.destinationChainId).toBe(NonEvmChains.BITCOIN)
+        expect(result?.status.status).toBe(BridgeStatus.EXECUTED)
+      })
+
+      // An order placed before a migration names the asset that is deprecated by the time its
+      // status is read, so this path must resolve against the unfiltered list. Routing it through
+      // `getRoutableTokens` instead would report a still-settling bridge as "Token not supported".
+      it('resolves an order whose destinationAsset is now deprecated', async () => {
+        mockApi(buildMockStatus(btcPoaDeprecated.assetId))
         const result = await provider.getBridgingParams(SupportedChainId.BASE, mockOrder as any, '0xtxhash')
         expect(result).not.toBeNull()
         expect(result?.params.outputTokenAddress).toBe(BTC_CURRENCY_ADDRESS)
@@ -383,7 +405,7 @@ adapterNames.forEach((adapterName) => {
         }
 
         jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
-        jest.spyOn(api, 'getTokens').mockResolvedValue([
+        jest.spyOn(api, 'getRoutableTokens').mockResolvedValue([
           {
             assetId: 'nep141:usdc.omft.near',
             decimals: 6,
@@ -489,7 +511,7 @@ adapterNames.forEach((adapterName) => {
         }
 
         jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
-        jest.spyOn(api, 'getTokens').mockResolvedValue([
+        jest.spyOn(api, 'getRoutableTokens').mockResolvedValue([
           {
             assetId: 'nep141:usdc.omft.near',
             decimals: 6,
@@ -660,7 +682,7 @@ adapterNames.forEach((adapterName) => {
         }
 
         jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
-        jest.spyOn(api, 'getTokens').mockResolvedValue([
+        jest.spyOn(api, 'getRoutableTokens').mockResolvedValue([
           {
             assetId: 'nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near',
             decimals: 6,
@@ -764,7 +786,7 @@ adapterNames.forEach((adapterName) => {
         }
 
         jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
-        jest.spyOn(api, 'getTokens').mockResolvedValue([
+        jest.spyOn(api, 'getRoutableTokens').mockResolvedValue([
           {
             assetId: 'nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near',
             decimals: 6,
@@ -887,7 +909,7 @@ adapterNames.forEach((adapterName) => {
         }
 
         jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
-        jest.spyOn(api, 'getTokens').mockResolvedValue([
+        jest.spyOn(api, 'getRoutableTokens').mockResolvedValue([
           {
             assetId: 'nep141:eth.omft.near',
             decimals: 18,
@@ -1003,7 +1025,7 @@ adapterNames.forEach((adapterName) => {
         }
 
         jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
-        jest.spyOn(api, 'getTokens').mockResolvedValue([
+        jest.spyOn(api, 'getRoutableTokens').mockResolvedValue([
           {
             assetId: 'nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near',
             decimals: 6,
@@ -1125,7 +1147,7 @@ adapterNames.forEach((adapterName) => {
         }
 
         jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
-        jest.spyOn(api, 'getTokens').mockResolvedValue([
+        jest.spyOn(api, 'getRoutableTokens').mockResolvedValue([
           {
             assetId: 'nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near',
             decimals: 6,
@@ -1230,7 +1252,7 @@ adapterNames.forEach((adapterName) => {
         }
 
         jest.spyOn(api, 'getQuote').mockResolvedValue(mockQuoteResponse)
-        jest.spyOn(api, 'getTokens').mockResolvedValue([
+        jest.spyOn(api, 'getRoutableTokens').mockResolvedValue([
           {
             assetId: 'nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near',
             decimals: 6,
