@@ -43,6 +43,7 @@ const sdk = new SolanaTradingSdk() // same env as the SDK instance used for the 
 const approveInstruction = sdk.approveCowProtocol({
   ownerAddress: owner,
   sellTokenAddress: sellMint,
+  sellTokenProgramId, // TOKEN_PROGRAM_ID, or TOKEN_2022_PROGRAM_ID for a Token-2022 mint
   approveAmount, // at least the order's sellAmount
 })
 ```
@@ -74,6 +75,8 @@ const { quoteResults, solanaQuote, buildOrder, postSwapOrderFromQuote } = await 
   sellTokenDecimals,
   buyTokenAddress,
   buyTokenDecimals,
+  sellTokenProgramId, // TOKEN_PROGRAM_ID, or TOKEN_2022_PROGRAM_ID for a Token-2022 mint
+  buyTokenProgramId,
   appCode: 'YOUR_APP_CODE',
   amount, // bigint — sell-side amount for a SELL order, buy-side amount for a BUY order
   kind: OrderKind.SELL,
@@ -87,8 +90,9 @@ const { quoteResults, solanaQuote, buildOrder, postSwapOrderFromQuote } = await 
   (real amounts/slippage) the intent was derived from.
 - Native SOL is accepted as the sentinel address; it's substituted with wrapped SOL (WSOL) before
   quoting and building the intent, since Solana has no native-token mint to reference on-chain.
-- Passing `sellTokenProgramId` / `buyTokenProgramId` (e.g. `TOKEN_2022_PROGRAM_ID`) is required for
-  Token-2022 mints, since the associated token account address differs by program.
+- `sellTokenProgramId` / `buyTokenProgramId` are required for every mint, classic SPL Token as much
+  as Token-2022. The associated token account address is a PDA of `(owner, tokenProgram, mint)`, so
+  the wrong program names an account that cannot exist and the order can never settle.
 
 ### Showing a quote
 
@@ -290,6 +294,8 @@ const { instruction, orderId, orderPda, uid } = await sdk.buildLimitOrder({
   buyTokenAddress,
   sellAmount, // bigint — the caller's own price, not a quoted amount
   buyAmount,
+  sellTokenProgramId, // TOKEN_PROGRAM_ID, or TOKEN_2022_PROGRAM_ID for a Token-2022 mint
+  buyTokenProgramId,
   kind: OrderKind.SELL,
   validTo, // unix timestamp, seconds — when the order expires
   partiallyFillable,
@@ -300,8 +306,8 @@ await sendMyTransaction([approveInstruction, instruction])
 ```
 
 - Takes the same token-account/mint resolution as `getQuote` (native SOL → WSOL substitution,
-  `receiverAddress` defaulting to `ownerAddress`, `sellTokenProgramId`/`buyTokenProgramId` for
-  Token-2022 mints), but needs no upstream quote and no signer to build.
+  `receiverAddress` defaulting to `ownerAddress`, the required
+  `sellTokenProgramId`/`buyTokenProgramId`), but needs no upstream quote and no signer to build.
 - `appData` is used exactly as given — no hashing, no doc, no merging against a quoted value. To
   commit to the same kind of app-data doc `getQuote` builds for a swap, build it with
   `buildSolanaAppData` and upload it as in [Step 3](#step-3--read-back-the-result):
