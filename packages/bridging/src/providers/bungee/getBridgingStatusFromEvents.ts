@@ -1,14 +1,17 @@
 import { BridgeStatus, BridgeStatusResult } from '../../types'
 import { AcrossStatus, BungeeBridgeName, BungeeEvent, BungeeEventStatus } from './types'
 
+/**
+ * Evaluates only the first event. Empty input or a missing first event returns `UNKNOWN`.
+ * For Across with a completed source and pending destination, looks up status by the source transaction hash.
+ * A missing hash, lookup failure or status other than expired or refunded leaves the bridge `IN_PROGRESS`.
+ * Unhandled API status values throw.
+ */
 export async function getBridgingStatusFromEvents(
   events: BungeeEvent[] | undefined,
   getAcrossStatus: (depositTxHash: string) => Promise<AcrossStatus>,
 ): Promise<BridgeStatusResult> {
-  // if empty, return not_initiated
-  // order id exists so order is valid, but
-  // - bungee may not have indexed the event yet, which it will do eventually
-  // - or the order is not filled yet on cowswap
+  // No first event: return UNKNOWN. The order may be unfilled or not yet indexed by Bungee.
   if (!events?.length || !events?.[0]) {
     return { status: BridgeStatus.UNKNOWN }
   }
