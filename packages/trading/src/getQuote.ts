@@ -55,6 +55,11 @@ interface GetQuoteRawResult {
   suggestedSlippageBps: number
 }
 
+/**
+ * Preserves explicit `slippageBps`, including zero. AUTO applies only when `slippageBps === undefined`.
+ * In AUTO mode, a non-nullish suggestion (including zero) rebuilds app data and updates returned slippage and
+ * trade parameters. Reuses the same API response, with possible `protocolFeeBps` normalization, without refetching.
+ */
 export async function getQuoteRaw(
   _tradeParameters: TradeParameters,
   trader: QuoterParameters,
@@ -165,16 +170,14 @@ export async function getQuoteRaw(
     isEthFlow,
     quote,
     orderBookApi,
-    suggestedSlippageBps: suggestedSlippageBps || defaultSlippageBps,
+    suggestedSlippageBps: suggestedSlippageBps ?? defaultSlippageBps,
   }
 
   // If no slippage is specified. AUTO slippage is used
   if (slippageBps === undefined) {
-    if (suggestedSlippageBps) {
-      // Recursive call, this time using the suggested slippage
-      log(
-        `Suggested slippage is greater than ${defaultSlippageBps} BPS (default), using the suggested slippage (${suggestedSlippageBps} BPS)`,
-      )
+    if (suggestedSlippageBps != null) {
+      // Rebuild app data with the suggested slippage.
+      log(`Using suggested slippage (${suggestedSlippageBps} BPS) instead of the default (${defaultSlippageBps} BPS)`)
 
       const newAppDataInfo = await buildAppData(
         {
