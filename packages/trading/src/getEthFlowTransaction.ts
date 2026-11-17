@@ -19,6 +19,10 @@ import {
 import type { UnsignedOrder } from '@cowprotocol/sdk-order-signing'
 import { getDefaultSlippageBps } from './utils/slippage'
 
+/**
+ * Builds an EthFlow transaction, keeping its amounts, `orderId` and returned `orderToSign` consistent
+ * with any collision adjustment. Reusing the original order after a collision would recreate the colliding order.
+ */
 export async function getEthFlowTransaction(
   appDataKeccak256: string,
   _params: LimitTradeParametersFromQuote,
@@ -57,10 +61,6 @@ export async function getEthFlowTransaction(
     params,
     appDataKeccak256,
   )
-  // `uniqueOrder` may differ from `orderToSign` when a collision was detected and the
-  // amounts were nudged to produce `orderId` — the on-chain transaction and everything
-  // returned to the caller MUST be built from `uniqueOrder`, not the original input,
-  // or the transaction recreates the exact order that was just detected as colliding.
   const { orderId, order: uniqueOrder } = await calculateUniqueOrderId(
     chainId,
     orderToSign,

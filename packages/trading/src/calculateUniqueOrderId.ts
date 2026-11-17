@@ -14,14 +14,17 @@ import { unsignedOrderForSigning } from './utils/order'
 export interface UniqueOrderIdResult {
   orderId: string
   /**
-   * The order that actually produced `orderId`. On a collision this differs from the
-   * `order` argument (its `buyAmount` has been nudged) — callers MUST build the on-chain
-   * transaction from this order, not from their original input, or they'll recreate the
-   * exact order that was just detected as colliding.
+   * The order to use for the transaction, including any collision adjustment.
    */
   order: UnsignedOrder
 }
 
+/**
+ * Computes an ID using EthFlow-normalized fields: maximum validity, wrapped native sell token and contract owner.
+ * Checks collisions only when `checkEthFlowOrderExists` is supplied, reducing `buyAmount` by one base unit per retry.
+ * Adjustment throws if the buy amount cannot remain positive.
+ * Callers must build the transaction from the returned order.
+ */
 export async function calculateUniqueOrderId(
   chainId: SupportedChainId,
   order: UnsignedOrder,
@@ -50,7 +53,7 @@ export async function calculateUniqueOrderId(
       fee: order.feeAmount,
     })
 
-    // Recursive call, increment one fee until we get an unique order Id
+    // Retry with buyAmount decreased by one base unit.
     return calculateUniqueOrderId(
       chainId,
       adjustAmounts(order),
@@ -62,17 +65,16 @@ export async function calculateUniqueOrderId(
   return { orderId, order }
 }
 
+/**
+ * Nudges `buyAmount` down by one base unit, slightly worsening the requested price.
+ * With zero fees there is no fee amount to shift. Keeping `sellAmount` fixed avoids
+ * a harder-to-fill price from reducing it or requiring more native funds from increasing it.
+ * Throws if the adjusted buy amount would be nonpositive.
+ */
 function adjustAmounts(order: UnsignedOrder): UnsignedOrder {
   const buyAmount = BigInt(order.buyAmount)
 
-  // On fee=0, fee is, well, 0. Thus, we cannot shift amounts around and remain with the exact same price.
-  // Also, we don't want to touch the sell amount.
-  // If we move it down, the price might become "too good", if we move it up, the user might not have enough funds!
-  // Thus, we make the buy amount a tad bit worse by 1 wei.
   if (buyAmount <= BigInt(1)) {
-    // A zero (or negative, on a second collision) buyAmount can't be nudged further down
-    // without producing an invalid order — fail loudly instead of silently building a
-    // transaction with buyAmount 0 (or a BigInt that can't encode as uint256).
     throw new Error(
       `[calculateUniqueOrderId] Cannot resolve order-id collision: buyAmount (${order.buyAmount}) is too small to adjust further`,
     )
