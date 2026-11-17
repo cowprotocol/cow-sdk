@@ -22,12 +22,12 @@ export interface SolanaQuoteParameters {
   slippageBps?: number
   /** Identifies the integrator in the order's app-data doc. Overridden by `advancedSettings.appData.appCode`. */
   appCode: string
-  /** Token program owning `sellMint`'s accounts (classic SPL Token vs Token-2022). Defaults to the
-   * classic SPL Token program — pass `TOKEN_2022_PROGRAM_ID` explicitly for Token-2022 mints, since the
-   * associated token account address differs by program. */
-  sellTokenProgramId?: PublicKeyInitData
+  /** Token program owning `sellMint`'s accounts (classic SPL Token vs Token-2022). Required: the
+   * associated token account address is a PDA of `(owner, tokenProgram, mint)`, so the wrong program
+   * names an account that cannot exist for the mint. */
+  sellTokenProgramId: PublicKeyInitData
   /** Same as `sellTokenProgramId`, for `buyMint`. */
-  buyTokenProgramId?: PublicKeyInitData
+  buyTokenProgramId: PublicKeyInitData
 }
 
 export interface SolanaQuote {
@@ -42,7 +42,7 @@ export interface SolanaQuote {
   env?: CowEnv
   /** Token program owning `intent.buyMint`'s accounts, as resolved at quote time — needed to re-derive
    * `buyTokenAccount`'s associated token address if `receiver` is overridden when posting. */
-  buyTokenProgramId?: PublicKey
+  buyTokenProgramId: PublicKey
   /** Pays for a sponsored order on this deployment — pass it as `sponsor` to `buildSolanaSwapOrder`
    * and name it as the transaction's fee payer. Absent when the deployment has no sponsoring. */
   funder?: PublicKey

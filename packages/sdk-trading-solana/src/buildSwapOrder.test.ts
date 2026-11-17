@@ -1,5 +1,5 @@
 import { Keypair, PublicKey } from '@solana/web3.js'
-import { getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token'
+import { getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { OrderKind, SigningScheme } from '@cowprotocol/sdk-order-book'
 import { SOL_NATIVE_CURRENCY_ADDRESS } from '@cowprotocol/sdk-config'
 import type { QuoteResults } from '@cowprotocol/sdk-trading'
@@ -15,7 +15,7 @@ function fillPubkey(byte: number): PublicKey {
 }
 
 async function buildFixtureQuote(
-  buyTokenProgramId?: PublicKey,
+  buyTokenProgramId: PublicKey = TOKEN_PROGRAM_ID,
   intentOverrides: Partial<SolanaOrderIntent> = {},
 ): Promise<SolanaQuote> {
   const programId = fillPubkey(0x01)
@@ -125,9 +125,12 @@ describe('buildSolanaSwapOrder', () => {
     const solanaQuote = await buildFixtureQuote()
     const originalValidTo = solanaQuote.intent.validTo
 
-    await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, {
-      quoteRequest: { validTo: originalValidTo + 1_000 },
-    })
+    await buildSolanaSwapOrder(
+      { quoteResults: buildFixtureQuoteResults(), solanaQuote },
+      {
+        quoteRequest: { validTo: originalValidTo + 1_000 },
+      },
+    )
 
     expect(solanaQuote.intent.validTo).toBe(originalValidTo)
   })
@@ -137,9 +140,12 @@ describe('buildSolanaSwapOrder', () => {
     const solanaQuote = await buildFixtureQuote(buyTokenProgramId)
     const newReceiver = Keypair.generate().publicKey
 
-    const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, {
-      quoteRequest: { receiver: newReceiver.toBase58() },
-    })
+    const order = await buildSolanaSwapOrder(
+      { quoteResults: buildFixtureQuoteResults(), solanaQuote },
+      {
+        quoteRequest: { receiver: newReceiver.toBase58() },
+      },
+    )
 
     const expectedBuyTokenAccount = getAssociatedTokenAddressSync(
       solanaQuote.intent.buyMint,
@@ -165,9 +171,12 @@ describe('buildSolanaSwapOrder', () => {
     })
     const newReceiver = Keypair.generate().publicKey
 
-    const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, {
-      quoteRequest: { receiver: newReceiver.toBase58() },
-    })
+    const order = await buildSolanaSwapOrder(
+      { quoteResults: buildFixtureQuoteResults(), solanaQuote },
+      {
+        quoteRequest: { receiver: newReceiver.toBase58() },
+      },
+    )
 
     expect(order.intent.buyTokenAccount.toBase58()).toBe(newReceiver.toBase58())
     expect(order.intent.buyTokenAccount.toBase58()).not.toBe(
@@ -179,9 +188,12 @@ describe('buildSolanaSwapOrder', () => {
     const solanaQuote = await buildFixtureQuote()
     const newValidTo = solanaQuote.intent.validTo + 1_000
 
-    const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, {
-      quoteRequest: { validTo: newValidTo },
-    })
+    const order = await buildSolanaSwapOrder(
+      { quoteResults: buildFixtureQuoteResults(), solanaQuote },
+      {
+        quoteRequest: { validTo: newValidTo },
+      },
+    )
 
     const expectedIntent = { ...solanaQuote.intent, validTo: newValidTo }
     const expectedUid = await hashOrderIntent(encodeOrderIntent(expectedIntent))
@@ -197,9 +209,12 @@ describe('buildSolanaSwapOrder', () => {
     const solanaQuote = { ...(await buildFixtureQuote()), env: 'staging' as const }
     const newValidTo = solanaQuote.intent.validTo + 1_000
 
-    const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, {
-      quoteRequest: { validTo: newValidTo },
-    })
+    const order = await buildSolanaSwapOrder(
+      { quoteResults: buildFixtureQuoteResults(), solanaQuote },
+      {
+        quoteRequest: { validTo: newValidTo },
+      },
+    )
 
     const expectedUid = await hashOrderIntent(encodeOrderIntent({ ...solanaQuote.intent, validTo: newValidTo }))
     const [expectedPda] = findOrderPda(solanaQuote.programId, expectedUid, solanaQuote.env)
@@ -232,7 +247,7 @@ describe('buildSolanaSwapOrder', () => {
     expect(order.appDataInfo?.doc.metadata).toMatchObject({ referrer: { code: 'someone' } })
   })
 
-  it('returns the quote\'s app-data doc when appData is not overridden', async () => {
+  it("returns the quote's app-data doc when appData is not overridden", async () => {
     const solanaQuote = await buildFixtureQuote()
     const quoteResults = buildFixtureQuoteResults()
 
@@ -255,9 +270,12 @@ describe('buildSolanaSwapOrder', () => {
   it('keeps the quoted uid/orderPda when advancedSettings overrides nothing relevant', async () => {
     const solanaQuote = await buildFixtureQuote()
 
-    const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, {
-      quoteRequest: {},
-    })
+    const order = await buildSolanaSwapOrder(
+      { quoteResults: buildFixtureQuoteResults(), solanaQuote },
+      {
+        quoteRequest: {},
+      },
+    )
 
     expect(order.orderId).toBe(toOrderId(solanaQuote.uid))
     expect(order.orderPda.toBase58()).toBe(solanaQuote.orderPda.toBase58())

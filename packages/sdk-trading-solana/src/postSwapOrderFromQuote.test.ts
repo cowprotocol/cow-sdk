@@ -1,3 +1,4 @@
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { OrderKind, SigningScheme } from '@cowprotocol/sdk-order-book'
 import type { QuoteResults } from '@cowprotocol/sdk-trading'
@@ -34,6 +35,7 @@ async function buildFixtureQuote(): Promise<SolanaQuote> {
     intent,
     intentBytes,
     uid,
+    buyTokenProgramId: TOKEN_PROGRAM_ID,
     orderPda,
     programId,
   }

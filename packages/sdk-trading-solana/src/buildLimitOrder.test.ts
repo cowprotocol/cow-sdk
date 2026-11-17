@@ -1,5 +1,5 @@
 import { Keypair, PublicKey } from '@solana/web3.js'
-import { getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token'
+import { getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { OrderKind, SigningScheme } from '@cowprotocol/sdk-order-book'
 import { SOL_NATIVE_CURRENCY_ADDRESS, SupportedChainId, WRAPPED_NATIVE_CURRENCIES } from '@cowprotocol/sdk-config'
 
@@ -25,6 +25,8 @@ function buildParams(overrides: Partial<SolanaLimitOrderParams> = {}): SolanaLim
     validTo: 1_700_000_000,
     partiallyFillable: false,
     appData: APP_DATA_BYTES,
+    sellTokenProgramId: TOKEN_PROGRAM_ID,
+    buyTokenProgramId: TOKEN_PROGRAM_ID,
     ...overrides,
   }
 }
@@ -74,7 +76,7 @@ describe('buildSolanaLimitOrderOrder', () => {
     )
   })
 
-  it("substitutes WSOL for a native SOL sell, matching what the wrap step produces", async () => {
+  it('substitutes WSOL for a native SOL sell, matching what the wrap step produces', async () => {
     const order = await buildSolanaLimitOrderOrder(
       buildParams({ sellTokenAddress: new PublicKey(SOL_NATIVE_CURRENCY_ADDRESS) }),
     )
@@ -126,9 +128,7 @@ describe('buildSolanaLimitOrderOrder', () => {
   })
 
   it('rejects appData that is not exactly 32 bytes, matching the on-chain intent format', async () => {
-    await expect(buildSolanaLimitOrderOrder(buildParams({ appData: new Uint8Array(31) }))).rejects.toThrow(
-      /32 bytes/,
-    )
+    await expect(buildSolanaLimitOrderOrder(buildParams({ appData: new Uint8Array(31) }))).rejects.toThrow(/32 bytes/)
   })
 
   it('carries through kind, validTo, and partiallyFillable exactly as given', async () => {
@@ -148,7 +148,7 @@ describe('buildSolanaLimitOrderOrder', () => {
     expect(encodeOrderIntent(order.intent)[180]).toBe(0)
   })
 
-  it("derives uid/orderPda/instruction from the encoded intent, matching the primitives directly", async () => {
+  it('derives uid/orderPda/instruction from the encoded intent, matching the primitives directly', async () => {
     const order = await buildSolanaLimitOrderOrder(buildParams())
 
     const expectedIntentBytes = encodeOrderIntent(order.intent)

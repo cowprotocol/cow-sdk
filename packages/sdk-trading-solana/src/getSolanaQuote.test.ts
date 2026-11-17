@@ -1,5 +1,5 @@
 import { PublicKey } from '@solana/web3.js'
-import { getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token'
+import { getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
   OrderKind,
   OrderBookApi,
@@ -75,6 +75,8 @@ describe('getSolanaQuote', () => {
     const { solanaQuote, quoteResults } = await getSolanaQuote(
       {
         ownerAddress: owner,
+        sellTokenProgramId: TOKEN_PROGRAM_ID,
+        buyTokenProgramId: TOKEN_PROGRAM_ID,
         receiverAddress: receiver,
         sellTokenAddress: sellMint,
         sellTokenDecimals,
@@ -131,6 +133,8 @@ describe('getSolanaQuote', () => {
       await getSolanaQuote(
         {
           ownerAddress: owner,
+          sellTokenProgramId: TOKEN_PROGRAM_ID,
+          buyTokenProgramId: TOKEN_PROGRAM_ID,
           receiverAddress: receiver,
           sellTokenAddress: sellMint,
           sellTokenDecimals,
@@ -162,6 +166,8 @@ describe('getSolanaQuote', () => {
       await getSolanaQuote(
         {
           ownerAddress: owner,
+          sellTokenProgramId: TOKEN_PROGRAM_ID,
+          buyTokenProgramId: TOKEN_PROGRAM_ID,
           receiverAddress: receiver,
           sellTokenAddress: sellMint,
           sellTokenDecimals,
@@ -191,6 +197,8 @@ describe('getSolanaQuote', () => {
         return getSolanaQuote(
           {
             ownerAddress: owner,
+            sellTokenProgramId: TOKEN_PROGRAM_ID,
+            buyTokenProgramId: TOKEN_PROGRAM_ID,
             receiverAddress: receiver,
             sellTokenAddress: sellMint,
             sellTokenDecimals,
@@ -248,6 +256,8 @@ describe('getSolanaQuote', () => {
       return getSolanaQuote(
         {
           ownerAddress: owner,
+          sellTokenProgramId: TOKEN_PROGRAM_ID,
+          buyTokenProgramId: TOKEN_PROGRAM_ID,
           receiverAddress: receiver,
           sellTokenAddress: sellMint,
           sellTokenDecimals,
@@ -327,6 +337,8 @@ describe('getSolanaQuote', () => {
       return getSolanaQuote(
         {
           ownerAddress: owner,
+          sellTokenProgramId: TOKEN_PROGRAM_ID,
+          buyTokenProgramId: TOKEN_PROGRAM_ID,
           receiverAddress: receiver,
           sellTokenAddress: sellMint,
           sellTokenDecimals,
@@ -395,6 +407,8 @@ describe('getSolanaQuote', () => {
       return getSolanaQuote(
         {
           ownerAddress: owner,
+          sellTokenProgramId: TOKEN_PROGRAM_ID,
+          buyTokenProgramId: TOKEN_PROGRAM_ID,
           receiverAddress: receiver,
           sellTokenAddress: sellMint,
           sellTokenDecimals,
@@ -473,6 +487,8 @@ describe('getSolanaQuote', () => {
     const { solanaQuote } = await getSolanaQuote(
       {
         ownerAddress: owner,
+        sellTokenProgramId: TOKEN_PROGRAM_ID,
+        buyTokenProgramId: TOKEN_PROGRAM_ID,
         receiverAddress: receiver,
         sellTokenAddress: sellMint,
         sellTokenDecimals,
@@ -494,6 +510,8 @@ describe('getSolanaQuote', () => {
     const { solanaQuote } = await getSolanaQuote(
       {
         ownerAddress: owner,
+        sellTokenProgramId: TOKEN_PROGRAM_ID,
+        buyTokenProgramId: TOKEN_PROGRAM_ID,
         receiverAddress: receiver,
         sellTokenAddress: sellMint,
         sellTokenDecimals,
@@ -516,6 +534,8 @@ describe('getSolanaQuote', () => {
       getSolanaQuote(
         {
           ownerAddress: owner,
+          sellTokenProgramId: TOKEN_PROGRAM_ID,
+          buyTokenProgramId: TOKEN_PROGRAM_ID,
           receiverAddress: receiver,
           sellTokenAddress: sellMint,
           sellTokenDecimals,
@@ -541,6 +561,8 @@ describe('getSolanaQuote', () => {
       return getSolanaQuote(
         {
           ownerAddress: owner,
+          sellTokenProgramId: TOKEN_PROGRAM_ID,
+          buyTokenProgramId: TOKEN_PROGRAM_ID,
           receiverAddress: receiver,
           sellTokenAddress: SOL_NATIVE_CURRENCY_ADDRESS,
           sellTokenDecimals: 9,
@@ -579,7 +601,10 @@ describe('getSolanaQuote', () => {
 
       await quoteNativeSell()
 
-      expect(getSolanaQuoteMock).toHaveBeenCalledWith(expect.objectContaining({ sellToken: wsolMint.toBase58() }), SOLANA_CONTEXT)
+      expect(getSolanaQuoteMock).toHaveBeenCalledWith(
+        expect.objectContaining({ sellToken: wsolMint.toBase58() }),
+        SOLANA_CONTEXT,
+      )
       expect(getSolanaQuoteMock.mock.calls[0]?.[0].sellToken).not.toBe(SOL_NATIVE_CURRENCY_ADDRESS)
     })
 
@@ -635,6 +660,8 @@ describe('getSolanaQuote', () => {
       const { solanaQuote, quoteResults } = await getSolanaQuote(
         {
           ownerAddress: owner,
+          sellTokenProgramId: TOKEN_PROGRAM_ID,
+          buyTokenProgramId: TOKEN_PROGRAM_ID,
           receiverAddress: receiver,
           sellTokenAddress: usdcMint,
           sellTokenDecimals: 6,
@@ -664,6 +691,8 @@ describe('getSolanaQuote', () => {
       return getSolanaQuote(
         {
           ownerAddress: owner,
+          sellTokenProgramId: TOKEN_PROGRAM_ID,
+          buyTokenProgramId: TOKEN_PROGRAM_ID,
           receiverAddress: receiver,
           sellTokenAddress: usdcMint,
           sellTokenDecimals: 6,
@@ -745,6 +774,8 @@ describe('getSolanaQuote', () => {
       const { solanaQuote, quoteResults } = await getSolanaQuote(
         {
           ownerAddress: owner,
+          sellTokenProgramId: TOKEN_PROGRAM_ID,
+          buyTokenProgramId: TOKEN_PROGRAM_ID,
           receiverAddress: receiver,
           sellTokenAddress: usdcMint,
           sellTokenDecimals: 6,
@@ -771,6 +802,8 @@ describe('getSolanaQuote', () => {
     const { solanaQuote } = await getSolanaQuote(
       {
         ownerAddress: owner,
+        sellTokenProgramId: TOKEN_PROGRAM_ID,
+        buyTokenProgramId: TOKEN_PROGRAM_ID,
         receiverAddress: receiver,
         sellTokenAddress: sellMint,
         sellTokenDecimals,
@@ -792,7 +825,10 @@ describe('getSolanaQuote', () => {
   })
 
   it('quotes for an off-curve owner and receiver, as a multisig vault is', async () => {
-    const [vault] = PublicKey.findProgramAddressSync([Buffer.from('vault')], new PublicKey(SOLANA_SETTLEMENT_PROGRAM_ID))
+    const [vault] = PublicKey.findProgramAddressSync(
+      [Buffer.from('vault')],
+      new PublicKey(SOLANA_SETTLEMENT_PROGRAM_ID),
+    )
     expect(PublicKey.isOnCurve(vault.toBytes())).toBe(false)
 
     mockQuoteResponse({ receiver: vault.toBase58() })
@@ -801,6 +837,8 @@ describe('getSolanaQuote', () => {
       {
         ownerAddress: vault,
         receiverAddress: vault,
+        sellTokenProgramId: TOKEN_PROGRAM_ID,
+        buyTokenProgramId: TOKEN_PROGRAM_ID,
         sellTokenAddress: sellMint,
         sellTokenDecimals,
         buyTokenAddress: buyMint,
@@ -825,6 +863,8 @@ describe('getSolanaQuote', () => {
     const { solanaQuote: classicQuote } = await getSolanaQuote(
       {
         ownerAddress: owner,
+        sellTokenProgramId: TOKEN_PROGRAM_ID,
+        buyTokenProgramId: TOKEN_PROGRAM_ID,
         receiverAddress: receiver,
         sellTokenAddress: sellMint,
         sellTokenDecimals,
@@ -866,6 +906,8 @@ describe('getSolanaQuote', () => {
       return getSolanaQuote(
         {
           ownerAddress: owner,
+          sellTokenProgramId: TOKEN_PROGRAM_ID,
+          buyTokenProgramId: TOKEN_PROGRAM_ID,
           receiverAddress: receiver,
           sellTokenAddress: sellMint,
           sellTokenDecimals,
@@ -910,6 +952,8 @@ describe('getSolanaQuote', () => {
       return getSolanaQuote(
         {
           ownerAddress: owner,
+          sellTokenProgramId: TOKEN_PROGRAM_ID,
+          buyTokenProgramId: TOKEN_PROGRAM_ID,
           receiverAddress: receiver,
           sellTokenAddress: sellMint,
           sellTokenDecimals,
@@ -966,7 +1010,9 @@ describe('getSolanaQuote', () => {
       restore: () => void
     } {
       let seen: OrderBookApi['context'] | undefined
-      const spy = jest.spyOn(OrderBookApi.prototype, 'getSolanaQuote').mockImplementation(function (this: OrderBookApi) {
+      const spy = jest.spyOn(OrderBookApi.prototype, 'getSolanaQuote').mockImplementation(function (
+        this: OrderBookApi,
+      ) {
         seen = this.context
 
         return Promise.resolve(quoteResponseFixture())
@@ -975,6 +1021,8 @@ describe('getSolanaQuote', () => {
       const quote = getSolanaQuote(
         {
           ownerAddress: owner,
+          sellTokenProgramId: TOKEN_PROGRAM_ID,
+          buyTokenProgramId: TOKEN_PROGRAM_ID,
           receiverAddress: receiver,
           sellTokenAddress: sellMint,
           sellTokenDecimals,

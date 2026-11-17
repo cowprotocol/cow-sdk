@@ -1,5 +1,10 @@
 import { PublicKey } from '@solana/web3.js'
-import { decodeApproveInstruction, TOKEN_2022_PROGRAM_ID, getAssociatedTokenAddressSync } from '@solana/spl-token'
+import {
+  decodeApproveInstruction,
+  TOKEN_2022_PROGRAM_ID,
+  TOKEN_PROGRAM_ID,
+  getAssociatedTokenAddressSync,
+} from '@solana/spl-token'
 import { OrderKind, SigningScheme } from '@cowprotocol/sdk-order-book'
 import type {
   OrderPostingResult,
@@ -57,6 +62,8 @@ const APP_CODE = 'test-app'
 const params: SolanaQuoteParameters = {
   ownerAddress: owner,
   receiverAddress: receiver,
+  sellTokenProgramId: TOKEN_PROGRAM_ID,
+  buyTokenProgramId: TOKEN_PROGRAM_ID,
   sellTokenAddress: sellMint,
   sellTokenDecimals: 6,
   buyTokenAddress: buyMint,
@@ -67,6 +74,7 @@ const params: SolanaQuoteParameters = {
 }
 
 const solanaQuoteFixture: SolanaQuote = {
+  buyTokenProgramId: TOKEN_PROGRAM_ID,
   intent: {
     owner,
     buyTokenAccount: fillPubkey(0x44),
@@ -270,6 +278,8 @@ describe('SolanaTradingSdk', () => {
   describe('buildLimitOrder', () => {
     const limitOrderParams: SolanaLimitOrderParams = {
       ownerAddress: owner,
+      sellTokenProgramId: TOKEN_PROGRAM_ID,
+      buyTokenProgramId: TOKEN_PROGRAM_ID,
       sellTokenAddress: sellMint,
       buyTokenAddress: buyMint,
       sellAmount: 1_000_000n,
@@ -316,6 +326,7 @@ describe('SolanaTradingSdk', () => {
       const instruction = sdk.approveCowProtocol({
         ownerAddress: owner,
         sellTokenAddress: sellMint,
+        sellTokenProgramId: TOKEN_PROGRAM_ID,
         approveAmount: 123n,
       })
 
@@ -333,6 +344,7 @@ describe('SolanaTradingSdk', () => {
       const instruction = sdk.approveCowProtocol({
         ownerAddress: owner,
         sellTokenAddress: sellMint,
+        sellTokenProgramId: TOKEN_PROGRAM_ID,
         approveAmount: 123n,
       })
 
