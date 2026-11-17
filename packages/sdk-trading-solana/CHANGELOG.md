@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v1.2.1...sdk-trading-solana-v2.0.0) (2026-11-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* **solana:** require the token program ids that derive token accounts ([#1100](https://github.com/cowprotocol/cow-sdk/issues/1100))
+
+### 🐛 Bug Fixes
+
+* **solana:** require the token program ids that derive token accounts ([#1100](https://github.com/cowprotocol/cow-sdk/issues/1100)) ([151cb81](https://github.com/cowprotocol/cow-sdk/commit/151cb814c866fdedb9d2c0aecdb238c5f7c119fd))
+
 ## [1.2.1](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v1.2.0...sdk-trading-solana-v1.2.1) (2026-11-16)
 
 
