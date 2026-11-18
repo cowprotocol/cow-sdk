@@ -73,6 +73,10 @@ export async function generateAppDataFromDoc(
   return { fullAppData, appDataKeccak256 }
 }
 
+function replaceArray<T>(_target: T[], source: T[]): T[] {
+  return source
+}
+
 export async function mergeAppDataDoc(
   _doc: LatestAppDataDocVersion,
   appDataOverride: AppDataParams,
@@ -88,7 +92,12 @@ export async function mergeAppDataDoc(
     },
   }
 
-  const appData = (appDataOverride ? deepmerge(doc, appDataOverride) : doc) as LatestAppDataDocVersion
+  // The override's arrays replace the doc's: the quote's doc may already hold the same override (e.g. the
+  // caller passed one `advancedSettings` to both the quote and the posting), and concatenating would
+  // duplicate entries such as `metadata.partnerFee` or `metadata.wrappers`.
+  const appData = (
+    appDataOverride ? deepmerge(doc, appDataOverride, { arrayMerge: replaceArray }) : doc
+  ) as LatestAppDataDocVersion
   const { fullAppData, appDataKeccak256 } = await generateAppDataFromDoc(appData)
 
   return {

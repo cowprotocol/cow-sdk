@@ -1,7 +1,7 @@
 import { getQuoteWithSigner } from './getQuote'
 import { SupportedChainId } from '@cowprotocol/sdk-config'
 import { getQuoteAmountsAndCosts, OrderKind } from '@cowprotocol/sdk-order-book'
-import { postSwapOrderFromQuote } from './postSwapOrder'
+import { postSwapOrder, postSwapOrderFromQuote } from './postSwapOrder'
 import { SwapParameters } from './types'
 import { AdaptersTestSetup, createAdapters } from '../tests/setup'
 import { setGlobalAdapter } from '@cowprotocol/sdk-common'
@@ -195,6 +195,38 @@ describe('postSwapOrder', () => {
       const call = orderBookApi.sendOrder.mock.calls[0][0]
 
       expect(JSON.parse(call.appData).metadata.partnerFee).toEqual(orderParams.partnerFee)
+    }
+  })
+
+  it('When advancedSettings appData has arrays, then postSwapOrder must not duplicate their entries', async () => {
+    const partnerFee = [{ volumeBps: 50, recipient: '0x79063d9173C09887d536924E2F6eADbaBAc099f5' }]
+    const wrappers = [{ address: '0x0000000000000000000000000000000000000001', data: '0x' }]
+    const advancedSettings = { appData: { metadata: { partnerFee, wrappers } } }
+
+    for (const adapterName of Object.keys(adapters) as Array<keyof AdaptersTestSetup>) {
+      setGlobalAdapter(adapters[adapterName])
+      const orderBookApi = {
+        context: {
+          chainId: SELL_ORDER_PARAMS.chainId,
+        },
+        getQuote: jest.fn().mockResolvedValue(SELL_ORDER_QUOTE_MOCK),
+        sendOrder: jest.fn().mockResolvedValue('0x01'),
+        uploadAppData: jest.fn().mockResolvedValue(null),
+      }
+
+      // postSwapOrder hands the same advancedSettings to the quote (which builds the appData with them)
+      // and to the posting step (which merges them into that appData again)
+      await postSwapOrder(
+        { ...SELL_ORDER_PARAMS, amount: adapters[adapterName].utils.parseUnits('0.1', 18).toString() },
+        advancedSettings,
+        orderBookApi as any,
+      )
+
+      const call = orderBookApi.sendOrder.mock.calls[0][0]
+      const { metadata } = JSON.parse(call.appData)
+
+      expect(metadata.partnerFee).toEqual(partnerFee)
+      expect(metadata.wrappers).toEqual(wrappers)
     }
   })
 
