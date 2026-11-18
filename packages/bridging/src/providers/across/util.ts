@@ -169,7 +169,7 @@ export function applyBps(amount: bigint, bps: number): bigint {
 
 const AcrossStatusToBridgeStatus: Record<DepositStatusResponse['status'], BridgeStatus> = {
   filled: BridgeStatus.EXECUTED,
-  slowFillRequested: BridgeStatus.EXECUTED,
+  slowFillRequested: BridgeStatus.IN_PROGRESS,
   pending: BridgeStatus.IN_PROGRESS,
   expired: BridgeStatus.EXPIRED,
   refunded: BridgeStatus.REFUND,
