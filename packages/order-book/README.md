@@ -162,25 +162,31 @@ const sdk = new TradingSdk(
 
 ### Rate Limiting Configuration
 
+The API enforces its own [rate limits](https://docs.cow.fi/cow-protocol/integrate/api#rate-limits); `limiterOpts` only throttles requests on the client side.
+
+With the default `backoffOpts` (`DEFAULT_BACKOFF_OPTIONS`), `408`, `425`, `5xx` and network errors are retried up to 10 attempts. A `429` is retried at most twice: the SDK waits for `Retry-After` (or a random delay of up to 1–2 s when it is absent), and returns the error straight away if `Retry-After` is above 5 s. The thrown `OrderBookApiError` exposes `retryAfterMs` and `rateLimitHeaders`. In browsers, these headers are only readable if the API lists them in `Access-Control-Expose-Headers`.
+
+Custom `backoffOpts` replace the defaults; spread `DEFAULT_BACKOFF_OPTIONS` to keep its retry rules:
+
 ```typescript
 import { RateLimiterOpts } from 'limiter'
 import { BackoffOptions } from 'exponential-backoff'
+import { DEFAULT_BACKOFF_OPTIONS } from '@cowprotocol/sdk-order-book'
 
 const limiterOpts: RateLimiterOpts = {
   tokensPerInterval: 5,
   interval: 'second',
 }
 
-const backOffOpts: BackoffOptions = {
+const backoffOpts: BackoffOptions = {
+  ...DEFAULT_BACKOFF_OPTIONS,
   numOfAttempts: 5,
-  maxDelay: Infinity,
-  jitter: 'none',
 }
 
 const orderBookApi = new OrderBookApi({
   chainId: SupportedChainId.MAINNET,
   limiterOpts,
-  backOffOpts,
+  backoffOpts,
 })
 ```
 
