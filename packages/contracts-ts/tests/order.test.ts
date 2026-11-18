@@ -111,6 +111,35 @@ describe('Order Hashing and Signing', () => {
       const orderHash = hashOrder(testDomain, testOrder)
       expect(firstParams.orderDigest).toEqual(orderHash)
     })
+
+    test('should extract the correct validTo even when arrayify returns a view into a larger buffer', () => {
+      // Regression test: extractOrderUidParams used to build its DataView directly over
+      // bytes.buffer, ignoring bytes.byteOffset. That's fine for the shipped adapters (their
+      // arrayify implementations always return a byteOffset-0 Uint8Array), but any adapter
+      // whose arrayify returns a view into a larger backing buffer (e.g. a pooled Node
+      // Buffer, or a plain .subarray()) would silently read validTo from the wrong offset.
+      setGlobalAdapter(adapters.ethersV5Adapter)
+      const uid = computeOrderUid(testDomain, testOrder, TEST_ADDRESS)
+
+      const realArrayify = adapters.ethersV5Adapter.utils.arrayify.bind(adapters.ethersV5Adapter.utils)
+      const arrayifySpy = jest.spyOn(adapters.ethersV5Adapter.utils, 'arrayify').mockImplementation((hexString) => {
+        const realBytes = realArrayify(hexString)
+        // Simulate a byteOffset-shifted view: pack the real bytes into a larger backing
+        // buffer at a nonzero offset, then hand back a subarray view into it.
+        const padding = 20
+        const backing = new Uint8Array(padding + realBytes.length)
+        backing.set(realBytes, padding)
+        return backing.subarray(padding, padding + realBytes.length)
+      })
+
+      try {
+        const params = extractOrderUidParams(uid)
+        expect(params.validTo).toEqual(testOrder.validTo)
+        expect(params.owner).toEqual(TEST_ADDRESS)
+      } finally {
+        arrayifySpy.mockRestore()
+      }
+    })
   })
 
   describe('signOrder', () => {
