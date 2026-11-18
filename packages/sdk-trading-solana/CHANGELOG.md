@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v2.0.0...sdk-trading-solana-v2.1.0) (2026-11-18)
+
+
+### ✨ Features
+
+* **solana:** resolve a compute budget for sponsored order bundles ([#1095](https://github.com/cowprotocol/cow-sdk/issues/1095)) ([5a9846a](https://github.com/cowprotocol/cow-sdk/commit/5a9846a38bfc97433ba49ec584a4510eb542d3e8))
+
 ## [2.0.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v1.2.1...sdk-trading-solana-v2.0.0) (2026-11-17)
 
 
