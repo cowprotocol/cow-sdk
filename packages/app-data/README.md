@@ -97,6 +97,9 @@ Schemas are exposed as json files, where the version is the file name:
 // If you use TypeScript, enable `resolveJsonModule` in tsconfig.
 const schema = require('@cowprotocol/sdk-app-data/schemas/v0.4.0.json')
 
+// In native ES modules (Node.js 22+):
+// import schema from '@cowprotocol/sdk-app-data/schemas/v0.4.0.json' with { type: 'json' }
+
 // Now you can for example run validation against a schema
 ```
 
@@ -131,14 +134,20 @@ import {
 
 ### Utils
 
+These utils are methods of `AppDataSdk`. Schema retrieval and validation don't need an adapter.
+
+```js
+import { AppDataSdk } from '@cowprotocol/sdk-app-data'
+
+const appDataSdk = new AppDataSdk()
+```
+
 _Get appData schema_
 
 To get a schema definition by version
 
 ```js
-import { getAppDataSchema } from '@cowprotocol/sdk-app-data'
-
-const schema = getAppDataSchema('0.1.0')
+const schema = await appDataSdk.getAppDataSchema('0.1.0')
 ```
 
 It'll throw if the version does not exist
@@ -150,16 +159,14 @@ It'll return an object with a boolean indicating `success` and `errors`, if any.
 The version to validate against will be taken from the doc itself.
 
 ```js
-import { validateAppDataDoc } from '@cowprotocol/sdk-app-data'
-
 let doc = { version: '0.4.0', metadata: {} }
 
-let result = await validateAppDataDoc(doc)
-console.log(result) // { success: true }
+let result = await appDataSdk.validateAppDataDoc(doc)
+console.log(result) // { success: true, errors: undefined }
 
 doc = { version: '0.0.0', metadata: {} }
 
-result = await validateAppDataDoc(doc)
+result = await appDataSdk.validateAppDataDoc(doc)
 // Contrary to `getAppDataSchema`, invalid or non-existing schemas won't throw
 console.log(result) // { success: false, errors: 'AppData version 0.0.0 doesn\'t exist'}
 ```
