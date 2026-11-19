@@ -39,6 +39,23 @@ describe('validateAppDataDocument', () => {
     expect(validation.errors).toEqual("AppData version 0.0.0 doesn't exist")
   })
 
+  test("Version doesn't exist without logging the internal import error", async () => {
+    // given
+    // A version no other test loads: validators, including failed ones, are cached per version
+    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined)
+
+    try {
+      // when
+      const validation = await validateAppDataDoc({ ...v010Doc, version: '0.0.1' })
+
+      // then
+      expect(validation).toEqual({ success: false, errors: "AppData version 0.0.1 doesn't exist" })
+      expect(consoleLogSpy).not.toHaveBeenCalled()
+    } finally {
+      consoleLogSpy.mockRestore()
+    }
+  })
+
   test('Valid doc', async () => {
     // given
     const doc = { version: '0.4.0', metadata: {} }

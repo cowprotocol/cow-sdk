@@ -7,8 +7,7 @@ export async function importSchema(version: string): Promise<AnyAppDataDocVersio
   }
   try {
     return await import(`../schemas/v${version}.json`)
-  } catch (e) {
-    console.log(e)
+  } catch {
     throw new CowError(`AppData version ${version} doesn't exist`)
   }
 }

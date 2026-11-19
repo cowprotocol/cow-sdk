@@ -13,7 +13,8 @@
       "require": "./dist/index.js",
       "import": "./dist/index.mjs",
       "default": "./dist/index.js"
-    }
+    },
+    "./schemas/*.json": "./schemas/*.json"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
