@@ -447,4 +447,63 @@ describe('SolanaTradingSdk', () => {
       expect(sdk.cancelOrders([])).toEqual([])
     })
   })
+
+  describe('reclaimOrder', () => {
+    const orderPda = fillPubkey(0x88)
+
+    it('builds a reclaim instruction against the resolved settlement program', () => {
+      const sdk = new SolanaTradingSdk()
+
+      const instruction = sdk.reclaimOrder({ ownerAddress: owner, orderPda })
+
+      expect(instruction.programId).toEqual(getSolanaSettlementProgramId())
+      expect(instruction.data).toEqual(Buffer.from([5]))
+      expect(instruction.keys).toEqual([
+        { pubkey: orderPda, isSigner: false, isWritable: true },
+        { pubkey: owner, isSigner: false, isWritable: true },
+        { pubkey: owner, isSigner: true, isWritable: false },
+      ])
+    })
+
+    it('pays the rent to the sponsor that funded it, while the owner still signs', () => {
+      const sdk = new SolanaTradingSdk()
+      const sponsor = fillPubkey(0xbb)
+
+      const instruction = sdk.reclaimOrder({ ownerAddress: owner, orderPda, reclaimRecipientAddress: sponsor })
+
+      expect(instruction.keys[1]).toEqual({ pubkey: sponsor, isSigner: false, isWritable: true })
+      expect(instruction.keys[2]).toEqual({ pubkey: owner, isSigner: true, isWritable: false })
+    })
+
+    it('uses the constructor-bound env to resolve the settlement program', () => {
+      const sdk = new SolanaTradingSdk({ env: 'staging' })
+
+      const instruction = sdk.reclaimOrder({ ownerAddress: owner, orderPda })
+
+      expect(instruction.programId).toEqual(getSolanaSettlementProgramId('staging'))
+    })
+  })
+
+  describe('reclaimOrders', () => {
+    it('builds one ReclaimOrder instruction per entry, in order', () => {
+      const sdk = new SolanaTradingSdk()
+      const orderPdaA = fillPubkey(0x88)
+      const orderPdaB = fillPubkey(0x89)
+
+      const instructions = sdk.reclaimOrders([
+        { ownerAddress: owner, orderPda: orderPdaA },
+        { ownerAddress: owner, orderPda: orderPdaB },
+      ])
+
+      expect(instructions).toHaveLength(2)
+      expect(instructions[0]).toEqual(sdk.reclaimOrder({ ownerAddress: owner, orderPda: orderPdaA }))
+      expect(instructions[1]).toEqual(sdk.reclaimOrder({ ownerAddress: owner, orderPda: orderPdaB }))
+    })
+
+    it('returns an empty array for an empty list', () => {
+      const sdk = new SolanaTradingSdk()
+
+      expect(sdk.reclaimOrders([])).toEqual([])
+    })
+  })
 })
