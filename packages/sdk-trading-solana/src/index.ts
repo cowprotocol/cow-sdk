@@ -10,6 +10,10 @@ export { buildCreateOrderInstruction } from './createOrderInstruction'
 export type { CreateOrderInstructionParams } from './createOrderInstruction'
 export { buildCancelOrderInstruction } from './cancelOrderInstruction'
 export type { CancelOrderInstructionParams } from './cancelOrderInstruction'
+export { buildReclaimOrderInstruction } from './reclaimOrderInstruction'
+export type { ReclaimOrderInstructionParams } from './reclaimOrderInstruction'
+export { decodeSolanaOrderAccount, ENCODED_ORDER_ACCOUNT_SIZE } from './orderAccount'
+export type { SolanaOrderAccount } from './orderAccount'
 export {
   buildComputeBudgetInstructions,
   DEFAULT_COMPUTE_UNIT_PRICE_MICRO_LAMPORTS,
@@ -37,6 +41,7 @@ export { SolanaTradingSdk } from './solanaTradingSdk'
 export type {
   ApproveCowProtocolParams,
   CancelOrderParams,
+  ReclaimOrderParams,
   SolanaQuoteAndPost,
   SolanaTradingSdkOptions,
 } from './solanaTradingSdk'

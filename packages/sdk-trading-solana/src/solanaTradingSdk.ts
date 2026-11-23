@@ -11,6 +11,7 @@ import { getSolanaQuote } from './getSolanaQuote'
 import { SolanaOrderIntent } from './orderIntent'
 import { postSolanaSponsoredOrder } from './postSponsoredOrder'
 import { postSolanaSwapOrderFromQuote, SolanaOrderPostingResult } from './postSwapOrderFromQuote'
+import { buildReclaimOrderInstruction } from './reclaimOrderInstruction'
 import { getSolanaDelegateAuthority, getSolanaSettlementProgramId } from './statePda'
 import { SolanaQuote, SolanaQuoteParameters, SolanaSignAndSend } from './types'
 
@@ -46,6 +47,16 @@ export interface CancelOrderParams {
   /** Funds the order PDA's rent and must sign when `intent` is given; unused otherwise. Defaults to
    * `ownerAddress`. */
   createdByAddress?: PublicKeyInitData
+}
+
+export interface ReclaimOrderParams {
+  /** Signs the reclaim; must be the order's intent owner while the order is still within its `validTo`. */
+  ownerAddress: PublicKeyInitData
+  /** The order's PDA — see `findOrderPda`, or `orderPda` from `buildOrder`/`buildLimitOrder`. */
+  orderPda: PublicKeyInitData
+  /** Receives the rent; must be the `created_by` recorded in the order PDA. Defaults to `ownerAddress`,
+   * which is who funded the rent unless the order was sponsored. */
+  reclaimRecipientAddress?: PublicKeyInitData
 }
 
 /**
@@ -122,6 +133,27 @@ export class SolanaTradingSdk {
    */
   cancelOrders(paramsList: CancelOrderParams[]): TransactionInstruction[] {
     return paramsList.map((params) => this.cancelOrder(params))
+  }
+
+  /**
+   * Builds the `ReclaimOrder` instruction closing the order at `orderPda` and returning its rent, without
+   * sending it — see `buildReclaimOrderInstruction` for when the program accepts it. Bundle it after a
+   * `CancelOrder` in the same transaction to cancel and recover the rent in one signature.
+   */
+  reclaimOrder(params: ReclaimOrderParams): TransactionInstruction {
+    const owner = new PublicKey(params.ownerAddress)
+
+    return buildReclaimOrderInstruction({
+      programId: getSolanaSettlementProgramId(this.options.env),
+      orderPda: new PublicKey(params.orderPda),
+      reclaimRecipient: params.reclaimRecipientAddress ? new PublicKey(params.reclaimRecipientAddress) : owner,
+      caller: owner,
+    })
+  }
+
+  /** Builds one `ReclaimOrder` instruction per entry in `paramsList`, to bundle the way `cancelOrders` describes. */
+  reclaimOrders(paramsList: ReclaimOrderParams[]): TransactionInstruction[] {
+    return paramsList.map((params) => this.reclaimOrder(params))
   }
 
   /**
