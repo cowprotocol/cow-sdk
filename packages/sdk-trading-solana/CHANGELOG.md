@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v2.1.0...sdk-trading-solana-v2.2.0) (2026-11-23)
+
+
+### ✨ Features
+
+* **solana:** add ReclaimOrder instruction to the trading sdk ([#1106](https://github.com/cowprotocol/cow-sdk/issues/1106)) ([c20d290](https://github.com/cowprotocol/cow-sdk/commit/c20d290b41b53494ada249bff37910c279772c96))
+
 ## [2.1.0](https://github.com/cowprotocol/cow-sdk/compare/sdk-trading-solana-v2.0.0...sdk-trading-solana-v2.1.0) (2026-11-18)
 
 
