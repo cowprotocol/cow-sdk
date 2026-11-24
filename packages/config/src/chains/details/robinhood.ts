@@ -39,7 +39,7 @@ export const robinhood: EvmChainInfo = {
     url: 'https://docs.robinhood.com/chain',
   },
   blockExplorer: {
-    name: 'Robinhood Chain Explorer',
+    name: 'Robinscan',
     url: 'https://robin.etherscan.io',
   },
   bridges: [
