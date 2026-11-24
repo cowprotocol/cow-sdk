@@ -6,6 +6,17 @@ import { RateLimiter, RateLimiterOpts } from 'limiter'
  */
 export class OrderBookApiError<T = unknown> extends Error {
   /**
+   * How long the API asked the client to wait before a new request, in milliseconds, from the `Retry-After` header
+   * (delay-seconds or HTTP-date, measured when the error was created). `undefined` if the header is absent or invalid.
+   */
+  public readonly retryAfterMs?: number
+
+  /**
+   * The `Retry-After`, `RateLimit*` and `X-RateLimit-*` response headers, keyed by lower-case name.
+   */
+  public readonly rateLimitHeaders: Record<string, string>
+
+  /**
    * Error thrown when the CoW Protocol OrderBook API returns an error.
    * @param response The response from the CoW Protocol OrderBook API.
    * @param body The body of the response.
@@ -16,7 +27,39 @@ export class OrderBookApiError<T = unknown> extends Error {
     public readonly body: T,
   ) {
     super(typeof body === 'string' ? body : response.statusText)
+    this.rateLimitHeaders = getRateLimitHeaders(response.headers)
+    this.retryAfterMs = parseRetryAfterMs(this.rateLimitHeaders['retry-after'])
   }
+}
+
+const RATE_LIMIT_HEADER = /^(retry-after|ratelimit(-.+)?|x-ratelimit-.+)$/
+
+function getRateLimitHeaders(headers: Headers | undefined): Record<string, string> {
+  const rateLimitHeaders: Record<string, string> = {}
+
+  headers?.forEach((value, name) => {
+    const key = name.toLowerCase()
+    if (RATE_LIMIT_HEADER.test(key)) rateLimitHeaders[key] = value
+  })
+
+  return rateLimitHeaders
+}
+
+/**
+ * Parses a `Retry-After` value (RFC 9110, section 10.2.3) into milliseconds from now.
+ * A date in the past gives `0`; a malformed value gives `undefined`.
+ */
+function parseRetryAfterMs(value: string | undefined): number | undefined {
+  const trimmed = value?.trim()
+  if (!trimmed) return undefined
+
+  if (/^\d+$/.test(trimmed)) return Number(trimmed) * 1000
+
+  // An HTTP-date always contains letters (day and month names). Requiring one rejects values such as "-1" or "1.5",
+  // which Date.parse would otherwise read as dates.
+  const date = /[a-z]/i.test(trimmed) ? Date.parse(trimmed) : NaN
+
+  return Number.isNaN(date) ? undefined : Math.max(0, date - Date.now())
 }
 
 const REQUEST_TIMEOUT = 408
@@ -30,23 +73,48 @@ const GATEWAY_TIMEOUT = 504
 const STATUS_CODES_TO_RETRY = [
   REQUEST_TIMEOUT,
   TOO_EARLY,
-  TOO_MANY_REQUESTS,
   INTERNAL_SERVER_ERROR,
   BAD_GATEWAY,
   SERVICE_UNAVAILABLE,
   GATEWAY_TIMEOUT,
 ]
 
+/** A 429 is only retried after the first or second attempt, so it is retried at most twice. */
+const MAX_RATE_LIMIT_RETRIES = 2
+/** Longest wait before retrying a 429. A longer `Retry-After` is returned to the caller instead. */
+const MAX_RATE_LIMIT_DELAY_MS = 5_000
+/** Upper bound of the random wait before the first retry of a 429 without a valid `Retry-After`; doubles after. */
+const RATE_LIMIT_FALLBACK_DELAY_MS = 1_000
+
+function retryRateLimited(error: OrderBookApiError, attemptNumber: number): boolean | Promise<boolean> {
+  if (attemptNumber > MAX_RATE_LIMIT_RETRIES) return false
+
+  const delayMs = error.retryAfterMs ?? Math.random() * RATE_LIMIT_FALLBACK_DELAY_MS * 2 ** (attemptNumber - 1)
+  if (delayMs > MAX_RATE_LIMIT_DELAY_MS) return false
+
+  return new Promise((resolve) => setTimeout(() => resolve(true), delayMs))
+}
+
 /**
- * The default backoff options for CoW Protocol's API
+ * The default backoff options for CoW Protocol's API.
+ *
+ * - `408`, `425`, `5xx` and network errors: up to 10 attempts with exponential backoff.
+ * - `429`: at most 2 retries. Each waits for `Retry-After`, or a random delay when it is absent, before the usual
+ *   backoff delay. A `Retry-After` above 5 s is returned to the caller without retrying.
+ * - Other errors are not retried.
+ *
+ * Custom `backoffOpts` replace these options entirely; spread them to keep the retry rules. The 429 wait runs in
+ * `retry`, before `numOfAttempts` is checked, so keep `numOfAttempts` above 2 when reusing it.
  * @see {@link Backoff configuration: https://www.npmjs.com/package/@insertish/exponential-backoff}
  */
 export const DEFAULT_BACKOFF_OPTIONS: BackoffOptions = {
   numOfAttempts: 10,
   maxDelay: Infinity,
   jitter: 'none',
-  retry: (error: Error | OrderBookApiError) => {
+  retry: (error: Error | OrderBookApiError, attemptNumber: number) => {
     if (error instanceof OrderBookApiError) {
+      if (error.response.status === TOO_MANY_REQUESTS) return retryRateLimited(error, attemptNumber)
+
       return STATUS_CODES_TO_RETRY.includes(error.response.status)
     }
 
@@ -57,7 +125,8 @@ export const DEFAULT_BACKOFF_OPTIONS: BackoffOptions = {
 /**
  * The default rate limiter options for CoW Protocol's API.
  *
- * **CAUTION**: The CoW Protocol OrderBook API is limited to 5 requests per second per IP.
+ * This only throttles requests on the client side. The API enforces its own limits, which differ per endpoint:
+ * @see {@link https://docs.cow.fi/cow-protocol/integrate/api#rate-limits}
  */
 export const DEFAULT_LIMITER_OPTIONS: RateLimiterOpts = {
   tokensPerInterval: 5,
