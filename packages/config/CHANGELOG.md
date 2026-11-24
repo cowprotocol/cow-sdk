@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.11.3](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.11.2...sdk-config-v2.11.3) (2026-11-24)
+
+
+### 🐛 Bug Fixes
+
+* **robinhood:** update Robinhood chain explorer name to Robinscan ([#1108](https://github.com/cowprotocol/cow-sdk/issues/1108)) ([97cf803](https://github.com/cowprotocol/cow-sdk/commit/97cf803c2f3cf337688ab60f9ccf9257b3d44b9c))
+
 ## [2.11.2](https://github.com/cowprotocol/cow-sdk/compare/sdk-config-v2.11.1...sdk-config-v2.11.2) (2026-11-04)
 
 
