@@ -51,6 +51,6 @@ export interface SolanaQuote {
   costs?: SolanaQuoteCosts
 }
 
-/** Signs and submits a `CreateOrder` instruction; supplied by the caller since this SDK has no bound
- * Solana wallet/signer (unlike the EVM adapter). */
-export type SolanaSignAndSend = (instruction: TransactionInstruction) => Promise<{ signature: string }>
+/** Signs and submits an order creation as one transaction, carrying `instructions` in the order given;
+ * supplied by the caller since this SDK has no bound Solana wallet/signer (unlike the EVM adapter). */
+export type SolanaSignAndSend = (instructions: TransactionInstruction[]) => Promise<{ signature: string }>

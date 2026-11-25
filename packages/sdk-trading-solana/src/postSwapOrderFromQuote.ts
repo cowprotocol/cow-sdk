@@ -14,9 +14,10 @@ export interface SolanaOrderPostingResult extends OrderPostingResult {
 
 // TODO: implement real order posting flow, see https://github.com/cowprotocol/cowswap/pull/7860
 /**
- * Builds `quote`'s `CreateOrder` instruction and has `signAndSend` submit it as its own transaction. This
- * is the Solana analogue of `postSwapOrderFromQuote` in `postSwapOrder.ts` — but where the EVM version
- * signs order data and POSTs it to the CoW order-book, Solana orders are created entirely on-chain.
+ * Builds `quote`'s `CreateOrder` instruction, together with the memo linking the order to the quote, and
+ * has `signAndSend` submit them as their own transaction. This is the Solana analogue of
+ * `postSwapOrderFromQuote` in `postSwapOrder.ts` — but where the EVM version signs order data and POSTs
+ * it to the CoW order-book, Solana orders are created entirely on-chain.
  *
  * To bundle the order with other instructions instead of sending it alone, use `buildSolanaSwapOrder`.
  */
@@ -26,14 +27,14 @@ export async function postSolanaSwapOrderFromQuote(
   advancedSettings?: SwapAdvancedSettings,
   signingStepManager?: SigningStepManager,
 ): Promise<SolanaOrderPostingResult> {
-  const { instruction, orderId, signingScheme, orderToSign, appDataInfo } = await buildSolanaSwapOrder(
+  const { instructions, orderId, signingScheme, orderToSign, appDataInfo } = await buildSolanaSwapOrder(
     quote,
     advancedSettings,
   )
 
   await signingStepManager?.beforeOrderSign?.()
 
-  const { signature } = await signAndSend(instruction)
+  const { signature } = await signAndSend(instructions)
 
   await signingStepManager?.afterOrderSign?.()
 

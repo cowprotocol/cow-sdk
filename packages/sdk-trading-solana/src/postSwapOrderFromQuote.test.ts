@@ -41,14 +41,16 @@ async function buildFixtureQuote(): Promise<SolanaQuote> {
   }
 }
 
+const FIXTURE_QUOTE_ID = 161211
+
 function buildFixtureQuoteResults(orderToSign: unknown = { fake: 'orderToSign' }): QuoteResults {
-  return { orderToSign } as unknown as QuoteResults
+  return { orderToSign, quoteResponse: { id: FIXTURE_QUOTE_ID } } as unknown as QuoteResults
 }
 
 /** Intent-level overrides (`receiver`/`validTo`) are covered directly in `buildSwapOrder.test.ts`; this
  * suite covers what the wrapper adds on top: signing, submission and result mapping. */
 describe('postSolanaSwapOrderFromQuote', () => {
-  it('signs and sends the CreateOrder instruction, returning the order posting result', async () => {
+  it('signs and sends the quote memo and the CreateOrder instruction, returning the order posting result', async () => {
     const solanaQuote = await buildFixtureQuote()
     const quoteResults = buildFixtureQuoteResults()
     const signAndSend = jest.fn().mockResolvedValue({ signature: 'fake-signature' })
@@ -56,7 +58,8 @@ describe('postSolanaSwapOrderFromQuote', () => {
     const result = await postSolanaSwapOrderFromQuote({ quoteResults, solanaQuote }, signAndSend)
 
     expect(signAndSend).toHaveBeenCalledTimes(1)
-    const instruction = signAndSend.mock.calls[0][0]
+    const [memo, instruction] = signAndSend.mock.calls[0][0]
+    expect(memo.data.toString('utf8')).toBe(`cow:quote:${FIXTURE_QUOTE_ID}`)
     expect(instruction.programId.toBase58()).toBe(solanaQuote.programId.toBase58())
     expect(instruction.data[0]).toBe(2)
 
@@ -142,8 +145,9 @@ describe('postSolanaSwapOrderFromQuote', () => {
       appData: { metadata: { referrer: { code: 'someone' } } },
     })
 
-    const instruction = signAndSend.mock.calls[0][0]
-    const committedAppData = Uint8Array.from(instruction.data.subarray(1)).slice(-32)
+    const instructions = signAndSend.mock.calls[0][0]
+    const createOrder = instructions[instructions.length - 1]
+    const committedAppData = Uint8Array.from(createOrder.data.subarray(1)).slice(-32)
     expect(result.appDataInfo?.doc.metadata).toMatchObject({ referrer: { code: 'someone' } })
     expect(result.appDataInfo?.appDataKeccak256).toBe(`0x${toHex(committedAppData)}`)
   })

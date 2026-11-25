@@ -176,19 +176,23 @@ const result = await postSwapOrderFromQuote(signAndSend)
 // result.orderId, result.txHash / result.signature
 ```
 
-`signAndSend` has the shape `(instruction: TransactionInstruction) => Promise<{ signature: string }>`
-— build, sign and send the transaction however fits your app (a `Connection` + `Keypair`, a wallet
-adapter, a Squads/Safe-style multisig flow, etc).
+`signAndSend` has the shape
+`(instructions: TransactionInstruction[]) => Promise<{ signature: string }>` — build, sign and send one
+transaction carrying them in the order given, however fits your app (a `Connection` + `Keypair`, a
+wallet adapter, a Squads/Safe-style multisig flow, etc).
 
 **Bundle the order with your own instructions** — a Solana order is created by a single instruction,
 so it can share one transaction with, say, the Step 0 delegate approval, a native-SOL wrap, or
-anything else. `buildOrder` returns that instruction without sending it:
+anything else. `buildOrder` returns the creation without sending it:
 
 ```ts
-const { instruction, orderId, orderPda, uid } = await buildOrder()
+const { instructions, orderId, orderPda, uid } = await buildOrder()
 
-await sendMyTransaction([approveInstruction, instruction])
+await sendMyTransaction([approveInstruction, ...instructions])
 ```
+
+`instructions` is the order's `CreateOrder` preceded by the memo that links it to this quote (see
+below), with `CreateOrder` last. Take `instruction` instead when you want that one instruction alone.
 
 This is the recommended path whenever the sell-token account's delegate allowance needs
 topping up for this trade, since it lets the delegate approval and the order creation land
@@ -200,6 +204,49 @@ PDA so they still match the intent actually being created:
 
 ```ts
 await postSwapOrderFromQuote(signAndSend, { quoteRequest: { receiver: otherWallet.toBase58() } })
+```
+
+### Link the order to the quote it came from
+
+An order placed through the API names its quote with `quoteId`; an on-chain creation calls no API, so
+it names it with an SPL Memo instruction reading `cow:quote:<id>` in the same transaction. The order
+book reads it while indexing the creation and ties the order to that quote, which is what lets a fill
+be compared against what was quoted — without it the order is matched to the best quote stored for its
+pair, side and amount, which may not be the one the user saw.
+
+`buildOrder` emits the memo by default for an owner-paid order whose quote reported an id, as the
+first entry of `instructions`:
+
+```ts
+const { instructions, quoteMemoInstruction } = await buildOrder()
+```
+
+Two rules the transaction has to keep, or the link is dropped and the order is indexed as if unnamed:
+
+- **exactly one memo** carrying the `cow:quote:` prefix — pass `quoteMemo: false` if your own
+  transaction already adds a memo
+- **exactly one order creation** — pass `quoteMemo: false` when bundling several orders together
+
+Sponsored orders are the exception and get no memo by default: their id travels in `postSponsoredOrder`
+instead, and the order book refuses a sponsored bundle carrying any instruction its template does not
+name — so leave the default alone there.
+
+On the owner-paid path, pass `{ quoteId }` to name a quote fetched outside this SDK, which
+`quoteResults` therefore cannot report:
+
+```ts
+const { instructions } = await buildOrder(undefined, { quoteMemo: { quoteId } })
+```
+
+Building the memo on its own, for a creation assembled by hand:
+
+```ts
+import { buildSolanaQuoteMemoInstruction } from '@cowprotocol/sdk-trading-solana'
+
+// `id` is absent (`undefined`, or `null` from the endpoint) when the order book could not store the
+// quote, and there is then nothing to link to.
+const { id } = quoteResults.quoteResponse
+const memo = id == null ? undefined : buildSolanaQuoteMemoInstruction(id)
 ```
 
 ### Set a compute budget on a sponsored bundle
