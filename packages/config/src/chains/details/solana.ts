@@ -29,8 +29,8 @@ export const solana: NonEvmChainInfo = {
     url: 'https://docs.solana.com',
   },
   blockExplorer: {
-    name: 'Solana Explorer',
-    url: 'https://explorer.solana.com',
+    name: 'Solscan',
+    url: 'https://solscan.io',
   },
   isUnderDevelopment: true,
 }

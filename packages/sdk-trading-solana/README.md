@@ -19,7 +19,7 @@ actively evolving deployment — expect breaking changes to the intent wire form
 package's API across minor versions. The currently deployed program id is exported as
 [`SOLANA_SETTLEMENT_PROGRAM_ID`](https://github.com/cowprotocol/cow-sdk/blob/main/packages/config/src/chains/const/contracts.ts)
 from `@cowprotocol/sdk-config` — see it on
-[Solana Explorer](https://explorer.solana.com/address/FYp8R5K4B3B1Kfr7QuWzMz4TwoT7wptjYtxgCrY5sRXb).
+[Solscan](https://solscan.io/account/FYp8R5K4B3B1Kfr7QuWzMz4TwoT7wptjYtxgCrY5sRXb).
 
 ```
 npm install @cowprotocol/sdk-trading-solana
