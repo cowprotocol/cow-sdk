@@ -83,6 +83,8 @@ export async function buildSolanaLimitOrderOrder(params: SolanaLimitOrderParams)
 
   return {
     instruction,
+    // No quote to link: a limit order rests at the user's own price, which no quote ever reported.
+    instructions: [instruction],
     // No sponsor option here yet, so the owner both authenticates the order and funds its PDA's rent.
     feePayer: owner,
     orderId: toOrderId(uid),

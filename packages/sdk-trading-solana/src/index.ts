@@ -12,6 +12,7 @@ export { buildCancelOrderInstruction } from './cancelOrderInstruction'
 export type { CancelOrderInstructionParams } from './cancelOrderInstruction'
 export { buildReclaimOrderInstruction } from './reclaimOrderInstruction'
 export type { ReclaimOrderInstructionParams } from './reclaimOrderInstruction'
+export { buildSolanaQuoteMemoInstruction, SOLANA_QUOTE_MEMO_PREFIX, SPL_MEMO_PROGRAM_ID } from './quoteMemo'
 export { decodeSolanaOrderAccount, ENCODED_ORDER_ACCOUNT_SIZE } from './orderAccount'
 export type { SolanaOrderAccount } from './orderAccount'
 export {

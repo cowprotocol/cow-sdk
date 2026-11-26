@@ -76,13 +76,14 @@ async function main() {
     approveAmount: solanaQuote.intent.sellAmount,
   })
 
-  // Step 2: build the CreateOrder instruction without sending it, so it can be bundled with the
-  // approval above into a single atomic transaction.
+  // Step 2: build the order's instructions without sending them, so they can be bundled with the
+  // approval above into a single atomic transaction. `instructions` is the memo linking the order to
+  // this quote followed by the CreateOrder itself.
   console.log('Building CreateOrder instruction...')
-  const { instruction, orderId } = await buildOrder()
+  const { instructions, orderId } = await buildOrder()
 
   console.log('Sending transaction...')
-  const transaction = new Transaction().add(approveInstruction, instruction)
+  const transaction = new Transaction().add(approveInstruction, ...instructions)
   const signature = await sendAndConfirmTransactionResilient(connection, transaction, [owner])
 
   console.log('Order created:', { orderId, signature })

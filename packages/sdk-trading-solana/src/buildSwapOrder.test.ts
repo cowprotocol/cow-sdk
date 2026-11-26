@@ -47,10 +47,13 @@ async function buildFixtureQuote(
   }
 }
 
+const FIXTURE_QUOTE_ID = 161211
+
 function buildFixtureQuoteResults(orderToSign: unknown = { fake: 'orderToSign' }): QuoteResults {
   return {
     orderToSign,
     appDataInfo: { doc: { appCode: 'fixture-app', metadata: {} } },
+    quoteResponse: { id: FIXTURE_QUOTE_ID },
   } as unknown as QuoteResults
 }
 
@@ -279,5 +282,99 @@ describe('buildSolanaSwapOrder', () => {
 
     expect(order.orderId).toBe(toOrderId(solanaQuote.uid))
     expect(order.orderPda.toBase58()).toBe(solanaQuote.orderPda.toBase58())
+  })
+
+  describe('quote memo', () => {
+    it('emits it ahead of the creation an owner pays for', async () => {
+      const solanaQuote = await buildFixtureQuote()
+
+      const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote })
+
+      expect(order.quoteMemoInstruction?.data.toString('utf8')).toBe(`cow:quote:${FIXTURE_QUOTE_ID}`)
+      expect(order.instructions).toEqual([order.quoteMemoInstruction, order.instruction])
+    })
+
+    // The sponsored placement request carries the id instead, and the order book refuses a bundle
+    // holding any instruction its template does not name.
+    it('leaves it out of a sponsored bundle', async () => {
+      const solanaQuote = await buildFixtureQuote()
+
+      const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, undefined, {
+        sponsor: fillPubkey(0x99),
+      })
+
+      expect(order.quoteMemoInstruction).toBeUndefined()
+      expect(order.instructions).toEqual([order.instruction])
+    })
+
+    it('emits it for a sponsored bundle when the caller asks for it explicitly', async () => {
+      const solanaQuote = await buildFixtureQuote()
+
+      const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, undefined, {
+        sponsor: fillPubkey(0x99),
+        quoteMemo: true,
+      })
+
+      expect(order.instructions).toEqual([order.quoteMemoInstruction, order.instruction])
+    })
+
+    it('leaves it out when the caller turns it off', async () => {
+      const solanaQuote = await buildFixtureQuote()
+
+      const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, undefined, {
+        quoteMemo: false,
+      })
+
+      expect(order.quoteMemoInstruction).toBeUndefined()
+      expect(order.instructions).toEqual([order.instruction])
+    })
+
+    it('names the quote the caller gives over the one the results report', async () => {
+      const solanaQuote = await buildFixtureQuote()
+
+      const order = await buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, undefined, {
+        quoteMemo: { quoteId: 42 },
+      })
+
+      expect(order.quoteMemoInstruction?.data.toString('utf8')).toBe('cow:quote:42')
+    })
+
+    it('leaves it out when the quote reports no id to link to', async () => {
+      const solanaQuote = await buildFixtureQuote()
+      const quoteResults = { ...buildFixtureQuoteResults(), quoteResponse: {} } as unknown as QuoteResults
+
+      const order = await buildSolanaSwapOrder({ quoteResults, solanaQuote })
+
+      expect(order.quoteMemoInstruction).toBeUndefined()
+      expect(order.instructions).toEqual([order.instruction])
+    })
+
+    // The endpoint answers `id: null` when it fails to store the quote, which the generated type does
+    // not admit — an order must still be creatable, just unlinked.
+    // Creating the order matters more than naming its quote: a response the generated type does not
+    // describe must not take the creation down with it.
+    it.each([null, '161211', 1.5, Number.MAX_SAFE_INTEGER + 2, -1])(
+      'leaves it out when the quote reports %p as its id',
+      async (id) => {
+        const solanaQuote = await buildFixtureQuote()
+        const quoteResults = { ...buildFixtureQuoteResults(), quoteResponse: { id } } as unknown as QuoteResults
+
+        const order = await buildSolanaSwapOrder({ quoteResults, solanaQuote })
+
+        expect(order.quoteMemoInstruction).toBeUndefined()
+        expect(order.instructions).toEqual([order.instruction])
+      },
+    )
+
+    it('rejects an id the caller names itself, rather than quietly dropping it', async () => {
+      const solanaQuote = await buildFixtureQuote()
+
+      await expect(
+        buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, undefined, {
+          quoteMemo: { quoteId: -1 },
+        }),
+      ).rejects.toThrow('quoteId must be a non-negative integer')
+    })
+
   })
 })
