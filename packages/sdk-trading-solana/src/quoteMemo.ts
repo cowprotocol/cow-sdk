@@ -7,6 +7,14 @@ export const SPL_MEMO_PROGRAM_ID = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMy
 export const SOLANA_QUOTE_MEMO_PREFIX = 'cow:quote:'
 
 /**
+ * Whether `value` is an id a memo can name. The order book's ids are sequential and fit a double, so
+ * anything outside that is a response the generated type does not describe rather than a real id.
+ */
+export function isSolanaQuoteId(value: unknown): value is number {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+}
+
+/**
  * Builds the memo naming the quote an order was created from, as `cow:quote:<id>`. Bundle it in the
  * same transaction as the order's `CreateOrder` and the order book links the two, the way `quoteId`
  * names a quote when an order is placed through the API — which an on-chain creation never calls. The
@@ -21,7 +29,7 @@ export const SOLANA_QUOTE_MEMO_PREFIX = 'cow:quote:'
  * actually saw.
  */
 export function buildSolanaQuoteMemoInstruction(quoteId: number): TransactionInstruction {
-  if (!Number.isSafeInteger(quoteId) || quoteId < 0) {
+  if (!isSolanaQuoteId(quoteId)) {
     throw new Error(`quoteId must be a non-negative integer, got ${quoteId}`)
   }
 

@@ -6,7 +6,7 @@ import { deriveAta } from './associatedTokenAccount'
 import { buildCreateOrderInstruction } from './createOrderInstruction'
 import { encodeOrderIntent, hashOrderIntent, SolanaOrderIntent, toOrderId } from './orderIntent'
 import { findOrderPda } from './orderPda'
-import { buildSolanaQuoteMemoInstruction } from './quoteMemo'
+import { buildSolanaQuoteMemoInstruction, isSolanaQuoteId } from './quoteMemo'
 import { isNativeSolMint } from './splMint'
 import { SolanaQuote } from './types'
 
@@ -27,7 +27,9 @@ export interface BuildSolanaSwapOrderOptions {
    * instead, and the order book refuses a bundle carrying any instruction its template does not name.
    *
    * Pass `{ quoteId }` when the quote was fetched elsewhere, and `false` when the transaction already
-   * holds a memo or creates more than one order — either of those voids the link.
+   * holds a memo or creates more than one order — either of those voids the link. An id the response
+   * reports that is not one the memo can name leaves the order unlinked; only a `{ quoteId }` the
+   * caller names is rejected outright.
    */
   quoteMemo?: boolean | { quoteId: number }
 }
@@ -126,17 +128,18 @@ function resolveQuoteMemoInstruction(
 ): TransactionInstruction | undefined {
   if (quoteMemo === false) return undefined
 
-  // The endpoint answers `id: null` when it could not store the quote — which the generated type does
-  // not admit — so normalize that away; the optional access covers hand-built quote results, which
-  // `getSolanaQuote`'s own always fill.
-  const quoteId = typeof quoteMemo === 'object' ? quoteMemo.quoteId : (quoteResults.quoteResponse?.id ?? undefined)
+  // A caller naming the quote itself means it, sponsored or not, and hears about an id it got wrong.
+  if (typeof quoteMemo === 'object') return buildSolanaQuoteMemoInstruction(quoteMemo.quoteId)
 
-  // No id means the order book has nothing to link this creation to.
-  if (quoteId === undefined) return undefined
+  if (quoteMemo === undefined && sponsor !== undefined) return undefined
 
-  const isSponsoredDefault = quoteMemo === undefined && sponsor !== undefined
+  // Whatever the response carries, never trusted to be an id: it answers `id: null` for a quote it
+  // could not store, which the generated type already does not admit. The memo is diagnostic, so an
+  // id the SDK cannot name leaves the order unlinked rather than failing a creation that is otherwise
+  // fine. The optional access covers hand-built quote results, which `getSolanaQuote`'s own always fill.
+  const quoteId = quoteResults.quoteResponse?.id
 
-  return isSponsoredDefault ? undefined : buildSolanaQuoteMemoInstruction(quoteId)
+  return isSolanaQuoteId(quoteId) ? buildSolanaQuoteMemoInstruction(quoteId) : undefined
 }
 
 function toTradingAppDataInfo(info: SolanaAppDataInfo | undefined): TradingAppDataInfo | undefined {

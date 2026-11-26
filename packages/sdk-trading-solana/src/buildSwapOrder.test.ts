@@ -351,17 +351,30 @@ describe('buildSolanaSwapOrder', () => {
 
     // The endpoint answers `id: null` when it fails to store the quote, which the generated type does
     // not admit — an order must still be creatable, just unlinked.
-    it('leaves it out when the quote reports a null id', async () => {
+    // Creating the order matters more than naming its quote: a response the generated type does not
+    // describe must not take the creation down with it.
+    it.each([null, '161211', 1.5, Number.MAX_SAFE_INTEGER + 2, -1])(
+      'leaves it out when the quote reports %p as its id',
+      async (id) => {
+        const solanaQuote = await buildFixtureQuote()
+        const quoteResults = { ...buildFixtureQuoteResults(), quoteResponse: { id } } as unknown as QuoteResults
+
+        const order = await buildSolanaSwapOrder({ quoteResults, solanaQuote })
+
+        expect(order.quoteMemoInstruction).toBeUndefined()
+        expect(order.instructions).toEqual([order.instruction])
+      },
+    )
+
+    it('rejects an id the caller names itself, rather than quietly dropping it', async () => {
       const solanaQuote = await buildFixtureQuote()
-      const quoteResults = {
-        ...buildFixtureQuoteResults(),
-        quoteResponse: { id: null },
-      } as unknown as QuoteResults
 
-      const order = await buildSolanaSwapOrder({ quoteResults, solanaQuote })
-
-      expect(order.quoteMemoInstruction).toBeUndefined()
-      expect(order.instructions).toEqual([order.instruction])
+      await expect(
+        buildSolanaSwapOrder({ quoteResults: buildFixtureQuoteResults(), solanaQuote }, undefined, {
+          quoteMemo: { quoteId: -1 },
+        }),
+      ).rejects.toThrow('quoteId must be a non-negative integer')
     })
+
   })
 })
