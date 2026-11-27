@@ -48,5 +48,4 @@ export const robinhood: EvmChainInfo = {
       url: 'https://portal.arbitrum.io/bridge?destinationChain=robinhood-chain&sourceChain=ethereum',
     },
   ],
-  isUnderDevelopment: true,
 }
