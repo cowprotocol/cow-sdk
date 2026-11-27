@@ -400,6 +400,26 @@ adapterNames.forEach((adapterName) => {
           status: BridgeStatus.UNKNOWN,
         })
       })
+
+      it('should query the across API with the deposit tx hash, not the order id, and report EXPIRED', async () => {
+        const mockBungeeApi = new BungeeApi()
+        const pendingDestEvents: BungeeEvent[] = [
+          { ...mockEvents[0]!, destTxStatus: BungeeEventStatus.PENDING, destTransactionHash: undefined },
+        ]
+        jest.spyOn(mockBungeeApi, 'getEvents').mockResolvedValue(pendingDestEvents)
+        const getAcrossStatus = jest.spyOn(mockBungeeApi, 'getAcrossStatus').mockResolvedValue('expired')
+        provider.setApi(mockBungeeApi)
+
+        const status = await provider.getStatus('123')
+
+        // must be looked up by the on-chain deposit tx hash (srcTransactionHash), never the CoW order id
+        expect(getAcrossStatus).toHaveBeenCalledWith('0x123')
+        expect(getAcrossStatus).not.toHaveBeenCalledWith('123')
+        expect(status).toEqual({
+          status: BridgeStatus.EXPIRED,
+          depositTxHash: '0x123',
+        })
+      })
     })
 
     describe('getCancelBridgingTx', () => {
