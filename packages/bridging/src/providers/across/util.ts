@@ -175,8 +175,23 @@ const AcrossStatusToBridgeStatus: Record<DepositStatusResponse['status'], Bridge
   refunded: BridgeStatus.REFUND,
 }
 
-export function mapAcrossStatusToBridgeStatus(status: DepositStatusResponse['status']): BridgeStatus {
-  return AcrossStatusToBridgeStatus[status]
+/**
+ * `DepositStatusResponse['status']` is a hand-maintained TS literal union describing Across'
+ * documented statuses, not a guarantee of what the live API will actually send - a wire value
+ * outside this union (a new status Across adds, or any other drift) must not silently produce
+ * `undefined` where every caller expects a `BridgeStatus`. Widen to `string` so the fallback
+ * below is real, not just satisfying an already-exhaustive type.
+ *
+ * `Object.hasOwn` (not a plain index/`??`) guards against prototype-chain keys - a status of
+ * `"constructor"` or `"toString"` would otherwise resolve to an `Object.prototype` member
+ * instead of `undefined`, silently bypassing the fallback.
+ */
+export function mapAcrossStatusToBridgeStatus(status: string): BridgeStatus {
+  if (!Object.hasOwn(AcrossStatusToBridgeStatus, status)) {
+    return BridgeStatus.UNKNOWN
+  }
+
+  return AcrossStatusToBridgeStatus[status as DepositStatusResponse['status']]
 }
 
 export function getAcrossDepositEvents(chainId: SupportedChainId, logs: Log[]): AcrossDepositEvent[] {
