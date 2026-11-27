@@ -6,6 +6,12 @@ import { QuoterParameters, SlippageToleranceResponse, SwapAdvancedSettings, Trad
 import { suggestTradingSlippageBps, SuggestSlippageBps } from './suggestTradingSlippageBps'
 import { getPartnerFeeBps } from './utils/getPartnerFeeBps'
 
+/**
+ * Converts custom slippage BPS, including zero, to `volumeMultiplierPercent` for the built-in calculation;
+ * the custom value is not the final slippage. FAST quotes bypass the custom callback.
+ * A missing callback or nullish custom BPS uses the built-in suggestion; callback or recomputation errors
+ * fall back. Amount-preparation errors outside the try propagate.
+ */
 export async function resolveSlippageSuggestion(
   chainId: SupportedChainId,
   tradeParameters: TradeParameters,
@@ -50,12 +56,13 @@ export async function resolveSlippageSuggestion(
     const suggestedSlippageBps = suggestedSlippage.slippageBps
 
     return {
-      slippageBps: suggestedSlippageBps
-        ? suggestTradingSlippageBps({
-            ...suggestSlippageParams,
-            volumeMultiplierPercent: bpsToPercentage(suggestedSlippageBps),
-          })
-        : defaultSuggestion,
+      slippageBps:
+        suggestedSlippageBps != null
+          ? suggestTradingSlippageBps({
+              ...suggestSlippageParams,
+              volumeMultiplierPercent: bpsToPercentage(suggestedSlippageBps),
+            })
+          : defaultSuggestion,
     }
   } catch (e: unknown) {
     log(`getSlippageSuggestion() error: ${(e as Error).message || String(e)}`)
