@@ -1,7 +1,7 @@
 import fetchMock, { enableFetchMocks } from 'jest-fetch-mock'
 import { CowError } from '@cowprotocol/sdk-common'
 import { OrderBookApi } from './api'
-import { BuyTokenDestination, OrderKind, SellTokenSource, SigningScheme } from './generated'
+import { AppDataHash, BuyTokenDestination, OrderKind, SellTokenSource, SigningScheme } from './generated'
 import { EcdsaSigningScheme } from './signingSchemes'
 import { SupportedChainId, ETH_ADDRESS } from '@cowprotocol/sdk-config'
 import { AUCTION } from './mock'
@@ -684,6 +684,10 @@ describe('CoW Api', () => {
       }),
     )
     expect(appDataHashResult).toEqual(appDataHash)
+    // Pin the return type: if this ever regresses to `AppDataObject`, tsc fails here
+    // rather than the mismatch surviving until someone hits it at runtime.
+    const typedResult: AppDataHash = appDataHashResult
+    expect(typeof typedResult).toBe('string')
   })
 
   test('Valid: Get solver competition by auctionId', async () => {
